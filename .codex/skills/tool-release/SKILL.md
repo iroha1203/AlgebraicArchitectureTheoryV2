@@ -21,7 +21,7 @@ GitHub Release notes は原則として英語で書く。
 - Release は GitHub Issue / PR の完了状態を根拠にする。
 - Release notes は `.github/RELEASE_TEMPLATE.md` を起点に英語で作成する。
 - ArchSig / FieldSig の claim scope を混同しない。
-- ArchSig は、宣言された ArchMap + LawPolicy + MeasurementProfile から bounded verdict と analysis packet を計算する計測層として書く。結論の相対性は入力契約に由来する帰結として述べ、「theorem prover ではない」型の否定形免責を identity 文に書かない(AGENTS.md「責務範囲」の記述規律)。
+- ArchSig は、宣言された ArchMap + LawPolicy + MeasurementProfile から bounded verdict と analysis packet を計算する計測層として書く。結論の相対性は入力契約に由来する帰結として述べ、「theorem prover ではない」型の否定形免責を identity 文に書かない(`docs/tool/guideline.md`「責務範囲(入力トライアドの正本)」の identity 記述規律)。
 - FieldSig は forecast, governance, calibration, operational feedback を扱うが、forecast correctness、probability、causal correctness、global safety、CI/Test/human review の置換を主張しない。
 - ArchSig release notes では、Architecture Signature を単一スコアではなく、多軸診断として扱う。
 - Release を勝手に publish しない。公開は必ずユーザー確認後に行う。
@@ -60,11 +60,11 @@ GitHub Release notes は原則として英語で書く。
 5. 検証する。
    - ArchSig 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
    - FieldSig 変更あり: `cargo test --manifest-path tools/fieldsig/Cargo.toml`
-   - Lean / docs claim 変更あり: 本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。ローカルでは変更範囲に応じた focused check または targeted build を必要に応じて実行する。
+   - Lean / docs claim 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、変更範囲に応じた focused check または targeted build をローカルで実行する。
    - website 変更あり: Playwright で静的ページを確認する。
    - release notes / workflow / docs 変更のみでも:
      - `git diff --check`
-     - `AGENTS.md`「よく使う検証」の hidden / bidirectional Unicode scan
+     - `docs/workflow/guideline.md`「PR 前の共通確認」の hidden / bidirectional Unicode scan
      - `.codex/skills/_shared/refutation-checklist.md` §6 の privacy、local-path、
        public artifact scan
      - `.github/release.yml` を触った場合は YAML parse

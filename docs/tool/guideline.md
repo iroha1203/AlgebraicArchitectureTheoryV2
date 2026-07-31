@@ -2,6 +2,44 @@
 
 この文書は `tools/archsig`、`tools/archview`、`tools/fieldsig`、`docs/tool` を編集するときの作業方針をまとめる。
 
+## 責務範囲(入力トライアドの正本)
+
+- AAT は Atom と law から立つ純粋理論である。ArchSig は ArchMap と LawPolicy から
+  bounded diagnostic を計算する。観測の正しさは ArchMap author の責務として扱う。
+- 入力トライアド(hard rule): ArchMap は観測した atom を書く場、
+  LawPolicy(law-equation-surface / MeasurementProfile を含む法・方程式側 artifact)は
+  ルールと制約を書く場であり、ArchSig はこの二系統の入力から計算して結果を出力する。
+  第三の入力カテゴリは存在しない(供給 contract を第三の入力として読み替える誤読を
+  塞ぐための明示である)。
+- 帰属は名前ではなく内容で決める。法・方程式側に帰属するのは、特定の ArchMap instance に
+  依存しない規則・制約・係数・被覆・評価計画だけである。特定 instance の値(section、
+  cocycle、class の零性、写像の存在)を運ぶ供給は、名称にかかわらず法側ではない。
+  観測側に帰属する行は source への解決可能な ref を持つ。RepairPlan のうち作者が提案する
+  修理そのもの(修理後状態と repair cochain の対象)は、この観測側の資格を満たす形で
+  書かれた場合に限り提案された観測として観測側に帰属する。ArchSig が計算すべき結論を
+  先渡しする slot はどちらにも帰属しない。
+- どちらにも帰属しない authored データ(証明、証書、presentation、結論相当の
+  supplied 判定)を、新しい入力、CLI flag、schema field、供給 slot として受け取らない。
+  既存 field への同種データの追加・意味拡張・解禁語彙の追加も同じ禁止に含む。
+  台帳への収載、validator の存在、結論の相対化表記、assumption ledger 記録、
+  未供給時に沈黙する設計、fixture / golden lock、schema 登録や version bump は、
+  いずれも帰属の代替にならない(列挙は例示であり、帰属それ自体を示さない装置は
+  すべて同様)。二系統から計算できない語彙は、供給で解禁せず沈黙として扱う。
+- 二系統に帰属しない導入済みの入力面は、台帳収載の有無にかかわらずこの規律に対する
+  既存の負債である。返済は供給 slot 台帳(入口は docs/tool/README.md)で管理し、
+  負債の存在も返済作業も新規追加の先例として引用しない。
+- ウィトゲンシュタイン的責務範囲を守る。ArchSig は与えられた入力 contract から、
+  選ばれた vocabulary と policy の中で語れることだけを語る。入力 contract を補完・推測・
+  拡張しない。語れない領域は、失敗や残タスクではなく沈黙として扱い、必要な場合だけ
+  結論の近くに最小限の boundary として書く。
+- Tooling の identity は肯定形で書く。ArchSig の定義は
+  「観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
+  二系統から bounded verdict を計算する計測層」という
+  肯定形であり、結論の相対性はこの入力契約に由来する帰結として述べる。
+  「theorem prover ではない」「global truth ではない」のような否定形免責を
+  identity 文へ習慣的に併記しない。否定を書くのは、読者の実在する誤推論を塞ぐ場合だけ、
+  結論の近くで一度に限る。
+
 ## 境界
 
 - ArchMap finite-poset-site shape は supplied `archmap/v0.5.4` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。旧 grouping field は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
@@ -14,10 +52,10 @@
   再現可能な run では `policy-bundle` が三つの選択済み policy component と canonical fingerprint を固定し、個別 flag は同じ入力を直接渡す形である。
 - ArchView は supplied ArchMap の Atom / Context / Cover を直接読む Atom-native な可視化レイヤーである。ArchMap 単独で architecture understanding を成立させ、その同じ geometry 上へ既存 ArchSig run artifact の measurement、finding、comparison、gate、明示された repair target を optional overlay として重ねる。ArchView は新しい structural verdict、source relation、repair recommendation を作らず、すべての描画と source landing を supplied artifact へ追跡可能にする。再構築前の `tools/archview/archview.html` が `archsig-atom-viewer-data.json` / `archview-sequence/v0.5.4` を読むことは現行実装上の制約であり、ArchView の恒久的な product identity ではない。
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
-  二系統に限る(正本は AGENTS.md「責務範囲」の入力トライアド)。この二系統に帰属しない
+  二系統に限る(正本は本 guideline の「責務範囲(入力トライアドの正本)」)。この二系統に帰属しない
   authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
   既存の RepairPlan 系入力はこの規律に従って扱い、退役した refactor morphism / refinement data の
-  供給 slot は現行入力面に置かない。
+  供給 slot は現行入力面に置かない。返済の記録は供給 slot 台帳の負債告知に残す。
 - ArchSig の `analyze` は、観測(ArchMap)と選ばれた LawPolicy / law-equation-surface / MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
@@ -108,9 +146,4 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-inpu
   --out .tmp/fieldsig/operation-support-estimate.json
 ```
 
-PR 前には次も確認する。
-
-```bash
-git diff --check
-rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
-```
+PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。

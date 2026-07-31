@@ -1,6 +1,7 @@
 # PRD guideline
 
 この文書は、PRDの責務、lifecycle、参照規律、完了後削除の条件を定める正本である。
+PRD作業では本guidelineをhard ruleとして適用し、既存違反も例外扱いしない。
 
 ## PRD lifecycle
 

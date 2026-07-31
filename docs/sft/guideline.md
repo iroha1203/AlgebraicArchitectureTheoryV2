@@ -16,9 +16,9 @@
 - AAT は Atom を公理とする純粋数学理論であり、測定境界は SFT / ArchSig / empirical artifact 側にある。
   SFT 側でも、AAT の外部にある観測限界を AAT の未完了 theorem として扱わない。
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
-- `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書である。
-  更新は、人間の明示的な編集指示、実装者以外の LLM によるレビュー、人間による差分確認と merge の
-  3条件がすべて揃う場合に限る(正本は AGENTS.md「作業規律」)。
+- `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書であり
+  保護ファイルである。更新条件は [workflow guideline](../workflow/guideline.md) の
+  「保護ファイル(3条件)」を正とする。
 - SFT の恒久情報は
   現行本文、interface、台帳、artifact contract に置く。
 
@@ -44,13 +44,11 @@
 ## 検証
 
 docs-only 変更でも、AAT theorem status、tool schema、website copy への影響を確認する。
+PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。
 
-```bash
-git diff --check
-rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>
-```
-
-Lean source や FieldSig behavior に触れた場合は、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ。本体のroot全体のフル `lake build` はPR作成後のCIで確認する。
+Lean source や FieldSig behavior に触れた場合は、変更範囲に応じて focused check、対象moduleの
+targeted build、必要な監査を選ぶ(Lean build の hard rule は
+[AAT guideline](../aat/guideline.md) の「Lean build 運用」)。
 
 ```bash
 lake env lean <target-file>

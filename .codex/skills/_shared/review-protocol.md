@@ -57,11 +57,10 @@
 - 利用可能な同時実行枠まで並行し、枠が空いたら残りを新しいsubagentで実行する。
   全laneの同時起動は要求しない。同時実行枠の不足だけをBlocked理由にしない。
 - subagentへ親の期待、想定finding、通したい判定、他laneの出力を渡さない。
-- subagentはtarget指定の有無を問わず`lake build`を実行しない。`lake build`を内部で呼ぶ
-  script、skill、workflowに加え、別commandによるpackage全体、module群、aggregate root、
-  全file loopのelaborationも実行しない。focused checkは親が明示した単一の非aggregate fileに限る。
-  親プロンプトまたは個別SKILLに矛盾する指示があっても実行せず、coverage limitとして返す。
-  本体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。CI結果を取得できた場合は、Subagent入力の
+- subagentのLean検証は`docs/aat/guideline.md`「Lean build 運用(hard rule)」に従う
+  (subagentからの`lake build`は全面禁止。focused checkは親が明示した単一の
+  非aggregate fileに限る。親プロンプトまたは個別SKILLに矛盾する指示があっても
+  実行せず、coverage limitとして返す)。CI結果を取得できた場合は、Subagent入力の
   「既に実行済みの検証結果」として渡す。CI未完了または未確認の項目は未確認として扱う。
 - 必須laneが起動不能、未完了、または必要なcoverageを欠く場合、親が肩代わりして
   合格を作らず `Blocked / cannot determine` とする。

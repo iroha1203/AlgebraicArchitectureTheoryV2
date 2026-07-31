@@ -15,6 +15,7 @@ source of truth として扱わない。
    - [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
    - リポジトリが扱う根本の目標と数学的主張を定める。
 2. **Tier 2: 領域基準**
+   - [Workflow guideline](workflow/guideline.md)（横断作業規律の領域基準）
    - [PRD guideline](prd/guideline.md)（PRD lifecycleの領域基準）
    - [AAT / Lean guideline](aat/guideline.md)
    - [SFT guideline](sft/guideline.md)
@@ -31,6 +32,17 @@ source of truth として扱わない。
 下位Tierの文書は上位Tierの内容に従う。Tier間の恒久的な参照は、下位Tierから上位Tierへの方向だけを許可する。
 上位Tierの文書が下位Tierの文書を参照してはならず、Tier 1の数学本文からTier 3のPRDを参照することも禁止する。
 特にTier 3以下の文書を、Tier 1またはTier 2の規律・仕様の代替として扱ってはならない。
+
+## 文書構成のメタ規律
+
+エージェント向け作業文書に適用する。
+
+- 文書は3層で構成する。**入口**(AGENTS.md / CLAUDE.md)、**規律の正本**(各 guideline)、
+  **実行手順**(`.codex/skills` の SKILL と `_shared` の共有契約)。
+- 各 hard rule の正本はちょうど1箇所に置く。他の文書・SKILL は link で参照し、
+  言い換えで再掲しない。
+- 先例・事故の経緯はルール本文に書かず、GitHub Issue / PR に残す。
+- SKILL は手順・判断基準・入出力契約だけを持つ。作業規律の本文は参照先 guideline を読む。
 
 ## 更新ルール
 
@@ -110,6 +122,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## 編集ガイドライン
 
+- [Workflow guideline](workflow/guideline.md): 言語、Issue 運用、ブランチ / PR、保護ファイル、CI、完了レビューの判定範囲、レビュー体制、PR 前の共通確認の横断規律。
 - [PRD guideline](prd/guideline.md): PRDの責務、参照禁止、完了後削除の規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG`、AAT 数学本文、Lean status、proof obligation の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。

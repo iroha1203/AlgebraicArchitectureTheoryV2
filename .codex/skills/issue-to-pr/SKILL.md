@@ -73,8 +73,9 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
    - 既存の設計と命名を優先する。
    - 受け入れ要件ごとに実装箇所と確認証拠を追跡し、すべての完了を必須とする。
    - Issue の `備考` に明示された対象外に反する変更は入れない。
-   - Lean 定義は小さく保ち、対応関係は theorem として育てる。
-   - `axiom`, `admit`, `sorry`, `unsafe` は明示的な相談なしに導入しない。
+   - Lean 実装の定義・statement・status 規律は `docs/aat/guideline.md` の
+     「Lean 形式化方針」に従う(`axiom`, `admit`, `sorry`, `unsafe` は
+     明示的な相談なしに導入しない)。
    - **instance ペア規律**: 新規の Prop 述語・certificate 構造を導入する
      ときは、満たす instance と満たさない instance の両方を同じ PR で
      提供する(意味レベルの空虚化 — subsingleton 等式型・
@@ -88,12 +89,12 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
      `unported (Research-proved)` を別statusへ置換して完了扱いしない。
    - Issue 番号や残る proof obligation を明確にする。
 7. 検証する。
-   - Lean 変更あり: 変更範囲に応じて focused check または targeted build を必要に応じて実行する。本体のroot全体のフル `lake build` はローカルで実行せず、PR作成後のCIで確認する。
-     サブエージェントに委譲しない。
+   - Lean 変更あり: `docs/aat/guideline.md`「Lean build 運用(hard rule)」に従い、
+     変更範囲に応じた focused check または targeted build を実行する。サブエージェントに委譲しない。
    - Rust tooling 変更あり: `cargo test --manifest-path tools/archsig/Cargo.toml`
    - website 変更あり: `python3 -m http.server 8000 --directory website` などで静的 preview を確認する。
    - Issue の`受け入れ要件`に示された検証証拠を優先する。
-   - PR 前の共通scanは`AGENTS.md`と
+   - PR 前の共通scanは`docs/workflow/guideline.md`「PR 前の共通確認」と
      `.codex/skills/_shared/refutation-checklist.md` §6に従う。
 8. PR 作成前にローカル自己点検を行う。
    - 対象は現在のローカル差分、staged / unstaged diff、必要に応じて `main...HEAD` とする。
@@ -124,13 +125,8 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
 
 ## このリポジトリ固有の注意
 
-- `Decomposable G := StrictLayered G` を維持する。
-- acyclicity, finite propagation, nilpotence, spectral conditions は定義に混ぜず、別 theorem または future proof obligation として扱う。
-- `ComponentCategory` は thin category として path count / walk length を忘れる。
-- 定量指標は `Walk`, `Path`, adjacency matrix, future free-category construction 側で扱う。
-- executable metrics は有限な測定 universe 上の計算として定義し、graph-level facts との接続は別 theorem として証明する。
-- `ComponentUniverse` は proof-carrying measurement universe として扱い、実コードベース抽出器の完全性を直接主張しない。
-- Architecture Signature は単一スコアではなく、多軸診断として扱う。
+- Lean / AAT の定義・指標・universe・status の扱いは `docs/aat/guideline.md` の
+  「Lean 形式化方針」と「Lean status discipline」を正本として従う。
 
 ## PR 本文テンプレート
 
