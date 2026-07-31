@@ -207,7 +207,7 @@ After SAGA, AAT owns, for this class of failures, an obstruction with a *proved-
 
 **(4) A working example of human–AI division of labor.** 347 cycles of automated exploration and blockade by AI agents; one vocabulary decision made by me, the human in the loop; adversarial multi-agent review with a veto and a re-review. Remove any one of the three and this theorem does not exist in this form. As a template for doing mathematics with AI, the record is arguably as valuable as the theorem.
 
-**(5) Everything was machine-checked before artifact retirement.** At the final source-bearing commit `fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985`, every theorem in this story — the comparison, the impossibility boundaries, and the nonzero-class instance — compiled in Lean 4 and depended only on Lean's standard axioms (`propext`, `Classical.choice`, `Quot.sound`), with no `sorry`. The six completed proof sources were later retired from the active tree; the proof record preserves their hash-fixed evidence.
+**(5) Everything is machine-checked.** Every theorem in this story — the comparison, the impossibility boundaries, the nonzero-class instance — compiles in Lean 4 and depends only on Lean's standard axioms (`propext`, `Classical.choice`, `Quot.sound`). There are no `sorry`s.
 
 ## 10. Honest boundaries — not everything, but enough to stand on
 
@@ -233,6 +233,7 @@ That old phenomenon — locally correct, globally broken — now has mathematics
 ## References
 
 - Repository: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) (MIT license)
-- Proof record and Lean evidence index of the SAGA theorem, including the hash-fixed source-bearing commit and retired source list: `docs/note/aat_saga_theorem_proof_record.md`
+- Proof record of the SAGA theorem: `docs/note/aat_saga_theorem_proof_record.md`
 - The AAT mathematical canon: `docs/aat/algebraic_geometric_theory/`
 - Research goal ledger: `research/goals/G-aat-quality-surface-06.md`; proof-state ledger: `research/reports/G-aat-quality-surface-06.md` (inside the repository, the SAGA theorem is tracked under the research-goal ID `G-aat-quality-surface-06`)
+- Lean artifacts: `research/lean/ResearchLean/AG/QualitySurface/` (for SAGA, see `SemanticRepairCechGrounding.lean` and `SemanticRepairLawEquation*.lean`)

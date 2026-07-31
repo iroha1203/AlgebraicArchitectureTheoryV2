@@ -212,7 +212,7 @@ SAGA 以後の AAT は、この障害クラスに対して「検出器の健全�
 
 **(4) 人間と AI の分業の実例。** AI の自動ループによる 347 サイクルの探索と封鎖、人間である私が下した語彙の決断、そして敵対的なマルチエージェント査読(veto と再審)。どれか一つでも欠けたら、この定理はこの形では存在しません。AI が数学をやる時代の協働の型として、証明そのものと同じくらい価値のある記録だと思っています。
 
-**(5) 成果物の退役前に、すべて機械検証済み。** 最終 source-bearing commit `fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985` では、上の物語のすべての定理 — 比較も、不可能性境界も、非零クラスの実例も — が Lean 4 でコンパイルされ、依存公理は Lean 標準のもの(`propext`、`Classical.choice`、`Quot.sound`)だけで、`sorry` はありませんでした。完了済みの証明 source 6 件はその後現行 tree から退役し、proof record が hash 固定の証拠を保持しています。
+**(5) 全部が機械検証済み。** 上の物語のすべての定理 — 比較も、不可能性境界も、非零クラスの実例も — は Lean 4 でコンパイルが通り、依存公理は Lean 標準のもの(`propext`、`Classical.choice`、`Quot.sound`)だけです。`sorry` はありません。
 
 ## 10. 正直な境界 — なんでも語れるわけではない。でも、足場としては十分
 
@@ -238,6 +238,7 @@ SAGA 以後の AAT は、この障害クラスに対して「検出器の健全�
 ## 参考
 
 - リポジトリ: [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)(MIT ライセンス)
-- SAGA 定理の証明記録兼 Lean 証拠索引(固定 source-bearing commit と退役 source 一覧を含む): `docs/note/aat_saga_theorem_proof_record.md`
+- SAGA 定理の証明の記録: `docs/note/aat_saga_theorem_proof_record.md`
 - AAT 数学本文(正典): `docs/aat/algebraic_geometric_theory/`
 - 研究 GOAL 台帳: `research/goals/G-aat-quality-surface-06.md`、証明状態の台帳: `research/reports/G-aat-quality-surface-06.md`(SAGA 定理はリポジトリ内部では `G-aat-quality-surface-06` という研究目標 ID で管理されています)
+- Lean 成果物: `research/lean/ResearchLean/AG/QualitySurface/`(SAGA 関連は `SemanticRepairCechGrounding.lean` と `SemanticRepairLawEquation*.lean`)
