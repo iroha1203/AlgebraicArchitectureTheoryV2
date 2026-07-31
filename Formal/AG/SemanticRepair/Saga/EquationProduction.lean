@@ -44,8 +44,9 @@ import Formal.AG.SemanticRepair.Saga.EquationRealization
   に零)。lift problem の非自明な内容(非零 base reading)は発火しない —
   Implementation notes に申告。
 * `SagaEquationPacket.ofProduction`: 定理1.1 入力束を production route から
-  組み立てる束ね constructor。旧 `Law.holds`、manual equation core、
-  membership certificate、結論相当 field は入力に取らない。
+  組み立てる束ね constructor。`sel.realization`、repair atlas、
+  generated `Q_E` lift system、lift atlas、state correspondence を同一の
+  named production route に束ねる。
 
 Claim boundary: `P_E` 本体と local lift atlas、semantic 側入力(`P_sem` /
 repair atlas)、state correspondence `β` は X.§1 の

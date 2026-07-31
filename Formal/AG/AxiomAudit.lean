@@ -37,9 +37,8 @@ entry to the namespace is sufficient to place it under the kernel axiom
 allowlist check (standard mathlib axioms only). Per-entry `#guard_msgs in
 #print axioms` blocks are no longer needed.
 
-Compatibility leaves excluded from the standard `Formal.AG` aggregate run
-the same command at the end of their own source files. This active entrypoint
-therefore imports only modules available after a cold standard aggregate build.
+This active entrypoint imports only modules available after a cold standard
+aggregate build.
 
 The command must remain the last non-empty line of this file; declarations
 added after it would escape the audit, and CI checks the tail position
@@ -10718,14 +10717,7 @@ def architecturalEquationSystemObservablePresheafObj :=
 def architecturalEquationSystemObservablePresheafMapApply :=
   @ArchitecturalEquationSystem.observablePresheaf_map_apply
 
-/-- Kernel-audit alias for the one-way legacy bridge equivalence. -/
-def architecturalEquationSystemToLegacyLawHoldsIff :=
-  @ArchitecturalEquationSystem.toLegacyLaw_holds_iff
-
 /-! Issue #3730 equation-generated core/site audit aliases. -/
-
-/-- Kernel-audit alias for extensional equality of legacy law displays. -/
-def lawExt := @Law.ext
 
 /-- Kernel-audit alias for extensional equality of equation detector code. -/
 def equationCircuitReadingExt := @EquationCircuitReading.ext
@@ -10745,26 +10737,6 @@ def equationCircuitReadingAcceptsEqTrueIffOfCodeExact :=
 /-- Kernel-audit alias for disjunctive-code evaluation. -/
 def equationCircuitReadingAcceptsEqTrueIffOfCodeAny :=
   @EquationCircuitReading.accepts_eq_true_iff_of_code_any
-
-/-- Kernel-audit alias for the equation-generated legacy universe. -/
-def architecturalEquationSystemToLegacyLawUniverse :=
-  @ArchitecturalEquationSystem.toLegacyLawUniverse
-
-/-- Kernel-audit alias for preservation of the required equation role. -/
-def architecturalEquationSystemToLegacyRequiredIff :=
-  @ArchitecturalEquationSystem.toLegacyLawUniverse_required_iff
-
-/-- Kernel-audit alias for preservation of the optional equation role. -/
-def architecturalEquationSystemToLegacyOptionalIff :=
-  @ArchitecturalEquationSystem.toLegacyLawUniverse_optional_iff
-
-/-- Kernel-audit alias for preservation of the derived equation role. -/
-def architecturalEquationSystemToLegacyDerivedIff :=
-  @ArchitecturalEquationSystem.toLegacyLawUniverse_derived_iff
-
-/-- Kernel-audit alias for equation lawfulness versus its generated legacy display. -/
-def architecturalEquationSystemEquationLawfulIffLegacyLawfulness :=
-  @ArchitecturalEquationSystem.equationLawful_iff_legacyLawfulness
 
 /-- Kernel-audit alias for equation-indexed circuit soundness. -/
 def equationCircuitReadingSound :=

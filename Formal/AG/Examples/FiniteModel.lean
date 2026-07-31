@@ -941,9 +941,9 @@ noncomputable def componentAAbsentResidual
   exact if A.configuration.family.mem FiniteAtom.componentA then 1 else 0
 
 /--
-A singleton required equation whose fulfillment says that component A is
-absent. This supplies a direct equation-system fixture rather than passing
-through the legacy `Law` display.
+A singleton required equation whose residual vanishing states that component A
+is absent. This supplies the direct equation-system fixture used by the
+completeness examples.
 -/
 noncomputable def componentAAbsentEquationSystem
     (C : Site.ContextPreorderCategory object) :

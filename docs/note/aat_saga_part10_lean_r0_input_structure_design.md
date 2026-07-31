@@ -842,11 +842,14 @@ proof pattern の補助参照とする。
 | `connectingClass_isZero_iff_nonempty_semanticFirstOrderRepair` | `RQS.LawGeneratedSemanticFirstOrderRepair.connectingClass_isZero_iff_nonempty_semanticFirstOrderRepair` | 同 `:872` | specialization |
 | `lawGeneratedConormalFirstOrderDescent_package` | `RQS.LawGeneratedConormalFirstOrderDescentPackage.lawGeneratedConormalFirstOrderDescent_package` | `LawGeneratedConormalFirstOrderDescentPackage.lean:239` | specialization |
 
-import 経路も #3757 の記載どおりであることを確認した:
+退役前の最終検証 source-bearing head
+[`fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/commit/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985)
+で、import 経路も #3757 の記載どおりであることを確認した:
 `LawGeneratedLargeCoefficientCech.lean` の `Formal/AG` 側 import は generic な
 `Formal.AG.Cohomology.CochainComparison`(+ `Site.FinitePosetGeometry`)のみで、
-`SemanticRepairCechGrounding` / `SagaComparison` / `H1Comparison` を import しない
-(非循環)。
+退役済みの
+[`SemanticRepairCechGrounding`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean)、
+および現行の `SagaComparison` / `H1Comparison` を import しない(非循環)。
 
 universe 接続: 大係数資産の conormal lift / state は `Type (u+1)` に実体を持つ。
 §1 の universe 規約(係数 `w`・状態 `x`/`y` の分離)により、C6 は蒸留時に

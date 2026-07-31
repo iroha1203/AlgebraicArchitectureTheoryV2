@@ -241,4 +241,4 @@ SAGA 以後の AAT は、この障害クラスに対して「検出器の健全�
 - SAGA 定理の証明の記録: `docs/note/aat_saga_theorem_proof_record.md`
 - AAT 数学本文(正典): `docs/aat/algebraic_geometric_theory/`
 - 研究 GOAL 台帳: `research/goals/G-aat-quality-surface-06.md`、証明状態の台帳: `research/reports/G-aat-quality-surface-06.md`(SAGA 定理はリポジトリ内部では `G-aat-quality-surface-06` という研究目標 ID で管理されています)
-- Lean 成果物: `research/lean/ResearchLean/AG/QualitySurface/`(SAGA 関連は `SemanticRepairCechGrounding.lean` と `SemanticRepairLawEquation*.lean`)
+- Lean 証拠索引: `docs/note/aat_saga_theorem_proof_record.md`、現行の研究 module: `research/lean/ResearchLean/AG/QualitySurface/`
