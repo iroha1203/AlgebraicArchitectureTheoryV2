@@ -9,9 +9,9 @@ of a real microservice architecture as a single computation
 (\S\ref{sec:71}--\S\ref{sec:73}), then fixes the essentials of the
 input contract on which the diagnosis stands (\S\ref{sec:74}) and the
 boundary of the claims (\S\ref{sec:75}). The audit surface --- the
-per-artifact input contract, the definition of the computation, the
-kinds of conditions behind the conclusions, and the reproduction procedure ---
-is fixed in
+per-artifact input contract and the definition of the computation, the
+supply process for observation, the kinds of conditions behind the
+conclusions, and the reproduction procedure --- is fixed in
 Appendix~\ref{app:C}.
 
 \subsection{A real-code case: the one-cent obstruction}\label{sec:71}
@@ -49,7 +49,7 @@ of the three services. This investigative finding is reflected in the
 diagnosis in the form of declaring no triple overlap in the selected
 complex. The absence of a simultaneous reconciliation site is itself
 treated as an assertion of the operator, not as a fact exhibited by the
-observation artifacts (\S\ref{sec:72}, Appendix~\ref{app:C2}).
+observation artifacts (\S\ref{sec:72}, Appendix~\ref{app:C3}).
 
 This configuration can be read as a 3-cycle instance of the same
 \textbf{cycle-without-a-face mechanism} as Example~\ref{ex:circle}.
@@ -156,7 +156,7 @@ are the 6 observed restriction edges (3 of the triangle +
 consign--consign-price + preserve--consign + preserve--order); no
 triple overlap is declared (reflecting the investigative finding of
 \S\ref{sec:71}; its status as an assertion is discussed in
-Appendix~\ref{app:C2}).
+Appendix~\ref{app:C3}).
 \item \textbf{repaired variant}: a hypothetical-repair ArchMap in
 which the 3 charts of the triangle are replaced by a unified
 BigDecimal scale-2 \code{HALF\_EVEN} convention.
@@ -283,7 +283,7 @@ declarations, unobserved sections, and mismatches without witness
 bindings all stop the computation without generating conclusions.
 Therefore, while obstructions can be silenced by selection
 (enumeration completeness is disclosed as an assumption in
-Appendix~\ref{app:C2}), no nonzero residual can be erected on an edge
+Appendix~\ref{app:C3}), no nonzero residual can be erected on an edge
 where the observations agree.
 
 What this computation executes is a finite fragment of the complex
@@ -295,10 +295,17 @@ $\Phi$, $\kappa$, presentation exactness) is not within the scope of
 this computation; it is carried by the Lean witnesses of
 Section~\ref{sec:6} (\S\ref{sec:75}).
 
+On the supply side, providing an ArchMap involves semantic reading of
+how the sources are used --- a probabilistic process that cannot be
+replaced by a deterministic computation. This work does not hide that
+stage: it fixes it as a procedure executed by an AI agent (the
+authoring SKILL), chaining the probabilistic semantic reading and the
+deterministic measurement in series. The discipline of the process and
+the two layers of reproducibility are fixed in Appendix~\ref{app:C2}.
 The kinds of conditions behind the conclusions (\code{computed} /
 \code{checked} / \code{assumed} / \code{unmeasured}) are fixed row by
-row by the condition matrix of Appendix~\ref{app:C2}, and the
-reproduction procedure by Appendix~\ref{app:C3}.
+row by the condition matrix of Appendix~\ref{app:C3}, and the
+reproduction procedure by Appendix~\ref{app:C4}.
 
 \subsection{Boundary of the claims}\label{sec:75}
 
@@ -317,7 +324,7 @@ witness bindings (law surface), and the repaired variant are
 declarations written by the operator, and none of them carries
 residual values. Class vocabulary is not unlocked: in this packet,
 where no triple is declared on the component containing the triangle,
-ArchSig's reading stays at boundary membership (Appendix~\ref{app:C2}). The
+ArchSig's reading stays at boundary membership (Appendix~\ref{app:C3}). The
 repaired variant is a hypothetical-repair ArchMap with rewritten
 sections, and what \code{PASS\_WITHIN\_GATE\_POLICY} shows is the
 mechanism of prior verification --- ``with this repair proposal, the
@@ -330,5 +337,13 @@ The finite instantiation of Theorem~\ref{thm:central} is outside the
 scope of this case study. Its bearer is the Lean witness of
 Section~\ref{sec:6} (the circle witness of Example~\ref{ex:circle});
 what the packet of this section carries are the finite checks shown by
-the condition matrix of Appendix~\ref{app:C2}. No correspondence transporting
+the condition matrix of Appendix~\ref{app:C3}. No correspondence transporting
 the measurement run into Lean is required.
+
+We also make explicit the coverage of the SKILL-based supply process. The authoring SKILL of Appendix~\ref{app:C2} covers the
+supply of the ArchMap, and an authoring SKILL of the same kind is in
+place for the selected complex (repair plan). The law surfaces and the
+repaired variant were supplied, at the time of this experiment, as
+builder scripts and authored declarations. The builder scripts and
+supply findings of this experiment are recorded as design material for
+that step.

@@ -206,7 +206,7 @@ observed restrictions are not accepted. The remaining enumeration
 assertion and the presence or absence of triple-overlap declarations
 are author assertions: they accompany the conclusions as disclosure
 rows of the assumption ledger, not as material from which conclusions
-are derived (\S\ref{app:C2}). Thus the only thing the repair plan adds
+are derived (\S\ref{app:C3}). Thus the only thing the repair plan adds
 of its own is disclosed assumptions.
 
 ArchSig's \code{analyze} computes the following and emits them as a
@@ -254,10 +254,61 @@ of convention agreement and carries the detection of mismatches (the
 coordinates and criteria and carries grounding. The descent surface
 declares the witness bindings on mismatch edges and carries residual
 derivation and boundary membership (the \code{saga-descent} stage). The
-``stages'' mentioned by the condition matrix of \S\ref{app:C2} and its
+``stages'' mentioned by the condition matrix of \S\ref{app:C3} and its
 note~1 refer to this correspondence.
 
-\subsection{Conditions and input kinds: the condition matrix}\label{app:C2}
+\subsection{Supplying the inputs: authoring of observation and reproducibility}\label{app:C2}
+
+Supplying an ArchMap involves semantic reading of how the sources are
+used. This reading is a probabilistic process and cannot be replaced
+by a deterministic computation. This work does not hide that stage; it
+fixes it as a process. That is, the creation of the ArchMap is defined
+as a fixed procedure executed by an AI agent --- hereafter the
+\textbf{authoring SKILL} --- turning the probabilistic reading into a
+traceable artifact.
+
+The SKILL fixes the provenance of observation by the following
+discipline.
+\begin{itemize}
+\item \textbf{Separation of the mechanical layer and the reading
+layer}: the mechanical layer performs only file enumeration, content
+hashing, literal comparison of normalized keys, and referential
+integrity checks. Generation of Atoms, semantic choices, adoption or
+rejection of candidates, and similarity-based merging are not
+permitted in the mechanical layer; they remain as recorded judgments
+of the reading layer.
+\item \textbf{Approval record of scope}: the revision of the target
+repository, the include / exclude globs, and the approved scope
+manifest are fixed as artifacts. Observation claims are bounded by the
+recorded revision and the selected scope; extraction of all evidence
+is not claimed.
+\item \textbf{Independent two-pass reading and adjudication}: the
+standard mode (full-dual) reads the same worklist twice independently,
+takes an extraction diff, and adjudicates discrepancies by re-reading
+the sources. Adoption decisions are recorded with counts and grounds.
+\item \textbf{Authoring audit}: the integrated ArchMap becomes a
+measurement input only after passing mechanical checks (referential
+integrity, coverage ledger, and so on).
+\item \textbf{Run records and explicit models}: each authoring run
+records the model used. The ArchMap of all 42 services underlying this
+case study (2{,}118 atoms / 43 contexts / 440 sources) was created by
+a run whose extraction and adjudication subagents were pinned to a
+lightweight model. The fact that observation supply does not demand an
+expensive frontier model has thus been measured as a practical
+condition of this measurement system.
+\end{itemize}
+
+Under this process design, reproducibility splits into two layers.
+ArchSig's computation is deterministic: the same input artifacts
+return the same outputs (verified by digests). The generation of the
+ArchMap is probabilistic, but since scope, grounds, procedure,
+adjudication, and audit are fixed in artifacts, a third party can
+re-execute the observation under the same discipline and confront the
+results. Chaining the probabilistic semantic reading and the
+deterministic measurement in series is the design principle of this
+supply pipeline.
+
+\subsection{Conditions and input kinds: the condition matrix}\label{app:C3}
 
 Table~\ref{tab:conditionmatrix} fixes, for each conclusion of the
 diagnosis staircase, under which kind of condition it stands. \code{computed}
@@ -357,10 +408,10 @@ nonzero reading of the \code{saga-descent} stage in head (the $B^1$
 membership decision) does not depend on this row. The verdict of the
 \code{cech} stage separately declares its dependence on this assumption.
 
-\subsection{Reproduction}\label{app:C3}
+\subsection{Reproduction}\label{app:C4}
 
-All input artifacts, primary outputs, and builder scripts are included
-in the reproduction bundle. The
+All input artifacts, primary outputs, builder scripts, and the
+authoring SKILL itself are included in the reproduction bundle. The
 schema versions of the artifacts (for the repair plan,
 \code{archsig-repair-plan/v0.5.7}) are fixed by the bundle manifest.
 The \code{inputDigests} of the primary outputs have been verified to
@@ -386,8 +437,8 @@ policy, law surfaces, measurement profile, repair plans, gate policy,
 the builder script, and the \code{analyze} $\times2$ / \code{compare}
 / \code{gate} $\times2$ outputs); \code{report/} (the canonical
 diagnosis report, including the condition-matrix source);
-\code{reproduction/} (the execution commands and the expected outputs);
-\code{audit/} (the claim-to-evidence
+\code{reproduction/} (the execution commands, the expected outputs,
+and the authoring SKILL); \code{audit/} (the claim-to-evidence
 matrix); \code{MANIFEST.json} (SHA-256 checksums of every bundle file
 together with the release identity); and \code{CITATION.md}.
 
