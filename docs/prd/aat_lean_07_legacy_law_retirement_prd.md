@@ -54,14 +54,19 @@ Atom/ObstructionLegacy.lean
 「compatibility 監査を leaf へ移す」(commit 29f04459)以降、leaf が全ビルド経路から外れた。
 放置すれば toolchain / mathlib 更新で静かに壊れ、#3736 の最終監査の前提が崩れる。
 
-### 残債 3: research 側の bridge 依存(2 file)
+### 残債 3: research 側の bridge 依存 → G-06 成果物の退役で解消(2026-08-01 裁定)
 
 `research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean`(6 箇所)と
 同 `SemanticRepairCechGrounding.lean`(246 箇所)が、導出 bridge `toLegacyLawUniverse` の
-`Index` / `Required` 表示を参照している。自由述語の直接構成ではないが、
-`LawUniverse` 型を削除するとこの 2 file が壊れる。特に CechGrounding は受理済み research
-成果の大規模 file であり、機械的置換でも statement 同一性の検証負荷が大きい。
-処置は R1 の decision rule に従う。
+`Index` / `Required` 表示を参照している。両 file は GOAL `G-aat-quality-surface-06`
+(status: completed)の主要成果物であり、`docs/note/aat_saga_theorem_proof_record.md` §6 に
+研究価値が記録済みである。
+
+ユーザー裁定(2026-08-01): G-06 は SAGA 系であり、蒸留完了として退役させる。
+一部 conjunct が AG 本体に存在しない場合も、AG 本体が必要とする内容ではないため、
+unported 起票なしで退役してよい。処置は `research/README.md`「Lean 成果物の退役」の
+規律(#3870)に従い、R3 で実行する。これにより 252 箇所の同時移行は不要になり、
+`LawUniverse` 型は完全削除できる。
 
 ### 対象外と分類する語彙 residue(構造非依存)
 
@@ -77,21 +82,14 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
 
 ### R1 — 自由述語 primary API の廃止
 
-- `structure Law`(自由 `holds` field)と自由構成の `LawUniverse` を公開 API から除去する。
+- `structure Law`(自由 `holds` field)と `LawUniverse` を、bridge
+  (`Equation/Legacy.lean` の `toLegacyLaw` / `toLegacyLawUniverse`)ごと完全削除する。
+  R3 の退役完了後は bridge の生きた消費者が存在しないため、表示型の残置は不要である。
   任意の `ArchitectureObject -> Prop` を AAT の primary law として構成できる公開 structure を残さない。
-- 表示互換が必要な場合も、`ArchitecturalEquationSystem` からの一方向導出 def
-  (現行 `toLegacyLaw` / `toLegacyLawUniverse` の系譜)のみを許す。導出表示型を残す場合は、
-  その型に自由述語を注入できる public constructor 経路がないことを statement 実読で確認する。
 - 一般の旧 `Law` から equation system を復元する API を追加しない(G-06 no-go)。
 - `LawRole` / `LawWitnessFamily` / `Lawfulness` / `SemanticLawful` 等の随伴宣言は、
   equation 側で役割が引き継がれているかを実読で確認し、残存必要性のないものを削除する。
-- research 側 bridge 依存(残債 3)の decision rule: 既定は、当該 2 file の
-  `toLegacyLawUniverse` 表示参照を equation system 直参照(`Index` / required selection)へ
-  置換する同時移行とする。置換は量化対象・material premise・結論を変えない書き換えに限る。
-  次のいずれかに該当する場合は停止してユーザー裁定を仰ぐ(代替案 = 表示型の残置を
-  ユーザー承認の上で採る): (a) 移行が Research integrity gate(R3 migration manifest 等)の
-  変更を要する場合、(b) CechGrounding(246 箇所)の置換で statement 同一性を機械的に
-  保証できない箇所が見つかった場合。
+- 正典定義 7.2 の law universe 表示は本文の記法であり、Lean 側に表示型を要求しない。
 
 ### R2 — 暗黒コード処分(既定 = 削除)
 
@@ -105,13 +103,37 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
 - 完了時、`Formal/` 配下に CI がビルドしない `.lean` file が存在しないことを import 走査で示す
   (`AxiomAudit.lean` は CI 直接実行のため例外)。走査手順を PR に記録する。
 
-### R3 — AxiomAudit・台帳同期
+### R3 — G-06 research 成果物の退役(退役規律の適用第 1 号)
+
+`research/README.md`「Lean 成果物の退役」の 3 手順に従い、G-06 の成果物 6 file を退役する。
+
+```text
+ResearchLean/AG/QualitySurface/SemanticRepairCechGrounding.lean
+ResearchLean/AG/QualitySurface/SemanticRepairLawEquationRealization.lean
+ResearchLean/AG/QualitySurface/SemanticRepairLawEquationWitnessInstance.lean
+ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean
+ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean
+ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean
+```
+
+- 6 file は閉クラスタである(importer は相互と `ResearchLean/AG.lean` aggregate のみ、
+  他 GOAL の file からの依存なし。2026-08-01 実査)。想定外の依存が見つかった場合は停止する。
+- 手順 1 の証拠固定は `research/reports/G-aat-quality-surface-06.md` へ、最終検証 head の
+  commit hash と退役 file 一覧を追記して行う。
+- `docs/note/aat_saga_theorem_proof_record.md` §6 の置き場所記載へ、退役済みであることと
+  参照用 commit hash を追記する(path 参照の hash 付き置換)。
+  `docs/note/aat_saga_part10_lean_r0_input_structure_design.md` の path 参照も同様に扱う。
+- `research/lean/research-modules.txt` と `ResearchLean/AG.lean` から 6 module を除去し、
+  file を削除する。
+- ビルド対象から外すだけで file を tree に残す凍結は退役として認めない。
+
+### R4 — AxiomAudit・台帳同期
 
 - 削除宣言の監査 alias(`AxiomAudit.lean` 内の legacy 系 alias を含む)を除去し、
   監査対象を最終宣言集合と一致させる。
 - standard axioms のみ、`sorry` / `admit` / custom `axiom` / `unsafe` 追加なしを維持する。
 
-### R4 — 最終監査と close
+### R5 — 最終監査と close
 
 - #3728 packet の 7 symbol search を固定 head で再実行し、旧 semantic / equational seam が
   0 件であることを記録する(同名 identifier N 群は除外一覧として明記)。
@@ -125,6 +147,7 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
   Atom 基礎論 GOAL の理論論点として扱う)
 - `AxiomAudit.lean` の責務分割と cold build 再現性(#3792)
 - `StandardGeometryReference/Geometry.lean` のビルド時間対策(別 Issue)
+- G-06 以外の completed GOAL 成果物の退役 sweep(別作業として起票する)
 - `docs/aat/algebraic_geometric_theory/**` の編集(保護ファイル)
 
 ## Failure Contract
@@ -138,17 +161,24 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
 5. 移設判断なしの一括削除で、equation 側に等価物のない検証を黙って失った。
 6. 検索証拠が固定 head に紐付かない、または statement 実読を省略した。
 7. 要求の一部を後続 Issue へ送るスコープ縮小をユーザー承認なしに行った。
+8. 退役をビルド対象からの除外だけで済ませ、file を tree に残した(凍結の禁止)。
+9. 退役の証拠固定(report への最終 head 追記・proof record の hash 付き注記)を省略した。
 
 ## Acceptance Criteria
 
 - [ ] 任意の `ArchitectureObject -> Prop` を primary law として構成できる公開 structure が
       `Formal/` に存在しない。
-- [ ] 表示互換 API は equation system からの一方向導出 def のみで、逆向き構成 API がない。
+- [ ] 旧 `Law` から equation system を復元する API が存在しない(逆向き構成の禁止)。
 - [ ] `holds_defect_mem` 同値の membership certificate input が標準 route に存在しない
       (現状 0 件を最終 head で再確認)。
 - [ ] orphan 連鎖 6 file が削除済み(例外裁定時は公式 build target へ配線済み)で、
       `Formal/` に CI 未ビルド `.lean` が存在しないことの走査記録がある。
 - [ ] equation 側に等価物のない検証の移設対応表が実装 PR に記録されている。
+- [ ] G-06 成果物 6 file が退役済みである: report への最終検証 head と file 一覧の追記、
+      proof record・r0 設計 note の hash 付き注記、`research-modules.txt` と
+      `ResearchLean/AG.lean` からの除去、file 削除がすべて確認できる。
+- [ ] `toLegacyLaw` / `toLegacyLawUniverse` を含む `Law` / `LawUniverse` 系 API の残存が
+      0 件である(bridge 完全削除の確認。N 群の同名 identifier は除外一覧に従い対象外)。
 - [ ] `AxiomAudit.lean` が最終宣言集合と一致し、standard axioms のみ、
       `sorry` / `admit` / custom `axiom` / `unsafe` 追加がない。
 - [ ] 7 symbol search の固定 head での再実行結果 0 件と除外一覧(N 群)の記録がある。
@@ -161,15 +191,16 @@ N 群は対象外」に従い、rename は本 PRD の対象外とする(最終�
 
 1. **P1 実読分類**: orphan 連鎖 6 file の検証内容を実読し、equation 側対応表
    (等価あり = 削除のみ / 等価なし = 移設先)を Issue コメントに固定する。
-2. **P2 廃止と処分**: R1 の API 廃止、R2 の移設と削除、`Equation/Legacy.lean` の
-   残置範囲確定を単一 PR で実装する。
-3. **P3 監査同期と close**: R3 の alias 同期、R4 の最終検索・acceptance audit、
+2. **P2 廃止と処分**: R1 の API 廃止(bridge 含む完全削除)、R2 の移設と削除、
+   R3 の G-06 成果物退役を単一 PR で実装する。
+3. **P3 監査同期と close**: R4 の alias 同期、R5 の最終検索・acceptance audit、
    両 Issue の close。P2 と同一 PR に同梱してよい。
 
 ## 停止条件
 
 - equation 側で等価に立て直せない検証があり、かつ legacy 語彙なしで表現できない場合は
-  停止してユーザー裁定を仰ぐ。
+  停止してユーザー裁定を仰ぐ(Formal 側 orphan 連鎖の移設判断に限る。G-06 成果物は
+  裁定済みのため該当しない)。
 - 処分の過程で正典本文の編集が必要と判明した場合は停止する(保護ファイル 3 条件)。
-- 削除対象に、残債 3 で特定済みの 2 file 以外の外部依存(research/lean・tools からの参照)が
-  見つかった場合は停止する。
+- 削除・退役対象に、R2 の orphan 連鎖と R3 の閉クラスタ以外からの外部依存
+  (research/lean の他 GOAL file・tools からの参照)が見つかった場合は停止する。
