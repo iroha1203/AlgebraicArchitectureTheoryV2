@@ -7,7 +7,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use archsig::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
-    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT, ARCHSIG_COMPARISON_CONCLUSION_CODES,
+    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT,
+    ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES, ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
@@ -10714,14 +10715,10 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                             .iter()
                             .all(|code| description.contains(code))
                             && [
-                                "incidenceBridgeKind",
-                                "h1ComparisonDataKind",
-                                "normalizedComplexFingerprint",
-                                "classPrerequisite",
-                                "targetClassComputed",
-                                "contractChecked",
-                                "strings",
-                                "booleans",
+                                "ag.saga-descent",
+                                "checked triple-cocycle certificate",
+                                "MeasurementProfile-selected normalized covers",
+                                "classTransport",
                             ]
                             .iter()
                             .all(|field| description.contains(field))
@@ -10764,6 +10761,10 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                         ARCHSIG_COMPARISON_CONCLUSION_CODES
                             .iter()
                             .all(|code| description.contains(code))
+                            && ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES
+                                .iter()
+                                .all(|code| description.contains(code))
+                            && description.contains("derived-class-zero-preservation@1")
                     })
         }),
         "schema catalog must register comparison conclusionCode values"
@@ -12742,8 +12743,22 @@ fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
     let out_dir = temp_dir("archsig-compare-derived-class-zero");
     let root = ag_measurement_root();
     let zero_plan = zero_plan_for_derived_relation_test(&root);
-    let base_archmap = read_json(&root.join("archmap_v2.json"));
-    let fine_archmap = derived_fine_archmap_for_test(&root);
+    let mut base_archmap = read_json(&root.join("archmap_v2.json"));
+    base_archmap["covers"]
+        .as_array_mut()
+        .expect("base covers are an array")
+        .push(json!({
+            "id": "cover:unselected-observation",
+            "contexts": ["ctx:order"]
+        }));
+    let mut fine_archmap = derived_fine_archmap_for_test(&root);
+    fine_archmap["covers"]
+        .as_array_mut()
+        .expect("fine covers are an array")
+        .push(json!({
+            "id": "cover:unselected-observation",
+            "contexts": ["ctx:order"]
+        }));
     let base_run = run_saga_compare_fixture(
         "derived-coarse-zero",
         base_archmap.clone(),
@@ -12773,6 +12788,10 @@ fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
         ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT
     );
     assert_eq!(positive["classTransport"]["derivedRefinement"]["status"], "established");
+    assert_eq!(
+        positive["classTransport"]["derivedRefinement"]["runBinding"]["coarse"]["measurementProfile"]["coverRef"],
+        "cover:order-inventory"
+    );
     assert_eq!(
         positive["classTransport"]["derivedRefinement"]["contextMap"]
             .as_array()

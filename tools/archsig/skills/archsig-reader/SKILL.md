@@ -27,5 +27,5 @@ Use this skill to read current `archsig analyze` output.
 
 - Read `lawDependent` conclusions from the holdsCriterion raw-value premise; read `lawIndependent` conclusions as separate outputs without turning them into law evidence.
 - Read `harmonicDebtNorm` as an analytic measurement; read `essentialRepairLowerBound` only when the cost model is supplied.
-- A refactor transport reading is not part of the current analyze output surface.
+- The current analyze output surface records the selected measurement packet and its derived residual readings; run-pair class-zero readings are read from the `compare` report.
 - Read `TWO_PROFILES_REPORTED_SEPARATELY` as a comparison record; do not turn separate profiles into a shared class claim.

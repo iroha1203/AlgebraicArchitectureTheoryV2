@@ -9577,7 +9577,7 @@
         "rows": [],
         "stageId": "comparison",
         "status": "not_computed",
-        "visualRole": "transfer-comparison"
+        "visualRole": "comparison-record"
       },
       {
         "order": 3,

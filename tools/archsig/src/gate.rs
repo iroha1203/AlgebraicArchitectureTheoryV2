@@ -7,6 +7,7 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 use crate::{
+    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_BLOCKED_BY_GATE_POLICY,
     ARCHSIG_GATE_NOT_EVALUABLE, ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY,
     ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
@@ -648,6 +649,9 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
     {
         return false;
     }
+    if !class_transport_shape_is_evaluable(comparison) {
+        return false;
+    }
     let Some(transitions) = comparison
         .get("verdictTransitions")
         .and_then(Value::as_array)
@@ -671,6 +675,154 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
                     || transition_name == COMPARISON_OTHER_TRANSITION
             })
             && refs_present
+    })
+}
+
+fn class_transport_shape_is_evaluable(comparison: &Value) -> bool {
+    let Some(class_transport) = comparison
+        .get("classTransport")
+        .and_then(Value::as_object)
+    else {
+        return false;
+    };
+    let comparison_level = comparison["comparability"]["level"].as_str();
+    if class_transport.get("readingKind").and_then(Value::as_str)
+        != Some("derived-class-zero-preservation@1")
+        || class_transport.get("recordComparability").and_then(Value::as_str)
+            != comparison_level
+        || !COMPARISON_LEVELS.contains(&comparison_level.unwrap_or_default())
+    {
+        return false;
+    }
+    let Some(derived_refinement) = class_transport
+        .get("derivedRefinement")
+        .and_then(Value::as_object)
+    else {
+        return false;
+    };
+    let derived_status = derived_refinement
+        .get("status")
+        .and_then(Value::as_str);
+    if !matches!(derived_status, Some("established") | Some("not_computed")) {
+        return false;
+    }
+    if derived_status == Some("established") && !derived_refinement_shape_is_evaluable(derived_refinement) {
+        return false;
+    }
+    if derived_status == Some("not_computed")
+        && derived_refinement
+            .get("reason")
+            .and_then(Value::as_str)
+            .is_none_or(str::is_empty)
+    {
+        return false;
+    }
+    match class_transport.get("status").and_then(Value::as_str) {
+        Some("established") => {
+            derived_status == Some("established")
+                && class_transport.get("conclusionCode").and_then(Value::as_str)
+                    == Some(ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT)
+                && class_transport.get("sourceClassNonZero").and_then(Value::as_bool)
+                    == Some(false)
+                && class_transport.get("targetClassNonZero").and_then(Value::as_bool)
+                    == Some(false)
+                && class_transport.get("zeroPreserved").and_then(Value::as_bool) == Some(true)
+                && class_transport.get("boundaryStatement") == Some(&Value::Null)
+        }
+        Some("not_computed") => {
+            class_transport
+                .get("reason")
+                .and_then(Value::as_str)
+                .is_some_and(|reason| !reason.is_empty())
+                && class_transport.get("conclusionCode") == Some(&Value::Null)
+                && class_transport
+                    .get("boundaryStatement")
+                    .and_then(Value::as_object)
+                    .is_some_and(|boundary| {
+                        boundary.get("kind").and_then(Value::as_str)
+                            == Some("class_zero_transport_not_derived")
+                            || boundary.get("kind").and_then(Value::as_str)
+                                == Some("class_zero_transport_not_established")
+                    })
+        }
+        _ => false,
+    }
+}
+
+fn derived_refinement_shape_is_evaluable(derived_refinement: &serde_json::Map<String, Value>) -> bool {
+    if derived_refinement.get("direction").and_then(Value::as_str)
+        != Some("coarse-to-fine")
+        || derived_refinement
+            .get("coarseCoverRef")
+            .and_then(Value::as_str)
+            .is_none_or(str::is_empty)
+        || derived_refinement
+            .get("fineCoverRef")
+            .and_then(Value::as_str)
+            .is_none_or(str::is_empty)
+    {
+        return false;
+    }
+    let Some(site_ref) = derived_refinement.get("siteRef").and_then(Value::as_object) else {
+        return false;
+    };
+    if ["coarse", "fine"].iter().any(|key| {
+        site_ref
+            .get(*key)
+            .and_then(Value::as_str)
+            .is_none_or(str::is_empty)
+    }) {
+        return false;
+    }
+    let Some(context_map) = derived_refinement.get("contextMap").and_then(Value::as_array) else {
+        return false;
+    };
+    if context_map.is_empty()
+        || !context_map.iter().all(|row| {
+            row.get("fineContextRef")
+                .and_then(Value::as_str)
+                .is_some_and(|value| !value.is_empty())
+                && row
+                    .get("coarseContextRef")
+                    .and_then(Value::as_str)
+                    .is_some_and(|value| !value.is_empty())
+                && matches!(
+                    row.get("relation").and_then(Value::as_str),
+                    Some("identity") | Some("observed_restriction_path")
+                )
+                && row
+                    .get("restrictionPath")
+                    .and_then(Value::as_array)
+                    .is_some_and(|path| !path.is_empty() && path.iter().all(Value::is_string))
+        })
+    {
+        return false;
+    }
+    let Some(run_binding) = derived_refinement.get("runBinding").and_then(Value::as_object) else {
+        return false;
+    };
+    ["coarse", "fine"].iter().all(|side| {
+        let Some(binding) = run_binding.get(*side).and_then(Value::as_object) else {
+            return false;
+        };
+        binding.get("side").and_then(Value::as_str).is_some_and(|value| {
+            (*side == "coarse" && value == "base") || (*side == "fine" && value == "head")
+        })
+            && binding
+                .get("siteCoverDigest")
+                .and_then(Value::as_str)
+                .is_some_and(|value| !value.is_empty())
+            && binding
+                .get("measurementProfile")
+                .and_then(Value::as_object)
+                .is_some_and(|profile| {
+                    ["profileId", "siteRef", "coverRef"].iter().all(|key| {
+                        profile
+                            .get(*key)
+                            .and_then(Value::as_str)
+                            .is_some_and(|value| !value.is_empty())
+                    })
+                })
     })
 }
 

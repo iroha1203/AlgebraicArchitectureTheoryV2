@@ -12621,7 +12621,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
                 "order": 2,
                 "status": comparison_status,
                 "rows": comparison_rows,
-                "visualRole": "transfer-comparison"
+                "visualRole": "comparison-record"
             },
             {
                 "stageId": "silence",

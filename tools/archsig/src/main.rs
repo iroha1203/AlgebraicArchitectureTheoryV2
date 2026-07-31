@@ -1666,7 +1666,7 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
             "stages": [
                 {"stageId": "grounding", "order": 0, "status": "not_computed", "rows": [], "measurements": [], "visualRole": "grounding"},
                 {"stageId": "descent", "order": 1, "status": "not_computed", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
-                {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "transfer-comparison"},
+                {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "comparison-record"},
                 {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
             ],
             "silenceRows": [],

@@ -8243,7 +8243,6 @@
           "saga-descent:boundary-membership",
           "saga-descent:closure-diagnostics",
           "saga-descent:residual-class",
-          "saga-comparison:h1-transfer",
           "harmonic-debt:profile:money-drift@1"
         ],
         "contextRefs": [
@@ -9192,7 +9191,6 @@
             "saga-descent:boundary-membership",
             "saga-descent:closure-diagnostics",
             "saga-descent:residual-class",
-            "saga-comparison:h1-transfer",
             "harmonic-debt:profile:money-drift@1"
           ],
           "contextRefs": [
@@ -10567,27 +10565,10 @@
       },
       {
         "order": 2,
-        "rows": [
-          {
-            "conclusionCode": "SAGA_COMPARISON_ESTABLISHED_UNDER_SUPPLIED_DATA",
-            "contract": {
-              "classPrerequisite": true,
-              "contractChecked": true,
-              "h1ComparisonDataKind": "explicit",
-              "incidenceBridgeKind": "explicit",
-              "normalizedComplexFingerprint": "574638b7510e991db10a8cebfbd17202219a126ba7edd510e57f50367ce382e6",
-              "targetClassComputed": true
-            },
-            "evaluator": "ag.saga-comparison",
-            "failureCode": null,
-            "invariantId": "saga-comparison:h1-transfer",
-            "kind": "h1-comparison-transfer",
-            "status": "established"
-          }
-        ],
+        "rows": [],
         "stageId": "comparison",
-        "status": "measured_zero",
-        "visualRole": "transfer-comparison"
+        "status": "not_computed",
+        "visualRole": "comparison-record"
       },
       {
         "order": 3,

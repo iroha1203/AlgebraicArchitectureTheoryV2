@@ -7,8 +7,7 @@ fine cover の各 context が coarse cover の一つへ identity または `rest
 site / cover の選択が異なる、cover が存在しない、context が到達しない、または複数の coarse context へ到達する場合は、
 `classTransport.status: not_computed` と named reason を記録する。
 
-SAGA の run 対の読みは、supplied comparison data ではなく **導出 residualDifferenceReading** が担う
-(#3822 で `RepairPlan.comparison` slot と `saga-comparison:h1-transfer` invariant は沈黙した)。
+SAGA の run 対の読みは、両 run の導出 residual を比較する **residualDifferenceReading** が担う。
 `compare` は base / head 両 run の `saga-descent:residual-derivation`(観測 sectionValue 比較から
 導出された overlap ごとの F₂ 値と provenance)を読み、comparability ゲート
 (level が identical / verdict-row、両 derivation の coverRef / mappedCoverRef / lawSurfaceRef /

@@ -3,7 +3,8 @@ use crate::{
     ARCHMAP_COVERAGE_LEDGER_V1_SCHEMA, ARCHMAP_EXTRACTION_CONSISTENCY_V1_SCHEMA,
     ARCHMAP_SCOPE_MANIFEST_V1_SCHEMA, ARCHMAP_V2_SCHEMA, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
-    ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CONCLUSION_CODES,
+    ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES,
+    ARCHSIG_COMPARISON_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_POLICY_V1_SCHEMA,
     ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
@@ -221,7 +222,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig v0.5.4 Algebraic Geometry Measurement",
                 vec!["archsig-contract:v0.5.4-ag-measurement"],
                 &format!(
-                    "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed seven-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans; measuredClassAgreement is a boolean when a measured residual class row is also present and null otherwise. When that agreement is false the invariant additionally carries measuredClassDivergence naming both readings. Registered SAGA conclusionCode values include {}.",
+                    "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. Residual-class rows are emitted by ag.saga-descent only with a checked triple-cocycle certificate; run-pair class-zero preservation is derived in comparison report v0.5.7 from MeasurementProfile-selected normalized covers and recorded in classTransport. Registered SAGA conclusionCode values include {}.",
                     registry_sentence(&ARCHSIG_SAGA_CONCLUSION_CODES),
                 ),
                 vec![
@@ -297,8 +298,9 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a coarse-to-fine context relation from the selected normalized ArchMap covers before recording the class-zero preservation reading. Registered conclusionCode values are {}.",
+                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
+                    registry_sentence(&ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES),
                 ),
                 vec![
                     "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence beyond the derived class-zero predicate and the two run records.",

@@ -84,9 +84,8 @@ SAGA の run 間読みは LawPolicy の selector ではなく、二つの analyz
 ゲートに、residual delta の `B¹` 所属と `δ⁰` witness を計算する)。供給型の H¹ comparison slot
 (`h1ComparisonData` の explicit / presentation-generated)は #3822 で沈黙した。
 
-R8 の class-zero reading は、`compare` が両 run の selected normalized ArchMap から
-coarse-to-fine context relation を導出し、fine context ごとの coarse containment が一意に定まった場合だけ追加される。
-refactor transport の authored input は現行 `analyze` surface に含まれない。
+R8 の class-zero reading は、`compare` が両 run の MeasurementProfile-selected normalized ArchMap から
+coarse-to-fine context relationを導出し、fine contextごとの一意な coarse containment pathとderived class certificateを確認した場合だけ追加される。
 
 The current handoff to FieldSig is the serialized measurement packet. FieldSig
 does not accept old raw analysis packets as the current boundary.

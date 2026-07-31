@@ -15,7 +15,7 @@ use crate::{
     ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ArchSigMeasurementPacketV1,
-    NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
+    NORMALIZED_ARCHMAP_V2_SCHEMA, NormalizedArchMapV2, validate_measurement_packet_value_v1,
 };
 
 const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. ArchSig derives a class-zero reading from the selected normalized ArchMap covers when each fine context has a unique observed coarse containment path.";
@@ -108,6 +108,8 @@ pub fn build_comparison_artifacts_v1(
     let derived_refinement = derive_refinement(
         &base_manifest,
         &head_manifest,
+        &base_packet,
+        &head_packet,
         &base_normalized,
         &head_normalized,
     );
@@ -343,6 +345,7 @@ fn class_transport(
     if derived_refinement["status"] != "established" {
         return json!({
             "status": "not_computed",
+            "conclusionCode": Value::Null,
             "reason": derived_refinement["reason"],
             "readingKind": "derived-class-zero-preservation@1",
             "recordComparability": comparability["level"],
@@ -355,43 +358,27 @@ fn class_transport(
             }
         });
     }
-    let class = |packet: &Value| {
-        packet["computedInvariants"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .find(|invariant| invariant["invariantId"] == "saga-descent:residual-class")
-            .and_then(|invariant| invariant["residualClassSupport"]["nonZero"].as_bool())
+    let base_nonzero = match derived_class_nonzero(base_packet, "base") {
+        Ok(nonzero) => nonzero,
+        Err(reason) => {
+            return class_transport_failure(
+                comparability,
+                derived_refinement,
+                &format!("base_{reason}"),
+                "The coarse run did not record a validated derived residual class certificate.",
+            );
+        }
     };
-    let Some(base_nonzero) = class(base_packet) else {
-        return json!({
-            "status": "not_computed",
-            "reason": "base_class_not_derived",
-            "readingKind": "derived-class-zero-preservation@1",
-            "recordComparability": comparability["level"],
-            "derivedRefinement": derived_refinement,
-            "boundaryStatement": {
-                "kind": "class_zero_transport_not_derived",
-                "scopeRefs": ["comparison:run-pair"],
-                "reason": "base_class_not_derived",
-                "text": "The coarse run did not record a derived residual class."
-            }
-        });
-    };
-    let Some(head_nonzero) = class(head_packet) else {
-        return json!({
-            "status": "not_computed",
-            "reason": "head_class_not_derived",
-            "readingKind": "derived-class-zero-preservation@1",
-            "recordComparability": comparability["level"],
-            "derivedRefinement": derived_refinement,
-            "boundaryStatement": {
-                "kind": "class_zero_transport_not_derived",
-                "scopeRefs": ["comparison:run-pair"],
-                "reason": "head_class_not_derived",
-                "text": "The fine run did not record a derived residual class."
-            }
-        });
+    let head_nonzero = match derived_class_nonzero(head_packet, "head") {
+        Ok(nonzero) => nonzero,
+        Err(reason) => {
+            return class_transport_failure(
+                comparability,
+                derived_refinement,
+                &format!("head_{reason}"),
+                "The fine run did not record a validated derived residual class certificate.",
+            );
+        }
     };
     let zero_preserved = !base_nonzero && !head_nonzero;
     json!({
@@ -416,41 +403,173 @@ fn class_transport(
     })
 }
 
+fn class_transport_failure(
+    comparability: &Value,
+    derived_refinement: &Value,
+    reason: &str,
+    text: &str,
+) -> Value {
+    json!({
+        "status": "not_computed",
+        "conclusionCode": Value::Null,
+        "reason": reason,
+        "readingKind": "derived-class-zero-preservation@1",
+        "recordComparability": comparability["level"],
+        "derivedRefinement": derived_refinement,
+        "boundaryStatement": {
+            "kind": "class_zero_transport_not_derived",
+            "scopeRefs": ["comparison:run-pair"],
+            "reason": reason,
+            "text": text
+        }
+    })
+}
+
+fn derived_class_nonzero(packet: &Value, side: &str) -> Result<bool, String> {
+    let invariants = packet
+        .get("computedInvariants")
+        .and_then(Value::as_array)
+        .ok_or_else(|| format!("{side}_class_invariants_missing"))?;
+    let class_invariants = invariants
+        .iter()
+        .filter(|invariant| invariant.get("invariantId").and_then(Value::as_str)
+            == Some("saga-descent:residual-class"))
+        .collect::<Vec<_>>();
+    let [invariant] = class_invariants.as_slice() else {
+        return Err(format!("{side}_class_certificate_missing_or_ambiguous"));
+    };
+    if invariant.get("evaluator").and_then(Value::as_str) != Some("ag.saga-descent")
+        || invariant.get("kind").and_then(Value::as_str) != Some("residual-class-support")
+        || !invariant
+            .get("suppliedSlots")
+            .and_then(Value::as_array)
+            .is_some_and(|slots| {
+                slots.iter().any(|slot| slot == "complex.charts")
+                    && slots.iter().any(|slot| slot == "complex.overlaps")
+            })
+    {
+        return Err(format!("{side}_class_certificate_owner_invalid"));
+    }
+    let support = invariant
+        .get("residualClassSupport")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{side}_class_certificate_missing"))?;
+    if support.get("basis").and_then(Value::as_str) != Some("Z1/B1")
+        || support.get("quotient").and_then(Value::as_str) != Some("Z1/B1")
+        || !support
+            .get("representative")
+            .and_then(Value::as_array)
+            .is_some_and(|representative| !representative.is_empty())
+    {
+        return Err(format!("{side}_class_certificate_shape_invalid"));
+    }
+    let component = support
+        .get("component")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{side}_class_certificate_component_missing"))?;
+    for field in ["chartRefs", "overlapRefs"] {
+        if !component
+            .get(field)
+            .and_then(Value::as_array)
+            .is_some_and(|refs| !refs.is_empty() && refs.iter().all(Value::is_string))
+        {
+            return Err(format!("{side}_class_certificate_component_invalid"));
+        }
+    }
+    let cocycle = support
+        .get("cocycle")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("{side}_class_certificate_cocycle_missing"))?;
+    if cocycle.get("checked").and_then(Value::as_bool) != Some(true)
+        || cocycle.get("deltaOne").and_then(Value::as_str) != Some("zero")
+        || cocycle.get("certificateKind").and_then(Value::as_str)
+            != Some("checked-triple-cocycle-zero")
+        || !cocycle
+            .get("tripleOverlapRefs")
+            .and_then(Value::as_array)
+            .is_some_and(|refs| {
+                !refs.is_empty()
+                    && refs.iter().all(|triple| {
+                        triple
+                            .get("tripleRef")
+                            .and_then(Value::as_str)
+                            .is_some_and(|value| !value.is_empty())
+                            && triple
+                                .get("overlapRefs")
+                                .and_then(Value::as_array)
+                                .is_some_and(|overlaps| {
+                                    overlaps.len() == 3 && overlaps.iter().all(Value::is_string)
+                                })
+                    })
+            })
+    {
+        return Err(format!("{side}_class_certificate_cocycle_invalid"));
+    }
+    let nonzero = support
+        .get("nonZero")
+        .and_then(Value::as_bool)
+        .ok_or_else(|| format!("{side}_class_nonzero_missing"))?;
+    let verdict = packet
+        .get("structuralVerdict")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|row| {
+            row.get("evaluator").and_then(Value::as_str) == Some("ag.saga-descent")
+                && row.get("law").and_then(Value::as_str) == Some("saga.residual-class")
+        })
+        .collect::<Vec<_>>();
+    let [verdict] = verdict.as_slice() else {
+        return Err(format!("{side}_class_verdict_missing_or_ambiguous"));
+    };
+    if verdict["verdictData"]["inScope"].as_bool() != Some(true)
+        || verdict["verdictData"]["certRef"]
+            .as_str()
+            != Some("computedInvariants/saga-descent:residual-class")
+        || verdict["target"]["classRef"].as_str()
+            != Some("computedInvariants/saga-descent:residual-class")
+        || !verdict["evidence"]["computedInvariantRefs"]
+            .as_array()
+            .is_some_and(|refs| refs.iter().any(|reference| reference == "saga-descent:residual-class"))
+    {
+        return Err(format!("{side}_class_certificate_provenance_invalid"));
+    }
+    let verdict_nonzero = verdict["verdictData"]["nonZero"].as_bool();
+    let expected_verdict = if nonzero { "measured_nonzero" } else { "measured_zero" };
+    if verdict["verdict"].as_str() != Some(expected_verdict)
+        || verdict_nonzero != Some(nonzero)
+        || verdict["verdictData"]["zero"].as_bool() != Some(!nonzero)
+    {
+        return Err(format!("{side}_class_certificate_verdict_mismatch"));
+    }
+    Ok(nonzero)
+}
+
 fn derive_refinement(
     base_manifest: &Value,
     head_manifest: &Value,
+    base_packet: &Value,
+    head_packet: &Value,
     base_normalized: &Value,
     head_normalized: &Value,
 ) -> Value {
-    let Some(coarse_cover) = selected_normalized_cover(base_normalized) else {
-        return refinement_failure(
-            "coarse_selected_cover_missing",
-            "coarse normalized ArchMap does not contain exactly one selectedCandidate cover",
-        );
+    let (coarse_site_ref, coarse_cover_ref, coarse_cover) =
+        match selected_normalized_cover(base_normalized, base_packet, "coarse") {
+            Ok(selection) => selection,
+            Err((reason, detail)) => return refinement_failure(reason, &detail),
+        };
+    let (fine_site_ref, fine_cover_ref, fine_cover) =
+        match selected_normalized_cover(head_normalized, head_packet, "fine") {
+            Ok(selection) => selection,
+            Err((reason, detail)) => return refinement_failure(reason, &detail),
+        };
+    let _coarse_context_map = match validated_context_map(base_normalized, "coarse") {
+        Ok(contexts) => contexts,
+        Err((reason, detail)) => return refinement_failure(reason, &detail),
     };
-    let Some(fine_cover) = selected_normalized_cover(head_normalized) else {
-        return refinement_failure(
-            "fine_selected_cover_missing",
-            "fine normalized ArchMap does not contain exactly one selectedCandidate cover",
-        );
-    };
-    let Some(coarse_cover_ref) = coarse_cover
-        .get("normalizedCoverId")
-        .and_then(Value::as_str)
-    else {
-        return refinement_failure(
-            "coarse_selected_cover_id_missing",
-            "coarse selectedCandidate cover lacks normalizedCoverId",
-        );
-    };
-    let Some(fine_cover_ref) = fine_cover
-        .get("normalizedCoverId")
-        .and_then(Value::as_str)
-    else {
-        return refinement_failure(
-            "fine_selected_cover_id_missing",
-            "fine selectedCandidate cover lacks normalizedCoverId",
-        );
+    let fine_context_map = match validated_context_map(head_normalized, "fine") {
+        Ok(contexts) => contexts,
+        Err((reason, detail)) => return refinement_failure(reason, &detail),
     };
     let coarse_contexts = cover_contexts(coarse_cover);
     let fine_contexts = cover_contexts(fine_cover);
@@ -460,18 +579,17 @@ fn derive_refinement(
     if fine_contexts.is_empty() {
         return refinement_failure("fine_selected_cover_empty", "fine selected cover has no observed contexts");
     }
-    let fine_context_map = context_map(head_normalized);
     let mut context_rows = Vec::new();
     for fine_context in &fine_contexts {
         let candidates = if coarse_contexts.contains(fine_context) {
-            vec![fine_context.clone()]
+            vec![(fine_context.clone(), vec![vec![fine_context.clone()]])]
         } else {
             coarse_contexts
                 .iter()
-                .filter(|coarse_context| {
-                    context_reaches(&fine_context_map, fine_context, coarse_context)
+                .filter_map(|coarse_context| {
+                    let paths = context_paths(&fine_context_map, fine_context, coarse_context);
+                    (!paths.is_empty()).then(|| (coarse_context.clone(), paths))
                 })
-                .cloned()
                 .collect::<Vec<_>>()
         };
         match candidates.as_slice() {
@@ -481,11 +599,18 @@ fn derive_refinement(
                     &format!("fine context {fine_context} has no observed restriction path to a coarse context"),
                 );
             }
-            [coarse_context] => context_rows.push(json!({
+            [(coarse_context, paths)] if paths.len() == 1 => context_rows.push(json!({
                 "fineContextRef": fine_context,
                 "coarseContextRef": coarse_context,
-                "relation": "identity_or_observed_restriction_path"
+                "relation": if fine_context == coarse_context { "identity" } else { "observed_restriction_path" },
+                "restrictionPath": paths[0]
             })),
+            [(coarse_context, _)] => {
+                return refinement_failure(
+                    "fine_chart_has_ambiguous_restriction_paths",
+                    &format!("fine context {fine_context} has multiple observed restriction paths to {coarse_context}"),
+                );
+            }
             _ => {
                 return refinement_failure(
                     "fine_chart_has_ambiguous_coarse_containment",
@@ -499,32 +624,114 @@ fn derive_refinement(
     json!({
         "status": "established",
         "direction": "coarse-to-fine",
-        "basis": "normalized ArchMap selected covers and observed context restriction paths",
-        "siteRef": "normalized-archmap:contexts",
+        "basis": "MeasurementProfile-selected normalized ArchMap covers and unique observed context restriction paths",
+        "siteRef": {
+            "coarse": coarse_site_ref,
+            "fine": fine_site_ref
+        },
         "coarseCoverRef": coarse_cover_ref,
         "fineCoverRef": fine_cover_ref,
         "contextMap": context_rows,
         "runBinding": {
             "coarse": {
                 "siteCoverDigest": coarse_digest,
-                "side": "base"
+                "side": "base",
+                "measurementProfile": {
+                    "siteRef": coarse_site_ref,
+                    "coverRef": base_packet["profile"]["coverRef"],
+                    "profileId": base_packet["profile"]["profileId"]
+                }
             },
             "fine": {
                 "siteCoverDigest": fine_digest,
-                "side": "head"
+                "side": "head",
+                "measurementProfile": {
+                    "siteRef": fine_site_ref,
+                    "coverRef": head_packet["profile"]["coverRef"],
+                    "profileId": head_packet["profile"]["profileId"]
+                }
             }
         }
     })
 }
 
-fn selected_normalized_cover(normalized: &Value) -> Option<&Value> {
-    let mut selected = normalized
-        .get("covers")?
-        .as_array()?
-        .iter()
-        .filter(|cover| cover.get("coverageStatus").and_then(Value::as_str) == Some("selectedCandidate"));
-    let cover = selected.next()?;
-    selected.next().is_none().then_some(cover)
+fn selected_normalized_cover<'a>(
+    normalized: &'a Value,
+    packet: &Value,
+    side: &str,
+) -> Result<(String, String, &'a Value), (&'static str, String)> {
+    let profile = packet
+        .get("profile")
+        .and_then(Value::as_object)
+        .ok_or((
+            "measurement_profile_missing",
+            format!("{side} measurement packet has no profile object"),
+        ))?;
+    let site_ref = profile
+        .get("siteRef")
+        .and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty())
+        .ok_or((
+            "measurement_profile_site_missing",
+            format!("{side} measurement profile has no siteRef"),
+        ))?;
+    let cover_ref = profile
+        .get("coverRef")
+        .and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty())
+        .ok_or((
+            "measurement_profile_cover_missing",
+            format!("{side} measurement profile has no coverRef"),
+        ))?;
+    if site_ref != "archmap:/contexts" {
+        let site_resolves = normalized
+            .get("contexts")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .any(|context| {
+                context.get("normalizedContextId").and_then(Value::as_str) == Some(site_ref)
+                    || context.get("sourceContextId").and_then(Value::as_str) == Some(site_ref)
+            });
+        if !site_resolves {
+            return Err((
+                "measurement_profile_site_unresolved",
+                format!("{side} measurement profile siteRef {site_ref} does not resolve in normalized ArchMap"),
+            ));
+        }
+    }
+    let matches = normalized
+        .get("covers")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|cover| {
+            (cover.get("normalizedCoverId").and_then(Value::as_str) == Some(cover_ref)
+                || cover.get("sourceCoverId").and_then(Value::as_str) == Some(cover_ref))
+                && cover.get("coverageStatus").and_then(Value::as_str)
+                    == Some("selectedCandidate")
+        })
+        .collect::<Vec<_>>();
+    match matches.as_slice() {
+        [cover] => {
+            let normalized_cover_ref = cover
+                .get("normalizedCoverId")
+                .and_then(Value::as_str)
+                .ok_or((
+                    "selected_cover_id_missing",
+                    format!("{side} selected cover lacks normalizedCoverId"),
+                ))?;
+            Ok((site_ref.to_string(), normalized_cover_ref.to_string(), *cover))
+        }
+        [] => Err((
+            "measurement_profile_cover_unresolved",
+            format!("{side} measurement profile coverRef {cover_ref} does not resolve to a selectedCandidate cover"),
+        )),
+        _ => Err((
+            "measurement_profile_cover_ambiguous",
+            format!("{side} measurement profile coverRef {cover_ref} resolves to multiple covers"),
+        )),
+    }
 }
 
 fn cover_contexts(cover: &Value) -> BTreeSet<String> {
@@ -538,48 +745,136 @@ fn cover_contexts(cover: &Value) -> BTreeSet<String> {
         .collect()
 }
 
-fn context_map(normalized: &Value) -> BTreeMap<String, Value> {
-    normalized
+fn validated_context_map(
+    normalized: &Value,
+    side: &str,
+) -> Result<BTreeMap<String, Value>, (&'static str, String)> {
+    let contexts = normalized
         .get("contexts")
         .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter_map(|context| {
-            Some((
-                context.get("normalizedContextId")?.as_str()?.to_string(),
-                context.clone(),
-            ))
-        })
-        .collect()
-}
-
-fn context_reaches(contexts: &BTreeMap<String, Value>, start: &str, target: &str) -> bool {
-    if start == target {
-        return true;
-    }
-    let mut pending = vec![start.to_string()];
-    let mut visited = BTreeSet::new();
-    while let Some(current) = pending.pop() {
-        if !visited.insert(current.clone()) {
-            continue;
+        .ok_or((
+            "normalized_contexts_missing",
+            format!("{side} normalized ArchMap has no contexts array"),
+        ))?;
+    let mut map = BTreeMap::new();
+    for context in contexts {
+        let id = context
+            .get("normalizedContextId")
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .ok_or((
+                "normalized_context_id_missing",
+                format!("{side} normalized context lacks normalizedContextId"),
+            ))?;
+        if map.insert(id.to_string(), context.clone()).is_some() {
+            return Err((
+                "normalized_context_id_duplicated",
+                format!("{side} normalized ArchMap repeats context {id}"),
+            ));
         }
-        let Some(context) = contexts.get(&current) else {
-            continue;
-        };
-        for next in context
+    }
+    for (id, context) in &map {
+        let targets = context
             .get("restrictsTo")
             .and_then(Value::as_array)
+            .ok_or((
+                "normalized_context_restrictions_missing",
+                format!("{side} normalized context {id} has no restrictsTo array"),
+            ))?;
+        for target in targets {
+            let target = target.as_str().ok_or((
+                "normalized_context_restriction_invalid",
+                format!("{side} normalized context {id} has a non-string restrictsTo target"),
+            ))?;
+            if !map.contains_key(target) {
+                return Err((
+                    "normalized_context_restriction_unresolved",
+                    format!("{side} normalized context {id} restrictsTo unknown context {target}"),
+                ));
+            }
+        }
+    }
+    if has_context_cycle(&map) {
+        return Err((
+            "normalized_context_restriction_cycle",
+            format!("{side} normalized context restrictions are cyclic"),
+        ));
+    }
+    Ok(map)
+}
+
+fn has_context_cycle(contexts: &BTreeMap<String, Value>) -> bool {
+    fn visit(
+        current: &str,
+        contexts: &BTreeMap<String, Value>,
+        visiting: &mut BTreeSet<String>,
+        visited: &mut BTreeSet<String>,
+    ) -> bool {
+        if visiting.contains(current) {
+            return true;
+        }
+        if !visited.insert(current.to_string()) {
+            return false;
+        }
+        visiting.insert(current.to_string());
+        let cycle = contexts[current]["restrictsTo"]
+            .as_array()
             .into_iter()
             .flatten()
             .filter_map(Value::as_str)
-        {
-            if next == target {
-                return true;
+            .any(|next| visit(next, contexts, visiting, visited));
+        visiting.remove(current);
+        cycle
+    }
+    let mut visiting = BTreeSet::new();
+    let mut visited = BTreeSet::new();
+    contexts
+        .keys()
+        .any(|id| visit(id, contexts, &mut visiting, &mut visited))
+}
+
+fn context_paths(
+    contexts: &BTreeMap<String, Value>,
+    start: &str,
+    target: &str,
+) -> Vec<Vec<String>> {
+    fn walk(
+        contexts: &BTreeMap<String, Value>,
+        current: &str,
+        target: &str,
+        path: &mut Vec<String>,
+        paths: &mut Vec<Vec<String>>,
+    ) {
+        if paths.len() >= 2 {
+            return;
+        }
+        if current == target {
+            paths.push(path.clone());
+            return;
+        }
+        let mut nexts = contexts[current]["restrictsTo"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .collect::<Vec<_>>();
+        nexts.sort_unstable();
+        for next in nexts {
+            if path.iter().any(|item| item == next) {
+                continue;
             }
-            pending.push(next.to_string());
+            path.push(next.to_string());
+            walk(contexts, next, target, path, paths);
+            path.pop();
         }
     }
-    false
+    if !contexts.contains_key(start) || !contexts.contains_key(target) {
+        return Vec::new();
+    }
+    let mut path = vec![start.to_string()];
+    let mut paths = Vec::new();
+    walk(contexts, start, target, &mut path, &mut paths);
+    paths
 }
 
 fn refinement_failure(reason: &str, detail: &str) -> Value {
@@ -918,6 +1213,35 @@ fn validate_compare_normalized_archmap(
     manifest: &Value,
     label: &str,
 ) -> Result<String, Box<dyn Error>> {
+    let normalized: NormalizedArchMapV2 = serde_json::from_value(normalized_archmap.clone())
+        .map_err(|error| format!("{label} shape is invalid: {error}"))?;
+    let context_map = validated_context_map(normalized_archmap, label)
+        .map_err(|(_, detail)| format!("{label} {detail}"))?;
+    let mut source_context_ids = BTreeSet::new();
+    for context in &normalized.contexts {
+        if !source_context_ids.insert(context.source_context_id.as_str()) {
+            return Err(format!("{label} repeats source context {}", context.source_context_id).into());
+        }
+    }
+    let mut normalized_cover_ids = BTreeSet::new();
+    let mut source_cover_ids = BTreeSet::new();
+    for cover in &normalized.covers {
+        if !normalized_cover_ids.insert(cover.normalized_cover_id.as_str()) {
+            return Err(format!("{label} repeats normalized cover {}", cover.normalized_cover_id).into());
+        }
+        if !source_cover_ids.insert(cover.source_cover_id.as_str()) {
+            return Err(format!("{label} repeats source cover {}", cover.source_cover_id).into());
+        }
+        for context_id in &cover.context_ids {
+            if !context_map.contains_key(context_id) {
+                return Err(format!(
+                    "{label} cover {} references unknown context {}",
+                    cover.normalized_cover_id, context_id
+                )
+                .into());
+            }
+        }
+    }
     validate_compare_run_contract(normalized_archmap, manifest, label)?;
     validate_manifest_artifact_digest(normalized_archmap, manifest, "normalizedArchmap", label)
 }
@@ -1091,7 +1415,9 @@ fn component_fingerprint_at<'a>(value: &'a Value, component: &str) -> Option<&'a
 
 #[cfg(test)]
 mod tests {
-    use super::{comparability, validate_component_fingerprints};
+    use std::collections::BTreeMap;
+
+    use super::{comparability, context_paths, validate_component_fingerprints, validated_context_map};
     use serde_json::json;
 
     fn manifest(law_surface: &str) -> serde_json::Value {
@@ -1148,6 +1474,79 @@ mod tests {
         let mut value = manifest("sha256:surface-a");
         value["componentFingerprints"] = json!({});
         assert!(validate_component_fingerprints(&value, "test manifest").is_err());
+    }
+
+    #[test]
+    fn context_paths_records_a_unique_nontrivial_restriction_path() {
+        let contexts = BTreeMap::from([
+            (
+                "coarse".to_string(),
+                json!({"restrictsTo": []}),
+            ),
+            (
+                "fine".to_string(),
+                json!({"restrictsTo": ["middle"]}),
+            ),
+            (
+                "middle".to_string(),
+                json!({"restrictsTo": ["coarse"]}),
+            ),
+        ]);
+        assert_eq!(
+            context_paths(&contexts, "fine", "coarse"),
+            vec![vec!["fine".to_string(), "middle".to_string(), "coarse".to_string()]]
+        );
+    }
+
+    #[test]
+    fn context_paths_caps_ambiguous_paths_for_fail_closed_selection() {
+        let contexts = BTreeMap::from([
+            (
+                "coarse".to_string(),
+                json!({"restrictsTo": []}),
+            ),
+            (
+                "fine".to_string(),
+                json!({"restrictsTo": ["left", "right"]}),
+            ),
+            (
+                "left".to_string(),
+                json!({"restrictsTo": ["coarse"]}),
+            ),
+            (
+                "right".to_string(),
+                json!({"restrictsTo": ["coarse"]}),
+            ),
+        ]);
+        assert_eq!(
+            context_paths(&contexts, "fine", "coarse"),
+            vec![
+                vec!["fine".to_string(), "left".to_string(), "coarse".to_string()],
+                vec!["fine".to_string(), "right".to_string(), "coarse".to_string()],
+            ]
+        );
+    }
+
+    #[test]
+    fn normalized_context_validation_rejects_unresolved_and_cyclic_restrictions() {
+        let unresolved = json!({
+            "contexts": [{"normalizedContextId": "fine", "restrictsTo": ["missing"]}]
+        });
+        assert_eq!(
+            validated_context_map(&unresolved, "test").unwrap_err().0,
+            "normalized_context_restriction_unresolved"
+        );
+
+        let cyclic = json!({
+            "contexts": [
+                {"normalizedContextId": "fine", "restrictsTo": ["coarse"]},
+                {"normalizedContextId": "coarse", "restrictsTo": ["fine"]}
+            ]
+        });
+        assert_eq!(
+            validated_context_map(&cyclic, "test").unwrap_err().0,
+            "normalized_context_restriction_cycle"
+        );
     }
 }
 
