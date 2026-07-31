@@ -19,7 +19,7 @@ Use this skill when asked to run ArchSig-assisted PR review.
 ## Workflow
 
 1. Run `archsig analyze` for the base and head contexts when run directories are not already supplied; use `--policy-bundle` when the bundle is supplied and confirm the three component fingerprints.
-2. Run `archsig compare --base-run <base> --head-run <head> --out-dir <compare>`, adding `--refinement <refinement-comparison>` only when the coarse-to-fine artifact is validated.
+2. Run `archsig compare --base-run <base> --head-run <head> --out-dir <compare>`; the command derives the selected coarse-to-fine relation from the two normalized ArchMap runs.
 3. Run `archsig gate --packet <head>/archsig-measurement-packet.json --policy <policy> --comparison <compare>/archsig-comparison-report.json --out <gate-report>`.
 4. Read the comparison report, gate report, summary, insight report, and changed source.
 5. Write bounded review questions. Do not treat ArchSig output as merge approval, forecast truth, or source-code proof.
@@ -34,6 +34,5 @@ Report:
 - concrete follow-up questions or patch suggestions.
 
 For SAGA packets, review `lawDependent` and `lawIndependent` separately. A
-class transport finding must cite a validated refinement artifact, and a
-refactor transport finding must cite a validated `refactor-morphism/v0.5.4`
-artifact plus the matching witness; neither is inferred from matching names.
+class-zero finding must cite the derived normalized-ArchMap context relation;
+the compare report records the named reason when that relation is unavailable.

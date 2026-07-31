@@ -52,14 +52,15 @@
   再現可能な run では `policy-bundle` が三つの選択済み policy component と canonical fingerprint を固定し、個別 flag は同じ入力を直接渡す形である。
 - ArchView は supplied ArchMap の Atom / Context / Cover を直接読む Atom-native な可視化レイヤーである。ArchMap 単独で architecture understanding を成立させ、その同じ geometry 上へ既存 ArchSig run artifact の measurement、finding、comparison、gate、明示された repair target を optional overlay として重ねる。ArchView は新しい structural verdict、source relation、repair recommendation を作らず、すべての描画と source landing を supplied artifact へ追跡可能にする。再構築前の `tools/archview/archview.html` が `archsig-atom-viewer-data.json` / `archview-sequence/v0.5.4` を読むことは現行実装上の制約であり、ArchView の恒久的な product identity ではない。
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
-  二系統に限る(正本は本 guideline の「責務範囲(入力トライアドの正本)」)。
-  既存の供給 slot 群(RepairPlan 系、refactor morphism、refinement data)はこの規律に対する
-  負債であり、返済の管理先は供給 slot 台帳の負債告知が示す。
+  二系統に限る(正本は本 guideline の「責務範囲(入力トライアドの正本)」)。この二系統に帰属しない
+  authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
+  既存の RepairPlan 系入力はこの規律に従って扱い、退役した refactor morphism / refinement data の
+  供給 slot は現行入力面に置かない。返済の記録は供給 slot 台帳の負債告知に残す。
 - ArchSig の `analyze` は、観測(ArchMap)と選ばれた LawPolicy / law-equation-surface / MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
   gate policy は計算済み packet と比較記録を CI 判断へ写す規則だけを書き、新しい measurement
-  結論や供給された判定を gate policy / comparison / refinement へ置かない。
+  結論や供給された判定を gate policy / comparison の入力へ置かない。
 - ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
   failure、残タスク、Lean linkage requirement、長い `non-conclusion` 一覧として扱わない。外側は必要最小限の
   silence boundary として扱う。

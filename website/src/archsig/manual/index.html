@@ -71,7 +71,7 @@
             </section>
             <section id="packet" class="article-section">
               <h2>The measurement packet</h2>
-              <p><code>archsig-measurement-packet.json</code> (<code>archsig-measurement-packet/v0.5.3</code>) is the artifact everything else summarizes, and the handoff FieldSig reads. Its load-bearing sections include <code>componentFingerprints</code>, which records the exact LawPolicy, law surface, and MeasurementProfile selected by the bundle.</p>
+              <p><code>archsig-measurement-packet.json</code> (<code>archsig-measurement-packet/v0.5.4</code>) is the artifact everything else summarizes, and the handoff FieldSig reads. Its load-bearing sections include <code>componentFingerprints</code>, which records the exact LawPolicy, law surface, and MeasurementProfile selected by the bundle.</p>
               <ul class="status-list">
                 <li><strong><code>structuralVerdict[]</code></strong><span>One row per selected evaluator: the five-valued verdict, the certificate ref behind it, the law it checked, and <code>dependsOnAssumptions</code> — which assumption-ledger entries this row's validity rides on.</span></li>
                 <li><strong><code>computedInvariants[]</code></strong><span>The concrete mathematical objects: ranks, class supports, spectra, forbidden supports, hitting sets. This is where a nonzero verdict names its evidence.</span></li>
@@ -110,7 +110,7 @@ classSupport.supportAtomRefs
   }
 ]</code></pre>
               </figure>
-              <p>The comparison report grades comparability first (<code>identical</code> / <code>verdict-row</code> / <code>not-comparable</code>), then records row-level verdict transitions with refs into both runs. A validated <code>--refinement</code> artifact must bind coarse and fine <code>complexFingerprint</code> values to the runs' normalized <code>siteCoverDigest</code> values; it can then add the dedicated <code>CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT</code> reading for coarse-zero → fine-zero. Cover changes may leave ordinary comparability at <code>not-comparable</code>; nonzero or mixed class shapes remain non-terminal. Without the artifact, the report keeps the two profiles separate. <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code> says the record changed, not that your commit caused the fix. The reasoning behind that discipline is in <a href="../concepts/#comparability">Concepts</a>.</p>
+              <p>The comparison report grades comparability first (<code>identical</code> / <code>verdict-row</code> / <code>not-comparable</code>), then records row-level verdict transitions with refs into both runs. It derives a coarse context for each fine context from the selected normalized ArchMap covers and adds the dedicated <code>CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT</code> reading for coarse-zero → fine-zero only when every relation is unique. Cover changes may leave ordinary comparability at <code>not-comparable</code>; nonzero or mixed class shapes remain non-terminal. <code>MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE</code> says the record changed, not that your commit caused the fix. The reasoning behind that discipline is in <a href="../concepts/#comparability">Concepts</a>.</p>
             </section>
             <section id="recipes" class="article-section">
               <h2>Task recipes</h2>

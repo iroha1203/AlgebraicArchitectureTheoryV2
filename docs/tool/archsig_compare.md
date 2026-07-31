@@ -1,15 +1,13 @@
 # ArchSig compare report guide
 
 `archsig compare` は 2 つの `archsig analyze` run directory を読み、record 水準の差分を出力する。
-`--refinement <refinement-comparison/v0.5.4>` を供給した場合は、coarse / fine の
-`complexFingerprint` がそれぞれ base / head run の正規化有限複体 fingerprint
-(`inputDigests.siteCoverDigest.sha256`)と一致することを検査してから、class-zero reading を追加する。
-この fingerprint 検査により、site cover が異なる coarse→fine run でも refinement 経路を受理できる。
-不一致は `COMPARISON_DATA_CONTRACT_VIOLATION` で fail-closed とする。
-fingerprint 不一致かつ refinement 不在の場合は `profileConclusionCode: TWO_PROFILES_REPORTED_SEPARATELY` を記録する。
+選択された MeasurementProfile の `siteRef` / `coverRef` と、両 run の normalized ArchMap を使い、
+fine cover の各 context が coarse cover の一つへ identity または `restrictsTo` 経路で到達することを導出する。
+各 fine context の到達先が一意に定まる場合だけ、class-zero reading を追加する。
+site / cover の選択が異なる、cover が存在しない、context が到達しない、または複数の coarse context へ到達する場合は、
+`classTransport.status: not_computed` と named reason を記録する。
 
-SAGA の run 対の読みは、supplied comparison data ではなく **導出 residualDifferenceReading** が担う
-(#3822 で `RepairPlan.comparison` slot と `saga-comparison:h1-transfer` invariant は沈黙した)。
+SAGA の run 対の読みは、両 run の導出 residual を比較する **residualDifferenceReading** が担う。
 `compare` は base / head 両 run の `saga-descent:residual-derivation`(観測 sectionValue 比較から
 導出された overlap ごとの F₂ 値と provenance)を読み、comparability ゲート
 (level が identical / verdict-row、両 derivation の coverRef / mappedCoverRef / lawSurfaceRef /
@@ -24,7 +22,7 @@ charts 相等、overlap 鍵集合一致)の下で delta = value_base XOR value_h
 
 この block は 2 run の residual 差に対する `B¹` 所属の有限計算である
 (theoremRef: part10/2.3)。修理成功の読みは、repaired 側 run の零 residual
-(`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。v0.5.6 はこの一系統の語彙を
+(`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。v0.5.7 はこの一系統の語彙を
 triple 宣言の有無にかかわらず使う。入力は両 run に記録済みの導出 residual であり、
 新しい authored data や供給 slot は追加しない。
 
@@ -48,7 +46,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 Outputs:
 
 - `archmap-diff.json` with schema `archmap-diff/v0.5.4`
-- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.6`
+- `archsig-comparison-report.json` with schema `archsig-comparison-report/v0.5.7`
 
 ## Comparability
 
@@ -65,8 +63,8 @@ Each measurement run manifest records the canonical digests of its normalized Ar
 `compare` verifies both digests and each artifact's run contract (`runId`, tool version, input digests,
 component fingerprints) against the manifest before computing an ArchMap diff or verdict transition.
 
-When a checked refinement artifact binds both run site-cover fingerprints, `classTransport.recordComparability`
-may remain `not-comparable` while the separate refinement reading is established.
+When the derived context relation is established, `classTransport.recordComparability` may remain
+`not-comparable` while the separate class-zero reading is established.
 
 Cover or context changes are boundary data. They are not architecture degradation claims.
 For gate policy, affected transitions are classified as `other_transition` and map through the policy key `other`.
@@ -80,8 +78,7 @@ Current conclusion codes are:
 - `MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE`
 - `RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA`
 
-`VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR` belongs to the `refactor-morphism/v0.5.4`
-analytic reading. Refinement compare uses the dedicated
+The derived coarse-to-fine reading uses the dedicated
 `CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT` token only for coarse-zero →
 fine-zero. Both nonzero and zero/nonzero pairs remain `not_computed` with a
 boundary statement; they do not establish class transport.
@@ -92,6 +89,6 @@ packet digestとともに供給する。
 
 ## Non-claims
 
-- compare does not transport nonzero cohomology classes or obstruction identity across runs; its dedicated refinement reading is limited to the checked class-zero predicate.
+- compare does not transport nonzero cohomology classes or obstruction identity across runs; its dedicated reading is limited to the derived class-zero predicate.
 - compare does not decide whether a code change caused a verdict change.
 - compare does not turn raw ArchMap differences into FieldSig evolution claims.

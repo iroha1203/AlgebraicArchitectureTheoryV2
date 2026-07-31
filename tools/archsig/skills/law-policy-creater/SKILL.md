@@ -32,6 +32,5 @@ For Stage 3 SAGA laws, author `skeleton`, `defectSources[].holdsCriterion`, and
 `quotientSheafCondition` on the law-equation surface. `ag.saga-grounded` also
 requires the law's `witnessVariables` and `forbiddenSupportGenerators`; these
 generate the finite quotient and cannot be replaced by conclusion fields.
-For refactor transport, author and validate a separate
-`refactor-morphism/v0.5.4` artifact. For compare class-zero transport, author a
-`refinement-comparison/v0.5.4` artifact in the coarse-to-fine direction.
+Compare class-zero transport is derived from the selected normalized ArchMap
+cover/context relation; do not author a separate transport artifact.

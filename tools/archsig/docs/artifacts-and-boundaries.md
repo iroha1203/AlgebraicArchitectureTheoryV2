@@ -14,7 +14,7 @@ gate report, summary, insight report, viewer data, and run manifest.
 | Insight report / brief | `archsig-insight-report.json`, `archsig-insight-brief.md` | Prioritized inspection queue and boundary digest derived from the measurement run. |
 | Viewer data | `archsig-atom-viewer-data/v0.5.4` | Bounded analysis projection for the pre-rebuild ArchView and a possible optional overlay source for the rebuilt atlas. It is not the authoritative codebase-understanding base and adds no new structural verdict. |
 | Run manifest | `archsig-run-manifest/v0.5.4` | Generated artifact list, input digests, validation result summary, claim boundary, and run metadata. |
-| Comparison report | `archsig-comparison-report/v0.5.6` | Compares two current run directories and records verdict transitions, comparability, change categories, and whether the derived residual difference is in `B¹`. |
+| Comparison report | `archsig-comparison-report/v0.5.7` | Compares two current run directories, derives selected coarse-to-fine context containment, and records verdict transitions, comparability, change categories, and whether the residual difference is in `B¹`. |
 | Gate report | `archsig-gate-report/v0.5.4` | Applies gate policy to a measurement packet and optional comparison report. This is the CI decision surface. |
 
 FieldSig handoff uses `archsig-measurement-packet/v0.5.4`.

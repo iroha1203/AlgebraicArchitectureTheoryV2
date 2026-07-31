@@ -7,7 +7,7 @@ It fixes these current contracts:
 
 - `archsig-measurement-packet/v0.5.4`
 - `archsig-gate-report/v0.5.4`
-- `archsig-comparison-report/v0.5.6`
+- `archsig-comparison-report/v0.5.7`
 - `archmap-diff/v0.5.4`
 - `archsig-analysis-summary.json`
 - `archsig-insight-report.json`
@@ -33,8 +33,8 @@ R9 numeric locks are executable in `cli_r9_numeric_locks_preserve_ag_measurement
 
 The one-cent drift script asserts the five-act SAGA-staircase lock:
 base typed silence → head `MEASURED_NONGLUING_RESIDUAL_CLASS` (grounding
-`measured_zero`, residual class `measured_nonzero`, `h1-transfer`
-`established`, harmonic-debt lower bound `0.353553`) → gate BLOCK → repaired
+`measured_zero`, residual class `measured_nonzero`, derived compare relation
+`not_computed`, harmonic-debt lower bound `0.353553`) → gate BLOCK → repaired
 `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` → PASS, including the expected
 comparison codes. The head and repaired runs share the same LawPolicy, law
 surface, measurement profiles, and per-state RepairPlans under

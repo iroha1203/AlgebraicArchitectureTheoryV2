@@ -13,7 +13,7 @@ use archsig::{
     LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA, LawEquationSurfaceV1,
     LawPolicyDocumentV1, MEASUREMENT_PROFILE_V1_SCHEMA, MeasurementProfileV1, RepairPlanDocumentV1,
     SchemaVersionCatalogV0, ScopeManifestOptions, archmap_authoring_audit_checks_v1,
-    build_comparison_artifacts_with_refinement_v1, build_extraction_consistency_v1,
+    build_comparison_artifacts_v1, build_extraction_consistency_v1,
     build_foundation_measurement_packet_v1, build_gate_report_v1, build_insight_brief_v1,
     build_insight_report_v1, build_measurement_summary_v1, build_measurement_view_model_v1,
     build_measurement_viewer_data_v1,
@@ -22,7 +22,7 @@ use archsig::{
     parse_candidate_packet_value, resolve_and_verify_policy_bundle, static_schema_version_catalog,
     validate_archmap_v2_report, validate_authoring_audit_input_v1, validate_law_policy_v1_report,
     validate_law_surface_v1_report, validate_measurement_packet_value_v1,
-    validate_measurement_profile_v1_checks, validate_refactor_morphism_v1,
+    validate_measurement_profile_v1_checks,
 };
 use clap::{Parser, Subcommand};
 use globset::{Glob, GlobSetBuilder};
@@ -262,10 +262,6 @@ enum Command {
         #[arg(long = "repair-plan")]
         repair_plan: Option<PathBuf>,
 
-        /// Optional refactor-morphism/v0.5.4 artifact enabling declared verdict transport.
-        #[arg(long = "refactor-morphism")]
-        refactor_morphism: Option<PathBuf>,
-
         /// Output directory for ArchSig analysis workflow artifacts.
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
@@ -285,7 +281,7 @@ enum Command {
         #[arg(long)]
         policy: PathBuf,
 
-        /// Optional archsig-comparison-report/v0.5.6 JSON path for introduced-by-change rules.
+        /// Optional archsig-comparison-report/v0.5.7 JSON path for introduced-by-change rules.
         #[arg(long)]
         comparison: Option<PathBuf>,
 
@@ -308,9 +304,6 @@ enum Command {
         #[arg(long = "out-dir")]
         out_dir: PathBuf,
 
-        /// Optional refinement-comparison/v0.5.4 artifact enabling fingerprint-bound class-zero transport.
-        #[arg(long = "refinement")]
-        refinement: Option<PathBuf>,
     },
     /// Create or validate an ArchSig policy bundle.
     PolicyBundle {
@@ -887,14 +880,9 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             base_run,
             head_run,
             out_dir,
-            refinement,
         }) => {
             let (archmap_diff, comparison_report) =
-                build_comparison_artifacts_with_refinement_v1(
-                    &base_run,
-                    &head_run,
-                    refinement.as_deref(),
-                )?;
+                build_comparison_artifacts_v1(&base_run, &head_run)?;
             std::fs::create_dir_all(&out_dir)?;
             write_json(Some(out_dir.join("archmap-diff.json")), &archmap_diff)?;
             write_json(
@@ -954,7 +942,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             measurement_profiles,
             policy_bundle,
             repair_plan,
-            refactor_morphism,
             out_dir,
             stamp,
         }) => {
@@ -1047,13 +1034,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let repair_plan_failed = repair_plan_preflight
                 .as_ref()
                 .is_some_and(|(_, _, failed)| *failed);
-            let refactor_morphism_value = refactor_morphism
-                .as_ref()
-                .map(read_json)
-                .transpose()?;
-            if let Some(refactor_morphism_value) = refactor_morphism_value.as_ref() {
-                validate_refactor_morphism_v1(refactor_morphism_value)?;
-            }
             let law_surface_failed = law_surface_preflight
                 .as_ref()
                 .is_some_and(|(_, failed)| *failed);
@@ -1243,7 +1223,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 law_surface_input_ref.as_deref(),
                 &measurement_profile_input_ref,
                 repair_plan_input_ref.as_deref(),
-                refactor_morphism_value.as_ref(),
             )
             {
                 Ok(packet) => packet,
@@ -1687,7 +1666,7 @@ fn build_validation_failure_viewer_data(insight_report: &Value) -> Value {
             "stages": [
                 {"stageId": "grounding", "order": 0, "status": "not_computed", "rows": [], "measurements": [], "visualRole": "grounding"},
                 {"stageId": "descent", "order": 1, "status": "not_computed", "rows": [], "measurements": [], "harmonicDebt": [], "visualRole": "descent-measurement"},
-                {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "transfer-comparison"},
+                {"stageId": "comparison", "order": 2, "status": "not_computed", "rows": [], "visualRole": "comparison-record"},
                 {"stageId": "silence", "order": 3, "status": "not_computed", "rows": [], "visualRole": "silence"}
             ],
             "silenceRows": [],

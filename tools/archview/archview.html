@@ -1212,7 +1212,7 @@ function buildSagaDescent() {
   const expected = [
     ["grounding", "grounding"],
     ["descent", "descent-measurement"],
-    ["comparison", "transfer-comparison"],
+    ["comparison", "comparison-record"],
     ["silence", "silence"],
   ];
   if (!saga || !Array.isArray(saga.stages) || saga.stages.length !== expected.length) {

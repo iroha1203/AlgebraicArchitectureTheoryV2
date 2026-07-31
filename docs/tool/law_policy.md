@@ -84,12 +84,8 @@ SAGA の run 間読みは LawPolicy の selector ではなく、二つの analyz
 ゲートに、residual delta の `B¹` 所属と `δ⁰` witness を計算する)。供給型の H¹ comparison slot
 (`h1ComparisonData` の explicit / presentation-generated)は #3822 で沈黙した。
 
-R8 の class-zero reading は、`--refinement` で
-`refinement-comparison/v0.5.4` を供給し、その coarse-to-fine と
-`zeroTransport.checked`、および coarse/fine `complexFingerprint` と base/head の
-`inputDigests.siteCoverDigest.sha256` の一致を検査した場合だけ追加される。
-refactor transport は
-`--refactor-morphism refactor-morphism/v0.5.4` と matching witness の両方を必要とする。
+R8 の class-zero reading は、`compare` が両 run の MeasurementProfile-selected normalized ArchMap から
+coarse-to-fine context relationを導出し、fine contextごとの一意な coarse containment pathとderived class certificateを確認した場合だけ追加される。
 
 The current handoff to FieldSig is the serialized measurement packet. FieldSig
 does not accept old raw analysis packets as the current boundary.

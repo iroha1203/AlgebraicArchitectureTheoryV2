@@ -55,7 +55,7 @@ PRDや設計ノートを恒久仕様として参照しない。実装済みcontr
 - [ArchMapStore](archmap_store.md)
 - [ArchMap supply bench](archmap_supply_bench.md)
 - [Golden corpus](golden_corpus.md)
-- [AG measurement evidence](ag_measurement_evidence_contract.md)
+- [AG measurement input](ag_measurement_input_contract.md)
 - [ArchSig supplied slot 台帳(負債告知)](archsig_v0_5_2_supplied_slot_ledger.md)
 - [ArchSig skills](../../tools/archsig/skills/)
 - [ArchView](../../tools/archview/README.md)
