@@ -11104,7 +11104,7 @@
     },
     {
       "axisMapping": {
-        "x": "evidence contract",
+        "x": "input contract",
         "y": "assumption status",
         "z": "blocker intensity"
       },

@@ -10,12 +10,10 @@ mod law_policy;
 mod law_surface;
 mod normalizer;
 mod policy_bundle;
-mod refactor;
 mod repair_plan;
 mod saga;
 mod view_model;
 
-pub use refactor::{validate_refactor_morphism_v1, validate_refinement_comparison_v1};
 mod schema;
 mod supply_bench;
 pub use supply_bench::{
@@ -48,7 +46,7 @@ pub use authoring::{
     validate_candidate_packet_v1, validate_coverage_ledger_v1, validate_extraction_consistency_v1,
     validate_scope_manifest_v1,
 };
-pub use compare::{build_comparison_artifacts_v1, build_comparison_artifacts_with_refinement_v1};
+pub use compare::build_comparison_artifacts_v1;
 pub use gate::{build_gate_report_v1, validate_gate_policy_v1};
 pub use law_policy::{
     expand_law_policy_v1, is_compatible_evaluator_condition, static_law_evaluator_registry_v1,
@@ -89,8 +87,8 @@ pub use schema::{
     ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_MEASURED_LAW_DEFECT_AT_CHART, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_REFINEMENT_CONCLUSION_CODES, ARCHSIG_REPAIR_PLAN_V1_SCHEMA,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
+    ARCHSIG_REPAIR_PLAN_V1_SCHEMA, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     ARCHSIG_SAGA_CONCLUSION_CODES,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
     ARCHSIG_VALIDATION_FAILED_BEFORE_MEASUREMENT, AatAtomVocabularyEntryV1, AatAtomVocabularyV1,

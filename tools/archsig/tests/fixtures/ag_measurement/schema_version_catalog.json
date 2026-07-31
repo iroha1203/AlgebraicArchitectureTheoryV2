@@ -409,7 +409,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed seven-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans; measuredClassAgreement is a boolean when a measured residual class row is also present and null otherwise. When that agreement is false the invariant additionally carries measuredClassDivergence naming both readings. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, COMPARISON_DATA_CONTRACT_VIOLATION, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR, and TWO_PROFILES_REPORTED_SEPARATELY.",
+        "fieldMappingPolicy": "ArchSig measurement packet v0.5.4 carries profile, structuralVerdict with optional dependsOnAssumptions refs, computedInvariants, analyticReadings, assumptions, boundaryStatements, and legacy-compatible nonConclusions as the AG Definition 11.1-aligned output contract. The h1-comparison-transfer computed invariant is owned by ag.saga-comparison and carries a closed seven-field comparison contract: incidenceBridgeKind, h1ComparisonDataKind, and normalizedComplexFingerprint are strings; classPrerequisite, targetClassComputed, and contractChecked are booleans; measuredClassAgreement is a boolean when a measured residual class row is also present and null otherwise. When that agreement is false the invariant additionally carries measuredClassDivergence naming both readings. Registered SAGA conclusionCode values include REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, MEASURED_NONGLUING_RESIDUAL, MEASURED_NONGLUING_RESIDUAL_CLASS, COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION, REPAIR_TARGETS_IDENTIFIED, MEASURED_LAW_DEFECT_AT_CHART, DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS, and TWO_PROFILES_REPORTED_SEPARATELY.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -451,60 +451,6 @@
         "nonConclusions": [
           "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
           "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero."
-        ]
-      }
-    },
-    {
-      "artifactId": "refactor-morphism/v0.5.4",
-      "artifactName": "ArchSig declared refactor morphism v0.5.4",
-      "schemaName": "refactor-morphism/v0.5.4",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.4 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:v0.5.4-ag-measurement"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "A validated site morphism, law/coefficient compatibility, and finite witness-variable map used to transport an existing verdict row under declared refactor data.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "The artifact supplies compatibility data and does not supply a conclusion, class value, or zero verdict.",
-          "Transport is emitted only when a selected refactor witness is tied to an existing structural verdict."
-        ]
-      }
-    },
-    {
-      "artifactId": "refinement-comparison/v0.5.4",
-      "artifactName": "ArchSig coarse-to-fine refinement comparison v0.5.4",
-      "schemaName": "refinement-comparison/v0.5.4",
-      "artifactRole": "primary",
-      "ownerPhase": "ArchSig v0.5.4 Algebraic Geometry Measurement",
-      "status": "implemented",
-      "primaryDocs": [
-        "archsig-contract:v0.5.4-ag-measurement"
-      ],
-      "downstreamIssues": [],
-      "compatibilityBoundary": {
-        "fieldMappingPolicy": "A validated coarse-to-fine finite-complex comparison that binds both run siteCoverDigest fingerprints and permits compare to emit the supplied class-zero preservation reading. Registered conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT.",
-        "deprecatedFields": [],
-        "newRequiredAssumptions": [
-          "Required fields, observation families, law refs, or analysis axes change.",
-          "Evidence boundaries or non-conclusions are removed or weakened."
-        ],
-        "coverageExactnessBoundary": [
-          "Coverage and exactness are artifact-local and do not imply semantic completeness."
-        ],
-        "nonConclusions": [
-          "Only coarse-to-fine direction is accepted.",
-          "The artifact supplies a zero-preservation contract; compare requires its coarse and fine fingerprints to match the corresponding run siteCoverDigest values."
         ]
       }
     },
@@ -592,9 +538,9 @@
       }
     },
     {
-      "artifactId": "archsig-comparison-report/v0.5.6",
-      "artifactName": "ArchSig comparison report v0.5.6",
-      "schemaName": "archsig-comparison-report/v0.5.6",
+      "artifactId": "archsig-comparison-report/v0.5.7",
+      "artifactName": "ArchSig comparison report v0.5.7",
+      "schemaName": "archsig-comparison-report/v0.5.7",
       "artifactRole": "primary",
       "ownerPhase": "ArchSig Output / CI workflow",
       "status": "implemented",
@@ -603,7 +549,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.6 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). With a validated refinement-comparison/v0.5.4 artifact it can also record class-zero preservation. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
+        "fieldMappingPolicy": "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, archmap-diff intersections, comparability of the two runs' repair-plan digests, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a coarse-to-fine context relation from the selected normalized ArchMap covers before recording the class-zero preservation reading. Registered conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -613,7 +559,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without a validated refinement-comparison/v0.5.4 artifact whose fingerprints bind the corresponding run siteCoverDigest values.",
+          "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence beyond the derived class-zero predicate and the two run records.",
           "Comparison report conclusion codes are record-level names only.",
           "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
         ]

@@ -1,12 +1,12 @@
-# ArchSig AG measurement evidence contract
+# ArchSig AG measurement input contract
 
 > 本 doc は既存 fixture の `sourceRef.section` 解決のための section 台帳であり、
-> 新しい供給入力・新 section の根拠として引用してはならない(入力トライアドの正本は
-> AGENTS.md「責務範囲」)。名称の是正は fixture / tests の参照更新と併せて
-> 供給 slot 返済系列で扱う。
+> ArchMap が観測する入力の根拠を固定する(入力トライアドの正本は AGENTS.md
+> 「責務範囲」)。測定結果や authored conclusion はこの台帳へ追加しない。
 
-この文書は、AG measurement fixtureの`sourceRef.section`が指す恒久contractである。
-各sectionはfixtureが供給する入力の意味を固定し、測定結果そのものは固定しない。
+この文書は、AG measurement fixtureの`sourceRef.section`が指す恒久的な入力契約である。
+各sectionは ArchMap が観測する有限 site、cover、restriction、law witness の意味を固定し、
+測定結果そのものは固定しない。
 
 ## R3
 

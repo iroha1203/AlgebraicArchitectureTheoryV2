@@ -122,9 +122,9 @@ ArchSig は与えられた contract から語れることだけを語り、語�
 source extraction の健全性、semantic の正しさ、global lawfulness、未来予測は主張しない。
 `analyze` の出力は選択された contract に対する structural verdict と analytic reading である。
 `compare` は analyze run の比較記録を作り、`gate` は必須の measurement packet と任意の比較記録に対して gate policy を適用し、CI判断へ写像する。
-`refactor-morphism/v0.5.4` は既存 verdict の declared transport compatibility を供給し、
-`refinement-comparison/v0.5.4` は coarse-to-fine の class-zero preservation data を供給する。
-これらの供給 slot は、次段の RepairPlan explicit H¹ comparison の供給を含め、AGENTS.md「責務範囲」の入力トライアドに対する既存の負債であり、返済は供給 slot 台帳の負債告知が管理する。validator 通過は帰属の代替にならない。
+`compare` は二つの analyze run に含まれる selected normalized ArchMap から coarse-to-fine の context relation を導出し、
+一意な containment が得られた場合に class-zero reading を計算する。refactor transport の authored input は現行入力面に含まれない。
+入力トライアドに帰属しない結論相当の供給 slot を新設しない。
 RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表、次数2の `zeroImage`、
 および変数対応を供給し、ArchSig が差保存・零保存・微分可換性を再計算する。適合条件の宣言booleanは入力として採用しない。
 

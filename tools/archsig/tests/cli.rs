@@ -17,7 +17,6 @@ use archsig::{
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
     ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX, ArchMapDocumentV2, ArchSigRunManifestV1,
     compare_archmap_v2_doctrine,
-    validate_refactor_morphism_v1, validate_refinement_comparison_v1,
 };
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -3993,7 +3992,7 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
         }));
     archmap["sources"]["src:triple-overlap"] = json!({
         "kind": "policy",
-            "path": "docs/tool/ag_measurement_evidence_contract.md",
+            "path": "docs/tool/ag_measurement_input_contract.md",
             "section": "B.8.2"
     });
     for context_id in ["ctx:top", "ctx:left", "ctx:bottom"] {
@@ -9312,161 +9311,6 @@ fn cli_analyze_v2_support_transfer_blocks_support_disjoint_pairing() {
 }
 
 #[test]
-fn cli_analyze_v2_refactor_transport_reading_requires_functoriality_witness() {
-    let out_dir = temp_dir("ag-measurement-refactor-transport");
-    let root = ag_measurement_root();
-    let mut archmap = read_json(&root.join("archmap_v2_square_free_repair.json"));
-    archmap["sources"]["src:refactor"] = serde_json::json!({
-        "kind": "policy",
-        "path": "docs/tool/ag_measurement_evidence_contract.md",
-        "section": "AC-M10"
-    });
-    archmap["atoms"]
-        .as_array_mut()
-        .expect("atoms is array")
-        .push(serde_json::json!({
-            "id": "atom:refactor-transport",
-            "kind": "semantic",
-            "subject": "refactor:extract-square-free-repair-module",
-            "object": "ag.square-free-repair",
-            "axis": "refactor",
-            "predicate": "functorialityWitness",
-            "refs": ["src:refactor"]
-        }));
-    archmap["contexts"][0]["atoms"]
-        .as_array_mut()
-        .expect("context atoms is array")
-        .push(Value::String("atom:refactor-transport".to_string()));
-    let archmap_path = out_dir.join("archmap_v2_refactor_transport.json");
-    fs::write(
-        &archmap_path,
-        serde_json::to_vec_pretty(&archmap).expect("archmap serializes"),
-    )
-    .expect("archmap fixture can be written");
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join("law_policy_square_free.json")
-                .to_str()
-                .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--refactor-morphism",
-        root.join("refactor_morphism.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert_eq!(
-        packet["structuralVerdict"]
-            .as_array()
-            .expect("structural verdict is array")
-            .len(),
-        1,
-        "refactor transport witness must not add a verdict row"
-    );
-    let reading = packet["analyticReadings"]
-        .as_array()
-        .expect("analytic readings is array")
-        .iter()
-        .find(|reading| reading["value"]["readingKind"] == "refactor-verdict-transport@1")
-        .expect("refactor transport reading exists when functoriality witness is supplied");
-    assert_eq!(reading["evaluator"], "ag.foundation");
-    assert_eq!(reading["structuralVerdictRef"], Value::Null);
-    assert_eq!(
-        reading["value"]["witnessAtomRef"],
-        "atom:refactor-transport"
-    );
-    assert_eq!(
-        reading["value"]["transportedEvaluator"],
-        "ag.square-free-repair"
-    );
-    assert_eq!(reading["value"]["schema"], "refactor-morphism/v0.5.4");
-    assert!(
-        reading["value"]["nonConclusion"]
-            .as_str()
-            .is_some_and(|text| text.contains("creates no new verdict"))
-    );
-}
-
-#[test]
-fn cli_refactor_and_refinement_artifacts_are_validated_fail_closed() {
-    let root = ag_measurement_root();
-    let morphism = read_json(&root.join("refactor_morphism.json"));
-    assert!(validate_refactor_morphism_v1(&morphism).is_ok());
-    let mut invalid_morphism = morphism.clone();
-    invalid_morphism["siteMorphism"]["direction"] = json!("fine-to-coarse");
-    assert!(validate_refactor_morphism_v1(&invalid_morphism).is_err());
-    let mut unknown_morphism = morphism.clone();
-    unknown_morphism["conclusion"] = json!("forged");
-    assert!(validate_refactor_morphism_v1(&unknown_morphism).is_err());
-
-    let refinement = read_json(&root.join("refinement_comparison.json"));
-    assert!(validate_refinement_comparison_v1(&refinement).is_ok());
-    let mut invalid_refinement = refinement.clone();
-    invalid_refinement["direction"] = json!("fine-to-coarse");
-    assert!(validate_refinement_comparison_v1(&invalid_refinement).is_err());
-}
-
-#[test]
-fn cli_analyze_v2_refactor_transport_absent_without_functoriality_witness() {
-    let out_dir = temp_dir("ag-measurement-refactor-transport-absent");
-    let root = ag_measurement_root();
-
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_v2_square_free_repair.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_square_free.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
-            root.join("law_policy_square_free.json")
-                .to_str()
-                .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--out-dir",
-        out_dir.to_str().expect("path is utf-8"),
-    ]);
-
-    let packet = read_json(&out_dir.join("archsig-measurement-packet.json"));
-    assert!(
-        packet["analyticReadings"]
-            .as_array()
-            .expect("analytic readings is array")
-            .iter()
-            .all(|reading| reading["value"]["readingKind"] != "refactor-invariant-transport@1"),
-        "refactor transport reading must be absent without supplied functoriality witness data"
-    );
-}
-
-#[test]
 fn cli_analyze_v2_support_transfer_missing_pairing_cell_is_not_computed() {
     let out_dir = temp_dir("ag-measurement-support-transfer-missing-cell");
     let root = ag_measurement_root();
@@ -10797,12 +10641,10 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
             "normalized-archmap-current",
             "archsig-measurement-packet/v0.5.4",
             "archsig-boundary-statement/v0.5.4",
-            "refactor-morphism/v0.5.4",
-            "refinement-comparison/v0.5.4",
             "archsig-gate-policy/v0.5.4",
             "archsig-gate-report/v0.5.4",
             "archmap-diff/v0.5.4",
-            "archsig-comparison-report/v0.5.6",
+            "archsig-comparison-report/v0.5.7",
             "archsig-run-manifest/v0.5.4",
             "archsig-atom-viewer-data/v0.5.4",
             "archsig-measurement-view-model/v0.5.4",
@@ -10915,7 +10757,7 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
     );
     assert!(
         artifacts.iter().any(|entry| {
-            entry["artifactId"] == "archsig-comparison-report/v0.5.6"
+            entry["artifactId"] == "archsig-comparison-report/v0.5.7"
                 && entry["compatibilityBoundary"]["fieldMappingPolicy"]
                     .as_str()
                     .is_some_and(|description| {
@@ -12109,7 +11951,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
 
     let retired_vocabulary_path = out_dir.join("retired-vocabulary-comparison.json");
     let retired_vocabulary = json!({
-        "schema": "archsig-comparison-report/v0.5.6",
+        "schema": "archsig-comparison-report/v0.5.7",
         "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
         "comparability": { "level": "identical" },
         "inputDigests": {
@@ -12220,7 +12062,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &empty_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.6",
+        "schema": "archsig-comparison-report/v0.5.7",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": []
@@ -12252,7 +12094,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
     fs::write(
         &unknown_category_comparison_path,
         serde_json::to_vec_pretty(&json!({
-            "schema": "archsig-comparison-report/v0.5.6",
+        "schema": "archsig-comparison-report/v0.5.7",
             "conclusionCode": "NO_NEW_MEASURED_OBSTRUCTION_RECORDED",
             "comparability": { "level": "identical" },
             "verdictTransitions": [{
@@ -12752,10 +12594,10 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
-    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.6");
+    assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.7");
     assert_eq!(
         comparison["discipline"],
-        "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract."
+        "Comparison is a record-level juxtaposition of two ArchSig runs. ArchSig derives a class-zero reading from the selected normalized ArchMap covers when each fine context has a unique observed coarse containment path."
     );
     assert!(
         comparison["inputDigests"]["headRun"]["measurementPacket"]["sha256"]
@@ -12896,87 +12738,47 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
 }
 
 #[test]
-fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
-    let out_dir = temp_dir("archsig-compare-refinement-zero-transport");
+fn cli_compare_derives_coarse_to_fine_class_zero_from_selected_archmaps() {
+    let out_dir = temp_dir("archsig-compare-derived-class-zero");
     let root = ag_measurement_root();
-    let zero_plan = zero_plan_for_refinement_test(&root);
-
+    let zero_plan = zero_plan_for_derived_relation_test(&root);
     let base_archmap = read_json(&root.join("archmap_v2.json"));
+    let fine_archmap = derived_fine_archmap_for_test(&root);
     let base_run = run_saga_compare_fixture(
-        "refinement-coarse-zero",
+        "derived-coarse-zero",
         base_archmap.clone(),
         zero_plan.clone(),
     );
-    let fine_archmap = refinement_fine_archmap_for_test(&root);
     let fine_run = run_saga_compare_fixture(
-        "refinement-fine-zero",
+        "derived-fine-zero",
         fine_archmap.clone(),
         zero_plan.clone(),
     );
-
-    let refinement_path = out_dir.join("refinement.json");
-    let refinement_for = |coarse: &Path, fine: &Path| {
-        let coarse_manifest = read_json(&coarse.join("archsig-run-manifest.json"));
-        let fine_manifest = read_json(&fine.join("archsig-run-manifest.json"));
-        json!({
-            "schema": "refinement-comparison/v0.5.4",
-            "id": "refinement-comparison:e2e",
-            "direction": "coarse-to-fine",
-            "coarse": {
-                "siteRef": "archmap:/contexts",
-                "coverRef": "cover:order-inventory",
-                "complexFingerprint": coarse_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
-            },
-            "fine": {
-                "siteRef": "archmap:/contexts",
-                "coverRef": "cover:order-inventory",
-                "complexFingerprint": fine_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
-            },
-            "zeroTransport": {
-                "kind": "class-zero-preservation",
-                "checked": true,
-                "map": "coarse-to-fine-supplied"
-            }
-        })
-    };
-    fs::write(
-        &refinement_path,
-        serde_json::to_vec_pretty(&refinement_for(&base_run, &fine_run))
-            .expect("refinement serializes"),
-    )
-    .expect("refinement writes");
-
-    let positive_out = out_dir.join("positive-compare");
+    let compare_out = out_dir.join("positive-compare");
     run_sig0(&[
         "compare",
         "--base-run",
         base_run.to_str().expect("base path is utf-8"),
         "--head-run",
         fine_run.to_str().expect("fine path is utf-8"),
-        "--refinement",
-        refinement_path.to_str().expect("refinement path is utf-8"),
         "--out-dir",
-        positive_out.to_str().expect("output path is utf-8"),
+        compare_out.to_str().expect("output path is utf-8"),
     ]);
-    let positive = read_json(&positive_out.join("archsig-comparison-report.json"));
+    let positive = read_json(&compare_out.join("archsig-comparison-report.json"));
+    assert_eq!(positive["schema"], "archsig-comparison-report/v0.5.7");
     assert_eq!(positive["comparability"]["level"], "not-comparable");
-    assert_eq!(positive["comparability"]["sameSiteCoverDigest"], false);
     assert_eq!(positive["classTransport"]["status"], "established");
     assert_eq!(
         positive["classTransport"]["conclusionCode"],
         ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT
     );
+    assert_eq!(positive["classTransport"]["derivedRefinement"]["status"], "established");
     assert_eq!(
-        positive["classTransport"]["recordComparability"],
-        "not-comparable"
-    );
-    assert_eq!(
-        positive["classTransport"]["runBinding"]["coarse"]["complexFingerprint"],
-        read_json(&base_run.join("archsig-run-manifest.json"))["inputDigests"]["siteCoverDigest"]["sha256"]
-    );
-    assert_eq!(
-        positive["classTransport"]["runBinding"]["fine"]["complexFingerprint"],
-        read_json(&fine_run.join("archsig-run-manifest.json"))["inputDigests"]["siteCoverDigest"]["sha256"]
+        positive["classTransport"]["derivedRefinement"]["contextMap"]
+            .as_array()
+            .expect("derived context map is an array")
+            .len(),
+        3
     );
     assert_eq!(positive["classTransport"]["boundaryStatement"], Value::Null);
     assert_eq!(
@@ -12984,26 +12786,17 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
         "a not-comparable run pair must not compute residual difference membership in B1"
     );
 
-    // class 語彙は checked triple が必要になった(#3822 是正)。奇サイクルと
-    // 偶パリティ検査三角形を両立する五角形+弦構成を使う。
     let nonzero_plan = supplied_triple_saga_plan(&root, true);
     let nonzero_base = run_saga_compare_fixture(
-        "refinement-coarse-nonzero",
-        read_json(&root.join("archmap_v2.json")),
+        "derived-coarse-nonzero",
+        base_archmap.clone(),
         nonzero_plan.clone(),
     );
     let nonzero_head = run_saga_compare_fixture(
-        "refinement-fine-nonzero",
-        read_json(&root.join("archmap_v2.json")),
-        nonzero_plan.clone(),
+        "derived-fine-nonzero",
+        fine_archmap.clone(),
+        nonzero_plan,
     );
-    let nonzero_refinement_path = out_dir.join("nonzero-refinement.json");
-    fs::write(
-        &nonzero_refinement_path,
-        serde_json::to_vec_pretty(&refinement_for(&nonzero_base, &nonzero_head))
-            .expect("nonzero refinement serializes"),
-    )
-    .expect("nonzero refinement writes");
     let nonzero_out = out_dir.join("nonzero-compare");
     run_sig0(&[
         "compare",
@@ -13011,10 +12804,6 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
         nonzero_base.to_str().expect("nonzero base path is utf-8"),
         "--head-run",
         nonzero_head.to_str().expect("nonzero head path is utf-8"),
-        "--refinement",
-        nonzero_refinement_path
-            .to_str()
-            .expect("nonzero refinement path is utf-8"),
         "--out-dir",
         nonzero_out.to_str().expect("nonzero output path is utf-8"),
     ]);
@@ -13023,153 +12812,44 @@ fn cli_compare_refinement_binds_fingerprints_and_transports_only_zero() {
     assert_eq!(nonzero["classTransport"]["targetClassNonZero"], true);
     assert_eq!(nonzero["classTransport"]["zeroPreserved"], false);
     assert_eq!(nonzero["classTransport"]["status"], "not_computed");
-    assert_eq!(nonzero["classTransport"]["conclusionCode"], Value::Null);
     assert_eq!(
         nonzero["classTransport"]["boundaryStatement"]["kind"],
         "class_zero_transport_not_established"
     );
 
-    let mixed_base = run_saga_compare_fixture(
-        "refinement-coarse-nonzero-to-zero",
-        base_archmap,
-        nonzero_plan,
+    let mut invalid_fine_archmap = derived_fine_archmap_for_test(&root);
+    invalid_fine_archmap["contexts"]
+        .as_array_mut()
+        .expect("fine contexts are an array")
+        .push(json!({
+            "id": "ctx:fine-only",
+            "atoms": ["atom:order"],
+            "refs": ["src:cover"]
+        }));
+    invalid_fine_archmap["covers"][0]["contexts"]
+        .as_array_mut()
+        .expect("fine cover contexts are an array")
+        .push(json!("ctx:fine-only"));
+    let invalid_fine = run_saga_compare_fixture(
+        "derived-fine-uncontained",
+        invalid_fine_archmap,
+        zero_plan_for_derived_relation_test(&root),
     );
-    let mixed_head = run_saga_compare_fixture(
-        "refinement-fine-nonzero-to-zero",
-        fine_archmap,
-        zero_plan_for_refinement_test(&root),
-    );
-    let mixed_refinement_path = out_dir.join("mixed-refinement.json");
-    fs::write(
-        &mixed_refinement_path,
-        serde_json::to_vec_pretty(&refinement_for(&mixed_base, &mixed_head))
-            .expect("mixed refinement serializes"),
-    )
-    .expect("mixed refinement writes");
-    let mixed_out = out_dir.join("mixed-compare");
-    run_sig0(&[
-        "compare",
-        "--base-run",
-        mixed_base.to_str().expect("mixed base path is utf-8"),
-        "--head-run",
-        mixed_head.to_str().expect("mixed head path is utf-8"),
-        "--refinement",
-        mixed_refinement_path
-            .to_str()
-            .expect("mixed refinement path is utf-8"),
-        "--out-dir",
-        mixed_out.to_str().expect("mixed output path is utf-8"),
-    ]);
-    let mixed = read_json(&mixed_out.join("archsig-comparison-report.json"));
-    assert_eq!(mixed["classTransport"]["sourceClassNonZero"], true);
-    assert_eq!(mixed["classTransport"]["targetClassNonZero"], false);
-    assert_eq!(mixed["classTransport"]["zeroPreserved"], false);
-    assert_eq!(mixed["classTransport"]["status"], "not_computed");
-    assert_eq!(mixed["classTransport"]["conclusionCode"], Value::Null);
-    assert_eq!(
-        mixed["classTransport"]["boundaryStatement"]["kind"],
-        "class_zero_transport_not_established"
-    );
-
-    let mut mismatched_refinement = refinement_for(&base_run, &fine_run);
-    mismatched_refinement["fine"]["complexFingerprint"] = json!("sha256:mismatch");
-    let mismatched_path = out_dir.join("mismatched-refinement.json");
-    fs::write(
-        &mismatched_path,
-        serde_json::to_vec_pretty(&mismatched_refinement)
-            .expect("mismatched refinement serializes"),
-    )
-    .expect("mismatched refinement writes");
-    let mismatch_output = run_sig0_output(&[
-        "compare",
-        "--base-run",
-        base_run.to_str().expect("base path is utf-8"),
-        "--head-run",
-        fine_run.to_str().expect("fine path is utf-8"),
-        "--refinement",
-        mismatched_path.to_str().expect("mismatched path is utf-8"),
-        "--out-dir",
-        out_dir
-            .join("mismatched-compare")
-            .to_str()
-            .expect("mismatch output is utf-8"),
-    ]);
-    assert_eq!(mismatch_output.status.code(), Some(2));
-    assert!(
-        String::from_utf8_lossy(&mismatch_output.stderr)
-            .contains("COMPARISON_DATA_CONTRACT_VIOLATION")
-    );
-
-    let separate_out = out_dir.join("separate-compare");
+    let invalid_out = out_dir.join("invalid-compare");
     run_sig0(&[
         "compare",
         "--base-run",
         base_run.to_str().expect("base path is utf-8"),
         "--head-run",
-        fine_run.to_str().expect("fine path is utf-8"),
+        invalid_fine.to_str().expect("invalid fine path is utf-8"),
         "--out-dir",
-        separate_out.to_str().expect("separate output is utf-8"),
+        invalid_out.to_str().expect("invalid output path is utf-8"),
     ]);
-    let separate = read_json(&separate_out.join("archsig-comparison-report.json"));
+    let invalid = read_json(&invalid_out.join("archsig-comparison-report.json"));
+    assert_eq!(invalid["classTransport"]["status"], "not_computed");
     assert_eq!(
-        separate["profileConclusionCode"],
-        "TWO_PROFILES_REPORTED_SEPARATELY"
-    );
-    assert_eq!(separate["classTransport"]["status"], "silence_by_design");
-
-    let mut reverse = refinement_for(&base_run, &fine_run);
-    reverse["direction"] = json!("fine-to-coarse");
-    let reverse_path = out_dir.join("reverse-refinement.json");
-    fs::write(
-        &reverse_path,
-        serde_json::to_vec_pretty(&reverse).expect("reverse refinement serializes"),
-    )
-    .expect("reverse refinement writes");
-    let reverse_output = run_sig0_output(&[
-        "compare",
-        "--base-run",
-        base_run.to_str().expect("base path is utf-8"),
-        "--head-run",
-        fine_run.to_str().expect("fine path is utf-8"),
-        "--refinement",
-        reverse_path.to_str().expect("reverse path is utf-8"),
-        "--out-dir",
-        out_dir
-            .join("reverse-compare")
-            .to_str()
-            .expect("reverse output is utf-8"),
-    ]);
-    assert_eq!(reverse_output.status.code(), Some(2));
-    assert!(
-        String::from_utf8_lossy(&reverse_output.stderr)
-            .contains("direction must be coarse-to-fine")
-    );
-}
-
-#[test]
-fn cli_refinement_fixture_binds_to_generated_run_fingerprints() {
-    let root = ag_measurement_root();
-    let coarse = run_saga_compare_fixture(
-        "refinement-static-fixture-coarse",
-        read_json(&root.join("archmap_v2.json")),
-        zero_plan_for_refinement_test(&root),
-    );
-    let fine = run_saga_compare_fixture(
-        "refinement-static-fixture-fine",
-        refinement_fine_archmap_for_test(&root),
-        zero_plan_for_refinement_test(&root),
-    );
-    let fixture = read_json(&root.join("refinement_comparison.json"));
-    let coarse_manifest = read_json(&coarse.join("archsig-run-manifest.json"));
-    let fine_manifest = read_json(&fine.join("archsig-run-manifest.json"));
-    assert_eq!(fixture["direction"], "coarse-to-fine");
-    assert_eq!(
-        fixture["coarse"]["complexFingerprint"],
-        coarse_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
-    );
-    assert_eq!(
-        fixture["fine"]["complexFingerprint"],
-        fine_manifest["inputDigests"]["siteCoverDigest"]["sha256"]
+        invalid["classTransport"]["reason"],
+        "fine_chart_not_contained_in_coarse_cover"
     );
 }
 
@@ -13595,7 +13275,7 @@ fn write_test_policy_and_profile(policy_path: &Path, mut policy: Value, profile:
         policy["basisLedger"] = json!([{
             "basisId": "policy-basis:layering",
             "kind": "repo-document",
-            "path": "docs/tool/ag_measurement_evidence_contract.md",
+            "path": "docs/tool/ag_measurement_input_contract.md",
             "revision": "ag-measurement-current"
         }]);
     }
@@ -13736,11 +13416,11 @@ fn assert_saga_summary_has_no_class_vocabulary(summary: &Value) {
     );
 }
 
-fn zero_plan_for_refinement_test(root: &Path) -> Value {
+fn zero_plan_for_derived_relation_test(root: &Path) -> Value {
     read_json(&root.join("repair_plan_complete_support.json"))
 }
 
-fn refinement_fine_archmap_for_test(root: &Path) -> Value {
+fn derived_fine_archmap_for_test(root: &Path) -> Value {
     let mut fine_archmap = read_json(&root.join("archmap_v2.json"));
     fine_archmap["contexts"][2]["atoms"]
         .as_array_mut()
@@ -14629,10 +14309,10 @@ fn restriction_archmap(case: &str) -> Value {
         "sources": {
             "src:source": {"kind": "rust", "path": "src/source.rs", "symbol": "Source", "line": 1},
             "src:target": {"kind": "rust", "path": "src/target.rs", "symbol": "Target", "line": 1},
-            "src:source-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2 source generator"},
-            "src:target-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2 target generator"},
-            "ctx:source": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2"},
-            "ctx:target": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M2"}
+            "src:source-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M2 source generator"},
+            "src:target-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M2 target generator"},
+            "ctx:source": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M2"},
+            "ctx:target": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M2"}
         },
         "atoms": atoms,
         "contexts": [
@@ -14831,16 +14511,16 @@ fn boundary_residue_archmap(case: &str) -> Value {
         "schema": "archmap/v0.5.4",
         "id": format!("ag-boundary-residue-fixture-{case}"),
         "sources": {
-            "src:core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 core patch"},
-            "src:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 feature patch"},
-            "src:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 boundary patch"},
-            "src:role": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 patch role"},
-            "src:d0-core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 Mayer-Vietoris d0"},
-            "src:d0-feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 Mayer-Vietoris d0"},
-            "src:boundary-section": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6 boundary section"},
-            "ctx:core": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"},
-            "ctx:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"},
-            "ctx:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M6"}
+            "src:core": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 core patch"},
+            "src:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 feature patch"},
+            "src:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 boundary patch"},
+            "src:role": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 patch role"},
+            "src:d0-core": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:d0-feature": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 Mayer-Vietoris d0"},
+            "src:boundary-section": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6 boundary section"},
+            "ctx:core": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6"},
+            "ctx:feature": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6"},
+            "ctx:boundary": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M6"}
         },
         "atoms": atoms,
         "contexts": [
@@ -14934,13 +14614,13 @@ fn section_archmap(case: &str) -> Value {
         "schema": "archmap/v0.5.4",
         "id": format!("ag-section-fixture-{case}"),
         "sources": {
-            "src:section-carrier": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 section"},
-            "src:forbidden-support": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 minimal forbidden support"},
-            "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 total section assignment A"},
-            "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 total section assignment B"},
-            "src:section-partial": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 partial section"},
-            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3 assignment without raw support"},
-            "ctx:section": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M3"}
+            "src:section-carrier": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 section"},
+            "src:forbidden-support": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 minimal forbidden support"},
+            "src:section-assignment-a": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 total section assignment A"},
+            "src:section-assignment-b": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 total section assignment B"},
+            "src:section-partial": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 partial section"},
+            "src:section-assignment-no-generator": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3 assignment without raw support"},
+            "ctx:section": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M3"}
         },
         "atoms": atoms,
         "contexts": [{
@@ -15356,7 +15036,7 @@ fn coherence_oversized_archmap() -> Value {
     for index in 0..13 {
         archmap["sources"][format!("ctx:n{index}")] = json!({
             "kind": "policy",
-            "path": "docs/tool/ag_measurement_evidence_contract.md",
+            "path": "docs/tool/ag_measurement_input_contract.md",
             "section": "M5"
         });
     }
@@ -15428,15 +15108,15 @@ fn archmap_with_contexts(atoms: Vec<Value>, contexts: Vec<Value>) -> Value {
             "src:b": {"kind": "rust", "path": "src/b.rs", "symbol": "B", "line": 1},
             "src:c": {"kind": "rust", "path": "src/c.rs", "symbol": "C", "line": 1},
             "src:d": {"kind": "rust", "path": "src/d.rs", "symbol": "D", "line": 1},
-            "src:abc": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "src:face-abc": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "src:face-abd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "src:face-acd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "src:face-bcd": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "ctx:a": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "ctx:b": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "ctx:c": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"},
-            "ctx:d": {"kind": "policy", "path": "docs/tool/ag_measurement_evidence_contract.md", "section": "M5"}
+            "src:abc": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "src:face-abc": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "src:face-abd": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "src:face-acd": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "src:face-bcd": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "ctx:a": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "ctx:b": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "ctx:c": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"},
+            "ctx:d": {"kind": "policy", "path": "docs/tool/ag_measurement_input_contract.md", "section": "M5"}
         },
         "atoms": atoms,
         "contexts": contexts,

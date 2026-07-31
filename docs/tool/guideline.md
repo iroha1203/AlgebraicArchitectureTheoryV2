@@ -16,13 +16,13 @@
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
   二系統に限る(正本は AGENTS.md「責務範囲」の入力トライアド)。この二系統に帰属しない
   authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
-  既存の供給 slot 群(RepairPlan 系、refactor morphism、refinement data)はこの規律に対する
-  負債であり、返済の管理先は供給 slot 台帳の負債告知が示す。
+  既存の RepairPlan 系入力はこの規律に従って扱い、退役した refactor morphism / refinement data の
+  供給 slot は現行入力面に置かない。
 - ArchSig の `analyze` は、観測(ArchMap)と選ばれた LawPolicy / law-equation-surface / MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
   gate policy は計算済み packet と比較記録を CI 判断へ写す規則だけを書き、新しい measurement
-  結論や供給された判定を gate policy / comparison / refinement へ置かない。
+  結論や供給された判定を gate policy / comparison の入力へ置かない。
 - ArchSig は、未観測 runtime 全体や global semantic safety のように選ばれた evidence language の外にあるものを、
   failure、残タスク、Lean linkage requirement、長い `non-conclusion` 一覧として扱わない。外側は必要最小限の
   silence boundary として扱う。

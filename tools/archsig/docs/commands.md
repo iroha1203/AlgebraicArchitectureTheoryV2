@@ -15,10 +15,6 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 input, emits `archsig-measurement-packet.json`, and writes summary, insight,
 viewer, validation, and manifest artifacts.
 
-For declared refactor transport, add
-`--refactor-morphism <refactor-morphism/v0.5.4>`. The artifact is validated
-before measurement; without it no transport reading is emitted.
-
 When a LawPolicy selects `ag.saga-descent`, `analyze` accepts an optional
 checked repair plan:
 
@@ -151,9 +147,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- compare \
 ```
 
 `compare` reads two current run directories and emits
-`archsig-comparison-report.json` plus `archmap-diff.json`.
-Use `--refinement <refinement-comparison/v0.5.4>` only for a validated
-coarse-to-fine class-zero preservation reading.
+`archsig-comparison-report.json` plus `archmap-diff.json`. It derives a
+coarse-to-fine context relation from the selected normalized ArchMap covers;
+the class-zero reading is emitted only when each fine context has a unique
+observed coarse containment path.
 
 ## Gate
 

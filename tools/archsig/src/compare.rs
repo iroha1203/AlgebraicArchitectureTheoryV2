@@ -7,10 +7,8 @@ use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
-use crate::validate_refinement_comparison_v1;
 use crate::{
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT,
-    ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
@@ -20,19 +18,11 @@ use crate::{
     NORMALIZED_ARCHMAP_V2_SCHEMA, validate_measurement_packet_value_v1,
 };
 
-const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. It does not claim causal repair, semantic equivalence, or preserved obstruction identity; a class-zero reading is available only under a checked coarse-to-fine refinement contract.";
+const RECORD_DISCIPLINE: &str = "Comparison is a record-level juxtaposition of two ArchSig runs. ArchSig derives a class-zero reading from the selected normalized ArchMap covers when each fine context has a unique observed coarse containment path.";
 
 pub fn build_comparison_artifacts_v1(
     base_run: &Path,
     head_run: &Path,
-) -> Result<(Value, Value), Box<dyn Error>> {
-    build_comparison_artifacts_with_refinement_v1(base_run, head_run, None)
-}
-
-pub fn build_comparison_artifacts_with_refinement_v1(
-    base_run: &Path,
-    head_run: &Path,
-    refinement_path: Option<&Path>,
 ) -> Result<(Value, Value), Box<dyn Error>> {
     let base_manifest = read_run_json(base_run, "archsig-run-manifest.json")?;
     let head_manifest = read_run_json(head_run, "archsig-run-manifest.json")?;
@@ -115,28 +105,21 @@ pub fn build_comparison_artifacts_with_refinement_v1(
     );
     let conclusion_code = conclusion_code(&comparability, &verdict_transitions);
     let boundary_statements = comparison_boundaries(&comparability, cover_or_context_changed);
-    let class_transport = if let Some(refinement_path) = refinement_path {
-        let refinement = read_run_json_path(refinement_path)?;
-        validate_refinement_comparison_v1(&refinement)?;
-        let run_binding =
-            validate_refinement_complex_fingerprints(&base_manifest, &head_manifest, &refinement)?;
-        class_transport(
-            &base_packet,
-            &head_packet,
-            &comparability,
-            &refinement,
-            &run_binding,
-        )
-    } else {
-        json!({
-            "status": "silence_by_design",
-            "reason": "refinement_data_not_supplied",
-            "nonConclusion": "comparison does not identify or transport a class without a checked coarse-to-fine refinement artifact"
-        })
-    };
-    let profile_conclusion_code = (refinement_path.is_none()
-        && comparability["level"].as_str() == Some("not-comparable"))
-    .then_some(ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY);
+    let derived_refinement = derive_refinement(
+        &base_manifest,
+        &head_manifest,
+        &base_normalized,
+        &head_normalized,
+    );
+    let class_transport = class_transport(
+        &base_packet,
+        &head_packet,
+        &comparability,
+        &derived_refinement,
+    );
+    let profile_conclusion_code = (comparability["level"].as_str() == Some("not-comparable")
+        && class_transport["status"] != "established")
+        .then_some(ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY);
 
     let report = json!({
         "schema": ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
@@ -168,7 +151,7 @@ pub fn build_comparison_artifacts_with_refinement_v1(
         "profileConclusionCode": profile_conclusion_code,
         "nonConclusions": [
             "Comparison report records run-local verdict rows and deterministic ArchMap diff intersections.",
-            "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence without the checked refinement or comparison contract that supplies the corresponding data.",
+            "Comparison report does not infer class transport, obstruction identity transport, repair causality, or semantic equivalence beyond the derived class-zero predicate and the two run records.",
             "Cover or context changes are boundary data and map to other_transition for gate policy evaluation."
         ]
     });
@@ -355,9 +338,23 @@ fn class_transport(
     base_packet: &Value,
     head_packet: &Value,
     comparability: &Value,
-    refinement: &Value,
-    run_binding: &Value,
+    derived_refinement: &Value,
 ) -> Value {
+    if derived_refinement["status"] != "established" {
+        return json!({
+            "status": "not_computed",
+            "reason": derived_refinement["reason"],
+            "readingKind": "derived-class-zero-preservation@1",
+            "recordComparability": comparability["level"],
+            "derivedRefinement": derived_refinement,
+            "boundaryStatement": {
+                "kind": "class_zero_transport_not_derived",
+                "scopeRefs": ["comparison:run-pair"],
+                "reason": derived_refinement["reason"],
+                "text": "ArchSig did not derive a coarse-to-fine containment relation from the two selected normalized ArchMap covers."
+            }
+        });
+    }
     let class = |packet: &Value| {
         packet["computedInvariants"]
             .as_array()
@@ -369,80 +366,229 @@ fn class_transport(
     let Some(base_nonzero) = class(base_packet) else {
         return json!({
             "status": "not_computed",
-            "reason": "base_class_not_supplied"
+            "reason": "base_class_not_derived",
+            "readingKind": "derived-class-zero-preservation@1",
+            "recordComparability": comparability["level"],
+            "derivedRefinement": derived_refinement,
+            "boundaryStatement": {
+                "kind": "class_zero_transport_not_derived",
+                "scopeRefs": ["comparison:run-pair"],
+                "reason": "base_class_not_derived",
+                "text": "The coarse run did not record a derived residual class."
+            }
         });
     };
     let Some(head_nonzero) = class(head_packet) else {
         return json!({
             "status": "not_computed",
-            "reason": "head_class_not_supplied"
+            "reason": "head_class_not_derived",
+            "readingKind": "derived-class-zero-preservation@1",
+            "recordComparability": comparability["level"],
+            "derivedRefinement": derived_refinement,
+            "boundaryStatement": {
+                "kind": "class_zero_transport_not_derived",
+                "scopeRefs": ["comparison:run-pair"],
+                "reason": "head_class_not_derived",
+                "text": "The fine run did not record a derived residual class."
+            }
         });
     };
     let zero_preserved = !base_nonzero && !head_nonzero;
     json!({
         "status": if zero_preserved { "established" } else { "not_computed" },
         "conclusionCode": zero_preserved.then_some(ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT),
-        "schema": "refinement-comparison/v0.5.4",
-        "direction": refinement["direction"],
+        "readingKind": "derived-class-zero-preservation@1",
+        "direction": "coarse-to-fine",
         "recordComparability": comparability["level"],
-        "comparabilityBasis": "checked_refinement_complex_fingerprints_bind_each_run",
-        "runBinding": run_binding,
+        "comparabilityBasis": "derived_from_normalized_archmap_context_restrictions_and_selected_covers",
+        "runBinding": derived_refinement["runBinding"],
+        "derivedRefinement": derived_refinement,
         "sourceClassNonZero": base_nonzero,
         "targetClassNonZero": head_nonzero,
         "zeroPreserved": zero_preserved,
         "boundaryStatement": if zero_preserved { Value::Null } else { json!({
             "kind": "class_zero_transport_not_established",
             "scopeRefs": ["comparison:run-pair"],
-            "reason": "the supplied refinement contract does not establish coarse-zero to fine-zero",
-            "text": "The checked refinement supplies a class-zero reading only when both supplied residual classes are zero."
+            "reason": "derived_class_zero_predicate_not_preserved",
+            "text": "The derived coarse-to-fine reading is emitted only when both derived residual classes are zero."
         }) },
-        "nonConclusion": "transport is limited to the supplied residual class zero predicate under the checked coarse-to-fine comparison"
+        "nonConclusion": "the reading is limited to the derived residual class zero predicate under the selected coarse-to-fine cover relation"
     })
 }
 
-fn validate_refinement_complex_fingerprints(
+fn derive_refinement(
     base_manifest: &Value,
     head_manifest: &Value,
-    refinement: &Value,
-) -> Result<Value, Box<dyn Error>> {
-    let mut bindings = serde_json::Map::new();
-    for (side, manifest, digest_label) in [
-        ("coarse", base_manifest, "base"),
-        ("fine", head_manifest, "head"),
-    ] {
-        let expected = digest_at(manifest, "siteCoverDigest").ok_or_else(|| {
-            format!(
-                "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: {digest_label} run lacks siteCoverDigest.sha256 for refinement binding"
-            )
-        })?;
-        let supplied = refinement[side]["complexFingerprint"]
-            .as_str()
-            .ok_or_else(|| {
-                format!(
-                    "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: refinement.{side}.complexFingerprint is required"
-                )
-            })?;
-        if supplied != expected {
-            return Err(format!(
-                "{ARCHSIG_COMPARISON_DATA_CONTRACT_VIOLATION}: refinement.{side}.complexFingerprint does not match {digest_label} run inputDigests.siteCoverDigest.sha256"
-            )
-            .into());
-        }
-        bindings.insert(
-            side.to_string(),
-            json!({
-                "complexFingerprint": supplied,
-                "runDigest": {"field": "inputDigests.siteCoverDigest.sha256", "side": digest_label}
-            }),
+    base_normalized: &Value,
+    head_normalized: &Value,
+) -> Value {
+    let Some(coarse_cover) = selected_normalized_cover(base_normalized) else {
+        return refinement_failure(
+            "coarse_selected_cover_missing",
+            "coarse normalized ArchMap does not contain exactly one selectedCandidate cover",
         );
+    };
+    let Some(fine_cover) = selected_normalized_cover(head_normalized) else {
+        return refinement_failure(
+            "fine_selected_cover_missing",
+            "fine normalized ArchMap does not contain exactly one selectedCandidate cover",
+        );
+    };
+    let Some(coarse_cover_ref) = coarse_cover
+        .get("normalizedCoverId")
+        .and_then(Value::as_str)
+    else {
+        return refinement_failure(
+            "coarse_selected_cover_id_missing",
+            "coarse selectedCandidate cover lacks normalizedCoverId",
+        );
+    };
+    let Some(fine_cover_ref) = fine_cover
+        .get("normalizedCoverId")
+        .and_then(Value::as_str)
+    else {
+        return refinement_failure(
+            "fine_selected_cover_id_missing",
+            "fine selectedCandidate cover lacks normalizedCoverId",
+        );
+    };
+    let coarse_contexts = cover_contexts(coarse_cover);
+    let fine_contexts = cover_contexts(fine_cover);
+    if coarse_contexts.is_empty() {
+        return refinement_failure("coarse_selected_cover_empty", "coarse selected cover has no observed contexts");
     }
-    Ok(Value::Object(bindings))
+    if fine_contexts.is_empty() {
+        return refinement_failure("fine_selected_cover_empty", "fine selected cover has no observed contexts");
+    }
+    let fine_context_map = context_map(head_normalized);
+    let mut context_rows = Vec::new();
+    for fine_context in &fine_contexts {
+        let candidates = if coarse_contexts.contains(fine_context) {
+            vec![fine_context.clone()]
+        } else {
+            coarse_contexts
+                .iter()
+                .filter(|coarse_context| {
+                    context_reaches(&fine_context_map, fine_context, coarse_context)
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        };
+        match candidates.as_slice() {
+            [] => {
+                return refinement_failure(
+                    "fine_chart_not_contained_in_coarse_cover",
+                    &format!("fine context {fine_context} has no observed restriction path to a coarse context"),
+                );
+            }
+            [coarse_context] => context_rows.push(json!({
+                "fineContextRef": fine_context,
+                "coarseContextRef": coarse_context,
+                "relation": "identity_or_observed_restriction_path"
+            })),
+            _ => {
+                return refinement_failure(
+                    "fine_chart_has_ambiguous_coarse_containment",
+                    &format!("fine context {fine_context} reaches multiple coarse contexts"),
+                );
+            }
+        }
+    }
+    let coarse_digest = digest_at(base_manifest, "siteCoverDigest");
+    let fine_digest = digest_at(head_manifest, "siteCoverDigest");
+    json!({
+        "status": "established",
+        "direction": "coarse-to-fine",
+        "basis": "normalized ArchMap selected covers and observed context restriction paths",
+        "siteRef": "normalized-archmap:contexts",
+        "coarseCoverRef": coarse_cover_ref,
+        "fineCoverRef": fine_cover_ref,
+        "contextMap": context_rows,
+        "runBinding": {
+            "coarse": {
+                "siteCoverDigest": coarse_digest,
+                "side": "base"
+            },
+            "fine": {
+                "siteCoverDigest": fine_digest,
+                "side": "head"
+            }
+        }
+    })
 }
 
-fn read_run_json_path(path: &Path) -> Result<Value, Box<dyn Error>> {
-    let text = std::fs::read_to_string(path)?;
-    reject_duplicate_keys(&text)?;
-    Ok(serde_json::from_str(&text)?)
+fn selected_normalized_cover(normalized: &Value) -> Option<&Value> {
+    let mut selected = normalized
+        .get("covers")?
+        .as_array()?
+        .iter()
+        .filter(|cover| cover.get("coverageStatus").and_then(Value::as_str) == Some("selectedCandidate"));
+    let cover = selected.next()?;
+    selected.next().is_none().then_some(cover)
+}
+
+fn cover_contexts(cover: &Value) -> BTreeSet<String> {
+    cover
+        .get("contextIds")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+fn context_map(normalized: &Value) -> BTreeMap<String, Value> {
+    normalized
+        .get("contexts")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|context| {
+            Some((
+                context.get("normalizedContextId")?.as_str()?.to_string(),
+                context.clone(),
+            ))
+        })
+        .collect()
+}
+
+fn context_reaches(contexts: &BTreeMap<String, Value>, start: &str, target: &str) -> bool {
+    if start == target {
+        return true;
+    }
+    let mut pending = vec![start.to_string()];
+    let mut visited = BTreeSet::new();
+    while let Some(current) = pending.pop() {
+        if !visited.insert(current.clone()) {
+            continue;
+        }
+        let Some(context) = contexts.get(&current) else {
+            continue;
+        };
+        for next in context
+            .get("restrictsTo")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+        {
+            if next == target {
+                return true;
+            }
+            pending.push(next.to_string());
+        }
+    }
+    false
+}
+
+fn refinement_failure(reason: &str, detail: &str) -> Value {
+    json!({
+        "status": "not_computed",
+        "reason": reason,
+        "basis": "normalized ArchMap selected covers and observed context restriction paths",
+        "detail": detail
+    })
 }
 
 fn build_archmap_diff(
@@ -623,9 +769,9 @@ fn comparison_boundaries(comparability: &Value, cover_or_context_changed: bool) 
         boundaries.push(json!({
             "id": format!("boundary:comparison:{kind}"),
             "kind": kind,
-            "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's checked refinement contract",
+            "reason": "record-level comparison data does not support class identity or causal transition claims outside classTransport's derived coarse-to-fine relation",
             "scopeRefs": ["comparison:run-pair"],
-            "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's checked coarse-to-fine refinement contract."
+            "text": "Record transitions remain side by side; any class-zero reading is limited to classTransport's derived coarse-to-fine relation."
         }));
     }
     if comparability["sameRepairPlanDigest"] == Value::Bool(false) {

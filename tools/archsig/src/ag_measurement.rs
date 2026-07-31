@@ -13,7 +13,7 @@ use crate::{
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
     ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
+    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY,
     AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
     ArchMapDocumentV2, ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1,
     LawPolicyDocumentV1, MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2,
@@ -142,18 +142,11 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             boundary: "Supply semantic repair operations before treating hitting sets as automatic repairs.",
             generated_discipline: "generated square-free hitting-set detection",
         },
-        ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR => SummaryTranslationRule {
-            conclusion_code: ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
-            theorem_ref: Some("part8/7.3"),
-            principal_text: "An existing verdict row is transported under the supplied refactor morphism compatibility contract.",
-            boundary: "Supply the validated refactor-morphism artifact and matching witness again before reading transport.",
-            generated_discipline: "generated declared refactor transport reading",
-        },
         ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY => SummaryTranslationRule {
             conclusion_code: ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY,
             theorem_ref: None,
             principal_text: "Two selected measurement profiles are reported separately because their comparison contract does not establish a shared class reading.",
-            boundary: "Supply a validated comparison or refinement artifact before reading a cross-profile transport.",
+            boundary: "Derive a selected coarse-to-fine relation from normalized ArchMap covers before reading a cross-profile class-zero relation.",
             generated_discipline: "generated separate-profile comparison record",
         },
         ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
@@ -741,7 +734,6 @@ pub fn build_foundation_measurement_packet_v1(
     law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
     repair_plan_ref: Option<&str>,
-    refactor_morphism: Option<&Value>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
         return Err(
@@ -1247,9 +1239,6 @@ pub fn build_foundation_measurement_packet_v1(
                     ),
                 });
             }
-        } else if evaluator == "ag.refactor-transport" {
-            // Refactor transport is analytic-only and is emitted below only when
-            // both the declared morphism and a matching ArchMap witness exist.
         } else {
             structural_verdict.push(AgStructuralVerdictV1 {
                 evaluator: evaluator.to_string(),
@@ -1269,17 +1258,6 @@ pub fn build_foundation_measurement_packet_v1(
             });
         }
     }
-    let selected_contexts = selected_cover_contexts(normalized, &profile)
-        .into_iter()
-        .collect::<BTreeSet<_>>();
-    analytic_readings.extend(refactor_transport_readings(
-        normalized,
-        &profile,
-        &selected_contexts,
-        &structural_verdict,
-        refactor_morphism,
-    ));
-
     let mut non_conclusions = vec![
         format!(
             "ArchSig v0.5.4 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
@@ -4355,73 +4333,6 @@ fn evaluate_support_transfer_v1(
     })
 }
 
-fn refactor_transport_readings(
-    normalized: &NormalizedArchMapV2,
-    profile: &MeasurementProfileV1,
-    selected_contexts: &BTreeSet<String>,
-    structural_verdict: &[AgStructuralVerdictV1],
-    refactor_morphism: Option<&Value>,
-) -> Vec<AgAnalyticReadingV1> {
-    let Some(refactor_morphism) = refactor_morphism else {
-        return Vec::new();
-    };
-    let Ok(validated) = crate::validate_refactor_morphism_v1(refactor_morphism) else {
-        return Vec::new();
-    };
-    let verdict_refs = structural_verdict
-        .iter()
-        .map(|row| (row.evaluator.clone(), structural_verdict_ref(row)))
-        .collect::<BTreeMap<_, _>>();
-    normalized
-        .atoms
-        .iter()
-        .filter(|atom| atom.axis == "refactor")
-        .filter(|atom| {
-            matches!(
-                atom.predicate.as_str(),
-                "transportWitness" | "functorialityWitness"
-            )
-        })
-        .filter(|atom| atom_belongs_to_selected_context(atom, selected_contexts))
-        .filter_map(|atom| {
-            let object_tokens = atom
-                .object
-                .as_deref()
-                .map(parse_csv_values)
-                .unwrap_or_default()
-                .into_iter()
-                .collect::<BTreeSet<_>>();
-            let (transported_evaluator, transported_ref) = verdict_refs
-                .iter()
-                .find(|(evaluator, verdict_ref)| {
-                    object_tokens.contains(*evaluator) || object_tokens.contains(*verdict_ref)
-                })?;
-            Some(AgAnalyticReadingV1 {
-                reading_id: format!("analytic:refactor-transport:{}", atom.normalized_atom_id),
-                evaluator: "ag.foundation".to_string(),
-                value: json!({
-                    "readingKind": "refactor-verdict-transport@1",
-                    "schema": "refactor-morphism/v0.5.4",
-                    "morphismId": validated["id"].clone(),
-                    "selectedCoverRef": profile.cover_ref.clone(),
-                    "witnessAtomRef": atom.normalized_atom_id.clone(),
-                    "transportSubject": atom.subject.clone(),
-                    "transportObject": atom.object.clone(),
-                    "transportedEvaluator": transported_evaluator.clone(),
-                    "transportedStructuralVerdictRef": transported_ref.clone(),
-                    "predicate": atom.predicate.clone(),
-                    "contextRefs": atom.context_memberships.clone(),
-                    "sourceRefs": atom.source_refs.clone(),
-                    "conclusionCode": ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
-                    "nonConclusion": "refactor transport is emitted only from a validated refactor-morphism artifact and supplied witness data tied to an existing structural verdict; it creates no new verdict or evaluator"
-                }),
-                regime: Some("analytic-measurement".to_string()),
-                structural_verdict_ref: None,
-            })
-        })
-        .collect()
-}
-
 pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Value {
     let nonzero_count = packet
         .structural_verdict
@@ -4498,7 +4409,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     };
     let translation_rule = summary_translation_rule(conclusion);
-    let mut translation_rule_table = ARCHSIG_ANALYSIS_CONCLUSION_CODES
+    let translation_rule_table = ARCHSIG_ANALYSIS_CONCLUSION_CODES
         .iter()
         .filter(|candidate| {
             **candidate != ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS
@@ -4506,14 +4417,6 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
         })
         .map(|conclusion| summary_translation_rule_json(&summary_translation_rule(conclusion)))
         .collect::<Vec<_>>();
-    if packet.analytic_readings.iter().any(|reading| {
-        reading.value.get("readingKind").and_then(Value::as_str)
-            == Some("refactor-verdict-transport@1")
-    }) {
-        translation_rule_table.push(summary_translation_rule_json(&summary_translation_rule(
-            ARCHSIG_VERDICT_PRESERVED_UNDER_DECLARED_REFACTOR,
-        )));
-    }
     json!({
         "schema": "archsig-analysis-summary/v0.5.4",
         "conclusion": conclusion,
@@ -6882,7 +6785,7 @@ fn boundary_scene_v1(primary_refs: &Value) -> Value {
         "sceneStatus": "active",
         "userQuestion": "Which regions are checked, assumed, unknown, unmeasured, not_computed, or violated?",
         "axisMapping": {
-            "x": "evidence contract",
+            "x": "input contract",
             "y": "assumption status",
             "z": "blocker intensity"
         },

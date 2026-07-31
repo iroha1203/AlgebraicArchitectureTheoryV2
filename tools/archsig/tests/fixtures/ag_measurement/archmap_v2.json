@@ -16,7 +16,7 @@
     },
     "src:cover": {
       "kind": "policy",
-      "path": "docs/tool/ag_measurement_evidence_contract.md",
+      "path": "docs/tool/ag_measurement_input_contract.md",
       "section": "R3"
     }
   },

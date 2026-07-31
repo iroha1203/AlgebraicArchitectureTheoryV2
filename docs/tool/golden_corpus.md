@@ -7,7 +7,7 @@ It fixes these current contracts:
 
 - `archsig-measurement-packet/v0.5.4`
 - `archsig-gate-report/v0.5.4`
-- `archsig-comparison-report/v0.5.6`
+- `archsig-comparison-report/v0.5.7`
 - `archmap-diff/v0.5.4`
 - `archsig-analysis-summary.json`
 - `archsig-insight-report.json`
