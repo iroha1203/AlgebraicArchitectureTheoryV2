@@ -26,7 +26,7 @@ PRD を書くときは冒頭に「## 問い」節を置き、その問いを採�
 ## 作業時の注意
 
 - 応答・commit・PR / Issue は日本語(正本は [Workflow guideline](docs/workflow/guideline.md) の「言語」)。
-- 作業前に AGENTS.md の「基礎概念(誤認防止の最小セット)」で各対象の identity を確認し、
+- 作業前に AGENTS.md の「基礎概念」で各対象の identity を確認し、
   触る領域の guideline を読む。
 - 保護ファイルの3条件、レビュー体制、完了レビューの判定範囲、PR 前の共通確認は
   [Workflow guideline](docs/workflow/guideline.md) を正とする。
