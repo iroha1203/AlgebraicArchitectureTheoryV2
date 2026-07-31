@@ -587,7 +587,7 @@ const G = {
 Object.values(G).forEach((g) => root.add(g));
 
 const pickables = []; // {mesh, info}
-const EXPECTED_VIEWER_SCHEMA = "archsig-atom-viewer-data/v0.5.3";
+const EXPECTED_VIEWER_SCHEMA = "archsig-atom-viewer-data/v0.5.4";
 let MODEL = null;     // parsed model
 let DATA = null;      // raw viewer data
 let COMPANIONS = { summary: null, manifest: null, gate: null, gateError: null };
@@ -2157,7 +2157,7 @@ function noteSilence(id) {
   if (id === "sagaDescent" && !(MODEL && MODEL.saga && Array.isArray(MODEL.saga.stages)))
     { silent = true; msg = "No sagaDescent projection was supplied by this packet — the SAGA scene stays silent."; }
   else if (id === "sagaDescent" && window.__archviewSagaState && window.__archviewSagaState.valid === false)
-    { silent = true; msg = "sagaDescent projection rejected: stage shape does not match the v0.5.3 contract — the SAGA scene stays silent."; }
+    { silent = true; msg = "sagaDescent projection rejected: stage shape does not match the v0.5.4 contract — the SAGA scene stays silent."; }
   const sceneStatus = silent ? msg : (MODEL ? MODEL.boundary : "");
   document.getElementById("st-boundary").textContent = COMPANIONS.gateError
     ? `Gate report rejected: ${COMPANIONS.gateError}` : sceneStatus;
@@ -2686,7 +2686,7 @@ async function loadCompanions(base = ".") {
 }
 function validateGateReport(report, viewerData) {
   if (report == null) return null;
-  if (report.schema !== "archsig-gate-report/v0.5.3") throw new Error("gate report schema mismatch");
+  if (report.schema !== "archsig-gate-report/v0.5.4") throw new Error("gate report schema mismatch");
   if (!["PASS_WITHIN_GATE_POLICY", "BLOCKED_BY_GATE_POLICY", "NOT_EVALUABLE"].includes(report.decision)) {
     throw new Error("gate report decision vocabulary mismatch");
   }

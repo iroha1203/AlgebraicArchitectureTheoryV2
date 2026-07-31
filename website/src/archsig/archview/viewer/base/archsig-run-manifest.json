@@ -1,17 +1,28 @@
 {
   "archmapInputPath": "input:archmap.json",
+  "artifactDigests": {
+    "measurementPacket": {
+      "path": "archsig-measurement-packet.json",
+      "sha256": "ba907bc86df8657ccada1d503a58fd27bfdf8f8a30ad27e3a660107f613499c6"
+    },
+    "normalizedArchmap": {
+      "path": "normalized-archmap.json",
+      "sha256": "0a2d3d179907000b833466ffb6c8304d8cbb443ee812c4b77f88ce77acf2473a"
+    }
+  },
   "artifactLinks": {
     "insightBrief": "archsig-insight-brief.md",
     "insightReport": "archsig-insight-report.json",
     "measurementPacket": "archsig-measurement-packet.json",
     "summary": "archsig-analysis-summary.json",
+    "viewModel": "archsig-measurement-view-model.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
   "commandName": "analyze",
   "componentFingerprints": {
-    "lawPolicy": "sha256:cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9",
-    "lawSurface": "sha256:653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba",
-    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+    "lawPolicy": "sha256:962fb7056e3b096361ad230579b7d56869a49055e426be95b2d0cef81b4da7b2",
+    "lawSurface": "sha256:0366ad85f3467da55575564fb56fdba715cd1214d31b64db01157d5c7db39f29",
+    "measurementProfile": "sha256:c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
   },
   "conclusionCode": null,
   "generatedArtifacts": [
@@ -25,38 +36,39 @@
     "archsig-insight-report.json",
     "archsig-insight-brief.md",
     "archsig-atom-viewer-data.json",
+    "archsig-measurement-view-model.json",
     "archsig-run-manifest.json"
   ],
   "inputDigests": {
     "archmap": {
       "path": "input:archmap.json",
-      "sha256": "4fa9f202742780e15175ab41a34958de8eda61555670899d066c41d6e76367c5"
+      "sha256": "e8250c591be8947f1d3e0afa51ada6ef1d06b5f04a03453a54a9387031107bf1"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "cee78ff6bf5af905cee93d86a64c9c6bd76ef777a7ee4fbba454396b8a0e16a9"
+      "sha256": "962fb7056e3b096361ad230579b7d56869a49055e426be95b2d0cef81b4da7b2"
     },
     "lawSurface": {
       "path": "input:law_surface_base.json",
-      "sha256": "653b7e4d4e2a77fab32d9156958b4d379a4a549373359bbc97a54f19d2ba0aba"
+      "sha256": "0366ad85f3467da55575564fb56fdba715cd1214d31b64db01157d5c7db39f29"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement_profile.json",
-        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+        "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
       },
       {
         "path": "input:measurement_profile_drift.json",
-        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
+        "sha256": "28cfe76ad4da60b3e6f4d36f5d4fec55160d40a3d22bb95001f7be1b88973c3e"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
+      "sha256": "724f89f73c2bf9e2aa72effeb6df4eece0332a3d1a0b5f625349fd298d83adb3"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -73,16 +85,16 @@
   ],
   "mode": "measurement",
   "nonConclusions": [
-    "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
+    "Finite-poset-site run manifest records the v0.5.4 AG measurement foundation artifacts.",
     "Foundation packet rows are not completed AG invariant evaluator computation."
   ],
   "omittedArtifacts": [],
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": null,
-  "runId": "run:45bcb06313a1",
-  "schema": "archsig-run-manifest/v0.5.3",
-  "toolVersion": "0.5.3",
+  "runId": "run:75d67aa2e0f0",
+  "schema": "archsig-run-manifest/v0.5.4",
+  "toolVersion": "0.5.4",
   "validationReports": {
     "analysis": "archsig-analysis-validation.json",
     "archmap": "archmap-validation.json",

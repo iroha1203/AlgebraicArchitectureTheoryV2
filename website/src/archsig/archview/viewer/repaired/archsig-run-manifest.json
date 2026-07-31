@@ -1,17 +1,28 @@
 {
   "archmapInputPath": "input:archmap_repaired.json",
+  "artifactDigests": {
+    "measurementPacket": {
+      "path": "archsig-measurement-packet.json",
+      "sha256": "0fdc63eb7eacdb0829007d0f2d5a365110dd95b8b1deca7709e53fed208986f6"
+    },
+    "normalizedArchmap": {
+      "path": "normalized-archmap.json",
+      "sha256": "338e2b083418b459f6f8c146d8192f5aeb1e19a136d11b91c4010a4eb684bdb8"
+    }
+  },
   "artifactLinks": {
     "insightBrief": "archsig-insight-brief.md",
     "insightReport": "archsig-insight-report.json",
     "measurementPacket": "archsig-measurement-packet.json",
     "summary": "archsig-analysis-summary.json",
+    "viewModel": "archsig-measurement-view-model.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
   "commandName": "analyze",
   "componentFingerprints": {
-    "lawPolicy": "sha256:0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b",
-    "lawSurface": "sha256:896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed",
-    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+    "lawPolicy": "sha256:840659c0ea8b483d77acb970bbce259ee30c5bd996aa9e6dd8e74e103292dbe9",
+    "lawSurface": "sha256:a6ff07748bf4e9d86f321c42811a053771fef66498281aae229cd62981fa1066",
+    "measurementProfile": "sha256:c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
   },
   "conclusionCode": null,
   "generatedArtifacts": [
@@ -26,38 +37,43 @@
     "archsig-insight-report.json",
     "archsig-insight-brief.md",
     "archsig-atom-viewer-data.json",
+    "archsig-measurement-view-model.json",
     "archsig-run-manifest.json"
   ],
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_repaired.json",
-      "sha256": "8d46a6b0e8edaa1f3c18688b34d554338e9f8809487b6709842fd0fbc06af1ad"
+      "sha256": "fd2369b8cb46101950a292e4528182f4b85807a1d1e31cc4ed260cdadc432cf9"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
+      "sha256": "840659c0ea8b483d77acb970bbce259ee30c5bd996aa9e6dd8e74e103292dbe9"
     },
     "lawSurface": {
       "path": "input:law_surface.json",
-      "sha256": "896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed"
+      "sha256": "a6ff07748bf4e9d86f321c42811a053771fef66498281aae229cd62981fa1066"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement_profile.json",
-        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+        "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
       },
       {
         "path": "input:measurement_profile_drift.json",
-        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
+        "sha256": "28cfe76ad4da60b3e6f4d36f5d4fec55160d40a3d22bb95001f7be1b88973c3e"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
+      "sha256": "724f89f73c2bf9e2aa72effeb6df4eece0332a3d1a0b5f625349fd298d83adb3"
+    },
+    "repairPlan": {
+      "path": "input:repair_plan_repaired.json",
+      "sha256": "a148593c9a40a45d8b3ff4c4ba39a03a0b7c0eef147362f25e22ac8a7773602e"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -74,16 +90,16 @@
   ],
   "mode": "measurement",
   "nonConclusions": [
-    "Finite-poset-site run manifest records the v0.5.3 AG measurement foundation artifacts.",
+    "Finite-poset-site run manifest records the v0.5.4 AG measurement foundation artifacts.",
     "Foundation packet rows are not completed AG invariant evaluator computation."
   ],
   "omittedArtifacts": [],
   "rawArtifactPaths": null,
   "rawArtifactRetention": "omitted",
   "repairPlanInputPath": "input:repair_plan_repaired.json",
-  "runId": "run:8e5ab0ca43a5",
-  "schema": "archsig-run-manifest/v0.5.3",
-  "toolVersion": "0.5.3",
+  "runId": "run:a52af5b4dedc",
+  "schema": "archsig-run-manifest/v0.5.4",
+  "toolVersion": "0.5.4",
   "validationReports": {
     "analysis": "archsig-analysis-validation.json",
     "archmap": "archmap-validation.json",

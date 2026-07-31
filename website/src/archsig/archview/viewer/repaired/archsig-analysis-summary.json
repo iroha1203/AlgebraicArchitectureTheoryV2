@@ -1,45 +1,49 @@
 {
   "assumptionSummary": {
-    "assumedCount": 14,
+    "assumedCount": 11,
     "checkedCount": 7,
     "violatedCount": 0
   },
   "componentFingerprints": {
-    "lawPolicy": "sha256:0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b",
-    "lawSurface": "sha256:896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed",
-    "measurementProfile": "sha256:1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+    "lawPolicy": "sha256:840659c0ea8b483d77acb970bbce259ee30c5bd996aa9e6dd8e74e103292dbe9",
+    "lawSurface": "sha256:a6ff07748bf4e9d86f321c42811a053771fef66498281aae229cd62981fa1066",
+    "measurementProfile": "sha256:c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
   },
   "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
   "inputDigests": {
     "archmap": {
       "path": "input:archmap_repaired.json",
-      "sha256": "8d46a6b0e8edaa1f3c18688b34d554338e9f8809487b6709842fd0fbc06af1ad"
+      "sha256": "fd2369b8cb46101950a292e4528182f4b85807a1d1e31cc4ed260cdadc432cf9"
     },
     "lawPolicy": {
       "path": "input:law_policy.json",
-      "sha256": "0b4bc15660919bedcb70dfe0cf676272da9a3148fb44f95c511111258f1aac3b"
+      "sha256": "840659c0ea8b483d77acb970bbce259ee30c5bd996aa9e6dd8e74e103292dbe9"
     },
     "lawSurface": {
       "path": "input:law_surface.json",
-      "sha256": "896f54b056e9212f2478145af09934dcb4ee226c33eb3ffb77e24fdac6ecb5ed"
+      "sha256": "a6ff07748bf4e9d86f321c42811a053771fef66498281aae229cd62981fa1066"
     },
     "measurementProfile": {
       "path": "input:measurement_profile.json",
-      "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+      "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
     },
     "measurementProfiles": [
       {
         "path": "input:measurement_profile.json",
-        "sha256": "1283d3045507920c034389d3095169fb26d579049e207f46df0c511d38687761"
+        "sha256": "c20e6fa2f3f7bd33b8685bafef5d89f62fa4f419c6f67cabf179e80176a32539"
       },
       {
         "path": "input:measurement_profile_drift.json",
-        "sha256": "22c62a5b8f1f00f3759d4d9d26905f6e63b0f3a393010ce82977a94b473ac0d3"
+        "sha256": "28cfe76ad4da60b3e6f4d36f5d4fec55160d40a3d22bb95001f7be1b88973c3e"
       }
     ],
     "profileFingerprint": {
       "basis": "archmap shape + LawPolicy measurementProfileRef + external MeasurementProfile artifact",
-      "sha256": "f699097b54922e3f52c3465a818bb2946c2aab070e7c7195dbc3416610ad1e72"
+      "sha256": "724f89f73c2bf9e2aa72effeb6df4eece0332a3d1a0b5f625349fd298d83adb3"
+    },
+    "repairPlan": {
+      "path": "input:repair_plan_repaired.json",
+      "sha256": "a148593c9a40a45d8b3ff4c4ba39a03a0b7c0eef147362f25e22ac8a7773602e"
     },
     "siteCoverDigest": {
       "basis": "normalized contexts + covers + derived finite cover nerve",
@@ -52,57 +56,57 @@
     "insightReport": "archsig-insight-report.json",
     "viewerData": "archsig-atom-viewer-data.json"
   },
-  "measurementPacketSchema": "archsig-measurement-packet/v0.5.3",
+  "measurementPacketSchema": "archsig-measurement-packet/v0.5.4",
   "nonConclusions": [
     "Summary conclusion is relative to MeasurementProfile and assumption ledger.",
     "Schema foundation rows do not claim completed AG invariant computation."
   ],
   "profileRef": "profile:commerce-fulfillment@1",
   "readThisFirst": {
-    "boundary": "Profile-relative. 14 assumptions declared. 0 non-terminal rows.",
+    "boundary": "Profile-relative. 11 assumptions declared. 0 non-terminal rows.",
     "conclusion": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "heading": "Read this first",
     "nextAction": "Open archsig-insight-brief.md or the viewer Insight Queue.",
     "whatItMeans": "No selected H1 glue mismatch was measured under the profile.",
     "whereToLookFirst": "See archsig-insight-report.json#/insightCards/0/evidence"
   },
-  "runId": "run:8e5ab0ca43a5",
-  "schema": "archsig-analysis-summary/v0.5.3",
+  "runId": "run:a52af5b4dedc",
+  "schema": "archsig-analysis-summary/v0.5.4",
   "structuralVerdictSummary": {
     "measuredNonzeroCount": 0,
     "nonTerminalCount": 0,
-    "rowCount": 5,
+    "rowCount": 4,
     "unmeasuredCount": 0
   },
-  "toolVersion": "0.5.3",
+  "toolVersion": "0.5.4",
   "translationRule": {
-    "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+    "boundary": "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
     "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
     "concreteSupportRefs": [],
     "emitsLawSatisfiedWithoutLawCheck": false,
-    "generatedDiscipline": "generated complete-support boundary-membership detection",
-    "principalText": "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+    "generatedDiscipline": "generated derived-residual boundary-membership detection",
+    "principalText": "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
     "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-    "theoremRef": "part10/3.5"
+    "theoremRef": "part10/4.5"
   },
   "translationRuleTable": [
     {
-      "boundary": "Supply a different complete-support residual or Stage 2 comparison data before claiming repair gluing.",
+      "boundary": "Revise the observed sections or the repair plan complex and re-run analyze before claiming repair gluing.",
       "conclusionCode": "MEASURED_NONGLUING_RESIDUAL",
       "emitsLawSatisfiedWithoutLawCheck": false,
-      "generatedDiscipline": "generated complete-support boundary-membership detection",
-      "principalText": "The selected SAGA residual is measured outside B1 with concrete residual support; complete-support faithfulness is reported separately.",
+      "generatedDiscipline": "generated derived-residual boundary-membership detection",
+      "principalText": "The derived SAGA residual is measured outside B1 with concrete residual support.",
       "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
       "theoremRef": "part10/3.4"
     },
     {
-      "boundary": "Supply Stage 2 law surface and comparison artifacts before claiming global semantic repair.",
+      "boundary": "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
       "conclusionCode": "REPAIR_GLUES_WITHIN_SELECTED_COMPLEX",
       "emitsLawSatisfiedWithoutLawCheck": false,
-      "generatedDiscipline": "generated complete-support boundary-membership detection",
-      "principalText": "The selected SAGA residual is measured inside B1 and the selected residual component is covered and faithful.",
+      "generatedDiscipline": "generated derived-residual boundary-membership detection",
+      "principalText": "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
       "supportDiscipline": "nonzero conclusions must name concrete selected support in active translationRule.concreteSupportRefs",
-      "theoremRef": "part10/3.5"
+      "theoremRef": "part10/4.5"
     },
     {
       "boundary": "Supply non-abelian torsor, stacky descent, or gerbe data before speaking outside the selected abelian coefficient sheaf.",
