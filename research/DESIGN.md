@@ -22,4 +22,6 @@
 
 **停止は通常 GOAL では完全達成ではなく研究フェーズの区切りとして読む。** 通常 GOAL は、完全達成を機械的に判定できる性質のものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。`target-theorem` GOAL では例外的に、GOAL カードの completion criteria を満たし、かつ `$math-lean-review` gate を通った target theorem proof が完了条件になる。ただし、この場合も tracking Issue の closure は人間判断であり、ループは proof completion summary を残して返す。
 
+**完了 GOAL の Lean 成果物は退役させ、現役 tree には進行中の研究だけを置く。** 検証ゲートの合格は受理時点の固定 head に紐づく事実であり、成果物を現在の基礎語彙へ追随させ続けても研究価値は増えない。追随を義務にすると基礎語彙の改訂のたびに完了済み研究へ移行費が発生し、放置すると「受理済み証拠」を名乗る Lean が elaborate しない状態になる。どちらも避けるため、完了 GOAL の成果物は markdown 記録と Git 履歴に証拠を固定して退役する。条件と手順は [README](README.md) の「Lean 成果物の退役」を正本とする。
+
 **research はトップレベルに置き、検証結果は `research/reports/` にまとめる。** docs は読むための場所、research は手を動かす場所という住み分けである。検証または証拠固定を経た結果は `research/reports/` に置き、メモにすぎない docs/note には置かない。AAT の数学本文への取り込みや正式版への昇格をループの外に置くのは、検証ゲートでは判定できない人間の判断、すなわち本文へどう位置づけるかや理論との整合を、ループの不変条件に紛れ込ませないためである。
