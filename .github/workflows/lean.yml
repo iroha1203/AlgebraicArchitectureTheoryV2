@@ -153,10 +153,27 @@ jobs:
           build: false
           test: false
           lint: false
+          use-github-cache: false
+
+      - name: Restore Formal build cache
+        if: steps.ag-changes.outputs.run == 'true'
+        uses: actions/cache/restore@v5
+        with:
+          path: .lake/build
+          key: formal-build-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: |
+            formal-build-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
 
       - name: Build active AAT algebraic geometry
         if: steps.ag-changes.outputs.run == 'true'
         run: lake build +Formal.AG
+
+      - name: Save Formal build cache
+        if: always() && steps.ag-changes.outputs.run == 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: .lake/build
+          key: formal-build-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.sha }}
 
       - name: Kernel axiom audit
         if: steps.ag-changes.outputs.run == 'true'
