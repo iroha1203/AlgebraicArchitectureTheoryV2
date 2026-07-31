@@ -264,6 +264,34 @@ summary:focus-visible {
 .source-list button { width: 100%; padding: 0; color: inherit; text-align: left; font: inherit; overflow-wrap: anywhere; }
 .source-list button[aria-current="true"] { color: var(--indigo); text-decoration: underline; text-underline-offset: 2px; }
 .source-list li[data-resolution="unresolved"] { border-color: rgba(163, 95, 56, 0.45); color: var(--rust); }
+.finding-list { display: grid; gap: 7px; padding: 0; margin: 0; list-style: none; }
+.finding-list button { display: grid; width: 100%; gap: 4px; padding: 8px; border: 1px solid var(--rule); border-left: 3px solid var(--graphite); color: var(--ink-soft); text-align: left; font-size: 11px; }
+.finding-list button[aria-current="true"] { border-left-color: var(--indigo); background: var(--indigo-soft); }
+.finding-list [data-finding-state="measured_nonzero"] button { border-left-color: #b87932; }
+.finding-list [data-finding-state="measured_zero"] button { border-left-color: #54799a; }
+.finding-list [data-finding-state="unmeasured"] button,
+.finding-list [data-finding-state="unknown"] button,
+.finding-list [data-finding-state="not_computed"] button { border-left-style: dashed; }
+.finding-state { font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.finding-counts { color: var(--graphite); font-size: 9px; }
+.analysis-step { margin-top: 10px !important; padding: 9px; border-left: 2px solid var(--rule); background: rgba(255, 255, 255, 0.2); }
+.analysis-step h4 { margin: 0 0 5px; color: var(--ink-soft); font-size: 10px; }
+.analysis-step div,
+.analysis-step ul { padding-left: 14px; margin: 0; color: var(--ink-soft); font-size: 10px; line-height: 1.45; }
+.analysis-step[data-analysis-state="measured_nonzero"] { border-left-color: #b87932; }
+.analysis-step[data-analysis-state="measured_zero"] { border-left-color: #54799a; }
+.analysis-step[data-analysis-state="unmeasured"],
+.analysis-step[data-analysis-state="unknown"],
+.analysis-step[data-analysis-state="not_computed"] { border-left-style: dashed; }
+.analysis-step[data-analysis-state="blocked"] { border-left-color: #a13a32; }
+.source-classification-badge { display: block; margin-bottom: 4px; color: var(--indigo); font: 700 9px Inter, sans-serif; letter-spacing: 0.06em; }
+.source-tree ul { display: grid; gap: 5px; padding: 5px 0 0 10px; margin: 0; list-style: none; }
+.source-path-group > strong { color: var(--ink); font-size: 10px; }
+.source-symbol-group,
+.source-line-group { display: block; margin-bottom: 3px; color: var(--graphite); }
+.source-classification-badge:has(+ [data-source-classification="CANDIDATE CHANGE POINT"]) { color: #3f6fa8; }
+.source-classification-badge:has(+ [data-source-classification="DIRECT EVIDENCE"]) { color: #b87932; }
+.source-classification-badge:has(+ [data-source-classification="VALIDATED IN HYPOTHETICAL TARGET"]) { color: var(--botanical); }
 
 .atlas-panel {
   position: relative;
@@ -385,7 +413,7 @@ summary:focus-visible {
 
 .source-drawer {
   display: grid;
-  grid-template-columns: 115px minmax(0, 1fr) auto;
+  grid-template-columns: 115px minmax(0, 1fr) auto minmax(150px, auto) minmax(150px, auto);
   align-items: center;
   gap: 18px;
   padding: 0 22px;
@@ -400,6 +428,11 @@ summary:focus-visible {
 .source-drawer dt { color: var(--graphite); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
 .source-drawer dd { margin: 4px 0 0; overflow: hidden; color: var(--ink-soft); font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
 .resolution-level { margin: 0; color: var(--graphite); font-size: 10px; letter-spacing: 0.07em; }
+.source-classification,
+.source-supporting-atom { margin: 0; color: var(--ink-soft); font-size: 9px; letter-spacing: 0.04em; }
+.source-classification[data-classification="DIRECT EVIDENCE"] { color: #b87932; }
+.source-classification[data-classification="CANDIDATE CHANGE POINT"] { color: #3f6fa8; }
+.source-classification[data-classification="VALIDATED IN HYPOTHETICAL TARGET"] { color: var(--botanical); }
 
 @media (max-width: 1080px) {
   .topbar { grid-template-columns: 140px minmax(250px, 1fr) auto auto; gap: 8px; padding: 0 12px; }

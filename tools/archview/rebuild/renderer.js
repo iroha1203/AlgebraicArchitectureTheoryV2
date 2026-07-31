@@ -114,6 +114,7 @@ export function createAtlasRenderer(host) {
   scene.add(selectionSurface);
   let atomMeshes = [];
   let selectableMeshes = [];
+  let analysisSupport = null;
   let onSelection = null;
   let onSceneHover = null;
 
@@ -176,6 +177,54 @@ export function createAtlasRenderer(host) {
     }
   };
 
+  const rememberMaterial = (material) => {
+    if (!material.userData.archviewBase) material.userData.archviewBase = { color: material.color?.getHex() ?? null, opacity: material.opacity, transparent: material.transparent };
+    return material.userData.archviewBase;
+  };
+
+  const styleObject = (object, emphasis, color = null) => object.traverse((child) => {
+    const materials = Array.isArray(child.material) ? child.material : child.material ? [child.material] : [];
+    materials.forEach((material) => {
+      const base = rememberMaterial(material);
+      material.opacity = emphasis === "dim" ? Math.min(base.opacity, 0.16) : base.opacity;
+      material.transparent = emphasis === "dim" || base.transparent;
+      if (material.color && base.color !== null) material.color.setHex(emphasis === "support" && color !== null ? color : base.color);
+      material.needsUpdate = true;
+    });
+  });
+
+  const setAnalysisSupport = (support) => {
+    analysisSupport = support;
+    const edgeVisuals = [];
+    const active = support && (support.atomIds.length || support.contextIds.length || support.edgeIds.length || support.sharedAtomIds.length);
+    const highlight = ({ measured_nonzero: 0xb87932, measured_zero: 0x54799a, unmeasured: 0x7c7b76, unknown: 0x7c7b76, not_computed: 0x7c7b76 })[support?.state] || 0x3e7780;
+    for (const object of architectureSurface.children) {
+      const data = object.userData || {};
+      const edgeId = data.kind === "restriction" ? `${data.sourceId}->${data.targetId}` : null;
+      const supported = data.kind === "atom" ? support?.atomIds.includes(data.atomId)
+        : ["context", "context-label", "subject"].includes(data.kind) ? support?.contextIds.includes(data.contextId)
+        : data.kind === "restriction" ? support?.edgeIds.includes(edgeId)
+        : data.kind === "shared-support" ? support?.sharedAtomIds.includes(data.atomId)
+        : false;
+      const edgeHighlight = data.kind !== "restriction" ? highlight
+        : support?.unmeasuredEdgeIds?.includes(edgeId) ? 0x7c7b76
+        : support?.mismatchEdgeIds?.includes(edgeId) ? 0xb87932
+        : support?.agreementEdgeIds?.includes(edgeId) ? 0x54799a
+        : 0x3e7780;
+      styleObject(object, !active ? "base" : supported ? "support" : "dim", edgeHighlight);
+      if (data.kind === "restriction") {
+        let materialColor = null;
+        object.traverse((child) => {
+          if (materialColor !== null) return;
+          const material = Array.isArray(child.material) ? child.material[0] : child.material;
+          if (material?.color) materialColor = material.color.getHex();
+        });
+        edgeVisuals.push(Object.freeze({ edgeId, supported: Boolean(supported), color: materialColor }));
+      }
+    }
+    return Object.freeze({ active: Boolean(active), atoms: support?.atomIds.length || 0, contexts: support?.contextIds.length || 0, edges: support?.edgeIds.length || 0, sharedSupports: support?.sharedAtomIds.length || 0, state: support?.state || null, edgeStates: Object.freeze({ agreement: support?.agreementEdgeIds?.length || 0, mismatch: support?.mismatchEdgeIds?.length || 0, unmeasured: support?.unmeasuredEdgeIds?.length || 0, participant: (support?.edgeIds || []).filter((edge) => !support?.agreementEdgeIds?.includes(edge) && !support?.mismatchEdgeIds?.includes(edge) && !support?.unmeasuredEdgeIds?.includes(edge)).length }), edgeVisuals: Object.freeze(edgeVisuals) });
+  };
+
   const setArchitecture = (index, layout, selectHandler, hoverHandler = null) => {
     disposeTree(architectureSurface);
     disposeTree(selectionSurface);
@@ -183,6 +232,7 @@ export function createAtlasRenderer(host) {
     selectableMeshes = [];
     onSelection = selectHandler;
     onSceneHover = hoverHandler;
+    analysisSupport = null;
     if (!index || index.empty || !layout) return Object.freeze({ contextPlates: 0, subjectGroups: 0, atomGlyphs: 0, restrictions: 0, sharedSupports: 0 });
 
     layout.contexts.forEach((contextLayout, contextIndex) => {
@@ -313,6 +363,7 @@ export function createAtlasRenderer(host) {
     setView,
     reset,
     setArchitecture,
+    setAnalysisSupport,
     selectAtom,
     dispose() {
       if (disposed) return;

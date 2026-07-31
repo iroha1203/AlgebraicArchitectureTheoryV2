@@ -39,9 +39,11 @@ findingからAtomとsource refsを経由して、確認対象を次の4種類に
 | Direct evidence | findingの直接根拠となったsource |
 | Boundary participant | mismatchやrestrictionの一方を構成するsource |
 | Candidate change point | ArchSigまたはRepairPlanが明示した変更候補 |
-| Validated repair | target stateの再計測で選択されたobstructionの解消が記録されたsource |
+| Validated hypothetical repair | targetと選択obstructionを結ぶchecked contractが明示したrepair。現行comparisonのrun-local resultとは分けて扱う |
 
 source解決精度はmethod / symbol / line / file / unresolvedとして表示する。
+method metadataが明示されないsourceはsymbol名からmethodを推測せず、
+`METHOD GRANULARITY UNAVAILABLE`を表示する。
 evidence locationを自動的にcandidate change pointへ昇格しない。
 
 ## Input contract
@@ -172,9 +174,12 @@ python3 -m http.server 8000 --directory tools/archview/rebuild
 node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
 ```
 
-未実装:
-
-- Analysis / Improveのfinding selectionとgeometry overlay
+Analysis / Improveではfindingを選択すると、local facts、shared relations、global result、
+source evidenceの4段階説明を表示し、同じgeometry上のsupportを強調する。
+source targetはpath → symbol → line → supporting Atomの順に辿れる。
+comparisonとgateは対応artifactが入力された場合だけ表示し、明示されたrepair targetと
+evidence locationを別の状態として扱う。comparisonのrecord transitionはrun-local resultとして表示し、
+targetと選択obstructionを結ぶchecked contractなしにvalidated repairへ昇格しない。
 
 現行viewer-data handoffは移行中のruntime contractであり、ArchViewのproduct identityではない。
 
@@ -206,7 +211,8 @@ Architecture / Analysis / Improveのacceptance testを`tools/archview/`配下へ
 
 再構築applicationのbrowser testは、ArchMapの正常・empty・malformed・unresolved入力、
 WebGL / bootstrap failure、3 modeとcamera、5段階selection、structured search、
-表示factのArchMap追跡、同一入力でのlayout/source順序の決定性、Architecture理解5問を検査する。
+表示factのArchMap追跡、同一入力でのlayout/source順序の決定性、Architecture理解5問、
+Analysis / Improveのbrowser probeを検査する。参加者task testの実施結果は対応Issue / PRへ記録する。
 
 ```bash
 git diff --check

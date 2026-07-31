@@ -1,5 +1,6 @@
 import { buildArchMapIndex, loadArchMapFromUrl, parseArchMap } from "./archmap.js";
 import { documentsFromFiles, documentsFromUrl, validateAnalysisBundle } from "./analysis.js";
+import { buildAnalysisView } from "./analysis-view.js";
 import { buildArchitectureLayout } from "./layout.js";
 import { createArchViewState, MODES } from "./state.js";
 
@@ -292,7 +293,7 @@ function renderBreadcrumb(snapshot, actions) {
   if (subject && contextId) items.push({ level: "subject", label: subject, action: () => actions.subject(contextId, subject) });
   const atomId = ownedAtomId;
   if (atomId) items.push({ level: "atom", label: displayName(index?.atomsById.get(atomId)), action: () => actions.atom(atomId, contextId) });
-  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId, selection.contextId) });
+  if (selection?.kind === "source") items.push({ level: "source", label: selection.id, action: () => actions.source(selection.id, selection.atomId, selection.contextId, selection.sourceTargetKey) });
   const breadcrumb = requireElement("#semantic-breadcrumb");
   if (!items.length) return replaceWithEmpty(breadcrumb, "Cover → Context → Subject → Atom → Source");
   const nodes = [];
@@ -309,7 +310,7 @@ function renderBreadcrumb(snapshot, actions) {
   breadcrumb.replaceChildren(...nodes);
 }
 
-function searchRecords(index, coverId, query) {
+function searchRecords(index, coverId, query, analysisModel) {
   const needle = query.trim().toLocaleLowerCase();
   if (!needle) return [];
   const contexts = visibleContexts(index, coverId);
@@ -324,6 +325,7 @@ function searchRecords(index, coverId, query) {
     if (contextId && includes(atom.id, atom.label, atom.kind, atom.subject, atom.axis, atom.predicate, atom.object)) results.push({ kind: "atom", id: atom.id, contextId, label: `Atom · ${displayName(atom)} · ${atom.kind}` });
   }
   for (const [id, source] of index.sources) if (includes(id, source.kind, source.path, source.source, source.symbol, source.section, source.line)) results.push({ kind: "source", id, label: `Source · ${source.path || source.source || id}` });
+  for (const finding of analysisModel.findings) if (includes(finding.id, finding.title, finding.summary, finding.conclusionCode, finding.state)) results.push({ kind: "finding", id: finding.id, label: `Finding · ${finding.title} · ${finding.stateLabel}` });
   return results.slice(0, 30);
 }
 
@@ -331,7 +333,7 @@ function renderSearch(snapshot, actions) {
   const results = requireElement("#search-results");
   const query = requireElement("#architecture-search").value;
   const index = snapshot.architecture.index;
-  const records = index ? searchRecords(index, snapshot.cover, query) : [];
+  const records = index ? searchRecords(index, snapshot.cover, query, buildAnalysisView(snapshot.analysis.bundle, index)) : [];
   if (!query.trim()) return replaceWithEmpty(results, "Search explicit ids, facts, kinds, and source metadata");
   if (!records.length) return replaceWithEmpty(results, "No supplied fact matches");
   const list = document.createElement("ul");
@@ -344,6 +346,7 @@ function renderSearch(snapshot, actions) {
       else if (record.kind === "subject") actions.subject(record.contextId, record.id);
       else if (record.kind === "atom") actions.atom(record.id, record.contextId);
       else if (record.kind === "source") actions.source(record.id);
+      else if (record.kind === "finding") actions.finding(record.id);
     };
     item.append(selectionButton(record.label, { searchKind: record.kind, searchId: record.id }, false, selectRecord));
     list.append(item);
@@ -370,7 +373,134 @@ function renderArchitecture(snapshot, layout, actions) {
   renderSearch(snapshot, actions);
 }
 
-function renderAnalysisStatus(snapshot) {
+function findingById(model, id) {
+  return model.findings.find((finding) => finding.id === id) || null;
+}
+
+function renderFindingList(container, snapshot, model, actions) {
+  if (snapshot.analysis.status !== "accepted") return replaceWithEmpty(container, "No analysis loaded");
+  if (!model.findings.length) return replaceWithEmpty(container, "No insight findings supplied");
+  const list = document.createElement("ul");
+  list.className = "finding-list";
+  model.findings.forEach((finding) => {
+    const item = document.createElement("li");
+    item.dataset.findingState = finding.state;
+    const button = selectionButton(finding.title, { findingId: finding.id, findingState: finding.state }, snapshot.finding === finding.id, () => actions.finding(finding.id));
+    const state = document.createElement("span");
+    state.className = "finding-state";
+    state.textContent = finding.stateLabel;
+    const counts = document.createElement("span");
+    counts.className = "finding-counts";
+    counts.textContent = `${finding.supportContextIds.length} contexts · ${finding.relationRefs.length} boundaries · ${finding.supportAtomIds.length} supporting atoms`;
+    button.append(state, counts);
+    item.append(button);
+    list.append(item);
+  });
+  container.replaceChildren(list);
+}
+
+function analysisSection(title, content, state = null) {
+  const section = document.createElement("section");
+  section.className = "analysis-step";
+  if (state) section.dataset.analysisState = state;
+  const heading = document.createElement("h4");
+  heading.textContent = title;
+  const body = document.createElement("div");
+  if (Array.isArray(content)) {
+    const list = document.createElement("ul");
+    content.forEach((entry) => { const item = document.createElement("li"); item.textContent = entry; list.append(item); });
+    body.append(list);
+  } else body.textContent = content;
+  section.append(heading, body);
+  return section;
+}
+
+function renderFindingExplanation(container, finding, model, mode) {
+  if (!finding) return replaceWithEmpty(container, "Select a finding to inspect local facts, shared relations, global result, and source evidence.");
+  const local = finding.localFacts.length ? finding.localFacts.map((fact) => `${fact.atomId} · ${fact.fact} · ${fact.contexts.join(", ")}`) : ["No local Atom support was supplied."];
+  const classifiedRelations = new Set([...finding.agreementEdgeRefs, ...finding.mismatchEdgeRefs, ...finding.unobservedEdgeRefs]);
+  const shared = [
+    ...finding.agreementEdgeRefs.map((edge) => `Agreement · ${edge}`),
+    ...finding.mismatchEdgeRefs.map((edge) => `Mismatch · ${edge}`),
+    ...finding.edgeRefs.filter((edge) => !classifiedRelations.has(edge)).map((edge) => `Relation participant · ${edge} · status not supplied`),
+    ...(!finding.edgeRefs.length ? ["No measured relation support was supplied."] : []),
+    ...(finding.unobservedEdgeRefs.length ? finding.unobservedEdgeRefs.map((edge) => `Unmeasured relation · ${edge}`) : ["Unmeasured relations · none supplied for this finding."]),
+  ];
+  const global = `${finding.stateLabel}. ${finding.summary}`;
+  const source = finding.sourceTargets.length ? finding.sourceTargets.map((target) => `${target.classification} · ${target.path || target.sourceId} · ${target.symbol || "symbol unavailable"}`) : ["No source target resolved from the supplied evidence."];
+  const steps = [
+    analysisSection("1. Local facts", local),
+    analysisSection("2. Shared relations", shared, finding.unobservedEdgeRefs.length ? "unmeasured" : finding.state),
+    analysisSection("3. Global result", global, finding.state),
+    analysisSection("4. Source evidence", source),
+  ];
+  if (finding.unmeasuredRows.length) steps.push(analysisSection("Unmeasured", finding.unmeasuredRows.map((row) => `${row.evaluator} · ${row.law} · ${row.verdict}`), "unmeasured"));
+  if (model.comparison) steps.push(analysisSection("Run comparison", model.comparison.conclusionCode || "Comparison artifact supplied"));
+  if (model.gate) steps.push(analysisSection("Gate decision", model.gate.decision, model.gate.blocked ? "blocked" : model.gate.evaluable ? "informational" : "unmeasured"));
+  if (mode === "improve") steps.push(analysisSection("Evidence and change status", [
+    "Direct evidence identifies an observed inspection location.",
+    finding.repairAtomIds.length ? "Candidate change points are supplied explicitly by ArchSig repair_candidate data." : "No explicit repair target was supplied; evidence is not promoted to a change recommendation.",
+    "A validated hypothetical repair requires an explicit checked target-to-obstruction contract; none is supplied by the current artifact contract.",
+    model.comparison ? "The comparison is shown as a run-local recorded result and is not promoted to repair validation." : "No run comparison artifact is supplied for this finding.",
+    "No actual repository change is asserted by this analysis view.",
+  ]));
+  container.replaceChildren(...steps);
+}
+
+function renderFindingSources(container, snapshot, finding, actions) {
+  if (!finding) return replaceWithEmpty(container, "Select a finding to resolve source targets");
+  if (!finding.sourceTargets.length) return replaceWithEmpty(container, finding.repairAtomIds.length ? "Explicit repair targets have no resolved source metadata." : "No explicit repair target was supplied. Evidence locations are inspection points, not validated change recommendations.");
+  const list = document.createElement("ul");
+  list.className = "source-list classified-source-list source-tree";
+  const paths = new Map();
+  finding.sourceTargets.forEach((target) => {
+    const path = target.path || "UNRESOLVED";
+    const symbol = target.symbol || "symbol unavailable";
+    const line = target.line ?? "line unavailable";
+    const symbols = paths.get(path) || new Map();
+    const lines = symbols.get(symbol) || new Map();
+    lines.set(line, [...(lines.get(line) || []), target]);
+    symbols.set(symbol, lines);
+    paths.set(path, symbols);
+  });
+  [...paths].sort(([left], [right]) => left.localeCompare(right)).forEach(([path, symbols]) => {
+    const pathItem = document.createElement("li");
+    pathItem.className = "source-path-group";
+    const pathLabel = document.createElement("strong");
+    pathLabel.textContent = path;
+    const symbolList = document.createElement("ul");
+    [...symbols].sort(([left], [right]) => left.localeCompare(right)).forEach(([symbol, lines]) => {
+      const symbolItem = document.createElement("li");
+      const symbolLabel = document.createElement("span");
+      symbolLabel.className = "source-symbol-group";
+      symbolLabel.textContent = symbol;
+      const lineList = document.createElement("ul");
+      [...lines].sort(([left], [right]) => String(left).localeCompare(String(right), undefined, { numeric: true })).forEach(([line, targets]) => {
+        const lineItem = document.createElement("li");
+        const lineLabel = document.createElement("span");
+        lineLabel.className = "source-line-group";
+        lineLabel.textContent = `line ${line}`;
+        lineItem.append(lineLabel);
+        targets.forEach((target) => {
+          const badge = document.createElement("span");
+          badge.className = "source-classification-badge";
+          badge.textContent = target.classification;
+          const button = selectionButton(`${target.sourceId} · ${target.resolution} · Supporting Atom ${target.atomId || "not directly supplied"}`, { sourceId: target.sourceId, sourceClassification: target.classification, sourceSupportingAtom: target.atomId || "" }, snapshot.selection?.kind === "source" && snapshot.selection.sourceTargetKey === target.key, () => actions.source(target.sourceId, target.atomId, target.contextId, target.key));
+          button.dataset.classification = target.classification;
+          lineItem.append(badge, button);
+        });
+        lineList.append(lineItem);
+      });
+      symbolItem.append(symbolLabel, lineList);
+      symbolList.append(symbolItem);
+    });
+    pathItem.append(pathLabel, symbolList);
+    list.append(pathItem);
+  });
+  container.replaceChildren(list);
+}
+
+function renderAnalysisStatus(snapshot, model, actions) {
   const analysis = snapshot.analysis;
   const labels = {
     absent: "No analysis loaded",
@@ -393,8 +523,33 @@ function renderAnalysisStatus(snapshot) {
     item.textContent = `${entry.path}: ${entry.message}${values}`;
     return item;
   }));
-  const findings = requireElement("#findings-list");
-  replaceWithEmpty(findings, analysis.status === "accepted" ? "Compatible analysis loaded · finding display follows in the next Issue" : "No analysis loaded");
+  renderFindingList(requireElement("#findings-list"), snapshot, model, actions);
+  const selected = findingById(model, snapshot.finding);
+  if (selected && snapshot.mode !== "architecture") requireElement("#inspector-summary").textContent = `${selected.title} · ${selected.stateLabel}`;
+  renderFindingExplanation(requireElement("#analysis-explanation"), selected, model, snapshot.mode);
+  requireElement("#technical-conclusion").textContent = selected?.conclusionCode || "—";
+  requireElement("#technical-gate").textContent = model.gate?.decision || "—";
+  if (snapshot.mode === "analysis" || snapshot.mode === "improve") renderFindingSources(requireElement("#source-targets"), snapshot, selected, actions);
+  const selectedTarget = snapshot.mode === "architecture" ? null : selected?.sourceTargets.find((target) => snapshot.selection?.sourceTargetKey ? target.key === snapshot.selection.sourceTargetKey : target.sourceId === snapshot.selection?.id && (!snapshot.selection?.atomId || target.atomId === snapshot.selection.atomId));
+  const sourceClassification = requireElement("#source-classification");
+  if (selectedTarget) {
+    sourceClassification.textContent = selectedTarget.classification;
+    sourceClassification.dataset.classification = selectedTarget.classification;
+    requireElement("#source-supporting-atom").textContent = `Supporting Atom ${selectedTarget.atomId || "not directly supplied"}`;
+    requireElement("#source-resolution").textContent = selectedTarget.resolution;
+  } else if (snapshot.mode === "architecture") {
+    sourceClassification.textContent = snapshot.selection?.kind === "source" ? "ARCHMAP SOURCE" : "NO SOURCE CLASSIFICATION";
+    delete sourceClassification.dataset.classification;
+    requireElement("#source-supporting-atom").textContent = `Supporting Atom ${snapshot.selection?.atomId || "—"}`;
+  } else {
+    sourceClassification.textContent = snapshot.mode === "improve" && selected && !selected.repairAtomIds.length ? "NO EXPLICIT REPAIR TARGET" : "NO SOURCE CLASSIFICATION";
+    delete sourceClassification.dataset.classification;
+    requireElement("#source-supporting-atom").textContent = "Supporting Atom —";
+    requireElement("#source-path").textContent = "—";
+    requireElement("#source-symbol").textContent = "—";
+    requireElement("#source-line").textContent = "—";
+    requireElement("#source-resolution").textContent = "UNRESOLVED";
+  }
 }
 
 export async function startArchView() {
@@ -416,9 +571,10 @@ export async function startArchView() {
     context(id) { state.selectContext(id); },
     subject(contextId, subject) { state.selectSubject(contextId, subject); },
     atom(id, contextId = null) { state.selectAtom(id, contextId); atlasRenderer?.selectAtom(id); },
-    source(id, atomId = null, contextId = null) { state.selectSource(id, atomId, contextId); },
+    source(id, atomId = null, contextId = null, sourceTargetKey = null) { state.selectSource(id, atomId, contextId, sourceTargetKey); },
     restriction(sourceId, targetId) { state.selectRestriction(sourceId, targetId); },
     sharedSupport(atomId, contextIds) { state.selectSharedSupport(atomId, contextIds); },
+    finding(id) { state.selectFinding(id); },
     hover(label) {
       const hover = requireElement("#atlas-hover-label");
       hover.hidden = !label;
@@ -442,10 +598,26 @@ export async function startArchView() {
   state.subscribe((snapshot) => {
     const copy = MODE_COPY[snapshot.mode];
     const layout = buildArchitectureLayout(snapshot.architecture.index, snapshot.cover);
+    const analysisModel = buildAnalysisView(snapshot.analysis.bundle, snapshot.architecture.index);
+    const selectedFinding = findingById(analysisModel, snapshot.finding);
     window.__archviewLayout = layout;
+    window.__archviewAnalysisView = analysisModel;
     if (atlasRenderer && renderedSignature !== layout.signature) {
       window.__archviewRenderStats = atlasRenderer.setArchitecture(snapshot.architecture.index, layout, handleSceneSelection, handleSceneHover);
       renderedSignature = layout.signature;
+    }
+    if (atlasRenderer) {
+      const support = snapshot.mode === "architecture" || !selectedFinding ? null : {
+        atomIds: selectedFinding.supportAtomIds,
+        contextIds: [...new Set([...selectedFinding.supportContextIds, ...selectedFinding.boundaryContextIds])],
+        edgeIds: selectedFinding.relationRefs,
+        agreementEdgeIds: selectedFinding.agreementEdgeRefs,
+        mismatchEdgeIds: selectedFinding.mismatchEdgeRefs,
+        unmeasuredEdgeIds: selectedFinding.unobservedEdgeRefs,
+        sharedAtomIds: selectedFinding.supportAtomIds.filter((atomId) => (snapshot.architecture.index?.contextIdsByAtom.get(atomId) || []).length > 1),
+        state: selectedFinding.state,
+      };
+      window.__archviewAnalysisSupport = atlasRenderer.setAnalysisSupport(support);
     }
     root.dataset.mode = snapshot.mode;
     root.dataset.phase = snapshot.phase;
@@ -456,6 +628,7 @@ export async function startArchView() {
     requireElement("#revision-name").textContent = snapshot.revision || "—";
     requireElement("#cover-name").textContent = snapshot.cover || "No cover selected";
     requireElement("#inspector-heading").textContent = copy.heading;
+    if (selectedFinding && snapshot.mode !== "architecture") requireElement("#inspector-summary").textContent = `${selectedFinding.title} · ${selectedFinding.stateLabel}`;
     requireElement("#technical-mode").textContent = snapshot.mode;
     requireElement("#technical-zoom").textContent = snapshot.zoom;
     requireElement("#layout-signature").textContent = layout.signature === "empty" ? "empty" : `${layout.signature.length} deterministic bytes`;
@@ -466,7 +639,7 @@ export async function startArchView() {
     requireElement("#empty-state-title").textContent = snapshot.architecture.status === "empty" ? "Empty ArchMap" : snapshot.architecture.status === "error" ? "ArchMap rejected" : copy.title;
     requireElement("#empty-state-copy").textContent = snapshot.architecture.status === "empty" ? "The supplied ArchMap contains no sources, Atoms, Contexts, or Covers." : snapshot.architecture.status === "error" ? "Review the visible validation findings in Scope Explorer." : copy.copy;
     renderArchitecture(snapshot, layout, actions);
-    renderAnalysisStatus(snapshot);
+    renderAnalysisStatus(snapshot, analysisModel, actions);
     publishTestState(snapshot);
   });
 
