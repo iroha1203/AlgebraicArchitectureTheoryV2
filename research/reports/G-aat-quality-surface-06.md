@@ -44,9 +44,11 @@ artifacts, proof-obligation deltas, and discharge audits only.
   - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationGroundedPacket.lean)
   - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationEndToEndInstance.lean)
   - [`ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/fb132e9eaa06004bd4f8e8f2a3eb316bbb0fd985/research/lean/ResearchLean/AG/QualitySurface/SemanticRepairLawEquationNonzeroClassInstance.lean)
-- All declaration names, module-build commands, and source paths below are
-  historical evidence at or before the fixed source-bearing commit above; they
-  are not live paths in the current tree.
+- References below to these six retired artifacts—their declaration names,
+  module-build commands, and source paths—are historical evidence at or before
+  the fixed source-bearing commit above; they are not live paths in the current
+  tree. References to other Formal and ResearchLean foundations retain their
+  ordinary current-tree meaning.
 
 ## Initial Scope
 

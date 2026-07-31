@@ -950,7 +950,7 @@ FullyEquationLawful_E(A)
                   <dt>Lean names</dt>
                   <dd><code>AAT.AG.ArchitecturalEquationSystem</code> with <code>EquationRole</code> (<code>required</code> / <code>optional</code> / <code>derived</code>), the two restriction-compatible coordinate families (<code>violationCoordinate</code>, <code>equationResidual</code>), the fulfillment predicates <code>EquationHolds</code>, <code>EquationLawful</code>, <code>FullyEquationLawful</code>, and the Mathlib-facing <code>observablePresheaf</code> into <code>CommRingCat</code>.</dd>
                   <dt>Boundary</dt>
-                  <dd>The equation system is the primary carrier. Its law universe is the derived display of equation indices and roles, rather than an additional predicate-bearing structure. Ideal-membership, quotient-vanishing, cohomology, comparison, and descent conclusions are generated downstream (Parts III–IV).</dd>
+                  <dd>The structure stores no ideal-membership, quotient-vanishing, cohomology, comparison, or descent conclusion; those are generated downstream (Parts III–IV). The earlier predicate-based <code>Law</code> / <code>LawUniverse</code> carriers remain as a legacy reading layer.</dd>
                 </dl>
               </article>
             </section>
