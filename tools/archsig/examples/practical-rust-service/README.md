@@ -14,7 +14,7 @@ and the staircase names each step of its failure precisely:
 1. **Grounding** — every module satisfies its own displayed money law
    (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The fixed chart-local observation check is clean.
 2. **Descent** — the residual derived from the observed sections under the
-   selected descent law contract has a **nonzero** boundary-membership result
+   selected `ag.saga-descent` evaluator contract has a **nonzero** boundary-membership result
    on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL`). A named
    `Z1/B1` class is emitted only when a derived triple face is actually checked.
 3. **Comparison** — `compare` derives the difference of the head and repaired

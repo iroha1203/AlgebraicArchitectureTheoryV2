@@ -117,7 +117,7 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
             theorem_ref: None,
             principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
-            boundary: "The class reading is relative to the selected cover 1-skeleton, the derived triple faces whose cocycle parity was checked, and the selected descent law contract.",
+            boundary: "The class reading is relative to the selected cover 1-skeleton, the derived triple faces whose cocycle parity was checked, and the selected ag.saga-descent evaluator contract.",
             generated_discipline: "generated derived class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {

@@ -45,7 +45,7 @@ fn ag_saga_descent_manifest() -> LawEvaluatorManifestV1 {
         required_atom_constructors: Vec::new(),
         required_predicates: Vec::new(),
         required_molecule_condition:
-            "archmap/v0.5.4 selected finite cover; ArchSig derives the finite SAGA complex from observed cover contexts and restriction relations, then derives the residual from observed sections under the selected ag.saga-descent law contract"
+            "archmap/v0.5.4 selected finite cover; ArchSig derives the finite SAGA complex from observed cover contexts and restriction relations, then derives the residual from observed sections under the selected ag.saga-descent evaluator contract"
                 .to_string(),
         scope_filtering_rule:
             "selected finite cover from MeasurementProfile and the finite complex derived from ArchMap restriction observations"

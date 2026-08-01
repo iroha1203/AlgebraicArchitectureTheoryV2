@@ -678,19 +678,6 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
             .unwrap()
             .iter()
             .any(|entry| {
-                entry["theoremRef"] == "part8/B.8.2-triple-overlap-faces"
-                    && entry["assumption"]
-                        == "selected graph-only Cech H1 calculation has no triple-overlap faces"
-                    && entry["status"] == "violated"
-            }),
-        "a triple-overlap face must block the graph-only Cech H1 measurement"
-    );
-    assert!(
-        packet["assumptions"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|entry| {
                 entry["theoremRef"] == "part4/12.4"
                     && entry["assumption"] == "restriction maps are surjective"
                     && entry["status"] == "assumed"

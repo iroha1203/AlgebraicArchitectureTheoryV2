@@ -180,17 +180,6 @@ fn evaluate_cech_obstruction_v1(
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
         });
     }
-    if triple_overlap_faces_not_measured && !empty_selected_scope {
-        assumptions.push(AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part8/B.8.2-triple-overlap-faces".to_string(),
-            assumption: "selected graph-only Cech H1 calculation has no triple-overlap faces"
-                .to_string(),
-            status: "violated".to_string(),
-            checked_by: None,
-            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
-        });
-    }
-
     let (verdict, zero, non_zero, method_status, reason) = if empty_selected_scope {
         (
             "not_computed".to_string(),

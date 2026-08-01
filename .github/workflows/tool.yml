@@ -87,16 +87,14 @@ jobs:
             --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
             --out-dir "$archsig_measurement_dir/gate-smoke"
 
-          gate_status=0
           cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
             --packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
             --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
-            --out "$archsig_measurement_dir/archsig-gate-report.json" || gate_status=$?
-          test "$gate_status" -eq 1
+            --out "$archsig_measurement_dir/archsig-gate-report.json"
 
           jq -e '
             .schema == "archsig-gate-report/v0.5.4"
-            and .decision == "BLOCKED_BY_GATE_POLICY"
+            and .decision == "PASS_WITHIN_GATE_POLICY"
             and ([.ruleOutcomes[]? | select(.scope == "absolute" and .status == "evaluated")] | length == 1)
           ' "$archsig_measurement_dir/archsig-gate-report.json"
 

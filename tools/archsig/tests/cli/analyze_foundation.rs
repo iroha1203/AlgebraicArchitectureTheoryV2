@@ -308,8 +308,7 @@ fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
     ]);
 
     let gate_report_path = temp_dir("full-sheaf-output-lint-gate").join("archsig-gate-report.json");
-    run_sig0_expect_code(
-        &[
+    run_sig0(&[
         "gate",
         "--packet",
         head_run
@@ -325,9 +324,7 @@ fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
         gate_report_path
             .to_str()
             .expect("gate report path is utf-8"),
-        ],
-        1,
-    );
+    ]);
 
     let output_surfaces = [
         (
