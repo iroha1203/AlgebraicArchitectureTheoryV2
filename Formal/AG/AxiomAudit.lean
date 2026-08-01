@@ -7957,15 +7957,19 @@ def standardGeometry_rightToOverlapRingHom_comp_algebraMap :=
 def standardGeometry_referenceRaw_isSheaf :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.referenceRaw_isSheaf
 
+/-- Kernel-audit alias for the base-to-left implementation transport theorem. -/
 def standardGeometry_geometryImplementation_base_to_left_transport :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.GeometryImplementation.base_to_left_transport
 
+/-- Kernel-audit alias for the base-to-right implementation transport theorem. -/
 def standardGeometry_geometryImplementation_base_to_right_transport :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.GeometryImplementation.base_to_right_transport
 
+/-- Kernel-audit alias for the left-to-overlap implementation transport theorem. -/
 def standardGeometry_geometryImplementation_left_to_overlap_transport :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.GeometryImplementation.left_to_overlap_transport
 
+/-- Kernel-audit alias for the right-to-overlap implementation transport theorem. -/
 def standardGeometry_geometryImplementation_right_to_overlap_transport :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.GeometryImplementation.right_to_overlap_transport
 
