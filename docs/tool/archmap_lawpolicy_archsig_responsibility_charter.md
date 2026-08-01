@@ -125,8 +125,8 @@ source extraction の健全性、semantic の正しさ、global lawfulness、未
 `compare` は二つの analyze run に含まれる MeasurementProfile-selected normalized ArchMap から coarse-to-fine の context relation を導出し、
 一意な containment path と derived residual class certificate が得られた場合に class-zero reading を計算する。
 入力トライアドに帰属しない結論相当の供給 slot を新設しない。
-RepairPlan の explicit H¹ comparison は、次数0/1/2の有限基底写像表、次数2の `zeroImage`、
-および変数対応を供給し、ArchSig が差保存・零保存・微分可換性を再計算する。適合条件の宣言booleanは入力として採用しない。
+H¹ comparison は二つの analyze run に記録された ArchMap-derived residual から `compare` が導出する。
+ArchSig は入力トライアドに含まれない比較写像・修理複体・結論相当の authored data を受け取らない。
 
 ## 三層を混同すると何が壊れるか
 

@@ -63,9 +63,8 @@ Atom は、programming language や framework を越える共通 carrier でも�
 
 ### 確率的な意味読解と決定論的な計測を分業する
 
-semantic Atom の供給には、source の使われ方を読む能力が要る。AI agent はこの局所的な意味読解を担い、
-ArchMap と LawPolicy の生成 SKILL が、選択した対象、語彙、根拠、生成手順を artifact に固定する。
-これにより、AI の意味読解を追跡可能な入力へ変換し、観測と制度選択の再現性を高める。
+semantic Atom の供給には、source の使われ方を読む能力が要る。観測と制度選択は、
+追跡可能な入力 artifact として扱う。
 
 ArchSig は、その入力を受け取る決定論的な計算核である。同じ入力から同じ計測結果を返し、
 Rust の可搬性を活かした cross-platform build によって複数の OS と processor architecture へ届けられる。

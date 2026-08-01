@@ -8,10 +8,8 @@ use clap::{Parser, Subcommand};
 use fieldsig::{
     AatObservableBundleV0, AatObservableBundleValidationReportV0, AiProposalGovernanceV0,
     AiProposalGovernanceValidationReportV0, AirDocumentInput, AirDocumentV0, AirValidationReport,
-    ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
-    ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
-    ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
-    ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
+    ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationReportV0,
+    ArchitectureFieldSnapshotV0, ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, ConsequenceEnvelopeReportV0,
@@ -23,11 +21,10 @@ use fieldsig::{
     FieldSigRunManifestValidationReportV0, ForecastCalibrationHookV0,
     ForecastCalibrationHookValidationReportV0, ForecastConeSkeletonV0,
     ForecastConeSkeletonValidationReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
-    IncidentCorrelationMonitorV0, IntentArchMapAlignmentV0,
-    IntentArchMapAlignmentValidationReportV0, IntentCalibrationRecordV0,
-    IntentCalibrationValidationReportV0, IntentMapV0, IntentMapValidationReportV0,
-    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0,
-    MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
+    IncidentCorrelationMonitorV0, IntentCalibrationRecordV0, IntentCalibrationValidationReportV0,
+    IntentMapV0, IntentMapValidationReportV0, LawPolicyTemplateRegistryV0,
+    LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0, MeasurementUnitRegistryV0,
+    MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
     OperationProposalLogValidationReportV0, OperationSupportEstimateV0,
     OperationSupportEstimateValidationReportV0, OrganizationPolicyV0,
@@ -44,33 +41,30 @@ use fieldsig::{
     SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0,
     TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
     attach_framework_adapter_evidence, build_ai_proposal_governance_from_descriptor,
-    build_air_document, build_air_from_archmap, build_artifact_descriptor_from_ai_proposal_json,
+    build_air_document, build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
-    build_law_violation_report, build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_archsig_measurement_packet,
-    build_operation_support_estimate_from_descriptor,
-    build_operation_support_estimate_from_intent_alignment,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
-    build_sft_review_summary_from_consequence_envelope, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
+    build_law_violation_report, build_operation_support_estimate_from_archsig_measurement_packet,
+    build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
+    build_schema_compatibility_check_report, build_sft_review_summary_from_consequence_envelope,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    read_architecture_policy, render_pr_comment_markdown, static_aat_observable_bundle,
-    static_ai_proposal_governance, static_architecture_dynamics_metrics_report,
-    static_architecture_field_snapshot, static_artifact_descriptor,
-    static_calibration_review_record, static_consequence_envelope_report,
-    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_dynamics_measurement_contract, static_fieldsig_run_manifest,
-    static_forecast_calibration_hook, static_forecast_cone_skeleton,
+    read_architecture_policy, read_archsig_measurement_packet, render_pr_comment_markdown,
+    static_aat_observable_bundle, static_ai_proposal_governance,
+    static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
+    static_artifact_descriptor, static_calibration_review_record,
+    static_consequence_envelope_report, static_custom_rule_plugin_registry,
+    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
+    static_fieldsig_run_manifest, static_forecast_calibration_hook, static_forecast_cone_skeleton,
     static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_intent_archmap_alignment, static_intent_calibration_record, static_intent_map,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_operation_proposal_log,
-    static_operation_support_estimate, static_organization_policy,
+    static_intent_calibration_record, static_intent_map, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate,
+    static_operation_proposal_log, static_operation_support_estimate, static_organization_policy,
     static_ownership_boundary_monitor, static_pr_force_report, static_pr_quality_analysis_report,
     static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
@@ -79,11 +73,10 @@ use fieldsig::{
     static_team_threshold_policy, validate_aat_observable_bundle, validate_ai_proposal_governance,
     validate_air_document_report, validate_architecture_dynamics_metrics_report,
     validate_architecture_field_snapshot, validate_architecture_policy_report,
-    validate_archmap_report, validate_artifact_descriptor_report,
-    validate_component_universe_report, validate_consequence_envelope_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_fieldsig_run_manifest, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton, validate_intent_archmap_alignment,
+    validate_artifact_descriptor_report, validate_component_universe_report,
+    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_fieldsig_run_manifest,
+    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
     validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
@@ -505,55 +498,6 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a supplied ArchMap v0 JSON artifact.
-    Archmap {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        input: PathBuf,
-
-        /// Optional Sig0 JSON path used for static / semantic conflict checks.
-        #[arg(long)]
-        sig0: Option<PathBuf>,
-
-        /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Emit a bounded external-agent protocol for generating ArchMap JSON.
-    ArchmapGenerate {
-        /// Source inventory JSON path used by the external agent.
-        #[arg(long = "source-inventory")]
-        source_inventory: PathBuf,
-
-        /// Prompt pack path retained as provenance.
-        #[arg(long = "prompt-pack")]
-        prompt_pack: PathBuf,
-
-        /// Model provider name retained as provenance.
-        #[arg(long, default_value = "external-agent")]
-        provider: String,
-
-        /// Model id retained as provenance.
-        #[arg(long = "model-id", default_value = "unspecified")]
-        model_id: String,
-
-        /// Output generation protocol JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Project a supplied ArchMap v0 JSON artifact into SFT operation-support input.
-    ArchmapSftInput {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
     /// Project an ArchSig measurement packet into SFT operation-support input.
     ArchsigAnalysisSftInput {
         /// Input archsig-measurement-packet/v0.5.4 JSON path.
@@ -561,25 +505,6 @@ enum Command {
         measurement_packet: PathBuf,
 
         /// Output operation-support-estimate/v0.5.0 JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Project a supplied ArchMap v0 JSON artifact into AIR v0.
-    AirFromArchmap {
-        /// Input ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// Optional Sig0 JSON path used to preserve static / semantic conflicts.
-        #[arg(long)]
-        sig0: Option<PathBuf>,
-
-        /// Optional ArchMap validation report path recorded by callers in workflow artifacts.
-        #[arg(long)]
-        validation: Option<PathBuf>,
-
-        /// Output AIR JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -885,59 +810,6 @@ enum Command {
         /// Output IntentMap or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
-    },
-
-    /// Emit or validate an intent-archmap-alignment/v0.5.0 artifact.
-    IntentArchmapAlignment {
-        /// Optional AlignmentMap JSON path to validate.
-        #[arg(long)]
-        input: Option<PathBuf>,
-
-        /// IntentMap JSON path used for dangling reference validation.
-        #[arg(long = "intent-map")]
-        intent_map: Option<PathBuf>,
-
-        /// ArchMap JSON path used for dangling reference validation.
-        #[arg(long)]
-        archmap: Option<PathBuf>,
-
-        /// Emit the canonical minimal intent-archmap-alignment/v0.5.0 fixture.
-        #[arg(long)]
-        fixture: bool,
-
-        /// Output AlignmentMap or validation report JSON path. If omitted, JSON is written to stdout.
-        #[arg(long)]
-        out: Option<PathBuf>,
-    },
-
-    /// Build operation support from IntentMap x ArchMap alignment.
-    IntentForecast {
-        /// IntentMap JSON path.
-        #[arg(long = "intent-map")]
-        intent_map: PathBuf,
-
-        /// ArchMap JSON path.
-        #[arg(long)]
-        archmap: PathBuf,
-
-        /// AlignmentMap JSON path.
-        #[arg(long)]
-        alignment: PathBuf,
-
-        /// Output directory for operation support, ForecastCone, ConsequenceEnvelope, and validations.
-        #[arg(long = "out-dir")]
-        out_dir: PathBuf,
-
-        /// Bounded horizon step count for forecast-cone-skeleton/v0.5.0 generation.
-        #[arg(long = "horizon-steps", default_value_t = 3)]
-        horizon_steps: u32,
-
-        /// Human-readable horizon boundary for forecast-cone-skeleton/v0.5.0 generation.
-        #[arg(
-            long = "horizon-window",
-            default_value = "selected bounded intent forecast horizon"
-        )]
-        horizon_window: String,
     },
 
     /// Emit or validate an operation-support-estimate/v0.5.0 artifact.
@@ -1564,134 +1436,18 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }
-        Some(Command::Archmap { input, sig0, out }) => {
-            let document: ArchMapDocumentV0 = read_json(&input)?;
-            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
-            let source_inventory_path = document
-                .source_inventory_ref
-                .as_ref()
-                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
-            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
-            let mut source_inventory_error: Option<String> = None;
-            if let Some(path) = source_inventory_path {
-                match resolve_archmap_sidecar_path(&input, path) {
-                    Some(resolved_path) => match read_json(&resolved_path) {
-                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
-                        Err(error) => {
-                            source_inventory_error = Some(format!(
-                                "source inventory artifact could not be read: {error}"
-                            ));
-                        }
-                    },
-                    None => {
-                        source_inventory_error =
-                            Some("source inventory artifact path does not exist".to_string());
-                    }
-                }
-            }
-            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
-                path,
-                document: source_inventory_document.as_ref(),
-                read_error: source_inventory_error.clone(),
-            });
-            let report: ArchMapValidationReportV0 = validate_archmap_report(
-                &document,
-                &input.display().to_string(),
-                sig0_document.as_ref(),
-                source_inventory,
-            );
-            let failed = report.summary.result == "fail";
-            write_json(out, &report)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::ArchmapGenerate {
-            source_inventory,
-            prompt_pack,
-            provider,
-            model_id,
-            out,
-        }) => {
-            let inventory: ArchMapSourceInventoryV0 = read_json(&source_inventory)?;
-            let protocol = serde_json::json!({
-                "schema": "archmap-generation-protocol/v0.5.0",
-                "protocolId": format!("archmap-generation:{}", inventory.inventory_id),
-                "sourceInventoryRef": {
-                    "artifactId": inventory.inventory_id,
-                    "kind": "source_inventory",
-                    "path": source_inventory.display().to_string()
-                },
-                "promptPackRef": {
-                    "artifactId": "archmap-prompt-pack",
-                    "kind": "prompt",
-                    "path": prompt_pack.display().to_string()
-                },
-                "modelProvenance": {
-                    "provider": provider,
-                    "modelId": model_id
-                },
-                "requiredWorkflow": [
-                    "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
-                    "produce archmap/v0.5.0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
-                    "run archsig archmap --input <archmap.json> before downstream projection",
-                    "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
-                ],
-                "generationBoundary": {
-                    "selectionBoundary": inventory.selection_boundary,
-                    "privateRefCount": inventory.private_refs.len(),
-                    "unavailableRefCount": inventory.unavailable_refs.len(),
-                    "nonConclusions": [
-                        "external agent output is not semantic truth",
-                        "generation protocol does not reconstruct private context",
-                        "validation pass does not prove architecture lawfulness"
-                    ]
-                }
-            });
-            write_json(out, &protocol)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::ArchmapSftInput { archmap, out }) => {
-            let document: ArchMapDocumentV0 = read_json(&archmap)?;
-            let estimate: OperationSupportEstimateV0 =
-                build_operation_support_estimate_from_archmap(
-                    &document,
-                    &archmap.display().to_string(),
-                );
-            write_json(out, &estimate)?;
-            Ok(ExitCode::SUCCESS)
-        }
         Some(Command::ArchsigAnalysisSftInput {
             measurement_packet,
             out,
         }) => {
-            let packet: serde_json::Value = read_json(&measurement_packet)?;
+            reject_output_overwrite(&measurement_packet, out.as_deref())?;
+            reject_existing_output(out.as_deref())?;
+            let packet = read_archsig_measurement_packet(&measurement_packet)?;
             let estimate = build_operation_support_estimate_from_archsig_measurement_packet(
                 &packet,
                 &measurement_packet.display().to_string(),
             )?;
             write_json(out, &estimate)?;
-            Ok(ExitCode::SUCCESS)
-        }
-        Some(Command::AirFromArchmap {
-            archmap,
-            sig0,
-            validation,
-            out,
-        }) => {
-            let document: ArchMapDocumentV0 = read_json(&archmap)?;
-            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
-            if let Some(validation_path) = validation.as_ref() {
-                let _: ArchMapValidationReportV0 = read_json(validation_path)?;
-            }
-            let air = build_air_from_archmap(
-                &document,
-                &archmap.display().to_string(),
-                sig0_document.as_ref(),
-            );
-            write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::ValidateAir {
@@ -2200,125 +1956,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 validate_intent_map(&intent_map, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::IntentArchmapAlignment {
-            input,
-            intent_map,
-            archmap,
-            fixture,
-            out,
-        }) => {
-            if fixture {
-                let alignment: IntentArchMapAlignmentV0 = static_intent_archmap_alignment();
-                write_json(out, &alignment)?;
-                return Ok(ExitCode::SUCCESS);
-            }
-            let alignment: IntentArchMapAlignmentV0 = input
-                .as_ref()
-                .map(read_json)
-                .transpose()?
-                .unwrap_or_else(static_intent_archmap_alignment);
-            let intent_map_doc: Option<IntentMapV0> =
-                intent_map.as_ref().map(read_json).transpose()?;
-            let archmap_doc: Option<ArchMapDocumentV0> =
-                archmap.as_ref().map(read_json).transpose()?;
-            let input_path = input
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_else(|| "static-intent-archmap-alignment".to_string());
-            let validation: IntentArchMapAlignmentValidationReportV0 =
-                validate_intent_archmap_alignment(
-                    &alignment,
-                    intent_map_doc.as_ref(),
-                    archmap_doc.as_ref(),
-                    &input_path,
-                );
-            let failed = validation.summary.result == "fail";
-            write_json(out, &validation)?;
-            Ok(if failed {
-                ExitCode::from(1)
-            } else {
-                ExitCode::SUCCESS
-            })
-        }
-        Some(Command::IntentForecast {
-            intent_map,
-            archmap,
-            alignment,
-            out_dir,
-            horizon_steps,
-            horizon_window,
-        }) => {
-            std::fs::create_dir_all(&out_dir)?;
-            let intent_map_doc: IntentMapV0 = read_json(&intent_map)?;
-            let archmap_doc: ArchMapDocumentV0 = read_json(&archmap)?;
-            let alignment_doc: IntentArchMapAlignmentV0 = read_json(&alignment)?;
-
-            let intent_validation_path = out_dir.join("intentmap-validation.json");
-            let alignment_validation_path =
-                out_dir.join("intent-archmap-alignment-validation.json");
-            let estimate_path = out_dir.join("operation-support-estimate.json");
-            let estimate_validation_path =
-                out_dir.join("operation-support-estimate-validation.json");
-            let cone_path = out_dir.join("forecast-cone-skeleton.json");
-            let cone_validation_path = out_dir.join("forecast-cone-skeleton-validation.json");
-            let envelope_path = out_dir.join("consequence-envelope-report.json");
-            let envelope_validation_path = out_dir.join("consequence-envelope-validation.json");
-
-            let intent_validation: IntentMapValidationReportV0 =
-                validate_intent_map(&intent_map_doc, &intent_map.display().to_string());
-            let alignment_validation: IntentArchMapAlignmentValidationReportV0 =
-                validate_intent_archmap_alignment(
-                    &alignment_doc,
-                    Some(&intent_map_doc),
-                    Some(&archmap_doc),
-                    &alignment.display().to_string(),
-                );
-            let estimate: OperationSupportEstimateV0 =
-                build_operation_support_estimate_from_intent_alignment(
-                    &intent_map_doc,
-                    &archmap_doc,
-                    &alignment_doc,
-                );
-            let estimate_validation: OperationSupportEstimateValidationReportV0 =
-                validate_operation_support_estimate(
-                    &estimate,
-                    &estimate_path.display().to_string(),
-                );
-            let cone: ForecastConeSkeletonV0 = build_forecast_cone_skeleton_from_operation_support(
-                &estimate,
-                horizon_steps,
-                &horizon_window,
-            );
-            let cone_validation: ForecastConeSkeletonValidationReportV0 =
-                validate_forecast_cone_skeleton(&cone, &cone_path.display().to_string());
-            let envelope: ConsequenceEnvelopeReportV0 =
-                build_consequence_envelope_from_forecast_cone(&cone);
-            let envelope_validation: ConsequenceEnvelopeValidationReportV0 =
-                validate_consequence_envelope_report(
-                    &envelope,
-                    &envelope_path.display().to_string(),
-                );
-            let failed = intent_validation.summary.result == "fail"
-                || alignment_validation.summary.result == "fail"
-                || estimate_validation.summary.result == "fail"
-                || cone_validation.summary.result == "fail"
-                || envelope_validation.summary.result == "fail";
-
-            write_json(Some(intent_validation_path), &intent_validation)?;
-            write_json(Some(alignment_validation_path), &alignment_validation)?;
-            write_json(Some(estimate_path), &estimate)?;
-            write_json(Some(estimate_validation_path), &estimate_validation)?;
-            write_json(Some(cone_path), &cone)?;
-            write_json(Some(cone_validation_path), &cone_validation)?;
-            write_json(Some(envelope_path), &envelope)?;
-            write_json(Some(envelope_validation_path), &envelope_validation)?;
-
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -2985,6 +2622,53 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
     Ok(())
 }
 
+fn reject_output_overwrite(input: &Path, output: Option<&Path>) -> Result<(), Box<dyn Error>> {
+    if !input.exists() {
+        return Ok(());
+    }
+    let Some(output) = output else {
+        return Ok(());
+    };
+    let input_path = std::fs::canonicalize(input)?;
+    let output_path = if output.exists() {
+        std::fs::canonicalize(output)?
+    } else if output.is_absolute() {
+        output.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(output)
+    };
+    let same_path = input_path == output_path;
+    #[cfg(unix)]
+    let same_inode = if output.exists() {
+        use std::os::unix::fs::MetadataExt;
+        let input_metadata = std::fs::metadata(input)?;
+        let output_metadata = std::fs::metadata(output)?;
+        input_metadata.dev() == output_metadata.dev()
+            && input_metadata.ino() == output_metadata.ino()
+    } else {
+        false
+    };
+    #[cfg(not(unix))]
+    let same_inode = false;
+    if same_path || same_inode {
+        return Err("output path must differ from input path".into());
+    }
+    Ok(())
+}
+
+fn reject_existing_output(output: Option<&Path>) -> Result<(), Box<dyn Error>> {
+    if let Some(output) = output {
+        if output.exists() {
+            return Err(format!(
+                "output path already exists; choose a new path: {}",
+                output.display()
+            )
+            .into());
+        }
+    }
+    Ok(())
+}
+
 fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
     match out {
         Some(path) => {
@@ -3007,33 +2691,6 @@ fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
-}
-
-fn resolve_archmap_sidecar_path(archmap_path: &Path, sidecar_path: &str) -> Option<PathBuf> {
-    let raw_path = PathBuf::from(sidecar_path);
-    if raw_path.is_absolute() {
-        return raw_path.exists().then_some(raw_path);
-    }
-
-    if let Ok(current_dir) = std::env::current_dir() {
-        let candidate = current_dir.join(&raw_path);
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-
-    let archmap_parent = archmap_path.parent()?;
-    let local_candidate = archmap_parent.join(&raw_path);
-    if local_candidate.exists() {
-        return Some(local_candidate);
-    }
-    for ancestor in archmap_parent.ancestors() {
-        let candidate = ancestor.join(&raw_path);
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-    None
 }
 
 fn read_risk_dispositions(paths: &[PathBuf]) -> Result<Vec<RiskDispositionV0>, Box<dyn Error>> {

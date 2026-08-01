@@ -32,17 +32,14 @@ pub(crate) fn reject_output_overwrite(
     input: &PathBuf,
     output: &Option<PathBuf>,
 ) -> Result<(), Box<dyn Error>> {
+    if !input.exists() {
+        return Ok(());
+    }
     let Some(output) = output else {
         return Ok(());
     };
     let input_path = std::fs::canonicalize(input)?;
-    let output_path = if output.exists() {
-        std::fs::canonicalize(output)?
-    } else if output.is_absolute() {
-        output.clone()
-    } else {
-        std::env::current_dir()?.join(output)
-    };
+    let output_path = resolve_path_with_existing_ancestor(output)?;
     let same_path = input_path == output_path;
     #[cfg(unix)]
     let same_inode = if output.exists() {
@@ -60,6 +57,28 @@ pub(crate) fn reject_output_overwrite(
         return Err("output path must differ from input path".into());
     }
     Ok(())
+}
+
+pub(crate) fn resolve_path_with_existing_ancestor(path: &Path) -> Result<PathBuf, Box<dyn Error>> {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(path)
+    };
+    let mut existing = absolute.clone();
+    let mut suffix = Vec::new();
+    while !existing.exists() {
+        let component = existing
+            .file_name()
+            .ok_or_else(|| format!("cannot resolve output path {}", path.display()))?;
+        suffix.push(component.to_os_string());
+        existing.pop();
+    }
+    let mut resolved = std::fs::canonicalize(existing)?;
+    for component in suffix.iter().rev() {
+        resolved.push(component);
+    }
+    Ok(resolved)
 }
 
 struct StrictValueSeed;

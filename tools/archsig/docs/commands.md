@@ -1,5 +1,9 @@
 # ArchSig Commands
 
+ArchSig validates supplied ArchMap input as part of the current analysis
+workflow. The `analyze` command uses the canonical ArchMap schema, source
+references, and vocabulary checks in the ArchSig runtime.
+
 ## Analyze
 
 ```bash
@@ -15,61 +19,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
 input, emits `archsig-measurement-packet.json`, and writes summary, insight,
 viewer, validation, and manifest artifacts.
 
-When a LawPolicy selects `ag.saga-descent`, `analyze` accepts an optional
-checked repair plan:
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
-  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
-  --law-policy tools/archsig/tests/fixtures/ag_measurement/law_policy_ag.json \
-  --measurement-profile tools/archsig/tests/fixtures/ag_measurement/measurement_profile_ag.json \
-  --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
-  --repair-plan tools/archsig/tests/fixtures/ag_measurement/repair_plan_complete_support.json \
-  --out-dir .archsig/analyze-saga
-```
-
-If `ag.saga-descent` is selected without `--repair-plan`, ArchSig emits a
-`not_computed` row with a `silence_by_design` boundary rather than failing
-validation.
-
-## ArchMap
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
-  --out .archsig/archmap-validation.json
-```
-
-`archmap` validates a supplied `archmap/v0.5.4` observation artifact. With the
-optional `--scope-manifest`, `--candidate-packets`, `--extraction-consistency`,
-and `--coverage-ledger` inputs it also audits authoring survey traceability and
-adjudicated provenance closure.
-
-## Scope Manifest
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- scope-manifest \
-  --repo-root . \
-  --include "src/**/*.rs" \
-  --out .archsig/scope-manifest.json
-```
-
-`scope-manifest` builds the deterministic authoring worklist (paths, hashes,
-approved globs) that ArchMap surveys start from. `--baseline` emits only new or
-content-changed worklist rows against a previous manifest.
-
-## Extraction Diff
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- extraction-diff \
-  --pass-a .archsig/authoring/pass-a/candidate-packet.json \
-  --pass-b .archsig/authoring/pass-b/candidate-packet.json \
-  --out .archsig/extraction-consistency.json
-```
-
-`extraction-diff` compares two survey passes' candidate packets by authoring
-atom-match-key. It records agreement and divergence for the integrator to
-adjudicate; it never auto-adopts candidates.
+When a LawPolicy selects `ag.saga-descent`, ArchSig derives the finite SAGA
+complex from the selected ArchMap cover and its observed restriction relations.
+No third authored input is required.
 
 ## Law Policy
 
@@ -120,22 +72,6 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-profile \
 
 `measurement-profile` validates a standalone `measurement-profile/v0.5.4`
 artifact, including finite bounds against evaluator registry hard caps.
-
-## Repair Plan
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- repair-plan \
-  --archmap tools/archsig/tests/fixtures/ag_measurement/archmap_v2.json \
-  --repair-plan tools/archsig/tests/fixtures/ag_measurement/repair_plan_complete_support.json \
-  --out .archsig/repair-plan-validation.json
-```
-
-`repair-plan` validates the supplied SAGA Stage 1 input side. Faithfulness,
-true-sheaf, gluing, and coefficient slots are checked. Still-reserved
-comparison/grounding fields, generated conclusion tokens, unresolved refs,
-restriction-difference violations, cocycle parity violations, and
-complete-support inconsistencies fail closed. `enumerationComplete` is recorded
-as an author assumption.
 
 ## Compare
 

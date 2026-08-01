@@ -1,4 +1,0 @@
-interface:
-  display_name: "Arch Intent Forecaster"
-  short_description: "Forecast planning impact from IntentMap evidence"
-  default_prompt: "Use $arch-intent-forecaster to analyze Epic or PRD planning forecast from IntentMap x ArchMap artifacts."

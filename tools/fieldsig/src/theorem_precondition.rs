@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::archmap::archmap_lean_preservation_vocabulary;
+use crate::measurement_handoff::archmap_lean_preservation_vocabulary;
 use crate::{
     AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram,
     ArchMapLeanPreservationChecklistEntry, PYTHON_COMPONENT_KIND,
@@ -971,7 +971,7 @@ fn theorem_check_archmap_formal_guardrail_entry() -> ArchMapLeanPreservationChec
         ],
         missing_evidence: vec!["ArchMapPreservationPackage witness not supplied".to_string()],
         coverage_boundary:
-            "theorem-check reports candidate and blocked states; it does not promote ArchMap validation to proof"
+            "theorem-check reports candidate and blocked states; it does not promote ArchMap input validation to proof"
                 .to_string(),
         non_conclusions: vec![
             "theorem-check pass is not semantic preservation proof".to_string(),

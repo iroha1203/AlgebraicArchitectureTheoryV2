@@ -1,6 +1,6 @@
 ---
 name: arch-pr-analyzer
-description: Analyze PR or CI architecture quality from ArchSig, ArchMap, AIR, theorem-check, feature-report, policy, signature diff, and pr-quality-analysis artifacts. Use when Codex is asked to review a PR's architecture impact, inspect CI architecture reports, explain current architecture state for a change, or recommend bounded PR review actions.
+description: Analyze PR or CI architecture quality from ArchSig measurement packets, AIR, theorem-check, feature-report, policy, signature diff, and pr-quality-analysis artifacts. Use when Codex is asked to review a PR's architecture impact, inspect CI architecture reports, explain current architecture state for a change, or recommend bounded PR review actions.
 ---
 
 # Arch PR Analyzer
@@ -13,7 +13,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 
 - `signature-diff-report/v0.5.0`
 - Sig0 and validation reports
-- ArchMap observation artifact and ArchMap validation report
+- `archsig-measurement-packet/v0.5.4` and its canonical ArchSig input-validation evidence
 - AIR, AIR validation, theorem-check, feature-report
 - `aat-observable-bundle/v0.5.0` and validation report when the PR review asks for AAT concept coverage
 - `architecture-policy/v0.5.0` and `law-violation-report/v0.5.0`
@@ -21,7 +21,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 - `pr-quality-analysis-report/v0.5.0`
 - `sft-review-summary/v0.5.0` only when the user asks for SFT review judgement or future-impact review
 
-Do not use IntentMap, AlignmentMap, or planning forecast artifacts for PR merge review unless the user explicitly asks for planning context.
+Do not use planning forecast artifacts for PR merge review unless the user explicitly asks for planning context.
 
 ## Minimal Execution Rules
 
@@ -49,25 +49,12 @@ ${FIELDSIG_BIN:-fieldsig} validate \
   --universe-mode local-only
 ```
 
-If before / after snapshots are available, use `signature-diff`. If ArchMap-side artifacts are available, validate them and project to AIR:
+If before / after snapshots are available, use `signature-diff`. If an ArchSig measurement packet is available, project it into the FieldSig handoff:
 
 ```bash
-${FIELDSIG_BIN:-fieldsig} archmap \
-  --input .archsig/archmap/archmap.json \
-  --out .archsig/archmap/validation.json
-
-${FIELDSIG_BIN:-fieldsig} air-from-archmap \
-  --archmap .archsig/archmap/archmap.json \
-  --validation .archsig/archmap/validation.json \
-  --out .archsig/archmap/air.json
-
-${FIELDSIG_BIN:-fieldsig} theorem-check \
-  --air .archsig/archmap/air.json \
-  --out .archsig/archmap/theorem-check.json
-
-${FIELDSIG_BIN:-fieldsig} feature-report \
-  --air .archsig/archmap/air.json \
-  --out .archsig/archmap/feature-report.json
+${FIELDSIG_BIN:-fieldsig} archsig-analysis-sft-input \
+  --measurement-packet .archsig/archsig/measurement-packet.json \
+  --out .archsig/sft/operation-support-estimate.json
 ```
 
 If a project-local law policy is supplied, validate it and evaluate Layered Architecture findings:

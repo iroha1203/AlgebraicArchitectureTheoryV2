@@ -14,10 +14,9 @@
 - 帰属は名前ではなく内容で決める。法・方程式側に帰属するのは、特定の ArchMap instance に
   依存しない規則・制約・係数・被覆・評価計画だけである。特定 instance の値(section、
   cocycle、class の零性、写像の存在)を運ぶ供給は、名称にかかわらず法側ではない。
-  観測側に帰属する行は source への解決可能な ref を持つ。RepairPlan のうち作者が提案する
-  修理そのもの(修理後状態と repair cochain の対象)は、この観測側の資格を満たす形で
-  書かれた場合に限り提案された観測として観測側に帰属する。ArchSig が計算すべき結論を
-  先渡しする slot はどちらにも帰属しない。
+  観測側に帰属する行は source への解決可能な ref を持つ。SAGA の有限複体と残差は、
+  選択された ArchMap cover と観測済みの restriction relation から ArchSig が導出する。
+  ArchSig が計算すべき結論を先渡しする slot はどちらにも帰属しない。
 - どちらにも帰属しない authored データ(証明、証書、presentation、結論相当の
   supplied 判定)を、新しい入力、CLI flag、schema field、供給 slot として受け取らない。
   既存 field への同種データの追加・意味拡張・解禁語彙の追加も同じ禁止に含む。
@@ -25,9 +24,8 @@
   未供給時に沈黙する設計、fixture / golden lock、schema 登録や version bump は、
   いずれも帰属の代替にならない(列挙は例示であり、帰属それ自体を示さない装置は
   すべて同様)。二系統から計算できない語彙は、供給で解禁せず沈黙として扱う。
-- 二系統に帰属しない導入済みの入力面は、台帳収載の有無にかかわらずこの規律に対する
-  既存の負債である。返済は供給 slot 台帳(入口は docs/tool/README.md)で管理し、
-  負債の存在も返済作業も新規追加の先例として引用しない。
+- 二系統に帰属しない入力面は導入しない。既存の供給負債は削除し、現行入力面へ
+  互換 stub や別名を残さない。
 - ウィトゲンシュタイン的責務範囲を守る。ArchSig は与えられた入力 contract から、
   選ばれた vocabulary と policy の中で語れることだけを語る。入力 contract を補完・推測・
   拡張しない。語れない領域は、失敗や残タスクではなく沈黙として扱い、必要な場合だけ
@@ -45,7 +43,7 @@
 - ArchMap finite-poset-site shape は supplied `archmap/v0.5.4` evidence を読む source-grounded finite poset site map である。primary input は `sources` / `atoms`(subject / axis 必須) / `contexts` / `covers` であり、extraction doctrine は ArchSig 側の固定 `doctrine:aat-canonical@1` として扱う。旧 grouping field は primary field ではない。gap、projection info、concern hints、provenance、non-conclusions を primary schema に戻さない。
 - 現行 AAT は Atom 公理系から architecture object を構成し、それを site / sheaf /
   law algebra / obstruction ideal / lawful locus へ持ち上げる代数幾何的アーキテクチャ論である。
-  ArchMap / extractor は source code から Atom evidence や AAT measurement input を提示・検査する
+  ArchMap input は source-grounded Atom evidence と AAT measurement input を提示・検査する
   実測 surface であり、AAT の定理や完了条件を定義しない。
 - LawPolicy selector は明示した law / lawPair / evaluator / basis / scope / severity と `lawSurfaceRef` を選ぶ `law-policy/v0.5.4` artifact である。退役した policy pack selector は受理しない。AG evaluator を選ぶ場合は `measurementProfileRef` で `measurement-profile/v0.5.4` を選ぶ。cover、coefficient、resolution、witness variables、exactness assumption、distance rule は supplied law-equation-surface、evaluator registry、または MeasurementProfile の責務である。AAT そのものではない。
 - ArchSig v0.5.4 は、ArchMap + LawPolicy + supplied law-equation-surface + MeasurementProfile の入力検証が通った `analyze` run で `archsig-measurement-packet/v0.5.4` を作る AG measurement layer である。Rust と Lean の対応を tooling contract として要求しない。
@@ -54,8 +52,8 @@
 - ArchSig への入力は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface / MeasurementProfile)の
   二系統に限る(正本は本 guideline の「責務範囲(入力トライアドの正本)」)。この二系統に帰属しない
   authored 証明・証書・presentation を、新しい CLI 入力や schema slot として追加しない。
-  既存の RepairPlan 系入力はこの規律に従って扱い、退役した refactor morphism / refinement data の
-  供給 slot は現行入力面に置かない。返済の記録は供給 slot 台帳の負債告知に残す。
+  SAGA の有限複体、residual、comparison reading は ArchMap と法・方程式側から導出し、
+  第三の authored input を受け取らない。
 - ArchSig の `analyze` は、観測(ArchMap)と選ばれた LawPolicy / law-equation-surface / MeasurementProfile の中で
   structural verdict と analytic reading を出す。`compare` は二つの analyze run を記録レベルで比較し、
   `gate` は gate policy に従って measurement packet と比較記録をCI判断へ写像する。
@@ -77,11 +75,11 @@
 ## CLI / schema 方針
 
 - ArchSig の現行一次 workflow は `analyze` である。新しい docs、script、CI では `analyze` を使う。
-- `llm-native-workflow` / `north-star-workflow`、`archsig-analysis` / `aat-analysis`、`analysis-summary`、`codebase-inspection`、`archmap-generate` は current runtime surface ではない。
+- `llm-native-workflow` / `north-star-workflow`、`archsig-analysis` / `aat-analysis`、`analysis-summary`、`codebase-inspection` は current runtime surface ではない。
 - pre-v1 workflow は Git history や historical fixtures に残るだけで、現行 ArchSig surface や compatibility input として扱わない。
 - JSON artifact / schema / report の互換性を壊す変更では、`docs/tool`、tool README、fixtures、validation tests を合わせて更新する。
 - ArchView surface を変更する場合は、`tools/archview/README.md`、`docs/tool/README.md`、release bundle、必要な visual / workflow tests を合わせて更新する。可視化の豊かさを ArchSig の測定結論へ昇格させない。
-- CLI surface を追加・変更する場合は、必要に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
+- CLI surface を追加・変更する場合は、責務に応じて `tools/archsig/README.md`、`tools/archsig/docs/commands.md`、`tools/fieldsig/README.md`、`tools/fieldsig/docs/commands.md` を更新する。
 - Rust 型共有を ArchSig / FieldSig 間の cross-tool contract として扱わない。serialized JSON artifact boundary を重視する。
 - Rust source では不用意な `unwrap`, `expect`, `panic!`、placeholder 実装、claim boundary を曖昧にする fallback を避ける。
 - Report / schema / CLI wording は「これは結論ではない」を主文にしない。結論、根拠、選ばれた入力 contract を
@@ -108,12 +106,12 @@ ArchSig の `cli` integration test target は runtime 契約だけを所有す�
 --manifest-path tools/archsig/Cargo.toml --test cli` は `analyze` / `gate` / `compare`、
 schema catalog、measurement packet、evaluator の入力・出力、CLI error、決定性を検証する。
 ArchView、release workflow、docs、SKILL、websiteをこのtargetから検査しない。
-全体の `cargo test --manifest-path tools/archsig/Cargo.toml` は、下表の専用targetも合わせて実行する。
+ArchSig の全体 test は ArchSig crate で実行する。ArchSig の cli target は
+供給済みArchMap入力の検証・分析だけを責務に持つ。
 
 | 対象 | source of truth | 実行経路 |
 | --- | --- | --- |
 | ArchSig runtime | `tools/archsig/src/` と `tools/archsig/tests/cli.rs` | `cargo test --manifest-path tools/archsig/Cargo.toml --test cli` |
-| ArchMap authoring | `tools/archsig/src/authoring.rs`、`archmap` CLI、`archmap-creater` | `cargo test --manifest-path tools/archsig/Cargo.toml --lib authoring::tests` と `cargo test --manifest-path tools/archsig/Cargo.toml --test authoring` |
 | ArchView | `tools/archview/` | ArchView自身が所有するbrowser / UI testで検証する。ArchMap単独読込、optional overlay、source landing、unsupported geometryの非描画、empty / malformed入力を同じsurfaceで確認する。ArchSigのRust testからArchViewのUI、scene、内部関数を検査しない |
 | release | `.github/workflows/archsig-release.yml` | `gh workflow run archsig-release.yml -f tag=<tag>` |
 | docs / skill / website | 各source fileとreview workflow | docs / skill は `git diff --check -- docs/tool tools/archsig/skills`、website は `cd website && npx @11ty/eleventy`。ArchSig runtime testには含めない |

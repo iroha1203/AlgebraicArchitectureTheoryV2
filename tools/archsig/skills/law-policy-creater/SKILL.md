@@ -28,8 +28,8 @@ canonical fingerprints must be preserved with the run.
 
 Gate decisions belong in `archsig gate` policy, not in `analyze` flags.
 
-For Stage 3 SAGA laws, author `skeleton`, `defectSources[].holdsCriterion`, and
-`quotientSheafCondition` on the law-equation surface. `ag.saga-grounded` also
+For `ag.saga-grounded`, author `quotientSheafCondition` on the law-equation
+surface. The selected law also
 requires the law's `witnessVariables` and `forbiddenSupportGenerators`; these
 generate the finite quotient and cannot be replaced by conclusion fields.
 Compare class-zero transport is derived from the selected normalized ArchMap

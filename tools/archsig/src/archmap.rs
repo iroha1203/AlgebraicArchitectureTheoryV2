@@ -4,9 +4,9 @@ use crate::law_surface::LawSurfaceBindingVocabularyV1;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AAT_ATOM_VOCABULARY_V1_SCHEMA, ARCHMAP_V2_SCHEMA, AatAtomVocabularyEntryV1,
-    AatAtomVocabularyV1, ArchMapDocumentV2, ArchMapValidationReportV2, ArchMapValidationSummaryV2,
-    LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, ValidationCheck, ValidationExample,
-    canonical_archmap_extraction_doctrine_ref_v2,
+    AatAtomVocabularyPairV1, AatAtomVocabularyV1, ArchMapDocumentV2, ArchMapValidationReportV2,
+    ArchMapValidationSummaryV2, LAW_SURFACE_BINDING_VOCABULARY_SCHEMA, ValidationCheck,
+    ValidationExample, canonical_archmap_extraction_doctrine_ref_v2,
 };
 
 /// Splits a `src:<path>:<line>` citation into its file-level source id and
@@ -60,9 +60,11 @@ pub fn validate_archmap_v2_report(
         check_archmap_v2_schema(&document.schema),
         check_archmap_v2_doctrine(document),
         check_archmap_v2_sources(document),
+        check_archmap_v2_collection_shape(document),
         check_archmap_v2_atom_ids(document),
         check_archmap_v2_no_diagnostic_shortcuts(document),
         check_archmap_v2_atom_kind_vocabulary(document),
+        check_archmap_v2_atom_axis_predicate_vocabulary(document),
         check_archmap_v2_binding_vocabulary(),
         check_archmap_v2_atom_shapes(document),
         check_archmap_v2_contexts(document),
@@ -127,18 +129,101 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
             provenance_ref: doctrine_ref.to_string(),
         })
         .collect(),
+        axis_predicate_pairs: canonical_aat_atom_axis_predicate_pairs(),
+        allowed_non_ag_observation_axes: [
+            "application",
+            "boundary",
+            "cover",
+            "dataflow",
+            "effect",
+            "restriction",
+            "runtime",
+            "semantic",
+            "specification",
+            "state",
+            "static",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect(),
         non_conclusions: vec![
-            "AAT atom vocabulary is an artifact-side authoring contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
-            "Vocabulary lint checks token membership only and does not decide whether a new atom kind should be added to the doctrine.".to_string(),
+            "AAT atom vocabulary is an ArchSig input contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
+            "Vocabulary lint checks token membership only and does not decide whether a new atom kind or observed AG pair should be added to the doctrine.".to_string(),
         ],
     }
 }
 
+fn canonical_aat_atom_axis_predicate_pairs() -> Vec<AatAtomVocabularyPairV1> {
+    [
+        (
+            "boundary-residue",
+            [
+                "boundarySection",
+                "patchClassification",
+                "patchRole",
+                "restrictionColumn",
+            ]
+            .as_slice(),
+        ),
+        (
+            "cech",
+            [
+                "cocycleValue",
+                "restrictionSurjectivityWitness",
+                "sectionValue",
+            ]
+            .as_slice(),
+        ),
+        (
+            "coherence",
+            ["coherenceSection", "h2Section", "tripleSection"].as_slice(),
+        ),
+        (
+            "laplacian",
+            ["cellularBoundary", "cellularCochain"].as_slice(),
+        ),
+        (
+            "period",
+            ["boundaryPeriod", "dOmegaIntegral", "periodIntegral"].as_slice(),
+        ),
+        (
+            "restriction-compatibility",
+            ["restrictionIdealGenerator"].as_slice(),
+        ),
+        (
+            "section-factorization",
+            [
+                "cooccurrence",
+                "selectedSection",
+                "support",
+                "witnessAssignment",
+            ]
+            .as_slice(),
+        ),
+        ("square-free", ["cooccurrence", "support"].as_slice()),
+        ("tor", ["commonAmbient", "lawIdealGenerator"].as_slice()),
+        (
+            "transfer",
+            ["groundCost", "repairPath", "transferPairing"].as_slice(),
+        ),
+    ]
+    .into_iter()
+    .map(|(axis, predicates)| AatAtomVocabularyPairV1 {
+        axis: axis.to_string(),
+        predicates: predicates
+            .iter()
+            .map(|predicate| predicate.to_string())
+            .collect(),
+        provenance_ref: "aat-theory:atom-vocabulary".to_string(),
+    })
+    .collect()
+}
+
 pub fn static_aat_atom_binding_vocabulary_v1() -> LawSurfaceBindingVocabularyV1 {
     serde_json::from_str(include_str!(
-        "../skills/archmap-creater/references/aat-law-surface-binding-vocabulary.json"
+        "schema/aat-law-surface-binding-vocabulary.json"
     ))
-    .expect("checked-in AAT atom binding vocabulary must be valid JSON")
+    .expect("canonical AAT atom binding vocabulary must be valid JSON")
 }
 
 fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
@@ -174,7 +259,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
         examples.push(generic_validation_example(
             "aatAtomBindingVocabulary.schema",
             &vocabulary.schema,
-            "ArchMap authoring and law-surface validation use the v0.5.4 binding manifest",
+            "ArchSig ArchMap and law-surface validation use the v0.5.4 binding manifest",
         ));
     }
     for axis in required_axes {
@@ -268,7 +353,7 @@ fn check_archmap_v2_binding_vocabulary() -> ValidationCheck {
     }
     check_from_examples(
         "archmap-schema052-aat-binding-vocabulary",
-        "ArchMap authoring and law-surface validation resolve one versioned binding manifest",
+        "ArchSig ArchMap and law-surface validation resolve one versioned binding manifest",
         examples,
     )
 }
@@ -330,11 +415,25 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
         ));
     }
     for (source_id, source) in &document.sources {
+        if source_id.trim().is_empty() {
+            examples.push(generic_validation_example(
+                "sources",
+                "empty",
+                "source id must be non-empty",
+            ));
+        }
         if source.kind.trim().is_empty() {
             examples.push(generic_validation_example(
                 "sources",
                 source_id,
                 "source kind must be non-empty",
+            ));
+        }
+        if !source_has_locator(source) {
+            examples.push(generic_validation_example(
+                "sources",
+                source_id,
+                "source record must carry at least one non-empty locator: path, symbol, section, or traceId",
             ));
         }
         if let Some(parent) = source.source.as_deref() {
@@ -350,6 +449,48 @@ fn check_archmap_v2_sources(document: &ArchMapDocumentV2) -> ValidationCheck {
     check_from_examples(
         "archmap-schema052-sources-resolve",
         "sources table is present and internally resolvable",
+        examples,
+    )
+}
+
+fn source_has_locator(source: &crate::ArchMapSource) -> bool {
+    [
+        source.path.as_deref(),
+        source.symbol.as_deref(),
+        source.section.as_deref(),
+        source.trace_id.as_deref(),
+    ]
+    .into_iter()
+    .flatten()
+    .any(|value| !value.trim().is_empty())
+}
+
+fn check_archmap_v2_collection_shape(document: &ArchMapDocumentV2) -> ValidationCheck {
+    let mut examples = Vec::new();
+    for (field, is_empty, requirement) in [
+        (
+            "atoms",
+            document.atoms.is_empty(),
+            "ArchMap v2 must contain at least one observed atom",
+        ),
+        (
+            "contexts",
+            document.contexts.is_empty(),
+            "ArchMap v2 must contain at least one observed context",
+        ),
+        (
+            "covers",
+            document.covers.is_empty(),
+            "ArchMap v2 must contain at least one observed cover",
+        ),
+    ] {
+        if is_empty {
+            examples.push(generic_validation_example(field, "empty", requirement));
+        }
+    }
+    check_from_examples(
+        "archmap-schema052-required-observation-collections",
+        "ArchMap v2 declares non-empty atom, context, and cover observations",
         examples,
     )
 }
@@ -382,26 +523,26 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
 fn check_archmap_v2_no_diagnostic_shortcuts(document: &ArchMapDocumentV2) -> ValidationCheck {
     let mut examples = Vec::new();
     for atom in &document.atoms {
-        if let Some(token) = diagnostic_shortcut_token(&atom.id) {
-            examples.push(generic_validation_example(
-                &atom.id,
-                &format!("id:{token}"),
-                "ArchMap v2 atom ids must not pre-author diagnostic conclusions",
-            ));
+        let mut fields = vec![("id", atom.id.as_str())];
+        if !atom.axis.trim().is_empty() {
+            fields.push(("axis", atom.axis.as_str()));
         }
         if let Some(predicate) = atom.predicate.as_deref() {
-            if let Some(token) = diagnostic_shortcut_token(predicate) {
+            fields.push(("predicate", predicate));
+        }
+        for (field, value) in fields {
+            if let Some(token) = diagnostic_shortcut_token(value) {
                 examples.push(generic_validation_example(
                     &atom.id,
-                    &format!("predicate:{token}"),
-                    "ArchMap v2 atom predicates must stay observational; diagnostic conclusions belong to ArchSig",
+                    &format!("{field}:{token}"),
+                    "ArchMap v2 observation fields must not pre-author diagnostic conclusions",
                 ));
             }
         }
     }
     check_from_examples(
         "archmap-schema052-no-diagnostic-shortcuts",
-        "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions",
+        "ArchMap v2 atom observation fields do not pre-author diagnostic conclusions",
         examples,
     )
 }
@@ -417,6 +558,7 @@ fn diagnostic_shortcut_token(value: &str) -> Option<&'static str> {
             "risk" | "risky" => Some("risk"),
             "debt" => Some("debt"),
             "unsafe" => Some("unsafe"),
+            "safety" => Some("safety"),
             "lawful" => Some("lawful"),
             "nonzero" => Some("nonzero"),
             "failure" | "fail" | "failed" | "failing" => Some("failure"),
@@ -527,6 +669,146 @@ fn check_archmap_v2_atom_kind_vocabulary(document: &ArchMapDocumentV2) -> Valida
     check
 }
 
+fn check_archmap_v2_atom_axis_predicate_vocabulary(
+    document: &ArchMapDocumentV2,
+) -> ValidationCheck {
+    let vocabulary = static_aat_atom_vocabulary_v1();
+    let allowed_pairs = vocabulary
+        .axis_predicate_pairs
+        .iter()
+        .map(|pair| {
+            (
+                pair.axis.as_str(),
+                pair.predicates
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let allowed_non_ag_axes = vocabulary
+        .allowed_non_ag_observation_axes
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut examples = Vec::new();
+    for atom in &document.atoms {
+        let Some(predicates) = allowed_pairs.get(atom.axis.as_str()) else {
+            if !allowed_non_ag_axes.contains(atom.axis.as_str()) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    &atom.axis,
+                    "ArchMap v2 atom axis must be in the compiled observation-axis vocabulary",
+                ));
+            } else if atom.predicate.as_deref().is_none_or(|predicate| {
+                !canonical_non_ag_observation_predicate(atom.axis.as_str(), predicate)
+            }) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    &format!(
+                        "{}/{}",
+                        atom.axis,
+                        atom.predicate.as_deref().unwrap_or("<missing>")
+                    ),
+                    "ArchMap v2 non-AG atom axis/predicate pair must be in the compiled observation vocabulary",
+                ));
+            }
+            continue;
+        };
+        let Some(predicate) = atom.predicate.as_deref() else {
+            examples.push(generic_validation_example(
+                &atom.id,
+                "predicate",
+                "ArchMap v2 atom predicate is required for a vocabulary-bound axis",
+            ));
+            continue;
+        };
+        if !predicates.contains(predicate) {
+            examples.push(generic_validation_example(
+                &atom.id,
+                &format!("{}/{}", atom.axis, predicate),
+                "ArchMap v2 atom axis/predicate pair must be in the compiled AAT AG measurement vocabulary",
+            ));
+        }
+    }
+    let mut check = check_from_examples(
+        "archmap-schema052-atom-axis-predicate-vocabulary",
+        "ArchMap v2 atom axis/predicate pairs are members of the compiled AAT AG measurement vocabulary",
+        examples,
+    );
+    check.metric = Some(vocabulary.vocabulary_id);
+    check
+}
+
+fn canonical_non_ag_observation_predicate(axis: &str, predicate: &str) -> bool {
+    match axis {
+        "application" => matches!(
+            predicate,
+            "authorizesPayment"
+                | "evaluatesPolicyCatalog"
+                | "placesOrder"
+                | "plansShipment"
+                | "reservesInventory"
+        ),
+        "boundary" => matches!(
+            predicate,
+            "catalogLookupBoundary"
+                | "inventoryReservationBoundary"
+                | "paymentAuthorizationBoundary"
+                | "policyRuleCatalogBoundary"
+        ),
+        "cover" => predicate == "coSelectedInCover",
+        "dataflow" => matches!(
+            predicate,
+            "appendsDomainEvent"
+                | "booksCaptureFor"
+                | "booksPricedOrderFrom"
+                | "createsShipmentPlan"
+                | "decrementsAvailableInventory"
+                | "recordsAuthorization"
+        ),
+        "effect" => predicate == "effect",
+        "restriction" => predicate == "dependsOn",
+        "runtime" => matches!(
+            predicate,
+            "calls"
+                | "component"
+                | "concurrentReservationTrace"
+                | "demoCheckoutTrace"
+                | "presentsArchSigDemo"
+        ),
+        "semantic" => matches!(
+            predicate,
+            "commerceFulfillmentWorkflow"
+                | "policyRuleSpecCatalog"
+                | "reads"
+                | "reconciliationResidue"
+        ),
+        "specification" => matches!(
+            predicate,
+            "authorizationKeyedByOrderId"
+                | "hazmatUsesGroundCarrier"
+                | "platformBoundIncludesPorts"
+                | "rejectsEmptyOrder"
+                | "requiresPositiveQuantity"
+                | "reservationCarriesWarehouse"
+        ),
+        "state" => matches!(
+            predicate,
+            "OrderStatus" | "PaymentStatus" | "ReservationStatus" | "ShipmentStatus"
+        ),
+        "static" => matches!(
+            predicate,
+            "component"
+                | "dependsOn"
+                | "implements"
+                | "tripleOverlapWitness"
+                | "quadrupleOverlapWitness"
+        ),
+        _ => false,
+    }
+}
+
 fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck {
     let mut examples = Vec::new();
     for atom in &document.atoms {
@@ -544,15 +826,13 @@ fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck
                 "ArchMap v2 atom axis decoration is required",
             ));
         }
-        for source_ref in &atom.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &atom.id,
-                    source_ref,
-                    "atom refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &atom.id,
+            &atom.refs,
+            "atom refs[]",
+        );
     }
     check_from_examples(
         "archmap-schema052-atom-subject-axis-refs",
@@ -620,15 +900,13 @@ fn check_archmap_v2_contexts(document: &ArchMapDocumentV2) -> ValidationCheck {
                 ));
             }
         }
-        for source_ref in &context.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &context.id,
-                    source_ref,
-                    "context refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &context.id,
+            &context.refs,
+            "context refs[]",
+        );
     }
     let graph = document
         .contexts
@@ -709,21 +987,60 @@ fn check_archmap_v2_covers(document: &ArchMapDocumentV2) -> ValidationCheck {
                 ));
             }
         }
-        for source_ref in &cover.refs {
-            if !source_ref_resolves(document, source_ref) {
-                examples.push(generic_validation_example(
-                    &cover.id,
-                    source_ref,
-                    "cover refs[] entry must resolve to sources",
-                ));
-            }
-        }
+        append_source_ref_validation_examples(
+            &mut examples,
+            document,
+            &cover.id,
+            &cover.refs,
+            "cover refs[]",
+        );
     }
     check_from_examples(
         "archmap-schema052-cover-refs",
         "covers select finite source-grounded context families",
         examples,
     )
+}
+
+fn append_source_ref_validation_examples(
+    examples: &mut Vec<ValidationExample>,
+    document: &ArchMapDocumentV2,
+    owner: &str,
+    refs: &[String],
+    field: &str,
+) {
+    if refs.is_empty() {
+        examples.push(generic_validation_example(
+            owner,
+            field,
+            "observation rows must carry at least one source ref",
+        ));
+        return;
+    }
+    let mut seen = BTreeSet::new();
+    for source_ref in refs {
+        if source_ref.trim().is_empty() {
+            examples.push(generic_validation_example(
+                owner,
+                field,
+                "source refs must be non-empty strings",
+            ));
+        }
+        if !seen.insert(source_ref.as_str()) {
+            examples.push(generic_validation_example(
+                owner,
+                source_ref,
+                "source refs must be unique within an observation row",
+            ));
+        }
+        if !source_ref_resolves(document, source_ref) {
+            examples.push(generic_validation_example(
+                owner,
+                source_ref,
+                "source refs[] entry must resolve to sources",
+            ));
+        }
+    }
 }
 
 fn check_from_examples(id: &str, title: &str, examples: Vec<ValidationExample>) -> ValidationCheck {
@@ -768,10 +1085,32 @@ mod tests {
             vocabulary.required_doctrine_components,
             ["V", "Gamma", "R", "rho", "E", "N"]
         );
+        assert_eq!(
+            vocabulary.allowed_non_ag_observation_axes,
+            [
+                "application",
+                "boundary",
+                "cover",
+                "dataflow",
+                "effect",
+                "restriction",
+                "runtime",
+                "semantic",
+                "specification",
+                "state",
+                "static",
+            ]
+        );
         assert!(vocabulary.entries.iter().all(|entry| {
             entry.doctrine_ref == "aat-theory:atom-vocabulary"
                 && entry.provenance_ref == "aat-theory:atom-vocabulary"
         }));
+        assert!(
+            vocabulary
+                .axis_predicate_pairs
+                .iter()
+                .all(|pair| { pair.provenance_ref == "aat-theory:atom-vocabulary" })
+        );
         assert!(
             vocabulary
                 .non_conclusions
@@ -783,6 +1122,229 @@ mod tests {
                 .non_conclusions
                 .iter()
                 .any(|text| text.contains("does not prove source extraction soundness"))
+        );
+        let expected_pairs = BTreeMap::from([
+            (
+                "boundary-residue".to_string(),
+                BTreeSet::from([
+                    "boundarySection".to_string(),
+                    "patchClassification".to_string(),
+                    "patchRole".to_string(),
+                    "restrictionColumn".to_string(),
+                ]),
+            ),
+            (
+                "cech".to_string(),
+                BTreeSet::from([
+                    "cocycleValue".to_string(),
+                    "restrictionSurjectivityWitness".to_string(),
+                    "sectionValue".to_string(),
+                ]),
+            ),
+            (
+                "coherence".to_string(),
+                BTreeSet::from([
+                    "coherenceSection".to_string(),
+                    "h2Section".to_string(),
+                    "tripleSection".to_string(),
+                ]),
+            ),
+            (
+                "laplacian".to_string(),
+                BTreeSet::from([
+                    "cellularBoundary".to_string(),
+                    "cellularCochain".to_string(),
+                ]),
+            ),
+            (
+                "period".to_string(),
+                BTreeSet::from([
+                    "boundaryPeriod".to_string(),
+                    "dOmegaIntegral".to_string(),
+                    "periodIntegral".to_string(),
+                ]),
+            ),
+            (
+                "restriction-compatibility".to_string(),
+                BTreeSet::from(["restrictionIdealGenerator".to_string()]),
+            ),
+            (
+                "section-factorization".to_string(),
+                BTreeSet::from([
+                    "cooccurrence".to_string(),
+                    "selectedSection".to_string(),
+                    "support".to_string(),
+                    "witnessAssignment".to_string(),
+                ]),
+            ),
+            (
+                "square-free".to_string(),
+                BTreeSet::from(["cooccurrence".to_string(), "support".to_string()]),
+            ),
+            (
+                "tor".to_string(),
+                BTreeSet::from(["commonAmbient".to_string(), "lawIdealGenerator".to_string()]),
+            ),
+            (
+                "transfer".to_string(),
+                BTreeSet::from([
+                    "groundCost".to_string(),
+                    "repairPath".to_string(),
+                    "transferPairing".to_string(),
+                ]),
+            ),
+        ]);
+        let actual_pairs = vocabulary
+            .axis_predicate_pairs
+            .iter()
+            .map(|pair| {
+                (
+                    pair.axis.clone(),
+                    pair.predicates.iter().cloned().collect::<BTreeSet<_>>(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        assert_eq!(actual_pairs, expected_pairs);
+        assert!(serde_json::to_value(&vocabulary).is_ok());
+    }
+
+    #[test]
+    fn archmap_input_rejects_unknown_axis_predicate_pairs() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let valid_report = validate_archmap_v2_report(&document, "fixture:archmap_v2.json");
+        assert_eq!(
+            valid_report
+                .checks
+                .iter()
+                .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+                .expect("axis/predicate check exists")
+                .result,
+            "pass"
+        );
+
+        let mut invalid_pair = document.clone();
+        invalid_pair.atoms[0].axis = "cech".to_string();
+        invalid_pair.atoms[0].predicate = Some("unregisteredPredicate".to_string());
+        let invalid_pair_report =
+            validate_archmap_v2_report(&invalid_pair, "fixture:invalid-pair.json");
+        let invalid_pair_check = invalid_pair_report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+            .expect("axis/predicate check exists");
+        assert_eq!(invalid_pair_check.result, "fail");
+        assert!(
+            invalid_pair_check
+                .examples
+                .iter()
+                .any(|example| example.target.as_deref() == Some("cech/unregisteredPredicate"))
+        );
+
+        let mut invalid_axis = document;
+        invalid_axis.atoms[0].axis = "unregistered-axis".to_string();
+        invalid_axis.atoms[0].predicate = Some("component".to_string());
+        let invalid_axis_report =
+            validate_archmap_v2_report(&invalid_axis, "fixture:invalid-axis.json");
+        let invalid_axis_check = invalid_axis_report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-atom-axis-predicate-vocabulary")
+            .expect("axis/predicate check exists");
+        assert_eq!(invalid_axis_check.result, "fail");
+        assert!(
+            invalid_axis_check
+                .examples
+                .iter()
+                .any(|example| example.target.as_deref() == Some("unregistered-axis"))
+        );
+    }
+
+    #[test]
+    fn archmap_input_requires_source_grounded_observation_rows() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+
+        let mut invalid = document.clone();
+        invalid.atoms[0].refs.clear();
+        invalid.contexts[0].refs = vec!["src:checkout".to_string(), "src:checkout".to_string()];
+        invalid.covers[0].refs.clear();
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-source-grounding.json");
+
+        for check_id in [
+            "archmap-schema052-atom-subject-axis-refs",
+            "archmap-schema052-context-poset-refs",
+            "archmap-schema052-cover-refs",
+        ] {
+            assert_eq!(
+                report
+                    .checks
+                    .iter()
+                    .find(|check| check.id == check_id)
+                    .expect("source-grounding check exists")
+                    .result,
+                "fail",
+                "{check_id} must reject absent or duplicate refs"
+            );
+        }
+    }
+
+    #[test]
+    fn archmap_input_requires_a_source_locator_on_every_source_record() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let mut invalid = document;
+        let source = invalid
+            .sources
+            .get_mut("src:order")
+            .expect("fixture source exists");
+        source.path = None;
+        source.symbol = None;
+        source.section = None;
+        source.trace_id = None;
+
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-source-locator.json");
+        let check = report
+            .checks
+            .iter()
+            .find(|check| check.id == "archmap-schema052-sources-resolve")
+            .expect("source check exists");
+        assert_eq!(check.result, "fail");
+        assert!(check.examples.iter().any(|example| {
+            example.source.as_deref() == Some("sources")
+                && example.target.as_deref() == Some("src:order")
+                && example
+                    .evidence
+                    .as_deref()
+                    .is_some_and(|reason| reason.contains("locator"))
+        }));
+    }
+
+    #[test]
+    fn non_ag_observation_predicates_cannot_pre_author_safety_conclusions() {
+        let document: ArchMapDocumentV2 = serde_json::from_str(include_str!(
+            "../tests/fixtures/ag_measurement/archmap_v2.json"
+        ))
+        .expect("canonical ArchMap fixture parses");
+        let mut invalid = document;
+        invalid.atoms[0].axis = "runtime".to_string();
+        invalid.atoms[0].predicate = Some("globalSafety".to_string());
+        let report = validate_archmap_v2_report(&invalid, "fixture:invalid-safety-label.json");
+
+        assert_eq!(
+            report
+                .checks
+                .iter()
+                .find(|check| check.id == "archmap-schema052-no-diagnostic-shortcuts")
+                .expect("diagnostic shortcut check exists")
+                .result,
+            "fail"
         );
     }
 }

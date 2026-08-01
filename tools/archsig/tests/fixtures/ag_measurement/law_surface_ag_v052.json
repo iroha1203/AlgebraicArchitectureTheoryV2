@@ -109,7 +109,6 @@
         {
           "variable": "e_order_shared",
           "binding": {
-            "edge": ["ctx:order", "ctx:shared"],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -117,7 +116,6 @@
         {
           "variable": "e_inventory_shared",
           "binding": {
-            "edge": ["ctx:inventory", "ctx:shared"],
             "axis": "cech",
             "predicate": "sectionValue"
           }

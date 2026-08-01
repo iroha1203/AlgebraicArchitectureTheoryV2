@@ -6,9 +6,9 @@
       "lawId": "surface:cech-surface-v052",
       "conditionType": "closed-equational",
       "witnessVariables": [
-        { "variable": "e_top_left", "binding": { "edge": ["ctx:top", "ctx:left"], "axis": "cech", "predicate": "sectionValue" } },
-        { "variable": "e_top_right", "binding": { "edge": ["ctx:top", "ctx:right"], "axis": "cech", "predicate": "sectionValue" } },
-        { "variable": "e_left_bottom", "binding": { "edge": ["ctx:left", "ctx:bottom"], "axis": "cech", "predicate": "sectionValue" } }
+        { "variable": "e_top_left", "binding": { "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_top_right", "binding": { "axis": "cech", "predicate": "sectionValue" } },
+        { "variable": "e_left_bottom", "binding": { "axis": "cech", "predicate": "sectionValue" } }
       ],
       "forbiddenSupportGenerators": [
         { "support": ["e_top_left"] },

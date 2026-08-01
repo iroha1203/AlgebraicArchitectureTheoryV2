@@ -14,11 +14,7 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     let root = fixture_root();
     let out_dir = temp_dir("intentmap-alignment-workflow");
     let intent_fixture = root.join("intentmap.json");
-    let alignment_fixture = root.join("intent_archmap_alignment.json");
-    let archmap_fixture = root.join("archmap.json");
     let intent_validation = out_dir.join("intentmap-validation.json");
-    let alignment_validation = out_dir.join("alignment-validation.json");
-    let forecast_dir = out_dir.join("forecast");
     let pr_quality_validation = out_dir.join("pr-quality-validation.json");
     let calibration_validation = out_dir.join("intent-calibration-validation.json");
 
@@ -51,85 +47,6 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
             .any(|entry| {
                 entry == "IntentMap does not provide an implementation plan completeness guarantee"
             })
-    );
-
-    run_sig0(&[
-        "intent-archmap-alignment",
-        "--input",
-        alignment_fixture
-            .to_str()
-            .expect("alignment fixture path is utf-8"),
-        "--intent-map",
-        intent_fixture
-            .to_str()
-            .expect("intent fixture path is utf-8"),
-        "--archmap",
-        archmap_fixture
-            .to_str()
-            .expect("archmap fixture path is utf-8"),
-        "--out",
-        alignment_validation
-            .to_str()
-            .expect("alignment validation path is utf-8"),
-    ]);
-    let alignment_json = read_json(&alignment_validation);
-    assert_eq!(
-        alignment_json["schema"],
-        "intent-archmap-alignment-validation-report/v0.5.0"
-    );
-    assert_eq!(alignment_json["summary"]["result"], "pass");
-    assert!(
-        alignment_json["checks"]
-            .as_array()
-            .expect("checks are array")
-            .iter()
-            .any(|check| {
-                check["id"] == "intent-archmap-alignment-boundaries-not-measured-zero"
-            })
-    );
-
-    run_sig0(&[
-        "intent-forecast",
-        "--intent-map",
-        intent_fixture
-            .to_str()
-            .expect("intent fixture path is utf-8"),
-        "--archmap",
-        archmap_fixture
-            .to_str()
-            .expect("archmap fixture path is utf-8"),
-        "--alignment",
-        alignment_fixture
-            .to_str()
-            .expect("alignment fixture path is utf-8"),
-        "--out-dir",
-        forecast_dir.to_str().expect("forecast dir is utf-8"),
-    ]);
-    let estimate = read_json(&forecast_dir.join("operation-support-estimate.json"));
-    assert_eq!(estimate["schema"], "operation-support-estimate/v0.5.0");
-    assert_eq!(
-        estimate["descriptorRef"]["descriptorSchemaVersion"],
-        "intent-archmap-alignment/v0.5.0"
-    );
-    assert!(
-        estimate["unknownRemainder"][0]["unknownAxes"]
-            .as_array()
-            .expect("unknown axes are array")
-            .iter()
-            .any(|axis| {
-                axis.as_str()
-                    .expect("axis is string")
-                    .contains("coupons may stack")
-            })
-    );
-    let cone = read_json(&forecast_dir.join("forecast-cone-skeleton.json"));
-    assert_eq!(cone["schema"], "forecast-cone-skeleton/v0.5.0");
-    assert!(
-        cone["nonConclusions"]
-            .as_array()
-            .expect("forecast nonConclusions are array")
-            .iter()
-            .any(|entry| entry == "forecast cone skeleton does not assign probabilities")
     );
 
     run_sig0(&[
@@ -263,10 +180,6 @@ fn cli_emits_and_validates_aat_observable_bundle() {
     );
 }
 
-fn expressiveness_fixture_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
-}
-
 fn module_root_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/module_root")
 }
@@ -341,7 +254,16 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "zeroPredicate": "rank-zero@1",
             "nonZeroPredicate": "rank-positive@1",
             "certSelector": "finite-certificate@1",
-            "verdictDiscipline": "five-valued-structural-verdict@1"
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/computed",
@@ -365,7 +287,7 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "dependsOnAssumptions": ["assumption:part8-4-2:finite-site"],
             "evidence": {
                 "computedInvariantRefs": ["cech-cohomology:profile:test-handoff"],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }, {
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/certificate-missing",
@@ -395,7 +317,13 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "evaluator": "ag.cech-obstruction",
             "status": "computed",
             "value": {"H0": 1, "H1": 1},
-            "representation": {"dimensions": {"H0": 1, "H1": 1}}
+            "representation": {"dimensions": {"H0": 1, "H1": 1}},
+            "measuredCechVerdictEcho": {
+                "evaluator": "ag.cech-obstruction",
+                "certRef": "computedInvariants/cech-cohomology:profile:test-handoff",
+                "h1ClassNonzero": true,
+                "note": "separate structural verdict echo"
+            }
         }],
         "analyticReadings": [{
             "readingId": "theorem-candidate:transfer-lower-bound:test",
@@ -449,6 +377,14 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "conformance": {
                 "status": "validated",
                 "checkRef": "law-policy/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
             }
         }, {
             "suppliedId": "supplied:measurement-profile",
@@ -739,7 +675,16 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "zeroPredicate": "rank-zero@1",
             "nonZeroPredicate": "rank-positive@1",
             "certSelector": "finite-certificate@1",
-            "verdictDiscipline": "five-valued-structural-verdict@1"
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-cech-obstruction/ag-cech-obstruction/finite-f2-cech-computed",
@@ -761,7 +706,7 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             },
             "evidence": {
                 "computedInvariantRefs": [],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }],
         "computedInvariants": [{
@@ -797,6 +742,30 @@ fn cli_rejects_archsig_measurement_capacity_reading_as_cech_cert_fallback() {
             "conformance": {
                 "status": "validated",
                 "checkRef": "archmap/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-policy",
+            "kind": "law-policy",
+            "sourceArtifactRef": "input:law-policy.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-policy/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:measurement-profile",
+            "kind": "measurement-profile",
+            "sourceArtifactRef": "input:measurement-profile.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "measurement-profile/v0.5.4-validation"
             }
         }],
         "boundaryStatements": [],
@@ -836,6 +805,22 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     )
     .expect("schema-only packet fixture is written");
 
+    let aliased = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        schema_only
+            .to_str()
+            .expect("schema-only packet path is utf-8"),
+        "--out",
+        schema_only.to_str().expect("aliased output path is utf-8"),
+    ]);
+    assert!(!aliased.status.success());
+    assert!(
+        String::from_utf8_lossy(&aliased.stderr)
+            .contains("output path must differ from input path"),
+        "measurement-packet handoff must reject input/output aliases"
+    );
+
     let malformed = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
@@ -857,10 +842,10 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     let rejected = run_sig0_output(&[
         "archsig-analysis-sft-input",
         "--measurement-packet",
-        fixture_root()
-            .join("archmap.json")
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../archsig/tests/fixtures/ag_measurement/archmap_v2.json")
             .to_str()
-            .expect("archmap path is utf-8"),
+            .expect("ArchSig ArchMap path is utf-8"),
         "--out",
         out_dir
             .join("rejected.json")
@@ -930,7 +915,26 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
         },
         "profile": {
             "schema": "measurement-profile/v0.5.4",
-            "profileId": "profile:semantic-validation"
+            "profileId": "profile:semantic-validation",
+            "siteRef": "archmap:/contexts",
+            "coverRef": "cover:semantic-validation",
+            "coefficient": "F2",
+            "effCoeff": "finite-linear-algebra@1",
+            "resolutionSelector": "cech@1",
+            "domain": "finite-poset-site",
+            "zeroPredicate": "rank-zero@1",
+            "nonZeroPredicate": "rank-positive@1",
+            "certSelector": "finite-certificate@1",
+            "verdictDiscipline": "five-valued-structural-verdict@1",
+            "finiteBounds": {
+                "maxSquareFreeWitnessVariables": 12,
+                "maxCoherenceContexts": 12,
+                "maxTorWitnessVariables": 12,
+                "maxBoundaryResidueVariables": 16,
+                "maxLaplacianCells": 16,
+                "maxPeriodCycles": 16,
+                "maxTransferTargets": 16
+            }
         },
         "structuralVerdict": [{
             "verdictRef": "structuralVerdict/ag-square-free-repair/ag-square-free-repair/nsdepth-certificate-verified",
@@ -954,7 +958,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
             "dependsOnAssumptions": ["assumption:part3-7-2B:finite-certificate-verified"],
             "evidence": {
                 "computedInvariantRefs": ["square-free-repair:profile:semantic-validation"],
-                "sourceRefs": []
+                "sourceRefs": ["source:fixture:measurement"]
             }
         }],
         "computedInvariants": [{
@@ -990,10 +994,276 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
                 "status": "validated",
                 "checkRef": "archmap/v0.5.4-validation"
             }
+        }, {
+            "suppliedId": "supplied:law-policy",
+            "kind": "law-policy",
+            "sourceArtifactRef": "input:law-policy.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-policy/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:law-surface",
+            "kind": "law-equation-surface",
+            "sourceArtifactRef": "input:law_surface.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "law-equation-surface/v0.5.4-validation"
+            }
+        }, {
+            "suppliedId": "supplied:measurement-profile",
+            "kind": "measurement-profile",
+            "sourceArtifactRef": "input:measurement-profile.json",
+            "conformance": {
+                "status": "validated",
+                "checkRef": "measurement-profile/v0.5.4-validation"
+            }
         }],
         "boundaryStatements": [],
         "nonConclusions": []
     });
+
+    let mut residual_class_packet = valid_measurement_packet.clone();
+    residual_class_packet["computedInvariants"]
+        .as_array_mut()
+        .expect("computed invariants are an array")
+        .push(serde_json::json!({
+            "invariantId": "saga-descent:residual-class",
+            "kind": "residual-class-support",
+            "evaluator": "ag.saga-descent",
+            "value": {},
+            "representation": {},
+            "derivedComplexRef": "derived:saga-complex:profile:semantic-validation",
+            "derivedFrom": ["ArchMap.cover", "ArchMap.contexts.restrictsTo"]
+        }));
+    let residual_class_path = out_dir.join("residual-class-measurement-packet.json");
+    fs::write(
+        &residual_class_path,
+        serde_json::to_string_pretty(&residual_class_packet)
+            .expect("residual class packet serializes"),
+    )
+    .expect("residual class packet writes");
+    let residual_class_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        residual_class_path
+            .to_str()
+            .expect("residual class packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("residual-class.json")
+            .to_str()
+            .expect("residual class output path is utf-8"),
+    ]);
+    assert!(
+        residual_class_output.status.success(),
+        "residual-class-support is a current ArchSig handoff kind: {}",
+        String::from_utf8_lossy(&residual_class_output.stderr)
+    );
+
+    let mut malformed_profiles_packet = valid_measurement_packet.clone();
+    malformed_profiles_packet["profiles"] = serde_json::json!({});
+    let malformed_profiles_path = out_dir.join("malformed-profiles-measurement-packet.json");
+    fs::write(
+        &malformed_profiles_path,
+        serde_json::to_string_pretty(&malformed_profiles_packet)
+            .expect("malformed profiles packet serializes"),
+    )
+    .expect("malformed profiles packet writes");
+    let malformed_profiles_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        malformed_profiles_path
+            .to_str()
+            .expect("malformed profiles packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("malformed-profiles.json")
+            .to_str()
+            .expect("malformed profiles output path is utf-8"),
+    ]);
+    assert!(!malformed_profiles_output.status.success());
+    assert!(
+        String::from_utf8_lossy(&malformed_profiles_output.stderr)
+            .contains("profiles must be an array")
+    );
+
+    let mut incomplete_profiles_packet = valid_measurement_packet.clone();
+    incomplete_profiles_packet["profiles"] = serde_json::json!([{
+        "schema": "measurement-profile/v0.5.4",
+        "profileId": "profile:incomplete"
+    }]);
+    let incomplete_profiles_path = out_dir.join("incomplete-profiles-measurement-packet.json");
+    fs::write(
+        &incomplete_profiles_path,
+        serde_json::to_string_pretty(&incomplete_profiles_packet)
+            .expect("incomplete profiles packet serializes"),
+    )
+    .expect("incomplete profiles packet writes");
+    let incomplete_profiles_output = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        incomplete_profiles_path
+            .to_str()
+            .expect("incomplete profiles packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("incomplete-profiles.json")
+            .to_str()
+            .expect("incomplete profiles output path is utf-8"),
+    ]);
+    assert!(!incomplete_profiles_output.status.success());
+    assert!(
+        String::from_utf8_lossy(&incomplete_profiles_output.stderr)
+            .contains("profiles[0] requires non-empty siteRef")
+    );
+
+    let duplicate_json_packet = out_dir.join("duplicate-json-key-measurement-packet.json");
+    let valid_packet_source = serde_json::to_string_pretty(&valid_measurement_packet)
+        .expect("valid measurement packet serializes");
+    let duplicate_key = "  \"packetId\": \"measurement:semantic-validation\",";
+    let duplicate_packet_source = valid_packet_source.replacen(
+        duplicate_key,
+        &format!("{duplicate_key}\n{duplicate_key}"),
+        1,
+    );
+    fs::write(&duplicate_json_packet, duplicate_packet_source)
+        .expect("duplicate JSON key packet fixture is written");
+    let duplicate_json = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        duplicate_json_packet
+            .to_str()
+            .expect("duplicate JSON key packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("duplicate-json-key.json")
+            .to_str()
+            .expect("duplicate JSON key output path is utf-8"),
+    ]);
+    assert!(!duplicate_json.status.success());
+    assert!(
+        String::from_utf8_lossy(&duplicate_json.stderr)
+            .contains("duplicate JSON object key packetId"),
+        "measurement-packet handoff must reject duplicate JSON object keys"
+    );
+
+    let missing_source_refs_packet = out_dir.join("missing-source-refs-measurement-packet.json");
+    let mut missing_source_refs_json = valid_measurement_packet.clone();
+    missing_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!([]);
+    fs::write(
+        &missing_source_refs_packet,
+        serde_json::to_string_pretty(&missing_source_refs_json)
+            .expect("missing source refs packet serializes"),
+    )
+    .expect("missing source refs packet fixture is written");
+    let missing_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        missing_source_refs_packet
+            .to_str()
+            .expect("missing source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("missing-source-refs.json")
+            .to_str()
+            .expect("missing source refs output path is utf-8"),
+    ]);
+    assert!(!missing_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&missing_source_refs.stderr)
+            .contains("requires non-empty evidence.sourceRefs"),
+        "measurement-packet handoff must reject measured verdicts without observation provenance"
+    );
+
+    let invalid_source_refs_packet = out_dir.join("invalid-source-refs-measurement-packet.json");
+    let mut invalid_source_refs_json = valid_measurement_packet.clone();
+    invalid_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!([null]);
+    fs::write(
+        &invalid_source_refs_packet,
+        serde_json::to_string_pretty(&invalid_source_refs_json)
+            .expect("invalid source refs packet serializes"),
+    )
+    .expect("invalid source refs packet fixture is written");
+    let invalid_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        invalid_source_refs_packet
+            .to_str()
+            .expect("invalid source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("invalid-source-refs.json")
+            .to_str()
+            .expect("invalid source refs output path is utf-8"),
+    ]);
+    assert!(!invalid_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&invalid_source_refs.stderr)
+            .contains("evidence.sourceRefs[0] requires non-empty string"),
+        "measurement-packet handoff must reject non-string observation provenance\n{}",
+        String::from_utf8_lossy(&invalid_source_refs.stderr)
+    );
+
+    let duplicate_source_refs_packet =
+        out_dir.join("duplicate-source-refs-measurement-packet.json");
+    let mut duplicate_source_refs_json = valid_measurement_packet.clone();
+    duplicate_source_refs_json["structuralVerdict"][0]["evidence"]["sourceRefs"] =
+        serde_json::json!(["source:fixture:measurement", "source:fixture:measurement"]);
+    fs::write(
+        &duplicate_source_refs_packet,
+        serde_json::to_string_pretty(&duplicate_source_refs_json)
+            .expect("duplicate source refs packet serializes"),
+    )
+    .expect("duplicate source refs packet fixture is written");
+    let duplicate_source_refs = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        duplicate_source_refs_packet
+            .to_str()
+            .expect("duplicate source refs packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("duplicate-source-refs.json")
+            .to_str()
+            .expect("duplicate source refs output path is utf-8"),
+    ]);
+    assert!(!duplicate_source_refs.status.success());
+    assert!(
+        String::from_utf8_lossy(&duplicate_source_refs.stderr)
+            .contains("evidence.sourceRefs[1] duplicates source:fixture:measurement"),
+        "measurement-packet handoff must reject duplicate observation provenance"
+    );
+
+    let unknown_nested_packet = out_dir.join("unknown-nested-measurement-packet.json");
+    let mut unknown_nested_json = valid_measurement_packet.clone();
+    unknown_nested_json["structuralVerdict"][0]["evidence"]["extra"] = serde_json::json!(true);
+    fs::write(
+        &unknown_nested_packet,
+        serde_json::to_string_pretty(&unknown_nested_json)
+            .expect("unknown nested packet serializes"),
+    )
+    .expect("unknown nested packet fixture is written");
+    let unknown_nested = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--measurement-packet",
+        unknown_nested_packet
+            .to_str()
+            .expect("unknown nested packet path is utf-8"),
+        "--out",
+        out_dir
+            .join("unknown-nested.json")
+            .to_str()
+            .expect("unknown nested output path is utf-8"),
+    ]);
+    assert!(!unknown_nested.status.success());
+    assert!(
+        String::from_utf8_lossy(&unknown_nested.stderr)
+            .contains("rejects unknown field structuralVerdict[0].evidence.extra"),
+        "measurement-packet handoff must reject unknown nested evidence fields"
+    );
 
     let mismatched_evaluator_packet = out_dir.join("mismatched-evaluator-measurement-packet.json");
     let mut mismatched_evaluator_json = valid_measurement_packet.clone();
@@ -1275,7 +1545,7 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
     assert!(!opaque_cert_ref.status.success());
     assert!(
         String::from_utf8_lossy(&opaque_cert_ref.stderr)
-            .contains("requires certRef or matching computed invariant evidence"),
+            .contains("certRef opaque:non-computed-cert must resolve to a computed invariant"),
         "measurement-packet handoff must reject opaque certRef values that do not resolve to computedInvariants"
     );
 
@@ -1403,738 +1673,20 @@ fn cli_rejects_invalid_measurement_packet_handoff_inputs() {
 }
 
 #[test]
-fn cli_validates_archmap_fixture_and_guardrails() {
-    let out_dir = temp_dir("archmap-validation");
-    let input = fixture_root().join("archmap.json");
-    let report = out_dir.join("archmap-validation.json");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        input.to_str().expect("fixture path is utf-8"),
-        "--out",
-        report.to_str().expect("output path is utf-8"),
-    ]);
-
-    let json = read_json(&report);
-    assert_eq!(json["schema"], "archmap-validation-report/v0.5.0");
-    assert_eq!(json["summary"]["result"], "warn");
-    let source_inventory_checks = json["sourceInventoryChecks"]
-        .as_array()
-        .expect("source inventory checks are an array");
-    assert!(
-        source_inventory_checks.iter().any(|check| {
-            check["id"] == "archmap-source-inventory-artifact"
-                && check["result"] == "pass"
-                && check["reason"]
-                    .as_str()
-                    .expect("source inventory pass has a reason")
-                    .contains("included, excluded, unavailable, private")
-        }),
-        "source inventory artifact boundary should be present and consistent"
-    );
-    assert!(
-        json["conflictChecks"][0]["examples"]
-            .as_array()
-            .expect("conflict examples are an array")
-            .iter()
-            .any(|example| example["source"] == "policy-disagreement")
-    );
-    assert!(
-        json["nonConclusions"]
-            .as_array()
-            .expect("nonConclusions are an array")
-            .iter()
-            .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
-    );
-    assert_eq!(
-        json["atomicObservationSummary"]["atomCandidateCount"], 4,
-        "ArchMap validation should expose atom candidate count"
-    );
-    assert!(
-        json["atomicObservationChecks"]
-            .as_array()
-            .expect("atomic observation checks are an array")
-            .iter()
-            .any(|check| check["id"] == "archmap-observation-gaps-not-measured-zero")
-    );
-    assert!(
-        json["nonConclusions"]
-            .as_array()
-            .expect("nonConclusions are an array")
-            .iter()
-            .any(|entry| entry == "obstruction circuit candidate is not a primitive atom")
-    );
-    assert!(
-        json["leanPreservationVocabulary"]
-            .as_array()
-            .expect("Lean preservation vocabulary is an array")
-            .iter()
-            .any(|entry| {
-                entry["archmapSelector"] == "mappingKind=object or targetRef.kind=air-component"
-                    && entry["leanPackageField"] == "ObjectPreservation"
-            })
-    );
-    let preservation_checklist = json["leanPreservationPreconditionChecklist"]
-        .as_array()
-        .expect("Lean preservation checklist is an array");
-    assert!(
-        preservation_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "object-route-users"
-                && entry["leanPackageField"] == "ObjectPreservation"
-                && entry["status"] == "candidate"
-        }),
-        "object mapping should be tracked as an ObjectPreservation candidate"
-    );
-    assert!(
-        preservation_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "policy-layered-route-service"
-                && entry["leanPackageField"] == "LawPolicyPreservation"
-                && entry["status"] == "satisfiedBySuppliedAssumption"
-        }),
-        "supplied policy assumptions should stay distinct from proved theorem discharge"
-    );
-    assert!(
-        preservation_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "semantic-unmeasured-global-commutation"
-                && entry["leanPackageField"] == "SemanticCommutationPreservation"
-                && entry["status"] == "blockedByUnmeasuredCoverage"
-        }),
-        "unmeasured semantic commutation should block preservation discharge"
-    );
-    assert!(
-        preservation_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "runtime-unmeasured-boundary"
-                && entry["status"] == "blockedByMissingEvidence"
-        }),
-        "runtime missing evidence should remain visible in the checklist"
-    );
-    assert!(
-        preservation_checklist.iter().any(|entry| {
-            entry["leanPackageField"] == "FormalPromotionGuardrail"
-                && entry["status"] == "blockedByFormalPromotionGuardrail"
-        }),
-        "validation success should keep the formal promotion guardrail visible"
-    );
-
-    let invalid = out_dir.join("archmap-invalid.json");
-    let invalid_report = out_dir.join("archmap-invalid-validation.json");
-    let mut invalid_json = read_json(&input);
-    invalid_json["mapItems"][0]["sourceRefs"] = serde_json::json!([]);
-    invalid_json["mapItems"][1]["claimClassification"] = serde_json::json!("proved");
-    fs::write(
-        &invalid,
-        serde_json::to_string_pretty(&invalid_json).expect("invalid ArchMap serializes"),
-    )
-    .expect("invalid ArchMap is written");
-
-    let output = run_sig0_output(&[
-        "archmap",
-        "--input",
-        invalid.to_str().expect("invalid path is utf-8"),
-        "--out",
-        invalid_report.to_str().expect("output path is utf-8"),
-    ]);
-    assert!(
-        !output.status.success(),
-        "invalid ArchMap should fail validation"
-    );
-    let invalid_report_json = read_json(&invalid_report);
-    assert_eq!(invalid_report_json["summary"]["result"], "fail");
-    assert_eq!(
-        invalid_report_json["claimBoundaryChecks"][0]["id"],
-        "archmap-measured-claims-have-evidence"
-    );
-    assert_eq!(
-        invalid_report_json["formalPromotionGuardrailChecks"][0]["id"],
-        "archmap-formal-promotion-guardrail"
-    );
-
-    let missing_inventory = out_dir.join("archmap-missing-source-inventory.json");
-    let missing_inventory_report = out_dir.join("archmap-missing-source-inventory-report.json");
-    let mut missing_inventory_json = read_json(&input);
-    missing_inventory_json["sourceInventoryRef"]["path"] = serde_json::json!(
-        "tools/fieldsig/tests/fixtures/minimal/external/missing_source_inventory.json"
-    );
-    fs::write(
-        &missing_inventory,
-        serde_json::to_string_pretty(&missing_inventory_json)
-            .expect("missing inventory ArchMap serializes"),
-    )
-    .expect("missing inventory ArchMap is written");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        missing_inventory
-            .to_str()
-            .expect("missing inventory path is utf-8"),
-        "--out",
-        missing_inventory_report
-            .to_str()
-            .expect("output path is utf-8"),
-    ]);
-    let missing_inventory_report_json = read_json(&missing_inventory_report);
-    assert_eq!(missing_inventory_report_json["summary"]["result"], "warn");
-    assert!(
-        missing_inventory_report_json["sourceInventoryChecks"]
-            .as_array()
-            .expect("source inventory checks are an array")
-            .iter()
-            .any(|check| {
-                check["id"] == "archmap-source-inventory-artifact"
-                    && check["result"] == "warn"
-                    && check["examples"]
-                        .as_array()
-                        .expect("warning examples are an array")
-                        .iter()
-                        .any(|example| {
-                            example["evidence"] == "source inventory artifact path does not exist"
-                        })
-            })
-    );
-
-    let mismatched_inventory = out_dir.join("archmap-source-inventory-mismatched.json");
-    let mismatched_archmap = out_dir.join("archmap-mismatched-source-inventory.json");
-    let mismatched_inventory_report =
-        out_dir.join("archmap-mismatched-source-inventory-report.json");
-    let mut inventory_json = read_json(&fixture_root().join("archmap_source_inventory.json"));
-    inventory_json["includedRefs"] = serde_json::json!([]);
-    fs::write(
-        &mismatched_inventory,
-        serde_json::to_string_pretty(&inventory_json).expect("mismatched inventory serializes"),
-    )
-    .expect("mismatched inventory is written");
-    let mut mismatched_archmap_json = read_json(&input);
-    mismatched_archmap_json["sourceInventoryRef"]["path"] = serde_json::json!(
-        mismatched_inventory
-            .to_str()
-            .expect("mismatched inventory path is utf-8")
-    );
-    fs::write(
-        &mismatched_archmap,
-        serde_json::to_string_pretty(&mismatched_archmap_json)
-            .expect("mismatched ArchMap serializes"),
-    )
-    .expect("mismatched ArchMap is written");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        mismatched_archmap
-            .to_str()
-            .expect("mismatched ArchMap path is utf-8"),
-        "--out",
-        mismatched_inventory_report
-            .to_str()
-            .expect("output path is utf-8"),
-    ]);
-    let mismatched_inventory_report_json = read_json(&mismatched_inventory_report);
-    assert_eq!(
-        mismatched_inventory_report_json["summary"]["result"],
-        "warn"
-    );
-    assert!(
-        mismatched_inventory_report_json["sourceInventoryChecks"]
-            .as_array()
-            .expect("source inventory checks are an array")
-            .iter()
-            .any(|check| {
-                check["id"] == "archmap-source-inventory-artifact"
-                    && check["result"] == "warn"
-                    && check["examples"]
-                        .as_array()
-                        .expect("warning examples are an array")
-                        .iter()
-                        .any(|example| {
-                            example["source"] == "sourceUniverse.includedRefs"
-                                && example["evidence"]
-                                    == "embedded ArchMap sourceUniverse ref is absent from source inventory artifact"
-                        })
-            })
-    );
-}
-
-#[test]
-fn cli_projects_archmap_to_sft_input_and_generation_protocol() {
-    let out_dir = temp_dir("archmap-sft-input");
-    let input = fixture_root().join("archmap.json");
-    let source_inventory = fixture_root().join("archmap_source_inventory.json");
-    let estimate = out_dir.join("archmap-operation-support.json");
-    let cone = out_dir.join("archmap-forecast-cone.json");
-    let envelope = out_dir.join("archmap-consequence-envelope.json");
-    let protocol = out_dir.join("archmap-generation-protocol.json");
-
-    run_sig0(&[
-        "archmap-sft-input",
-        "--archmap",
-        input.to_str().expect("fixture path is utf-8"),
-        "--out",
-        estimate.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "forecast-cone-skeleton",
-        "--operation-support",
-        estimate.to_str().expect("estimate path is utf-8"),
-        "--out",
-        cone.to_str().expect("cone path is utf-8"),
-    ]);
-    run_sig0(&[
-        "consequence-envelope",
-        "--forecast-cone",
-        cone.to_str().expect("cone path is utf-8"),
-        "--out",
-        envelope.to_str().expect("envelope path is utf-8"),
-    ]);
-    run_sig0(&[
-        "archmap-generate",
-        "--source-inventory",
-        source_inventory
-            .to_str()
-            .expect("source inventory path is utf-8"),
-        "--prompt-pack",
-        ".lake/archmap-prompt.md",
-        "--provider",
-        "fixture-provider",
-        "--model-id",
-        "fixture-model",
-        "--out",
-        protocol.to_str().expect("protocol path is utf-8"),
-    ]);
-
-    let estimate_json = read_json(&estimate);
-    assert_eq!(estimate_json["schema"], "operation-support-estimate/v0.5.0");
-    assert!(
-        estimate_json["candidateOperationFamilies"]
-            .as_array()
-            .expect("candidate families are an array")
-            .iter()
-            .any(|family| family["operationFamily"] == "runtime-observation")
-    );
-    assert!(
-        estimate_json["unknownRemainder"]
-            .as_array()
-            .expect("unknown remainder is an array")
-            .iter()
-            .any(|remainder| {
-                remainder["treatment"]
-                    .as_str()
-                    .expect("treatment is a string")
-                    .contains("do not round to absence or measured zero")
-            })
-    );
-    assert!(
-        estimate_json["descriptorRef"]["actionClassCandidateIds"]
-            .as_array()
-            .expect("action class candidate ids are an array")
-            .iter()
-            .any(|candidate| candidate == "atom:archmap:atom-component-service-user"),
-        "FieldSig handoff must retain ArchMap atom refs as observation refs"
-    );
-    assert!(
-        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
-            .as_array()
-            .expect("measurement boundary refs are an array")
-            .iter()
-            .any(|boundary| boundary == "archmapObservationGap:gap-runtime-user-db-trace"),
-        "FieldSig handoff must retain observation gap refs"
-    );
-    assert!(
-        estimate_json["unknownRemainder"]
-            .as_array()
-            .expect("unknown remainder is an array")
-            .iter()
-            .any(|remainder| remainder["remainderId"]
-                == "unknown:archmap:gap:gap-runtime-user-db-trace")
-    );
-
-    let cone_json = read_json(&cone);
-    assert!(
-        cone_json["operationSupportRef"]["sourceRefIds"]
-            .as_array()
-            .expect("cone source refs are an array")
-            .iter()
-            .any(|source| {
-                source
-                    .as_str()
-                    .expect("source ref is a string")
-                    .starts_with("source:archmap:")
-            })
-    );
-    let envelope_json = read_json(&envelope);
-    assert!(
-        envelope_json["forecastConeRef"]["sourceRefIds"]
-            .as_array()
-            .expect("envelope source refs are an array")
-            .iter()
-            .any(|source| {
-                source
-                    .as_str()
-                    .expect("source ref is a string")
-                    .starts_with("source:archmap:")
-            })
-    );
-
-    let protocol_json = read_json(&protocol);
-    assert_eq!(
-        protocol_json["schema"],
-        "archmap-generation-protocol/v0.5.0"
-    );
-    assert_eq!(
-        protocol_json["modelProvenance"]["provider"],
-        "fixture-provider"
-    );
-    assert!(
-        protocol_json["requiredWorkflow"]
-            .as_array()
-            .expect("required workflow is an array")
-            .iter()
-            .any(|step| {
-                step.as_str()
-                    .expect("workflow step is a string")
-                    .contains("invalid, dangling, unsupported, private, and unavailable")
-            })
-    );
-}
-
-#[test]
-fn cli_projects_archmap_to_air_and_existing_reports() {
-    let out_dir = temp_dir("archmap-air-flow");
-    let archmap = fixture_root().join("archmap.json");
-    let validation = out_dir.join("archmap-validation.json");
-    let air = out_dir.join("air.json");
-    let air_validation = out_dir.join("air-validation.json");
-    let theorem_report = out_dir.join("theorem-check.json");
-    let feature_report = out_dir.join("feature-report.json");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        archmap.to_str().expect("fixture path is utf-8"),
-        "--out",
-        validation.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "air-from-archmap",
-        "--archmap",
-        archmap.to_str().expect("fixture path is utf-8"),
-        "--validation",
-        validation.to_str().expect("validation path is utf-8"),
-        "--out",
-        air.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "validate-air",
-        "--input",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        air_validation.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "theorem-check",
-        "--air",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        theorem_report.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "feature-report",
-        "--air",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        feature_report.to_str().expect("output path is utf-8"),
-    ]);
-
-    let air_json = read_json(&air);
-    assert_eq!(air_json["schema"], "aat-air/v0.5.0");
-    assert!(
-        air_json["artifacts"]
-            .as_array()
-            .expect("AIR artifacts are an array")
-            .iter()
-            .any(|artifact| {
-                artifact["artifactId"] == "source-inventory-fixture"
-                    && artifact["kind"] == "source_inventory"
-                    && artifact["path"]
-                        == "tools/fieldsig/tests/fixtures/minimal/archmap_source_inventory.json"
-            })
-    );
-    assert!(
-        air_json["evidence"]
-            .as_array()
-            .expect("AIR evidence is an array")
-            .iter()
-            .any(|evidence| {
-                evidence["evidenceId"] == "evidence-archmap-source-inventory"
-                    && evidence["artifactRef"] == "source-inventory-fixture"
-            })
-    );
-    assert!(
-        air_json["semanticDiagrams"]
-            .as_array()
-            .expect("semantic diagrams are an array")
-            .iter()
-            .any(|diagram| diagram["id"] == "diagram-create-user")
-    );
-    assert!(
-        air_json["nonfillabilityWitnesses"]
-            .as_array()
-            .expect("nonfillability witnesses are an array")
-            .iter()
-            .any(|witness| witness["witnessId"] == "witness-user-saga-missing-compensation")
-    );
-    assert!(
-        air_json["claims"]
-            .as_array()
-            .expect("claims are an array")
-            .iter()
-            .any(|claim| claim["predicate"] == "ArchMap conflict review cue: missing-static-edge")
-    );
-
-    let air_validation_json = read_json(&air_validation);
-    assert_eq!(air_validation_json["summary"]["result"], "pass");
-    let theorem_json = read_json(&theorem_report);
-    assert_eq!(
-        theorem_json["schema"],
-        "theorem-precondition-check-report/v0.5.0"
-    );
-    let theorem_archmap_checklist = theorem_json["archmapPreservationPreconditionChecklist"]
-        .as_array()
-        .expect("theorem-check ArchMap preservation checklist is an array");
-    assert!(
-        theorem_archmap_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "semantic-create-user-diagram"
-                && entry["leanPackageField"] == "SemanticDiagramPreservation"
-                && entry["status"] == "candidate"
-        }),
-        "theorem-check should report semantic diagram preservation candidates"
-    );
-    assert!(
-        theorem_archmap_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "semantic-unmeasured-global-commutation"
-                && entry["leanPackageField"] == "SemanticCommutationPreservation"
-                && entry["status"] == "blockedByUnmeasuredCoverage"
-        }),
-        "theorem-check should keep unmeasured semantic commutation out of proof promotion"
-    );
-    assert!(
-        theorem_archmap_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "runtime-unmeasured-boundary"
-                && entry["status"] == "blockedByMissingEvidence"
-                && entry["missingEvidence"]
-                    .as_array()
-                    .expect("missing evidence is an array")
-                    .iter()
-                    .any(|missing| missing == "runtime trace not supplied")
-        }),
-        "theorem-check should keep missing runtime evidence out of proof promotion"
-    );
-    assert!(
-        theorem_archmap_checklist.iter().any(|entry| {
-            entry["leanPackageField"] == "FormalPromotionGuardrail"
-                && entry["status"] == "blockedByFormalPromotionGuardrail"
-        }),
-        "theorem-check should keep ArchMap formal promotion blocked"
-    );
-    let feature_json = read_json(&feature_report);
-    assert_eq!(feature_json["schema"], "feature-extension-report/v0.5.0");
-    assert!(
-        feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
-            .as_u64()
-            .expect("witness count is numeric")
-            >= 1
-    );
-}
-
-#[test]
-fn cli_locks_archmap_expressiveness_suite_v0_boundaries() {
-    let out_dir = temp_dir("archmap-expressiveness-suite");
-    let root = expressiveness_fixture_root();
-    let archmap = root.join("archmap_expressiveness_suite_v0.json");
-    let validation = out_dir.join("archmap-validation.json");
-    let air = out_dir.join("air.json");
-    let air_validation = out_dir.join("air-validation.json");
-    let theorem_report = out_dir.join("theorem-check.json");
-    let feature_report = out_dir.join("feature-report.json");
-
-    run_sig0(&[
-        "archmap",
-        "--input",
-        archmap.to_str().expect("fixture path is utf-8"),
-        "--out",
-        validation.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "air-from-archmap",
-        "--archmap",
-        archmap.to_str().expect("fixture path is utf-8"),
-        "--validation",
-        validation.to_str().expect("validation path is utf-8"),
-        "--out",
-        air.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "validate-air",
-        "--input",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        air_validation.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "theorem-check",
-        "--air",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        theorem_report.to_str().expect("output path is utf-8"),
-    ]);
-    run_sig0(&[
-        "feature-report",
-        "--air",
-        air.to_str().expect("AIR path is utf-8"),
-        "--out",
-        feature_report.to_str().expect("output path is utf-8"),
-    ]);
-
-    let validation_json = read_json(&validation);
-    assert_eq!(validation_json["summary"]["mapItemCount"], 10);
-    assert_eq!(validation_json["summary"]["result"], "warn");
-    assert!(
-        validation_json["sourceInventoryChecks"]
-            .as_array()
-            .expect("source inventory checks are an array")
-            .iter()
-            .any(|check| check["id"] == "archmap-source-inventory-artifact"
-                && check["result"] == "pass")
-    );
-    assert!(
-        validation_json["leanPreservationVocabulary"]
-            .as_array()
-            .expect("vocabulary is an array")
-            .iter()
-            .any(|entry| {
-                entry["vocabularyId"] == "archmap-runtime-static-disagreement-boundary"
-                    && entry["leanPackageField"] == "CoverageExactnessBoundary"
-            })
-    );
-    let checklist = validation_json["leanPreservationPreconditionChecklist"]
-        .as_array()
-        .expect("checklist is an array");
-    for (map_item_id, field, status) in [
-        (
-            "layered_policy_violation",
-            "LawPolicyPreservation",
-            "satisfiedBySuppliedAssumption",
-        ),
-        (
-            "srp_responsibility_split",
-            "LawPolicyPreservation",
-            "candidate",
-        ),
-        (
-            "contract_preservation",
-            "SemanticDiagramPreservation",
-            "candidate",
-        ),
-        (
-            "semantic_commutation",
-            "SemanticCommutationPreservation",
-            "candidate",
-        ),
-        (
-            "semantic_non_commutation",
-            "NonfillabilityWitnessPreservation",
-            "candidate",
-        ),
-        (
-            "event_sourcing_projection",
-            "SemanticDiagramPreservation",
-            "candidate",
-        ),
-        (
-            "saga_compensation",
-            "NonfillabilityWitnessPreservation",
-            "candidate",
-        ),
-        (
-            "runtime_static_disagreement",
-            "CoverageExactnessBoundary",
-            "blockedByUnmeasuredCoverage",
-        ),
-        (
-            "framework_convention_boundary",
-            "CoverageExactnessBoundary",
-            "blockedByUnmeasuredCoverage",
-        ),
-        (
-            "dynamic_plugin_blind_spot",
-            "CoverageExactnessBoundary",
-            "blockedByUnmeasuredCoverage",
-        ),
+fn cli_removed_archmap_authoring_commands_are_not_accepted() {
+    for command in [
+        "intent-archmap-alignment",
+        "intent-forecast",
+        "scope-manifest",
+        "extraction-diff",
+        "supply-bench",
     ] {
+        let output = run_sig0_output(&[command, "--help"]);
         assert!(
-            checklist.iter().any(|entry| {
-                entry["mapItemId"] == map_item_id
-                    && entry["leanPackageField"] == field
-                    && entry["status"] == status
-            }),
-            "{map_item_id} should map to {field} with {status}"
+            !output.status.success(),
+            "removed authoring command {command} should not be accepted"
         );
     }
-    assert!(
-        validation_json["nonConclusions"]
-            .as_array()
-            .expect("nonConclusions are an array")
-            .iter()
-            .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
-    );
-
-    let air_json = read_json(&air);
-    assert_eq!(air_json["schema"], "aat-air/v0.5.0");
-    assert!(
-        air_json["semanticDiagrams"]
-            .as_array()
-            .expect("semantic diagrams are an array")
-            .iter()
-            .any(|diagram| diagram["id"] == "diagram-event-sourcing-projection")
-    );
-    assert!(
-        air_json["nonfillabilityWitnesses"]
-            .as_array()
-            .expect("nonfillability witnesses are an array")
-            .iter()
-            .any(|witness| witness["witnessId"] == "witness-saga-compensation-gap")
-    );
-    let air_validation_json = read_json(&air_validation);
-    assert_eq!(air_validation_json["summary"]["result"], "pass");
-
-    let theorem_json = read_json(&theorem_report);
-    let theorem_checklist = theorem_json["archmapPreservationPreconditionChecklist"]
-        .as_array()
-        .expect("theorem-check ArchMap checklist is an array");
-    assert!(
-        theorem_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "dynamic_plugin_blind_spot"
-                && entry["leanPackageField"] == "CoverageExactnessBoundary"
-                && entry["status"] == "blockedByMissingEvidence"
-        }),
-        "theorem-check keeps private dynamic plugin evidence out of proof promotion"
-    );
-    assert!(
-        theorem_checklist.iter().any(|entry| {
-            entry["mapItemId"] == "framework_convention_boundary"
-                && entry["status"] == "blockedByUnmeasuredCoverage"
-        }),
-        "framework convention remains an unmeasured boundary"
-    );
-
-    let feature_json = read_json(&feature_report);
-    assert_eq!(feature_json["schema"], "feature-extension-report/v0.5.0");
-    assert!(
-        feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
-            .as_u64()
-            .expect("witness count is numeric")
-            >= 2
-    );
 }
 
 #[test]

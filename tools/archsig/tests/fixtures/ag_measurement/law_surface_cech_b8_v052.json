@@ -9,7 +9,6 @@
         {
           "variable": "e_dep_state",
           "binding": {
-            "edge": ["ctx:W_dep", "ctx:W_state"],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -17,7 +16,6 @@
         {
           "variable": "e_dep_effect",
           "binding": {
-            "edge": ["ctx:W_dep", "ctx:W_effect"],
             "axis": "cech",
             "predicate": "sectionValue"
           }
@@ -25,7 +23,6 @@
         {
           "variable": "e_state_effect",
           "binding": {
-            "edge": ["ctx:W_state", "ctx:W_effect"],
             "axis": "cech",
             "predicate": "sectionValue"
           }

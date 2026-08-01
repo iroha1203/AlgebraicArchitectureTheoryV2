@@ -4,22 +4,21 @@ use serde_json::{Value, json};
 
 use crate::law_execution::{LawExecutionPlanV1, build_law_execution_plan};
 use crate::saga::{evaluate_saga_descent_v1, evaluate_saga_grounded_v1};
+use crate::saga_complex::derive_saga_complex_from_normalized;
 use crate::validation::{generic_validation_example, validation_check};
 use crate::{
     ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE, ARCHSIG_ANALYSIS_CONCLUSION_CODES,
     ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION,
-    ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
-    ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
+    ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE,
+    ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE, ARCHSIG_REPAIR_TARGETS_IDENTIFIED,
     ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL, ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY,
-    AgAnalyticReadingV1, AgAssumptionLedgerEntryV1, AgStructuralVerdictV1, AgVerdictDataV1,
-    ArchMapDocumentV2, ArchSigMeasurementPacketV1, BoundaryStatementV1, LawEquationSurfaceV1,
-    LawPolicyDocumentV1, MeasurementProfileV1, MeasurementProfileWitnessV1, NormalizedArchMapV2,
-    NormalizedAtomV2, NormalizedContextV2, NormalizedCoverV2, RepairPlanDocumentV1,
-    SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample, analytic_claim_status,
-    analytic_fidelity, assumption_id_for_schema,
+    ARCHSIG_TWO_PROFILES_REPORTED_SEPARATELY, AgAnalyticReadingV1, AgAssumptionLedgerEntryV1,
+    AgStructuralVerdictV1, AgVerdictDataV1, ArchMapDocumentV2, ArchSigMeasurementPacketV1,
+    BoundaryStatementV1, LawEquationSurfaceV1, LawPolicyDocumentV1, MeasurementProfileV1,
+    MeasurementProfileWitnessV1, NormalizedArchMapV2, NormalizedAtomV2, NormalizedContextV2,
+    NormalizedCoverV2, SuppliedDataLedgerEntryV1, ValidationCheck, ValidationExample,
+    analytic_claim_status, analytic_fidelity, assumption_id_for_schema,
 };
 
 const VERDICTS: [&str; 5] = [
@@ -104,21 +103,21 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
             theorem_ref: Some("part10/3.4"),
             principal_text: "The derived SAGA residual is measured outside B1 with concrete residual support.",
-            boundary: "Revise the observed sections or the repair plan complex and re-run analyze before claiming repair gluing.",
+            boundary: "Revise the observed sections or the derived SAGA complex and re-run analyze before claiming repair gluing.",
             generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
             theorem_ref: Some("part10/4.5"),
-            principal_text: "The derived SAGA residual is measured inside B1 for the selected RepairPlan complex.",
-            boundary: "The gluing reading is relative to the selected RepairPlan complex and its declared triple overlaps; it does not claim global semantic repair.",
+            principal_text: "The derived SAGA residual is measured inside B1 for the finite complex derived from the selected ArchMap cover.",
+            boundary: "The gluing reading is relative to the finite complex derived from the selected ArchMap cover and its triple faces; it does not claim global semantic repair.",
             generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
             theorem_ref: Some("part10/4.5"),
             principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
-            boundary: "The class reading is relative to the selected cover 1-skeleton, the declared triple overlaps whose cocycle parity was checked, and the law-surface witness bindings.",
+            boundary: "The class reading is relative to the selected cover 1-skeleton, the derived triple faces whose cocycle parity was checked, and the law-surface witness bindings.",
             generated_discipline: "generated derived class representative detection",
         },
         ARCHSIG_CECH_COVER_SHAPE_EXCLUDES_GLUING_OBSTRUCTION => SummaryTranslationRule {
@@ -401,20 +400,6 @@ fn boundary_statements_for_measurement_packet(
             });
         }
         if row.verdict == "not_computed"
-            && row.evaluator == "ag.saga-descent"
-            && row.verdict_data.method_status == "repair_plan_not_supplied"
-        {
-            statements.push(BoundaryStatementV1 {
-                id: format!("boundary:silence-by-design:saga-descent:{index}"),
-                kind: "silence_by_design".to_string(),
-                scope_refs: vec![scope_ref.clone()],
-                reason: row.verdict_data.method_status.clone(),
-                text: row.reason.clone().unwrap_or_else(|| {
-                    "ag.saga-descent is silent until a checked repair-plan artifact is supplied."
-                        .to_string()
-                }),
-            });
-        } else if row.verdict == "not_computed"
             && row.verdict_data.method_status == "sections_not_observed"
         {
             statements.push(BoundaryStatementV1 {
@@ -464,7 +449,6 @@ fn boundary_statements_for_measurement_packet(
         else {
             continue;
         };
-        let invariant_ref = invariant["invariantId"].as_str();
         for (generator_index, generator) in invariant["obstructionIdeal"]["generators"]
             .as_array()
             .into_iter()
@@ -489,14 +473,15 @@ fn boundary_statements_for_measurement_packet(
                 .collect::<Vec<_>>()
                 .join(",");
             // Do not let one unobserved generator override a row-level
-            // measured_nonzero result when another generator is observed.
-            let mut scope_refs = Vec::new();
-            if row.verdict == "measured_zero" {
-                scope_refs.push(scope_ref.clone());
-            }
-            if let Some(invariant_ref) = invariant_ref {
-                scope_refs.push(invariant_ref.to_string());
-            }
+            // measured_nonzero result when another generator is observed. A
+            // nonzero row uses the packet scope because the computed invariant
+            // itself carries the measured support and cannot carry a silence
+            // scope at the same time.
+            let scope_refs = if row.verdict == "measured_zero" {
+                vec![scope_ref.clone()]
+            } else {
+                vec![packet.packet_id.clone()]
+            };
             statements.push(BoundaryStatementV1 {
                 id: format!(
                     "boundary:silence-by-design:square-free:{index}:{generator_index}"
@@ -563,7 +548,7 @@ fn boundary_statements_for_measurement_packet(
             kind: "silence_by_design".to_string(),
             scope_refs: vec![packet.packet_id.clone()],
             reason: "class_vocabulary_not_unlocked_without_declared_triples".to_string(),
-            text: "The residual component declares no triple overlaps, so the cocycle condition is an author assertion (automatic-c2-zero); the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked.".to_string(),
+            text: "The derived residual component has no triple faces, so the cocycle condition is not checked; the reading stays at selected 1-skeleton boundary membership and the class vocabulary is not unlocked.".to_string(),
         });
     }
 
@@ -722,18 +707,56 @@ fn apply_assumption_dependency_propagation(packet: &mut ArchSigMeasurementPacket
     }
 }
 
+fn refresh_observation_evidence(
+    packet: &mut ArchSigMeasurementPacketV1,
+    normalized: &NormalizedArchMapV2,
+) {
+    let invariant_refs = packet
+        .structural_verdict
+        .iter()
+        .map(|row| {
+            generated_invariant_refs_for_row(row, &packet.computed_invariants, &packet.profile)
+        })
+        .collect::<Vec<_>>();
+    let source_refs = packet
+        .structural_verdict
+        .iter()
+        .map(|row| {
+            generated_observation_source_refs_for_row(
+                normalized,
+                row,
+                &packet.profile,
+                &packet.computed_invariants,
+            )
+        })
+        .collect::<Vec<_>>();
+    let scope_sizes = packet
+        .structural_verdict
+        .iter()
+        .map(|row| {
+            generated_observation_scope_size(
+                row,
+                normalized,
+                &packet.profile,
+                &packet.computed_invariants,
+            )
+        })
+        .collect::<Vec<_>>();
+    packet.observation_invariant_refs = invariant_refs;
+    packet.observation_source_refs = source_refs;
+    packet.observation_scope_sizes = scope_sizes;
+}
+
 pub fn build_foundation_measurement_packet_v1(
     normalized: &NormalizedArchMapV2,
     _archmap: &ArchMapDocumentV2,
     policy: &LawPolicyDocumentV1,
     law_surface: Option<&LawEquationSurfaceV1>,
     measurement_profiles: &BTreeMap<String, MeasurementProfileV1>,
-    repair_plan: Option<&RepairPlanDocumentV1>,
     archmap_ref: &str,
     law_policy_ref: &str,
     law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
-    repair_plan_ref: Option<&str>,
 ) -> Result<ArchSigMeasurementPacketV1, String> {
     if policy.policies.iter().any(|entry| entry.pack.is_some()) {
         return Err(
@@ -760,11 +783,12 @@ pub fn build_foundation_measurement_packet_v1(
         );
     }
     let profile = profile_with_law_surface_witnesses(policy, &selected_profile, law_surface)?;
+    let derived_complex = derive_saga_complex_from_normalized(normalized, &profile);
     let stage3_examples =
         crate::validate_law_surface_stage3_against_archmap_v1(law_surface, &profile, normalized);
     if !stage3_examples.is_empty() {
         return Err(format!(
-            "law-equation-surface Stage 3 contract failed: {}",
+            "law-equation-surface measurement contract failed: {}",
             stage3_examples
                 .iter()
                 .map(|example| {
@@ -883,22 +907,16 @@ pub fn build_foundation_measurement_packet_v1(
                 continue;
             }
         }
-        let selected_contexts_for_plan = (evaluator == "ag.cech-obstruction").then(|| {
-            selected_cover_contexts(normalized, &profile)
-                .into_iter()
-                .collect::<BTreeSet<_>>()
-        });
         let execution_plan = build_law_execution_plan(
             normalized,
             Some(law_surface),
             entry.law.as_deref(),
             evaluator,
-            selected_contexts_for_plan.as_ref(),
+            &profile,
         )?;
         if evaluator == "ag.cech-obstruction" {
             validate_cech_profile_v1(&profile)?;
-            let measurement =
-                evaluate_cech_obstruction_v1(normalized, &profile, execution_plan.as_ref());
+            let measurement = evaluate_cech_obstruction_v1(normalized, &profile);
             let depends_on_assumptions = assumption_theorem_refs(&measurement.assumptions);
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
@@ -1141,85 +1159,35 @@ pub fn build_foundation_measurement_packet_v1(
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
-            if let Some(plan) = repair_plan {
-                let measurement =
-                    evaluate_saga_descent_v1(normalized, &profile, plan, Some(law_surface));
+            let measurement = evaluate_saga_descent_v1(
+                normalized,
+                &profile,
+                &derived_complex,
+                Some(law_surface),
+                execution_plan.as_ref(),
+            );
+            computed_invariants.extend(measurement.computed_invariants);
+            assumptions.extend(measurement.assumptions);
+            structural_verdict.extend(measurement.structural_verdict);
+        } else if evaluator == "ag.saga-grounded" {
+            if let Some(execution_plan) = execution_plan.as_ref() {
+                let measurement = evaluate_saga_grounded_v1(
+                    normalized,
+                    &profile,
+                    &derived_complex,
+                    law_surface,
+                    execution_plan,
+                );
                 computed_invariants.extend(measurement.computed_invariants);
                 assumptions.extend(measurement.assumptions);
                 structural_verdict.extend(measurement.structural_verdict);
-            } else {
-                computed_invariants.push(json!({
-                    "invariantId": "saga-descent-stage1-input",
-                    "evaluator": "ag.saga-descent",
-                    "status": "not_computed",
-                    "methodStatus": "repair_plan_not_supplied",
-                    "repairPlanRef": null
-                }));
-                structural_verdict.push(AgStructuralVerdictV1 {
-                    evaluator: evaluator.to_string(),
-                    law: entry
-                        .law
-                        .clone()
-                        .unwrap_or_else(|| "ag.saga-descent".to_string()),
-                    verdict: "not_computed".to_string(),
-                    verdict_data: AgVerdictDataV1 {
-                        in_scope: true,
-                        zero: false,
-                        non_zero: false,
-                        method_status: "repair_plan_not_supplied".to_string(),
-                        cert_ref: None,
-                    },
-                    depends_on_assumptions: Vec::new(),
-                    reason: Some(
-                        "repair-plan not supplied; ag.saga-descent remains silent by design until --repair-plan is provided.".to_string(),
-                    ),
-                });
-            }
-        } else if evaluator == "ag.saga-grounded" {
-            if let Some(plan) = repair_plan {
-                if let Some(execution_plan) = execution_plan.as_ref() {
-                    let measurement = evaluate_saga_grounded_v1(
-                        normalized,
-                        &profile,
-                        plan,
-                        law_surface,
-                        execution_plan,
-                    );
-                    computed_invariants.extend(measurement.computed_invariants);
-                    assumptions.extend(measurement.assumptions);
-                    structural_verdict.extend(measurement.structural_verdict);
-                } else {
-                    computed_invariants.push(json!({
-                        "invariantId": "saga-generated-end-to-end-packet",
-                        "kind": "saga-grounded-defect-quotient",
-                        "evaluator": "ag.saga-grounded",
-                        "status": "not_computed",
-                        "methodStatus": "execution_plan_not_supplied"
-                    }));
-                    structural_verdict.push(AgStructuralVerdictV1 {
-                        evaluator: evaluator.to_string(),
-                        law: entry.law.clone().unwrap_or_else(|| evaluator.to_string()),
-                        verdict: "not_computed".to_string(),
-                        verdict_data: AgVerdictDataV1 {
-                            in_scope: true,
-                            zero: false,
-                            non_zero: false,
-                            method_status: "execution_plan_not_supplied".to_string(),
-                            cert_ref: None,
-                        },
-                        depends_on_assumptions: Vec::new(),
-                        reason: Some(
-                            "ag.saga-grounded requires a Stage 3 law execution plan".to_string(),
-                        ),
-                    });
-                }
             } else {
                 computed_invariants.push(json!({
                     "invariantId": "saga-generated-end-to-end-packet",
                     "kind": "saga-grounded-defect-quotient",
                     "evaluator": "ag.saga-grounded",
                     "status": "not_computed",
-                    "methodStatus": "repair_plan_not_supplied"
+                    "methodStatus": "execution_plan_not_supplied"
                 }));
                 structural_verdict.push(AgStructuralVerdictV1 {
                     evaluator: evaluator.to_string(),
@@ -1229,13 +1197,12 @@ pub fn build_foundation_measurement_packet_v1(
                         in_scope: true,
                         zero: false,
                         non_zero: false,
-                        method_status: "repair_plan_not_supplied".to_string(),
+                        method_status: "execution_plan_not_supplied".to_string(),
                         cert_ref: None,
                     },
                     depends_on_assumptions: Vec::new(),
                     reason: Some(
-                        "repair-plan not supplied; ag.saga-grounded remains silent by design"
-                            .to_string(),
+                        "ag.saga-grounded requires a derived grounding execution plan".to_string(),
                     ),
                 });
             }
@@ -1258,6 +1225,21 @@ pub fn build_foundation_measurement_packet_v1(
             });
         }
     }
+    let measured_invariant_refs = structural_verdict
+        .iter()
+        .filter(|row| matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero"))
+        .flat_map(|row| generated_invariant_refs_for_row(row, &computed_invariants, &profile))
+        .collect::<BTreeSet<_>>();
+    for invariant in &mut computed_invariants {
+        if invariant.get("status").is_none()
+            && invariant
+                .get("invariantId")
+                .and_then(Value::as_str)
+                .is_some_and(|invariant_id| measured_invariant_refs.contains(invariant_id))
+        {
+            invariant["status"] = json!("computed");
+        }
+    }
     let mut non_conclusions = vec![
         format!(
             "ArchSig v0.5.4 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
@@ -1277,6 +1259,27 @@ pub fn build_foundation_measurement_packet_v1(
             "silence_by_design: diagnostic ceiling {ceiling} is not reached by the foundation evaluator; supply the corresponding SAGA data before emitting that stage"
         ));
     }
+    let observation_invariant_refs = structural_verdict
+        .iter()
+        .map(|row| generated_invariant_refs_for_row(row, &computed_invariants, &profile))
+        .collect::<Vec<_>>();
+    let observation_source_refs = structural_verdict
+        .iter()
+        .map(|row| {
+            generated_observation_source_refs_for_row(
+                normalized,
+                row,
+                &profile,
+                &computed_invariants,
+            )
+        })
+        .collect::<Vec<_>>();
+    let observation_scope_sizes = structural_verdict
+        .iter()
+        .map(|row| {
+            generated_observation_scope_size(row, normalized, &profile, &computed_invariants)
+        })
+        .collect::<Vec<_>>();
     let mut packet = ArchSigMeasurementPacketV1 {
         schema: ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA.to_string(),
         packet_id: format!("measurement:{}", normalized.source_archmap_id),
@@ -1293,14 +1296,202 @@ pub fn build_foundation_measurement_packet_v1(
             law_policy_ref,
             law_surface_ref,
             measurement_profile_ref,
-            repair_plan_ref,
         ),
         boundary_statements: Vec::new(),
         non_conclusions,
+        observation_source_refs,
+        observation_scope_sizes,
+        observation_invariant_refs,
     };
     apply_assumption_dependency_propagation(&mut packet);
+    refresh_observation_evidence(&mut packet, normalized);
     packet.boundary_statements = boundary_statements_for_measurement_packet(&packet);
     Ok(packet)
+}
+
+fn generated_invariant_refs_for_row(
+    row: &AgStructuralVerdictV1,
+    invariants: &[Value],
+    profile: &MeasurementProfileV1,
+) -> Vec<String> {
+    if let Some(cert_ref) = row
+        .verdict_data
+        .cert_ref
+        .as_deref()
+        .and_then(|cert_ref| cert_ref.strip_prefix("computedInvariants/"))
+    {
+        if invariants
+            .iter()
+            .any(|invariant| invariant.get("invariantId").and_then(Value::as_str) == Some(cert_ref))
+        {
+            return vec![cert_ref.to_string()];
+        }
+    }
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return Vec::new();
+    }
+    invariants
+        .iter()
+        .filter(|invariant| {
+            invariant.get("evaluator").and_then(Value::as_str) == Some(row.evaluator.as_str())
+                && invariant
+                    .get("selectedCoverRef")
+                    .and_then(Value::as_str)
+                    .is_none_or(|cover_ref| cover_ref == profile.cover_ref)
+        })
+        .filter_map(|invariant| invariant.get("invariantId").and_then(Value::as_str))
+        .map(str::to_string)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
+fn generated_invariants_for_row<'a>(
+    row: &AgStructuralVerdictV1,
+    invariants: &'a [Value],
+    profile: &MeasurementProfileV1,
+) -> Vec<&'a Value> {
+    let refs = generated_invariant_refs_for_row(row, invariants, profile)
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    invariants
+        .iter()
+        .filter(|invariant| {
+            invariant
+                .get("invariantId")
+                .and_then(Value::as_str)
+                .is_some_and(|invariant_id| refs.contains(invariant_id))
+        })
+        .collect()
+}
+
+fn generated_observation_source_refs_for_row(
+    normalized: &NormalizedArchMapV2,
+    row: &AgStructuralVerdictV1,
+    profile: &MeasurementProfileV1,
+    invariants: &[Value],
+) -> Vec<String> {
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return Vec::new();
+    }
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let selected_context_aliases = normalized
+        .contexts
+        .iter()
+        .filter(|context| {
+            selected_contexts.contains(&context.normalized_context_id)
+                || selected_contexts.contains(&context.source_context_id)
+        })
+        .flat_map(|context| {
+            [
+                context.normalized_context_id.as_str(),
+                context.source_context_id.as_str(),
+            ]
+        })
+        .collect::<BTreeSet<_>>();
+    let row_invariants = generated_invariants_for_row(row, invariants, profile);
+    let row_invariant_values = row_invariants
+        .iter()
+        .map(|invariant| (*invariant).clone())
+        .collect::<Vec<_>>();
+    let mut atom_refs = collect_packet_refs_from_values(
+        &row_invariant_values,
+        &[
+            "supportAtomRefs",
+            "mismatchSupportRefs",
+            "witnessSupportRefs",
+            "atomRefs",
+            "atomRef",
+        ],
+    );
+    atom_refs.extend(atom_refs_for_row(normalized, row));
+    let atom_refs = normalize_atom_refs(normalized, atom_refs)
+        .into_iter()
+        .filter(|atom_ref| {
+            normalized
+                .atoms
+                .iter()
+                .find(|atom| atom.normalized_atom_id == *atom_ref)
+                .is_some_and(|atom| {
+                    atom.context_memberships.is_empty()
+                        || atom
+                            .context_memberships
+                            .iter()
+                            .any(|context| selected_context_aliases.contains(context.as_str()))
+                })
+        })
+        .collect::<Vec<_>>();
+    let mut source_refs = BTreeSet::new();
+    if let Some(cover) = normalized.covers.iter().find(|cover| {
+        cover.normalized_cover_id == profile.cover_ref || cover.source_cover_id == profile.cover_ref
+    }) {
+        source_refs.extend(
+            cover
+                .source_refs
+                .iter()
+                .map(|source_ref| sanitize_source_ref(source_ref)),
+        );
+    }
+    source_refs.extend(
+        normalized
+            .contexts
+            .iter()
+            .filter(|context| {
+                selected_context_aliases.contains(context.normalized_context_id.as_str())
+            })
+            .flat_map(|context| context.source_refs.iter())
+            .map(|source_ref| sanitize_source_ref(source_ref)),
+    );
+    source_refs.extend(source_refs_for_atoms(normalized, &atom_refs));
+    let mut invariant_source_refs = BTreeSet::new();
+    let source_ref_keys = BTreeSet::from(["sourceRefs", "sourceRef"]);
+    for invariant in row_invariants {
+        collect_packet_refs(invariant, &source_ref_keys, &mut invariant_source_refs);
+    }
+    source_refs.extend(
+        invariant_source_refs
+            .into_iter()
+            .map(|source_ref| sanitize_source_ref(&source_ref)),
+    );
+    source_refs.into_iter().collect()
+}
+
+fn generated_observation_scope_size(
+    row: &AgStructuralVerdictV1,
+    normalized: &NormalizedArchMapV2,
+    profile: &MeasurementProfileV1,
+    invariants: &[Value],
+) -> Value {
+    if !matches!(row.verdict.as_str(), "measured_zero" | "measured_nonzero") {
+        return json!({"contexts": 0, "edges": 0, "triangles": 0});
+    }
+    let row_invariants = generated_invariants_for_row(row, invariants, profile);
+    let selected_contexts = selected_cover_contexts(normalized, profile);
+    let contexts = row_invariants
+        .iter()
+        .find_map(|invariant| invariant.get("contextCount").and_then(Value::as_u64))
+        .map(|count| count as usize)
+        .unwrap_or(selected_contexts.len());
+    let edges = row_invariants
+        .iter()
+        .find_map(|invariant| {
+            invariant
+                .get("restrictionEdgeCount")
+                .and_then(Value::as_u64)
+        })
+        .map(|count| count as usize)
+        .unwrap_or_else(|| cech_edges(normalized, &selected_contexts).len());
+    let triangles = row_invariants
+        .iter()
+        .find_map(|invariant| {
+            invariant
+                .get("coverNerveProjection")
+                .and_then(|projection| projection.get("faces"))
+                .and_then(Value::as_array)
+                .map(Vec::len)
+        })
+        .unwrap_or_default();
+    json!({"contexts": contexts, "edges": edges, "triangles": triangles})
 }
 
 fn supplied_data_ledger(
@@ -1308,7 +1499,6 @@ fn supplied_data_ledger(
     law_policy_ref: &str,
     law_surface_ref: Option<&str>,
     measurement_profile_ref: &str,
-    repair_plan_ref: Option<&str>,
 ) -> Vec<SuppliedDataLedgerEntryV1> {
     let mut entries = vec![
         supplied_data_entry(
@@ -1339,15 +1529,6 @@ fn supplied_data_ledger(
             "law-equation-surface",
             law_surface_ref,
             "law-equation-surface/v0.5.4-validation",
-            "validated",
-        ));
-    }
-    if let Some(repair_plan_ref) = repair_plan_ref {
-        entries.push(supplied_data_entry(
-            "supplied:repair-plan",
-            "repair-plan",
-            repair_plan_ref,
-            "repair-plan/v0.5.4-validation",
             "validated",
         ));
     }
@@ -7213,11 +7394,25 @@ fn sanitize_source_ref(source_ref: &str) -> String {
 }
 
 fn is_local_or_private_source_ref(source_ref: &str) -> bool {
-    source_ref.starts_with('/')
+    source_ref.starts_with("file:")
+        || source_ref.starts_with('/')
         || source_ref.starts_with("~/")
         || source_ref.starts_with("../")
         || source_ref.contains("/../")
         || source_ref.contains('\\')
+        || [
+            "docs/",
+            "tools/",
+            "src/",
+            "tests/",
+            "research/",
+            "Formal/",
+            "paper/",
+            "website/",
+            "outreach/",
+        ]
+        .iter()
+        .any(|prefix| source_ref.starts_with(prefix))
         || looks_like_windows_drive_path(source_ref)
         || has_hidden_path_segment(source_ref)
 }
@@ -7441,24 +7636,9 @@ struct CechEdgeV1 {
 fn evaluate_cech_obstruction_v1(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
-    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> CechMeasurementV1 {
     let selected_contexts = selected_cover_contexts(normalized, profile);
-    let derived_edges = cech_edges(normalized, &selected_contexts);
-    let edges = execution_plan
-        .and_then(|plan| plan.cech_edges.as_ref())
-        .map(|selected_edges| {
-            derived_edges
-                .iter()
-                .filter(|edge| {
-                    let mut pair = [edge.source_context.clone(), edge.target_context.clone()];
-                    pair.sort();
-                    selected_edges.contains(&pair)
-                })
-                .cloned()
-                .collect::<Vec<_>>()
-        })
-        .unwrap_or(derived_edges);
+    let edges = cech_edges(normalized, &selected_contexts);
     let cover_nerve_projection =
         cover_nerve_projection_v1(normalized, &selected_contexts, &edges, &profile.cover_ref);
     let cover_nerve_face_count = cover_nerve_projection["faces"]
@@ -7993,11 +8173,14 @@ fn restriction_surjectivity_witnesses_v1(
             atom.axis == "cech"
                 && atom.predicate == "restrictionSurjectivityWitness"
                 && edge_ids.contains(atom.subject.as_str())
+                && atom.object.as_deref() == Some("finite-preimage-witness")
+                && !atom.source_refs.is_empty()
         })
         .map(|atom| {
             json!({
                 "edgeRef": atom.subject,
                 "atomRef": atom.normalized_atom_id,
+                "witnessObject": atom.object,
                 "sourceRefs": atom.source_refs
             })
         })
@@ -11316,6 +11499,16 @@ pub(crate) fn observe_cech_edge(
         })
         .collect::<Vec<_>>();
     if !explicit_support.is_empty() {
+        if explicit_support
+            .iter()
+            .any(|atom| atom.source_refs.is_empty())
+        {
+            return CechEdgeObservationV1 {
+                value: 0,
+                support_atom_refs: Vec::new(),
+                observed: false,
+            };
+        }
         let value = explicit_support.iter().any(|atom| {
             atom.object
                 .as_deref()
@@ -11338,6 +11531,7 @@ pub(crate) fn observe_cech_edge(
     let section_values = |atoms: &[&NormalizedAtomV2]| {
         atoms
             .iter()
+            .filter(|atom| !atom.source_refs.is_empty())
             .filter_map(|atom| atom.object.as_deref())
             .map(str::trim)
             .filter(|value| !value.is_empty())
@@ -11355,6 +11549,7 @@ pub(crate) fn observe_cech_edge(
             .filter(|atom| {
                 atom.axis == "cech"
                     && atom.predicate == "sectionValue"
+                    && !atom.source_refs.is_empty()
                     && (atom.subject == left || atom.subject == right)
             })
             .map(|atom| atom.normalized_atom_id.clone())
@@ -11415,7 +11610,6 @@ fn cech_edges(normalized: &NormalizedArchMapV2, selected_contexts: &[String]) ->
     edges.sort_by(|left, right| left.edge_id.cmp(&right.edge_id));
     edges
 }
-
 
 fn coherence_faces(
     normalized: &NormalizedArchMapV2,
@@ -12548,9 +12742,7 @@ fn build_saga_descent_viewer_projection(packet: &ArchSigMeasurementPacketV1) -> 
         if invariant["status"] != "silence_by_design"
             || !matches!(
                 invariant["evaluator"].as_str(),
-                Some("ag.saga-grounded")
-                    | Some("ag.saga-descent")
-                    | Some("ag.harmonic-debt")
+                Some("ag.saga-grounded") | Some("ag.saga-descent") | Some("ag.harmonic-debt")
             )
         {
             continue;
@@ -12902,7 +13094,7 @@ fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &
             .and_then(|parent| parent.path.clone())
     });
     if let Some(path) = path {
-        sample["path"] = json!(path);
+        sample["path"] = json!(sanitize_viewer_source_path(&path));
     }
     if let Some(symbol) = &entry.symbol {
         sample["symbol"] = json!(symbol);
@@ -12918,6 +13110,14 @@ fn resolved_source_ref_sample(archmap_document: &ArchMapDocumentV2, reference: &
         sample["section"] = json!(section);
     }
     sample
+}
+
+fn sanitize_viewer_source_path(path: &str) -> String {
+    if is_local_or_private_source_ref(path) {
+        "path:redacted-local-path".to_string()
+    } else {
+        path.to_string()
+    }
 }
 
 fn viewer_atom_nodes(
@@ -13266,11 +13466,11 @@ fn check_packet_unknown_fields(packet_value: &Value) -> ValidationCheck {
         "rankD1",
         "rankKerD2",
         "repairPathAtomRefs",
-        "repairPlanRef",
         "representative",
         "residualClassSupport",
         "residualDerivation",
-        "suppliedSlots",
+        "derivedComplexRef",
+        "derivedFrom",
         "suppliedCochainMap",
         "presentationGenerated",
         "measuredClassDivergence",
@@ -14272,11 +14472,7 @@ fn check_supplied_data_shape(packet: &ArchSigMeasurementPacketV1) -> ValidationC
             }
             if !matches!(
                 kind,
-                "archmap"
-                    | "law-policy"
-                    | "law-equation-surface"
-                    | "measurement-profile"
-                    | "repair-plan"
+                "archmap" | "law-policy" | "law-equation-surface" | "measurement-profile"
             ) {
                 examples.push(generic_validation_example(
                     &label,
@@ -15540,7 +15736,7 @@ mod tests {
         normalized.covers[0].context_ids.clear();
         let profile = packet_fixture().profile;
 
-        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile, None);
+        let measurement = evaluate_cech_obstruction_v1(&normalized, &profile);
 
         assert_eq!(measurement.verdict, "not_computed");
         assert!(!measurement.zero);

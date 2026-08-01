@@ -8,9 +8,9 @@ Use this playbook for PR / CI architecture review.
 | --- | --- | --- |
 | "what changed" | signature diff, snapshots | architecture deltas, regressions, improvements, unmeasured deltas |
 | "is this PR risky" | signature diff, feature report, policy decision | review cues and evidence gaps |
-| "is this ArchMap trustworthy" | ArchMap validation | source refs, conflicts, guardrails, non-conclusions |
-| "can this become Lean proof" | theorem-check, ArchMap validation | preconditions and blocked formal claims |
-| "current architecture state" | Sig0, validation, ArchMap validation, feature report | measured structure, semantic coverage, unmeasured axes |
+| "is this ArchMap trustworthy" | ArchSig input validation | source refs, conflicts, guardrails, non-conclusions |
+| "can this become Lean proof" | theorem-check, ArchSig input validation | preconditions and blocked formal claims |
+| "current architecture state" | Sig0, validation, ArchSig input validation, feature report | measured structure, semantic coverage, unmeasured axes |
 
 ## Review Rules
 

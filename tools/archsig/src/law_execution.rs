@@ -1,9 +1,39 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::{
-    LawDefectSourceV1, LawEquationSurfaceV1, LawQuotientSheafConditionV1, LawSkeletonSimplexV1,
-    NormalizedArchMapV2,
-};
+use crate::{LawEquationSurfaceV1, LawQuotientSheafConditionV1, NormalizedArchMapV2};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DerivedGroundingSkeletonV1 {
+    pub(crate) simplex: String,
+    pub(crate) support_atom_ref: String,
+    pub(crate) required_law_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DerivedGroundingDefectSourceV1 {
+    pub(crate) law_id: String,
+    pub(crate) cover_ref: String,
+    pub(crate) chart_defects: Vec<DerivedGroundingChartDefectV1>,
+    pub(crate) holds_criterion: DerivedGroundingHoldsCriterionV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DerivedGroundingChartDefectV1 {
+    pub(crate) chart: String,
+    pub(crate) defect_observable: DerivedGroundingDefectObservableV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DerivedGroundingDefectObservableV1 {
+    pub(crate) axis: String,
+    pub(crate) predicate: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DerivedGroundingHoldsCriterionV1 {
+    pub(crate) kind: String,
+    pub(crate) zero_sense: String,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LawExecutionPlanV1 {
@@ -11,15 +41,73 @@ pub(crate) struct LawExecutionPlanV1 {
     pub(crate) evaluator: String,
     pub(crate) evaluator_law_ids: BTreeSet<String>,
     pub(crate) selected_law_id: String,
-    pub(crate) cech_edges: Option<BTreeSet<[String; 2]>>,
     pub(crate) section_witness_variables: Option<Vec<String>>,
     pub(crate) section_variable_aliases: Option<BTreeMap<String, String>>,
     pub(crate) section_forbidden_supports: Option<Vec<Vec<String>>>,
     pub(crate) grounded_variable_aliases: Option<BTreeMap<String, String>>,
     pub(crate) grounded_forbidden_supports: Option<Vec<Vec<String>>>,
-    pub(crate) stage3_skeleton: Option<Vec<LawSkeletonSimplexV1>>,
-    pub(crate) stage3_defect_source: Option<LawDefectSourceV1>,
+    pub(crate) grounded_skeleton: Option<Vec<DerivedGroundingSkeletonV1>>,
+    pub(crate) grounded_defect_source: Option<DerivedGroundingDefectSourceV1>,
     pub(crate) stage3_quotient_sheaf_condition: Option<LawQuotientSheafConditionV1>,
+}
+
+fn derive_grounded_contract(
+    normalized: &NormalizedArchMapV2,
+    profile: &crate::MeasurementProfileV1,
+    law_id: &str,
+) -> (
+    Vec<DerivedGroundingSkeletonV1>,
+    DerivedGroundingDefectSourceV1,
+) {
+    let charts = normalized
+        .covers
+        .iter()
+        .find(|cover| {
+            cover.normalized_cover_id == profile.cover_ref
+                || cover.source_cover_id == profile.cover_ref
+        })
+        .map(|cover| cover.context_ids.clone())
+        .unwrap_or_default();
+    let chart_set = charts.iter().collect::<BTreeSet<_>>();
+    let skeleton = normalized
+        .atoms
+        .iter()
+        .filter(|atom| {
+            atom.axis == "cech"
+                && atom.predicate == "sectionValue"
+                && atom
+                    .context_memberships
+                    .iter()
+                    .any(|context| chart_set.contains(context))
+        })
+        .map(|atom| DerivedGroundingSkeletonV1 {
+            simplex: format!("vertex:{}", atom.normalized_atom_id),
+            support_atom_ref: atom.normalized_atom_id.clone(),
+            required_law_id: law_id.to_string(),
+        })
+        .collect();
+    let chart_defects = charts
+        .iter()
+        .map(|chart| DerivedGroundingChartDefectV1 {
+            chart: (*chart).clone(),
+            defect_observable: DerivedGroundingDefectObservableV1 {
+                axis: "square-free".to_string(),
+                predicate: "support".to_string(),
+            },
+        })
+        .collect();
+    (
+        skeleton,
+        DerivedGroundingDefectSourceV1 {
+            law_id: law_id.to_string(),
+            cover_ref: profile.cover_ref.clone(),
+            chart_defects,
+            holds_criterion: DerivedGroundingHoldsCriterionV1 {
+                kind: "defect-raw-value-zero".to_string(),
+                zero_sense: "empty-witness-set".to_string(),
+            },
+        },
+    )
 }
 
 pub(crate) fn build_law_execution_plan(
@@ -27,7 +115,7 @@ pub(crate) fn build_law_execution_plan(
     surface: Option<&LawEquationSurfaceV1>,
     policy_law_id: Option<&str>,
     evaluator: &str,
-    selected_contexts: Option<&BTreeSet<String>>,
+    profile: &crate::MeasurementProfileV1,
 ) -> Result<Option<LawExecutionPlanV1>, String> {
     let Some(surface) = surface else {
         return if matches!(
@@ -88,66 +176,18 @@ pub(crate) fn build_law_execution_plan(
         ));
     }
     let evaluator_law_ids = BTreeSet::from([selected_law.law_id.clone()]);
-    let derived_edges = normalized
-        .contexts
-        .iter()
-        .filter(|context| {
-            selected_contexts
-                .is_none_or(|contexts| contexts.contains(&context.normalized_context_id))
-        })
-        .flat_map(|context| {
-            context
-                .restricts_to
-                .iter()
-                .filter(move |target| {
-                    normalized
-                        .contexts
-                        .iter()
-                        .any(|candidate| candidate.normalized_context_id == **target)
-                        && selected_contexts.is_none_or(|contexts| contexts.contains(*target))
-                })
-                .map(|target| {
-                    let mut edge = [context.normalized_context_id.clone(), target.clone()];
-                    edge.sort();
-                    edge
-                })
-        })
-        .collect::<BTreeSet<_>>();
-
-    let mut explicit_cech_edges = BTreeSet::new();
     let mut section_witness_variables = Vec::new();
     let mut section_variable_aliases = BTreeMap::new();
     for witness in &selected_law.witness_variables {
         let axis = witness.binding.axis.as_deref().unwrap_or_default();
         match evaluator {
             "ag.cech-obstruction" => {
-                if axis != "cech" {
+                if axis != "cech" || witness.binding.predicate.as_deref() != Some("sectionValue") {
                     return Err(format!(
-                        "{evaluator} law {} witness {} has binding axis {axis}, expected cech",
+                        "{evaluator} law {} witness {} has an unsupported binding",
                         selected_law.law_id, witness.variable
                     ));
                 }
-                let edge = witness.binding.edge.as_ref().ok_or_else(|| {
-                    format!(
-                        "law {} cech witness {} has no edge binding",
-                        selected_law.law_id, witness.variable
-                    )
-                })?;
-                if edge.len() != 2 {
-                    return Err(format!(
-                        "law {} cech witness {} edge binding must contain two context refs",
-                        selected_law.law_id, witness.variable
-                    ));
-                }
-                let mut pair = [edge[0].clone(), edge[1].clone()];
-                pair.sort();
-                if !derived_edges.contains(&pair) {
-                    return Err(format!(
-                        "law {} cech witness {} edge {} -> {} is not in the selected restriction 1-skeleton",
-                        selected_law.law_id, witness.variable, edge[0], edge[1]
-                    ));
-                }
-                explicit_cech_edges.insert(pair);
             }
             "ag.section-factorization" => {
                 if axis != "section-factorization"
@@ -238,21 +278,18 @@ pub(crate) fn build_law_execution_plan(
     } else {
         (None, None)
     };
-    let stage3_defect_source = surface
-        .defect_sources
-        .as_ref()
-        .and_then(|sources| {
-            sources
-                .iter()
-                .find(|source| source.law_id == selected_law.law_id)
-        })
-        .cloned();
+    let (grounded_skeleton, grounded_defect_source) = if evaluator == "ag.saga-grounded" {
+        let (skeleton, source) =
+            derive_grounded_contract(normalized, profile, &selected_law.law_id);
+        (Some(skeleton), Some(source))
+    } else {
+        (None, None)
+    };
     Ok(Some(LawExecutionPlanV1 {
         surface_id: surface.id.clone(),
         evaluator: evaluator.to_string(),
         evaluator_law_ids,
         selected_law_id: selected_law.law_id.clone(),
-        cech_edges: (!explicit_cech_edges.is_empty()).then_some(explicit_cech_edges),
         section_witness_variables: (!section_witness_variables.is_empty())
             .then_some(section_witness_variables),
         section_variable_aliases: (!section_variable_aliases.is_empty())
@@ -260,8 +297,8 @@ pub(crate) fn build_law_execution_plan(
         section_forbidden_supports,
         grounded_variable_aliases,
         grounded_forbidden_supports,
-        stage3_skeleton: surface.skeleton.clone(),
-        stage3_defect_source,
+        grounded_skeleton,
+        grounded_defect_source,
         stage3_quotient_sheaf_condition: surface.quotient_sheaf_condition.clone(),
     }))
 }

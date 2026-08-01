@@ -12,11 +12,11 @@ v0.5.2/v0.5.4 to do it. The checkout → payment → settlement flow *is* a saga
 and the staircase names each step of its failure precisely:
 
 1. **Grounding** — every module satisfies its own displayed money law
-   (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The defect is not in any chart.
+   (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The fixed chart-local observation check is clean.
 2. **Descent** — the residual derived from the observed sections and the
-   law-surface witness bindings has a **nonzero** class in `Z1/B1`: no
-   assignment of per-module fixes reconciles the loop
-   (`MEASURED_NONGLUING_RESIDUAL_CLASS`).
+   law-surface witness bindings has a **nonzero** boundary-membership result
+   on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL`). A named
+   `Z1/B1` class is emitted only when a derived triple face is actually checked.
 3. **Comparison** — `compare` derives the difference of the head and repaired
    residuals and tests its membership in `B1`
    (`residualDifferenceReading`; here `difference_not_in_B1`).
@@ -62,7 +62,7 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total
 - Every module's unit tests pass, because each module is **locally correct
   under its own convention** — that is exactly what its owner's spec says.
   The SAGA grounding stage measures this directly: the per-chart
-  `holdsCriterion` raw check comes back clean on every chart.
+  The derived holds-criterion raw check comes back clean on every chart.
 - The port signature never changes; there is no type error and nothing for a
   linter to see.
 - Each diff hunk is individually reasonable, so a file-by-file human or LLM
@@ -78,23 +78,23 @@ RECONCILIATION MISMATCH: psp captured +1 cents against the displayed total
 
 ## The SAGA staircase: observation and law unlock vocabulary
 
-ArchSig only speaks a diagnostic vocabulary the two input families can carry:
+ArchSig only speaks a diagnostic vocabulary carried by the two input families:
 observation (ArchMap) and law / equations (LawPolicy, law surface,
-MeasurementProfile). The RepairPlan is a selected-complex declaration only;
-the base act omits it, so the base run shows what typed silence looks like:
+MeasurementProfile). The SAGA finite complex is derived from the selected
+ArchMap cover and observed restriction relations:
 
 | Input | Where in this demo | Vocabulary it unlocks |
 | --- | --- | --- |
 | Observation (atoms / contexts / covers) | `archmap/archmap*.json` | raw section values, Čech H¹, **derived residual** |
-| Selected complex (`complex` only) | `saga/repair_plan_*.json` | residual boundary membership on the selected 1-skeleton |
-| Declared triple overlaps (checked cocycle parity) | same RepairPlan `complex.tripleOverlaps` | **residual class in `Z1/B1`** (withheld as a named boundary statement when no triple is declared) |
+| Selected finite complex | selected ArchMap cover and restrictions | residual boundary membership on the derived 1-skeleton |
+| Triple faces | shared observed atoms across three selected contexts | residual class in `Z1/B1` when the derived face parity is checked |
 | Run pair of measurement records | two `analyze` out-dirs | `residualDifferenceReading` (with its `δ⁰` witness when the difference is in `B1`) derived by `compare` |
-| Grounded law surface (`skeleton` / `defectSources` / `holdsCriterion`) | `law_policy/law_surface*.json` | law-grounded defect quotient, per-chart law defect detector |
+| Grounded law/equation declarations | `law_policy/law_surface*.json` | law-grounded defect quotient; ArchSig derives chart and observation rows from the selected ArchMap cover |
 | Cost model (`analytic.costModel`) | `law_policy/measurement_profile_drift.json` | `essentialRepairLowerBound` |
 
-Without a RepairPlan (the base act), the same LawPolicy rows produce
-`not_computed` verdicts with `silence_by_design` boundary statements — not
-failures, and not permission to speak.
+The base, head, and repaired acts use the same two input families. Their
+different SAGA readings come from the source-grounded observations and the
+ArchMap-derived finite complex.
 
 ## Run the demo
 
@@ -105,13 +105,12 @@ tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 The script walks five acts and prints one conclusion per step:
 
 ```text
-[analyze base]           NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE
-[saga base]              not_computed          (typed silence: no RepairPlan)
+[analyze base]           REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+[saga base]              measured_zero         (derived residual in B1)
 [grounding head]         measured_zero         (every chart's own law holds)
-[descent head]           measured_nonzero      (residual class in Z1/B1)
-[comparison head]        established           (checked cochain-map transport)
+[descent head]           measured_nonzero      (residual outside B1)
 [harmonic debt head]     0.353553              (quarter-cent essential debt)
-[analyze head]           MEASURED_NONGLUING_RESIDUAL_CLASS
+[analyze head]           MEASURED_NONGLUING_RESIDUAL
 [compare base->head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
 [gate head]              BLOCKED_BY_GATE_POLICY
 [descent repaired]       measured_zero         (residual glues)
@@ -140,8 +139,8 @@ features; each state has a matching ArchMap observation:
 
 | State | Build | ArchMap | analyze conclusion |
 | --- | --- | --- | --- |
-| base (main) | `cargo run` | `archmap/archmap.json` | `NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE` |
-| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL_CLASS` |
+| base (main) | `cargo run` | `archmap/archmap.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL` |
 | repaired | `cargo run --features settlement-authority` | `archmap/archmap_repaired.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 
 All three build states pass `cargo test` — that is the point of the demo.
@@ -156,29 +155,25 @@ conventions were observed everywhere and they glue.
 ## How each stage is grounded
 
 **Grounding.** The head/repaired law surface declares the money-convention
-law over the four overlap edges of the money loop, a `skeleton` of the eight
-per-context section atoms, and per-chart `defectSources` whose observable is
-the square-free law-defect axis. The observation contains no defect atom for
-any chart — module test suites are green — so the `holdsCriterion`
-empty-witness-set check passes chart by chart and the grounded packet fires
+law over the four overlap edges of the money loop. ArchSig derives the
+selected chart set, section support, and per-chart square-free law-defect
+observation from the selected ArchMap cover and its validated atoms. The
+observation contains no defect atom for any chart — module test suites are
+green — so the fixed empty-witness-set check passes chart by chart and the grounded packet fires
 `DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`. That is the precise sense in which
 "every module is right and the whole is wrong."
 
-**Descent.** `saga/repair_plan_head.json` supplies the finite repair complex
-over the eight contexts: the money loop
-`ctx:application – ctx:settlement – ctx:infrastructure – ctx:ports`, one
-triangle (`application/domain/shared`) as the supplied triple overlap, and
+**Descent.** ArchSig derives the finite repair complex from the selected
+ArchMap cover and observed restriction relations over the eight contexts: the money loop
+`ctx:application – ctx:settlement – ctx:infrastructure – ctx:ports`, and
 the policy/runtime edges. The residual is **derived, not supplied**: ArchSig
 compares the observed `cech/sectionValue` atoms across each overlap of the
 loop and finds three mismatching convention boundaries, each bound to a
 law-surface witness variable; the derivation record
 (`saga-descent:residual-derivation`) names the observed atoms and witnesses.
 Odd parity around a closed loop is not a coboundary: boundary membership
-fails, and — because the plan declares a triple overlap whose cocycle parity
-is actually checked under the profile's F₂ coefficient — ArchSig is allowed
-to say **class**, not just "mismatch": `saga-descent:residual-class` is
-`measured_nonzero`. (Without a declared triple the class vocabulary stays
-withheld as a named boundary statement.)
+fails. This run's ArchMap does not provide a shared observed face for a checked
+triple, so the class vocabulary remains withheld as a named boundary statement.
 
 **Comparison.** `compare` reads the two measurement records (head and
 repaired) and derives the run-pair reading itself: the residual delta on the
@@ -214,12 +209,11 @@ display total 33140 cents / psp captured 33140 cents / exact 33140.2500 cents
 reconciled: capture matches display; rounding residual +2500 tenk-cents booked explicitly
 ```
 
-In the ArchMap this is one shared section value on every context; in the
-RepairPlan (`saga/repair_plan_repaired.json`) the residual support is empty
-on every overlap. The residual lies in `B1`, global coherence is
+In the ArchMap this is one shared section value on every context. The derived
+residual support is empty on every overlap. The residual lies in `B1`, global coherence is
 `measured_zero`, and the summary upgrades from "no obstruction" to the
-stronger SAGA reading: the supplied repair **glues** within the selected
-complex.
+stronger SAGA reading: the derived finite complex **glues** within the selected
+cover.
 
 ## Layout
 
@@ -235,20 +229,16 @@ sample/
     telemetry.rs    # trace and presentation surface
     scenario.rs     # executable demo scenario and reconciliation report
 archmap/
-  source_inventory.json
   archmap.json           # base observation (+ drift cells at rest)
   archmap_head.json      # head observation (three conventions, drift witness, drift cells)
   archmap_repaired.json  # repaired observation (one authoritative convention)
 law_policy/
   law_policy.json               # cech-obstruction + saga-grounded + saga-descent + harmonic-debt
-  law_surface.json              # head/repaired surface: money law + skeleton/defectSources/holdsCriterion
+  law_surface.json              # head/repaired surface: money law and equation declarations
   law_surface_base.json         # base surface (no settlement edges), same SAGA declarations
   measurement_profile.json      # F2, cover:commerce-fulfillment
   measurement_profile_drift.json# R, analytic inner product + Lipschitz cost model
   gate_policy.json              # CI mapping: measured_nonzero -> block
-saga/
-  repair_plan_head.json      # selected complex (charts / overlaps / one declared triple)
-  repair_plan_repaired.json  # same complex; the repaired observation derives a zero residual
 runtime/
   place_order_trace.json
   concurrent_reservation_trace.json
@@ -268,28 +258,29 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- analyze \
   --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile.json \
   --measurement-profile tools/archsig/examples/practical-rust-service/law_policy/measurement_profile_drift.json \
   --law-surface tools/archsig/examples/practical-rust-service/law_policy/law_surface.json \
-  --repair-plan tools/archsig/examples/practical-rust-service/saga/repair_plan_head.json \
-  --out-dir .tmp/archsig-practical-rust-service/head
+  --out-dir "$OUT/head"
 ```
 
 ## Viewer
 
 Open `tools/archview/archview.html` and load
-`.tmp/archsig-practical-rust-service/head/archsig-atom-viewer-data.json`.
+`$OUT/head/archsig-atom-viewer-data.json` (the demo prints the concrete `$OUT` directory).
 Besides the eight contexts and the settlement cycle, the v0.5.4 SAGA view
 renders the diagnostic staircase itself (`sagaDescent.stages`): grounding
-(measured_zero), descent measurement with the residual class and the
-harmonic-debt reading, the comparison transfer contract, and the silence
-stage. Load the base run's viewer data to see the same staircase in full
-typed silence. The viewer data is a projection of the supplied ArchMap,
+(measured_zero), descent measurement with the residual boundary membership and
+the harmonic-debt reading, the comparison transfer contract, and the silence
+stage. The named residual-class vocabulary appears only when a derived triple
+face has been checked. Load the base run's viewer data to see the same
+staircase in full typed silence. The viewer data is a projection of the supplied ArchMap,
 LawPolicy, and measurement packet; it is not a new analyzer.
 
 ## Boundary
 
 Every conclusion above is relative to the two input families: observation
 (`archmap/v0.5.4`) and law / equations (`law-policy` + `law-equation-surface`
-+ `measurement-profile`), together with the author-selected repair complex.
-Enumeration completeness of the selected complex and the law-surface quotient
++ `measurement-profile`). ArchSig derives the finite SAGA complex from the
+selected ArchMap cover and observed restrictions. Enumeration completeness and
+the law-surface quotient
 sheaf condition are recorded in the packet's assumption ledger as
 assumptions, not theorems. ArchSig does not extract conventions from Rust source by itself,
 does not claim the sample has no other defects, and does not prove

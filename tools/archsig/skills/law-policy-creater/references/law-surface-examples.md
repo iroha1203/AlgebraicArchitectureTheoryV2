@@ -18,7 +18,7 @@ They are intentionally paired with the validator's fail-closed rules.
 ```
 
 The binding pair is selected from
-`references/aat-law-surface-binding-vocabulary.json`; the forbidden support is
+`tools/archsig/src/schema/aat-law-surface-binding-vocabulary.json`; the forbidden support is
 supplied by the law surface and is not copied from an ArchMap support atom.
 
 ## Bad: judgment in an identifier

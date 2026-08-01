@@ -7,12 +7,11 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 use crate::{
-    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT,
-    ARCHSIG_COMPARISON_REPORT_V1_SCHEMA, ARCHSIG_GATE_BLOCKED_BY_GATE_POLICY,
-    ARCHSIG_GATE_NOT_EVALUABLE, ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY,
-    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_V1_SCHEMA,
-    ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ArchSigMeasurementPacketV1,
-    validate_measurement_packet_value_v1,
+    ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
+    ARCHSIG_GATE_BLOCKED_BY_GATE_POLICY, ARCHSIG_GATE_NOT_EVALUABLE,
+    ARCHSIG_GATE_PASS_WITHIN_GATE_POLICY, ARCHSIG_GATE_POLICY_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_V1_SCHEMA, ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA,
+    ArchSigMeasurementPacketV1, validate_measurement_packet_value_v1,
 };
 
 const ABSOLUTE_MAPPING_KEYS: [&str; 6] = [
@@ -679,16 +678,15 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
 }
 
 fn class_transport_shape_is_evaluable(comparison: &Value) -> bool {
-    let Some(class_transport) = comparison
-        .get("classTransport")
-        .and_then(Value::as_object)
-    else {
+    let Some(class_transport) = comparison.get("classTransport").and_then(Value::as_object) else {
         return false;
     };
     let comparison_level = comparison["comparability"]["level"].as_str();
     if class_transport.get("readingKind").and_then(Value::as_str)
         != Some("derived-class-zero-preservation@1")
-        || class_transport.get("recordComparability").and_then(Value::as_str)
+        || class_transport
+            .get("recordComparability")
+            .and_then(Value::as_str)
             != comparison_level
         || !COMPARISON_LEVELS.contains(&comparison_level.unwrap_or_default())
     {
@@ -700,13 +698,13 @@ fn class_transport_shape_is_evaluable(comparison: &Value) -> bool {
     else {
         return false;
     };
-    let derived_status = derived_refinement
-        .get("status")
-        .and_then(Value::as_str);
+    let derived_status = derived_refinement.get("status").and_then(Value::as_str);
     if !matches!(derived_status, Some("established") | Some("not_computed")) {
         return false;
     }
-    if derived_status == Some("established") && !derived_refinement_shape_is_evaluable(derived_refinement) {
+    if derived_status == Some("established")
+        && !derived_refinement_shape_is_evaluable(derived_refinement)
+    {
         return false;
     }
     if derived_status == Some("not_computed")
@@ -720,13 +718,22 @@ fn class_transport_shape_is_evaluable(comparison: &Value) -> bool {
     match class_transport.get("status").and_then(Value::as_str) {
         Some("established") => {
             derived_status == Some("established")
-                && class_transport.get("conclusionCode").and_then(Value::as_str)
+                && class_transport
+                    .get("conclusionCode")
+                    .and_then(Value::as_str)
                     == Some(ARCHSIG_CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT)
-                && class_transport.get("sourceClassNonZero").and_then(Value::as_bool)
+                && class_transport
+                    .get("sourceClassNonZero")
+                    .and_then(Value::as_bool)
                     == Some(false)
-                && class_transport.get("targetClassNonZero").and_then(Value::as_bool)
+                && class_transport
+                    .get("targetClassNonZero")
+                    .and_then(Value::as_bool)
                     == Some(false)
-                && class_transport.get("zeroPreserved").and_then(Value::as_bool) == Some(true)
+                && class_transport
+                    .get("zeroPreserved")
+                    .and_then(Value::as_bool)
+                    == Some(true)
                 && class_transport.get("boundaryStatement") == Some(&Value::Null)
         }
         Some("not_computed") => {
@@ -749,9 +756,10 @@ fn class_transport_shape_is_evaluable(comparison: &Value) -> bool {
     }
 }
 
-fn derived_refinement_shape_is_evaluable(derived_refinement: &serde_json::Map<String, Value>) -> bool {
-    if derived_refinement.get("direction").and_then(Value::as_str)
-        != Some("coarse-to-fine")
+fn derived_refinement_shape_is_evaluable(
+    derived_refinement: &serde_json::Map<String, Value>,
+) -> bool {
+    if derived_refinement.get("direction").and_then(Value::as_str) != Some("coarse-to-fine")
         || derived_refinement
             .get("coarseCoverRef")
             .and_then(Value::as_str)
@@ -774,7 +782,10 @@ fn derived_refinement_shape_is_evaluable(derived_refinement: &serde_json::Map<St
     }) {
         return false;
     }
-    let Some(context_map) = derived_refinement.get("contextMap").and_then(Value::as_array) else {
+    let Some(context_map) = derived_refinement
+        .get("contextMap")
+        .and_then(Value::as_array)
+    else {
         return false;
     };
     if context_map.is_empty()
@@ -798,16 +809,22 @@ fn derived_refinement_shape_is_evaluable(derived_refinement: &serde_json::Map<St
     {
         return false;
     }
-    let Some(run_binding) = derived_refinement.get("runBinding").and_then(Value::as_object) else {
+    let Some(run_binding) = derived_refinement
+        .get("runBinding")
+        .and_then(Value::as_object)
+    else {
         return false;
     };
     ["coarse", "fine"].iter().all(|side| {
         let Some(binding) = run_binding.get(*side).and_then(Value::as_object) else {
             return false;
         };
-        binding.get("side").and_then(Value::as_str).is_some_and(|value| {
-            (*side == "coarse" && value == "base") || (*side == "fine" && value == "head")
-        })
+        binding
+            .get("side")
+            .and_then(Value::as_str)
+            .is_some_and(|value| {
+                (*side == "coarse" && value == "base") || (*side == "fine" && value == "head")
+            })
             && binding
                 .get("siteCoverDigest")
                 .and_then(Value::as_str)

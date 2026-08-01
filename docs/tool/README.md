@@ -37,7 +37,7 @@ direct evidence、boundary participant、candidate change point、validated repa
 | Concern | Source of truth |
 | --- | --- |
 | Tooling編集規律と検証経路 | [guideline.md](guideline.md) |
-| ArchMap authoring | [Atom handoff](atom_handoff.md)とschema / validator / fixture |
+| ArchMap input | `tools/archsig/src/schema/archmap.rs`、ArchSig validation、供給済み `archmap/v0.5.4` artifact |
 | LawPolicy authoring | [law_policy.md](law_policy.md) |
 | ArchSig runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
 | ArchSig artifact reading | [Artifacts and boundaries](../../tools/archsig/docs/artifacts-and-boundaries.md) |
@@ -52,10 +52,7 @@ PRDや設計ノートを恒久仕様として参照しない。実装済みcontr
 - [ArchSig measurement view model](archsig_view_model_contract.md)
 - [ArchSig gate policy](archsig_gate_policy.md)
 - [ArchSig compare report](archsig_compare.md)
-- [ArchMapStore](archmap_store.md)
-- [ArchMap supply bench](archmap_supply_bench.md)
 - [Golden corpus](golden_corpus.md)
 - [AG measurement input](ag_measurement_input_contract.md)
-- [ArchSig supplied slot 台帳(負債告知)](archsig_v0_5_2_supplied_slot_ledger.md)
 - [ArchSig skills](../../tools/archsig/skills/)
 - [ArchView](../../tools/archview/README.md)

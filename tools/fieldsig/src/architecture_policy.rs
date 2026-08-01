@@ -184,14 +184,14 @@ pub fn apply_architecture_policy_to_sig0(
         MetricStatus {
             measured: false,
             reason: Some(
-                "SRP review cues require ArchMap semantic evidence and LLM judgment".to_string(),
+                "SRP review cues require selected semantic evidence and LLM judgment".to_string(),
             ),
             source: policy_path.map(str::to_string),
         },
     );
 }
 
-pub fn srp_review_cue_from_archmap_item(
+pub fn srp_review_cue_from_semantic_evidence(
     item_id: &str,
     subject_ref: String,
     semantic_role: Option<String>,

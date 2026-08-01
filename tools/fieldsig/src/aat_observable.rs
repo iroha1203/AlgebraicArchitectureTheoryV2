@@ -3,15 +3,14 @@ use std::collections::BTreeSet;
 use crate::validation::{count_checks, validation_check};
 use crate::{
     AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AAT_OBSERVABLE_BUNDLE_VALIDATION_REPORT_SCHEMA_VERSION,
-    AIR_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, AatAnalyticAxisV0, AatConceptMappingV0,
-    AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0, AatLlmReviewSurfaceV0,
-    AatObservableBundleV0, AatObservableBundleValidationInputV0,
-    AatObservableBundleValidationReportV0, AatObservableBundleValidationSummaryV0,
-    AatObservableSourceRefV0, AatObservedAxisV0, AatOperationCandidateV0,
-    AatProjectionObservationEvidenceV0, AatRepairSynthesisEvidenceV0, AatResponsibilityBoundaryV0,
-    AatReviewActionV0, AatSelectedUniverseV0, AatSemanticDiagramEvidenceV0,
-    AatStateEffectLawEvidenceV0, AatTheoremBoundaryV0, AatWitnessCatalogEntryV0,
-    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, ValidationCheck,
+    AIR_SCHEMA_VERSION, AatAnalyticAxisV0, AatConceptMappingV0, AatCoverageBoundaryV0,
+    AatFeatureExtensionEvidenceV0, AatLlmReviewSurfaceV0, AatObservableBundleV0,
+    AatObservableBundleValidationInputV0, AatObservableBundleValidationReportV0,
+    AatObservableBundleValidationSummaryV0, AatObservableSourceRefV0, AatObservedAxisV0,
+    AatOperationCandidateV0, AatProjectionObservationEvidenceV0, AatRepairSynthesisEvidenceV0,
+    AatResponsibilityBoundaryV0, AatReviewActionV0, AatSelectedUniverseV0,
+    AatSemanticDiagramEvidenceV0, AatStateEffectLawEvidenceV0, AatTheoremBoundaryV0,
+    AatWitnessCatalogEntryV0, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, ValidationCheck,
 };
 
 const AAT_OBSERVABLE_NON_CONCLUSIONS: [&str; 9] = [
@@ -39,13 +38,6 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
                 AIR_SCHEMA_VERSION,
                 "tools/archsig/tests/fixtures/air/good_extension.json",
                 &["components", "relations", "claims", "coverage", "semanticDiagrams"],
-            ),
-            source_ref(
-                "source:archmap:coupon",
-                "archmap",
-                ARCHMAP_SCHEMA_VERSION,
-                "tools/fieldsig/tests/fixtures/minimal/archmap.json",
-                &["sourceUniverse", "mapItems", "coverage", "conflicts"],
             ),
             source_ref(
                 "source:feature-report:coupon",
@@ -197,7 +189,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:architecture-object",
             "ArchitectureObject / ComponentUniverse",
-            &["source:archmap:coupon", "source:air:coupon"],
+            &["source:air:coupon"],
             &["coverage-boundary:dynamic-dispatch"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",

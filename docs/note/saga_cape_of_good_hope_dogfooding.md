@@ -104,8 +104,6 @@ AAT という航路が数学の中だけの海ではなく、現実のコード�
 (非空 tripleOverlaps、residual ref の sources 解決など)を突き止めたが、これは実ユーザーに
 要求できる手順ではない。
 
-- SAGA 供給の SKILL 化(archmap-creater と同じ抽象化: repair 対象のループを指せば
-  artifact 一式が組み上がる)。本 run の builder スクリプトと所見2件が設計素材
 - 鍵収束 PRD の続き(AC1 ゲート裁定)と、外部 OSS ドッグフーディング
 - ArchSig 記事は本 run を中心素材に据える(前提の実在証明という観点)
 

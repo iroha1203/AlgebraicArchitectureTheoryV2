@@ -38,7 +38,7 @@ findingからAtomとsource refsを経由して、確認対象を次の4種類に
 | --- | --- |
 | Direct evidence | findingの直接根拠となったsource |
 | Boundary participant | mismatchやrestrictionの一方を構成するsource |
-| Candidate change point | ArchSigまたはRepairPlanが明示した変更候補 |
+| Candidate change point | ArchSigが明示した変更候補 |
 | Validated repair | target stateの再計測で選択されたobstructionの解消が記録されたsource |
 
 source解決精度はmethod / symbol / line / file / unresolvedとして表示する。

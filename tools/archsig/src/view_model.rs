@@ -15,14 +15,11 @@ pub const ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION: &str =
     "archsig-measurement-view-model/v0.5.4";
 
 fn invariant_with_id_prefix<'a>(packet: &'a Value, prefix: &str) -> Option<&'a Value> {
-    packet["computedInvariants"]
-        .as_array()?
-        .iter()
-        .find(|inv| {
-            inv["invariantId"]
-                .as_str()
-                .is_some_and(|id| id.starts_with(prefix))
-        })
+    packet["computedInvariants"].as_array()?.iter().find(|inv| {
+        inv["invariantId"]
+            .as_str()
+            .is_some_and(|id| id.starts_with(prefix))
+    })
 }
 
 fn representation<'a>(invariant: &'a Value) -> &'a Value {
@@ -37,12 +34,9 @@ fn profile_rows(packet: &Value) -> Vec<Value> {
     let mut rows = Vec::new();
     let mut seen = std::collections::BTreeSet::new();
     let primary = &packet["profile"];
-    for profile in std::iter::once(primary).chain(
-        packet["profiles"]
-            .as_array()
-            .into_iter()
-            .flatten(),
-    ) {
+    for profile in
+        std::iter::once(primary).chain(packet["profiles"].as_array().into_iter().flatten())
+    {
         let Some(profile_id) = profile["profileId"].as_str() else {
             continue;
         };
@@ -213,8 +207,7 @@ fn class_support_section(packet: &Value) -> Value {
 /// Per-chart grounding rows, present only when a saga-grounded premise was
 /// actually evaluated in this run.
 fn local_observations_section(packet: &Value) -> Value {
-    let Some(grounded) = invariant_with_id_prefix(packet, "saga-grounded:defect-quotient")
-    else {
+    let Some(grounded) = invariant_with_id_prefix(packet, "saga-grounded:defect-quotient") else {
         return Value::Null;
     };
     let rep = representation(grounded);
@@ -264,7 +257,10 @@ fn observation_coverage_section(packet: &Value, normalized: &NormalizedArchMapV2
     let mut section_atoms: BTreeMap<&str, Vec<&NormalizedAtomV2>> = BTreeMap::new();
     for atom in &normalized.atoms {
         if atom.axis == "cech" && atom.predicate == "sectionValue" {
-            section_atoms.entry(atom.subject.as_str()).or_default().push(atom);
+            section_atoms
+                .entry(atom.subject.as_str())
+                .or_default()
+                .push(atom);
         }
     }
     let grounding = local_observations_section(packet);
@@ -327,7 +323,11 @@ fn observation_coverage_section(packet: &Value, normalized: &NormalizedArchMapV2
 
 fn boundary_kinds_by_scope(packet: &Value) -> BTreeMap<String, Vec<Value>> {
     let mut map: BTreeMap<String, Vec<Value>> = BTreeMap::new();
-    for statement in packet["boundaryStatements"].as_array().into_iter().flatten() {
+    for statement in packet["boundaryStatements"]
+        .as_array()
+        .into_iter()
+        .flatten()
+    {
         for scope in statement["scopeRefs"].as_array().into_iter().flatten() {
             if let Some(scope_ref) = scope.as_str() {
                 map.entry(scope_ref.to_string())
