@@ -122,7 +122,7 @@ pub fn build_measurement_viewer_data_v1(
         "omittedDetailCounts": insight_report["omittedDetailCounts"],
         "nonConclusions": [
             "Viewer data is a bounded projection of ArchMap v2 and measurement packet foundation rows.",
-            "Layout and site visualization are not AG invariant values or Lean proof objects.",
+            "Layout and site visualization are ArchView presentation data; AG invariant values come from ArchSig measurement artifacts.",
             "Holonomy-like views are restriction path or cover path exploration, not monodromy verdicts.",
             "Theorem-candidate readings are not displayed as structural conclusions."
         ]

@@ -97,7 +97,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             } else if cech_nonzero {
                 "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
             } else if nonzero_count > 0 {
-                "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim."
+                "Review the structural verdict rows together with their dependsOnAssumptions refs and the corresponding assumption ledger entries before reading any selected AG obstruction claim."
             } else if cech_zero {
                 "No selected H1 glue mismatch was measured under the profile."
             } else if unmeasured_count > 0 {
@@ -442,8 +442,8 @@ fn insight_cards_v1(
                     "has next inspection action".to_string(),
                 ],
                 vec![
-                    "This does not prove source extraction completeness.".to_string(),
-                    "This does not automatically identify a safe repair.".to_string(),
+                    "ArchMap source refs are validated before measurement; this card records the selected measurement result.".to_string(),
+                    "This card exposes measured support and a next inspection action; repair is not computed by this card.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.cech-obstruction" && row.verdict == "measured_zero" {
@@ -464,8 +464,8 @@ fn insight_cards_v1(
                     "boundary digest remains visible".to_string(),
                 ],
                 vec![
-                    "This does not mean the architecture is clean.".to_string(),
-                    "This does not rule out unmeasured or unknown support.".to_string(),
+                    "This card records a profile-relative zero result for the selected measurement surface.".to_string(),
+                    "Unmeasured and unknown support remain represented by their own packet rows.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.square-free-repair" && row.verdict == "measured_nonzero" {
@@ -487,8 +487,8 @@ fn insight_cards_v1(
                     "non-claim required".to_string(),
                 ],
                 vec![
-                    "This is a combinatorial repair candidate, not a semantic refactor guarantee.".to_string(),
-                    "This does not prove repair safety.".to_string(),
+                    "This is a combinatorial repair candidate evaluated under the selected support contract.".to_string(),
+                    "Repair safety is a result of the selected repair evaluation contract; this card records the candidate support.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.law-conflict-tor" && row.verdict == "measured_nonzero" {
@@ -505,7 +505,7 @@ fn insight_cards_v1(
                 "Inspect policy conflict witness",
                 "law-conflict-tor",
                 vec!["policy conflict".to_string(), "measured_nonzero structural verdict".to_string()],
-                vec!["This does not prove there is no compatible refactor.".to_string()],
+                vec!["Compatible refactors are evaluated by the selected comparison contract; this card records the computed compatibility result.".to_string()],
             ));
         } else if row.verdict == "not_computed" {
             cards.push(insight_card(
@@ -1043,8 +1043,8 @@ fn insight_viewer_visual_scenes_v1(
                 has_repair,
             ),
             &[
-                "This is a combinatorial repair candidate. It is not a semantic refactor guarantee.",
-                "This does not prove repair safety.",
+                "This is a combinatorial repair candidate under the selected support contract.",
+                "Repair safety is evaluated by the selected repair contract; this scene records the candidate support.",
             ],
         ),
         scene_v1(
@@ -1437,8 +1437,7 @@ fn gluing_geometry_projection_v1(
                 .get("observedCocycle")
                 .and_then(|cocycle| cocycle.get("classNonzero"))
                 .and_then(Value::as_bool)
-        })
-        .unwrap_or(false);
+        });
     let cocycle_support_atom_refs = nonzero_edges
         .iter()
         .flat_map(|edge| edge.support_atom_refs.iter().cloned())
@@ -1510,7 +1509,7 @@ fn gluing_geometry_projection_v1(
             "supportEdges": cocycle_support_edges,
             "closureGapEncoding": {
                 "kind": "holonomyLikeGapMarker",
-                "visible": class_nonzero && !nonzero_edges.is_empty(),
+                "visible": class_nonzero == Some(true) && !nonzero_edges.is_empty(),
                 "lineRole": "thick_glowing_dashed_seam",
                 "source": "observedCocycle.classNonzero plus representative support from packet",
                 "nonClaim": "Exploratory restriction-path closure gap only; monodromy verdict is not generated."
@@ -1736,7 +1735,7 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
                     "transferMeasurementPairing": reading.value["transferMeasurementPairing"].clone(),
                     "transferResidue": reading.value["transferResidue"].clone(),
                     "wassersteinTransferCost": reading.value["wassersteinTransferCost"].clone(),
-                    "nonClaim": "Wasserstein transfer cost is a supplied finite support-localized analytic reading; it is not W1 itself and does not prove global repair safety.",
+                    "nonClaim": "Wasserstein transfer cost is a supplied finite support-localized analytic reading under the selected cost model; it records a local transport cost.",
                     "projectionBoundary": reading.value["nonConclusion"].clone()
                 }));
             }

@@ -248,7 +248,11 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
             .all(|row| row["verdictData"]["methodStatus"] != "depends_on_violated_assumption"),
         "M8 typed boundary must not trigger assumption dependency propagation"
     );
-    assert_eq!(packet["structuralVerdict"][0]["verdict"], "measured_zero");
+    assert_eq!(packet["structuralVerdict"][0]["verdict"], "not_computed");
+    assert_eq!(
+        packet["structuralVerdict"][0]["verdictData"]["methodStatus"],
+        "triple_overlap_faces_unmeasured"
+    );
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
     assert_eq!(cech["dimensions"]["H1"], Value::from(0));
     assert_eq!(cech["selectedH2"]["dimension"], Value::Null);
@@ -271,7 +275,7 @@ fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],
-        "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+        ARCHSIG_AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
     );
 }
 
@@ -427,22 +431,13 @@ fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
 }
 
 #[test]
-fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
-    let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v052.json"));
-    assert_eq!(fixture["schema"], "ag-circle-nerve-fixture/v0.5.4");
-    assert_eq!(
-        fixture["provenance"]["reference"],
-        "part10/9.2 + appendix/B.9"
-    );
-    assert_eq!(
-        fixture["provenance"]["leanWitness"],
-        "circleSimplex/circleNext is the separate 3-edge Lean witness"
-    );
-    assert!(
-        fixture["provenance"]["note"]
-            .as_str()
-            .is_some_and(|note| note.contains("not a Lean-proved witness"))
-    );
+fn fixture_r13_two_vertex_circle_nerve_body_worked_example() {
+    // This reverse-edge body example is locked independently; the analyzer
+    // golden for a measured Cech circle is the R9 test below.
+    const CIRCLE_NERVE_FIXTURE_SCHEMA: &str = "ag-circle-nerve-fixture/v0.5.5";
+    let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v055.json"));
+    assert_eq!(fixture["schema"], CIRCLE_NERVE_FIXTURE_SCHEMA);
+    assert_eq!(fixture["provenance"]["kind"], "body-worked-example");
     assert_eq!(fixture["coefficient"]["ring"], "Z");
     assert_eq!(fixture["coefficient"]["quotient"], "F2");
     assert_eq!(fixture["coefficient"]["ideal"], "(2)");
@@ -517,6 +512,20 @@ fn cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts() {
         circle_nerve["observedCocycle"]["mismatchSupportRefs"],
         json!(["atom:b8-cocycle-P"])
     );
+    let circle_summary = read_json(&circle_nerve_a.join("archsig-analysis-summary.json"));
+    assert_eq!(
+        circle_summary["readThisFirst"]["whatItMeans"],
+        "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
+    );
+    let circle_insight = read_json(&circle_nerve_a.join("archsig-insight-report.json"));
+    assert!(json_contains_substring(
+        &circle_insight,
+        "ArchMap source refs are validated before measurement"
+    ));
+    assert!(json_contains_substring(
+        &circle_insight,
+        "repair is not computed by this card"
+    ));
 
     let square_free = run_analyze_fixture_lock_with_surface(
         "r9-square-free-hitting-sets",
@@ -564,6 +573,10 @@ fn cli_r9_numeric_locks_preserve_ag_measurement_values_and_verdicts() {
     );
     assert_eq!(tor_invariant["lawConflicts"][0]["degree"], 1);
     assert_eq!(tor_invariant["proxyComparison"]["taylorClassCount"], 1);
+    let tor_summary = read_json(&tor.join("archsig-analysis-summary.json"));
+    assert!(tor_summary["readThisFirst"]["whatItMeans"]
+        .as_str()
+        .is_some_and(|text| text.contains("dependsOnAssumptions")));
 }
 
 #[test]

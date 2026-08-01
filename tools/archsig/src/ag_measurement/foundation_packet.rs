@@ -493,7 +493,7 @@ pub fn build_foundation_measurement_packet_v1(
     }
     let mut non_conclusions = vec![
         format!(
-            "ArchSig v0.5.4 foundation packet is computed from {archmap_ref} and {law_policy_ref}; it is not a Lean proof object."
+            "ArchSig v0.5.4 foundation packet is computed from {archmap_ref} and {law_policy_ref} under the selected measurement contract."
         ),
         "Unmeasured AG evaluator rows are schema handoff rows, not measured zero.".to_string(),
         "Theorem-candidate readings are analytic-only and cannot generate structural verdicts."

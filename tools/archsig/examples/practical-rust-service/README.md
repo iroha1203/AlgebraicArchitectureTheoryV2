@@ -13,9 +13,9 @@ and the staircase names each step of its failure precisely:
 
 1. **Grounding** — every module satisfies its own displayed money law
    (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The fixed chart-local observation check is clean.
-2. **Descent** — the residual derived from the observed sections and the
-   law-surface witness bindings has a **nonzero** boundary-membership result
-   on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL`). A named
+2. **Descent** — the residual derived from the observed sections under the
+   selected `ag.saga-descent` evaluator contract has a **nonzero** boundary-membership result
+   on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL_CLASS`). A named
    `Z1/B1` class is emitted only when a derived triple face is actually checked.
 3. **Comparison** — `compare` derives the difference of the head and repaired
    residuals and tests its membership in `B1`
@@ -105,12 +105,16 @@ tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 The script walks five acts and prints one conclusion per step:
 
 ```text
-[analyze base]           REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
-[saga base]              measured_zero         (derived residual in B1)
+[analyze base]           AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
+[saga base selected rows] 0
 [grounding head]         measured_zero         (every chart's own law holds)
 [descent head]           measured_nonzero      (residual outside B1)
 [harmonic debt head]     0.353553              (quarter-cent essential debt)
-[analyze head]           MEASURED_NONGLUING_RESIDUAL
+[Cech head]              not_computed
+[Cech head classNonzero] null
+[Cech head echo classNonzero] null
+[Cech head echo certRef] null
+[analyze head]           MEASURED_NONGLUING_RESIDUAL_CLASS
 [compare base->head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
 [gate head]              BLOCKED_BY_GATE_POLICY
 [descent repaired]       measured_zero         (residual glues)
@@ -139,8 +143,8 @@ features; each state has a matching ArchMap observation:
 
 | State | Build | ArchMap | analyze conclusion |
 | --- | --- | --- | --- |
-| base (main) | `cargo run` | `archmap/archmap.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
-| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL` |
+| base (main) | `cargo run` | `archmap/archmap.json` | `AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE` |
+| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL_CLASS` |
 | repaired | `cargo run --features settlement-authority` | `archmap/archmap_repaired.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 
 All three build states pass `cargo test` — that is the point of the demo.
@@ -168,12 +172,14 @@ ArchMap cover and observed restriction relations over the eight contexts: the mo
 `ctx:application – ctx:settlement – ctx:infrastructure – ctx:ports`, and
 the policy/runtime edges. The residual is **derived, not supplied**: ArchSig
 compares the observed `cech/sectionValue` atoms across each overlap of the
-loop and finds three mismatching convention boundaries, each bound to a
-law-surface witness variable; the derivation record
-(`saga-descent:residual-derivation`) names the observed atoms and witnesses.
+loop and finds three mismatching convention boundaries; the derivation record
+(`saga-descent:residual-derivation`) names the observed support atoms.
 Odd parity around a closed loop is not a coboundary: boundary membership
 fails. This run's ArchMap does not provide a shared observed face for a checked
-triple, so the class vocabulary remains withheld as a named boundary statement.
+triple, so the separate `ag.cech-obstruction` class reading stays
+`not_computed` with `classNonzero: null`. The selected `ag.saga-descent`
+evaluator has a checked triple for its derived residual, so the analysis
+summary records `MEASURED_NONGLUING_RESIDUAL_CLASS`.
 
 **Comparison.** `compare` reads the two measurement records (head and
 repaired) and derives the run-pair reading itself: the residual delta on the
@@ -282,10 +288,9 @@ Every conclusion above is relative to the two input families: observation
 selected ArchMap cover and observed restrictions. Enumeration completeness and
 the law-surface quotient
 sheaf condition are recorded in the packet's assumption ledger as
-assumptions, not theorems. ArchSig does not extract conventions from Rust source by itself,
-does not claim the sample has no other defects, and does not prove
-production correctness. The harmonic-debt bound is relative to the declared
-inner product and cost model. The head/base comparison deliberately refuses
-row-level comparability across different sites rather than inventing class
-transport. None of this is a Lean proof; it is a bounded measurement that
-makes a specific global inconsistency visible, priceable, and reviewable.
+assumptions, not theorems. ArchSig reads the conventions recorded as selected
+ArchMap observations. The harmonic-debt bound is relative to the declared inner
+product and cost model. The head/base comparison records comparable run pairs
+under the selected site conditions. ArchSig produces a bounded measurement
+from the selected ArchMap observations and measurement contracts, making a
+specific global inconsistency visible, priceable, and reviewable.

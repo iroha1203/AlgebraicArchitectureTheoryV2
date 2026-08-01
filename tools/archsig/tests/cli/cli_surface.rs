@@ -150,9 +150,11 @@ fn practical_rust_service_example_runs_current_analyze() {
     );
     assert!(
         verdict_rows.iter().any(|row| {
-            row["evaluator"] == "ag.cech-obstruction" && row["verdict"] == "measured_zero"
+            row["evaluator"] == "ag.cech-obstruction"
+                && row["verdict"] == "not_computed"
+                && row["verdictData"]["methodStatus"] == "triple_overlap_faces_unmeasured"
         }),
-        "practical sample must expose the selected AG structural verdict"
+        "practical sample must expose the selected AG structural verdict and its triple-face reading"
     );
     assert!(
         verdict_rows
@@ -177,7 +179,7 @@ fn practical_rust_service_example_runs_current_analyze() {
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
     assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 4);
-    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
+    assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 1);
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.4");
     assert_eq!(manifest["mode"], "measurement");
@@ -868,8 +870,9 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     .as_array()
                     .is_some_and(|items| {
                         items.iter().any(|item| {
-                            item.as_str()
-                                .is_some_and(|text| text.contains("semantic correctness"))
+                            item.as_str().is_some_and(|text| {
+                                text.contains("canonical atom-kind and observation-pair vocabulary")
+                            })
                         })
                     })
         }),

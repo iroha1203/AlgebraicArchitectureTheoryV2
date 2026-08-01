@@ -567,6 +567,40 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
         "Topological Debt Capacity must not add a structural verdict row"
     );
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    let cech_row = packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.cech-obstruction")
+        .expect("Cech structural verdict is present");
+    assert_eq!(cech_row["verdict"], "not_computed");
+    assert_eq!(
+        cech_row["verdictData"]["methodStatus"],
+        "triple_overlap_faces_unmeasured"
+    );
+    assert_eq!(
+        cech_row["verdictData"]["zero"],
+        false,
+        "a selected triple-overlap face must not be reported as a measured zero"
+    );
+    assert_eq!(cech_row["verdictData"]["nonZero"], false);
+    assert_eq!(cech["status"], "not_computed");
+    assert_eq!(cech["methodStatus"], "triple_overlap_faces_unmeasured");
+    assert_eq!(cech["observedCocycle"]["classNonzero"], Value::Null);
+    assert_eq!(cech_row["verdictData"]["certRef"], Value::Null);
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(
+        capacity["measuredCechVerdictEcho"]["h1ClassNonzero"],
+        Value::Null,
+        "an unmeasured Cech row must not echo a measured zero"
+    );
+    assert_eq!(capacity["measuredCechVerdictEcho"]["certRef"], Value::Null);
+    let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
+    assert_eq!(
+        view_model["classSupport"]["classNonzero"],
+        Value::Null,
+        "an unmeasured Cech row must not project classNonzero=false into the view model"
+    );
     let faces = cech["coverNerveProjection"]["faces"]
         .as_array()
         .expect("cover nerve faces are array");
@@ -711,6 +745,17 @@ fn cli_analyze_v2_restriction_compatibility_measures_support_inclusion() {
     );
     assert_eq!(zero_invariant["method"], "finite-support-inclusion@1");
     assert_eq!(zero_invariant["edgeChecks"][0]["status"], "compatible");
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .expect("restriction assumptions are array")
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "archsig-contract:ag-restriction-compatibility"
+                    && row["status"] == "checked"
+            }),
+        "restriction compatibility contract ID must be emitted and checked"
+    );
 
     let nonzero_dir = root_out.join("nonzero");
     fs::create_dir_all(&nonzero_dir).expect("nonzero dir exists");
@@ -1335,6 +1380,17 @@ fn cli_analyze_v2_section_factorization_checks_selected_section() {
             .is_some_and(|reference| reference.starts_with("law-surface:"))
     );
     assert_eq!(zero_invariant["violatedForbiddenSupports"], json!([]));
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .expect("section assumptions are array")
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "archsig-contract:ag-section-factorization"
+                    && row["status"] == "checked"
+            }),
+        "section factorization contract ID must be emitted and checked"
+    );
     assert!(
         zero_invariant["boundaryNote"]
             .as_str()

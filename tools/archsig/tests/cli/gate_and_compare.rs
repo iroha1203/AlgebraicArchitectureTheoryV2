@@ -668,12 +668,12 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         }],
         "residualClassAgreement": {
             "status": "cohomologous",
-            "theoremRef": "part10/3.4+4.4"
+            "theoremRef": "archsig-contract:retired-residual-class-agreement"
         },
         "residualDifferenceReading": {
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": "part10/2.3"
+            "theoremRef": "archsig-contract:residual-difference-reading"
         }
     });
     fs::write(
@@ -712,7 +712,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         .remove("residualClassAgreement");
     unknown_status["residualDifferenceReading"] = json!({
         "status": "cohomologous",
-        "theoremRef": "part10/2.3"
+        "theoremRef": "archsig-contract:residual-difference-reading"
     });
     fs::write(
         &unknown_status_path,
@@ -951,37 +951,70 @@ fn cli_gate_rejects_duplicate_json_and_input_output_aliases() {
 fn cli_compare_asserts_identical_and_verdict_row_transitions() {
     let out_dir = temp_dir("archsig-compare-positive-transitions");
     let root = ag_measurement_root();
-    let source_run = out_dir.join("source-run");
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        root.join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
+    let mut source_archmap = read_json(&root.join("archmap_v2.json"));
+    let mut shared_restriction_atom = source_archmap["atoms"]
+        .as_array()
+        .expect("source atoms are array")
+        .iter()
+        .find(|atom| atom["id"] == "atom:order-inventory-restriction")
+        .cloned()
+        .expect("source restriction atom exists");
+    shared_restriction_atom["id"] = json!("atom:shared-order-inventory-restriction");
+    source_archmap["atoms"]
+        .as_array_mut()
+        .expect("source atoms are array")
+        .push(shared_restriction_atom);
+    let shared_atom = source_archmap["contexts"]
+        .as_array_mut()
+        .expect("source contexts are array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:shared")
+        .expect("source shared context exists")["atoms"]
+        .as_array_mut()
+        .expect("source shared atoms are array")
+        .iter_mut()
+        .find(|atom| *atom == "atom:order-inventory-restriction")
+        .expect("source shared restriction atom exists");
+    *shared_atom = Value::String("atom:shared-order-inventory-restriction".to_string());
+    let source_archmap_path = out_dir.join("source-archmap.json");
+    fs::write(
+        &source_archmap_path,
+        serde_json::to_vec_pretty(&source_archmap).expect("source ArchMap serializes"),
+    )
+    .expect("source ArchMap writes");
+    let run_source_analysis = |name: &str| {
+        let target = out_dir.join(name);
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            source_archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
             root.join("law_policy_ag.json")
                 .to_str()
                 .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
+            "--measurement-profile",
+            test_measurement_profile_path(Path::new(
+                root.join("law_policy_ag.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+            ))
             .to_str()
             .expect("path is utf-8"),
-        "--out-dir",
-        source_run.to_str().expect("path is utf-8"),
-    ]);
+            "--law-surface",
+            root.join("law_surface_ag_v052.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            target.to_str().expect("path is utf-8"),
+        ]);
+        target
+    };
+    let source_run = run_source_analysis("source-run");
 
-    let clone_run = |name: &str| {
+    let clone_run_from = |source: &Path, name: &str| {
         let target = out_dir.join(name);
         fs::create_dir_all(&target).expect("comparison run directory can be created");
-        for entry in fs::read_dir(&source_run).expect("source run can be read") {
+        for entry in fs::read_dir(source).expect("source run can be read") {
             let entry = entry.expect("source run entry can be read");
             let file_type = entry
                 .file_type()
@@ -993,9 +1026,10 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         }
         target
     };
+    let clone_run = |name: &str| clone_run_from(&source_run, name);
 
-    let identical_base = clone_run("identical-base");
-    let identical_head = clone_run("identical-head");
+    let identical_base = run_source_analysis("identical-base");
+    let identical_head = run_source_analysis("identical-head");
     let identical_out = out_dir.join("identical-compare");
     run_sig0(&[
         "compare",
@@ -1058,7 +1092,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         assert!(!identical_base.join("nested-output").exists());
     }
 
-    let mut verdict_row_archmap = read_json(&root.join("archmap_v2.json"));
+    let mut verdict_row_archmap = source_archmap.clone();
     verdict_row_archmap["atoms"][0]["object"] = json!("changed-object-for-verdict-row");
     let verdict_row_archmap_path = out_dir.join("verdict-row-archmap.json");
     fs::write(
@@ -1208,6 +1242,177 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         .unwrap()
         .iter()
         .any(|transition| transition["transition"] == "measured_obstruction_no_longer_recorded"));
+
+    let practical_root = practical_rust_service_root();
+    let practical_base_archmap = practical_root.join("archmap/archmap_head.json");
+    let mut practical_head_archmap = read_json(&practical_base_archmap);
+    practical_head_archmap["atoms"]
+        .as_array_mut()
+        .expect("practical ArchMap atoms are mutable")
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:cech-money-application")
+        .expect("practical ArchMap application section atom exists")["object"] =
+        json!("section=money-amount:exact-tenk-cents");
+    let practical_head_archmap_path = write_archmap_variant(
+        &out_dir,
+        practical_head_archmap,
+        "residual-head-archmap.json",
+    );
+    let analyze_practical = |archmap: &Path, name: &str| {
+        let run = out_dir.join(name);
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            archmap.to_str().expect("practical ArchMap path is utf-8"),
+            "--law-policy",
+            practical_root
+                .join("law_policy/law_policy.json")
+                .to_str()
+                .expect("practical LawPolicy path is utf-8"),
+            "--measurement-profile",
+            practical_root
+                .join("law_policy/measurement_profile.json")
+                .to_str()
+                .expect("practical MeasurementProfile path is utf-8"),
+            "--measurement-profile",
+            practical_root
+                .join("law_policy/measurement_profile_drift.json")
+                .to_str()
+                .expect("practical drift profile path is utf-8"),
+            "--law-surface",
+            practical_root
+                .join("law_policy/law_surface.json")
+                .to_str()
+                .expect("practical law surface path is utf-8"),
+            "--out-dir",
+            run.to_str().expect("practical analyze output path is utf-8"),
+        ]);
+        run
+    };
+    let practical_base = analyze_practical(&practical_base_archmap, "residual-base");
+    let practical_identical_head =
+        analyze_practical(&practical_base_archmap, "residual-identical-head");
+    let identical_residual_out = out_dir.join("residual-identical-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        practical_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        practical_identical_head
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        identical_residual_out
+            .to_str()
+            .expect("path is utf-8"),
+    ]);
+    let identical_residual_report = read_json(
+        &identical_residual_out.join("archsig-comparison-report.json"),
+    );
+    let identical_residual_reading = &identical_residual_report["residualDifferenceReading"];
+    assert_eq!(identical_residual_report["comparability"]["level"], "identical");
+    assert_eq!(
+        identical_residual_reading["status"],
+        "no_residual_change"
+    );
+    assert_eq!(identical_residual_reading["derived"], true);
+    assert_eq!(identical_residual_reading["deltaSupport"], json!([]));
+    assert_eq!(
+        identical_residual_reading["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["coverRef"],
+        "cover:commerce-fulfillment"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["lawSurfaceRef"],
+        "law-surface:practical-rust-v052"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["overlapComplex"]["overlapRefs"]
+            .as_array()
+            .expect("identical residual overlap refs are an array")
+            .len(),
+        14
+    );
+    let practical_head = analyze_practical(&practical_head_archmap_path, "residual-head");
+    let residual_out = out_dir.join("residual-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        practical_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        practical_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        residual_out.to_str().expect("path is utf-8"),
+    ]);
+    let residual_report = read_json(&residual_out.join("archsig-comparison-report.json"));
+    let residual_reading = &residual_report["residualDifferenceReading"];
+    assert_eq!(residual_report["comparability"]["level"], "verdict-row");
+    assert_eq!(residual_report["comparability"]["sameArchmapDigest"], false);
+    assert_eq!(residual_report["comparability"]["sameComponentFingerprints"], true);
+    assert_eq!(residual_reading["status"], "difference_in_B1");
+    assert_eq!(residual_reading["derived"], true);
+    assert_eq!(residual_reading["inB1"], true);
+    assert_eq!(
+        residual_reading["equation"],
+        "delta0(h) = r_base XOR r_head"
+    );
+    assert_eq!(
+        residual_reading["deltaSupport"],
+        json!([
+            "overlap:ctx:application:ctx:domain",
+            "overlap:ctx:application:ctx:ports",
+            "overlap:ctx:application:ctx:runtime",
+            "overlap:ctx:application:ctx:settlement",
+            "overlap:ctx:application:ctx:shared"
+        ])
+    );
+    assert_eq!(
+        residual_reading["witnessChartAssignment"],
+        json!([
+            {"chartRef": "ctx:application", "parity": 1},
+            {"chartRef": "ctx:domain", "parity": 0},
+            {"chartRef": "ctx:infrastructure", "parity": 0},
+            {"chartRef": "ctx:policy", "parity": 0},
+            {"chartRef": "ctx:ports", "parity": 0},
+            {"chartRef": "ctx:runtime", "parity": 0},
+            {"chartRef": "ctx:settlement", "parity": 0},
+            {"chartRef": "ctx:shared", "parity": 0}
+        ])
+    );
+    assert_eq!(
+        residual_reading["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
+    assert_eq!(
+        residual_reading["provenance"]["coverRef"],
+        "cover:commerce-fulfillment"
+    );
+    assert_eq!(
+        residual_reading["provenance"]["lawSurfaceRef"],
+        "law-surface:practical-rust-v052"
+    );
+    assert_eq!(
+        residual_reading["provenance"]["overlapComplex"]["overlapRefs"],
+        json!([
+            "overlap:ctx:application:ctx:domain",
+            "overlap:ctx:application:ctx:ports",
+            "overlap:ctx:application:ctx:runtime",
+            "overlap:ctx:application:ctx:settlement",
+            "overlap:ctx:application:ctx:shared",
+            "overlap:ctx:domain:ctx:shared",
+            "overlap:ctx:infrastructure:ctx:ports",
+            "overlap:ctx:infrastructure:ctx:runtime",
+            "overlap:ctx:infrastructure:ctx:settlement",
+            "overlap:ctx:infrastructure:ctx:shared",
+            "overlap:ctx:policy:ctx:shared",
+            "overlap:ctx:ports:ctx:shared",
+            "overlap:ctx:runtime:ctx:shared",
+            "overlap:ctx:settlement:ctx:shared"
+        ])
+    );
 }
 
 #[test]
@@ -1316,6 +1521,10 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
         ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA,
     ]);
     assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.7");
+    assert_eq!(
+        comparison["residualDifferenceReading"]["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
     assert_eq!(
         comparison["discipline"],
         "Comparison is a record-level juxtaposition of two ArchSig runs. ArchSig derives a class-zero reading from the selected normalized ArchMap covers when each fine context has a unique observed coarse containment path."

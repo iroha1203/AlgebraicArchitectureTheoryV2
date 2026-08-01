@@ -152,9 +152,9 @@ pub fn build_comparison_artifacts_v1(
     Ok((archmap_diff, report))
 }
 
-/// 同一複体上の 2 run の導出 residual の差が delta0(h) の像に入るかを記録する。
-/// 第X部 定義2.3 の B^1=im(delta0)を選択複体上で有限検査し、
-/// 修理成功の判定ではない。修理の成立は head run 自身の residual 測定が語る。
+/// 同一複体上の2 runの導出residualの差を、
+/// `archsig-contract:residual-difference-reading`のB^1=im(delta0)計算として記録する。
+/// 修理成功の判定ではなく、修理の成立はhead run自身のresidual測定が語る。
 fn packet_residual_derivation(packet: &Value) -> Option<&Value> {
     packet
         .get("computedInvariants")?
@@ -188,7 +188,6 @@ fn derived_residual_difference_reading(
     head_packet: &Value,
     comparability: &Value,
 ) -> Value {
-    const THEOREM_REF: &str = "part10/2.3";
     if !matches!(
         comparability["level"].as_str(),
         Some("identical") | Some("verdict-row")
@@ -196,7 +195,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "runs_not_comparable",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 is read only for comparable runs; a not-comparable pair shares no checked complex"
         });
     }
@@ -207,7 +206,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
@@ -216,7 +215,7 @@ fn derived_residual_difference_reading(
             return json!({
                 "status": "not_computed",
                 "reason": "residual_derivation_provenance_mismatch",
-                "theoremRef": THEOREM_REF,
+                "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
                 "mismatchedField": provenance_key,
                 "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals under different covers, law surfaces, or chart sets"
             });
@@ -229,7 +228,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
@@ -249,7 +248,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "not_computed",
             "reason": "residual_complexes_do_not_match",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals over different overlap complexes"
         });
     }
@@ -293,7 +292,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "no_residual_change",
             "derived": true,
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "deltaSupport": [],
             "provenance": provenance
         });
@@ -303,7 +302,7 @@ fn derived_residual_difference_reading(
             "status": "difference_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "inB1": true,
             "deltaSupport": delta_support,
             "witnessChartAssignment": charts
@@ -321,7 +320,7 @@ fn derived_residual_difference_reading(
             "status": "difference_not_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "reason": "delta_not_a_boundary_within_selected_complex",
             "inB1": false,
             "deltaSupport": delta_support,

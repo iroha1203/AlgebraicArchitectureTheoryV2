@@ -33,7 +33,7 @@ row = next(row for row in packet['computedInvariants'] if row['invariantId'] == 
 value = row
 for key in sys.argv[3].split('.'):
     value = value[key]
-print(value)" "$1" "$2" "$3"
+print('null' if value is None else value)" "$1" "$2" "$3"
 }
 
 expect() {
@@ -63,7 +63,7 @@ echo "--- repaired (--features settlement-authority): reconciled ---"
 cargo run --quiet --manifest-path "$SAMPLE" --features settlement-authority
 
 echo
-echo "=== Act 2: measure base — the selected profile stays at the Cech/grounding rows ==="
+echo "=== Act 2: measure base — the selected profile records the Cech face reading and grounding rows ==="
 mkdir -p "$OUT/base"
 base_policy="$OUT/base/law_policy.json"
 jq --arg ref "$(jq -r '.id' "$EXAMPLE/law_policy/law_surface_base.json")" \
@@ -76,7 +76,7 @@ jq --arg ref "$(jq -r '.id' "$EXAMPLE/law_policy/law_surface_base.json")" \
   --measurement-profile "$EXAMPLE/law_policy/measurement_profile_drift.json" \
   --law-surface "$EXAMPLE/law_policy/law_surface_base.json" \
   --out-dir "$OUT/base" >/dev/null
-expect_value "$OUT/base/archsig-analysis-summary.json" "analyze base" conclusion "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"
+expect_value "$OUT/base/archsig-analysis-summary.json" "analyze base" conclusion "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"
 expect "saga base selected rows" "$(python3 -c "import json,sys; print(sum(row['evaluator'] == 'ag.saga-descent' for row in json.load(open(sys.argv[1]))['structuralVerdict']))" "$OUT/base/archsig-measurement-packet.json")" "0"
 
 echo
@@ -94,6 +94,10 @@ expect "grounding head" "$(saga_verdict "$head_packet" "law:money-convention")" 
 echo "    (every chart satisfies its own displayed money law — that is the trap)"
 expect "descent head" "$(saga_verdict "$head_packet" "saga.residual-boundary-membership")" "measured_nonzero"
 expect "harmonic debt head" "$(invariant_value "$head_packet" "harmonic-debt:profile:money-drift@1" "essentialRepairLowerBound")" "0.353553"
+expect "Cech head" "$(saga_verdict "$head_packet" "surface:cech-surface-v052")" "not_computed"
+expect "Cech head classNonzero" "$(invariant_value "$head_packet" "cech-cohomology:profile:commerce-fulfillment@1" "observedCocycle.classNonzero")" "null"
+expect "Cech head echo classNonzero" "$(invariant_value "$head_packet" "topological-debt-capacity:profile:commerce-fulfillment@1" "measuredCechVerdictEcho.h1ClassNonzero")" "null"
+expect "Cech head echo certRef" "$(invariant_value "$head_packet" "topological-debt-capacity:profile:commerce-fulfillment@1" "measuredCechVerdictEcho.certRef")" "null"
 expect_value "$OUT/head/archsig-analysis-summary.json" "analyze head" conclusion "MEASURED_NONGLUING_RESIDUAL_CLASS"
 
 echo

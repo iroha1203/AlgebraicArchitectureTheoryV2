@@ -475,7 +475,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         .is_some_and(|condition| condition.mode == "assumed")
     {
         assumptions.push(AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part10/8.3".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION.to_string(),
             assumption: format!(
                 "selected quotient sheaf condition for {}",
                 execution_plan.surface_id
@@ -616,7 +616,7 @@ pub(crate) fn evaluate_saga_descent_v1(
     };
     let boundary = solve_boundary_membership(plan, &derived.supports);
     let enumeration_assumption = AgAssumptionLedgerEntryV1 {
-        theorem_ref: "part10/3.1".to_string(),
+        theorem_ref: crate::ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION.to_string(),
         assumption: format!("ArchSig-derived finite complex enumeration for {}", plan.id),
         status: "assumed".to_string(),
         checked_by: None,

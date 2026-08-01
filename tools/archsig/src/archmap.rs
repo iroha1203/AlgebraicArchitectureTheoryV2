@@ -95,7 +95,7 @@ pub fn validate_archmap_v2_report(
             warning_check_count,
         },
         non_conclusions: vec![
-            "ArchMap v2 validation checks the finite poset site observation contract; it does not prove source extraction soundness, U-adequacy, architecture lawfulness, or Lean theorem discharge.".to_string(),
+            "ArchMap v2 validation checks the finite poset site observation contract and supplies source-grounded observations for ArchSig measurement.".to_string(),
             "Contexts and covers are source-grounded observations; selected measurement coefficients, witnesses, and verdict predicates belong to MeasurementProfile.".to_string(),
         ],
     }
@@ -147,8 +147,8 @@ pub fn static_aat_atom_vocabulary_v1() -> AatAtomVocabularyV1 {
         .map(str::to_string)
         .collect(),
         non_conclusions: vec![
-            "AAT atom vocabulary is an ArchSig input contract; it does not prove source extraction soundness or semantic correctness.".to_string(),
-            "Vocabulary lint checks token membership only and does not decide whether a new atom kind or observed AG pair should be added to the doctrine.".to_string(),
+            "AAT atom vocabulary is the ArchSig input contract for token membership and canonical observation pairs.".to_string(),
+            "Vocabulary lint computes token membership under the compiled AAT doctrine.".to_string(),
         ],
     }
 }
@@ -1115,13 +1115,13 @@ mod tests {
             vocabulary
                 .non_conclusions
                 .iter()
-                .any(|text| text.contains("token membership only"))
+                .any(|text| text.contains("token membership under the compiled AAT doctrine"))
         );
         assert!(
             vocabulary
                 .non_conclusions
                 .iter()
-                .any(|text| text.contains("does not prove source extraction soundness"))
+                .any(|text| text.contains("canonical observation pairs"))
         );
         let expected_pairs = BTreeMap::from([
             (

@@ -44,6 +44,7 @@ fn evaluate_cech_obstruction_v1(
     let nerve_is_forest = !empty_selected_scope
         && edges.len().saturating_add(component_count) == selected_contexts.len();
     let has_triple_overlap_faces = cover_nerve_face_count > 0;
+    let triple_overlap_faces_not_measured = has_triple_overlap_faces;
     let restriction_surjectivity_witnesses =
         restriction_surjectivity_witnesses_v1(normalized, &edges);
     let selected_restriction_edges = edges
@@ -78,7 +79,11 @@ fn evaluate_cech_obstruction_v1(
         && !cover_shape_excludes_gluing_obstruction;
     let h1_class_nonzero = !empty_selected_scope
         && !sections_not_observed
+        && !triple_overlap_faces_not_measured
         && !edge_cochain_is_coboundary(&selected_contexts, &observed_edges);
+    let cech_class_measured = !empty_selected_scope
+        && !sections_not_observed
+        && !triple_overlap_faces_not_measured;
     let topological_debt_capacity = topological_debt_capacity_invariant_v1(
         profile,
         &selected_contexts,
@@ -87,6 +92,7 @@ fn evaluate_cech_obstruction_v1(
         h1_dimension,
         h1_class_nonzero,
         empty_selected_scope,
+        cech_class_measured,
     );
     let representative = edges
         .iter()
@@ -138,12 +144,20 @@ fn evaluate_cech_obstruction_v1(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part4/12.3".to_string(),
             assumption: "constant coefficient nerve b1 comparison".to_string(),
-            status: "checked".to_string(),
-            checked_by: Some(format!(
-                "measurement-profile:{}.coefficient={}",
-                profile.profile_id, profile.coefficient
-            )),
-            assumed_by: None,
+            status: if triple_overlap_faces_not_measured {
+                "assumed"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (!triple_overlap_faces_not_measured).then(|| {
+                format!(
+                    "measurement-profile:{}.coefficient={}",
+                    profile.profile_id, profile.coefficient
+                )
+            }),
+            assumed_by: triple_overlap_faces_not_measured
+                .then(|| format!("measurement-profile:{}.triple-overlap-faces", profile.profile_id)),
         },
     ];
     assumptions.extend(cech_effectivity_assumptions_v1(
@@ -170,7 +184,6 @@ fn evaluate_cech_obstruction_v1(
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
         });
     }
-
     let (verdict, zero, non_zero, method_status, reason) = if empty_selected_scope {
         (
             "not_computed".to_string(),
@@ -186,6 +199,14 @@ fn evaluate_cech_obstruction_v1(
             false,
             "sections_not_observed".to_string(),
             "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge; supply section observations on both endpoint contexts of a selected edge (or an explicit cocycleValue for the edge) before the H1 class can be measured".to_string(),
+        )
+    } else if triple_overlap_faces_not_measured {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "triple_overlap_faces_unmeasured".to_string(),
+            "triple_overlap_faces_unmeasured: the selected Cech H1 evaluator measures the cover 1-skeleton only and does not check d1 cocycle parity for selected triple-overlap faces".to_string(),
         )
     } else if h1_class_nonzero {
         (
@@ -204,13 +225,19 @@ fn evaluate_cech_obstruction_v1(
             "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover".to_string(),
         )
     };
-    let cert_ref = if empty_selected_scope || sections_not_observed {
-        None
-    } else {
+    let cert_ref = if cech_class_measured {
         Some(format!(
             "computedInvariants/cech-cohomology:{}",
             profile.profile_id
         ))
+    } else {
+        None
+    };
+
+    let class_nonzero_reading = if cech_class_measured {
+        json!(h1_class_nonzero)
+    } else {
+        Value::Null
     };
 
     CechMeasurementV1 {
@@ -225,7 +252,10 @@ fn evaluate_cech_obstruction_v1(
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
                 "evaluator": "ag.cech-obstruction",
                 "method": "finite-f2-incidence-graph-cochain@1",
-                "status": if empty_selected_scope || sections_not_observed {
+                "status": if empty_selected_scope
+                    || sections_not_observed
+                    || triple_overlap_faces_not_measured
+                {
                     "not_computed"
                 } else {
                     "computed"
@@ -234,6 +264,8 @@ fn evaluate_cech_obstruction_v1(
                     "empty_selected_scope"
                 } else if sections_not_observed {
                     "sections_not_observed"
+                } else if triple_overlap_faces_not_measured {
+                    "triple_overlap_faces_unmeasured"
                 } else {
                     "finite_f2_cech_computed"
                 },
@@ -241,6 +273,8 @@ fn evaluate_cech_obstruction_v1(
                     "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
                 } else if sections_not_observed {
                     "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge"
+                } else if triple_overlap_faces_not_measured {
+                    "triple_overlap_faces_unmeasured: the selected Cech H1 evaluator does not check d1 cocycle parity for selected triple-overlap faces"
                 } else {
                     "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction"
                 },
@@ -279,7 +313,7 @@ fn evaluate_cech_obstruction_v1(
                     }
                 },
                 "observedCocycle": {
-                    "classNonzero": h1_class_nonzero,
+                    "classNonzero": class_nonzero_reading,
                     "representative": representative,
                     "mismatchSupportRefs": mismatch_support_refs
                 },
@@ -339,6 +373,7 @@ fn topological_debt_capacity_invariant_v1(
     one_skeleton_b1: usize,
     h1_class_nonzero: bool,
     empty_selected_scope: bool,
+    cech_class_measured: bool,
 ) -> Value {
     let dim_c0 = selected_contexts.len();
     let dim_c1 = edges.len();
@@ -401,12 +436,16 @@ fn topological_debt_capacity_invariant_v1(
         },
         "measuredCechVerdictEcho": {
             "evaluator": "ag.cech-obstruction",
-            "certRef": if empty_selected_scope {
-                Value::Null
-            } else {
+            "certRef": if cech_class_measured {
                 json!(format!("computedInvariants/cech-cohomology:{}", profile.profile_id))
+            } else {
+                Value::Null
             },
-            "h1ClassNonzero": h1_class_nonzero,
+            "h1ClassNonzero": if cech_class_measured {
+                json!(h1_class_nonzero)
+            } else {
+                Value::Null
+            },
             "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
         },
         "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
@@ -2002,7 +2041,7 @@ fn period_assumptions(
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part12/12.3".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT.to_string(),
             assumption: "Stokes audit identity checked on supplied finite model".to_string(),
             status: period_model_status.to_string(),
             checked_by: (period_model_status == "checked")
@@ -2026,7 +2065,7 @@ fn period_audit_assumptions(
 ) -> Vec<AgAssumptionLedgerEntryV1> {
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part4/13.2".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT.to_string(),
             assumption:
                 "supplied finite Stokes accounting values share a fixed coefficient reading"
                     .to_string(),
@@ -2710,7 +2749,7 @@ fn restriction_assumptions(
 ) -> Vec<AgAssumptionLedgerEntryV1> {
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "Lean/ObstructionIdeal.RestrictionCompatible.maps_selected".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY.to_string(),
             assumption: "selected finite support generator family for restriction compatibility"
                 .to_string(),
             status: if method_status == "restriction_generator_missing" {
@@ -3016,7 +3055,7 @@ fn section_assumptions(
         .collect::<Vec<_>>();
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "Lean/FiniteExamples.lawful_iff_factorsThroughLawfulLocus".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION.to_string(),
             assumption: "selected witnessAssignment atom supplies the Boolean section for finite pullback evaluation".to_string(),
             status: if method_status == "section_assignment_absent" {
                 "violated"

@@ -3,7 +3,8 @@ use crate::{
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_CONCLUSION_CODES, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
-    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING, ARCHSIG_GATE_POLICY_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
     ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
@@ -34,8 +35,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 "ArchMap v0.5.4 records source-grounded architecture observations. Finite-poset-site inputs contain sources, subject/axis-decorated atoms, contexts, and covers for AG measurement. They reject legacy v0 root fields, unknown atom kinds or compiled AAT axis/predicate pairs, and unresolved source refs before analysis.",
                 vec![
-                    "ArchMap validation does not run the evaluator or measurement pipeline.",
-                    "ArchMap validation does not prove architecture lawfulness, source completeness, U-adequacy, exactness, Lean theorem discharge, or global semantic truth.",
+                    "ArchMap validation runs the schema and source-reference checks that precede ArchSig measurement.",
+                    "ArchMap validation supplies source-grounded observations and finite site-shape checks for ArchSig measurement.",
                     ],
             ),
             artifact(
@@ -47,8 +48,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:v0.5.4-improvement"],
                 "AAT atom vocabulary v0.5.5 is an artifact-side projection of allowed ArchMap atom kind tokens, observation axes, and AG measurement axis/predicate pairs with per-pair provenance refs back to the AAT doctrine. ArchMap v2 validation enforces the compiled-in fixed AAT canonical doctrine before checking atom kind, observation-axis, and canonical AG pair membership.",
                 vec![
-                    "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
-                    "The linter does not decide whether a new atom kind should be added to the doctrine.",
+                    "Vocabulary lint computes token membership under the compiled AAT doctrine.",
+                    "The compiled doctrine supplies the canonical atom-kind and observation-pair vocabulary for this input.",
                 ],
             ),
             artifact(
@@ -86,7 +87,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:archmap-minimal-observation"],
                 "LawPolicy v0.5.4 selects explicit law/evaluator pairs with registry-owned basis, scope, and severity. Retired policy pack selectors, unknown evaluators, unresolved basis refs, and DSL-style witness rules are rejected before analysis.",
                 vec![
-                    "LawPolicy v0.5.4 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
+                    "LawPolicy v0.5.4 selects evaluator contracts registered for witness predicates, axis valuation, obstruction definitions, and measurement execution.",
                     "LawPolicy validation does not run the evaluator pipeline.",
                 ],
             ),
@@ -112,7 +113,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:v0.5.4-ag-measurement"],
                 "MeasurementProfile v0.5.4 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, optional analytic innerProduct / weights / costModel declarations, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
                 vec![
-                    "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
+                    "MeasurementProfile selects a bounded measurement regime with declared coefficients, resolution, predicates, and evaluator hypotheses; witness variables are resolved from the referenced law-equation-surface.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",
                 ],
             ),
@@ -125,8 +126,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:archmap-minimal-observation"],
                 "Law evaluator registry v0.5.4 owns evaluator manifests, basis refs, missing blocker rules, pass / violation criteria, and output refs. LawPolicy v0.5.4 selects entries from this registry.",
                 vec![
-                    "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
-                    "LawPolicy v0.5.4 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria.",
+                    "Evaluator registry manifest is the ArchSig computation contract for evaluator manifests, basis refs, blocker rules, pass criteria, and output refs.",
+                    "LawPolicy v0.5.4 selects the registered witness rules, axis rules, distance formula, pass criteria, and violation criteria.",
                 ],
             ),
             artifact(
@@ -141,8 +142,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 "Normalized ArchMap v0.5.4 is generated by the ArchSig normalizer without rereading the source repository. Finite-poset-site output records deterministic context, cover, and selected-site presentation under the fixed AAT canonical doctrine fingerprint.",
                 vec![
-                    "Normalized ArchMap is deterministic tooling input for evaluators or measurements, not a Lean proof object.",
-                    "Finite-poset-site normalization does not prove source extraction soundness.",
+                    "Normalized ArchMap is deterministic ArchSig evaluator input generated from the ArchMap observation contract.",
+                    "Finite-poset-site normalization records deterministic contexts, covers, and selected-site presentations.",
                 ],
             ),
             artifact(
@@ -173,7 +174,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:v0.5.4-improvement"],
                 "BoundaryStatement v0.5.4 is the typed scoped qualifier contract for measurement packet boundaries. It records id, kind, scopeRefs, reason, and text while preserving nonConclusions as a compatibility view.",
                 vec![
-                    "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
+                    "Boundary statements qualify selected packet rows under the ArchSig measurement contract.",
                     "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero.",
                 ],
             ),
@@ -229,7 +230,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
+                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 ({}). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
+                    ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                     registry_sentence(&ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES),
                 ),
@@ -254,7 +256,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     registry_sentence(&ARCHSIG_ANALYSIS_CONCLUSION_CODES),
                 ),
                 vec![
-                    "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
+                    "Run manifest is artifact navigation metadata for the ArchSig measurement run.",
                     "Generated artifact lists describe this run only and do not imply any unlisted artifact was produced.",
                 ],
             ),
@@ -317,13 +319,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "Run ArchSig schema-catalog, current analyze, and FieldSig handoff checks.".to_string(),
             ],
             non_conclusions: vec![
-                "schema catalog compatibility is not a semantic-preservation theorem".to_string(),
-                "schema catalog compatibility is not evidence of extractor completeness".to_string(),
-                "schema catalog compatibility is not a Lean theorem package".to_string(),
+                "schema catalog compatibility records artifact and schema compatibility under the tooling contract".to_string(),
+                "schema catalog comparison records the canonical source/fixture synchronization check".to_string(),
+                "schema catalog compatibility records the current input and output artifact contract".to_string(),
             ],
         },
         non_conclusions: vec![
-            "schema migration is not a semantic-preservation theorem".to_string(),
+            "schema migration records the current artifact catalog and its compatibility policy".to_string(),
             "schema catalog does not retain pre-Atom scan, projection, report, or PR-review surfaces as current ArchSig contracts".to_string(),
             "FieldSig-owned forecast and governance artifacts are intentionally outside this ArchSig catalog".to_string(),
         ],
@@ -394,6 +396,13 @@ fn compatibility_dimension(
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeSet;
+
+    use crate::schema::{
+        ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY, ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
+        ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
+        ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT, ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
+        ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION, ARCHSIG_GENERATED_CONTRACT_IDS,
+    };
 
     use super::*;
 
@@ -480,5 +489,24 @@ mod tests {
         ))
         .expect("schema version catalog fixture parses");
         assert_eq!(fixture, static_schema_version_catalog());
+    }
+
+    #[test]
+    fn generated_contract_registry_is_unique_and_prefixed() {
+        let ids = ARCHSIG_GENERATED_CONTRACT_IDS;
+        let unique_ids = ids.iter().copied().collect::<BTreeSet<_>>();
+        assert_eq!(unique_ids.len(), ids.len());
+        assert!(ids.iter().all(|id| id.starts_with("archsig-contract:")));
+        assert_eq!(
+            unique_ids,
+            BTreeSet::from([
+                ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY,
+                ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
+                ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
+                ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION,
+                ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
+                ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT,
+            ])
+        );
     }
 }

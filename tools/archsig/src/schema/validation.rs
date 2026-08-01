@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ValidationCheck {
     pub id: String,
     pub title: String,
@@ -14,12 +14,10 @@ pub struct ValidationCheck {
     pub examples: Vec<ValidationExample>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metric: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lean_boundary: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ValidationExample {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_id: Option<String>,
@@ -31,4 +29,28 @@ pub struct ValidationExample {
     pub target: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ValidationCheck;
+
+    #[test]
+    fn validation_check_rejects_unknown_fields() {
+        let value = serde_json::json!({
+            "id": "check:unknown-field",
+            "title": "unknown field",
+            "result": "pass",
+            "leanBoundary": "retired"
+        });
+        assert!(serde_json::from_value::<ValidationCheck>(value).is_err());
+
+        let nested_value = serde_json::json!({
+            "id": "check:nested-unknown-field",
+            "title": "nested unknown field",
+            "result": "fail",
+            "examples": [{"leanBoundary": "retired"}]
+        });
+        assert!(serde_json::from_value::<ValidationCheck>(nested_value).is_err());
+    }
 }
