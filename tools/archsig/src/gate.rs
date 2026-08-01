@@ -603,7 +603,7 @@ fn comparison_report_shape_is_evaluable(comparison: &Value) -> bool {
         || residual_difference
             .get("theoremRef")
             .and_then(Value::as_str)
-            != Some("part10/2.3")
+            != Some("archsig-contract:residual-difference-reading")
     {
         return false;
     }

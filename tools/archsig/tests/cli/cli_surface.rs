@@ -604,7 +604,7 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
             format!("{}/", ["", "Users"].join("/")),
             format!("{}/", ["", "private"].join("/")),
             [".", "codex"].join(""),
-            ["Hello", "Lean"].join(""),
+            "CodexWorkspaceMarker".to_string(),
             ["Algebraic", "Architecture", "TheoryV2"].join(""),
         ];
         for forbidden in forbidden_markers {
@@ -868,8 +868,9 @@ fn cli_schema_catalog_is_primary_archsig_surface_only() {
                     .as_array()
                     .is_some_and(|items| {
                         items.iter().any(|item| {
-                            item.as_str()
-                                .is_some_and(|text| text.contains("semantic correctness"))
+                            item.as_str().is_some_and(|text| {
+                                text.contains("canonical atom-kind and observation-pair vocabulary")
+                            })
                         })
                     })
         }),

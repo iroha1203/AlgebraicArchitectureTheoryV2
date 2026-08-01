@@ -959,7 +959,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
         summary["translationRule"]["conclusionCode"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert_eq!(summary["translationRule"]["theoremRef"], "part10/4.5");
+    assert_eq!(summary["translationRule"]["theoremRef"], Value::Null);
     assert_eq!(
         summary["translationRule"]["emitsLawSatisfiedWithoutLawCheck"],
         false
@@ -1009,7 +1009,7 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
     assert_eq!(generic_rule["theoremRef"], Value::Null);
     assert!(
         generic_rule["principalText"].as_str().is_some_and(|text| {
-            text.contains("Review the theoremRef-bearing structural verdict rows")
+            text.contains("ArchSig reports selected AG obstruction rows")
                 && !text.contains("measured a selected AG obstruction")
         }),
         "theoremRef-free generic rule must not emit a measurement claim as principal text"

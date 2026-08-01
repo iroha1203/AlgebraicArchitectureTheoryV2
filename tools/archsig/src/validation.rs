@@ -15,7 +15,6 @@ pub(crate) fn validation_check(id: &str, title: &str, result: &str) -> Validatio
         count: None,
         examples: Vec::new(),
         metric: None,
-        lean_boundary: None,
     }
 }
 

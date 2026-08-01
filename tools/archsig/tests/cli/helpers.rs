@@ -1836,7 +1836,7 @@ fn cli_analyze_practical_grounded_emits_defect_quotient_invariant() {
     assert!(
         packet["assumptions"]
             .as_array()
-            .is_some_and(|rows| rows.iter().any(|row| row["theoremRef"] == "part10/8.3")),
+            .is_some_and(|rows| rows.iter().any(|row| row["theoremRef"] == "archsig-contract:law-surface-quotient-sheaf-condition")),
         "the law-side quotient sheaf condition must be disclosed as an assumption"
     );
 }

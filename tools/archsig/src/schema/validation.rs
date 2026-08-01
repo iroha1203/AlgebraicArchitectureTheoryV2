@@ -14,8 +14,6 @@ pub struct ValidationCheck {
     pub examples: Vec<ValidationExample>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metric: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lean_boundary: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

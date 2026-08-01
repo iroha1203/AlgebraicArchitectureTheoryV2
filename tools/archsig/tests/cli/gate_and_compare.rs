@@ -668,12 +668,12 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         }],
         "residualClassAgreement": {
             "status": "cohomologous",
-            "theoremRef": "part10/3.4+4.4"
+            "theoremRef": "archsig-contract:retired-residual-class-agreement"
         },
         "residualDifferenceReading": {
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": "part10/2.3"
+            "theoremRef": "archsig-contract:residual-difference-reading"
         }
     });
     fs::write(
@@ -712,7 +712,7 @@ fn cli_gate_not_evaluable_for_malformed_packet_or_unsupported_comparison() {
         .remove("residualClassAgreement");
     unknown_status["residualDifferenceReading"] = json!({
         "status": "cohomologous",
-        "theoremRef": "part10/2.3"
+        "theoremRef": "archsig-contract:residual-difference-reading"
     });
     fs::write(
         &unknown_status_path,

@@ -442,8 +442,8 @@ fn insight_cards_v1(
                     "has next inspection action".to_string(),
                 ],
                 vec![
-                    "This does not prove source extraction completeness.".to_string(),
-                    "This does not automatically identify a safe repair.".to_string(),
+                    "Source extraction completeness is supplied by the ArchMap source-grounding contract; this card records the selected measurement result.".to_string(),
+                    "Repair safety is evaluated by the selected repair contract; this card records the measured support.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.cech-obstruction" && row.verdict == "measured_zero" {
@@ -464,8 +464,8 @@ fn insight_cards_v1(
                     "boundary digest remains visible".to_string(),
                 ],
                 vec![
-                    "This does not mean the architecture is clean.".to_string(),
-                    "This does not rule out unmeasured or unknown support.".to_string(),
+                    "This card records a profile-relative zero result for the selected measurement surface.".to_string(),
+                    "Unmeasured and unknown support remain represented by their own packet rows.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.square-free-repair" && row.verdict == "measured_nonzero" {
@@ -487,8 +487,8 @@ fn insight_cards_v1(
                     "non-claim required".to_string(),
                 ],
                 vec![
-                    "This is a combinatorial repair candidate, not a semantic refactor guarantee.".to_string(),
-                    "This does not prove repair safety.".to_string(),
+                    "This is a combinatorial repair candidate evaluated under the selected support contract.".to_string(),
+                    "Repair safety is a result of the selected repair evaluation contract; this card records the candidate support.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.law-conflict-tor" && row.verdict == "measured_nonzero" {
@@ -505,7 +505,7 @@ fn insight_cards_v1(
                 "Inspect policy conflict witness",
                 "law-conflict-tor",
                 vec!["policy conflict".to_string(), "measured_nonzero structural verdict".to_string()],
-                vec!["This does not prove there is no compatible refactor.".to_string()],
+                vec!["Compatible refactors are evaluated by the selected comparison contract; this card records the computed compatibility result.".to_string()],
             ));
         } else if row.verdict == "not_computed" {
             cards.push(insight_card(
@@ -1043,8 +1043,8 @@ fn insight_viewer_visual_scenes_v1(
                 has_repair,
             ),
             &[
-                "This is a combinatorial repair candidate. It is not a semantic refactor guarantee.",
-                "This does not prove repair safety.",
+                "This is a combinatorial repair candidate under the selected support contract.",
+                "Repair safety is evaluated by the selected repair contract; this scene records the candidate support.",
             ],
         ),
         scene_v1(
@@ -1736,7 +1736,7 @@ fn analytic_overlay_bundle_projection(packet: &ArchSigMeasurementPacketV1) -> Va
                     "transferMeasurementPairing": reading.value["transferMeasurementPairing"].clone(),
                     "transferResidue": reading.value["transferResidue"].clone(),
                     "wassersteinTransferCost": reading.value["wassersteinTransferCost"].clone(),
-                    "nonClaim": "Wasserstein transfer cost is a supplied finite support-localized analytic reading; it is not W1 itself and does not prove global repair safety.",
+                    "nonClaim": "Wasserstein transfer cost is a supplied finite support-localized analytic reading under the selected cost model; it records a local transport cost.",
                     "projectionBoundary": reading.value["nonConclusion"].clone()
                 }));
             }

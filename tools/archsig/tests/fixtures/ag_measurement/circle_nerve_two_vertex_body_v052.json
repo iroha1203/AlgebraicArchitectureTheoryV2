@@ -2,10 +2,7 @@
   "schema": "ag-circle-nerve-fixture/v0.5.4",
   "id": "ag-measurement-circle-nerve-two-vertex-body",
   "provenance": {
-    "kind": "body-worked-example",
-    "reference": "part10/9.2 + appendix/B.9",
-    "leanWitness": "circleSimplex/circleNext is the separate 3-edge Lean witness",
-    "note": "This 2-vertex reverse-edge fixture is a body-specification auxiliary fixture; it is not a Lean-proved witness."
+    "kind": "body-worked-example"
   },
   "coefficient": {
     "ring": "Z",

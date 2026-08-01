@@ -188,7 +188,7 @@ fn derived_residual_difference_reading(
     head_packet: &Value,
     comparability: &Value,
 ) -> Value {
-    const THEOREM_REF: &str = "part10/2.3";
+    const THEOREM_REF: &str = "archsig-contract:residual-difference-reading";
     if !matches!(
         comparability["level"].as_str(),
         Some("identical") | Some("verdict-row")

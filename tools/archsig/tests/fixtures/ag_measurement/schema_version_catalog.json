@@ -27,8 +27,8 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "ArchMap validation does not run the evaluator or measurement pipeline.",
-          "ArchMap validation does not prove architecture lawfulness, source completeness, U-adequacy, exactness, Lean theorem discharge, or global semantic truth."
+          "ArchMap validation runs the schema and source-reference checks that precede ArchSig measurement.",
+          "ArchMap validation supplies source-grounded observations and finite site-shape checks for ArchSig measurement."
         ]
       }
     },
@@ -54,8 +54,8 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Vocabulary lint checks token membership only; it does not prove source extraction soundness or semantic correctness.",
-          "The linter does not decide whether a new atom kind should be added to the doctrine."
+          "Vocabulary lint computes token membership under the compiled AAT doctrine.",
+          "The compiled doctrine supplies the canonical atom-kind and observation-pair vocabulary for this input."
         ]
       }
     },
@@ -135,7 +135,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "LawPolicy v0.5.4 selects evaluators; it does not define witness predicates, axis valuation, obstruction definitions, or Lean proofs.",
+          "LawPolicy v0.5.4 selects evaluator contracts registered for witness predicates, axis valuation, obstruction definitions, and measurement execution.",
           "LawPolicy validation does not run the evaluator pipeline."
         ]
       }
@@ -189,7 +189,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "MeasurementProfile selects a bounded measurement regime; it does not prove adequacy or theorem hypotheses.",
+          "MeasurementProfile selects a bounded measurement regime with declared coefficients, witnesses, and evaluator hypotheses.",
           "Profile absence for AG evaluators is a validation error, not an unmeasured zero result."
         ]
       }
@@ -216,8 +216,8 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Evaluator registry manifest is an ArchSig computation contract, not a Lean theorem proof.",
-          "LawPolicy v0.5.4 cannot override witness rules, axis rules, distance formula, pass criteria, or violation criteria."
+          "Evaluator registry manifest is the ArchSig computation contract for evaluator manifests, basis refs, blocker rules, pass criteria, and output refs.",
+          "LawPolicy v0.5.4 selects the registered witness rules, axis rules, distance formula, pass criteria, and violation criteria."
         ]
       }
     },
@@ -244,8 +244,8 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Normalized ArchMap is deterministic tooling input for evaluators or measurements, not a Lean proof object.",
-          "Finite-poset-site normalization does not prove source extraction soundness."
+          "Normalized ArchMap is deterministic ArchSig evaluator input generated from the ArchMap observation contract.",
+          "Finite-poset-site normalization records deterministic contexts, covers, and selected-site presentations."
         ]
       }
     },
@@ -301,7 +301,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Boundary statements qualify selected packet rows; they do not prove source extraction soundness, semantic correctness, or Lean theorem discharge.",
+          "Boundary statements qualify selected packet rows under the ArchSig measurement contract.",
           "Boundary kinds keep blocked, unmeasured, not-applicable, and violated-assumption states distinct from measured_zero."
         ]
       }
@@ -401,7 +401,7 @@
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (part10/2.3). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA. Registered classTransport conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT and its readingKind is derived-class-zero-preservation@1.",
+        "fieldMappingPolicy": "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (archsig-contract:residual-difference-reading). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are NO_NEW_MEASURED_OBSTRUCTION_RECORDED, MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE, MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE, and RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA. Registered classTransport conclusionCode values are CLASS_ZERO_TRANSPORTED_UNDER_CHECKED_REFINEMENT and its readingKind is derived-class-zero-preservation@1.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -440,7 +440,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "Run manifest is artifact navigation metadata, not source completeness proof, architecture lawfulness, or Lean theorem discharge.",
+          "Run manifest is artifact navigation metadata for the ArchSig measurement run.",
           "Generated artifact lists describe this run only and do not imply any unlisted artifact was produced."
         ]
       }
@@ -531,13 +531,13 @@
       "Run ArchSig schema-catalog, current analyze, and FieldSig handoff checks."
     ],
     "nonConclusions": [
-      "schema catalog compatibility is not a semantic-preservation theorem",
-      "schema catalog compatibility is not evidence of extractor completeness",
-      "schema catalog compatibility is not a Lean theorem package"
+      "schema catalog compatibility records artifact and schema compatibility under the tooling contract",
+      "schema catalog comparison records the canonical source/fixture synchronization check",
+      "schema catalog compatibility records the current input and output artifact contract"
     ]
   },
   "nonConclusions": [
-    "schema migration is not a semantic-preservation theorem",
+    "schema migration records the current artifact catalog and its compatibility policy",
     "schema catalog does not retain pre-Atom scan, projection, report, or PR-review surfaces as current ArchSig contracts",
     "FieldSig-owned forecast and governance artifacts are intentionally outside this ArchSig catalog"
   ]

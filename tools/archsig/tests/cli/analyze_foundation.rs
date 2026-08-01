@@ -430,19 +430,7 @@ fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
 fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
     let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v052.json"));
     assert_eq!(fixture["schema"], "ag-circle-nerve-fixture/v0.5.4");
-    assert_eq!(
-        fixture["provenance"]["reference"],
-        "part10/9.2 + appendix/B.9"
-    );
-    assert_eq!(
-        fixture["provenance"]["leanWitness"],
-        "circleSimplex/circleNext is the separate 3-edge Lean witness"
-    );
-    assert!(
-        fixture["provenance"]["note"]
-            .as_str()
-            .is_some_and(|note| note.contains("not a Lean-proved witness"))
-    );
+    assert_eq!(fixture["provenance"]["kind"], "body-worked-example");
     assert_eq!(fixture["coefficient"]["ring"], "Z");
     assert_eq!(fixture["coefficient"]["quotient"], "F2");
     assert_eq!(fixture["coefficient"]["ideal"], "(2)");

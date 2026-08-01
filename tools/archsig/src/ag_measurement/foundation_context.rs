@@ -101,21 +101,21 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
     match conclusion {
         ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_MEASURED_NONGLUING_RESIDUAL,
-            theorem_ref: Some("part10/3.4"),
+            theorem_ref: None,
             principal_text: "The derived SAGA residual is measured outside B1 with concrete residual support.",
             boundary: "Revise the observed sections or the derived SAGA complex and re-run analyze before claiming repair gluing.",
             generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX => SummaryTranslationRule {
             conclusion_code: ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX,
-            theorem_ref: Some("part10/4.5"),
+            theorem_ref: None,
             principal_text: "The derived SAGA residual is measured inside B1 for the finite complex derived from the selected ArchMap cover.",
             boundary: "The gluing reading is relative to the finite complex derived from the selected ArchMap cover and its triple faces; it does not claim global semantic repair.",
             generated_discipline: "generated derived-residual boundary-membership detection",
         },
         ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_NONGLUING_RESIDUAL_CLASS,
-            theorem_ref: Some("part10/4.5"),
+            theorem_ref: None,
             principal_text: "The selected finite complex contains a measured non-gluing derived residual class in Z1/B1.",
             boundary: "The class reading is relative to the selected cover 1-skeleton, the derived triple faces whose cocycle parity was checked, and the law-surface witness bindings.",
             generated_discipline: "generated derived class representative detection",
@@ -151,8 +151,8 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
             theorem_ref: None,
-            principal_text: "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim.",
-            boundary: "Supply the relevant theoremRef-bearing evaluator row before reading this as a proved theorem attribution.",
+            principal_text: "ArchSig reports selected AG obstruction rows through structural verdict entries with their declared theoremRef fields.",
+            boundary: "Read the selected evaluator row, its declared theoremRef, and its packet evidence together.",
             generated_discipline: "generated profile-relative detection",
         },
         ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {

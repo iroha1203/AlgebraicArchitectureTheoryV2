@@ -21,7 +21,7 @@ charts 相等、overlap 鍵集合一致)の下で delta = value_base XOR value_h
 - `status: not_computed` / `silence_by_design` — 複体・provenance 不一致、または derivation 未記録
 
 この block は 2 run の residual 差に対する `B¹` 所属の有限計算である
-(theoremRef: part10/2.3)。修理成功の読みは、repaired 側 run の零 residual
+(`theoremRef: archsig-contract:residual-difference-reading`)。修理成功の読みは、repaired 側 run の零 residual
 (`REPAIR_GLUES_WITHIN_SELECTED_COMPLEX`)と gate が担う。v0.5.7 はこの一系統の語彙を
 triple 宣言の有無にかかわらず使う。入力は両 run に記録済みの導出 residual であり、
 新しい authored data や供給 slot は追加しない。
