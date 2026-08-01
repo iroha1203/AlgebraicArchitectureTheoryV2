@@ -172,7 +172,10 @@ loop and finds three mismatching convention boundaries; the derivation record
 (`saga-descent:residual-derivation`) names the observed support atoms.
 Odd parity around a closed loop is not a coboundary: boundary membership
 fails. This run's ArchMap does not provide a shared observed face for a checked
-triple, so the class vocabulary remains withheld as a named boundary statement.
+triple, so the separate `ag.cech-obstruction` class reading stays
+`not_computed` with `classNonzero: null`. The selected `ag.saga-descent`
+evaluator has a checked triple for its derived residual, so the analysis
+summary records `MEASURED_NONGLUING_RESIDUAL_CLASS`.
 
 **Comparison.** `compare` reads the two measurement records (head and
 repaired) and derives the run-pair reading itself: the residual delta on the
