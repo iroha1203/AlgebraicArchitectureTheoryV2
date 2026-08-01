@@ -15,4 +15,4 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- report-outcome-daily-ledg
   --out .fieldsig/operational/report-outcome-daily-ledger.json
 ```
 
-Operational correlation remains empirical evidence. It is not causal proof, forecast correctness, or a Lean theorem witness.
+Operational correlation is empirical evidence recorded by the selected measurement contract and handed to FieldSig as workflow evidence.

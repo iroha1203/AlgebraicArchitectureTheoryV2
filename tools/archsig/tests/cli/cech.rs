@@ -588,6 +588,13 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     assert_eq!(cech["methodStatus"], "triple_overlap_faces_unmeasured");
     assert_eq!(cech["observedCocycle"]["classNonzero"], Value::Null);
     assert_eq!(cech_row["verdictData"]["certRef"], Value::Null);
+    let capacity = invariant_by_id(&packet, "topological-debt-capacity:profile:ag-default@1");
+    assert_eq!(
+        capacity["measuredCechVerdictEcho"]["h1ClassNonzero"],
+        Value::Null,
+        "an unmeasured Cech row must not echo a measured zero"
+    );
+    assert_eq!(capacity["measuredCechVerdictEcho"]["certRef"], Value::Null);
     let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
     assert_eq!(
         view_model["classSupport"]["classNonzero"],

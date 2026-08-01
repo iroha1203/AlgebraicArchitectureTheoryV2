@@ -81,6 +81,9 @@ fn evaluate_cech_obstruction_v1(
         && !sections_not_observed
         && !triple_overlap_faces_not_measured
         && !edge_cochain_is_coboundary(&selected_contexts, &observed_edges);
+    let cech_class_measured = !empty_selected_scope
+        && !sections_not_observed
+        && !triple_overlap_faces_not_measured;
     let topological_debt_capacity = topological_debt_capacity_invariant_v1(
         profile,
         &selected_contexts,
@@ -89,6 +92,7 @@ fn evaluate_cech_obstruction_v1(
         h1_dimension,
         h1_class_nonzero,
         empty_selected_scope,
+        cech_class_measured,
     );
     let representative = edges
         .iter()
@@ -221,22 +225,19 @@ fn evaluate_cech_obstruction_v1(
             "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover".to_string(),
         )
     };
-    let cert_ref = if empty_selected_scope || sections_not_observed || triple_overlap_faces_not_measured {
-        None
-    } else {
+    let cert_ref = if cech_class_measured {
         Some(format!(
             "computedInvariants/cech-cohomology:{}",
             profile.profile_id
         ))
+    } else {
+        None
     };
 
-    let class_nonzero_reading = if empty_selected_scope
-        || sections_not_observed
-        || triple_overlap_faces_not_measured
-    {
-        Value::Null
-    } else {
+    let class_nonzero_reading = if cech_class_measured {
         json!(h1_class_nonzero)
+    } else {
+        Value::Null
     };
 
     CechMeasurementV1 {
@@ -372,6 +373,7 @@ fn topological_debt_capacity_invariant_v1(
     one_skeleton_b1: usize,
     h1_class_nonzero: bool,
     empty_selected_scope: bool,
+    cech_class_measured: bool,
 ) -> Value {
     let dim_c0 = selected_contexts.len();
     let dim_c1 = edges.len();
@@ -434,12 +436,16 @@ fn topological_debt_capacity_invariant_v1(
         },
         "measuredCechVerdictEcho": {
             "evaluator": "ag.cech-obstruction",
-            "certRef": if empty_selected_scope {
-                Value::Null
-            } else {
+            "certRef": if cech_class_measured {
                 json!(format!("computedInvariants/cech-cohomology:{}", profile.profile_id))
+            } else {
+                Value::Null
             },
-            "h1ClassNonzero": h1_class_nonzero,
+            "h1ClassNonzero": if cech_class_measured {
+                json!(h1_class_nonzero)
+            } else {
+                Value::Null
+            },
             "note": "This is an echo of the separate Cech structural verdict, not a capacity-derived class claim."
         },
         "boundaryNote": "Part IV principle 11.3 is referenced only as the Cohomological Non-Claim boundary; this row does not import any Part VII numbering or create a viewer verdict.",
@@ -2035,7 +2041,7 @@ fn period_assumptions(
                 .then(|| format!("measurement-profile:{}", profile.profile_id)),
         },
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part12/12.3".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT.to_string(),
             assumption: "Stokes audit identity checked on supplied finite model".to_string(),
             status: period_model_status.to_string(),
             checked_by: (period_model_status == "checked")

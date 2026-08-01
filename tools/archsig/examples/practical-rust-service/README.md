@@ -15,7 +15,7 @@ and the staircase names each step of its failure precisely:
    (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The fixed chart-local observation check is clean.
 2. **Descent** — the residual derived from the observed sections under the
    selected `ag.saga-descent` evaluator contract has a **nonzero** boundary-membership result
-   on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL`). A named
+   on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL_CLASS`). A named
    `Z1/B1` class is emitted only when a derived triple face is actually checked.
 3. **Comparison** — `compare` derives the difference of the head and repaired
    residuals and tests its membership in `B1`
@@ -106,11 +106,11 @@ The script walks five acts and prints one conclusion per step:
 
 ```text
 [analyze base]           AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
-[saga base]              measured_zero         (derived residual in B1)
+[saga base selected rows] 0
 [grounding head]         measured_zero         (every chart's own law holds)
 [descent head]           measured_nonzero      (residual outside B1)
 [harmonic debt head]     0.353553              (quarter-cent essential debt)
-[analyze head]           MEASURED_NONGLUING_RESIDUAL
+[analyze head]           MEASURED_NONGLUING_RESIDUAL_CLASS
 [compare base->head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
 [gate head]              BLOCKED_BY_GATE_POLICY
 [descent repaired]       measured_zero         (residual glues)
@@ -140,7 +140,7 @@ features; each state has a matching ArchMap observation:
 | State | Build | ArchMap | analyze conclusion |
 | --- | --- | --- | --- |
 | base (main) | `cargo run` | `archmap/archmap.json` | `AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE` |
-| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL` |
+| head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL_CLASS` |
 | repaired | `cargo run --features settlement-authority` | `archmap/archmap_repaired.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 
 All three build states pass `cargo test` — that is the point of the demo.
