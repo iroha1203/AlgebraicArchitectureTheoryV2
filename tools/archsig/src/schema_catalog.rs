@@ -112,7 +112,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["archsig-contract:v0.5.4-ag-measurement"],
                 "MeasurementProfile v0.5.4 declares selected site, cover, coefficient, EffCoeff procedure, resolution selector, Dom/Zero/NonZero/Cert predicates, optional analytic innerProduct / weights / costModel declarations, and five-valued verdict discipline. Witness variables are supplied by the referenced law-equation-surface.",
                 vec![
-                    "MeasurementProfile selects a bounded measurement regime with declared coefficients, witnesses, and evaluator hypotheses.",
+                    "MeasurementProfile selects a bounded measurement regime with declared coefficients, resolution, predicates, and evaluator hypotheses; witness variables are resolved from the referenced law-equation-surface.",
                     "Profile absence for AG evaluators is a validation error, not an unmeasured zero result.",
                 ],
             ),

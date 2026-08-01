@@ -189,7 +189,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "MeasurementProfile selects a bounded measurement regime with declared coefficients, witnesses, and evaluator hypotheses.",
+          "MeasurementProfile selects a bounded measurement regime with declared coefficients, resolution, predicates, and evaluator hypotheses; witness variables are resolved from the referenced law-equation-surface.",
           "Profile absence for AG evaluators is a validation error, not an unmeasured zero result."
         ]
       }

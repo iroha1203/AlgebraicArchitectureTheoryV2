@@ -41,7 +41,7 @@ mod tests {
             "id": "check:unknown-field",
             "title": "unknown field",
             "result": "pass",
-            "extraField": "retired"
+            "leanBoundary": "retired"
         });
         assert!(serde_json::from_value::<ValidationCheck>(value).is_err());
     }

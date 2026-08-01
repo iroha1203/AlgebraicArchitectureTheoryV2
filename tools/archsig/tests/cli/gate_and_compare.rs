@@ -978,10 +978,10 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         source_run.to_str().expect("path is utf-8"),
     ]);
 
-    let clone_run = |name: &str| {
+    let clone_run_from = |source: &Path, name: &str| {
         let target = out_dir.join(name);
         fs::create_dir_all(&target).expect("comparison run directory can be created");
-        for entry in fs::read_dir(&source_run).expect("source run can be read") {
+        for entry in fs::read_dir(source).expect("source run can be read") {
             let entry = entry.expect("source run entry can be read");
             let file_type = entry
                 .file_type()
@@ -993,6 +993,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         }
         target
     };
+    let clone_run = |name: &str| clone_run_from(&source_run, name);
 
     let identical_base = clone_run("identical-base");
     let identical_head = clone_run("identical-head");
@@ -1208,6 +1209,80 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         .unwrap()
         .iter()
         .any(|transition| transition["transition"] == "measured_obstruction_no_longer_recorded"));
+
+    let practical_source = run_practical_saga_head_analyze("compare-residual-difference");
+    let practical_base = clone_run_from(&practical_source, "residual-base");
+    let practical_head = clone_run_from(&practical_source, "residual-head");
+    let set_residual_edge_values = |run: &Path, selected_chart: Option<&str>| {
+        let packet_path = run.join("archsig-measurement-packet.json");
+        let mut packet = read_json(&packet_path);
+        let derivation = packet["computedInvariants"]
+            .as_array_mut()
+            .expect("computed invariants are mutable")
+            .iter_mut()
+            .find(|invariant| invariant["invariantId"] == "saga-descent:residual-derivation")
+            .expect("practical saga run has residual derivation");
+        derivation["residualDerivation"]["edges"]
+            .as_array_mut()
+            .expect("residual edges are mutable")
+            .iter_mut()
+            .for_each(|edge| {
+                let value = selected_chart.is_some_and(|chart| {
+                    edge["leftContextRef"] == chart || edge["rightContextRef"] == chart
+                });
+                edge["value"] = json!(u8::from(value));
+            });
+        fs::write(
+            packet_path,
+            serde_json::to_vec_pretty(&packet).expect("residual transition packet serializes"),
+        )
+        .expect("residual transition packet writes");
+        refresh_run_measurement_packet_digest(run);
+    };
+    set_residual_edge_values(&practical_base, None);
+    set_residual_edge_values(&practical_head, Some("ctx:application"));
+    let residual_out = out_dir.join("residual-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        practical_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        practical_head.to_str().expect("path is utf-8"),
+        "--out-dir",
+        residual_out.to_str().expect("path is utf-8"),
+    ]);
+    let residual_report = read_json(&residual_out.join("archsig-comparison-report.json"));
+    let residual_reading = &residual_report["residualDifferenceReading"];
+    assert_eq!(residual_report["comparability"]["level"], "identical");
+    assert_eq!(residual_reading["status"], "difference_in_B1");
+    assert_eq!(residual_reading["derived"], true);
+    assert_eq!(residual_reading["inB1"], true);
+    assert_eq!(
+        residual_reading["equation"],
+        "delta0(h) = r_base XOR r_head"
+    );
+    assert!(
+        residual_reading["deltaSupport"]
+            .as_array()
+            .is_some_and(|support| !support.is_empty()),
+        "residual comparison must expose the changed overlap support"
+    );
+    assert!(
+        residual_reading["witnessChartAssignment"]
+            .as_array()
+            .is_some_and(|assignment| !assignment.is_empty()),
+        "residual comparison must expose the computed delta0 witness"
+    );
+    assert_eq!(
+        residual_reading["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
+    assert!(
+        residual_reading["provenance"]["coverRef"]
+            .as_str()
+            .is_some_and(|cover| !cover.is_empty()),
+        "residual comparison must retain the selected cover provenance"
+    );
 }
 
 #[test]

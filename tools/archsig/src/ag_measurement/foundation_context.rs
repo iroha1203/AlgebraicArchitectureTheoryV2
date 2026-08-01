@@ -151,8 +151,8 @@ fn summary_translation_rule(conclusion: &str) -> SummaryTranslationRule {
         ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
             conclusion_code: ARCHSIG_MEASURED_AG_OBSTRUCTION_UNDER_PROFILE,
             theorem_ref: None,
-            principal_text: "ArchSig reports selected AG obstruction rows through structural verdict entries with their declared theoremRef fields.",
-            boundary: "Read the selected evaluator row, its declared theoremRef, and its packet evidence together.",
+            principal_text: "ArchSig reports selected AG obstruction rows together with the assumption ledger entries that identify their theoremRef fields.",
+            boundary: "Read the selected structural verdict, its dependsOnAssumptions refs, and the corresponding assumption ledger entries together.",
             generated_discipline: "generated profile-relative detection",
         },
         ARCHSIG_NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE => SummaryTranslationRule {
