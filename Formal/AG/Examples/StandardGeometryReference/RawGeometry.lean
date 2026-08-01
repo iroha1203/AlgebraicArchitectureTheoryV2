@@ -37,6 +37,10 @@ build on this stable raw geometry.
 * Raw sections use exactly the coordinate and two inverse variables, with two
   context-dependent relations. Restriction maps are the fixed piecewise
   variable images; arbitrary localization isomorphisms are not input data.
+* Each fixed configuration separates its value function from the relation
+  proof, and its quotient map uses `quotientAlgHomOfConfiguration` directly.
+  This keeps evaluation lemmas from unfolding proof fields while preserving
+  the `toFun` selected by `configurationRepresentability`.
 * The raw sheaf theorem is proved by principal-open gluing and reconstruction
   of ring and under-category morphisms. The localization presentations and
   their restriction equations are then derived from quotient and
