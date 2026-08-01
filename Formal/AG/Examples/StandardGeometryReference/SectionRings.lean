@@ -41,7 +41,8 @@ theorem canonical_component_isIso (W : referenceSite.category) :
 /--
 SD0 constructor-provenance lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
 It factors the canonical-map naturality calculation shared by the four reference restriction theorems.
-Its material data are fixed or constructed inside this fixture; no external material certificate is used.
+The source canonical-map `IsIso` premise is supplied by `canonical_component_isIso`,
+which derives it from `referenceRaw_isSheaf`; no external material certificate is used.
 The executable contract fixes the exact declaration type.
 -/
 theorem canonical_restriction_conjugation
