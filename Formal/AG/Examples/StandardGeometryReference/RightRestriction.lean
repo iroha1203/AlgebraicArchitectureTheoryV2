@@ -58,7 +58,7 @@ theorem right_restriction_is_localization :
   rw [referenceRaw_restrictionStable]
   apply ConcreteCategory.hom_ext
   intro a
-  exact RingHom.congr_fun baseToRight_transport a
+  exact RingHom.congr_fun base_to_right_transport a
 
 
 end

@@ -58,7 +58,7 @@ theorem left_restriction_is_localization :
   rw [referenceRaw_restrictionStable]
   apply ConcreteCategory.hom_ext
   intro a
-  exact RingHom.congr_fun baseToLeft_transport a
+  exact RingHom.congr_fun base_to_left_transport a
 
 
 end

@@ -2933,7 +2933,12 @@ independently elaborated restriction-theorem modules. -/
 
 namespace GeometryImplementation
 
-theorem baseToLeft_transport :
+/--
+Implementation bridge used by `left_restriction_is_localization`.
+It identifies the fixed base-to-left raw restriction with the canonical
+localization map; all data are constructed inside this reference fixture.
+-/
+theorem base_to_left_transport :
     leftRawToLocalizationAlgHom.toRingHom.comp
         ((referenceRestrictionStable leftToBase).quotientDesc.comp
           ambientToBaseRawAlgHom.toRingHom) =
@@ -2954,7 +2959,12 @@ theorem baseToLeft_transport :
           rawCoordinate_restrict (f := leftToBase)]
     exact leftRawToLocalizationAlgHom_rawCoordinate
 
-theorem baseToRight_transport :
+/--
+Implementation bridge used by `right_restriction_is_localization`.
+It identifies the fixed base-to-right raw restriction with the canonical
+localization map; all data are constructed inside this reference fixture.
+-/
+theorem base_to_right_transport :
     rightRawToLocalizationAlgHom.toRingHom.comp
         ((referenceRestrictionStable rightToBase).quotientDesc.comp
           ambientToBaseRawAlgHom.toRingHom) =
@@ -2975,7 +2985,12 @@ theorem baseToRight_transport :
           rawCoordinate_restrict (f := rightToBase)]
     exact rightRawToLocalizationAlgHom_rawCoordinate
 
-theorem leftToOverlap_transport :
+/--
+Implementation bridge used by `overlap_left_restriction_is_localization`.
+It identifies the fixed left-to-overlap raw restriction with the canonical
+localization map; all data are constructed inside this reference fixture.
+-/
+theorem left_to_overlap_transport :
     overlapRawToLocalizationAlgHom.toRingHom.comp
         ((referenceRestrictionStable overlapToLeft).quotientDesc.comp
           leftLocalizationToRawRingHom) =
@@ -3000,7 +3015,12 @@ theorem leftToOverlap_transport :
           rawCoordinate_restrict (f := overlapToLeft)]
     exact overlapRawToLocalizationAlgHom_rawCoordinate
 
-theorem rightToOverlap_transport :
+/--
+Implementation bridge used by `overlap_right_restriction_is_localization`.
+It identifies the fixed right-to-overlap raw restriction with the canonical
+localization map; all data are constructed inside this reference fixture.
+-/
+theorem right_to_overlap_transport :
     overlapRawToLocalizationAlgHom.toRingHom.comp
         ((referenceRestrictionStable overlapToRight).quotientDesc.comp
           rightLocalizationToRawRingHom) =
@@ -3035,7 +3055,7 @@ private theorem baseToLeft_transport_apply
         ((referenceRestrictionStable leftToBase).quotientDesc a) =
       algebraMap AmbientRing (Localization.Away leftGenerator)
         (baseRawToAmbientAlgHom a) := by
-  have h := RingHom.congr_fun baseToLeft_transport (baseRawToAmbientAlgHom a)
+  have h := RingHom.congr_fun base_to_left_transport (baseRawToAmbientAlgHom a)
   change leftRawToLocalizationAlgHom
       ((referenceRestrictionStable leftToBase).quotientDesc
         (ambientToBaseRawAlgHom (baseRawToAmbientAlgHom a))) = _ at h
@@ -3049,7 +3069,7 @@ private theorem baseToRight_transport_apply
         ((referenceRestrictionStable rightToBase).quotientDesc a) =
       algebraMap AmbientRing (Localization.Away rightGenerator)
         (baseRawToAmbientAlgHom a) := by
-  have h := RingHom.congr_fun baseToRight_transport (baseRawToAmbientAlgHom a)
+  have h := RingHom.congr_fun base_to_right_transport (baseRawToAmbientAlgHom a)
   change rightRawToLocalizationAlgHom
       ((referenceRestrictionStable rightToBase).quotientDesc
         (ambientToBaseRawAlgHom (baseRawToAmbientAlgHom a))) = _ at h
@@ -3062,7 +3082,7 @@ private theorem leftToOverlap_transport_apply
     overlapRawToLocalizationAlgHom
         ((referenceRestrictionStable overlapToLeft).quotientDesc a) =
       leftToOverlapRingHom (leftRawToLocalizationAlgHom a) := by
-  have h := RingHom.congr_fun leftToOverlap_transport
+  have h := RingHom.congr_fun left_to_overlap_transport
     (leftRawToLocalizationAlgHom a)
   change overlapRawToLocalizationAlgHom
       ((referenceRestrictionStable overlapToLeft).quotientDesc
@@ -3076,7 +3096,7 @@ private theorem rightToOverlap_transport_apply
     overlapRawToLocalizationAlgHom
         ((referenceRestrictionStable overlapToRight).quotientDesc a) =
       rightToOverlapRingHom (rightRawToLocalizationAlgHom a) := by
-  have h := RingHom.congr_fun rightToOverlap_transport
+  have h := RingHom.congr_fun right_to_overlap_transport
     (rightRawToLocalizationAlgHom a)
   change overlapRawToLocalizationAlgHom
       ((referenceRestrictionStable overlapToRight).quotientDesc

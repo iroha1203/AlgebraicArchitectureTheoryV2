@@ -57,7 +57,7 @@ theorem overlap_right_restriction_is_localization :
   rw [referenceRaw_restrictionStable]
   apply ConcreteCategory.hom_ext
   intro a
-  exact RingHom.congr_fun rightToOverlap_transport a
+  exact RingHom.congr_fun right_to_overlap_transport a
 
 
 end
