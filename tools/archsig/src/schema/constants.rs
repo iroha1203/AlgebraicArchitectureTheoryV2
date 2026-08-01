@@ -19,6 +19,26 @@ pub const ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANG
     "MEASURED_OBSTRUCTION_NO_LONGER_RECORDED_AFTER_CHANGE";
 pub const ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA: &str =
     "RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA";
+// Generated evaluator contract IDs are owned by ArchSig's computation layer.
+// Keep this registry as the single source of truth for the IDs emitted into
+// assumption ledgers and comparison readings.
+pub const ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY: &str =
+    "archsig-contract:ag-restriction-compatibility";
+pub const ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION: &str =
+    "archsig-contract:ag-section-factorization";
+pub const ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION: &str =
+    "archsig-contract:law-surface-quotient-sheaf-condition";
+pub const ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION: &str =
+    "archsig-contract:saga-derived-finite-complex-enumeration";
+pub const ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING: &str =
+    "archsig-contract:residual-difference-reading";
+pub const ARCHSIG_GENERATED_CONTRACT_IDS: [&str; 5] = [
+    ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY,
+    ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
+    ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
+    ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION,
+    ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
+];
 pub const ARCHSIG_COMPARISON_CONCLUSION_CODES: [&str; 4] = [
     ARCHSIG_COMPARISON_NO_NEW_MEASURED_OBSTRUCTION_RECORDED,
     ARCHSIG_COMPARISON_MEASURED_OBSTRUCTION_RECORDED_AFTER_CHANGE,

@@ -97,7 +97,7 @@ pub fn build_measurement_summary_v1(packet: &ArchSigMeasurementPacketV1) -> Valu
             } else if cech_nonzero {
                 "Local rules are not enough to explain the selected cover; ArchSig measured a cross-context glue mismatch."
             } else if nonzero_count > 0 {
-                "Review the theoremRef-bearing structural verdict rows before reading any selected AG obstruction claim."
+                "Review the structural verdict rows together with their dependsOnAssumptions refs and the corresponding assumption ledger entries before reading any selected AG obstruction claim."
             } else if cech_zero {
                 "No selected H1 glue mismatch was measured under the profile."
             } else if unmeasured_count > 0 {
@@ -442,8 +442,8 @@ fn insight_cards_v1(
                     "has next inspection action".to_string(),
                 ],
                 vec![
-                    "Source extraction completeness is supplied by the ArchMap source-grounding contract; this card records the selected measurement result.".to_string(),
-                    "Repair safety is evaluated by the selected repair contract; this card records the measured support.".to_string(),
+                    "ArchMap source refs are validated before measurement; this card records the selected measurement result.".to_string(),
+                    "This card exposes measured support and a next inspection action; repair is not computed by this card.".to_string(),
                 ],
             ));
         } else if row.evaluator == "ag.cech-obstruction" && row.verdict == "measured_zero" {

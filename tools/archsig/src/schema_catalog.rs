@@ -3,7 +3,8 @@ use crate::{
     ARCHSIG_ARCHMAP_DIFF_V1_SCHEMA, ARCHSIG_ATOM_VIEWER_DATA_SCHEMA_VERSION,
     ARCHSIG_BOUNDARY_STATEMENT_V1_SCHEMA, ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES,
     ARCHSIG_COMPARISON_CONCLUSION_CODES, ARCHSIG_COMPARISON_REPORT_V1_SCHEMA,
-    ARCHSIG_GATE_POLICY_V1_SCHEMA, ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
+    ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING, ARCHSIG_GATE_POLICY_V1_SCHEMA,
+    ARCHSIG_GATE_REPORT_DECISIONS, ARCHSIG_GATE_REPORT_V1_SCHEMA,
     ARCHSIG_MEASUREMENT_PACKET_V1_SCHEMA, ARCHSIG_MEASUREMENT_VIEW_MODEL_SCHEMA_VERSION,
     ARCHSIG_POLICY_BUNDLE_V1_SCHEMA, ARCHSIG_RUN_MANIFEST_SCHEMA_VERSION,
     ARCHSIG_SAGA_CONCLUSION_CODES, LAW_EQUATION_SURFACE_V1_SCHEMA, LAW_POLICY_V1_SCHEMA,
@@ -229,7 +230,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig Output / CI workflow",
                 vec!["archsig-contract:artifact-ci-v0.5.4"],
                 &format!(
-                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 (archsig-contract:residual-difference-reading). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
+                    "Comparison report v0.5.7 records identical, verdict-row, or not-comparable run comparison together with record-level verdict transitions, ArchMap-diff intersections, and — for comparable runs whose residual derivations share cover, law surface, and chart set — the residualDifferenceReading block (difference_in_B1 / difference_not_in_B1 / no_residual_change) with its delta0 witness when the difference is in B1 ({}). It derives a MeasurementProfile-selected coarse-to-fine context relation from normalized ArchMap covers, records unique restrictionPath witnesses and run bindings, and validates the derived class certificate before recording the class-zero preservation reading. Registered record-level conclusionCode values are {}. Registered classTransport conclusionCode values are {} and its readingKind is derived-class-zero-preservation@1.",
+                    ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
                     registry_sentence(&ARCHSIG_COMPARISON_CONCLUSION_CODES),
                     registry_sentence(&ARCHSIG_COMPARISON_CLASS_TRANSPORT_CONCLUSION_CODES),
                 ),
@@ -395,6 +397,13 @@ fn compatibility_dimension(
 mod tests {
     use std::collections::BTreeSet;
 
+    use crate::{
+        ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY, ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
+        ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
+        ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
+        ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION, ARCHSIG_GENERATED_CONTRACT_IDS,
+    };
+
     use super::*;
 
     #[test]
@@ -480,5 +489,23 @@ mod tests {
         ))
         .expect("schema version catalog fixture parses");
         assert_eq!(fixture, static_schema_version_catalog());
+    }
+
+    #[test]
+    fn generated_contract_registry_is_unique_and_prefixed() {
+        let ids = ARCHSIG_GENERATED_CONTRACT_IDS;
+        let unique_ids = ids.iter().copied().collect::<BTreeSet<_>>();
+        assert_eq!(unique_ids.len(), ids.len());
+        assert!(ids.iter().all(|id| id.starts_with("archsig-contract:")));
+        assert_eq!(
+            unique_ids,
+            BTreeSet::from([
+                ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY,
+                ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
+                ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
+                ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION,
+                ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
+            ])
+        );
     }
 }

@@ -188,7 +188,6 @@ fn derived_residual_difference_reading(
     head_packet: &Value,
     comparability: &Value,
 ) -> Value {
-    const THEOREM_REF: &str = "archsig-contract:residual-difference-reading";
     if !matches!(
         comparability["level"].as_str(),
         Some("identical") | Some("verdict-row")
@@ -196,7 +195,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "runs_not_comparable",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 is read only for comparable runs; a not-comparable pair shares no checked complex"
         });
     }
@@ -207,7 +206,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
@@ -216,7 +215,7 @@ fn derived_residual_difference_reading(
             return json!({
                 "status": "not_computed",
                 "reason": "residual_derivation_provenance_mismatch",
-                "theoremRef": THEOREM_REF,
+                "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
                 "mismatchedField": provenance_key,
                 "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals under different covers, law surfaces, or chart sets"
             });
@@ -229,7 +228,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "silence_by_design",
             "reason": "residual_derivation_not_recorded",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 requires both runs to record a derived saga-descent residual"
         });
     };
@@ -249,7 +248,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "not_computed",
             "reason": "residual_complexes_do_not_match",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "nonConclusion": "residual difference membership in B1 is fail-closed when the two runs derive residuals over different overlap complexes"
         });
     }
@@ -293,7 +292,7 @@ fn derived_residual_difference_reading(
         return json!({
             "status": "no_residual_change",
             "derived": true,
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "deltaSupport": [],
             "provenance": provenance
         });
@@ -303,7 +302,7 @@ fn derived_residual_difference_reading(
             "status": "difference_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "inB1": true,
             "deltaSupport": delta_support,
             "witnessChartAssignment": charts
@@ -321,7 +320,7 @@ fn derived_residual_difference_reading(
             "status": "difference_not_in_B1",
             "derived": true,
             "equation": "delta0(h) = r_base XOR r_head",
-            "theoremRef": THEOREM_REF,
+            "theoremRef": crate::ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
             "reason": "delta_not_a_boundary_within_selected_complex",
             "inB1": false,
             "deltaSupport": delta_support,

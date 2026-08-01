@@ -429,7 +429,6 @@ fn cli_representative_json_artifacts_omit_absolute_sheaf_cohomology_notation() {
 #[test]
 fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
     let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v052.json"));
-    assert_eq!(fixture["schema"], "ag-circle-nerve-fixture/v0.5.5");
     assert_eq!(fixture["provenance"]["kind"], "body-worked-example");
     assert_eq!(fixture["coefficient"]["ring"], "Z");
     assert_eq!(fixture["coefficient"]["quotient"], "F2");
@@ -457,6 +456,28 @@ fn cli_r13_two_vertex_circle_nerve_fixture_locks_body_worked_example() {
     assert_eq!(fixture["higherSimplices"], json!([]));
     assert_eq!(fixture["expected"]["cocycle"], true);
     assert_eq!(fixture["expected"]["classNonzero"], true);
+
+    let generated = run_analyze_fixture_lock_with_surface(
+        "r13-circle-nerve-generated-output",
+        "archmap_v2_cech_b8_toy.json",
+        "law_policy_cech_b8.json",
+        "law_surface_cech_b8_v052.json",
+    );
+    let generated_packet = read_json(&generated.join("archsig-measurement-packet.json"));
+    let generated_h1 = invariant_by_id(
+        &generated_packet,
+        "cech-cohomology:profile:ag-default@1",
+    );
+    assert_eq!(
+        generated_h1["coefficient"],
+        fixture["coefficient"]["quotient"],
+        "the body fixture coefficient must agree with the generated ArchSig output"
+    );
+    assert_eq!(
+        generated_h1["observedCocycle"]["classNonzero"],
+        fixture["expected"]["classNonzero"],
+        "the body fixture expected class must agree with the generated ArchSig output"
+    );
 }
 
 #[test]

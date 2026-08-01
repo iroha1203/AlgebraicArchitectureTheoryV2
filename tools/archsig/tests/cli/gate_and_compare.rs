@@ -1210,37 +1210,54 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         .iter()
         .any(|transition| transition["transition"] == "measured_obstruction_no_longer_recorded"));
 
-    let practical_source = run_practical_saga_head_analyze("compare-residual-difference");
-    let practical_base = clone_run_from(&practical_source, "residual-base");
-    let practical_head = clone_run_from(&practical_source, "residual-head");
-    let set_residual_edge_values = |run: &Path, selected_chart: Option<&str>| {
-        let packet_path = run.join("archsig-measurement-packet.json");
-        let mut packet = read_json(&packet_path);
-        let derivation = packet["computedInvariants"]
-            .as_array_mut()
-            .expect("computed invariants are mutable")
-            .iter_mut()
-            .find(|invariant| invariant["invariantId"] == "saga-descent:residual-derivation")
-            .expect("practical saga run has residual derivation");
-        derivation["residualDerivation"]["edges"]
-            .as_array_mut()
-            .expect("residual edges are mutable")
-            .iter_mut()
-            .for_each(|edge| {
-                let value = selected_chart.is_some_and(|chart| {
-                    edge["leftContextRef"] == chart || edge["rightContextRef"] == chart
-                });
-                edge["value"] = json!(u8::from(value));
-            });
-        fs::write(
-            packet_path,
-            serde_json::to_vec_pretty(&packet).expect("residual transition packet serializes"),
-        )
-        .expect("residual transition packet writes");
-        refresh_run_measurement_packet_digest(run);
+    let practical_root = practical_rust_service_root();
+    let practical_base_archmap = practical_root.join("archmap/archmap_head.json");
+    let mut practical_head_archmap = read_json(&practical_base_archmap);
+    practical_head_archmap["atoms"]
+        .as_array_mut()
+        .expect("practical ArchMap atoms are mutable")
+        .iter_mut()
+        .find(|atom| atom["id"] == "atom:cech-money-application")
+        .expect("practical ArchMap application section atom exists")["object"] =
+        json!("section=money-amount:exact-tenk-cents");
+    let practical_head_archmap_path = write_archmap_variant(
+        &out_dir,
+        practical_head_archmap,
+        "residual-head-archmap.json",
+    );
+    let analyze_practical = |archmap: &Path, name: &str| {
+        let run = out_dir.join(name);
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            archmap.to_str().expect("practical ArchMap path is utf-8"),
+            "--law-policy",
+            practical_root
+                .join("law_policy/law_policy.json")
+                .to_str()
+                .expect("practical LawPolicy path is utf-8"),
+            "--measurement-profile",
+            practical_root
+                .join("law_policy/measurement_profile.json")
+                .to_str()
+                .expect("practical MeasurementProfile path is utf-8"),
+            "--measurement-profile",
+            practical_root
+                .join("law_policy/measurement_profile_drift.json")
+                .to_str()
+                .expect("practical drift profile path is utf-8"),
+            "--law-surface",
+            practical_root
+                .join("law_policy/law_surface.json")
+                .to_str()
+                .expect("practical law surface path is utf-8"),
+            "--out-dir",
+            run.to_str().expect("practical analyze output path is utf-8"),
+        ]);
+        run
     };
-    set_residual_edge_values(&practical_base, None);
-    set_residual_edge_values(&practical_head, Some("ctx:application"));
+    let practical_base = analyze_practical(&practical_base_archmap, "residual-base");
+    let practical_head = analyze_practical(&practical_head_archmap_path, "residual-head");
     let residual_out = out_dir.join("residual-compare");
     run_sig0(&[
         "compare",
@@ -1253,7 +1270,9 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
     ]);
     let residual_report = read_json(&residual_out.join("archsig-comparison-report.json"));
     let residual_reading = &residual_report["residualDifferenceReading"];
-    assert_eq!(residual_report["comparability"]["level"], "identical");
+    assert_eq!(residual_report["comparability"]["level"], "verdict-row");
+    assert_eq!(residual_report["comparability"]["sameArchmapDigest"], false);
+    assert_eq!(residual_report["comparability"]["sameComponentFingerprints"], true);
     assert_eq!(residual_reading["status"], "difference_in_B1");
     assert_eq!(residual_reading["derived"], true);
     assert_eq!(residual_reading["inB1"], true);
@@ -1261,27 +1280,59 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         residual_reading["equation"],
         "delta0(h) = r_base XOR r_head"
     );
-    assert!(
-        residual_reading["deltaSupport"]
-            .as_array()
-            .is_some_and(|support| !support.is_empty()),
-        "residual comparison must expose the changed overlap support"
+    assert_eq!(
+        residual_reading["deltaSupport"],
+        json!([
+            "overlap:ctx:application:ctx:domain",
+            "overlap:ctx:application:ctx:ports",
+            "overlap:ctx:application:ctx:runtime",
+            "overlap:ctx:application:ctx:settlement",
+            "overlap:ctx:application:ctx:shared"
+        ])
     );
-    assert!(
-        residual_reading["witnessChartAssignment"]
-            .as_array()
-            .is_some_and(|assignment| !assignment.is_empty()),
-        "residual comparison must expose the computed delta0 witness"
+    assert_eq!(
+        residual_reading["witnessChartAssignment"],
+        json!([
+            {"chartRef": "ctx:application", "parity": 1},
+            {"chartRef": "ctx:domain", "parity": 0},
+            {"chartRef": "ctx:infrastructure", "parity": 0},
+            {"chartRef": "ctx:policy", "parity": 0},
+            {"chartRef": "ctx:ports", "parity": 0},
+            {"chartRef": "ctx:runtime", "parity": 0},
+            {"chartRef": "ctx:settlement", "parity": 0},
+            {"chartRef": "ctx:shared", "parity": 0}
+        ])
     );
     assert_eq!(
         residual_reading["theoremRef"],
         "archsig-contract:residual-difference-reading"
     );
-    assert!(
-        residual_reading["provenance"]["coverRef"]
-            .as_str()
-            .is_some_and(|cover| !cover.is_empty()),
-        "residual comparison must retain the selected cover provenance"
+    assert_eq!(
+        residual_reading["provenance"]["coverRef"],
+        "cover:commerce-fulfillment"
+    );
+    assert_eq!(
+        residual_reading["provenance"]["lawSurfaceRef"],
+        "law-surface:practical-rust-v052"
+    );
+    assert_eq!(
+        residual_reading["provenance"]["overlapComplex"]["overlapRefs"],
+        json!([
+            "overlap:ctx:application:ctx:domain",
+            "overlap:ctx:application:ctx:ports",
+            "overlap:ctx:application:ctx:runtime",
+            "overlap:ctx:application:ctx:settlement",
+            "overlap:ctx:application:ctx:shared",
+            "overlap:ctx:domain:ctx:shared",
+            "overlap:ctx:infrastructure:ctx:ports",
+            "overlap:ctx:infrastructure:ctx:runtime",
+            "overlap:ctx:infrastructure:ctx:settlement",
+            "overlap:ctx:infrastructure:ctx:shared",
+            "overlap:ctx:policy:ctx:shared",
+            "overlap:ctx:ports:ctx:shared",
+            "overlap:ctx:runtime:ctx:shared",
+            "overlap:ctx:settlement:ctx:shared"
+        ])
     );
 }
 

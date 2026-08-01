@@ -2710,7 +2710,7 @@ fn restriction_assumptions(
 ) -> Vec<AgAssumptionLedgerEntryV1> {
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "archsig-contract:ag-restriction-compatibility".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY.to_string(),
             assumption: "selected finite support generator family for restriction compatibility"
                 .to_string(),
             status: if method_status == "restriction_generator_missing" {
@@ -3016,7 +3016,7 @@ fn section_assumptions(
         .collect::<Vec<_>>();
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "archsig-contract:ag-section-factorization".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION.to_string(),
             assumption: "selected witnessAssignment atom supplies the Boolean section for finite pullback evaluation".to_string(),
             status: if method_status == "section_assignment_absent" {
                 "violated"
