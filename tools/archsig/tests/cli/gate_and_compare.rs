@@ -1317,6 +1317,10 @@ fn cli_compare_records_cover_change_without_transport_and_feeds_gate_other_trans
     ]);
     assert_eq!(comparison["schema"], "archsig-comparison-report/v0.5.7");
     assert_eq!(
+        comparison["residualDifferenceReading"]["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
+    assert_eq!(
         comparison["discipline"],
         "Comparison is a record-level juxtaposition of two ArchSig runs. ArchSig derives a class-zero reading from the selected normalized ArchMap covers when each fine context has a unique observed coarse containment path."
     );

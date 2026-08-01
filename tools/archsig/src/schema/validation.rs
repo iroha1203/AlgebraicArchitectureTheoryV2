@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ValidationCheck {
     pub id: String,
     pub title: String,
@@ -29,4 +29,20 @@ pub struct ValidationExample {
     pub target: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ValidationCheck;
+
+    #[test]
+    fn validation_check_rejects_unknown_fields() {
+        let value = serde_json::json!({
+            "id": "check:unknown-field",
+            "title": "unknown field",
+            "result": "pass",
+            "extraField": "retired"
+        });
+        assert!(serde_json::from_value::<ValidationCheck>(value).is_err());
+    }
 }

@@ -604,7 +604,7 @@ fn cli_analyze_outputs_do_not_embed_local_absolute_input_paths() {
             format!("{}/", ["", "Users"].join("/")),
             format!("{}/", ["", "private"].join("/")),
             [".", "codex"].join(""),
-            "CodexWorkspaceMarker".to_string(),
+            ["Hello", "Lean"].join(""),
             ["Algebraic", "Architecture", "TheoryV2"].join(""),
         ];
         for forbidden in forbidden_markers {

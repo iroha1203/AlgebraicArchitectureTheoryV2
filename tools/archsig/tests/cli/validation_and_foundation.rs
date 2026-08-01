@@ -949,6 +949,17 @@ fn cli_analyze_saga_descent_complete_support_measures_boundary_membership() {
                     .is_some_and(Vec::is_empty))),
         "matching sections must derive a zero residual on every observed overlap"
     );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .expect("saga assumptions are array")
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "archsig-contract:saga-derived-finite-complex-enumeration"
+                    && row["status"] == "assumed"
+            }),
+        "saga finite-complex enumeration contract ID must be emitted"
+    );
     let summary = read_json(&out_dir.join("archsig-analysis-summary.json"));
     assert_eq!(
         summary["conclusion"],

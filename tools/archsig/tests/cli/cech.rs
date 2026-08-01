@@ -711,6 +711,17 @@ fn cli_analyze_v2_restriction_compatibility_measures_support_inclusion() {
     );
     assert_eq!(zero_invariant["method"], "finite-support-inclusion@1");
     assert_eq!(zero_invariant["edgeChecks"][0]["status"], "compatible");
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .expect("restriction assumptions are array")
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "archsig-contract:ag-restriction-compatibility"
+                    && row["status"] == "checked"
+            }),
+        "restriction compatibility contract ID must be emitted and checked"
+    );
 
     let nonzero_dir = root_out.join("nonzero");
     fs::create_dir_all(&nonzero_dir).expect("nonzero dir exists");
@@ -1335,6 +1346,17 @@ fn cli_analyze_v2_section_factorization_checks_selected_section() {
             .is_some_and(|reference| reference.starts_with("law-surface:"))
     );
     assert_eq!(zero_invariant["violatedForbiddenSupports"], json!([]));
+    assert!(
+        zero_packet["assumptions"]
+            .as_array()
+            .expect("section assumptions are array")
+            .iter()
+            .any(|row| {
+                row["theoremRef"] == "archsig-contract:ag-section-factorization"
+                    && row["status"] == "checked"
+            }),
+        "section factorization contract ID must be emitted and checked"
+    );
     assert!(
         zero_invariant["boundaryNote"]
             .as_str()
