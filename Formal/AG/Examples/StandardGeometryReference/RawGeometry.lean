@@ -1945,12 +1945,14 @@ theorem rawCoordinate_restrict
       referenceTypedRestriction_polynomialMap_variable]
     rfl]
 
+/-- SD0 internal value function for the fixed base configuration. -/
 private noncomputable def baseConfigurationVal :
     ReferenceRawCoordinate → AmbientRing
   | .coordinate => coordinate
   | .leftInverse => 0
   | .rightInverse => 0
 
+/-- SD0 internal proof that the fixed base values satisfy the two fixture relations. -/
 private theorem baseConfigurationVal_property (r : Bool) :
     MvPolynomial.aeval baseConfigurationVal
       (referenceRelationPolynomial baseContext r) = 0 := by
@@ -1960,11 +1962,13 @@ private theorem baseConfigurationVal_property (r : Bool) :
   · rw [referenceRelationPolynomial_true, if_neg rightIsInverted_base]
     simp [rawRightInverse, rawVariable, baseConfigurationVal]
 
+/-- SD0 internal configuration assembled from the fixed base values and relation proof. -/
 private noncomputable def baseConfiguration :
     (referenceRelationFamily baseContext).Configuration AmbientRing where
   val := baseConfigurationVal
   property := baseConfigurationVal_property
 
+/-- SD0 internal quotient map represented by the fixed base configuration. -/
 private noncomputable def baseRawToAmbientAlgHom :
     referenceRaw.rawAlgebra baseContext →ₐ[Int] AmbientRing :=
   (referenceRelationFamily baseContext).quotientAlgHomOfConfiguration
@@ -1974,6 +1978,7 @@ private noncomputable def ambientToBaseRawAlgHom :
     AmbientRing →ₐ[Int] referenceRaw.rawAlgebra baseContext :=
   MvPolynomial.aeval (fun _ => rawCoordinate baseContext)
 
+/-- SD0 internal evaluation API for the base raw coordinate. -/
 @[simp] private theorem baseRawToAmbientAlgHom_rawCoordinate :
     baseRawToAmbientAlgHom (rawCoordinate baseContext) = coordinate := by
   rw [rawCoordinate_eq]
@@ -2017,6 +2022,7 @@ private theorem baseRawToAmbientAlgHom_comp_ambientToBaseRawAlgHom :
     if_neg rightIsInverted_base] at h
   exact h
 
+/-- SD0 internal inverse law for the fixed base presentation maps. -/
 private theorem ambientToBaseRawAlgHom_comp_baseRawToAmbientAlgHom :
     ambientToBaseRawAlgHom.comp baseRawToAmbientAlgHom =
       AlgHom.id Int (referenceRaw.rawAlgebra baseContext) := by
@@ -2126,6 +2132,7 @@ private theorem left_rawCoordinate_isUnit :
   isUnit_iff_exists_inv.mpr ⟨rawLeftInverseClass leftContext,
     left_rawCoordinate_mul_inverse⟩
 
+/-- SD0 internal value function for the fixed left-localization configuration. -/
 private noncomputable def leftConfigurationVal :
     ReferenceRawCoordinate → Localization.Away leftGenerator
   | .coordinate => algebraMap AmbientRing
@@ -2133,6 +2140,7 @@ private noncomputable def leftConfigurationVal :
   | .leftInverse => IsLocalization.Away.invSelf leftGenerator
   | .rightInverse => 0
 
+/-- SD0 internal proof that the fixed left values satisfy the two fixture relations. -/
 private theorem leftConfigurationVal_property (r : Bool) :
     MvPolynomial.aeval leftConfigurationVal
       (referenceRelationPolynomial leftContext r) = 0 := by
@@ -2147,12 +2155,14 @@ private theorem leftConfigurationVal_property (r : Bool) :
   · rw [referenceRelationPolynomial_true, if_neg rightIsInverted_left]
     simp [rawRightInverse, rawVariable, leftConfigurationVal]
 
+/-- SD0 internal configuration assembled from the fixed left values and relation proof. -/
 private noncomputable def leftConfiguration :
     (referenceRelationFamily leftContext).Configuration
       (Localization.Away leftGenerator) where
   val := leftConfigurationVal
   property := leftConfigurationVal_property
 
+/-- SD0 internal quotient map represented by the fixed left configuration. -/
 private noncomputable def leftRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra leftContext →ₐ[Int]
       Localization.Away leftGenerator :=
@@ -2167,6 +2177,7 @@ private noncomputable def leftLocalizationToRawRingHom :
       rw [leftGenerator, ambientToRawAlgHom_coordinate]
       exact left_rawCoordinate_isUnit)
 
+/-- SD0 internal evaluation API for the left raw coordinate. -/
 @[simp] private theorem leftRawToLocalizationAlgHom_rawCoordinate :
     leftRawToLocalizationAlgHom (rawCoordinate leftContext) =
       algebraMap AmbientRing (Localization.Away leftGenerator) coordinate := by
@@ -2178,6 +2189,7 @@ private noncomputable def leftLocalizationToRawRingHom :
   rw [MvPolynomial.aeval_X]
   rfl
 
+/-- SD0 internal evaluation API for the left raw inverse. -/
 @[simp] private theorem leftRawToLocalizationAlgHom_rawLeftInverse :
     leftRawToLocalizationAlgHom (rawLeftInverseClass leftContext) =
       IsLocalization.Away.invSelf leftGenerator := by
@@ -2320,6 +2332,7 @@ private theorem right_rawGenerator_isUnit :
   isUnit_iff_exists_inv.mpr ⟨rawRightInverseClass rightContext,
     right_rawGenerator_mul_inverse⟩
 
+/-- SD0 internal value function for the fixed right-localization configuration. -/
 private noncomputable def rightConfigurationVal :
     ReferenceRawCoordinate → Localization.Away rightGenerator
   | .coordinate => algebraMap AmbientRing
@@ -2327,6 +2340,7 @@ private noncomputable def rightConfigurationVal :
   | .leftInverse => 0
   | .rightInverse => IsLocalization.Away.invSelf rightGenerator
 
+/-- SD0 internal proof that the fixed right values satisfy the two fixture relations. -/
 private theorem rightConfigurationVal_property (r : Bool) :
     MvPolynomial.aeval rightConfigurationVal
       (referenceRelationPolynomial rightContext r) = 0 := by
@@ -2344,12 +2358,14 @@ private theorem rightConfigurationVal_property (r : Bool) :
       IsLocalization.Away.mul_invSelf]
     exact sub_self 1
 
+/-- SD0 internal configuration assembled from the fixed right values and relation proof. -/
 private noncomputable def rightConfiguration :
     (referenceRelationFamily rightContext).Configuration
       (Localization.Away rightGenerator) where
   val := rightConfigurationVal
   property := rightConfigurationVal_property
 
+/-- SD0 internal quotient map represented by the fixed right configuration. -/
 private noncomputable def rightRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra rightContext →ₐ[Int]
       Localization.Away rightGenerator :=
@@ -2364,6 +2380,7 @@ private noncomputable def rightLocalizationToRawRingHom :
       rw [rightGenerator, map_sub, map_one, ambientToRawAlgHom_coordinate]
       exact right_rawGenerator_isUnit)
 
+/-- SD0 internal evaluation API for the right raw coordinate. -/
 @[simp] private theorem rightRawToLocalizationAlgHom_rawCoordinate :
     rightRawToLocalizationAlgHom (rawCoordinate rightContext) =
       algebraMap AmbientRing (Localization.Away rightGenerator) coordinate := by
@@ -2375,6 +2392,7 @@ private noncomputable def rightLocalizationToRawRingHom :
   rw [MvPolynomial.aeval_X]
   rfl
 
+/-- SD0 internal evaluation API for the right raw inverse. -/
 @[simp] private theorem rightRawToLocalizationAlgHom_rawRightInverse :
     rightRawToLocalizationAlgHom (rawRightInverseClass rightContext) =
       IsLocalization.Away.invSelf rightGenerator := by
@@ -2573,6 +2591,7 @@ private theorem overlap_rawGenerator_isUnit :
     map_one, ambientToRawAlgHom_coordinate]
   exact overlap_rawLeft_isUnit.mul overlap_rawRight_isUnit
 
+/-- SD0 internal value function for the fixed overlap-localization configuration. -/
 private noncomputable def overlapConfigurationVal :
     ReferenceRawCoordinate → Localization.Away overlapGenerator
   | .coordinate => algebraMap AmbientRing
@@ -2580,6 +2599,7 @@ private noncomputable def overlapConfigurationVal :
   | .leftInverse => overlapLeftInverse
   | .rightInverse => overlapRightInverse
 
+/-- SD0 internal proof that the fixed overlap values satisfy the two fixture relations. -/
 private theorem overlapConfigurationVal_property (r : Bool) :
     MvPolynomial.aeval overlapConfigurationVal
       (referenceRelationPolynomial overlapContext r) = 0 := by
@@ -2601,12 +2621,14 @@ private theorem overlapConfigurationVal_property (r : Bool) :
       overlap_right_mul_inverse]
     exact sub_self 1
 
+/-- SD0 internal configuration assembled from the fixed overlap values and relation proof. -/
 private noncomputable def overlapConfiguration :
     (referenceRelationFamily overlapContext).Configuration
       (Localization.Away overlapGenerator) where
   val := overlapConfigurationVal
   property := overlapConfigurationVal_property
 
+/-- SD0 internal quotient map represented by the fixed overlap configuration. -/
 private noncomputable def overlapRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra overlapContext →ₐ[Int]
       Localization.Away overlapGenerator :=
@@ -2617,6 +2639,7 @@ private noncomputable def overlapLocalizationToRawRingHom :
     Localization.Away overlapGenerator →+* referenceRaw.rawAlgebra overlapContext :=
   IsLocalization.Away.lift overlapGenerator overlap_rawGenerator_isUnit
 
+/-- SD0 internal evaluation API for the overlap raw coordinate. -/
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawCoordinate :
     overlapRawToLocalizationAlgHom (rawCoordinate overlapContext) =
       algebraMap AmbientRing (Localization.Away overlapGenerator) coordinate := by
@@ -2628,6 +2651,7 @@ private noncomputable def overlapLocalizationToRawRingHom :
   rw [MvPolynomial.aeval_X]
   rfl
 
+/-- SD0 internal evaluation API for the overlap left raw inverse. -/
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawLeftInverse :
     overlapRawToLocalizationAlgHom (rawLeftInverseClass overlapContext) =
       overlapLeftInverse := by
@@ -2639,6 +2663,7 @@ private noncomputable def overlapLocalizationToRawRingHom :
   rw [MvPolynomial.aeval_X]
   rfl
 
+/-- SD0 internal evaluation API for the overlap right raw inverse. -/
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawRightInverse :
     overlapRawToLocalizationAlgHom (rawRightInverseClass overlapContext) =
       overlapRightInverse := by
