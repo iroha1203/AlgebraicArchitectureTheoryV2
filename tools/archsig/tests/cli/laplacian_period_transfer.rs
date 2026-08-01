@@ -877,6 +877,16 @@ fn cli_analyze_v2_period_stokes_audit_outputs_structural_verdicts() {
         assert_eq!(invariant["evaluator"], "ag.period-stokes-audit");
         assert_eq!(invariant["stokesAudit"]["coefficient"], coefficient);
         assert!(
+            packet["assumptions"]
+                .as_array()
+                .expect("period assumptions are array")
+                .iter()
+                .any(|assumption| {
+                    assumption["theoremRef"] == "archsig-contract:period-stokes-audit"
+                }),
+            "period Stokes audit must emit its generated contract ID"
+        );
+        assert!(
             packet["analyticReadings"]
                 .as_array()
                 .expect("analytic readings is array")

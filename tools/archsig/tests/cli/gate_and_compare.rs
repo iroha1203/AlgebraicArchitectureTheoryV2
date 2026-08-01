@@ -1290,7 +1290,8 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         run
     };
     let practical_base = analyze_practical(&practical_base_archmap, "residual-base");
-    let practical_identical_head = clone_run_from(&practical_base, "residual-identical-head");
+    let practical_identical_head =
+        analyze_practical(&practical_base_archmap, "residual-identical-head");
     let identical_residual_out = out_dir.join("residual-identical-compare");
     run_sig0(&[
         "compare",

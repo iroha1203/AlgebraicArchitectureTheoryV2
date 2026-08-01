@@ -2065,7 +2065,7 @@ fn period_audit_assumptions(
 ) -> Vec<AgAssumptionLedgerEntryV1> {
     vec![
         AgAssumptionLedgerEntryV1 {
-            theorem_ref: "part4/13.2".to_string(),
+            theorem_ref: crate::ARCHSIG_CONTRACT_PERIOD_STOKES_AUDIT.to_string(),
             assumption:
                 "supplied finite Stokes accounting values share a fixed coefficient reading"
                     .to_string(),
