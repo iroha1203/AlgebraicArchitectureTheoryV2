@@ -7973,6 +7973,10 @@ def standardGeometry_geometryImplementation_left_to_overlap_transport :=
 def standardGeometry_geometryImplementation_right_to_overlap_transport :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.GeometryImplementation.right_to_overlap_transport
 
+/-- Kernel-audit alias for the shared canonical restriction conjugation theorem. -/
+def standardGeometry_geometryImplementation_canonical_restriction_conjugation :=
+  @AAT.AG.Examples.StandardGeometryReferenceModels.canonical_restriction_conjugation
+
 def standardGeometry_canonical_component_isIso :=
   @AAT.AG.Examples.StandardGeometryReferenceModels.canonical_component_isIso
 

@@ -18,6 +18,7 @@ universe u
 open CategoryTheory CategoryTheory.Limits Opposite
 open AAT.AG.LawAlgebra
 open AlgebraicGeometry
+open GeometryImplementation
 open scoped AlgebraicGeometry Classical
 
 noncomputable section
@@ -36,6 +37,38 @@ theorem canonical_component_isIso (W : referenceSite.category) :
   change IsIso ((CategoryTheory.toSheafify referenceSite.topology
     referenceRaw.toPresheaf).app (op W))
   infer_instance
+
+/--
+SD0 constructor-provenance lemma for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
+It factors the canonical-map naturality calculation shared by the four reference restriction theorems.
+The source canonical-map `IsIso` premise is supplied by `canonical_component_isIso`,
+which derives it from `referenceRaw_isSheaf`; no external material certificate is used.
+The executable contract fixes the exact declaration type.
+-/
+theorem canonical_restriction_conjugation
+    {source target : referenceSite.category} (f : source ⟶ target)
+    [IsIso (referenceRaw.toRingedSite.canonical.app (op source))] :
+    (referenceRaw.toRingedSite.canonical.app (op target)).right ≫
+        sheafifiedRestriction referenceRaw f ≫
+        inv (referenceRaw.toRingedSite.canonical.app (op source)).right =
+      CommRingCat.ofHom
+        (referenceRaw.restrictionStable f).quotientDesc := by
+  have hnat :
+      (referenceRaw.toRingedSite.canonical.app (op target)).right ≫
+          sheafifiedRestriction referenceRaw f =
+        CommRingCat.ofHom
+            (referenceRaw.restrictionStable f).quotientDesc ≫
+          (referenceRaw.toRingedSite.canonical.app (op source)).right := by
+    apply ConcreteCategory.hom_ext
+    intro x
+    have hn := referenceRaw.toRingedSite.canonical.naturality f.op
+    have ha := congrArg (fun q => q.right x) hn
+    simpa only [CommRingCat.comp_apply,
+      RawAmbientRestrictionSystem.toRingedSite_raw,
+      sheafifiedRestriction] using ha.symm
+  rw [← Category.assoc, hnat]
+  simp only [Category.assoc]
+  rw [IsIso.hom_inv_id, Category.comp_id]
 
 /--
 SD0 fixture data declaration for Part II definitions 9.1–11.2 and Part III definitions 4.1–4.3 with conditions 4.4–4.5.
