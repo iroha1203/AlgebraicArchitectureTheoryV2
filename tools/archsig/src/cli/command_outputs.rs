@@ -41,8 +41,6 @@ fn reject_analyze_output_overwrite(out_dir: &PathBuf) -> Result<(), Box<dyn Erro
         "archsig-insight-brief.md",
         "archsig-analysis-validation.json",
         "law-surface-validation.json",
-        "archmap-validation.json",
-        "law-policy-validation.json",
     ]
     .into_iter()
     .filter(|artifact| out_dir.join(artifact).exists())
