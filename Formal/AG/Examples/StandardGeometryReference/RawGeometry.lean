@@ -1945,33 +1945,30 @@ theorem rawCoordinate_restrict
       referenceTypedRestriction_polynomialMap_variable]
     rfl]
 
+private noncomputable def baseConfigurationVal :
+    ReferenceRawCoordinate → AmbientRing
+  | .coordinate => coordinate
+  | .leftInverse => 0
+  | .rightInverse => 0
+
+private theorem baseConfigurationVal_property (r : Bool) :
+    MvPolynomial.aeval baseConfigurationVal
+      (referenceRelationPolynomial baseContext r) = 0 := by
+  cases r
+  · rw [referenceRelationPolynomial_false, if_neg leftIsInverted_base]
+    simp [rawLeftInverse, rawVariable, baseConfigurationVal]
+  · rw [referenceRelationPolynomial_true, if_neg rightIsInverted_base]
+    simp [rawRightInverse, rawVariable, baseConfigurationVal]
+
 private noncomputable def baseConfiguration :
     (referenceRelationFamily baseContext).Configuration AmbientRing where
-  val
-    | .coordinate => coordinate
-    | .leftInverse => 0
-    | .rightInverse => 0
-  property r := by
-    cases r
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => coordinate
-          | .leftInverse => 0
-          | .rightInverse => 0)
-        (referenceRelationPolynomial baseContext false) = 0
-      rw [referenceRelationPolynomial_false, if_neg leftIsInverted_base]
-      simp [rawLeftInverse, rawVariable]
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => coordinate
-          | .leftInverse => 0
-          | .rightInverse => 0)
-        (referenceRelationPolynomial baseContext true) = 0
-      rw [referenceRelationPolynomial_true, if_neg rightIsInverted_base]
-      simp [rawRightInverse, rawVariable]
+  val := baseConfigurationVal
+  property := baseConfigurationVal_property
 
 private noncomputable def baseRawToAmbientAlgHom :
     referenceRaw.rawAlgebra baseContext →ₐ[Int] AmbientRing :=
-  (referenceRelationFamily baseContext).configurationRepresentability
-    AmbientRing baseConfiguration
+  (referenceRelationFamily baseContext).quotientAlgHomOfConfiguration
+    baseConfiguration
 
 private noncomputable def ambientToBaseRawAlgHom :
     AmbientRing →ₐ[Int] referenceRaw.rawAlgebra baseContext :=
@@ -1979,17 +1976,13 @@ private noncomputable def ambientToBaseRawAlgHom :
 
 @[simp] private theorem baseRawToAmbientAlgHom_rawCoordinate :
     baseRawToAmbientAlgHom (rawCoordinate baseContext) = coordinate := by
-  change (referenceRelationFamily baseContext).quotientAlgHomOfConfiguration
-      baseConfiguration
-      ((referenceRelationFamily baseContext).quotientMap (rawX baseContext)) =
-    coordinate
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.bind₁ (fun c => match c with
-      | .coordinate => coordinate
-      | .leftInverse => 0
-      | .rightInverse => 0)
+  rw [rawCoordinate_eq]
+  change (referenceRelationFamily baseContext).configurationAlgHom
+    baseConfiguration (rawX baseContext) = coordinate
+  change MvPolynomial.aeval baseConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.coordinate) = coordinate
-  rw [MvPolynomial.bind₁_X_right]
+  rw [MvPolynomial.aeval_X]
+  rfl
 
 @[simp] private theorem ambientToBaseRawAlgHom_coordinate :
     ambientToBaseRawAlgHom coordinate = rawCoordinate baseContext := by
@@ -2044,12 +2037,10 @@ private theorem ambientToBaseRawAlgHom_comp_baseRawToAmbientAlgHom :
           (rawLeftInverse baseContext)) = 0 := by
       change (referenceRelationFamily baseContext).configurationAlgHom
           baseConfiguration (rawLeftInverse baseContext) = 0
-      change MvPolynomial.bind₁ (fun c => match c with
-          | .coordinate => coordinate
-          | .leftInverse => 0
-          | .rightInverse => 0)
+      change MvPolynomial.aeval baseConfigurationVal
         (MvPolynomial.X ReferenceRawCoordinate.leftInverse) = 0
-      rw [MvPolynomial.bind₁_X_right]
+      rw [MvPolynomial.aeval_X]
+      rfl
     rw [hmap, map_zero]
     change 0 = (referenceRelationFamily baseContext).quotientMap
       (rawLeftInverse baseContext)
@@ -2062,12 +2053,10 @@ private theorem ambientToBaseRawAlgHom_comp_baseRawToAmbientAlgHom :
           (rawRightInverse baseContext)) = 0 := by
       change (referenceRelationFamily baseContext).configurationAlgHom
           baseConfiguration (rawRightInverse baseContext) = 0
-      change MvPolynomial.bind₁ (fun c => match c with
-          | .coordinate => coordinate
-          | .leftInverse => 0
-          | .rightInverse => 0)
+      change MvPolynomial.aeval baseConfigurationVal
         (MvPolynomial.X ReferenceRawCoordinate.rightInverse) = 0
-      rw [MvPolynomial.bind₁_X_right]
+      rw [MvPolynomial.aeval_X]
+      rfl
     rw [hmap, map_zero]
     change 0 = (referenceRelationFamily baseContext).quotientMap
       (rawRightInverse baseContext)
@@ -2137,42 +2126,38 @@ private theorem left_rawCoordinate_isUnit :
   isUnit_iff_exists_inv.mpr ⟨rawLeftInverseClass leftContext,
     left_rawCoordinate_mul_inverse⟩
 
+private noncomputable def leftConfigurationVal :
+    ReferenceRawCoordinate → Localization.Away leftGenerator
+  | .coordinate => algebraMap AmbientRing
+      (Localization.Away leftGenerator) coordinate
+  | .leftInverse => IsLocalization.Away.invSelf leftGenerator
+  | .rightInverse => 0
+
+private theorem leftConfigurationVal_property (r : Bool) :
+    MvPolynomial.aeval leftConfigurationVal
+      (referenceRelationPolynomial leftContext r) = 0 := by
+  cases r
+  · rw [referenceRelationPolynomial_false, if_pos leftIsInverted_left]
+    simp only [leftInverseRelation, map_sub, map_mul, map_one,
+      rawX_eq, rawLeftInverse_eq, rawVariable_eq, MvPolynomial.aeval_X,
+      leftConfigurationVal]
+    rw [show coordinate = leftGenerator by rfl,
+      IsLocalization.Away.mul_invSelf]
+    exact sub_self 1
+  · rw [referenceRelationPolynomial_true, if_neg rightIsInverted_left]
+    simp [rawRightInverse, rawVariable, leftConfigurationVal]
+
 private noncomputable def leftConfiguration :
     (referenceRelationFamily leftContext).Configuration
       (Localization.Away leftGenerator) where
-  val
-    | .coordinate => algebraMap AmbientRing
-        (Localization.Away leftGenerator) coordinate
-    | .leftInverse => IsLocalization.Away.invSelf leftGenerator
-    | .rightInverse => 0
-  property r := by
-    cases r
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away leftGenerator) coordinate
-          | .leftInverse => IsLocalization.Away.invSelf leftGenerator
-          | .rightInverse => 0)
-        (referenceRelationPolynomial leftContext false) = 0
-      rw [referenceRelationPolynomial_false, if_pos leftIsInverted_left]
-      simp only [leftInverseRelation, map_sub, map_mul, map_one,
-        rawX_eq, rawLeftInverse_eq, rawVariable_eq, MvPolynomial.aeval_X]
-      rw [show coordinate = leftGenerator by rfl,
-        IsLocalization.Away.mul_invSelf]
-      exact sub_self 1
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away leftGenerator) coordinate
-          | .leftInverse => IsLocalization.Away.invSelf leftGenerator
-          | .rightInverse => 0)
-        (referenceRelationPolynomial leftContext true) = 0
-      rw [referenceRelationPolynomial_true, if_neg rightIsInverted_left]
-      simp [rawRightInverse, rawVariable]
+  val := leftConfigurationVal
+  property := leftConfigurationVal_property
 
 private noncomputable def leftRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra leftContext →ₐ[Int]
       Localization.Away leftGenerator :=
-  (referenceRelationFamily leftContext).configurationRepresentability
-    (Localization.Away leftGenerator) leftConfiguration
+  (referenceRelationFamily leftContext).quotientAlgHomOfConfiguration
+    leftConfiguration
 
 private noncomputable def leftLocalizationToRawRingHom :
     Localization.Away leftGenerator →+* referenceRaw.rawAlgebra leftContext :=
@@ -2185,33 +2170,24 @@ private noncomputable def leftLocalizationToRawRingHom :
 @[simp] private theorem leftRawToLocalizationAlgHom_rawCoordinate :
     leftRawToLocalizationAlgHom (rawCoordinate leftContext) =
       algebraMap AmbientRing (Localization.Away leftGenerator) coordinate := by
-  change (referenceRelationFamily leftContext).quotientAlgHomOfConfiguration
-      leftConfiguration
-      ((referenceRelationFamily leftContext).quotientMap (rawX leftContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away leftGenerator) coordinate
-      | .leftInverse => IsLocalization.Away.invSelf leftGenerator
-      | .rightInverse => 0)
+  rw [rawCoordinate_eq]
+  change (referenceRelationFamily leftContext).configurationAlgHom
+    leftConfiguration (rawX leftContext) = _
+  change MvPolynomial.aeval leftConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.coordinate) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 @[simp] private theorem leftRawToLocalizationAlgHom_rawLeftInverse :
     leftRawToLocalizationAlgHom (rawLeftInverseClass leftContext) =
       IsLocalization.Away.invSelf leftGenerator := by
-  change (referenceRelationFamily leftContext).quotientAlgHomOfConfiguration
-      leftConfiguration
-      ((referenceRelationFamily leftContext).quotientMap
-        (rawLeftInverse leftContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away leftGenerator) coordinate
-      | .leftInverse => IsLocalization.Away.invSelf leftGenerator
-      | .rightInverse => 0)
+  rw [rawLeftInverseClass]
+  change (referenceRelationFamily leftContext).configurationAlgHom
+    leftConfiguration (rawLeftInverse leftContext) = _
+  change MvPolynomial.aeval leftConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.leftInverse) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 private theorem leftLocalizationToRawRingHom_comp_algebraMap :
     leftLocalizationToRawRingHom.comp
@@ -2344,45 +2320,41 @@ private theorem right_rawGenerator_isUnit :
   isUnit_iff_exists_inv.mpr ⟨rawRightInverseClass rightContext,
     right_rawGenerator_mul_inverse⟩
 
+private noncomputable def rightConfigurationVal :
+    ReferenceRawCoordinate → Localization.Away rightGenerator
+  | .coordinate => algebraMap AmbientRing
+      (Localization.Away rightGenerator) coordinate
+  | .leftInverse => 0
+  | .rightInverse => IsLocalization.Away.invSelf rightGenerator
+
+private theorem rightConfigurationVal_property (r : Bool) :
+    MvPolynomial.aeval rightConfigurationVal
+      (referenceRelationPolynomial rightContext r) = 0 := by
+  cases r
+  · rw [referenceRelationPolynomial_false, if_neg leftIsInverted_right]
+    simp [rawLeftInverse, rawVariable, rightConfigurationVal]
+  · rw [referenceRelationPolynomial_true, if_pos rightIsInverted_right]
+    simp only [rightInverseRelation, map_sub, map_mul, map_one,
+      rawX_eq, rawRightInverse_eq, rawVariable_eq, MvPolynomial.aeval_X,
+      rightConfigurationVal]
+    rw [show 1 - algebraMap AmbientRing
+        (Localization.Away rightGenerator) coordinate =
+      algebraMap AmbientRing (Localization.Away rightGenerator)
+        rightGenerator by simp [rightGenerator],
+      IsLocalization.Away.mul_invSelf]
+    exact sub_self 1
+
 private noncomputable def rightConfiguration :
     (referenceRelationFamily rightContext).Configuration
       (Localization.Away rightGenerator) where
-  val
-    | .coordinate => algebraMap AmbientRing
-        (Localization.Away rightGenerator) coordinate
-    | .leftInverse => 0
-    | .rightInverse => IsLocalization.Away.invSelf rightGenerator
-  property r := by
-    cases r
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away rightGenerator) coordinate
-          | .leftInverse => 0
-          | .rightInverse => IsLocalization.Away.invSelf rightGenerator)
-        (referenceRelationPolynomial rightContext false) = 0
-      rw [referenceRelationPolynomial_false, if_neg leftIsInverted_right]
-      simp [rawLeftInverse, rawVariable]
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away rightGenerator) coordinate
-          | .leftInverse => 0
-          | .rightInverse => IsLocalization.Away.invSelf rightGenerator)
-        (referenceRelationPolynomial rightContext true) = 0
-      rw [referenceRelationPolynomial_true, if_pos rightIsInverted_right]
-      simp only [rightInverseRelation, map_sub, map_mul, map_one,
-        rawX_eq, rawRightInverse_eq, rawVariable_eq, MvPolynomial.aeval_X]
-      rw [show 1 - algebraMap AmbientRing
-          (Localization.Away rightGenerator) coordinate =
-        algebraMap AmbientRing (Localization.Away rightGenerator)
-          rightGenerator by simp [rightGenerator],
-        IsLocalization.Away.mul_invSelf]
-      exact sub_self 1
+  val := rightConfigurationVal
+  property := rightConfigurationVal_property
 
 private noncomputable def rightRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra rightContext →ₐ[Int]
       Localization.Away rightGenerator :=
-  (referenceRelationFamily rightContext).configurationRepresentability
-    (Localization.Away rightGenerator) rightConfiguration
+  (referenceRelationFamily rightContext).quotientAlgHomOfConfiguration
+    rightConfiguration
 
 private noncomputable def rightLocalizationToRawRingHom :
     Localization.Away rightGenerator →+* referenceRaw.rawAlgebra rightContext :=
@@ -2395,33 +2367,24 @@ private noncomputable def rightLocalizationToRawRingHom :
 @[simp] private theorem rightRawToLocalizationAlgHom_rawCoordinate :
     rightRawToLocalizationAlgHom (rawCoordinate rightContext) =
       algebraMap AmbientRing (Localization.Away rightGenerator) coordinate := by
-  change (referenceRelationFamily rightContext).quotientAlgHomOfConfiguration
-      rightConfiguration
-      ((referenceRelationFamily rightContext).quotientMap (rawX rightContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away rightGenerator) coordinate
-      | .leftInverse => 0
-      | .rightInverse => IsLocalization.Away.invSelf rightGenerator)
+  rw [rawCoordinate_eq]
+  change (referenceRelationFamily rightContext).configurationAlgHom
+    rightConfiguration (rawX rightContext) = _
+  change MvPolynomial.aeval rightConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.coordinate) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 @[simp] private theorem rightRawToLocalizationAlgHom_rawRightInverse :
     rightRawToLocalizationAlgHom (rawRightInverseClass rightContext) =
       IsLocalization.Away.invSelf rightGenerator := by
-  change (referenceRelationFamily rightContext).quotientAlgHomOfConfiguration
-      rightConfiguration
-      ((referenceRelationFamily rightContext).quotientMap
-        (rawRightInverse rightContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away rightGenerator) coordinate
-      | .leftInverse => 0
-      | .rightInverse => IsLocalization.Away.invSelf rightGenerator)
+  rw [rawRightInverseClass]
+  change (referenceRelationFamily rightContext).configurationAlgHom
+    rightConfiguration (rawRightInverse rightContext) = _
+  change MvPolynomial.aeval rightConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.rightInverse) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 private theorem rightLocalizationToRawRingHom_comp_algebraMap :
     rightLocalizationToRawRingHom.comp
@@ -2610,48 +2573,45 @@ private theorem overlap_rawGenerator_isUnit :
     map_one, ambientToRawAlgHom_coordinate]
   exact overlap_rawLeft_isUnit.mul overlap_rawRight_isUnit
 
+private noncomputable def overlapConfigurationVal :
+    ReferenceRawCoordinate → Localization.Away overlapGenerator
+  | .coordinate => algebraMap AmbientRing
+      (Localization.Away overlapGenerator) coordinate
+  | .leftInverse => overlapLeftInverse
+  | .rightInverse => overlapRightInverse
+
+private theorem overlapConfigurationVal_property (r : Bool) :
+    MvPolynomial.aeval overlapConfigurationVal
+      (referenceRelationPolynomial overlapContext r) = 0 := by
+  cases r
+  · rw [referenceRelationPolynomial_false, if_pos leftIsInverted_overlap]
+    simp only [leftInverseRelation, map_sub, map_mul, map_one,
+      rawX_eq, rawLeftInverse_eq, rawVariable_eq, MvPolynomial.aeval_X,
+      overlapConfigurationVal]
+    rw [show coordinate = leftGenerator by rfl, overlap_left_mul_inverse]
+    exact sub_self 1
+  · rw [referenceRelationPolynomial_true, if_pos rightIsInverted_overlap]
+    simp only [rightInverseRelation, map_sub, map_mul, map_one,
+      rawX_eq, rawRightInverse_eq, rawVariable_eq, MvPolynomial.aeval_X,
+      overlapConfigurationVal]
+    rw [show 1 - algebraMap AmbientRing
+        (Localization.Away overlapGenerator) coordinate =
+      algebraMap AmbientRing (Localization.Away overlapGenerator)
+        rightGenerator by simp [rightGenerator],
+      overlap_right_mul_inverse]
+    exact sub_self 1
+
 private noncomputable def overlapConfiguration :
     (referenceRelationFamily overlapContext).Configuration
       (Localization.Away overlapGenerator) where
-  val
-    | .coordinate => algebraMap AmbientRing
-        (Localization.Away overlapGenerator) coordinate
-    | .leftInverse => overlapLeftInverse
-    | .rightInverse => overlapRightInverse
-  property r := by
-    cases r
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away overlapGenerator) coordinate
-          | .leftInverse => overlapLeftInverse
-          | .rightInverse => overlapRightInverse)
-        (referenceRelationPolynomial overlapContext false) = 0
-      rw [referenceRelationPolynomial_false, if_pos leftIsInverted_overlap]
-      simp only [leftInverseRelation, map_sub, map_mul, map_one,
-        rawX_eq, rawLeftInverse_eq, rawVariable_eq, MvPolynomial.aeval_X]
-      rw [show coordinate = leftGenerator by rfl, overlap_left_mul_inverse]
-      exact sub_self 1
-    · change MvPolynomial.aeval (fun c => match c with
-          | .coordinate => algebraMap AmbientRing
-              (Localization.Away overlapGenerator) coordinate
-          | .leftInverse => overlapLeftInverse
-          | .rightInverse => overlapRightInverse)
-        (referenceRelationPolynomial overlapContext true) = 0
-      rw [referenceRelationPolynomial_true, if_pos rightIsInverted_overlap]
-      simp only [rightInverseRelation, map_sub, map_mul, map_one,
-        rawX_eq, rawRightInverse_eq, rawVariable_eq, MvPolynomial.aeval_X]
-      rw [show 1 - algebraMap AmbientRing
-          (Localization.Away overlapGenerator) coordinate =
-        algebraMap AmbientRing (Localization.Away overlapGenerator)
-          rightGenerator by simp [rightGenerator],
-        overlap_right_mul_inverse]
-      exact sub_self 1
+  val := overlapConfigurationVal
+  property := overlapConfigurationVal_property
 
 private noncomputable def overlapRawToLocalizationAlgHom :
     referenceRaw.rawAlgebra overlapContext →ₐ[Int]
       Localization.Away overlapGenerator :=
-  (referenceRelationFamily overlapContext).configurationRepresentability
-    (Localization.Away overlapGenerator) overlapConfiguration
+  (referenceRelationFamily overlapContext).quotientAlgHomOfConfiguration
+    overlapConfiguration
 
 private noncomputable def overlapLocalizationToRawRingHom :
     Localization.Away overlapGenerator →+* referenceRaw.rawAlgebra overlapContext :=
@@ -2660,49 +2620,35 @@ private noncomputable def overlapLocalizationToRawRingHom :
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawCoordinate :
     overlapRawToLocalizationAlgHom (rawCoordinate overlapContext) =
       algebraMap AmbientRing (Localization.Away overlapGenerator) coordinate := by
-  change (referenceRelationFamily overlapContext).quotientAlgHomOfConfiguration
-      overlapConfiguration
-      ((referenceRelationFamily overlapContext).quotientMap (rawX overlapContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away overlapGenerator) coordinate
-      | .leftInverse => overlapLeftInverse
-      | .rightInverse => overlapRightInverse)
+  rw [rawCoordinate_eq]
+  change (referenceRelationFamily overlapContext).configurationAlgHom
+    overlapConfiguration (rawX overlapContext) = _
+  change MvPolynomial.aeval overlapConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.coordinate) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawLeftInverse :
     overlapRawToLocalizationAlgHom (rawLeftInverseClass overlapContext) =
       overlapLeftInverse := by
-  change (referenceRelationFamily overlapContext).quotientAlgHomOfConfiguration
-      overlapConfiguration
-      ((referenceRelationFamily overlapContext).quotientMap
-        (rawLeftInverse overlapContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away overlapGenerator) coordinate
-      | .leftInverse => overlapLeftInverse
-      | .rightInverse => overlapRightInverse)
+  rw [rawLeftInverseClass]
+  change (referenceRelationFamily overlapContext).configurationAlgHom
+    overlapConfiguration (rawLeftInverse overlapContext) = _
+  change MvPolynomial.aeval overlapConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.leftInverse) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 @[simp] private theorem overlapRawToLocalizationAlgHom_rawRightInverse :
     overlapRawToLocalizationAlgHom (rawRightInverseClass overlapContext) =
       overlapRightInverse := by
-  change (referenceRelationFamily overlapContext).quotientAlgHomOfConfiguration
-      overlapConfiguration
-      ((referenceRelationFamily overlapContext).quotientMap
-        (rawRightInverse overlapContext)) = _
-  rw [StructuralRelationFamily.quotientAlgHomOfConfiguration_mk]
-  change MvPolynomial.aeval (fun c => match c with
-      | .coordinate => algebraMap AmbientRing
-          (Localization.Away overlapGenerator) coordinate
-      | .leftInverse => overlapLeftInverse
-      | .rightInverse => overlapRightInverse)
+  rw [rawRightInverseClass]
+  change (referenceRelationFamily overlapContext).configurationAlgHom
+    overlapConfiguration (rawRightInverse overlapContext) = _
+  change MvPolynomial.aeval overlapConfigurationVal
     (MvPolynomial.X ReferenceRawCoordinate.rightInverse) = _
   rw [MvPolynomial.aeval_X]
+  rfl
 
 private theorem overlapLocalizationToRawRingHom_comp_algebraMap :
     overlapLocalizationToRawRingHom.comp

@@ -30,31 +30,15 @@ theorem left_restriction_is_localization :
   letI := canonical_component_isIso leftContext
   rw [baseSectionRingIso, leftSectionRingIso, Iso.trans_inv,
     Iso.trans_hom]
-  have hnat :
-      (referenceRaw.toRingedSite.canonical.app (op baseContext)).right ≫
-          sheafifiedRestriction referenceRaw leftToBase =
-        CommRingCat.ofHom
-            (referenceRaw.restrictionStable leftToBase).quotientDesc ≫
-          (referenceRaw.toRingedSite.canonical.app (op leftContext)).right := by
-    apply ConcreteCategory.hom_ext
-    intro x
-    have hn :=
-      referenceRaw.toRingedSite.canonical.naturality leftToBase.op
-    have ha := congrArg (fun q => q.right x) hn
-    simpa only [CommRingCat.comp_apply,
-      RawAmbientRestrictionSystem.toRingedSite_raw,
-      sheafifiedRestriction] using ha.symm
   rw [show (asIso
       (referenceRaw.toRingedSite.canonical.app (op baseContext)).right).symm.inv =
         (referenceRaw.toRingedSite.canonical.app (op baseContext)).right by
       simpa only [Iso.symm_inv, asIso_hom]]
-  slice_lhs 2 3 => rw [hnat]
   rw [show (asIso
       (referenceRaw.toRingedSite.canonical.app (op leftContext)).right).symm.hom =
         inv (referenceRaw.toRingedSite.canonical.app (op leftContext)).right by
       simpa only [Iso.symm_hom, asIso_inv]]
-  simp only [Category.assoc]
-  simp only [IsIso.hom_inv_id_assoc]
+  slice_lhs 2 4 => rw [canonical_restriction_conjugation]
   rw [referenceRaw_restrictionStable]
   apply ConcreteCategory.hom_ext
   intro a

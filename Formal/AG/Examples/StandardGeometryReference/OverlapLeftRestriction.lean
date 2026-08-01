@@ -29,31 +29,15 @@ theorem overlap_left_restriction_is_localization :
   letI := canonical_component_isIso overlapContext
   rw [leftSectionRingIso, overlapSectionRingIso, Iso.trans_inv,
     Iso.trans_hom]
-  have hnat :
-      (referenceRaw.toRingedSite.canonical.app (op leftContext)).right ≫
-          sheafifiedRestriction referenceRaw overlapToLeft =
-        CommRingCat.ofHom
-            (referenceRaw.restrictionStable overlapToLeft).quotientDesc ≫
-          (referenceRaw.toRingedSite.canonical.app (op overlapContext)).right := by
-    apply ConcreteCategory.hom_ext
-    intro x
-    have hn :=
-      referenceRaw.toRingedSite.canonical.naturality overlapToLeft.op
-    have ha := congrArg (fun q => q.right x) hn
-    simpa only [CommRingCat.comp_apply,
-      RawAmbientRestrictionSystem.toRingedSite_raw,
-      sheafifiedRestriction] using ha.symm
   rw [show (asIso
       (referenceRaw.toRingedSite.canonical.app (op leftContext)).right).symm.inv =
         (referenceRaw.toRingedSite.canonical.app (op leftContext)).right by
       simpa only [Iso.symm_inv, asIso_hom]]
-  slice_lhs 2 3 => rw [hnat]
   rw [show (asIso
       (referenceRaw.toRingedSite.canonical.app (op overlapContext)).right).symm.hom =
         inv (referenceRaw.toRingedSite.canonical.app (op overlapContext)).right by
       simpa only [Iso.symm_hom, asIso_inv]]
-  simp only [Category.assoc]
-  simp only [IsIso.hom_inv_id_assoc]
+  slice_lhs 2 4 => rw [canonical_restriction_conjugation]
   rw [referenceRaw_restrictionStable]
   apply ConcreteCategory.hom_ext
   intro a
