@@ -43,7 +43,7 @@ jobs:
           tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 
           out=".tmp/archsig-practical-rust-service"
-          jq -e '.conclusion == "NO_MEASURED_H1_OBSTRUCTION_UNDER_PROFILE"' \
+          jq -e '.conclusion == "AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE"' \
             "$out/base/archsig-analysis-summary.json"
           jq -e '.conclusion == "MEASURED_NONGLUING_RESIDUAL_CLASS"' \
             "$out/head/archsig-analysis-summary.json"
@@ -87,14 +87,16 @@ jobs:
             --law-surface tools/archsig/tests/fixtures/ag_measurement/law_surface_ag_v052.json \
             --out-dir "$archsig_measurement_dir/gate-smoke"
 
+          gate_status=0
           cargo run --manifest-path tools/archsig/Cargo.toml -- gate \
             --packet "$archsig_measurement_dir/gate-smoke/archsig-measurement-packet.json" \
             --policy tools/archsig/tests/fixtures/ag_measurement/gate_policy_conservative.json \
-            --out "$archsig_measurement_dir/archsig-gate-report.json"
+            --out "$archsig_measurement_dir/archsig-gate-report.json" || gate_status=$?
+          test "$gate_status" -eq 1
 
           jq -e '
             .schema == "archsig-gate-report/v0.5.4"
-            and .decision == "PASS_WITHIN_GATE_POLICY"
+            and .decision == "BLOCKED_BY_GATE_POLICY"
             and ([.ruleOutcomes[]? | select(.scope == "absolute" and .status == "evaluated")] | length == 1)
           ' "$archsig_measurement_dir/archsig-gate-report.json"
 
