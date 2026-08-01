@@ -116,7 +116,7 @@ Method / line
 |---|---|
 | Direct Evidence | 問題の直接根拠になったsource |
 | Boundary Participant | 不一致境界の片側を構成するsource |
-| Candidate Change Point | ArchSigまたはRepairPlanが変更候補として明示したsource |
+| Candidate Change Point | ArchSigのcomputed repair-pathが変更候補として明示したsource |
 | Validated Repair | target stateを再計測し、選択されたobstructionが解消されたsource |
 
 ---
@@ -828,7 +828,7 @@ line 142
 
 ### Candidate Change Point
 
-ArchSigのrepair targetやRepairPlanが明示したAtom・source。
+ArchSigのcomputed repair-pathが明示したAtom・source。
 
 ```text
 CANDIDATE CHANGE POINT

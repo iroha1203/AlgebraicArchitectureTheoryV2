@@ -35,6 +35,5 @@ pub struct DerivedSagaOverlapV1 {
 pub struct DerivedSagaTripleV1 {
     pub id: String,
     pub overlap_refs: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub archmap_context_ref: Option<String>,
+    pub archmap_atom_refs: Vec<String>,
 }

@@ -317,7 +317,13 @@ fn cli_projects_archsig_measurement_packet_to_sft_input_boundary() {
             "evaluator": "ag.cech-obstruction",
             "status": "computed",
             "value": {"H0": 1, "H1": 1},
-            "representation": {"dimensions": {"H0": 1, "H1": 1}}
+            "representation": {"dimensions": {"H0": 1, "H1": 1}},
+            "measuredCechVerdictEcho": {
+                "evaluator": "ag.cech-obstruction",
+                "certRef": "computedInvariants/cech-cohomology:profile:test-handoff",
+                "h1ClassNonzero": true,
+                "note": "separate structural verdict echo"
+            }
         }],
         "analyticReadings": [{
             "readingId": "theorem-candidate:transfer-lower-bound:test",

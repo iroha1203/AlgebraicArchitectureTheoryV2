@@ -22,46 +22,77 @@ pub(crate) fn derive_saga_complex_from_normalized(
         .map(|cover| cover.context_ids.clone())
         .unwrap_or_default();
     let chart_set = charts.iter().collect::<BTreeSet<_>>();
-    let pairs = normalized
+    let mut pair_sources = BTreeMap::new();
+    for context in normalized
         .contexts
         .iter()
         .filter(|context| chart_set.contains(&context.normalized_context_id))
-        .flat_map(|context| {
-            context
-                .restricts_to
-                .iter()
-                .filter(|target| chart_set.contains(*target))
-                .map(|target| sorted_pair(&context.normalized_context_id, target))
-                .collect::<Vec<_>>()
-        })
-        .collect::<BTreeSet<_>>();
-    let overlaps = pairs
+    {
+        for target in context
+            .restricts_to
+            .iter()
+            .filter(|target| chart_set.contains(*target))
+        {
+            let pair = sorted_pair(&context.normalized_context_id, target);
+            let source = pair_sources
+                .entry(pair)
+                .or_insert_with(|| context.normalized_context_id.clone());
+            if context.normalized_context_id < *source {
+                *source = context.normalized_context_id.clone();
+            }
+        }
+    }
+    let overlaps = pair_sources
         .iter()
-        .map(|(left, right)| DerivedSagaOverlapV1 {
+        .map(|((left, right), source_context)| DerivedSagaOverlapV1 {
             id: derived_overlap_id(left, right),
             left: left.clone(),
             right: right.clone(),
-            archmap_context_ref: None,
+            archmap_context_ref: Some(source_context.clone()),
         })
         .collect::<Vec<_>>();
-    let overlap_ids = pairs
+    let overlap_ids = pair_sources
         .iter()
-        .map(|(left, right)| {
+        .map(|((left, right), _)| {
             (
                 (left.clone(), right.clone()),
                 derived_overlap_id(left, right),
             )
         })
         .collect::<BTreeMap<_, _>>();
-    let context_atoms = normalized
+    let observed_cech_atom_ids = normalized
+        .atoms
+        .iter()
+        .filter(|atom| atom.axis == "cech" && atom.predicate == "sectionValue")
+        .map(|atom| atom.normalized_atom_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let context_observations = normalized
         .contexts
         .iter()
         .filter(|context| chart_set.contains(&context.normalized_context_id))
         .map(|context| {
-            (
-                context.normalized_context_id.clone(),
-                context.atom_ids.iter().cloned().collect::<BTreeSet<_>>(),
-            )
+            let observations = normalized
+                .atoms
+                .iter()
+                .filter(|atom| {
+                    observed_cech_atom_ids.contains(atom.normalized_atom_id.as_str())
+                        && context.atom_ids.contains(&atom.normalized_atom_id)
+                })
+                .filter_map(|atom| {
+                    atom.object
+                        .as_deref()
+                        .map(str::trim)
+                        .filter(|object| !object.is_empty())
+                        .map(|object| (object.to_string(), atom.normalized_atom_id.clone()))
+                })
+                .fold(
+                    BTreeMap::<String, BTreeSet<String>>::new(),
+                    |mut values, (object, atom_id)| {
+                        values.entry(object).or_default().insert(atom_id);
+                        values
+                    },
+                );
+            (context.normalized_context_id.clone(), observations)
         })
         .collect::<BTreeMap<_, _>>();
     let mut triple_overlaps = Vec::new();
@@ -69,15 +100,19 @@ pub(crate) fn derive_saga_complex_from_normalized(
         for second in first + 1..charts.len() {
             for third in second + 1..charts.len() {
                 let contexts = [&charts[first], &charts[second], &charts[third]];
-                let mut shared = context_atoms.get(contexts[0]).cloned().unwrap_or_default();
+                let mut shared_values = context_observations
+                    .get(contexts[0])
+                    .map(|observations| observations.keys().cloned().collect::<BTreeSet<_>>())
+                    .unwrap_or_default();
                 for context in &contexts[1..] {
-                    let Some(atoms) = context_atoms.get(*context) else {
-                        shared.clear();
+                    let Some(observations) = context_observations.get(*context) else {
+                        shared_values.clear();
                         break;
                     };
-                    shared = shared.intersection(atoms).cloned().collect();
+                    let values = observations.keys().cloned().collect::<BTreeSet<_>>();
+                    shared_values = shared_values.intersection(&values).cloned().collect();
                 }
-                if shared.is_empty() {
+                if shared_values.is_empty() {
                     continue;
                 }
                 let pairs_for_face = [
@@ -92,10 +127,25 @@ pub(crate) fn derive_saga_complex_from_normalized(
                 else {
                     continue;
                 };
+                let archmap_atom_refs = shared_values
+                    .iter()
+                    .flat_map(|value| {
+                        contexts.iter().flat_map(|context| {
+                            context_observations
+                                .get(*context)
+                                .and_then(|observations| observations.get(value))
+                                .into_iter()
+                                .flatten()
+                                .cloned()
+                        })
+                    })
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
+                    .collect::<Vec<_>>();
                 triple_overlaps.push(DerivedSagaTripleV1 {
                     id: format!("triple:{}:{}:{}", contexts[0], contexts[1], contexts[2]),
                     overlap_refs,
-                    archmap_context_ref: None,
+                    archmap_atom_refs,
                 });
             }
         }
@@ -140,12 +190,26 @@ pub(crate) fn saga_complex_has_valid_finite_incidence(complex: &DerivedSagaCompl
     charts.len() == complex.charts.len()
         && overlap_ids.len() == complex.overlaps.len()
         && triple_ids.len() == complex.triple_overlaps.len()
-        && complex
-            .overlaps
-            .iter()
-            .all(|overlap| charts.contains(&overlap.left) && charts.contains(&overlap.right))
+        && complex.overlaps.iter().all(|overlap| {
+            charts.contains(&overlap.left)
+                && charts.contains(&overlap.right)
+                && overlap.left != overlap.right
+                && overlap
+                    .archmap_context_ref
+                    .as_deref()
+                    .is_some_and(|context_ref| {
+                        context_ref == overlap.left || context_ref == overlap.right
+                    })
+        })
         && complex.triple_overlaps.iter().all(|triple| {
-            if triple.overlap_refs.len() != 3
+            if triple.archmap_atom_refs.is_empty()
+                || triple
+                    .archmap_atom_refs
+                    .iter()
+                    .collect::<BTreeSet<_>>()
+                    .len()
+                    != triple.archmap_atom_refs.len()
+                || triple.overlap_refs.len() != 3
                 || triple.overlap_refs.iter().collect::<BTreeSet<_>>().len() != 3
                 || triple
                     .overlap_refs
@@ -207,13 +271,13 @@ mod tests {
                     id: id.to_string(),
                     left: left.to_string(),
                     right: right.to_string(),
-                    archmap_context_ref: None,
+                    archmap_context_ref: Some(left.to_string()),
                 })
                 .collect(),
             triple_overlaps: vec![DerivedSagaTripleV1 {
                 id: "t".to_string(),
                 overlap_refs: vec!["e1".to_string(), "e2".to_string(), "e3".to_string()],
-                archmap_context_ref: None,
+                archmap_atom_refs: vec!["atom:shared".to_string()],
             }],
             archmap_cover_ref: None,
             enumeration_complete: true,

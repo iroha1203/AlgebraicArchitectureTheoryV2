@@ -70,7 +70,7 @@ Wave 1  AAT 全面リライト(AG 版第I〜X部+付録+status)
           + ArchSig の「概念・責務境界」先行増強(版数非依存の章のみ)
 Wave 2  SFT v2 リライト — 発火条件: SFT P4/P5 完了(README / interface の v2 同期)
 Wave 3  ArchSig 製品マニュアル完成 — 発火条件: ArchSig v0.5.0 出荷
-          (compare / gate、単一契約版数、SAGA evaluator、repair-plan)
+          (compare / gate、単一契約版数、SAGA evaluator)
 ```
 
 Wave 0 と Wave 1 が今回の実作業(Claude 直接実装、§9)。Wave 2 / 3 は構成と
@@ -317,7 +317,7 @@ sitemap / llms.txt は新ルートのみ列挙する。
 ## 7. Wave 3: ArchSig 製品マニュアル完成(発火条件付き・構成のみ固定)
 
 発火条件: ArchSig v0.5.0 出荷(compare / gate 一本化、単一契約版数 `<name>/v0.5.0`、
-SAGA evaluator、`archsig-repair-plan/v1`)。
+SAGA evaluator)。
 
 ### 7.1 位置づけ(2026-07-05 理想系議論で更新)
 
@@ -371,7 +371,7 @@ ArchSig は Skill-first であり、一次オペレーターは LLM エージェ
                            最大の参入障壁を正面から扱う(新設)
 /archsig/analyses/         evaluator カタログ+理論 anchor(SAGA evaluator 3 種を追加)
 /archsig/manual/           artifact の読み方: measurement packet、summary、viewer、
-                           repair-plan、gate 結果。「SAFE_WITHIN_POLICY を読む」を中心に。
+                           comparison、gate 結果。「SAFE_WITHIN_POLICY を読む」を中心に。
                            タスク別レシピ(CI ゲート / PR レビュー / リファクタ計画)を含む
 /archsig/reference/        CLI(archmap / law-policy / analyze / compare / gate /
                            schema-catalog)、schema、移行表(旧版との互換なしの明記)、
@@ -381,7 +381,7 @@ ArchSig は Skill-first であり、一次オペレーターは LLM エージェ
 
 - 製品マニュアルの密度基準: 各章に「実行できるコマンド or 読める artifact 実例」が
   最低 1 つあること。H2 フラット構成を廃し、手順・例・境界を H3 で構造化する。
-- SAGA の現場接続(第X部 ↔ repair-plan / SAGA evaluator)がマニュアルの目玉。
+- SAGA の現場接続(第X部 ↔ SAGA evaluator)がマニュアルの目玉。
   Wave 1 の AAT SAGA 章と相互リンクする。
 - FieldSig は製品マニュアル化しない。ArchSig / ArchView / FieldSig の三分業図を
   landing に置き、FieldSig は「進化計測レイヤー」として 1 節の予告に留める

@@ -8845,7 +8845,7 @@ fn practical_rust_service_example_runs_current_analyze() {
         .expect("structural verdict rows");
     assert_eq!(
         verdict_rows.len(),
-        3,
+        4,
         "base act carries the cech row plus the ArchMap-derived SAGA rows"
     );
     assert!(
@@ -8876,7 +8876,7 @@ fn practical_rust_service_example_runs_current_analyze() {
         summary["conclusion"],
         ARCHSIG_SAGA_REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
     );
-    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 3);
+    assert_eq!(summary["structuralVerdictSummary"]["rowCount"], 4);
     assert_eq!(summary["structuralVerdictSummary"]["nonTerminalCount"], 0);
 
     assert_eq!(manifest["schema"], "archsig-run-manifest/v0.5.4");
@@ -13617,7 +13617,7 @@ fn cli_analyze_saga_descent_faults_on_unobserved_section() {
 }
 
 #[test]
-fn cli_analyze_saga_descent_faults_on_unbound_mismatch_edge() {
+fn cli_analyze_saga_descent_measures_observed_mismatch_edge_without_law_witness_union() {
     let packet = saga_derivation_fault_packet(
         "ag-saga-derivation-fault-unbound-mismatch",
         |archmap| {
@@ -13633,7 +13633,20 @@ fn cli_analyze_saga_descent_faults_on_unbound_mismatch_edge() {
         },
         None,
     );
-    assert_derivation_fault(&packet, "no cech witness vocabulary");
+    let membership = saga_row(&packet, "saga.residual-boundary-membership");
+    assert_eq!(membership["verdict"], "measured_zero");
+    let derivation = packet["computedInvariants"]
+        .as_array()
+        .expect("computed invariants")
+        .iter()
+        .find(|row| row["invariantId"] == "saga-descent:residual-derivation")
+        .expect("residual derivation invariant");
+    assert_eq!(derivation["residualDerivation"]["derived"], true);
+    assert!(
+        derivation["residualDerivation"]["edges"]
+            .as_array()
+            .is_some_and(|edges| edges.iter().any(|edge| edge["value"] == 1))
+    );
 }
 
 #[test]

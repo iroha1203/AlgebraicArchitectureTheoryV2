@@ -1239,6 +1239,7 @@ fn validate_handoff_nested_fields(
         "transferMeasurementPairing",
         "transferResidue",
         "wassersteinTransferCost",
+        "measuredCechVerdictEcho",
         "coverageStatus",
         "dimension",
         "edgeCount",

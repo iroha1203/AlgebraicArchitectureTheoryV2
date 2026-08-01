@@ -1159,8 +1159,13 @@ pub fn build_foundation_measurement_packet_v1(
             analytic_readings.extend(measurement.analytic_readings);
             assumptions.extend(measurement.assumptions);
         } else if evaluator == "ag.saga-descent" {
-            let measurement =
-                evaluate_saga_descent_v1(normalized, &profile, &derived_complex, Some(law_surface));
+            let measurement = evaluate_saga_descent_v1(
+                normalized,
+                &profile,
+                &derived_complex,
+                Some(law_surface),
+                execution_plan.as_ref(),
+            );
             computed_invariants.extend(measurement.computed_invariants);
             assumptions.extend(measurement.assumptions);
             structural_verdict.extend(measurement.structural_verdict);
@@ -11494,6 +11499,16 @@ pub(crate) fn observe_cech_edge(
         })
         .collect::<Vec<_>>();
     if !explicit_support.is_empty() {
+        if explicit_support
+            .iter()
+            .any(|atom| atom.source_refs.is_empty())
+        {
+            return CechEdgeObservationV1 {
+                value: 0,
+                support_atom_refs: Vec::new(),
+                observed: false,
+            };
+        }
         let value = explicit_support.iter().any(|atom| {
             atom.object
                 .as_deref()
@@ -11516,6 +11531,7 @@ pub(crate) fn observe_cech_edge(
     let section_values = |atoms: &[&NormalizedAtomV2]| {
         atoms
             .iter()
+            .filter(|atom| !atom.source_refs.is_empty())
             .filter_map(|atom| atom.object.as_deref())
             .map(str::trim)
             .filter(|value| !value.is_empty())
@@ -11533,6 +11549,7 @@ pub(crate) fn observe_cech_edge(
             .filter(|atom| {
                 atom.axis == "cech"
                     && atom.predicate == "sectionValue"
+                    && !atom.source_refs.is_empty()
                     && (atom.subject == left || atom.subject == right)
             })
             .map(|atom| atom.normalized_atom_id.clone())

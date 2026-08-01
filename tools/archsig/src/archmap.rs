@@ -523,26 +523,26 @@ fn check_archmap_v2_atom_ids(document: &ArchMapDocumentV2) -> ValidationCheck {
 fn check_archmap_v2_no_diagnostic_shortcuts(document: &ArchMapDocumentV2) -> ValidationCheck {
     let mut examples = Vec::new();
     for atom in &document.atoms {
-        if let Some(token) = diagnostic_shortcut_token(&atom.id) {
-            examples.push(generic_validation_example(
-                &atom.id,
-                &format!("id:{token}"),
-                "ArchMap v2 atom ids must not pre-author diagnostic conclusions",
-            ));
+        let mut fields = vec![("id", atom.id.as_str())];
+        if !atom.axis.trim().is_empty() {
+            fields.push(("axis", atom.axis.as_str()));
         }
         if let Some(predicate) = atom.predicate.as_deref() {
-            if let Some(token) = diagnostic_shortcut_token(predicate) {
+            fields.push(("predicate", predicate));
+        }
+        for (field, value) in fields {
+            if let Some(token) = diagnostic_shortcut_token(value) {
                 examples.push(generic_validation_example(
                     &atom.id,
-                    &format!("predicate:{token}"),
-                    "ArchMap v2 atom predicates must stay observational; diagnostic conclusions belong to ArchSig",
+                    &format!("{field}:{token}"),
+                    "ArchMap v2 observation fields must not pre-author diagnostic conclusions",
                 ));
             }
         }
     }
     check_from_examples(
         "archmap-schema052-no-diagnostic-shortcuts",
-        "ArchMap v2 atom id / predicate fields do not pre-author diagnostic conclusions",
+        "ArchMap v2 atom observation fields do not pre-author diagnostic conclusions",
         examples,
     )
 }
@@ -700,6 +700,18 @@ fn check_archmap_v2_atom_axis_predicate_vocabulary(
                     &atom.axis,
                     "ArchMap v2 atom axis must be in the compiled observation-axis vocabulary",
                 ));
+            } else if atom.predicate.as_deref().is_none_or(|predicate| {
+                !canonical_non_ag_observation_predicate(atom.axis.as_str(), predicate)
+            }) {
+                examples.push(generic_validation_example(
+                    &atom.id,
+                    &format!(
+                        "{}/{}",
+                        atom.axis,
+                        atom.predicate.as_deref().unwrap_or("<missing>")
+                    ),
+                    "ArchMap v2 non-AG atom axis/predicate pair must be in the compiled observation vocabulary",
+                ));
             }
             continue;
         };
@@ -726,6 +738,75 @@ fn check_archmap_v2_atom_axis_predicate_vocabulary(
     );
     check.metric = Some(vocabulary.vocabulary_id);
     check
+}
+
+fn canonical_non_ag_observation_predicate(axis: &str, predicate: &str) -> bool {
+    match axis {
+        "application" => matches!(
+            predicate,
+            "authorizesPayment"
+                | "evaluatesPolicyCatalog"
+                | "placesOrder"
+                | "plansShipment"
+                | "reservesInventory"
+        ),
+        "boundary" => matches!(
+            predicate,
+            "catalogLookupBoundary"
+                | "inventoryReservationBoundary"
+                | "paymentAuthorizationBoundary"
+                | "policyRuleCatalogBoundary"
+        ),
+        "cover" => predicate == "coSelectedInCover",
+        "dataflow" => matches!(
+            predicate,
+            "appendsDomainEvent"
+                | "booksCaptureFor"
+                | "booksPricedOrderFrom"
+                | "createsShipmentPlan"
+                | "decrementsAvailableInventory"
+                | "recordsAuthorization"
+        ),
+        "effect" => predicate == "effect",
+        "restriction" => predicate == "dependsOn",
+        "runtime" => matches!(
+            predicate,
+            "calls"
+                | "component"
+                | "concurrentReservationTrace"
+                | "demoCheckoutTrace"
+                | "presentsArchSigDemo"
+        ),
+        "semantic" => matches!(
+            predicate,
+            "commerceFulfillmentWorkflow"
+                | "policyRuleSpecCatalog"
+                | "reads"
+                | "reconciliationResidue"
+        ),
+        "specification" => matches!(
+            predicate,
+            "authorizationKeyedByOrderId"
+                | "hazmatUsesGroundCarrier"
+                | "platformBoundIncludesPorts"
+                | "rejectsEmptyOrder"
+                | "requiresPositiveQuantity"
+                | "reservationCarriesWarehouse"
+        ),
+        "state" => matches!(
+            predicate,
+            "OrderStatus" | "PaymentStatus" | "ReservationStatus" | "ShipmentStatus"
+        ),
+        "static" => matches!(
+            predicate,
+            "component"
+                | "dependsOn"
+                | "implements"
+                | "tripleOverlapWitness"
+                | "quadrupleOverlapWitness"
+        ),
+        _ => false,
+    }
 }
 
 fn check_archmap_v2_atom_shapes(document: &ArchMapDocumentV2) -> ValidationCheck {

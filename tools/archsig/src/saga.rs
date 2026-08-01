@@ -26,7 +26,7 @@ pub(crate) struct SagaGroundedMeasurementV1 {
     pub assumptions: Vec<AgAssumptionLedgerEntryV1>,
 }
 
-/// 観測(選択 cover の cech sectionValue)と法曲面(cech witness vocabulary)から
+/// 観測(選択 cover の cech sectionValue)と選択された法の実行計画から
 /// 導出した residual。overlap ごとの support は、その edge の観測 mismatch が非零のとき
 /// 共有導出変数の単元集合、零のとき空集合になる。
 pub(crate) const DERIVED_RESIDUAL_VARIABLE: &str = "cech:section-mismatch";
@@ -54,26 +54,12 @@ fn selected_cover_context_ids(
         .unwrap_or_default()
 }
 
-/// 法曲面の全 law を走査し、cech witness vocabularyを集める。context pairは
-/// ArchMapのselected cover/restrictionから導出し、法曲面はinstance-specificなedgeを持たない。
-fn cech_witness_variables(law_surface: &LawEquationSurfaceV1) -> BTreeSet<String> {
-    law_surface
-        .laws
-        .iter()
-        .flat_map(|law| law.witness_variables.iter())
-        .filter(|witness| {
-            witness.binding.axis.as_deref() == Some("cech")
-                && witness.binding.predicate.as_deref() == Some("sectionValue")
-        })
-        .map(|witness| witness.variable.clone())
-        .collect()
-}
-
 pub(crate) fn derive_residual(
     normalized: &NormalizedArchMapV2,
     profile: &MeasurementProfileV1,
     plan: &DerivedSagaComplexV1,
     law_surface: &LawEquationSurfaceV1,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> Result<DerivedResidualV1, String> {
     if profile.coefficient != "F2" {
         return Err(format!(
@@ -87,6 +73,16 @@ pub(crate) fn derive_residual(
             "selected cover {} does not resolve to a normalized cover",
             profile.cover_ref
         ));
+    }
+    if let Some(execution_plan) = execution_plan {
+        if execution_plan.evaluator != "ag.saga-descent"
+            || execution_plan.selected_law_id.trim().is_empty()
+        {
+            return Err(
+                "saga-descent residual derivation requires the selected law execution plan"
+                    .to_string(),
+            );
+        }
     }
     let selected_set = selected.iter().map(String::as_str).collect::<BTreeSet<_>>();
     for chart in &plan.complex.charts {
@@ -103,6 +99,12 @@ pub(crate) fn derive_residual(
         .iter()
         .map(String::as_str)
         .collect::<BTreeSet<_>>();
+    if plan.complex.overlaps.is_empty() {
+        return Err(format!(
+            "selected cover {} has no observed restriction edges for saga-descent residual derivation",
+            profile.cover_ref
+        ));
+    }
     let mut seen_overlap_ids = BTreeSet::new();
     let mut seen_overlap_pairs = BTreeSet::new();
     for overlap in &plan.complex.overlaps {
@@ -121,7 +123,6 @@ pub(crate) fn derive_residual(
             ));
         }
     }
-    let witness_variables = cech_witness_variables(law_surface);
     let mut supports = BTreeMap::new();
     let mut edges = Vec::new();
     for overlap in &plan.complex.overlaps {
@@ -132,16 +133,33 @@ pub(crate) fn derive_residual(
                 overlap.id, overlap.left, overlap.right
             ));
         }
+        let Some(source_context) = overlap.archmap_context_ref.as_deref() else {
+            return Err(format!(
+                "overlap {} has no ArchMap source context provenance",
+                overlap.id
+            ));
+        };
+        let target_context = if source_context == overlap.left {
+            overlap.right.as_str()
+        } else if source_context == overlap.right {
+            overlap.left.as_str()
+        } else {
+            return Err(format!(
+                "overlap {} ArchMap source context {} is not one of its endpoints",
+                overlap.id, source_context
+            ));
+        };
         let restriction_observed = normalized.contexts.iter().any(|context| {
-            (context.normalized_context_id == overlap.left
-                && context.restricts_to.contains(&overlap.right))
-                || (context.normalized_context_id == overlap.right
-                    && context.restricts_to.contains(&overlap.left))
+            context.normalized_context_id == source_context
+                && context
+                    .restricts_to
+                    .iter()
+                    .any(|target| target == target_context)
         });
         if !restriction_observed {
             return Err(format!(
-                "overlap {} has no observed restriction between {} and {}",
-                overlap.id, overlap.left, overlap.right
+                "overlap {} has no observed directed restriction {} -> {}",
+                overlap.id, source_context, target_context
             ));
         }
         let observation = observe_cech_edge(normalized, &overlap.left, &overlap.right);
@@ -152,17 +170,6 @@ pub(crate) fn derive_residual(
             ));
         }
         let value = observation.value;
-        let witness = if value == 1 {
-            witness_variables.iter().cloned().collect::<Vec<_>>()
-        } else {
-            Vec::new()
-        };
-        if value == 1 && witness_variables.is_empty() {
-            return Err(format!(
-                "measured section mismatch on overlap {} has no cech witness vocabulary in the law surface",
-                overlap.id
-            ));
-        }
         // Čech の係数はスカラーであり、mismatch した全 edge は同じ selected section family の
         // 1-cochain を成す。共有変数がその結合を表し、edge ごとの witness variable は
         // provenance として derivation record に残る。
@@ -175,8 +182,9 @@ pub(crate) fn derive_residual(
             "overlapRef": overlap.id,
             "leftContextRef": overlap.left,
             "rightContextRef": overlap.right,
+            "archmapContextRef": source_context,
             "value": value,
-            "witnessVariables": witness,
+            "witnessVariables": Vec::<String>::new(),
             "supportAtomRefs": observation.support_atom_refs
         }));
         supports.insert(overlap.id.clone(), support);
@@ -242,7 +250,7 @@ pub(crate) fn evaluate_saga_grounded_v1(
         });
     let coefficient_is_f2 = profile.coefficient == "F2";
     let residual_derivation_fault =
-        derive_residual(normalized, profile, plan, law_surface).is_err();
+        derive_residual(normalized, profile, plan, law_surface, None).is_err();
     let defect_support_size = source
         .chart_defects
         .iter()
@@ -588,12 +596,19 @@ pub(crate) fn evaluate_saga_descent_v1(
     profile: &MeasurementProfileV1,
     plan: &DerivedSagaComplexV1,
     law_surface: Option<&LawEquationSurfaceV1>,
+    execution_plan: Option<&LawExecutionPlanV1>,
 ) -> SagaDescentMeasurementV1 {
-    let derived = match law_surface {
-        None => {
+    let derived = match (law_surface, execution_plan) {
+        (Some(surface), Some(execution_plan)) => {
+            derive_residual(normalized, profile, plan, surface, Some(execution_plan))
+        }
+        (Some(_), None) => Err(
+            "saga-descent requires the selected law execution plan for residual derivation"
+                .to_string(),
+        ),
+        (None, _) => {
             Err("saga-descent requires a supplied law surface for residual derivation".to_string())
         }
-        Some(surface) => derive_residual(normalized, profile, plan, surface),
     };
     let derived = match derived {
         Err(fault) => return descent_not_computed(plan, fault),
@@ -1147,7 +1162,7 @@ mod tests {
     fn derive_residual_faults_on_overlap_endpoint_outside_charts() {
         let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
         plan.complex.charts.retain(|chart| chart != "ctx:order");
-        let fault = derive_residual(&normalized, &profile, &plan, &law_surface)
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface, None)
             .expect_err("overlap endpoint outside charts must fail closed, not panic");
         assert!(
             fault.contains("must be declared in complex.charts"),
@@ -1160,7 +1175,7 @@ mod tests {
         let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
         let duplicate_id = plan.complex.overlaps[0].id.clone();
         plan.complex.overlaps[1].id = duplicate_id;
-        let fault = derive_residual(&normalized, &profile, &plan, &law_surface).expect_err(
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface, None).expect_err(
             "duplicate overlap ids must fail closed instead of overwriting residual edges",
         );
         assert!(
@@ -1176,11 +1191,23 @@ mod tests {
         duplicate.id = "overlap:duplicate-pair".to_string();
         std::mem::swap(&mut duplicate.left, &mut duplicate.right);
         plan.complex.overlaps.push(duplicate);
-        let fault = derive_residual(&normalized, &profile, &plan, &law_surface)
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface, None)
             .expect_err("duplicate unordered chart pairs must fail closed");
         assert!(
             fault.contains("appears more than once"),
             "fault must name the duplicated pair: {fault}"
+        );
+    }
+
+    #[test]
+    fn derive_residual_faults_when_selected_cover_has_no_restriction_edges() {
+        let (normalized, profile, mut plan, law_surface) = derivation_test_inputs();
+        plan.complex.overlaps.clear();
+        let fault = derive_residual(&normalized, &profile, &plan, &law_surface, None)
+            .expect_err("an empty selected one-skeleton must remain typed silence");
+        assert!(
+            fault.contains("no observed restriction edges"),
+            "fault must identify the missing observed edge set: {fault}"
         );
     }
 }
