@@ -46,8 +46,7 @@ The executable contract fixes the exact declaration type.
 -/
 theorem canonical_restriction_conjugation
     {source target : referenceSite.category} (f : source ⟶ target)
-    [IsIso (referenceRaw.toRingedSite.canonical.app (op source))]
-    [IsIso (referenceRaw.toRingedSite.canonical.app (op target))] :
+    [IsIso (referenceRaw.toRingedSite.canonical.app (op source))] :
     (referenceRaw.toRingedSite.canonical.app (op target)).right ≫
         sheafifiedRestriction referenceRaw f ≫
         inv (referenceRaw.toRingedSite.canonical.app (op source)).right =

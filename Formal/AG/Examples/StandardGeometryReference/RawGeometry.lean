@@ -1953,7 +1953,7 @@ private noncomputable def baseConfigurationVal :
   | .rightInverse => 0
 
 /-- SD0 internal proof that the fixed base values satisfy the two fixture relations. -/
-private theorem baseConfigurationVal_property (r : Bool) :
+private theorem base_configuration_val_property (r : Bool) :
     MvPolynomial.aeval baseConfigurationVal
       (referenceRelationPolynomial baseContext r) = 0 := by
   cases r
@@ -1966,7 +1966,7 @@ private theorem baseConfigurationVal_property (r : Bool) :
 private noncomputable def baseConfiguration :
     (referenceRelationFamily baseContext).Configuration AmbientRing where
   val := baseConfigurationVal
-  property := baseConfigurationVal_property
+  property := base_configuration_val_property
 
 /-- SD0 internal quotient map represented by the fixed base configuration. -/
 private noncomputable def baseRawToAmbientAlgHom :
@@ -2141,7 +2141,7 @@ private noncomputable def leftConfigurationVal :
   | .rightInverse => 0
 
 /-- SD0 internal proof that the fixed left values satisfy the two fixture relations. -/
-private theorem leftConfigurationVal_property (r : Bool) :
+private theorem left_configuration_val_property (r : Bool) :
     MvPolynomial.aeval leftConfigurationVal
       (referenceRelationPolynomial leftContext r) = 0 := by
   cases r
@@ -2160,7 +2160,7 @@ private noncomputable def leftConfiguration :
     (referenceRelationFamily leftContext).Configuration
       (Localization.Away leftGenerator) where
   val := leftConfigurationVal
-  property := leftConfigurationVal_property
+  property := left_configuration_val_property
 
 /-- SD0 internal quotient map represented by the fixed left configuration. -/
 private noncomputable def leftRawToLocalizationAlgHom :
@@ -2341,7 +2341,7 @@ private noncomputable def rightConfigurationVal :
   | .rightInverse => IsLocalization.Away.invSelf rightGenerator
 
 /-- SD0 internal proof that the fixed right values satisfy the two fixture relations. -/
-private theorem rightConfigurationVal_property (r : Bool) :
+private theorem right_configuration_val_property (r : Bool) :
     MvPolynomial.aeval rightConfigurationVal
       (referenceRelationPolynomial rightContext r) = 0 := by
   cases r
@@ -2363,7 +2363,7 @@ private noncomputable def rightConfiguration :
     (referenceRelationFamily rightContext).Configuration
       (Localization.Away rightGenerator) where
   val := rightConfigurationVal
-  property := rightConfigurationVal_property
+  property := right_configuration_val_property
 
 /-- SD0 internal quotient map represented by the fixed right configuration. -/
 private noncomputable def rightRawToLocalizationAlgHom :
@@ -2600,7 +2600,7 @@ private noncomputable def overlapConfigurationVal :
   | .rightInverse => overlapRightInverse
 
 /-- SD0 internal proof that the fixed overlap values satisfy the two fixture relations. -/
-private theorem overlapConfigurationVal_property (r : Bool) :
+private theorem overlap_configuration_val_property (r : Bool) :
     MvPolynomial.aeval overlapConfigurationVal
       (referenceRelationPolynomial overlapContext r) = 0 := by
   cases r
@@ -2626,7 +2626,7 @@ private noncomputable def overlapConfiguration :
     (referenceRelationFamily overlapContext).Configuration
       (Localization.Away overlapGenerator) where
   val := overlapConfigurationVal
-  property := overlapConfigurationVal_property
+  property := overlap_configuration_val_property
 
 /-- SD0 internal quotient map represented by the fixed overlap configuration. -/
 private noncomputable def overlapRawToLocalizationAlgHom :
