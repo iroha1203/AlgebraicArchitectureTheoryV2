@@ -73,6 +73,50 @@ fn cli_analyze_rejects_input_output_aliases() {
 }
 
 #[test]
+fn cli_analyze_rejects_existing_validation_outputs() {
+    let out_dir = temp_dir("ag-measurement-existing-validation-output");
+    let root = ag_measurement_root();
+    let archmap_validation = out_dir.join("archmap-validation.json");
+    let law_policy_validation = out_dir.join("law-policy-validation.json");
+    fs::write(&archmap_validation, "archmap-sentinel").expect("archmap sentinel writes");
+    fs::write(&law_policy_validation, "law-policy-sentinel")
+        .expect("law policy sentinel writes");
+
+    let output = run_sig0_output(&[
+        "analyze",
+        "--archmap",
+        root.join("archmap_v2.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy_ag.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--measurement-profile",
+        root.join("measurement_profile_ag.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--law-surface",
+        root.join("law_surface_ag_v052.json")
+            .to_str()
+            .expect("law surface path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory is utf-8"),
+    ]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("archmap-validation.json"));
+    assert_eq!(
+        fs::read_to_string(archmap_validation).expect("archmap sentinel reads"),
+        "archmap-sentinel"
+    );
+    assert_eq!(
+        fs::read_to_string(law_policy_validation).expect("law policy sentinel reads"),
+        "law-policy-sentinel"
+    );
+}
+
+#[test]
 fn cli_analyze_v2_writes_measurement_packet_foundation() {
     let out_dir = temp_dir("ag-measurement-analyze");
     let root = ag_measurement_root();
