@@ -105,7 +105,7 @@ tools/archsig/examples/practical-rust-service/scripts/run_archsig_demo.sh
 The script walks five acts and prints one conclusion per step:
 
 ```text
-[analyze base]           REPAIR_GLUES_WITHIN_SELECTED_COMPLEX
+[analyze base]           AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE
 [saga base]              measured_zero         (derived residual in B1)
 [grounding head]         measured_zero         (every chart's own law holds)
 [descent head]           measured_nonzero      (residual outside B1)
@@ -139,7 +139,7 @@ features; each state has a matching ArchMap observation:
 
 | State | Build | ArchMap | analyze conclusion |
 | --- | --- | --- | --- |
-| base (main) | `cargo run` | `archmap/archmap.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
+| base (main) | `cargo run` | `archmap/archmap.json` | `AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE` |
 | head (PR under review) | `cargo run --features psp-compliance` | `archmap/archmap_head.json` | `MEASURED_NONGLUING_RESIDUAL` |
 | repaired | `cargo run --features settlement-authority` | `archmap/archmap_repaired.json` | `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` |
 

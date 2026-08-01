@@ -435,7 +435,7 @@ fn fixture_r13_two_vertex_circle_nerve_body_worked_example() {
     // This reverse-edge body example is locked independently; the analyzer
     // golden for a measured Cech circle is the R9 test below.
     const CIRCLE_NERVE_FIXTURE_SCHEMA: &str = "ag-circle-nerve-fixture/v0.5.5";
-    let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v052.json"));
+    let fixture = read_json(&ag_measurement_root().join("circle_nerve_two_vertex_body_v055.json"));
     assert_eq!(fixture["schema"], CIRCLE_NERVE_FIXTURE_SCHEMA);
     assert_eq!(fixture["provenance"]["kind"], "body-worked-example");
     assert_eq!(fixture["coefficient"]["ring"], "Z");

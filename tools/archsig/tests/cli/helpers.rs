@@ -1940,7 +1940,11 @@ fn cli_analyze_emits_measurement_view_model_typed_sections() {
     // class support is undirected and carries no orientation channel.
     let class_support = &view_model["classSupport"];
     assert_eq!(class_support["undirected"], true);
-    assert!(class_support["classNonzero"].is_boolean());
+    assert_eq!(
+        class_support["classNonzero"],
+        Value::Null,
+        "the practical head's unmeasured Cech class must remain typed silence in the view model"
+    );
     assert!(class_support["representativeEdgeRefs"].is_array());
     for forbidden in ["direction", "rotation", "orientation", "magnitude"] {
         assert!(

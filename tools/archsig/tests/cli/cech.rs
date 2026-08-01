@@ -586,8 +586,14 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
     assert_eq!(cech_row["verdictData"]["nonZero"], false);
     assert_eq!(cech["status"], "not_computed");
     assert_eq!(cech["methodStatus"], "triple_overlap_faces_unmeasured");
-    assert_eq!(cech["observedCocycle"]["classNonzero"], false);
+    assert_eq!(cech["observedCocycle"]["classNonzero"], Value::Null);
     assert_eq!(cech_row["verdictData"]["certRef"], Value::Null);
+    let view_model = read_json(&out_dir.join("archsig-measurement-view-model.json"));
+    assert_eq!(
+        view_model["classSupport"]["classNonzero"],
+        Value::Null,
+        "an unmeasured Cech row must not project classNonzero=false into the view model"
+    );
     let faces = cech["coverNerveProjection"]["faces"]
         .as_array()
         .expect("cover nerve faces are array");

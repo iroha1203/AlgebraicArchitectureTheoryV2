@@ -230,6 +230,15 @@ fn evaluate_cech_obstruction_v1(
         ))
     };
 
+    let class_nonzero_reading = if empty_selected_scope
+        || sections_not_observed
+        || triple_overlap_faces_not_measured
+    {
+        Value::Null
+    } else {
+        json!(h1_class_nonzero)
+    };
+
     CechMeasurementV1 {
         verdict,
         zero,
@@ -303,7 +312,7 @@ fn evaluate_cech_obstruction_v1(
                     }
                 },
                 "observedCocycle": {
-                    "classNonzero": h1_class_nonzero,
+                    "classNonzero": class_nonzero_reading,
                     "representative": representative,
                     "mismatchSupportRefs": mismatch_support_refs
                 },

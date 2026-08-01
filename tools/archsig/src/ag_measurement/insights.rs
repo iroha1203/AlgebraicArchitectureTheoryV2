@@ -1437,8 +1437,7 @@ fn gluing_geometry_projection_v1(
                 .get("observedCocycle")
                 .and_then(|cocycle| cocycle.get("classNonzero"))
                 .and_then(Value::as_bool)
-        })
-        .unwrap_or(false);
+        });
     let cocycle_support_atom_refs = nonzero_edges
         .iter()
         .flat_map(|edge| edge.support_atom_refs.iter().cloned())
@@ -1510,7 +1509,7 @@ fn gluing_geometry_projection_v1(
             "supportEdges": cocycle_support_edges,
             "closureGapEncoding": {
                 "kind": "holonomyLikeGapMarker",
-                "visible": class_nonzero && !nonzero_edges.is_empty(),
+                "visible": class_nonzero == Some(true) && !nonzero_edges.is_empty(),
                 "lineRole": "thick_glowing_dashed_seam",
                 "source": "observedCocycle.classNonzero plus representative support from packet",
                 "nonClaim": "Exploratory restriction-path closure gap only; monodromy verdict is not generated."

@@ -982,30 +982,34 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         serde_json::to_vec_pretty(&source_archmap).expect("source ArchMap serializes"),
     )
     .expect("source ArchMap writes");
-    let source_run = out_dir.join("source-run");
-    run_sig0(&[
-        "analyze",
-        "--archmap",
-        source_archmap_path.to_str().expect("path is utf-8"),
-        "--law-policy",
-        root.join("law_policy_ag.json")
-            .to_str()
-            .expect("path is utf-8"),
-        "--measurement-profile",
-        test_measurement_profile_path(Path::new(
+    let run_source_analysis = |name: &str| {
+        let target = out_dir.join(name);
+        run_sig0(&[
+            "analyze",
+            "--archmap",
+            source_archmap_path.to_str().expect("path is utf-8"),
+            "--law-policy",
             root.join("law_policy_ag.json")
                 .to_str()
                 .expect("path is utf-8"),
-        ))
-        .to_str()
-        .expect("path is utf-8"),
-        "--law-surface",
-        root.join("law_surface_ag_v052.json")
+            "--measurement-profile",
+            test_measurement_profile_path(Path::new(
+                root.join("law_policy_ag.json")
+                    .to_str()
+                    .expect("path is utf-8"),
+            ))
             .to_str()
             .expect("path is utf-8"),
-        "--out-dir",
-        source_run.to_str().expect("path is utf-8"),
-    ]);
+            "--law-surface",
+            root.join("law_surface_ag_v052.json")
+                .to_str()
+                .expect("path is utf-8"),
+            "--out-dir",
+            target.to_str().expect("path is utf-8"),
+        ]);
+        target
+    };
+    let source_run = run_source_analysis("source-run");
 
     let clone_run_from = |source: &Path, name: &str| {
         let target = out_dir.join(name);
@@ -1024,8 +1028,8 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
     };
     let clone_run = |name: &str| clone_run_from(&source_run, name);
 
-    let identical_base = clone_run("identical-base");
-    let identical_head = clone_run("identical-head");
+    let identical_base = run_source_analysis("identical-base");
+    let identical_head = run_source_analysis("identical-head");
     let identical_out = out_dir.join("identical-compare");
     run_sig0(&[
         "compare",
