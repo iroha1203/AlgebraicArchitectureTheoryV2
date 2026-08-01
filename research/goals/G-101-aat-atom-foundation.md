@@ -1,10 +1,10 @@
 # G-101-aat-atom-foundation — Atom 輸送の opcartesian lift 定理
 
 - `id`: `G-101-aat-atom-foundation`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未起票
+- `tracking issue`: [#3888](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3888)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)
 - `research aim`: doctrine の射の圏 `Doct_U` と pointed 圏 `ExtInst_U` を立て、
   exact 射に沿う package 輸送を opcartesian lift として構成・特徴づけ、輸送データ
