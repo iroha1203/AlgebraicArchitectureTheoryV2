@@ -1,4 +1,4 @@
-import Formal.AG.Examples.StandardGeometryReference.Geometry
+import Formal.AG.Examples.StandardGeometryReference.Scheme
 import Formal.AG.Examples.StandardGeometryReference.EquationGeometry
 import Formal.AG.Examples.StandardGeometryReference.CoefficientChange
 import Formal.AG.Examples.StandardGeometryReference.NegativeFixtures
