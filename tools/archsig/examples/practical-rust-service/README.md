@@ -110,6 +110,10 @@ The script walks five acts and prints one conclusion per step:
 [grounding head]         measured_zero         (every chart's own law holds)
 [descent head]           measured_nonzero      (residual outside B1)
 [harmonic debt head]     0.353553              (quarter-cent essential debt)
+[Cech head]              not_computed
+[Cech head classNonzero] null
+[Cech head echo classNonzero] null
+[Cech head echo certRef] null
 [analyze head]           MEASURED_NONGLUING_RESIDUAL_CLASS
 [compare base->head]     RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA
 [gate head]              BLOCKED_BY_GATE_POLICY

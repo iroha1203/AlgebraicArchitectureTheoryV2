@@ -34,8 +34,10 @@ R9 numeric locks are executable in `cli_r9_numeric_locks_preserve_ag_measurement
 The one-cent drift script asserts the five-act SAGA-staircase lock:
 base `AG_MEASUREMENT_FOUNDATION_READY_UNDER_PROFILE` → head
 `MEASURED_NONGLUING_RESIDUAL_CLASS` (grounding `measured_zero`, residual boundary
-membership `measured_nonzero`, class vocabulary withheld without a derived
-triple face, harmonic-debt lower bound `0.353553`) → gate BLOCK → repaired
+membership `measured_nonzero`, the selected `ag.cech-obstruction` reading remains
+`not_computed` with `classNonzero: null` when its triple face is unmeasured,
+while the SAGA residual class is measured from its checked triple,
+harmonic-debt lower bound `0.353553`) → gate BLOCK → repaired
 `REPAIR_GLUES_WITHIN_SELECTED_COMPLEX` → PASS, including the expected
 comparison codes. The head and repaired runs share the same LawPolicy, law
 surface, and measurement profiles under
