@@ -13,8 +13,8 @@ and the staircase names each step of its failure precisely:
 
 1. **Grounding** — every module satisfies its own displayed money law
    (`DISPLAYED_LAWS_HOLD_ON_SELECTED_CHARTS`). The fixed chart-local observation check is clean.
-2. **Descent** — the residual derived from the observed sections and the
-   law-surface witness bindings has a **nonzero** boundary-membership result
+2. **Descent** — the residual derived from the observed sections under the
+   selected descent law contract has a **nonzero** boundary-membership result
    on the ArchMap-derived 1-skeleton (`MEASURED_NONGLUING_RESIDUAL`). A named
    `Z1/B1` class is emitted only when a derived triple face is actually checked.
 3. **Comparison** — `compare` derives the difference of the head and repaired
@@ -168,9 +168,8 @@ ArchMap cover and observed restriction relations over the eight contexts: the mo
 `ctx:application – ctx:settlement – ctx:infrastructure – ctx:ports`, and
 the policy/runtime edges. The residual is **derived, not supplied**: ArchSig
 compares the observed `cech/sectionValue` atoms across each overlap of the
-loop and finds three mismatching convention boundaries, each bound to a
-law-surface witness variable; the derivation record
-(`saga-descent:residual-derivation`) names the observed atoms and witnesses.
+loop and finds three mismatching convention boundaries; the derivation record
+(`saga-descent:residual-derivation`) names the observed support atoms.
 Odd parity around a closed loop is not a coboundary: boundary membership
 fails. This run's ArchMap does not provide a shared observed face for a checked
 triple, so the class vocabulary remains withheld as a named boundary statement.

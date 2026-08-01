@@ -567,6 +567,27 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
         "Topological Debt Capacity must not add a structural verdict row"
     );
     let cech = invariant_by_id(&packet, "cech-cohomology:profile:ag-default@1");
+    let cech_row = packet["structuralVerdict"]
+        .as_array()
+        .expect("structuralVerdict is array")
+        .iter()
+        .find(|row| row["evaluator"] == "ag.cech-obstruction")
+        .expect("Cech structural verdict is present");
+    assert_eq!(cech_row["verdict"], "not_computed");
+    assert_eq!(
+        cech_row["verdictData"]["methodStatus"],
+        "triple_overlap_faces_unmeasured"
+    );
+    assert_eq!(
+        cech_row["verdictData"]["zero"],
+        false,
+        "a selected triple-overlap face must not be reported as a measured zero"
+    );
+    assert_eq!(cech_row["verdictData"]["nonZero"], false);
+    assert_eq!(cech["status"], "not_computed");
+    assert_eq!(cech["methodStatus"], "triple_overlap_faces_unmeasured");
+    assert_eq!(cech["observedCocycle"]["classNonzero"], false);
+    assert_eq!(cech_row["verdictData"]["certRef"], Value::Null);
     let faces = cech["coverNerveProjection"]["faces"]
         .as_array()
         .expect("cover nerve faces are array");
@@ -650,6 +671,19 @@ fn cli_analyze_v2_cover_nerve_faces_require_packet_triple_overlap_support() {
                     && entry["status"] == "assumed"
             }),
         "triple-overlap faces keep theorem 12.4 forest/no-triple premise assumed"
+    );
+    assert!(
+        packet["assumptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| {
+                entry["theoremRef"] == "part8/B.8.2-triple-overlap-faces"
+                    && entry["assumption"]
+                        == "selected graph-only Cech H1 calculation has no triple-overlap faces"
+                    && entry["status"] == "violated"
+            }),
+        "a triple-overlap face must block the graph-only Cech H1 measurement"
     );
     assert!(
         packet["assumptions"]

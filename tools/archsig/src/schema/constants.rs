@@ -22,17 +22,18 @@ pub const ARCHSIG_COMPARISON_RUNS_NOT_COMPARABLE_WITHOUT_COMPARISON_DATA: &str =
 // Generated evaluator contract IDs are owned by ArchSig's computation layer.
 // Keep this registry as the single source of truth for the IDs emitted into
 // assumption ledgers and comparison readings.
-pub const ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY: &str =
+pub(crate) const ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY: &str =
     "archsig-contract:ag-restriction-compatibility";
-pub const ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION: &str =
+pub(crate) const ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION: &str =
     "archsig-contract:ag-section-factorization";
-pub const ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION: &str =
+pub(crate) const ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION: &str =
     "archsig-contract:law-surface-quotient-sheaf-condition";
-pub const ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION: &str =
+pub(crate) const ARCHSIG_CONTRACT_SAGA_DERIVED_FINITE_COMPLEX_ENUMERATION: &str =
     "archsig-contract:saga-derived-finite-complex-enumeration";
-pub const ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING: &str =
+pub(crate) const ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING: &str =
     "archsig-contract:residual-difference-reading";
-pub const ARCHSIG_GENERATED_CONTRACT_IDS: [&str; 5] = [
+#[cfg(test)]
+pub(crate) const ARCHSIG_GENERATED_CONTRACT_IDS: [&str; 5] = [
     ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY,
     ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
     ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,

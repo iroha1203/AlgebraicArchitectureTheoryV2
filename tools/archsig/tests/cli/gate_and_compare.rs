@@ -951,13 +951,42 @@ fn cli_gate_rejects_duplicate_json_and_input_output_aliases() {
 fn cli_compare_asserts_identical_and_verdict_row_transitions() {
     let out_dir = temp_dir("archsig-compare-positive-transitions");
     let root = ag_measurement_root();
+    let mut source_archmap = read_json(&root.join("archmap_v2.json"));
+    let mut shared_restriction_atom = source_archmap["atoms"]
+        .as_array()
+        .expect("source atoms are array")
+        .iter()
+        .find(|atom| atom["id"] == "atom:order-inventory-restriction")
+        .cloned()
+        .expect("source restriction atom exists");
+    shared_restriction_atom["id"] = json!("atom:shared-order-inventory-restriction");
+    source_archmap["atoms"]
+        .as_array_mut()
+        .expect("source atoms are array")
+        .push(shared_restriction_atom);
+    let shared_atom = source_archmap["contexts"]
+        .as_array_mut()
+        .expect("source contexts are array")
+        .iter_mut()
+        .find(|context| context["id"] == "ctx:shared")
+        .expect("source shared context exists")["atoms"]
+        .as_array_mut()
+        .expect("source shared atoms are array")
+        .iter_mut()
+        .find(|atom| *atom == "atom:order-inventory-restriction")
+        .expect("source shared restriction atom exists");
+    *shared_atom = Value::String("atom:shared-order-inventory-restriction".to_string());
+    let source_archmap_path = out_dir.join("source-archmap.json");
+    fs::write(
+        &source_archmap_path,
+        serde_json::to_vec_pretty(&source_archmap).expect("source ArchMap serializes"),
+    )
+    .expect("source ArchMap writes");
     let source_run = out_dir.join("source-run");
     run_sig0(&[
         "analyze",
         "--archmap",
-        root.join("archmap_v2.json")
-            .to_str()
-            .expect("path is utf-8"),
+        source_archmap_path.to_str().expect("path is utf-8"),
         "--law-policy",
         root.join("law_policy_ag.json")
             .to_str()
@@ -1059,7 +1088,7 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         assert!(!identical_base.join("nested-output").exists());
     }
 
-    let mut verdict_row_archmap = read_json(&root.join("archmap_v2.json"));
+    let mut verdict_row_archmap = source_archmap.clone();
     verdict_row_archmap["atoms"][0]["object"] = json!("changed-object-for-verdict-row");
     let verdict_row_archmap_path = out_dir.join("verdict-row-archmap.json");
     fs::write(
@@ -1257,6 +1286,51 @@ fn cli_compare_asserts_identical_and_verdict_row_transitions() {
         run
     };
     let practical_base = analyze_practical(&practical_base_archmap, "residual-base");
+    let practical_identical_head = clone_run_from(&practical_base, "residual-identical-head");
+    let identical_residual_out = out_dir.join("residual-identical-compare");
+    run_sig0(&[
+        "compare",
+        "--base-run",
+        practical_base.to_str().expect("path is utf-8"),
+        "--head-run",
+        practical_identical_head
+            .to_str()
+            .expect("path is utf-8"),
+        "--out-dir",
+        identical_residual_out
+            .to_str()
+            .expect("path is utf-8"),
+    ]);
+    let identical_residual_report = read_json(
+        &identical_residual_out.join("archsig-comparison-report.json"),
+    );
+    let identical_residual_reading = &identical_residual_report["residualDifferenceReading"];
+    assert_eq!(identical_residual_report["comparability"]["level"], "identical");
+    assert_eq!(
+        identical_residual_reading["status"],
+        "no_residual_change"
+    );
+    assert_eq!(identical_residual_reading["derived"], true);
+    assert_eq!(identical_residual_reading["deltaSupport"], json!([]));
+    assert_eq!(
+        identical_residual_reading["theoremRef"],
+        "archsig-contract:residual-difference-reading"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["coverRef"],
+        "cover:commerce-fulfillment"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["lawSurfaceRef"],
+        "law-surface:practical-rust-v052"
+    );
+    assert_eq!(
+        identical_residual_reading["provenance"]["overlapComplex"]["overlapRefs"]
+            .as_array()
+            .expect("identical residual overlap refs are an array")
+            .len(),
+        14
+    );
     let practical_head = analyze_practical(&practical_head_archmap_path, "residual-head");
     let residual_out = out_dir.join("residual-compare");
     run_sig0(&[

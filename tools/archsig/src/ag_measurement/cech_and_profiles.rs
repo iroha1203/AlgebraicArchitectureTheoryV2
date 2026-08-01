@@ -44,6 +44,7 @@ fn evaluate_cech_obstruction_v1(
     let nerve_is_forest = !empty_selected_scope
         && edges.len().saturating_add(component_count) == selected_contexts.len();
     let has_triple_overlap_faces = cover_nerve_face_count > 0;
+    let triple_overlap_faces_not_measured = has_triple_overlap_faces;
     let restriction_surjectivity_witnesses =
         restriction_surjectivity_witnesses_v1(normalized, &edges);
     let selected_restriction_edges = edges
@@ -78,6 +79,7 @@ fn evaluate_cech_obstruction_v1(
         && !cover_shape_excludes_gluing_obstruction;
     let h1_class_nonzero = !empty_selected_scope
         && !sections_not_observed
+        && !triple_overlap_faces_not_measured
         && !edge_cochain_is_coboundary(&selected_contexts, &observed_edges);
     let topological_debt_capacity = topological_debt_capacity_invariant_v1(
         profile,
@@ -138,12 +140,20 @@ fn evaluate_cech_obstruction_v1(
         AgAssumptionLedgerEntryV1 {
             theorem_ref: "part4/12.3".to_string(),
             assumption: "constant coefficient nerve b1 comparison".to_string(),
-            status: "checked".to_string(),
-            checked_by: Some(format!(
-                "measurement-profile:{}.coefficient={}",
-                profile.profile_id, profile.coefficient
-            )),
-            assumed_by: None,
+            status: if triple_overlap_faces_not_measured {
+                "assumed"
+            } else {
+                "checked"
+            }
+            .to_string(),
+            checked_by: (!triple_overlap_faces_not_measured).then(|| {
+                format!(
+                    "measurement-profile:{}.coefficient={}",
+                    profile.profile_id, profile.coefficient
+                )
+            }),
+            assumed_by: triple_overlap_faces_not_measured
+                .then(|| format!("measurement-profile:{}.triple-overlap-faces", profile.profile_id)),
         },
     ];
     assumptions.extend(cech_effectivity_assumptions_v1(
@@ -170,6 +180,16 @@ fn evaluate_cech_obstruction_v1(
             assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
         });
     }
+    if triple_overlap_faces_not_measured && !empty_selected_scope {
+        assumptions.push(AgAssumptionLedgerEntryV1 {
+            theorem_ref: "part8/B.8.2-triple-overlap-faces".to_string(),
+            assumption: "selected graph-only Cech H1 calculation has no triple-overlap faces"
+                .to_string(),
+            status: "violated".to_string(),
+            checked_by: None,
+            assumed_by: Some(format!("measurement-profile:{}", profile.profile_id)),
+        });
+    }
 
     let (verdict, zero, non_zero, method_status, reason) = if empty_selected_scope {
         (
@@ -186,6 +206,14 @@ fn evaluate_cech_obstruction_v1(
             false,
             "sections_not_observed".to_string(),
             "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge; supply section observations on both endpoint contexts of a selected edge (or an explicit cocycleValue for the edge) before the H1 class can be measured".to_string(),
+        )
+    } else if triple_overlap_faces_not_measured {
+        (
+            "not_computed".to_string(),
+            false,
+            false,
+            "triple_overlap_faces_unmeasured".to_string(),
+            "triple_overlap_faces_unmeasured: the selected Cech H1 evaluator measures the cover 1-skeleton only and does not check d1 cocycle parity for selected triple-overlap faces".to_string(),
         )
     } else if h1_class_nonzero {
         (
@@ -204,7 +232,7 @@ fn evaluate_cech_obstruction_v1(
             "finite F2 Cech 1-cocycle is zero or a coboundary on the selected cover".to_string(),
         )
     };
-    let cert_ref = if empty_selected_scope || sections_not_observed {
+    let cert_ref = if empty_selected_scope || sections_not_observed || triple_overlap_faces_not_measured {
         None
     } else {
         Some(format!(
@@ -225,7 +253,10 @@ fn evaluate_cech_obstruction_v1(
                 "invariantId": format!("cech-cohomology:{}", profile.profile_id),
                 "evaluator": "ag.cech-obstruction",
                 "method": "finite-f2-incidence-graph-cochain@1",
-                "status": if empty_selected_scope || sections_not_observed {
+                "status": if empty_selected_scope
+                    || sections_not_observed
+                    || triple_overlap_faces_not_measured
+                {
                     "not_computed"
                 } else {
                     "computed"
@@ -234,6 +265,8 @@ fn evaluate_cech_obstruction_v1(
                     "empty_selected_scope"
                 } else if sections_not_observed {
                     "sections_not_observed"
+                } else if triple_overlap_faces_not_measured {
+                    "triple_overlap_faces_unmeasured"
                 } else {
                     "finite_f2_cech_computed"
                 },
@@ -241,6 +274,8 @@ fn evaluate_cech_obstruction_v1(
                     "empty_selected_scope: selected cover has no non-empty Cech 1-skeleton for ag.cech-obstruction"
                 } else if sections_not_observed {
                     "sections_not_observed: no sectionValue or cocycleValue observation covers any selected Cech edge"
+                } else if triple_overlap_faces_not_measured {
+                    "triple_overlap_faces_unmeasured: the selected Cech H1 evaluator does not check d1 cocycle parity for selected triple-overlap faces"
                 } else {
                     "selected cover has a non-empty Cech 1-skeleton for ag.cech-obstruction"
                 },

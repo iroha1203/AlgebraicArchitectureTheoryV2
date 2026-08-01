@@ -397,7 +397,7 @@ fn compatibility_dimension(
 mod tests {
     use std::collections::BTreeSet;
 
-    use crate::{
+    use crate::schema::{
         ARCHSIG_CONTRACT_AG_RESTRICTION_COMPATIBILITY, ARCHSIG_CONTRACT_AG_SECTION_FACTORIZATION,
         ARCHSIG_CONTRACT_LAW_SURFACE_QUOTIENT_SHEAF_CONDITION,
         ARCHSIG_CONTRACT_RESIDUAL_DIFFERENCE_READING,
