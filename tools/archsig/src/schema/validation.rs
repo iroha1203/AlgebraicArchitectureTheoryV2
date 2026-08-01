@@ -17,7 +17,7 @@ pub struct ValidationCheck {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ValidationExample {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_id: Option<String>,
@@ -44,5 +44,13 @@ mod tests {
             "leanBoundary": "retired"
         });
         assert!(serde_json::from_value::<ValidationCheck>(value).is_err());
+
+        let nested_value = serde_json::json!({
+            "id": "check:nested-unknown-field",
+            "title": "nested unknown field",
+            "result": "fail",
+            "examples": [{"leanBoundary": "retired"}]
+        });
+        assert!(serde_json::from_value::<ValidationCheck>(nested_value).is_err());
     }
 }
