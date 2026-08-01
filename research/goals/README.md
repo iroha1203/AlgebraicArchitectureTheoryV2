@@ -6,8 +6,16 @@ GOAL とは、研究で成し遂げたい能力や到達像である。通常は
 
 active threshold、current SCORE、proof state、サイクル履歴などの実行状態は、GOAL ごとの GitHub tracking Issue を正本とする。ループ実行中は GOAL カードを編集せず、改訂が必要なら tracking Issue または別 Issue に提案を残す。
 
+## 命名規則
+
+GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始まる3桁の
+グローバル通し番号(領域をまたいで単調増加)、`<領域>` は `aat` / `sft` 等、
+`<テーマ>` は短い kebab-case。略称には `G-<NNN>` を用いる。
+旧形式 `G-<領域>-<テーマ>-<連番>` のカードは改名しない。
+
 ## active
 
+- [G-101-aat-atom-foundation](G-101-aat-atom-foundation.md)
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
