@@ -281,10 +281,9 @@ Every conclusion above is relative to the two input families: observation
 selected ArchMap cover and observed restrictions. Enumeration completeness and
 the law-surface quotient
 sheaf condition are recorded in the packet's assumption ledger as
-assumptions, not theorems. ArchSig does not extract conventions from Rust source by itself,
-does not claim the sample has no other defects, and does not prove
-production correctness. The harmonic-debt bound is relative to the declared
-inner product and cost model. The head/base comparison deliberately refuses
-row-level comparability across different sites rather than inventing class
-transport. None of this is a Lean proof; it is a bounded measurement that
-makes a specific global inconsistency visible, priceable, and reviewable.
+assumptions, not theorems. ArchSig reads the conventions recorded as selected
+ArchMap observations. The harmonic-debt bound is relative to the declared inner
+product and cost model. The head/base comparison records comparable run pairs
+under the selected site conditions. ArchSig produces a bounded measurement
+from the selected ArchMap observations and measurement contracts, making a
+specific global inconsistency visible, priceable, and reviewable.
