@@ -1,4 +1,4 @@
-import Formal.AG.Examples.StandardGeometryReference.Geometry
+import Formal.AG.Examples.StandardGeometryReference.Scheme
 import Formal.AG.LawAlgebra.ClosedEquationalGeometry
 import Formal.AG.LawAlgebra.Correspondence
 
