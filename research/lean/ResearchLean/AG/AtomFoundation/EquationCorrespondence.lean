@@ -1,4 +1,4 @@
-import ResearchLean.AG.AtomFoundation.RefinementSupplyObstruction
+import ResearchLean.AG.AtomFoundation.Transport
 
 /-!
 # Standalone equation correspondence for canonical Atom transport

@@ -14,7 +14,7 @@
   `8bd64686da1b10bb44075f25def9b8adf04fb1c016fb5a6928a8957fdc9f035e`
 - implementation base: `cf762f0c510814dade9b1c16ad1bc91556e7ae06`
 - fixed Lean snapshot SHA-256:
-  `32150bfe75c2f745bc041e1b8b40f73946f8597c433b19a1f0f2cd8da50e2cdd`
+  `163b909d1bea66a32d5f3aae96ebcb743dafb876833e1f3c21d7dcaf844370e4`
 - snapshot scope: `research/lean/ResearchLean/AG/AtomFoundation/*.lean`、
   `research/lean/ResearchLean/AG.lean`、`research/lean/research-modules.txt`
 - digest recipe:
@@ -167,6 +167,45 @@ vacuity、Setoid uniqueness、post-hoc component、reverse importを各レーン
 Cycle 16 の `refinementQueryMap_accepts` はgoalとsource hypothesisの双方で公開API
 `EquationCircuitReading.accepts_eq_eval` を使い、source acceptanceを実使用することも
 source inspectionとfocused elaborationで確認した。
+
+## PR fixed-head review attempt 1 と import 依存修正
+
+- PR: [#3889](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3889)
+- reviewed head: `f73c5c66bda8ca07d381a247c2d30a0d257e3042`
+- mathematics review A: `No major findings`
+- mathematics review B: `No major findings`
+- Lean review A: `No major findings`
+- Lean review B: `Minor issues`
+- integrated field verdict: `Minor issues`
+
+Lean review B は数学的中心 claim ではなく、module localityのfindingを1件報告した。
+`EquationCorrespondence.lean` が D3 の負例module
+`RefinementSupplyObstruction` を経由して D1 の `Transport` APIを読み、
+`RefinementSupplyWitness.lean` も未使用の負例moduleを経由していた。
+
+修正は各ファイル1行目のimportだけに限定した。
+
+- `EquationCorrespondence` は `Transport` を直接import。
+- `RefinementSupplyWitness` は `RefinementSupply` を直接import。
+- declaration、statement、proof body、公開APIの変更はなし。
+
+修正後の検証:
+
+- 両moduleのfocused elaboration: pass
+- namespace axiom audit: EquationCorrespondence `8`、RefinementSupplyWitness `23`
+  declarations、standard axioms only
+- full ResearchLean build: pass (`4475` jobs)
+- fixed Lean snapshot SHA-256:
+  `163b909d1bea66a32d5f3aae96ebcb743dafb876833e1f3c21d7dcaf844370e4`
+- Research import direction gate: pass (`228` modules scanned)
+- Research package dependency direction gate: pass
+- `git diff --check`、hidden・bidirectional Unicode、private-path、forbidden-term scan:
+  clean
+
+finding限定の独立確認では元finding2点とも `resolved`、新規内容findingなしと判定された。
+一方、共有review protocolはimport方向変更を直接対応の対象外とするため、直接対応資格は
+fail-closedで失われた。更新PR headを固定後、AAT / Lean分野の正式
+`$math-lean-review` 4レーンを全再実行する。
 
 ## Target theorem completion judgment
 

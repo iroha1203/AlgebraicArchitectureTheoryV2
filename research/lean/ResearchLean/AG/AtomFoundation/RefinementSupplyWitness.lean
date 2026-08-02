@@ -1,4 +1,4 @@
-import ResearchLean.AG.AtomFoundation.RefinementSupplyObstruction
+import ResearchLean.AG.AtomFoundation.RefinementSupply
 
 /-!
 # Concrete positive refinement-extension supply
