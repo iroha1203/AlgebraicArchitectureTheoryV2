@@ -1,3 +1,4 @@
+import ResearchLean.AG.AtomFoundation.RefinementObstruction
 import ResearchLean.AG.AtomFoundation.RefinementSupply
 
 /-!

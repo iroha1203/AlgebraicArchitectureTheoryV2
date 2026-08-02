@@ -4,7 +4,11 @@
 - tracking Issue: [#3888](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3888)
 - proof state: `target-theorem-proved`
 - completion candidate: `yes`
-- final `$math-lean-review`: `No major findings`
+- target-completion final `$math-lean-review`: `No major findings`
+- target-completion reviewed Lean snapshot SHA-256:
+  `32150bfe75c2f745bc041e1b8b40f73946f8597c433b19a1f0f2cd8da50e2cdd`
+- current PR content verdict: PR監査コメントでfixed-headごとに判定し、
+  target-completion verdictを流用しない
 
 ## Completion candidate packet
 
@@ -13,8 +17,8 @@
 - source-of-truth SHA-256:
   `8bd64686da1b10bb44075f25def9b8adf04fb1c016fb5a6928a8957fdc9f035e`
 - implementation base: `cf762f0c510814dade9b1c16ad1bc91556e7ae06`
-- fixed Lean snapshot SHA-256:
-  `163b909d1bea66a32d5f3aae96ebcb743dafb876833e1f3c21d7dcaf844370e4`
+- current PR Lean snapshot SHA-256:
+  `b280ef55c83cb6e8ea44a7175e14e07d7b2820b40a134c38b1f400756e5eb17c`
 - snapshot scope: `research/lean/ResearchLean/AG/AtomFoundation/*.lean`、
   `research/lean/ResearchLean/AG.lean`、`research/lean/research-modules.txt`
 - digest recipe:
@@ -206,6 +210,52 @@ finding限定の独立確認では元finding2点とも `resolved`、新規内容
 一方、共有review protocolはimport方向変更を直接対応の対象外とするため、直接対応資格は
 fail-closedで失われた。更新PR headを固定後、AAT / Lean分野の正式
 `$math-lean-review` 4レーンを全再実行する。
+
+### PR fixed-head review attempt 2 と transitive dependency 修正
+
+- reviewed head: `f7b82275c93d3770bd11f471e0ae7374bdf5861d`
+- mathematics review A: `Minor issues`
+- mathematics review B: `No major findings`
+- Lean review A: `No major findings`
+- Lean review B: `No major findings`
+- integrated field verdict: `Minor issues`
+
+mathematics review A は中心数学D0–D4をすべてpassし、2件のlocality / ledger findingを
+報告した。
+
+1. current PR digestとtarget-completion review lockを分離せず、旧snapshotの合格を
+   current packetの合格のように表示していた。
+2. generic `RefinementSupply` がfinite `RefinementObstruction` を未使用のままimportし、
+   finite正例 / 負例moduleがそのtransitive re-exportに依存していた。
+
+修正後はtop-level ledgerでtarget-completion review lock
+`32150bfe75c2f745bc041e1b8b40f73946f8597c433b19a1f0f2cd8da50e2cdd` と
+current PR Lean snapshotを明示的に分離する。PR content verdictはPR監査コメントを正本とし、
+旧target-completion verdictを流用しない。
+
+import routeは次のように明示した。
+
+- generic `RefinementSupply` は D1 `Transport` を直接import。
+- `RefinementSupplyWitness` は finite base witnessを持つ `RefinementObstruction` と
+  generic `RefinementSupply` を明示import。
+- `RefinementSupplyObstruction` も同じ2依存を明示import。
+- declaration、statement、proof body、公開APIの変更はなし。
+
+修正後の検証:
+
+- focused elaboration: RefinementSupply / RefinementSupplyObstruction /
+  RefinementSupplyWitness、全てpass
+- namespace axiom audit: `62 / 6 / 23` declarations、standard axioms only
+- full ResearchLean build: pass (`4475` jobs)
+- current PR Lean snapshot SHA-256:
+  `b280ef55c83cb6e8ea44a7175e14e07d7b2820b40a134c38b1f400756e5eb17c`
+- Research import direction gate: pass (`228` modules scanned)
+- Research package dependency direction gate: pass
+- `git diff --check`、hidden・bidirectional Unicode、private-path、forbidden-term scan:
+  clean
+
+import方向変更を含むため直接対応資格は使わず、更新PR headでAAT / Lean分野の正式
+`$math-lean-review` 4レーンを再実行する。
 
 ## Target theorem completion judgment
 

@@ -1,4 +1,4 @@
-import ResearchLean.AG.AtomFoundation.RefinementObstruction
+import ResearchLean.AG.AtomFoundation.Transport
 
 /-!
 # Composition and equation supply for refinement lifts
