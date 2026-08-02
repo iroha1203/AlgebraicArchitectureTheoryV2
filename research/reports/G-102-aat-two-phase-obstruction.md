@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-102-aat-two-phase-obstruction.md`](../goals/G-102-aat-two-phase-obstruction.md)
 - tracking Issue: [#3892](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3892)
 - target theorem: Two-Phase Obstruction Support Theorem
-- proof state: `target-theorem-proved`
+- proof state: `target-proof-checkpoint`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -14,7 +14,8 @@ report はそれらを再定義しない。
 - 完了: E0 依存 profile、二相分解、同一の有限・非 singleton family における両相非空 witness。
 - 完了: E1 Atom-indexed 係数複体・条件 E・構造部分複体・意味商複体・各次数の短完全列。
 - 完了: E2 比較列中央 exactness・標準商写像の support 単射。
-- 完了: E3 actual forest pruning から既存消滅定理を instantiation し、support 系を導出。
+- 再検証中: E3 actual forest pruning から既存消滅定理を instantiation する
+  proof-use remediation は direct elaboration 済み。PR-gate formal rerun は未実行。
 - 完了: E4 actual 条件 E 破れ、E 成立下の構造 `H^1` 非零、
   proper two-phase complex の非自明 canonical 発火 witness。
 - cycle T3: E0–E4 すべて approve。completion candidate: yes。
@@ -22,7 +23,9 @@ report はそれらを再定義しない。
   後の再査読は1件の unused-premise finding で reject。redundant field 削除後の
   focused / targeted check と parent full ResearchLean build (4480 jobs) は pass、
   最終 formal 4レーン再査読は Math A / Math B / Lean A / Lean B の全件が
-  `No major findings`。proof state を `target-theorem-proved` とする。
+  `No major findings`。その後の PR #3895 fixed-head review は no-triple-face
+  proof-use と public docstring coverage の finding を検出した。remediation 後の
+  formal 4レーン再査読まで `target-proof-checkpoint` とする。
 
 ## Cycle 1 — E0 依存 profile と二相分解
 
@@ -386,7 +389,8 @@ completion candidate: no
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning`
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.solveCoordinates`
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.primitive`
-  - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralD0_primitive`
+  - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralD0_primitive_coordinate`
+  - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.normalizedCycle_coordinate_zero`
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.toReviewedCertificate`
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralForestH1Zero`
   - `AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.forestStandardSemanticH1Map_injective`
@@ -396,7 +400,7 @@ completion candidate: no
   pass。
 - targeted build: `lake build ResearchLean.AG.TwoPhase.ForestSupport` pass。
 - axiom audit: 57 declarations、standard axioms only。
-  `structuralD0_primitive`、`toReviewedCertificate`、`structuralForestH1Zero`、
+  `structuralD0_primitive_coordinate`、`toReviewedCertificate`、`structuralForestH1Zero`、
   `forestNonzeroClass_mapsNonzero` の `#print axioms` は `propext`、
   `Classical.choice`、`Quot.sound` の範囲。
 - `git diff --check`、placeholder、hidden / bidirectional Unicode、private path
@@ -411,11 +415,15 @@ completion candidate: no
   structural edge 被覆、earlier leaf freshness、no-triple-face、actual structural
   endpoint に限定した。
   external certificate、`H1Zero`、right inverse、injectivity は入力に含まない。
-- `solveCoordinates_matches` と `structuralD0_primitive` は actual incidence
-  differential、leaf order、E0 phase support、Condition E から構造的に導出する。
-- `toReviewedCertificate` の `edgeSupport` は normalized representative の actual
-  structural edge coordinate から生成され、`zero_of_no_edgeSupport` も
-  coordinate injectivity と quotient class 定理から内部証明される。
+- `solveCoordinates_matches`、`structuralD0_primitive_coordinate`、
+  `normalizedCycle_coordinate_zero` は actual incidence differential、leaf order、
+  E0 phase support、Condition E から edge ごとの局所 absorption を導出する。
+  global right inverse / normalized-cycle-zero theorem は certificate より前に置かない。
+- `toReviewedCertificate` の `edgeSupport` は face-free 資格と normalized
+  representative の actual structural edge coordinate から生成される。
+  `zero_of_no_edgeSupport` は predecessor から渡る no-triple-face 証拠を用いて
+  各 structural coordinate の support witness を組み立て、coordinate injectivity と
+  quotient class 定理から零を導出する。
 - `structuralForestH1Zero` は reviewed `forestVanishing` を actual structural
   `H1` へ canonical `ULift` で instantiation し、E2 の
   `standardSemanticH1Map_injective` に実際に渡す。
@@ -449,7 +457,8 @@ primary_specification:
 lean_artifacts:
   - file: research/lean/ResearchLean/AG/TwoPhase/ForestSupport.lean
     declarations:
-      - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralD0_primitive
+      - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralD0_primitive_coordinate
+      - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.normalizedCycle_coordinate_zero
       - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.toReviewedCertificate
       - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.structuralForestH1Zero
       - AAT.AG.TwoPhase.AtomIndexedCoefficientComplex.StructuralForestPruning.forestStandardSemanticH1Map_injective
@@ -802,5 +811,67 @@ blocking_findings: []
 formal_four_lane_rerun: pass
 full_researchlean_build: pass-4480-jobs
 target_theorem_proved: true
+tracking_issue_closed: false
+```
+
+## PR #3895 review — run 1 needs changes と remediation
+
+PR fixed head `519efe30b079eafc26d6aa4996aafdf9601f0c88` に対する正式
+`$review-pr` / `$math-lean-review` は `Needs changes`。Math A / Math B /
+Lean A が E3 の `noTripleFaces` proof-use を Major finding とし、Lean A /
+Lean B が新規 public 宣言の docstring coverage 不足を検出した。
+
+### Findings
+
+- `StructuralForestPruning.noTripleFaces` は旧 certificate へコピーされたが、
+  `zero_of_no_edgeSupport` が `_hfaces` として捨てていた。
+- 旧 `structuralD0_primitive` と `normalizedCycle_zero` が certificate より前に
+  global vanishing route を閉じ、reviewed predecessor instantiation の materiality を
+  過大表示していた。
+- `CohomologyComparison.lean` と `FiniteWitnesses.lean` の新規 public 宣言41件に
+  §3.2 docstring が不足していた。
+
+### Remediation
+
+- global `structuralD0_primitive` / `normalizedCycle_zero` を削除し、
+  `structuralD0_primitive_coordinate` / `normalizedCycle_coordinate_zero` により
+  pruning entry ごとの structural edge absorption だけを certificate 前で証明する。
+- `edgeSupport` を face-free 資格と actual structural coordinate support の組として
+  定義し、`zero_of_no_edgeSupport` が predecessor から渡る no-triple-face 証拠を
+  実際に用いて各 support witness を構成する。
+- 全新規 public 宣言へ position / premise provenance を示す docstring を追加する。
+
+remediation evidence:
+
+- `lake env lean ResearchLean/AG/TwoPhase/ForestSupport.lean` pass。
+- `lake env lean ResearchLean/AG/TwoPhase/FiniteWitnesses.lean` pass。
+- `lake env lean ResearchLean/AG/TwoPhase/CohomologyComparison.lean` pass。
+- `./check_research_modules.sh --focused ResearchLean/AG/TwoPhase/ForestSupport.lean`
+  pass。
+- `./check_research_modules.sh --focused ResearchLean/AG/TwoPhase/FiniteWitnesses.lean`
+  pass。
+- `lake build ResearchLean.AG.TwoPhase.FiniteWitnesses` pass (3694 jobs)。
+- parent full ResearchLean `lake build` pass (4480 jobs)。
+- namespace axiom audit: ForestSupport 57 declarations、FiniteWitnesses 258
+  declarations、standard axioms only。
+- individual axiom audit:
+  `structuralD0_primitive_coordinate`、`normalizedCycle_coordinate_zero`、
+  `toReviewedCertificate`、`structuralForestH1Zero`、
+  `unconditionalSupport_counterexample`、`forestSupportRegime_nonvacuous`、
+  `e4FiniteWitnessPackage` はすべて `[propext, Classical.choice, Quot.sound]` のみ。
+- next gate: 変更後 fixed head の正式4レーン `$math-lean-review`。
+
+```yaml
+ledger_type: pr_math_lean_review
+pr: 3895
+run: 1
+decision: needs-changes
+blocking_findings:
+  - no-triple-face premise was not materially used by the E3 certificate route
+quality_findings:
+  - missing public declaration docstrings
+remediation_status: implemented-and-parent-validated
+formal_four_lane_rerun: pending
+target_theorem_proved: false
 tracking_issue_closed: false
 ```

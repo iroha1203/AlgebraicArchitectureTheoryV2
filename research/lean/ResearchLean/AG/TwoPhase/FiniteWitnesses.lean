@@ -129,18 +129,22 @@ def conditionEFailureNerve : CoverNerve where
   edgeOverlapComponent_holds := by simp
   faceTripleOverlapComponent_holds := fun face => isEmptyElim face
 
+/-- Finite witness infrastructure inherited from the explicit two-chart failure nerve. -/
 instance failureChartFintype : Fintype conditionEFailureNerve.Chart := by
   change Fintype FailureChart
   infer_instance
 
+/-- Finite witness infrastructure inherited from the explicit one-edge failure nerve. -/
 instance failureEdgeFintype : Fintype conditionEFailureNerve.EdgeComponent := by
   change Fintype FailureEdge
   infer_instance
 
+/-- Finite witness infrastructure for the failure nerve's empty face type. -/
 instance failureFaceFintype : Fintype conditionEFailureNerve.FaceComponent := by
   change Fintype Empty
   infer_instance
 
+/-- The no-face premise supplied by the explicit failure nerve. -/
 instance failureFaceIsEmpty : IsEmpty conditionEFailureNerve.FaceComponent := by
   change IsEmpty Empty
   infer_instance
@@ -308,18 +312,22 @@ def twoPhaseCycleNerve : CoverNerve where
   edgeOverlapComponent_holds := by simp
   faceTripleOverlapComponent_holds := fun face => isEmptyElim face
 
+/-- Finite witness infrastructure inherited from the four-chart cycle nerve. -/
 instance twoPhaseCycleChartFintype : Fintype twoPhaseCycleNerve.Chart := by
   change Fintype TwoPhaseCycleChart
   infer_instance
 
+/-- Finite witness infrastructure inherited from the four-edge cycle nerve. -/
 instance twoPhaseCycleEdgeFintype : Fintype twoPhaseCycleNerve.EdgeComponent := by
   change Fintype TwoPhaseCycleEdge
   infer_instance
 
+/-- Finite witness infrastructure for the cycle nerve's empty face type. -/
 instance twoPhaseCycleFaceFintype : Fintype twoPhaseCycleNerve.FaceComponent := by
   change Fintype Empty
   infer_instance
 
+/-- The no-face premise supplied by the explicit two-phase cycle nerve. -/
 instance twoPhaseCycleFaceIsEmpty : IsEmpty twoPhaseCycleNerve.FaceComponent := by
   change IsEmpty Empty
   infer_instance
@@ -404,6 +412,7 @@ theorem structuralLeftChart_structural :
   simpa [twoPhaseCycleIndexing, structuralLeftChart] using
     structuralPair_structural
 
+/-- The right structural chart inherits structural provenance from `structuralPair`. -/
 theorem structuralRightChart_structural :
     family.Structural
       (twoPhaseCycleIndexing.chartPairAt structuralRightChart) := by
@@ -417,6 +426,7 @@ theorem semanticLeftChart_semantic :
   simpa [twoPhaseCycleIndexing, semanticLeftChart] using
     semanticPair_semantic
 
+/-- The right semantic chart inherits semantic provenance from `semanticPair`. -/
 theorem semanticRightChart_semantic :
     family.Semantic
       (twoPhaseCycleIndexing.chartPairAt semanticRightChart) := by
@@ -430,6 +440,7 @@ theorem structuralTopEdge_structural :
   simpa [twoPhaseCycleIndexing, structuralTopEdge] using
     structuralPair_structural
 
+/-- The bottom structural edge inherits structural provenance from `structuralPair`. -/
 theorem structuralBottomEdge_structural :
     family.Structural
       (twoPhaseCycleIndexing.edgePairAt structuralBottomEdge) := by
@@ -443,6 +454,7 @@ theorem semanticTopEdge_semantic :
   simpa [twoPhaseCycleIndexing, semanticTopEdge] using
     semanticPair_semantic
 
+/-- The bottom semantic edge inherits semantic provenance from `semanticPair`. -/
 theorem semanticBottomEdge_semantic :
     family.Semantic
       (twoPhaseCycleIndexing.edgePairAt semanticBottomEdge) := by
@@ -629,6 +641,7 @@ theorem semanticEdgeVector_not_mem :
   rw [hone] at hzero
   exact one_ne_zero hzero
 
+/-- The selected structural chart coordinate is a nonzero cochain. -/
 theorem structuralChartVector_ne_zero : structuralChartVector ≠ 0 := by
   intro hzero
   have hcoordinate := congrArg
@@ -636,6 +649,7 @@ theorem structuralChartVector_ne_zero : structuralChartVector ≠ 0 := by
       structuralLeftChart) hzero
   simp [structuralChartVector, coordinateVector] at hcoordinate
 
+/-- The selected structural edge coordinate is a nonzero cochain. -/
 theorem structuralEdgeVector_ne_zero : structuralEdgeVector ≠ 0 := by
   intro hzero
   have hcoordinate := congrArg
@@ -998,18 +1012,22 @@ def forestFiringNerve : CoverNerve where
   edgeOverlapComponent_holds := by simp
   faceTripleOverlapComponent_holds := fun face => isEmptyElim face
 
+/-- Finite witness infrastructure inherited from the forest firing chart type. -/
 instance forestFiringChartFintype : Fintype forestFiringNerve.Chart := by
   change Fintype TwoPhaseCycleChart
   infer_instance
 
+/-- Finite witness infrastructure inherited from the forest firing edge type. -/
 instance forestFiringEdgeFintype : Fintype forestFiringNerve.EdgeComponent := by
   change Fintype ForestFiringEdge
   infer_instance
 
+/-- Finite witness infrastructure for the forest firing nerve's empty face type. -/
 instance forestFiringFaceFintype : Fintype forestFiringNerve.FaceComponent := by
   change Fintype Empty
   infer_instance
 
+/-- The no-triple-face premise supplied by the explicit forest firing nerve. -/
 instance forestFiringFaceIsEmpty : IsEmpty forestFiringNerve.FaceComponent := by
   change IsEmpty Empty
   infer_instance
@@ -1054,63 +1072,77 @@ def forestFiringComplex :
   indexing := forestFiringIndexing
   all := forestFiringAll
 
+/-- Expanded structural-left chart used by the forest firing witness. -/
 def forestStructuralLeftChart : forestFiringIndexing.expandedNerve.Chart :=
   ⟨TwoPhaseCycleChart.structuralLeft, PUnit.unit⟩
 
+/-- Expanded structural-right chart used by the forest pruning entry. -/
 def forestStructuralRightChart : forestFiringIndexing.expandedNerve.Chart :=
   ⟨TwoPhaseCycleChart.structuralRight, PUnit.unit⟩
 
+/-- Expanded semantic-left chart supporting the retained semantic cycle. -/
 def forestSemanticLeftChart : forestFiringIndexing.expandedNerve.Chart :=
   ⟨TwoPhaseCycleChart.semanticLeft, PUnit.unit⟩
 
+/-- Expanded semantic-right chart supporting the retained semantic cycle. -/
 def forestSemanticRightChart : forestFiringIndexing.expandedNerve.Chart :=
   ⟨TwoPhaseCycleChart.semanticRight, PUnit.unit⟩
 
+/-- The unique structural bridge covered by the forest pruning order. -/
 def forestStructuralEdge : forestFiringIndexing.expandedNerve.EdgeComponent :=
   ⟨ForestFiringEdge.structuralBridge, PUnit.unit⟩
 
+/-- The top semantic edge retained outside structural pruning. -/
 def forestSemanticTopEdge : forestFiringIndexing.expandedNerve.EdgeComponent :=
   ⟨ForestFiringEdge.semanticTop, PUnit.unit⟩
 
+/-- The bottom semantic edge retained outside structural pruning. -/
 def forestSemanticBottomEdge : forestFiringIndexing.expandedNerve.EdgeComponent :=
   ⟨ForestFiringEdge.semanticBottom, PUnit.unit⟩
 
+/-- The left forest chart has E0 structural provenance. -/
 theorem forestStructuralLeftChart_structural :
     family.Structural
       (forestFiringIndexing.chartPairAt forestStructuralLeftChart) := by
   simpa [forestFiringIndexing, forestStructuralLeftChart] using
     structuralPair_structural
 
+/-- The right forest chart has E0 structural provenance. -/
 theorem forestStructuralRightChart_structural :
     family.Structural
       (forestFiringIndexing.chartPairAt forestStructuralRightChart) := by
   simpa [forestFiringIndexing, forestStructuralRightChart] using
     structuralPair_structural
 
+/-- The left retained chart has E0 semantic provenance. -/
 theorem forestSemanticLeftChart_semantic :
     family.Semantic
       (forestFiringIndexing.chartPairAt forestSemanticLeftChart) := by
   simpa [forestFiringIndexing, forestSemanticLeftChart] using
     semanticPair_semantic
 
+/-- The right retained chart has E0 semantic provenance. -/
 theorem forestSemanticRightChart_semantic :
     family.Semantic
       (forestFiringIndexing.chartPairAt forestSemanticRightChart) := by
   simpa [forestFiringIndexing, forestSemanticRightChart] using
     semanticPair_semantic
 
+/-- The pruned bridge has E0 structural provenance. -/
 theorem forestStructuralEdge_structural :
     family.Structural
       (forestFiringIndexing.edgePairAt forestStructuralEdge) := by
   simpa [forestFiringIndexing, forestStructuralEdge] using
     structuralPair_structural
 
+/-- The top retained edge has E0 semantic provenance. -/
 theorem forestSemanticTopEdge_semantic :
     family.Semantic
       (forestFiringIndexing.edgePairAt forestSemanticTopEdge) := by
   simpa [forestFiringIndexing, forestSemanticTopEdge] using
     semanticPair_semantic
 
+/-- The bottom retained edge has E0 semantic provenance. -/
 theorem forestSemanticBottomEdge_semantic :
     family.Semantic
       (forestFiringIndexing.edgePairAt forestSemanticBottomEdge) := by
@@ -1197,15 +1229,18 @@ def forestFiringCochain : forestFiringComplex.allComplex.C1 :=
   forestFiringComplex.all.oneCochainCoordinates.symm
     (coordinateVector forestSemanticTopEdge)
 
+/-- The selected forest firing cochain is a cocycle because the witness has no faces. -/
 theorem forestFiringCochain_cocycle :
     forestFiringComplex.allComplex.d1 forestFiringCochain = 0 := by
   apply forestFiringComplex.all.twoCochainCoordinates.injective
   funext face
   exact isEmptyElim face.1
 
+/-- The kernel element represented by the selected semantic edge cochain. -/
 def forestFiringCycle : LinearMap.ker forestFiringComplex.allComplex.d1 :=
   ⟨forestFiringCochain, forestFiringCochain_cocycle⟩
 
+/-- The standard all-phase `H^1` quotient class of `forestFiringCycle`. -/
 def forestFiringClass : forestFiringComplex.allComplex.H1 :=
   (LinearMap.range forestFiringComplex.allComplex.boundaryToCycles).mkQ
     forestFiringCycle
@@ -1219,6 +1254,7 @@ def forestSemanticEdgeDifference :
   map_add' left right := by simp; ring
   map_smul' scalar c := by simp [mul_sub]
 
+/-- The semantic parallel-edge functional annihilates every actual degree-zero boundary. -/
 theorem forestSemanticEdgeDifference_boundary_zero
     (c : forestFiringComplex.all.C0) :
     forestSemanticEdgeDifference (forestFiringComplex.all.d0 c) = 0 := by
@@ -1235,6 +1271,7 @@ theorem forestSemanticEdgeDifference_boundary_zero
         forestFiringComplex.all.zeroCochainCoordinates c forestSemanticLeftChart) = 0
   ring
 
+/-- The semantic parallel-edge functional evaluates to one on the firing cycle. -/
 theorem forestSemanticEdgeDifference_firingCycle :
     forestSemanticEdgeDifference forestFiringCycle.1 = 1 := by
   classical
@@ -1244,6 +1281,7 @@ theorem forestSemanticEdgeDifference_firingCycle :
   simp [forestFiringCycle, forestFiringCochain, forestSemanticEdgeDifference,
     coordinateVector, hne]
 
+/-- The forest firing class is nonzero by the boundary-annihilating edge difference. -/
 theorem forestFiringClass_ne_zero : forestFiringClass ≠ 0 := by
   intro hzero
   have hmem := (Submodule.Quotient.mk_eq_zero

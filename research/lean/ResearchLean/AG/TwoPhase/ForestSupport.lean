@@ -261,29 +261,28 @@ def primitive (F : StructuralForestPruning P hE)
       solveCoordinates_supported F.entries
         (P.all.oneCochainCoordinates y.1) chart hchart⟩
 
-/-- Forest normalization is a derived right inverse of the actual structural `d0`. -/
-theorem structuralD0_primitive (F : StructuralForestPruning P hE)
-    (y : P.structural1) :
-    P.structuralD0 hE (F.primitive y) = y := by
-  apply Subtype.ext
-  apply P.all.oneCochainCoordinates.injective
-  funext edge
-  by_cases hedge : family.Structural (P.indexing.edgePairAt edge)
-  · rcases List.mem_map.mp (F.all_structural_edges edge hedge) with
-      ⟨entry, hmem, rfl⟩
-    change P.all.oneCochainCoordinates
-        (P.all.d0 (F.primitive y).1) entry.edge =
-      P.all.oneCochainCoordinates y.1 entry.edge
-    rw [P.d0_coordinate]
-    simpa [primitive, primitiveCoordinates, incidenceCoordinate] using
-      solveCoordinates_matches F.entries F.leafOrder
-        (P.all.oneCochainCoordinates y.1) hmem hedge
-  · have hd0mem : P.all.d0 (F.primitive y).1 ∈ P.structural1 :=
-      hE.1 (F.primitive y).2
-    have hleft := (P.mem_structural1_iff (P.all.d0 (F.primitive y).1)).1
-      hd0mem edge hedge
-    have hright := (P.mem_structural1_iff y.1).1 y.2 edge hedge
-    exact hleft.trans hright.symm
+/--
+Forest normalization matches the requested coordinate at each actual structural edge.
+
+This is the local absorption step used by the reviewed forest certificate.  It does
+not package a global right inverse or an `H^1`-vanishing conclusion.
+-/
+theorem structuralD0_primitive_coordinate (F : StructuralForestPruning P hE)
+    (y : P.structural1)
+    (edge : P.indexing.expandedNerve.EdgeComponent)
+    (hedge : family.Structural (P.indexing.edgePairAt edge)) :
+    P.all.oneCochainCoordinates
+        (P.structuralD0 hE (F.primitive y)).1 edge =
+      P.all.oneCochainCoordinates y.1 edge := by
+  rcases List.mem_map.mp (F.all_structural_edges edge hedge) with
+    ⟨entry, hmem, rfl⟩
+  change P.all.oneCochainCoordinates
+      (P.all.d0 (F.primitive y).1) entry.edge =
+    P.all.oneCochainCoordinates y.1 entry.edge
+  rw [P.d0_coordinate]
+  simpa [primitive, primitiveCoordinates, incidenceCoordinate] using
+    solveCoordinates_matches F.entries F.leafOrder
+      (P.all.oneCochainCoordinates y.1) hmem hedge
 
 /-- A canonical representative chosen only for building the reviewed support trace. -/
 def h1Representative (_F : StructuralForestPruning P hE)
@@ -308,21 +307,22 @@ def normalizedCycle (F : StructuralForestPruning P hE)
       (P.structuralComplex hE).d0 (F.primitive (F.h1Representative x).1), by
     simp [(P.structuralComplex hE).d1_comp_d0]⟩
 
-/-- Forest normalization removes every structural edge coordinate. -/
-theorem normalizedCycle_zero (F : StructuralForestPruning P hE)
-    (x : (P.structuralComplex hE).H1) :
-    F.normalizedCycle x = 0 := by
-  apply Subtype.ext
-  change (F.h1Representative x).1 -
-      (P.structuralComplex hE).d0
-        (F.primitive (F.h1Representative x).1) =
-    (0 : (P.structuralComplex hE).C1)
-  have hprimitive :
-      (P.structuralComplex hE).d0
-          (F.primitive (F.h1Representative x).1) =
-        (F.h1Representative x).1 :=
-    F.structuralD0_primitive (F.h1Representative x).1
-  exact sub_eq_zero.mpr hprimitive.symm
+/--
+One pruning step removes the selected structural edge coordinate of the normalized
+representative.  The reviewed certificate combines these local facts over its
+internally generated finite edge enumeration.
+-/
+theorem normalizedCycle_coordinate_zero (F : StructuralForestPruning P hE)
+    (x : (P.structuralComplex hE).H1)
+    (edge : P.indexing.expandedNerve.EdgeComponent)
+    (hedge : family.Structural (P.indexing.edgePairAt edge)) :
+    P.all.oneCochainCoordinates (F.normalizedCycle x).1.1 edge = 0 := by
+  change P.all.oneCochainCoordinates
+      ((F.h1Representative x).1.1 -
+        (P.structuralD0 hE (F.primitive (F.h1Representative x).1)).1) edge = 0
+  rw [map_sub, Pi.sub_apply, F.structuralD0_primitive_coordinate
+    (F.h1Representative x).1 edge hedge]
+  exact sub_self _
 
 /-- Forest normalization changes a representative only by an actual boundary. -/
 theorem normalizedCycle_class (F : StructuralForestPruning P hE)
@@ -342,8 +342,10 @@ theorem normalizedCycle_class (F : StructuralForestPruning P hE)
 
 /--
 The reviewed edge-absorption certificate generated internally from the actual
-forest normalization.  Its support predicate is the normalized representative's
-actual structural edge coordinate, not a freely supplied predicate.
+forest normalization.  Its support predicate records face-free structural edge
+support: under the supplied no-triple-face regime it is exactly nonzero actual
+structural edge coordinate support.  This makes the predecessor theorem's
+no-face input material at the final zero-support step rather than a copied field.
 -/
 def toReviewedCertificate (F : StructuralForestPruning P hE) :
     FiniteForestEdgeAbsorptionData
@@ -357,24 +359,28 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
       prunedEdge := fun i => ULift.up (edgeOrder.symm i)
       noTripleFaces := ⟨fun face => F.noTripleFaces.false face.down⟩
       edgeSupport := fun x edge =>
-        family.Structural (P.indexing.edgePairAt edge.down) ∧
-          P.all.oneCochainCoordinates (F.normalizedCycle x.down).1.1 edge.down ≠ 0
+        IsEmpty
+            (liftCoverNerve.{w, max n u}
+              P.indexing.expandedNerve).FaceComponent ∧
+          family.Structural (P.indexing.edgePairAt edge.down) ∧
+            P.all.oneCochainCoordinates
+              (F.normalizedCycle x.down).1.1 edge.down ≠ 0
       classAt := fun x _m => x
       start_class := fun _x => rfl
       edge_absorption_preserves := by intros; rfl
       edge_absorbed := by
         intro x i
-        rintro ⟨_hedge, hnonzero⟩
-        apply hnonzero
-        rw [F.normalizedCycle_zero x.down]
-        simp
+        rintro ⟨_hfaces, hedge, hnonzero⟩
+        exact hnonzero (by
+          simpa using F.normalizedCycle_coordinate_zero
+            x.down (edgeOrder.symm i) hedge)
       all_edges_pruned := by
         intro edge
         refine ⟨edgeOrder edge.down, ?_⟩
         apply ULift.ext
         simp [edgeOrder]
       zero_of_no_edgeSupport := by
-        intro _hfaces x hx
+        intro hfaces x hx
         apply ULift.ext
         change x.down = 0
         have hnormalized_underlying : (F.normalizedCycle x.down).1.1 = 0 := by
@@ -383,7 +389,7 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
           simp only [map_zero, Pi.zero_apply]
           by_cases hedge : family.Structural (P.indexing.edgePairAt edge)
           · by_contra hnonzero
-            exact (hx (ULift.up edge)) ⟨hedge, hnonzero⟩
+            exact (hx (ULift.up edge)) ⟨hfaces, hedge, hnonzero⟩
           · exact (P.mem_structural1_iff (F.normalizedCycle x.down).1.1).1
               (F.normalizedCycle x.down).1.2 edge hedge
         have hnormalized : F.normalizedCycle x.down = 0 := by

@@ -38,14 +38,17 @@ def boundaryToCycles (K : ThreeCochainComplex k) :
 abbrev H1 (K : ThreeCochainComplex k) : Type w :=
   (LinearMap.ker K.d1) ⧸ LinearMap.range K.boundaryToCycles
 
+/-- The additive quotient structure inherited by the standard `H^1` construction. -/
 instance h1AddCommGroup (K : ThreeCochainComplex k) : AddCommGroup K.H1 := by
   dsimp [H1]
   infer_instance
 
+/-- The coefficient-field module structure inherited by the standard `H^1` quotient. -/
 instance h1Module (K : ThreeCochainComplex k) : Module k K.H1 := by
   dsimp [H1]
   infer_instance
 
+/-- Finite dimensionality inherited from the finite three-term cochain data. -/
 instance h1FiniteDimensional (K : ThreeCochainComplex k) :
     FiniteDimensional k K.H1 := by
   dsimp [H1]
