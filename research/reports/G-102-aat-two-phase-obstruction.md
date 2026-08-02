@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-102-aat-two-phase-obstruction.md`](../goals/G-102-aat-two-phase-obstruction.md)
 - tracking Issue: [#3892](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3892)
 - target theorem: Two-Phase Obstruction Support Theorem
-- proof state: `target-proof-checkpoint`
+- proof state: `target-theorem-proved`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -14,10 +14,10 @@ report はそれらを再定義しない。
 - 完了: E0 依存 profile、二相分解、同一の有限・非 singleton family における両相非空 witness。
 - 完了: E1 Atom-indexed 係数複体・条件 E・構造部分複体・意味商複体・各次数の短完全列。
 - 完了: E2 比較列中央 exactness・標準商写像の support 単射。
-- 再検証中: E3 actual forest pruning の局所吸収を、全 edge 共通の full normalized
-  representative 上で既存消滅定理が有限集約する proof-use remediation は formal run 4 の
-  全レーンで中心 claim を承認された。新規 `Fresh` Prop の非退化な正負例不足だけを
-  3 chart / 2 structural edge path で放電し、宣言変更後の formal 4レーン再査読を待つ。
+- 完了: E3 actual forest pruning の局所吸収を、全 edge 共通の full normalized
+  representative 上で既存消滅定理が有限集約する。新規 `Fresh` Prop の非退化な正負例も
+  3 chart / 2 structural edge path で放電し、宣言変更後の formal run 5 は全4レーン
+  `No major findings`。
 - 完了: E4 actual 条件 E 破れ、E 成立下の構造 `H^1` 非零、
   proper two-phase complex の非自明 canonical 発火 witness。
 - pre-PR cycle T3: E0–E4 すべて approve。completion candidate: yes。
@@ -30,8 +30,8 @@ report はそれらを再定義しない。
   normalization 経路による predecessor bypass、run 3 は edge ごとの補正後 suffix
   support が恒常的に空になる certificate wrapper を検出した。run 4 は
   common-representative remediation を全レーンで承認し、残った `Fresh` 正負例の
-  quality finding も parent validation 済み。変更後 fixed head の formal 4レーン
-  再査読まで `target-proof-checkpoint` とする。
+  quality finding も放電した。変更後 fixed head の formal run 5 は全4レーン
+  `No major findings`、CI 7件 green であり、`target-theorem-proved` とする。
 
 ## Cycle 1 — E0 依存 profile と二相分解
 
@@ -1062,5 +1062,65 @@ quality_findings:
 remediation_status: fresh-positive-negative-witnesses-parent-validated
 formal_four_lane_rerun: pending
 target_theorem_proved: false
+tracking_issue_closed: false
+```
+
+## PR #3895 review — run 5 approve
+
+Fresh 正負例 remediation と source-hash 同期後の fixed head
+`a45bce0e72e56c7d2d1c8cef9c96ffb6dabebed0` に対して formal 4レーンを全面再実行した。
+Math A / Math B / Lean A / Lean B は全件 `No major findings` であり、固定 GOAL の
+E0–E4、target (i)–(v)、material premise discharge、certificate provenance、proof-use、
+anti-weakening、dependency / axiom / report sync を承認した。
+
+### Fixed snapshot and validation
+
+- `DependencyProfile.lean`: `8a60e2a4332a7599583d5b32df4deecb3ba61d0568734e29fed0b7360235db9d`
+- `CoefficientComplex.lean`: `7efb501e8faafcc34178f2f29007ef0154f579ccbe9f3ee0004266725fb13367`
+- `CohomologyComparison.lean`: `73e53b5e525e9640e63d59de16403e10486d4f33915ed9533f3cdc596438ae46`
+- `ForestSupport.lean`: `b292d9c17d9ac546f0afaddbb57563ea933dffaf8672903d4b8879100787a2b8`
+- `FiniteWitnesses.lean`: `34b04b070aa166f111baf49d59f414cc61aa440049b2b475ac7937a82e9b8f51`
+- direct / focused FiniteWitnesses: pass。
+- targeted `ResearchLean.AG.TwoPhase.FiniteWitnesses`: pass (3694 jobs)。
+- parent full ResearchLean: pass (4480 jobs)。
+- FiniteWitnesses namespace axiom audit: 329 declarations、standard axioms only。
+- GitHub CI: 7 checks green。
+- `git diff --check`、placeholder、hidden / bidirectional Unicode、privacy、
+  protected-source、Formal-to-Research reverse-import scan: clean。
+
+### Independent lane results
+
+- Math A: `No major findings`。E0–E4 mapping、premise discharge、canonical maps、
+  nonvacuous Fresh 正負例を承認。
+- Math B: `No major findings`。certificate / field escape、predecessor bypass、support
+  tautology、all-structural Fresh witness の結論供給化を反証。
+- Lean A: `No major findings`。term-level proof-use、private/public API、2要素
+  `Pairwise Fresh` branch、actual endpoint collision を承認。
+- Lean B: `No major findings`。dependency / axiom surface、aggregate / manifest、
+  public docstring、report chronology / hashes を承認。
+
+`freshPathStructuralPruning` は actual two-edge path の2 entry orderを持ち、positive theorem
+は earlier left leaf と later edge の両 endpoint の不一致、negative theorem は shared
+middle leaf と later left endpoint の定義的一致を証明する。この品質 witness は target の
+二相 anti-vacuity を代用せず、後者は引き続き `twoPhaseCycleComplex` と
+`forestFiringComplex` の canonical nonzero classes が担う。E3 の全 edge 集約は reviewed
+predecessor `forestVanishing` に残り、公開 global right inverse / global-zero bypass はない。
+
+```yaml
+ledger_type: pr_math_lean_review
+pr: 3895
+run: 5
+fixed_head: a45bce0e72e56c7d2d1c8cef9c96ffb6dabebed0
+decision: approve
+lane_results:
+  math_a: No major findings
+  math_b: No major findings
+  lean_a: No major findings
+  lean_b: No major findings
+blocking_findings: []
+formal_four_lane_rerun: pass
+full_researchlean_build: pass-4480-jobs
+github_ci: pass-7-checks
+target_theorem_proved: true
 tracking_issue_closed: false
 ```
