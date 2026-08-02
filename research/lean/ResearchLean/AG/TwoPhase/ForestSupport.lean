@@ -27,6 +27,18 @@ open Cohomology
 
 universe u n v w r
 
+/-- An edge is face-free when it occurs in none of the three boundary positions of a face. -/
+def FaceFreeEdge (N : CoverNerve.{r}) (edge : N.EdgeComponent) : Prop :=
+  ∀ face : N.FaceComponent,
+    edge ≠ N.faceEdge0 face ∧ edge ≠ N.faceEdge1 face ∧ edge ≠ N.faceEdge2 face
+
+/-- Absence of face components makes every actual edge face-free. -/
+theorem faceFreeEdge_of_isEmpty
+    (N : CoverNerve.{r}) (hfaces : IsEmpty N.FaceComponent)
+    (edge : N.EdgeComponent) : FaceFreeEdge N edge := by
+  intro face
+  exact (hfaces.false face).elim
+
 /-- Canonical universe lift of every component and incidence map of a cover nerve. -/
 def liftCoverNerve (N : CoverNerve.{r}) : CoverNerve.{max r w} where
   Chart := ULift.{w, r} N.Chart
@@ -95,18 +107,20 @@ end StructuralForestPruningEntry
 /--
 Concrete forest/no-face/local-restriction data on the actual expanded nerve.
 
-`entries` is a leaf-removal order for structural support: each earlier leaf is
-absent from every later listed edge, and every structural expanded edge occurs
-in the list.  Semantic edges need not occur, so semantic cycles remain possible.
-The local structural endpoint condition is part of each entry; no all-phase
-`d0` surjectivity is supplied.
+`entries` is a leaf-removal order for face-free structural support: each earlier
+leaf is absent from every later listed edge, and every face-free structural
+expanded edge occurs in the list.  The no-triple-face premise is therefore what
+promotes this local coverage to every structural edge.  Semantic edges need not
+occur, so semantic cycles remain possible.  The local structural endpoint
+condition is part of each entry; no all-phase `d0` surjectivity is supplied.
 -/
 structure StructuralForestPruning
     (P : AtomIndexedCoefficientComplex.{u, n, v, w} D family N k)
     (hE : P.ConditionE) where
   entries : List (StructuralForestPruningEntry P)
-  all_structural_edges :
+  all_faceFree_structural_edges :
     ∀ edge : P.indexing.expandedNerve.EdgeComponent,
+      FaceFreeEdge P.indexing.expandedNerve edge →
       family.Structural (P.indexing.edgePairAt edge) →
       edge ∈ entries.map StructuralForestPruningEntry.edge
   leafOrder : entries.Pairwise StructuralForestPruningEntry.Fresh
@@ -155,13 +169,8 @@ def incidenceCoordinate
   coords (P.indexing.expandedNerve.edgeRight edge) -
     coords (P.indexing.expandedNerve.edgeLeft edge)
 
-/--
-Recursive chart-coordinate normalization along a leaf-pruning list.
-
-The tail is solved first.  The head leaf is absent from the tail, so its single
-coordinate correction fixes the head edge without changing any later edge.
--/
-noncomputable def solveCoordinates :
+/-- The private tail-first coordinate trace used only inside the reviewed certificate. -/
+private noncomputable def solveCoordinates :
     List (StructuralForestPruningEntry P) →
       (P.indexing.expandedNerve.EdgeComponent → k) →
       (P.indexing.expandedNerve.Chart → k)
@@ -180,8 +189,8 @@ noncomputable def solveCoordinates :
                 coordinateVector entry.leaf)
         tailSolution
 
-/-- The recursive normalization uses only structural chart coordinates. -/
-theorem solveCoordinates_supported
+/-- The private solver stays inside structural chart support, as required by Condition E. -/
+private theorem solveCoordinates_supported
     (entries : List (StructuralForestPruningEntry P))
     (values : P.indexing.expandedNerve.EdgeComponent → k)
     (chart : P.indexing.expandedNerve.Chart)
@@ -200,152 +209,237 @@ theorem solveCoordinates_supported
           simp [solveCoordinates, hedge, hside, ih, coordinateVector, hne]
       · simp [solveCoordinates, hedge, ih]
 
-/-- Every structural edge in the list is solved to its requested value. -/
-theorem solveCoordinates_matches
-    (entries : List (StructuralForestPruningEntry P))
-    (horder : entries.Pairwise StructuralForestPruningEntry.Fresh)
+/-- One private correction matches only the pivot at the head of the current suffix. -/
+private theorem solveCoordinates_head_matches
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
     (values : P.indexing.expandedNerve.EdgeComponent → k)
-    {entry : StructuralForestPruningEntry P}
-    (hmem : entry ∈ entries)
     (hedge : family.Structural (P.indexing.edgePairAt entry.edge)) :
-    incidenceCoordinate (solveCoordinates entries values) entry.edge =
+    incidenceCoordinate (solveCoordinates (entry :: tail) values) entry.edge =
       values entry.edge := by
   classical
-  induction entries generalizing entry with
-  | nil => simp at hmem
-  | cons head tail ih =>
+  cases hside : entry.leafOnRight
+  · have heq := entry.leaf_eq_endpoint
+    have hne := entry.leaf_ne_opposite
+    simp only [hside, Bool.false_eq_true, ↓reduceIte] at heq hne
+    have hend :
+        P.indexing.expandedNerve.edgeLeft entry.edge ≠
+          P.indexing.expandedNerve.edgeRight entry.edge := by
+      simpa [heq] using hne
+    simp [solveCoordinates, hedge, hside, incidenceCoordinate,
+      coordinateVector, heq, hend]
+    ring
+  · have heq := entry.leaf_eq_endpoint
+    have hne := entry.leaf_ne_opposite
+    simp only [hside, ↓reduceIte] at heq hne
+    have hend :
+        P.indexing.expandedNerve.edgeRight entry.edge ≠
+          P.indexing.expandedNerve.edgeLeft entry.edge := by
+      simpa [heq] using hne
+    simp [solveCoordinates, hedge, hside, incidenceCoordinate,
+      coordinateVector, heq, hend]
+    ring
+
+/-- Pairwise pruning freshness makes every prefix entry fresh for the selected pivot. -/
+private theorem pairwise_prefix_fresh
+    (before : List (StructuralForestPruningEntry P))
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
+    (horder : (before ++ entry :: tail).Pairwise
+      StructuralForestPruningEntry.Fresh) :
+    ∀ earlier ∈ before, StructuralForestPruningEntry.Fresh earlier entry := by
+  induction before with
+  | nil => simp
+  | cons head rest ih =>
       have hpair := List.pairwise_cons.mp horder
-      rcases hpair with ⟨hfresh, htail⟩
+      intro earlier hmem
       rcases List.mem_cons.mp hmem with rfl | hmem
-      · cases hside : entry.leafOnRight
-        · have heq := entry.leaf_eq_endpoint
-          have hne := entry.leaf_ne_opposite
-          simp only [hside, Bool.false_eq_true, ↓reduceIte] at heq hne
-          have hend :
-              P.indexing.expandedNerve.edgeLeft entry.edge ≠
-                P.indexing.expandedNerve.edgeRight entry.edge := by
-            simpa [heq] using hne
-          simp [solveCoordinates, hedge, hside, incidenceCoordinate,
-            coordinateVector, heq, hend]
-          ring
-        · have heq := entry.leaf_eq_endpoint
-          have hne := entry.leaf_ne_opposite
-          simp only [hside, ↓reduceIte] at heq hne
-          have hend :
-              P.indexing.expandedNerve.edgeRight entry.edge ≠
-                P.indexing.expandedNerve.edgeLeft entry.edge := by
-            simpa [heq] using hne
-          simp [solveCoordinates, hedge, hside, incidenceCoordinate,
-            coordinateVector, heq, hend]
-          ring
-      · have hmatch := ih htail hmem hedge
-        have hf := hfresh entry hmem
-        by_cases hhead : family.Structural (P.indexing.edgePairAt head.edge)
-        · cases hside : head.leafOnRight <;>
-            simpa [solveCoordinates, hhead, hside, incidenceCoordinate,
-              coordinateVector, hf.1, hf.2] using hmatch
-        · simpa [solveCoordinates, hhead] using hmatch
+      · exact hpair.1 entry (by simp)
+      · exact ih hpair.2 earlier hmem
 
-/-- Chart coordinates produced for a structural degree-one cochain. -/
-def primitiveCoordinates (F : StructuralForestPruning P hE)
-    (y : P.structural1) : P.indexing.expandedNerve.Chart → k :=
-  solveCoordinates F.entries (P.all.oneCochainCoordinates y.1)
+/-- Later private corrections preserve the pivot coordinate already solved in the suffix. -/
+private theorem solveCoordinates_prefix_preserves
+    (before : List (StructuralForestPruningEntry P))
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
+    (values : P.indexing.expandedNerve.EdgeComponent → k)
+    (hfresh : ∀ earlier ∈ before,
+      StructuralForestPruningEntry.Fresh earlier entry) :
+    incidenceCoordinate
+        (solveCoordinates (before ++ entry :: tail) values) entry.edge =
+      incidenceCoordinate (solveCoordinates (entry :: tail) values) entry.edge := by
+  classical
+  induction before with
+  | nil => rfl
+  | cons head rest ih =>
+      have hhead := hfresh head (by simp)
+      have hrest : ∀ earlier ∈ rest,
+          StructuralForestPruningEntry.Fresh earlier entry := by
+        intro earlier hmem
+        exact hfresh earlier (by simp [hmem])
+      by_cases hedge : family.Structural (P.indexing.edgePairAt head.edge)
+      · cases hside : head.leafOnRight <;>
+          simpa [solveCoordinates, hedge, hside, incidenceCoordinate,
+            coordinateVector, hhead.1, hhead.2] using ih hrest
+      · simpa [solveCoordinates, hedge] using ih hrest
 
-/-- The actual structural degree-zero cochain generated by forest normalization. -/
-def primitive (F : StructuralForestPruning P hE)
+/-- A listed pruning entry determines an actual prefix-and-suffix split of the list. -/
+private theorem exists_split_of_mem
+    {entry : StructuralForestPruningEntry P}
+    {entries : List (StructuralForestPruningEntry P)}
+    (hmem : entry ∈ entries) :
+    ∃ before tail, entries = before ++ entry :: tail := by
+  induction entries with
+  | nil => simp at hmem
+  | cons head rest ih =>
+      rcases List.mem_cons.mp hmem with rfl | hmem
+      · exact ⟨[], rest, rfl⟩
+      · rcases ih hmem with ⟨before, tail, rfl⟩
+        exact ⟨head :: before, tail, by simp⟩
+
+/-- The private structural degree-zero correction generated for one pruning suffix. -/
+private def primitiveFor
+    (entries : List (StructuralForestPruningEntry P))
     (y : P.structural1) : P.structural0 :=
-  ⟨P.all.zeroCochainCoordinates.symm (F.primitiveCoordinates y), by
+  ⟨P.all.zeroCochainCoordinates.symm
+      (solveCoordinates entries (P.all.oneCochainCoordinates y.1)), by
     rw [P.mem_structural0_iff]
     intro chart hchart
-    simpa [primitiveCoordinates] using
-      solveCoordinates_supported F.entries
+    simpa using
+      solveCoordinates_supported entries
         (P.all.oneCochainCoordinates y.1) chart hchart⟩
 
-/--
-Forest normalization matches the requested coordinate at each actual structural edge.
-
-This is the local absorption step used by the reviewed forest certificate.  It does
-not package a global right inverse or an `H^1`-vanishing conclusion.
--/
-theorem structuralD0_primitive_coordinate (F : StructuralForestPruning P hE)
+/-- The suffix correction realizes the requested coordinate only at its head pivot. -/
+private theorem structuralD0_primitiveFor_head_coordinate
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
     (y : P.structural1)
-    (edge : P.indexing.expandedNerve.EdgeComponent)
-    (hedge : family.Structural (P.indexing.edgePairAt edge)) :
+    (hedge : family.Structural (P.indexing.edgePairAt entry.edge)) :
     P.all.oneCochainCoordinates
-        (P.structuralD0 hE (F.primitive y)).1 edge =
-      P.all.oneCochainCoordinates y.1 edge := by
-  rcases List.mem_map.mp (F.all_structural_edges edge hedge) with
-    ⟨entry, hmem, rfl⟩
+        (P.structuralD0 hE (primitiveFor (entry :: tail) y)).1 entry.edge =
+      P.all.oneCochainCoordinates y.1 entry.edge := by
   change P.all.oneCochainCoordinates
-      (P.all.d0 (F.primitive y).1) entry.edge =
+      (P.all.d0 (primitiveFor (entry :: tail) y).1) entry.edge =
     P.all.oneCochainCoordinates y.1 entry.edge
   rw [P.d0_coordinate]
-  simpa [primitive, primitiveCoordinates, incidenceCoordinate] using
-    solveCoordinates_matches F.entries F.leafOrder
-      (P.all.oneCochainCoordinates y.1) hmem hedge
+  simpa [primitiveFor, incidenceCoordinate] using
+    solveCoordinates_head_matches entry tail
+      (P.all.oneCochainCoordinates y.1) hedge
 
-/-- A canonical representative chosen only for building the reviewed support trace. -/
-def h1Representative (_F : StructuralForestPruning P hE)
+/-- A private cycle representative used to build the certificate's step-local trace. -/
+private def h1Representative
     (x : (P.structuralComplex hE).H1) :
     LinearMap.ker (P.structuralComplex hE).d1 :=
   Classical.choose
     ((LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ_surjective x)
 
-/-- The chosen representative represents the original structural cohomology class. -/
-theorem h1Representative_class (F : StructuralForestPruning P hE)
+/-- The private chosen cycle represents the supplied structural cohomology class. -/
+private theorem h1Representative_class
     (x : (P.structuralComplex hE).H1) :
     (LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ
-        (F.h1Representative x) = x :=
+        (h1Representative x) = x :=
   Classical.choose_spec
     ((LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ_surjective x)
 
-/-- The representative after subtracting its forest-generated boundary primitive. -/
-def normalizedCycle (F : StructuralForestPruning P hE)
+/-- The private representative after subtracting the boundary generated by one suffix. -/
+private def normalizedFor
+    (entries : List (StructuralForestPruningEntry P))
     (x : (P.structuralComplex hE).H1) :
     LinearMap.ker (P.structuralComplex hE).d1 :=
-  ⟨(F.h1Representative x).1 -
-      (P.structuralComplex hE).d0 (F.primitive (F.h1Representative x).1), by
+  ⟨(h1Representative x).1 -
+      (P.structuralComplex hE).d0
+        (primitiveFor entries (h1Representative x).1), by
     simp [(P.structuralComplex hE).d1_comp_d0]⟩
 
-/--
-One pruning step removes the selected structural edge coordinate of the normalized
-representative.  The reviewed certificate combines these local facts over its
-internally generated finite edge enumeration.
--/
-theorem normalizedCycle_coordinate_zero (F : StructuralForestPruning P hE)
+/-- The representative normalized for a suffix has zero coordinate at that suffix's head. -/
+private theorem normalizedFor_head_coordinate_zero
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
     (x : (P.structuralComplex hE).H1)
-    (edge : P.indexing.expandedNerve.EdgeComponent)
-    (hedge : family.Structural (P.indexing.edgePairAt edge)) :
-    P.all.oneCochainCoordinates (F.normalizedCycle x).1.1 edge = 0 := by
+    (hedge : family.Structural (P.indexing.edgePairAt entry.edge)) :
+    P.all.oneCochainCoordinates
+        (normalizedFor (entry :: tail) x).1.1 entry.edge = 0 := by
   change P.all.oneCochainCoordinates
-      ((F.h1Representative x).1.1 -
-        (P.structuralD0 hE (F.primitive (F.h1Representative x).1)).1) edge = 0
-  rw [map_sub, Pi.sub_apply, F.structuralD0_primitive_coordinate
-    (F.h1Representative x).1 edge hedge]
+      ((h1Representative x).1.1 -
+        (P.structuralD0 hE
+          (primitiveFor (entry :: tail) (h1Representative x).1)).1)
+        entry.edge = 0
+  rw [map_sub, Pi.sub_apply, structuralD0_primitiveFor_head_coordinate
+    entry tail (h1Representative x).1 hedge]
   exact sub_self _
 
-/-- Forest normalization changes a representative only by an actual boundary. -/
-theorem normalizedCycle_class (F : StructuralForestPruning P hE)
+/-- Prefix corrections preserve the selected suffix correction's incidence coordinate. -/
+private theorem structuralD0_primitiveFor_prefix_coordinate
+    (before : List (StructuralForestPruningEntry P))
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
+    (horder : (before ++ entry :: tail).Pairwise
+      StructuralForestPruningEntry.Fresh)
+    (y : P.structural1) :
+    P.all.oneCochainCoordinates
+        (P.structuralD0 hE (primitiveFor (before ++ entry :: tail) y)).1
+        entry.edge =
+      P.all.oneCochainCoordinates
+        (P.structuralD0 hE (primitiveFor (entry :: tail) y)).1 entry.edge := by
+  change P.all.oneCochainCoordinates
+      (P.all.d0 (primitiveFor (before ++ entry :: tail) y).1) entry.edge =
+    P.all.oneCochainCoordinates
+      (P.all.d0 (primitiveFor (entry :: tail) y).1) entry.edge
+  rw [P.d0_coordinate, P.d0_coordinate]
+  simpa [primitiveFor, incidenceCoordinate] using
+    solveCoordinates_prefix_preserves before entry tail
+      (P.all.oneCochainCoordinates y.1)
+      (pairwise_prefix_fresh before entry tail horder)
+
+/-- Prefix corrections preserve the selected suffix representative's pivot coordinate. -/
+private theorem normalizedFor_prefix_coordinate
+    (before : List (StructuralForestPruningEntry P))
+    (entry : StructuralForestPruningEntry P)
+    (tail : List (StructuralForestPruningEntry P))
+    (horder : (before ++ entry :: tail).Pairwise
+      StructuralForestPruningEntry.Fresh)
+    (x : (P.structuralComplex hE).H1) :
+    P.all.oneCochainCoordinates
+        (normalizedFor (before ++ entry :: tail) x).1.1 entry.edge =
+      P.all.oneCochainCoordinates
+        (normalizedFor (entry :: tail) x).1.1 entry.edge := by
+  change P.all.oneCochainCoordinates
+      ((h1Representative x).1.1 -
+        (P.structuralD0 hE
+          (primitiveFor (before ++ entry :: tail) (h1Representative x).1)).1)
+        entry.edge =
+    P.all.oneCochainCoordinates
+      ((h1Representative x).1.1 -
+        (P.structuralD0 hE
+          (primitiveFor (entry :: tail) (h1Representative x).1)).1)
+        entry.edge
+  rw [map_sub, map_sub, Pi.sub_apply, Pi.sub_apply,
+    structuralD0_primitiveFor_prefix_coordinate before entry tail horder]
+
+/-- Every private suffix representative differs from the chosen cycle by an actual boundary. -/
+private theorem normalizedFor_class
+    (entries : List (StructuralForestPruningEntry P))
     (x : (P.structuralComplex hE).H1) :
     (LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ
-        (F.normalizedCycle x) = x := by
+        (normalizedFor entries x) = x := by
   calc
     (LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ
-          (F.normalizedCycle x) =
+          (normalizedFor entries x) =
         (LinearMap.range (P.structuralComplex hE).boundaryToCycles).mkQ
-          (F.h1Representative x) := by
+          (h1Representative x) := by
       apply (Submodule.Quotient.eq _).2
-      refine ⟨-F.primitive (F.h1Representative x).1, ?_⟩
+      refine ⟨-primitiveFor entries (h1Representative x).1, ?_⟩
       apply Subtype.ext
-      simp [normalizedCycle, ThreeCochainComplex.boundaryToCycles]
-    _ = x := F.h1Representative_class x
+      simp [normalizedFor, ThreeCochainComplex.boundaryToCycles]
+    _ = x := h1Representative_class x
 
 /--
 The reviewed edge-absorption certificate generated internally from the actual
-forest normalization.  Its support predicate records face-free structural edge
-support: under the supplied no-triple-face regime it is exactly nonzero actual
-structural edge coordinate support.  This makes the predecessor theorem's
-no-face input material at the final zero-support step rather than a copied field.
+forest normalization.  Its support predicate is the natural nonzero-coordinate
+support on actual edges that occur in no face, measured on the representative
+immediately after that edge's suffix correction.  The predecessor theorem's
+no-triple-face input and finite all-edge aggregation are what transport these
+local absorptions to the final representative.
 -/
 def toReviewedCertificate (F : StructuralForestPruning P hE) :
     FiniteForestEdgeAbsorptionData
@@ -359,21 +453,24 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
       prunedEdge := fun i => ULift.up (edgeOrder.symm i)
       noTripleFaces := ⟨fun face => F.noTripleFaces.false face.down⟩
       edgeSupport := fun x edge =>
-        IsEmpty
-            (liftCoverNerve.{w, max n u}
-              P.indexing.expandedNerve).FaceComponent ∧
+        FaceFreeEdge P.indexing.expandedNerve edge.down ∧
           family.Structural (P.indexing.edgePairAt edge.down) ∧
-            P.all.oneCochainCoordinates
-              (F.normalizedCycle x.down).1.1 edge.down ≠ 0
+            ∃ before entry tail,
+              F.entries = before ++ entry :: tail ∧
+                entry.edge = edge.down ∧
+                  P.all.oneCochainCoordinates
+                    (normalizedFor (entry :: tail) x.down).1.1 edge.down ≠ 0
       classAt := fun x _m => x
       start_class := fun _x => rfl
       edge_absorption_preserves := by intros; rfl
       edge_absorbed := by
         intro x i
-        rintro ⟨_hfaces, hedge, hnonzero⟩
+        rintro ⟨_hfree, hedge, before, entry, tail, _hsplit, hedge_eq, hnonzero⟩
+        have hentry : family.Structural (P.indexing.edgePairAt entry.edge) := by
+          simpa [hedge_eq] using hedge
         exact hnonzero (by
-          simpa using F.normalizedCycle_coordinate_zero
-            x.down (edgeOrder.symm i) hedge)
+          simpa [hedge_eq] using
+            normalizedFor_head_coordinate_zero entry tail x.down hentry)
       all_edges_pruned := by
         intro edge
         refine ⟨edgeOrder edge.down, ?_⟩
@@ -383,20 +480,40 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
         intro hfaces x hx
         apply ULift.ext
         change x.down = 0
-        have hnormalized_underlying : (F.normalizedCycle x.down).1.1 = 0 := by
+        have hnormalized_underlying :
+            (normalizedFor F.entries x.down).1.1 = 0 := by
           apply P.all.oneCochainCoordinates.injective
           funext edge
           simp only [map_zero, Pi.zero_apply]
           by_cases hedge : family.Structural (P.indexing.edgePairAt edge)
-          · by_contra hnonzero
-            exact (hx (ULift.up edge)) ⟨hfaces, hedge, hnonzero⟩
-          · exact (P.mem_structural1_iff (F.normalizedCycle x.down).1.1).1
-              (F.normalizedCycle x.down).1.2 edge hedge
-        have hnormalized : F.normalizedCycle x.down = 0 := by
+          · have hfree : FaceFreeEdge P.indexing.expandedNerve edge := by
+              intro face
+              exact (hfaces.false (ULift.up face)).elim
+            rcases List.mem_map.mp
+                (F.all_faceFree_structural_edges edge hfree hedge) with
+              ⟨entry, hmem, rfl⟩
+            rcases exists_split_of_mem hmem with ⟨before, tail, hsplit⟩
+            have hsuffix :
+                P.all.oneCochainCoordinates
+                    (normalizedFor (entry :: tail) x.down).1.1 entry.edge = 0 := by
+              by_contra hnonzero
+              exact (hx (ULift.up entry.edge))
+                ⟨hfree, hedge, before, entry, tail, hsplit, rfl, hnonzero⟩
+            have horder :
+                (before ++ entry :: tail).Pairwise
+                  StructuralForestPruningEntry.Fresh := by
+              simpa [← hsplit] using F.leafOrder
+            rw [hsplit]
+            exact (normalizedFor_prefix_coordinate
+              before entry tail horder x.down).trans hsuffix
+          · exact (P.mem_structural1_iff
+                (normalizedFor F.entries x.down).1.1).1
+              (normalizedFor F.entries x.down).1.2 edge hedge
+        have hnormalized : normalizedFor F.entries x.down = 0 := by
           apply Subtype.ext
           apply Subtype.ext
           exact hnormalized_underlying
-        have hclass := F.normalizedCycle_class x.down
+        have hclass := normalizedFor_class F.entries x.down
         rw [hnormalized] at hclass
         exact hclass.symm }
 

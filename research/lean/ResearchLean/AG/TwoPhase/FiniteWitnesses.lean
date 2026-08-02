@@ -1211,8 +1211,8 @@ def forestStructuralPruning :
     AtomIndexedCoefficientComplex.StructuralForestPruning
       forestFiringComplex forestFiring_conditionE where
   entries := [forestStructuralPruningEntry]
-  all_structural_edges := by
-    intro edge hedge
+  all_faceFree_structural_edges := by
+    intro edge _hfree hedge
     rcases edge with ⟨edge, basis⟩
     rcases basis with ⟨⟩
     cases edge with
