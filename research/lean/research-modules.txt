@@ -262,3 +262,8 @@ ResearchLean.AG.SFT.ConwayTwoTopology	ResearchLean/AG/SFT/ConwayTwoTopology.lean
 ResearchLean.AG.SFTDynamics.ForceSchema	ResearchLean/AG/SFTDynamics/ForceSchema.lean
 ResearchLean.AG.SFTDynamics.MergeResidue	ResearchLean/AG/SFTDynamics/MergeResidue.lean
 ResearchLean.AG.SFTDynamics.TraceSite	ResearchLean/AG/SFTDynamics/TraceSite.lean
+ResearchLean.AG.TwoPhase.DependencyProfile	ResearchLean/AG/TwoPhase/DependencyProfile.lean
+ResearchLean.AG.TwoPhase.CoefficientComplex	ResearchLean/AG/TwoPhase/CoefficientComplex.lean
+ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/CohomologyComparison.lean
+ResearchLean.AG.TwoPhase.ForestSupport	ResearchLean/AG/TwoPhase/ForestSupport.lean
+ResearchLean.AG.TwoPhase.FiniteWitnesses	ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
