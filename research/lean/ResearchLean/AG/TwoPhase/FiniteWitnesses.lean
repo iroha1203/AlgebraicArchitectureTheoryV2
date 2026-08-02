@@ -16,8 +16,12 @@ nonzero standard `H^1` class; its semantic parallel-edge cycle gives an
 all-phase class whose image under the canonical semantic quotient map is
 nonzero.  The structural support is visibly nonzero and proper.
 
+A separate three-chart structural path fixes a nonvacuous positive instance of
+the forest-pruning `Fresh` relation, while a deliberately wrong middle-leaf
+ordering supplies its endpoint-collision negative instance.
+
 No phase label, nonzero-class certificate, vanishing result, or injectivity
-claim is a field of either example.  Every differential is the actual endpoint
+claim is a field of these examples.  Every differential is the actual endpoint
 incidence map of a `FiniteNerveCochainComplex`, and every phase fact is generated
 from the E0 dependency profile.
 -/
@@ -983,6 +987,215 @@ theorem firingClass_ne_zero : firingClass ≠ 0 := by
         (fun x => twoPhaseCycleComplex.standardSemanticH1Map
           twoPhaseCycle_conditionE x) hzero
     _ = 0 := LinearMap.map_zero _
+
+/-! ## Nonvacuous positive and negative freshness witnesses -/
+
+/-- Three actual charts forming a two-edge structural path. -/
+inductive FreshPathChart where
+  | left
+  | middle
+  | right
+  deriving DecidableEq, Fintype
+
+/-- The two consecutive structural edges of the freshness path. -/
+inductive FreshPathEdge where
+  | leftLeg
+  | rightLeg
+  deriving DecidableEq, Fintype
+
+/-- A face-free path whose two edges meet only at the middle chart. -/
+def freshPathNerve : CoverNerve where
+  Chart := FreshPathChart
+  EdgeComponent := FreshPathEdge
+  FaceComponent := Empty
+  edgeLeft
+    | .leftLeg => .left
+    | .rightLeg => .middle
+  edgeRight
+    | .leftLeg => .middle
+    | .rightLeg => .right
+  faceEdge0 := fun face => isEmptyElim face
+  faceEdge1 := fun face => isEmptyElim face
+  faceEdge2 := fun face => isEmptyElim face
+  edgeOverlapComponent := fun _ => True
+  faceTripleOverlapComponent := fun _ => True
+  edgeOverlapComponent_holds := by simp
+  faceTripleOverlapComponent_holds := fun face => isEmptyElim face
+
+/-- Finite witness infrastructure inherited from the freshness path charts. -/
+instance freshPathChartFintype : Fintype freshPathNerve.Chart := by
+  change Fintype FreshPathChart
+  infer_instance
+
+/-- Finite witness infrastructure inherited from the freshness path edges. -/
+instance freshPathEdgeFintype : Fintype freshPathNerve.EdgeComponent := by
+  change Fintype FreshPathEdge
+  infer_instance
+
+/-- Finite witness infrastructure for the freshness path's empty face type. -/
+instance freshPathFaceFintype : Fintype freshPathNerve.FaceComponent := by
+  change Fintype Empty
+  infer_instance
+
+/-- The no-face premise supplied by the explicit freshness path. -/
+instance freshPathFaceIsEmpty : IsEmpty freshPathNerve.FaceComponent := by
+  change IsEmpty Empty
+  infer_instance
+
+/-- Atom provenance and restriction indices for the all-structural path. -/
+def freshPathIndexing : AtomIndexedNerveData doctrine freshPathNerve where
+  ChartBasis := fun _ => PUnit
+  EdgeBasis := fun _ => PUnit
+  FaceBasis := fun _ => PUnit
+  chartBasisFintype := fun _ => inferInstance
+  edgeBasisFintype := fun _ => inferInstance
+  faceBasisFintype := fun face => isEmptyElim face
+  chartPair := fun _ _ => structuralPair
+  edgePair := fun _ _ => structuralPair
+  facePair := fun face => isEmptyElim face
+  edgeLeftIndex := fun _ _ => PUnit.unit
+  edgeRightIndex := fun _ _ => PUnit.unit
+  faceEdge0Index := fun face => isEmptyElim face
+  faceEdge1Index := fun face => isEmptyElim face
+  faceEdge2Index := fun face => isEmptyElim face
+
+/-- The actual incidence complex on the expanded all-structural path. -/
+def freshPathAll :
+    FiniteNerveCochainComplex freshPathIndexing.expandedNerve (ZMod 2) := by
+  let I := freshPathIndexing
+  letI : Fintype I.expandedNerve.Chart := I.chartFintype
+  letI : Fintype I.expandedNerve.EdgeComponent := I.edgeFintype
+  letI : Fintype I.expandedNerve.FaceComponent := I.faceFintype
+  letI : IsEmpty I.expandedNerve.FaceComponent :=
+    ⟨fun face => isEmptyElim face.1⟩
+  exact noFaceIncidenceComplex I.expandedNerve (ZMod 2)
+
+/-- The Atom-indexed coefficient complex on the all-structural path. -/
+def freshPathComplex :
+    AtomIndexedCoefficientComplex doctrine family freshPathNerve (ZMod 2) where
+  indexing := freshPathIndexing
+  all := freshPathAll
+
+/-- Expanded left chart of the freshness path. -/
+def freshPathLeftChart : freshPathIndexing.expandedNerve.Chart :=
+  ⟨FreshPathChart.left, PUnit.unit⟩
+
+/-- Expanded middle chart of the freshness path. -/
+def freshPathMiddleChart : freshPathIndexing.expandedNerve.Chart :=
+  ⟨FreshPathChart.middle, PUnit.unit⟩
+
+/-- Expanded right chart of the freshness path. -/
+def freshPathRightChart : freshPathIndexing.expandedNerve.Chart :=
+  ⟨FreshPathChart.right, PUnit.unit⟩
+
+/-- Expanded left edge of the freshness path. -/
+def freshPathLeftEdge : freshPathIndexing.expandedNerve.EdgeComponent :=
+  ⟨FreshPathEdge.leftLeg, PUnit.unit⟩
+
+/-- Expanded right edge of the freshness path. -/
+def freshPathRightEdge : freshPathIndexing.expandedNerve.EdgeComponent :=
+  ⟨FreshPathEdge.rightLeg, PUnit.unit⟩
+
+/-- Every expanded chart of the path has actual E0 structural provenance. -/
+theorem freshPath_chart_structural
+    (chart : freshPathIndexing.expandedNerve.Chart) :
+    family.Structural (freshPathIndexing.chartPairAt chart) := by
+  simpa [freshPathIndexing] using structuralPair_structural
+
+/-- Every expanded edge of the path has actual E0 structural provenance. -/
+theorem freshPath_edge_structural
+    (edge : freshPathIndexing.expandedNerve.EdgeComponent) :
+    family.Structural (freshPathIndexing.edgePairAt edge) := by
+  simpa [freshPathIndexing] using structuralPair_structural
+
+/-- Condition E holds on the all-structural path. -/
+theorem freshPath_conditionE : freshPathComplex.ConditionE := by
+  constructor
+  · intro c _hc
+    change freshPathComplex.all.d0 c ∈ freshPathComplex.structural1
+    rw [freshPathComplex.mem_structural1_iff]
+    intro edge hedge
+    exact (hedge (freshPath_edge_structural edge)).elim
+  · intro c _hc
+    change freshPathComplex.all.d1 c ∈ freshPathComplex.structural2
+    rw [freshPathComplex.mem_structural2_iff]
+    intro face
+    exact isEmptyElim face.1
+
+/-- The left leaf is pruned from the first edge of the path. -/
+def freshPathLeftPruningEntry :
+    AtomIndexedCoefficientComplex.StructuralForestPruningEntry
+      freshPathComplex where
+  edge := freshPathLeftEdge
+  leaf := freshPathLeftChart
+  leafOnRight := false
+  leaf_eq_endpoint := rfl
+  leaf_ne_opposite := by
+    intro h
+    exact FreshPathChart.noConfusion (congrArg Sigma.fst h)
+  leaf_structural := fun _hedge =>
+    freshPath_chart_structural freshPathLeftChart
+
+/-- The right leaf is pruned from the second edge of the path. -/
+def freshPathRightPruningEntry :
+    AtomIndexedCoefficientComplex.StructuralForestPruningEntry
+      freshPathComplex where
+  edge := freshPathRightEdge
+  leaf := freshPathRightChart
+  leafOnRight := true
+  leaf_eq_endpoint := rfl
+  leaf_ne_opposite := by
+    intro h
+    exact FreshPathChart.noConfusion (congrArg Sigma.fst h)
+  leaf_structural := fun _hedge =>
+    freshPath_chart_structural freshPathRightChart
+
+/-- A deliberately wrong first step that removes the shared middle chart. -/
+def freshPathMiddlePruningEntry :
+    AtomIndexedCoefficientComplex.StructuralForestPruningEntry
+      freshPathComplex where
+  edge := freshPathLeftEdge
+  leaf := freshPathMiddleChart
+  leafOnRight := true
+  leaf_eq_endpoint := rfl
+  leaf_ne_opposite := by
+    intro h
+    exact FreshPathChart.noConfusion (congrArg Sigma.fst h)
+  leaf_structural := fun _hedge =>
+    freshPath_chart_structural freshPathMiddleChart
+
+/-- Pruning the left leaf before the right leaf is a nonvacuous `Fresh` pair. -/
+theorem freshPath_left_before_right_fresh :
+    AtomIndexedCoefficientComplex.StructuralForestPruningEntry.Fresh
+      freshPathLeftPruningEntry freshPathRightPruningEntry := by
+  constructor
+  · intro h
+    exact FreshPathChart.noConfusion (congrArg Sigma.fst h)
+  · intro h
+    exact FreshPathChart.noConfusion (congrArg Sigma.fst h)
+
+/-- Removing the shared middle chart first fails `Fresh` at the later left endpoint. -/
+theorem freshPath_middle_before_right_not_fresh :
+    ¬ AtomIndexedCoefficientComplex.StructuralForestPruningEntry.Fresh
+      freshPathMiddlePruningEntry freshPathRightPruningEntry := by
+  intro h
+  exact h.1 rfl
+
+/-- The two-edge path is an actual non-singleton structural pruning order. -/
+def freshPathStructuralPruning :
+    AtomIndexedCoefficientComplex.StructuralForestPruning
+      freshPathComplex freshPath_conditionE where
+  entries := [freshPathLeftPruningEntry, freshPathRightPruningEntry]
+  all_faceFree_structural_edges := by
+    intro edge _hfree _hedge
+    rcases edge with ⟨edge, basis⟩
+    rcases basis with ⟨⟩
+    cases edge with
+    | leftLeg => simp [freshPathLeftPruningEntry, freshPathLeftEdge]
+    | rightLeg => simp [freshPathRightPruningEntry, freshPathRightEdge]
+  leafOrder := by
+    simpa using freshPath_left_before_right_fresh
+  noTripleFaces := ⟨fun face => isEmptyElim face.1⟩
 
 /-! ## A nonvacuous structural-forest firing regime -/
 

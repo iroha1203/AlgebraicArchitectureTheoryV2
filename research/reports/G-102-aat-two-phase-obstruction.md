@@ -15,8 +15,9 @@ report はそれらを再定義しない。
 - 完了: E1 Atom-indexed 係数複体・条件 E・構造部分複体・意味商複体・各次数の短完全列。
 - 完了: E2 比較列中央 exactness・標準商写像の support 単射。
 - 再検証中: E3 actual forest pruning の局所吸収を、全 edge 共通の full normalized
-  representative 上で既存消滅定理が有限集約する proof-use remediation は parent 検証済み。
-  PR-gate formal 4レーン再査読は未実行。
+  representative 上で既存消滅定理が有限集約する proof-use remediation は formal run 4 の
+  全レーンで中心 claim を承認された。新規 `Fresh` Prop の非退化な正負例不足だけを
+  3 chart / 2 structural edge path で放電し、宣言変更後の formal 4レーン再査読を待つ。
 - 完了: E4 actual 条件 E 破れ、E 成立下の構造 `H^1` 非零、
   proper two-phase complex の非自明 canonical 発火 witness。
 - pre-PR cycle T3: E0–E4 すべて approve。completion candidate: yes。
@@ -27,8 +28,10 @@ report はそれらを再定義しない。
   `No major findings`。その後の PR #3895 fixed-head review run 1 は
   no-triple-face proof-use と public docstring coverage、run 2 は公開された全域
   normalization 経路による predecessor bypass、run 3 は edge ごとの補正後 suffix
-  support が恒常的に空になる certificate wrapper を検出した。common-representative
-  remediation 後の formal 4レーン再査読まで `target-proof-checkpoint` とする。
+  support が恒常的に空になる certificate wrapper を検出した。run 4 は
+  common-representative remediation を全レーンで承認し、残った `Fresh` 正負例の
+  quality finding も parent validation 済み。変更後 fixed head の formal 4レーン
+  再査読まで `target-proof-checkpoint` とする。
 
 ## Cycle 1 — E0 依存 profile と二相分解
 
@@ -993,6 +996,70 @@ quality_findings:
   - FaceFreeEdge lacked a negative witness
   - leafRestriction carried an unused structurality argument
 remediation_status: common-representative-candidate-parent-validated
+formal_four_lane_rerun: pending
+target_theorem_proved: false
+tracking_issue_closed: false
+```
+
+## PR #3895 review — run 4 quality finding と Fresh witness remediation
+
+PR fixed head `b2ffdc2d95ae8b2b2540562372cd3d9a79dbbdeb` に対する新規4レーン
+formal review は、Math B / Lean B が `No major findings`、Math A / Lean A が
+同一の `Minor issues` を返した。全レーンは common representative、edge-local
+absorption、predecessor all-edge aggregation、`hfaces + hx` zero criterion の分離を
+承認し、E0–E4 と target (i)–(v) を落とす finding はなかった。
+
+### Quality finding
+
+- 新規 public Prop `StructuralForestPruningEntry.Fresh` の唯一の finite pruning は
+  singleton list で、`Pairwise Fresh` が空虚だった。新規 Prop の成立可能性と
+  endpoint collision の拒否を固定する正負例が不足していた。
+
+### Fresh witness remediation
+
+- `FreshPathChart` / `FreshPathEdge` により、3 chart の actual path
+  `left -- middle -- right` と2本の structural edge を構成した。
+- `freshPathStructuralPruning` は
+  `[freshPathLeftPruningEntry, freshPathRightPruningEntry]` の非 singleton order を持ち、
+  `freshPath_left_before_right_fresh` が earlier left leaf が later edge の両 endpoint に
+  現れないことを直接証明する。
+- `freshPathMiddlePruningEntry` は共有 middle chart を先に leaf とする deliberate bad
+  order であり、`freshPath_middle_before_right_not_fresh` が later right edge の左 endpoint
+  との実際の一致 `rfl` から `¬ Fresh` を証明する。
+- 全 chart / edge の structurality は E0 の `structuralPair_structural` から導出され、
+  pruning structure に phase label や結論相当 field を追加していない。
+
+parent validation evidence:
+
+- `lake env lean ResearchLean/AG/TwoPhase/FiniteWitnesses.lean` pass。
+- focused FiniteWitnesses check: pass。
+- targeted `lake build ResearchLean.AG.TwoPhase.FiniteWitnesses`: pass (3694 jobs)。
+- parent full ResearchLean `lake build`: pass (4480 jobs)。
+- FiniteWitnesses namespace axiom audit: 329 declarations、standard axioms only。
+- `git diff --check`: clean。
+- fixed source hashes:
+  - `DependencyProfile.lean`: `8a60e2a4332a7599583d5b32df4deecb3ba61d0568734e29fed0b7360235db9d`
+  - `CoefficientComplex.lean`: `7efb501e8faafcc34178f2f29007ef0154f579ccbe9f3ee0004266725fb13367`
+  - `CohomologyComparison.lean`: `73e53b5e525e9640e63d59de16403e10486d4f33915ed9533f3cdc596438ae46`
+  - `ForestSupport.lean`: `b292d9c17d9ac546f0afaddbb57563ea933dffaf8672903d4b8879100787a2b8`
+  - `FiniteWitnesses.lean`: `ffa3200773922c0b7a3366cfb3605949d92cf4b6260e11f0b0c51171058de853`
+- next gate: 宣言変更後 fixed head に対する新規4レーン formal `$math-lean-review`。
+
+```yaml
+ledger_type: pr_math_lean_review
+pr: 3895
+run: 4
+fixed_head: b2ffdc2d95ae8b2b2540562372cd3d9a79dbbdeb
+decision: needs-changes
+lane_results:
+  math_a: Minor issues
+  math_b: No major findings
+  lean_a: Minor issues
+  lean_b: No major findings
+blocking_findings: []
+quality_findings:
+  - Fresh lacked nonvacuous positive and endpoint-collision negative witnesses
+remediation_status: fresh-positive-negative-witnesses-parent-validated
 formal_four_lane_rerun: pending
 target_theorem_proved: false
 tracking_issue_closed: false
