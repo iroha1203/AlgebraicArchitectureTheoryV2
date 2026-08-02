@@ -39,6 +39,13 @@ theorem faceFreeEdge_of_isEmpty
   intro face
   exact (hfaces.false face).elim
 
+/-- An actual boundary edge of a face is not face-free. -/
+theorem not_faceFreeEdge_faceEdge0
+    (N : CoverNerve.{r}) (face : N.FaceComponent) :
+    ¬ FaceFreeEdge N (N.faceEdge0 face) := by
+  intro hfree
+  exact (hfree face).1 rfl
+
 /-- Canonical universe lift of every component and incidence map of a cover nerve. -/
 def liftCoverNerve (N : CoverNerve.{r}) : CoverNerve.{max r w} where
   Chart := ULift.{w, r} N.Chart
@@ -134,8 +141,7 @@ variable
 
 /-- The scalar endpoint restriction on the actual structural chart subspace. -/
 def leafRestriction
-    (entry : StructuralForestPruningEntry P)
-    (_hedge : family.Structural (P.indexing.edgePairAt entry.edge)) :
+    (entry : StructuralForestPruningEntry P) :
     P.structural0 →ₗ[k] k where
   toFun c := P.all.zeroCochainCoordinates c.1 entry.leaf
   map_add' x y := by simp
@@ -145,7 +151,7 @@ def leafRestriction
 theorem leafRestriction_surjective
     (entry : StructuralForestPruningEntry P)
     (hedge : family.Structural (P.indexing.edgePairAt entry.edge)) :
-    Function.Surjective (leafRestriction entry hedge) := by
+    Function.Surjective (leafRestriction entry) := by
   classical
   intro scalar
   let coords : P.indexing.expandedNerve.Chart → k :=
@@ -436,10 +442,10 @@ private theorem normalizedFor_class
 /--
 The reviewed edge-absorption certificate generated internally from the actual
 forest normalization.  Its support predicate is the natural nonzero-coordinate
-support on actual edges that occur in no face, measured on the representative
-immediately after that edge's suffix correction.  The predecessor theorem's
-no-triple-face input and finite all-edge aggregation are what transport these
-local absorptions to the final representative.
+support on actual edges that occur in no face, measured on one common full
+normalized representative.  Each local absorption transports a suffix-head zero
+to that common representative; the predecessor theorem alone aggregates those
+edgewise facts before the no-support criterion concludes vanishing.
 -/
 def toReviewedCertificate (F : StructuralForestPruning P hE) :
     FiniteForestEdgeAbsorptionData
@@ -455,22 +461,32 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
       edgeSupport := fun x edge =>
         FaceFreeEdge P.indexing.expandedNerve edge.down ∧
           family.Structural (P.indexing.edgePairAt edge.down) ∧
-            ∃ before entry tail,
-              F.entries = before ++ entry :: tail ∧
-                entry.edge = edge.down ∧
-                  P.all.oneCochainCoordinates
-                    (normalizedFor (entry :: tail) x.down).1.1 edge.down ≠ 0
+            P.all.oneCochainCoordinates
+              (normalizedFor F.entries x.down).1.1 edge.down ≠ 0
       classAt := fun x _m => x
       start_class := fun _x => rfl
       edge_absorption_preserves := by intros; rfl
       edge_absorbed := by
         intro x i
-        rintro ⟨_hfree, hedge, before, entry, tail, _hsplit, hedge_eq, hnonzero⟩
+        rintro ⟨hfree, hedge, hnonzero⟩
+        rcases List.mem_map.mp
+            (F.all_faceFree_structural_edges (edgeOrder.symm i) hfree hedge) with
+          ⟨entry, hmem, hedge_eq⟩
+        rcases exists_split_of_mem hmem with ⟨before, tail, hsplit⟩
         have hentry : family.Structural (P.indexing.edgePairAt entry.edge) := by
           simpa [hedge_eq] using hedge
-        exact hnonzero (by
-          simpa [hedge_eq] using
-            normalizedFor_head_coordinate_zero entry tail x.down hentry)
+        have horder :
+            (before ++ entry :: tail).Pairwise
+              StructuralForestPruningEntry.Fresh := by
+          simpa [← hsplit] using F.leafOrder
+        have hfull :
+            P.all.oneCochainCoordinates
+                (normalizedFor F.entries x.down).1.1 entry.edge = 0 := by
+          rw [hsplit]
+          exact (normalizedFor_prefix_coordinate
+            before entry tail horder x.down).trans
+              (normalizedFor_head_coordinate_zero entry tail x.down hentry)
+        exact hnonzero (by simpa [hedge_eq] using hfull)
       all_edges_pruned := by
         intro edge
         refine ⟨edgeOrder edge.down, ?_⟩
@@ -489,23 +505,8 @@ def toReviewedCertificate (F : StructuralForestPruning P hE) :
           · have hfree : FaceFreeEdge P.indexing.expandedNerve edge := by
               intro face
               exact (hfaces.false (ULift.up face)).elim
-            rcases List.mem_map.mp
-                (F.all_faceFree_structural_edges edge hfree hedge) with
-              ⟨entry, hmem, rfl⟩
-            rcases exists_split_of_mem hmem with ⟨before, tail, hsplit⟩
-            have hsuffix :
-                P.all.oneCochainCoordinates
-                    (normalizedFor (entry :: tail) x.down).1.1 entry.edge = 0 := by
-              by_contra hnonzero
-              exact (hx (ULift.up entry.edge))
-                ⟨hfree, hedge, before, entry, tail, hsplit, rfl, hnonzero⟩
-            have horder :
-                (before ++ entry :: tail).Pairwise
-                  StructuralForestPruningEntry.Fresh := by
-              simpa [← hsplit] using F.leafOrder
-            rw [hsplit]
-            exact (normalizedFor_prefix_coordinate
-              before entry tail horder x.down).trans hsuffix
+            by_contra hnonzero
+            exact (hx (ULift.up edge)) ⟨hfree, hedge, hnonzero⟩
           · exact (P.mem_structural1_iff
                 (normalizedFor F.entries x.down).1.1).1
               (normalizedFor F.entries x.down).1.2 edge hedge
