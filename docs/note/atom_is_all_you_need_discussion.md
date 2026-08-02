@@ -53,13 +53,16 @@ canonical な読みが立つ(§3、§6)。幾何の導出(創発)ではなく、
 到達目標は Grothendieck の相対的視点(relative point of view)である。
 EGA 以降の代数幾何では対象は射 X -> S であり、性質(平坦・固有・滑らか)は
 すべて底 S に相対的な射の性質として定義される。ソフトウェアは底の塔の上の
-ファイバーであり、Atom は**宣言された底の上の族**である。現段階の
-「Grothendieck 的」は比喩であり、doctrine の変更に対して Atom family・
-site・係数・障害類がどう輸送されるかを構成できたとき、はじめて数学になる。
-本目標の理論的内容はこの**輸送の構成**にある(§3、§8)。輸送の形式化
-仕様と達成階梯(Gr0–Gr4)は §3.5 に固定した: 現在 Gr1(statement 化)に
-到達済みであり、この比喩宣言の撤回条件は Gr2(§12 スライス a–c の
-Lean 構成)である。
+ファイバーであり、Atom は**宣言された底の上の族**である。「Grothendieck
+的」の語は、doctrine の変更に対して Atom family・site・係数・障害類が
+どう輸送されるかを構成できたとき、はじめて数学になる。本目標の理論的
+内容はこの**輸送の構成**にある(§3、§8)。輸送の形式化仕様と達成階梯
+(Gr0–Gr4)は §3.5 に固定した: 2026-08-02 に G-101(Atom Transport
+Opcartesian Lift Theorem、`target-theorem-proved`)で Gr2(構成された
+実例)に到達し、比喩宣言の撤回条件は満たされた — doctrine 射に沿う
+package 輸送(Atom family・equation system・detector)の範囲で
+「Grothendieck 的」は装置名である。site・係数を含む段横断の整合(Gr3)と
+base change 完備(Gr4)は未到達であり、その範囲では引き続き比喩である。
 
 タイトル「Atom Is All You Need」のテーゼは、因子化として固定する。
 
@@ -343,14 +346,16 @@ opcartesian であるとは、σ を通して factor する任意の hom が F �
 ```text
 Gr0 比喩(本ノート初版の状態)
 Gr1 statement 化: 四成分すべてに定理候補+機構+検査計画(本節で到達)
-Gr2 構成された実例: 上記 (i)–(iv) が FiniteModel + Lean で立つ
+Gr2 構成された実例: 上記 (i)–(iv) が FiniteModel + Lean で立つ(G-101 で到達)
 Gr3 擬関手的整合: 候補17 の 2-障害込みで輸送が段横断に合成する
 Gr4 base change 完備: doctrine 圏の fiber product(§10 ギャップ2)込みで
     相対的視点の全操作が閉じる
 ```
 
-Gr2 が立った時点で §1 の比喩宣言は撤回可能になり、Gr4 で EGA 的な
-意味の相対性に届く。descent 側(第X部・候補11・13)が先行して厚く、
+Gr2 は 2026-08-02 に G-101
+([research/reports/G-101-aat-atom-foundation.md](../../research/reports/G-101-aat-atom-foundation.md))で
+到達し、§1 の比喩宣言は撤回可能になった。EGA 的な意味の相対性に届くのは
+Gr4 である。descent 側(第X部・候補11・13)が先行して厚く、
 base change 側が最後に残るのは、代数幾何の歴史と同じ順序である。
 (記号 Gr は換金在庫の G1–G7(§9)との衝突を避けるための接頭辞である。)
 
@@ -1221,7 +1226,8 @@ a–d までで塔の下層・lift・Agent constructor・canonical resolution �
 同じ有限模型に乗り、`ReadingCore`(geometry 段)へ進む理由も明確になる。
 スライス a–c の形式仕様(Doct 射の二種・opcartesian lift・証明対象4点)は
 §3.5 に固定済みであり、a–c の完了が達成階梯 Gr2 = §1 の比喩宣言の撤回
-条件に一致する。
+条件に一致する。a–c は G-101(2026-08-02、`target-theorem-proved`)で
+完了した。未着手スライスの先頭は d(`q_L` の構成)である。
 
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
