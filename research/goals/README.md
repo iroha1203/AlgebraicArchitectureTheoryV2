@@ -15,12 +15,14 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-102-aat-two-phase-obstruction](G-102-aat-two-phase-obstruction.md)
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 
 ## draft（人間の確認待ち）
 
+- [G-103-aat-canonical-resolution](G-103-aat-canonical-resolution.md)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
