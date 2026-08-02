@@ -1,10 +1,17 @@
 # G-101-aat-atom-foundation — Atom 輸送の opcartesian lift 定理
 
 - `id`: `G-101-aat-atom-foundation`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Atom Transport Opcartesian Lift
+  Theorem の (i)–(iv) を全放電し、final `$math-lean-review` は全4レーン
+  `No major findings`(veto なし)。実装 PR は
+  [#3889](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3889)
+  でマージ済み。`Formal/AG` への移植は未実施(porting status: `unported`)。
+- `completed at`: `2026-08-02 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `tracking issue`: [#3888](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3888)
+- `tracking issue`: [#3888](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3888) closed as `COMPLETED`.
+- `report`: [research/reports/G-101-aat-atom-foundation.md](../reports/G-101-aat-atom-foundation.md)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)
 - `research aim`: doctrine の射の圏 `Doct_U` と pointed 圏 `ExtInst_U` を立て、
   exact 射に沿う package 輸送を opcartesian lift として構成・特徴づけ、輸送データ
