@@ -1042,7 +1042,7 @@ parent validation evidence:
   - `CoefficientComplex.lean`: `7efb501e8faafcc34178f2f29007ef0154f579ccbe9f3ee0004266725fb13367`
   - `CohomologyComparison.lean`: `73e53b5e525e9640e63d59de16403e10486d4f33915ed9533f3cdc596438ae46`
   - `ForestSupport.lean`: `b292d9c17d9ac546f0afaddbb57563ea933dffaf8672903d4b8879100787a2b8`
-  - `FiniteWitnesses.lean`: `ffa3200773922c0b7a3366cfb3605949d92cf4b6260e11f0b0c51171058de853`
+  - `FiniteWitnesses.lean`: `34b04b070aa166f111baf49d59f414cc61aa440049b2b475ac7937a82e9b8f51`
 - next gate: 宣言変更後 fixed head に対する新規4レーン formal `$math-lean-review`。
 
 ```yaml
