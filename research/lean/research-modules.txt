@@ -1,6 +1,19 @@
 # module	source
 ResearchLean.AG.Smoke	ResearchLean/AG/Smoke.lean
 ResearchLean.AG.Basic	ResearchLean/AG/Basic.lean
+ResearchLean.AG.AtomFoundation.Categories	ResearchLean/AG/AtomFoundation/Categories.lean
+ResearchLean.AG.AtomFoundation.Deconjugation	ResearchLean/AG/AtomFoundation/Deconjugation.lean
+ResearchLean.AG.AtomFoundation.Doctrine	ResearchLean/AG/AtomFoundation/Doctrine.lean
+ResearchLean.AG.AtomFoundation.EquationCorrespondence	ResearchLean/AG/AtomFoundation/EquationCorrespondence.lean
+ResearchLean.AG.AtomFoundation.FiniteTransportWitness	ResearchLean/AG/AtomFoundation/FiniteTransportWitness.lean
+ResearchLean.AG.AtomFoundation.LiftUniqueness	ResearchLean/AG/AtomFoundation/LiftUniqueness.lean
+ResearchLean.AG.AtomFoundation.Opcartesian	ResearchLean/AG/AtomFoundation/Opcartesian.lean
+ResearchLean.AG.AtomFoundation.RefinementObstruction	ResearchLean/AG/AtomFoundation/RefinementObstruction.lean
+ResearchLean.AG.AtomFoundation.RefinementSupply	ResearchLean/AG/AtomFoundation/RefinementSupply.lean
+ResearchLean.AG.AtomFoundation.RefinementSupplyObstruction	ResearchLean/AG/AtomFoundation/RefinementSupplyObstruction.lean
+ResearchLean.AG.AtomFoundation.RefinementSupplyWitness	ResearchLean/AG/AtomFoundation/RefinementSupplyWitness.lean
+ResearchLean.AG.AtomFoundation.Transport	ResearchLean/AG/AtomFoundation/Transport.lean
+ResearchLean.AG.AtomFoundation.TransportLaws	ResearchLean/AG/AtomFoundation/TransportLaws.lean
 ResearchLean.AG.QualitySurface.AntichainOverlapBasisTransversal	ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean
 ResearchLean.AG.QualitySurface.ArbitraryBranchFamilyAdequacy	ResearchLean/AG/QualitySurface/ArbitraryBranchFamilyAdequacy.lean
 ResearchLean.AG.QualitySurface.BranchReflectionAdequacyKernel	ResearchLean/AG/QualitySurface/BranchReflectionAdequacyKernel.lean

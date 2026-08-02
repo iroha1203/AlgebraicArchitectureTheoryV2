@@ -1,4 +1,17 @@
 import ResearchLean.AG.Basic
+import ResearchLean.AG.AtomFoundation.Categories
+import ResearchLean.AG.AtomFoundation.Deconjugation
+import ResearchLean.AG.AtomFoundation.Doctrine
+import ResearchLean.AG.AtomFoundation.EquationCorrespondence
+import ResearchLean.AG.AtomFoundation.FiniteTransportWitness
+import ResearchLean.AG.AtomFoundation.LiftUniqueness
+import ResearchLean.AG.AtomFoundation.Opcartesian
+import ResearchLean.AG.AtomFoundation.RefinementObstruction
+import ResearchLean.AG.AtomFoundation.RefinementSupply
+import ResearchLean.AG.AtomFoundation.RefinementSupplyObstruction
+import ResearchLean.AG.AtomFoundation.RefinementSupplyWitness
+import ResearchLean.AG.AtomFoundation.Transport
+import ResearchLean.AG.AtomFoundation.TransportLaws
 import ResearchLean.AG.QualitySurface.AntichainOverlapBasisTransversal
 import ResearchLean.AG.QualitySurface.ArbitraryBranchFamilyAdequacy
 import ResearchLean.AG.QualitySurface.BranchReflectionAdequacyKernel
