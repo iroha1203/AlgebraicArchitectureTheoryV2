@@ -143,6 +143,13 @@ profile の全次数は注記に留める。
 =層の条件が必然的に生じる。これが「なぜ AAT が層理論的になるのか」への
 答えである。
 
+このうち、二相分解の依存 profile からの導出(宣言された semantic-reading
+変形族に相対的な `fam`-不変性としての定義)と、二相係数の短完全列から
+`H^1` support 単射に至る機構は、G-102(2026-08-03、
+`target-theorem-proved`、report
+`research/reports/G-102-aat-two-phase-obstruction.md`)で Lean 定理化
+された(§8 候補1)。
+
 ## 3. 柱2 — 読みの規律(接地・反証・輸送)
 
 「読み方を変えれば Atom も変わる」を工学として強くする締め具は三つある:
@@ -780,6 +787,14 @@ law 族の方向(15)、二階の整合(17)、source 側の対称性(19)。
    第IV部定理12.4 として既存であり、本候補の新規部分は二相分解との
    積にある(研究ループでの再証明を避ける)。face が loop を埋める
    regime では `H^1(F_struct) = 0` 条件にも系12.3 の face 補正が要る。
+   **本候補は G-102(2026-08-03、`target-theorem-proved`、report
+   `research/reports/G-102-aat-two-phase-obstruction.md`)で証明済み。**
+   短完全列の実質条件は条件 E(構造 support 保存)として特定され、
+   E が破れる有限反例と、E 成立下でも構造側 descent が失敗する
+   (`H^1(F_struct) ≠ 0`)有限反例の2種、および `H^1(F_all) ≠ 0` の類の
+   像が実際に非零になる非 vacuous 発火 witness までが Lean で固定された。
+   探索課題としていた「構造 Atom だけでも descent が失敗する反例」と
+   「短完全列と消滅を成立させる最小仮定」はどちらも放電済みである。
 2. **Blame gauge(二分)**: (a) 固定した複体の中で代表元が coboundary 分
    だけ動くこと(cohomology の statement)。(b) doctrine の変更で複体
    そのものが変わること(comparison map と naturality が必要)。
@@ -1226,8 +1241,10 @@ a–d までで塔の下層・lift・Agent constructor・canonical resolution �
 同じ有限模型に乗り、`ReadingCore`(geometry 段)へ進む理由も明確になる。
 スライス a–c の形式仕様(Doct 射の二種・opcartesian lift・証明対象4点)は
 §3.5 に固定済みであり、a–c の完了が達成階梯 Gr2 = §1 の比喩宣言の撤回
-条件に一致する。a–c は G-101(2026-08-02、`target-theorem-proved`)で
-完了した。未着手スライスの先頭は d(`q_L` の構成)である。
+条件に一致する。a–c は G-101(2026-08-02、`target-theorem-proved`)で、
+e は G-102(2026-08-03、`target-theorem-proved`。構造 descent 失敗の
+有限反例と、消滅側を成立させる条件 E+forest regime の特定)で完了した。
+未着手スライスの先頭は d(`q_L` の構成、G-103 が対応)である。
 
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
@@ -1286,7 +1303,8 @@ Lean 形式化を主役に切り出すなら ITP / CPP)→ジャーナル特集�
 preprint + DOI(Zenodo / arXiv)を先行させる二段構えを取る。
 投稿判断の gate は執筆力ではなく証明であり、Gr2+候補1・4 の証明+
 one-cent 実例が揃った時点で JLAMP / LMCS 級が現実的射程になる。
-研究 GOAL の受け入れ規準はこの査読水準を目線に書く。
+Gr2(G-101)と候補1(G-102)は達成済みであり、gate の残りは候補4 の
+証明である。研究 GOAL の受け入れ規準はこの査読水準を目線に書く。
 
 ## 付録A. law の定義域と層別観測 — 形式手法実務家の反応から(2026-07-31)
 
