@@ -32,10 +32,12 @@
   構成の instantiation で済む部分は流用してよいが、正負 witness と
   admissible class の定義は AAT 入力から構成する。
 - `claim boundary`: 有限 Source(`Fintype` + `DecidableEq` regime)、
-  関数として与えられる law evaluation 族 `eval_l : Source -> Value_l`、
-  reading = Source 上の商(kernel 同値で比較)、adequacy =「各 `eval_l` が
-  reading を通して factor する」、admissible class = カード内で明示定義
-  する doctrine 誘導 readings の有限族を対象とする。無限 Source、
+  有限 index 集合上の law evaluation 族 `eval_l : Source -> Value_l`
+  (各 `Value_l` は `DecidableEq`)、reading = Source 上の商(kernel 同値で
+  比較)、adequacy =「各 `eval_l` が reading を通して factor する」、
+  admissible class = カード内で明示定義する doctrine 誘導 readings の
+  有限族(族の各 doctrine の `Source` 成分は固定した有限 Source と一致
+  する)を対象とする。無限 Source、
   一般 representability の特徴づけ(Goldblatt 型双条件)、決定不能性
   結果、concept lattice の一般論、二入口(方程式系先行 / Atom 先行)の
   合流 theorem、adequacy shell の一般存在、接地 certificate の分類は
@@ -55,7 +57,8 @@
 - `dullness filter`: 次を弾く。空 `L`・単元 Source・全 law が定数で
   `q_L` が自明(全潰し・恒等)になる例だけの発火、admissible class が
   空・または L-adequate reading を一つも含まないことによる vacuous 負例、
-  Source の濃度・型の不一致だけで成立する負例、普遍性を「`q_L` より粗い
+  恒等(離散)reading の常時 adequacy だけを vacuity 排除の witness に
+  立てる負例、Source の濃度・型の不一致だけで成立する負例、普遍性を「`q_L` より粗い
   adequate reading がない」の有限探索だけに弱めた確認、partition
   refinement の実装だけで正当性 theorem を欠く成果、既存 Myhill–Nerode
   類似の再証明で AAT 側の接続(doctrine 誘導 readings)を欠く成果。
@@ -70,7 +73,10 @@
     同値関係)とし、粗さは kernel の包含で比較する。reading `q` が
     `L`-adequate であるとは、各 `eval_l` が `q` を通して factor すること。
   - **admissible class**: 宣言された有限 doctrine 族が誘導する readings の
-    族。doctrine `D` が誘導する reading は、抽出集合の一致
+    族。族の各 doctrine は `Source` 成分が固定した有限 Source と一致する
+    ものに限る(`ExtractionDoctrine` は `Source` を内部型として持つため、
+    共有 Source なしには「同一 Source 上の商」を誘導できない)。doctrine
+    `D` が誘導する reading は、抽出集合の一致
     `x ~_D y ⟺ {a | D.extracts x a} = {a | D.extracts y a}` が定める
     Source 上の商とする。representable とは、`q_L` がこの族のある
     reading と kernel 同値であること。
@@ -80,19 +86,28 @@
      factor し、factor する写像は商の同型を除いて一意である。
   2. **(ii) 実効計算**: 有限 regime で `~_L` を計算する実効的構成
      (partition refinement 型でよい)を与え、その出力が (i) の `q_L` と
-     kernel 同値であることを theorem として証明する。
+     kernel 同値であることを theorem として証明する。実効性は claim
+     boundary の decidable 入力(有限 index の `L`・`DecidableEq` な
+     `Value_l`)の上での computable 構成として主張する。
   3. **(iii) representability 正例**: 宣言された admissible class の中に
      `q_L` と kernel 同値な reading が実在する有限 instance。
   4. **(iv) representability 負例**: admissible class が `L`-adequate な
      reading を少なくとも一つ含む(vacuity 排除)にもかかわらず、class の
-     どの reading も `q_L` と kernel 同値でない有限 instance。すなわち
-     adequate readings は在るが最粗のものが class 内で表現できない状況の
-     Lean witness。
+     どの reading も `q_L` と kernel 同値でない有限 instance。vacuity
+     排除の witness に立てる adequate reading は**非離散**(非自明な
+     同一視を少なくとも1組含む)であることを要求する — 恒等 reading は
+     任意の `L` に対して常時 adequate であり、それだけでは負例が
+     「class に `q_L` を入れなかった」という fiat 選択に退化するからで
+     ある。すなわち非離散な adequate readings は在るが最粗のものが
+     class 内で表現できない状況の Lean witness。
   5. **(v) 発火 witness**: (iii)(iv) の instance で `L` が非空・非定数、
      `q_L` が恒等でも全潰しでもなく、admissible class が2元以上を持つ
      ことを theorem として確認する。
   (i)(ii) は有限 Source と任意の `L` について証明する。witness((iii)–(v))
-  のみ既存 `FiniteModel` の carrier へ具体化する。
+  のみ既存 `FiniteModel` の Atom carrier へ具体化する。既存に固定するのは
+  Atom carrier のみであり、witness 用の有限 Source と doctrine 族は新設
+  してよい(既存 `extractionDoctrine` の 2 元 Source 上では商が恒等か
+  全潰しの二択となり (v) が実現不可能なため)。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/CanonicalResolution/` 配下。`Formal/AG` は
   参照のみ。full abstraction の一般理論、無限状態、決定不能性、concept
@@ -126,7 +141,9 @@
   certificate や structure field で受け取るだけでは放電と数えない。
 - `target material premise ledger`:
   - `有限 Source / FiniteModel`: `ambient-boundary`。(i)(ii) は任意の有限
-    Source、witness は既存 `FiniteModel` で具体化する。
+    Source、witness は既存 `FiniteModel` の Atom carrier 上に新設する
+    有限 Source / doctrine 族で具体化する(既存に固定するのは Atom
+    carrier のみ)。
   - `ExtractionDoctrine と extracts`: `ambient-boundary`。review 済み
     `Formal/AG/Atom/Axioms.lean` の参照のみ。doctrine 誘導 reading の
     定義は新規に research 側へ置く。
@@ -139,8 +156,9 @@
     kernel 同値を theorem で証明する。実装のみは放電と数えない。
   - `representability 正例`: `discharge-required`。admissible class 内の
     reading と `q_L` の kernel 同値の Lean witness。
-  - `representability 負例`: `discharge-required`。class 内に adequate
-    reading が存在することの witness と、全 class 元の非同値の証明。
+  - `representability 負例`: `discharge-required`。class 内に**非離散な**
+    adequate reading が存在することの witness と、全 class 元の非同値の
+    証明。恒等 reading の常時 adequacy による vacuity 排除、
     型・濃度不一致だけの構成は放電と数えない。
   - `非退化(発火)witness`: `discharge-required`。`L` 非空・非定数、
     `q_L` 非自明、class 2元以上。route integrity audit で使う。
@@ -148,7 +166,9 @@
   reading)を縮めない。一意性を商の粗視化で自明化しない。adequacy を
   「ある law が factor する」へ弱めない。representability を kernel 同値
   より弱い比較(濃度一致・次元一致)へ置き換えない。負例の vacuity
-  排除条件(class 内 adequate reading の実在)を落とさない。結論相当
+  排除条件(class 内の非離散 adequate reading の実在)を落とさない・
+  恒等 reading で代替しない。実効計算の decidability を `Classical` 選択で
+  供給して computable 構成を僭称しない。結論相当
   データ(普遍性・同値・非同値)を theorem argument、typeclass、
   structure field、certificate field、opaque membership へ移さない。
   statement を claim boundary 外(無限化・一般特徴づけ・合流)の主張と
