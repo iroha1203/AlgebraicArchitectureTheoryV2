@@ -32,6 +32,7 @@ def all : List Source := [.a0, .a1, .a2, .b0, .b1, .b2]
 theorem mem_all (source : Source) : source ∈ all := by
   cases source <;> simp [all]
 
+/-- The finite source instance induced by the explicit six-element enumeration. -/
 instance : Fintype Source := Fintype.ofList all mem_all
 
 end Source
@@ -51,6 +52,7 @@ theorem mem_all (law : Law) : law ∈ all := by
   cases law
   simp [all]
 
+/-- The finite law-index instance induced by the singleton enumeration. -/
 instance : Fintype Law := Fintype.ofList all mem_all
 
 end Law

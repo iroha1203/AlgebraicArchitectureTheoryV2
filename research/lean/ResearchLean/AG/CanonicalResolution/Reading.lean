@@ -139,9 +139,11 @@ namespace FiniteLawFamily
 
 variable {Source : Type u}
 
+/-- The finite law-index instance supplied by a finite law family. -/
 instance instLawFintype (laws : FiniteLawFamily Source) : Fintype laws.Law :=
   laws.lawFintype
 
+/-- Decidable equality on the value type associated with each law. -/
 instance instValueDecidableEq (laws : FiniteLawFamily Source)
     (law : laws.Law) : DecidableEq (laws.Value law) :=
   laws.valueDecidableEq law

@@ -77,6 +77,7 @@ namespace AdmissibleClass
 
 variable {U : AtomCarrier.{u}} {Source : Type u}
 
+/-- The finite doctrine-index instance supplied by an admissible class. -/
 instance instFintypeIndex (admissible : AdmissibleClass U Source) :
     Fintype admissible.Index :=
   admissible.indexFintype
