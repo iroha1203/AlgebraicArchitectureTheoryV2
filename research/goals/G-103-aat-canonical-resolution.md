@@ -1,12 +1,10 @@
 # G-103-aat-canonical-resolution — ambient canonical resolution と representability
 
 - `id`: `G-103-aat-canonical-resolution`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `predecessor`: 同分野の active target-theorem loop(G-102)の消化状況を
-  見て、人間の判断で active へ昇格する。
-- `tracking issue`: 未起票(active 昇格時に起票する)
+- `tracking issue`: [#3897](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3897)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§5–6、§7.1、§8 候補6、§12 スライス d)
 - `research aim`: 有限 Source 上の law family `L` に対して ambient
   joint-kernel quotient `q_L`(`x ~_L y ⟺ ∀ l ∈ L, eval_l x = eval_l y`)を
