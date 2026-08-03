@@ -12,6 +12,13 @@ import ResearchLean.AG.AtomFoundation.RefinementSupplyObstruction
 import ResearchLean.AG.AtomFoundation.RefinementSupplyWitness
 import ResearchLean.AG.AtomFoundation.Transport
 import ResearchLean.AG.AtomFoundation.TransportLaws
+import ResearchLean.AG.CanonicalResolution.Admissible
+import ResearchLean.AG.CanonicalResolution.Effective
+import ResearchLean.AG.CanonicalResolution.InstancePairs
+import ResearchLean.AG.CanonicalResolution.JointKernel
+import ResearchLean.AG.CanonicalResolution.NegativeWitness
+import ResearchLean.AG.CanonicalResolution.PositiveWitness
+import ResearchLean.AG.CanonicalResolution.Reading
 import ResearchLean.AG.QualitySurface.AntichainOverlapBasisTransversal
 import ResearchLean.AG.QualitySurface.ArbitraryBranchFamilyAdequacy
 import ResearchLean.AG.QualitySurface.BranchReflectionAdequacyKernel
