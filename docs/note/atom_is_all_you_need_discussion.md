@@ -542,6 +542,14 @@ resolution が必ず存在する。** 難しい問いは「その quotient が�
 statistic や Myhill–Nerode 型の最小商(観測で分離する最粗の合同)との
 接続が見える。
 
+この二段構えの有限 regime の核 — `q_L` の ambient 存在と普遍性(任意の
+adequate reading を通る factorization と一意性)、partition refinement 型
+実効計算の正当性、抽出集合の一致が誘導する admissible class 相対の
+representability 正例・負例 — は、G-103(2026-08-04、
+`target-theorem-proved`、report
+`research/reports/G-103-aat-canonical-resolution.md`)で Lean 定理化された
+(§8 候補6、§12 スライス d)。
+
 「どちらが先か」を随伴で解消するのは、代数幾何が通った道でもある
 (空間が先か環が先か — `Spec ⊣ Γ`、Gelfand 双対性)。言語ゲームにおいて
 語と規則が相互構成的であることとも整合する。実務にも両方の入口が実在する:
@@ -853,6 +861,16 @@ law 族の方向(15)、二階の整合(17)、source 側の対称性(19)。
    shell が先例。§7.2)。statement の雛形は「canonical resolution の
    存在 ⟺ law family の expressivity」という Goldblatt 型の双条件
    (§7.3)。
+   **本候補のうち (b) の有限モデル面は G-103(2026-08-04、
+   `target-theorem-proved`、report
+   `research/reports/G-103-aat-canonical-resolution.md`)で証明済み。**
+   ambient `q_L` の存在・普遍性(factorization と一意性)・実効計算の
+   正当性は任意の有限 Source と law family について、doctrine 誘導
+   admissible class 相対の representability 正例・負例(負例は class 内の
+   非離散 adequate reading の実在で vacuity を排除)と発火 witness は
+   有限 instance で、それぞれ Lean 固定された。(a) concept lattice の
+   principal extent 特徴づけ、(b) の一般的特徴づけ(Goldblatt 型双条件)、
+   (c) 二入口の合流条件、adequacy shell の構成的存在は未証明のまま残る。
 7. **Beth 型因子化定理(Atom-interface completeness の精密化)**:
    因子化テーゼ(§1)を invariance ⟹ definability の形に立てる。
 
@@ -1243,8 +1261,11 @@ a–d までで塔の下層・lift・Agent constructor・canonical resolution �
 §3.5 に固定済みであり、a–c の完了が達成階梯 Gr2 = §1 の比喩宣言の撤回
 条件に一致する。a–c は G-101(2026-08-02、`target-theorem-proved`)で、
 e は G-102(2026-08-03、`target-theorem-proved`。構造 descent 失敗の
-有限反例と、消滅側を成立させる条件 E+forest regime の特定)で完了した。
-未着手スライスの先頭は d(`q_L` の構成、G-103 が対応)である。
+有限反例と、消滅側を成立させる条件 E+forest regime の特定)で、
+d は G-103(2026-08-04、`target-theorem-proved`。`q_L` の普遍性・実効
+計算の正当性・representability 正負例と発火 witness)で完了した。
+未着手スライスは f(blame 代表と coboundary)と g(law 弱化と repair
+cochain 非存在)である。
 
 想定する進め方(未確定、着手時に PRD / 研究 GOAL 化して確定する):
 
