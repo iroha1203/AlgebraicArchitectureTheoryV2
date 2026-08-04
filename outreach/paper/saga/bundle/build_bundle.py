@@ -2,9 +2,9 @@
 """saga-zenodo-bundle の組成スクリプト。
 
 repository root から実行する。paper PDF は事前に tectonic でビルドしておく:
-    cd outreach/paper/en && tectonic main.tex
+    cd outreach/paper/saga/en && tectonic main.tex
 組成:
-    python3 outreach/paper/bundle/build_bundle.py [--ci-run URL] [--out DIR]
+    python3 outreach/paper/saga/bundle/build_bundle.py [--ci-run URL] [--out DIR]
 tag 押下後に --ci-run で release CI run URL を渡すと MANIFEST に記録される。
 """
 
@@ -78,11 +78,11 @@ def main() -> int:
     args = ap.parse_args()
 
     root = Path.cwd()
-    if not (root / "outreach/paper/en/main.tex").exists():
+    if not (root / "outreach/paper/saga/en/main.tex").exists():
         sys.exit("run from the repository root")
-    pdf = root / "outreach/paper/en/main.pdf"
+    pdf = root / "outreach/paper/saga/en/main.pdf"
     if not pdf.exists():
-        sys.exit("build the PDF first: cd outreach/paper/en && tectonic main.tex")
+        sys.exit("build the PDF first: cd outreach/paper/saga/en && tectonic main.tex")
 
     out = Path(args.out)
     if out.exists():
@@ -95,10 +95,10 @@ def main() -> int:
     src.mkdir(parents=True)
     shutil.copy2(pdf, paper / "main.pdf")
     for fig in ["zenodo_saga_figure1_comparison.png", "zenodo_saga_figure2_one_cent.png"]:
-        shutil.copy2(root / "outreach/paper" / fig, paper / fig)
-    shutil.copy2(root / "outreach/paper/zenodo_saga_references.bib",
+        shutil.copy2(root / "outreach/paper/saga" / fig, paper / fig)
+    shutil.copy2(root / "outreach/paper/saga/zenodo_saga_references.bib",
                  paper / "zenodo_saga_references.bib")
-    for tex in sorted((root / "outreach/paper/en").glob("*.tex")):
+    for tex in sorted((root / "outreach/paper/saga/en").glob("*.tex")):
         shutil.copy2(tex, src / tex.name)
 
     # evidence/
@@ -156,7 +156,7 @@ report with the condition matrix is `../report/saga_diagnosis.md`.
 
     # audit/
     (out / "audit").mkdir()
-    shutil.copy2(root / "outreach/paper/zenodo_claim_evidence_matrix.md",
+    shutil.copy2(root / "outreach/paper/saga/zenodo_claim_evidence_matrix.md",
                  out / "audit/claim_evidence_matrix.md")
 
     # CITATION.md
