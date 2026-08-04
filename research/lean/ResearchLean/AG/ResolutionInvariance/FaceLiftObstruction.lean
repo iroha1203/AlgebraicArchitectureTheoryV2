@@ -277,14 +277,20 @@ abbrev nerveMorphism : NerveMorphism fineNerve coarseNerve where
   face_none_edge1 := by intro face; exact isEmptyElim face
   face_none_edge2 := by intro face; exact isEmptyElim face
 
+/-!
+The following predicates are private proof helpers for this one closed finite
+witness.  They are not exported as reusable `Prop` APIs: the public theorems
+below state the corresponding incidence properties directly.
+-/
+
 /-- Fine chart support maps into the corresponding coarse chart support. -/
-def SupportCompatible : Prop :=
+private def SupportCompatible : Prop :=
   ∀ chart target, target ∈ fineSupported.chartSupport chart →
     comparisonFactor coarseReading fineReading coarse_coarser_fine target ∈
       coarseSupported.chartSupport (nerveMorphism.chartMap chart)
 
 /-- C0: every coarse chart support is exactly the union of mapped fine supports. -/
-def ConditionC0 : Prop :=
+private def ConditionC0 : Prop :=
   ∀ coarseChart target,
     target ∈ coarseSupported.chartSupport coarseChart ↔
       ∃ fineChart fineTarget,
@@ -294,13 +300,13 @@ def ConditionC0 : Prop :=
           target
 
 /-- Fine charts are adjacent inside a coarse-chart fiber along deleted edges. -/
-def FiberAdjacent (left right : fineNerve.Chart) : Prop :=
+private def FiberAdjacent (left right : fineNerve.Chart) : Prop :=
   ∃ edge, nerveMorphism.edgeMap edge = none ∧
     ((fineNerve.edgeLeft edge = left ∧ fineNerve.edgeRight edge = right) ∨
       (fineNerve.edgeLeft edge = right ∧ fineNerve.edgeRight edge = left))
 
 /-- C1: every chart fiber is nonempty and connected by internal fine edges. -/
-def ConditionC1 : Prop :=
+private def ConditionC1 : Prop :=
   ∀ coarseChart,
     (∃ fineChart, nerveMorphism.chartMap fineChart = coarseChart) ∧
     ∀ left right,
@@ -309,58 +315,59 @@ def ConditionC1 : Prop :=
       Relation.ReflTransGen FiberAdjacent left right
 
 /-- C2: every coarse edge has a fine edge lift. -/
-def ConditionC2 : Prop :=
+private def ConditionC2 : Prop :=
   ∀ coarseEdge, ∃ fineEdge, nerveMorphism.edgeMap fineEdge = some coarseEdge
 
 /-- An edge lies in the internal graph over one coarse chart. -/
-def FiberEdge (coarseChart : coarseNerve.Chart)
+private def FiberEdge (coarseChart : coarseNerve.Chart)
     (edge : fineNerve.EdgeComponent) : Prop :=
   nerveMorphism.edgeMap edge = none ∧
     nerveMorphism.chartMap (fineNerve.edgeLeft edge) = coarseChart
 
 /-- Incoming coefficient sum of a finite one-chain at one fine chart. -/
-def incoming (chain : fineNerve.EdgeComponent → ℚ)
+private def incoming (chain : fineNerve.EdgeComponent → ℚ)
     (chart : fineNerve.Chart) : ℚ :=
   ∑ edge, if fineNerve.edgeRight edge = chart then chain edge else 0
 
 /-- Outgoing coefficient sum of a finite one-chain at one fine chart. -/
-def outgoing (chain : fineNerve.EdgeComponent → ℚ)
+private def outgoing (chain : fineNerve.EdgeComponent → ℚ)
     (chart : fineNerve.Chart) : ℚ :=
   ∑ edge, if fineNerve.edgeLeft edge = chart then chain edge else 0
 
 /-- A cycle supported inside one chart fiber, stated only with incidence data. -/
-def IsFiberCycle (coarseChart : coarseNerve.Chart)
+private def IsFiberCycle (coarseChart : coarseNerve.Chart)
     (chain : fineNerve.EdgeComponent → ℚ) : Prop :=
   (∀ edge, ¬ FiberEdge coarseChart edge → chain edge = 0) ∧
   ∀ chart, nerveMorphism.chartMap chart = coarseChart →
     incoming chain chart = outgoing chain chart
 
 /-- A fine face is internal to one chart fiber when all boundary edges are. -/
-def InternalFace (coarseChart : coarseNerve.Chart)
+private def InternalFace (coarseChart : coarseNerve.Chart)
     (face : fineNerve.FaceComponent) : Prop :=
   FiberEdge coarseChart (fineNerve.faceEdge0 face) ∧
     FiberEdge coarseChart (fineNerve.faceEdge1 face) ∧
     FiberEdge coarseChart (fineNerve.faceEdge2 face)
 
 /-- Oriented boundary of a finite fine-face chain. -/
-def faceBoundary (faces : fineNerve.FaceComponent → ℚ)
+private def faceBoundary (faces : fineNerve.FaceComponent → ℚ)
     (edge : fineNerve.EdgeComponent) : ℚ :=
   (∑ face, if fineNerve.faceEdge0 face = edge then faces face else 0) -
     (∑ face, if fineNerve.faceEdge1 face = edge then faces face else 0) +
       (∑ face, if fineNerve.faceEdge2 face = edge then faces face else 0)
 
 /-- C3: every internal fiber cycle is spanned by internal fine faces. -/
-def ConditionC3 : Prop :=
+private def ConditionC3 : Prop :=
   ∀ coarseChart chain, IsFiberCycle coarseChart chain →
     ∃ faces : fineNerve.FaceComponent → ℚ,
       (∀ face, ¬ InternalFace coarseChart face → faces face = 0) ∧
       ∀ edge, chain edge = faceBoundary faces edge
 
-/-- The proposed fixed condition is the conjunction C0--C3. -/
-def ConditionC : Prop := ConditionC0 ∧ ConditionC1 ∧ ConditionC2 ∧ ConditionC3
-
 /-- Full supports are compatible with the canonical comparison factor. -/
-theorem support_compatible : SupportCompatible := by
+theorem support_compatible :
+    ∀ chart target, target ∈ fineSupported.chartSupport chart →
+      comparisonFactor coarseReading fineReading coarse_coarser_fine target ∈
+        coarseSupported.chartSupport (nerveMorphism.chartMap chart) := by
+  change SupportCompatible
   intro chart target _
   trivial
 
@@ -374,7 +381,15 @@ theorem chartMap_chartLift (chart : coarseNerve.Chart) :
   fin_cases chart <;> rfl
 
 /-- C0 holds for the concrete full supports. -/
-theorem conditionC0 : ConditionC0 := by
+theorem conditionC0 :
+    ∀ coarseChart target,
+      target ∈ coarseSupported.chartSupport coarseChart ↔
+        ∃ fineChart fineTarget,
+          nerveMorphism.chartMap fineChart = coarseChart ∧
+          fineTarget ∈ fineSupported.chartSupport fineChart ∧
+          comparisonFactor coarseReading fineReading coarse_coarser_fine fineTarget =
+            target := by
+  change ConditionC0
   intro coarseChart target
   constructor
   · intro _
@@ -386,15 +401,29 @@ theorem conditionC0 : ConditionC0 := by
     trivial
 
 /-- The two split charts are connected by the internal edge. -/
-theorem fiberAdjacent_zero_one : FiberAdjacent 0 1 := by
+private theorem fiberAdjacent_zero_one : FiberAdjacent 0 1 := by
   exact ⟨0, by rfl, Or.inl ⟨rfl, rfl⟩⟩
 
 /-- The split adjacency is symmetric. -/
-theorem fiberAdjacent_one_zero : FiberAdjacent 1 0 := by
+private theorem fiberAdjacent_one_zero : FiberAdjacent 1 0 := by
   exact ⟨0, by rfl, Or.inr ⟨rfl, rfl⟩⟩
 
 /-- C1 holds: the only nonsingleton fiber is the connected pair zero--one. -/
-theorem conditionC1 : ConditionC1 := by
+theorem conditionC1 :
+    ∀ coarseChart,
+      (∃ fineChart, nerveMorphism.chartMap fineChart = coarseChart) ∧
+      ∀ left right,
+        nerveMorphism.chartMap left = coarseChart →
+        nerveMorphism.chartMap right = coarseChart →
+        Relation.ReflTransGen
+          (fun left right : fineNerve.Chart =>
+            ∃ edge, nerveMorphism.edgeMap edge = none ∧
+              ((fineNerve.edgeLeft edge = left ∧
+                  fineNerve.edgeRight edge = right) ∨
+                (fineNerve.edgeLeft edge = right ∧
+                  fineNerve.edgeRight edge = left)))
+          left right := by
+  change ConditionC1
   intro coarseChart
   refine ⟨⟨chartLift coarseChart, chartMap_chartLift coarseChart⟩, ?_⟩
   intro left right hleft hright
@@ -424,7 +453,10 @@ theorem conditionC1 : ConditionC1 := by
     exact Relation.ReflTransGen.refl
 
 /-- C2 holds by the three nondegenerate fine edges. -/
-theorem conditionC2 : ConditionC2 := by
+theorem conditionC2 :
+    ∀ coarseEdge, ∃ fineEdge,
+      nerveMorphism.edgeMap fineEdge = some coarseEdge := by
+  change ConditionC2
   intro coarseEdge
   fin_cases coarseEdge
   · exact ⟨1, rfl⟩
@@ -432,7 +464,7 @@ theorem conditionC2 : ConditionC2 := by
   · exact ⟨3, rfl⟩
 
 /-- Every internal fiber cycle in the concrete fine graph is zero. -/
-theorem fiberCycle_eq_zero (coarseChart : coarseNerve.Chart)
+private theorem fiberCycle_eq_zero (coarseChart : coarseNerve.Chart)
     (chain : fineNerve.EdgeComponent → ℚ)
     (hcycle : IsFiberCycle coarseChart chain) : chain = 0 := by
   rcases hcycle with ⟨hsupport, hbalanced⟩
@@ -459,16 +491,35 @@ theorem fiberCycle_eq_zero (coarseChart : coarseNerve.Chart)
     exact hsupport 3 (by simp [FiberEdge, edgeMap])
 
 /-- C3 holds because every chart fiber graph is a forest. -/
-theorem conditionC3 : ConditionC3 := by
+theorem conditionC3 :
+    ∀ coarseChart,
+      let fiberEdge : fineNerve.EdgeComponent → Prop := fun edge =>
+        nerveMorphism.edgeMap edge = none ∧
+          nerveMorphism.chartMap (fineNerve.edgeLeft edge) = coarseChart
+      let isFiberCycle : (fineNerve.EdgeComponent → ℚ) → Prop := fun chain =>
+        (∀ edge, ¬ fiberEdge edge → chain edge = 0) ∧
+          ∀ chart, nerveMorphism.chartMap chart = coarseChart →
+            (∑ edge, if fineNerve.edgeRight edge = chart then chain edge else 0) =
+              ∑ edge, if fineNerve.edgeLeft edge = chart then chain edge else 0
+      let internalFace : fineNerve.FaceComponent → Prop := fun face =>
+        fiberEdge (fineNerve.faceEdge0 face) ∧
+          fiberEdge (fineNerve.faceEdge1 face) ∧
+          fiberEdge (fineNerve.faceEdge2 face)
+      let boundary : (fineNerve.FaceComponent → ℚ) →
+          fineNerve.EdgeComponent → ℚ := fun faces edge =>
+        (∑ face, if fineNerve.faceEdge0 face = edge then faces face else 0) -
+          (∑ face, if fineNerve.faceEdge1 face = edge then faces face else 0) +
+            ∑ face, if fineNerve.faceEdge2 face = edge then faces face else 0
+      ∀ chain, isFiberCycle chain →
+        ∃ faces : fineNerve.FaceComponent → ℚ,
+          (∀ face, ¬ internalFace face → faces face = 0) ∧
+            ∀ edge, chain edge = boundary faces edge := by
+  change ConditionC3
   intro coarseChart chain hcycle
   refine ⟨Empty.elim, (by intro face; exact isEmptyElim face), ?_⟩
   intro edge
   rw [fiberCycle_eq_zero coarseChart chain hcycle]
   simp [faceBoundary]
-
-/-- All four proposed incidence conditions hold in the witness. -/
-theorem conditionC : ConditionC :=
-  ⟨conditionC0, conditionC1, conditionC2, conditionC3⟩
 
 /-- The coarse filling face has no fine face lift. -/
 theorem coarse_face_has_no_lift :
@@ -789,35 +840,95 @@ The finite witness satisfies every proposed input and C0--C3 while the
 canonical comparison map fails to be an `H^1` isomorphism.
 -/
 theorem fixedConditionC_not_sufficient :
+    let supportCompatible : Prop :=
+      ∀ chart target, target ∈ fineSupported.chartSupport chart →
+        comparisonFactor coarseReading fineReading coarse_coarser_fine target ∈
+          coarseSupported.chartSupport (nerveMorphism.chartMap chart)
+    let conditionC0 : Prop :=
+      ∀ coarseChart target,
+        target ∈ coarseSupported.chartSupport coarseChart ↔
+          ∃ fineChart fineTarget,
+            nerveMorphism.chartMap fineChart = coarseChart ∧
+            fineTarget ∈ fineSupported.chartSupport fineChart ∧
+            comparisonFactor coarseReading fineReading coarse_coarser_fine fineTarget =
+              target
+    let fiberAdjacent : fineNerve.Chart → fineNerve.Chart → Prop := fun left right =>
+      ∃ edge, nerveMorphism.edgeMap edge = none ∧
+        ((fineNerve.edgeLeft edge = left ∧ fineNerve.edgeRight edge = right) ∨
+          (fineNerve.edgeLeft edge = right ∧ fineNerve.edgeRight edge = left))
+    let conditionC1 : Prop :=
+      ∀ coarseChart,
+        (∃ fineChart, nerveMorphism.chartMap fineChart = coarseChart) ∧
+        ∀ left right,
+          nerveMorphism.chartMap left = coarseChart →
+          nerveMorphism.chartMap right = coarseChart →
+          Relation.ReflTransGen fiberAdjacent left right
+    let conditionC2 : Prop :=
+      ∀ coarseEdge, ∃ fineEdge,
+        nerveMorphism.edgeMap fineEdge = some coarseEdge
+    let fiberEdge : coarseNerve.Chart → fineNerve.EdgeComponent → Prop :=
+      fun coarseChart edge =>
+        nerveMorphism.edgeMap edge = none ∧
+          nerveMorphism.chartMap (fineNerve.edgeLeft edge) = coarseChart
+    let incoming : (fineNerve.EdgeComponent → ℚ) → fineNerve.Chart → ℚ :=
+      fun chain chart =>
+        ∑ edge, if fineNerve.edgeRight edge = chart then chain edge else 0
+    let outgoing : (fineNerve.EdgeComponent → ℚ) → fineNerve.Chart → ℚ :=
+      fun chain chart =>
+        ∑ edge, if fineNerve.edgeLeft edge = chart then chain edge else 0
+    let isFiberCycle : coarseNerve.Chart →
+        (fineNerve.EdgeComponent → ℚ) → Prop := fun coarseChart chain =>
+      (∀ edge, ¬ fiberEdge coarseChart edge → chain edge = 0) ∧
+        ∀ chart, nerveMorphism.chartMap chart = coarseChart →
+          incoming chain chart = outgoing chain chart
+    let internalFace : coarseNerve.Chart → fineNerve.FaceComponent → Prop :=
+      fun coarseChart face =>
+        fiberEdge coarseChart (fineNerve.faceEdge0 face) ∧
+          fiberEdge coarseChart (fineNerve.faceEdge1 face) ∧
+          fiberEdge coarseChart (fineNerve.faceEdge2 face)
+    let boundary : (fineNerve.FaceComponent → ℚ) →
+        fineNerve.EdgeComponent → ℚ := fun faces edge =>
+      (∑ face, if fineNerve.faceEdge0 face = edge then faces face else 0) -
+        (∑ face, if fineNerve.faceEdge1 face = edge then faces face else 0) +
+          ∑ face, if fineNerve.faceEdge2 face = edge then faces face else 0
+    let conditionC3 : Prop :=
+      ∀ coarseChart chain, isFiberCycle coarseChart chain →
+        ∃ faces : fineNerve.FaceComponent → ℚ,
+          (∀ face, ¬ internalFace coarseChart face → faces face = 0) ∧
+            ∀ edge, chain edge = boundary faces edge
     laws.Adequate coarseReading ∧
-    laws.Adequate fineReading ∧
-    coarseReading.CoarserThan fineReading ∧
-    SupportCompatible ∧
-    ConditionC ∧
-    (¬ Function.Injective
-      (comparisonFactor coarseReading fineReading coarse_coarser_fine)) ∧
-    (∃ law x y, laws.eval law x ≠ laws.eval law y) ∧
-    (∀ value : CoarseCoordinate,
-      ∃ target : coarseReading.Target,
-        target ∈ (Set.univ : Set coarseReading.Target) ∧
-        lawDescend laws coarseReading coarse_adequate PUnit.unit target = value) ∧
-    (∀ value : FineCoordinate,
-      ∃ target : fineReading.Target,
-        target ∈ (Set.univ : Set fineReading.Target) ∧
-        lawDescend laws fineReading fine_adequate PUnit.unit target = value) ∧
-    (∀ target : fineReading.Target,
-      lawDescend laws coarseReading coarse_adequate PUnit.unit
-          (comparisonFactor coarseReading fineReading coarse_coarser_fine target) =
-        coordinateMap
-          (lawDescend laws fineReading fine_adequate PUnit.unit target)) ∧
-    coarseComplex.H1Zero ∧
-    fineFiringClass ≠ 0 ∧
-    (¬ Function.Surjective comparisonH1Map) :=
-  ⟨coarse_adequate, fine_adequate, coarse_coarser_fine,
-    support_compatible, conditionC, comparisonFactor_not_injective,
-    law_nonconstant, coarseCoordinate_generated, fineCoordinate_generated,
-    coordinateMap_descend_compatible, coarseH1Zero, fineFiringClass_ne_zero,
-    comparisonH1Map_not_surjective⟩
+      laws.Adequate fineReading ∧
+      coarseReading.CoarserThan fineReading ∧
+      supportCompatible ∧
+      conditionC0 ∧
+      conditionC1 ∧
+      conditionC2 ∧
+      conditionC3 ∧
+      (¬ Function.Injective
+        (comparisonFactor coarseReading fineReading coarse_coarser_fine)) ∧
+      (∃ law x y, laws.eval law x ≠ laws.eval law y) ∧
+      (∀ value : CoarseCoordinate,
+        ∃ target : coarseReading.Target,
+          target ∈ (Set.univ : Set coarseReading.Target) ∧
+          lawDescend laws coarseReading coarse_adequate PUnit.unit target = value) ∧
+      (∀ value : FineCoordinate,
+        ∃ target : fineReading.Target,
+          target ∈ (Set.univ : Set fineReading.Target) ∧
+          lawDescend laws fineReading fine_adequate PUnit.unit target = value) ∧
+      (∀ target : fineReading.Target,
+        lawDescend laws coarseReading coarse_adequate PUnit.unit
+            (comparisonFactor coarseReading fineReading coarse_coarser_fine target) =
+          coordinateMap
+            (lawDescend laws fineReading fine_adequate PUnit.unit target)) ∧
+      coarseComplex.H1Zero ∧
+      fineFiringClass ≠ 0 ∧
+      (¬ Function.Surjective comparisonH1Map) := by
+  dsimp only
+  exact ⟨coarse_adequate, fine_adequate, coarse_coarser_fine,
+    support_compatible, conditionC0, conditionC1, conditionC2, conditionC3,
+    comparisonFactor_not_injective, law_nonconstant, coarseCoordinate_generated,
+    fineCoordinate_generated, coordinateMap_descend_compatible, coarseH1Zero,
+    fineFiringClass_ne_zero, comparisonH1Map_not_surjective⟩
 
 end FaceLiftObstruction
 

@@ -165,7 +165,10 @@ completion candidate: no
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.fine_adequate`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.comparisonFactor_not_injective`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.law_nonconstant`
-  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC0`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC1`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC2`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC3`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_face_has_no_lift`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarseCoordinate_generated`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.fineCoordinate_generated`
@@ -188,9 +191,10 @@ completion candidate: no
     pullback の `h1Map` は非全射。
 - focused check: pass。
 - targeted module build: pass、3695 jobs。
-- full ResearchLean build: pass、4489 jobs。
+- full ResearchLean build: pass、4489 jobs (formal review 前 snapshot)。
+- formal review 修正後の focused check / targeted module build: pass。
 - manifest focused check: pass。
-- namespace axiom audit: 130 declarations、standard axioms only。
+- namespace axiom audit: 113 declarations、standard axioms only。
 - principal `#print axioms`: `propext`、`Classical.choice`、`Quot.sound` の範囲。
 - placeholder、hidden / bidirectional Unicode、local-path、diff check: clean。
 
@@ -205,6 +209,8 @@ completion candidate: no
   adequacy と descend compatibility は coordinate generation と final witness package
   に接続される。
 - structure-field escape: none-found。
+- instance-pair audit: witness 内部の Prop helper は private とし、public theorem は
+  C0–C3 の incidence 式を直接 statement に持つ。片側だけの public predicate API はない。
 - route integrity: pass。proper refinement、非定数 law、3 chart 以上、fine 非零
   `H^1` を持ち、identity / zero-`H^1` / constant-law / single-chart vacuity ではない。
 - cheat route: target-fitting construction、vacuity、one-way theorem の同値扱い、
@@ -223,8 +229,9 @@ completion candidate: no
 - **C4 (coarse-face lift)**: 各 coarse face は、その3本の boundary edge が対応する
   coarse edge へ写る fine face を少なくとも一つ持つ。
 
-この witness は C4 の必要性を示すが、C4 を加えた条件の十分性は証明していない。
-改訂後は edge / face fiber の追加 incidence coherence が必要かを別途検査する。
+C4 はこの witness を除外する次版候補である。その一般的な必要性・十分性は
+いずれも証明していない。改訂後は edge / face fiber の追加 incidence coherence が
+必要かを別途検査する。
 
 ```yaml
 ledger_type: target_cycle_result
@@ -242,7 +249,10 @@ primary_specification:
 lean_artifacts:
   - file: research/lean/ResearchLean/AG/ResolutionInvariance/FaceLiftObstruction.lean
     declarations:
-      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC0
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC1
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC2
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC3
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_face_has_no_lift
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarseCoordinate_generated
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.fineCoordinate_generated
