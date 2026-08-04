@@ -5,9 +5,10 @@
 
 ## 構成
 
-- `en/`: 英語記事
-- `ja/`: 日本語記事・下書き
-- `assets/`: 記事用画像
+- `blog/hashnode/`: 英語記事(Hashnode ほか英語媒体向け)
+- `blog/zenn/`: 日本語記事・下書き(Zenn ほか日本語媒体向け)
+- `blog/assets/`: 記事用画像
+- `paper/saga/`: SAGA 論文(Zenodo 出版素材・LaTeX 原稿・bundle スクリプト)
 
 公開 website の `/outreach/` は `website/src/outreach/` で管理する。ここにある記事本文は公開サイトの実装そのものではなく、外部媒体向けの原稿・素材である。
 

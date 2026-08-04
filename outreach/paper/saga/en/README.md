@@ -24,7 +24,7 @@ tex / bib / 図ソース一式を添付として deposit する。
 ## ビルド
 
 ```bash
-cd outreach/paper/en && tectonic main.tex   # main.pdf を生成
+cd outreach/paper/saga/en && tectonic main.tex   # main.pdf を生成
 ```
 
 tectonic は単体バイナリの TeX エンジン(`brew install tectonic`)。
