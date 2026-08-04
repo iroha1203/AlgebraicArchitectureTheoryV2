@@ -5,8 +5,9 @@
 
 ## 構成
 
-- `blog/hashnode/`: 英語記事(Hashnode ほか英語媒体向け)
+- `blog/hashnode/`: 英語記事(Hashnode ほか英語媒体向け、技術系)
 - `blog/zenn/`: 日本語記事・下書き(Zenn ほか日本語媒体向け)
+- `blog/medium/`: 思想系記事(Medium「Spec Z」向け、日本語原稿+英語公開版)
 - `blog/assets/`: 記事用画像
 - `paper/saga/`: SAGA 論文(Zenodo 出版素材・LaTeX 原稿・bundle スクリプト)
 
