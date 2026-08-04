@@ -163,6 +163,8 @@ completion candidate: no
 - principal declarations:
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_adequate`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.fine_adequate`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_coarser_fine`
+  - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.support_compatible`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.comparisonFactor_not_injective`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.law_nonconstant`
   - `AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC0`
@@ -249,6 +251,12 @@ primary_specification:
 lean_artifacts:
   - file: research/lean/ResearchLean/AG/ResolutionInvariance/FaceLiftObstruction.lean
     declarations:
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_adequate
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.fine_adequate
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.coarse_coarser_fine
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.support_compatible
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.comparisonFactor_not_injective
+      - AAT.AG.ResolutionInvariance.FaceLiftObstruction.law_nonconstant
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC0
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC1
       - AAT.AG.ResolutionInvariance.FaceLiftObstruction.conditionC2
