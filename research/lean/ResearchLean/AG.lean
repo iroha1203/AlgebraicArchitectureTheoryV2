@@ -235,6 +235,7 @@ import ResearchLean.AG.QualitySurface.VisibleLawDeletionProtectedZero
 import ResearchLean.AG.QualitySurface.VisibleLocalSemanticGluingObstruction
 import ResearchLean.AG.QualitySurface.VisibleRepairTransportCommutator
 import ResearchLean.AG.ResolutionInvariance.ComparisonData
+import ResearchLean.AG.ResolutionInvariance.EdgeFiberObstruction
 import ResearchLean.AG.ResolutionInvariance.FaceLiftObstruction
 import ResearchLean.AG.SFT.ConwayBoundaryGenerator
 import ResearchLean.AG.SFT.ConwayBoundaryMap
