@@ -19,6 +19,10 @@
   に条件が要り、その条件 C の正体こそが定理の中身である。C が自明に常時
   成立するなら定理は定義の言い換えであり、C が強すぎて実例が持てないなら
   定理は空である。C の成立正例と、C なしで同型が破れる反例の稜線が核心。
+  特に coarse face の fine lift(C4)は外せない: これを欠く C は、filling
+  face 付きの粗側 nerve と face-free の細側 cycle で `H^1` が一致しない
+  有限反例を許す。残る稜線は C0–C4 で十分か、edge / face fiber の追加
+  incidence coherence が要るかの判定である。
 - `rival`: 抽象解釈の粒度選択(Galois 接続の合成で精度が単調に変わる
   一般論)、モデル検査の抽象化精細化(CEGAR)、Čech 理論の被覆精細化と
   Leray 型定理(古典的先例。差は adequacy を law family 相対で固定する
@@ -50,10 +54,12 @@
 - `dullness filter`: 次を弾く。`q = q'`(恒等比較)だけの発火、両側の
   `H^1` が零で同型が vacuous に成立する witness、law が定数で係数が
   退化する例、粗さ順序が自明(単元 Source)な例、単一 chart の nerve で
-  条件 C が空虚に成立する例、comparison map を同型と仮定して不変性を導く
+  条件 C が空虚に成立する例、粗側 nerve が face を持たず C4 が空虚に
+  成立するだけの発火、comparison map を同型と仮定して不変性を導く
   循環、law ラベルを貼っただけの定数係数(annotation)を law 由来係数と
   称する構成、反例が型不一致だけで成立する構成。
-- `frontier`: 定量化(inadequate 粗化で失われる類の個数・次元の下界)、
+- `frontier`: 条件 C の必要性方向の特徴づけ(C0–C4 各条項の独立性・
+  弱化可能性)、定量化(inadequate 粗化で失われる類の個数・次元の下界)、
   接地条件との交差(接地可能な解像度だけに制限した不変性)、
   資源制約下の最適解像度選択の観察、論文Aの実証節(解像度スイープ)への
   theorem 側の錨の供給。
@@ -93,6 +99,10 @@
     - **C2**: 各粗側 edge の `φ`-fiber は非空である。
     - **C3**: fiber グラフ内の辺の閉路は、boundary edge がすべて fiber
       内にある細側 face で張られる。
+    - **C4(coarse-face lift)**: 各粗側 face の `φ`-fiber は非空である
+      (当該粗側 face へ `φ` の face 対応で写る細側 face が少なくとも
+      一つ存在する)。nerve 射の boundary 可換性により、その細側 face の
+      3本の boundary edge は対応する粗側 boundary edge へ写る。
     C には cohomology・同型・消滅と同値または片方向に近い条項を含めない
     (incidence / support レベルの条項に限る)。
   この設定で次が成り立つ。
@@ -115,7 +125,8 @@
   5. **(v) 発火 witness**: (ii) の成立正例において、非恒等な粗化
      (`π` が非単射)、非零 `H^1`(両側)、係数が実際に law evaluation の
      descend から生成されること、ある粗側 chart の fiber が2元以上を持ち
-     C1 が非空虚に働くこと、を theorem として確認する。
+     C1 が非空虚に働くこと、粗側 nerve が少なくとも一つ face を持ち
+     C4 が非空虚に働くこと、を theorem として確認する。
   (i)(ii)(iii) は一般の有限 Source / `L` / adequate pair / comparison
   data について証明する。witness((iv)(v))は G-103 の witness 素材
   (six-source law family)の再利用または新設の有限 Source / law family /
@@ -129,19 +140,26 @@
 - `target proof artifacts`: reading の Target に台を持つ nerve の定義、
   nerve 射(incidence 可換+退化成分宣言)と `π`-両立性の定義、law 由来
   係数の生成 def、descend 可換補題(粗側 descend と細側 descend の
-  `π`-両立)、comparison cochain map の構成 def、条件 C(C0–C3)の定義、
+  `π`-両立)、comparison cochain map の構成 def、条件 C(C0–C4)の定義、
   不変性 theorem、系 theorem、descend 可能部分族による inadequate 側診断の
   定義、反例3種 witness、発火 witness、
   report `research/reports/G-104-aat-resolution-invariance.md`。
 - `target proof strategy`: H0 comparison data(nerve / nerve 射 / 台
-  両立)と law 由来係数の生成、descend 可換補題 -> H1 条件 C(C0–C3)の
-  定義と不変性 -> H2 系の導出 -> H3 反例3種 -> H4 発火 witness。既存成果の
+  両立)と law 由来係数の生成、descend 可換補題 -> H1 条件 C(C0–C4)の
+  定義と不変性(edge / face fiber の追加 incidence coherence の要否を
+  ここで検査し、不足なら failure policy で返す)-> H2 系の導出 ->
+  H3 反例3種 -> H4 発火 witness。既存成果の
   利用 map: G-103 `CanonicalResolution/Reading.lean`(`Reading` /
   `FiniteLawFamily` / `Adequate` / `CoarserThan` / `factors_iff_kernel` /
   `factorsThrough_iff_coarserThan`)、G-103 witness 素材(six-source law
   family。再利用は任意)、G-102 `TwoPhase/CoefficientComplex.lean` +
   `CohomologyComparison.lean`(`ThreeCochainComplex` / `Hom` / `H1` /
-  `h1Map`)。固定 statement と完了条件は本カードのみを正本とする。
+  `h1Map`)、
+  `ResolutionInvariance/ComparisonData.lean`(canonical comparison
+  factor / law descend とその可換・一意性。review 済み、再定義しない)、
+  `ResolutionInvariance/FaceLiftObstruction.lean`(C4 が破れる有限
+  witness。(iv)(c) の素材として転用可)。固定 statement と完了条件は
+  本カードのみを正本とする。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean である
   こと。ledger の `discharge-required` を放電し、T3 audit で provenance、
@@ -174,7 +192,7 @@
     細側 descend ∘ (`π`-対応)を theorem で証明する。
   - `comparison map`: `discharge-required`。比較データから構成し、同型性を
     field に入れない。
-  - `条件 C と不変性`: `discharge-required`。C は C0–C3(incidence
+  - `条件 C と不変性`: `discharge-required`。C は C0–C4(incidence
     レベル)で固定し、同型相当の条項を含めない。C の成立正例と破れ反例
     ((iv)(c))をセットで要求する。
   - `inadequate 側診断の固定`: `discharge-required`。descend 可能 law
@@ -197,7 +215,7 @@
   nerve 構成データ、review 済み predecessor へ追跡する。恒等比較・
   零 `H^1`・定数 law・単一 chart nerve だけの発火、proof 後の GOAL
   読み替えを completion に使わない。
-- `target failure policy`: (ii) の反例(C0–C3 の下で同型が破れる)は
+- `target failure policy`: (ii) の反例(C0–C4 の下で同型が破れる)は
   `target-refuted` とし、C の改訂案(同じ incidence レベルの条項)または
   comparison map 構成の改訂案を返す。cohomological 条項への差し替えは
   改訂案として認めない。(iv) は反例構成が成功条件であり、「adequate で
