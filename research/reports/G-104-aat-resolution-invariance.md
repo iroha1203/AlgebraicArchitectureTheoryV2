@@ -390,7 +390,7 @@ completion candidate: no
 
 ### Incidence-level revision proposal
 
-現 GOAL は編集しない。次版でこの witness を除外する最小の候補は、各 coarse
+現 GOAL は編集しない。次版でこの witness を除外する直接的な候補は、各 coarse
 edge が nondegenerate fine edge lift をちょうど一つ持つことを要求する
 **C5 (unique coarse-edge lift)** である。より弱い face-mediated edge-fiber
 coherence が十分かは未証明であり、C5 自体の一般的な十分性も証明していない。
