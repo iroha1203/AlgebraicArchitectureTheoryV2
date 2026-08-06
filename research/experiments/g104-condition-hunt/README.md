@@ -43,6 +43,11 @@ nerve 射の mapped cell は coarse cell の cochain を pullback し、degenera
 では零にする。kernel、image、comparison rank はすべて `fractions.Fraction` による
 exact Gaussian elimination で計算する。
 
+reading comparison には review 済みの proper adequate pair を固定する。canonical factor
+`π : Fin 4 → Fin 3` は `(0, 0, 1, 2)` で、nerve chart map `φ` とは別データ・別 assertion
+として検査する。Target support も係数座標 support から分離し、C0 は actual Target 上の
+`π`-像で判定する。非退化正例の3座標は、同じ pair の非定数 law descent の実値から生成する。
+
 C3 の条項自体は「fiber 1-cycle が internal face boundaries で張られる」という
 incidence 文であり、コード内の `H¹` 次元計算は有限データ上でその文を判定する手段に
 すぎない。cohomology の消滅を候補条件として追加してはいない。

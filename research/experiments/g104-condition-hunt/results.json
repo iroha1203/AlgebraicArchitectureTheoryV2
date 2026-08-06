@@ -23,6 +23,47 @@
         "surjective": false
       },
       "name": "FaceLiftObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -36,6 +77,105 @@
           "edges": 4,
           "faces": 0
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -58,6 +198,47 @@
         "surjective": false
       },
       "name": "EdgeFiberObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -71,6 +252,106 @@
           "edges": 4,
           "faces": 1
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -93,6 +374,47 @@
         "surjective": true
       },
       "name": "LoopLiftObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -106,6 +428,140 @@
           "edges": 6,
           "faces": 1
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     }
   ],
@@ -130,7 +586,48 @@
         "surjective": true
       },
       "independence_pass": true,
-      "name": "drop_C0_support_coordinate",
+      "name": "drop_C0_target_support_image",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -144,6 +641,95 @@
           "edges": 4,
           "faces": 1
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": false,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "fine_face_supports": [
+          [
+            0,
+            2
+          ]
+        ],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -167,6 +753,47 @@
       },
       "independence_pass": true,
       "name": "drop_C1_disconnected_chart_fiber",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 2,
@@ -180,6 +807,71 @@
           "edges": 2,
           "faces": 0
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -203,6 +895,47 @@
       },
       "independence_pass": true,
       "name": "drop_C2_missing_parallel_edge_lift",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 2,
@@ -216,6 +949,59 @@
           "edges": 1,
           "faces": 0
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -239,6 +1025,47 @@
       },
       "independence_pass": true,
       "name": "drop_C3_unfilled_fiber_cycles",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 1,
@@ -252,6 +1079,43 @@
           "edges": 2,
           "faces": 0
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [],
+        "coarse_face_supports": [],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -275,6 +1139,47 @@
       },
       "independence_pass": true,
       "name": "FaceLiftObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -288,6 +1193,105 @@
           "edges": 4,
           "faces": 0
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -311,6 +1315,47 @@
       },
       "independence_pass": true,
       "name": "EdgeFiberObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -324,6 +1369,106 @@
           "edges": 4,
           "faces": 1
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     },
     {
@@ -347,6 +1492,47 @@
       },
       "independence_pass": true,
       "name": "LoopLiftObstruction",
+      "reading_comparison": {
+        "canonical_factor_pi": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_adequate_for_law": true,
+        "coarse_read": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "coarse_read_surjective": true,
+        "coarse_reading_coarser_than_fine": true,
+        "coarse_target_count": 3,
+        "factor_pi_canonical_by_fine_surjectivity": true,
+        "factor_pi_commutes_with_readings": true,
+        "factor_pi_noninjective": true,
+        "factor_pi_surjective": true,
+        "fine_adequate_for_law": true,
+        "fine_read": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "fine_read_surjective": true,
+        "fine_target_count": 4,
+        "law_descents_commute_with_pi": true,
+        "law_evaluation": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "law_nonconstant": true,
+        "provenance": "FaceLiftObstruction proper adequate reading pair",
+        "source_count": 4
+      },
       "sizes": {
         "coarse": {
           "charts": 3,
@@ -360,6 +1546,140 @@
           "edges": 6,
           "faces": 1
         }
+      },
+      "target_supports": {
+        "C0_chart_support_image": true,
+        "coarse_chart_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_edge_supports": [
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "coarse_face_supports": [
+          [
+            0,
+            1,
+            2
+          ]
+        ],
+        "fine_chart_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_edge_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "fine_face_supports": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ],
+        "incidence_containment": true,
+        "pi_compatible": true
       }
     }
   ],
@@ -384,33 +1704,197 @@
       "chart_fiber_of_size_at_least_two": true,
       "coarse_face_nonempty": true,
       "coarse_h1_nonzero": true,
-      "comparison_factor_noninjective": true,
+      "coefficient_coordinates_generated_by_law_descent": true,
+      "comparison_factor_pi_noninjective": true,
       "fine_degenerate_fiber_edge_exists": true,
-      "fine_h1_nonzero": true
+      "fine_h1_nonzero": true,
+      "law_nonconstant": true,
+      "nerve_chart_map_phi_noninjective": true,
+      "proper_adequate_reading_pair": true,
+      "target_support_C0_holds": true,
+      "target_support_pi_compatible": true
     },
     "firing_pass": true,
     "h1": {
-      "coarse_h1_dimension": 2,
-      "comparison_rank": 2,
-      "fine_h1_dimension": 2,
+      "coarse_h1_dimension": 3,
+      "comparison_rank": 3,
+      "fine_h1_dimension": 3,
       "injective": true,
       "isomorphism": true,
       "surjective": true
     },
     "name": "nondegenerate_positive",
+    "reading_comparison": {
+      "canonical_factor_pi": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "coarse_adequate_for_law": true,
+      "coarse_read": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "coarse_read_surjective": true,
+      "coarse_reading_coarser_than_fine": true,
+      "coarse_target_count": 3,
+      "factor_pi_canonical_by_fine_surjectivity": true,
+      "factor_pi_commutes_with_readings": true,
+      "factor_pi_noninjective": true,
+      "factor_pi_surjective": true,
+      "fine_adequate_for_law": true,
+      "fine_read": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fine_read_surjective": true,
+      "fine_target_count": 4,
+      "law_descents_commute_with_pi": true,
+      "law_evaluation": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "law_nonconstant": true,
+      "provenance": "FaceLiftObstruction proper adequate reading pair",
+      "source_count": 4
+    },
     "sizes": {
       "coarse": {
         "charts": 3,
-        "coefficient_rank": 2,
+        "coefficient_rank": 3,
         "edges": 4,
         "faces": 1
       },
       "fine": {
         "charts": 4,
-        "coefficient_rank": 2,
+        "coefficient_rank": 3,
         "edges": 5,
         "faces": 1
       }
+    },
+    "target_supports": {
+      "C0_chart_support_image": true,
+      "coarse_chart_supports": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "coarse_edge_supports": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "coarse_face_supports": [
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "fine_chart_supports": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "fine_edge_supports": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "fine_face_supports": [
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "incidence_containment": true,
+      "pi_compatible": true
     }
   },
   "round_1_constant_coordinate_candidate_search": {
@@ -447,7 +1931,49 @@
       "coefficients": "constant free Q-rank, identity coordinate pullback, basis changes quotiented",
       "edge_orientation": "lower chart index to higher; orientation sign quotiented",
       "fine_chart_fibers": "positive fibers with a star tree or one explicitly filled triangle"
-    }
+    },
+    "reading_comparison": {
+      "canonical_factor_pi": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "coarse_adequate_for_law": true,
+      "coarse_read": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "coarse_read_surjective": true,
+      "coarse_reading_coarser_than_fine": true,
+      "coarse_target_count": 3,
+      "factor_pi_canonical_by_fine_surjectivity": true,
+      "factor_pi_commutes_with_readings": true,
+      "factor_pi_noninjective": true,
+      "factor_pi_surjective": true,
+      "fine_adequate_for_law": true,
+      "fine_read": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fine_read_surjective": true,
+      "fine_target_count": 4,
+      "law_descents_commute_with_pi": true,
+      "law_evaluation": [
+        0,
+        0,
+        1,
+        2
+      ],
+      "law_nonconstant": true,
+      "provenance": "FaceLiftObstruction proper adequate reading pair",
+      "source_count": 4
+    },
+    "target_support_policy": "full support on every chart, edge, and face; C0 and all pi-compatibility checks follow from the surjective canonical factor"
   },
   "round_2_cellwise_coefficient_search": {
     "bounds": {
@@ -468,7 +1994,7 @@
     "mechanism": "The support-hole case keeps the incidence fiber edge but gives it coefficient dimension zero. The duplicate-coordinate case is universal: duplicating a nonzero fine H1 summand leaves all incidence predicates unchanged and makes the comparison non-surjective.",
     "same_incidence_pair": {
       "duplicate_coordinate_counterexample": {
-        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "cell_maps": "canonical zero/identity restrictions for 2 fine coordinate(s) mapping to 1 coarse coordinate(s)",
         "coarse_cell_dimensions": {
           "charts": [
             1,
@@ -486,6 +2012,7 @@
             1
           ]
         },
+        "coefficient_chart_support_image": true,
         "conditions": {
           "C0_chart_support_image": true,
           "C1_chart_fiber_connected": true,
@@ -522,10 +2049,179 @@
           "isomorphism": false,
           "surjective": false
         },
-        "name": "same_incidence_duplicated_fine_coordinate"
+        "name": "same_incidence_duplicated_fine_coordinate",
+        "reading_comparison": {
+          "canonical_factor_pi": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_adequate_for_law": true,
+          "coarse_read": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_read_surjective": true,
+          "coarse_reading_coarser_than_fine": true,
+          "coarse_target_count": 3,
+          "factor_pi_canonical_by_fine_surjectivity": true,
+          "factor_pi_commutes_with_readings": true,
+          "factor_pi_noninjective": true,
+          "factor_pi_surjective": true,
+          "fine_adequate_for_law": true,
+          "fine_read": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fine_read_surjective": true,
+          "fine_target_count": 4,
+          "law_descents_commute_with_pi": true,
+          "law_evaluation": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "law_nonconstant": true,
+          "provenance": "FaceLiftObstruction proper adequate reading pair",
+          "source_count": 4
+        },
+        "target_supports": {
+          "C0_chart_support_image": true,
+          "coarse_chart_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_edge_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_face_supports": [
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "fine_chart_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_edge_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_face_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "incidence_containment": true,
+          "pi_compatible": true
+        }
       },
       "positive": {
-        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "cell_maps": "canonical zero/identity restrictions for 1 fine coordinate(s) mapping to 1 coarse coordinate(s)",
         "coarse_cell_dimensions": {
           "charts": [
             1,
@@ -543,6 +2239,7 @@
             1
           ]
         },
+        "coefficient_chart_support_image": true,
         "conditions": {
           "C0_chart_support_image": true,
           "C1_chart_fiber_connected": true,
@@ -579,10 +2276,179 @@
           "isomorphism": true,
           "surjective": true
         },
-        "name": "same_incidence_full_coordinate_support"
+        "name": "same_incidence_full_coordinate_support",
+        "reading_comparison": {
+          "canonical_factor_pi": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_adequate_for_law": true,
+          "coarse_read": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_read_surjective": true,
+          "coarse_reading_coarser_than_fine": true,
+          "coarse_target_count": 3,
+          "factor_pi_canonical_by_fine_surjectivity": true,
+          "factor_pi_commutes_with_readings": true,
+          "factor_pi_noninjective": true,
+          "factor_pi_surjective": true,
+          "fine_adequate_for_law": true,
+          "fine_read": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fine_read_surjective": true,
+          "fine_target_count": 4,
+          "law_descents_commute_with_pi": true,
+          "law_evaluation": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "law_nonconstant": true,
+          "provenance": "FaceLiftObstruction proper adequate reading pair",
+          "source_count": 4
+        },
+        "target_supports": {
+          "C0_chart_support_image": true,
+          "coarse_chart_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_edge_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_face_supports": [
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "fine_chart_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_edge_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_face_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "incidence_containment": true,
+          "pi_compatible": true
+        }
       },
       "support_hole_counterexample": {
-        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "cell_maps": "canonical zero/identity restrictions for 1 fine coordinate(s) mapping to 1 coarse coordinate(s)",
         "coarse_cell_dimensions": {
           "charts": [
             1,
@@ -600,6 +2466,7 @@
             1
           ]
         },
+        "coefficient_chart_support_image": true,
         "conditions": {
           "C0_chart_support_image": true,
           "C1_chart_fiber_connected": true,
@@ -636,7 +2503,176 @@
           "isomorphism": false,
           "surjective": true
         },
-        "name": "same_incidence_missing_fiber_edge_coordinate"
+        "name": "same_incidence_missing_fiber_edge_coordinate",
+        "reading_comparison": {
+          "canonical_factor_pi": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_adequate_for_law": true,
+          "coarse_read": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "coarse_read_surjective": true,
+          "coarse_reading_coarser_than_fine": true,
+          "coarse_target_count": 3,
+          "factor_pi_canonical_by_fine_surjectivity": true,
+          "factor_pi_commutes_with_readings": true,
+          "factor_pi_noninjective": true,
+          "factor_pi_surjective": true,
+          "fine_adequate_for_law": true,
+          "fine_read": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fine_read_surjective": true,
+          "fine_target_count": 4,
+          "law_descents_commute_with_pi": true,
+          "law_evaluation": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "law_nonconstant": true,
+          "provenance": "FaceLiftObstruction proper adequate reading pair",
+          "source_count": 4
+        },
+        "target_supports": {
+          "C0_chart_support_image": true,
+          "coarse_chart_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_edge_supports": [
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "coarse_face_supports": [
+            [
+              0,
+              1,
+              2
+            ]
+          ],
+          "fine_chart_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_edge_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "fine_face_supports": [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "incidence_containment": true,
+          "pi_compatible": true
+        }
       }
     },
     "sample_counterexamples": [

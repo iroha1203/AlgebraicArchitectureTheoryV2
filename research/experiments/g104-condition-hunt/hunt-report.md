@@ -33,8 +33,15 @@ d₁(y)(f) = y(e₀) - y(e₁) + y(e₂)
 `Option` 型の edge / face map、endpoint / boundary 可換性を持つ。`none` の edge / face
 では pullback を零とし、mapped cell では対応する coarse cochain を pullback する。
 
+reading comparison には `FaceLiftObstruction` で review 済みの proper adequate pair を固定する。
+Source は `Fin 4`、fine Target は `Fin 4`、coarse Target は `Fin 3` であり、canonical factor は
+`π = (0, 0, 1, 2)` で非単射である。law evaluation も `(0, 0, 1, 2)` で非定数であり、両 reading
+への descent と `π` の可換性を個別に検査する。この `π` は、fine chart から coarse chart への
+nerve map `φ` とは別データである。
+
 `H¹ = ker d₁ / im d₀`、comparison rank、単射性、全射性は、浮動小数点を使わず
-`fractions.Fraction` 上の Gaussian elimination で計算する。
+`fractions.Fraction` 上の Gaussian elimination で計算する。C0 は coefficient coordinate support
+ではなく、reading Target 上の chart support と `π` から判定する。
 
 cellwise 係数モデルでは、各 cell が有限 coordinate support を持ち、その要素数を
 cell ごとの係数次元とする。edge support は endpoint supports の共通部分、face support は
@@ -88,11 +95,14 @@ rank 1 / 2 で判定した6,086件に反例はなかった。
 
 filled triangle にもう1本の unfilled parallel edge を持つ coarse nerve を使い、coarse chart 0 を
 fine chart 0 / 1 に分割する。両者を `edgeMap = none` の fiber edge で結び、4本の coarse edge と
-1つの coarse face は一意に lift する。
+1つの coarse face は一意に lift する。上記の adequate reading pair と full Target support をこの
+nerve comparison に接続し、3つの係数座標は非定数 law descent の実値 `0, 1, 2` から生成する。
 
-- chart map 非単射
-- coarse / fine とも `dim H¹ = 2`（rank 2座標で計算）
-- comparison rank 2、同型
+- canonical reading factor `π : Fin 4 → Fin 3` は `(0, 0, 1, 2)` で非単射
+- nerve chart map `φ` も非単射（`π` とは別に検査）
+- `π` と full Target support は両立し、C0 が成立
+- coarse / fine とも `dim H¹ = 3`（law descent の3実値座標で計算）
+- comparison rank 3、同型
 - 2元 chart fiber あり
 - coarse / fine face あり
 - fine fiber edge あり
@@ -115,8 +125,10 @@ pullback が `H¹` 同型になる、という経路である。
 ### Round 2: cellwise 自由係数
 
 Round 1 の非退化 incidence を、coarse 側に2本、fine 側に少なくとも1本の非零 `H¹` が残るよう
-parallel edge を1本増やして固定した。この同じ incidence 上で、coarse 全 cell の次元を1、fine chart
-次元を1とし、fine edge / face の次元 `0/1` と、対応する零 / 恒等 restriction を全数列挙した。
+parallel edge を1本増やして固定した。reading pair、canonical `π`、full Target support は正例・
+support-hole・座標複製の3データで完全に共通である。この同じ incidence 上で、coarse 全 cell の
+自由係数次元を1、fine chart 次元を1とし、fine edge / face の次元 `0/1` と、対応する零 / 恒等
+restriction を全数列挙した。
 
 - coefficient systems: 72
 - 同型: 5
@@ -132,8 +144,8 @@ parallel edge を1本増やして固定した。この同じ incidence 上で、
 | 同一 incidence、fiber edge 次元0 | 2 | 1 | 1 | 非単射 |
 | 同一 incidence、fine 座標を2コピー | 2 | 4 | 2 | 非全射 |
 
-3データは C0–C5 と R の真偽が完全に同じで、非単射な chart map、2元 fiber、face、fiber edge、
-両側非零 `H¹` を保つ。
+3データは同じ非単射 canonical `π`、同じ Target support、同じ nerve map `φ` を持つため、C0–C5 と
+R の真偽が完全に同じである。2元 chart fiber、face、fiber edge、両側非零 `H¹` も保つ。
 
 ### Round 3: (b) / (c) の incidence 改訂可能性
 
@@ -157,7 +169,7 @@ ambient law-derived coefficient premise を具体化する仕事である。
 
 | 外す条項 | 反例機構 | coarse / fine `dim H¹` | map failure |
 | --- | --- | --- | --- |
-| C0 | coarse にだけ残る chart coordinate | 2 / 1 | 非単射 |
+| C0 | coarse Target support の元 `2` が fine supports の `π`-像から欠落 | 2 / 1 | 非単射 |
 | C1 | parallel lifts が chart fiber の別成分へ着地 | 1 / 0 | 非単射 |
 | C2 | coarse parallel edge の lift 欠落 | 1 / 0 | 非単射 |
 | C3 | face-free fiber の2本の loop edge | 0 / 2 | 非全射 |
@@ -165,7 +177,9 @@ ambient law-derived coefficient premise を具体化する仕事である。
 | C5 | `EdgeFiberObstruction` | 0 / 3 | 非全射 |
 | R | `LoopLiftObstruction` | 6 / 3 | 非単射 |
 
-C0 の反例は coarse rank 2 / fine rank 1 の自由係数 fixture であり、law 実現可能性は未確認である。
+C0 の反例は full coarse Target support `{0,1,2}` に対して各 fine chart support を `{0,2}` とし、
+`π({0,2}) = {0,1}` なので C0 だけが偽になることを actual Target 上で検査する。comparison failure は
+coarse rank 2 / fine rank 1 の自由係数 fixture で示しており、この係数系の law 実現可能性は未確認である。
 他の新規小反例も incidence / free-coordinate 証拠であり、Lean theorem や G-104 proof state を更新しない。
 
 ## 6. Coverage limit と次の判断点

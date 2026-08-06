@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from fractions import Fraction
 from functools import lru_cache
 from itertools import combinations_with_replacement, product
@@ -284,6 +284,264 @@ class NerveMorphism:
 
 
 @dataclass(frozen=True)
+class ReadingComparison:
+    """A finite adequate reading pair and its canonical factor ``pi``.
+
+    This data is deliberately separate from ``NerveMorphism.vertex_map``:
+    ``factor`` maps fine reading targets to coarse reading targets, whereas the
+    nerve vertex map sends fine charts to coarse charts.
+    """
+
+    source_count: int
+    fine_target_count: int
+    coarse_target_count: int
+    fine_read: tuple[int, ...]
+    coarse_read: tuple[int, ...]
+    factor: tuple[int, ...]
+    law_evaluation: tuple[int, ...]
+    fine_law_descent: tuple[int, ...]
+    coarse_law_descent: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        if self.source_count <= 0 or self.fine_target_count <= 0 or self.coarse_target_count <= 0:
+            raise ValueError("reading sets must be nonempty")
+        if len(self.fine_read) != self.source_count:
+            raise ValueError("fine reading has the wrong source count")
+        if len(self.coarse_read) != self.source_count:
+            raise ValueError("coarse reading has the wrong source count")
+        if len(self.factor) != self.fine_target_count:
+            raise ValueError("comparison factor has the wrong fine-target count")
+        if len(self.law_evaluation) != self.source_count:
+            raise ValueError("law evaluation has the wrong source count")
+        if len(self.fine_law_descent) != self.fine_target_count:
+            raise ValueError("fine law descent has the wrong target count")
+        if len(self.coarse_law_descent) != self.coarse_target_count:
+            raise ValueError("coarse law descent has the wrong target count")
+        if any(not 0 <= target < self.fine_target_count for target in self.fine_read):
+            raise ValueError("fine reading leaves its target")
+        if any(not 0 <= target < self.coarse_target_count for target in self.coarse_read):
+            raise ValueError("coarse reading leaves its target")
+        if any(not 0 <= target < self.coarse_target_count for target in self.factor):
+            raise ValueError("comparison factor leaves the coarse target")
+        if set(self.fine_read) != set(range(self.fine_target_count)):
+            raise ValueError("fine reading is not surjective")
+        if set(self.coarse_read) != set(range(self.coarse_target_count)):
+            raise ValueError("coarse reading is not surjective")
+        if any(
+            self.factor[self.fine_read[source]] != self.coarse_read[source]
+            for source in range(self.source_count)
+        ):
+            raise ValueError("comparison factor does not commute with the readings")
+        if any(
+            self.fine_law_descent[self.fine_read[source]] != self.law_evaluation[source]
+            for source in range(self.source_count)
+        ):
+            raise ValueError("fine reading is not adequate for the declared law")
+        if any(
+            self.coarse_law_descent[self.coarse_read[source]] != self.law_evaluation[source]
+            for source in range(self.source_count)
+        ):
+            raise ValueError("coarse reading is not adequate for the declared law")
+        if any(
+            self.coarse_law_descent[self.factor[target]] != self.fine_law_descent[target]
+            for target in range(self.fine_target_count)
+        ):
+            raise ValueError("law descents do not commute with the comparison factor")
+
+    def factor_noninjective(self) -> bool:
+        return len(set(self.factor)) < len(self.factor)
+
+    def law_nonconstant(self) -> bool:
+        return len(set(self.law_evaluation)) > 1
+
+    def summary(self) -> dict[str, object]:
+        return {
+            "source_count": self.source_count,
+            "fine_target_count": self.fine_target_count,
+            "coarse_target_count": self.coarse_target_count,
+            "fine_read": list(self.fine_read),
+            "coarse_read": list(self.coarse_read),
+            "canonical_factor_pi": list(self.factor),
+            "fine_read_surjective": set(self.fine_read) == set(range(self.fine_target_count)),
+            "coarse_read_surjective": set(self.coarse_read) == set(range(self.coarse_target_count)),
+            "coarse_reading_coarser_than_fine": all(
+                self.fine_read[left] != self.fine_read[right]
+                or self.coarse_read[left] == self.coarse_read[right]
+                for left in range(self.source_count)
+                for right in range(self.source_count)
+            ),
+            "factor_pi_surjective": set(self.factor) == set(range(self.coarse_target_count)),
+            "factor_pi_noninjective": self.factor_noninjective(),
+            "factor_pi_commutes_with_readings": all(
+                self.factor[self.fine_read[source]] == self.coarse_read[source]
+                for source in range(self.source_count)
+            ),
+            "factor_pi_canonical_by_fine_surjectivity": (
+                set(self.fine_read) == set(range(self.fine_target_count))
+                and all(
+                    self.factor[self.fine_read[source]] == self.coarse_read[source]
+                    for source in range(self.source_count)
+                )
+            ),
+            "fine_adequate_for_law": all(
+                self.fine_law_descent[self.fine_read[source]] == self.law_evaluation[source]
+                for source in range(self.source_count)
+            ),
+            "coarse_adequate_for_law": all(
+                self.coarse_law_descent[self.coarse_read[source]] == self.law_evaluation[source]
+                for source in range(self.source_count)
+            ),
+            "law_descents_commute_with_pi": all(
+                self.coarse_law_descent[self.factor[target]] == self.fine_law_descent[target]
+                for target in range(self.fine_target_count)
+            ),
+            "law_evaluation": list(self.law_evaluation),
+            "law_nonconstant": self.law_nonconstant(),
+            "provenance": "FaceLiftObstruction proper adequate reading pair",
+        }
+
+
+def known_reading_comparison() -> ReadingComparison:
+    """The reviewed ``Fin 4 -> Fin 3`` adequate pair from FaceLiftObstruction."""
+
+    return ReadingComparison(
+        source_count=4,
+        fine_target_count=4,
+        coarse_target_count=3,
+        fine_read=(0, 1, 2, 3),
+        coarse_read=(0, 0, 1, 2),
+        factor=(0, 0, 1, 2),
+        law_evaluation=(0, 0, 1, 2),
+        fine_law_descent=(0, 0, 1, 2),
+        coarse_law_descent=(0, 1, 2),
+    )
+
+
+@dataclass(frozen=True)
+class TargetSupportProfile:
+    """Cell supports in reading targets; chart supports determine GOAL C0."""
+
+    coarse_chart_supports: tuple[frozenset[int], ...]
+    fine_chart_supports: tuple[frozenset[int], ...]
+    coarse_edge_supports: tuple[frozenset[int], ...]
+    fine_edge_supports: tuple[frozenset[int], ...]
+    coarse_face_supports: tuple[frozenset[int], ...]
+    fine_face_supports: tuple[frozenset[int], ...]
+
+    def validate(self, morphism: NerveMorphism, reading: ReadingComparison) -> None:
+        if len(self.coarse_chart_supports) != morphism.coarse.vertices:
+            raise ValueError("coarse target-support profile has the wrong chart count")
+        if len(self.fine_chart_supports) != morphism.fine.vertices:
+            raise ValueError("fine target-support profile has the wrong chart count")
+        if len(self.coarse_edge_supports) != len(morphism.coarse.edges):
+            raise ValueError("coarse target-support profile has the wrong edge count")
+        if len(self.fine_edge_supports) != len(morphism.fine.edges):
+            raise ValueError("fine target-support profile has the wrong edge count")
+        if len(self.coarse_face_supports) != len(morphism.coarse.faces):
+            raise ValueError("coarse target-support profile has the wrong face count")
+        if len(self.fine_face_supports) != len(morphism.fine.faces):
+            raise ValueError("fine target-support profile has the wrong face count")
+        coarse_universe = set(range(reading.coarse_target_count))
+        fine_universe = set(range(reading.fine_target_count))
+        if any(not support or not set(support) <= coarse_universe
+               for support in self.coarse_chart_supports):
+            raise ValueError("coarse chart target supports must be nonempty and in range")
+        if any(not support or not set(support) <= fine_universe
+               for support in self.fine_chart_supports):
+            raise ValueError("fine chart target supports must be nonempty and in range")
+        if any(not set(support) <= coarse_universe
+               for support in self.coarse_edge_supports + self.coarse_face_supports):
+            raise ValueError("coarse edge/face target support leaves the target")
+        if any(not set(support) <= fine_universe
+               for support in self.fine_edge_supports + self.fine_face_supports):
+            raise ValueError("fine edge/face target support leaves the target")
+        for nerve, chart_supports, edge_supports, face_supports in (
+            (
+                morphism.coarse,
+                self.coarse_chart_supports,
+                self.coarse_edge_supports,
+                self.coarse_face_supports,
+            ),
+            (
+                morphism.fine,
+                self.fine_chart_supports,
+                self.fine_edge_supports,
+                self.fine_face_supports,
+            ),
+        ):
+            for edge, (left, right) in enumerate(nerve.edges):
+                if not edge_supports[edge] <= chart_supports[left] & chart_supports[right]:
+                    raise ValueError("target edge support leaves an endpoint chart support")
+            for face, boundary in enumerate(nerve.faces):
+                if any(not face_supports[face] <= edge_supports[edge] for edge in boundary):
+                    raise ValueError("target face support leaves a boundary edge support")
+        for fine_chart, support in enumerate(self.fine_chart_supports):
+            coarse_chart = morphism.vertex_map[fine_chart]
+            image = {reading.factor[target] for target in support}
+            if not image <= self.coarse_chart_supports[coarse_chart]:
+                raise ValueError("fine target support is incompatible with pi and the chart map")
+        for fine_edge, coarse_edge in enumerate(morphism.edge_map):
+            if coarse_edge is None:
+                continue
+            image = {reading.factor[target] for target in self.fine_edge_supports[fine_edge]}
+            if not image <= self.coarse_edge_supports[coarse_edge]:
+                raise ValueError("fine edge target support is incompatible with pi")
+        for fine_face, coarse_face in enumerate(morphism.face_map):
+            if coarse_face is None:
+                continue
+            image = {reading.factor[target] for target in self.fine_face_supports[fine_face]}
+            if not image <= self.coarse_face_supports[coarse_face]:
+                raise ValueError("fine face target support is incompatible with pi")
+
+    def c0_holds(self, morphism: NerveMorphism, reading: ReadingComparison) -> bool:
+        self.validate(morphism, reading)
+        return all(
+            self.coarse_chart_supports[coarse_chart]
+            == {
+                reading.factor[target]
+                for fine_chart, mapped_chart in enumerate(morphism.vertex_map)
+                if mapped_chart == coarse_chart
+                for target in self.fine_chart_supports[fine_chart]
+            }
+            for coarse_chart in range(morphism.coarse.vertices)
+        )
+
+    def summary(self, morphism: NerveMorphism, reading: ReadingComparison) -> dict[str, object]:
+        self.validate(morphism, reading)
+        return {
+            "coarse_chart_supports": [sorted(support) for support in self.coarse_chart_supports],
+            "fine_chart_supports": [sorted(support) for support in self.fine_chart_supports],
+            "coarse_edge_supports": [sorted(support) for support in self.coarse_edge_supports],
+            "fine_edge_supports": [sorted(support) for support in self.fine_edge_supports],
+            "coarse_face_supports": [sorted(support) for support in self.coarse_face_supports],
+            "fine_face_supports": [sorted(support) for support in self.fine_face_supports],
+            "incidence_containment": True,
+            "pi_compatible": True,
+            "C0_chart_support_image": self.c0_holds(morphism, reading),
+        }
+
+
+def full_target_supports(
+    morphism: NerveMorphism,
+    reading: ReadingComparison,
+) -> TargetSupportProfile:
+    coarse_full = frozenset(range(reading.coarse_target_count))
+    fine_full = frozenset(range(reading.fine_target_count))
+    return TargetSupportProfile(
+        coarse_chart_supports=tuple(
+            coarse_full for _ in range(morphism.coarse.vertices)
+        ),
+        fine_chart_supports=tuple(
+            fine_full for _ in range(morphism.fine.vertices)
+        ),
+        coarse_edge_supports=tuple(coarse_full for _ in morphism.coarse.edges),
+        fine_edge_supports=tuple(fine_full for _ in morphism.fine.edges),
+        coarse_face_supports=tuple(coarse_full for _ in morphism.coarse.faces),
+        fine_face_supports=tuple(fine_full for _ in morphism.fine.faces),
+    )
+
+
+@dataclass(frozen=True)
 class H1Analysis:
     coarse_h1_dimension: int
     fine_h1_dimension: int
@@ -544,11 +802,12 @@ def connected(vertices: Iterable[int], edges: Iterable[tuple[int, int]]) -> bool
 def condition_vector(morphism: NerveMorphism, *, c0: bool = True) -> dict[str, bool]:
     """Evaluate C0--C5 and self-loop endpoint reflection.
 
-    C0 is supplied by the coefficient/support fixture.  The normal-form search
-    uses full supports and therefore passes ``c0=True``.  The other clauses are
-    computed directly from incidence data.  C3 is *stated* as cycle span by
-    face boundaries; exact rank is only its finite decision procedure, not a
-    cohomology premise added to the candidate.
+    C0 is supplied by a ``TargetSupportProfile`` over the reading targets.  The
+    normal-form search fixes the reviewed surjective factor ``pi : Fin 4 ->
+    Fin 3`` and full target supports, and therefore passes ``c0=True``.  The
+    other clauses are computed directly from incidence data.  C3 is *stated*
+    as cycle span by face boundaries; exact rank is only its finite decision
+    procedure, not a cohomology premise added to the candidate.
     """
 
     fibers = [
@@ -617,55 +876,31 @@ class SearchCase:
     name: str
     morphism: NerveMorphism
     coefficient_map: Matrix
-    fine_to_coarse_coordinate: tuple[int, ...] = ()
-    coarse_chart_supports: tuple[frozenset[int], ...] | None = None
-    fine_chart_supports: tuple[frozenset[int], ...] | None = None
+    reading_comparison: ReadingComparison = field(default_factory=known_reading_comparison)
+    target_supports: TargetSupportProfile | None = None
+
+    def resolved_target_supports(self) -> TargetSupportProfile:
+        return self.target_supports or full_target_supports(
+            self.morphism,
+            self.reading_comparison,
+        )
 
     def c0_holds(self) -> bool:
-        coordinate_map = self.fine_to_coarse_coordinate
-        if not coordinate_map:
-            if self.coefficient_map.rows != self.coefficient_map.cols:
-                raise ValueError("a non-square coefficient fixture needs an explicit coordinate map")
-            coordinate_map = tuple(range(self.coefficient_map.rows))
-        if len(coordinate_map) != self.coefficient_map.rows:
-            raise ValueError("coordinate map has the wrong fine rank")
-        if any(not 0 <= coordinate < self.coefficient_map.cols for coordinate in coordinate_map):
-            raise ValueError("coordinate map leaves the coarse coordinate set")
-
-        coarse_supports = self.coarse_chart_supports or tuple(
-            frozenset(range(self.coefficient_map.cols))
-            for _ in range(self.morphism.coarse.vertices)
-        )
-        fine_supports = self.fine_chart_supports or tuple(
-            frozenset(range(self.coefficient_map.rows))
-            for _ in range(self.morphism.fine.vertices)
-        )
-        if len(coarse_supports) != self.morphism.coarse.vertices:
-            raise ValueError("coarse chart-support profile has the wrong size")
-        if len(fine_supports) != self.morphism.fine.vertices:
-            raise ValueError("fine chart-support profile has the wrong size")
-
-        for fine_chart, support in enumerate(fine_supports):
-            coarse_chart = self.morphism.vertex_map[fine_chart]
-            image = {coordinate_map[coordinate] for coordinate in support}
-            if not image <= coarse_supports[coarse_chart]:
-                raise ValueError("fine chart support is not compatible with its coarse image")
-
-        return all(
-            coarse_supports[coarse_chart]
-            == {
-                coordinate_map[coordinate]
-                for fine_chart, mapped_chart in enumerate(self.morphism.vertex_map)
-                if mapped_chart == coarse_chart
-                for coordinate in fine_supports[fine_chart]
-            }
-            for coarse_chart in range(self.morphism.coarse.vertices)
+        return self.resolved_target_supports().c0_holds(
+            self.morphism,
+            self.reading_comparison,
         )
 
     def result(self) -> dict[str, object]:
+        target_supports = self.resolved_target_supports()
         return {
             "name": self.name,
             "conditions": condition_vector(self.morphism, c0=self.c0_holds()),
+            "reading_comparison": self.reading_comparison.summary(),
+            "target_supports": target_supports.summary(
+                self.morphism,
+                self.reading_comparison,
+            ),
             "h1": asdict(analyze_h1(self.morphism, self.coefficient_map)),
             "sizes": {
                 "coarse": {
@@ -765,7 +1000,8 @@ def positive_case() -> SearchCase:
         (None, 0, 1, 2, 3),
         (0,),
     )
-    return SearchCase("nondegenerate_positive", morphism, Matrix.identity(2))
+    # Three coordinates are the actual values of the reviewed nonconstant law.
+    return SearchCase("nondegenerate_positive", morphism, Matrix.identity(3))
 
 
 def supported_incidence_morphism() -> NerveMorphism:
@@ -801,7 +1037,7 @@ def full_supported_nerve(nerve: Nerve, coordinate_count: int = 1) -> SupportedNe
     )
 
 
-def supported_c0_holds(
+def coefficient_chart_support_image_holds(
     morphism: NerveMorphism,
     coarse: SupportedNerve,
     fine: SupportedNerve,
@@ -824,19 +1060,32 @@ def supported_result(
     morphism: NerveMorphism,
     coarse: SupportedNerve,
     fine: SupportedNerve,
+    reading_comparison: ReadingComparison,
+    target_supports: TargetSupportProfile,
 ) -> dict[str, object]:
     coordinate_map = tuple(0 for _ in range(fine.coordinate_count))
     analysis = analyze_supported_h1(morphism, coarse, fine, coordinate_map)
     conditions = condition_vector(
         morphism,
-        c0=supported_c0_holds(morphism, coarse, fine, coordinate_map),
+        c0=target_supports.c0_holds(morphism, reading_comparison),
     )
     return {
         "name": name,
         "conditions": conditions,
+        "reading_comparison": reading_comparison.summary(),
+        "target_supports": target_supports.summary(morphism, reading_comparison),
         "coarse_cell_dimensions": coarse.dimensions(),
         "fine_cell_dimensions": fine.dimensions(),
-        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "coefficient_chart_support_image": coefficient_chart_support_image_holds(
+            morphism,
+            coarse,
+            fine,
+            coordinate_map,
+        ),
+        "cell_maps": (
+            f"canonical zero/identity restrictions for {fine.coordinate_count} fine "
+            f"coordinate(s) mapping to {coarse.coordinate_count} coarse coordinate(s)"
+        ),
         "h1": asdict(analysis),
     }
 
@@ -845,7 +1094,12 @@ def cellwise_coefficient_search() -> dict[str, object]:
     """Exhaust all 0/1 fine cell dimensions on one fixed positive incidence map."""
 
     morphism = supported_incidence_morphism()
-    conditions = condition_vector(morphism)
+    reading_comparison = known_reading_comparison()
+    target_supports = full_target_supports(morphism, reading_comparison)
+    conditions = condition_vector(
+        morphism,
+        c0=target_supports.c0_holds(morphism, reading_comparison),
+    )
     if not all(conditions.values()):
         raise AssertionError("cellwise coefficient sweep did not start from candidate incidence")
 
@@ -896,6 +1150,8 @@ def cellwise_coefficient_search() -> dict[str, object]:
         morphism,
         coarse,
         full_supported_nerve(morphism.fine),
+        reading_comparison,
+        target_supports,
     )
     hole_fine = SupportedNerve(
         nerve=morphism.fine,
@@ -909,12 +1165,16 @@ def cellwise_coefficient_search() -> dict[str, object]:
         morphism,
         coarse,
         hole_fine,
+        reading_comparison,
+        target_supports,
     )
     duplicate_counterexample = supported_result(
         "same_incidence_duplicated_fine_coordinate",
         morphism,
         coarse,
         full_supported_nerve(morphism.fine, coordinate_count=2),
+        reading_comparison,
+        target_supports,
     )
 
     full_h1 = full_positive["h1"]
@@ -977,13 +1237,37 @@ def independence_cases() -> tuple[tuple[str, SearchCase], ...]:
         tuple(range(len(identity_incidence.edges))),
         tuple(range(len(identity_incidence.faces))),
     )
+    c0_reading = known_reading_comparison()
     c0_case = SearchCase(
-        "drop_C0_support_coordinate",
+        "drop_C0_target_support_image",
         c0_morphism,
         Matrix.from_mutable([[1, 0]]),
-        fine_to_coarse_coordinate=(0,),
-        coarse_chart_supports=tuple(frozenset((0, 1)) for _ in range(c0_morphism.coarse.vertices)),
-        fine_chart_supports=tuple(frozenset((0,)) for _ in range(c0_morphism.fine.vertices)),
+        reading_comparison=c0_reading,
+        target_supports=TargetSupportProfile(
+            coarse_chart_supports=tuple(
+                frozenset(range(c0_reading.coarse_target_count))
+                for _ in range(c0_morphism.coarse.vertices)
+            ),
+            # pi({0, 2}) = {0, 1}, so coarse target 2 is genuinely missing.
+            fine_chart_supports=tuple(
+                frozenset((0, 2))
+                for _ in range(c0_morphism.fine.vertices)
+            ),
+            coarse_edge_supports=tuple(
+                frozenset(range(c0_reading.coarse_target_count))
+                for _ in c0_morphism.coarse.edges
+            ),
+            fine_edge_supports=tuple(
+                frozenset((0, 2)) for _ in c0_morphism.fine.edges
+            ),
+            coarse_face_supports=tuple(
+                frozenset(range(c0_reading.coarse_target_count))
+                for _ in c0_morphism.coarse.faces
+            ),
+            fine_face_supports=tuple(
+                frozenset((0, 2)) for _ in c0_morphism.fine.faces
+            ),
+        ),
     )
 
     c1_coarse = Nerve(2, ((0, 1), (0, 1)), ())
@@ -1143,6 +1427,7 @@ def exhaustive_search(
     max_fine_vertices: int,
     max_coefficient_rank: int,
 ) -> dict[str, object]:
+    reading_comparison = known_reading_comparison()
     coarse_count = 0
     refinement_count = 0
     candidate_count = 0
@@ -1183,6 +1468,11 @@ def exhaustive_search(
 
     return {
         "candidate": list(condition_names),
+        "reading_comparison": reading_comparison.summary(),
+        "target_support_policy": (
+            "full support on every chart, edge, and face; C0 and all pi-compatibility "
+            "checks follow from the surjective canonical factor"
+        ),
         "normal_form": {
             "edge_orientation": "lower chart index to higher; orientation sign quotiented",
             "coarse_connected": True,
@@ -1253,9 +1543,35 @@ def firing_report() -> dict[str, object]:
     case = positive_case()
     result = case.result()
     morphism = case.morphism
+    reading = case.reading_comparison
+    reading_summary = result["reading_comparison"]
+    target_support_summary = result["target_supports"]
     fibers = [morphism.vertex_map.count(vertex) for vertex in range(morphism.coarse.vertices)]
+    law_coordinate_count = len(set(reading.law_evaluation))
     firing = {
-        "comparison_factor_noninjective": len(set(morphism.vertex_map)) < len(morphism.vertex_map),
+        "proper_adequate_reading_pair": (
+            reading_summary["fine_read_surjective"]
+            and reading_summary["coarse_read_surjective"]
+            and reading_summary["fine_adequate_for_law"]
+            and reading_summary["coarse_adequate_for_law"]
+            and reading_summary["coarse_reading_coarser_than_fine"]
+            and reading_summary["factor_pi_commutes_with_readings"]
+            and reading_summary["factor_pi_canonical_by_fine_surjectivity"]
+            and reading_summary["factor_pi_surjective"]
+            and reading_summary["law_descents_commute_with_pi"]
+        ),
+        "comparison_factor_pi_noninjective": reading.factor_noninjective(),
+        "nerve_chart_map_phi_noninjective": (
+            len(set(morphism.vertex_map)) < len(morphism.vertex_map)
+        ),
+        "target_support_pi_compatible": target_support_summary["pi_compatible"],
+        "target_support_C0_holds": target_support_summary["C0_chart_support_image"],
+        "law_nonconstant": reading.law_nonconstant(),
+        "coefficient_coordinates_generated_by_law_descent": (
+            case.coefficient_map == Matrix.identity(law_coordinate_count)
+            and set(reading.fine_law_descent) == set(range(law_coordinate_count))
+            and set(reading.coarse_law_descent) == set(range(law_coordinate_count))
+        ),
         "coarse_h1_nonzero": result["h1"]["coarse_h1_dimension"] > 0,
         "fine_h1_nonzero": result["h1"]["fine_h1_dimension"] > 0,
         "chart_fiber_of_size_at_least_two": max(fibers) >= 2,
