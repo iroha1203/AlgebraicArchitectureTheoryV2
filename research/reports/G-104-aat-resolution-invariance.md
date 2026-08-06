@@ -21,8 +21,11 @@ report はそれらを再定義しない。
 - 完了: Cycle 3 の C0–C4 十分性 blocker。C4 face を actual differential と
   comparison map に使いながら、同一 coarse edge の parallel fine lift が作る
   追加 `H^1` class を Lean で固定した。
-- 停止: 改訂 target の (ii)。C0–C4 をすべて満たす canonical comparison map が
-  非全射となるため、現 statement の証明は続行しない。
+- 完了: Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
+  同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
+  fine coboundary へ写る有限反例を Lean で固定した。
+- 停止: 改訂 target の (ii)。C0–C5 をすべて満たす canonical comparison map が
+  非単射となるため、現 statement の証明は続行しない。
 - 未実行: (iii)–(v)。中心 claim (ii) の反例が固定されたため completion artifact
   としては進めない。
 
@@ -145,7 +148,171 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
-## Cycle 2 — coarse-face lift obstruction
+## Current cycle: Cycle 4 — coarse self-loop lift obstruction
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 4
+decision: approve
+result type: blocker-fixed
+proof obligation: law 由来係数と canonical comparison map を構成し、固定 C0–C5 の一般不変性を直接判定する
+proof obligation delta: C0–C5 をすべて満たしながら canonical H1 map が非単射となる有限反例を Lean に固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LoopLiftObstruction.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC0`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC1`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC2`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC3`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC4`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC5`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonCochainMap`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.coarseLoopClass_ne_zero`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map_coarseLoopClass_zero`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map_not_injective`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.fineSurvivingClass_ne_zero`
+  - `AAT.AG.ResolutionInvariance.LoopLiftObstruction.fixedConditionC0C5_not_sufficient`
+- witness:
+  - Cycle 2 / 3 で監査済みの proper adequate reading pair と非定数 law を再利用する。
+  - coarse nerve は filled triangle、chart 0 の self-loop、triangle の第一 edge と
+    parallel な unfilled edge を持つ。
+  - fine nerve は coarse chart 0 の fiber に3 chart を持つ。coarse self-loop の
+    唯一 lift は最初の2 chart を結び、`edgeMap = none` の edge が残る chart を
+    接続するため、fiber graph は非自明な tree になる。
+  - 各 coarse edge の lift はちょうど一つで C2 / C5 が成立する。fine filling face
+    は unique coarse face へ写り、actual `d1`、`pullback2`、`comm1` に使われる。
+  - law-value basis は canonical law descend の実値 `Fin 3`。全 basis value の
+    generation と coarse / fine descend の両立は predecessor theorem へ追跡できる。
+  - coarse self-loop の basis cocycle は loop period 1 の非零 `H^1` class を作る。
+    canonical pullback は fine fiber tree 上の明示 primitive の coboundary であるため、
+    canonical `h1Map` は非単射である。
+  - fine 側には unfilled parallel edge の period 1 による別の非零 `H^1` class があり、
+    fine cohomology 全体の消滅による反例ではない。
+- focused check: pass。
+- manifest focused check: pass。
+- targeted module build: pass、3697 jobs。
+- namespace axiom audit: 58 declarations、standard axioms only。
+- principal `#print axioms`: `propext`、`Classical.choice`、`Quot.sound` の範囲。
+- placeholder、hidden / bidirectional Unicode、local-path、diff check: clean。
+
+### Audit
+
+- premise delta: 改訂 C0–C5 の十分性を反証する finite blocker を固定。
+- certificate provenance: readings、adequacy、proper comparison、law descends は review 済み
+  predecessor へ追跡できる。nerve、supports、incidence morphism、differentials、
+  pullbacks、period、nonzero classes は explicit finite data から構成し、非同型性を
+  field や premise で受け取らない。
+- proof use: comparison factor の全射性を C0 に使う。fiber path と edge map を
+  C1–C3 に使い、5本の mapped lift を C2 / C5 で直接検査する。C4 face は actual
+  differential と cochain map に使う。coarse self-loop と distinct-endpoint fine lift
+  は explicit primitive に、coarse class の非零性とその零像は非単射性に使う。
+- structure-field escape: none-found。
+- route integrity: pass。proper refinement、非定数 law、law-descend-generated
+  coordinates、nonvacuous C4 face、declared degenerate fiber edge、両側の非零
+  `H^1` を持ち、identity、constant-law、face-free C4、fiber-edge-free C5、
+  zero-`H^1` vacuity ではない。
+- cheat route: target-fitting construction、vacuity、one-way theorem の同値扱い、
+  GOAL / report の読み替えはすべて none-found。
+- blocking finding: C0–C5 は coarse self-loop の唯一 fine lift が、同一 chart fiber
+  の異なる fine chart を結ぶことを禁じない。この incidence collapse により coarse
+  loop class が fine coboundary へ写る。
+- T3 verdict: `approve / blocker-fixed / completion_candidate: no`。
+- stop condition: `target-refuted`。
+
+### Incidence-level revision proposal
+
+現 GOAL は編集しない。この witness を除外する直接的な次版候補は、coarse edge の
+両端点が一致する場合、その唯一 fine lift の両端点も一致することを要求する
+**self-loop endpoint reflection** である。coarse self-loop を nerve data から除外する
+案も同じ witness を除外する。どちらも incidence レベルの候補に限り、その一般的な
+必要性・十分性は証明していない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 4
+decision: approve
+result_type: blocker-fixed
+proof_obligation: test fixed C0-C5 by constructing the law-generated canonical comparison
+proof_obligation_delta: a finite adequate law-generated witness refutes H1 invariance under C0-C5
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 8832100118ced7141757befd1880a6ae1e0b0a5d
+  status: revised
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LoopLiftObstruction.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.support_compatible
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC0
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC1
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC2
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC3
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC4
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.conditionC5
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonCochainMap
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.coarseLoopClass_ne_zero
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map_coarseLoopClass_zero
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.comparisonH1Map_not_injective
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.fineSurvivingClass_ne_zero
+      - AAT.AG.ResolutionInvariance.LoopLiftObstruction.fixedConditionC0C5_not_sufficient
+premise_delta:
+  discharged:
+    - fixed C0-C5 insufficiency blocker
+    - proper adequate pair and nonconstant law
+    - nonvacuous C4 face and declared degenerate fiber edge
+    - law-descend-generated coordinates and canonical comparison map
+    - nonzero coarse H1 class with zero image and separate nonzero fine H1 class
+  remaining:
+    - current target claim ii cannot be discharged under C0-C5
+    - a revised incidence condition controlling coarse self-loop lifts
+certificate_provenance:
+  discharged:
+    - readings, factor, and law descents from reviewed G-103 and G-104 predecessor theorems
+    - coefficient coordinates from actual canonical law-descend values
+    - cochain map from explicit nerve, cell maps, and value map
+    - nonzero and noninjectivity from direct incidence, primitive, period, and quotient calculations
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - both adequacy proofs and CoarserThan
+    - support compatibility and C0-C5
+    - the nonvacuous fine face in d1, pullback2, and comm1
+    - law-value generation and descend compatibility
+    - coarse nonzero loop class, explicit fine primitive, and separate fine nonzero class
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings:
+  - C0-C5 do not reflect a coarse self-loop to a self-loop fine lift
+next_obligation: human revision of the incidence condition, with self-loop endpoint reflection as one candidate
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Prior refutation cycles
+
+以下は Cycle 4 が再利用する predecessor evidence と改訂履歴である。
+
+### Cycle 2 — coarse-face lift obstruction
 
 ```text
 Target theorem cycle result
@@ -315,7 +482,7 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
-## Cycle 3 — parallel edge-lift obstruction
+### Cycle 3 — parallel edge-lift obstruction
 
 ```text
 Target theorem cycle result
