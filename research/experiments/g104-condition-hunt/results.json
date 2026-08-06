@@ -1,0 +1,994 @@
+{
+  "arithmetic": "exact rational linear algebra",
+  "artifact": "G-104 off-loop condition hunt",
+  "artifact_gates_pass": true,
+  "calibration": [
+    {
+      "calibration_pass": true,
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": false,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "h1": {
+        "coarse_h1_dimension": 0,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 3,
+        "injective": true,
+        "isomorphism": false,
+        "surjective": false
+      },
+      "name": "FaceLiftObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 3,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 4,
+          "coefficient_rank": 3,
+          "edges": 4,
+          "faces": 0
+        }
+      }
+    },
+    {
+      "calibration_pass": true,
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": false,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "h1": {
+        "coarse_h1_dimension": 0,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 3,
+        "injective": true,
+        "isomorphism": false,
+        "surjective": false
+      },
+      "name": "EdgeFiberObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 3,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 4,
+          "faces": 1
+        }
+      }
+    },
+    {
+      "calibration_pass": true,
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": false
+      },
+      "h1": {
+        "coarse_h1_dimension": 6,
+        "comparison_rank": 3,
+        "fine_h1_dimension": 3,
+        "injective": false,
+        "isomorphism": false,
+        "surjective": true
+      },
+      "name": "LoopLiftObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 5,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 5,
+          "coefficient_rank": 3,
+          "edges": 6,
+          "faces": 1
+        }
+      }
+    }
+  ],
+  "clause_independence": [
+    {
+      "conditions": {
+        "C0_chart_support_image": false,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C0_chart_support_image",
+      "h1": {
+        "coarse_h1_dimension": 2,
+        "comparison_rank": 1,
+        "fine_h1_dimension": 1,
+        "injective": false,
+        "isomorphism": false,
+        "surjective": true
+      },
+      "independence_pass": true,
+      "name": "drop_C0_support_coordinate",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 2,
+          "edges": 4,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 3,
+          "coefficient_rank": 1,
+          "edges": 4,
+          "faces": 1
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": false,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C1_chart_fiber_connected",
+      "h1": {
+        "coarse_h1_dimension": 1,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 0,
+        "injective": false,
+        "isomorphism": false,
+        "surjective": true
+      },
+      "independence_pass": true,
+      "name": "drop_C1_disconnected_chart_fiber",
+      "sizes": {
+        "coarse": {
+          "charts": 2,
+          "coefficient_rank": 1,
+          "edges": 2,
+          "faces": 0
+        },
+        "fine": {
+          "charts": 3,
+          "coefficient_rank": 1,
+          "edges": 2,
+          "faces": 0
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": false,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C2_coarse_edge_lift",
+      "h1": {
+        "coarse_h1_dimension": 1,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 0,
+        "injective": false,
+        "isomorphism": false,
+        "surjective": true
+      },
+      "independence_pass": true,
+      "name": "drop_C2_missing_parallel_edge_lift",
+      "sizes": {
+        "coarse": {
+          "charts": 2,
+          "coefficient_rank": 1,
+          "edges": 2,
+          "faces": 0
+        },
+        "fine": {
+          "charts": 2,
+          "coefficient_rank": 1,
+          "edges": 1,
+          "faces": 0
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": false,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C3_fiber_cycles_filled",
+      "h1": {
+        "coarse_h1_dimension": 0,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 2,
+        "injective": true,
+        "isomorphism": false,
+        "surjective": false
+      },
+      "independence_pass": true,
+      "name": "drop_C3_unfilled_fiber_cycles",
+      "sizes": {
+        "coarse": {
+          "charts": 1,
+          "coefficient_rank": 1,
+          "edges": 0,
+          "faces": 0
+        },
+        "fine": {
+          "charts": 1,
+          "coefficient_rank": 1,
+          "edges": 2,
+          "faces": 0
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": false,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C4_coarse_face_lift",
+      "h1": {
+        "coarse_h1_dimension": 0,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 3,
+        "injective": true,
+        "isomorphism": false,
+        "surjective": false
+      },
+      "independence_pass": true,
+      "name": "FaceLiftObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 3,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 4,
+          "coefficient_rank": 3,
+          "edges": 4,
+          "faces": 0
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": false,
+        "R_self_loop_endpoint_reflection": true
+      },
+      "dropped_clause": "C5_unique_coarse_edge_lift",
+      "h1": {
+        "coarse_h1_dimension": 0,
+        "comparison_rank": 0,
+        "fine_h1_dimension": 3,
+        "injective": true,
+        "isomorphism": false,
+        "surjective": false
+      },
+      "independence_pass": true,
+      "name": "EdgeFiberObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 3,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 4,
+          "faces": 1
+        }
+      }
+    },
+    {
+      "conditions": {
+        "C0_chart_support_image": true,
+        "C1_chart_fiber_connected": true,
+        "C2_coarse_edge_lift": true,
+        "C3_fiber_cycles_filled": true,
+        "C4_coarse_face_lift": true,
+        "C5_unique_coarse_edge_lift": true,
+        "R_self_loop_endpoint_reflection": false
+      },
+      "dropped_clause": "R_self_loop_endpoint_reflection",
+      "h1": {
+        "coarse_h1_dimension": 6,
+        "comparison_rank": 3,
+        "fine_h1_dimension": 3,
+        "injective": false,
+        "isomorphism": false,
+        "surjective": true
+      },
+      "independence_pass": true,
+      "name": "LoopLiftObstruction",
+      "sizes": {
+        "coarse": {
+          "charts": 3,
+          "coefficient_rank": 3,
+          "edges": 5,
+          "faces": 1
+        },
+        "fine": {
+          "charts": 5,
+          "coefficient_rank": 3,
+          "edges": 6,
+          "faces": 1
+        }
+      }
+    }
+  ],
+  "decision": {
+    "final_candidate": null,
+    "goal_proof_state_changed": false,
+    "law_realizability_checked": false,
+    "reason": "The same nondegenerate incidence data passes C0-C5 plus endpoint reflection with both an H1 isomorphism and a non-isomorphism.  An incidence-only revision cannot distinguish the pair; coefficient-generation restrictions must do so.",
+    "stop_condition": "B_structural_negative_in_free_coefficient_model"
+  },
+  "nondegenerate_positive": {
+    "conditions": {
+      "C0_chart_support_image": true,
+      "C1_chart_fiber_connected": true,
+      "C2_coarse_edge_lift": true,
+      "C3_fiber_cycles_filled": true,
+      "C4_coarse_face_lift": true,
+      "C5_unique_coarse_edge_lift": true,
+      "R_self_loop_endpoint_reflection": true
+    },
+    "firing_gate": {
+      "chart_fiber_of_size_at_least_two": true,
+      "coarse_face_nonempty": true,
+      "coarse_h1_nonzero": true,
+      "comparison_factor_noninjective": true,
+      "fine_degenerate_fiber_edge_exists": true,
+      "fine_h1_nonzero": true
+    },
+    "firing_pass": true,
+    "h1": {
+      "coarse_h1_dimension": 2,
+      "comparison_rank": 2,
+      "fine_h1_dimension": 2,
+      "injective": true,
+      "isomorphism": true,
+      "surjective": true
+    },
+    "name": "nondegenerate_positive",
+    "sizes": {
+      "coarse": {
+        "charts": 3,
+        "coefficient_rank": 2,
+        "edges": 4,
+        "faces": 1
+      },
+      "fine": {
+        "charts": 4,
+        "coefficient_rank": 2,
+        "edges": 5,
+        "faces": 1
+      }
+    }
+  },
+  "round_1_constant_coordinate_candidate_search": {
+    "bounds": {
+      "coarse_charts": 3,
+      "coarse_edges": 4,
+      "coarse_faces": 1,
+      "coefficient_rank": 2,
+      "fine_charts": 4
+    },
+    "candidate": [
+      "C0_chart_support_image",
+      "C1_chart_fiber_connected",
+      "C2_coarse_edge_lift",
+      "C3_fiber_cycles_filled",
+      "C4_coarse_face_lift",
+      "C5_unique_coarse_edge_lift",
+      "R_self_loop_endpoint_reflection"
+    ],
+    "counterexamples": [],
+    "counts": {
+      "candidate_refinements": 3043,
+      "coarse_nerves": 1069,
+      "coefficient_cases": 6086,
+      "counterexamples": 0,
+      "generated_refinements": 112562
+    },
+    "normal_form": {
+      "coarse_connected": true,
+      "coarse_edge_lifts": "exactly one; every endpoint assignment enumerated; loops reflected",
+      "coarse_face_bound": 1,
+      "coarse_face_lifts": "one boundary-commuting lift per coarse face",
+      "coarse_parallel_edges_and_loops": true,
+      "coefficients": "constant free Q-rank, identity coordinate pullback, basis changes quotiented",
+      "edge_orientation": "lower chart index to higher; orientation sign quotiented",
+      "fine_chart_fibers": "positive fibers with a star tree or one explicitly filled triangle"
+    }
+  },
+  "round_2_cellwise_coefficient_search": {
+    "bounds": {
+      "cell_maps": "canonical zero/identity coordinate restrictions",
+      "chart_dimensions": "fixed at 1 and nonempty",
+      "coarse_cell_dimensions": "fixed at 1",
+      "coordinate_count": 1,
+      "fine_edge_dimensions": "all 0/1 assignments",
+      "fine_face_dimensions": "all incidence-compatible 0/1 assignments"
+    },
+    "counts": {
+      "isomorphisms": 5,
+      "nonisomorphisms": 67,
+      "nonisomorphisms_with_both_h1_nonzero": 31,
+      "supported_coefficient_systems": 72
+    },
+    "law_realizability": "not checked; this is authorized free-coefficient evidence only",
+    "mechanism": "The support-hole case keeps the incidence fiber edge but gives it coefficient dimension zero. The duplicate-coordinate case is universal: duplicating a nonzero fine H1 summand leaves all incidence predicates unchanged and makes the comparison non-surjective.",
+    "same_incidence_pair": {
+      "duplicate_coordinate_counterexample": {
+        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "coarse_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            1
+          ]
+        },
+        "conditions": {
+          "C0_chart_support_image": true,
+          "C1_chart_fiber_connected": true,
+          "C2_coarse_edge_lift": true,
+          "C3_fiber_cycles_filled": true,
+          "C4_coarse_face_lift": true,
+          "C5_unique_coarse_edge_lift": true,
+          "R_self_loop_endpoint_reflection": true
+        },
+        "fine_cell_dimensions": {
+          "charts": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "edges": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "faces": [
+            2
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 2,
+          "fine_h1_dimension": 4,
+          "injective": true,
+          "isomorphism": false,
+          "surjective": false
+        },
+        "name": "same_incidence_duplicated_fine_coordinate"
+      },
+      "positive": {
+        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "coarse_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            1
+          ]
+        },
+        "conditions": {
+          "C0_chart_support_image": true,
+          "C1_chart_fiber_connected": true,
+          "C2_coarse_edge_lift": true,
+          "C3_fiber_cycles_filled": true,
+          "C4_coarse_face_lift": true,
+          "C5_unique_coarse_edge_lift": true,
+          "R_self_loop_endpoint_reflection": true
+        },
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            1
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 2,
+          "fine_h1_dimension": 2,
+          "injective": true,
+          "isomorphism": true,
+          "surjective": true
+        },
+        "name": "same_incidence_full_coordinate_support"
+      },
+      "support_hole_counterexample": {
+        "cell_maps": "canonical zero/identity restrictions for the single free coordinate",
+        "coarse_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            1
+          ]
+        },
+        "conditions": {
+          "C0_chart_support_image": true,
+          "C1_chart_fiber_connected": true,
+          "C2_coarse_edge_lift": true,
+          "C3_fiber_cycles_filled": true,
+          "C4_coarse_face_lift": true,
+          "C5_unique_coarse_edge_lift": true,
+          "R_self_loop_endpoint_reflection": true
+        },
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            1
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 1,
+          "fine_h1_dimension": 1,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        },
+        "name": "same_incidence_missing_fiber_edge_coordinate"
+      }
+    },
+    "sample_counterexamples": [
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      },
+      {
+        "fine_cell_dimensions": {
+          "charts": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "edges": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            1
+          ],
+          "faces": [
+            0
+          ]
+        },
+        "h1": {
+          "coarse_h1_dimension": 2,
+          "comparison_rank": 0,
+          "fine_h1_dimension": 0,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        }
+      }
+    ],
+    "structural_negative": true
+  }
+}
