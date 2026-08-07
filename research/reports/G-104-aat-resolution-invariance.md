@@ -5,8 +5,8 @@
 - target theorem: Diagnostic Resolution Invariance Theorem
 - proof state: `target-proof-checkpoint`(現行 statement の claim (i) canonical
   comparison map は Cycle 9、有限 `(law, 値)` block の複体・次数別直和分解は
-  Cycle 10 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face 宣言規則に
-  対する歴史証拠)
+  Cycle 10、actual `H^1` quotient の block 有限直和同型は Cycle 11 で証明済み。
+  Cycle 7 の `target-refuted` は改訂前の退化 face 宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -65,6 +65,13 @@ report はそれらを再定義しない。
   全3次数の finite `DirectSum` equivalence を構成し、実際の `lawGeneratedD0` / `D1`
   と componentwise block differential の intertwining を証明した。Cycle 9 の
   mapped chart / edge / face coordinate transport も同じ label を保つ。
+- 完了(現行 statement): Cycle 11 の quotient-level `H^1` block 有限直和分解。
+  Cycle 10 の componentwise differential を aggregate `ThreeCochainComplex` にまとめ、
+  global complex と aggregate complex の cycle 同型、global / aggregate の boundary range 対応、
+  aggregate cycle / boundary と label 別の product との対応を証明した。G-102 の実際の
+  `H1 = ker d1 / range boundaryToCycles` に `Submodule.Quotient.equiv` と
+  `Submodule.quotientPi` を適用し、global `H^1` と block `H^1` の finite
+  `DirectSum` の canonical `LinearEquiv` と representative の成分公式を得た。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -83,9 +90,141 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  aggregate block complex と `H^1` / comparison map の座標 block 直和分解、
+  comparison map の座標 block 直和分解、
   座標 subnerve と C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 11 — quotient-level block cohomology
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 11
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: aggregate block complex を構成し、actual G-102 H1 を label 別 block H1 の finite DirectSum に canonical に分解する
+proof obligation delta: cochain-level block decomposition を cycle / boundary / quotient の各段階で放電した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockDirectSumComplex`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedAggregateCyclesEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBoundaryRange_map_aggregate`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockCyclesEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockBoundaryRange_map_cyclesEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBlockCyclesEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBoundaryRange_map_blocks`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedH1BlockEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedH1BlockEquiv_mk_component`
+- aggregate 複体の complex law は全 label での Cycle 10 `lawValueBlock_d1_comp_d0`
+  から生成した。complex law や differential 対応を入力 field として追加しない。
+- global cycle と aggregate cycle の同型は degree-one block equivalence と
+  `lawGeneratedD1_block_intertwining`、boundary range の等式は degree-zero block
+  equivalence と `lawGeneratedD0_block_intertwining` から導いた。
+- finite label 上の aggregate cycle は label 別 cycle の product と canonical に同型で、
+  aggregate boundary range は label 別 boundary range の `Submodule.pi Set.univ`
+  に正確に写る。この2つの submodule 等式を quotient で実使用した。
+- 最終同型は `Submodule.Quotient.equiv` → `Submodule.quotientPi` →
+  `DirectSum.linearEquivFunOnFintype.symm` の合成である。basis、finrank、補空間、
+  任意の quotient equivalence は使わない。
+- `lawGeneratedH1BlockEquiv_mk_component` は global cycle の quotient class の各
+  label 成分が、canonical に transport された block cycle の quotient class であることを固定する。
+- focused manifest check: pass。
+- targeted module build: pass、3701 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 12 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: finite Source / law family、adequate reading、finite supported nerve は
+  `ambient-boundary`。cycle / boundary の対応、aggregate complex、quotient equivalence は
+  Cycle 11 の出力である。
+- certificate provenance: cycle は actual `d1` kernel、boundary は actual
+  `boundaryToCycles` range、quotient は G-102 の actual `H1` に追跡できる。
+  finite label は Cycle 10 の source evaluation image をそのまま使う。
+- proof use: componentwise complex law、D1 intertwining、D0 intertwining、cycle / boundary
+  submodule 等式、G-102 quotient API をすべて最終同型の構成に実使用する。
+- structure-field escape: none-found。cycle decomposition、boundary decomposition、H1 iso の
+  certificate を新規 structure field で受けない。
+- route integrity: pass。common source-generated label と exact coordinate fiber から離れず、
+  reading 別 label、occurrence index、dimension-counting route を使わない。
+- cheat route: target-fitting construction、vacuity、one-way map の equivalence 扱い、
+  supplied quotient equivalence、GOAL / report の読み替えは none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: Cycle 9 `generatedComparisonHom` / `generatedComparisonH1Map` を
+  common label の block ごとに分解し、global と block の naturality square を証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 11
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: derive the canonical finite-DirectSum decomposition of actual G-102 H1
+proof_obligation_delta: discharged cycle, boundary, and quotient decomposition from the Cycle 10 cochain blocks
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockDirectSumComplex
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBlockCyclesEquiv
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedBoundaryRange_map_blocks
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedH1BlockEquiv
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedH1BlockEquiv_mk_component
+premise_delta:
+  ambient_boundary:
+    - finite Source and law family, adequate reading, and finite supported nerve
+  discharged:
+    - aggregate finite-DirectSum block complex
+    - exact global-to-block cycle equivalence
+    - exact global-to-product boundary-range equality
+    - canonical quotient-level H1 finite-DirectSum equivalence and representative formula
+  remaining:
+    - blockwise generated comparison Hom and H1 naturality
+    - coordinate subnerves, C0-C6, invariance, corollary, diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - cycle correspondence generated from the actual D1 intertwining theorem
+    - boundary correspondence generated from the actual D0 intertwining theorem
+    - H1 equivalence generated by quotient equivalence and finite quotientPi
+  unresolved:
+    - generated-comparison block naturality
+proof_use_audit:
+  used_material_premises:
+    - per-label complex laws for the aggregate complex law
+    - D1 intertwining for cycle transport
+    - D0 intertwining for boundary-range transport
+    - actual G-102 boundaryToCycles and H1 quotient
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove blockwise generated-comparison Hom and H1 naturality
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 10 — finite law-value block complexes
 
