@@ -244,6 +244,7 @@ import ResearchLean.AG.ResolutionInvariance.LawValueBlockCohomology
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockComparison
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockComparisonNaturality
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockDecomposition
+import ResearchLean.AG.ResolutionInvariance.LawValueCoordinateSubnerve
 import ResearchLean.AG.ResolutionInvariance.LoopLiftObstruction
 import ResearchLean.AG.ResolutionInvariance.SupportedNerveMorphism
 import ResearchLean.AG.SFT.ConwayBoundaryGenerator
