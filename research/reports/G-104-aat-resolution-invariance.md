@@ -9,7 +9,9 @@
   label 別 comparison Hom / `h1Map` と global pullback の3次数 block 成分一致は
   Cycle 12、global comparison `H^1` map の quotient-level block 直和 naturality は
   Cycle 13、K0 / K1 exact block からの canonical 座標 subnerve は Cycle 14 で
-  証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
+  証明済み。whole-nerve C0 / C5 / C6 と全座標 subnerve 相対の C1–C4 からなる
+  incidence / support-only の条件 C package は Cycle 15 で定義済み。Cycle 7 の
+  `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
@@ -100,6 +102,16 @@ report はそれらを再定義しない。
   chart support / K1 edge support / K1 face support 上で exact label value が実際に
   出現することとそれぞれ iff で特徴づけた。有限 Source regime の全 cell 型に
   `Fintype` instance も生成した。
+- 完了(現行 statement): Cycle 15 の incidence / support-only 条件 C package。
+  C0 / C5 / C6 を whole nerve、C1–C4 を全 source-generated label の canonical
+  座標 subnerve 上で定義した。C1 の fiber graph は両 endpoint coordinate が
+  同一 coarse block chart へ写る全 fine block edge を使い、C2 / C4 は canonical
+  Option block transport の exact image を要求する。C3 は有限な全 fine block edge
+  上の `ℚ` chainについて fiber 外で零、fiber chart ごとの incoming = outgoing、
+  内部 face の oriented boundary `e₀ - e₁ + e₂` の span を要求する。C5 / C6 の
+  exact block 制限を theorem として導き、C6 の endpoint reflection は C5 に
+  依存しない。package は命題 field だけを持ち、同型・消滅・inverse・選択 lift / path /
+  filling chain を入力しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -118,8 +130,156 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
+  不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 15 — incidence / support-only C0–C6 package
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 15
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: fixed GOAL の whole-nerve / coordinate-relative C0–C6 を incidence / support data だけで定義する
+proof obligation delta: 不変性 theorem の全 material direction hypotheses と exact block bridge を固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC1`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC2`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC3`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC4`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC5`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC6`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC5_block_unique`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC6_block_endpoint_reflection`
+- C0 は各 coarse chart support と、その chart fiber に属する fine chart support の
+  canonical `comparisonFactor` image の合併を pointwise iff で同定する。
+- C1 は各 exact coarse block chart の fiber を非空とし、両 endpoint coordinate が
+  その chart へ写る全 fine block edge による undirected graph で連結とする。
+- C2 / C4 は canonical `edgeBlockCoordinateMapOption` /
+  `faceBlockCoordinateMapOption` が exact same-label coarse block cell を返す lift を
+  要求する。
+- C3 は全 fine block edge 上の有限 `ℚ` chain を量化する。fiber 外で零、fiber 内の
+  全 chart で incoming = outgoing を満たす chain を、3本すべてが fiber edge である
+  fine block face の `e₀ - e₁ + e₂` oriented boundary の線形結合として表す。
+  `edgeMap = none` / `faceMap = none`、global complex、`H^1`、comparison map を
+  定義に参照しない。
+- C5 / C6 は whole nerve 上で量化し、C6 は C5 と独立に全 mapped edge へ課す。
+  exact block の lift 一意性と self-loop endpoint reflection は、Cycle 14 の cell
+  projection 単射性と canonical Option map から theorem として導出する。
+- `ConditionC` は7個の命題 fieldだけを束ねる。lift、path、filling chain、inverse、
+  cohomology certificate は data field にしない。
+- focused manifest check: pass。
+- targeted module build: pass、3705 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 33 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: 有限 Source、finite law family、adequate pair、supported nerves、
+  reviewed morphism は `ambient-boundary`。C0–C6 は固定 theorem の
+  `direction-hypothesis` であり、その成立 witness と不変性は本 Cycle の出力に
+  数えない。
+- certificate provenance: C0 は canonical factor、C1–C4 は reviewed K0 / K1 の
+  exact block coordinates、C2 / C4 は generated partial block transportを使う。
+  C3 に cycle basis、filling certificate、global complex、cohomology datumを
+  導入しない。
+- proof use: C5 bridge は C5、両 Option-map hypotheses、whole-edge extraction、
+  edge-cell injectivityを実使用する。C6 bridge は C6、Option-map hypothesis、
+  coarse self-loop equality、chart-cell injectivityを実使用し、C5を使わない。
+  `Fintype Source` は全 block edge / face 上の有限和に使用する。
+- structure-field escape: none-found。C3 は許可された局所 fiber acyclicityそのもの。
+  global exactness、comparison equivalence、`H^1` vanishing、selected path / fillingを
+  fieldにしない。
+- route integrity: pass。relative clauses は canonical coordinate subnerveとexact
+  block transportに追跡でき、whole-nerve clausesを label 相対へ弱めていない。
+- cheat route: `edgeMap = none`限定C3、global cohomologyへの置換、空 / singleton
+  特例、target-fitting certificate、結論相当fieldは none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: C1–C6から各 label の定数係数 block comparison `H^1` map が
+  同型であることを、C3の局所 fiber contractionとC5 / C6 bridgeを実使用して証明し、
+  Cycle 13 の naturalityでglobal generated comparison mapへ輸送する。C0の最終
+  proof-useを明示的に追跡する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 15
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: define the fixed whole-nerve and coordinate-relative incidence/support-only C0-C6 package
+proof_obligation_delta: fixed every material direction hypothesis and its exact block bridge before the invariance proof
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC1
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC2
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC3
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC4
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC5
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC6
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC5_block_unique
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC6_block_endpoint_reflection
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate pair, supported nerves, and reviewed morphism
+  discharged:
+    - exact whole-nerve C0, C5, and C6 predicates
+    - exact coordinate-relative C1-C4 predicates for every source-generated label
+    - local rational C3 on all endpoint-defined fiber edges with oriented internal-face boundaries
+    - proposition-only aggregate ConditionC package
+    - whole-nerve C5 and C6 consequences on exact block coordinates
+  remaining:
+    - blockwise and global invariance
+    - nondegenerate ConditionC realization, corollary, inadequate diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - support comparison and block transports are canonical reviewed constructions
+    - C3 stores no selected basis or filling data
+  unresolved:
+    - concrete realization of ConditionC and canonical H1 isomorphism
+proof_use_audit:
+  used_material_premises:
+    - C5, exact Option maps, whole-edge extraction, and edge-cell injectivity in the uniqueness bridge
+    - C6, exact Option map, coarse loop equality, and chart-cell injectivity in the endpoint bridge
+    - finite Source for complete rational edge and face sums
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove per-label block H1 invariance and transport it globally while tracking C0 proof-use
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 14 — canonical law-value coordinate subnerve
 
