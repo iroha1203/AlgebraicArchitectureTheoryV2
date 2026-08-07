@@ -61,7 +61,7 @@
 
 | 領域 | 主な場所 | 正本 guideline |
 | --- | --- | --- |
-| Lean / AAT | `Formal/AG`, `Formal.lean`, `docs/aat` | [AAT guideline](docs/aat/guideline.md) |
+| Lean / AAT | `Formal/AG`, `Formal.lean`, `docs/aat`(数学本文は [algebraic_geometric_theory](docs/aat/algebraic_geometric_theory/README.md)) | [AAT guideline](docs/aat/guideline.md) |
 | SFT | `docs/sft` | [SFT guideline](docs/sft/guideline.md) |
 | Tooling | `tools/archsig`, `tools/archview`, `tools/fieldsig`, `docs/tool` | [Tool guideline](docs/tool/guideline.md) |
 | Website | `website`, `docs/website` | [Website guideline](docs/website/guideline.md) |
@@ -71,14 +71,6 @@
 | 横断(全領域) | — | [Workflow guideline](docs/workflow/guideline.md) |
 
 同じ語でも領域によって責務が違うため、作業前に対象領域を確認する。
-
-## 主要な入口
-
-- `docs/README.md`: 研究 docs 全体の読み方。
-- `docs/aat/algebraic_geometric_theory/README.md`: 代数幾何的 AAT 数学本文の入口。
-- `research/goals/` と GitHub Issues: 作業状態と未解決課題。
-- `docs/tool/README.md`: 現行 tooling scope。
-- `research/README.md`: 研究ループ engine(`$research-loop`)の入口。
 
 ## 検証
 
