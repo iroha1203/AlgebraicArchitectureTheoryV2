@@ -7,6 +7,11 @@
 [Tooling](../tool/guideline.md) / [Website](../website/guideline.md) /
 [PRD](../prd/guideline.md))を正本とする。
 
+## 文書構成
+
+- 文書構成のメタ規律(3層構成、正本一元、言い換え再掲禁止)は
+  [docs/README.md](../README.md) の「文書構成のメタ規律」を正とする。
+
 ## 言語
 
 - ユーザーへの応答、commit message、PR / Issue の title と本文は日本語で書く。

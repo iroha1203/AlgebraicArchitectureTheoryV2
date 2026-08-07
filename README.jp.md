@@ -25,7 +25,7 @@ ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
-プロジェクトの核となる思想と問いは [PHILOSOPHY](PHILOSOPHY.md) にまとめています。
+プロジェクトの核となる哲学は [AGENTS.md](AGENTS.md) の「PHILOSOPHY」節にまとめています。
 研究ループの実行入口は [research/README.md](research/README.md) で、GOAL の定義は
 [research/goals](research/goals/README.md) に置きます。
 
@@ -61,7 +61,7 @@ SFT makes software evolution computable.
 
 ## 読む順序
 
-1. [PHILOSOPHY](PHILOSOPHY.md)
+1. [AGENTS.md の PHILOSOPHY 節](AGENTS.md)
 2. [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md)
 3. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)

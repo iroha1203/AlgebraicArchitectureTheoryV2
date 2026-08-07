@@ -18,7 +18,7 @@ ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
-The project's core philosophy and guiding question are stated in [PHILOSOPHY](PHILOSOPHY.md).
+The project's core philosophy is stated in the PHILOSOPHY section of [AGENTS.md](AGENTS.md).
 The research-loop operating entry is [research/README.md](research/README.md), with
 GOAL definitions under [research/goals](research/goals/README.md).
 
@@ -58,7 +58,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## Reading Order
 
-1. [PHILOSOPHY](PHILOSOPHY.md)
+1. [AGENTS.md PHILOSOPHY section](AGENTS.md)
 2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
 3. [Software Field Theory](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)

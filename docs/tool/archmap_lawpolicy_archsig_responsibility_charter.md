@@ -34,7 +34,7 @@ ArchMap が書くのは **"X is the case"(世界がこうなっている)** だ�
 - **観測の主観(守る)**: 観測者が source を読んで下す意味の読み取り。
   第I部の semantic Atom は、後期ウィトゲンシュタインの「意味は使用である」を AAT に移したものとして定義され、
   その一意性は意味対象の絶対性ではなく **使われ方の規則に相対化** して与えられる。
-  同じ `sendEmail` が、二要素認証のゲームでは検証経路を、ニュースレターのゲームでは配信経路を意味する(PHILOSOPHY.md)。
+  同じ `sendEmail` が、二要素認証のゲームでは検証経路を、ニュースレターのゲームでは配信経路を意味する。
   この読み取りは本質的に主観的であり、それこそが grep や型解析では出てこない観測である。
   これを機械判定化したら、ArchMap は静的解析に堕ち、AAT が上に載せる計算の土台が消える。**主観はバグではなく機能である。**
 
@@ -157,7 +157,7 @@ ArchSig は入力トライアドに含まれない比較写像・修理複体・
 | 観測は Atom の **存在** を生成しない(判定排除の根拠は本憲章の原則1) | 第I部 公理 A6(Observation Non-Generation) |
 | Atom の存在と観測は別、観測は情報を忘れうる写像 | 第I部 命題 A9(観測不完全性と存在一意性)、`obs : F → O` |
 | doctrine を固定したときの相対化された一意性(多 doctrine を許す。単一固定は tool の設計選択) | 第I部 公理 A8(Essential Uniqueness)、`(V, Γ, R, ρ, E, N)` |
-| semantic は「意味は使用」で相対化された主観的観測 | 第I部 semantic Atom 定義、PHILOSOPHY.md |
+| semantic は「意味は使用」で相対化された主観的観測 | 第I部 semantic Atom 定義 |
 | law は atom / coordinate を生成せず loci を切り出す | 第III部 Law Algebra |
 | 計測出力契約と五値 verdict | 第VIII部 定義 11.1 |
 | verdict discipline(unknown ≠ nonzero ほか) | 第VIII部 measurement verdict discipline |
@@ -168,4 +168,4 @@ ArchSig は入力トライアドに含まれない比較写像・修理複体・
 
 - [guideline.md](guideline.md) —— tooling の編集方針と検証コマンド。
 - [README.md](README.md) —— 入力契約と現行 boundary statement の一覧。
-- [PHILOSOPHY.md](../../PHILOSOPHY.md) —— プロジェクト全体の思想基盤。
+- [AGENTS.md](../../AGENTS.md) の「PHILOSOPHY」節 —— プロジェクト全体の思想基盤(底)。
