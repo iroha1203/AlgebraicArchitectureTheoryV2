@@ -83,7 +83,10 @@
   条件 C が空虚に成立する例、粗側 nerve が face を持たず C4 が空虚に
   成立するだけの発火、細側 nerve が退化成分として宣言された fiber 内
   edge を持たず C5 の一意性が
-  細側=粗側の自明な edge 対応で成立するだけの発火、粗側 nerve が
+  細側=粗側の自明な edge 対応で成立するだけの発火、細側 nerve が
+  退化成分として宣言された face を持たない、または退化宣言された face が
+  K0 / K1 由来係数座標を一つも持たず、退化成分上の零 pullback 規則が
+  空虚に成立するだけの発火、粗側 nerve が
   self-loop を持たず C6 が空虚に成立するだけの発火、全 cell が同一の
   係数座標集合を持ち座標 subnerve 相対化が空虚に全体条項へ一致するだけの
   発火、comparison map を
@@ -229,7 +232,13 @@
      C1 が非空虚に働くこと、粗側 nerve が少なくとも一つ face を持ち
      C4 が非空虚に働くこと、細側 nerve が少なくとも一つ退化成分として
      宣言された fiber 内 edge を持ち C5 の一意性が細側=粗側の自明な
-     edge 対応で成立するのでないこと、粗側 nerve が少なくとも一つ self-loop を持ち
+     edge 対応で成立するのでないこと、細側 nerve が少なくとも一つ
+     退化成分として宣言された face を持ち(hereditary 性によりその3本の
+     boundary edge も退化宣言済み)、その face が少なくとも一つの
+     K0 / K1 由来係数座標を持ち、当該座標上で degree-one pullback の
+     boundary 交代和が実際に零へ落ちて零 pullback と一致する
+     (comm1 の退化成分の非空虚な検証)こと、
+     粗側 nerve が少なくとも一つ self-loop を持ち
      C6 が非空虚に働くこと、少なくとも一つの係数座標の subnerve が nerve
      全体と一致しない(値の分配が実際に起き、C1–C4 の座標 subnerve
      相対化が空虚に全体条項へ一致するのでない)こと、を theorem として
@@ -350,6 +359,8 @@
   - `反例3種`: `discharge-required`。存在 witness。型不一致 vacuity は
     不可。
   - `発火 witness`: `discharge-required`。route integrity audit で使う。
+    退化宣言 face の comm1 非空虚検証((v) の当該項目: 係数座標を持つ
+    退化 face 上で boundary 交代和が実際に零へ落ちること)を含む。
 - `target anti-weakening rule`: 不変性を「ある同型が存在する」へ弱めない
   (comparison map が誘導する canonical 射について主張する)。条件 C に、
   comparison map・粗側複体・両側の global `H^1` に関する同型・消滅と同値
@@ -373,7 +384,8 @@
   破れる)は `target-refuted` とし、C の改訂案(同じ incidence レベルの
   条項)、comparison map 構成の改訂案、または係数生成契約(K0 / K1)の
   改訂案を返す。cohomological 条項への差し替えは改訂案として認めない。
-  (v) の C6 非空虚発火または座標 subnerve 相対化の非空虚発火(値分配)が
+  (v) の C6 非空虚発火、座標 subnerve 相対化の非空虚発火(値分配)、
+  または退化宣言 face の comm1 非空虚検証(係数座標を持つ退化 face)が
   他の発火条件と同一 witness で構成不能と判明した場合は、当該項目を
   別 witness へ分離する GOAL 改訂案を返す。(iv) は反例構成が成功条件であり、「adequate で
   ない粗化でも診断が常に保たれる」と証明された場合は adequacy 定義の
