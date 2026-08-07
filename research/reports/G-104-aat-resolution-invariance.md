@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-refuted`(**改訂前 statement に対する Cycle 4 判定**。
-  下記注記参照)
+- proof state: `target-proof-checkpoint`(PR #3915 で再固定した現行 statement。
+  Cycle 5 で K0 / K1 base complex を放電)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -16,10 +16,11 @@ report はそれらを再定義しない。
 > 条項、係数生成契約なし。commit `88321001` 時点)の固定 statement に
 > 対する歴史証拠である。カードはその後の改訂(PR #3915: 係数生成契約
 > K0 / K1、係数体 `ℚ` 固定、C6 追加、C1–C4 の座標 subnerve 相対化)で
-> statement を再固定した。**改訂後 statement の proof state は未証明・
-> cycle 未実行**であり、本 report の反例は改訂後 statement の反証では
+> statement を再固定した。本 report の反例は改訂後 statement の反証では
 > ない(Cycle 2–4 の Lean 反例は改訂後カードの (iv)(c) 素材として転用
-> 可能なまま残る)。runtime state の正本は tracking Issue #3902。
+> 可能なまま残る)。改訂後 statement は Cycle 5 から再開し、現在は
+> K0 / K1 base complex までを放電した checkpoint である。runtime state の
+> 正本は tracking Issue #3902。
 
 ## Proof obligation state
 
@@ -27,18 +28,164 @@ report はそれらを再定義しない。
   一意性・全射性。
 - 完了: H0b `Adequate` から生成した各 law descend、その可換性・一意性、
   comparison factor に沿う coarse / fine descend の可換性。
-- 完了: Cycle 2 の C0–C3 十分性 blocker。coarse face lift の欠落を有限反例で
+- 完了(現行 statement): Cycle 5 の K0 / K1 base complex。chart 台と face
+  endpoint coherence だけを入力に、edge / face 台、実際の law-descend 値の
+  `(cell, law, 値)` 座標、`ℚ` 上の `d₀` / `d₁`、`d₁ ∘ d₀ = 0`、
+  `ThreeCochainComplex ℚ` を生成した。
+- 歴史証拠(改訂前 statement): Cycle 2 の C0–C3 十分性 blocker。coarse face lift の欠落を有限反例で
   固定し、条件 C を C0–C4 へ改訂する根拠を得た。
-- 完了: Cycle 3 の C0–C4 十分性 blocker。C4 face を actual differential と
+- 歴史証拠(改訂前 statement): Cycle 3 の C0–C4 十分性 blocker。C4 face を actual differential と
   comparison map に使いながら、同一 coarse edge の parallel fine lift が作る
   追加 `H^1` class を Lean で固定した。
-- 完了: Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
+- 歴史証拠(改訂前 statement): Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
-- 停止: 改訂 target の (ii)。C0–C5 をすべて満たす canonical comparison map が
-  非単射となるため、現 statement の証明は続行しない。
-- 未実行: (iii)–(v)。中心 claim (ii) の反例が固定されたため completion artifact
-  としては進めない。
+- 未完: coarse / fine nerve morphism、`π`-compatible chart 台、comparison
+  cochain map、`H^1` の `(law, 値)` block 直和分解、座標 subnerve と C0–C6、
+  不変性 theorem、系、inadequate 側診断、反例3種、発火 witness。
+
+## Cycle 5 — K0 / K1 law-generated base complex
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 5
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: chart 台と face endpoint coherence から K1 台、K0 座標、ℚ 上の differential、d₁d₀ theorem、ThreeCochainComplex を生成する
+proof obligation delta: 改訂後 statement の最初の discharge-required node を一般の有限入力について Lean で固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeSupport`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceSupport`
+  - `AAT.AG.ResolutionInvariance.CellCoordinate`
+  - `AAT.AG.ResolutionInvariance.CellCoordinate.ofSupportedTarget_eq_of_value_eq`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.chartCoordinate_exists`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD1`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGenerated_d1_comp_d0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedComplex`
+- K1 は edge 台を両端 chart 台の交わり、face 台を3本の boundary edge 台の
+  交わりとして def で生成する。edge / face 台の独立 field はない。
+- K0 coordinate は `(cell, law, 値)` と、その値が当該 cell の導出台上で
+  canonical `lawDescend` に実在するという Prop witness だけを持つ。target 上の
+  occurrence は coordinate field ではなく、同じ descended 値の複数出現が同一
+  coordinate になることを theorem で固定した。
+- `d₀` は同一 label の right-minus-left、`d₁` は同一 label の
+  `e₀ - e₁ + e₂`。`d₁ ∘ d₀ = 0` は face boundary の3本の endpoint
+  equality をすべて使用して証明し、G-102 の `ThreeCochainComplex ℚ` を構成する。
+- focused manifest check: pass。
+- targeted module build: pass、3694 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 70 declarations、standard axioms only。
+- principal `#print axioms`: `propext`、`Classical.choice`、`Quot.sound` の範囲。
+- placeholder、hidden / bidirectional Unicode、local-path、reverse-import、diff scan:
+  clean。
+
+### Audit
+
+- premise delta: K1 台、K0 の exact-image / no-multiplicity 座標、`ℚ` 上の
+  generated differential、`d₁d₀`、base complex を放電。
+- certificate provenance: `lawDescend` は `Adequate` と reading surjectivity へ
+  追跡できる。coordinate の occurrence witness は exact-image membership であり、
+  追加・複製・省略を選ぶ certificate ではない。有限性 instance は supported
+  occurrence から coordinate 全体への全射で構成し、座標を選別しない。
+- proof use: adequacy は各 coordinate の `lawDescend` に、chart 台は K1 と
+  coordinate image に、chart 台非空は `chartCoordinate_exists` に、3本の face
+  endpoint equality は `lawGenerated_d1_comp_d0` に実使用される。
+- structure-field escape: none-found。入力 structure は finite nerve、chart 台、
+  chart 台非空、face endpoint coherence だけを持ち、edge / face 台、differential、
+  `d₁d₀`、comparison、cohomology を field で受けない。
+- route integrity: pass。一般の入力dataと reviewed `lawDescend` API からの
+  canonical construction であり、旧 full-support fixture や selected coefficient
+  complex を再包装していない。
+- cheat route: target-fitting construction、vacuity、one-way theorem の同値扱い、
+  GOAL / report の読み替えはすべて none-found。
+- blocking findings: none。
+- T3 verdict: `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: endpoint / boundary と可換で退化 edge / face を許す一般の
+  coarse / fine `TargetSupportedNerve` morphism と `π`-compatible chart 台を、
+  comparison / cohomology / isomorphism field なしに定義する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 5
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: generate the K0/K1 law-derived rational base complex
+proof_obligation_delta: K1 supports, exact law-value coordinates, generated differentials, d1d0, and the ThreeCochainComplex are now constructed from finite input data
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 2ede7da2d150eda52599f219942e9d9477edd552
+  status: revised
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeSupport
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceSupport
+      - AAT.AG.ResolutionInvariance.CellCoordinate
+      - AAT.AG.ResolutionInvariance.CellCoordinate.ofSupportedTarget_eq_of_value_eq
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.chartCoordinate_exists
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD1
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGenerated_d1_comp_d0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedComplex
+premise_delta:
+  discharged:
+    - K1 edge and face supports from chart supports
+    - exact law-descend cell coordinates without occurrence multiplicity
+    - rational same-label d0 and d1
+    - d1 composed with d0 from face endpoint coherence
+    - finite ThreeCochainComplex over the generated coordinates
+  remaining:
+    - supported-nerve morphism and pi-compatible chart supports
+    - canonical comparison cochain map
+    - H1 law-value block decomposition
+    - coordinate subnerves and C0-C6
+    - invariance theorem and no-overresolution corollary
+    - canonical inadequate diagnostic, three counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - law descent from Adequate and reading surjectivity
+    - coordinates from exact law-descend images on K1 supports
+    - d1d0 from the three face endpoint equalities
+  unresolved:
+    - comparison coordinate transport and cochain-map provenance
+    - H1 block-decomposition provenance
+    - invariance and witness provenance
+proof_use_audit:
+  used_material_premises:
+    - Adequate and canonical lawDescend
+    - chart supports and chart-support nonemptiness
+    - all three face endpoint equalities
+    - finite Source and finite nerve cells
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define the supported-nerve morphism and pi-compatible chart supports without comparison or cohomology fields
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 1 — canonical comparison factor と law descend
 
@@ -159,7 +306,7 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
-## Current cycle: Cycle 4 — coarse self-loop lift obstruction
+## Historical Cycle 4 — coarse self-loop lift obstruction
 
 ```text
 Target theorem cycle result
