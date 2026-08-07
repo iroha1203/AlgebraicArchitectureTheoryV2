@@ -47,8 +47,7 @@
 - **LawPolicy**(law-equation-surface / MeasurementProfile を含む): law reading、cover、
   witness、measurement regime を固定する法・方程式側 contract。
 - **ArchSig**: 観測(ArchMap)と法・方程式(LawPolicy 系)の二系統の入力から
-  bounded diagnostic を計算する Rust tooling。入力はこの二系統に限る
-  (正本は [Tool guideline](docs/tool/guideline.md) の「責務範囲(入力トライアドの正本)」)。
+  bounded diagnostic を計算する Rust tooling。入力はこの二系統に限る。
 - **ArchView**: ArchMap の Atom / Context / Cover を geometry として可視化し、ArchSig の
   分析結果を overlay として重ねて source landing へ接続する。新しい structural verdict を作らない。
 - **FieldSig**: ArchSig の handoff artifact と workflow evidence を SFT 側の
