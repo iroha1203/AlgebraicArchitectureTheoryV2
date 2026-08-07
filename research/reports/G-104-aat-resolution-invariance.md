@@ -3,12 +3,23 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-refuted`
+- proof state: `target-refuted`(**改訂前 statement に対する Cycle 4 判定**。
+  下記注記参照)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
 report はそれらを再定義しない。
+
+> **注記(2026-08-07、カード改訂)**: 本 report の Cycle 1–4 packet と
+> `target-refuted` 判定は、改訂前カード(条件 C = C0–C5、nerve 全体への
+> 条項、係数生成契約なし。commit `88321001` 時点)の固定 statement に
+> 対する歴史証拠である。カードはその後の改訂(PR #3915: 係数生成契約
+> K0 / K1、係数体 `ℚ` 固定、C6 追加、C1–C4 の座標 subnerve 相対化)で
+> statement を再固定した。**改訂後 statement の proof state は未証明・
+> cycle 未実行**であり、本 report の反例は改訂後 statement の反証では
+> ない(Cycle 2–4 の Lean 反例は改訂後カードの (iv)(c) 素材として転用
+> 可能なまま残る)。runtime state の正本は tracking Issue #3902。
 
 ## Proof obligation state
 

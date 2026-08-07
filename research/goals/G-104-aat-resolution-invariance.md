@@ -29,9 +29,10 @@
   self-loop の一意な fine lift が同一 fiber 内の異なる chart を結び、粗側
   loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す。さらに
   off-loop の計算探索(artifact は target proof strategy 参照)は、係数を
-  宣言で自由に変えられるモデルでは、同一 incidence 上の座標複製と
-  support hole による2点分離により、incidence レベルの条項をどう足しても
-  同型を強制できないことを固定した(law 由来係数への反証ではない)。
+  宣言で自由に変えられるモデルでは、非退化正例を一つでも受理する
+  incidence-only の条件が、同一 incidence 上の座標複製と support hole に
+  よる2点分離により、その正例の係数変更例と区別できないことを固定した
+  (条件付き no-go であり、law 由来係数への反証ではない)。
   さらに K1 の導出台の下でも、粗側 chart の値を複数の細側 chart へ分配
   すると fiber 内 edge の導出台(交わり)が空になり、nerve 全体への
   C0–C6 だけでは非同型が残る有限例がある。したがって同型の制御は係数生成
@@ -52,8 +53,9 @@
   `Reading` / `Kernel` / `Factors` / `CoarserThan` / `Adequate`)による
   reading / adequacy / 粗さ順序、reading の Target に chart 台を宣言する
   有限 nerve(edge / face の台は K1 で導出)、K0 / K1 に従う law 由来係数の
-  有限被覆複体(線形機構は G-102 の
-  `ThreeCochainComplex` / `H1` / `h1Map` を再利用)を対象とする。無限
+  有限被覆複体を対象とする。係数体は `ℚ` に固定する(線形機構は G-102 の
+  `ThreeCochainComplex` / `H1` / `h1Map` を `ℚ` で instantiate して再利用。
+  他の係数体への一般化は claim に含めない)。無限
   regime、係数の一般論(semi-module 化)、doctrine 間 comparison(blame
   輸送)、doctrine / Atom carrier 機構そのもの、接地 certificate、`q_L` の
   representability は含めない。
@@ -112,23 +114,39 @@
     退化成分として宣言してよい(cochain map の構成では退化成分上の
     pullback を零とする)。chart 台は `π` と両立する(細側 chart の台の
     `π`-像が対応する粗側 chart の台に含まれる)ことを要求する。
-  - **law 由来係数(生成契約 K0)**: 各 reading の係数複体は、その reading を
-    通して descend した law evaluation(存在・一意は G-103 の
-    `factors_iff_kernel`)から生成する。**K0(座標 index の固定)**: 各 cell の
-    係数座標の index 集合は対 `(law, 値)` の集合とする。ここで `値` は、
-    descend した当該 law evaluation がその cell の台(K1 の導出台)上に取る
-    相異なる値である。値の Target 上の出現回数(occurrence)や台の要素数を
-    index にしない(多重度は常に値ごとに1)。粗側・細側は同一の index 対象
-    `(law, 値)` を使い、比較写像の座標対応は宣言せず、`(law, 値)` 上の恒等
-    対応として descend の `π`-可換(`ResolutionInvariance/ComparisonData.lean`
-    の `lawDescend_comparisonFactor`)から生成する(細側 cell が当該座標を
-    持たない場合の成分は零写像)。宣言による座標の追加・複製・省略は
-    認めない。複体・`H^1`・誘導写像は G-102 の `ThreeCochainComplex` /
-    `H1` / `h1Map`
+  - **law 由来係数(生成契約 K0)**: 係数体は `ℚ` に固定する。各 reading の
+    係数複体は、その reading を通して descend した law evaluation(存在・
+    一意は G-103 の `factors_iff_kernel`)から、次の生成規則 K0 で
+    構成する。
+    - **座標 index**: 各 cell の係数座標は対 `(law, 値)` とする。`値` は
+      descend した当該 law evaluation がその cell の台(K1 の導出台)上に
+      取る相異なる値である。値の Target 上の出現回数(occurrence)や台の
+      要素数を index にしない(多重度は常に値ごとに1)。
+    - **各次数の空間**: `C⁰` は {(chart, law, 値)} 上、`C¹` は
+      {(edge, law, 値)} 上、`C²` は {(face, law, 値)} 上の `ℚ`-値関数空間と
+      する。
+    - **differential の生成**: `d₀` の `(edge, law, 値)` 成分は両端点 chart の
+      同一 `(law, 値)` 成分の差(right − left)とする(edge の値集合は K1 に
+      より両端点の値集合に含まれるため、同一 label の恒等対応で
+      well-defined)。`d₁` の `(face, law, 値)` 成分は boundary triple の
+      同一 `(law, 値)` 成分の交代和(`e₀ − e₁ + e₂`)とする。同一 label は
+      恒等、label 不在は零であり、これ以外の座標写像は生成しない。
+      `d₁ ∘ d₀ = 0` は face の端点整合から label ごとの計算で theorem と
+      して導く。
+    - **comparison map の生成**: 比較の係数写像は宣言せず、`(law, 値)` 上の
+      恒等対応として descend の `π`-可換
+      (`ResolutionInvariance/ComparisonData.lean` の
+      `lawDescend_comparisonFactor`)から生成する(細側 cell が当該座標を
+      持たない成分と退化成分上は零写像)。cochain map
+      (`ThreeCochainComplex.Hom`)の可換性と、`H^1` の `(law, 値)` ごとの
+      block 直和分解は、この生成規則から theorem として導き、theorem
+      argument や structure field で受けない。
+    宣言による座標の追加・複製・省略は認めない。複体・`H^1`・誘導写像は
+    G-102 の `ThreeCochainComplex` / `H1` / `h1Map`
     (`research/lean/ResearchLean/AG/TwoPhase/CoefficientComplex.lean`、
-    `CohomologyComparison.lean`)を再利用する。law ラベルだけの定数係数
-    annotation は law 由来係数と認めない(G-102 E1 と同水準の生成的
-    構成)。
+    `CohomologyComparison.lean`)を `ℚ` で instantiate して再利用する。
+    law ラベルだけの定数係数 annotation は law 由来係数と認めない
+    (G-102 E1 と同水準の生成的構成)。
   - **条件 C(被覆像の適合条件。incidence / support レベルの候補式として
     固定)**: 各係数座標 `(law, 値)` に対し、その座標を係数に持つ cell
     (descend した当該 law evaluation が K1 の導出台上にその値を取る cell)が
@@ -144,8 +162,11 @@
       fiber グラフは非空かつ連結である。
     - **C2**: 各座標 subnerve で、subnerve に属する各粗側 edge は
       subnerve 内に `φ`-lift を持つ。
-    - **C3**: 各座標 subnerve で、fiber グラフ内の辺の閉路は、boundary
-      edge がすべて fiber 内にある subnerve 内の細側 face で張られる。
+    - **C3(局所 fiber acyclicity。明示の例外条項)**: 各座標 subnerve で、
+      fiber グラフ上の任意の有理 1-cycle(`ℚ`-係数)は、boundary edge が
+      すべて fiber 内にある subnerve 内の細側 face の boundary の
+      `ℚ`-線形結合で張られる。これは fiber の `ℚ`-係数 1-homology 消滅と
+      同値な局所条件であり、下記の禁止規則の明示の例外として許す。
     - **C4(coarse-face lift)**: 各座標 subnerve で、subnerve に属する
       各粗側 face は `φ` の face 対応で写る subnerve 内の細側 face を
       少なくとも一つ持つ。nerve 射の boundary 可換性により、その細側
@@ -159,9 +180,15 @@
       落ちる粗側 edge(self-loop)へ `φ` の edge 対応で写る各細側 edge は、
       それ自身 self-loop である(両端点が同一の細側 chart に落ちる)。
       C5 と独立に定式化する(C5 の一意 lift に条件を課す形にしない)。
-    C には cohomology・同型・消滅と同値または片方向に近い条項を含めない
-    (incidence / support レベルの条項に限る。座標 subnerve は K0 / K1 の
-    導出データであり、その上の incidence 条項はこの制限に適合する)。
+    C には、comparison map・粗側複体・両側の global `H^1` に関する同型・
+    消滅と同値または片方向に近い条項を含めない(incidence / support
+    レベルの条項に限る。座標 subnerve は K0 / K1 の導出データであり、
+    その上の incidence 条項はこの制限に適合する)。**明示の例外は C3 の
+    局所 fiber acyclicity のみ**とする: C3 は個々の chart fiber の内部
+    データ(fiber 内 edge / face)だけに依存し、comparison map・粗側複体・
+    両側の `H^1` を参照しない、Čech 理論の Leray 型局所非輪状仮定に相当
+    する局所条件である。global comparison の同型やどちらか一側の `H^1`
+    消滅を条項化することは引き続き禁止する。
     係数の restriction と比較の係数写像は座標ごとの零 / 恒等写像なので、
     `H^1` と comparison map は座標 block へ直和分解し、各 block は当該
     座標 subnerve 上の定数係数(1次元)比較に還元される。C1–C4 の
@@ -207,9 +234,11 @@
 - `target proof artifacts`: reading の Target に台を持つ nerve の定義
   (K1 の台導出・face boundary の端点整合を含む)と `d₁d₀ = 0` の導出
   theorem、nerve 射(incidence 可換+退化成分宣言)と `π`-両立性の定義、
-  law 由来係数の生成 def(K0: `(law, 値)` index の固定と比較の座標対応の
-  生成)、descend 可換補題(粗側 descend と細側 descend の `π`-両立)、
-  comparison cochain map の構成 def、座標 subnerve の定義、条件 C
+  law 由来係数の生成 def(K0: `(law, 値)` index・`ℚ`-値関数空間・
+  零 / 恒等 restriction・導出 differential・比較の座標対応の生成)、
+  descend 可換補題(粗側 descend と細側 descend の `π`-両立)、
+  comparison cochain map の構成 def、`H^1` の座標 block 直和分解
+  theorem、座標 subnerve の定義、条件 C
   (C0–C6、C1–C4 は座標 subnerve 相対化)の定義、
   不変性 theorem、系 theorem、descend 可能部分族による inadequate 側診断の
   定義、反例3種 witness、発火 witness、
@@ -267,18 +296,25 @@
     端点整合・`π`-両立)は定義に含め、witness で実例を与える。
     `d₁ ∘ d₀ = 0` は端点整合から theorem として導く(structure field で
     受けた場合は未放電仮定として数える)。
-  - `law 由来係数の生成`: `discharge-required`。座標 basis を descend
-    した law evaluation の値から K0 / K1 に従って生成し、descend の存在・
-    一意を G-103 factorization へ、比較の座標対応を
-    `lawDescend_comparisonFactor` へ追跡する。law ラベルだけの定数係数
-    annotation、宣言による座標の追加・複製・省略は放電と数えない。
+  - `law 由来係数の生成`: `discharge-required`。係数複体(`ℚ` 上の
+    `(cell, law, 値)` 関数空間・零 / 恒等 restriction・導出 differential・
+    `d₁d₀ = 0`)と comparison cochain map・`H^1` の block 直和分解を、
+    K0 / K1 の生成規則から構成・証明する。descend の存在・一意を G-103
+    factorization へ、比較の座標対応を `lawDescend_comparisonFactor` へ
+    追跡する。law ラベルだけの定数係数 annotation、宣言による座標の追加・
+    複製・省略、生成規則の theorem argument / structure field 化は放電と
+    数えない。
   - `descend 可換補題`: `discharge-required`。粗側 descend =
     細側 descend ∘ (`π`-対応)を theorem で証明する。
   - `comparison map`: `discharge-required`。比較データから構成し、同型性を
     field に入れない。
   - `条件 C(C0–C6、座標 subnerve 相対化込み)`: `direction-hypothesis`。
     (ii) の含意の仮定側。incidence / support レベルの条項に固定し、
-    同型相当の条項を含めない。
+    global comparison の同型相当の条項を含めない。C3(局所 fiber
+    acyclicity、`ℚ` 係数)だけを明示の例外として含む。結論相当でない
+    理由: C3 は個々の chart fiber の内部データだけに依存する局所条件で
+    あり、comparison map・粗側複体・両側の global `H^1` を参照しない
+    (Leray 型局所非輪状仮定に相当)。
   - `条件 C の非退化成立 witness`: `discharge-required`。C を満たし (v) の
     発火条件をすべて伴う正例を構成する。
   - `不変性 theorem`: `discharge-required`。C から (i) の canonical map の
@@ -291,11 +327,12 @@
     不可。
   - `発火 witness`: `discharge-required`。route integrity audit で使う。
 - `target anti-weakening rule`: 不変性を「ある同型が存在する」へ弱めない
-  (comparison map が誘導する canonical 射について主張する)。条件 C に
-  同型・消滅・cohomology と同値または片方向に近い条項を移さない(fiber の
-  cohomological 条件への置き換えも不可。incidence / support レベルの条項に
+  (comparison map が誘導する canonical 射について主張する)。条件 C に、
+  comparison map・粗側複体・両側の global `H^1` に関する同型・消滅と同値
+  または片方向に近い条項を移さない(incidence / support レベルの条項に
   限る。座標 subnerve への相対化は K0 / K1 の導出データ上の incidence
-  条項であり可)。
+  条項であり可。明示の例外は C3 の局所 fiber acyclicity のみで、条件C節と
+  ledger に固定した理由の範囲を超えて拡張しない)。
   adequate の定義(G-103 の `Adequate`)を反例が立つように事後調整
   しない。係数生成を law ラベル annotation へ退化させない。係数生成契約
   K0 / K1 を premise 化しない(座標対応の全単射性や台の一致を仮定・

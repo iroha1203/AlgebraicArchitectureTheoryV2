@@ -22,10 +22,13 @@
 
 条件Cの候補条項(C0–C5、self-loop endpoint reflection、Quillen A 型 comma-fiber、
 face-mediated coherence を含む)はすべて incidence データと Target 台のみから
-計算されるため、この3つを区別できない。したがって**係数を自由に宣言できる
-モデルでは、incidence レベルの条件Cをどう強めても comparison map の同型性は
-制御できない**。これは探索範囲に依存しない一般論法であり、停止条件B
-(構造的否定)の判定は正当である。
+計算されるため、この3つを区別できない。したがって、**非退化正例を一つでも
+受理する incidence-only の条件Cは、係数を自由に宣言できるモデルでは、その
+正例と同一 incidence の係数変更例(複製・support hole)との区別に失敗する**。
+これは「無条件にいかなる条件も不可能」ではなく条件付き no-go だが、非退化
+正例の受理はカードの (v) が要求する成功条件なので、目的に対しては十分な
+否定である。探索範囲に依存しない一般論法であり、停止条件B(構造的否定)の
+判定は正当である。
 
 同時にハントは、この否定が law 由来係数への反証ではないことを明記している。
 複製や support hole が law descent から生成できるかは未確認である。
@@ -49,8 +52,10 @@ face-mediated coherence を含む)はすべて incidence データと Target 台
    張る」と書くが、basis の index 集合の生成規則を固定していない。細側だけ
    座標を二重に取る構成を排除する条項がどこにもない。
 
-つまりハントの帰結は「条件Cの条項不足」ではなく「係数生成仕様の過小決定」であり、
-是正は条件C側ではなく係数生成側に置くのが正しい。
+つまりハントの帰結は「条件Cの条項不足」ではなく「係数生成仕様の過小決定」で
+あり、是正は二層になる: 宣言自由度に由来する機構(複製、台宣言による hole)は
+係数生成側(K0 / K1)で潰し、K1 の導出台の下でも残る値分配由来の derived hole
+は条件C側の座標 subnerve 相対化(§5)で扱う。
 
 ## 3. 係数生成契約(K0 / K1)
 
@@ -64,7 +69,9 @@ face-mediated coherence を含む)はすべて incidence データと Target 台
   宣言せず、`(law, 値)` 上の恒等対応として descend の π-可換
   (`ResearchLean/AG/ResolutionInvariance/ComparisonData.lean` の
   `lawDescend_comparisonFactor`)から生成する。宣言による座標の追加・複製・
-  省略は認めない。
+  省略は認めない。係数体(`ℚ` 固定)・関数空間・restriction / differential・
+  block 分解まで含めた生成契約の完結形は、§5 の追加是正とカード本文を正と
+  する。
 - **K1(cell 台の導出)**: edge の台は端点 chart の台の交わり**に等しい**、
   face の台は boundary edge の台の交わり**に等しい**とする(包含から等式へ)。
   宣言入力として残る台は chart 台だけであり、edge / face の台は導出データになる。
@@ -118,9 +125,35 @@ canonical に生成され、`lawDescend_unique` で一意、`lawDescend_comparis
 最直接の canonical 具体化の下でも、粗側 chart の値を複数の細側 chart へ
 分配すると、C0(合併条件)と C1(incidence fiber 連結)は成立したまま
 fiber 内 edge の導出台が空になり、comparison map が非単射になる。
-Claude も exact engine 上で独立再現した(値 {a} / {b} を fiber の 2 chart へ
-分配、C0–C6 全成立、coarse `dim H¹` = 4 / fine `dim H¹` = 1 / rank 1、
-非単射)。
+Claude も exact engine 上で独立再現した。再計算可能な全データを次に固定する
+(committed engine `research/experiments/g104-condition-hunt/condition_hunt.py`
+の `SupportedNerve` / `analyze_supported_h1` / `condition_vector` を使用。
+係数体は `ℚ`):
+
+- incidence: `supported_incidence_morphism()`(coarse: 3 chart / 5 edge /
+  1 face、fine: 4 chart / 6 edge / 1 face、`vertex_map = (0,0,1,2)`、
+  `edge_map = (none,0,1,2,3,4)`、`face_map = (0,)`。fine edge 0 =
+  fiber 内 edge)
+- 係数座標(値)宇宙: {a, b}。coarse 側は全 cell 台 {a, b}
+  (`full_supported_nerve(coarse, coordinate_count=2)`)
+- fine chart 台: chart 0 = {a}、chart 1 = {b}、chart 2 = {a, b}、
+  chart 3 = {a, b}(coarse chart 0 の fiber = {0, 1} へ値を分配。
+  `π`-像の合併 = {a, b} = coarse chart 0 の台で C0 成立)
+- K1 導出: fine edge 台 = 端点台の交わり = (∅, {a}, {a}, {a,b}, {b}, {a})、
+  fine face(boundary = edge 1,2,3)台 = {a}。fiber 内 edge の導出台が空
+  (derived support hole)
+- `coordinate_map = (0, 1)`(K0 の `(law, 値)` 恒等対応)
+- 結果: C0(値合併)成立、C1–C6 は**改訂前の whole-nerve 条件として評価して
+  全成立**(この incidence に self-loop はなく C6 は空虚)、
+  coarse `dim H¹` = 4 / fine `dim H¹` = 1 / comparison rank = 1、非単射
+- 相対化後の判定: a-subnerve では coarse edge 3(唯一の lift = fine edge 4、
+  台 {b})が subnerve 内 lift を欠き C2 が破れる。b-subnerve では
+  coarse edge 0(唯一の lift = fine edge 1、台 {a})で同様に C2 が破れる。
+  よって相対化した C はこの例を受理しない
+
+Codex の fixture は self-loop / face / fiber edge を含み C0–C6 が非空虚に
+発火する変種で、coarse `dim H¹` = 2 / fine `dim H¹` = 1 / rank 1 の非単射
+(機構は同一)。
 
 是正は条件C側の再定式化で行う(ユーザー裁定 2026-08-07):
 
@@ -146,13 +179,38 @@ Codex の反例と Claude の再現例は、いずれも当該値の座標 subne
 ledger の「条件Cと不変性」を direction-hypothesis / witness / theorem の
 3項へ分離(P2-4)。
 
+### 再レビュー(固定 head ddc30bf8)での追加是正
+
+Codex の2巡目レビューは4件の残欠陥を指摘し、すべて有効と判定して是正した。
+
+1. **係数体の固定**: `ThreeCochainComplex` は体に多相なため theorem の強さが
+   確定していなかった。係数体を `ℚ` に固定した(ハント engine =
+   `fractions.Fraction`、既存 obstruction fixture = `ℚ` と整合。他の体への
+   一般化は claim に含めない)。
+2. **生成契約の完結**: K0 は index の固定だけでは閉じない(`ThreeCochainComplex`
+   は任意の `d₀` / `d₁` を収容する)。各次数を `(cell, law, 値)` 上の
+   `ℚ`-値関数空間とし、restriction / differential は同一 label 恒等・label
+   不在零・端点差と boundary 交代和で生成、`d₁d₀ = 0`・cochain map 可換性・
+   block 直和分解はこの規則から theorem として導く、をカードに明文化した。
+3. **C3 と anti-weakening の衝突**: C3(fiber の閉路が internal face で
+   張られる)は `ℚ`-係数の fiber 1-homology 消滅と同値であり、「cohomology
+   条項の禁止」と名称上でなく内容上衝突していた。C3 を**局所 fiber
+   acyclicity の明示の例外**として承認し、禁止規則を「comparison map・
+   粗側複体・両側の global `H^1` に関する条項の禁止」へ精密化、結論相当で
+   ない理由(個々の chart fiber の内部データのみに依存する Leray 型局所
+   非輪状仮定)を ledger に固定した。
+4. **no-go の量化と証拠固定**: §1 の no-go を条件付き(非退化正例を受理する
+   条件に対する2点分離)へ量化し、§2 の是正の二層構造を同期し、値分配
+   反例の再計算可能な全データを上に固定した。report の Cycle 1–4 packet が
+   改訂前 statement への歴史証拠であることも report 側に注記した。
+
 ## 6. カード改訂の項目対応
 
 | 改訂箇所 | 内容 |
 | --- | --- |
 | comparison data | edge / face の台を包含宣言から導出(K1)へ+face boundary の端点整合を要求し `d₁d₀ = 0` を theorem 化 |
-| law 由来係数 | K0(`(law, 値)` index の固定・多重度1)/ K1 を契約として明文化、比較対応の生成元を明記 |
-| 条件C | C6 追加+C1–C4 の座標 subnerve 相対化(block 直和分解が数学的根拠) |
+| law 由来係数 | K0(`(law, 値)` index・`ℚ`-値関数空間・零 / 恒等 restriction・導出 differential・block 分解の生成契約)/ K1 を明文化、比較対応の生成元を明記 |
+| 条件C | C6 追加+C1–C4 の座標 subnerve 相対化(block 直和分解が数学的根拠)。C3 は局所 fiber acyclicity の明示例外 |
 | (v) 発火 witness | C6 の非空虚発火(粗側 self-loop)と座標 subnerve 相対化の非空虚発火(値分配の実在)を追加 |
 | dullness filter | C6 空虚発火・座標 subnerve 相対化が空虚に全体条項へ一致するだけの発火を追加で弾く |
 | proof strategy | LoopLiftObstruction を再利用 map に追加、block 還元+ハント手証明スケッチを参考として記載 |
