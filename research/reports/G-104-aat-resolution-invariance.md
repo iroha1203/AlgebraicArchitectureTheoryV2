@@ -306,7 +306,7 @@ completion_candidate: false
 tracking_issue_closed: false
 ```
 
-## Current cycle: Cycle 4 — coarse self-loop lift obstruction
+## Historical Cycle 4 — coarse self-loop lift obstruction
 
 ```text
 Target theorem cycle result
