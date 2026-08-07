@@ -4,8 +4,9 @@
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
 - proof state: `target-proof-checkpoint`(現行 statement の claim (i) canonical
-  comparison map は Cycle 9 で証明済み。Cycle 7 の `target-refuted` は改訂前の
-  退化 face 宣言規則に対する歴史証拠)
+  comparison map は Cycle 9、有限 `(law, 値)` block の複体・次数別直和分解は
+  Cycle 10 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face 宣言規則に
+  対する歴史証拠)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -57,6 +58,13 @@ report はそれらを再定義しない。
   degreewise pullback を生成した。`edge_none_fiber` と hereditary な3本の
   face-none field を実使用して `comm0` / `comm1` を証明し、coarse から fine の
   `ThreeCochainComplex.Hom` と canonical `H^1` map を構成した。
+- 完了(現行 statement): Cycle 10 の有限 `(law, 値)` block 複体と次数別直和分解。
+  `FiniteLawFamily.Value` を有限と仮定せず、有限 Source 上の law evaluation の像を
+  reading 非依存な共通 label 型として生成した。各 K0 coordinate の label fiber、
+  label を保つ endpoint / face incidence、label ごとの `ThreeCochainComplex`、
+  全3次数の finite `DirectSum` equivalence を構成し、実際の `lawGeneratedD0` / `D1`
+  と componentwise block differential の intertwining を証明した。Cycle 9 の
+  mapped chart / edge / face coordinate transport も同じ label を保つ。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -75,8 +83,149 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  `H^1` の座標 block 直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、
-  系、inadequate 側診断、反例3種、発火 witness。
+  aggregate block complex と `H^1` / comparison map の座標 block 直和分解、
+  座標 subnerve と C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
+  反例3種、発火 witness。
+
+## Cycle 10 — finite law-value block complexes
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 10
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: source-generated finite label、label fiber、block 複体、次数別 finite DirectSum と differential intertwining を生成する
+proof obligation delta: H1 quotient に先立つ canonical law-value block complex decomposition を一般有限入力上で固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.LawValueLabel`
+  - `AAT.AG.ResolutionInvariance.LawValueLabel.instFintype`
+  - `AAT.AG.ResolutionInvariance.CellCoordinate.lawValueLabel`
+  - `AAT.AG.ResolutionInvariance.CellCoordinate.cochainBlockEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockComplex`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.chartCochainBlockEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.edgeCochainBlockEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.faceCochainBlockEquiv`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD0_block_intertwining`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD1_block_intertwining`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.chartCoordinateMap_lawValueLabel`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeCoordinateMap_lawValueLabel`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceCoordinateMap_lawValueLabel`
+- `LawValueLabel` は `∃ source, laws.eval law source = value` を持つ evaluation image で、
+  `Σ law, Source` からの全射により有限性を生成する。ambient な
+  `FiniteLawFamily.Value law` には `Fintype` を要求しない。
+- K0 coordinate の label occurrence は `CellCoordinate.generated`、reading の全射性、
+  `lawDescend_commutes` から生成する。同一値の異なる source / target occurrence は
+  proof data であり、`LawValueLabel.ext` により label を複製しない。
+- endpoint と face の5本の coordinate restriction が label を保つことを証明し、
+  各 label fiber 上の `d₀` / `d₁` と `d₁ ∘ d₀ = 0` を incidence から導いた。
+- 3次数の cochain space は `Equiv.sigmaFiberEquiv`、`LinearEquiv.piCurry`、
+  `DirectSum.linearEquivFunOnFintype` により、各 label block の有限直和へ canonical に
+  同型となる。componentwise direct-sum differential は block formula 自体から定義し、
+  global `lawGeneratedD0` / `D1` との intertwining を theorem として証明した。
+- focused manifest check: pass。
+- targeted module build: pass、3699 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 54 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: finite Source / law family、adequate reading、finite supported nerve は
+  `ambient-boundary`。label image、fiber、block differential、complex、DirectSum equivalence、
+  intertwining は Cycle 10 の出力である。
+- certificate provenance: label の値は actual `FiniteLawFamily.eval` の像、coordinate の
+  label は actual K0 occurrence と law descent に追跡できる。任意の値一覧、partition、
+  basis、reading ごとの label bijection、decomposition certificate は受けない。
+- proof use: Source と law index の有限性を label の有限性に、adequacy / descent 可換性を
+  coordinate label に、K1-derived incidence を block restriction に、face endpoint coherence を
+  block の `d₁ ∘ d₀ = 0` に実使用する。Cycle 9 coordinate transport の law / dependent value
+  保存も3種類すべて theorem として固定した。
+- structure-field escape: none-found。`LawValueLabel.generated` は source occurrence のみを持ち、
+  decomposition / comparison / isomorphism certificate を持たない。block complex の complex law は
+  proved theorem で埋める。
+- route integrity: pass。ambient value 型の偽の有限化、source occurrence を index に含める経路、
+  coordinate ごとの自明 block、任意 basis による抽象同型は使わない。
+- cheat route: target-fitting construction、vacuity、one-way theorem の同値扱い、GOAL / report の
+  読み替えは none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: componentwise direct-sum differential を aggregate
+  `ThreeCochainComplex` にまとめ、global `H^1` と block `H^1` の有限直和同型、および Cycle 9
+  comparison Hom / `H^1` map の blockwise naturality を証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 10
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: generate the finite source-law-value block complexes and degreewise DirectSum decomposition
+proof_obligation_delta: fixed the canonical complex-level block decomposition before quotient-level H1
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.LawValueLabel
+      - AAT.AG.ResolutionInvariance.CellCoordinate.cochainBlockEquiv
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockComplex
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD0_block_intertwining
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawGeneratedD1_block_intertwining
+premise_delta:
+  ambient_boundary:
+    - finite Source and law family, adequate reading, and finite supported nerve
+  discharged:
+    - finite common source-generated law-value label type
+    - exact coordinate fibers and per-label complexes
+    - three canonical finite-DirectSum degree equivalences
+    - both global-to-block differential intertwining theorems
+    - Cycle 9 coordinate-transport label preservation
+  remaining:
+    - aggregate direct-sum complex and quotient-level H1 decomposition
+    - blockwise generated comparison Hom and H1 map
+    - coordinate subnerves, C0-C6, invariance, corollary, diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - label image generated from actual law evaluation on finite Source
+    - coordinate labels generated from K0 occurrence, reading surjectivity, and law descent
+    - finite DirectSum equivalences generated without basis or partition input
+  unresolved:
+    - H1 quotient and comparison naturality
+proof_use_audit:
+  used_material_premises:
+    - finite Source and law index for label finiteness
+    - adequacy and lawDescend_commutes for coordinate labels
+    - K1 incidence and face endpoint coherence for block complexes
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: package the aggregate block complex and prove H1 and generated-comparison block decomposition
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 9 — generated comparison cochain map
 
