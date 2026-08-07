@@ -26,8 +26,10 @@ namespace ResolutionInvarianceConditionInstances
 
 /-! ## A proper finite reading pair and one generated label -/
 
+/-- Finite source used by every Cycle 15 quality instance in this module. -/
 abbrev Source := Fin 2
 
+/-- Coarse constant reading in the proper finite refinement fixture. -/
 abbrev coarseReading : Reading Source where
   Target := PUnit
   read := fun _ => PUnit.unit
@@ -35,15 +37,18 @@ abbrev coarseReading : Reading Source where
     intro target
     exact ⟨0, Subsingleton.elim _ _⟩
 
+/-- Fine identity reading whose two targets collapse under the coarse reading. -/
 abbrev fineReading : Reading Source where
   Target := Fin 2
   read := id
   surjective := Function.surjective_id
 
+/-- Canonical coarsening proof for the finite positive and negative fixtures. -/
 theorem coarse_coarser_fine : coarseReading.CoarserThan fineReading := by
   intro left right _h
   exact Subsingleton.elim _ _
 
+/-- Constant finite law family used only to test the condition API, not claim (v). -/
 def laws : FiniteLawFamily Source where
   Law := PUnit
   lawFintype := inferInstance
@@ -51,19 +56,23 @@ def laws : FiniteLawFamily Source where
   valueDecidableEq := fun _ => inferInstance
   eval := fun _ _ => PUnit.unit
 
+/-- Adequacy certificate for the coarse side of the constant-law fixture. -/
 theorem coarse_adequate : laws.Adequate coarseReading := by
   intro law
   cases law
   exact ⟨fun _ => PUnit.unit, fun _ => rfl⟩
 
+/-- Adequacy certificate for the fine side of the constant-law fixture. -/
 theorem fine_adequate : laws.Adequate fineReading := by
   intro law
   cases law
   exact ⟨fun _ => PUnit.unit, fun _ => rfl⟩
 
+/-- The unique source-generated law-value label in the constant-law fixture. -/
 def label : LawValueLabel laws :=
   LawValueLabel.ofSource laws PUnit.unit 0
 
+/-- Elimination API identifying every generated label with the named fixture label. -/
 theorem lawValueLabel_eq_label (current : LawValueLabel laws) :
     current = label := by
   cases current with
@@ -108,6 +117,7 @@ abbrev fineNerve : CoverNerve where
   edgeOverlapComponent_holds := fun _ => trivial
   faceTripleOverlapComponent_holds := fun _ => trivial
 
+/-- Coarse supported nerve with total chart support for the positive fixture. -/
 abbrev coarseSupported : TargetSupportedNerve coarseReading where
   nerve := coarseNerve
   chartFintype := inferInstance
@@ -125,6 +135,7 @@ abbrev coarseSupported : TargetSupportedNerve coarseReading where
     intro face
     fin_cases face <;> simp [coarseNerve]
 
+/-- Fine supported nerve with total chart support for the positive fixture. -/
 abbrev fineSupported : TargetSupportedNerve fineReading where
   nerve := fineNerve
   chartFintype := inferInstance
@@ -142,17 +153,21 @@ abbrev fineSupported : TargetSupportedNerve fineReading where
     intro face
     fin_cases face <;> simp [fineNerve]
 
+/-- Chart map with a genuine two-chart fiber over coarse chart zero. -/
 def chartMap (chart : fineNerve.Chart) : coarseNerve.Chart :=
   if chart = 2 then 1 else 0
 
+/-- Partial edge map that leaves the declared fiber edge degenerate. -/
 def positiveEdgeMap (edge : fineNerve.EdgeComponent) :
     Option coarseNerve.EdgeComponent :=
   if edge = 0 then some 0 else if edge = 1 then some 1 else
     if edge = 2 then some 2 else none
 
+/-- Total face map for the two positive filling faces. -/
 def positiveFaceMap (face : fineNerve.FaceComponent) :
     Option coarseNerve.FaceComponent := some face
 
+/-- Reviewed supported-nerve morphism underlying every positive condition instance. -/
 abbrev positiveMorphism :
     TargetSupportedNerveMorphism coarseReading fineReading coarse_coarser_fine
       coarseSupported fineSupported where
@@ -198,6 +213,7 @@ abbrev positiveMorphism :
 
 /-! ## Canonical named block coordinates -/
 
+/-- Named coarse chart coordinate in the unique constant-law block. -/
 def coarseChartCoordinate (chart : coarseNerve.Chart) :
     coarseSupported.ChartBlockCoordinate laws coarse_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws coarseReading
@@ -205,6 +221,7 @@ def coarseChartCoordinate (chart : coarseNerve.Chart) :
       PUnit.unit PUnit.unit (Set.mem_univ _)
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named fine chart coordinate in the unique constant-law block. -/
 def fineChartCoordinate (chart : fineNerve.Chart) :
     fineSupported.ChartBlockCoordinate laws fine_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws fineReading
@@ -212,6 +229,7 @@ def fineChartCoordinate (chart : fineNerve.Chart) :
       PUnit.unit 0 (Set.mem_univ _)
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named coarse edge coordinate generated from K1 support. -/
 def coarseEdgeCoordinate (edge : coarseNerve.EdgeComponent) :
     coarseSupported.EdgeBlockCoordinate laws coarse_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws coarseReading
@@ -220,6 +238,7 @@ def coarseEdgeCoordinate (edge : coarseNerve.EdgeComponent) :
         simp [TargetSupportedNerve.edgeSupport])
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named fine edge coordinate generated from K1 support. -/
 def fineEdgeCoordinate (edge : fineNerve.EdgeComponent) :
     fineSupported.EdgeBlockCoordinate laws fine_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws fineReading
@@ -228,6 +247,7 @@ def fineEdgeCoordinate (edge : fineNerve.EdgeComponent) :
         simp [TargetSupportedNerve.edgeSupport])
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named coarse face coordinate generated from K1 support. -/
 def coarseFaceCoordinate (face : coarseNerve.FaceComponent) :
     coarseSupported.FaceBlockCoordinate laws coarse_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws coarseReading
@@ -237,6 +257,7 @@ def coarseFaceCoordinate (face : coarseNerve.FaceComponent) :
           TargetSupportedNerve.edgeSupport])
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named fine face coordinate generated from K1 support. -/
 def fineFaceCoordinate (face : fineNerve.FaceComponent) :
     fineSupported.FaceBlockCoordinate laws fine_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws fineReading
@@ -246,64 +267,77 @@ def fineFaceCoordinate (face : fineNerve.FaceComponent) :
           TargetSupportedNerve.edgeSupport])
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Simp normalizes a named coarse chart coordinate to its underlying chart. -/
 @[simp] theorem coarseChartCoordinate_cell (chart) :
     (coarseChartCoordinate chart).1.cell = chart := rfl
 
+/-- Simp normalizes a named fine chart coordinate to its underlying chart. -/
 @[simp] theorem fineChartCoordinate_cell (chart) :
     (fineChartCoordinate chart).1.cell = chart := rfl
 
+/-- Simp normalizes a named coarse edge coordinate to its underlying edge. -/
 @[simp] theorem coarseEdgeCoordinate_cell (edge) :
     (coarseEdgeCoordinate edge).1.cell = edge := by
   simp [coarseEdgeCoordinate, CellCoordinate.ofSupportedTarget]
 
+/-- Simp normalizes a named fine edge coordinate to its underlying edge. -/
 @[simp] theorem fineEdgeCoordinate_cell (edge) :
     (fineEdgeCoordinate edge).1.cell = edge := by
   simp [fineEdgeCoordinate, CellCoordinate.ofSupportedTarget]
 
+/-- Simp normalizes a named coarse face coordinate to its underlying face. -/
 @[simp] theorem coarseFaceCoordinate_cell (face) :
     (coarseFaceCoordinate face).1.cell = face := by
   simp [coarseFaceCoordinate, CellCoordinate.ofSupportedTarget]
 
+/-- Simp normalizes a named fine face coordinate to its underlying face. -/
 @[simp] theorem fineFaceCoordinate_cell (face) :
     (fineFaceCoordinate face).1.cell = face := by
   simp [fineFaceCoordinate, CellCoordinate.ofSupportedTarget]
 
+/-- Reconstruction API for coarse chart coordinates in the finite fixture. -/
 theorem coarseChartCoordinate_eq (coordinate) :
     coarseChartCoordinate coordinate.1.cell = coordinate := by
   apply coarseSupported.lawValueCoordinateSubnerveChartCell_injective
   change (coarseChartCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Reconstruction API for fine chart coordinates in the finite fixture. -/
 theorem fineChartCoordinate_eq (coordinate) :
     fineChartCoordinate coordinate.1.cell = coordinate := by
   apply fineSupported.lawValueCoordinateSubnerveChartCell_injective
   change (fineChartCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Reconstruction API for coarse edge coordinates in the finite fixture. -/
 theorem coarseEdgeCoordinate_eq (coordinate) :
     coarseEdgeCoordinate coordinate.1.cell = coordinate := by
   apply coarseSupported.lawValueCoordinateSubnerveEdgeCell_injective
   change (coarseEdgeCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Reconstruction API for fine edge coordinates in the finite fixture. -/
 theorem fineEdgeCoordinate_eq (coordinate) :
     fineEdgeCoordinate coordinate.1.cell = coordinate := by
   apply fineSupported.lawValueCoordinateSubnerveEdgeCell_injective
   change (fineEdgeCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Reconstruction API for coarse face coordinates in the finite fixture. -/
 theorem coarseFaceCoordinate_eq (coordinate) :
     coarseFaceCoordinate coordinate.1.cell = coordinate := by
   apply coarseSupported.lawValueCoordinateSubnerveFaceCell_injective
   change (coarseFaceCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Reconstruction API for fine face coordinates in the finite fixture. -/
 theorem fineFaceCoordinate_eq (coordinate) :
     fineFaceCoordinate coordinate.1.cell = coordinate := by
   apply fineSupported.lawValueCoordinateSubnerveFaceCell_injective
   change (fineFaceCoordinate coordinate.1.cell).1.cell = coordinate.1.cell
   simp
 
+/-- Dependent eliminator reducing a coarse chart coordinate goal to its cell. -/
 theorem coarseChartCoordinate_cases
     {P : coarseSupported.ChartBlockCoordinate laws coarse_adequate label → Prop}
     (h : ∀ chart, P (coarseChartCoordinate chart)) (coordinate) :
@@ -311,6 +345,7 @@ theorem coarseChartCoordinate_cases
   rw [← coarseChartCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Dependent eliminator reducing a fine chart coordinate goal to its cell. -/
 theorem fineChartCoordinate_cases
     {P : fineSupported.ChartBlockCoordinate laws fine_adequate label → Prop}
     (h : ∀ chart, P (fineChartCoordinate chart)) (coordinate) :
@@ -318,6 +353,7 @@ theorem fineChartCoordinate_cases
   rw [← fineChartCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Dependent eliminator reducing a coarse edge coordinate goal to its cell. -/
 theorem coarseEdgeCoordinate_cases
     {P : coarseSupported.EdgeBlockCoordinate laws coarse_adequate label → Prop}
     (h : ∀ edge, P (coarseEdgeCoordinate edge)) (coordinate) :
@@ -325,6 +361,7 @@ theorem coarseEdgeCoordinate_cases
   rw [← coarseEdgeCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Dependent eliminator reducing a fine edge coordinate goal to its cell. -/
 theorem fineEdgeCoordinate_cases
     {P : fineSupported.EdgeBlockCoordinate laws fine_adequate label → Prop}
     (h : ∀ edge, P (fineEdgeCoordinate edge)) (coordinate) :
@@ -332,6 +369,7 @@ theorem fineEdgeCoordinate_cases
   rw [← fineEdgeCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Dependent eliminator reducing a coarse face coordinate goal to its cell. -/
 theorem coarseFaceCoordinate_cases
     {P : coarseSupported.FaceBlockCoordinate laws coarse_adequate label → Prop}
     (h : ∀ face, P (coarseFaceCoordinate face)) (coordinate) :
@@ -339,6 +377,7 @@ theorem coarseFaceCoordinate_cases
   rw [← coarseFaceCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Dependent eliminator reducing a fine face coordinate goal to its cell. -/
 theorem fineFaceCoordinate_cases
     {P : fineSupported.FaceBlockCoordinate laws fine_adequate label → Prop}
     (h : ∀ face, P (fineFaceCoordinate face)) (coordinate) :
@@ -346,6 +385,7 @@ theorem fineFaceCoordinate_cases
   rw [← fineFaceCoordinate_eq coordinate]
   exact h coordinate.1.cell
 
+/-- Simp normalizes equality of named coarse chart coordinates to cell equality. -/
 @[simp]
 theorem coarseChartCoordinate_inj {left right : coarseNerve.Chart} :
     coarseChartCoordinate left = coarseChartCoordinate right ↔ left = right := by
@@ -353,6 +393,7 @@ theorem coarseChartCoordinate_inj {left right : coarseNerve.Chart} :
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg coarseChartCoordinate h
 
+/-- Simp normalizes equality of named fine chart coordinates to cell equality. -/
 @[simp]
 theorem fineChartCoordinate_inj {left right : fineNerve.Chart} :
     fineChartCoordinate left = fineChartCoordinate right ↔ left = right := by
@@ -360,6 +401,7 @@ theorem fineChartCoordinate_inj {left right : fineNerve.Chart} :
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg fineChartCoordinate h
 
+/-- Simp normalizes equality of named fine edge coordinates to cell equality. -/
 @[simp]
 theorem fineEdgeCoordinate_inj {left right : fineNerve.EdgeComponent} :
     fineEdgeCoordinate left = fineEdgeCoordinate right ↔ left = right := by
@@ -367,6 +409,7 @@ theorem fineEdgeCoordinate_inj {left right : fineNerve.EdgeComponent} :
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg fineEdgeCoordinate h
 
+/-- Simp normalizes equality of named fine face coordinates to cell equality. -/
 @[simp]
 theorem fineFaceCoordinate_inj {left right : fineNerve.FaceComponent} :
     fineFaceCoordinate left = fineFaceCoordinate right ↔ left = right := by
@@ -374,6 +417,7 @@ theorem fineFaceCoordinate_inj {left right : fineNerve.FaceComponent} :
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg fineFaceCoordinate h
 
+/-- Equivalence enumerating fine chart block coordinates by the finite nerve cells. -/
 def fineChartCoordinateEquiv :
     fineNerve.Chart ≃
       fineSupported.ChartBlockCoordinate laws fine_adequate label where
@@ -382,6 +426,7 @@ def fineChartCoordinateEquiv :
   left_inv := fineChartCoordinate_cell
   right_inv := fineChartCoordinate_eq
 
+/-- Equivalence enumerating coarse chart block coordinates by finite nerve cells. -/
 def coarseChartCoordinateEquiv :
     coarseNerve.Chart ≃
       coarseSupported.ChartBlockCoordinate laws coarse_adequate label where
@@ -390,6 +435,7 @@ def coarseChartCoordinateEquiv :
   left_inv := coarseChartCoordinate_cell
   right_inv := coarseChartCoordinate_eq
 
+/-- Equivalence enumerating fine edge block coordinates by finite nerve cells. -/
 def fineEdgeCoordinateEquiv :
     fineNerve.EdgeComponent ≃
       fineSupported.EdgeBlockCoordinate laws fine_adequate label where
@@ -398,6 +444,7 @@ def fineEdgeCoordinateEquiv :
   left_inv := fineEdgeCoordinate_cell
   right_inv := fineEdgeCoordinate_eq
 
+/-- Equivalence enumerating coarse edge block coordinates by finite nerve cells. -/
 def coarseEdgeCoordinateEquiv :
     coarseNerve.EdgeComponent ≃
       coarseSupported.EdgeBlockCoordinate laws coarse_adequate label where
@@ -406,6 +453,7 @@ def coarseEdgeCoordinateEquiv :
   left_inv := coarseEdgeCoordinate_cell
   right_inv := coarseEdgeCoordinate_eq
 
+/-- Equivalence enumerating fine face block coordinates by finite nerve cells. -/
 def fineFaceCoordinateEquiv :
     fineNerve.FaceComponent ≃
       fineSupported.FaceBlockCoordinate laws fine_adequate label where
@@ -414,6 +462,7 @@ def fineFaceCoordinateEquiv :
   left_inv := fineFaceCoordinate_cell
   right_inv := fineFaceCoordinate_eq
 
+/-- Equivalence enumerating coarse face block coordinates by finite nerve cells. -/
 def coarseFaceCoordinateEquiv :
     coarseNerve.FaceComponent ≃
       coarseSupported.FaceBlockCoordinate laws coarse_adequate label where
@@ -422,6 +471,7 @@ def coarseFaceCoordinateEquiv :
   left_inv := coarseFaceCoordinate_cell
   right_inv := coarseFaceCoordinate_eq
 
+/-- Local finite enumeration used for the positive C3 edge sums. -/
 noncomputable local instance fineEdgeBlockFintype :
     Fintype (fineSupported.EdgeBlockCoordinate laws fine_adequate label) := by
   change Fintype
@@ -429,6 +479,7 @@ noncomputable local instance fineEdgeBlockFintype :
   exact TargetSupportedNerve.lawValueCoordinateSubnerveEdgeFintype
     fineSupported laws fine_adequate label
 
+/-- Local finite enumeration used for the positive C3 face sums. -/
 noncomputable local instance fineFaceBlockFintype :
     Fintype (fineSupported.FaceBlockCoordinate laws fine_adequate label) := by
   change Fintype
@@ -436,24 +487,31 @@ noncomputable local instance fineFaceBlockFintype :
   exact TargetSupportedNerve.lawValueCoordinateSubnerveFaceFintype
     fineSupported laws fine_adequate label
 
+/-- Simp normalizes fine chart equivalence application to the named coordinate. -/
 @[simp] theorem fineChartCoordinateEquiv_apply (chart : fineNerve.Chart) :
     fineChartCoordinateEquiv chart = fineChartCoordinate chart := rfl
 
+/-- Simp normalizes coarse chart equivalence application to the named coordinate. -/
 @[simp] theorem coarseChartCoordinateEquiv_apply (chart : coarseNerve.Chart) :
     coarseChartCoordinateEquiv chart = coarseChartCoordinate chart := rfl
 
+/-- Simp normalizes fine edge equivalence application to the named coordinate. -/
 @[simp] theorem fineEdgeCoordinateEquiv_apply (edge : fineNerve.EdgeComponent) :
     fineEdgeCoordinateEquiv edge = fineEdgeCoordinate edge := rfl
 
+/-- Simp normalizes coarse edge equivalence application to the named coordinate. -/
 @[simp] theorem coarseEdgeCoordinateEquiv_apply (edge : coarseNerve.EdgeComponent) :
     coarseEdgeCoordinateEquiv edge = coarseEdgeCoordinate edge := rfl
 
+/-- Simp normalizes fine face equivalence application to the named coordinate. -/
 @[simp] theorem fineFaceCoordinateEquiv_apply (face : fineNerve.FaceComponent) :
     fineFaceCoordinateEquiv face = fineFaceCoordinate face := rfl
 
+/-- Simp normalizes coarse face equivalence application to the named coordinate. -/
 @[simp] theorem coarseFaceCoordinateEquiv_apply (face : coarseNerve.FaceComponent) :
     coarseFaceCoordinateEquiv face = coarseFaceCoordinate face := rfl
 
+/-- Simp normalizes the positive chart-block map to the named coarse coordinate. -/
 @[simp]
 theorem positive_chartBlockCoordinateMap (chart : fineNerve.Chart) :
     positiveMorphism.chartBlockCoordinateMap laws coarse_adequate fine_adequate
@@ -463,6 +521,7 @@ theorem positive_chartBlockCoordinateMap (chart : fineNerve.Chart) :
   change chartMap chart = chartMap chart
   rfl
 
+/-- Simp normalizes a fine edge's left endpoint to its named chart coordinate. -/
 @[simp]
 theorem fine_edgeLeftBlockCoordinate (edge : fineNerve.EdgeComponent) :
     fineSupported.edgeLeftBlockCoordinate laws fine_adequate label
@@ -472,6 +531,7 @@ theorem fine_edgeLeftBlockCoordinate (edge : fineNerve.EdgeComponent) :
   change fineNerve.edgeLeft edge = fineNerve.edgeLeft edge
   rfl
 
+/-- Simp normalizes a fine edge's right endpoint to its named chart coordinate. -/
 @[simp]
 theorem fine_edgeRightBlockCoordinate (edge : fineNerve.EdgeComponent) :
     fineSupported.edgeRightBlockCoordinate laws fine_adequate label
@@ -481,6 +541,7 @@ theorem fine_edgeRightBlockCoordinate (edge : fineNerve.EdgeComponent) :
   change fineNerve.edgeRight edge = fineNerve.edgeRight edge
   rfl
 
+/-- Simp normalizes a fine face's first boundary edge to its named coordinate. -/
 @[simp]
 theorem fine_faceEdge0BlockCoordinate (face : fineNerve.FaceComponent) :
     fineSupported.faceEdge0BlockCoordinate laws fine_adequate label
@@ -490,6 +551,7 @@ theorem fine_faceEdge0BlockCoordinate (face : fineNerve.FaceComponent) :
   change fineNerve.faceEdge0 face = fineNerve.faceEdge0 face
   rfl
 
+/-- Simp normalizes a fine face's second boundary edge to its named coordinate. -/
 @[simp]
 theorem fine_faceEdge1BlockCoordinate (face : fineNerve.FaceComponent) :
     fineSupported.faceEdge1BlockCoordinate laws fine_adequate label
@@ -499,6 +561,7 @@ theorem fine_faceEdge1BlockCoordinate (face : fineNerve.FaceComponent) :
   change fineNerve.faceEdge1 face = fineNerve.faceEdge1 face
   rfl
 
+/-- Simp normalizes a fine face's third boundary edge to its named coordinate. -/
 @[simp]
 theorem fine_faceEdge2BlockCoordinate (face : fineNerve.FaceComponent) :
     fineSupported.faceEdge2BlockCoordinate laws fine_adequate label
@@ -508,6 +571,7 @@ theorem fine_faceEdge2BlockCoordinate (face : fineNerve.FaceComponent) :
   change fineNerve.faceEdge2 face = fineNerve.faceEdge2 face
   rfl
 
+/-- Gives the exact same-label edge lift used by the positive C2 instance. -/
 theorem positive_edgeBlockCoordinateMapOption (edge : coarseNerve.EdgeComponent) :
     positiveMorphism.edgeBlockCoordinateMapOption laws coarse_adequate
         fine_adequate label (fineEdgeCoordinate edge.castSucc) =
@@ -520,6 +584,7 @@ theorem positive_edgeBlockCoordinateMapOption (edge : coarseNerve.EdgeComponent)
     edge hmap]
   congr 1
 
+/-- Gives the exact same-label face lift used by the positive C4 instance. -/
 theorem positive_faceBlockCoordinateMapOption (face : coarseNerve.FaceComponent) :
     positiveMorphism.faceBlockCoordinateMapOption laws coarse_adequate
         fine_adequate label (fineFaceCoordinate face) =
@@ -532,16 +597,19 @@ theorem positive_faceBlockCoordinateMapOption (face : coarseNerve.FaceComponent)
 
 /-! ## Positive helper-relation instances -/
 
+/-- Positive §1.4 instance: fine edge three lies in the two-chart coordinate fiber. -/
 theorem fiberEdge_three :
     positiveMorphism.CoordinateFiberEdge laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineEdgeCoordinate 3) := by
   simp [TargetSupportedNerveMorphism.CoordinateFiberEdge, fineNerve, chartMap]
 
+/-- Negative §1.4 instance: fine edge zero leaves coarse chart zero's fiber. -/
 theorem not_fiberEdge_zero :
     ¬ positiveMorphism.CoordinateFiberEdge laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineEdgeCoordinate 0) := by
   simp [TargetSupportedNerveMorphism.CoordinateFiberEdge, fineNerve, chartMap]
 
+/-- Positive §1.4 instance: the two distinct fine fiber charts are adjacent. -/
 theorem fiberAdjacent_zero_one :
     positiveMorphism.CoordinateFiberAdjacent laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineChartCoordinate 0)
@@ -549,6 +617,7 @@ theorem fiberAdjacent_zero_one :
   refine ⟨fineEdgeCoordinate 3, fiberEdge_three, ?_⟩
   exact Or.inl ⟨by simp, by simp⟩
 
+/-- Reverse adjacency API used to prove undirected fiber connectivity for C1. -/
 theorem fiberAdjacent_one_zero :
     positiveMorphism.CoordinateFiberAdjacent laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineChartCoordinate 1)
@@ -556,6 +625,7 @@ theorem fiberAdjacent_one_zero :
   refine ⟨fineEdgeCoordinate 3, fiberEdge_three, ?_⟩
   exact Or.inr ⟨by simp, by simp⟩
 
+/-- Negative §1.4 instance: the fixture has no loop adjacency at fine chart one. -/
 theorem not_fiberAdjacent_one_one :
     ¬ positiveMorphism.CoordinateFiberAdjacent laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineChartCoordinate 1)
@@ -569,12 +639,14 @@ theorem not_fiberAdjacent_one_one :
     fineChartCoordinate_inj, fineNerve] at hendpoints
   split_ifs at hendpoints <;> omega
 
+/-- Positive §1.4 instance: repeated face one is internal to the chart-zero fiber. -/
 theorem internalFace_one :
     positiveMorphism.CoordinateInternalFace laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineFaceCoordinate 1) := by
   simp [TargetSupportedNerveMorphism.CoordinateInternalFace, fineNerve,
     TargetSupportedNerveMorphism.CoordinateFiberEdge, chartMap]
 
+/-- Negative §1.4 instance: triangle face zero is not internal to that fiber. -/
 theorem not_internalFace_zero :
     ¬ positiveMorphism.CoordinateInternalFace laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) (fineFaceCoordinate 0) := by
@@ -583,6 +655,7 @@ theorem not_internalFace_zero :
 
 /-! ## Positive principal-condition instances except for C3 -/
 
+/-- Positive §1.4 instance for whole-nerve target-support image condition C0. -/
 theorem positive_conditionC0 : positiveMorphism.ConditionC0 := by
   intro coarseChart coarseTarget
   constructor
@@ -595,6 +668,7 @@ theorem positive_conditionC0 : positiveMorphism.ConditionC0 := by
   · intro _hwitness
     exact Set.mem_univ _
 
+/-- Positive §1.4 instance for labelwise nonempty connected chart fibers. -/
 theorem positive_conditionC1At :
     positiveMorphism.ConditionC1At laws coarse_adequate fine_adequate label := by
   intro coarseChart
@@ -650,12 +724,14 @@ theorem positive_conditionC1At :
       | exact Relation.ReflTransGen.single fiberAdjacent_zero_one
       | exact Relation.ReflTransGen.single fiberAdjacent_one_zero
 
+/-- Positive §1.4 instance for C1 over every generated label. -/
 theorem positive_conditionC1 :
     positiveMorphism.ConditionC1 laws coarse_adequate fine_adequate := by
   intro current
   rw [lawValueLabel_eq_label current]
   exact positive_conditionC1At
 
+/-- Positive §1.4 instance for exact edge lifts at the named label. -/
 theorem positive_conditionC2At :
     positiveMorphism.ConditionC2At laws coarse_adequate fine_adequate label := by
   intro coarseEdge
@@ -668,12 +744,14 @@ theorem positive_conditionC2At :
   exact ⟨fineEdgeCoordinate edge.castSucc,
     positive_edgeBlockCoordinateMapOption edge⟩
 
+/-- Positive §1.4 instance for C2 over every generated label. -/
 theorem positive_conditionC2 :
     positiveMorphism.ConditionC2 laws coarse_adequate fine_adequate := by
   intro current
   rw [lawValueLabel_eq_label current]
   exact positive_conditionC2At
 
+/-- Positive §1.4 instance for exact face lifts at the named label. -/
 theorem positive_conditionC4At :
     positiveMorphism.ConditionC4At laws coarse_adequate fine_adequate label := by
   intro coarseFace
@@ -685,17 +763,20 @@ theorem positive_conditionC4At :
   intro face
   exact ⟨fineFaceCoordinate face, positive_faceBlockCoordinateMapOption face⟩
 
+/-- Positive §1.4 instance for C4 over every generated label. -/
 theorem positive_conditionC4 :
     positiveMorphism.ConditionC4 laws coarse_adequate fine_adequate := by
   intro current
   rw [lawValueLabel_eq_label current]
   exact positive_conditionC4At
 
+/-- Positive §1.4 instance for whole-nerve edge-lift uniqueness C5. -/
 theorem positive_conditionC5 : positiveMorphism.ConditionC5 := by
   intro coarseEdge fineLeft fineRight hleft hright
   fin_cases coarseEdge <;> fin_cases fineLeft <;> fin_cases fineRight <;>
     simp [positiveEdgeMap] at hleft hright ⊢
 
+/-- Positive §1.4 instance for whole-nerve self-loop reflection C6. -/
 theorem positive_conditionC6 : positiveMorphism.ConditionC6 := by
   intro fineEdge coarseEdge hmap hloop
   fin_cases fineEdge <;> fin_cases coarseEdge <;>
@@ -703,6 +784,7 @@ theorem positive_conditionC6 : positiveMorphism.ConditionC6 := by
 
 /-! ## Explicit local-chain formulas and the positive C3 instance -/
 
+/-- Finite-cell formula for incoming coefficients in the positive C3 calculation. -/
 theorem coordinateFiberIncoming_formula
     (chain : fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ)
     (chart : fineNerve.Chart) :
@@ -716,6 +798,7 @@ theorem coordinateFiberIncoming_formula
   rw [← fineEdgeCoordinateEquiv.sum_comp]
   simp [fineEdgeCoordinateEquiv, fineNerve]
 
+/-- Finite-cell formula for outgoing coefficients in the positive C3 calculation. -/
 theorem coordinateFiberOutgoing_formula
     (chain : fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ)
     (chart : fineNerve.Chart) :
@@ -729,6 +812,7 @@ theorem coordinateFiberOutgoing_formula
   rw [← fineEdgeCoordinateEquiv.sum_comp]
   simp [fineEdgeCoordinateEquiv, fineNerve]
 
+/-- Finite-cell `e₀ - e₁ + e₂` formula used by the C3 filling proof. -/
 theorem coordinateFaceBoundary_formula
     (faces : fineSupported.FaceBlockCoordinate laws fine_adequate label → ℚ)
     (edge : fineNerve.EdgeComponent) :
@@ -752,14 +836,17 @@ theorem coordinateFaceBoundary_formula
   rw [← fineFaceCoordinateEquiv.sum_comp]
   fin_cases edge <;> simp [fineFaceCoordinateEquiv, fineNerve]
 
+/-- Nonzero self-loop chain used to make the positive cycle witness nonvacuous. -/
 def loopChain :
     fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ :=
   fun edge => if edge.1.cell = 1 then 1 else 0
 
+/-- Edge chain leaving the coordinate fiber, used as a negative cycle instance. -/
 def badSupportChain :
     fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ :=
   fun edge => if edge.1.cell = 0 then 1 else 0
 
+/-- Positive §1.4 instance: the named nonzero self-loop chain is a fiber cycle. -/
 theorem loopChain_cycle :
     positiveMorphism.CoordinateFiberCycle laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) loopChain := by
@@ -790,6 +877,7 @@ theorem loopChain_cycle :
       simp [coordinateFiberIncoming_formula, coordinateFiberOutgoing_formula,
         loopChain, fineNerve, chartMap, Fin.sum_univ_succ] at hmap ⊢
 
+/-- Negative §1.4 instance: the outside-edge chain violates fiber support. -/
 theorem not_badSupportChain_cycle :
     ¬ positiveMorphism.CoordinateFiberCycle laws coarse_adequate fine_adequate
       label (coarseChartCoordinate 0) badSupportChain := by
@@ -797,6 +885,7 @@ theorem not_badSupportChain_cycle :
   have hzero := hcycle.1 (fineEdgeCoordinate 0) not_fiberEdge_zero
   simp [badSupportChain] at hzero
 
+/-- Positive §1.4 instance: every local cycle is filled by internal faces. -/
 theorem positive_conditionC3At :
     positiveMorphism.ConditionC3At laws coarse_adequate fine_adequate label := by
   intro coarseChart
@@ -874,12 +963,14 @@ theorem positive_conditionC3At :
       rw [hzero cell, coordinateFaceBoundary_formula]
       simp
 
+/-- Positive §1.4 instance for C3 over every generated label. -/
 theorem positive_conditionC3 :
     positiveMorphism.ConditionC3 laws coarse_adequate fine_adequate := by
   intro current
   rw [lawValueLabel_eq_label current]
   exact positive_conditionC3At
 
+/-- Positive §1.4 instance realizing the complete C0–C6 package. -/
 theorem positive_conditionC :
     positiveMorphism.ConditionC laws coarse_adequate fine_adequate where
   c0 := positive_conditionC0
@@ -892,14 +983,18 @@ theorem positive_conditionC :
 
 /-! ## Missing-image counterinstances for C0, C1, C2, and C4 -/
 
+/-- Counterfixture chart map omitting coarse chart one, so C0 and C1 fail. -/
 def missingChartMap (_chart : fineNerve.Chart) : coarseNerve.Chart := 0
 
+/-- Counterfixture edge map omitting every coarse edge, so C2 fails. -/
 def missingEdgeMap (_edge : fineNerve.EdgeComponent) :
     Option coarseNerve.EdgeComponent := none
 
+/-- Counterfixture face map omitting every coarse face, so C4 fails. -/
 def missingFaceMap (_face : fineNerve.FaceComponent) :
     Option coarseNerve.FaceComponent := none
 
+/-- Reviewed missing-image morphism isolating failures of C0, C1, C2, and C4. -/
 abbrev missingMorphism :
     TargetSupportedNerveMorphism coarseReading fineReading coarse_coarser_fine
       coarseSupported fineSupported where
@@ -937,6 +1032,7 @@ abbrev missingMorphism :
     intro fineChart fineTarget _htarget
     exact Set.mem_univ _
 
+/-- Negative §1.4 instance: missing coarse-chart support violates C0. -/
 theorem missing_not_conditionC0 : ¬ missingMorphism.ConditionC0 := by
   intro hC0
   obtain ⟨fineChart, _fineTarget, hchart, _hsupport, _hfactor⟩ :=
@@ -944,6 +1040,7 @@ theorem missing_not_conditionC0 : ¬ missingMorphism.ConditionC0 := by
   have : missingChartMap fineChart = 1 := hchart
   simp [missingChartMap] at this
 
+/-- Negative §1.4 instance: the named coarse chart has an empty C1 fiber. -/
 theorem missing_not_conditionC1At :
     ¬ missingMorphism.ConditionC1At laws coarse_adequate fine_adequate label := by
   intro hC1
@@ -958,11 +1055,13 @@ theorem missing_not_conditionC1At :
   change missingChartMap cell = 1 at hcell
   simp [missingChartMap] at hcell
 
+/-- Negative §1.4 instance for global C1, inherited from the named label. -/
 theorem missing_not_conditionC1 :
     ¬ missingMorphism.ConditionC1 laws coarse_adequate fine_adequate := by
   intro hC1
   exact missing_not_conditionC1At (hC1 label)
 
+/-- Negative §1.4 instance: no exact edge lift exists at the named label. -/
 theorem missing_not_conditionC2At :
     ¬ missingMorphism.ConditionC2At laws coarse_adequate fine_adequate label := by
   intro hC2
@@ -972,11 +1071,13 @@ theorem missing_not_conditionC2At :
     coarse_adequate fine_adequate label fineEdge hnone] at hmap
   contradiction
 
+/-- Negative §1.4 instance for global C2, inherited from the named label. -/
 theorem missing_not_conditionC2 :
     ¬ missingMorphism.ConditionC2 laws coarse_adequate fine_adequate := by
   intro hC2
   exact missing_not_conditionC2At (hC2 label)
 
+/-- Negative §1.4 instance: no exact face lift exists at the named label. -/
 theorem missing_not_conditionC4At :
     ¬ missingMorphism.ConditionC4At laws coarse_adequate fine_adequate label := by
   intro hC4
@@ -986,11 +1087,13 @@ theorem missing_not_conditionC4At :
     coarse_adequate fine_adequate label fineFace hnone] at hmap
   contradiction
 
+/-- Negative §1.4 instance for global C4, inherited from the named label. -/
 theorem missing_not_conditionC4 :
     ¬ missingMorphism.ConditionC4 laws coarse_adequate fine_adequate := by
   intro hC4
   exact missing_not_conditionC4At (hC4 label)
 
+/-- Negative §1.4 instance for aggregate ConditionC, witnessed by C0 failure. -/
 theorem missing_not_conditionC :
     ¬ missingMorphism.ConditionC laws coarse_adequate fine_adequate := by
   intro hC
@@ -998,10 +1101,12 @@ theorem missing_not_conditionC :
 
 /-! ## Duplicate-loop counterinstances for C5 and C6 -/
 
+/-- Counterfixture edge map sending two distinct fine edges to one coarse self-loop. -/
 def duplicateEdgeMap (edge : fineNerve.EdgeComponent) :
     Option coarseNerve.EdgeComponent :=
   if edge = 0 then some 0 else if edge = 2 then some 2 else some 1
 
+/-- Reviewed duplicate-loop morphism isolating C5 and C6 failures. -/
 abbrev duplicateMorphism :
     TargetSupportedNerveMorphism coarseReading fineReading coarse_coarser_fine
       coarseSupported fineSupported where
@@ -1044,11 +1149,13 @@ abbrev duplicateMorphism :
     intro fineChart fineTarget _htarget
     exact Set.mem_univ _
 
+/-- Negative §1.4 instance: duplicate lifts violate whole-nerve uniqueness C5. -/
 theorem duplicate_not_conditionC5 : ¬ duplicateMorphism.ConditionC5 := by
   intro hC5
   have heq := hC5 1 1 3 (by rfl) (by rfl)
   exact (by decide : (1 : Fin 4) ≠ 3) heq
 
+/-- Negative §1.4 instance: the extra self-loop lift has unequal endpoints, violating C6. -/
 theorem duplicate_not_conditionC6 : ¬ duplicateMorphism.ConditionC6 := by
   intro hC6
   have heq := hC6 3 1 (by rfl) (by rfl)
@@ -1058,6 +1165,7 @@ theorem duplicate_not_conditionC6 : ¬ duplicateMorphism.ConditionC6 := by
 
 namespace AcyclicityFailure
 
+/-- Face-free coarse nerve used to isolate failure of local fiber acyclicity. -/
 abbrev coarseNerve : CoverNerve where
   Chart := PUnit
   EdgeComponent := Empty
@@ -1072,6 +1180,7 @@ abbrev coarseNerve : CoverNerve where
   edgeOverlapComponent_holds := Empty.elim
   faceTripleOverlapComponent_holds := Empty.elim
 
+/-- Fine nerve with one self-loop and no faces for the negative C3 instance. -/
 abbrev fineNerve : CoverNerve where
   Chart := PUnit
   EdgeComponent := PUnit
@@ -1086,6 +1195,7 @@ abbrev fineNerve : CoverNerve where
   edgeOverlapComponent_holds := fun _ => trivial
   faceTripleOverlapComponent_holds := Empty.elim
 
+/-- Totally supported coarse side of the face-free C3 counterfixture. -/
 abbrev coarseSupported : TargetSupportedNerve coarseReading where
   nerve := coarseNerve
   chartFintype := inferInstance
@@ -1097,6 +1207,7 @@ abbrev coarseSupported : TargetSupportedNerve coarseReading where
   faceEdge0_right := by intro face; exact Empty.elim face
   faceEdge1_right := by intro face; exact Empty.elim face
 
+/-- Totally supported fine side of the one-loop C3 counterfixture. -/
 abbrev fineSupported : TargetSupportedNerve fineReading where
   nerve := fineNerve
   chartFintype := inferInstance
@@ -1108,6 +1219,7 @@ abbrev fineSupported : TargetSupportedNerve fineReading where
   faceEdge0_right := by intro face; exact Empty.elim face
   faceEdge1_right := by intro face; exact Empty.elim face
 
+/-- Reviewed morphism collapsing the sole fine self-loop with no filling face. -/
 abbrev morphism :
     TargetSupportedNerveMorphism coarseReading fineReading coarse_coarser_fine
       coarseSupported fineSupported where
@@ -1145,6 +1257,7 @@ abbrev morphism :
     intro fineChart fineTarget _htarget
     exact Set.mem_univ _
 
+/-- Named coarse chart coordinate in the face-free counterfixture. -/
 def coarseChartCoordinate :
     coarseSupported.ChartBlockCoordinate laws coarse_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws coarseReading
@@ -1152,6 +1265,7 @@ def coarseChartCoordinate :
       PUnit.unit PUnit.unit (Set.mem_univ _)
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named fine chart coordinate in the face-free counterfixture. -/
 def fineChartCoordinate :
     fineSupported.ChartBlockCoordinate laws fine_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws fineReading
@@ -1159,6 +1273,7 @@ def fineChartCoordinate :
       PUnit.unit 0 (Set.mem_univ _)
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Named fine self-loop coordinate carrying the nonzero negative C3 chain. -/
 def fineEdgeCoordinate :
     fineSupported.EdgeBlockCoordinate laws fine_adequate label := by
   let coordinate := CellCoordinate.ofSupportedTarget laws fineReading
@@ -1166,6 +1281,7 @@ def fineEdgeCoordinate :
       PUnit.unit 0 (by simp [TargetSupportedNerve.edgeSupport])
   exact ⟨coordinate, lawValueLabel_eq_label _⟩
 
+/-- Local subsingleton instance for the sole coarse chart block coordinate. -/
 local instance coarseChartBlockSubsingleton :
     Subsingleton
       (coarseSupported.ChartBlockCoordinate laws coarse_adequate label) where
@@ -1173,6 +1289,7 @@ local instance coarseChartBlockSubsingleton :
     apply coarseSupported.lawValueCoordinateSubnerveChartCell_injective
     exact Subsingleton.elim _ _
 
+/-- Local subsingleton instance for the sole fine chart block coordinate. -/
 local instance fineChartBlockSubsingleton :
     Subsingleton
       (fineSupported.ChartBlockCoordinate laws fine_adequate label) where
@@ -1180,6 +1297,7 @@ local instance fineChartBlockSubsingleton :
     apply fineSupported.lawValueCoordinateSubnerveChartCell_injective
     exact Subsingleton.elim _ _
 
+/-- Local subsingleton instance for the sole fine edge block coordinate. -/
 local instance fineEdgeBlockSubsingleton :
     Subsingleton
       (fineSupported.EdgeBlockCoordinate laws fine_adequate label) where
@@ -1187,10 +1305,12 @@ local instance fineEdgeBlockSubsingleton :
     apply fineSupported.lawValueCoordinateSubnerveEdgeCell_injective
     exact Subsingleton.elim _ _
 
+/-- Local emptiness instance recording that the counterfixture has no face coordinates. -/
 local instance fineFaceBlockIsEmpty :
     IsEmpty (fineSupported.FaceBlockCoordinate laws fine_adequate label) where
   false coordinate := Empty.elim coordinate.1.cell
 
+/-- Local finite enumeration of the sole fine edge block coordinate. -/
 noncomputable local instance fineEdgeBlockFintype :
     Fintype (fineSupported.EdgeBlockCoordinate laws fine_adequate label) := by
   change Fintype
@@ -1198,6 +1318,7 @@ noncomputable local instance fineEdgeBlockFintype :
   exact TargetSupportedNerve.lawValueCoordinateSubnerveEdgeFintype
     fineSupported laws fine_adequate label
 
+/-- Local finite enumeration of the empty fine face block coordinates. -/
 noncomputable local instance fineFaceBlockFintype :
     Fintype (fineSupported.FaceBlockCoordinate laws fine_adequate label) := by
   change Fintype
@@ -1205,9 +1326,11 @@ noncomputable local instance fineFaceBlockFintype :
   exact TargetSupportedNerve.lawValueCoordinateSubnerveFaceFintype
     fineSupported laws fine_adequate label
 
+/-- Nonzero chain on the sole fine self-loop in the C3 counterfixture. -/
 def loopChain :
-    fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ := fun _ => 1
+  fineSupported.EdgeBlockCoordinate laws fine_adequate label → ℚ := fun _ => 1
 
+/-- The nonzero self-loop chain satisfies the local fiber-cycle equations. -/
 theorem loopChain_cycle :
     morphism.CoordinateFiberCycle laws coarse_adequate fine_adequate label
       coarseChartCoordinate loopChain := by
@@ -1223,6 +1346,7 @@ theorem loopChain_cycle :
     intro edge _hedge
     rw [if_pos (Subsingleton.elim _ _), if_pos (Subsingleton.elim _ _)]
 
+/-- Negative §1.4 instance: the nonzero cycle has no internal face filling. -/
 theorem not_conditionC3At :
     ¬ morphism.ConditionC3At laws coarse_adequate fine_adequate label := by
   intro hC3
@@ -1231,6 +1355,7 @@ theorem not_conditionC3At :
   have heq := hboundary fineEdgeCoordinate
   simp [loopChain, TargetSupportedNerveMorphism.coordinateFaceBoundary] at heq
 
+/-- Negative §1.4 instance for global C3, inherited from the named label. -/
 theorem not_conditionC3 :
     ¬ morphism.ConditionC3 laws coarse_adequate fine_adequate := by
   intro hC3

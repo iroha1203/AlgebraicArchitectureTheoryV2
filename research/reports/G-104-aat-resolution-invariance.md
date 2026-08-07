@@ -212,6 +212,9 @@ completion candidate: no
   3706 jobs。新規 modules の linter warning なし。
 - namespace axiom audit: Conditions は33 declarations、ConditionInstances は
   129 declarations、いずれも standard axioms only。
+- ConditionInstances の named declaration 127件はすべて declaration-level
+  `/--` docstring を持ち、fixture / API / instance-pair 内の position と premise 出自を
+  記録する。`@[simp]` theorem は normal-form direction も明記する。
 - placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
 
 ### Audit
@@ -240,8 +243,15 @@ completion candidate: no
   major finding を受けた。受理前に同一 Cycle 内で finite pair file を追加し、aggregate、
   principal C0–C6、全補助条件を正負両側から検査した。修正後 snapshot は fresh T3 と
   4 lane fixed-head review の対象とする。
+- second fixed-head review finding: instance-pair 修正 snapshot は追加 file の
+  declaration docstring が127件中2件だけで、Lean quality standard §3.2 / §6 に反したため
+  4 lane すべてで major finding を受けた。受理前に同 file の残る125件へ declaration-level
+  docstring を追加し、public abbrev / def / theorem と named local instance を127/127で収載した。
+  この修正は signature / proof term / statement を変えず、再 focused elaboration、targeted
+  build、129-declaration standard-axiom audit を通した。この修正 snapshot の fresh T3 は
+  approve であり、最終受理には4 lane fixed-head reviewを改めて要求する。
 - blocking findings: none。
-- repair 後 fresh independent T3 verdict:
+- final docstring repair 後 fresh independent T3 verdict:
   `approve / proof-obligation-discharged / completion_candidate: no`。
 - next obligation: C1–C6から各 label の定数係数 block comparison `H^1` map が
   同型であることを、C3の局所 fiber contractionとC5 / C6 bridgeを実使用して証明し、
