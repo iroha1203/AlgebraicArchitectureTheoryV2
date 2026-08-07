@@ -49,7 +49,7 @@
 - **ArchSig**: 観測(ArchMap)と法・方程式(LawPolicy 系)の二系統の入力から
   bounded diagnostic を計算する Rust tooling。入力はこの二系統に限る。
 - **ArchView**: ArchMap の Atom / Context / Cover を geometry として可視化し、ArchSig の
-  分析結果を overlay として重ねて source landing へ接続する。新しい structural verdict を作らない。
+  分析結果を overlay として重ねて source landing へ接続する。
 - **FieldSig**: ArchSig の handoff artifact と workflow evidence を SFT 側の
   evolution measurement / governance input として読む。
 - **Lean 形式化**(`Formal/`): AAT の語彙で述べられる命題だけを形式化する。
