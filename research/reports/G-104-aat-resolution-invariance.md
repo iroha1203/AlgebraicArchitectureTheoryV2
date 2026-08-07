@@ -45,6 +45,12 @@ report はそれらを再定義しない。
   endpoint coherence だけを入力に、edge / face 台、実際の law-descend 値の
   `(cell, law, 値)` 座標、`ℚ` 上の `d₀` / `d₁`、`d₁ ∘ d₀ = 0`、
   `ThreeCochainComplex ℚ` を生成した。
+- 完了(現行 statement): Cycle 8 の supported-nerve comparison geometry。
+  partial edge / face map、endpoint / boundary 可換、fiber 内 edge の退化宣言、
+  face から boundary edge への hereditary な退化宣言、canonical `π` に沿う
+  chart 台包含だけを入力に持つ一般の `TargetSupportedNerveMorphism` を定義した。
+  mapped edge / face の台包含は K1 の交わりと incidence から theorem として
+  導出し、独立な edge / face 台対応 field は持たない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -63,10 +69,133 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  hereditary な退化成分宣言を含む supported-nerve morphism と `π`-両立
-  chart 台の定義、canonical comparison cochain map、`H^1` の座標 block
-  直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、系、
+  canonical comparison cochain map と `comm0` / `comm1`、`H^1` の座標
+  block 直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、系、
   inadequate 側診断、反例3種、発火 witness。
+
+## Cycle 8 — hereditary supported-nerve comparison geometry
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 8
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: hereditary な退化宣言を持つ一般の supported-nerve morphism を定義し、mapped edge / face の台両立性を K1 から導出する
+proof obligation delta: canonical comparison factor に沿う chart 台包含だけから mapped cell の導出台輸送までを一般入力上で固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/SupportedNerveMorphism.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeSupport_compatible`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceSupport_compatible`
+- morphism の input fields は chart map、partial edge / face map、mapped cell の
+  endpoint / boundary 可換、`edgeMap = none` の chart-fiber 条件、
+  `faceMap = none` なら boundary triple の各 edge も `edgeMap = none` となる
+  hereditary 条件、canonical `comparisonFactor` に沿う chart 台包含に限る。
+- `edgeSupport_compatible` は mapped edge の endpoint incidence、chart 台包含、
+  K1 edge 台の endpoint 交わりを使用して導出する。
+- `faceSupport_compatible` は mapped face の boundary incidence と、すでに導出した
+  3本の edge 台輸送、K1 face 台の boundary-edge 交わりを使用して導出する。
+- focused manifest check: pass。
+- targeted module build: pass、3695 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 27 declarations、standard axioms only。
+- principal `#print axioms`: `propext`、`Classical.choice`、`Quot.sound` の範囲。
+- placeholder、hidden / bidirectional Unicode、local-path、reverse-import scan: clean。
+
+### Audit
+
+- premise delta: hereditary な partial incidence morphism、canonical `π` と chart 台の
+  両立、mapped edge / face の K1-derived support transport を放電した。
+- certificate provenance: `π` は `CoarserThan` から生成する review 済み
+  `comparisonFactor`。edge / face 台は Cycle 5 の K1 定義に追跡できる。
+  任意 factor、独立な edge / face 台対応、coordinate correspondence は受けない。
+- proof use: `edge_some_left` / `edge_some_right` と chart 台包含は
+  `edgeSupport_compatible` に、`face_some_edge0/1/2` と edge 台輸送は
+  `faceSupport_compatible` に実使用される。`edge_none_fiber` と
+  `face_none_edge0/1/2` はこの support theorem では未使用であり、次 cycle の
+  zero-on-degenerate `comm0` / `comm1` で実使用するまで G-104 全体の完了根拠に
+  数えない。
+- structure-field escape: none-found。structure は `ThreeCochainComplex.Hom`、
+  commutation、`H^1` map、同型、条件 C、座標対応 certificate を持たない。
+- route integrity: pass。一般の入力幾何と canonical factor、K1 生成 def からの
+  theorem であり、歴史的 obstruction fixture や full-support 選択に依存しない。
+- cheat route: target-fitting construction、vacuity、one-way theorem の同値扱い、
+  GOAL / report の読み替えはすべて none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: この morphism と `lawDescend_comparisonFactor` から degreewise
+  comparison map と `ThreeCochainComplex.Hom` を生成し、退化 edge / face fields を
+  実使用して `comm0` / `comm1` を証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 8
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: define the hereditary supported-nerve morphism and derive mapped K1 support transport
+proof_obligation_delta: partial comparison geometry and mapped edge-face support transport are now fixed over general finite input data
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: revised
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/SupportedNerveMorphism.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeSupport_compatible
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceSupport_compatible
+premise_delta:
+  discharged:
+    - hereditary partial chart-edge-face incidence geometry
+    - canonical comparison-factor compatibility on chart supports
+    - mapped edge and face support transport derived from K1 intersections
+  remaining:
+    - generated comparison cochain map and comm0-comm1
+    - H1 law-value block decomposition
+    - coordinate subnerves and C0-C6
+    - invariance theorem and no-overresolution corollary
+    - canonical inadequate diagnostic, three counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - chart support transport through comparisonFactor generated from CoarserThan
+    - edge and face support transport from K1 definitions and mapped incidence
+  unresolved:
+    - generated coordinate transport and cochain-map provenance
+    - proof-use of degenerate edge and hereditary degenerate face declarations in comm0-comm1
+    - H1 block-decomposition, invariance, and witness provenance
+proof_use_audit:
+  used_material_premises:
+    - mapped-edge endpoint incidence and canonical chart-support compatibility
+    - mapped-face boundary incidence and K1 edge-support transport
+  unused_material_premises:
+    - edge_none_fiber and face_none_edge0-face_none_edge2 await comm0-comm1 proof-use
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct the generated comparison cochain map and prove comm0-comm1 using the degenerate-cell fields
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Historical Cycle 7 — literal degenerate-face comm1 obstruction
 
