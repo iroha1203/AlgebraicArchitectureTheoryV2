@@ -27,12 +27,11 @@
   粗側 edge に写る複数 fine lift 間の cycle を制御しない)。粗側 self-loop の
   endpoint reflection(C6)も外せない: これを欠く C は、C0–C5 が成立しても、
   self-loop の一意な fine lift が同一 fiber 内の異なる chart を結び、粗側
-  loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す
-  (`LoopLiftObstruction`)。さらに off-loop の条件Cハント(Issue #3912、
-  `research/experiments/g104-condition-hunt/`)は、係数を宣言で自由に変えられる
-  モデルでは、同一 incidence 上の座標複製と support hole による2点分離により、
-  incidence レベルの条項をどう足しても同型を強制できないことを固定した
-  (law 由来係数への反証ではない)。したがって同型の制御は条件 C と係数生成
+  loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す。さらに
+  off-loop の計算探索(artifact は target proof strategy 参照)は、係数を
+  宣言で自由に変えられるモデルでは、同一 incidence 上の座標複製と
+  support hole による2点分離により、incidence レベルの条項をどう足しても
+  同型を強制できないことを固定した(law 由来係数への反証ではない)。したがって同型の制御は条件 C と係数生成
   契約 K0 / K1(座標 index の共有生成・cell 台の導出)の分担であり、残る
   稜線は K0 / K1 の下で C0–C6 が十分か、さらに高次の incidence coherence が
   要るかの判定である。
@@ -133,8 +132,9 @@
       細側 edge はちょうど一つ)。fiber 内 edge(退化成分)は粗側対応物を
       持たないためこの条項の対象外であり、fiber 内の多重性は制限しない。
     - **C6(self-loop endpoint reflection)**: 両端点が同一の粗側 chart に
-      落ちる粗側 edge(self-loop)については、C5 の一意な fine lift も
-      同一の細側 chart を両端点に持つ。
+      落ちる粗側 edge(self-loop)へ `φ` の edge 対応で写る各細側 edge は、
+      それ自身 self-loop である(両端点が同一の細側 chart に落ちる)。
+      C5 と独立に定式化する(C5 の一意 lift に条件を課す形にしない)。
     C には cohomology・同型・消滅と同値または片方向に近い条項を含めない
     (incidence / support レベルの条項に限る)。
   この設定で次が成り立つ。

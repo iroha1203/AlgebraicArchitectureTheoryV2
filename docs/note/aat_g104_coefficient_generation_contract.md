@@ -82,8 +82,13 @@ canonical に生成され、`lawDescend_unique` で一意、`lawDescend_comparis
 `C*` の R 条項を C6 として条件Cに加える。
 
 - **C6(self-loop endpoint reflection)**: 両端点が同一の粗側 chart に落ちる
-  粗側 edge(self-loop)については、C5 の一意な fine lift も同一の細側 chart を
-  両端点に持つ。
+  粗側 edge(self-loop)へ nerve 射の edge 対応で写る各細側 edge は、それ自身
+  self-loop である(両端点が同一の細側 chart に落ちる)。
+
+ハントの R 条項の文面は「一意な fine lift」を主語にするが、列挙器の実装
+(`condition_hunt.py` の `R_self_loop_endpoint_reflection`)は self-loop へ写る
+**すべての** nondegenerate lift を検査しており、C5 に依存しない。カードは実装側の
+独立定式化を採る(C5 だけを外した条項独立性の検査が意味を持つため)。
 
 根拠: C0–C5 だけでは、粗側 self-loop の一意 lift が同一 fiber 内の異なる chart を
 結ぶことを許し、粗側 loop 類が細側で coboundary に落ちて非単射になる
