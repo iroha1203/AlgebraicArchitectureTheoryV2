@@ -27,7 +27,13 @@
   粗側 edge に写る複数 fine lift 間の cycle を制御しない)。粗側 self-loop の
   endpoint reflection(C6)も外せない: これを欠く C は、C0–C5 が成立しても、
   self-loop の一意な fine lift が同一 fiber 内の異なる chart を結び、粗側
-  loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す。さらに
+  loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す。退化宣言の
+  hereditary 性も外せない: 退化 face 宣言の条件を「boundary edge がすべて
+  fiber 内 edge」に緩めると、fiber 内 edge が粗側 self-loop へ非退化に
+  写る場合に、その edge を boundary triple の3位置に持つ退化 face の零 pullback が
+  degree-one pullback の boundary 交代和(`1 − 1 + 1`)と衝突し、生成規則の
+  comparison 成分が cochain map にならない((i) の構成自体が破れる)
+  有限反例を許す。さらに
   off-loop の計算探索(artifact は target proof strategy 参照)は、係数を
   宣言で自由に変えられるモデルでは、非退化正例を一つでも受理する
   incidence-only の条件が、同一 incidence 上の座標複製と support hole に
@@ -75,7 +81,8 @@
   `H^1` が零で同型が vacuous に成立する witness、law が定数で係数が
   退化する例、粗さ順序が自明(単元 Source)な例、単一 chart の nerve で
   条件 C が空虚に成立する例、粗側 nerve が face を持たず C4 が空虚に
-  成立するだけの発火、細側 nerve が fiber 内 edge を持たず C5 の一意性が
+  成立するだけの発火、細側 nerve が退化成分として宣言された fiber 内
+  edge を持たず C5 の一意性が
   細側=粗側の自明な edge 対応で成立するだけの発火、粗側 nerve が
   self-loop を持たず C6 が空虚に成立するだけの発火、全 cell が同一の
   係数座標集合を持ち座標 subnerve 相対化が空虚に全体条項へ一致するだけの
@@ -109,10 +116,15 @@
     theorem として導き、structure field や premise で受けない)。さらに
     nerve 射 `φ : N' → N`。nerve 射は chart / edge / face の対応で
     endpoint / boundary と可換であることを要求する。ただし両端点が同一
-    fiber に落ちる細側 edge(fiber 内 edge)と、boundary edge がすべて
-    fiber 内 edge である細側 face は、粗側対応物を持たない
-    退化成分として宣言してよい(cochain map の構成では退化成分上の
-    pullback を零とする)。chart 台は `π` と両立する(細側 chart の台の
+    fiber に落ちる細側 edge(fiber 内 edge)は、粗側対応物を持たない
+    退化成分として宣言してよい。細側 face を退化成分として宣言できる
+    のは、その3本の boundary edge がすべて退化成分として宣言されている
+    場合に限る(**退化宣言の hereditary 性**。boundary edge が fiber 内
+    edge であっても、粗側 edge へ写ると宣言されているなら、その edge を
+    boundary に持つ face は退化成分にできない)。cochain map の構成では
+    退化成分上の pullback を零とする(退化 face の boundary pullback は
+    hereditary 性によりすべて零であり、零 pullback が degree-one 側の
+    boundary 交代和と衝突しない)。chart 台は `π` と両立する(細側 chart の台の
     `π`-像が対応する粗側 chart の台に含まれる)ことを要求する。
   - **law 由来係数(生成契約 K0)**: 係数体は `ℚ` に固定する。各 reading の
     係数複体は、その reading を通して descend した law evaluation(存在・
@@ -173,9 +185,10 @@
       face の3本の boundary edge は対応する粗側 boundary edge へ写る。
     - **C5(unique coarse-edge lift)**: 各粗側 edge の `φ`-fiber は高々
       一元である(C2 と合わせ、係数座標を持つ各粗側 edge へ `φ` の edge
-      対応で写る細側 edge はちょうど一つ)。fiber 内 edge(退化成分)は
-      粗側対応物を持たないためこの条項の対象外であり、fiber 内の多重性は
-      制限しない。
+      対応で写る細側 edge はちょうど一つ)。退化成分として宣言された
+      edge は粗側対応物を持たないためこの条項の対象外であり、fiber 内の
+      多重性は制限しない(fiber 内 edge であっても粗側 edge へ写ると
+      宣言された edge は `φ`-fiber に数える)。
     - **C6(self-loop endpoint reflection)**: 両端点が同一の粗側 chart に
       落ちる粗側 edge(self-loop)へ `φ` の edge 対応で写る各細側 edge は、
       それ自身 self-loop である(両端点が同一の細側 chart に落ちる)。
@@ -214,9 +227,9 @@
      (`π` が非単射)、非零 `H^1`(両側)、係数が実際に law evaluation の
      descend から生成されること、ある粗側 chart の fiber が2元以上を持ち
      C1 が非空虚に働くこと、粗側 nerve が少なくとも一つ face を持ち
-     C4 が非空虚に働くこと、細側 nerve が少なくとも一つ fiber 内 edge
-     (退化成分)を持ち C5 の一意性が細側=粗側の自明な edge 対応で
-     成立するのでないこと、粗側 nerve が少なくとも一つ self-loop を持ち
+     C4 が非空虚に働くこと、細側 nerve が少なくとも一つ退化成分として
+     宣言された fiber 内 edge を持ち C5 の一意性が細側=粗側の自明な
+     edge 対応で成立するのでないこと、粗側 nerve が少なくとも一つ self-loop を持ち
      C6 が非空虚に働くこと、少なくとも一つの係数座標の subnerve が nerve
      全体と一致しない(値の分配が実際に起き、C1–C4 の座標 subnerve
      相対化が空虚に全体条項へ一致するのでない)こと、を theorem として
@@ -233,7 +246,8 @@
   は参照のみ。G-104 の完了面は (i)–(v) まで。
 - `target proof artifacts`: reading の Target に台を持つ nerve の定義
   (K1 の台導出・face boundary の端点整合を含む)と `d₁d₀ = 0` の導出
-  theorem、nerve 射(incidence 可換+退化成分宣言)と `π`-両立性の定義、
+  theorem、nerve 射(incidence 可換+hereditary な退化成分宣言)と
+  `π`-両立性の定義、
   law 由来係数の生成 def(K0: `(law, 値)` index・`ℚ`-値関数空間・
   零 / 恒等 restriction・導出 differential・比較の座標対応の生成)、
   descend 可換補題(粗側 descend と細側 descend の `π`-両立)、
@@ -262,12 +276,21 @@
   `h1Map`)、
   `ResolutionInvariance/ComparisonData.lean`(canonical comparison
   factor / law descend とその可換・一意性。review 済み、再定義しない)、
+  `ResolutionInvariance/LawGeneratedComplex.lean`(K0 / K1 の生成複体:
+  `TargetSupportedNerve`・K1 導出台・`(cell, law, 値)` 座標・`ℚ` 上の
+  generated differential・`d₁d₀ = 0`・`ThreeCochainComplex` 構成。
+  review 済み、再定義しない)、
   `ResolutionInvariance/FaceLiftObstruction.lean`(C4 が破れる有限
   witness。(iv)(c) の素材として転用可)、
   `ResolutionInvariance/EdgeFiberObstruction.lean`(C5 が破れる有限
   witness。(iv)(c) の素材として転用可)、
   `ResolutionInvariance/LoopLiftObstruction.lean`(C6 が破れる有限
-  witness。(iv)(c) の素材として転用可)。固定 statement と完了条件は
+  witness。(iv)(c) の素材として転用可)、
+  `ResolutionInvariance/DegenerateFaceComm1Obstruction.lean`(hereditary
+  性を欠く退化 face 宣言規則の下で生成 comparison 成分が cochain map に
+  ならない有限 witness。本カードの退化宣言規則の根拠であり、改訂後の
+  well-formed な comparison data ではないため (iv) の素材ではない)。
+  固定 statement と完了条件は
   本カードのみを正本とする。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean である
@@ -293,7 +316,8 @@
   - `nerve / nerve 射 / 台両立`: `ambient-boundary`(入力幾何)。宣言できる
     のは chart 台までであり、edge / face の台は K1 で導出する(cell ごとの
     独立な台宣言は入力幾何に含めない)。well-formedness(face boundary の
-    端点整合・`π`-両立)は定義に含め、witness で実例を与える。
+    端点整合・退化宣言の hereditary 性・`π`-両立)は定義に含め、witness で
+    実例を与える。
     `d₁ ∘ d₀ = 0` は端点整合から theorem として導く(structure field で
     受けた場合は未放電仮定として数える)。
   - `law 由来係数の生成`: `discharge-required`。係数複体(`ℚ` 上の
