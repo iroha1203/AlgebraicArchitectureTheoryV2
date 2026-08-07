@@ -38,12 +38,11 @@
 ## 基礎概念
 
 - **AAT**: Atom を公理とする純粋数学理論(代数幾何的アーキテクチャ論)。比喩ではなく、
-  site / sheaf / cohomology 等の本物の代数幾何概念へ接続する。観測・測定・tooling の
-  境界を内部に持たない。
+  site / sheaf / cohomology 等の本物の代数幾何概念へ接続する。内部は公理と定理だけで
+  完結し、観測・測定・tooling は外側から接続する。
 - **SFT**: artifact や practice が software evolution の reachable future をどう変えるかを
   扱う理論。AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
-- **ArchMap**: 観測した atom を source ref とともに記録する有限 artifact。観測に
-  由来しない判定・証明・証書は記録しない。
+- **ArchMap**: 観測した atom を source ref とともに記録する有限 artifact。
 - **LawPolicy**(law-equation-surface / MeasurementProfile を含む): law reading、cover、
   witness、measurement regime を固定する法・方程式側 contract。
 - **ArchSig**: 観測(ArchMap)と法・方程式(LawPolicy 系)の二系統の入力から
@@ -53,7 +52,6 @@
 - **FieldSig**: ArchSig の handoff artifact と workflow evidence を SFT 側の
   evolution measurement / governance input として読む。
 - **Lean 形式化**(`Formal/`): AAT の語彙で述べられる命題だけを形式化する。
-  全知の検査器ではない。
 - **Website**: AAT / SFT / tooling を公開向けに読むための publication surface。
 
 ## モノレポの地図と guideline ルーティング
