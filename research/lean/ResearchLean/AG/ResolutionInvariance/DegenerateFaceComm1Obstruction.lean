@@ -36,26 +36,34 @@ namespace DegenerateFaceComm1Obstruction
 /-- Reuse only the reviewed reading/law input of the earlier finite witness. -/
 abbrev Source := FaceLiftObstruction.Source
 
+/-- The fine reading from the reviewed proper adequate predecessor witness. -/
 abbrev fineReading : Reading Source := FaceLiftObstruction.fineReading
 
+/-- The coarse reading from the reviewed proper adequate predecessor witness. -/
 abbrev coarseReading : Reading Source := FaceLiftObstruction.coarseReading
 
+/-- The nonconstant finite law family from the reviewed predecessor witness. -/
 abbrev laws : FiniteLawFamily Source := FaceLiftObstruction.laws
 
+/-- The predecessor proof that the coarse reading is adequate for `laws`. -/
 theorem coarse_adequate : laws.Adequate coarseReading :=
   FaceLiftObstruction.coarse_adequate
 
+/-- The predecessor proof that the fine reading is adequate for `laws`. -/
 theorem fine_adequate : laws.Adequate fineReading :=
   FaceLiftObstruction.fine_adequate
 
+/-- The predecessor proof that the coarse reading is coarser than the fine one. -/
 theorem coarse_coarser_fine : coarseReading.CoarserThan fineReading :=
   FaceLiftObstruction.coarse_coarser_fine
 
+/-- The canonical comparison factor is proper, rather than an identity disguise. -/
 theorem comparisonFactor_not_injective :
     ¬ Function.Injective
       (comparisonFactor coarseReading fineReading coarse_coarser_fine) :=
   FaceLiftObstruction.comparisonFactor_not_injective
 
+/-- The reused law family contains a genuinely nonconstant law evaluation. -/
 theorem law_nonconstant :
     ∃ law x y, laws.eval law x ≠ laws.eval law y :=
   FaceLiftObstruction.law_nonconstant
@@ -228,7 +236,11 @@ theorem fine_face_boundary_fiber_internal :
           (fineNerve.edgeRight (fineNerve.faceEdge2 PUnit.unit)) :=
   ⟨rfl, rfl, rfl⟩
 
-/-- Full chart supports are compatible with the canonical comparison factor. -/
+/--
+Full chart supports are compatible with the canonical comparison factor.
+The fine-support witness is intentionally unused because both concrete chart
+supports are `Set.univ`; it is retained to expose the fixed GOAL implication.
+-/
 theorem chartSupport_compatible (chart : fineNerve.Chart)
     (target : fineReading.Target)
     (_htarget : target ∈ fineSupported.chartSupport chart) :
@@ -309,6 +321,7 @@ def selectedCoarseEdgeCoordinate :
     (fineSupported.faceEdge0Coordinate laws fine_adequate
       selectedFineFaceCoordinate)
 
+/-- Boundary edge zero transports to the selected coarse edge coordinate. -/
 theorem edgeCoordinateMap_faceEdge0_eq_selected :
     edgeCoordinateMap
         (fineSupported.faceEdge0Coordinate laws fine_adequate
@@ -316,6 +329,7 @@ theorem edgeCoordinateMap_faceEdge0_eq_selected :
       selectedCoarseEdgeCoordinate :=
   rfl
 
+/-- Boundary edge one transports to the same selected coarse edge coordinate. -/
 theorem edgeCoordinateMap_faceEdge1_eq_selected :
     edgeCoordinateMap
         (fineSupported.faceEdge1Coordinate laws fine_adequate
@@ -323,6 +337,7 @@ theorem edgeCoordinateMap_faceEdge1_eq_selected :
       selectedCoarseEdgeCoordinate := by
   apply CellCoordinate.ext <;> rfl
 
+/-- Boundary edge two transports to the same selected coarse edge coordinate. -/
 theorem edgeCoordinateMap_faceEdge2_eq_selected :
     edgeCoordinateMap
         (fineSupported.faceEdge2Coordinate laws fine_adequate
