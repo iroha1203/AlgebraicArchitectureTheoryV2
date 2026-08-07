@@ -3,9 +3,9 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-proof-checkpoint`(カードは退化宣言の hereditary 化で
-  statement を再固定済み。Cycle 7 の `target-refuted` は改訂前の退化 face
-  宣言規則に対する歴史証拠)
+- proof state: `target-proof-checkpoint`(現行 statement の claim (i) canonical
+  comparison map は Cycle 9 で証明済み。Cycle 7 の `target-refuted` は改訂前の
+  退化 face 宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -51,6 +51,12 @@ report はそれらを再定義しない。
   chart 台包含だけを入力に持つ一般の `TargetSupportedNerveMorphism` を定義した。
   mapped edge / face の台包含は K1 の交わりと incidence から theorem として
   導出し、独立な edge / face 台対応 field は持たない。
+- 完了(現行 statement): Cycle 9 の claim (i)。canonical `comparisonFactor` と
+  `lawDescend_comparisonFactor`、Cycle 8 の morphism から同一 `(law, 値)` label の
+  coordinate transport と、mapped cell 上の評価 / 退化 cell 上の零からなる
+  degreewise pullback を生成した。`edge_none_fiber` と hereditary な3本の
+  face-none field を実使用して `comm0` / `comm1` を証明し、coarse から fine の
+  `ThreeCochainComplex.Hom` と canonical `H^1` map を構成した。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -69,9 +75,150 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  canonical comparison cochain map と `comm0` / `comm1`、`H^1` の座標
-  block 直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、系、
-  inadequate 側診断、反例3種、発火 witness。
+  `H^1` の座標 block 直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、
+  系、inadequate 側診断、反例3種、発火 witness。
+
+## Cycle 9 — generated comparison cochain map
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 9
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: actual lawGeneratedComplex 上で canonical coordinate pullback、comm0 / comm1、Hom、H1 map を生成する
+proof obligation delta: claim (i) の coarse-to-fine comparison map を一般有限入力上で固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/GeneratedComparisonMap.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.chartCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback1`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback2`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback_comm0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback_comm1`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonHom`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map`
+- chart / mapped edge / mapped face coordinate は、fine coordinate の occurrence を
+  canonical `comparisonFactor` で送り、`lawDescend_comparisonFactor` と K1-derived
+  support transport で同じ law と値を持つ coarse coordinate として生成する。
+- degree-one / degree-two pullback は `Option` incidence から生成する。`some` cell
+  では transported coordinate を評価し、`none` cell では零とする。
+- `comm0` の mapped branch は endpoint incidence、degenerate branch は
+  `edge_none_fiber` を使う。`comm1` の mapped branch は ordered
+  `face_some_edge0/1/2`、degenerate branch は `face_none_edge0/1/2` をすべて使う。
+- `generatedComparisonHom` の source は coarse actual `lawGeneratedComplex`、
+  target は fine actual `lawGeneratedComplex`。`generatedComparisonH1Map` は
+  review 済み `ThreeCochainComplex.Hom.h1Map` で coarse `H^1 →` fine `H^1` を誘導する。
+- focused manifest check: pass。
+- targeted module build: pass、3697 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 27 declarations、standard axioms only。
+- principal `#print axioms`: `propext`、`Classical.choice`、`Quot.sound` の範囲。
+- placeholder、hidden / bidirectional Unicode、local-path、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: 有限 Source / law family、adequate readings と粗さ順序、
+  coarse / fine supported nerve と Cycle 8 morphism は `ambient-boundary`。coordinate
+  map、linear map、commutation、Hom、`H^1` map は入力でなく Cycle 9 の出力である。
+- certificate provenance: `π` は `CoarserThan` 由来の canonical
+  `comparisonFactor`、値の一致は `lawDescend_comparisonFactor`、cell 上の occurrence
+  は chart 台包含と K1-derived edge / face transport に追跡できる。任意の coordinate
+  correspondence、linear map、Hom certificate を受けない。
+- proof use: mapped `comm0` は `edge_some_left/right`、degenerate `comm0` は
+  `edge_none_fiber` を実使用する。mapped `comm1` は `face_some_edge0/1/2`、
+  degenerate `comm1` は `face_none_edge0/1/2` を実使用し、Cycle 8 で残った
+  claim-(i)-specific field の proof-use gap はない。
+- structure-field escape: none-found。`TargetSupportedNerveMorphism` は Cycle 8 の
+  input geometry のままで、degreewise maps、`comm0` / `comm1`、Hom、`H^1` map は
+  新 module が構成・証明する。
+- route integrity: pass。singleton fixture、free coefficient proxy、full-support 仮定、
+  historical obstruction namespace に依存しない一般 theorem package である。
+- cheat route: target-fitting construction、vacuity、mapped branch だけの可換性、
+  任意 Hom の supplied certificate、one-way theorem の同値扱いは none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: finite `(law, 値)` block への `lawGeneratedComplex`、`H^1`、
+  `generatedComparisonH1Map` の直和分解を証明し、座標 subnerve と C0–C6 の
+  不変性 proof への橋を固定する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 9
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: generate the canonical comparison Hom and induced H1 map on the actual law-generated complexes
+proof_obligation_delta: fixed claim (i) for general finite input data with all degenerate branches proved
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: revised
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/GeneratedComparisonMap.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback1
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback2
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback_comm0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback_comm1
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonHom
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map
+premise_delta:
+  ambient_boundary:
+    - finite Source and law family, adequate coarse-fine readings, and CoarserThan
+    - coarse-fine TargetSupportedNerve values and TargetSupportedNerveMorphism input geometry
+  discharged:
+    - canonical law-value coordinate transport and Option-generated degreewise pullbacks
+    - comm0 and comm1 on mapped and degenerate components
+    - ThreeCochainComplex.Hom and the induced coarse-to-fine H1 map
+    - fixed target claim (i)
+  remaining:
+    - H1 law-value block decomposition
+    - coordinate subnerves and C0-C6
+    - invariance theorem and no-overresolution corollary
+    - canonical inadequate diagnostic, three counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - comparisonFactor generated from CoarserThan
+    - coordinate values generated through lawDescend_comparisonFactor and K1 support transport
+    - commutation generated from incidence and hereditary degeneracy
+    - H1 map generated by the reviewed ThreeCochainComplex Hom API
+  unresolved:
+    - block-decomposition, invariance, and witness provenance
+proof_use_audit:
+  used_material_premises:
+    - edge_some_left-right and edge_none_fiber in comm0
+    - face_some_edge0-face_some_edge2 and face_none_edge0-face_none_edge2 in comm1
+    - chart support compatibility and K1 support transport in coordinate construction
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove the finite law-value block decomposition of the complexes, H1, and generated comparison H1 map
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 8 — hereditary supported-nerve comparison geometry
 
