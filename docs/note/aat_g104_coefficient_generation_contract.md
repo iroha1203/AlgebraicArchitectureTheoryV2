@@ -34,12 +34,16 @@ face-mediated coherence を含む)はすべて incidence データと Target 台
 
 ハントの反例2種は、現行カードの入力語彙の中に対応する自由度を持つ。
 
-1. **support hole ← 台の containment 宣言**。現行カードは nerve の台を
-   「edge の台は端点 chart の台の交わり**に含まれる**、face の台は boundary
-   edge の台の交わり**に含まれる**」と包含(⊆)で宣言させる。この自由度を使うと、
-   端点の台を保ったまま fiber edge の台だけを空に宣言でき、係数次元 0 の
-   support hole がカードの適法な入力として構成できる。条件Cは chart 台
-   (C0)しか見ないため、これを検出できない。
+1. **support hole**。ハント artifact の support hole は Target 台とは別層の
+   係数座標台(`SupportedNerve` の `edge_supports`)に置かれており、Round 2 の
+   3 fixture の Target 台はすべて全域である(このノートの初版は帰属を Target
+   台側と誤記していた。Codex レビュー P1-2 で是正)。カードの語彙では係数
+   次元は cell の台上の descend 値から生成されるため、同じ機構は二つの経路で
+   現れる: (a) 台の containment 宣言(⊆)で fiber edge の台だけを空に宣言
+   する経路(K1 で閉じる)、(b) K1 の導出台の下でも、粗側 chart の値を複数の
+   細側 chart へ分配すると fiber 内 edge の導出台(交わり)が空になる経路
+   (**K1 では閉じない**。§5)。条件Cは chart 台(C0)しか見ないため、
+   どちらも検出できない。
 2. **複製 ← 座標 basis の index 生成規則の未固定**。現行カードは law 由来係数を
    「descend した law evaluation が chart 台上に取る値から生成した座標 basis で
    張る」と書くが、basis の index 集合の生成規則を固定していない。細側だけ
@@ -53,9 +57,11 @@ face-mediated coherence を含む)はすべて incidence データと Target 台
 改訂カードでは、law 由来係数の生成を次の2条項の契約として一次仕様化する。
 (G-102 の「E1 と同水準の生成的構成」の E1 と紛れないよう K を使う。)
 
-- **K0(座標 index の共有生成)**: 各 law の係数座標の index 集合は、descend した
-  law evaluation が cell の台上に取る値から、粗側・細側で**同一の規則**により
-  生成する。比較写像の座標対応は宣言せず、descend の π-可換
+- **K0(座標 index の固定)**: 各 cell の係数座標の index 集合は対 `(law, 値)`
+  の集合とする。`値` は descend した当該 law evaluation がその cell の台
+  (K1 の導出台)上に取る**相異なる値**であり、値の Target 上の出現回数や
+  台の要素数を index にしない(多重度は値ごとに1)。比較写像の座標対応は
+  宣言せず、`(law, 値)` 上の恒等対応として descend の π-可換
   (`ResearchLean/AG/ResolutionInvariance/ComparisonData.lean` の
   `lawDescend_comparisonFactor`)から生成する。宣言による座標の追加・複製・
   省略は認めない。
@@ -63,13 +69,17 @@ face-mediated coherence を含む)はすべて incidence データと Target 台
   face の台は boundary edge の台の交わり**に等しい**とする(包含から等式へ)。
   宣言入力として残る台は chart 台だけであり、edge / face の台は導出データになる。
 
-この契約の下で、ハントの反例2種は入力として構成不能になる(構成上の帰結であり、
-追加の theorem を要さない): 複製は K0 が index 生成規則を両 reading で共有する
-ため表現できず、support hole は K1 が edge / face 台を導出するため表現できない。
+この契約の下で、複製は K0 が多重度を値ごとに1へ固定するため構成不能になり、
+台宣言による support hole は K1 が edge / face 台を導出するため構成不能になる。
+ただし K0 / K1 だけでは十分でない: 値の分配による導出 support hole が残る
+(§5。条件C側の相対化で対処する)。
 
-K0 の index 生成規則の Lean 上の具体形(値集合を index に取るか、law ごとに
-値写像を係数化するか)は実装時に固定してよい。カードが要求するのは「両 reading で
-同一規則」「比較対応は descend 可換から生成」「宣言自由度なし」の3点である。
+なお、このノートの初版は K0 を「両 reading で同一の生成規則」とだけ要求し、
+具体形(値集合か値写像か)を実装時選択に残していた。Codex レビュー P1-1 が
+この選択で真偽が分岐することを示した: 「値の Target 上の出現回数を index に
+取る」規則も"同一規則"だが、π で潰れる粗側 target に対して細側の出現が複数に
+なり、ハントの複製反例と同じ機構で非全射になる。index 対象は上記のとおり
+`(law, 相異なる値)` へ数学的に固定した(definitional escape の余地を残さない)。
 
 なお ComparisonData.lean の `lawDescend` は law family の index(`laws.Law`)ごとに
 canonical に生成され、`lawDescend_unique` で一意、`lawDescend_comparisonFactor` で
@@ -100,29 +110,68 @@ canonical に生成され、`lawDescend_unique` で一意、`lawDescend_comparis
 証明ではない。cell 台が非自明に変わる law 由来構成での C0–C6 の十分性は未証明
 であり、それを判定するのが改訂後のループの仕事である。
 
-## 5. カード改訂の項目対応
+## 5. Codex レビュー(PR #3915)と条件Cの値ごと相対化
+
+固定 head 261a4c9a への Codex 独立レビュー(Major revisions)は、K0 の
+真偽分岐(P1-1、§3 で是正)に加え、**K1 では閉じない導出 support hole**
+(P1-2)を有限反例で示した: K1 の導出台と `(law, 相異なる値)` index の
+最直接の canonical 具体化の下でも、粗側 chart の値を複数の細側 chart へ
+分配すると、C0(合併条件)と C1(incidence fiber 連結)は成立したまま
+fiber 内 edge の導出台が空になり、comparison map が非単射になる。
+Claude も exact engine 上で独立再現した(値 {a} / {b} を fiber の 2 chart へ
+分配、C0–C6 全成立、coarse `dim H¹` = 4 / fine `dim H¹` = 1 / rank 1、
+非単射)。
+
+是正は条件C側の再定式化で行う(ユーザー裁定 2026-08-07):
+
+- 係数の restriction と比較の係数写像は K0 により座標ごとの零 / 恒等写像
+  なので、`H^1` と comparison map は係数座標 `(law, 値)` ごとの block へ
+  直和分解する。
+- 各 block は、その座標を持つ cell が成す**座標 subnerve** 上の定数係数
+  (1次元)比較にちょうど還元される。
+- したがって条件Cが本来語るべき対象は座標 subnerve であり、**C1–C4 を各
+  座標 subnerve ごとに課す**(C0 は合併条件として全体で、C5・C6 は全体で
+  課せば subnerve への制限が従う)。ハントの定数座標層の探索 6,086 件
+  無反例と手証明スケッチは、この block 分解の各成分にそのまま適用できる
+  形になる。
+
+Codex の反例と Claude の再現例は、いずれも当該値の座標 subnerve で C2
+(subnerve 内の edge lift)が破れるため、相対化した C の下で正しく除外
+される。
+
+レビューの他の指摘も同時に是正した: 一般 nerve の face boundary に端点
+整合を要求し `d₁d₀ = 0` を theorem 化(P1-3。`Formal/AG/Cohomology/CoverNerve.lean`
+の `FiniteNerveCochainComplex` が `d1_comp_d0` を field で受けている既存
+欠陥は Formal 側の別課題であり、本カードの nerve 定義には持ち込まない)、
+ledger の「条件Cと不変性」を direction-hypothesis / witness / theorem の
+3項へ分離(P2-4)。
+
+## 6. カード改訂の項目対応
 
 | 改訂箇所 | 内容 |
 | --- | --- |
-| comparison data | edge / face の台を包含宣言から導出(K1)へ |
-| law 由来係数 | K0 / K1 を契約として明文化、比較対応の生成元を明記 |
-| 条件C | C6 追加、(ii) 以下の参照を C0–C6 へ更新 |
-| (v) 発火 witness | C6 の非空虚発火(粗側 self-loop の存在)を追加 |
-| dullness filter | C6 が空虚成立するだけの発火を追加で弾く |
-| proof strategy | LoopLiftObstruction を再利用 map に追加、ハント手証明スケッチを参考として記載 |
-| premise ledger | `nerve / 台` と `law 由来係数の生成` の記述を K0 / K1 と同期 |
+| comparison data | edge / face の台を包含宣言から導出(K1)へ+face boundary の端点整合を要求し `d₁d₀ = 0` を theorem 化 |
+| law 由来係数 | K0(`(law, 値)` index の固定・多重度1)/ K1 を契約として明文化、比較対応の生成元を明記 |
+| 条件C | C6 追加+C1–C4 の座標 subnerve 相対化(block 直和分解が数学的根拠) |
+| (v) 発火 witness | C6 の非空虚発火(粗側 self-loop)と座標 subnerve 相対化の非空虚発火(値分配の実在)を追加 |
+| dullness filter | C6 空虚発火・座標 subnerve 相対化が空虚に全体条項へ一致するだけの発火を追加で弾く |
+| proof strategy | LoopLiftObstruction を再利用 map に追加、block 還元+ハント手証明スケッチを参考として記載 |
+| premise ledger | `nerve / 台` と `law 由来係数の生成` を K0 / K1 と同期、`条件Cと不変性` を hypothesis / witness / theorem の3項へ分離 |
 | anti-weakening | K0 / K1 の premise 化(座標対応や台の一致を仮定で受ける)を禁止 |
 | frontier | 自由係数反例の law 実現可能性の判定を追加(実現可能なら (iv) 素材、不能なら K0 / K1 の裏付け) |
 
-## 6. 残リスクと次の判定点
+## 7. 残リスクと次の判定点
 
-- **十分性のリスク**: K0 / K1 の下でも、chart 台が chart ごとに異なる構成で
-  C0–C6 が不変性に足りない可能性は残る。その場合は failure policy に従い
-  4度目の反証として条項改訂案を返す(cohomological 条項への差し替えは不可)。
-- **発火可能性のリスク**: (v) に C6 非空虚発火(粗側 self-loop)を足すことで
-  witness 構成が難化する。ハントの探索空間は self-loop を含み反例ゼロなので
-  構成可能と見込むが、構成不能と判明した場合は (v) の当該項目だけを別 witness に
+- **十分性のリスク**: 相対化した C0–C6 でも不変性の一般証明は未達であり、
+  座標 block をまたぐ現象や高次の incidence coherence が要る可能性は残る。
+  その場合は failure policy に従い反証として条項改訂案を返す
+  (cohomological 条項への差し替えは不可)。
+- **発火可能性のリスク**: (v) に C6 非空虚発火(粗側 self-loop)と値分配の
+  実在(ある座標 subnerve が全体と一致しない)を足したことで witness 構成が
+  難化する。分配しつつ各 subnerve が C を満たす正例は手検査で構成可能と
+  見込むが、構成不能と判明した場合は (v) の当該項目だけを別 witness に
   分離する改訂を提案する。
-- **K0 の具体化**: Lean 実装時に index 生成規則を固定した時点で、その規則が
-  「選択の余地のない canonical な生成」であることをレビューで確認する
-  (route integrity gate の provenance 追跡対象)。
+- **座標 subnerve の Lean 具体化**: subnerve とその上の fiber グラフ・
+  条項 C1–C4 の Lean 定義が、K0 / K1 の導出データだけから定まり選択を
+  持ち込まないことをレビューで確認する(route integrity gate の
+  provenance 追跡対象)。
