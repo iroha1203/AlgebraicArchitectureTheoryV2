@@ -8,7 +8,8 @@
   Cycle 10、actual `H^1` quotient の block 有限直和同型は Cycle 11 で証明済み。
   label 別 comparison Hom / `h1Map` と global pullback の3次数 block 成分一致は
   Cycle 12、global comparison `H^1` map の quotient-level block 直和 naturality は
-  Cycle 13 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
+  Cycle 13、K0 / K1 exact block からの canonical 座標 subnerve は Cycle 14 で
+  証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
@@ -91,6 +92,14 @@ report はそれらを再定義しない。
   representative 公式を証明した。これを quotient extensionality で全 class へ拡張し、
   coarse / fine `lawGeneratedH1BlockEquiv` の下で global comparison `H^1` map が
   label 別 block `H^1` map の有限直和と一致する naturality square を得た。
+- 完了(現行 statement): Cycle 14 の canonical 座標 subnerve。
+  各 source-generated `LawValueLabel` について、chart / edge / face を既存 K0
+  block coordinate そのものとし、K1 由来の endpoint / face incidence と
+  underlying overlap component を継承する `CoverNerve` を構成した。3次数の
+  underlying-cell projection は単射であり、各 cell が subnerve に現れることを、
+  chart support / K1 edge support / K1 face support 上で exact label value が実際に
+  出現することとそれぞれ iff で特徴づけた。有限 Source regime の全 cell 型に
+  `Fintype` instance も生成した。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -109,8 +118,148 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  座標 subnerve と C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
+  C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 14 — canonical law-value coordinate subnerve
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 14
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: K0 / K1 exact block coordinate から各 source-generated label の canonical 座標 subnerve を構成する
+proof obligation delta: C1–C4 の相対化対象を任意 selection なしで3次数すべて固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueCoordinateSubnerve.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.CellCoordinate.block_cell_injective`
+  - `AAT.AG.ResolutionInvariance.CellCoordinate.exists_block_coordinate_cell_iff`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerve`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveChartCell_injective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveEdgeCell_injective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveFaceCell_injective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.chart_occurs_in_lawValueCoordinateSubnerve_iff`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.edge_occurs_in_lawValueCoordinateSubnerve_iff`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.face_occurs_in_lawValueCoordinateSubnerve_iff`
+- subnerve の cell 型は Cycle 10–13 が使う `ChartBlockCoordinate` /
+  `EdgeBlockCoordinate` / `FaceBlockCoordinate` そのものであり、同型な複製型や
+  caller-supplied predicate を使わない。
+- endpoint と face incidence は既存 block incidence map、overlap predicate と
+  holds proof は underlying nerve component から定義として継承する。
+- general `CellCoordinate` theorem により、固定 label 内では cell projection が
+  単射であり、target occurrence witness や source generator の proof data が
+  coordinate multiplicity を作らないことを固定した。
+- chart / edge / face occurrence theorem は、各 cell の support 上で
+  `lawDescend ... label.law = label.value` となる target の存在と subnerve cell の
+  存在を双方向で同定する。edge / face 側の support は K1 の導出台である。
+- focused manifest check: pass。
+- targeted module build: pass、3704 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 22 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: finite Source、finite law family、adequate reading、
+  `TargetSupportedNerve`、source-generated label は `ambient-boundary`。subnerve、
+  projection 単射性、exact occurrence characterization は Cycle 14 の出力である。
+- certificate provenance: cell selection は K0 `CellCoordinate.Block` の fixed-label
+  fiber そのものである。chart は declared support、edge / face は K1 intersection
+  support 上の actual `lawDescend` occurrence に追跡できる。
+- proof use: dependent law / value equalityは `Sigma laws.Value` の equality から
+  law equality と `HEq` value を回収して projection 単射性に実使用する。
+  occurrence iff の forward / reverse 両方向、既存 block incidence、underlying
+  overlap component、Source と ambient cell の有限性を実使用する。
+- structure-field escape: none-found。arbitrary cell membership、closure certificate、
+  C 条件、comparison isomorphism、cohomology vanishing を入力 field にしない。
+- route integrity: pass。全 `LawValueLabel` を一様に扱い、coarse / fine の双方で
+  同じ construction を instantiate する。global `H^1` や C の真偽を membership に
+  参照しない。
+- cheat route: whole-nerve alias、空 / singleton subnerve、opaque selection、
+  occurrence multiplicity、law-name-only annotation、target-fitting membership は
+  none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: canonical 座標 subnerve を用い、C1–C4 を各 label 相対、
+  C0 / C5 / C6 を whole nerve 上で定式化する incidence / support-only の
+  condition package を構成する。global `H^1`、comparison isomorphism、
+  cohomology vanishing を field に入れない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 14
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct the canonical K0/K1 coordinate subnerve for every source-generated label
+proof_obligation_delta: fixed the exact three-degree relative nerve used by C1-C4 without supplied selection
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueCoordinateSubnerve.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.CellCoordinate.block_cell_injective
+      - AAT.AG.ResolutionInvariance.CellCoordinate.exists_block_coordinate_cell_iff
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerve
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveEdgeCell_injective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueCoordinateSubnerveFaceCell_injective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.chart_occurs_in_lawValueCoordinateSubnerve_iff
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.edge_occurs_in_lawValueCoordinateSubnerve_iff
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.face_occurs_in_lawValueCoordinateSubnerve_iff
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate reading, supported nerve, and source-generated label
+  discharged:
+    - canonical exact-label CoverNerve in all three degrees
+    - inherited block incidence and underlying overlap components
+    - injective underlying-cell projections
+    - exact support-occurrence characterization in all three degrees
+    - finite coordinate-subnerve cell instances
+  remaining:
+    - global C0/C5/C6 and coordinate-relative C1-C4
+    - invariance, corollary, diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - cell selection is the reviewed K0 fixed-label block itself
+    - membership is equivalent to actual lawDescend occurrence on K1-derived support
+  unresolved:
+    - C0-C6 hypotheses and invariance proof
+proof_use_audit:
+  used_material_premises:
+    - exact CellCoordinate and LawValueLabel fields
+    - declared chart support and K1-derived edge and face supports
+    - existing block endpoint and face-incidence maps
+    - underlying overlap components and finite cell instances
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define the incidence/support-only global and coordinate-relative C0-C6 package
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 13 — quotient-level block comparison naturality
 
