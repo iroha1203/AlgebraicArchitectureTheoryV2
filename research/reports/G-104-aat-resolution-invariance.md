@@ -10,7 +10,8 @@
   Cycle 12、global comparison `H^1` map の quotient-level block 直和 naturality は
   Cycle 13、K0 / K1 exact block からの canonical 座標 subnerve は Cycle 14 で
   証明済み。whole-nerve C0 / C5 / C6 と全座標 subnerve 相対の C1–C4 からなる
-  incidence / support-only の条件 C package は Cycle 15 で定義済み。Cycle 7 の
+  incidence / support-only の条件 C package と、各 principal 条件・補助条件を
+  識別する有限な正例 / 反例 instance pair は Cycle 15 で固定済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -111,7 +112,13 @@ report はそれらを再定義しない。
   内部 face の oriented boundary `e₀ - e₁ + e₂` の span を要求する。C5 / C6 の
   exact block 制限を theorem として導き、C6 の endpoint reflection は C5 に
   依存しない。package は命題 field だけを持ち、同型・消滅・inverse・選択 lift / path /
-  filling chain を入力しない。
+  filling chain を入力しない。さらに、proper かつ非単射な target factor、
+  coarse self-loop、宣言された退化 edge、repeated-edge face、非自明な chart fiber を
+  同時に持つ有限 fixture 上で C0–C6 と aggregate C の正例を構成した。image 欠落、
+  edge lift 重複、endpoint reflection 失敗、内部 face 欠落をそれぞれ分離する反例で、
+  principal 条件と全補助条件の正負 instance pair を固定した。この fixture は
+  constant law と whole-coordinate subnerve を使う API 品質証拠であり、claim (v) の
+  nondegenerate 発火 witness には数えない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -151,6 +158,8 @@ completion candidate: no
 
 - Lean file:
   `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean`
+- Lean instance file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditionInstances.lean`
 - principal declarations:
   - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC0`
   - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC1`
@@ -162,6 +171,15 @@ completion candidate: no
   - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC`
   - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC5_block_unique`
   - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC6_block_endpoint_reflection`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.missing_not_conditionC`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC0`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC1`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC2`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC3`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC4`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC5`
+  - `AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC6`
 - C0 は各 coarse chart support と、その chart fiber に属する fine chart support の
   canonical `comparisonFactor` image の合併を pointwise iff で同定する。
 - C1 は各 exact coarse block chart の fiber を非空とし、両 endpoint coordinate が
@@ -179,17 +197,29 @@ completion candidate: no
   projection 単射性と canonical Option map から theorem として導出する。
 - `ConditionC` は7個の命題 fieldだけを束ねる。lift、path、filling chain、inverse、
   cohomology certificate は data field にしない。
+- instance fixture は C0–C6 と aggregate C の正例に加え、C0 / C1 / C2 / C4 の
+  image 欠落、C5 / C6 の重複 self-loop lift、C3 の内部 face 欠落による反例を持つ。
+  `CoordinateFiberEdge`、`CoordinateFiberAdjacent`、`ConditionC1At`、
+  `ConditionC2At`、`CoordinateFiberCycle`、`CoordinateInternalFace`、
+  `ConditionC3At`、`ConditionC4At` にもそれぞれ正負 witness を置き、定義が空・恒真・
+  恒偽へ退化していないことを Lean で固定した。
+- positive fixture は proper な reading refinement、2 chart を持つ coarse-chart fiber、
+  ordinary / self-loop / reverse edge、triangle / repeated-edge face、宣言済み退化 edge を
+  同時に含む。一方、law は constant で各 coordinate subnerve は whole nerve なので、
+  claim (v) の nondegenerate 発火 witness と区別する。
 - focused manifest check: pass。
-- targeted module build: pass、3705 jobs。新規 module の linter warning なし。
-- namespace axiom audit: 33 declarations、standard axioms only。
+- targeted module build: Conditions は pass、3705 jobs。ConditionInstances は pass、
+  3706 jobs。新規 modules の linter warning なし。
+- namespace axiom audit: Conditions は33 declarations、ConditionInstances は
+  129 declarations、いずれも standard axioms only。
 - placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
 
 ### Audit
 
 - premise classification: 有限 Source、finite law family、adequate pair、supported nerves、
   reviewed morphism は `ambient-boundary`。C0–C6 は固定 theorem の
-  `direction-hypothesis` であり、その成立 witness と不変性は本 Cycle の出力に
-  数えない。
+  `direction-hypothesis` である。有限 instance pair は条件 API の nonvacuity と
+  識別能力を固定する品質証拠であり、不変性や claim (v) の発火 witness には数えない。
 - certificate provenance: C0 は canonical factor、C1–C4 は reviewed K0 / K1 の
   exact block coordinates、C2 / C4 は generated partial block transportを使う。
   C3 に cycle basis、filling certificate、global complex、cohomology datumを
@@ -205,8 +235,13 @@ completion candidate: no
   block transportに追跡でき、whole-nerve clausesを label 相対へ弱めていない。
 - cheat route: `edgeMap = none`限定C3、global cohomologyへの置換、空 / singleton
   特例、target-fitting certificate、結論相当fieldは none-found。
+- initial fixed-head review finding: 最初の snapshot は新規 public Prop 条件の
+  positive / negative instance pair を欠き、Lean quality standard §1.4 / §6 に反したため
+  major finding を受けた。受理前に同一 Cycle 内で finite pair file を追加し、aggregate、
+  principal C0–C6、全補助条件を正負両側から検査した。修正後 snapshot は fresh T3 と
+  4 lane fixed-head review の対象とする。
 - blocking findings: none。
-- independent T3 verdict:
+- repair 後 fresh independent T3 verdict:
   `approve / proof-obligation-discharged / completion_candidate: no`。
 - next obligation: C1–C6から各 label の定数係数 block comparison `H^1` map が
   同型であることを、C3の局所 fiber contractionとC5 / C6 bridgeを実使用して証明し、
@@ -240,6 +275,17 @@ lean_artifacts:
       - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.ConditionC
       - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC5_block_unique
       - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC6_block_endpoint_reflection
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditionInstances.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.missing_not_conditionC
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC0
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC1
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC2
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC3
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC4
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC5
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances.positive_conditionC6
 premise_delta:
   ambient_boundary:
     - finite Source, finite law family, adequate pair, supported nerves, and reviewed morphism
@@ -249,6 +295,7 @@ premise_delta:
     - local rational C3 on all endpoint-defined fiber edges with oriented internal-face boundaries
     - proposition-only aggregate ConditionC package
     - whole-nerve C5 and C6 consequences on exact block coordinates
+    - finite positive and negative instance pairs for aggregate ConditionC, every principal C0-C6 predicate, and every public helper predicate
   remaining:
     - blockwise and global invariance
     - nondegenerate ConditionC realization, corollary, inadequate diagnostics, counterexamples, and firing witness
@@ -256,8 +303,9 @@ certificate_provenance:
   discharged:
     - support comparison and block transports are canonical reviewed constructions
     - C3 stores no selected basis or filling data
+    - quality instances separate image omission, duplicate lifts, endpoint failure, and missing internal faces
   unresolved:
-    - concrete realization of ConditionC and canonical H1 isomorphism
+    - nondegenerate claim-v realization and canonical H1 isomorphism
 proof_use_audit:
   used_material_premises:
     - C5, exact Option maps, whole-edge extraction, and edge-cell injectivity in the uniqueness bridge
@@ -272,7 +320,7 @@ route_integrity_audit:
   concerns: []
 cheat_route_audit:
   target_fitting_construction: none-found
-  vacuity_or_degeneracy: none-found
+  vacuity_or_degeneracy: none-found for the condition API; the constant-law fixture is explicitly not accepted as claim-v firing evidence
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
