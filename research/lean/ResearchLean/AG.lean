@@ -240,6 +240,7 @@ import ResearchLean.AG.ResolutionInvariance.EdgeFiberObstruction
 import ResearchLean.AG.ResolutionInvariance.FaceLiftObstruction
 import ResearchLean.AG.ResolutionInvariance.LawGeneratedComplex
 import ResearchLean.AG.ResolutionInvariance.LoopLiftObstruction
+import ResearchLean.AG.ResolutionInvariance.SupportedNerveMorphism
 import ResearchLean.AG.SFT.ConwayBoundaryGenerator
 import ResearchLean.AG.SFT.ConwayBoundaryMap
 import ResearchLean.AG.SFT.ConwayBoundaryQuotient
