@@ -3,9 +3,10 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-proof-checkpoint`(PR #3915 で再固定した現行 statement。
-  Cycle 5 で K0 / K1 base complex を放電)
-- completion candidate: `no`
+- proof state: `target-refuted`(PR #3915 で再固定した現行 statement の
+  claim (i) を Cycle 7 の law-generated finite witness が反証)
+- completion candidate: `yes`(`target-refuted` terminal。`target-theorem-proved`
+  candidate ではない)
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -16,11 +17,12 @@ report はそれらを再定義しない。
 > 条項、係数生成契約なし。commit `88321001` 時点)の固定 statement に
 > 対する歴史証拠である。カードはその後の改訂(PR #3915: 係数生成契約
 > K0 / K1、係数体 `ℚ` 固定、C6 追加、C1–C4 の座標 subnerve 相対化)で
-> statement を再固定した。本 report の反例は改訂後 statement の反証では
-> ない(Cycle 2–4 の Lean 反例は改訂後カードの (iv)(c) 素材として転用
-> 可能なまま残る)。改訂後 statement は Cycle 5 から再開し、現在は
-> K0 / K1 base complex までを放電した checkpoint である。runtime state の
-> 正本は tracking Issue #3902。
+> statement を再固定した。Cycle 2–4 の反例は改訂後 statement の反証では
+> ない(これらの Lean 反例は改訂後カードの (iv)(c) 素材として転用
+> 可能なまま残る)。改訂後 statement は Cycle 5 から再開し、Cycle 7 で
+> claim (i) の退化 face 規則そのものが `comm1` を壊すことを現行
+> K0 / K1 上で固定した。したがって現在の phase proof state は
+> `target-refuted` である。runtime state の正本は tracking Issue #3902。
 
 ## Proof obligation state
 
@@ -32,6 +34,11 @@ report はそれらを再定義しない。
   endpoint coherence だけを入力に、edge / face 台、実際の law-descend 値の
   `(cell, law, 値)` 座標、`ℚ` 上の `d₀` / `d₁`、`d₁ ∘ d₀ = 0`、
   `ThreeCochainComplex ℚ` を生成した。
+- 反証(現行 statement): Cycle 7 の claim (i) blocker。固定 GOAL が許す
+  endpoint-defined fiber-internal edge は coarse self-loop へ非退化に写り得る。
+  その edge を3境界に持つ fine face だけを退化と宣言すると、generated
+  degree-one pullback の fine `d₁` は `1 - 1 + 1 = 1`、退化 face 上で零の
+  degree-two pullback は `0` となり、`ThreeCochainComplex.Hom.comm1` が破れる。
 - 歴史証拠(改訂前 statement): Cycle 2 の C0–C3 十分性 blocker。coarse face lift の欠落を有限反例で
   固定し、条件 C を C0–C4 へ改訂する根拠を得た。
 - 歴史証拠(改訂前 statement): Cycle 3 の C0–C4 十分性 blocker。C4 face を actual differential と
@@ -40,9 +47,188 @@ report はそれらを再定義しない。
 - 歴史証拠(改訂前 statement): Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
-- 未完: coarse / fine nerve morphism、`π`-compatible chart 台、comparison
-  cochain map、`H^1` の `(law, 値)` block 直和分解、座標 subnerve と C0–C6、
-  不変性 theorem、系、inadequate 側診断、反例3種、発火 witness。
+- 現 target に対する未完の数学 proof obligation: なし。claim (i) の反証で
+  target 全体が成立しないため、`H^1` block 直和分解、座標 subnerve と
+  C0–C6、不変性 theorem、系、inadequate 側診断、反例3種、発火 witness は
+  現 statement の proof としては未実行のまま停止する。再開には人間による
+  GOAL 改訂が必要である。
+
+## Cycle 7 — literal degenerate-face comm1 obstruction
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 7
+decision: approve
+result type: blocker-fixed
+proof obligation: 固定 GOAL の literal degenerate-face comparison data が generated K0/K1 cochain map を許すか有限 witness で判定する
+proof obligation delta: endpoint-defined fiber-internal boundary と zero-on-degenerate face が comm1 を破ることを実 law-generated complex 上で固定した
+phase proof state: target-refuted
+completion candidate: yes (target-refuted terminal; not target-theorem-proved)
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/DegenerateFaceComm1Obstruction.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.EndpointDegenerateNerveMorphism`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.nerveMorphism`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.chartCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.edgeCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.generatedPullback1`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.generatedPullback2`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.selectedFineFaceCoordinate`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.generated_pullback_comm1_fails`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.no_generated_comparison_hom`
+  - `AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.fixed_claim_i_refuted`
+- witness geometry:
+  - coarse nerve = 1 chart、1 self-loop edge `E`、face なし。
+  - fine nerve = 1 chart、1 self-loop edge `e`、boundary `(e,e,e)` の1 face `f`。
+  - `edgeMap e = some E`、`faceMap f = none`。`e` の両端 chart 像は一致するため、
+    3境界は固定 GOAL の意味で fiber-internal である。
+- witness input は `FaceLiftObstruction` で固定済みの proper adequate reading pair、
+  非単射 canonical `comparisonFactor`、非定数 law を再利用する。
+- coarse / fine complex は Cycle 5 の actual `lawGeneratedComplex`。edge / face 台は
+  K1 の交わりから導出し、selected coordinate は actual derived support 上の
+  `CellCoordinate.ofSupportedTarget`、cochain は実 coarse edge coordinate 上の
+  `coordinateVector` である。
+- `chartCoordinateMap` / `edgeCoordinateMap` は canonical `comparisonFactor` と
+  `lawDescend_comparisonFactor` から同じ `(law, 値)` を輸送する。任意の
+  coefficient correspondence は受け取らない。
+- selected basis cochain `y` について、fine 側3境界の pullback 値はすべて1。
+  よって `fine.d₁ (f₁ y) f = 1 - 1 + 1 = 1`。一方、退化 face 上の
+  generated `f₂` は零なので `f₂ (coarse.d₁ y) f = 0`。したがって prescribed
+  `f₀/f₁/f₂` を component に持つ `ThreeCochainComplex.Hom` は存在しない。
+- focused check: pass。
+- targeted module build: pass、3697 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 62 declarations、standard axioms only。
+- principal `#print axioms`: structure は公理依存なし、他は `propext`、
+  `Classical.choice`、`Quot.sound` の範囲。
+- placeholder、hidden / bidirectional Unicode、local-path、reverse-import、diff scan:
+  clean。
+
+### Audit
+
+- premise delta: literal comparison geometry、proper adequate pair、nonconstant law、
+  canonical factor / descend、actual K0 / K1 coefficient generationを同一 witness に
+  接続し、claim (i) の必要仮定不足を固定した。
+- certificate provenance: reading / law input は reviewed predecessor へ、cell 台・
+  coordinate・differential は Cycle 5 generator へ、coarse coordinate transport は
+  canonical factor / descend theorem へ追跡できる。旧 free-coefficient proxy、
+  law annotation、selected commutation certificate は使わない。
+- proof use: adequacy、`CoarserThan`、K1 support membership、3本の同一 boundary
+  coordinate、`Hom.comm1` を実使用する。full support の membership proof が
+  `chartSupport_compatible` の proof termで不要なのは両台が `Set.univ` だからで、
+  hidden premise ではない。`f₀` equality を矛盾に使わないのは `f₁/f₂` だけで
+  既に `comm1` が破れるためである。
+- structure-field escape: none-found。nerve morphism は incidence と endpoint-fiber
+  条件だけを持ち、Hom、commutation、cohomology、isomorphism field を持たない。
+- route integrity: pass。target-fitting coefficient や型不一致による反例ではない。
+- dullness: 単一 chart / coarse-face-free は条件 C の発火正例なら除外対象だが、
+  claim (i) は条件 C より前に一般の有限 comparison data へ量化される。fine face
+  coordinate と非零 `d₁` は実在するため、この dullness filter は普遍 claim (i) の
+  反例を除外しない。
+- cheat route: target-fitting construction、vacuity、one-way-as-equivalence、
+  GOAL / report reinterpretation はすべて none-found。
+- blocking findings: none。
+- independent T3 verdict: `approve / blocker-fixed / completion_candidate: yes`。
+- stop condition: `target-refuted`。`target-theorem-proved` ではない。
+- GOAL 改訂候補:
+  1. 直接案: `faceMap f = none` なら3本の boundary edge も宣言上退化
+     (`edgeMap = none`)であることを要求する。
+  2. より弱い案: 退化 face の mapped boundary が各 coarse edge について
+     符号付き multiplicity 零になる incidence 条件を要求する。
+  どちらの一般的十分性も未証明であり、固定 GOAL は本 cycle で編集しない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 7
+decision: approve
+result_type: blocker-fixed
+proof_state: target-refuted
+proof_obligation: formalize the literal degenerate-face comm1 countermodel on the K0/K1 law-generated complex
+proof_obligation_delta: the prescribed generated comparison components fail comm1 on an endpoint-degenerate face whose boundary edge maps to a coarse self-loop
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 2ede7da2d150eda52599f219942e9d9477edd552
+  blob: 69edc22678de7ea4c1a219b9540d1408a3b0bea3
+  status: immutable-refuted
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/DegenerateFaceComm1Obstruction.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.EndpointDegenerateNerveMorphism
+      - AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.generated_pullback_comm1_fails
+      - AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.no_generated_comparison_hom
+      - AAT.AG.ResolutionInvariance.DegenerateFaceComm1Obstruction.fixed_claim_i_refuted
+premise_delta:
+  discharged:
+    - literal endpoint-defined degenerate-face comparison geometry
+    - proper adequate nonidentity reading pair and nonconstant law
+    - canonical comparison-factor and law-descend coordinate transport
+    - actual K0/K1 law-generated coefficient spaces and differentials
+    - explicit comm1 failure and nonexistence of the prescribed comparison Hom
+  remaining: []
+certificate_provenance:
+  discharged:
+    - reading and law data from the reviewed finite predecessor witness
+    - coordinates from actual law-descend images on K1-derived supports
+    - coordinate transport from comparisonFactor and lawDescend_comparisonFactor
+    - obstruction cochain from coordinateVector on an actual coarse edge coordinate
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - both adequacy proofs
+    - CoarserThan and the canonical comparison factor
+    - K1-derived support membership
+    - all three boundary-coordinate equalities
+    - ThreeCochainComplex.Hom.comm1
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: human GOAL revision; preserve this counterexample as the fixed-statement lower bound
+completion_candidate: true
+target_theorem_proved: false
+tracking_issue_closed: false
+```
+
+## Cycle 6 — rejected general comparison-map attempt
+
+Cycle 6 では、一般の generated comparison `ThreeCochainComplex.Hom` を構成する
+候補を実装したが、独立T3が固定 GOAL にない material premise を検出したため
+`reject / rejected` とした。候補は `faceMap f = none` のとき3本の boundary edge
+すべてに `edgeMap = none` を要求していた。固定 GOAL の fiber-internal edge は
+端点 chart 像の一致だけで定義され、coarse self-loop へ `some` で写る edge も
+含むため、この条件は strict strengthening である。
+
+候補 Lean file と aggregate wiring は棄却後に全撤去し、PRは作成していない。
+Cycle 6 の最小反例予告を Cycle 7 が actual K0 / K1 上で形式化した。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+cycle: 6
+decision: reject
+result_type: rejected
+hidden_material_premise: faceMap_none_requires_all_boundary_edgeMap_none
+completion_candidate: false
+pr: null
+tracking_issue_closed: false
+next_obligation: formalize the literal degenerate-face comm1 countermodel in Lean
+```
 
 ## Cycle 5 — K0 / K1 law-generated base complex
 
