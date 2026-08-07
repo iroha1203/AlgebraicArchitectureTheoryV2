@@ -111,11 +111,15 @@ completion candidate: no
 
 ### Audit
 
-- premise delta: hereditary な partial incidence morphism、canonical `π` と chart 台の
-  両立、mapped edge / face の K1-derived support transport を放電した。
-- certificate provenance: `π` は `CoarserThan` から生成する review 済み
-  `comparisonFactor`。edge / face 台は Cycle 5 の K1 定義に追跡できる。
-  任意 factor、独立な edge / face 台対応、coordinate correspondence は受けない。
+- premise classification: partial incidence、hereditary な退化宣言、chart 台包含は
+  GOAL が許可する `ambient-boundary` の入力幾何であり、生成・放電した premise
+  ではない。Cycle 8 で放電したのは、mapped edge / face の台包含をこの入力と
+  K1 生成 def から導く obligation である。
+- certificate provenance: `π` 自体は `CoarserThan` から生成する review 済み
+  `comparisonFactor`。chart 台包含は supplied input であり、`CoarserThan` から
+  生成した certificate ではない。mapped edge / face 台の輸送は Cycle 5 の K1
+  定義へ追跡でき、独立な edge / face 台対応や coordinate correspondence は
+  受けない。
 - proof use: `edge_some_left` / `edge_some_right` と chart 台包含は
   `edgeSupport_compatible` に、`face_some_edge0/1/2` と edge 台輸送は
   `faceSupport_compatible` に実使用される。`edge_none_fiber` と
@@ -156,9 +160,10 @@ lean_artifacts:
       - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeSupport_compatible
       - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceSupport_compatible
 premise_delta:
+  ambient_boundary:
+    - partial chart-edge-face incidence and hereditary degenerate declarations
+    - canonical comparison-factor compatibility on chart supports as supplied input geometry
   discharged:
-    - hereditary partial chart-edge-face incidence geometry
-    - canonical comparison-factor compatibility on chart supports
     - mapped edge and face support transport derived from K1 intersections
   remaining:
     - generated comparison cochain map and comm0-comm1
@@ -167,8 +172,10 @@ premise_delta:
     - invariance theorem and no-overresolution corollary
     - canonical inadequate diagnostic, three counterexamples, and firing witness
 certificate_provenance:
+  ambient_boundary:
+    - chart-support compatibility is supplied input geometry, not generated from CoarserThan
   discharged:
-    - chart support transport through comparisonFactor generated from CoarserThan
+    - comparisonFactor itself is generated from CoarserThan by the reviewed predecessor
     - edge and face support transport from K1 definitions and mapped incidence
   unresolved:
     - generated coordinate transport and cochain-map provenance
