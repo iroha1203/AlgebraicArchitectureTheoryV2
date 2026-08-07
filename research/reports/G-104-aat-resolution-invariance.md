@@ -3,10 +3,10 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-refuted`(PR #3915 で再固定した現行 statement の
-  claim (i) を Cycle 7 の law-generated finite witness が反証)
-- completion candidate: `yes`(`target-refuted` terminal。`target-theorem-proved`
-  candidate ではない)
+- proof state: `target-proof-checkpoint`(カードは退化宣言の hereditary 化で
+  statement を再固定済み。Cycle 7 の `target-refuted` は改訂前の退化 face
+  宣言規則に対する歴史証拠)
+- completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -21,8 +21,19 @@ report はそれらを再定義しない。
 > ない(これらの Lean 反例は改訂後カードの (iv)(c) 素材として転用
 > 可能なまま残る)。改訂後 statement は Cycle 5 から再開し、Cycle 7 で
 > claim (i) の退化 face 規則そのものが `comm1` を壊すことを現行
-> K0 / K1 上で固定した。したがって現在の phase proof state は
-> `target-refuted` である。runtime state の正本は tracking Issue #3902。
+> K0 / K1 上で固定した。runtime state の正本は tracking Issue #3902。
+
+> **注記(2026-08-08、カード改訂)**: Cycle 7 の claim (i) 反証は、改訂前の
+> 退化 face 宣言規則(「boundary edge がすべて fiber 内 edge」で宣言可。
+> commit `2ede7da2` 時点)に対する歴史証拠である。カードはその後の改訂
+> (退化宣言の hereditary 化: 退化 face はその3本の boundary edge が
+> すべて退化成分として宣言済みの場合に限り宣言可)で statement を
+> 再固定した。改訂後の規則の下では Cycle 7 witness の comparison data は
+> well-formed でない(`DegenerateFaceComm1Obstruction` は改訂後規則の
+> 根拠として存続し、(iv) の素材ではない)。Cycle 5 の K0 / K1
+> `lawGeneratedComplex` は nerve 射に依存しない per-reading の構成で
+> あり、改訂後 statement でもそのまま再利用する。改訂後 statement の
+> cycle は Cycle 8 から再開する。
 
 ## Proof obligation state
 
@@ -34,11 +45,15 @@ report はそれらを再定義しない。
   endpoint coherence だけを入力に、edge / face 台、実際の law-descend 値の
   `(cell, law, 値)` 座標、`ℚ` 上の `d₀` / `d₁`、`d₁ ∘ d₀ = 0`、
   `ThreeCochainComplex ℚ` を生成した。
-- 反証(現行 statement): Cycle 7 の claim (i) blocker。固定 GOAL が許す
-  endpoint-defined fiber-internal edge は coarse self-loop へ非退化に写り得る。
-  その edge を3境界に持つ fine face だけを退化と宣言すると、generated
+- 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
+  規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
+  非退化に写り得る。
+  その edge を boundary triple の3位置に持つ fine face だけを退化と
+  宣言すると、generated
   degree-one pullback の fine `d₁` は `1 - 1 + 1 = 1`、退化 face 上で零の
   degree-two pullback は `0` となり、`ThreeCochainComplex.Hom.comm1` が破れる。
+  改訂後カードは退化宣言の hereditary 性でこの comparison data を
+  well-formedness から除外する。
 - 歴史証拠(改訂前 statement): Cycle 2 の C0–C3 十分性 blocker。coarse face lift の欠落を有限反例で
   固定し、条件 C を C0–C4 へ改訂する根拠を得た。
 - 歴史証拠(改訂前 statement): Cycle 3 の C0–C4 十分性 blocker。C4 face を actual differential と
@@ -47,13 +62,13 @@ report はそれらを再定義しない。
 - 歴史証拠(改訂前 statement): Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
-- 現 target に対する未完の数学 proof obligation: なし。claim (i) の反証で
-  target 全体が成立しないため、`H^1` block 直和分解、座標 subnerve と
-  C0–C6、不変性 theorem、系、inadequate 側診断、反例3種、発火 witness は
-  現 statement の proof としては未実行のまま停止する。再開には人間による
-  GOAL 改訂が必要である。
+- 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
+  hereditary な退化成分宣言を含む supported-nerve morphism と `π`-両立
+  chart 台の定義、canonical comparison cochain map、`H^1` の座標 block
+  直和分解、座標 subnerve と C0–C6 の定義、不変性 theorem、系、
+  inadequate 側診断、反例3種、発火 witness。
 
-## Cycle 7 — literal degenerate-face comm1 obstruction
+## Historical Cycle 7 — literal degenerate-face comm1 obstruction
 
 ```text
 Target theorem cycle result
@@ -87,7 +102,8 @@ completion candidate: yes (target-refuted terminal; not target-theorem-proved)
   - coarse nerve = 1 chart、1 self-loop edge `E`、face なし。
   - fine nerve = 1 chart、1 self-loop edge `e`、boundary `(e,e,e)` の1 face `f`。
   - `edgeMap e = some E`、`faceMap f = none`。`e` の両端 chart 像は一致するため、
-    3境界は固定 GOAL の意味で fiber-internal である。
+    boundary triple の3位置の edge は当時の固定 GOAL の意味で
+    fiber-internal である。
 - witness input は `FaceLiftObstruction` で固定済みの proper adequate reading pair、
   非単射 canonical `comparisonFactor`、非定数 law を再利用する。
 - coarse / fine complex は Cycle 5 の actual `lawGeneratedComplex`。edge / face 台は
@@ -97,7 +113,8 @@ completion candidate: yes (target-refuted terminal; not target-theorem-proved)
 - `chartCoordinateMap` / `edgeCoordinateMap` は canonical `comparisonFactor` と
   `lawDescend_comparisonFactor` から同じ `(law, 値)` を輸送する。任意の
   coefficient correspondence は受け取らない。
-- selected basis cochain `y` について、fine 側3境界の pullback 値はすべて1。
+- selected basis cochain `y` について、fine 側 boundary triple の
+  3位置の pullback 値はすべて1。
   よって `fine.d₁ (f₁ y) f = 1 - 1 + 1 = 1`。一方、退化 face 上の
   generated `f₂` は零なので `f₂ (coarse.d₁ y) f = 0`。したがって prescribed
   `f₀/f₁/f₂` を component に持つ `ThreeCochainComplex.Hom` は存在しない。
@@ -216,6 +233,9 @@ Cycle 6 では、一般の generated comparison `ThreeCochainComplex.Hom` を構
 
 候補 Lean file と aggregate wiring は棄却後に全撤去し、PRは作成していない。
 Cycle 6 の最小反例予告を Cycle 7 が actual K0 / K1 上で形式化した。
+なお改訂後カードは退化宣言の hereditary 性(`faceMap = none` なら3本の
+boundary edge も退化宣言済み)を nerve 射の well-formedness に含めるため、
+同種の構成は改訂後 statement では material premise の追加にならない。
 
 ```yaml
 ledger_type: target_cycle_result
