@@ -6,7 +6,9 @@
 - proof state: `target-proof-checkpoint`(現行 statement の claim (i) canonical
   comparison map は Cycle 9、有限 `(law, 値)` block の複体・次数別直和分解は
   Cycle 10、actual `H^1` quotient の block 有限直和同型は Cycle 11 で証明済み。
-  Cycle 7 の `target-refuted` は改訂前の退化 face 宣言規則に対する歴史証拠)
+  label 別 comparison Hom / `h1Map` と global pullback の3次数 block 成分一致は
+  Cycle 12 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
+  宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -72,6 +74,14 @@ report はそれらを再定義しない。
   `H1 = ker d1 / range boundaryToCycles` に `Submodule.Quotient.equiv` と
   `Submodule.quotientPi` を適用し、global `H^1` と block `H^1` の finite
   `DirectSum` の canonical `LinearEquiv` と representative の成分公式を得た。
+- 完了(現行 statement): Cycle 12 の label 別 generated comparison Hom。
+  Cycle 9 の canonical chart / edge / face coordinate transport を Cycle 10 の exact
+  `LawValueLabel` fiber へ制限し、mapped cell は同一 label の coarse coordinate を評価、
+  退化 edge / face は零とする block pullback を全3次数で生成した。
+  `comm0` / `comm1` を incidence と hereditary 退化宣言から証明し、label ごとの
+  actual `ThreeCochainComplex.Hom` と G-102 `h1Map` を構成した。global
+  `generatedPullback0/1/2` の canonical block 成分がそれぞれ label 別 pullback と
+  一致することも theorem として固定した。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -90,9 +100,143 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  comparison map の座標 block 直和分解、
+  comparison `H^1` map の quotient-level block 直和 naturality、
   座標 subnerve と C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 12 — generated comparison on exact blocks
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 12
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: common label ごとの actual block Hom / h1Map と global pullback の3次数 block 成分一致を生成する
+proof obligation delta: partial coordinate transport の mapped / degenerate 全 branch を exact coordinate fiber 上で放電した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparison.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.chartBlockCoordinateMap`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.edgeBlockCoordinateMapOption`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.faceBlockCoordinateMapOption`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockPullback0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockPullback1`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockPullback2`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonHom`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback0_block_component`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback1_block_component`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback2_block_component`
+- chart / mapped edge / mapped face の subtype membership は Cycle 10 の3本の
+  `*_lawValueLabel` theorem と input coordinate の block membership を合成して生成する。
+  reading 間 label bijection や occurrence index は追加しない。
+- degree 1 / 2 の block coordinate transport は Cycle 9 と同じ `Option` で、mapped
+  branch のみ coarse block coordinate を返し、宣言された退化 branch は `none`
+  のまま保つ。block pullback は `Option.elim 0` により零を生成する。
+- block `comm0` の mapped branch は `edge_some_left/right`、退化 branch は
+  `edge_none_fiber` を使う。block `comm1` は mapped branch の
+  `face_some_edge0/1/2` と degenerate branch の `face_none_edge0/1/2` を全て使う。
+- `generatedBlockComparisonHom` の source は coarse block complex、target は fine block
+  complex。`generatedBlockComparisonH1Map` はこの Hom の reviewed G-102 `h1Map` である。
+- global pullback の3本の component theorem は Cycle 10 の canonical coordinate-fiber
+  decomposition を使い、degree 1 / 2 で `none` / `some` を再度全分岐する。
+- focused manifest check: pass。
+- targeted module build: pass、3702 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 30 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: finite Source / law family、adequate pair、coarseness、supported-nerve
+  morphism は `ambient-boundary`。label 保存で生成した subtype map、block pullback、
+  commutation、Hom、`h1Map`、component equality は Cycle 12 の出力である。
+- certificate provenance: coarse coordinate は canonical `comparisonFactor`、K1-derived
+  support transport、`lawDescend_comparisonFactor` に追跡でき、block membership は
+  common source-generated label の不変性に追跡できる。
+- proof use: label 保存3補題、mapped incidence、fiber 内 edge の endpoint 一致、
+  hereditary face 退化の3補題、finite block decomposition を全て実使用する。
+- structure-field escape: none-found。block map / commutation / `h1Map` / component theorem を
+  input structure に追加せず、actual `ThreeCochainComplex.Hom` の出力として生成する。
+- route integrity: pass。coarse → fine の反変 pullback と common label を保ち、
+  global Hom の単なる wrapper や mapped-only route を使わない。
+- cheat route: arbitrary map / equivalence、basis / finrank、label bijection、vacuity、
+  conclusion-equivalent field、quotient naturality の先取りは none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: Cycle 11 の coarse / fine `lawGeneratedH1BlockEquiv` の下で、global
+  `generatedComparisonH1Map` と label 別 `generatedBlockComparisonH1Map` の finite
+  DirectSum map が一致する quotient-level naturality square と representative 成分公式を証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 12
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: generate each exact block Hom and all three global pullback component formulas
+proof_obligation_delta: discharged mapped and degenerate branches on the exact common label fibers
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparison.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonHom
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback0_block_component
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback1_block_component
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedPullback2_block_component
+premise_delta:
+  ambient_boundary:
+    - finite Source and law family, adequate pair, coarseness, and supported-nerve morphism
+  discharged:
+    - exact same-label coordinate transport in all three degrees
+    - zero-on-degenerate block pullbacks
+    - actual block Hom and G-102 h1Map
+    - three global-to-block pullback component theorems
+  remaining:
+    - quotient-level global H1 direct-sum naturality
+    - coordinate subnerves, C0-C6, invariance, corollary, diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - block coordinate maps generated from canonical Cycle 9 transport and Cycle 10 label preservation
+    - component formulas generated from the canonical coordinate-fiber decomposition
+  unresolved:
+    - quotient-level H1 naturality
+proof_use_audit:
+  used_material_premises:
+    - all three coordinate label-preservation theorems
+    - mapped edge and face incidence compatibility
+    - degenerate edge endpoint equality and hereditary face declarations
+    - finite coordinate-fiber block decomposition
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove quotient-level global H1 finite-DirectSum naturality
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 11 — quotient-level block cohomology
 

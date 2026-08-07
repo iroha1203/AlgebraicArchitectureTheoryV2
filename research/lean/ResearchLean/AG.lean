@@ -241,6 +241,7 @@ import ResearchLean.AG.ResolutionInvariance.FaceLiftObstruction
 import ResearchLean.AG.ResolutionInvariance.GeneratedComparisonMap
 import ResearchLean.AG.ResolutionInvariance.LawGeneratedComplex
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockCohomology
+import ResearchLean.AG.ResolutionInvariance.LawValueBlockComparison
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockDecomposition
 import ResearchLean.AG.ResolutionInvariance.LoopLiftObstruction
 import ResearchLean.AG.ResolutionInvariance.SupportedNerveMorphism
