@@ -7,7 +7,8 @@
   comparison map は Cycle 9、有限 `(law, 値)` block の複体・次数別直和分解は
   Cycle 10、actual `H^1` quotient の block 有限直和同型は Cycle 11 で証明済み。
   label 別 comparison Hom / `h1Map` と global pullback の3次数 block 成分一致は
-  Cycle 12 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
+  Cycle 12、global comparison `H^1` map の quotient-level block 直和 naturality は
+  Cycle 13 で証明済み。Cycle 7 の `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
 
@@ -82,6 +83,14 @@ report はそれらを再定義しない。
   actual `ThreeCochainComplex.Hom` と G-102 `h1Map` を構成した。global
   `generatedPullback0/1/2` の canonical block 成分がそれぞれ label 別 pullback と
   一致することも theorem として固定した。
+- 完了(現行 statement): Cycle 13 の quotient-level comparison naturality。
+  Cycle 12 の label 別 actual `generatedBlockComparisonH1Map` だけから finite
+  `DirectSum` map を componentwise に生成した。global cycle map と block cycle map の
+  成分一致を degree-one component theorem から導き、Cycle 11 の representative
+  成分公式と global / block 両側の G-102 `h1Map_mk` から quotient
+  representative 公式を証明した。これを quotient extensionality で全 class へ拡張し、
+  coarse / fine `lawGeneratedH1BlockEquiv` の下で global comparison `H^1` map が
+  label 別 block `H^1` map の有限直和と一致する naturality square を得た。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -100,9 +109,135 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  comparison `H^1` map の quotient-level block 直和 naturality、
   座標 subnerve と C0–C6 の定義、不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 13 — quotient-level block comparison naturality
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 13
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: label 別 block h1Map の finite DirectSum と global comparison H1 map の quotient-level naturality を証明する
+proof obligation delta: law-value block decomposition と generated comparison map の quotient-level 接続を放電した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonNaturality.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap_component`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonCyclesMap_block_component`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_mk_block_component`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_block_naturality`
+- direct-sum map は各 label の `generatedBlockComparisonH1Map` による product map を
+  `DirectSum.linearEquivFunOnFintype` で直和へ戻して生成する。global map を
+  coarse / fine block equivalence で共役して定義する循環経路は使わない。
+- `generatedComparisonCyclesMap_block_component` は Cycle 12 の
+  `generatedPullback1_block_component` を実使用し、global cycle map と block
+  cycle map の同一 label 成分を同定する。
+- representative 公式は global 側と block 側の
+  `ThreeCochainComplex.Hom.h1Map_mk`、coarse / fine の
+  `lawGeneratedH1BlockEquiv_mk_component`、cycle component 公式を合成する。
+- 最終 square は quotient の representative extensionality と finite DirectSum の成分外延性で証明し、
+  naturality や quotient equality を premise / field として受けない。
+- focused manifest check: pass。
+- targeted module build: pass、3703 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 5 declarations、standard axioms only。
+- placeholder、hidden / bidirectional Unicode、local-path、禁止語、reverse-import scan: clean。
+
+### Audit
+
+- premise classification: finite Source / law family、adequate pair、coarseness、supported-nerve
+  morphism は `ambient-boundary`。direct-sum map、cycle bridge、representative 公式、
+  quotient naturality は Cycle 13 の出力である。
+- certificate provenance: direct-sum map は Cycle 12 の actual block `h1Map`、cycle bridge は
+  actual degree-one component theorem、quotient transport は reviewed G-102 `h1Map_mk` と
+  Cycle 11 の canonical quotient decomposition に追跡できる。
+- proof use: Cycle 12 の block Hom / `h1Map` と degree-one component theorem、
+  Cycle 11 の coarse / fine cycle equivalence・representative 成分公式、G-102 の
+  global / block 両側 `h1Map_mk` を実使用する。Cycle 12 の degree-zero /
+  degree-two component theorem は本 node の直接 proof-use に数えない。
+- structure-field escape: none-found。naturality、quotient equality、map family を入力しない。
+- route integrity: pass。coarse `H^1` → fine `H^1` の向きと source-generated
+  common label を保つ。
+- cheat route: global map の共役による direct-sum map 定義、arbitrary family、
+  supplied certificate、basis / finrank / dimension route、abstract equivalence は none-found。
+- blocking findings: none。
+- independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: K0 / K1 から座標 subnerve を生成し、C0 / C5 / C6 を global、
+  C1–C4 を各座標 subnerve 相対で定式化する。C3 は fiber 内の有理1-cycle /
+  face-boundary span に限定し、global `H^1` や comparison 同型相当を混入させない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 13
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove quotient-level naturality of the finite DirectSum of actual block h1Maps
+proof_obligation_delta: connected the law-value H1 decomposition to the generated comparison map
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonNaturality.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap_component
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonCyclesMap_block_component
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_mk_block_component
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_block_naturality
+premise_delta:
+  ambient_boundary:
+    - finite Source and law family, adequate pair, coarseness, and supported-nerve morphism
+  discharged:
+    - finite DirectSum of actual block h1Maps
+    - global-to-block cycle-map component equality
+    - quotient representative component formula
+    - full quotient-level block naturality square
+  remaining:
+    - coordinate subnerves, C0-C6, invariance, corollary, diagnostics, counterexamples, and firing witness
+certificate_provenance:
+  discharged:
+    - direct-sum map generated componentwise from actual block h1Maps
+    - cycle bridge generated from the actual degree-one component theorem
+    - quotient formula generated from reviewed h1Map_mk and canonical H1 decomposition
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - Cycle 12 block Hom, block h1Map, and degree-one component theorem
+    - Cycle 11 cycle equivalences and representative component theorem
+    - G-102 global and block h1Map_mk
+  unused_material_premises:
+    - Cycle 12 degree-zero component theorem
+    - Cycle 12 degree-two component theorem
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define coordinate subnerves and the global/relative C0-C6 condition package
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 12 — generated comparison on exact blocks
 
