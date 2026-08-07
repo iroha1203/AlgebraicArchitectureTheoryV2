@@ -24,10 +24,18 @@
   有限反例を許す。同一粗側 edge への fine lift の一意性(C5)も外せない:
   これを欠く C は、C0–C4 が成立しても、どの細側 face にも含まれない
   parallel lift が追加の非零 `H^1` 類を残す有限反例を許す(C0–C4 は同一
-  粗側 edge に写る複数 fine lift 間の cycle を制御しない)。残る稜線は
-  C0–C5 で十分か、さらに高次の incidence coherence が要るか、逆に C5 を
-  face-mediated edge-fiber coherence(parallel lift の差を細側 face で
-  張る、より弱い条項)へ弱化できるかの判定である。
+  粗側 edge に写る複数 fine lift 間の cycle を制御しない)。粗側 self-loop の
+  endpoint reflection(C6)も外せない: これを欠く C は、C0–C5 が成立しても、
+  self-loop の一意な fine lift が同一 fiber 内の異なる chart を結び、粗側
+  loop 類が細側 coboundary へ落ちて非単射になる有限反例を許す
+  (`LoopLiftObstruction`)。さらに off-loop の条件Cハント(Issue #3912、
+  `research/experiments/g104-condition-hunt/`)は、係数を宣言で自由に変えられる
+  モデルでは、同一 incidence 上の座標複製と support hole による2点分離により、
+  incidence レベルの条項をどう足しても同型を強制できないことを固定した
+  (law 由来係数への反証ではない)。したがって同型の制御は条件 C と係数生成
+  契約 K0 / K1(座標 index の共有生成・cell 台の導出)の分担であり、残る
+  稜線は K0 / K1 の下で C0–C6 が十分か、さらに高次の incidence coherence が
+  要るかの判定である。
 - `rival`: 抽象解釈の粒度選択(Galois 接続の合成で精度が単調に変わる
   一般論)、モデル検査の抽象化精細化(CEGAR)、Čech 理論の被覆精細化と
   Leray 型定理(古典的先例。差は adequacy を law family 相対で固定する
@@ -38,8 +46,9 @@
   `FiniteLawFamily`)、G-103 の確定定義
   (`research/lean/ResearchLean/AG/CanonicalResolution/Reading.lean` の
   `Reading` / `Kernel` / `Factors` / `CoarserThan` / `Adequate`)による
-  reading / adequacy / 粗さ順序、reading の Target に台を持つ宣言された
-  有限 nerve、law 由来係数の有限被覆複体(線形機構は G-102 の
+  reading / adequacy / 粗さ順序、reading の Target に chart 台を宣言する
+  有限 nerve(edge / face の台は K1 で導出)、K0 / K1 に従う law 由来係数の
+  有限被覆複体(線形機構は G-102 の
   `ThreeCochainComplex` / `H1` / `h1Map` を再利用)を対象とする。無限
   regime、係数の一般論(semi-module 化)、doctrine 間 comparison(blame
   輸送)、doctrine / Atom carrier 機構そのもの、接地 certificate、`q_L` の
@@ -61,13 +70,16 @@
   退化する例、粗さ順序が自明(単元 Source)な例、単一 chart の nerve で
   条件 C が空虚に成立する例、粗側 nerve が face を持たず C4 が空虚に
   成立するだけの発火、細側 nerve が fiber 内 edge を持たず C5 の一意性が
-  細側=粗側の自明な edge 対応で成立するだけの発火、comparison map を
+  細側=粗側の自明な edge 対応で成立するだけの発火、粗側 nerve が
+  self-loop を持たず C6 が空虚に成立するだけの発火、comparison map を
   同型と仮定して不変性を導く
   循環、law ラベルを貼っただけの定数係数(annotation)を law 由来係数と
   称する構成、反例が型不一致だけで成立する構成。
-- `frontier`: 条件 C の必要性方向の特徴づけ(C0–C5 各条項の独立性・
-  弱化可能性、特に C5 の face-mediated edge-fiber coherence への弱化
-  可能性)、定量化(inadequate 粗化で失われる類の個数・次元の下界)、
+- `frontier`: 条件 C の必要性方向の特徴づけ(C0–C6 各条項の独立性・
+  弱化可能性の、law 由来係数と K0 / K1 の下での再検討)、off-loop ハントの
+  自由係数反例(座標複製・support hole)の law 実現可能性の判定(実現可能
+  なら (iv) の反例素材、不能なら K0 / K1 の canonical 性の裏付け)、
+  定量化(inadequate 粗化で失われる類の個数・次元の下界)、
   接地条件との交差(接地可能な解像度だけに制限した不変性)、
   資源制約下の最適解像度選択の観察、論文Aの実証節(解像度スイープ)への
   theorem 側の錨の供給。
@@ -79,9 +91,10 @@
     もの(`q.CoarserThan q'`)、および粗さから誘導される一意の factor
     写像 `π : q'.Target → q.Target`(存在は G-103 の
     `factorsThrough_iff_coarserThan`、一意性は `q'` の全射性から証明
-    する)。粗側・細側それぞれの Target に台(chart への非空台割当。
-    edge の台は端点 chart の台の交わりに、face の台は boundary edge の
-    台の交わりに含まれる)を持つ宣言された有限 nerve `N`, `N'` と、
+    する)。粗側・細側それぞれの Target に台を持つ有限 nerve `N`, `N'`
+    (**K1(cell 台の導出)**: 宣言するのは chart への非空台割当だけとし、
+    edge の台は端点 chart の台の交わり、face の台は boundary edge の台の
+    交わりとして導出する。cell ごとの独立な台宣言は持たない)と、
     nerve 射 `φ : N' → N`。nerve 射は chart / edge / face の対応で
     endpoint / boundary と可換であることを要求する。ただし両端点が同一
     fiber に落ちる細側 edge(fiber 内 edge)と、boundary edge がすべて
@@ -89,10 +102,14 @@
     退化成分として宣言してよい(cochain map の構成では退化成分上の
     pullback を零とする)。chart 台は `π` と両立する(細側 chart の台の
     `π`-像が対応する粗側 chart の台に含まれる)ことを要求する。
-  - **law 由来係数**: 各 reading の係数複体は、その reading を通して
-    descend した law evaluation(存在・一意は G-103 の
-    `factors_iff_kernel`)が chart 台上に取る値から生成した座標 basis で
-    張る。複体・`H^1`・誘導写像は G-102 の `ThreeCochainComplex` /
+  - **law 由来係数(生成契約 K0)**: 各 reading の係数複体は、その reading を
+    通して descend した law evaluation(存在・一意は G-103 の
+    `factors_iff_kernel`)が cell の台(K1 の導出台)上に取る値から生成した
+    座標 basis で張る。**K0(座標 index の共有生成)**: 座標 basis の index
+    集合は粗側・細側で同一の生成規則により定め、比較写像の座標対応は宣言
+    せず、descend の `π`-可換(`ResolutionInvariance/ComparisonData.lean` の
+    `lawDescend_comparisonFactor`)から生成する。宣言による座標の追加・
+    複製・省略は認めない。複体・`H^1`・誘導写像は G-102 の `ThreeCochainComplex` /
     `H1` / `h1Map`
     (`research/lean/ResearchLean/AG/TwoPhase/CoefficientComplex.lean`、
     `CohomologyComparison.lean`)を再利用する。law ラベルだけの定数係数
@@ -115,6 +132,9 @@
       一元である(C2 と合わせ、各粗側 edge へ `φ` の edge 対応で写る
       細側 edge はちょうど一つ)。fiber 内 edge(退化成分)は粗側対応物を
       持たないためこの条項の対象外であり、fiber 内の多重性は制限しない。
+    - **C6(self-loop endpoint reflection)**: 両端点が同一の粗側 chart に
+      落ちる粗側 edge(self-loop)については、C5 の一意な fine lift も
+      同一の細側 chart を両端点に持つ。
     C には cohomology・同型・消滅と同値または片方向に近い条項を含めない
     (incidence / support レベルの条項に限る)。
   この設定で次が成り立つ。
@@ -122,7 +142,7 @@
      (`ThreeCochainComplex.Hom`)を構成し、`h1Map` により粗側 `H^1` から
      細側 `H^1` への canonical 写像を誘導する。写像は比較データから構成
      し、同型性を field や premise で受けない。
-  2. **(ii) 不変性**: 条件 C の下で、(i) の comparison map は `H^1`
+  2. **(ii) 不変性**: 条件 C(C0–C6)の下で、(i) の comparison map は `H^1`
      障害類の同型を誘導する。
   3. **(iii) 系(過剰解像度の無益性)**: adequate な範囲内の精細化は
      診断(障害類の集合)を増やさない。(ii) の同型から系として導出する。
@@ -140,7 +160,8 @@
      C1 が非空虚に働くこと、粗側 nerve が少なくとも一つ face を持ち
      C4 が非空虚に働くこと、細側 nerve が少なくとも一つ fiber 内 edge
      (退化成分)を持ち C5 の一意性が細側=粗側の自明な edge 対応で
-     成立するのでないこと、を theorem として確認する。
+     成立するのでないこと、粗側 nerve が少なくとも一つ self-loop を持ち
+     C6 が非空虚に働くこと、を theorem として確認する。
   (i)(ii)(iii) は一般の有限 Source / `L` / adequate pair / comparison
   data について証明する。witness((iv)(v))は G-103 の witness 素材
   (six-source law family)の再利用または新設の有限 Source / law family /
@@ -151,18 +172,22 @@
   `research/lean/ResearchLean/AG/ResolutionInvariance/` 配下。`Formal/AG`
   と review 済み predecessor(G-102 TwoPhase / G-103 CanonicalResolution)
   は参照のみ。G-104 の完了面は (i)–(v) まで。
-- `target proof artifacts`: reading の Target に台を持つ nerve の定義、
-  nerve 射(incidence 可換+退化成分宣言)と `π`-両立性の定義、law 由来
-  係数の生成 def、descend 可換補題(粗側 descend と細側 descend の
-  `π`-両立)、comparison cochain map の構成 def、条件 C(C0–C5)の定義、
+- `target proof artifacts`: reading の Target に台を持つ nerve の定義
+  (K1 の台導出を含む)、nerve 射(incidence 可換+退化成分宣言)と
+  `π`-両立性の定義、law 由来係数の生成 def(K0: 座標 index の共有生成と
+  比較の座標対応の生成)、descend 可換補題(粗側 descend と細側 descend の
+  `π`-両立)、comparison cochain map の構成 def、条件 C(C0–C6)の定義、
   不変性 theorem、系 theorem、descend 可能部分族による inadequate 側診断の
   定義、反例3種 witness、発火 witness、
   report `research/reports/G-104-aat-resolution-invariance.md`。
-- `target proof strategy`: H0 comparison data(nerve / nerve 射 / 台
-  両立)と law 由来係数の生成、descend 可換補題 -> H1 条件 C(C0–C5)の
-  定義と不変性(さらに高次の incidence coherence の要否をここで検査し、
-  不足なら failure policy で返す)-> H2 系の導出 ->
-  H3 反例3種 -> H4 発火 witness。既存成果の
+- `target proof strategy`: H0 comparison data(nerve / nerve 射 / K1 の
+  台導出)と law 由来係数の生成(K0)、descend 可換補題 -> H1 条件 C
+  (C0–C6)の定義と不変性(fiber subcomplex を潰した relative complex
+  経由の手証明スケッチ = off-loop artifact
+  `research/experiments/g104-condition-hunt/hunt-report.md` §4 を参考に
+  してよい。off-loop artifact は証明根拠ではない。さらに高次の incidence
+  coherence の要否をここで検査し、不足なら failure policy で返す)->
+  H2 系の導出 -> H3 反例3種 -> H4 発火 witness。既存成果の
   利用 map: G-103 `CanonicalResolution/Reading.lean`(`Reading` /
   `FiniteLawFamily` / `Adequate` / `CoarserThan` / `factors_iff_kernel` /
   `factorsThrough_iff_coarserThan`)、G-103 witness 素材(six-source law
@@ -174,6 +199,8 @@
   `ResolutionInvariance/FaceLiftObstruction.lean`(C4 が破れる有限
   witness。(iv)(c) の素材として転用可)、
   `ResolutionInvariance/EdgeFiberObstruction.lean`(C5 が破れる有限
+  witness。(iv)(c) の素材として転用可)、
+  `ResolutionInvariance/LoopLiftObstruction.lean`(C6 が破れる有限
   witness。(iv)(c) の素材として転用可)。固定 statement と完了条件は
   本カードのみを正本とする。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
@@ -197,18 +224,20 @@
     しない。
   - `係数複体の線形機構(ThreeCochainComplex / H1 / h1Map)`:
     `ambient-boundary`。G-102 の review 済み artifact の参照のみ。
-  - `nerve / nerve 射 / 台両立`: `ambient-boundary`(入力幾何)。ただし
-    well-formedness(台の交わり条件・`π`-両立)は定義に含め、witness で
-    実例を与える。
+  - `nerve / nerve 射 / 台両立`: `ambient-boundary`(入力幾何)。宣言できる
+    のは chart 台までであり、edge / face の台は K1 で導出する(cell ごとの
+    独立な台宣言は入力幾何に含めない)。well-formedness(`π`-両立)は
+    定義に含め、witness で実例を与える。
   - `law 由来係数の生成`: `discharge-required`。座標 basis を descend
-    した law evaluation の値から生成し、descend の存在・一意を G-103
-    factorization へ追跡する。law ラベルだけの定数係数 annotation は放電と
-    数えない。
+    した law evaluation の値から K0 / K1 に従って生成し、descend の存在・
+    一意を G-103 factorization へ、比較の座標対応を
+    `lawDescend_comparisonFactor` へ追跡する。law ラベルだけの定数係数
+    annotation、宣言による座標の追加・複製・省略は放電と数えない。
   - `descend 可換補題`: `discharge-required`。粗側 descend =
     細側 descend ∘ (`π`-対応)を theorem で証明する。
   - `comparison map`: `discharge-required`。比較データから構成し、同型性を
     field に入れない。
-  - `条件 C と不変性`: `discharge-required`。C は C0–C5(incidence
+  - `条件 C と不変性`: `discharge-required`。C は C0–C6(incidence
     レベル)で固定し、同型相当の条項を含めない。C の成立正例と破れ反例
     ((iv)(c))をセットで要求する。
   - `inadequate 側診断の固定`: `discharge-required`。descend 可能 law
@@ -222,7 +251,9 @@
   同型・消滅・cohomology と同値または片方向に近い条項を移さない(fiber の
   cohomological 条件への置き換えも不可。incidence レベルの条項に限る)。
   adequate の定義(G-103 の `Adequate`)を反例が立つように事後調整
-  しない。係数生成を law ラベル annotation へ退化させない。結論相当
+  しない。係数生成を law ラベル annotation へ退化させない。係数生成契約
+  K0 / K1 を premise 化しない(座標対応の全単射性や台の一致を仮定・
+  certificate で受けず、生成規則から theorem として導く)。結論相当
   データを theorem argument、typeclass、structure field、certificate
   field へ移さない。statement を claim boundary 外(無限化・doctrine 間
   comparison・係数一般論)の主張と読み替えない。
@@ -231,10 +262,12 @@
   nerve 構成データ、review 済み predecessor へ追跡する。恒等比較・
   零 `H^1`・定数 law・単一 chart nerve だけの発火、proof 後の GOAL
   読み替えを completion に使わない。
-- `target failure policy`: (ii) の反例(C0–C5 の下で同型が破れる)は
-  `target-refuted` とし、C の改訂案(同じ incidence レベルの条項)または
-  comparison map 構成の改訂案を返す。cohomological 条項への差し替えは
-  改訂案として認めない。(iv) は反例構成が成功条件であり、「adequate で
+- `target failure policy`: (ii) の反例(C0–C6 と K0 / K1 の下で同型が
+  破れる)は `target-refuted` とし、C の改訂案(同じ incidence レベルの
+  条項)、comparison map 構成の改訂案、または係数生成契約(K0 / K1)の
+  改訂案を返す。cohomological 条項への差し替えは改訂案として認めない。
+  (v) の C6 非空虚発火が他の発火条件と同一 witness で構成不能と判明した
+  場合は、当該項目を別 witness へ分離する GOAL 改訂案を返す。(iv) は反例構成が成功条件であり、「adequate で
   ない粗化でも診断が常に保たれる」と証明された場合は adequacy 定義の
   仕様欠陥として GOAL 改訂案を返す。同じ blocker が二 cycle 続けば
   `target-blocked`。claim boundary 外の機構が必要と判明した場合は本 GOAL
