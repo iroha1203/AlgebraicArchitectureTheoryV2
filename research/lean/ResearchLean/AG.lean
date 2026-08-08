@@ -262,6 +262,7 @@ import ResearchLean.AG.ResolutionInvariance.LoopLiftObstruction
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceConditionInstances
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceConditions
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceFiringData
+import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceFiringCondition
 import ResearchLean.AG.ResolutionInvariance.SupportedNerveMorphism
 import ResearchLean.AG.SFT.ConwayBoundaryGenerator
 import ResearchLean.AG.SFT.ConwayBoundaryMap

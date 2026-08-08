@@ -46,8 +46,11 @@
   二law-value blockの分配、2-chart fiber、mapped face、declared edge、hereditary declared
   face、mapped self-loopを同一closed finite dataに置き、value-one coordinate subnerveの
   actual occurrenceによるpropernessと、value-zeroのactual K0/K1 face coordinate上で
-  退化成分の`comm1`両辺がともに零となることはCycle 29で固定済み。同一定数上の
-  Condition Cと両側非零`H^1`は後続node。Cycle 7 の
+  退化成分の`comm1`両辺がともに零となることはCycle 29で固定済み。同一定数上で
+  zero / oneの全actual block cellをsupportとlaw descentから分類し、whole-nerve C0/C5/C6、
+  label別C1/C2/C4、任意のlocal rational fiber cycleを反復faceで充填するC3を証明して、
+  full fixed Condition Cを閉じたことはCycle 30で固定済み。両側非零`H^1`と最終
+  principal theoremは後続node。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -256,6 +259,15 @@ report はそれらを再定義しない。
   degree-two pullbackも零と計算し、actual `generatedPullback_comm1`で両辺を一致させた。
   Condition C、actual `H^1`非零、global bijectivityをfieldやpremiseとして保持せず、この同一
   fixture上の後続proof-DAG nodeに残す。
+- 完了(現行 statement): Cycle 30 の claim (v) fixed Condition-C node。
+  Cycle 29と同じpublic constants上で、value-zero blockが両nerveの全cell、value-one blockが
+  coarse / fineのchart zero・self-loop edge two・mapped repeated faceだけを持つことをactual
+  supportとcanonical law descentから証明した。C0は非一様supportの正確なimage、C1はdeclared
+  connectorによるzero-block 2-chart fiberの接続、C2/C4はactual same-label partial block map、
+  C5/C6はwhole-nerve mapで閉じた。C3ではfiber外edge二本をsupportで零化し、fine chart oneの
+  conservationからconnector係数も零化し、残るself-loop二本を二つの反復faceで任意係数のまま
+  充填した。one blockもsingleton repeated faceで任意cycleを充填する。path・lift・face-chain・
+  H1 certificateをfieldやtheorem premiseへ保存せず、closed `fixed_firing_conditionC`を得た。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -274,8 +286,146 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  Cycle 29と同一fixture上のfixed Condition C、両側非零actual `H^1`、および
-  principal firing theorem。
+  Cycle 29/30と同一fixture上の両側非零actual `H^1`、actual canonical comparison mapの
+  bijectivity適用、およびprincipal firing theorem。
+
+## Cycle 30 — fixed Condition C on the firing fixture
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 30
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: Cycle 29と同一のclosed finite fixture上でC0–C6を全actual law-value blockについて証明しfull fixed Condition Cを構成する
+proof obligation delta: zero/one blockのactual cell分類、fiber connectivity、exact lifts、任意local cycle filling、whole-nerve uniquenessからclosed Condition Cを放電した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringCondition.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_firing_conditionC`
+- value-zero blockはcoarseの2 chart / 3 edge / unique face、fineの3 chart / 5 edge / 2 faceを
+  すべて含む。value-one blockはcoarse / fineともchart zero、self-loop edge two、mapped face zero
+  だけを含む。各normal formは`CellCoordinate.ofSupportedTarget`、actual K1 support、canonical
+  law descent、block-cell projection injectivityから導く。
+- C1のzero-block coarse-chart-zero fiberはfine chart zeroとoneをdeclared edge threeが接続し、
+  coarse-chart-one fiberとone blockはsingleton。C2はmapped fine edge 0/1/2、C4はmapped fine
+  face zeroをactual same-label partial coordinate mapで使う。
+- C3のzero-block coarse-chart-zero fiberではcycle supportからcross-fiber edge 0/1の係数が零、
+  fine chart oneのincoming=outgoingからconnector edge threeの係数も零。mapped repeated face zeroと
+  declared repeated face oneへ残るself-loop edge 2/4の係数を置き、各`e0 - e1 + e2`が元係数を
+  返す。coarse-chart-one fiberは全edgeが零、one blockは唯一のrepeated faceで任意cycleを充填する。
+- C0はcoarse chart zeroのtargets 0/1をfine `(chart,target)=(0,0)/(0,2)`から、coarse chart oneの
+  target zeroをfine `(2,0)`から得る。逆向きはreviewed chart-support compatibilityを使う。
+  C5/C6はactual whole-nerve `edgeMap`の3つの`some` branchとmapped self-loop twoを有限場合分けする。
+- direct / focused check: pass。
+- targeted module build: pass、3707 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 97 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: Cycle 29のfinite Source、readings、law family、supported nerves、hereditary
+  morphismはexistence witnessの`ambient-boundary`。各Condition theoremとprincipal theoremは追加引数なし。
+- proof use: nonuniform supportをC0とblock occurrenceへ、declared connectorをC1とC3 conservationへ、
+  mapped / declared repeated facesをC3 fillingへ、actual partial block mapsをC2/C4へ実使用する。
+- proof-use minimality: one blockはsingleton edgeをsingleton repeated faceが任意係数のまま充填するため、
+  その`CoordinateFiberCycle`仮定はproof上不要。C3の含意より強い局所事実であり、global exactnessや
+  H1消滅へ読み替えず、次nodeのactual H1非零と分離する。
+- certificate provenance: named coordinatesはactual supportとlaw descentから生成し、label内cell uniquenessは
+  canonical projection injectivityへ追跡する。path、edge lift、face fillingはproof内だけで消費する。
+- route integrity: pass。Cycle 15のconstant-law fixture、手製block type、specific-chain-only C3、global
+  H1消滅、supplied Condition C、別witnessへの差替えを使わない。
+- common scans: `git diff --check` pass。hidden/BiDi、new Lean placeholder、private path、
+  reverse `Formal -> ResearchLean.AG` import、禁止語の新規hitなし。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: このexact fixtureのactual coarse `H^1`に非零classを構成し、Cycle 23のactual
+  comparison bijectivityからfine imageも非零と示して、single-witness `fixed_claim_v`を閉じる。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 30
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove C0-C6 and full fixed Condition C on the exact Cycle 29 firing fixture
+proof_obligation_delta: actual zero and one block incidence, local rational filling, and whole-nerve map properties discharge a closed Condition C theorem
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringCondition.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC0
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC1At_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC1At_one
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC1
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC2
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC3At_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC3At_one
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC3
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC4
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC5
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firing_conditionC6
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_firing_conditionC
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - whole-nerve support image C0 on the nonuniform supports
+    - exact zero and one block chart-fiber connectivity C1
+    - exact same-label edge and face lifts C2 and C4
+    - arbitrary rational coordinate-fiber cycle filling C3 in both actual labels
+    - whole-nerve mapped-edge uniqueness C5 and self-loop reflection C6
+    - closed full fixed Condition C on the exact firing constants
+  remaining:
+    - nonzero actual H1 on both sides and actual comparison bijectivity on the exact fixture
+    - the final single-witness fixed_claim_v theorem
+certificate_provenance:
+  discharged:
+    - block coordinates and cell normal forms come from actual support, canonical law descent, and projection injectivity
+    - C1 paths, C2/C4 lifts, and C3 face chains are constructed and consumed proof-locally
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - nonuniform supports in C0 and exact block occurrence
+    - the declared connector in zero-label C1 and C3 conservation
+    - both repeated faces in arbitrary zero-label fiber-cycle filling
+    - actual same-label partial coordinate maps in C2 and C4
+    - actual whole-nerve edge map in C5 and C6
+  unused_material_premises:
+    - the one-label CoordinateFiberCycle hypothesis is unnecessary because its singleton repeated face fills every edge cochain; no global vanishing conclusion is drawn
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; the principal theorem is a closed positive instance of the existing fixed Condition C API
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove nonzero actual H1 on both sides through the actual canonical comparison map and close fixed_claim_v on the same fixture
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 29 — nondegenerate firing data and hereditary comm1
 
