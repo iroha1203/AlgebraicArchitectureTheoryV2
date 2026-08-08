@@ -361,7 +361,7 @@ primary_specification:
   source: research/goals/G-104-aat-resolution-invariance.md
   version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
   blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
-  status: fixed
+  status: recorded
 lean_artifacts:
   - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringCondition.lean
     declarations:
