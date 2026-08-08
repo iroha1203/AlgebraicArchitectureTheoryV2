@@ -55,8 +55,9 @@
   bijectivityを同一closed `fixed_claim_v`へ束ねたclaim (v)はCycle 31で証明済み。
   現行claim (i)–(v)のLean proofは揃い、PR #3943 fixed head `9ea25117`に対する
   最終math-lean-review四査読は全lane `No major findings`、CIは7/7 pass。独立completion
-  auditもcentral uncheckedなしでtarget-proved gateをpassし、mergeとreport / Issueの
-  lifecycle同期だけが残る。Cycle 7 の
+  auditもcentral uncheckedなしでtarget-proved gateをpassした。PR #3943はマージ済み
+  (merge commit `0fdc9867`)、tracking Issue #3902は`COMPLETED`でclose済みであり、
+  lifecycle同期も完了した。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `yes`
@@ -302,8 +303,8 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation: none。
-  fixed-head四査読、CI、独立completion auditはpass済み。残るのはPR mergeとtracking
-  Issueのlifecycle同期だけである。
+  fixed-head四査読、CI、独立completion auditはpass済み。PR #3943のmergeとtracking
+  Issue #3902のcloseも完了し、残obligationはない。
 
 ## Final completion judgment — target theorem proved
 
@@ -376,7 +377,8 @@ Proof obligation summary:
 - referee-level proof audit: statement precision / natural-language correspondence /
   quantifier scope / all-directions / nonvacuity / definition unfolding / acyclic dependency /
   anti-weakening / route integrity / dependency / parent recheckの全項目がpass。
-- PR / tracking: PR #3943。Issue #3902はmerge前なので本ledger時点ではopen。
+- PR / tracking: PR #3943マージ済み(merge commit `0fdc9867`)。Issue #3902は
+  `COMPLETED`でclose済み(2026-08-08)。
 
 ```yaml
 ledger_type: target_theorem_completion
@@ -415,7 +417,7 @@ completed_proof_obligations:
   - claim v single nondegenerate firing witness
 remaining_proof_obligations: []
 blockers: []
-tracking_issue_closed: false
+tracking_issue_closed: true
 ```
 
 ## Cycle 31 — actual nonzero cohomology and the fixed firing witness

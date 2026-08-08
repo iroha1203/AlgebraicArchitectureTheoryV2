@@ -1,10 +1,26 @@
 # G-104-aat-resolution-invariance — 診断の解像度不変性
 
 - `id`: `G-104-aat-resolution-invariance`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Diagnostic Resolution
+  Invariance Theorem の claim (i)–(v) を全放電。主要宣言は actual
+  `generatedComparisonHom` / `generatedComparisonH1Map`(claim (i))、
+  `generatedComparisonH1Map_bijective`(claim (ii)、固定条件 C の下の
+  global bijectivity)、`overresolution_no_new_diagnostic_classes`
+  (claim (iii))、canonical `FactorsDiagnosticH1` と
+  `fixed_claim_iv_a` / `_b` / `_c`(claim (iv) 反例3種)、
+  `fixed_firing_conditionC` / `fixed_claim_v`(claim (v) 非退化発火
+  witness)。final `$math-lean-review` は全4レーン `No major findings`
+  (veto なし、referee `accept-main-theorem`)、独立 completion audit も
+  pass。最終 fixed head は
+  [#3943](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3943)
+  でマージ済み(CI 7/7 green)。`Formal/AG` への移植は未実施
+  (porting status: `unported`)。
+- `completed at`: `2026-08-08 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `tracking issue`: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
+- `tracking issue`: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902) closed as `COMPLETED`.
+- `report`: [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§5、§8 候補4)
 - `research aim`: 二つの `L`-adequate な読み `q ≤ q'`(G-103 の粗さ順序
   `CoarserThan`)に対し、law 由来の係数で計算した障害類が、読みの比較射が
