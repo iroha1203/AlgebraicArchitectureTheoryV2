@@ -30,7 +30,9 @@
   bijectivityを導き、Cycle 13 naturalityでactual global comparison `H^1` mapの
   bijectivityへ輸送するclaim (ii)はCycle 23、全fine diagnostic classがactual
   canonical mapによる一意なcoarse preimageを持つclaim (iii)はCycle 24で
-  証明済み。Cycle 7 の
+  証明済み。G-103 `Factors`を満たすlawのexact subtypeから有限law族を作り、
+  既存K0/K1複体とactual G-102 `H^1`へ接続するcanonical inadequate-reading
+  diagnosticはCycle 25で固定済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -220,7 +222,161 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  inadequate 側診断、反例3種、発火 witness。
+  反例3種、発火 witness。
+
+## Cycle 25 — canonical inadequate-reading diagnostic
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 25
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: G-103 Factorsが成立するlawのexact subtypeからcanonicalな有限law族を作り、既存K0/K1複体とactual H1をinadequate readingの診断として固定する
+proof obligation delta: 選択依存のlaw subsetを導入せず、Factors判定から係数複体とactual quotientまでを一意に定めた
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateDiagnostic.lean`
+- declarations:
+  - `AAT.AG.CanonicalResolution.FiniteLawFamily.DescendableLaw`
+  - `AAT.AG.CanonicalResolution.FiniteLawFamily.exists_descendableLaw_iff_factors`
+  - `AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily`
+  - `AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily_eval`
+  - `AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily_adequate`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.factorsDiagnosticComplex`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.FactorsDiagnosticH1`
+- `DescendableLaw laws q`は文字どおり
+  `{law : laws.Law // q.Factors (laws.eval law)}`である。
+  `exists_descendableLaw_iff_factors`は元lawがこのsubtypeへ入ることとG-103
+  `Factors`が同値であることを両向きに固定する。後から選んだlaw一覧や
+  inclusion certificateを入力しない。
+- `descendableSubfamily`のlaw indexはこのexact subtypeであり、有限性は元の
+  `laws.Law`の有限性から`Fintype.ofFinite`で導く。`Factors`の
+  `DecidablePred`、`q.Target`のdecidable equality、追加の有限性premiseを
+  public inputにしない。
+- retained lawの`Value`と`eval`は元familyのものをそのまま再利用する。
+  adequacyは各subtype elementの`law.2`だけから証明し、descend functionや
+  adequacy certificateを別fieldに保存しない。
+- `factorsDiagnosticComplex`はこのderived adequacyを既存
+  `TargetSupportedNerve.lawGeneratedComplex`へ渡す。そのためcell support、
+  K0 `(cell, law, value)`座標、K1 support、differentialはreview済みの生成規則を
+  そのまま使う。`FactorsDiagnosticH1`はG-102のactual
+  `ThreeCochainComplex.H1 = ker d1 / range boundaryToCycles`であり、別quotientや
+  diagnostic setではない。
+- 定義は任意reading上でtotalに与える。`¬ laws.Adequate q`をphantom premiseに
+  せず、次cycleのinadequate witnessが同じcanonical typeを直接instantiateする。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3696 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 7 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite law family、reading、supported nerve、有限Sourceは
+  `ambient-boundary`。新しいdirection hypothesisはない。各lawの`Factors` proofは
+  canonical subtypeの要素そのもので、外部certificateではない。
+- proof use: `Factors`はlaw indexの選別とderived adequacyの両方に実使用する。
+  subtype propertyからadequacyを導き、そのproofをactual K0/K1 complex生成へ渡す。
+- certificate provenance: retained subsetはpredicate subtypeからdefinitionally決まり、
+  selected list、chosen section、law mask、supplied adequacyを受けない。
+- instance-pair / vacuity: 新しいpublic Prop、structure、classは追加しない。既存
+  `Reading.Factors`にはG-103の正負instance pairがあり、新exactness theoremが
+  retention / exclusionをそのpredicateへ反射する。反例本体は次cycleへ残し、この
+  surfaceだけをclaim (iv) witnessへ数えない。
+- structure-field escape: none-found。subfamilyは元lawのValue/evalとFactors proof以外の
+  dataを持たず、H1や反例結論に相当するfieldを追加しない。
+- route integrity: pass。G-103 `Factors`から既存K0/K1 complex、actual G-102 H1へ直結する。
+- anti-weakening: arbitrary selected subfamily、coefficient proxy、Set/cardinality diagnostic、
+  別complexへ置換しない。claim (iv)の3反例は未主張のまま保持する。
+- cheat routes: decidability premise、supplied subset、supplied adequacy、alternate quotient、
+  zero-H1 vacuityはいずれもnone-found。
+- common scans: `git diff --check` pass。hidden/BiDi、new Lean placeholder、private path、
+  reverse `Formal -> ResearchLean.AG` import、禁止語の新規hitなし。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。exact subtype、
+  unchanged evaluation、derived adequacy、actual H1、追加premise不在を独立承認した。
+- next obligation: claim (iv)(a)のfinite witnessをfresh selectorで固定し、canonical
+  coarse `FactorsDiagnosticH1`に非零classがある一方でfine側に対応する非零classが
+  ないことを、型不一致だけに頼らずactual complexes上で証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 25
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: define the canonical inadequate-reading diagnostic from the exact G-103 Factors-selected law subtype and the existing K0/K1 complex
+proof_obligation_delta: the Factors predicate now canonically determines the finite law family, actual coefficient complex, and actual G-102 H1 without a selected subset
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateDiagnostic.lean
+    declarations:
+      - AAT.AG.CanonicalResolution.FiniteLawFamily.DescendableLaw
+      - AAT.AG.CanonicalResolution.FiniteLawFamily.exists_descendableLaw_iff_factors
+      - AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily
+      - AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily_eval
+      - AAT.AG.CanonicalResolution.FiniteLawFamily.descendableSubfamily_adequate
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.factorsDiagnosticComplex
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.FactorsDiagnosticH1
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - the retained laws are exactly those satisfying G-103 Factors
+    - the retained finite family preserves the original values and evaluations
+    - subtype provenance derives adequacy and the existing K0/K1 complex
+    - the canonical diagnostic is the actual G-102 H1 of that complex
+  remaining:
+    - the three finite counterexamples
+    - the nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - the law subfamily is a predicate subtype rather than a selected list
+    - adequacy is derived from each subtype property
+    - no descend section, mask, alternate quotient, or diagnostic certificate is supplied
+  unresolved:
+    - concrete nonzero and zero classes for the three claim-iv witnesses
+proof_use_audit:
+  used_material_premises:
+    - G-103 Reading.Factors as the exact law-index predicate
+    - the inherited finite law index for Fintype.ofFinite
+    - each retained law property for adequacy
+    - the existing lawGeneratedComplex and actual ThreeCochainComplex.H1
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; existing Factors has positive and negative instances and exact retention is proved by an iff theorem
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_diagnostic_set: none-found
+  cardinality_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct claim (iv)(a) on the canonical FactorsDiagnosticH1 surface without type-mismatch vacuity
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 24 — overresolution corollary
 
