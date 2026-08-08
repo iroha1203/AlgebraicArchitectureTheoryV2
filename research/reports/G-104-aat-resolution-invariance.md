@@ -35,7 +35,11 @@
   diagnosticはCycle 25で固定済み。非単射な粗側readingがexact subtypeに
   非定数lawを残し、そのcanonical diagnosticに非零self-loop classを作る一方、
   actual comparison mapがそのclassを零へ送り、元law族によるfine側canonical
-  diagnosticの`H^1`が消滅するclaim (iv)(a)の有限反例はCycle 26で固定済み。Cycle 7 の
+  diagnosticの`H^1`が消滅するclaim (iv)(a)の有限反例はCycle 26で固定済み。
+  coarse treeのcanonical diagnosticが消滅する一方、same retained familyのfine
+  parallel-edge classが非零でactual comparison mapが全射でなく、元law族全体の
+  fine canonical diagnosticにも非零classがあるclaim (iv)(b)の有限反例はCycle 27で
+  固定済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -215,6 +219,15 @@ report はそれらを再定義しない。
   送ることを示した。さらに元の二law族全体によるfine側canonical diagnosticについて、
   任意cochainを積分するtree primitiveから`H^1`消滅を証明した。selected law list、
   別complex、型の不一致だけによる議論を使わない。
+- 完了(現行 statement): Cycle 27 の claim (iv)(b) canonical hidden-class witness。
+  Cycle 26と同じ非単射reading pair、二law族、exact `Factors` subtypeを用い、incidence
+  geometryだけをcoarse one-edge treeとfine two-parallel-edge multigraphへ変更した。
+  coarse canonical diagnosticのactual `H^1`消滅をexplicit tree primitiveで証明し、
+  same retained familyのfine actual quotientにparallel-edge periodが一となる非零classを
+  構成した。actual `generatedComparisonH1Map`はこのclassをcoverできず全射でない。
+  さらに元law族全体のfine canonical `FactorsDiagnosticH1`にも同じperiod patternの
+  非零classを別途構成し、型の不一致だけに依存しないことを固定した。historical
+  custom complex、selected law list、dimension count、supplied H1 certificateを使わない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -233,7 +246,164 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  反例2種、発火 witness。
+  反例1種、発火 witness。
+
+## Cycle 27 — canonical inadequate hidden-class witness
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 27
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: claim (iv)(b)としてfine canonical Factors diagnosticの非零classがinadequate coarse diagnosticから見えなくなるfinite witnessを構成する
+proof obligation delta: coarse actual H1Zero、same-family actual comparison非全射、full fine canonical非零classを一つのfinite fixtureで固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateHiddenClass.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.fixed_claim_iv_b`
+- Source、coarse / fine readings、元の二law族、`factorLaw`のexact retention、粗側
+  inadequacy、fine側adequacy、canonical target factorの非単射性はCycle 26のcurrent
+  canonical fixtureから再利用する。retained familyは引き続きCycle 25の
+  `descendableSubfamily coarseReading`そのものであり、selected law listを作らない。
+- incidence geometryはcoarse二chart・一edgeのtree、fine二chart・同じ端点を持つ
+  二parallel edges、両側faceなしとする。current hereditary
+  `TargetSupportedNerveMorphism`は両fine edgesを唯一のcoarse edgeへ写し、全supportは
+  K0 / K1の既存生成規則から導出する。
+- `coarsePrimitive`は任意のactual coarse degree-one cochainを右chartへ積分し、
+  `coarse_lawGeneratedD0_primitive`がactual generated `d0`で元cochainを回収する。
+  これをG-102 quotientへ適用してcanonical coarse `FactorsDiagnosticH1`の`H1Zero`を得る。
+- generic `fineParallelPeriod`は二parallel edge coordinateの評価差である。両edgeの
+  actual endpoint coordinatesが一致するため全actual coboundary上で零だが、第二edgeの
+  unit cochain上で一となる。fine側にfaceがないためunit cochainはactual cocycleであり、
+  `fineParallelClass_ne_zero`がactual quotient classの非零性を証明する。
+- `retainedFineClass`はsame exact coarse-retained familyをfine current K0/K1 complexへ
+  入れたclassである。`retainedComparisonH1Map`は既存`generatedComparisonH1Map`を
+  直接instantiateしたactual mapである。coarse source classはすべて零なので、
+  named `retainedFineClass`をpreimageに持つと非零性に矛盾し、mapは全射でない。
+- `fullFineClass`は元の二law族をfine readingのexact Factors subtypeへ入れたfull
+  canonical `FactorsDiagnosticH1`に、元の`factorLaw`から同じparallel period classを
+  構成する。same-family map非全射とfull canonical非零classの両方を公開するため、
+  dependent law indexの型差だけを反例に数えない。
+- principal theoremはcoarse inadequacy、fine adequacy、proper refinement、exact
+  Factors characterization、retained lawの非定数性、coarse canonical `H1Zero`、
+  retained fine class非零、actual map非全射、full fine class非零を一つに束ねる。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3700 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 51 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: concrete finite Source、readings、law family、supported nerves、
+  reviewed morphismは存在反例に許可された`ambient-boundary`。coarse `H1Zero`、fine
+  nonzero class、comparison非全射をpremiseやfieldとして受けない。
+- proof use: excluded lawがcoarse inadequacyを、retained nonconstant lawがboth fine
+  classesのactual K0/K1 coordinateを作る。tree incidenceはexplicit primitive、parallel
+  incidenceはperiod detector、nerve morphismはactual comparison mapへ実使用する。
+- certificate provenance: exact subtype adequacyはsubtype propertyからtheoremとして
+  導出する。tree primitive、parallel cycle、quotient classはproof-localまたはactual
+  G-102 constructorであり、H1 vanishing / nonvanishing certificateをstructureへ保存しない。
+- route integrity: pass。Cycle 25 canonical diagnostic、Cycle 26 law provenance、current
+  K0/K1、actual quotient、actual generated comparisonへ直結する。historical
+  `FaceLiftObstruction` / `EdgeFiberObstruction`の旧nerve型やcustom complexをimportしない。
+- anti-weakening: `¬ Surjective`のproofはnamed `retainedFineClass`を直接surjectivityへ
+  投入し、coarse `H1Zero`とその非零性から矛盾を得る。さらにfull fine canonical
+  class非零を別途示すため、型差、cardinality、別diagnostic setへの弱化はない。
+- vacuity / quality: exact retained familyは非空、lawは非定数、target factorは非単射、
+  retained / full fine classはともに明示的に非零。新規public Prop predicateやcertificate
+  typeはなく、51宣言はdeclaration docstringを持ち、Prop証明はtheoremで公開する。
+  face-free geometryをclaim (iv)(c)やclaim (v)へ数えない。
+- common scans: `git diff --check` pass。untracked Lean fileのwhitespace check、hidden/BiDi、
+  new Lean placeholder、private path、reverse `Formal -> ResearchLean.AG` import、禁止語の
+  新規hitなし。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: claim (iv)(c)のadequate pair finite witnessをfresh selectorで固定し、
+  fixed Condition Cの少なくとも一条項が破れ、actual canonical comparison `H1` mapも
+  同型でないことをcurrent surface上で示す。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 27
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct claim (iv)(b) as a canonical FactorsDiagnosticH1 hidden-class finite witness
+proof_obligation_delta: coarse actual H1Zero, same-retained-family actual comparison nonsurjectivity, and a full fine canonical nonzero class are now fixed on one finite fixture
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateHiddenClass.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.coarse_factors_iff
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.factorLaw_nonconstant
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.coarseFactorsDiagnosticH1Zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.fineParallelClass_ne_zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.retainedFineClass_ne_zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.fullFineClass_ne_zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.retainedComparisonH1Map_not_surjective
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateHiddenClass.fixed_claim_iv_b
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - the canonical coarse Factors diagnostic has actual H1Zero
+    - the same retained family has an explicit nonzero fine actual H1 class
+    - the actual generated comparison H1 map is not surjective
+    - the full fine canonical Factors diagnostic has an explicit nonzero class
+  remaining:
+    - claim (iv)(c) adequate Condition-C failure witness
+    - claim (v) nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - the retained family is the Cycle 25 exact predicate subtype
+    - both fine classes are actual G-102 quotient classes detected by an explicit period
+    - coarse vanishing is derived from an explicit tree primitive
+    - comparison nonsurjectivity concerns the actual generated map on one retained family
+  unresolved:
+    - the current-surface class for claim (iv)(c)
+proof_use_audit:
+  used_material_premises:
+    - positive and negative G-103 Factors proofs inherited from the same original law family
+    - the retained nonconstant law in both retained and full fine coordinates
+    - the current hereditary supported-nerve morphism in the actual comparison map
+    - actual tree and parallel-edge incidence in the G-102 quotient proofs
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; the closed finite theorem supplies retained and full fine nonzero witnesses and coarse vanishing
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_diagnostic_set: none-found
+  cardinality_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct claim (iv)(c) as an adequate-pair finite witness where fixed Condition C and actual H1 invariance fail
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 26 — canonical inadequate false-positive witness
 
