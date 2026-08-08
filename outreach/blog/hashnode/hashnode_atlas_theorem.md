@@ -10,6 +10,8 @@
 - The agent **refuted its own target statement four times** before the summit. A no-go argument then showed that no shape-only condition can ever suffice, forcing the coefficient definition itself to be rebuilt. Five working days, 31 modules / 13,028 lines of Lean, four-lane adversarial review.
 - The article walks from pixel art and the sampling theorem, through the four refutations and the discovered condition C, to what this means for code review in the era of AI-written code.
 
+![Cover: an oil portrait and its pixel-art counterpart, joined by the comparison map H¹(fine) ≅ H¹(coarse)](../assets/atlas_theorem_cover.png)
+
 A photorealistic portrait and a 16×16 pixel-art sprite can show you the same face. Comics theorist Scott McCloud called this **amplification through simplification**: removing lines doesn't discard information, it sharpens the essence.
 
 Can we say the same about software architecture diagnostics? **Look at your system at service granularity or at module granularity, and the same bugs show up in the same places** — not as a feeling, but as a proven guarantee.
