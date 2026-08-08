@@ -42,7 +42,12 @@
   固定済み。そのexact retained familyを両readingにadequateなlaw族として固定し、
   二本のfine parallel edgeが同一coarse edgeへ写ることでcurrent C5とfull Condition Cが
   破れ、同じactual generated comparison `H^1` mapが非全単射となるclaim (iv)(c)の
-  有限反例はCycle 28で固定済み。Cycle 7 の
+  有限反例はCycle 28で固定済み。claim (v)で使う単一witnessの非定数law、非単射factor、
+  二law-value blockの分配、2-chart fiber、mapped face、declared edge、hereditary declared
+  face、mapped self-loopを同一closed finite dataに置き、value-one coordinate subnerveの
+  actual occurrenceによるpropernessと、value-zeroのactual K0/K1 face coordinate上で
+  退化成分の`comm1`両辺がともに零となることはCycle 29で固定済み。同一定数上の
+  Condition Cと両側非零`H^1`は後続node。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -239,6 +244,18 @@ report はそれらを再定義しない。
   `generatedComparisonH1Map`は非全射であり、従ってclaim (ii)が結論する
   `Function.Bijective`の正確な否定を満たす。旧custom complex、任意map、selected law list、
   supplied nonisomorphism certificateを使わない。
+- 完了(現行 statement): Cycle 29 の claim (v) firing-data / provenance node。
+  `Fin 3`のidentity fine readingと、0,1を同一視し2を分離するcoarse readingを置き、
+  そのcoarse readそのものを値とする非定数one-law familyを両側でadequateにした。
+  coarse / fineのchart supportはvalue zeroとoneを実際に異なるcellへ分配し、value-one
+  coordinate subnerveでfine chart zeroが現れchart oneが現れないことをcanonical occurrence
+  theoremから証明した。同じnerve morphismは2-chart fiber、mapped repeated-loop face、異なる
+  endpointのdeclared edge、mapped self-loop、および3本のboundary edgeもdeclaredなhereditary
+  faceを持つ。後者はK1由来のface supportからactual value-zero coordinateを持ち、任意の
+  coarse one-cochainに対する3つのdegree-one pullbackがすべて零、その交代和も零、
+  degree-two pullbackも零と計算し、actual `generatedPullback_comm1`で両辺を一致させた。
+  Condition C、actual `H^1`非零、global bijectivityをfieldやpremiseとして保持せず、この同一
+  fixture上の後続proof-DAG nodeに残す。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -257,7 +274,149 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  発火 witness。
+  Cycle 29と同一fixture上のfixed Condition C、両側非零actual `H^1`、および
+  principal firing theorem。
+
+## Cycle 29 — nondegenerate firing data and hereditary comm1
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 29
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: claim (v)の単一finite witness上でlaw-derived値分配、proper coordinate subnerve、発火incidence、およびhereditary declared face上のactual comm1 zeroを固定する
+proof obligation delta: 同一closed fixtureのK0/K1 supportとactual generated pullbacksからclaim (v) H4a data/provenance nodeを放電した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringData.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_firing_input_nonvacuity`
+- `Source = Fin 3`、fine readingはidentity、coarse readingはsource 0,1を0へ、2を1へ読む。
+  one-law familyのevaluationはこのcoarse readそのもので、両readingのadequacyとcanonical
+  comparison factor / law descentはG-103のuniqueness APIから導く。factorは非単射、lawは非定数。
+- coarse nerveは2-chart、反対向きの2edge、self-loop、そのself-loopを3回使うfaceを持つ。
+  fine nerveはこれらのunique mapped liftに加え、coarse chart zeroの2-chart fiberを繋ぐ
+  declared edge、declared self-loop、およびそのdeclared self-loopを3位置に持つdeclared faceを持つ。
+- `face_none_edge0/1/2`はdeclared faceの各boundary edgeがactual `edgeMap = none`であることを
+  証明する。declared faceはannotationだけでなく、K1 intersection support上のactual
+  `fineDegenerateFaceCoordinate`とvalue-zero block coordinateを持つ。
+- value-one labelはfine chart zeroにはactual support target twoから現れ、fine chart oneには現れない。
+  canonical `chart_occurs_in_lawValueCoordinateSubnerve_iff`を使い、whole-nerveへのchart-cell
+  projectionが非全射であることを証明する。
+- 任意のcoarse one-cochainで、declared faceの3本のboundary coordinate上のactual
+  `generatedPullback1`はすべて零。従ってfine `d1`は`0 - 0 + 0 = 0`、actual
+  `generatedPullback2`も零で、`generatedPullback_comm1`の同じface coordinate成分が両者を一致させる。
+- direct / focused check: pass。
+- targeted module build: pass、3706 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 46 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、readings、law family、supported nerves、hereditary morphismは
+  existence witnessの`ambient-boundary`。Condition C、`H^1`非零、comparison bijectivityはinputにしない。
+- proof use: nonuniform chart supportsをactual face coordinate生成とproper subnerveの両方に使う。
+  declared faceの`faceMap = none`と3つのhereditary fieldをdegree-two / degree-one pullbackの
+  zero branchへそれぞれ使う。
+- certificate provenance: factorとlaw descentはcanonical uniqueness、face coordinateは
+  `CellCoordinate.ofSupportedTarget`とK1 support、propernessはcanonical coordinate-subnerve occurrence、
+  comm1はactual generated pullbacksとreview済みcochain-map theoremへ追跡できる。
+- route integrity: pass。constant law、identity factor、all-univ supports、face-free nerve、annotation-only
+  coordinate、nonhereditary declaration、assumed commutationを使わない。
+- staging: Cycle 29はclaim (v)のwitnessを分割していない。後続Cycleは同じpublic constantsに対して
+  Condition Cとactual cohomologyを証明するだけであり、別witnessへの差替えやcertificate fieldを追加しない。
+- common scans: `git diff --check` pass。hidden/BiDi、new Lean placeholder、private path、
+  reverse `Formal -> ResearchLean.AG` import、禁止語の新規hitなし。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: このexact fixture上でC0–C6とfull fixed Condition Cをclosed theoremとして構成する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 29
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: fix the single claim-v finite fixture with law-derived distribution, proper coordinate subnerve, firing incidence, and actual hereditary degenerate-face comm1 zero
+proof_obligation_delta: the H4a data and provenance node is discharged from one closed current-surface fixture
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringData.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.comparisonFactor_not_injective
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.law_nonconstant
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.nerveMorphism
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.nontrivial_chart_fiber
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.mapped_face_fires
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.declared_edge_fires
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.hereditary_face_fires
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.self_loop_reflection_fires
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fineDegenerateFaceBlockCoordinate
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.oneLabel_subnerve_proper
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.degenerateFace_boundary_pullbacks_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.degenerateFace_comm1_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_firing_input_nonvacuity
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - one closed proper adequate reading pair and genuinely nonconstant law family
+    - two actual law-value labels with nonuniform support distribution
+    - a two-chart fiber, mapped face, declared edge, hereditary declared face, and mapped self-loop on the same fixture
+    - an actual K0/K1 coordinate on the declared face
+    - a proper value-one coordinate subnerve proved through canonical occurrence
+    - explicit zero degree-one alternating sum and zero degree-two pullback on the same declared-face coordinate
+  remaining:
+    - C0-C6 and full fixed Condition C on the exact Cycle 29 fixture
+    - nonzero actual H1 on both sides and actual comparison bijectivity on the exact fixture
+    - the final single-witness fixed_claim_v theorem
+certificate_provenance:
+  discharged:
+    - comparison factor and law descents are canonical outputs of reviewed factorization APIs
+    - the face coordinate is generated from actual K1 support
+    - properness uses the canonical coordinate-subnerve occurrence theorem
+    - comm1 uses actual generated pullbacks and the hereditary current morphism
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - explicit adequacy and comparison data in canonical factor and law-descend calculations
+    - nonuniform chart supports in coordinate generation and subnerve occurrence
+    - faceMap none and all three hereditary face-none fields in actual pullback zero calculations
+    - reviewed generatedPullback_comm1 at the named actual face coordinate
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; the principal declaration is a closed positive data/provenance theorem for existing APIs
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove C0-C6 and full fixed Condition C as closed theorems on the exact Cycle 29 fixture
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 28 — adequate Condition-C failure witness
 
