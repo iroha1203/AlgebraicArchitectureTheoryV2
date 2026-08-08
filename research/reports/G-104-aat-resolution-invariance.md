@@ -21,7 +21,9 @@
   coordinate-fiber edge上で零になる normalization theorem は Cycle 19 で
   証明済み。C2のproof-local edge liftとC5のexact block uniquenessにより、その
   normalized residualをcoarse one-cochainのactual generated block pullbackとして
-  表すdescent theoremはCycle 20で証明済み。Cycle 7 の
+  表すdescent theoremはCycle 20で証明済み。C4のexact fine face liftから
+  degree-two pullbackの単射性を導き、actual `comm1`でCycle 20のcoarse
+  one-cochainをcoarse block cocycleへ昇格するtheoremはCycle 21で証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -167,6 +169,13 @@ report はそれらを再定義しない。
   `generatedBlockPullback1` が元fine cochainに一致するgeneric theoremを得た。これを
   Cycle 19のactual residualへ適用し、退化edgeのzero premiseをendpoint-defined fiber
   normalizationから放電した。lift family、primitive、coarse cochainをdata fieldへ保存しない。
+- 完了(現行 statement): Cycle 21 の coarse cocycle descent。C4のexact fine
+  face liftを座標ごとにproof内で取り出し、actual `generatedBlockPullback2` の単射性を
+  証明した。既存 `generatedBlockPullback_comm1` により、degree-one pullbackがfine
+  cocycleに一致すれば元coarse one-cochainがactual `lawValueBlockD1` のkernelに入る
+  ことを導いた。これをCycle 20のactual residual descentへ適用し、primitiveとactual
+  coarse block kernel representativeをexistential outputとして構成した。C0 / C1 / C6、
+  face lift uniqueness、selected face sectionを追加しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -185,8 +194,139 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  C4によるdescended coarse one-cochainのcocycle性とlabel別全射性、global 不変性 theorem、系、inadequate 側診断、
+  label別全射性、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 21 — coarse cocycle descent
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 21
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: C4のexact face liftとactual comm1によりCycle 20 descended cochainをcoarse block cocycleへ昇格する
+proof obligation delta: degree-two pullback injectivityがfine cocycle性をactual coarse d1 kernelへ反射する
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonCocycleDescent.lean`
+- declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockPullback2_injective_of_conditionC4At`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockD1_eq_zero_of_generatedBlockPullback1_eq_cocycle`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberCocycleDescent`
+- `generatedBlockPullback2_injective_of_conditionC4At` は各coarse block faceにC4を適用し、
+  exact fine face witnessをproof内だけで取り出す。両cochainのpullback equalityをその
+  fine faceで評価し、`faceBlockCoordinateMapOption = some coarseFace` を代入して元座標を回収する。
+  `[Fintype Source]`、C5、cocycle premiseを持たない。
+- `lawValueBlockD1_eq_zero_of_generatedBlockPullback1_eq_cocycle` はC4から得たdegree-two
+  injectivityと既存のactual `generatedBlockPullback_comm1`を使い、fine側`d1 = 0`を
+  coarse側`lawValueBlockD1 = 0`へ反射する。ordered incidenceとhereditary退化宣言は
+  Cycle 12の`comm1` theorem内で既に放電済みであり、新規premiseに戻さない。
+- principal theoremはCycle 20
+  `lawValueBlockCycle_exists_coordinateFiberDescent`を直接呼び、primitive、coarseOne、
+  actual degree-one pullback equalityを取得する。fine residualがcocycleであることを
+  `map_sub`、入力cycleのactual kernel proof、`lawValueBlock_d1_comp_d0`から構成し、
+  C4 reflection theoremで`coarseOne`をactual coarse block kernel subtypeへ昇格する。
+- focused manifest check: pass。
+- targeted module build: pass、3710 jobs。新規 module の linter warningなし。
+- namespace axiom audit: 4 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: law family、adequacy、supported nerves、reviewed morphism、label、
+  finite Source、actual fine block cocycleは`ambient-boundary`。C2 / C3 / C4 / C5は
+  `direction-hypothesis`。
+- proof use: C2 / C3 / C5はCycle 20のactual descentを通じて実使用し、C4はdegree-two
+  pullback injectivityとactual coarse cocycle reflectionに実使用する。
+- C0 / C1 / C6はこのnodeに不要でpremiseに含めない。C5をC4 helperで再使用せず、
+  Cycle 20のmapped edge descentだけに限定する。
+- certificate provenance: C4 fine-face witnessはinjectivity proof内だけで消去する。
+  primitiveとcoarse one-cochainはCycle 20 existential output、kernel membershipはC4と
+  actual `comm1`から構成する。face section、lift family、cocycle certificate structureを
+  追加しない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: pass。supplied degree-two injectivityやsupplied coarse kernel proofを
+  theorem inputにせず、C4とactual comparison mapから導く。
+- anti-weakening: actual coarse block `ker d1`とactual degree-one pullback equalityだけを主張し、
+  quotient class、block H1全射性、global invarianceへ読み替えない。
+- repeated boundary edgeは既存`comm1`のposition付き交代和により保持され、parallel coarse
+  faceはC4のface座標ごとの存在だけで処理する。face-lift uniquenessは要求しない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。C4 exact
+  face liftの座標別実使用、actual `comm1`によるkernel reflection、Cycle 20とactual
+  `d1d0`からのhelper premise放電、repeated edge / parallel face / self-loop、report scopeを
+  独立承認した。
+- next obligation: Cycle 21のkernel representativeをactual quotientへ送り、residualとの差が
+  actual `d0 primitive`であることからlabel別`generatedBlockComparisonH1Map`の全射性を証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 21
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: upgrade the Cycle 20 descended cochain to an actual coarse block cocycle using exact C4 face lifts and the actual comm1 law
+proof_obligation_delta: degree-two pullback injectivity reflects fine cocyclehood into the actual coarse d1 kernel
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonCocycleDescent.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockPullback2_injective_of_conditionC4At
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockD1_eq_zero_of_generatedBlockPullback1_eq_cocycle
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberCocycleDescent
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - C4 exact face lifts make the actual generated degree-two block pullback injective
+    - actual comm1 reflects fine cocyclehood to the descended coarse one-cochain
+    - Cycle 20 descent is upgraded to an actual coarse block kernel representative
+  remaining:
+    - per-label H1 surjectivity, bijectivity, and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - C4 face lifts are eliminated only inside the injectivity proof
+    - coarse kernel membership is derived from actual comm1 rather than supplied as data
+  unresolved:
+    - quotient-level H1 preimage construction
+proof_use_audit:
+  used_material_premises:
+    - C2, C3, and C5 through the actual Cycle 20 descent theorem
+    - C4 exact face lift existence
+    - actual generatedBlockPullback2 and generatedBlockPullback_comm1
+    - actual fine cocycle and lawValueBlock_d1_comp_d0
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: coarse cocycle descent is not reported as H1 surjectivity
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove per-label generatedBlockComparisonH1Map surjectivity from the Cycle 21 kernel representative
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 20 — normalized residual descent
 
