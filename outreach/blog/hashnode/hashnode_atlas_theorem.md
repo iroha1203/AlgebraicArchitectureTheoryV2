@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-- **Every time you analyze an architecture — at service, module, or method granularity — you are implicitly betting that the choice doesn't change what you find.** This article is about proving exactly when that bet is safe.
+- **A veteran reviewer does not read every line. They switch reading resolution to match the property they are checking.** Is there a guarantee that reading coarsely misses no bugs? This article is the record of proving the conditions under which there is.
 - AAT (Algebraic Architecture Theory) treats source code as the source of truth, abstracts implementations into Atoms, turns specifications into equations called laws, and analyzes architecture with the weapons of algebraic geometry. Defects appear as cohomology classes — algebraic fingerprints.
 - Within AAT, an AI agent loop proved in Lean 4 what we call the **Atlas theorem**: for two adequate readings, one a coarsening of the other, satisfying a calibration condition C, the diagnostic fingerprints coincide exactly — zooming out loses no defects, zooming in fabricates none. Break the conditions and both failure modes really occur, with finite counterexamples.
 - The agent **refuted its own target statement four times** before the summit. A no-go argument then showed that no shape-only condition can ever suffice, forcing the coefficient definition itself to be rebuilt. Five working days, 31 modules / 13,028 lines of Lean, four-lane adversarial review.
