@@ -23,7 +23,10 @@
   normalized residualをcoarse one-cochainのactual generated block pullbackとして
   表すdescent theoremはCycle 20で証明済み。C4のexact fine face liftから
   degree-two pullbackの単射性を導き、actual `comm1`でCycle 20のcoarse
-  one-cochainをcoarse block cocycleへ昇格するtheoremはCycle 21で証明済み。Cycle 7 の
+  one-cochainをcoarse block cocycleへ昇格するtheoremはCycle 21、そのkernel
+  representativeをactual quotientへ送り、Cycle 21 primitiveの負をactual `d0`
+  image witnessとして使うlabel別comparison `H^1` mapの全射性はCycle 22で
+  証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -176,6 +179,13 @@ report はそれらを再定義しない。
   ことを導いた。これをCycle 20のactual residual descentへ適用し、primitiveとactual
   coarse block kernel representativeをexistential outputとして構成した。C0 / C1 / C6、
   face lift uniqueness、selected face sectionを追加しない。
+- 完了(現行 statement): Cycle 22 の label 別 `H^1` 全射性。任意のfine block
+  `H^1` classをG-102のactual quotient surjectivityでkernel representativeへ戻し、
+  Cycle 21からprimitiveとactual coarse kernel representativeを取得した。coarse
+  representativeをactual coarse quotientへ送り、canonical generated comparison
+  `h1Map`のrepresentative公式を直接使った。両representativeの差はCycle 21の
+  pullback equalityによりactual `d0 (-primitive)`であるため、fine classを回収する。
+  supplied preimage、inverse、dimension count、別comparison mapを使わない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -194,8 +204,139 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  label別全射性、global 不変性 theorem、系、inadequate 側診断、
+  label別全単射の統合、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 22 — exact-block `H^1` surjectivity
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 22
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: Cycle 21のcoarse kernel representativeをactual quotientへ送り、label別canonical comparison H1 mapの全射性を証明する
+proof obligation delta: Cycle 21 primitiveの負がquotient relationのactual d0 image witnessを与える
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonSurjectivity.lean`
+- declaration:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_surjective`
+- 任意のfine block `H^1` classをactual
+  `(LinearMap.range boundaryToCycles).mkQ_surjective`でfine kernel representativeへ
+  戻す。representativeはproof内だけで取り出し、theorem inputやcertificate fieldへ
+  移さない。
+- Cycle 21
+  `lawValueBlockCycle_exists_coordinateFiberCocycleDescent`へC2 / C3 / C4 / C5と
+  fine representativeを直接渡し、primitive、actual coarse kernel representative、
+  actual `generatedBlockPullback1` equalityを取得する。
+- coarse preimage classはactual coarse quotientの`mkQ coarseCycle`として明示構成する。
+  `generatedBlockComparisonH1Map`をactual `generatedBlockComparisonHom.h1Map`へ展開し、
+  G-102 `ThreeCochainComplex.Hom.h1Map_mk`を使ってrepresentativeの等式へ戻す。
+- Cycle 21の式は
+  `pullback(coarseCycle) = fineCycle - d0 primitive`である。quotient relationが要求する
+  左右差は`pullback(coarseCycle) - fineCycle`なので、range witnessは`-primitive`である。
+  proofはactual `lawValueBlockD0`上で`map_neg`と点ごとの加法計算によりこの符号を固定する。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3711 jobs。新規 module のlinter warningなし。
+- namespace axiom audit: 1 declaration、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、law family、adequate readings、supported nerves、
+  reviewed morphism、labelは`ambient-boundary`。C2 / C3 / C4 / C5は
+  `direction-hypothesis`。
+- proof use: C2 / C3 / C4 / C5はCycle 21 principal theoremへ直接渡される。
+  fine class、fine representative、primitive、coarse kernel representative、actual
+  pullback equalityはすべてquotient proofで実使用する。C0 / C1 / C6をdecorative
+  premiseとして追加しない。
+- certificate provenance: fine representativeはactual `mkQ_surjective`、primitiveと
+  coarse representativeはreview済みCycle 21 existential outputから取得する。
+  coarse preimage classと`-primitive` witnessはproof内で構成し、supplied H1 preimage、
+  inverse、surjectivity certificateを受けない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: pass。canonical generated comparison `h1Map`とG-102 actual quotientを
+  直接使い、cycles map自体の全射性やdimension equalityへ置換しない。
+- anti-weakening: 各exact source-generated blockのactual canonical map全体の全射性を
+  主張する。あるmap、ある部分空間、あるrepresentativeだけの存在へ弱めない。一方で
+  単射性との統合やglobal同型はまだ主張しない。
+- loop、parallel edge、repeated face position、退化成分はCycle 18–21のactual
+  representative routeで保持される。quotient段階でedgeやfaceを集合化せず、追加の
+  distinctness premiseを要求しない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。actual quotientの
+  representative構成、C2–C5のproof-use、`-primitive`の符号、canonical `h1Map` route、
+  certificate provenanceとedge casesを独立承認した。
+- next obligation: Cycle 16 `generatedBlockComparisonH1Map_injective`とCycle 22の全射性を、
+  fixed Condition Cの該当成分から統合し、各labelのcanonical mapのbijectivityを証明する。
+  その後Cycle 13 naturalityでglobal mapへ輸送する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 22
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: send the Cycle 21 coarse kernel representative to the actual quotient and prove surjectivity of the canonical per-label comparison H1 map
+proof_obligation_delta: the negative Cycle 21 primitive supplies the actual d0-image witness for the quotient relation
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonSurjectivity.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_surjective
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - every fine block H1 class has an actual fine kernel representative
+    - Cycle 21 constructs an actual coarse kernel representative whose pullback differs by an actual d0 image
+    - the canonical generated block comparison H1 map is surjective
+  remaining:
+    - per-label bijectivity and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - fine representatives come from the actual quotient map
+    - coarse representatives and primitives come from the Cycle 21 existential theorem
+    - the quotient witness is the proof-local negative primitive
+  unresolved:
+    - per-label bijectivity integration and global block transport
+proof_use_audit:
+  used_material_premises:
+    - C2, C3, C4, and C5 through the actual Cycle 21 theorem
+    - actual generatedBlockComparisonHom, generatedBlockComparisonH1Map, and h1Map_mk
+    - actual generatedBlockPullback1 equality and boundaryToCycles quotient relation
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: surjectivity is not reported as bijectivity or invariance
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: combine Cycle 16 injectivity and Cycle 22 surjectivity into per-label bijectivity for the canonical map
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 21 — coarse cocycle descent
 
