@@ -263,6 +263,7 @@ import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceConditionInstanc
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceConditions
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceFiringData
 import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceFiringCondition
+import ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness
 import ResearchLean.AG.ResolutionInvariance.SupportedNerveMorphism
 import ResearchLean.AG.SFT.ConwayBoundaryGenerator
 import ResearchLean.AG.SFT.ConwayBoundaryMap
