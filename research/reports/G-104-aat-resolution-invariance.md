@@ -26,7 +26,9 @@
   one-cochainをcoarse block cocycleへ昇格するtheoremはCycle 21、そのkernel
   representativeをactual quotientへ送り、Cycle 21 primitiveの負をactual `d0`
   image witnessとして使うlabel別comparison `H^1` mapの全射性はCycle 22で
-  証明済み。Cycle 7 の
+  証明済み。fixed Condition Cからlabel別mapと既存finite DirectSum mapの
+  bijectivityを導き、Cycle 13 naturalityでactual global comparison `H^1` mapの
+  bijectivityへ輸送するclaim (ii)はCycle 23で証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -186,6 +188,13 @@ report はそれらを再定義しない。
   `h1Map`のrepresentative公式を直接使った。両representativeの差はCycle 21の
   pullback equalityによりactual `d0 (-primitive)`であるため、fine classを回収する。
   supplied preimage、inverse、dimension count、別comparison mapを使わない。
+- 完了(現行 statement): Cycle 23 の claim (ii) global bijectivity。fixed
+  `ConditionC`のC0–C6をCycle 16 / 22へlabelごとに投影し、actual block comparison
+  mapのbijectivityを得た。既存componentwise finite DirectSum mapは成分公式を用いて
+  単射性を反射し、各labelの全射性からproof内でpreimage familyを選んで全射性を
+  構成した。Cycle 13 naturalityとcanonical Cycle 11 block equivalenceにより、この
+  bijectivityをactual global `generatedComparisonH1Map`自身へ輸送した。comparison
+  inverse、dimension equality、alternate conjugate mapを入力しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -204,8 +213,142 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  label別全単射の統合、global 不変性 theorem、系、inadequate 側診断、
-  反例3種、発火 witness。
+  系、inadequate 側診断、反例3種、発火 witness。
+
+## Cycle 23 — global comparison `H^1` bijectivity
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 23
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: fixed Condition Cからlabel別・finite DirectSum・actual global comparison H1 mapのbijectivityを順に証明する
+proof obligation delta: Cycle 16/22の両方向をCycle 13 naturalityでactual global map自身へ輸送しclaim (ii)を閉じる
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean`
+- declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_bijective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap_bijective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_bijective`
+- label別 theoremはfixed `ConditionC`のfieldを明示投影する。injectivity側は
+  C0 / C1 / C2 / C6をCycle 16へ、surjectivity側はC2 / C3 / C4 / C5をCycle 22へ
+  渡す。したがってC0–C6の全fieldがreview済みのactual proof routeで実使用される。
+- finite DirectSum theoremのinjectivityはexisting component theoremで各labelへ評価し、
+  label別injectivityを適用してcanonical coarse component functionを一致させる。
+  surjectivityは各fine componentについてlabel別surjectivityからpreimageをproof内で
+  `Classical.choose`し、canonical finite DirectSum equivalenceの逆で一つのcoarse classに
+  組み立てる。preimage familyはoutput fieldやcertificateに保存しない。
+- global theoremはCycle 13 naturality
+  `fineEquiv (globalMap x) = blockMap (coarseEquiv x)`を点ごとに使う。global injectivityは
+  fine image equalityをblock-map equalityへ反射し、block-map injectivityと
+  `coarseEquiv.injective`で戻す。global surjectivityは`fineEquiv fineClass`のblock
+  preimageを取得し、`coarseEquiv.symm`でactual global coarse classを構成し、naturalityと
+  `fineEquiv.injective`で元fine classを回収する。
+- 主結論はあるLinearEquivの存在ではなく、actual canonical
+  `generatedComparisonH1Map`の`Function.Bijective`である。comparison inverse、dimension
+  equality、global bijectivity certificateをinputやstructure fieldに持たない。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3713 jobs。新規 module のlinter warningなし。
+- namespace axiom audit: 3 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、law family、adequate pair、supported nerves、review済み
+  morphismは`ambient-boundary`。fixed C0–C6 packageは`direction-hypothesis`。
+- proof use: C0–C6は各fieldがCycle 16 / 22へ明示投影される。existing DirectSum
+  component theoremは両方向の成分比較、Cycle 13 naturalityはactual global mapとの
+  bridgeとして実使用する。unused material premiseはない。
+- certificate provenance: label別両方向はreview済みCycle 16 / 22 theorem、DirectSum
+  preimage familyはproof-local choice、global preimageはcanonical block equivalenceと
+  本cycleで証明したblock-map surjectivityから構成する。supplied comparison inverseはない。
+- structure-field escape: none-found。`ConditionC`はincidence / support propositionのままで、
+  H1 bijectivity、inverse、vanishingを追加しない。新規 public Prop / structure / certificateはない。
+- route integrity: pass。existing block mapはCycle 13がcomponentwise actual mapから生成した
+  ものをそのまま使用する。global mapから逆算したconjugate mapへ置換しない。
+- anti-weakening: actual global canonical map自身のbijectivityを結論とし、ある同型の存在、
+  blockwise結果だけ、dimension equalityへ弱めない。
+- loop、parallel edge、repeated face position、退化成分はreview済みper-label actual mapの
+  座標を同一視せず保持され、Cycle 13もactual quotient mapとの等式である。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。C0–C6 proof-use、
+  proof-local DirectSum preimages、component formula、naturalityの向き、actual global mapへの
+  injective / surjective transport、certificate provenanceとcheat routeを独立承認した。
+- next obligation: claim (ii)のactual global surjectivityから、adequateな精細化は診断classを
+  増やさないというclaim (iii)をcanonical mapのsurjectivityとして明示するcorollaryを導く。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 23
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove per-label, finite direct-sum, and actual global comparison H1 bijectivity from the fixed Condition C package
+proof_obligation_delta: Cycle 16 and Cycle 22 are transported through Cycle 13 naturality to close claim (ii) for the actual global map
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_bijective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1DirectSumMap_bijective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedComparisonH1Map_bijective
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - all fixed C0-C6 fields are used through the reviewed per-label injectivity and surjectivity routes
+    - the existing componentwise finite direct-sum comparison map is bijective
+    - the actual global generatedComparisonH1Map is bijective, closing claim (ii)
+  remaining:
+    - claim (iii) corollary
+    - canonical inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - DirectSum preimage families are selected only inside the proof
+    - global preimages use the canonical block equivalence and proved block-map surjectivity
+    - no comparison inverse or dimension certificate is supplied
+  unresolved:
+    - full GOAL witness artifacts
+proof_use_audit:
+  used_material_premises:
+    - C0, C1, C2, and C6 through Cycle 16 injectivity
+    - C2, C3, C4, and C5 through Cycle 22 surjectivity
+    - the actual DirectSum component formula and Cycle 13 naturality
+    - the canonical Cycle 11 coarse and fine block equivalences
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_conjugate_map: none-found
+  dimension_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: derive claim (iii) directly from the actual global comparison map surjectivity
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 22 — exact-block `H^1` surjectivity
 
