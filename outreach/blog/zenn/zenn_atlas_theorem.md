@@ -27,7 +27,7 @@ published: false
 
 ## 前提: どんなプロジェクトか
 
-対象は [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)。ソフトウェアアーキテクチャの欠陥を、ソースコードの観測から代数的に診断する理論(AAT)を Lean 4 で形式検証しているモノレポだ。
+対象は [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)。すでにあるコードを Source of truth とし、実装を抽象化、仕様を方程式化。アーキテクチャを幾何として扱い、代数幾何の武器で解析する。それが AAT(代数的アーキテクチャ論)であり、このモノレポはその理論を Lean 4 で形式検証している。
 
 この理論には、ずっと見て見ぬふりをされてきた急所があった。**粒度選択**だ。
 
