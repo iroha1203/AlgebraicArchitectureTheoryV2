@@ -1,5 +1,7 @@
 # Atlas Theorem: How Far Can You Zoom Out?
 
+*Four refutations, 13,000 lines of Lean, and a proof that resolution doesn't change the diagnosis*
+
 A photorealistic portrait and a 16×16 pixel-art sprite can show you the same face. Comics theorist Scott McCloud called this **amplification through simplification**: removing lines doesn't discard information, it sharpens the essence.
 
 Can we say the same about software architecture diagnostics? **Look at your system at service granularity or at module granularity, and the same bugs show up in the same places** — not as a feeling, but as a proven guarantee.
