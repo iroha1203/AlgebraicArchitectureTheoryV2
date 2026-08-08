@@ -11,7 +11,8 @@
   Cycle 13、K0 / K1 exact block からの canonical 座標 subnerve は Cycle 14 で
   証明済み。whole-nerve C0 / C5 / C6 と全座標 subnerve 相対の C1–C4 からなる
   incidence / support-only の条件 C package と、各 principal 条件・補助条件を
-  識別する有限な正例 / 反例 instance pair は Cycle 15 で固定済み。Cycle 7 の
+  識別する有限な正例 / 反例 instance pair は Cycle 15 で固定済み。exact block
+  comparison `H^1` map の単射性は Cycle 16 で証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -119,6 +120,15 @@ report はそれらを再定義しない。
   principal 条件と全補助条件の正負 instance pair を固定した。この fixture は
   constant law と whole-coordinate subnerve を使う API 品質証拠であり、claim (v) の
   nondegenerate 発火 witness には数えない。
+- 完了(現行 statement): Cycle 16 の label 別単射性。C0 から粗側 block chart の
+  K0 occurrence を細側 occurrence へ戻して canonical chart block map の全射性を
+  導いた。fine zero-cochain が pulled coarse one-cochain の `d0` primitive なら、C1 の
+  fiber path に沿って値が一定であることを証明した。退化 edge では zero pullback、
+  mapped self-loop では C6 endpoint reflection を使用する。C0 から proof 内で選んだ
+  chart representatives と C2 の exact edge lift により coarse primitive を構成し、
+  G-102 の actual quotient `H^1` 上で generated block comparison map の単射性を得た。
+  representative / path / primitive は theorem proof 内だけに現れ、data field として
+  保存しない。C3 / C4 / C5 は全射性側へ残す。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -137,8 +147,140 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  不変性 theorem、系、inadequate 側診断、
+  label 別全射性と global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 16 — exact block comparison H1 injectivity
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 16
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: exact law-value block 上の generated comparison H1 map の injectivity を証明する
+proof obligation delta: C0 / C1 / C2 / C6 を actual quotient H1 の coarse coboundary reflection に接続した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonInjectivity.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC0_chartBlockCoordinateMap_surjective`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.fineZero_eq_of_coordinateFiberAdjacent`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.fineZero_eq_of_same_coordinateFiber`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.exists_coarse_zero_cochain_of_generatedBlockPullback1_eq_d0`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_injective`
+- C0 bridge は coarse K0 coordinate の actual occurrence witness を取り出し、C0 の
+  support equality と `lawDescend_comparisonFactor` から同一 law-value を持つ fine
+  occurrence を生成する。従って block chart map の全射性を selected section なしで
+  theorem として導く。
+- fiber adjacency 上の primitive constancy は canonical edge Option map を分岐する。
+  `none` branch は generated degree-one pullback の零規則、`some` branch は exact
+  endpoint bridge と C6 の block endpoint reflection を使う。C1 の
+  `Relation.ReflTransGen` path induction で fiber 全体へ拡張する。
+- C0 の existential から選ぶ chart representative は coarse primitive proof の局所
+  `let` に限る。C2 の各 exact edge lift で fine `d0` equality を評価し、coarse
+  `lawValueBlockD0` primitive を得る。
+- actual `generatedBlockComparisonH1Map` の kernel class を G-102 quotient の cycle
+  representative へ持ち上げ、`Submodule.Quotient.mk_eq_zero` で fine primitive を取得する。
+  上記 reflection theorem から coarse primitive を生成して元 class を零と示す。
+- focused manifest check: pass。
+- targeted module build: pass、3706 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 7 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、finite law family、adequate pair、supported nerves、
+  reviewed morphism は `ambient-boundary`。C0 / C1 / C2 / C6 はこの単射性方向の
+  `direction-hypothesis`。C3 / C4 / C5 は theorem argument に入れず、次の全射性
+  obligation へ送る。
+- proof use: C0 は K0 occurrence と descend compatibility を持つ block chart lift、C1 は
+  fiber connectivity、C2 は actual Option edge lift、C6 は mapped coarse self-loop の
+  fine self-loop reflection に実使用する。C0 が chart nonemptiness を与えるため、C1 の
+  nonempty conjunct と論理的に重なるが、C1 は path conjunct に実使用する。
+- certificate provenance: representatives は C0 existential、paths は C1 Prop、primitive は
+  existing quotient membership から proof 内でのみ選ぶ。新規 structure、section、inverse、
+  primitive certificate はない。
+- structure-field escape: none-found。result は actual generated block map の injectivity
+  theorem であり、同型 premise、dimension equality、片側 `H^1 = 0` を受けない。
+- route integrity: actual exact block coordinates、`lawValueBlockD0`、generated block Hom / H1
+  map、G-102 quotient API を直接使用する。
+- anti-weakening: label 別 injectivity だけを主張し、surjectivity、bijectivity、global
+  invariance、claim (ii) completion を主張しない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: C1 / C2 / C3 / C4 / C5 を使う label 別 surjectivity を
+  証明し、bijectivity と Cycle 13 naturality から global invariance へ輸送する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 16
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove injectivity of the generated comparison H1 map on every exact law-value block
+proof_obligation_delta: connected C0, C1, C2, and C6 to actual quotient-level coarse coboundary reflection
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonInjectivity.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.conditionC0_chartBlockCoordinateMap_surjective
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.fineZero_eq_of_coordinateFiberAdjacent
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.fineZero_eq_of_same_coordinateFiber
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.exists_coarse_zero_cochain_of_generatedBlockPullback1_eq_d0
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_injective
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate pair, supported nerves, and reviewed morphism
+  discharged:
+    - C0-derived surjectivity of the canonical exact-block chart map
+    - constancy of a fine primitive along C1 fiber paths using the zero branch and C6
+    - coarse primitive reconstruction through C2 exact edge lifts
+    - injectivity of the actual generated block comparison H1 map
+  remaining:
+    - per-label surjectivity using C1-C5
+    - per-label bijectivity and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - block chart lifts are generated from C0 support witnesses and canonical law descent
+    - representatives, paths, and primitives remain proof-local existential eliminations
+  unresolved:
+    - surjectivity normalization and the final canonical H1 isomorphism
+proof_use_audit:
+  used_material_premises:
+    - C0 for provenance-bearing block chart lifts
+    - C1 for fiber path induction
+    - C2 for exact coarse-edge lifts
+    - C6 for mapped self-loop endpoint reflection
+  unused_material_premises:
+    - C3, C4, and C5 are intentionally deferred to surjectivity
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: injectivity is explicitly recorded as one half only
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove per-label surjectivity using C1-C5 and combine it with injectivity
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 15 — incidence / support-only C0–C6 package
 
