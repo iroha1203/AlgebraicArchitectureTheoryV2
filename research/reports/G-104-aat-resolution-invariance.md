@@ -14,6 +14,8 @@
   識別する有限な正例 / 反例 instance pair は Cycle 15 で固定済み。exact block
   comparison `H^1` map の単射性は Cycle 16、C3 の局所 face filling を actual block
   cocycle の fiber-period 消滅へ接続する discrete Stokes theorem は Cycle 17 で
+  証明済み。finite directed multigraph dualityにより、その period 消滅を actual
+  block `d0` の coordinate-fiber primitiveへ変換する theorem は Cycle 18 で
   証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
@@ -138,6 +140,14 @@ report はそれらを再定義しない。
   cycle の period が零であることを証明した。C3 が同時に返す internal-face support
   conjunct はこの scalar consequence では不要であり、未使用であることを明記する。
   primitive、section、path、inverse は構成せず、有限 graph dualityへ残す。
+- 完了(現行 statement): Cycle 18 の coordinate-fiber primitive。有限 directed
+  multigraph の supported incidence pairing と masked value functionalを構成し、
+  period 消滅から value functional が incidence kernel の dual annihilator に属する
+  ことを証明した。`LinearMap.dualAnnihilator_ker_eq_range_flip` により vertex potentialを
+  existential に取得し、supported edge上で right-minus-left が元のedge valueに一致する。
+  このgeneric theoremをCycle 17のactual block period theoremへ直接適用し、各 coarse
+  block chart fiber上で `lawValueBlockD0 primitive = cycle` を得た。C1は不要であり、
+  loop・parallel edge・非連結成分を除外しない。primitiveはproof outputだけに現れる。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -156,8 +166,136 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  finite graph duality、C2 / C4 / C5 による label 別全射性、global 不変性 theorem、系、inadequate 側診断、
+  fiber primitive のproof-local assembly、C2 / C4 / C5 による label 別全射性、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 18 — finite graph duality and coordinate-fiber primitive
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 18
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: 全supported cycleのperiod消滅からvertex potentialを導き、actual exact-block fiber上のd0 primitiveへ接続する
+proof obligation delta: finite dual annihilator theoremとCycle 17を通じてC3をactual local primitive existenceまで進めた
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberPrimitive.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.FiniteDirectedMultigraph.exists_potential_on_of_annihilates_supported_cycles`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberPrimitive`
+- generic theorem は有限 vertex / edge型、左右 endpoint、任意の supported edge predicateを
+  量化する。incidence pairing と value pairingはfiber外edgeを零にmaskし、simple graph、
+  loop-free、parallel-edge-free、connected の仮定を置かない。
+- incidence kernelのchainを各 `Pi.single` vertexで評価し、masked chainのincoming / outgoing
+  equalityを得る。period仮定をこのchainへ適用してvalue pairingがkernelをannihilateする
+  ことを示す。
+- `LinearMap.dualAnnihilator_ker_eq_range_flip` によりvalue pairingをflipped incidence mapの
+  rangeへ入れ、そのrange witnessをvertex potentialとして取得する。各 `Pi.single` edgeで
+  equalityを評価してsupported edgeごとの right-minus-left 公式を得る。
+- specialization はsupported predicateをactual `CoordinateFiberEdge` とし、generic theoremの
+  period仮定をCycle 17
+  `lawValueBlockCycle_annihilates_coordinateFiberCycle` で直接放電する。出力はactual
+  `fine.lawValueBlockD0` 公式である。
+- exact block chart / edge の module-local `Fintype` instances はCycle 14のcanonical
+  coordinate subnerveから定義的に導出する。
+- focused manifest check: pass。
+- targeted module build: pass、3707 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 4 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: generic theoremの有限型・endpoint・support predicate・period仮定は
+  `domain-interface`。specializationのfinite Source、adequacy、supported nerves、reviewed
+  morphismは`ambient-boundary`、label別C3だけが`direction-hypothesis`。
+- proof use: generic `hperiod` はdual-annihilator membershipに実使用し、specializationは
+  Cycle 17 actual period theoremを直接呼ぶ。C3、actual block cocycle、fiber cycle predicate、
+  actual `lawValueBlockD0` へrouteが連続する。
+- C1はこのnodeに不要。非連結成分ごとにpotentialの加法定数が独立でもexistenceは成立する。
+  C1を装飾premiseとして追加せず、Cycle 16での既存proof-useと区別する。
+- loopでは単一edge circulationが値を零に強制し、parallel edgeでは二edge差のcirculationが
+  値の一致を強制する。generic theoremはedgeをquotientせず多重性を保持する。
+- certificate provenance: potentialはdual-annihilator range witnessからexistential outputとして
+  取得する。selected path、spanning tree、basis、section、primitive field、range-membership
+  premiseを入力に持たない。potentialのcanonicalityや一意性を主張しない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: pass。dimension equalityだけで結論を出さず、incidence pairing、kernel
+  annihilation、flipped range、actual d0をLean termで接続する。
+- anti-weakening: fiber-local primitiveだけを主張し、全fine zero-cochainへのassembly、residual
+  descent、block H1全射性、global invarianceへ読み替えない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。supported mask、
+  dual-annihilator / flip の向き、right-minus-left の符号、loop / parallel / 非連結
+  graphでの成立、Cycle 17からactual `lawValueBlockD0` へのproof-useを独立承認した。
+- next obligation: coarse block chartごとのprimitiveをproof内で選び、chart block mapに沿って
+  一つのfine zero-cochainへ組み立て、元cocycleからそのd0を引いたresidualが全fiber edge上で
+  零になることを証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 18
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: derive a vertex potential from supported-cycle period vanishing and specialize it to the actual exact-block coordinate fiber
+proof_obligation_delta: finite dual annihilator theory and Cycle 17 produce an actual local d0 primitive from C3
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberPrimitive.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.FiniteDirectedMultigraph.exists_potential_on_of_annihilates_supported_cycles
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberPrimitive
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate readings, supported nerves, and reviewed morphism
+  discharged:
+    - finite directed multigraph duality from supported period vanishing to a vertex potential
+    - proof-local coordinate-fiber primitive for every actual exact-block cocycle under C3
+  remaining:
+    - assembly of chart-fiber primitives and normalization of the fine cocycle
+    - C2-C5 residual descent and per-label H1 surjectivity
+    - per-label bijectivity and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - the potential is an existential flipped-range witness derived from kernel annihilation
+    - exact-block finiteness is derived from the reviewed canonical coordinate subnerve
+  unresolved:
+    - proof-local assembly and canonical H1 preimage construction
+proof_use_audit:
+  used_material_premises:
+    - the generic period hypothesis in dual-annihilator membership
+    - the actual Cycle 17 C3 period theorem in the exact-block specialization
+    - the actual coordinate-fiber predicate and lawValueBlockD0 formula
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: local primitive existence is not reported as H1 surjectivity
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: assemble proof-local fiber primitives into one fine zero-cochain and prove residual vanishing on every coordinate-fiber edge
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 17 — exact block cocycle fiber-period vanishing
 
