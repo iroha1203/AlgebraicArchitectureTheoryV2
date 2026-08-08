@@ -19,7 +19,9 @@
   証明済み。coarse block chartごとのprimitiveをproof内で選び、canonical chart
   block mapに沿って一つのfine zero-cochainへ組み立て、actual residualが全
   coordinate-fiber edge上で零になる normalization theorem は Cycle 19 で
-  証明済み。Cycle 7 の
+  証明済み。C2のproof-local edge liftとC5のexact block uniquenessにより、その
+  normalized residualをcoarse one-cochainのactual generated block pullbackとして
+  表すdescent theoremはCycle 20で証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -158,6 +160,13 @@ report はそれらを再定義しない。
   chartへ写るため、actual `lawValueBlockD0` は同一local primitiveの差となり、元cocycle
   との差が全coordinate-fiber edge上で零になる。C0 / C1は不要で、primitive familyを
   theorem input、structure、certificateへ保存しない。
+- 完了(現行 statement): Cycle 20 の normalized residual descent。C2から各coarse
+  block edgeのfine liftをproof内で選び、fine cochainをそのliftで評価するcoarse
+  one-cochainを構成した。mapped fine edgeはwhole-nerve C5のexact block uniquenessで
+  selected liftと一致し、退化Option branchは零とするため、actual
+  `generatedBlockPullback1` が元fine cochainに一致するgeneric theoremを得た。これを
+  Cycle 19のactual residualへ適用し、退化edgeのzero premiseをendpoint-defined fiber
+  normalizationから放電した。lift family、primitive、coarse cochainをdata fieldへ保存しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -176,8 +185,134 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  C2 / C4 / C5 による normalized residual の label 別全射性、global 不変性 theorem、系、inadequate 側診断、
+  C4によるdescended coarse one-cochainのcocycle性とlabel別全射性、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 20 — normalized residual descent
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 20
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: C2/C5によりCycle 19 normalized residualをcoarse one-cochainのactual generated block pullbackとして表す
+proof obligation delta: proof-local exact edge liftsとblock uniquenessがactual degree-one descentを与える
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberDescent.lean`
+- declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.exists_coarse_one_cochain_of_zero_on_degenerate_edges`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberDescent`
+- generic theoremはC2から各coarse block edgeのfine liftをproof内で選び、
+  `coarseOne coarseEdge := fineOne (fineLift coarseEdge)` と定める。`[Fintype Source]`、C3、
+  C4をpremiseに持たない。
+- actual `edgeBlockCoordinateMapOption` を直接case splitする。`none` branchは入力の
+  degenerate-edge zeroを使い、`some coarseEdge` branchはC5のreview済み
+  `conditionC5_block_unique` bridgeでselected liftと現在のfine edgeを同一化する。
+- principal theoremはCycle 19
+  `lawValueBlockCycle_exists_coordinateFiberNormalization`を直接呼び、primitiveと全
+  `CoordinateFiberEdge` 上のresidual zeroを得る。generic theoremのzero premiseを外部入力として
+  残さない。
+- Option `none` からunderlying whole-edge `none` を得る箇所はproof内で`edgeMap`をcase splitする。
+  `some` branchはcanonical `edgeBlockCoordinateMapOption_eq_some` と矛盾し、`none` branchでは
+  `chartBlockCoordinateMap_edgeLeft_eq_right_of_none`により左endpoint像のcoordinate fiberを
+  構成してCycle 19 zeroを適用する。
+- focused manifest check: pass。
+- targeted module build: pass、3709 jobs。新規 module の linter warningなし。
+- namespace axiom audit: 2 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: generic theoremのlaw family、adequacy、supported nerves、reviewed morphism、
+  label、fine cochainは`ambient-boundary` / domain input、C2とC5は`direction-hypothesis`。
+  principal theoremはfinite Sourceとactual block cocycleを加え、C3をCycle 19経由で実使用する。
+- proof use: C2はselected lift family、C5はmapped branchのexact block uniqueness、C3はCycle 19
+  actual normalization、退化geometryはOption none branchのfiber-zero放電に実使用する。
+- C0 / C1 / C4 / C6はこのnodeに不要でpremiseに含めない。mapped self-loopでもC5が同じ
+  coarse edgeのliftを一意化するためC6を要しない。
+- certificate provenance: fine lift familyはC2 existentialからproof内でのみ`Classical.choose`し、
+  coarse one-cochainはexistential theorem output。lift section、normalized certificate、coarse
+  cocycle certificateをstructure fieldへ移さない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: pass。generic supplied zeroで止めず、principal theoremがCycle 19 actual residualを
+  直接descendする。
+- anti-weakening: actual pullback equalityだけを主張し、coarse one-cochainのcocycle性、block H1
+  全射性、global invarianceへ読み替えない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。C2 selected
+  lift、C5 some-branch uniqueness、Cycle 19 / C3からのnone-branch zero放電、actual
+  pullback route、self-loop / parallel edge、C4未完のscope限定を独立承認した。
+- next obligation: C4のexact fine face liftを評価し、descended `coarseOne` がactual coarse block
+  `lawValueBlockD1` のkernelに入ることを証明する。その後label別H1全射性へ進む。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 20
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: descend the Cycle 19 normalized residual through the actual generated degree-one block pullback using C2 and C5
+proof_obligation_delta: proof-local exact edge lifts and block uniqueness produce an actual coarse one-cochain preimage
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberDescent.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.exists_coarse_one_cochain_of_zero_on_degenerate_edges
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberDescent
+premise_delta:
+  ambient_boundary:
+    - finite law family, adequate readings, supported nerves, reviewed morphism, label, and actual block cocycle
+  discharged:
+    - C2 proof-local selection of one exact fine lift for every coarse block edge
+    - C5 identification of every mapped fine edge with the selected exact lift
+    - Cycle 19 normalized residual vanishing on the degenerate Option branch
+    - actual generatedBlockPullback1 equality for the normalized residual
+  remaining:
+    - C4 proof that the descended coarse one-cochain is an actual cocycle
+    - per-label H1 surjectivity, bijectivity, and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - exact edge lifts are selected only from C2 inside the generic proof
+    - the degenerate-edge zero premise is discharged from the actual Cycle 19 theorem
+  unresolved:
+    - actual coarse cocycle and H1 preimage construction
+proof_use_audit:
+  used_material_premises:
+    - C2 exact Option lift existence
+    - C5 whole-to-block lift uniqueness
+    - C3 through the actual Cycle 19 normalization theorem
+    - actual edgeBlockCoordinateMapOption and generatedBlockPullback1 branches
+    - endpoint-fiber equality for the degenerate branch
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: degree-one descent is not reported as cocycle descent or H1 surjectivity
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: use C4 to prove that the descended coarse one-cochain lies in the actual coarse block d1 kernel
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 19 — coordinate-fiber residual normalization
 
