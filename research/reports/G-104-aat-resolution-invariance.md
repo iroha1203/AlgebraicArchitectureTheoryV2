@@ -16,6 +16,9 @@
   cocycle の fiber-period 消滅へ接続する discrete Stokes theorem は Cycle 17 で
   証明済み。finite directed multigraph dualityにより、その period 消滅を actual
   block `d0` の coordinate-fiber primitiveへ変換する theorem は Cycle 18 で
+  証明済み。coarse block chartごとのprimitiveをproof内で選び、canonical chart
+  block mapに沿って一つのfine zero-cochainへ組み立て、actual residualが全
+  coordinate-fiber edge上で零になる normalization theorem は Cycle 19 で
   証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
@@ -148,6 +151,13 @@ report はそれらを再定義しない。
   このgeneric theoremをCycle 17のactual block period theoremへ直接適用し、各 coarse
   block chart fiber上で `lawValueBlockD0 primitive = cycle` を得た。C1は不要であり、
   loop・parallel edge・非連結成分を除外しない。primitiveはproof outputだけに現れる。
+- 完了(現行 statement): Cycle 19 の coordinate-fiber residual normalization。
+  Cycle 18 のexistential primitiveを各 coarse block chartについてproof内で選び、各
+  fine chartをcanonical `chartBlockCoordinateMap` の像に属するlocal primitiveで評価する
+  一つのfine zero-cochainを構成した。`CoordinateFiberEdge` の左右endpointは同じcoarse
+  chartへ写るため、actual `lawValueBlockD0` は同一local primitiveの差となり、元cocycle
+  との差が全coordinate-fiber edge上で零になる。C0 / C1は不要で、primitive familyを
+  theorem input、structure、certificateへ保存しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -166,8 +176,128 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  fiber primitive のproof-local assembly、C2 / C4 / C5 による label 別全射性、global 不変性 theorem、系、inadequate 側診断、
+  C2 / C4 / C5 による normalized residual の label 別全射性、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 19 — coordinate-fiber residual normalization
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 19
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: chart-fiber primitivesを一つのfine zero-cochainへ組み立て、actual residualを全coordinate-fiber edge上で零化する
+proof obligation delta: Cycle 18のlocal primitivesをcanonical chart block mapに沿ってproof-localにassemblyした
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberNormalization.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberNormalization`
+- 各coarse block chartにCycle 18
+  `lawValueBlockCycle_exists_coordinateFiberPrimitive`を直接適用し、そのexistential outputを
+  theorem proof内だけで選ぶ。
+- assembled primitiveはfine chartを、そのcanonical
+  `chartBlockCoordinateMap` imageに対応するlocal primitiveで評価する。coarse chartの
+  representative、path、section、spanning tree、basisを選ばない。
+- `CoordinateFiberEdge` の二つのendpoint equalityを実使用することで、edgeの左右endpointが
+  同じlocal primitiveを参照する。Cycle 18のactual `lawValueBlockD0` equalityを代入し、
+  `cycle fineEdge - lawValueBlockD0 primitive fineEdge = 0` を得る。
+- C0 / C1はpremiseに含めない。fine chartからcoarse chartへのmapはtotalであり、codomain
+  全射性はassemblyに不要。Cycle 18は非連結fiberの全edge上ですでにprimitive equalityを
+  与えるためconnectivityも不要。
+- focused manifest check: pass。
+- targeted module build: pass、3708 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 2 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、adequacy、supported nerves、reviewed morphismは
+  `ambient-boundary`。label別C3だけが`direction-hypothesis`。C0 / C1 / C2 / C4 / C5 /
+  C6はこのtheoremのpremiseではない。
+- proof use: C3はCycle 18のactual local primitive theoremを各coarse chartについて呼ぶことで
+  実使用する。assembled cochainと結論はactual `chartBlockCoordinateMap`、
+  `CoordinateFiberEdge`、`lawValueBlockD0`を直接使う。
+- certificate provenance: local primitive familyはCycle 18 theorem outputsからproof内でのみ
+  `Classical.choose`する。primitive family、normalized residual、fiber exactnessをcondition、
+  morphism、certificate fieldへ移さない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: pass。`∀ coarseChart, ∃ localPrimitive` を無根拠に量化交換せず、各fine chartの
+  canonical map imageとfiber edgeの両endpoint equalityで単一primitiveを明示構成する。
+- anti-weakening: residualのfiber-edge消滅だけを主張し、actual kernel cycle、coarse descent、
+  block H1全射性、global invarianceへ読み替えない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。量化assembly、
+  `CoordinateFiberEdge` の左右endpoint equalityの実使用、actual `lawValueBlockD0`
+  residual、C0 / C1不要性、proof-local choice provenance、空fiberでのscope限定を
+  独立承認した。
+- next obligation: C2で各coarse block edgeのliftをproof内で選び、C5で一意化してnormalized
+  residualをcoarse one-cochainからのactual generated block pullbackとして表す。退化branchは
+  fiber-edge消滅を使い、その次にC4でcoarse cocycle equationを証明する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 19
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: assemble the Cycle 18 chart-fiber primitives and normalize the actual fine block cocycle on every coordinate-fiber edge
+proof_obligation_delta: a single proof-local fine zero-cochain now removes the actual cocycle on every coordinate fiber
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberNormalization.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_exists_coordinateFiberNormalization
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate readings, supported nerves, and reviewed morphism
+  discharged:
+    - proof-local assembly of every Cycle 18 chart-fiber primitive
+    - actual residual vanishing on every endpoint-defined coordinate-fiber edge
+  remaining:
+    - C2 and C5 descent of the normalized residual to a coarse one-cochain
+    - C4 proof that the descended coarse one-cochain is an actual cocycle
+    - per-label H1 surjectivity, bijectivity, and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - local primitives are selected only from Cycle 18 theorem outputs inside this proof
+    - each fine chart is assigned by its canonical chart block map image
+  unresolved:
+    - proof-local edge lift selection and canonical H1 preimage construction
+proof_use_audit:
+  used_material_premises:
+    - C3 through the actual Cycle 18 local primitive theorem
+    - both endpoint equalities in CoordinateFiberEdge
+    - the actual chartBlockCoordinateMap and lawValueBlockD0 formula
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: fiber normalization is not reported as H1 surjectivity
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: use C2 and C5 to express the normalized residual as an actual generated block pullback from a coarse one-cochain
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 18 — finite graph duality and coordinate-fiber primitive
 
