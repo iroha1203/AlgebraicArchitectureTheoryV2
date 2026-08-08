@@ -39,7 +39,10 @@
   coarse treeのcanonical diagnosticが消滅する一方、same retained familyのfine
   parallel-edge classが非零でactual comparison mapが全射でなく、元law族全体の
   fine canonical diagnosticにも非零classがあるclaim (iv)(b)の有限反例はCycle 27で
-  固定済み。Cycle 7 の
+  固定済み。そのexact retained familyを両readingにadequateなlaw族として固定し、
+  二本のfine parallel edgeが同一coarse edgeへ写ることでcurrent C5とfull Condition Cが
+  破れ、同じactual generated comparison `H^1` mapが非全単射となるclaim (iv)(c)の
+  有限反例はCycle 28で固定済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -228,6 +231,14 @@ report はそれらを再定義しない。
   さらに元law族全体のfine canonical `FactorsDiagnosticH1`にも同じperiod patternの
   非零classを別途構成し、型の不一致だけに依存しないことを固定した。historical
   custom complex、selected law list、dimension count、supplied H1 certificateを使わない。
+- 完了(現行 statement): Cycle 28 の claim (iv)(c) adequate Condition-C failure witness。
+  Cycle 27のexact `retainedLaws`を両readingでadequateな同一law族として用い、非定数lawと
+  非単射なcanonical target factorを保持した。相異なる二本のfine parallel edgeがcurrent
+  hereditary morphismのactual `edgeMap`で同一coarse edgeへ写るため、whole-nerve C5と
+  full fixed Condition Cは偽である。同じdata・同じadequacy proofを用いるactual
+  `generatedComparisonH1Map`は非全射であり、従ってclaim (ii)が結論する
+  `Function.Bijective`の正確な否定を満たす。旧custom complex、任意map、selected law list、
+  supplied nonisomorphism certificateを使わない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -246,7 +257,155 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  反例1種、発火 witness。
+  発火 witness。
+
+## Cycle 28 — adequate Condition-C failure witness
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 28
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: claim (iv)(c)としてadequate pair上でfixed Condition Cとactual canonical comparison H1 bijectivityが同時に破れるfinite witnessを構成する
+proof obligation delta: exact retained familyの両側adequacy、current C5とCondition Cの失敗、actual generated comparison H1 mapの非全単射を同一fixtureで固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/AdequateConditionCFailure.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.AdequateConditionCFailure.fixed_claim_iv_c`
+- law familyはCycle 25のexact G-103 `Factors` subtypeであるCycle 27
+  `retainedLaws`そのものとする。`coarseRetainedAdequate`はsubtype propertyから、
+  `retainedLawsFineAdequate`は元law族のfine adequacyから導出され、original two-law
+  familyのcoarse inadequacyをadequate premiseへ読み替えない。
+- `retainedLaw_nonconstant`はexact subtypeのevalが元の`factorLaw` evaluationを保つことから、
+  retained family自身が非定数lawを含むことを示す。canonical target factorも同じ
+  review済みreading pair上で非単射なので、adequacyは空familyや恒等比較のvacuityでない。
+- `parallel_edge_lifts`はfine edge `0`と`1`が相異なりながら、actual
+  `nerveMorphism.edgeMap`でともに`some PUnit.unit`へ写ることを公開する。
+  `conditionC5_not`はこの3事実をcurrent whole-nerve `ConditionC5`へ直接適用し、
+  `conditionC_not`はfull `ConditionC.c5` projectionを反証する。
+- `generatedComparisonH1Map_not_surjective`はCycle 27のsame-family actual map theoremを
+  definitionally exactなcurrent `generatedComparisonH1Map` statementへ接続する。
+  predecessor proofはexplicit coarse tree primitiveから得たactual `H1Zero`と、parallel
+  periodで検出したnamed fine quotient class非零を実使用する。
+- `generatedComparisonH1Map_not_bijective`はactual mapの非全射性を
+  `Function.Bijective`の全射成分へ適用する。任意map、別diagnostic、dimension argument、
+  supplied inverse / nonisomorphism certificateを導入しない。
+- principal theoremは両側adequacy、proper refinement、非単射factor、retained law非定数、
+  coarse actual `H1Zero`、named fine class非零、C5 failure、full Condition C failure、
+  actual canonical mapの非全単射を一つのclosed finite witnessへ束ねる。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3709 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 7 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、readings、supported nerves、review済みmorphismは
+  existence witnessに許可された`ambient-boundary`。adequacy、C5 / Condition C failure、
+  actual nonbijectivityをtheorem inputやstructure fieldとして受けない。
+- proof use: distinct parallel edgesと二つのactual edgeMap equationをC5反証へ、C5反証を
+  full Condition Cへ、actual non-surjectivityをnon-bijectivityへ直接使う。coarse `H1Zero`と
+  named fine class非零はpredecessorのsame actual map proofで実使用済み。
+- certificate provenance: retained familyはselected listでなくexact predicate subtype。
+  comparison mapはcurrent generated cochain HomのG-102 `h1Map`であり、H1結果をmorphismや
+  certificate fieldに保存しない。
+- route integrity: pass。Cycle 25 exact subtype、Cycle 27 current K0 / K1、actual quotient、
+  current hereditary morphism、actual generated comparisonへ直結する。historical
+  `EdgeFiberObstruction`のparallel-edge機構を旧custom surfaceのまま再ラベルしない。
+- anti-weakening: full Condition Cの否定だけで止めずfailure conjunct C5を公開し、
+  「ある非同型」でなくclaim (ii)と同じactual mapの`¬ Function.Bijective`を結論に含める。
+- vacuity / quality: retained familyは非定数lawを含み、target factorは非単射、fine classは
+  actual quotient上で非零。face-free fixtureはclaim (iv)(c)だけに数え、claim (v)のC4、C6、
+  hereditary degenerate face comm1発火へ流用しない。新規public Prop / certificate typeはなく、
+  7宣言はすべてdeclaration docstringを持つ。
+- common scans: `git diff --check` pass。hidden/BiDi、new Lean placeholder、private path、
+  reverse `Formal -> ResearchLean.AG` import、禁止語の新規hitなし。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: claim (v)の全nondegenerate firing条件を同一current-surface finite witnessで
+  構成し、fixed Condition Cとactual comparison bijectivityを非空虚に発火させる。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 28
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct claim (iv)(c) as an adequate-pair finite witness where fixed Condition C and actual H1 invariance fail
+proof_obligation_delta: both-side adequacy, current C5 and Condition C failure, and actual generated comparison H1 nonbijectivity are now fixed on one current-surface fixture
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/AdequateConditionCFailure.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.retainedLaw_nonconstant
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.parallel_edge_lifts
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.conditionC5_not
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.conditionC_not
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.generatedComparisonH1Map_not_surjective
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.generatedComparisonH1Map_not_bijective
+      - AAT.AG.ResolutionInvariance.AdequateConditionCFailure.fixed_claim_iv_c
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - the exact retained family is adequate for both readings
+    - two distinct fine edges have the same actual coarse edge image
+    - current whole-nerve C5 and full fixed Condition C fail
+    - the actual generated comparison H1 map is not bijective
+    - claim (iv)(c) is fixed on the current canonical K0/K1 surface
+  remaining:
+    - claim (v) nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - the law family is the Cycle 25 exact Factors predicate subtype
+    - adequacy is derived from subtype membership and reviewed fine adequacy
+    - coarse vanishing and fine nonvanishing come from an explicit primitive and period detector
+    - nonbijectivity concerns the actual current generated comparison map
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - both adequacy proofs on the same retained family
+    - distinct parallel fine edges and both actual edgeMap equations
+    - the C5 field of full Condition C
+    - actual nonsurjectivity as the obstruction to Function.Bijective
+    - actual coarse H1Zero and named nonzero fine class in the predecessor proof
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; the closed theorem is a substantive negative instance for existing C5 and Condition C
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_diagnostic_set: none-found
+  cardinality_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct claim (v) as the fixed nondegenerate firing witness satisfying every listed firing condition on the same witness
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 27 — canonical inadequate hidden-class witness
 
