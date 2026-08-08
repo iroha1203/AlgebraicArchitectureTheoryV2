@@ -1,10 +1,10 @@
-# The Atlas Theorem: Four Refutations and 13,000 Lines of Lean
+# How Coarsely Can You Look at Your Code and Still Catch Every Bug?
 
 A photorealistic portrait and a 16×16 pixel-art sprite can show you the same face. Comics theorist Scott McCloud called this **amplification through simplification**: removing lines doesn't discard information, it sharpens the essence.
 
 Can we say the same about software architecture diagnostics? **Look at your system at service granularity or at module granularity, and the same bugs show up in the same places** — not as a feeling, but as a proven guarantee.
 
-This article is the record of proving that guarantee in Lean 4. The AI agent that set out to prove it **refuted its own target statement four times**. Those four refutations turned out to be the best part. The protagonist here is not any proof technique. It is the discipline that accumulated refutations as results instead of writing them off as failures.
+This article is the record of proving that guarantee — we call it the **Atlas theorem** — in Lean 4. The AI agent that set out to prove it **refuted its own target statement four times**. Those four refutations turned out to be the best part. The protagonist here is not any proof technique. It is the discipline that accumulated refutations as results instead of writing them off as failures.
 
 Everything below happened between August 4 and 8, 2026 — **five working days**.
 
