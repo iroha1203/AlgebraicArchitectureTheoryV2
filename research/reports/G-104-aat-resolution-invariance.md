@@ -32,7 +32,10 @@
   canonical mapによる一意なcoarse preimageを持つclaim (iii)はCycle 24で
   証明済み。G-103 `Factors`を満たすlawのexact subtypeから有限law族を作り、
   既存K0/K1複体とactual G-102 `H^1`へ接続するcanonical inadequate-reading
-  diagnosticはCycle 25で固定済み。Cycle 7 の
+  diagnosticはCycle 25で固定済み。非単射な粗側readingがexact subtypeに
+  非定数lawを残し、そのcanonical diagnosticに非零self-loop classを作る一方、
+  actual comparison mapがそのclassを零へ送り、元law族によるfine側canonical
+  diagnosticの`H^1`が消滅するclaim (iv)(a)の有限反例はCycle 26で固定済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -204,6 +207,14 @@ report はそれらを再定義しない。
   proof内で取得し、global injectivityからその一意性を証明した。結論はactual
   canonical `generatedComparisonH1Map`を直接使う`∃!`であり、新しいdiagnostic set、
   inverse function、cardinality comparisonを導入しない。
+- 完了(現行 statement): Cycle 26 の claim (iv)(a) canonical false-positive witness。
+  `Fin 3`上の非単射な粗側readingについて、Cycle 25のexact `Factors` subtypeが
+  非定数lawをちょうど一つ保持し、fiberを分離する別lawを除外することを証明した。
+  one-chart self-loopのactual G-102 quotientに明示的な非零classを構成し、同じ
+  retained familyのactual `generatedComparisonH1Map`がそのclassをfine tree上で零へ
+  送ることを示した。さらに元の二law族全体によるfine側canonical diagnosticについて、
+  任意cochainを積分するtree primitiveから`H^1`消滅を証明した。selected law list、
+  別complex、型の不一致だけによる議論を使わない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -222,7 +233,164 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  反例3種、発火 witness。
+  反例2種、発火 witness。
+
+## Cycle 26 — canonical inadequate false-positive witness
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 26
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: claim (iv)(a)としてcanonical Factors diagnostic上のfalse-positive finite witnessを構成する
+proof obligation delta: 粗側の明示的非零class、actual comparisonでの消滅、元law族によるfine側actual H1消滅を同じ有限fixtureで固定した
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateFalsePositive.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.fixed_claim_iv_a`
+- `Source = Fin 3`とし、粗側readingはsource `0`と`1`を同じtargetへ写し、
+  fine側readingは恒等とする。canonical `comparisonFactor`が非単射であることを
+  source `0`と`1`の像から直接証明する。
+- 元の二law族では、非定数な`factorLaw`が粗側readingを通してfactorし、
+  `separatingLaw`は粗側fiberの`0`と`1`を分離するためfactorしない。
+  `coarse_factors_iff`は粗側のCycle 25 exact subtypeが文字どおり`factorLaw`だけを
+  保持することを両向きに固定する。粗側inadequacyとfine側adequacyもこの同じ
+  law evaluationから導出し、selected subsetや外部adequacy certificateを入力しない。
+- 粗側nerveは一chart・一self-loop、fine側nerveは二chart・一本のtree edgeである。
+  current hereditary `TargetSupportedNerveMorphism`はfine edgeをcoarse self-loopへ写し、
+  chart supportとK1 edge supportは既存生成規則を使う。
+- `coarseLoopClass`はcanonical coarse `FactorsDiagnosticH1`、すなわちactual
+  G-102 quotientのclassである。self-loop評価は全actual coboundary上で零だが
+  `coarseLoopClass`上で一となるため、`coarseLoopClass_ne_zero`を得る。
+- `retainedComparisonH1Map`は同じexact retained familyについて既存
+  `generatedComparisonH1Map`を直接instantiateしたactual mapである。fine treeでは
+  任意degree-one cochainを明示的なzero-cochainへ積分できるため、mapの像が零となる。
+- `fineFactorsDiagnosticH1Zero`はretained familyだけでなく、元の二law族をfine側の
+  exact Factors subtypeへ入れたfull canonical diagnosticについてactual `H1Zero`を
+  証明する。そのため反例はcoarse/fine diagnostic型の不一致だけに依存しない。
+- principal theoremはcoarse inadequacy、fine adequacy、proper refinement、
+  exact Factors characterization、retained lawの非定数性、coarse class非零、
+  actual comparison image零、full fine `H1Zero`を一つのPropとして公開する。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3699 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 49 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: concrete finite Source、readings、law family、supported nerves、
+  reviewed morphismは存在反例に許可された`ambient-boundary`。非零class、H1消滅、
+  comparison image零をpremiseやstructure fieldとして受けない。
+- proof use: `factorLaw` / `separatingLaw`はactual `Reading.Factors`の正負proofへ接続し、
+  separating lawの除外をcoarse inadequacyに使用する。retained lawはactual K0/K1
+  coordinateを作り、nerve morphismはactual comparison mapに使用する。
+- certificate provenance: retained familyはCycle 25のpredicate subtypeであり、
+  coarse adequacyはdocstring付きtheoremとしてsubtype propertyから導く。comparison map、
+  quotient class、fine primitiveは既存APIまたはproof-local constructionで、選択済み
+  law mask、inverse、H1 certificateを保存しない。
+- route integrity: pass。G-103 `Factors`からCycle 25 canonical diagnostic、current K0/K1、
+  actual G-102 `H1`、actual generated comparisonへ直結する。historical obstructionの
+  custom complexや旧supported-nerve型を再利用しない。
+- anti-weakening: coarse側非零だけで止めず、actual comparison image零とfull fine
+  canonical `H1Zero`の両方を示す。dimension/cardinality、別diagnostic set、型差だけの
+  argumentを使わない。
+- vacuity / quality: retained familyは非空でlawは非定数、coarse H1 classは明示的に非零、
+  target factorは非単射。新規宣言はすべてdeclaration docstringを持ち、named law defは
+  Factors/adequacy proofへ接続し、Prop proofはtheoremとして公開する。このfixtureを
+  claim (v)の発火witnessやclaim (iv)(c)へ数えない。
+- common scans: `git diff --check` pass。untracked Lean fileのwhitespace check、hidden/BiDi、
+  new Lean placeholder、private path、reverse `Formal -> ResearchLean.AG` import、禁止語の
+  新規hitなし。
+- blocking findings: none。初回T3の`separatingLaw` API非接続とProp `abbrev` findingは
+  bounded repair後のfinding-limited再監査で実体解消した。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。
+- next obligation: claim (iv)(b)のcanonical hidden-class finite witnessをfresh selectorで
+  固定し、fine側actual非零classがinadequate coarse diagnosticで見えなくなることを示す。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 26
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct claim (iv)(a) as a canonical FactorsDiagnosticH1 false-positive finite witness
+proof_obligation_delta: an explicit nonzero coarse class, its zero image under the actual generated comparison map, and full fine canonical H1Zero are now fixed on one finite fixture
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateFalsePositive.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.coarse_factors_iff
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.factorLaw_nonconstant
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.coarse_not_adequate
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.fine_adequate
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.comparisonFactor_not_injective
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.fineFactorsDiagnosticH1Zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.coarseLoopClass_ne_zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.retainedComparisonH1Map_coarseLoopClass_zero
+      - AAT.AG.ResolutionInvariance.CanonicalInadequateFalsePositive.fixed_claim_iv_a
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - the canonical coarse Factors subtype retains exactly one nonconstant law
+    - the canonical coarse diagnostic has an explicit nonzero actual H1 class
+    - the actual generated comparison map sends that class to zero
+    - the full fine canonical Factors diagnostic has H1Zero
+  remaining:
+    - claim (iv)(b) canonical hidden-class witness
+    - claim (iv)(c) adequate Condition-C failure witness
+    - claim (v) nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - the retained family is the Cycle 25 exact predicate subtype
+    - coarse retained adequacy is derived from subtype properties
+    - the quotient class and comparison map are the actual G-102 and generated constructions
+    - the fine zero result is derived from an explicit tree primitive
+  unresolved:
+    - concrete classes for claim (iv)(b) and claim (iv)(c)
+proof_use_audit:
+  used_material_premises:
+    - positive and negative G-103 Reading.Factors proofs for the named laws
+    - coarse inadequacy and fine adequacy from the same original law family
+    - the current hereditary supported-nerve morphism
+    - the actual ThreeCochainComplex quotient and generated comparison H1 map
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; the finite theorem itself supplies Factors retention and exclusion, nonzero and zero witnesses
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_diagnostic_set: none-found
+  cardinality_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct claim (iv)(b) as a canonical hidden-class finite witness
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 25 — canonical inadequate-reading diagnostic
 
