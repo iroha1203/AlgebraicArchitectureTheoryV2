@@ -28,7 +28,9 @@
   image witnessとして使うlabel別comparison `H^1` mapの全射性はCycle 22で
   証明済み。fixed Condition Cからlabel別mapと既存finite DirectSum mapの
   bijectivityを導き、Cycle 13 naturalityでactual global comparison `H^1` mapの
-  bijectivityへ輸送するclaim (ii)はCycle 23で証明済み。Cycle 7 の
+  bijectivityへ輸送するclaim (ii)はCycle 23、全fine diagnostic classがactual
+  canonical mapによる一意なcoarse preimageを持つclaim (iii)はCycle 24で
+  証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -195,6 +197,11 @@ report はそれらを再定義しない。
   構成した。Cycle 13 naturalityとcanonical Cycle 11 block equivalenceにより、この
   bijectivityをactual global `generatedComparisonH1Map`自身へ輸送した。comparison
   inverse、dimension equality、alternate conjugate mapを入力しない。
+- 完了(現行 statement): Cycle 24 の claim (iii) overresolution corollary。任意の
+  fine actual `H^1` classについて、Cycle 23のglobal surjectivityからcoarse preimageを
+  proof内で取得し、global injectivityからその一意性を証明した。結論はactual
+  canonical `generatedComparisonH1Map`を直接使う`∃!`であり、新しいdiagnostic set、
+  inverse function、cardinality comparisonを導入しない。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -213,7 +220,127 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  系、inadequate 側診断、反例3種、発火 witness。
+  inadequate 側診断、反例3種、発火 witness。
+
+## Cycle 24 — overresolution corollary
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 24
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: claim (iii)をactual canonical global mapに対する各fine H1 classの一意なcoarse preimageとして導く
+proof obligation delta: Cycle 23のsurjectivityを存在、injectivityを一意性に展開して精細化が新しいdiagnostic classを作らないことを固定する
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceCorollary.lean`
+- declaration:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.overresolution_no_new_diagnostic_classes`
+- theoremはfixed `ConditionC`の下で全fine actual `H^1` classを量化し、actual
+  `generatedComparisonH1Map`へ写る一意なcoarse actual `H^1` classを返す。
+- Cycle 23 `generatedComparisonH1Map_bijective`のsurjective成分を存在に、injective
+  成分を一意性に実使用する。coarse witnessはproof内で取得し、inverse functionや
+  chosen sectionとして保存しない。
+- map方向はcoarseからfineである。全fine classがそのimageに入ることが「adequateな
+  精細化で新しいdiagnostic classが増えない」を直接表し、一意性はclaim (ii)の既証明
+  bijectivityをそのまま展開したものなので過大化ではない。
+- 新しい`DiagnosticSet`、Set.range alias、別quotient、cardinality equalityを導入せず、
+  K0 / K1から生成済みのactual G-102 `H^1`だけを使う。
+- focused manifest / single-file check: pass。
+- targeted module build: pass、3714 jobs。新規 module のlinter warningなし。
+- namespace axiom audit: 1 declaration、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、law family、adequate pair、supported nerves、review済み
+  morphismは`ambient-boundary`。fixed `ConditionC`は`direction-hypothesis`。
+- proof use: `hbijective.2`はpreimage存在、`hbijective.1`は一意性に実使用する。
+  `hother.trans hmap.symm`で二つのactual global imagesを一致させてinjectivityへ渡す。
+- certificate provenance: bijectivityはCycle 23 theoremから導出し、theorem inputやfieldで
+  受けない。coarse classはsurjectivity proof-local output。comparison inverseやclass
+  correspondence certificateを新設しない。
+- structure-field escape: none-found。結論はPropの`∃!`であり、新規 data surfaceではない。
+- route integrity: pass。actual coarse/fine `lawGeneratedComplex.H1`とactual canonical mapを
+  直接使う。
+- anti-weakening: mere renamed surjectivityで止めず、全fine classのactual canonical
+  preimageを明示する。別diagnostic setやcardinality equalityへ弱めない。
+- vacuity: theoremは一般の有限Sourceに成立するが、これをnondegenerate発火 witnessへ
+  数えない。発火 witnessは引き続き未完として保持する。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。actual map方向、
+  existence / uniquenessの両proof-use、overstrength、provenance、alternate diagnostic
+  surface不在を独立承認した。
+- next obligation: G-103 `Factors`判定で定まるcanonical descend可能 law部分族に基づき、
+  inadequate coarse reading側のlaw-generated coefficient complexとactual `H^1`診断を定義する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 24
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: derive claim (iii) as a unique coarse preimage for every fine H1 class under the actual canonical global comparison map
+proof_obligation_delta: Cycle 23 surjectivity supplies existence and injectivity supplies uniqueness
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceCorollary.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.overresolution_no_new_diagnostic_classes
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - every fine actual H1 class has a coarse preimage under the actual canonical map
+    - the coarse preimage is unique, closing claim (iii)
+  remaining:
+    - canonical inadequate diagnostics
+    - three counterexamples and the nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - bijectivity is derived by Cycle 23 rather than supplied
+    - the coarse preimage remains proof-local
+    - no inverse function, diagnostic set, or cardinality certificate is added
+  unresolved:
+    - canonical Factors provenance for inadequate diagnostics
+proof_use_audit:
+  used_material_premises:
+    - Cycle 23 global surjectivity for existence
+    - Cycle 23 global injectivity for uniqueness
+    - the actual coarse-to-fine generatedComparisonH1Map
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  alternate_diagnostic_set: none-found
+  cardinality_argument: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define canonical inadequate diagnostics from the G-103 Factors-selected law subfamily
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 23 — global comparison `H^1` bijectivity
 
