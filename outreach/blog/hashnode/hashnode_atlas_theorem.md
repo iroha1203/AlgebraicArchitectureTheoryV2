@@ -1,4 +1,4 @@
-# How Coarsely Can You Look at Your Code and Still Catch Every Bug?
+# Atlas Theorem: How Far Can You Zoom Out?
 
 A photorealistic portrait and a 16×16 pixel-art sprite can show you the same face. Comics theorist Scott McCloud called this **amplification through simplification**: removing lines doesn't discard information, it sharpens the essence.
 
