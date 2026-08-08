@@ -12,7 +12,9 @@
   証明済み。whole-nerve C0 / C5 / C6 と全座標 subnerve 相対の C1–C4 からなる
   incidence / support-only の条件 C package と、各 principal 条件・補助条件を
   識別する有限な正例 / 反例 instance pair は Cycle 15 で固定済み。exact block
-  comparison `H^1` map の単射性は Cycle 16 で証明済み。Cycle 7 の
+  comparison `H^1` map の単射性は Cycle 16、C3 の局所 face filling を actual block
+  cocycle の fiber-period 消滅へ接続する discrete Stokes theorem は Cycle 17 で
+  証明済み。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
 - completion candidate: `no`
@@ -129,6 +131,13 @@ report はそれらを再定義しない。
   G-102 の actual quotient `H^1` 上で generated block comparison map の単射性を得た。
   representative / path / primitive は theorem proof 内だけに現れ、data field として
   保存しない。C3 / C4 / C5 は全射性側へ残す。
+- 完了(現行 statement): Cycle 17 の C3 fiber-period 消滅。actual exact block
+  cocycle は任意の rational face chain の oriented incidence imageを有限和の交換と
+  actual `lawValueBlockD1 = 0` により annihilate する。C3 の existential face chainを
+  proof 内だけで取り出し、その exact equalityを代入して、任意の coordinate-fiber
+  cycle の period が零であることを証明した。C3 が同時に返す internal-face support
+  conjunct はこの scalar consequence では不要であり、未使用であることを明記する。
+  primitive、section、path、inverse は構成せず、有限 graph dualityへ残す。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -147,8 +156,130 @@ report はそれらを再定義しない。
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
 - 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  label 別全射性と global 不変性 theorem、系、inadequate 側診断、
+  finite graph duality、C2 / C4 / C5 による label 別全射性、global 不変性 theorem、系、inadequate 側診断、
   反例3種、発火 witness。
+
+## Cycle 17 — exact block cocycle fiber-period vanishing
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 17
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: C3 の局所 rational filling を actual exact-block cocycle の fiber-period 消滅へ接続する
+proof obligation delta: discrete Stokes と C3 existential elimination により全 coordinate-fiber period を零にした
+completion candidate: no
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberPeriods.lean`
+- principal declarations:
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockCycle_annihilates_coordinateFaceBoundary`
+  - `AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_annihilates_coordinateFiberCycle`
+- 最初の theorem は任意の exact block face chainについて、`e₀ - e₁ + e₂` の各
+  incidence sum を edge-first から face-first へ交換する。各 face の summand は actual
+  `lawValueBlockD1` cocycle equation で零になるため、face chain の oriented incidence
+  image と cocycle の pairing は零になる。
+- 次の theorem は `ConditionC3At` を指定 coarse block chart と coordinate-fiber cycle に
+  適用し、face chain と pointwise equalityを proof 内でだけ取得する。その equalityを
+  pairingへ代入し、最初の theoremを適用する。
+- exact block edge / face の module-local `Fintype` instance は Cycle 14 の canonical
+  coordinate subnerve instanceから定義的に導出する。有限性を新たな theorem premiseや
+  data field として受け取らない。
+- focused manifest check: pass。
+- targeted module build: pass、3706 jobs。新規 module の linter warning なし。
+- namespace axiom audit: 5 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: finite Source、finite law family、adequate pair、supported nerves、
+  reviewed morphism は `ambient-boundary`。label 別 C3 はこの node 唯一の
+  `direction-hypothesis`。C1 / C2 / C4 / C5 は theorem argumentに入れない。
+- proof use: actual block cocycle equation、3位置すべての face-edge incidence、C3 の
+  existential face chain、pointwise chain equalityを実使用する。C3 output の
+  internal-face support conjunct は scalar period の結論には論理的に不要で未使用である。
+  C3 package全体の独立必要性や support conjunct の proof-useはこの cycle では主張しない。
+- certificate provenance: face chain は C3 Propから proof-localに取得するだけで、selected
+  filling、primitive、basis、section、path、inverseを structureへ保存しない。
+- structure-field escape: none-found。新規 public Prop / structure / certificate surfaceはない。
+- route integrity: actual `lawValueBlockComplex.d1`、exact block coordinates、固定 C3 の
+  `coordinateFaceBoundary` を直接使う。dimension count、`H^1 = 0`、supplied inverse、
+  conclusion-equivalent exactness premiseを使わない。
+- anti-weakening: fiber period vanishingだけを主張し、fiber primitive、block map の
+  surjectivity / bijectivity、global invarianceへ読み替えない。
+- blocking findings: none。
+- fresh independent T3 verdict:
+  `approve / proof-obligation-discharged / completion_candidate: no`。C3 output の
+  internal-face support conjunct は exact filling witnessへの制約として維持されるが、
+  Stokes pairing は pointwise equalityだけで成立するため、projection後にその proofを
+  再使用しないことは hidden premise や overclaim ではないと判定された。
+- next obligation: finite rational graph dualityにより、全 fiber cycleを annihilate する
+  edge cochainから proof-local fiber primitiveを構成する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 17
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: connect C3 local rational filling to vanishing of every actual exact-block cocycle fiber period
+proof_obligation_delta: discrete Stokes and proof-local C3 elimination remove every coordinate-fiber period obstruction
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: fixed
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonFiberPeriods.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockCycle_annihilates_coordinateFaceBoundary
+      - AAT.AG.ResolutionInvariance.TargetSupportedNerveMorphism.lawValueBlockCycle_annihilates_coordinateFiberCycle
+premise_delta:
+  ambient_boundary:
+    - finite Source, finite law family, adequate readings, supported nerves, and reviewed morphism
+  discharged:
+    - discrete Stokes for every actual exact-block cocycle and rational face chain
+    - vanishing of the period on every coordinate-fiber cycle under C3
+  remaining:
+    - finite graph duality and proof-local fiber primitive construction
+    - C2-C5 normalization and per-label H1 surjectivity
+    - per-label bijectivity and global invariance through Cycle 13 naturality
+    - corollary, inadequate diagnostics, three counterexamples, and nondegenerate firing witness
+certificate_provenance:
+  discharged:
+    - C3 face coefficients are eliminated proof-locally and never stored
+    - edge and face finiteness is derived from the reviewed canonical coordinate subnerve
+  unresolved:
+    - proof-local fiber primitive and canonical H1 preimage construction
+proof_use_audit:
+  used_material_premises:
+    - actual block d1 cocycle equation
+    - all three oriented face-edge incidence positions
+    - C3 face-chain existence and exact pointwise equality
+  unused_material_premises:
+    - the internal-face support conjunct returned by C3 is not needed for this scalar consequence
+    - C1, C2, C4, and C5 are intentionally deferred
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: fiber-period vanishing is not reported as primitive existence or surjectivity
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove finite rational graph duality from cycle-annihilation to a proof-local fiber primitive
+completion_candidate: false
+tracking_issue_closed: false
+```
 
 ## Cycle 16 — exact block comparison H1 injectivity
 
