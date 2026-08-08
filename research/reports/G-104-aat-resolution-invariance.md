@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-104-aat-resolution-invariance.md`](../goals/G-104-aat-resolution-invariance.md)
 - tracking Issue: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902)
 - target theorem: Diagnostic Resolution Invariance Theorem
-- proof state: `target-proof-checkpoint`(現行 statement の claim (i) canonical
+- proof state: `target-theorem-proved`(現行 statement の claim (i) canonical
   comparison map は Cycle 9、有限 `(law, 値)` block の複体・次数別直和分解は
   Cycle 10、actual `H^1` quotient の block 有限直和同型は Cycle 11 で証明済み。
   label 別 comparison Hom / `h1Map` と global pullback の3次数 block 成分一致は
@@ -49,11 +49,17 @@
   退化成分の`comm1`両辺がともに零となることはCycle 29で固定済み。同一定数上で
   zero / oneの全actual block cellをsupportとlaw descentから分類し、whole-nerve C0/C5/C6、
   label別C1/C2/C4、任意のlocal rational fiber cycleを反復faceで充填するC3を証明して、
-  full fixed Condition Cを閉じたことはCycle 30で固定済み。両側非零`H^1`と最終
-  principal theoremは後続node。Cycle 7 の
+  full fixed Condition Cを閉じたことはCycle 30で固定済み。actual coarse complexの
+  反対向き二辺に対するperiodで非零`H^1` classを構成し、actual canonical comparison
+  mapの単射性からそのfine imageも非零と示し、Cycle 29/30の全発火条件とactual
+  bijectivityを同一closed `fixed_claim_v`へ束ねたclaim (v)はCycle 31で証明済み。
+  現行claim (i)–(v)のLean proofは揃い、PR #3943 fixed head `9ea25117`に対する
+  最終math-lean-review四査読は全lane `No major findings`、CIは7/7 pass。独立completion
+  auditもcentral uncheckedなしでtarget-proved gateをpassし、mergeとreport / Issueの
+  lifecycle同期だけが残る。Cycle 7 の
   `target-refuted` は改訂前の退化 face
   宣言規則に対する歴史証拠)
-- completion candidate: `no`
+- completion candidate: `yes`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -268,6 +274,16 @@ report はそれらを再定義しない。
   conservationからconnector係数も零化し、残るself-loop二本を二つの反復faceで任意係数のまま
   充填した。one blockもsingleton repeated faceで任意cycleを充填する。path・lift・face-chain・
   H1 certificateをfieldやtheorem premiseへ保存せず、closed `fixed_firing_conditionC`を得た。
+- 完了(現行 statement): Cycle 31 の claim (v) actual cohomology / principal node。
+  coarse actual global one-cochainをdirected edge zeroだけで一とし、反対向きedge zero / oneの
+  値の和をperiodに取った。actual `d0 = right - left`では二辺のendpoint値が相殺し、唯一の
+  coarse faceはself-loop edge twoを3回反復するため選択cochainのactual `d1`は零となる。
+  G-102のactual quotientでclassが零ならperiodも零となるが選択cycleのperiodは一なので、
+  `coarseFiringClass ≠ 0`を得た。closed `fixed_firing_conditionC`をCycle 23のactual global
+  bijectivity theoremへ渡し、そのcanonical imageとして定義した`fineFiringClass`も単射性から
+  非零と証明した。value-zero coordinate fiberの相異なる二chartとactual connector adjacencyも
+  principal surfaceへ明記し、Cycle 29の全nonvacuity conjunct、full Condition C、両側の非零class、
+  actual canonical mapのimage equalityとbijectivityを一つの`fixed_claim_v`へ束ねた。
 - 歴史証拠(改訂前の退化宣言規則): Cycle 7 の claim (i) blocker。改訂前
   規則が許す endpoint-defined fiber-internal edge は coarse self-loop へ
   非退化に写り得る。
@@ -285,9 +301,248 @@ report はそれらを再定義しない。
 - 歴史証拠(改訂前 statement): Cycle 4 の C0–C5 十分性 blocker。coarse self-loop の唯一 fine lift が
   同一 chart fiber の異なる chart を結ぶことで、coarse の非零 `H^1` class が
   fine coboundary へ写る有限反例を Lean で固定した。
-- 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation:
-  Cycle 29/30と同一fixture上の両側非零actual `H^1`、actual canonical comparison mapの
-  bijectivity適用、およびprincipal firing theorem。
+- 現 target(hereditary 退化宣言)に対する未完の数学 proof obligation: none。
+  fixed-head四査読、CI、独立completion auditはpass済み。残るのはPR mergeとtracking
+  Issueのlifecycle同期だけである。
+
+## Final completion judgment — target theorem proved
+
+```text
+Target theorem completion judgment
+
+verdict: target-theorem-proved
+target theorem: Diagnostic Resolution Invariance Theorem
+completion criteria: satisfied
+math-lean-review verdict: No major findings
+math-lean-review required gate: pass
+target proved gate: pass
+mathematical referee verdict: accept-main-theorem
+
+Reviewer vetoes:
+- math reviewer A: pass
+- math reviewer B: pass
+- Lean reviewer A: pass
+- Lean reviewer B: pass
+
+Proof obligation summary:
+- completed: fixed GOAL claims (i)–(v) and every discharge-required ledger row
+- remaining: none
+- blockers: none
+```
+
+### Final review packet and audit
+
+- final review packet:
+  - goal claim: present
+  - completion criteria: present
+  - Lean declarations: present
+  - proof artifacts: present
+  - proof obligation summary: present
+  - material premise discharge: present
+  - certificate provenance audit: present
+  - proof-use audit: present
+  - structure-field escape audit: present
+  - route-integrity audit: present
+  - cheat-route audit: present
+  - axiom audit: present
+  - placeholder scan: present
+  - dependency DAG: present
+  - anti-weakening audit: present
+  - report / tracking Issue refs: present
+- goal claim / completion criteria: fixed GOAL version
+  `3f43ffd4c68f5b79abe90d0255e5419ec3697f3f`、blob
+  `3bb623aeaa1181b6626a90141ea47e1717f2a7c6`のclaim (i)–(v)。
+- Lean declarations: actual `generatedComparisonHom` / `generatedComparisonH1Map`、
+  `generatedComparisonH1Map_bijective`、`overresolution_no_new_diagnostic_classes`、
+  canonical `FactorsDiagnosticH1`、`fixed_claim_iv_a` / `_b` / `_c`、
+  `fixed_firing_conditionC`、`fixed_claim_v`。
+- dependency DAG: Cycles 5, 8–14のgenerated complex / comparison / block APIからCycle 15の
+  Condition C、Cycles 16–22のblock単射・全射、Cycle 23のglobal claim (ii)、Cycle 24の
+  claim (iii)。Cycle 25のcanonical Factors診断からCycles 26–28のclaim (iv)。
+  Cycles 29–31の同一firing fixtureからclaim (v)。循環依存なし。
+- material premise discharge: adequacy、factor / law descend、actual K0/K1 generation、
+  hereditary morphism、C0–C6、canonical Factors subtype、反例3種、非退化firing witnessを
+  theorem / finite witnessで全て放電。未使用material premiseなし。
+- certificate provenance / proof use: quotient、block decomposition、comparison map、fine firing
+  classはcanonical constructionまたはreview済みpredecessor由来。inverse、selected preimage、
+  dimension equality、結論相当fieldを受けず、各material premiseをmain proof DAGで実使用する。
+- structure-field / route-integrity / cheat-route / anti-weakening audit: pass。actual canonical map
+  自身を主張し、別isomorphism、block-only class、zero-H1、constant-law、identity comparison、
+  target-fitting data、one-way-as-equivalence、GOAL後追い読替えなし。
+- verification: direct / focused pass、targeted build 3716 jobs、新規14宣言standard axioms only、
+  placeholder / hidden-BiDi / privacy / reverse-import / diff scans clean、fixed-head CI 7/7 pass。
+- final reviewers: Math A / Math B / Lean A / Lean Bの全laneが
+  `No major findings`。central unchecked、veto、未放電、台帳不整合なし。
+- referee-level proof audit: statement precision / natural-language correspondence /
+  quantifier scope / all-directions / nonvacuity / definition unfolding / acyclic dependency /
+  anti-weakening / route integrity / dependency / parent recheckの全項目がpass。
+- PR / tracking: PR #3943。Issue #3902はmerge前なので本ledger時点ではopen。
+
+```yaml
+ledger_type: target_theorem_completion
+goal: G-104-aat-resolution-invariance
+verdict: target-theorem-proved
+target_theorem: Diagnostic Resolution Invariance Theorem
+completion_criteria_status: satisfied
+math_lean_review_verdict: No major findings
+math_lean_review_gate: pass
+target_proved_gate: pass
+final_review_packet_status: complete
+reviewer_vetoes:
+  - math reviewer A: pass
+  - math reviewer B: pass
+  - Lean reviewer A: pass
+  - Lean reviewer B: pass
+material_premise_ledger_audit: pass
+certificate_provenance_audit: pass
+proof_use_audit: pass
+structure_field_escape_audit: pass
+route_integrity_audit: pass
+cheat_route_audit: pass
+hidden_conclusion_premise_audit: none-found
+axiom_audit_status: pass
+placeholder_scan_status: pass
+dependency_audit_status: pass
+artifact_sync_audit: pass
+parent_recheck_status: pass
+unchecked_items_block_completion: []
+completed_proof_obligations:
+  - claim i actual generated comparison Hom and H1 map
+  - claim ii actual global comparison bijectivity under fixed C0-C6
+  - claim iii no-new-diagnostic-class corollary on the actual map
+  - canonical inadequate-reading Factors diagnostic
+  - claim iv finite witnesses a, b, and c
+  - claim v single nondegenerate firing witness
+remaining_proof_obligations: []
+blockers: []
+tracking_issue_closed: false
+```
+
+## Cycle 31 — actual nonzero cohomology and the fixed firing witness
+
+```text
+Target theorem cycle result
+
+target theorem: Diagnostic Resolution Invariance Theorem
+cycle: 31
+decision: approve
+result type: proof-obligation-discharged
+proof obligation: Cycle 29/30と同一fixtureのactual両側H1に非零classを構成し、actual canonical mapのbijectivityと全発火条件をsingle-witness fixed_claim_vへ束ねる
+proof obligation delta: directed two-edge periodでcoarse quotient classを非零化し、fixed Condition Cからactual mapの単射性を得てfine imageも非零化し、claim (v)を閉じた
+completion candidate: yes
+```
+
+### Evidence
+
+- Lean file:
+  `research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringWitness.lean`
+- principal declaration:
+  `AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_claim_v`
+- `coarseDirectedPeriod`はactual value-zero edge zero / oneの評価の和である。edge zeroは
+  coarse chart zeroからone、edge oneはoneからzeroなので、actual `lawGeneratedD0`の
+  `right - left`を二辺で足すと任意zero-cochain上で相殺する。
+- `coarseFiringCochain`はactual global edge coordinateのunderlying cellがzeroの場合だけ一。
+  coarseの唯一のfaceはboundary三位置がすべてself-loop edge twoなので、actual
+  `lawGeneratedD1`は`0 - 0 + 0 = 0`。actual kernel cycleをG-102 quotientへ送り、零classなら
+  coboundary periodが選択cycleのunit periodに一致してしまうことから非零性を証明した。
+- `firingComparisonH1Map`はactual
+  `nerveMorphism.generatedComparisonH1Map laws coarse_adequate fine_adequate`そのもの。
+  Cycle 30のclosed `fixed_firing_conditionC`をCycle 23のgeneral theoremへ直接渡して
+  bijectivityを得る。`fineFiringClass`をcoarse classのactual imageとして定義し、同じ
+  theoremのinjectivityから非零性を証明した。
+- principal theoremはCycle 29の全conjunctを再掲し、actual value-zero coordinate fiberの
+  相異なるchart zero / oneと`zero_fiberAdjacent_zero_one`、full Condition C、actual
+  coarse / fine非零class、actual generated mapのimage equalityとbijectivityを明記する。
+- direct / focused check: pass。
+- targeted module build: pass、3716 jobs。新規moduleのlinter warningなし。
+- namespace axiom audit: 14 declarations、standard axioms only。
+
+### Audit
+
+- premise classification: fixed Source、readings、law family、supported nerves、morphismはclosed
+  existence witnessの`ambient-boundary`。新規theorem argument、typeclass、H1 witness premiseなし。
+- proof use: actual `d0`をperiod消滅、actual `d1`をcocycle性、actual G-102 quotientをclass非零性へ
+  直接使用する。`fixed_firing_conditionC`はactual mapのbijectivityとfine image非零性へ実使用する。
+- certificate provenance: coarse classはactual K0/K1 edge coordinates上のcochainから生成し、fine
+  classはactual canonical mapのimage。inverse、selected preimage、dimension equalityを保存しない。
+- route integrity: pass。self-loop class、別complex、block-only H1、任意isomorphism、零H1、別fixtureを
+  使わない。Cycle 29/30のpublic constantsを変更しない。
+- common scans: `git diff --check` pass。hidden/BiDi、new Lean placeholder、private path、
+  reverse `Formal -> ResearchLean.AG` import、禁止語の新規hitなし。
+- blocking findings: none。
+- next obligation: completion candidateのfresh T3、fixed-head四査読・CI・merge、独立final review、
+  report / Issue closure。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-104-aat-resolution-invariance
+target_theorem: Diagnostic Resolution Invariance Theorem
+cycle: 31
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove nonzero actual H1 on both sides and close the single-witness fixed_claim_v on the exact Cycle 29 and 30 fixture
+proof_obligation_delta: a directed two-edge period proves the coarse quotient class nonzero and actual comparison injectivity proves its fine image nonzero, closing claim v
+primary_specification:
+  source: research/goals/G-104-aat-resolution-invariance.md
+  version: 3f43ffd4c68f5b79abe90d0255e5419ec3697f3f
+  blob: 3bb623aeaa1181b6626a90141ea47e1717f2a7c6
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringWitness.lean
+    declarations:
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.coarseDirectedPeriod_boundary_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.coarseFiringCochain_cocycle
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.coarseFiringClass_ne_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.firingComparisonH1Map_bijective
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fineFiringClass_ne_zero
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.zero_coordinate_fiber_nontrivial
+      - AAT.AG.ResolutionInvariance.ResolutionInvarianceFiringWitness.fixed_claim_v
+build_status: pass
+axiom_audit_status: pass
+placeholder_scan_status: pass
+statement_not_weakened: pass
+hidden_material_premise: none-found
+premise_delta:
+  discharged:
+    - nonzero class in the actual coarse G-102 H1 quotient
+    - nonzero actual fine H1 class as the canonical comparison image
+    - bijectivity of the actual generated comparison map on the exact fixed fixture
+    - exact-coordinate nonvacuity of the two-chart C1 fiber and its connector
+    - the complete single-witness fixed_claim_v package
+  remaining:
+    - fixed-head review, CI, merge, and final completion audit gates
+certificate_provenance:
+  discharged:
+    - the coarse class comes from an actual K0 and K1 generated cochain and quotient representative
+    - the fine class is the actual canonical map image and its nonvanishing uses fixed Condition C through comparison injectivity
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - the opposite orientations of coarse edges zero and one in the coboundary period calculation
+    - the repeated self-loop boundary of the unique coarse face in the cocycle calculation
+    - the actual G-102 quotient relation in coarse class nonvanishing
+    - fixed_firing_conditionC in actual comparison bijectivity and fine image nonvanishing
+    - all Cycle 29 nonvacuity facts and the exact value-zero coordinate adjacency in fixed_claim_v
+  unused_material_premises: []
+instance_pair_audit:
+  status: pass
+  reason: no new public Prop or certificate type; fixed_claim_v is a closed positive instance theorem over reviewed existing APIs
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: complete fresh T3, fixed-head four-lane review and CI, merge, then run the independent final completion audit and close the tracking Issue
+completion_candidate: true
+tracking_issue_closed: false
+```
 
 ## Cycle 30 — fixed Condition C on the firing fixture
 
