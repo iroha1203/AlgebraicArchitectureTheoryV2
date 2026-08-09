@@ -1,0 +1,3300 @@
+{
+  "artifact": "G-104 C0-C6 necessity map slim checkpoint summary",
+  "provenance": {
+    "checkpoint_amendment_issue_comment": 5231857267,
+    "full_results": {
+      "canonical_generator": "build_results.py --output <path>",
+      "expected_sha256": "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306",
+      "repository_status": "derived; not committed"
+    },
+    "post_punit_manifest_sha256": "7147f672e1f23a11c01c3a2c5ad31165eb32d4105f5fa3e7c6eec7d5a51044a9",
+    "round1_through_round7_hash_resync_issue_comment": 5230523348
+  },
+  "r0": {
+    "gates": {
+      "a_three_lean_obstructions": {
+        "fixtures": [
+          {
+            "blocks": [
+              {
+                "coarse_targets_A": [
+                  0
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              }
+            ],
+            "name": "FaceLiftObstruction",
+            "pass": true
+          },
+          {
+            "blocks": [
+              {
+                "coarse_targets_A": [
+                  0
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": false,
+                  "surjective": false
+                }
+              }
+            ],
+            "name": "EdgeFiberObstruction",
+            "pass": true
+          },
+          {
+            "blocks": [
+              {
+                "coarse_targets_A": [
+                  0
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 2,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": false,
+                  "isomorphism": false,
+                  "surjective": true
+                }
+              }
+            ],
+            "name": "LoopLiftObstruction",
+            "pass": true
+          }
+        ],
+        "pass": true
+      },
+      "b_derived_support_hole": {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0
+            ],
+            "h1": {
+              "coarse_h1_dimension": 2,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": false,
+              "isomorphism": false,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 2,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": false,
+              "isomorphism": false,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 2,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": false,
+              "isomorphism": false,
+              "surjective": true
+            }
+          }
+        ],
+        "global_h1": {
+          "coarse_h1_dimension": 4,
+          "comparison_rank": 1,
+          "fine_h1_dimension": 1,
+          "injective": false,
+          "isomorphism": false,
+          "surjective": true
+        },
+        "pass": true
+      },
+      "c_block_reduction": {
+        "blocks": {
+          "value_one": {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          "value_zero": {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        },
+        "global_h1": {
+          "coarse_h1_dimension": 1,
+          "comparison_rank": 1,
+          "fine_h1_dimension": 1,
+          "injective": true,
+          "isomorphism": true,
+          "surjective": true
+        },
+        "pass": true
+      },
+      "d_indicator_realizability": {
+        "factors": [
+          {
+            "blocks": [
+              {
+                "coarse_targets_A": [
+                  0
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 0,
+                  "comparison_rank": 0,
+                  "fine_h1_dimension": 0,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              }
+            ],
+            "factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "law_type": "PUnit",
+            "name": "Fin3_to_Fin2",
+            "pass": true,
+            "value_type": "Bool"
+          },
+          {
+            "blocks": [
+              {
+                "coarse_targets_A": [
+                  0
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              },
+              {
+                "coarse_targets_A": [
+                  0,
+                  1,
+                  2
+                ],
+                "fine_targets_pi_preimage_A": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "h1": {
+                  "coarse_h1_dimension": 1,
+                  "comparison_rank": 1,
+                  "fine_h1_dimension": 1,
+                  "injective": true,
+                  "isomorphism": true,
+                  "surjective": true
+                }
+              }
+            ],
+            "factor_pi": [
+              0,
+              0,
+              1,
+              2
+            ],
+            "law_type": "PUnit",
+            "name": "Fin4_to_Fin3",
+            "pass": true,
+            "value_type": "Bool"
+          }
+        ],
+        "pass": true
+      },
+      "e_canonical_firing_oracle": {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "global_h1": {
+          "coarse_h1_dimension": 1,
+          "comparison_rank": 1,
+          "fine_h1_dimension": 1,
+          "injective": true,
+          "isomorphism": true,
+          "surjective": true
+        },
+        "pass": true
+      }
+    },
+    "pass": true,
+    "payload_sha256": "37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf",
+    "phase": "R0"
+  },
+  "r1": {
+    "pass": true,
+    "payload_sha256": "ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a",
+    "phase": "R1",
+    "preregistered_issue_comment": 5230270861,
+    "verdicts": [
+      {
+        "clause": "C0",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C0_not_necessary"
+      },
+      {
+        "clause": "C1",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C1_not_necessary"
+      },
+      {
+        "clause": "C2",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C2_not_necessary"
+      },
+      {
+        "clause": "C3",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C3_not_necessary"
+      },
+      {
+        "clause": "C4",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C4_not_necessary"
+      },
+      {
+        "clause": "C5",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C5_not_necessary"
+      },
+      {
+        "clause": "C6",
+        "evidence_schema_satisfied": true,
+        "verdict": "not-necessary",
+        "witness": "C6_not_necessary"
+      }
+    ],
+    "witnesses": [
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C0",
+        "failure_scope": "whole nerve",
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                0,
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [],
+              "vertices": 2
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [],
+              "vertices": 2
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0
+            ],
+            "face_map": [],
+            "vertex_map": [
+              0,
+              1
+            ]
+          },
+          "name": "C0_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C1",
+        "failure_scope": [
+          [
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [],
+              "vertices": 2
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [],
+              "vertices": 3
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0
+            ],
+            "face_map": [],
+            "vertex_map": [
+              0,
+              1,
+              1
+            ]
+          },
+          "name": "C1_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C2",
+        "failure_scope": [
+          [
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  2
+                ]
+              ],
+              "faces": [],
+              "vertices": 3
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [],
+              "vertices": 3
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0
+            ],
+            "face_map": [],
+            "vertex_map": [
+              0,
+              1,
+              2
+            ]
+          },
+          "name": "C2_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C3",
+        "failure_scope": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                1
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  2,
+                  2
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  2
+                ]
+              ],
+              "vertices": 3
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                2
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  2,
+                  2
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  2
+                ]
+              ],
+              "vertices": 3
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              1,
+              2
+            ],
+            "face_map": [
+              0
+            ],
+            "vertex_map": [
+              0,
+              1,
+              2
+            ]
+          },
+          "name": "C3_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C4",
+        "failure_scope": [
+          [
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                1
+              ],
+              [
+                1
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ],
+                [
+                  1,
+                  1,
+                  1
+                ]
+              ],
+              "vertices": 2
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                2
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ]
+              ],
+              "vertices": 2
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              1
+            ],
+            "face_map": [
+              0
+            ],
+            "vertex_map": [
+              0,
+              1
+            ]
+          },
+          "name": "C4_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C5",
+        "failure_scope": "whole nerve",
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                1
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ]
+              ],
+              "vertices": 2
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  1,
+                  1
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  2,
+                  2
+                ]
+              ],
+              "vertices": 2
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              1,
+              1
+            ],
+            "face_map": [
+              0,
+              0
+            ],
+            "vertex_map": [
+              0,
+              1
+            ]
+          },
+          "name": "C5_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      },
+      {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 0,
+              "comparison_rank": 0,
+              "fine_h1_dimension": 0,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          },
+          {
+            "coarse_targets_A": [
+              0,
+              1
+            ],
+            "fine_targets_pi_preimage_A": [
+              0,
+              1,
+              2
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "clause": "C6",
+        "failure_scope": "whole nerve",
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                1
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                1
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ]
+              ],
+              "vertices": 2
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0,
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "derived_face_supports": [],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  2
+                ]
+              ],
+              "faces": [],
+              "vertices": 3
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              1
+            ],
+            "face_map": [],
+            "vertex_map": [
+              0,
+              1,
+              1
+            ]
+          },
+          "name": "C6_not_necessary",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0,
+              0,
+              1
+            ],
+            "coarse_count": 2,
+            "fine_count": 3
+          }
+        },
+        "uniform": true,
+        "verdict": "not-necessary",
+        "witness_pass": true
+      }
+    ]
+  },
+  "r2": {
+    "candidate_generations": [
+      {
+        "semantic_id": "R2-CSTAR-DIRECT-v1",
+        "semantic_sha256": "5e883518c3f82052d1921752118adf8307a259282eb359abdc069dc2b4a82756",
+        "spec": "scope:C1-C4 reduce both A-subnerves per nonempty A; C0,C5,C6 reduce both whole supported nerves once\nfacetwin:exact ordered edge triple and exact derived Target-support signature\nreduction:quotient FaceTwin then simultaneously once remove every self-loop e and class (e,e,e) when e occurs in no other class\ncritical:remaining self-loop or nonloop whose endpoints remain path-connected after deleting that edge\nactive-fine-chart:endpoint of retained fine lift of a critical coarse edge or retained fine face mapping a retained coarse FaceTwin class\nC0:critical coarse vertex support equals union of pi-images of active fine chart supports in its phi-fiber\nC1:critical port is nonempty and connected by all selected fine edges with both endpoints in the port\nC2:every critical coarse edge has a retained mapped fine lift\nC3:retained edgeMap-none fiber cycles are spanned over Q by retained faceMap-none internal face boundaries\nC4:every retained coarse FaceTwin class has a retained fine face mapping one of its members\ndirect-lifttwin:same retained fine face co-occurrence or occurrence in retained fine faces mapping one coarse FaceTwin class, with equal lift support signatures\nC5:the direct LiftTwin graph on each critical coarse edge lift set is a clique\nC6:each connected component of that graph over a critical coarse self-loop has a fine self-loop representative"
+      },
+      {
+        "semantic_id": "R2-CSTAR-COMPONENT-v2",
+        "semantic_sha256": "b16b934268aded0fd256141f1c516f3f28ee45bf8c0d40bad4dbfe8819ce6e80",
+        "spec": "scope:C1-C4 reduce both A-subnerves per nonempty A; C0,C5,C6 reduce both whole supported nerves once\nfacetwin:exact ordered edge triple and exact derived Target-support signature\nreduction:quotient FaceTwin then simultaneously once remove every self-loop e and class (e,e,e) when e occurs in no other class\ncritical:remaining self-loop or nonloop whose endpoints remain path-connected after deleting that edge\nactive-fine-chart:endpoint of retained fine lift of a critical coarse edge or retained fine face mapping a retained coarse FaceTwin class\nC0:critical coarse vertex support equals union of pi-images of active fine chart supports in its phi-fiber\nC1:critical port is nonempty and connected by all selected fine edges with both endpoints in the port\nC2:every critical coarse edge has a retained mapped fine lift\nC3:retained edgeMap-none fiber cycles are spanned over Q by retained faceMap-none internal face boundaries\nC4:every retained coarse FaceTwin class has a retained fine face mapping one of its members\ndirect-lifttwin:same retained fine face co-occurrence or occurrence in retained fine faces mapping one coarse FaceTwin class, with equal lift support signatures\nC5:the direct LiftTwin graph on each critical coarse edge lift set has at most one connected component\nC6:each connected component of that graph over a critical coarse self-loop has a fine self-loop representative"
+      },
+      {
+        "semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "semantic_sha256": "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa",
+        "spec": "scope:C1-C4 reduce both A-subnerves per nonempty A; C0,C5,C6 reduce both whole supported nerves once\nfacetwin:exact ordered edge triple and exact derived Target-support signature\nreduction:quotient FaceTwin then simultaneously once remove every self-loop e and class (e,e,e) when e occurs in no other class\ncritical:remaining self-loop or nonloop whose endpoints remain path-connected after deleting that edge\nactive-fine-chart:endpoint of retained fine lift of a critical coarse edge or retained fine face mapping a retained coarse FaceTwin class\nC0:critical coarse vertex support equals union of pi-images of active fine chart supports in its phi-fiber\nC1:critical port is nonempty and connected by all selected fine edges with both endpoints in the port\nC2:every critical coarse edge has a retained mapped fine lift\nC3:retained edgeMap-none fiber cycles are spanned over Q by retained faceMap-none internal face boundaries\nC4:every retained coarse FaceTwin class has a retained fine face mapping one of its members\nC5:the CertifiedDirect SLOT-or-KILL graph on each critical coarse edge lift set has at most one connected component\nC6:each CertifiedDirect connected component over a critical coarse self-loop has a fine self-loop representative\ncertified-slot:two retained fine faces map one coarse FaceTwin class and differ in exactly one ordered boundary slot occupied by the two lifts; other edges and support signatures are exact\ncertified-kill:a retained fine face has boundary (u,v,z) or (v,u,z), another has (z,z,z), mapped coarse boundaries are (E,E,Z) and (Z,Z,Z), and edge/face support signatures are exact\ncertified-swap:reflexive transitive closure of the undirected SLOT-or-KILL relation"
+      }
+    ],
+    "counterexample_fixtures": {
+      "Chain3": {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 1,
+              "injective": true,
+              "isomorphism": true,
+              "surjective": true
+            }
+          }
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [
+                [
+                  1,
+                  1,
+                  1
+                ],
+                [
+                  2,
+                  2,
+                  2
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ],
+                [
+                  0,
+                  0,
+                  2
+                ]
+              ],
+              "vertices": 1
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [
+                [
+                  3,
+                  3,
+                  3
+                ],
+                [
+                  4,
+                  4,
+                  4
+                ],
+                [
+                  0,
+                  1,
+                  3
+                ],
+                [
+                  1,
+                  2,
+                  4
+                ]
+              ],
+              "vertices": 1
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              0,
+              0,
+              1,
+              2
+            ],
+            "face_map": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "vertex_map": [
+              0
+            ]
+          },
+          "name": "R2_round1_Chain3",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0
+            ],
+            "coarse_count": 1,
+            "fine_count": 1
+          }
+        },
+        "name_free_semantic_id_20hex": "be08d17b39c8e16e3fee",
+        "name_free_semantic_sha256": "be08d17b39c8e16e3feeb0cdbb6824e107ac9be5c06bd295890a673f609a1b18",
+        "query_history": [
+          {
+            "candidate_aggregate": {
+              "C0*": true,
+              "C1*": true,
+              "C2*": true,
+              "C3*": true,
+              "C4*": true,
+              "C5*": false,
+              "C6*": true
+            },
+            "candidate_all": false,
+            "candidate_semantic_id": "R2-CSTAR-DIRECT-v1",
+            "id": "be08d17b39c8e16e3fee",
+            "necessity_break": true,
+            "round": "R2-round-1",
+            "sufficiency_break": false,
+            "uniform": true
+          },
+          {
+            "candidate_aggregate": {
+              "C0*": true,
+              "C1*": true,
+              "C2*": true,
+              "C3*": true,
+              "C4*": true,
+              "C5*": true,
+              "C6*": true
+            },
+            "candidate_all": true,
+            "candidate_semantic_id": "R2-CSTAR-COMPONENT-v2",
+            "id": "be08d17b39c8e16e3fee",
+            "necessity_break": false,
+            "round": "R2-round-2",
+            "sufficiency_break": false,
+            "uniform": true
+          },
+          {
+            "candidate_aggregate": {
+              "C0*": true,
+              "C1*": true,
+              "C2*": true,
+              "C3*": true,
+              "C4*": true,
+              "C5*": true,
+              "C6*": true
+            },
+            "candidate_all": true,
+            "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+            "id": "be08d17b39c8e16e3fee",
+            "necessity_break": false,
+            "round": "R2-round-3",
+            "sufficiency_break": false,
+            "uniform": true
+          }
+        ]
+      },
+      "UnkilledTwin": {
+        "blocks": [
+          {
+            "coarse_targets_A": [
+              0
+            ],
+            "h1": {
+              "coarse_h1_dimension": 1,
+              "comparison_rank": 1,
+              "fine_h1_dimension": 2,
+              "injective": true,
+              "isomorphism": false,
+              "surjective": false
+            }
+          }
+        ],
+        "fixture": {
+          "K1_supports_derived_by_intersection": true,
+          "chartSupport_compatible": true,
+          "coarse": {
+            "chart_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                0
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "vertices": 1
+            }
+          },
+          "fine": {
+            "chart_supports": [
+              [
+                0
+              ]
+            ],
+            "derived_edge_supports": [
+              [
+                0
+              ],
+              [
+                0
+              ],
+              [
+                0
+              ]
+            ],
+            "derived_face_supports": [
+              [
+                0
+              ]
+            ],
+            "nerve": {
+              "edges": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "faces": [
+                [
+                  0,
+                  1,
+                  2
+                ]
+              ],
+              "vertices": 1
+            }
+          },
+          "morphism": {
+            "edge_map": [
+              0,
+              0,
+              1
+            ],
+            "face_map": [
+              0
+            ],
+            "vertex_map": [
+              0
+            ]
+          },
+          "name": "R2_round2_UnkilledTwin",
+          "targets": {
+            "canonical_surjective_factor_pi": [
+              0
+            ],
+            "coarse_count": 1,
+            "fine_count": 1
+          }
+        },
+        "name_free_semantic_id_20hex": "e4af673b600c2cd55658",
+        "name_free_semantic_sha256": "e4af673b600c2cd5565858eab3e4784ac5c7f417816f606e5776561d1eb1806e",
+        "query_history": [
+          {
+            "candidate_aggregate": {
+              "C0*": true,
+              "C1*": true,
+              "C2*": true,
+              "C3*": true,
+              "C4*": true,
+              "C5*": true,
+              "C6*": true
+            },
+            "candidate_all": true,
+            "candidate_semantic_id": "R2-CSTAR-COMPONENT-v2",
+            "id": "e4af673b600c2cd55658",
+            "necessity_break": false,
+            "round": "R2-round-2",
+            "sufficiency_break": true,
+            "uniform": false
+          },
+          {
+            "candidate_aggregate": {
+              "C0*": true,
+              "C1*": true,
+              "C2*": true,
+              "C3*": true,
+              "C4*": true,
+              "C5*": false,
+              "C6*": true
+            },
+            "candidate_all": false,
+            "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+            "id": "e4af673b600c2cd55658",
+            "necessity_break": false,
+            "round": "R2-round-3",
+            "sufficiency_break": false,
+            "uniform": false
+          }
+        ]
+      }
+    },
+    "rounds": [
+      {
+        "blocker_id": null,
+        "candidate_semantic_id": "R2-CSTAR-DIRECT-v1",
+        "canonical_code_audit": null,
+        "coverage_limit": "Exactly the 590 preregistered core cases, 13 required fixtures, and Chain3; arbitrary larger incidence is not covered.",
+        "issue_comments": {
+          "additional_pre_run": [
+            5230443070
+          ],
+          "preregistration": [
+            5230386108,
+            5230405605
+          ],
+          "result": [
+            5230444735
+          ]
+        },
+        "key": "round1_direct",
+        "payload_sha256": "82aa4aa6895bbde75e5092f265f18d217fa66c17b63c16ebad92011a239861de",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 604,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 604,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 604,
+          "raw_cases": 604,
+          "strict_superset": null
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_nonisomorphic_counterexamples": [
+            "be08d17b39c8e16e3fee"
+          ],
+          "new_verdicts": [],
+          "progress": true,
+          "streak_after_round": null
+        },
+        "queries": {
+          "necessity_break_count": 1,
+          "necessity_break_ids": [
+            "be08d17b39c8e16e3fee"
+          ],
+          "sufficiency_break_count": 0,
+          "sufficiency_break_ids": []
+        },
+        "round": "R2-round-1",
+        "same_blocker_evidence": null,
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": null,
+        "candidate_semantic_id": "R2-CSTAR-COMPONENT-v2",
+        "canonical_code_audit": null,
+        "coverage_limit": "Exactly the round1 population plus UnkilledTwin; arbitrary larger incidence is not covered.",
+        "issue_comments": {
+          "additional_pre_run": [
+            5230449728
+          ],
+          "preregistration": [
+            5230446212
+          ],
+          "result": [
+            5230451462
+          ]
+        },
+        "key": "round2_component",
+        "payload_sha256": "ebc6f486a661e4fa53598d0c53efaaacf3cd1c4535e79fa31afedc222f7b260a",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 605,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 1,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 605,
+          "raw_cases": 605,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": true,
+          "new_nonisomorphic_counterexamples": [
+            "e4af673b600c2cd55658"
+          ],
+          "new_verdicts": [],
+          "progress": true,
+          "streak_after_round": null
+        },
+        "queries": {
+          "necessity_break_count": 0,
+          "necessity_break_ids": [],
+          "sufficiency_break_count": 1,
+          "sufficiency_break_ids": [
+            "e4af673b600c2cd55658"
+          ]
+        },
+        "round": "R2-round-2",
+        "same_blocker_evidence": null,
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": null,
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": null,
+        "coverage_limit": "Exactly the round2 population under CERTIFIED-v3; arbitrary larger incidence is not covered.",
+        "issue_comments": {
+          "additional_pre_run": [
+            5230457738
+          ],
+          "preregistration": [
+            5230453578
+          ],
+          "result": [
+            5230459292
+          ]
+        },
+        "key": "round3_certified",
+        "payload_sha256": "bcd3408ebe16429dec1a136a64c1ee4fffc99c6adcd31c548cd90cdf9cb6e381",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 605,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 0,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 605,
+          "raw_cases": 605,
+          "strict_superset": null
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": true,
+          "new_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": true,
+          "streak_after_round": null
+        },
+        "queries": {
+          "necessity_break_count": 0,
+          "necessity_break_ids": [],
+          "sufficiency_break_count": 0,
+          "sufficiency_break_ids": []
+        },
+        "round": "R2-round-3",
+        "same_blocker_evidence": null,
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": null,
+        "coverage_limit": "Three fixed-label closed two-dimensional identity cores; general face multiplicities and nonidentity refinements are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230462990
+          ],
+          "result": [
+            5230466829
+          ]
+        },
+        "key": "round4_closed_2d",
+        "payload_sha256": "d35620af9bfee3bf2e301ad91b562f3e788a063873a0042cee8425c20d72ce94",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 608,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 3,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 608,
+          "raw_cases": 608,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": null
+        },
+        "queries": {
+          "necessity_break_count": 0,
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "sufficiency_break_count": 0
+        },
+        "round": "R2-round-4",
+        "same_blocker_evidence": null,
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "historical_no_progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": null,
+        "coverage_limit": "One fixed-label identity square with six coarse chart masks and exact pi-preimages; arbitrary support masks and nonidentity incidence are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230467922
+          ],
+          "result": [
+            5230475473
+          ]
+        },
+        "key": "round5_mixed_support",
+        "payload_sha256": "09012de4338717f4332336a4a51b1d6103e59264f600c17827004d17699982c4",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1904,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 1296,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1904,
+          "raw_cases": 1904,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": null
+        },
+        "queries": {
+          "baseline_necessity_break_count": 0,
+          "baseline_sufficiency_break_count": 0,
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0
+        },
+        "round": "R2-round-5",
+        "same_blocker_evidence": null,
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "stop_streak_ineligible",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": null,
+        "coverage_limit": "Two linear nonfree face chains of lift counts four and five; branching and arbitrary length are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230507176
+          ],
+          "result": [
+            5230512797
+          ]
+        },
+        "key": "round6_nonfree_linear_face_chain",
+        "payload_sha256": "26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1906,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1906,
+          "raw_cases": 1906,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": null
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_new_counterexample_count": 0
+        },
+        "round": "R2-round-6",
+        "same_blocker_evidence": {
+          "free_pair_count": 0,
+          "nonidentity": true,
+          "remaining_gap": "No general proof for arbitrary length or branching of retained face chains.",
+          "retained_face_chain_lengths": [
+            3,
+            4
+          ]
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "historical_no_progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": null,
+        "coverage_limit": "One branching tree and one cycle relation graph at full Target support; arbitrary graph size and support distribution are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230514887
+          ],
+          "result": [
+            5230519971
+          ]
+        },
+        "key": "round7_nonfree_branching_face_chain",
+        "payload_sha256": "6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1908,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1908,
+          "raw_cases": 1908,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": null
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_new_counterexample_count": 0
+        },
+        "round": "R2-round-7",
+        "same_blocker_evidence": {
+          "free_pair_count": 0,
+          "nonidentity": true,
+          "relation_graphs": [
+            "branching-tree",
+            "cycle"
+          ],
+          "remaining_gap": "No general proof for arbitrary retained face-chain graphs."
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "historical_no_progress",
+          "recorded_streak_after_round": null,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": {
+          "full_sha256_collision_count": 0,
+          "registered_code_count": 6,
+          "truncated_20hex_collision_count": 0
+        },
+        "coverage_limit": "The two fixed full-support six-lift relation graphs (a KILL path and the SLOT circular ladder C3 x K2) plus the recomputed prior 1908 cases; arbitrary relation graphs, larger lift sets, and mixed KILL/SLOT graphs are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230713854
+          ],
+          "result": [
+            5230818358
+          ]
+        },
+        "key": "round8_invalid_diagnostic_relation_grammar",
+        "payload_sha256": "a239fbd921b7fd97de25ad0d00a43b5d5195116c9ecbf8d83e1f1911dffe3178",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1910,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1910,
+          "raw_cases": 1910,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "additional_calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_canonical_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": 0
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_counterexamples": [],
+          "prior_sufficiency_or_necessity_break_count": 0
+        },
+        "round": "R2-round-8",
+        "same_blocker_evidence": {
+          "finite_registered_graphs_close": true,
+          "remaining_gap": "No general proof for an arbitrary retained nonfree face-chain relation graph.",
+          "valid_no_progress_1_of_2": false
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "invalid_diagnostic",
+          "recorded_streak_after_round": 0,
+          "valid": false
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": {
+          "full_sha256_collision_count": 0,
+          "registered_code_count": 8,
+          "truncated_20hex_collision_count": 0
+        },
+        "coverage_limit": "The fixed mixed-color diamond and one fixed split-support figure-eight, plus the recomputed prior 1910 cases; arbitrary graph size, certificate coloring, face multiplicity, and support distribution are not covered.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230824089
+          ],
+          "result": [
+            5230876303
+          ]
+        },
+        "key": "round9_valid_mixed_relation_support",
+        "payload_sha256": "596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1912,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1912,
+          "raw_cases": 1912,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "additional_calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_canonical_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": 1
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_counterexamples": [],
+          "prior_sufficiency_or_necessity_break_count": 0
+        },
+        "round": "R2-round-9",
+        "same_blocker_evidence": {
+          "finite_mixed_or_split_support_cases_close": true,
+          "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs and arbitrary support distributions.",
+          "valid_no_progress_1_of_2": true
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "historical_no_progress",
+          "recorded_streak_after_round": 1,
+          "valid": true
+        },
+        "stop_audit": null
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": {
+          "compact_json_collision_count": 0,
+          "full_sha256_collision_count": 0,
+          "new_registered_code_count": 2,
+          "prior_registered_code_count": 8,
+          "registered_code_count": 10,
+          "strict_new": true,
+          "truncated_20hex_collision_count": 0
+        },
+        "coverage_limit": "The exact K2,3 mixed overlap-support fixture and exact K4-plus-star three-chart chain-support fixture, all 15 nonempty A for each, plus the recomputed prior 1912 cases. Cross-chart nonloop edges or faces, arbitrary graph size and coloring, arbitrary face multiplicity, and arbitrary compatible support distributions remain outside this finite coverage.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5230881464
+          ],
+          "result": [
+            5230966215
+          ]
+        },
+        "key": "round10_valid_multichart_face_chain",
+        "payload_sha256": "6f2a6287ae3f9c85300711b01b701ba6393dd2d5d44b3e2ebb748df923017a6f",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1914,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1914,
+          "raw_cases": 1914,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "additional_calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "new_canonical_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": 2
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_counterexamples": [],
+          "prior_sufficiency_or_necessity_break_count": 0
+        },
+        "round": "R2-round-10",
+        "same_blocker_evidence": {
+          "finite_multichart_relation_cases_close": true,
+          "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs and arbitrary compatible multichart support distributions.",
+          "valid_no_progress_2_of_2": true
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": false,
+          "final_stop_c_streak_after_round": 0,
+          "history_classification": "historical_retracted_stop_c",
+          "recorded_streak_after_round": 2,
+          "valid": true
+        },
+        "stop_audit": {
+          "stop_condition_A_completion": false,
+          "stop_condition_B_finite_exhaustion": false,
+          "stop_condition_C_two_valid_same_blocker_no_progress": true,
+          "terminal_reason": "Stop-C: two consecutive valid same-blocker no-progress rounds"
+        }
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": {
+          "compact_json_collision_count": 0,
+          "full_sha256_collision_count": 0,
+          "new_registered_code_count": 2,
+          "prior_registered_code_count": 10,
+          "registered_code_count": 12,
+          "strict_new": true,
+          "truncated_20hex_collision_count": 0
+        },
+        "coverage_limit": "The two fixed full-support six-lift mixed graphs W5 K5/S5 and K3,3 K3/S6, all 15 nonempty A for each, plus the recomputed prior 1914 cases. Arbitrary graph size or coloring, face multiplicity, support distribution, multichart supports, and cross-chart incidence remain outside this finite coverage.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5231154236
+          ],
+          "result": [
+            5231263023
+          ]
+        },
+        "key": "round11_post_punit_wheel_bipartite",
+        "payload_sha256": "a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1916,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1916,
+          "raw_cases": 1916,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "additional_calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "entry_streak": 0,
+          "new_canonical_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": 1
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_counterexamples": [],
+          "prior_sufficiency_or_necessity_break_count": 0
+        },
+        "round": "R2-round-11",
+        "same_blocker_evidence": {
+          "fixed_full_support_six_lift_mixed_graphs_close": true,
+          "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs, colorings, face multiplicities, or support distributions.",
+          "valid_no_progress_1_of_2": true
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": true,
+          "final_stop_c_streak_after_round": 1,
+          "history_classification": "final_valid_no_progress_1_of_2",
+          "recorded_streak_after_round": 1,
+          "valid": true
+        },
+        "stop_audit": {
+          "finite_zero_result_is_not_general_proof": true,
+          "stop_condition_B_finite_exhaustion": false,
+          "stop_condition_C_two_valid_same_blocker_no_progress": false
+        }
+      },
+      {
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "candidate_semantic_id": "R2-CSTAR-CERTIFIED-v3",
+        "canonical_code_audit": {
+          "compact_json_collision_count": 0,
+          "full_sha256_collision_count": 0,
+          "new_registered_code_count": 2,
+          "prior_registered_code_count": 12,
+          "registered_code_count": 14,
+          "strict_new": true,
+          "truncated_20hex_collision_count": 0
+        },
+        "coverage_limit": "The exact 1918 semantic cases through the fixed W5, K3,3, octahedral, house, and star graphs, with lift count at most six and no cross-chart nonloop edge or face. Arbitrary graph size, certificate coloring, face multiplicity, chart count, and compatible support distribution remain outside this finite coverage.",
+        "issue_comments": {
+          "additional_pre_run": [],
+          "preregistration": [
+            5231270132
+          ],
+          "result": [
+            5231343121
+          ]
+        },
+        "key": "round12_post_punit_octahedral_partitioned",
+        "payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
+        "population": {
+          "all_cases_evaluated": true,
+          "full_semantic_unique_ids": 1918,
+          "full_sha256_collision_count": 0,
+          "new_raw_cases": 2,
+          "prefix_20hex_collision_count": 0,
+          "prefix_20hex_unique_ids": 1918,
+          "raw_cases": 1918,
+          "strict_superset": true
+        },
+        "progress_audit": {
+          "additional_calibration_fixes": [],
+          "candidate_semantic_change": false,
+          "entry_streak": 1,
+          "new_canonical_nonisomorphic_counterexamples": [],
+          "new_verdicts": [],
+          "progress": false,
+          "streak_after_round": 2
+        },
+        "queries": {
+          "new_counterexample_count": 0,
+          "new_counterexample_ids": [],
+          "new_necessity_break_count": 0,
+          "new_sufficiency_break_count": 0,
+          "prior_counterexamples": [],
+          "prior_sufficiency_or_necessity_break_count": 0
+        },
+        "round": "R2-round-12",
+        "same_blocker_evidence": {
+          "fixed_octahedral_and_partitioned_multichart_cases_close": true,
+          "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs, certificate colorings, face multiplicities, chart counts, or compatible support distributions.",
+          "valid_no_progress_2_of_2": true
+        },
+        "status": {
+          "counted_in_final_stop_c_streak": true,
+          "final_stop_c_streak_after_round": 2,
+          "history_classification": "final_valid_no_progress_2_of_2",
+          "recorded_streak_after_round": 2,
+          "valid": true
+        },
+        "stop_audit": {
+          "finite_zero_result_is_not_general_proof": true,
+          "stop_condition_A_completion": false,
+          "stop_condition_B_finite_exhaustion": false,
+          "stop_condition_C_two_valid_same_blocker_no_progress": true,
+          "terminal_reason": "Stop-C: two consecutive post-PUnit valid same-blocker no-progress rounds"
+        }
+      }
+    ]
+  },
+  "randomness": "none",
+  "schema_version": 1,
+  "serialization": "UTF-8, LF, indent=2, sort_keys=True, trailing newline",
+  "terminal": {
+    "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+    "consecutive_no_progress_rounds": [
+      "R2-round-11",
+      "R2-round-12"
+    ],
+    "coverage_limit": "Finite exact populations through 1918 semantic cases, fixed W5, K3,3, octahedral, house, and star graphs, and lift count at most six only; no general theorem for arbitrary retained non-free face-chain graphs, certificate coloring, chart count, cross-chart coupled incidence, face multiplicity, or compatible support distribution.",
+    "draft_pr_checkpoint": true,
+    "final_population": 1918,
+    "historical_pre_punit_rounds_not_counted_in_final_streak": [
+      "R2-round-8",
+      "R2-round-9",
+      "R2-round-10"
+    ],
+    "historical_retracted_stop_c_result_issue_comment": 5230966215,
+    "issue_remains_open": true,
+    "kind": "C",
+    "last_progress_event": "R0(d) PUnit provenance calibration fix",
+    "last_progress_issue_comment": 5231149474,
+    "last_provenance_correction": "indicator law_type corrected from historical Unit label to the actual PUnit field; counted as PRD progress and reset Stop-C streak",
+    "prd_retained": true,
+    "r1_verdict_map_complete": true,
+    "r2_characterization_complete": false,
+    "round10_preregistration_issue_comment": 5230881464,
+    "round11_payload_sha256": "a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336",
+    "round11_preregistration_issue_comment": 5231154236,
+    "round11_result_issue_comment": 5231263023,
+    "round12_payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
+    "round12_preregistration_issue_comment": 5231270132,
+    "round12_result_issue_comment": 5231343121,
+    "round8_diagnostic_counted_in_stop_streak": false,
+    "round9_result_issue_comment": 5230876303,
+    "same_blocker_evidence": {
+      "fixed_octahedral_and_partitioned_multichart_cases_close": true,
+      "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs, certificate colorings, face multiplicities, chart counts, or compatible support distributions.",
+      "valid_no_progress_2_of_2": true
+    },
+    "stop_audit": {
+      "finite_zero_result_is_not_general_proof": true,
+      "stop_condition_A_completion": false,
+      "stop_condition_B_finite_exhaustion": false,
+      "stop_condition_C_two_valid_same_blocker_no_progress": true,
+      "terminal_reason": "Stop-C: two consecutive post-PUnit valid same-blocker no-progress rounds"
+    },
+    "stop_c_result_issue_comment": 5231343121,
+    "task_complete": false
+  }
+}

@@ -282,8 +282,9 @@ Round 6/7 の result SHA-256 はそれぞれ
 Round 8–10 の finite payloadは履歴として保持する。ただし Round 9/10 による旧Stop Cの後、
 `Law=PUnit` provenance calibrationの解消が Issue #3948 comment `5231149474` に
 最後の進展として固定されたため、そのStop C判定を撤回し、両roundをhistoricalへ移した。
-最終統合回帰は `44 tests / 346.745s / OK` であり、Round 10当時の実行数を
-最終値として再利用していない。
+統合回帰は `47 tests / 633.323s / OK`、査読後のprojection強化に対するfocused
+再検証は `3 tests / 316.488s / OK` であり、Round 10当時の実行数を最終値として
+再利用していない。
 
 post-PUnitの有効ラウンドは次のIssue記録に固定した。
 
@@ -335,15 +336,25 @@ canonical生成:
 
 ```bash
 cd research/experiments/g104-necessity-map
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test_necessity_map.py test_r2_hunt.py
-PYTHONDONTWRITEBYTECODE=1 python3 build_results.py --output results.json
-shasum -a 256 results.json
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test_necessity_map.py test_r2_hunt.py test_build_results.py
+PYTHONDONTWRITEBYTECODE=1 python3 build_results.py \
+  --output /tmp/g104-necessity-map-results.json \
+  --summary-output results-summary.json
+shasum -a 256 results-summary.json /tmp/g104-necessity-map-results.json
 ```
 
 - Python standard libraryのみ。
 - exact linear algebraは `fractions.Fraction` 上。
 - 乱数なし。
 - serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
-- 最終統合回帰: `44 tests / 346.745s / OK`
-- canonical `results.json` SHA-256:
+- commit対象の canonical `results-summary.json` SHA-256:
+  `afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5`
+- repo外で再生成する canonical full `results.json` SHA-256:
   `cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306`
+- 統合回帰: `47 tests / 633.323s / OK`
+- 査読後のprojection強化 focused再検証: `3 tests / 316.488s / OK`
+
+Issue #3948 comment `5231857267` のcheckpoint amendmentにより、フルJSONは
+hashで固定された導出物、slim summaryはcommit対象となった。旧repo fileのSHA
+`cabfbcae…2306` は regenerated full JSON の期待値へ役割を変更しただけであり、
+このprovenance correctionはPRD上の進展ではなく、Stop C判定とstreakを変更しない。
