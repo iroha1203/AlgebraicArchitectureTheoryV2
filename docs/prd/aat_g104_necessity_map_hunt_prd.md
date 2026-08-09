@@ -157,7 +157,9 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    - **calibration failure((a)–(e) の不一致)**: engine 実装または modeling の
      欠陥として扱い、engine を修正して再 calibration する。oracle 不一致から
      還元の偽は従わない。修正で解消できない場合は blocker として停止条件 C を
-     踏む。不一致のまま探索へ進むことは許さない。
+     踏む(**pre-R1 停止**。監査単位と成果物は停止条件 C の pre-R1 規定に
+     従う)。一般手証明(手順3)を完成も反証もできない場合も同じ経路を取る。
+     不一致のまま探索へ進むことは許さない。
    - **R0-fail(還元反証)**: 一般手証明(手順3)が破れた場合、または還元への
      数学的反例が **engine の外で独立再現**(手計算または独立実装)された場合に
      限る。探索に入らず、R0-fail 終端(停止条件節)として反例データと機構分析を
@@ -231,12 +233,16 @@ PRD は削除せず改訂対象として残す)。
   置き、C 終端の証拠として扱う。必須成果物 = 一般論法の report 固定+R0 / R1
   成果物。Issue の close は成果 PR(non-draft)の merge 後(人間裁定へ)。
 - **C(停滞)**: 同一 blocker で2ラウンド進展がなければ中間報告で停止。
-  監査単位を固定する: **ラウンド** = R1-1 / R2 の事前登録単位(bound または
-  候補 C\* の改訂を伴う Issue への登録1回)、**同一 blocker** = 同じ失敗機構への
-  帰着、**進展** = 新規 verdict の確定・新規反例・候補条項の実質改訂のいずれか。
-  自己申告のみの早期停止は不可(Issue の登録記録で監査する)。
+  監査単位を固定する: **ラウンド** = R1-1 / R2 では事前登録単位(bound または
+  候補 C\* の改訂を伴う Issue への登録1回)、**R1 到達前(R0)では engine 修正
+  または手証明試行の Issue への記録1回**。**同一 blocker** = 同じ失敗機構への
+  帰着、**進展** = 新規 verdict の確定・新規反例・候補条項の実質改訂・
+  calibration 不一致の解消のいずれか。自己申告のみの早期停止は不可(Issue の
+  登録・記録で監査する)。
   必須成果物 = 停滞点までの partial verdict 地図+blocker の特定+coverage
-  limit。この終端では7条項完備の verdict 地図を要求しない(blocker 記録付きの
+  limit。**pre-R1 停止(R0 blocker)では partial verdict 地図の代わりに、
+  verdict 未着手の記録+R0 blocker の特定+試行履歴+coverage limit を提出
+  する**。この終端では7条項完備の verdict 地図を要求しない(blocker 記録付きの
   停滞は縮小禁止の対象外)。Issue は open のまま人間裁定を待つ。
 - **R0-fail(還元反証)**: 還元の一般手証明の破れ、または engine の外で独立
   再現(手計算または独立実装)された数学的反例に限る。calibration (a)–(e) の
@@ -248,7 +254,11 @@ PRD は削除せず改訂対象として残す)。
 
 ## completion acceptance criteria(A / B 終端のみ)
 
-task 完了と PRD 削除の判断に使えるのは本節だけである。
+本 PRD 内で completion 判定に使うのは本節だけである。ただし PRD の**削除**には、
+加えて PRD guideline の全削除条件の充足が必要である: 恒久 contract・恒久ルール・
+status の現行 source of truth への反映、および対象 PRD の path / filename /
+title / 固有 identifier についての repository 全体 zero-reference scan を
+closeout で実施する。
 
 1. R0 calibration 5点((a)–(e))が回帰テストとして固定され全 pass し、還元の
    一般手証明(R0 手順3。Lean declaration との conjunct 対応表込み)が report
@@ -282,7 +292,9 @@ checkpoint の受理は task 完了・Issue close・PRD 削除のいずれの根
   範囲の results に適用)・7(変更禁止対象)と日本語規律を同水準で満たす。
   checkpoint の提出 PR は draft でよい。
 - C 終端: 停滞点までの partial verdict 地図+blocker の特定+coverage limit が
-  report にある(停止条件節の監査単位の記録で裏づける)。
+  report にある(停止条件節の監査単位の記録で裏づける)。pre-R1 停止
+  (R0 blocker)では partial verdict 地図の代わりに verdict 未着手の記録+
+  R0 blocker+試行履歴+coverage limit でよい。
 - R0-fail 終端: 破れの再現可能な反例データ(独立再現の記録込み)+機構分析+
   量化定義再設計への示唆が固定されている。
 
