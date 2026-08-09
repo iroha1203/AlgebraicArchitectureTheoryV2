@@ -11,32 +11,49 @@
   active 昇格は人間の判断による。
 - `tracking issue`: 未起票(active 昇格時に起票する)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
-- `確定事項`: 次の3点を固定した。active 昇格は人間の判断のみを残す。
-  (1) **2-障害の係数型**: fiber 内自己同型群に値を取る**非可換 2-cochain**
-  を、有限図式上の具体データとして直接定義する(gerbe / 一般
-  pseudofunctor coherence 理論は経由しない。mathlib の一般論は個別補題の
-  流用に限る)。可換化した不変量は採らない — 可換化で消える非可換情報が
-  (c) 三者調停 witness の実質になりうるためである。coboundary は lift
-  再選択(fiber 自己同型による書き換え)で定義し、2-障害は coboundary
-  剰余として立てる。
+- `確定事項`: 次の4点を固定した。active 昇格は人間の判断のみを残す。
+  (1) **2-障害の係数系**: 合成可能な三つ組ごとの **raw defect** を、その
+    合成の終点 package の **fiber 内自己同型群**に値を取るデータとして
+    定義する。与えられた比較射族の二通りの結合の差は、opcartesian
+    普遍性(G-101)により一意の fiber 自己同型として測れる。辺に沿う
+    作用は transport による共役(whiskering)で固定し、積順序は後続
+    合成を左に固定する。cocycle 等式は三重合成の二通り評価の一致として
+    立てる。reselection(coboundary)は合成可能対ごとの fiber 自己同型
+    割当による比較射族の書き換えとして定義する。**消滅は raw 2-cochain
+    が reselection 作用の orbit で恒等 cochain に到達すること**として、
+    coherent 化可能とは独立の述語で定義する — (iii) は定義展開ではなく、
+    この orbit 述語と coherence 等式系の同時可解の同値として証明する。
+    可換化した不変量は採らない — 可換化で消える非可換情報が (c) 三者
+    調停 witness の実質になりうるためである。gerbe / 一般 pseudofunctor
+    coherence 理論は経由しない(mathlib の一般論は個別補題の流用に限る)。
   (2) **消滅同値の regime**: 一般 carrier `U` 上の**有限図式**(菱形・
-  三角形およびその有限合成)で「消滅 ⟺ coherent 化可能」を主張する
-  (claim boundary の対象範囲と同一。carrier の有限性は要求しない —
-  同値の両方向は与えられた coboundary データの書き換えで立ち、fiber の
-  有限性を要しない見込みのため)。witness は `FiniteModel` へ具体化する。
-  無限図式への拡張は frontier に置く。
+    三角形およびその有限合成)で「消滅 ⟺ coherent 化可能」を主張する
+    (claim boundary の対象範囲と同一。carrier の有限性は要求しない —
+    同値の両方向は与えられた coboundary データの書き換えで立ち、fiber の
+    有限性を要しない見込みのため)。witness は `FiniteModel` へ具体化する。
+    無限図式への拡張は frontier に置く。
   (3) **完了面**: 最小完了面 = (b)(c) の witness+統一機構。(a) は正例
-  (canonical cleavage の整合)として完了面に含める。
+    (canonical cleavage の整合)として完了面に含める。
+  (4) **admissible 比較データ**: 各辺の lift は **opcartesian** である
+    ことを定義に含めて要求する(局所資格。非 opcartesian lift による
+    authored inconsistency の持ち込みを排除する)。障害の自由度は lift
+    ではなく、**外部から与えられる比較射の族**(lift 間の fiber 射で底
+    可換なもの)に置く。gauge で動かせるのは fiber 自己同型による
+    reselection のみで、lift の opcartesian 性と底射影は固定する。
+    canonical 比較への強制置換(witness の消去)は認めない。これが
+    「局所的には正当だが大域 coherence が失敗しうる」中間クラスの固定で
+    ある。
 - `research aim`: 輸送の比較射の合成が閉じない障害を 2-cocycle 型の
-  不変量として立て、三つの現象 — (a) 塔の cleavage の段間合成(段ごとに
-  lift が在っても end-to-end で失敗しうる)、(b) doctrine 圏の菱形の
+  不変量として立て、二つの障害現象 — (b) doctrine 圏の菱形の
   二経路輸送の食い違い、(c) 三つ以上の reading の pairwise 調停の
   非結合性(pairwise には翻訳可能なのに三者整合の共通語彙が組めない)—
   を同一機構(pseudofunctor coherence)の現れとして統一的に扱う。
-  正例側では、opcartesian 普遍性から導かれる canonical な輸送選択が
-  coherent(擬関手的に整合)であることを証明し、障害が立つのは選択が
-  canonical でない・比較データが外から与えられる場合であることを
-  切り分ける。
+  (a) 塔の cleavage の段間合成は障害現象としてではなく**正例側**で
+  扱う: opcartesian 普遍性から導かれる canonical な輸送選択が単一射影
+  内で coherent(擬関手的に整合)であることを証明し((i))、障害が
+  立つのは選択が canonical でない・比較データが外から与えられる場合で
+  あることを切り分ける(段横断の一般合成障害は claim boundary 外。
+  source note 候補17 の (a) の一般形は frontier の段横断拡張に置く)。
 - `core tension`: 普遍性から取った canonical cleavage は自動的に
   coherent である — したがって障害の実質は「与えられた比較射の族が
   canonical 選択と食い違う」場面にしかない。障害をどの自由度(lift の
@@ -70,9 +87,13 @@
   proof obligation delta で評価する。
 - `dullness filter`: 次を弾く。恒等射・単一 doctrine だけの図式での発火、
   再選択で消える障害を非自明と数えること(coboundary 剰余を取らない
-  不変量)、比較射の族を空にして vacuous に「閉じない」とする構成、
+  不変量)、消滅述語を coherent 化可能の言い換えとして定義し (iii) を
+  定義展開で放電する構成、canonical 比較への強制置換で witness を消す
+  構成、非 opcartesian lift の持ち込みで障害を捏造する構成、
+  比較射の族を空にして vacuous に「閉じない」とする構成、
   pairwise 翻訳が実在しない三者 witness(非結合ではなく単なる翻訳
-  不能)、一般 pseudofunctor coherence の再証明だけで AAT 側の接続を
+  不能)、(v) を共通 schema への収納だけで済ませ一致 theorem を欠く
+  成果、一般 pseudofunctor coherence の再証明だけで AAT 側の接続を
   欠く成果。
 - `frontier`: cartesian 側 lift との相互作用の観察、段横断(塔の複数段)
   への拡張の観察、ArchMap 調停への含意(pairwise 調停の原理的限界)の
@@ -84,18 +105,22 @@
      canonical 輸送選択について、合成比較射
      `transportAlong (τ ∘ σ) P ≅ transportAlong τ (transportAlong σ P)`
      が構成でき、隣接合成の整合(coherence 等式)が成り立つ。
-  2. **(ii) 2-障害の定義**: 有限図式上の与えられた lift / 比較射の族に
-     対し、合成の閉じなさを測る fiber 内自己同型群値の非可換 2-cochain
-     (確定事項 (1))を定義し、cocycle 条件と、lift 再選択(coboundary)に
-     よる同値を証明する。
+  2. **(ii) 2-障害の定義**: 有限図式上の admissible 比較データ
+     (確定事項 (4))に対し、合成の閉じなさを測る fiber 内自己同型群値の
+     非可換 raw 2-cochain(確定事項 (1))を定義し、cocycle 条件と、
+     reselection(coboundary)による同値、および消滅の orbit 述語
+     (coherent 化可能と独立の定義)を証明・構成する。
   3. **(iii) 消滅と整合の同値**: 一般 carrier `U` 上の有限図式(菱形・
-     三角形とその有限合成。確定事項 (2))で、2-障害の消滅と coherent な
-     再選択の存在が同値である。
+     三角形とその有限合成。確定事項 (2))で、(ii) の orbit 述語による
+     2-障害の消滅と coherent な再選択の存在が同値である(定義展開に
+     よる放電は認めない)。
   4. **(iv) 障害 witness 2種**: (b) 菱形の二経路輸送が再選択で消えない
      食い違いを持つ有限 witness、(c) pairwise 翻訳射が実在するのに
      三者整合が不可能な有限 witness。
   5. **(v) 統一**: (i)–(iv) が同一の coherence 機構の instance として
-     接続されること(菱形・三者図式が同じ 2-障害定義で読めること)。
+     接続されること。共通 schema への収納だけでは完了と数えず、菱形・
+     三者図式それぞれの specialized な raw obstruction・class・非消滅が、
+     統一定義の instance 化と**一致する theorem** を要求する。
   witness は既存 `FiniteModel` の carrier へ具体化する。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/TransportCoherence/` 配下。`Formal/AG` は
@@ -129,26 +154,35 @@
   - `Doct_U / transportAlong / opcartesian 普遍性`: `ambient-boundary`
     (G-101 の proved-in-research artifact の参照のみ。unported である
     ことを本カードは変更しない)。
+  - `admissible 比較データ`: `ambient-boundary`(入力。各辺 lift の
+    opcartesian 資格を定義に含め、witness で実例を与える。非 opcartesian
+    lift は入力として認めない。確定事項 (4))。
   - `合成比較射と canonical coherence`: `discharge-required`。普遍性から
     導出し、coherence を field に入れない。
-  - `2-障害の定義`: `discharge-required`。fiber 内自己同型群値の非可換
-    2-cochain(確定事項 (1))。coboundary 剰余を定義に含める。
+  - `2-障害の定義`: `discharge-required`。三つ組上の fiber 内自己同型群値
+    raw defect・共役作用・reselection 作用・消滅の orbit 述語
+    (確定事項 (1))。coboundary 剰余を定義に含め、消滅述語は coherent
+    化可能と独立に定義する。
   - `消滅同値`: `discharge-required`。一般 carrier 上の有限図式で主張する
-    (確定事項 (2))。
+    (確定事項 (2))。定義展開による放電は認めない。
   - `菱形 witness / 三者調停 witness`: `discharge-required`。再選択で
     消える障害・pairwise 翻訳不在の構成は放電と数えない。
   - `統一接続`: `discharge-required`。
 - `target anti-weakening rule`: (iii) の同値を片方向(消滅 ⟸ 整合)へ
-  弱めない。2-障害を coboundary 剰余なしの生データへ弱めない(自明化・
-  無内容化の両方を排除する)。(iv) の witness 条件(再選択不変の
-  食い違い・pairwise 翻訳の実在)を落とさない。結論相当データを theorem
+  弱めない。消滅述語を coherent 化可能の言い換えへ差し替えない(orbit
+  述語として独立に定義する)。2-障害を coboundary 剰余なしの生データへ
+  弱めない(自明化・無内容化の両方を排除する)。(iv) の witness 条件
+  (再選択不変の食い違い・pairwise 翻訳の実在)を落とさない。(v) を
+  共通 schema への収納へ弱めない(一致 theorem を要求する)。結論相当データを theorem
   argument、typeclass、structure field、certificate field へ移さない。
   statement を claim boundary 外(bifibration・base change・段横断合成)の
   主張と読み替えない。
 - `target route integrity gate`: 比較射の族・障害・witness の provenance
   を doctrine 図式の構成データ、canonical 構成、review 済みまたは
-  proved-in-research の predecessor へ追跡する。恒等図式・空族・退化
-  doctrine だけの発火を completion に使わない。
+  proved-in-research の predecessor へ追跡する。比較射族が外部与件として
+  明示宣言されたデータであること(opaque field 経由でないこと)と、
+  各辺 lift の opcartesian 資格の放電を追跡対象に含める。恒等図式・
+  空族・退化 doctrine だけの発火を completion に使わない。
 - `target failure policy`: (i) の反例(canonical 選択が coherent で
   ない)は `target-refuted` とし、G-101 の輸送構成へ差し戻す重大所見と
   して報告する。(iv) は witness 構成が成功条件であり、「再選択で常に
