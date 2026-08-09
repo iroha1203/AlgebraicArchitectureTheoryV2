@@ -119,10 +119,13 @@
      differential と可換になる)、それが誘導する障害類の comparison が
      同一の構造 nerve 上で well-defined であることを示す(comparison を
      opaque field や仮定で受けない)。比較対象の類には共通 provenance を
-     要求する: **宣言 local datum**(γ' 側複体の 1-cocycle。宣言入力とし、
-     cocycle 性は theorem で検査する)から、γ 側の類を制限写像の像として
-     生成し、生成と comparison の整合(naturality: 生成後の比較 =
-     比較後の生成)を theorem 化する。事後選択した無関係な類の対は
+     要求する: 生成と comparison の整合(naturality)は、**任意の cocycle
+     への量化**(`d₁ z = 0` を theorem の仮定に取る)として一般 theorem 化
+     する。witness で使う **raw local datum** は、proof を持たない具体的
+     有限 1-cochain として宣言し、その cocycle 性 `d₁ z = 0` は witness 内
+     で theorem として証明する(proof-bearing な cocycle certificate —
+     `z : ker d₁` 型の入力 — の先渡しは認めない)。γ 側の類は制限写像の
+     像として生成する。事後選択した無関係な類の対は
      (v) の発火に使えない。包含を持たない一般対の comparison
      は claim しない(frontier)。
   5. **(v) 発火 witness**: 非恒等な取り替え(包含対)で、nerve は不変の
@@ -167,13 +170,15 @@
   Lean / report / tracking Issue を同期し、
   `$math-lean-review research/goals/G-105-aat-structural-cover-invariance.md G-105-aat-structural-cover-invariance`
   の4査読がすべて `No major findings` であること。
-- `target premise discharge policy`: 入力に残せるのは doctrine と変形族
-  だけである。nerve 生成構成はカード固定の canonical 構成(台 Čech
-  nerve)であり、incidence を入力データとして受け取らない。不変性、
-  可変性反例、係数局在、比較可能性、variant 間 comparison はすべて
-  completion までに生成・証明する。不変性・同型相当のデータを
-  certificate や structure field で受け取るだけでは放電と数えない。
-  各 variant の `ConditionE` だけは (iii)(iv) の仮定側に置ける。
+- `target premise discharge policy`: 入力に残せるのは doctrine、変形族、
+  および witness の raw local datum(proof field を持たない具体的有限
+  1-cochain)だけである。nerve 生成構成はカード固定の canonical 構成
+  (台 Čech nerve)であり、incidence を入力データとして受け取らない。
+  不変性、可変性反例、係数局在、比較可能性、variant 間 comparison、
+  raw datum の cocycle 性はすべて
+  completion までに生成・証明する。不変性・同型相当のデータや
+  proof-bearing certificate を structure field で受け取るだけでは放電と
+  数えない。各 variant の `ConditionE` だけは (iii)(iv) の仮定側に置ける。
 - `target material premise ledger`:
   - `carrier U / FiniteModel`: `ambient-boundary`。(iii)(iv)(v) では
     有限 regime(`Fintype`・decidable extracts)を入力有限性として含む。
@@ -197,10 +202,14 @@
     障害類の一致を参照しない。
   - `係数局在と比較可能性`: `discharge-required`。構造部分複体の固定と
     semantic 側だけの変動を theorem で示す。
+  - `witness raw local datum`: 入力(具体的有限 1-cochain。proof field を
+    持たない)。`z : ker d₁` 型の proof-bearing certificate は入力として
+    認めない。
   - `distinguished class の生成と naturality`: `discharge-required`。
-    宣言 local datum(1-cocycle)からの variant-indexed 類生成と、生成の
-    制限写像との可換を theorem 化する。datum を共有しない類対の事後
-    選択は放電と数えない。
+    naturality は任意 cocycle への量化(`d₁ z = 0` 仮定付き)の一般
+    theorem として、witness datum の cocycle 性 `d₁ z = 0` は具体的
+    有限計算の theorem として証明する。datum を共有しない類対の事後
+    選択、cocycle 証明の certificate 先渡しは放電と数えない。
   - `診断変化発火 witness`: `discharge-required`。共通 datum 生成類の
     `[ω_γ'] ≠ 0 ∧ [ω_γ] = 0` まで含む。route integrity audit で使う。
 - `target anti-weakening rule`: (i) を「nerve の濃度が等しい」等の弱い
