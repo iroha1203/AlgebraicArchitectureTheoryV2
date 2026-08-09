@@ -1,6 +1,6 @@
 # G-104 条件C 必要性地図ハント PRD
 
-- 状態: Draft
+- 状態: Active(マージをもって実行契約として有効。進行状態の正本は Issue #3948)
 - 位置づけ: Atlas 定理(G-104 Diagnostic Resolution Invariance Theorem)の条件 C を
   必要十分化する二段計画の第一段(off-loop 計算探索)。第二段(必要十分定理の
   target-theorem GOAL 化と Lean 証明)は本 PRD の裁定後に別途起草し、依存は
