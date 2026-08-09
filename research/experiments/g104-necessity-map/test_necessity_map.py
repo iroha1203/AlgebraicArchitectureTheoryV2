@@ -562,7 +562,7 @@ class NecessityMapTest(unittest.TestCase):
             [3, 7],
         )
         for factor in report["factors"]:
-            self.assertEqual(factor["law_type"], "Unit")
+            self.assertEqual(factor["law_type"], "PUnit")
             self.assertEqual(factor["law_type_cardinality"], 1)
             self.assertEqual(factor["value_type"], "Bool")
             self.assertEqual(factor["value_type_cardinality"], 2)

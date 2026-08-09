@@ -8,7 +8,7 @@ Issue #3948 の C0–C6 必要性地図と C* 候補探索を exact rational eng
 ## 成果物
 
 - `necessity_map.py`: R0 calibration、A-subnerve還元、R1必要性地図
-- `r2_hunt.py`: 事前登録済みR2候補・二方向query・10 round
+- `r2_hunt.py`: 事前登録済みR2候補・二方向query・12 round
 - `build_results.py`: canonical `results.json` generator
 - `test_necessity_map.py` / `test_r2_hunt.py`: regression tests
 - `hunt-report.md`: 一般手証明、verdict、round履歴、blocker、coverage
@@ -26,22 +26,30 @@ shasum -a 256 results.json
 期待 SHA-256:
 
 ```text
-3d0173edac824dc04d661e4846d50937f52fdf3d29cc84ddec00fda629f23453
+cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306
 ```
+
+最終統合回帰: `44 tests / 346.745s / OK`
 
 Python standard libraryのみを用い、rank計算は `fractions.Fraction` 上で行う。
 乱数は使わない。JSONは UTF-8 / LF / `indent=2` / `sort_keys=True` / 末尾改行で固定する。
 
 ## 判定
 
-- R0(a)–(e): 独立global/block経路と現行canonical firing oracleの完全固定dataでpass
+- R0(a)–(e): 独立global/block経路と現行canonical firing oracleの完全固定dataでpass。
+  post-PUnit payloadは
+  `37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf`、
+  最後の進展はIssue #3948 comment `5231149474`
 - R1: C0–C6 全て `not-necessary`
-- R2: R0 calibration補正でstreakをresetし、Round 8は母集団に保持しつつ
-  stop-C streakからのみ除外後、
-  mixed-support / multichart face-chainを使うRound 9/10で同一 blockerの
-  2 round連続 valid no-progress
-- terminal: C(checkpoint)
+- R2: `Law=PUnit` provenance calibrationを進展としてstreakをresetしたため、旧Round 9/10
+  Stop Cは撤回してhistoricalに移した。post-PUnitのRound 11（Issue #3948
+  prereg `5231154236` / result `5231263023`）とRound 12（prereg `5231270132` /
+  result `5231343121`）が、同じ blockerで2 round連続のvalid no-progressとなった
+- terminal: A=false、B=false、C=true（checkpoint）
 - blocker: `PB-R2-NONFREE-GLOBAL-FACE-CHAIN`
+- state: task=false、Issue #3948 open、PRD retained、PR draft
 
-有限1,914 semantic caseのzero-resultは証明ではなく、`CERTIFIED-v3` を必要十分条件とは
-主張しない。cross-chart coupled incidence、任意graph・chart数・support分配は未被覆である。
+有限1,918 semantic caseのzero-resultは証明ではなく、`CERTIFIED-v3` を必要十分条件とは
+主張しない。coverageはlift数6以下の固定fixtureまでで、chart間のnonloop edge / face、
+任意graph size・certificate coloring・face multiplicity・chart数・compatible support分配は
+未被覆である。

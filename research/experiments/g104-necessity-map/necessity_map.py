@@ -2509,7 +2509,9 @@ def indicator_factor_report(
             "A_is_true_fiber": realized_coarse == targets,
             "pi_preimage_A_is_true_fiber": realized_fine == expected_fine,
             "unit_law_family_fields_finite": (
-                law_family.law_carrier == unit_law_carrier
+                law_family.law_type == "PUnit"
+                and law_family.law_carrier == unit_law_carrier
+                and law_family.value_type == "Bool"
                 and len(law_family.law_carrier) == len(set(unit_law_carrier)) == 1
                 and len(law_family.source_evaluation) == len(source)
             ),
@@ -2575,7 +2577,7 @@ def indicator_factor_report(
         "fine_read": list(fine_read),
         "coarse_read": list(coarse_read),
         "factor_pi": list(factor_pi),
-        "law_type": "Unit",
+        "law_type": law_family.law_type,
         "law_type_cardinality": len(set(unit_law_carrier)),
         "value_type": "Bool",
         "value_type_cardinality": len(set(bool_values)),

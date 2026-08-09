@@ -149,7 +149,7 @@ checkpoint 根拠から外し、次を実装して R0 を再校正した。
 最終結果:
 
 - 有効 R0 payload SHA-256:
-  `dd982e5ded6395371c421e1d6223c2bf7489a07b723797fdeda55d99a172b455`
+  `37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf`
 - 有効 R1 payload SHA-256:
   `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
 - (a)–(e): 全 pass
@@ -159,9 +159,9 @@ checkpoint 根拠から外し、次を実装して R0 を再校正した。
 - derived support hole: `4 / 1`、rank `1`、相対 C2 failure は
   `A={0}` と `A={1}`
 
-最終 calibration と時系列訂正は Issue #3948 comment `5230818358` に固定した。
-これは PRD の「calibration 不一致の解消」に当たる進展であり、それ以前の no-progress streak を
-resetする。
+`Law=PUnit`、unit singleton carrier、`Value=Fin 2` の provenanceを含む最終 calibration と
+時系列訂正は Issue #3948 comment `5231149474` に固定した。これは PRD の
+「calibration 不一致の解消」に当たる最後の進展であり、それ以前の no-progress streak をresetする。
 
 ## R1: 必要性地図
 
@@ -267,36 +267,44 @@ Round 6/7 の result SHA-256 はそれぞれ
 ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは PRD 上の進展なので、
 この2 roundを最終 stop streakには用いない。
 
-### 最終 R0 補正後のラウンド
+### calibration進展をまたぐラウンド履歴
 
-| round | strict expansion | payload SHA-256 | query / progress | stop streak |
+| round | strict expansion | payload SHA-256 | query / progress | stop streakでの扱い |
 | --- | --- | --- | --- | --- |
-| 8 | full-support KILL path 6 lifts、SLOT circular ladder、total 1,910 | `a239fbd921b7fd97de25ad0d00a43b5d5195116c9ecbf8d83e1f1911dffe3178` | 二方向0、4項目空 | 最終R0 Issue同期・実行許可前にqueryしたため diagnostic only、0/2 |
-| 9 | mixed KILL/SLOT diamond、split-support figure-eight、全15 A、total 1,912 | `596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb` | 二方向0、4項目空 | valid no-progress 1/2 |
-| 10 | overlapping-support mixed K2,3、3-chart K4+star face-chain、全15 A、total 1,914 | `6f2a6287ae3f9c85300711b01b701ba6393dd2d5d44b3e2ebb748df923017a6f` | 二方向0、4項目空 | valid no-progress 2/2 |
+| 8 | full-support KILL path 6 lifts、SLOT circular ladder、total 1,910 | `a239fbd921b7fd97de25ad0d00a43b5d5195116c9ecbf8d83e1f1911dffe3178` | 二方向0、4項目空 | diagnostic only |
+| 9 | mixed KILL/SLOT diamond、split-support figure-eight、total 1,912 | `596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb` | 二方向0、4項目空 | historical |
+| 10 | overlapping-support mixed K2,3、3-chart K4+star face-chain、total 1,914 | `6f2a6287ae3f9c85300711b01b701ba6393dd2d5d44b3e2ebb748df923017a6f` | 二方向0、4項目空 | historical。旧Stop Cは撤回 |
+| 11 | full-support six-lift W5 / K3,3 mixed relation graph、total 1,916 | `a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336` | 二方向0、4項目空 | post-PUnit valid no-progress 1/2 |
+| 12 | octahedral / partitioned multichart house-star graph、total 1,918 | `c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90` | 二方向0、4項目空 | post-PUnit valid no-progress 2/2 |
 
-Round 8 は数学的な finite diagnostic として母集団に保持するが、停止条件の監査単位には数えない。
-Round 9 は最終 R0 comment `5230818358` の後に事前登録・実行し、result comment
-`5230876303` に固定した。Round 10 は comment `5230881464` で事前登録し、実行前の
-静的敵対レビューを通してから初回 queryを行った。初回実行記録は21 tests成功
-（参考 wall time 124.093秒）であり、result comment `5230966215` に固定した。
+Round 8–10 の finite payloadは履歴として保持する。ただし Round 9/10 による旧Stop Cの後、
+`Law=PUnit` provenance calibrationの解消が Issue #3948 comment `5231149474` に
+最後の進展として固定されたため、そのStop C判定を撤回し、両roundをhistoricalへ移した。
+最終統合回帰は `44 tests / 346.745s / OK` であり、Round 10当時の実行数を
+最終値として再利用していない。
 
-Round 10 の strict-expansion auditは次を同時に満たした。
+post-PUnitの有効ラウンドは次のIssue記録に固定した。
 
-- prior/total raw・full semantic SHA・20-hex unique は `1912 / 1914`、collision 0。
-- 新規2 fixtureの30 A-blockと既存1,912件で十分性破れ・必要性破れはいずれも0。
-- lift/chart/許容target relabelに不変な colored graph/support canonical codeは
-  R6–R10の10 fixtureで全て異なり、support driftを検出する。
-- free pairはwhole/全Aで0。wholeで C0*/C5*/C6*、全Aで C1*–C4*が成立し、
-  全Aのcomparisonが同型。
-- 新規 verdict、新規 canonical counterexample、candidate改訂、追加 calibration fixは全て空。
+- Round 11: preregistration comment `5231154236`、result comment `5231263023`、
+  payload `a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336`。
+- Round 12: preregistration comment `5231270132`、result comment `5231343121`、
+  payload `c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90`。
+
+両roundは同じ blockerを直接扱うstrict expansionであり、新規verdict、新規canonical
+counterexample、candidate改訂、追加calibration fixはいずれも生じなかった。有限母集団は
+Round 11で1,916件、Round 12で1,918件になった。
 
 ## 停止条件 C
 
-終端は **C(停滞)** である。最後の進展は Issue #3948 comment `5230818358` に固定した
-最終 R0 calibration failure の解消である。その後、Round 8は無効な diagnosticとして除外し、
-Round 9とRound 10が同じ blocker
+終端は **C(停滞)** である。最後の進展は Issue #3948 comment `5231149474` に固定した
+post-PUnit R0 calibration failureの解消である。その後、Round 11とRound 12が同じ blocker
 `PB-R2-NONFREE-GLOBAL-FACE-CHAIN` に帰着して2ラウンド連続で進展なしとなった。
+
+| 停止条件 | 判定 | 根拠 |
+| --- | --- | --- |
+| A | false | characterization theoremまたはtask completionには到達していない |
+| B | false | 1,918件の有限母集団は一般 incidence/support 空間を尽くさない |
+| C | true | post-PUnitの有効Round 11/12が同一blockerで連続no-progress |
 
 blocker は、固定半径の `FaceTwin` / one-pass free pair / `SLOT` / `KILL` だけから、
 free pairを持たない任意の retained 2次元 face-chain graphが cycleを消すかを導く一般手証明が
@@ -308,15 +316,16 @@ coverage limit:
 
 - R1の全数化は4 core template、登録 Target bound、590 compatible comparisonsと
   required fixture catalog 13件に限る。
-- R2はname-free semantic case 1,914件と、linear / branching / cycle / ladder / diamond /
-  figure-eight / K2,3 / K4+star の固定 fixtureだけを exact 評価した。
-- Round 10の chart block間には非loop edgeやfaceがなく、cross-chart coupled incidenceは未被覆である。
-- 任意graph size、任意chart数、任意 face multiplicity、任意 compatible support distribution、
-  arbitrary large nerveとnonidentity refinementの一般形は未被覆である。
+- R2はname-free semantic case 1,918件と、W5、K3,3、octahedral、house、starを含む
+  登録済み固定fixtureだけを exact 評価した。lift数は6以下である。
+- chart間のnonloop edge / faceを持つcross-chart coupled incidenceは未被覆である。
+- 任意graph size、任意certificate coloring、任意face multiplicity、任意chart数、
+  任意compatible support distribution、arbitrary large nerveとnonidentity refinementの
+  一般形は未被覆である。
 
-この checkpoint は task完了ではない。Issue #3948は open、PRDは保持し、draft PRのまま
-人間裁定を待つ。有限 zero-resultを証明または停止 Bとは称さず、`CERTIFIED-v3` を必要十分条件や
-確定 theorem candidateとして主張せず、第二段 GOALも起票しない。
+この checkpoint は `task_complete=false` である。Issue #3948は open、PRDはretained、
+PRはdraftのまま人間裁定を待つ。有限 zero-resultを証明または停止 Bとは称さず、
+`CERTIFIED-v3` を必要十分条件や確定 theorem candidateとして主張せず、第二段 GOALも起票しない。
 
 ## 再現契約
 
@@ -333,5 +342,6 @@ shasum -a 256 results.json
 - exact linear algebraは `fractions.Fraction` 上。
 - 乱数なし。
 - serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
+- 最終統合回帰: `44 tests / 346.745s / OK`
 - canonical `results.json` SHA-256:
-  `3d0173edac824dc04d661e4846d50937f52fdf3d29cc84ddec00fda629f23453`
+  `cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306`

@@ -104,6 +104,41 @@ ROUND9_VALID_PAYLOAD_SHA256 = (
     "596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb"
 )
 ROUND9_RESULT_ISSUE_COMMENT = 5230876303
+HISTORICAL_ROUND10_PAYLOAD_SHA256 = (
+    "6f2a6287ae3f9c85300711b01b701ba6393dd2d5d44b3e2ebb748df923017a6f"
+)
+POST_PUNIT_R0_SEMANTIC_SHA256 = (
+    "37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf"
+)
+POST_PUNIT_R0_ISSUE_COMMENT = 5231149474
+POST_PUNIT_MANIFEST_REGISTERED_SHA256 = (
+    "7147f672e1f23a11c01c3a2c5ad31165eb32d4105f5fa3e7c6eec7d5a51044a9"
+)
+POST_PUNIT_MANIFEST = {
+    "candidate_sha256": CERTIFIED_SEMANTIC_SHA256,
+    "historical_round10_sha256": HISTORICAL_ROUND10_PAYLOAD_SHA256,
+    "historical_round8_sha256": ROUND8_DIAGNOSTIC_PAYLOAD_SHA256,
+    "historical_round9_sha256": ROUND9_VALID_PAYLOAD_SHA256,
+    "post_punit_r0_issue_comment": POST_PUNIT_R0_ISSUE_COMMENT,
+    "post_punit_r0_sha256": POST_PUNIT_R0_SEMANTIC_SHA256,
+    "prior_population": 1914,
+    "r1_sha256": FINAL_R1_SEMANTIC_SHA256,
+    "registered_round1_through_round7": list(REGISTERED_ROUND_PAYLOAD_SHA256),
+    "stop_c_entry_streak": 0,
+}
+POST_PUNIT_MANIFEST_COMPACT_JSON = json.dumps(
+    POST_PUNIT_MANIFEST,
+    sort_keys=True,
+    separators=(",", ":"),
+)
+POST_PUNIT_MANIFEST_COMPUTED_SHA256 = sha256(
+    POST_PUNIT_MANIFEST_COMPACT_JSON.encode("ascii")
+).hexdigest()
+ROUND11_PREREGISTERED_ISSUE_COMMENT = 5231154236
+ROUND11_RESULT_ISSUE_COMMENT = 5231263023
+ROUND11_VALID_PAYLOAD_SHA256 = (
+    "a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336"
+)
 
 
 def _canonical_report_sha256(report: dict[str, object]) -> str:
@@ -197,6 +232,196 @@ def _assert_round10_hash_baseline(
         and blocker.get("valid_no_progress_1_of_2") is True
     ):
         raise AssertionError("Round10 R0/R1/Round1-9 hash baseline drift")
+
+
+def _assert_round11_current_calibration_gate(
+    *,
+    current_r0_sha256: str,
+    current_r0: dict[str, object],
+    r1_sha256: str,
+    r1: dict[str, object],
+    manifest_compact_json: str,
+    manifest_sha256: str,
+) -> None:
+    """Reject stale calibration before regenerating any historical query."""
+
+    calibration = current_r0.get("calibration", {})
+    calibration_a = calibration.get("a_three_lean_obstructions", ())
+    calibration_b = calibration.get("b_derived_support_hole", {})
+    calibration_c = calibration.get("c_block_reduction", {})
+    calibration_d = calibration.get("d_indicator_realizability", {})
+    calibration_e = calibration.get("e_canonical_firing_oracle", {})
+    indicator_factors = calibration_d.get("factors", ())
+    verdicts = r1.get("verdicts", ())
+    necessity_witnesses = r1.get("necessity_witnesses", ())
+    if not (
+        current_r0_sha256 == POST_PUNIT_R0_SEMANTIC_SHA256
+        and current_r0_sha256 != FINAL_R0_SEMANTIC_SHA256
+        and current_r0.get("r0_pass") is True
+        and len(calibration_a) == 3
+        and all(item.get("calibration_pass") is True for item in calibration_a)
+        and calibration_b.get("calibration_pass") is True
+        and calibration_c.get("pass") is True
+        and calibration_d.get("all_nonempty_A_realized") is True
+        and calibration_e.get("canonical_oracle_pass") is True
+        and len(indicator_factors) == 2
+        and all(
+            factor.get("law_type") == "PUnit"
+            and factor.get("law_type_cardinality") == 1
+            and factor.get("value_type") == "Bool"
+            and factor.get("all_pass") is True
+            for factor in indicator_factors
+        )
+        and r1_sha256 == FINAL_R1_SEMANTIC_SHA256
+        and r1.get("all_seven_verdicts_fixed") is True
+        and len(verdicts) == 7
+        and [item.get("clause") for item in verdicts]
+        == [f"C{index}" for index in range(7)]
+        and all(
+            item.get("verdict") == "not-necessary"
+            and item.get("evidence_schema_satisfied") is True
+            and bool(item.get("witness"))
+            for item in verdicts
+        )
+        and len(necessity_witnesses) == 7
+        and all(
+            witness.get("clause") == f"C{index}"
+            and witness.get("evidence_schema")
+            == "uniform comparison and named-clause failure"
+            and witness.get("witness_pass") is True
+            for index, witness in enumerate(necessity_witnesses)
+        )
+        and manifest_compact_json == POST_PUNIT_MANIFEST_COMPACT_JSON
+        and manifest_sha256 == POST_PUNIT_MANIFEST_REGISTERED_SHA256
+        and manifest_sha256 == POST_PUNIT_MANIFEST_COMPUTED_SHA256
+        and POST_PUNIT_MANIFEST["stop_c_entry_streak"] == 0
+        and POST_PUNIT_MANIFEST["prior_population"] == 1914
+        and POST_PUNIT_MANIFEST["registered_round1_through_round7"]
+        == list(REGISTERED_ROUND_PAYLOAD_SHA256)
+    ):
+        raise AssertionError("Round11 current post-PUnit calibration gate drift")
+
+
+def _assert_round11_hash_baseline(
+    *,
+    current_r0_sha256: str,
+    current_r0: dict[str, object],
+    r1_sha256: str,
+    r1: dict[str, object],
+    round9_sha256: str,
+    round9: dict[str, object],
+    round10_sha256: str,
+    round10: dict[str, object],
+    manifest_compact_json: str,
+    manifest_sha256: str,
+) -> None:
+    """Admit Round11 queries only on the synchronized post-PUnit baseline."""
+
+    _assert_round11_current_calibration_gate(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        manifest_compact_json=manifest_compact_json,
+        manifest_sha256=manifest_sha256,
+    )
+
+    round9_queries = round9.get("queries", {})
+    round10_queries = round10.get("queries", {})
+    round10_population = round10.get("population", {})
+    round10_candidate = round10.get("candidate", {})
+    if not (
+        round9_sha256 == ROUND9_VALID_PAYLOAD_SHA256
+        and round9.get("valid") is True
+        and round9_queries.get("prior_sufficiency_or_necessity_break_count") == 0
+        and round9_queries.get("new_sufficiency_break_count") == 0
+        and round9_queries.get("new_necessity_break_count") == 0
+        and round9_queries.get("new_counterexample_count") == 0
+        and round9.get("progress_audit", {}).get("progress") is False
+        and round10_sha256 == HISTORICAL_ROUND10_PAYLOAD_SHA256
+        and round10.get("valid") is True
+        and round10_candidate.get("semantic_id") == CERTIFIED_SEMANTIC_ID
+        and round10_candidate.get("semantic_sha256") == CERTIFIED_SEMANTIC_SHA256
+        and round10_queries.get("prior_sufficiency_or_necessity_break_count") == 0
+        and round10_queries.get("new_sufficiency_break_count") == 0
+        and round10_queries.get("new_necessity_break_count") == 0
+        and round10_queries.get("new_counterexample_count") == 0
+        and round10.get("progress_audit", {}).get("progress") is False
+        and round10_population.get("total_raw_cases") == 1914
+        and round10_population.get("total_full_semantic_payload_ids") == 1914
+        and round10_population.get("total_truncated_semantic_payload_ids") == 1914
+        and round10_population.get("full_sha256_collision_count") == 0
+        and round10_population.get("truncated_20hex_collision_count") == 0
+        and round10.get("round8_diagnostic_baseline", {}).get("valid") is False
+        and round10.get("round9_valid_baseline", {}).get("valid") is True
+    ):
+        raise AssertionError("Round11 post-PUnit/historical manifest baseline drift")
+
+
+def _assert_round12_hash_baseline(
+    *,
+    current_r0_sha256: str,
+    current_r0: dict[str, object],
+    r1_sha256: str,
+    r1: dict[str, object],
+    round11_sha256: str,
+    round11: dict[str, object],
+    manifest_compact_json: str,
+    manifest_sha256: str,
+) -> None:
+    """Reject Round12 before query unless Round11 is the fixed 1/2 entry."""
+
+    _assert_round11_current_calibration_gate(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        manifest_compact_json=manifest_compact_json,
+        manifest_sha256=manifest_sha256,
+    )
+    candidate = round11.get("candidate", {})
+    queries = round11.get("queries", {})
+    progress = round11.get("progress_audit", {})
+    same_blocker = round11.get("same_blocker_evidence", {})
+    population = round11.get("population", {})
+    code_audit = round11.get("canonical_code_audit", {})
+    admission = round11.get("query_admission", {})
+    if not (
+        round11_sha256 == ROUND11_VALID_PAYLOAD_SHA256
+        and ROUND11_RESULT_ISSUE_COMMENT == 5231263023
+        and round11.get("valid") is True
+        and round11.get("preregistered_issue_comment")
+        == ROUND11_PREREGISTERED_ISSUE_COMMENT
+        and candidate.get("semantic_id") == CERTIFIED_SEMANTIC_ID
+        and candidate.get("semantic_sha256") == CERTIFIED_SEMANTIC_SHA256
+        and round11.get("blocker_id") == "PB-R2-NONFREE-GLOBAL-FACE-CHAIN"
+        and queries.get("prior_sufficiency_or_necessity_break_count") == 0
+        and queries.get("new_sufficiency_break_count") == 0
+        and queries.get("new_necessity_break_count") == 0
+        and queries.get("new_counterexample_count") == 0
+        and progress.get("new_verdicts") == []
+        and progress.get("new_canonical_nonisomorphic_counterexamples") == []
+        and progress.get("candidate_semantic_change") is False
+        and progress.get("additional_calibration_fixes") == []
+        and progress.get("progress") is False
+        and progress.get("streak_after_round") == 1
+        and same_blocker.get("valid_no_progress_1_of_2") is True
+        and population.get("total_raw_cases") == 1916
+        and population.get("total_full_semantic_payload_ids") == 1916
+        and population.get("total_truncated_semantic_payload_ids") == 1916
+        and population.get("full_sha256_collision_count") == 0
+        and population.get("truncated_20hex_collision_count") == 0
+        and code_audit.get("registered_code_count") == 12
+        and code_audit.get("full_sha256_collision_count") == 0
+        and code_audit.get("truncated_20hex_collision_count") == 0
+        and admission.get("post_punit_r0_sha256")
+        == POST_PUNIT_R0_SEMANTIC_SHA256
+        and admission.get("manifest_registered_sha256")
+        == POST_PUNIT_MANIFEST_REGISTERED_SHA256
+        and admission.get("all_gates_pass") is True
+        and round11.get("calibration_progress_reset", {}).get("entry_streak") == 0
+    ):
+        raise AssertionError("Round12 Round11/post-PUnit admission baseline drift")
 
 
 @dataclass(frozen=True)
@@ -1075,6 +1300,37 @@ R10_B_K4_KILL_RELATIONS = ((0, 1), (1, 2), (2, 0))
 R10_B_K4_SLOT_RELATIONS = ((0, 3), (1, 3), (2, 3))
 R10_B_STAR_KILL_RELATIONS = ((0, 1),)
 R10_B_STAR_SLOT_RELATIONS = ((0, 2), (0, 3))
+R11_W5_KILL_RELATIONS = ((1, 2), (2, 3), (3, 4), (4, 5), (1, 5))
+R11_W5_SLOT_RELATIONS = ((0, 1), (0, 2), (0, 3), (0, 4), (0, 5))
+R11_K33_KILL_RELATIONS = ((0, 3), (1, 4), (2, 5))
+R11_K33_SLOT_RELATIONS = (
+    (0, 4),
+    (0, 5),
+    (1, 3),
+    (1, 5),
+    (2, 3),
+    (2, 4),
+)
+R12_OCTA_KILL_RELATIONS = (
+    (0, 2),
+    (2, 4),
+    (1, 4),
+    (1, 3),
+    (3, 5),
+    (0, 5),
+)
+R12_OCTA_SLOT_RELATIONS = (
+    (0, 3),
+    (1, 2),
+    (0, 4),
+    (1, 5),
+    (2, 5),
+    (3, 4),
+)
+R12_HOUSE_KILL_RELATIONS = ((0, 1), (2, 3), (1, 4))
+R12_HOUSE_SLOT_RELATIONS = ((1, 2), (0, 3), (2, 4))
+R12_STAR_KILL_RELATIONS = ((0, 1), (0, 2))
+R12_STAR_SLOT_RELATIONS = ((0, 3), (0, 4))
 
 
 def _checked_relations(
@@ -1376,6 +1632,122 @@ def round10_relation_fixtures() -> tuple[UniformComparison, ...]:
     return (
         round10_k23_mixed_overlap_fixture(),
         round10_k4_star_multichart_fixture(),
+    )
+
+
+def round11_relation_fixtures() -> tuple[UniformComparison, ...]:
+    return (
+        relation_grammar_fixture(
+            "R11-W5-K5-S5",
+            6,
+            kill_relations=R11_W5_KILL_RELATIONS,
+            slot_relations=R11_W5_SLOT_RELATIONS,
+        ),
+        relation_grammar_fixture(
+            "R11-K33-K3-S6",
+            6,
+            kill_relations=R11_K33_KILL_RELATIONS,
+            slot_relations=R11_K33_SLOT_RELATIONS,
+        ),
+    )
+
+
+def round12_octahedral_fixture() -> UniformComparison:
+    return relation_grammar_fixture(
+        "R12-OCTA-K6-S6",
+        6,
+        kill_relations=R12_OCTA_KILL_RELATIONS,
+        slot_relations=R12_OCTA_SLOT_RELATIONS,
+    )
+
+
+def round12_house_star_partition_fixture() -> UniformComparison:
+    coarse = Nerve(
+        3,
+        tuple((0, 0) for _ in range(10))
+        + tuple((1, 1) for _ in range(7))
+        + ((2, 2),),
+        (
+            (1, 1, 1),
+            (0, 0, 1),
+            (2, 2, 2),
+            (0, 0, 2),
+            (3, 3, 3),
+            (0, 0, 3),
+            (0, 4, 5),
+            (0, 6, 7),
+            (0, 8, 9),
+            (11, 11, 11),
+            (10, 10, 11),
+            (12, 12, 12),
+            (10, 10, 12),
+            (10, 13, 14),
+            (10, 15, 16),
+        ),
+    )
+    fine = Nerve(
+        3,
+        tuple((0, 0) for _ in range(14))
+        + tuple((1, 1) for _ in range(11))
+        + ((2, 2),),
+        (
+            (5, 5, 5),
+            (0, 1, 5),
+            (6, 6, 6),
+            (2, 3, 6),
+            (7, 7, 7),
+            (1, 4, 7),
+            (1, 8, 9),
+            (2, 8, 9),
+            (0, 10, 11),
+            (3, 10, 11),
+            (2, 12, 13),
+            (4, 12, 13),
+            (19, 19, 19),
+            (14, 15, 19),
+            (20, 20, 20),
+            (14, 16, 20),
+            (14, 21, 22),
+            (17, 21, 22),
+            (14, 23, 24),
+            (18, 23, 24),
+        ),
+    )
+    return UniformComparison(
+        name="R12-HOUSE-STAR-PARTITION",
+        morphism=NerveMorphism(
+            coarse,
+            fine,
+            (0, 1, 2),
+            (
+                0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                10, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17,
+            ),
+            (
+                0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8,
+                9, 10, 11, 12, 13, 13, 14, 14,
+            ),
+        ),
+        coarse_target_count=4,
+        fine_target_count=5,
+        factor_pi=(0, 0, 1, 2, 3),
+        coarse_chart_supports=(
+            frozenset((0, 2)),
+            frozenset((1, 3)),
+            frozenset((0, 1, 2, 3)),
+        ),
+        fine_chart_supports=(
+            frozenset((0, 1, 3)),
+            frozenset((2, 4)),
+            frozenset((0, 1, 2, 3, 4)),
+        ),
+    )
+
+
+def round12_relation_fixtures() -> tuple[UniformComparison, ...]:
+    return (
+        round12_octahedral_fixture(),
+        round12_house_star_partition_fixture(),
     )
 
 
@@ -2221,6 +2593,16 @@ def _all_comparisons_through_round9() -> Iterator[UniformComparison]:
     yield from round9_relation_fixtures()
 
 
+def _all_comparisons_through_round10() -> Iterator[UniformComparison]:
+    yield from _all_comparisons_through_round9()
+    yield from round10_relation_fixtures()
+
+
+def _all_comparisons_through_round11() -> Iterator[UniformComparison]:
+    yield from _all_comparisons_through_round10()
+    yield from round11_relation_fixtures()
+
+
 def _registered_relation_graph_support_codes_through_round9(
 ) -> dict[str, dict[str, str]]:
     round6 = round6_face_chains()
@@ -2504,6 +2886,110 @@ def _registered_colored_graph_support_codes_through_round10(
         result[name] = colored_graph_support_canonical_code(
             factor_pi=comparison.factor_pi,
             chart_records=charts,
+            coarse_cell_counts=coarse_counts,
+            fine_cell_counts=fine_counts,
+        )
+    return result
+
+
+def _registered_colored_graph_support_codes_through_round11(
+) -> dict[str, dict[str, str]]:
+    result = _registered_colored_graph_support_codes_through_round10()
+    wheel, bipartite = round11_relation_fixtures()
+    rows = (
+        (
+            wheel,
+            RelationBlockCodeSpec(
+                6,
+                R11_W5_KILL_RELATIONS,
+                R11_W5_SLOT_RELATIONS,
+            ),
+        ),
+        (
+            bipartite,
+            RelationBlockCodeSpec(
+                6,
+                R11_K33_KILL_RELATIONS,
+                R11_K33_SLOT_RELATIONS,
+            ),
+        ),
+    )
+    for comparison, relation_block in rows:
+        coarse_counts, fine_counts = _comparison_cell_counts(comparison)
+        result[comparison.name] = colored_graph_support_canonical_code(
+            factor_pi=comparison.factor_pi,
+            chart_records=(
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (relation_block,),
+                ),
+            ),
+            coarse_cell_counts=coarse_counts,
+            fine_cell_counts=fine_counts,
+        )
+    return result
+
+
+def _registered_colored_graph_support_codes_through_round12(
+) -> dict[str, dict[str, str]]:
+    result = _registered_colored_graph_support_codes_through_round11()
+    octahedral, partitioned = round12_relation_fixtures()
+    rows = (
+        (
+            octahedral,
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (
+                        RelationBlockCodeSpec(
+                            6,
+                            R12_OCTA_KILL_RELATIONS,
+                            R12_OCTA_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        (
+            partitioned,
+            (
+                ChartCodeSpec(
+                    frozenset((0, 2)),
+                    frozenset((0, 1, 3)),
+                    (
+                        RelationBlockCodeSpec(
+                            5,
+                            R12_HOUSE_KILL_RELATIONS,
+                            R12_HOUSE_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+                ChartCodeSpec(
+                    frozenset((1, 3)),
+                    frozenset((2, 4)),
+                    (
+                        RelationBlockCodeSpec(
+                            5,
+                            R12_STAR_KILL_RELATIONS,
+                            R12_STAR_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    identity_loop_count=1,
+                ),
+            ),
+        ),
+    )
+    for comparison, chart_records in rows:
+        coarse_counts, fine_counts = _comparison_cell_counts(comparison)
+        result[comparison.name] = colored_graph_support_canonical_code(
+            factor_pi=comparison.factor_pi,
+            chart_records=chart_records,
             coarse_cell_counts=coarse_counts,
             fine_cell_counts=fine_counts,
         )
@@ -2799,10 +3285,12 @@ def round9_report() -> dict[str, object]:
     ):
         raise AssertionError("Round9 candidate semantic payload drifted")
 
-    r0 = r0_report()
     r1 = r1_report()
     round8 = round8_report()
-    r0_sha256 = _canonical_report_sha256(r0)
+    # Round9 is a historical payload.  Its registered byte representation
+    # records the pre-PUnit R0 manifest and must remain reproducible after the
+    # current R0 oracle moved to the actual PUnit law type.
+    r0_sha256 = FINAL_R0_SEMANTIC_SHA256
     r1_sha256 = _canonical_report_sha256(r1)
     round8_sha256 = _canonical_report_sha256(round8)
     _assert_round9_hash_baseline(
@@ -3860,6 +4348,1250 @@ def round10_report() -> dict[str, object]:
             ),
         },
         "coverage_limit": "The exact K2,3 mixed overlap-support fixture and exact K4-plus-star three-chart chain-support fixture, all 15 nonempty A for each, plus the recomputed prior 1912 cases. Cross-chart nonloop edges or faces, arbitrary graph size and coloring, arbitrary face multiplicity, and arbitrary compatible support distributions remain outside this finite coverage.",
+    }
+
+
+def round11_report() -> dict[str, object]:
+    """Run the post-PUnit wheel/bipartite strict expansion."""
+
+    if not (
+        CERTIFIED_SEMANTIC_ID == "R2-CSTAR-CERTIFIED-v3"
+        and CERTIFIED_SEMANTIC_SHA256
+        == "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa"
+    ):
+        raise AssertionError("Round11 candidate semantic payload drifted")
+
+    current_r0 = r0_report()
+    r1 = r1_report()
+    current_r0_sha256 = _canonical_report_sha256(current_r0)
+    r1_sha256 = _canonical_report_sha256(r1)
+    _assert_round11_current_calibration_gate(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        manifest_compact_json=POST_PUNIT_MANIFEST_COMPACT_JSON,
+        manifest_sha256=POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+    )
+
+    historical_round9 = round9_report()
+    historical_round9_sha256 = _canonical_report_sha256(historical_round9)
+    historical_round9_queries = historical_round9.get("queries", {})
+    if not (
+        historical_round9_sha256 == ROUND9_VALID_PAYLOAD_SHA256
+        and historical_round9.get("valid") is True
+        and historical_round9_queries.get(
+            "prior_sufficiency_or_necessity_break_count"
+        )
+        == 0
+        and historical_round9_queries.get("new_sufficiency_break_count") == 0
+        and historical_round9_queries.get("new_necessity_break_count") == 0
+        and historical_round9_queries.get("new_counterexample_count") == 0
+    ):
+        raise AssertionError("Round11 historical Round9 gate drift")
+
+    historical_round10 = round10_report()
+    historical_round10_sha256 = _canonical_report_sha256(historical_round10)
+    _assert_round11_hash_baseline(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        round9_sha256=historical_round9_sha256,
+        round9=historical_round9,
+        round10_sha256=historical_round10_sha256,
+        round10=historical_round10,
+        manifest_compact_json=POST_PUNIT_MANIFEST_COMPACT_JSON,
+        manifest_sha256=POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+    )
+
+    prior_comparisons = tuple(_all_comparisons_through_round10())
+    prior_full_ids = tuple(
+        _case_semantic_sha256(comparison) for comparison in prior_comparisons
+    )
+    prior_short_ids = tuple(identifier[:20] for identifier in prior_full_ids)
+    if not (
+        len(prior_comparisons) == 1914
+        and len(set(prior_full_ids)) == 1914
+        and len(set(prior_short_ids)) == 1914
+    ):
+        raise AssertionError("Round11 prior 1914-case semantic ID baseline drift")
+
+    prior_counterexamples: list[dict[str, str]] = []
+    for comparison in prior_comparisons:
+        result = _case_result(
+            comparison,
+            "round0_through_round10",
+            c5_mode="certified",
+        )
+        if result["sufficiency_break"] or result["necessity_break"]:
+            prior_counterexamples.append(
+                {
+                    "id": result["id"],
+                    "semantic_sha256": _case_semantic_sha256(comparison),
+                    "query": (
+                        "sufficiency_break"
+                        if result["sufficiency_break"]
+                        else "necessity_break"
+                    ),
+                }
+            )
+    if prior_counterexamples:
+        raise AssertionError("Round11 prior 1914-case query baseline drift")
+
+    wheel, bipartite = round11_relation_fixtures()
+    fixtures = (wheel, bipartite)
+    expansion: list[dict[str, object]] = []
+    for comparison in fixtures:
+        case = _case_result(
+            comparison,
+            "round11_connected_mixed_relation_grammar",
+            c5_mode="certified",
+        )
+        case["semantic_payload_json"] = _case_semantic_payload_json(comparison)
+        case["semantic_sha256"] = _case_semantic_sha256(comparison)
+        if sha256(case["semantic_payload_json"].encode("utf-8")).hexdigest() != case[
+            "semantic_sha256"
+        ]:
+            raise AssertionError("Round11 full semantic JSON/SHA mismatch")
+        case["all_block_h1"] = [
+            {
+                "coarse_targets_A": sorted(targets),
+                "h1": asdict(analysis),
+            }
+            for targets, analysis in comparison.block_analyses()
+        ]
+        expansion.append(case)
+
+    wheel_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (4, 4, 4), (0, 0, 4),
+        (5, 5, 5), (0, 0, 5),
+        (0, 6, 7), (0, 8, 9), (0, 10, 11),
+        (0, 12, 13), (0, 14, 15),
+    )
+    wheel_expected_fine_faces = (
+        (6, 6, 6), (1, 2, 6),
+        (7, 7, 7), (2, 3, 7),
+        (8, 8, 8), (3, 4, 8),
+        (9, 9, 9), (4, 5, 9),
+        (10, 10, 10), (1, 5, 10),
+        (0, 11, 12), (1, 11, 12),
+        (0, 13, 14), (2, 13, 14),
+        (0, 15, 16), (3, 15, 16),
+        (0, 17, 18), (4, 17, 18),
+        (0, 19, 20), (5, 19, 20),
+    )
+    bipartite_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (0, 4, 5), (0, 6, 7), (0, 8, 9),
+        (0, 10, 11), (0, 12, 13), (0, 14, 15),
+    )
+    bipartite_expected_fine_faces = (
+        (6, 6, 6), (0, 3, 6),
+        (7, 7, 7), (1, 4, 7),
+        (8, 8, 8), (2, 5, 8),
+        (0, 9, 10), (4, 9, 10),
+        (0, 11, 12), (5, 11, 12),
+        (1, 13, 14), (3, 13, 14),
+        (1, 15, 16), (5, 15, 16),
+        (2, 17, 18), (3, 17, 18),
+        (2, 19, 20), (4, 19, 20),
+    )
+    exact_fixture_rows = (
+        (
+            wheel,
+            ((1, 16, 15), (1, 21, 20)),
+            wheel_expected_coarse_faces,
+            wheel_expected_fine_faces,
+            tuple(range(10))
+            + (10, 10, 11, 11, 12, 12, 13, 13, 14, 14),
+        ),
+        (
+            bipartite,
+            ((1, 16, 12), (1, 21, 18)),
+            bipartite_expected_coarse_faces,
+            bipartite_expected_fine_faces,
+            tuple(range(6))
+            + (6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11),
+        ),
+    )
+    for comparison, cell_counts, coarse_faces, fine_faces, face_map in exact_fixture_rows:
+        if not (
+            _comparison_cell_counts(comparison) == cell_counts
+            and comparison.morphism.coarse.faces == coarse_faces
+            and comparison.morphism.fine.faces == fine_faces
+            and comparison.morphism.vertex_map == (0,)
+            and comparison.morphism.edge_map == (0,) * 6 + tuple(range(1, 16))
+            and comparison.morphism.face_map == face_map
+            and all(left == right for left, right in comparison.morphism.coarse.edges)
+            and all(left == right for left, right in comparison.morphism.fine.edges)
+            and comparison.coarse_target_count == 4
+            and comparison.fine_target_count == 5
+            and comparison.factor_pi == (0, 0, 1, 2, 3)
+            and comparison.coarse_chart_supports
+            == (frozenset((0, 1, 2, 3)),)
+            and comparison.fine_chart_supports
+            == (frozenset((0, 1, 2, 3, 4)),)
+        ):
+            raise AssertionError("Round11 exact grammar fixture calibration mismatch")
+
+    expected_h1 = (
+        H1Analysis(6, 6, 6, True, True, True),
+        H1Analysis(7, 7, 7, True, True, True),
+    )
+    h1_expected_tables: dict[str, list[dict[str, object]]] = {}
+    h1_dimension_histograms: dict[str, dict[str, int]] = {}
+    registered_colored_adjacencies = (
+        {
+            "KILL": tuple(sorted(_checked_relations(6, R11_W5_KILL_RELATIONS))),
+            "SLOT": tuple(sorted(_checked_relations(6, R11_W5_SLOT_RELATIONS))),
+        },
+        {
+            "KILL": tuple(sorted(_checked_relations(6, R11_K33_KILL_RELATIONS))),
+            "SLOT": tuple(sorted(_checked_relations(6, R11_K33_SLOT_RELATIONS))),
+        },
+    )
+    for comparison, case, expected, registered in zip(
+        fixtures,
+        expansion,
+        expected_h1,
+        registered_colored_adjacencies,
+    ):
+        blocks = comparison.block_analyses()
+        if not (
+            len(blocks) == 15
+            and all(analysis == expected for _, analysis in blocks)
+        ):
+            raise AssertionError("Round11 exact all-A H1 calibration mismatch")
+        h1_expected_tables[comparison.name] = [
+            {
+                "coarse_targets_A": sorted(targets),
+                "expected_h1": asdict(expected),
+            }
+            for targets, _ in blocks
+        ]
+        h1_dimension_histograms[comparison.name] = {
+            str(expected.coarse_h1_dimension): 15,
+        }
+
+        registered_edges = tuple(sorted(registered["KILL"] + registered["SLOT"]))
+        actual_edges = _normalized_direct_edges(case, 0)
+        case["certified_colored_adjacency"] = {
+            "coarse_edge": 0,
+            "KILL": [list(edge) for edge in registered["KILL"]],
+            "SLOT": [list(edge) for edge in registered["SLOT"]],
+            "actual_uncolored": [list(edge) for edge in actual_edges],
+            "unintended_edge_count": len(set(actual_edges) - set(registered_edges)),
+        }
+        whole_details = case["candidate"]["whole"]["direct_lifttwin"]
+        auxiliary_details = tuple(
+            detail for edge, detail in whole_details.items() if int(edge) != 0
+        )
+        all_reductions = (
+            case["candidate"]["whole"],
+            *case["candidate"]["per_subset"],
+        )
+        if not (
+            case["uniform"]
+            and case["candidate"]["all"]
+            and all(case["candidate"]["aggregate"].values())
+            and len(case["candidate"]["per_subset"]) == 15
+            and actual_edges == registered_edges
+            and len(whole_details["0"]["lifts"]) == 6
+            and len(whole_details) == 16
+            and all(
+                not reduction["coarse_reduction"]["removed_free_pairs"]
+                and not reduction["fine_reduction"]["removed_free_pairs"]
+                and len(reduction["coarse_reduction"]["retained_edges"])
+                == len(comparison.morphism.coarse.edges)
+                and len(reduction["fine_reduction"]["retained_edges"])
+                == len(comparison.morphism.fine.edges)
+                and len(reduction["coarse_reduction"]["retained_face_classes"])
+                == len(comparison.morphism.coarse.faces)
+                and len(reduction["fine_reduction"]["retained_face_classes"])
+                == len(comparison.morphism.fine.faces)
+                for reduction in all_reductions
+            )
+            and all(
+                len(detail["lifts"]) == 1
+                and detail["direct_edges"] == []
+                and detail["components"] == [detail["lifts"]]
+                and detail["component_has_fine_selfloop"] == [True]
+                for detail in auxiliary_details
+            )
+        ):
+            raise AssertionError("Round11 C*/free-pair/adjacency calibration mismatch")
+
+    expected_relation_invariants = {
+        "R11-W5-K5-S5": {
+            "n": 6,
+            "m": 10,
+            "degrees": [3, 3, 3, 3, 3, 5],
+            "beta1": 5,
+            "colors": "K^5S^5",
+        },
+        "R11-K33-K3-S6": {
+            "n": 6,
+            "m": 9,
+            "degrees": [3, 3, 3, 3, 3, 3],
+            "beta1": 4,
+            "colors": "K^3S^6",
+        },
+    }
+    actual_relation_invariants = {
+        wheel.name: _relation_graph_invariant(
+            6,
+            kill_relations=R11_W5_KILL_RELATIONS,
+            slot_relations=R11_W5_SLOT_RELATIONS,
+        ),
+        bipartite.name: _relation_graph_invariant(
+            6,
+            kill_relations=R11_K33_KILL_RELATIONS,
+            slot_relations=R11_K33_SLOT_RELATIONS,
+        ),
+    }
+    if actual_relation_invariants != expected_relation_invariants:
+        raise AssertionError("Round11 colored relation invariant mismatch")
+
+    graph_support_codes = _registered_colored_graph_support_codes_through_round11()
+    graph_full_ids = tuple(item["sha256"] for item in graph_support_codes.values())
+    graph_short_ids = tuple(identifier[:20] for identifier in graph_full_ids)
+    graph_payloads = tuple(
+        item["compact_json"] for item in graph_support_codes.values()
+    )
+    if not (
+        len(graph_support_codes) == 12
+        and len(set(graph_full_ids)) == 12
+        and len(set(graph_short_ids)) == 12
+        and len(set(graph_payloads)) == 12
+        and graph_support_codes[wheel.name]
+        != graph_support_codes[bipartite.name]
+        and graph_support_codes[bipartite.name]
+        != graph_support_codes["R8-CL3-SLOT"]
+    ):
+        raise AssertionError("Round11 graph/support canonicalization collision")
+
+    r8_ladder_invariant = _relation_graph_invariant(
+        6,
+        slot_relations=R8_CL3_SLOT_RELATIONS,
+    )
+    bipartite_invariant = actual_relation_invariants[bipartite.name]
+    if not (
+        tuple(r8_ladder_invariant[key] for key in ("n", "m", "degrees", "beta1"))
+        == tuple(bipartite_invariant[key] for key in ("n", "m", "degrees", "beta1"))
+        and r8_ladder_invariant["colors"] == "S^9"
+        and bipartite_invariant["colors"] == "K^3S^6"
+    ):
+        raise AssertionError("Round11 R8/K3,3 colored distinction mismatch")
+
+    full_chart = ChartCodeSpec(
+        frozenset((0, 1, 2, 3)),
+        frozenset((0, 1, 2, 3, 4)),
+        (
+            RelationBlockCodeSpec(
+                6,
+                R11_W5_KILL_RELATIONS,
+                R11_W5_SLOT_RELATIONS,
+            ),
+        ),
+    )
+    wheel_base_code = graph_support_codes[wheel.name]
+    lift_relabel = (5, 3, 1, 4, 0, 2)
+    lift_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=wheel.factor_pi,
+        chart_records=(
+            ChartCodeSpec(
+                full_chart.coarse_support,
+                full_chart.fine_support,
+                (
+                    RelationBlockCodeSpec(
+                        6,
+                        tuple(
+                            (lift_relabel[left], lift_relabel[right])
+                            for left, right in R11_W5_KILL_RELATIONS
+                        ),
+                        tuple(
+                            (lift_relabel[left], lift_relabel[right])
+                            for left, right in R11_W5_SLOT_RELATIONS
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        coarse_cell_counts=(1, 16, 15),
+        fine_cell_counts=(1, 21, 20),
+    )
+    target_chart_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=wheel.factor_pi,
+        chart_records=tuple(
+            reversed(
+                _target_relabelled_chart_records(
+                    (full_chart,),
+                    coarse_permutation=(0, 2, 1, 3),
+                    fine_permutation=(0, 1, 3, 2, 4),
+                )
+            )
+        ),
+        coarse_cell_counts=(1, 16, 15),
+        fine_cell_counts=(1, 21, 20),
+    )
+    support_drift_code = colored_graph_support_canonical_code(
+        factor_pi=wheel.factor_pi,
+        chart_records=(
+            ChartCodeSpec(
+                frozenset((0, 1, 2)),
+                frozenset((0, 1, 2, 3)),
+                full_chart.relation_blocks,
+            ),
+        ),
+        coarse_cell_counts=(1, 16, 15),
+        fine_cell_counts=(1, 21, 20),
+    )
+    cell_count_drift_code = colored_graph_support_canonical_code(
+        factor_pi=wheel.factor_pi,
+        chart_records=(full_chart,),
+        coarse_cell_counts=(1, 16, 16),
+        fine_cell_counts=(1, 21, 20),
+    )
+    if not (
+        lift_relabelled_code == wheel_base_code
+        and target_chart_relabelled_code == wheel_base_code
+        and support_drift_code != wheel_base_code
+        and cell_count_drift_code != wheel_base_code
+    ):
+        raise AssertionError("Round11 relabel/support/cell canonical code mismatch")
+
+    new_full_ids = tuple(case["semantic_sha256"] for case in expansion)
+    new_short_ids = tuple(case["id"] for case in expansion)
+    all_full_ids = prior_full_ids + new_full_ids
+    all_short_ids = prior_short_ids + new_short_ids
+    full_collision_count = len(all_full_ids) - len(set(all_full_ids))
+    short_collision_count = len(all_short_ids) - len(set(all_short_ids))
+    if not (
+        all(full.startswith(short) for full, short in zip(new_full_ids, new_short_ids))
+        and not (set(new_full_ids) & set(prior_full_ids))
+        and not (set(new_short_ids) & set(prior_short_ids))
+        and len(set(new_full_ids)) == len(set(new_short_ids)) == 2
+        and len(all_full_ids) == len(all_short_ids) == 1916
+        and full_collision_count == short_collision_count == 0
+    ):
+        raise AssertionError("Round11 semantic payload strict-expansion mismatch")
+
+    new_counterexamples = [
+        case
+        for case in expansion
+        if case["sufficiency_break"] or case["necessity_break"]
+    ]
+    new_verdicts = sorted(
+        {
+            "CSTAR-not-sufficient"
+            for case in new_counterexamples
+            if case["sufficiency_break"]
+        }
+        | {
+            "CSTAR-not-necessary"
+            for case in new_counterexamples
+            if case["necessity_break"]
+        }
+    )
+    new_canonical_counterexamples = [
+        case["semantic_sha256"] for case in new_counterexamples
+    ]
+    candidate_semantic_change = False
+    additional_calibration_fixes: list[str] = []
+    progress = bool(
+        new_verdicts
+        or new_canonical_counterexamples
+        or candidate_semantic_change
+        or additional_calibration_fixes
+    )
+
+    return {
+        "round": "R2-round-11",
+        "preregistered_issue_comment": 5231154236,
+        "valid": True,
+        "query_admission": {
+            "post_punit_r0_issue_comment": POST_PUNIT_R0_ISSUE_COMMENT,
+            "post_punit_r0_sha256": current_r0_sha256,
+            "pre_punit_r0_rejected_sha256": FINAL_R0_SEMANTIC_SHA256,
+            "r1_sha256": r1_sha256,
+            "historical_round8_sha256": ROUND8_DIAGNOSTIC_PAYLOAD_SHA256,
+            "historical_round9_sha256": historical_round9_sha256,
+            "historical_round10_sha256": historical_round10_sha256,
+            "manifest_compact_json": POST_PUNIT_MANIFEST_COMPACT_JSON,
+            "manifest_sha256": POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+            "manifest_registered_sha256": POST_PUNIT_MANIFEST_REGISTERED_SHA256,
+            "all_gates_pass": True,
+        },
+        "historical_payload_compatibility": {
+            "round9_uses_historical_pre_punit_r0_manifest": True,
+            "round9_payload_unchanged": (
+                historical_round9_sha256 == ROUND9_VALID_PAYLOAD_SHA256
+            ),
+            "round10_payload_unchanged": (
+                historical_round10_sha256 == HISTORICAL_ROUND10_PAYLOAD_SHA256
+            ),
+            "round8_diagnostic_only": True,
+        },
+        "calibration_progress_reset": {
+            "last_progress": "R0(d)-PUnit-provenance-calibration-fix",
+            "issue_comment": POST_PUNIT_R0_ISSUE_COMMENT,
+            "entry_streak": 0,
+        },
+        "candidate": {
+            "semantic_id": CERTIFIED_SEMANTIC_ID,
+            "semantic_sha256": CERTIFIED_SEMANTIC_SHA256,
+            "spec": CERTIFIED_SPEC,
+        },
+        "population": {
+            "prior_raw_cases_recomputed": len(prior_comparisons),
+            "prior_full_semantic_payload_ids": len(set(prior_full_ids)),
+            "prior_truncated_semantic_payload_ids": len(set(prior_short_ids)),
+            "new_connected_mixed_graph_cases": 2,
+            "new_full_semantic_payload_ids": list(new_full_ids),
+            "new_truncated_semantic_payload_ids": list(new_short_ids),
+            "full_sha256_collision_count": full_collision_count,
+            "truncated_20hex_collision_count": short_collision_count,
+            "strict_superset": True,
+            "total_raw_cases": 1916,
+            "total_full_semantic_payload_ids": len(set(all_full_ids)),
+            "total_truncated_semantic_payload_ids": len(set(all_short_ids)),
+            "new_A_block_queries": sum(
+                len(comparison.block_analyses()) for comparison in fixtures
+            ),
+            "all_cases_evaluated": True,
+        },
+        "canonical_colored_graph_support_codes": {
+            name: {
+                **code,
+                "id20": code["sha256"][:20],
+            }
+            for name, code in graph_support_codes.items()
+        },
+        "canonical_code_audit": {
+            "prior_registered_code_count": 10,
+            "new_registered_code_count": 2,
+            "registered_code_count": len(graph_support_codes),
+            "full_sha256_collision_count": len(graph_full_ids) - len(set(graph_full_ids)),
+            "truncated_20hex_collision_count": len(graph_short_ids) - len(set(graph_short_ids)),
+            "compact_json_collision_count": len(graph_payloads) - len(set(graph_payloads)),
+            "strict_new": True,
+            "lift_relabel_invariant": lift_relabelled_code == wheel_base_code,
+            "target_chart_relabel_invariant": (
+                target_chart_relabelled_code == wheel_base_code
+            ),
+            "support_drift_detected": support_drift_code != wheel_base_code,
+            "cell_count_drift_detected": cell_count_drift_code != wheel_base_code,
+            "r8_ladder_and_k33_uncolored_invariants_equal": True,
+            "r8_ladder_and_k33_colored_codes_distinct": True,
+        },
+        "relation_graph_invariants": actual_relation_invariants,
+        "A_block_expected_h1": h1_expected_tables,
+        "A_block_dimension_histograms": h1_dimension_histograms,
+        "queries": {
+            "prior_sufficiency_or_necessity_break_count": len(
+                prior_counterexamples
+            ),
+            "prior_counterexamples": prior_counterexamples,
+            "new_sufficiency_break_count": sum(
+                case["sufficiency_break"] for case in expansion
+            ),
+            "new_necessity_break_count": sum(
+                case["necessity_break"] for case in expansion
+            ),
+            "new_counterexample_count": len(new_counterexamples),
+            "new_counterexample_ids": [
+                case["semantic_sha256"] for case in new_counterexamples
+            ],
+        },
+        "expansion_cases": expansion,
+        "progress_audit": {
+            "entry_streak": 0,
+            "new_verdicts": new_verdicts,
+            "new_canonical_nonisomorphic_counterexamples": (
+                new_canonical_counterexamples
+            ),
+            "candidate_semantic_change": candidate_semantic_change,
+            "additional_calibration_fixes": additional_calibration_fixes,
+            "progress": progress,
+            "streak_after_round": 0 if progress else 1,
+        },
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "same_blocker_evidence": {
+            "valid_no_progress_1_of_2": not progress,
+            "fixed_full_support_six_lift_mixed_graphs_close": True,
+            "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs, colorings, face multiplicities, or support distributions.",
+        },
+        "stop_audit": {
+            "stop_condition_B_finite_exhaustion": False,
+            "stop_condition_C_two_valid_same_blocker_no_progress": False,
+            "finite_zero_result_is_not_general_proof": True,
+        },
+        "coverage_limit": "The two fixed full-support six-lift mixed graphs W5 K5/S5 and K3,3 K3/S6, all 15 nonempty A for each, plus the recomputed prior 1914 cases. Arbitrary graph size or coloring, face multiplicity, support distribution, multichart supports, and cross-chart incidence remain outside this finite coverage.",
+    }
+
+
+def round12_report() -> dict[str, object]:
+    """Run the preregistered octahedral/partitioned multichart expansion."""
+
+    if not (
+        CERTIFIED_SEMANTIC_ID == "R2-CSTAR-CERTIFIED-v3"
+        and CERTIFIED_SEMANTIC_SHA256
+        == "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa"
+    ):
+        raise AssertionError("Round12 candidate semantic payload drifted")
+
+    current_r0 = r0_report()
+    r1 = r1_report()
+    current_r0_sha256 = _canonical_report_sha256(current_r0)
+    r1_sha256 = _canonical_report_sha256(r1)
+    _assert_round11_current_calibration_gate(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        manifest_compact_json=POST_PUNIT_MANIFEST_COMPACT_JSON,
+        manifest_sha256=POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+    )
+
+    round11 = round11_report()
+    round11_sha256 = _canonical_report_sha256(round11)
+    _assert_round12_hash_baseline(
+        current_r0_sha256=current_r0_sha256,
+        current_r0=current_r0,
+        r1_sha256=r1_sha256,
+        r1=r1,
+        round11_sha256=round11_sha256,
+        round11=round11,
+        manifest_compact_json=POST_PUNIT_MANIFEST_COMPACT_JSON,
+        manifest_sha256=POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+    )
+
+    prior_comparisons = tuple(_all_comparisons_through_round11())
+    prior_full_ids = tuple(
+        _case_semantic_sha256(comparison) for comparison in prior_comparisons
+    )
+    prior_short_ids = tuple(identifier[:20] for identifier in prior_full_ids)
+    if not (
+        len(prior_comparisons) == 1916
+        and len(set(prior_full_ids)) == 1916
+        and len(set(prior_short_ids)) == 1916
+    ):
+        raise AssertionError("Round12 prior 1916-case semantic ID baseline drift")
+
+    prior_counterexamples: list[dict[str, str]] = []
+    for comparison in prior_comparisons:
+        result = _case_result(
+            comparison,
+            "round0_through_round11",
+            c5_mode="certified",
+        )
+        if result["sufficiency_break"] or result["necessity_break"]:
+            prior_counterexamples.append(
+                {
+                    "id": result["id"],
+                    "semantic_sha256": _case_semantic_sha256(comparison),
+                    "query": (
+                        "sufficiency_break"
+                        if result["sufficiency_break"]
+                        else "necessity_break"
+                    ),
+                }
+            )
+    if prior_counterexamples:
+        raise AssertionError("Round12 prior 1916-case query baseline drift")
+
+    octahedral, partitioned = round12_relation_fixtures()
+    fixtures = (octahedral, partitioned)
+    expansion: list[dict[str, object]] = []
+    for comparison in fixtures:
+        case = _case_result(
+            comparison,
+            "round12_octahedral_or_partitioned_multichart",
+            c5_mode="certified",
+        )
+        case["semantic_payload_json"] = _case_semantic_payload_json(comparison)
+        case["semantic_sha256"] = _case_semantic_sha256(comparison)
+        if sha256(case["semantic_payload_json"].encode("utf-8")).hexdigest() != case[
+            "semantic_sha256"
+        ]:
+            raise AssertionError("Round12 full semantic JSON/SHA mismatch")
+        case["all_block_h1"] = [
+            {
+                "coarse_targets_A": sorted(targets),
+                "h1": asdict(analysis),
+            }
+            for targets, analysis in comparison.block_analyses()
+        ]
+        expansion.append(case)
+
+    octahedral_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (4, 4, 4), (0, 0, 4),
+        (5, 5, 5), (0, 0, 5),
+        (6, 6, 6), (0, 0, 6),
+        (0, 7, 8), (0, 9, 10), (0, 11, 12),
+        (0, 13, 14), (0, 15, 16), (0, 17, 18),
+    )
+    octahedral_expected_fine_faces = (
+        (6, 6, 6), (0, 2, 6),
+        (7, 7, 7), (2, 4, 7),
+        (8, 8, 8), (1, 4, 8),
+        (9, 9, 9), (1, 3, 9),
+        (10, 10, 10), (3, 5, 10),
+        (11, 11, 11), (0, 5, 11),
+        (0, 12, 13), (3, 12, 13),
+        (1, 14, 15), (2, 14, 15),
+        (0, 16, 17), (4, 16, 17),
+        (1, 18, 19), (5, 18, 19),
+        (2, 20, 21), (5, 20, 21),
+        (3, 22, 23), (4, 22, 23),
+    )
+    if not (
+        _comparison_cell_counts(octahedral) == ((1, 19, 18), (1, 24, 24))
+        and octahedral.morphism.coarse.faces
+        == octahedral_expected_coarse_faces
+        and octahedral.morphism.fine.faces == octahedral_expected_fine_faces
+        and octahedral.morphism.vertex_map == (0,)
+        and octahedral.morphism.edge_map == (0,) * 6 + tuple(range(1, 19))
+        and octahedral.morphism.face_map
+        == tuple(range(12))
+        + (12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17)
+        and octahedral.coarse_target_count == 4
+        and octahedral.fine_target_count == 5
+        and octahedral.factor_pi == (0, 0, 1, 2, 3)
+        and octahedral.coarse_chart_supports
+        == (frozenset((0, 1, 2, 3)),)
+        and octahedral.fine_chart_supports
+        == (frozenset((0, 1, 2, 3, 4)),)
+    ):
+        raise AssertionError("Round12 octahedral exact fixture mismatch")
+
+    partitioned_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (0, 4, 5), (0, 6, 7), (0, 8, 9),
+        (11, 11, 11), (10, 10, 11),
+        (12, 12, 12), (10, 10, 12),
+        (10, 13, 14), (10, 15, 16),
+    )
+    partitioned_expected_fine_faces = (
+        (5, 5, 5), (0, 1, 5),
+        (6, 6, 6), (2, 3, 6),
+        (7, 7, 7), (1, 4, 7),
+        (1, 8, 9), (2, 8, 9),
+        (0, 10, 11), (3, 10, 11),
+        (2, 12, 13), (4, 12, 13),
+        (19, 19, 19), (14, 15, 19),
+        (20, 20, 20), (14, 16, 20),
+        (14, 21, 22), (17, 21, 22),
+        (14, 23, 24), (18, 23, 24),
+    )
+    if not (
+        _comparison_cell_counts(partitioned) == ((3, 18, 15), (3, 26, 20))
+        and partitioned.morphism.coarse.faces
+        == partitioned_expected_coarse_faces
+        and partitioned.morphism.fine.faces == partitioned_expected_fine_faces
+        and partitioned.morphism.vertex_map == (0, 1, 2)
+        and partitioned.morphism.edge_map
+        == (
+            0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            10, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17,
+        )
+        and partitioned.morphism.face_map
+        == (
+            0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8,
+            9, 10, 11, 12, 13, 13, 14, 14,
+        )
+        and partitioned.coarse_target_count == 4
+        and partitioned.fine_target_count == 5
+        and partitioned.factor_pi == (0, 0, 1, 2, 3)
+        and partitioned.coarse_chart_supports
+        == (
+            frozenset((0, 2)),
+            frozenset((1, 3)),
+            frozenset((0, 1, 2, 3)),
+        )
+        and partitioned.fine_chart_supports
+        == (
+            frozenset((0, 1, 3)),
+            frozenset((2, 4)),
+            frozenset((0, 1, 2, 3, 4)),
+        )
+    ):
+        raise AssertionError("Round12 partitioned exact fixture mismatch")
+
+    h1_expected_tables: dict[str, list[dict[str, object]]] = {}
+    h1_dimension_histograms: dict[str, dict[str, int]] = {}
+    house_support = frozenset((0, 2))
+    star_support = frozenset((1, 3))
+    expected_histograms = (
+        {"7": 15},
+        {"4": 3, "5": 3, "8": 9},
+    )
+    for fixture_index, comparison in enumerate(fixtures):
+        table: list[dict[str, object]] = []
+        histogram: dict[str, int] = {}
+        blocks = comparison.block_analyses()
+        if len(blocks) != 15:
+            raise AssertionError("Round12 fixture did not enumerate all 15 A")
+        for targets, analysis in blocks:
+            expected_dimension = (
+                7
+                if fixture_index == 0
+                else 1
+                + 4 * int(bool(targets & house_support))
+                + 3 * int(bool(targets & star_support))
+            )
+            expected = H1Analysis(
+                expected_dimension,
+                expected_dimension,
+                expected_dimension,
+                True,
+                True,
+                True,
+            )
+            if analysis != expected:
+                raise AssertionError("Round12 exact A-block H1 calibration mismatch")
+            dimension_key = str(expected_dimension)
+            histogram[dimension_key] = histogram.get(dimension_key, 0) + 1
+            table.append(
+                {
+                    "coarse_targets_A": sorted(targets),
+                    "expected_h1": asdict(expected),
+                }
+            )
+        if histogram != expected_histograms[fixture_index]:
+            raise AssertionError("Round12 A-block H1 distribution mismatch")
+        h1_expected_tables[comparison.name] = table
+        h1_dimension_histograms[comparison.name] = histogram
+
+    registered_colored_adjacencies = (
+        {
+            "OCTA": {
+                "coarse_edge": 0,
+                "KILL": tuple(sorted(_checked_relations(6, R12_OCTA_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(6, R12_OCTA_SLOT_RELATIONS))),
+            },
+        },
+        {
+            "HOUSE": {
+                "coarse_edge": 0,
+                "KILL": tuple(sorted(_checked_relations(5, R12_HOUSE_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(5, R12_HOUSE_SLOT_RELATIONS))),
+            },
+            "STAR": {
+                "coarse_edge": 10,
+                "KILL": tuple(sorted(_checked_relations(5, R12_STAR_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(5, R12_STAR_SLOT_RELATIONS))),
+            },
+        },
+    )
+    for fixture_index, (comparison, case) in enumerate(zip(fixtures, expansion)):
+        adjacency_report: dict[str, dict[str, object]] = {}
+        for block_name, registered in registered_colored_adjacencies[
+            fixture_index
+        ].items():
+            registered_edges = tuple(
+                sorted(registered["KILL"] + registered["SLOT"])
+            )
+            actual_edges = _normalized_direct_edges(
+                case,
+                registered["coarse_edge"],
+            )
+            adjacency_report[block_name] = {
+                "coarse_edge": registered["coarse_edge"],
+                "KILL": [list(edge) for edge in registered["KILL"]],
+                "SLOT": [list(edge) for edge in registered["SLOT"]],
+                "actual_uncolored": [list(edge) for edge in actual_edges],
+                "unintended_edge_count": len(
+                    set(actual_edges) - set(registered_edges)
+                ),
+            }
+            if actual_edges != registered_edges:
+                raise AssertionError("Round12 exact colored adjacency mismatch")
+        case["certified_colored_adjacency"] = adjacency_report
+
+        whole_details = case["candidate"]["whole"]["direct_lifttwin"]
+        nontrivial_edges = {
+            registered["coarse_edge"]
+            for registered in registered_colored_adjacencies[fixture_index].values()
+        }
+        auxiliary_details = tuple(
+            detail
+            for edge, detail in whole_details.items()
+            if int(edge) not in nontrivial_edges
+        )
+        all_reductions = (
+            case["candidate"]["whole"],
+            *case["candidate"]["per_subset"],
+        )
+        if not (
+            case["uniform"]
+            and case["candidate"]["all"]
+            and all(case["candidate"]["aggregate"].values())
+            and len(case["candidate"]["per_subset"]) == 15
+            and all(
+                not reduction["coarse_reduction"]["removed_free_pairs"]
+                and not reduction["fine_reduction"]["removed_free_pairs"]
+                for reduction in all_reductions
+            )
+            and len(whole_details) == len(comparison.morphism.coarse.edges)
+            and all(
+                len(detail["lifts"]) == 1
+                and detail["direct_edges"] == []
+                and detail["components"] == [detail["lifts"]]
+                and detail["component_has_fine_selfloop"] == [True]
+                for detail in auxiliary_details
+            )
+        ):
+            raise AssertionError("Round12 C*/free-pair/auxiliary-lift mismatch")
+
+    expected_relation_invariants = {
+        "R12-OCTA-K6-S6": {
+            "OCTA": {
+                "n": 6,
+                "m": 12,
+                "degrees": [4, 4, 4, 4, 4, 4],
+                "beta1": 7,
+                "colors": "K^6S^6",
+            },
+        },
+        "R12-HOUSE-STAR-PARTITION": {
+            "HOUSE": {
+                "n": 5,
+                "m": 6,
+                "degrees": [2, 2, 2, 3, 3],
+                "beta1": 2,
+                "colors": "K^3S^3",
+            },
+            "STAR": {
+                "n": 5,
+                "m": 4,
+                "degrees": [1, 1, 1, 1, 4],
+                "beta1": 0,
+                "colors": "K^2S^2",
+            },
+        },
+    }
+    actual_relation_invariants = {
+        octahedral.name: {
+            "OCTA": _relation_graph_invariant(
+                6,
+                kill_relations=R12_OCTA_KILL_RELATIONS,
+                slot_relations=R12_OCTA_SLOT_RELATIONS,
+            ),
+        },
+        partitioned.name: {
+            "HOUSE": _relation_graph_invariant(
+                5,
+                kill_relations=R12_HOUSE_KILL_RELATIONS,
+                slot_relations=R12_HOUSE_SLOT_RELATIONS,
+            ),
+            "STAR": _relation_graph_invariant(
+                5,
+                kill_relations=R12_STAR_KILL_RELATIONS,
+                slot_relations=R12_STAR_SLOT_RELATIONS,
+            ),
+        },
+    }
+    if actual_relation_invariants != expected_relation_invariants:
+        raise AssertionError("Round12 colored relation invariant mismatch")
+
+    graph_support_codes = _registered_colored_graph_support_codes_through_round12()
+    graph_full_ids = tuple(item["sha256"] for item in graph_support_codes.values())
+    graph_short_ids = tuple(identifier[:20] for identifier in graph_full_ids)
+    graph_payloads = tuple(
+        item["compact_json"] for item in graph_support_codes.values()
+    )
+    if not (
+        len(graph_support_codes) == 14
+        and len(set(graph_full_ids)) == 14
+        and len(set(graph_short_ids)) == 14
+        and len(set(graph_payloads)) == 14
+        and graph_support_codes[octahedral.name]
+        != graph_support_codes[partitioned.name]
+    ):
+        raise AssertionError("Round12 graph/support canonicalization collision")
+
+    octahedral_chart = ChartCodeSpec(
+        frozenset((0, 1, 2, 3)),
+        frozenset((0, 1, 2, 3, 4)),
+        (
+            RelationBlockCodeSpec(
+                6,
+                R12_OCTA_KILL_RELATIONS,
+                R12_OCTA_SLOT_RELATIONS,
+            ),
+        ),
+    )
+    partitioned_charts = (
+        ChartCodeSpec(
+            frozenset((0, 2)),
+            frozenset((0, 1, 3)),
+            (
+                RelationBlockCodeSpec(
+                    5,
+                    R12_HOUSE_KILL_RELATIONS,
+                    R12_HOUSE_SLOT_RELATIONS,
+                ),
+            ),
+        ),
+        ChartCodeSpec(
+            frozenset((1, 3)),
+            frozenset((2, 4)),
+            (
+                RelationBlockCodeSpec(
+                    5,
+                    R12_STAR_KILL_RELATIONS,
+                    R12_STAR_SLOT_RELATIONS,
+                ),
+            ),
+        ),
+        ChartCodeSpec(
+            frozenset((0, 1, 2, 3)),
+            frozenset((0, 1, 2, 3, 4)),
+            identity_loop_count=1,
+        ),
+    )
+    octahedral_base_code = graph_support_codes[octahedral.name]
+    partitioned_base_code = graph_support_codes[partitioned.name]
+    lift_relabel = (5, 2, 0, 4, 1, 3)
+    lift_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=octahedral.factor_pi,
+        chart_records=(
+            ChartCodeSpec(
+                octahedral_chart.coarse_support,
+                octahedral_chart.fine_support,
+                (
+                    RelationBlockCodeSpec(
+                        6,
+                        tuple(
+                            (lift_relabel[left], lift_relabel[right])
+                            for left, right in R12_OCTA_KILL_RELATIONS
+                        ),
+                        tuple(
+                            (lift_relabel[left], lift_relabel[right])
+                            for left, right in R12_OCTA_SLOT_RELATIONS
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        coarse_cell_counts=(1, 19, 18),
+        fine_cell_counts=(1, 24, 24),
+    )
+    chart_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=partitioned.factor_pi,
+        chart_records=tuple(reversed(partitioned_charts)),
+        coarse_cell_counts=(3, 18, 15),
+        fine_cell_counts=(3, 26, 20),
+    )
+    target_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=partitioned.factor_pi,
+        chart_records=_target_relabelled_chart_records(
+            partitioned_charts,
+            coarse_permutation=(0, 2, 1, 3),
+            fine_permutation=(0, 1, 3, 2, 4),
+        ),
+        coarse_cell_counts=(3, 18, 15),
+        fine_cell_counts=(3, 26, 20),
+    )
+    support_drift_code = colored_graph_support_canonical_code(
+        factor_pi=partitioned.factor_pi,
+        chart_records=(
+            ChartCodeSpec(
+                frozenset((0,)),
+                frozenset((0, 1)),
+                partitioned_charts[0].relation_blocks,
+            ),
+            partitioned_charts[1],
+            partitioned_charts[2],
+        ),
+        coarse_cell_counts=(3, 18, 15),
+        fine_cell_counts=(3, 26, 20),
+    )
+    if not (
+        lift_relabelled_code == octahedral_base_code
+        and chart_relabelled_code == partitioned_base_code
+        and target_relabelled_code == partitioned_base_code
+        and support_drift_code != partitioned_base_code
+    ):
+        raise AssertionError("Round12 relabel/support canonical code mismatch")
+
+    new_full_ids = tuple(case["semantic_sha256"] for case in expansion)
+    new_short_ids = tuple(case["id"] for case in expansion)
+    all_full_ids = prior_full_ids + new_full_ids
+    all_short_ids = prior_short_ids + new_short_ids
+    full_collision_count = len(all_full_ids) - len(set(all_full_ids))
+    short_collision_count = len(all_short_ids) - len(set(all_short_ids))
+    if not (
+        all(full.startswith(short) for full, short in zip(new_full_ids, new_short_ids))
+        and not (set(new_full_ids) & set(prior_full_ids))
+        and not (set(new_short_ids) & set(prior_short_ids))
+        and len(set(new_full_ids)) == len(set(new_short_ids)) == 2
+        and len(all_full_ids) == len(all_short_ids) == 1918
+        and full_collision_count == short_collision_count == 0
+    ):
+        raise AssertionError("Round12 semantic payload strict-expansion mismatch")
+
+    new_counterexamples = [
+        case
+        for case in expansion
+        if case["sufficiency_break"] or case["necessity_break"]
+    ]
+    new_verdicts = sorted(
+        {
+            "CSTAR-not-sufficient"
+            for case in new_counterexamples
+            if case["sufficiency_break"]
+        }
+        | {
+            "CSTAR-not-necessary"
+            for case in new_counterexamples
+            if case["necessity_break"]
+        }
+    )
+    new_canonical_counterexamples = [
+        case["semantic_sha256"] for case in new_counterexamples
+    ]
+    candidate_semantic_change = False
+    additional_calibration_fixes: list[str] = []
+    progress = bool(
+        new_verdicts
+        or new_canonical_counterexamples
+        or candidate_semantic_change
+        or additional_calibration_fixes
+    )
+    stop_condition_c = not progress
+
+    return {
+        "round": "R2-round-12",
+        "preregistered_issue_comment": 5231270132,
+        "valid": True,
+        "query_admission": {
+            "post_punit_r0_issue_comment": POST_PUNIT_R0_ISSUE_COMMENT,
+            "post_punit_r0_sha256": current_r0_sha256,
+            "manifest_sha256": POST_PUNIT_MANIFEST_COMPUTED_SHA256,
+            "r1_sha256": r1_sha256,
+            "round11_preregistered_issue_comment": (
+                ROUND11_PREREGISTERED_ISSUE_COMMENT
+            ),
+            "round11_result_issue_comment": ROUND11_RESULT_ISSUE_COMMENT,
+            "round11_payload_sha256": round11_sha256,
+            "all_gates_pass": True,
+        },
+        "round11_valid_baseline": {
+            "valid": round11["valid"],
+            "streak_after_round": round11["progress_audit"]["streak_after_round"],
+            "valid_no_progress_1_of_2": round11["same_blocker_evidence"][
+                "valid_no_progress_1_of_2"
+            ],
+            "population": round11["population"]["total_raw_cases"],
+            "registered_graph_support_codes": round11["canonical_code_audit"][
+                "registered_code_count"
+            ],
+        },
+        "candidate": {
+            "semantic_id": CERTIFIED_SEMANTIC_ID,
+            "semantic_sha256": CERTIFIED_SEMANTIC_SHA256,
+            "spec": CERTIFIED_SPEC,
+        },
+        "population": {
+            "prior_raw_cases_recomputed": len(prior_comparisons),
+            "prior_full_semantic_payload_ids": len(set(prior_full_ids)),
+            "prior_truncated_semantic_payload_ids": len(set(prior_short_ids)),
+            "new_octahedral_or_partitioned_cases": 2,
+            "new_full_semantic_payload_ids": list(new_full_ids),
+            "new_truncated_semantic_payload_ids": list(new_short_ids),
+            "full_sha256_collision_count": full_collision_count,
+            "truncated_20hex_collision_count": short_collision_count,
+            "strict_superset": True,
+            "total_raw_cases": 1918,
+            "total_full_semantic_payload_ids": len(set(all_full_ids)),
+            "total_truncated_semantic_payload_ids": len(set(all_short_ids)),
+            "new_A_block_queries": sum(
+                len(comparison.block_analyses()) for comparison in fixtures
+            ),
+            "all_cases_evaluated": True,
+        },
+        "canonical_colored_graph_support_codes": {
+            name: {
+                **code,
+                "id20": code["sha256"][:20],
+            }
+            for name, code in graph_support_codes.items()
+        },
+        "canonical_code_audit": {
+            "prior_registered_code_count": 12,
+            "new_registered_code_count": 2,
+            "registered_code_count": len(graph_support_codes),
+            "full_sha256_collision_count": len(graph_full_ids) - len(set(graph_full_ids)),
+            "truncated_20hex_collision_count": len(graph_short_ids) - len(set(graph_short_ids)),
+            "compact_json_collision_count": len(graph_payloads) - len(set(graph_payloads)),
+            "strict_new": True,
+            "lift_relabel_invariant": lift_relabelled_code == octahedral_base_code,
+            "chart_relabel_invariant": chart_relabelled_code == partitioned_base_code,
+            "target_relabel_invariant": target_relabelled_code == partitioned_base_code,
+            "support_drift_detected": support_drift_code != partitioned_base_code,
+        },
+        "relation_graph_invariants": actual_relation_invariants,
+        "A_block_expected_h1": h1_expected_tables,
+        "A_block_dimension_histograms": h1_dimension_histograms,
+        "queries": {
+            "prior_sufficiency_or_necessity_break_count": len(
+                prior_counterexamples
+            ),
+            "prior_counterexamples": prior_counterexamples,
+            "new_sufficiency_break_count": sum(
+                case["sufficiency_break"] for case in expansion
+            ),
+            "new_necessity_break_count": sum(
+                case["necessity_break"] for case in expansion
+            ),
+            "new_counterexample_count": len(new_counterexamples),
+            "new_counterexample_ids": [
+                case["semantic_sha256"] for case in new_counterexamples
+            ],
+        },
+        "expansion_cases": expansion,
+        "progress_audit": {
+            "entry_streak": 1,
+            "new_verdicts": new_verdicts,
+            "new_canonical_nonisomorphic_counterexamples": (
+                new_canonical_counterexamples
+            ),
+            "candidate_semantic_change": candidate_semantic_change,
+            "additional_calibration_fixes": additional_calibration_fixes,
+            "progress": progress,
+            "streak_after_round": 0 if progress else 2,
+        },
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "same_blocker_evidence": {
+            "valid_no_progress_2_of_2": not progress,
+            "fixed_octahedral_and_partitioned_multichart_cases_close": True,
+            "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs, certificate colorings, face multiplicities, chart counts, or compatible support distributions.",
+        },
+        "stop_audit": {
+            "stop_condition_A_completion": False,
+            "stop_condition_B_finite_exhaustion": False,
+            "stop_condition_C_two_valid_same_blocker_no_progress": stop_condition_c,
+            "finite_zero_result_is_not_general_proof": True,
+            "terminal_reason": (
+                "Stop-C: two consecutive post-PUnit valid same-blocker no-progress rounds"
+                if stop_condition_c
+                else None
+            ),
+        },
+        "coverage_limit": "The exact 1918 semantic cases through the fixed W5, K3,3, octahedral, house, and star graphs, with lift count at most six and no cross-chart nonloop edge or face. Arbitrary graph size, certificate coloring, face multiplicity, chart count, and compatible support distribution remain outside this finite coverage.",
     }
 
 
