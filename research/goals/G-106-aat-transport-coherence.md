@@ -7,17 +7,25 @@
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
   proved-in-research artifact(`Doct_U` / `transportAlong` / opcartesian
   普遍性。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
-  unported)を土台として参照する。G-102 系の消化状況を見て、人間の
-  判断で active へ昇格する。
+  unported)を土台として参照する。G-102〜G-104 は完了済みであり、
+  確定事項3点(下記)も固定済み。active 昇格は隊列の人間判断のみを残す。
 - `tracking issue`: 未起票(active 昇格時に起票する)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
-- `昇格前確定事項(スケルトン注記)`: 本カードは骨格 draft である。
-  次の3点は昇格前に固定する。(1) 2-障害の係数の正確な型(fiber 内
-  自己同型群に値を取る非可換 2-cocycle か、可換化した不変量か)。
-  (2) 「消滅 ⟺ coherent 化可能」の同値をどの有限 regime で主張するか。
-  (3) 三実現 (a)(b)(c) のうち完了面に含める範囲 — 最小完了面を
-  (b)(c) の witness と統一機構に置き、(a) は正例(canonical cleavage の
-  整合)として扱う案を既定とする。
+- `確定事項(2026-08-09 固定。旧・昇格前確定事項)`: 次の3点を固定した。
+  active 昇格は隊列の人間判断のみを残す。
+  (1) **2-障害の係数型**: fiber 内自己同型群に値を取る**非可換 2-cochain**
+  を、有限図式上の具体データとして直接定義する(gerbe / 一般
+  pseudofunctor coherence 理論は経由しない。mathlib の一般論は個別補題の
+  流用に限る)。可換化した不変量は採らない — 可換化で消える非可換情報が
+  (c) 三者調停 witness の実質になりうるためであり、アーベル群化による
+  情報落ちは G-104 条件Cハントの教訓(正値性の喪失、候補8 の系譜)とも
+  整合する。coboundary は lift 再選択(fiber 自己同型による書き換え)で
+  定義し、2-障害は coboundary 剰余として立てる。
+  (2) **消滅同値の regime**: `FiniteModel` carrier 上の有限図式(菱形・
+  三角形およびその有限合成)に限定して「消滅 ⟺ coherent 化可能」を
+  主張する。無限図式・一般 regime への拡張は frontier に置く。
+  (3) **完了面**: 最小完了面 = (b)(c) の witness+統一機構。(a) は正例
+  (canonical cleavage の整合)として完了面に含める(既定案を採用)。
 - `research aim`: 輸送の比較射の合成が閉じない障害を 2-cocycle 型の
   不変量として立て、三つの現象 — (a) 塔の cleavage の段間合成(段ごとに
   lift が在っても end-to-end で失敗しうる)、(b) doctrine 圏の菱形の
@@ -69,17 +77,19 @@
   への拡張の観察、ArchMap 調停への含意(pairwise 調停の原理的限界)の
   記述、H^2 語彙との接続の観察。
 
-- `target theorem`: **Transport Coherence Two-Obstruction Theorem**
-  (骨格)。G-101 の設定の上で:
+- `target theorem`: **Transport Coherence Two-Obstruction Theorem**。
+  G-101 の設定の上で:
   1. **(i) canonical coherence(正例)**: opcartesian 普遍性から導かれる
      canonical 輸送選択について、合成比較射
      `transportAlong (τ ∘ σ) P ≅ transportAlong τ (transportAlong σ P)`
      が構成でき、隣接合成の整合(coherence 等式)が成り立つ。
   2. **(ii) 2-障害の定義**: 有限図式上の与えられた lift / 比較射の族に
-     対し、合成の閉じなさを測る 2-cocycle 型不変量を定義し、cocycle
-     条件と、lift 再選択(coboundary)による同値を証明する。
-  3. **(iii) 消滅と整合の同値**: 有限 regime(範囲は昇格前確定事項 (2))
-     で、2-障害の消滅と coherent な再選択の存在が同値である。
+     対し、合成の閉じなさを測る fiber 内自己同型群値の非可換 2-cochain
+     (確定事項 (1))を定義し、cocycle 条件と、lift 再選択(coboundary)に
+     よる同値を証明する。
+  3. **(iii) 消滅と整合の同値**: `FiniteModel` 上の有限図式(菱形・
+     三角形とその有限合成。確定事項 (2))で、2-障害の消滅と coherent な
+     再選択の存在が同値である。
   4. **(iv) 障害 witness 2種**: (b) 菱形の二経路輸送が再選択で消えない
      食い違いを持つ有限 witness、(c) pairwise 翻訳射が実在するのに
      三者整合が不可能な有限 witness。
@@ -95,8 +105,7 @@
   2-障害の定義と cocycle / coboundary theorem、消滅同値 theorem、
   菱形 witness、三者調停 witness、統一接続、
   report `research/reports/G-106-aat-transport-coherence.md`。
-  (詳細分割は昇格時に確定する。)
-- `target proof strategy`(骨格): J0 合成比較射と canonical coherence ->
+- `target proof strategy`: J0 合成比較射と canonical coherence ->
   J1 2-障害の定義と同値関係 -> J2 消滅同値 -> J3 菱形・三者 witness ->
   J4 統一接続。既存成果の利用 map:
   `research/lean/ResearchLean/AG/AtomFoundation/`(`Doct_U` 圏則、
@@ -114,16 +123,17 @@
   witness の非自明性はすべて completion までに生成・証明する。整合・
   消滅相当のデータを certificate や structure field で受け取るだけでは
   放電と数えない。
-- `target material premise ledger`(骨格。昇格時に精密化する):
+- `target material premise ledger`:
   - `carrier U / FiniteModel`: `ambient-boundary`。
   - `Doct_U / transportAlong / opcartesian 普遍性`: `ambient-boundary`
     (G-101 の proved-in-research artifact の参照のみ。unported である
     ことを本カードは変更しない)。
   - `合成比較射と canonical coherence`: `discharge-required`。普遍性から
     導出し、coherence を field に入れない。
-  - `2-障害の定義`: `discharge-required`。昇格前確定事項 (1)。coboundary
-    剰余を定義に含める。
-  - `消滅同値`: `discharge-required`。昇格前確定事項 (2)。
+  - `2-障害の定義`: `discharge-required`。fiber 内自己同型群値の非可換
+    2-cochain(確定事項 (1))。coboundary 剰余を定義に含める。
+  - `消滅同値`: `discharge-required`。`FiniteModel` 上の有限図式に限る
+    (確定事項 (2))。
   - `菱形 witness / 三者調停 witness`: `discharge-required`。再選択で
     消える障害・pairwise 翻訳不在の構成は放電と数えない。
   - `統一接続`: `discharge-required`。

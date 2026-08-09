@@ -1,13 +1,16 @@
 # G-105-aat-structural-cover-invariance — 構造被覆の底不変性
 
 - `id`: `G-105-aat-structural-cover-invariance`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
-- `predecessor`: G-102(二相係数の障害 support 定理)の依存 profile /
-  二相分解の定義を正本として参照する。G-102 の完了後、その確定 artifact に
-  本カードの語彙を同期してから active へ昇格する。
-- `tracking issue`: 未起票(active 昇格時に起票する)
+- `predecessor`: G-102(二相係数の障害 support 定理、`target-theorem-proved`
+  2026-08-03、report
+  [research/reports/G-102-aat-two-phase-obstruction.md](../reports/G-102-aat-two-phase-obstruction.md))。
+  依存 profile / 二相分解 / Atom-indexed 係数複体の確定 artifact
+  (`research/lean/ResearchLean/AG/TwoPhase/` 配下)を正本として参照する。
+  本カードの語彙は 2026-08-09 に同期済み。
+- `tracking issue`: [#3950](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3950)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§2 幾何対応仮説、§8 候補9)
 - `research aim`: 「構造が空間を運び、意味が係数を運ぶ」を theorem に
   する。構造 Atom の定義(依存 profile が宣言変形族に不感)から、構造
@@ -30,12 +33,17 @@
   依存 profile から導出し、不変が破れる側(全 Atom nerve)との対比と、
   同一複体上の障害類比較の well-definedness までを Lean witness で固定
   する」点に置く。
-- `claim boundary`: 固定した一般 carrier `U`、G-102 の意味での doctrine
-  変形族(semantic 成分の対の族、他成分固定)、構造 / 意味 pair、Atom
+- `claim boundary`: 固定した一般 carrier `U`、G-102 の確定定義による宣言
+  変形族(`TwoPhase/DependencyProfile.lean` の `DeclaredSemanticFamily`:
+  semantic 成分の取り替え `SemanticVariant.replaceSemantic` の族、他成分
+  固定)、その `Structural` / `Semantic` 判定(variant ごとの `extracts`
+  真偽から導出。phase field 宣言は認めない)による構造 / 意味 pair、Atom
   データから被覆 nerve を生成する明示構成(カード内で定義)、Atom-indexed
-  係数複体を対象とする。doctrine の構文成分(vocabulary / resolution /
-  normalize)を動かす変形、carrier を動かす主張、blame の gauge 理論
-  (coboundary 移動の分類)、係数の同型分類は含めない。
+  係数複体(`TwoPhase/CoefficientComplex.lean` の
+  `AtomIndexedNerveData` / `AtomIndexedCoefficientComplex`)を対象とする。
+  doctrine の構文成分(vocabulary / resolution / normalize)を動かす変形、
+  carrier を動かす主張、blame の gauge 理論(coboundary 移動の分類)、
+  係数の同型分類は含めない。
 - `capability categories`: invariance、cover-generation、
   coefficient-localization、comparability、counterexample。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
@@ -58,7 +66,8 @@
 
 - `target theorem`: **Structural Cover Base Invariance Theorem**。
   固定した一般 carrier `U` 上、G-102 の意味の doctrine `D` と宣言変形族
-  `fam` に対し、Atom データから被覆 nerve を生成する明示構成
+  `fam`(`DeclaredSemanticFamily`)に対し、Atom データから被覆 nerve を
+  生成する明示構成
   `nerveOf`(chart / edge / face を extraction データから定める。正確な
   形はカード内で固定する)を与え、次を証明する。
   1. **(i) 構造 nerve の不変性**: 構造 pair だけから生成した nerve
@@ -87,8 +96,17 @@
   report `research/reports/G-105-aat-structural-cover-invariance.md`。
 - `target proof strategy`: I0 nerve 生成構成の定義 -> I1 構造 nerve
   不変性 -> I2 全 Atom nerve 可変性反例 -> I3 係数局在と比較可能性 ->
-  I4 発火 witness。既存成果の利用 map: G-102 の依存 profile / 二相分解 /
-  Atom-indexed 係数複体(確定後に参照)、
+  I4 発火 witness。既存成果の利用 map:
+  `research/lean/ResearchLean/AG/TwoPhase/DependencyProfile.lean`
+  (`DeclaredSemanticFamily` / `Structural` / `Semantic` /
+  `FiniteDependencyProfile`。review 済み、再定義しない)、
+  `research/lean/ResearchLean/AG/TwoPhase/CoefficientComplex.lean`
+  (`AtomIndexedNerveData` とその `expandedNerve`、
+  `AtomIndexedCoefficientComplex` / `ConditionE` / `structuralComplex` /
+  `semanticComplex`。本カードの `nerveOf` は Atom データからの生成構成と
+  して新設し、`expandedNerve` との関係(再利用または対比)を I0 で明示
+  する)、`research/lean/ResearchLean/AG/TwoPhase/FiniteWitnesses.lean`
+  (witness 素材の再利用は任意)、
   `Formal/AG/Cohomology/CoverNerve.lean` の `CoverNerve` 型(参照のみ)、
   `Formal/AG/Examples/FiniteModel.lean`(witness 素材)。固定 statement と
   完了条件は本カードのみを正本とする。
@@ -104,8 +122,8 @@
   certificate や structure field で受け取るだけでは放電と数えない。
 - `target material premise ledger`:
   - `carrier U / FiniteModel`: `ambient-boundary`。
-  - `依存 profile / 二相分解`: `ambient-boundary`(G-102 の確定 artifact を
-    参照する。未完了のうちは本カードを active にしない)。
+  - `依存 profile / 二相分解`: `ambient-boundary`(G-102 の確定 artifact
+    `TwoPhase/DependencyProfile.lean` の参照のみ。再定義しない)。
   - `nerve 生成構成`: `discharge-required`。Atom データから chart / edge /
     face を定める構成を定義し、退化(定数構成)でないことを witness で
     示す。
