@@ -12,34 +12,72 @@ import r2_hunt
 
 
 def results_report() -> dict[str, object]:
+    r0 = necessity_map.r0_report()
+    r1 = necessity_map.r1_report()
+    r2 = {
+        "round1_direct": r2_hunt.round1_report(),
+        "round2_component": r2_hunt.round2_report(),
+        "round3_certified": r2_hunt.round3_report(),
+        "round4_closed_2d": r2_hunt.round4_report(),
+        "round5_mixed_support": r2_hunt.round5_report(),
+        "round6_nonfree_linear_face_chain": r2_hunt.round6_report(),
+        "round7_nonfree_branching_face_chain": r2_hunt.round7_report(),
+        "round8_invalid_diagnostic_relation_grammar": r2_hunt.round8_report(),
+        "round9_valid_mixed_relation_support": r2_hunt.round9_report(),
+        "round10_valid_multichart_face_chain": r2_hunt.round10_report(),
+    }
+    round8 = r2["round8_invalid_diagnostic_relation_grammar"]
+    round9 = r2["round9_valid_mixed_relation_support"]
+    round10 = r2["round10_valid_multichart_face_chain"]
+    if not (
+        r0["r0_pass"]
+        and len(r1["verdicts"]) == 7
+        and r1["all_seven_verdicts_fixed"]
+        and round8["valid"] is False
+        and round8["progress_audit"]["streak_after_round"] == 0
+        and round9["valid"] is True
+        and round9["same_blocker_evidence"]["valid_no_progress_1_of_2"]
+        and round10["valid"] is True
+        and round10["same_blocker_evidence"]["valid_no_progress_2_of_2"]
+        and round10["stop_audit"][
+            "stop_condition_C_two_valid_same_blocker_no_progress"
+        ]
+    ):
+        raise AssertionError("Stop-C terminal audit is not satisfied")
+
     return {
         "artifact": "G-104 C0-C6 necessity map off-loop checkpoint",
         "arithmetic": "exact fractions.Fraction linear algebra over Q",
         "randomness": "none",
         "serialization": "UTF-8, LF, indent=2, sort_keys=True, trailing newline",
-        "r0": necessity_map.r0_report(),
-        "r1": necessity_map.r1_report(),
-        "r2": {
-            "round1_direct": r2_hunt.round1_report(),
-            "round2_component": r2_hunt.round2_report(),
-            "round3_certified": r2_hunt.round3_report(),
-            "round4_closed_2d": r2_hunt.round4_report(),
-            "round5_mixed_support": r2_hunt.round5_report(),
-            "round6_nonfree_linear_face_chain": r2_hunt.round6_report(),
-            "round7_nonfree_branching_face_chain": r2_hunt.round7_report(),
-        },
+        "r0": r0,
+        "r1": r1,
+        "r2": r2,
         "terminal": {
             "kind": "C",
             "task_complete": False,
             "issue_remains_open": True,
             "prd_retained": True,
-            "partial_verdict_map_complete_for_C0_through_C6": True,
-            "last_progress_round": "post-round5 independent audit correction",
-            "consecutive_no_progress_rounds": ["R2-round-6", "R2-round-7"],
+            "draft_pr_checkpoint": True,
+            "r1_verdict_map_complete": True,
+            "r2_characterization_complete": False,
+            "last_progress_event": "final R0 calibration correction",
+            "last_progress_issue_comment": 5230818358,
+            "last_provenance_correction": (
+                "post-round5 name-free semantic ID and payload resynchronization; "
+                "not counted as PRD progress"
+            ),
+            "round8_diagnostic_counted_in_stop_streak": False,
+            "consecutive_no_progress_rounds": ["R2-round-9", "R2-round-10"],
+            "round9_result_issue_comment": 5230876303,
+            "round10_preregistration_issue_comment": 5230881464,
+            "stop_c_result_issue_comment": 5230966215,
             "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
             "coverage_limit": (
-                "Finite fixed-label populations only; no general theorem for "
-                "arbitrary non-free two-dimensional face chains."
+                "Finite fixed-label populations through 1914 semantic cases only; "
+                "no general theorem for arbitrary retained non-free face-chain "
+                "graphs, arbitrary chart count, cross-chart coupled incidence, "
+                "face multiplicity, or compatible support distribution."
             ),
         },
     }

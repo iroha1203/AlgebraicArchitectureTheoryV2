@@ -207,6 +207,14 @@ class Nerve:
             for face in self.faces
         ):
             raise ValueError("face edge outside the edge set")
+        for edge0, edge1, edge2 in self.faces:
+            left0, right0 = self.edges[edge0]
+            left1, right1 = self.edges[edge1]
+            left2, right2 = self.edges[edge2]
+            if not (left0 == left1 and right0 == left2 and right1 == right2):
+                raise ValueError(
+                    "face boundary violates the three endpoint equalities"
+                )
         if not (self.d1() @ self.d0()).is_zero():
             raise ValueError("face incidence does not satisfy d1 * d0 = 0")
 
@@ -368,6 +376,406 @@ def direct_sum_analysis(analyses: Iterable[H1Analysis]) -> H1Analysis:
         surjective=rank == fine,
         isomorphism=rank == coarse == fine,
     )
+
+
+def matrix_column(matrix: Matrix, column: int) -> Matrix:
+    return Matrix.from_mutable(
+        [[matrix.entries[row][column]] for row in range(matrix.rows)],
+        cols=1,
+    )
+
+
+def quotient_h1_representatives(d0: Matrix, d1: Matrix) -> Matrix:
+    """Choose deterministic cycle representatives modulo the boundary span."""
+
+    cycles = d1.kernel_basis()
+    span = d0
+    rank = span.rank()
+    representatives: list[Matrix] = []
+    for column in range(cycles.cols):
+        candidate_column = matrix_column(cycles, column)
+        candidate_span = Matrix.hstack(span, candidate_column)
+        candidate_rank = candidate_span.rank()
+        if candidate_rank > rank:
+            representatives.append(candidate_column)
+            span = candidate_span
+            rank = candidate_rank
+    expected = cycles.cols - d0.rank()
+    if len(representatives) != expected:
+        raise AssertionError("failed to choose an H1 quotient basis")
+    if not representatives:
+        return Matrix.zero(d0.rows, 0)
+    result = representatives[0]
+    for representative in representatives[1:]:
+        result = Matrix.hstack(result, representative)
+    return result
+
+
+def solve_linear_system(matrix: Matrix, rhs: tuple[Q, ...]) -> tuple[Q, ...]:
+    """Return the deterministic solution with every free variable set to zero."""
+
+    if len(rhs) != matrix.rows:
+        raise ValueError("linear-system right side has the wrong dimension")
+    work = [list(matrix.entries[row]) + [rhs[row]] for row in range(matrix.rows)]
+    pivot_columns: list[int] = []
+    pivot_row = 0
+    for col in range(matrix.cols):
+        pivot = next(
+            (row for row in range(pivot_row, matrix.rows) if work[row][col] != 0),
+            None,
+        )
+        if pivot is None:
+            continue
+        work[pivot_row], work[pivot] = work[pivot], work[pivot_row]
+        pivot_value = work[pivot_row][col]
+        work[pivot_row] = [value / pivot_value for value in work[pivot_row]]
+        for row in range(matrix.rows):
+            if row == pivot_row or work[row][col] == 0:
+                continue
+            factor = work[row][col]
+            work[row] = [
+                work[row][index] - factor * work[pivot_row][index]
+                for index in range(matrix.cols + 1)
+            ]
+        pivot_columns.append(col)
+        pivot_row += 1
+        if pivot_row == matrix.rows:
+            break
+    if any(
+        all(work[row][col] == 0 for col in range(matrix.cols))
+        and work[row][-1] != 0
+        for row in range(matrix.rows)
+    ):
+        raise ValueError("linear system is inconsistent")
+    solution = [Q(0) for _ in range(matrix.cols)]
+    for row, pivot_col in enumerate(pivot_columns):
+        solution[pivot_col] = work[row][-1]
+    return tuple(solution)
+
+
+@dataclass(frozen=True)
+class H1MapMatrix:
+    coarse_representatives: Matrix
+    fine_representatives: Matrix
+    induced_map: Matrix
+
+
+def induced_h1_map_matrix(
+    coarse_d0: Matrix,
+    coarse_d1: Matrix,
+    fine_d0: Matrix,
+    fine_d1: Matrix,
+    pullback1: Matrix,
+) -> H1MapMatrix:
+    coarse_representatives = quotient_h1_representatives(coarse_d0, coarse_d1)
+    fine_representatives = quotient_h1_representatives(fine_d0, fine_d1)
+    mapped = pullback1 @ coarse_representatives
+    fine_span = Matrix.hstack(fine_d0, fine_representatives)
+    data = [
+        [Q(0) for _ in range(coarse_representatives.cols)]
+        for _ in range(fine_representatives.cols)
+    ]
+    for column in range(mapped.cols):
+        solution = solve_linear_system(
+            fine_span,
+            tuple(mapped.entries[row][column] for row in range(mapped.rows)),
+        )
+        quotient_coordinates = solution[fine_d0.cols :]
+        for row, value in enumerate(quotient_coordinates):
+            data[row][column] = value
+    return H1MapMatrix(
+        coarse_representatives=coarse_representatives,
+        fine_representatives=fine_representatives,
+        induced_map=Matrix.from_mutable(data, cols=coarse_representatives.cols),
+    )
+
+
+LawValue = int | bool
+CoordinateBasis = tuple[tuple[int, LawValue], ...]
+
+
+@dataclass(frozen=True)
+class SingletonLawFamily:
+    """One actual finite law, with source evaluation and both adequate descents."""
+
+    name: str
+    value_type: str
+    source_evaluation: tuple[LawValue, ...]
+    coarse_descend: tuple[LawValue, ...]
+    fine_descend: tuple[LawValue, ...]
+    law_type: str = "PUnit"
+    law_carrier: tuple[str, ...] = ("unit",)
+
+    def assertions(self, comparison: "UniformComparison") -> dict[str, bool]:
+        return {
+            "law_carrier_is_singleton": len(self.law_carrier) == 1,
+            "source_is_fine_target": len(self.source_evaluation)
+            == comparison.fine_target_count,
+            "fine_descend_target_count": len(self.fine_descend)
+            == comparison.fine_target_count,
+            "coarse_descend_target_count": len(self.coarse_descend)
+            == comparison.coarse_target_count,
+            "fine_read_identity_adequate": self.source_evaluation
+            == self.fine_descend,
+            "coarse_read_pi_adequate": len(self.coarse_descend)
+            == comparison.coarse_target_count
+            and len(self.source_evaluation) == comparison.fine_target_count
+            and all(
+                self.coarse_descend[comparison.factor_pi[source]]
+                == self.source_evaluation[source]
+                for source in range(comparison.fine_target_count)
+            ),
+            "descents_commute_with_pi": len(self.fine_descend)
+            == comparison.fine_target_count
+            and len(self.coarse_descend) == comparison.coarse_target_count
+            and all(
+                self.fine_descend[target]
+                == self.coarse_descend[comparison.factor_pi[target]]
+                for target in range(comparison.fine_target_count)
+            ),
+        }
+
+    def validate(self, comparison: "UniformComparison") -> None:
+        assertions = self.assertions(comparison)
+        if not all(assertions.values()):
+            failed = [name for name, value in assertions.items() if not value]
+            raise ValueError(f"invalid singleton law family: {failed}")
+
+    def is_nonconstant(self) -> bool:
+        return len(set(self.source_evaluation)) > 1
+
+
+def block_diagonal(matrices: Sequence[Matrix]) -> Matrix:
+    rows = sum(matrix.rows for matrix in matrices)
+    cols = sum(matrix.cols for matrix in matrices)
+    data = [[Q(0) for _ in range(cols)] for _ in range(rows)]
+    row_offset = 0
+    col_offset = 0
+    for matrix in matrices:
+        for row in range(matrix.rows):
+            for col in range(matrix.cols):
+                data[row_offset + row][col_offset + col] = matrix.entries[row][col]
+        row_offset += matrix.rows
+        col_offset += matrix.cols
+    return Matrix.from_mutable(data, cols=cols)
+
+
+def submatrix(
+    matrix: Matrix,
+    rows: Sequence[int],
+    cols: Sequence[int],
+) -> Matrix:
+    return Matrix.from_mutable(
+        [[matrix.entries[row][col] for col in cols] for row in rows],
+        cols=len(cols),
+    )
+
+
+@dataclass(frozen=True)
+class LawCoordinateComplex:
+    """The actual singleton-law K0 coordinate bases and generated K1 matrices."""
+
+    chart_basis: CoordinateBasis
+    edge_basis: CoordinateBasis
+    face_basis: CoordinateBasis
+    d0: Matrix
+    d1: Matrix
+
+    def basis(self, dimension: int) -> CoordinateBasis:
+        if dimension == 0:
+            return self.chart_basis
+        if dimension == 1:
+            return self.edge_basis
+        if dimension == 2:
+            return self.face_basis
+        raise ValueError("only dimensions zero through two are supported")
+
+
+@dataclass(frozen=True)
+class LawGeneratedComparison:
+    """A global law-generated comparison, independent of coordinate subnerves."""
+
+    values: tuple[LawValue, ...]
+    coarse: LawCoordinateComplex
+    fine: LawCoordinateComplex
+    pullback0: Matrix
+    pullback1: Matrix
+    pullback2: Matrix
+
+    def pullback(self, dimension: int) -> Matrix:
+        if dimension == 0:
+            return self.pullback0
+        if dimension == 1:
+            return self.pullback1
+        if dimension == 2:
+            return self.pullback2
+        raise ValueError("only dimensions zero through two are supported")
+
+    def analysis(self) -> H1Analysis:
+        return analyze_complex_map(
+            coarse_d0=self.coarse.d0,
+            coarse_d1=self.coarse.d1,
+            fine_d0=self.fine.d0,
+            fine_d1=self.fine.d1,
+            pullback0=self.pullback0,
+            pullback1=self.pullback1,
+            pullback2=self.pullback2,
+        )
+
+    def h1_map_matrix(self) -> H1MapMatrix:
+        return induced_h1_map_matrix(
+            self.coarse.d0,
+            self.coarse.d1,
+            self.fine.d0,
+            self.fine.d1,
+            self.pullback1,
+        )
+
+
+def cell_supports_by_dimension(
+    nerve: Nerve,
+    chart_supports: tuple[frozenset[int], ...],
+    dimension: int,
+) -> tuple[frozenset[int], ...]:
+    edge_supports, face_supports = derived_cell_supports(nerve, chart_supports)
+    if dimension == 0:
+        return chart_supports
+    if dimension == 1:
+        return edge_supports
+    if dimension == 2:
+        return face_supports
+    raise ValueError("only dimensions zero through two are supported")
+
+
+def generated_value_order(descend: tuple[LawValue, ...]) -> tuple[LawValue, ...]:
+    values: list[LawValue] = []
+    for value in descend:
+        if value not in values:
+            values.append(value)
+    return tuple(values)
+
+
+def generated_coordinate_basis(
+    supports: tuple[frozenset[int], ...],
+    descend: tuple[LawValue, ...],
+    values: tuple[LawValue, ...],
+) -> CoordinateBasis:
+    """K0 deduplicates targets with the same (cell, law, descend value)."""
+
+    return tuple(
+        (cell, value)
+        for value in values
+        for cell, support in enumerate(supports)
+        if any(descend[target] == value for target in support)
+    )
+
+
+def build_law_generated_complex(
+    nerve: Nerve,
+    chart_supports: tuple[frozenset[int], ...],
+    descend: tuple[LawValue, ...],
+    values: tuple[LawValue, ...],
+) -> LawCoordinateComplex:
+    """Construct global K0/K1 coordinates directly from support and descend."""
+
+    bases = tuple(
+        generated_coordinate_basis(
+            cell_supports_by_dimension(nerve, chart_supports, dimension),
+            descend,
+            values,
+        )
+        for dimension in range(3)
+    )
+    chart_index = {coordinate: index for index, coordinate in enumerate(bases[0])}
+    edge_index = {coordinate: index for index, coordinate in enumerate(bases[1])}
+
+    d0_data = [[Q(0) for _ in bases[0]] for _ in bases[1]]
+    for row, (edge, value) in enumerate(bases[1]):
+        left, right = nerve.edges[edge]
+        d0_data[row][chart_index[(left, value)]] -= 1
+        d0_data[row][chart_index[(right, value)]] += 1
+
+    d1_data = [[Q(0) for _ in bases[1]] for _ in bases[2]]
+    for row, (face, value) in enumerate(bases[2]):
+        edge0, edge1, edge2 = nerve.faces[face]
+        d1_data[row][edge_index[(edge0, value)]] += 1
+        d1_data[row][edge_index[(edge1, value)]] -= 1
+        d1_data[row][edge_index[(edge2, value)]] += 1
+
+    complex_ = LawCoordinateComplex(
+        chart_basis=bases[0],
+        edge_basis=bases[1],
+        face_basis=bases[2],
+        d0=Matrix.from_mutable(d0_data, cols=len(bases[0])),
+        d1=Matrix.from_mutable(d1_data, cols=len(bases[1])),
+    )
+    if not (complex_.d1 @ complex_.d0).is_zero():
+        raise AssertionError("law-generated K1 incidence failed d1 * d0 = 0")
+    return complex_
+
+
+def generated_partial_pullback(
+    coarse_basis: CoordinateBasis,
+    fine_basis: CoordinateBasis,
+    cell_map: Sequence[int | None],
+) -> Matrix:
+    coarse_index = {
+        coordinate: index for index, coordinate in enumerate(coarse_basis)
+    }
+    data = [[Q(0) for _ in coarse_basis] for _ in fine_basis]
+    for row, (fine_cell, value) in enumerate(fine_basis):
+        coarse_cell = cell_map[fine_cell]
+        if coarse_cell is None:
+            continue
+        coordinate = (coarse_cell, value)
+        if coordinate not in coarse_index:
+            raise AssertionError("generated fine coordinate lost its coarse image")
+        data[row][coarse_index[coordinate]] = Q(1)
+    return Matrix.from_mutable(data, cols=len(coarse_basis))
+
+
+def build_law_generated_comparison(
+    comparison: "UniformComparison",
+    law_family: SingletonLawFamily,
+) -> LawGeneratedComparison:
+    """Build the actual global singleton-law map without A-subnerve calls."""
+
+    law_family.validate(comparison)
+    values = generated_value_order(law_family.fine_descend)
+    coarse = build_law_generated_complex(
+        comparison.morphism.coarse,
+        comparison.coarse_chart_supports,
+        law_family.coarse_descend,
+        values,
+    )
+    fine = build_law_generated_complex(
+        comparison.morphism.fine,
+        comparison.fine_chart_supports,
+        law_family.fine_descend,
+        values,
+    )
+    generated = LawGeneratedComparison(
+        values=values,
+        coarse=coarse,
+        fine=fine,
+        pullback0=generated_partial_pullback(
+            coarse.chart_basis,
+            fine.chart_basis,
+            comparison.morphism.vertex_map,
+        ),
+        pullback1=generated_partial_pullback(
+            coarse.edge_basis,
+            fine.edge_basis,
+            comparison.morphism.edge_map,
+        ),
+        pullback2=generated_partial_pullback(
+            coarse.face_basis,
+            fine.face_basis,
+            comparison.morphism.face_map,
+        ),
+    )
+    generated.analysis()
+    return generated
 
 
 def nonempty_subsets(size: int) -> tuple[frozenset[int], ...]:
@@ -641,6 +1049,28 @@ class UniformComparison:
         )
 
     def summary(self) -> dict[str, object]:
+        chart_support_compatible = all(
+            {
+                self.factor_pi[target]
+                for target in self.fine_chart_supports[fine_chart]
+            }
+            <= self.coarse_chart_supports[mapped_chart]
+            for fine_chart, mapped_chart in enumerate(self.morphism.vertex_map)
+        )
+        coarse_derived = derived_cell_supports(
+            self.morphism.coarse,
+            self.coarse_chart_supports,
+        )
+        fine_derived = derived_cell_supports(
+            self.morphism.fine,
+            self.fine_chart_supports,
+        )
+        k1_supports_derived_by_intersection = (
+            self.coarse_edge_supports == coarse_derived[0]
+            and self.coarse_face_supports == coarse_derived[1]
+            and self.fine_edge_supports == fine_derived[0]
+            and self.fine_face_supports == fine_derived[1]
+        )
         return {
             "name": self.name,
             "targets": {
@@ -665,8 +1095,10 @@ class UniformComparison:
                 "edge_map": list(self.morphism.edge_map),
                 "face_map": list(self.morphism.face_map),
             },
-            "chartSupport_compatible": True,
-            "K1_supports_derived_by_intersection": True,
+            "chartSupport_compatible": chart_support_compatible,
+            "K1_supports_derived_by_intersection": (
+                k1_supports_derived_by_intersection
+            ),
         }
 
 
@@ -817,6 +1249,241 @@ def comparison_evaluation(comparison: UniformComparison) -> dict[str, object]:
     }
 
 
+def build_value_block_direct_sum(
+    comparison: UniformComparison,
+    coarse_descend: tuple[LawValue, ...],
+    values: tuple[LawValue, ...],
+) -> LawGeneratedComparison:
+    """Independently assemble the value-block A-subnerve direct sum."""
+
+    subcomparisons = tuple(
+        comparison.coordinate_subcomparison(
+            frozenset(
+                target
+                for target, target_value in enumerate(coarse_descend)
+                if target_value == value
+            )
+        )
+        for value in values
+    )
+    # The explicit comprehension below is value-major, then ascending original cell.
+    coarse_basis_by_dimension = tuple(
+        tuple(
+            (cell, value)
+            for value, subcomparison in zip(values, subcomparisons, strict=True)
+            for cell in (
+                subcomparison.coarse.vertices,
+                subcomparison.coarse.edges,
+                subcomparison.coarse.faces,
+            )[dimension]
+        )
+        for dimension in range(3)
+    )
+    fine_basis_by_dimension = tuple(
+        tuple(
+            (cell, value)
+            for value, subcomparison in zip(values, subcomparisons, strict=True)
+            for cell in (
+                subcomparison.fine.vertices,
+                subcomparison.fine.edges,
+                subcomparison.fine.faces,
+            )[dimension]
+        )
+        for dimension in range(3)
+    )
+    coarse = LawCoordinateComplex(
+        chart_basis=coarse_basis_by_dimension[0],
+        edge_basis=coarse_basis_by_dimension[1],
+        face_basis=coarse_basis_by_dimension[2],
+        d0=block_diagonal(
+            tuple(subcomparison.morphism.coarse.d0() for subcomparison in subcomparisons)
+        ),
+        d1=block_diagonal(
+            tuple(subcomparison.morphism.coarse.d1() for subcomparison in subcomparisons)
+        ),
+    )
+    fine = LawCoordinateComplex(
+        chart_basis=fine_basis_by_dimension[0],
+        edge_basis=fine_basis_by_dimension[1],
+        face_basis=fine_basis_by_dimension[2],
+        d0=block_diagonal(
+            tuple(subcomparison.morphism.fine.d0() for subcomparison in subcomparisons)
+        ),
+        d1=block_diagonal(
+            tuple(subcomparison.morphism.fine.d1() for subcomparison in subcomparisons)
+        ),
+    )
+    result = LawGeneratedComparison(
+        values=values,
+        coarse=coarse,
+        fine=fine,
+        pullback0=block_diagonal(
+            tuple(subcomparison.morphism.cell_pullback(0) for subcomparison in subcomparisons)
+        ),
+        pullback1=block_diagonal(
+            tuple(subcomparison.morphism.cell_pullback(1) for subcomparison in subcomparisons)
+        ),
+        pullback2=block_diagonal(
+            tuple(subcomparison.morphism.cell_pullback(2) for subcomparison in subcomparisons)
+        ),
+    )
+    result.analysis()
+    return result
+
+
+def extract_generated_value_block(
+    generated: LawGeneratedComparison,
+    value: LawValue,
+) -> LawGeneratedComparison:
+    coarse_indices = tuple(
+        tuple(
+            index
+            for index, (_, coordinate_value) in enumerate(
+                generated.coarse.basis(dimension)
+            )
+            if coordinate_value == value
+        )
+        for dimension in range(3)
+    )
+    fine_indices = tuple(
+        tuple(
+            index
+            for index, (_, coordinate_value) in enumerate(
+                generated.fine.basis(dimension)
+            )
+            if coordinate_value == value
+        )
+        for dimension in range(3)
+    )
+    coarse = LawCoordinateComplex(
+        chart_basis=tuple(generated.coarse.chart_basis[index] for index in coarse_indices[0]),
+        edge_basis=tuple(generated.coarse.edge_basis[index] for index in coarse_indices[1]),
+        face_basis=tuple(generated.coarse.face_basis[index] for index in coarse_indices[2]),
+        d0=submatrix(generated.coarse.d0, coarse_indices[1], coarse_indices[0]),
+        d1=submatrix(generated.coarse.d1, coarse_indices[2], coarse_indices[1]),
+    )
+    fine = LawCoordinateComplex(
+        chart_basis=tuple(generated.fine.chart_basis[index] for index in fine_indices[0]),
+        edge_basis=tuple(generated.fine.edge_basis[index] for index in fine_indices[1]),
+        face_basis=tuple(generated.fine.face_basis[index] for index in fine_indices[2]),
+        d0=submatrix(generated.fine.d0, fine_indices[1], fine_indices[0]),
+        d1=submatrix(generated.fine.d1, fine_indices[2], fine_indices[1]),
+    )
+    result = LawGeneratedComparison(
+        values=(value,),
+        coarse=coarse,
+        fine=fine,
+        pullback0=submatrix(
+            generated.pullback0,
+            fine_indices[0],
+            coarse_indices[0],
+        ),
+        pullback1=submatrix(
+            generated.pullback1,
+            fine_indices[1],
+            coarse_indices[1],
+        ),
+        pullback2=submatrix(
+            generated.pullback2,
+            fine_indices[2],
+            coarse_indices[2],
+        ),
+    )
+    result.analysis()
+    return result
+
+
+def exact_law_comparison_assertions(
+    generated: LawGeneratedComparison,
+    block_sum: LawGeneratedComparison,
+) -> dict[str, bool]:
+    return {
+        "value_order": generated.values == block_sum.values,
+        "coarse_chart_basis": generated.coarse.chart_basis
+        == block_sum.coarse.chart_basis,
+        "coarse_edge_basis": generated.coarse.edge_basis == block_sum.coarse.edge_basis,
+        "coarse_face_basis": generated.coarse.face_basis == block_sum.coarse.face_basis,
+        "fine_chart_basis": generated.fine.chart_basis == block_sum.fine.chart_basis,
+        "fine_edge_basis": generated.fine.edge_basis == block_sum.fine.edge_basis,
+        "fine_face_basis": generated.fine.face_basis == block_sum.fine.face_basis,
+        "coarse_d0": generated.coarse.d0 == block_sum.coarse.d0,
+        "coarse_d1": generated.coarse.d1 == block_sum.coarse.d1,
+        "fine_d0": generated.fine.d0 == block_sum.fine.d0,
+        "fine_d1": generated.fine.d1 == block_sum.fine.d1,
+        "pullback0": generated.pullback0 == block_sum.pullback0,
+        "pullback1": generated.pullback1 == block_sum.pullback1,
+        "pullback2": generated.pullback2 == block_sum.pullback2,
+        "H1_analysis": generated.analysis() == block_sum.analysis(),
+        "H1_coarse_representatives": (
+            generated.h1_map_matrix().coarse_representatives
+            == block_sum.h1_map_matrix().coarse_representatives
+        ),
+        "H1_fine_representatives": (
+            generated.h1_map_matrix().fine_representatives
+            == block_sum.h1_map_matrix().fine_representatives
+        ),
+        "H1_map_matrix": generated.h1_map_matrix().induced_map
+        == block_sum.h1_map_matrix().induced_map,
+    }
+
+
+def rational_summary(value: Q) -> int | str:
+    return value.numerator if value.denominator == 1 else str(value)
+
+
+def matrix_summary(matrix: Matrix) -> dict[str, object]:
+    return {
+        "rows": matrix.rows,
+        "cols": matrix.cols,
+        "entries": [
+            [rational_summary(value) for value in row] for row in matrix.entries
+        ],
+    }
+
+
+def basis_summary(basis: CoordinateBasis) -> list[dict[str, object]]:
+    return [{"cell": cell, "value": value} for cell, value in basis]
+
+
+def law_complex_summary(complex_: LawCoordinateComplex) -> dict[str, object]:
+    return {
+        "basis": {
+            "charts": basis_summary(complex_.chart_basis),
+            "edges": basis_summary(complex_.edge_basis),
+            "faces": basis_summary(complex_.face_basis),
+        },
+        "dimensions": {
+            "charts": len(complex_.chart_basis),
+            "edges": len(complex_.edge_basis),
+            "faces": len(complex_.face_basis),
+        },
+        "d0": matrix_summary(complex_.d0),
+        "d1": matrix_summary(complex_.d1),
+    }
+
+
+def law_comparison_summary(
+    comparison: LawGeneratedComparison,
+) -> dict[str, object]:
+    h1_map = comparison.h1_map_matrix()
+    return {
+        "values": list(comparison.values),
+        "coarse": law_complex_summary(comparison.coarse),
+        "fine": law_complex_summary(comparison.fine),
+        "pullback0": matrix_summary(comparison.pullback0),
+        "pullback1": matrix_summary(comparison.pullback1),
+        "pullback2": matrix_summary(comparison.pullback2),
+        "h1": asdict(comparison.analysis()),
+        "h1_map": {
+            "coarse_representatives": matrix_summary(
+                h1_map.coarse_representatives
+            ),
+            "fine_representatives": matrix_summary(h1_map.fine_representatives),
+            "matrix": matrix_summary(h1_map.induced_map),
+        },
+    }
+
+
 def reviewed_obstruction_comparison(
     name: str,
     morphism: NerveMorphism,
@@ -907,7 +1574,7 @@ def calibration_report() -> list[dict[str, object]]:
         if not passed:
             raise AssertionError(f"calibration mismatch for {comparison.name}")
         evaluation["expected_failed_clause"] = failed_clause
-        evaluation["calibration_pass"] = True
+        evaluation["calibration_pass"] = passed
         report.append(evaluation)
     return report
 
@@ -982,7 +1649,7 @@ def support_hole_report() -> dict[str, object]:
         **evaluation,
         "law_value_singleton_block_direct_sum": asdict(global_analysis),
         "relative_C2_failing_subsets": c2_failures,
-        "calibration_pass": True,
+        "calibration_pass": passed,
     }
 
 
@@ -1020,6 +1687,433 @@ def canonical_firing_fixture() -> UniformComparison:
     )
 
 
+def canonical_firing_law_family() -> SingletonLawFamily:
+    """The exact PUnit/Fin 2 law family fixed by the Lean firing witness."""
+
+    return SingletonLawFamily(
+        name="canonical_nonconstant_law",
+        law_type="PUnit",
+        law_carrier=("unit",),
+        value_type="Fin 2",
+        source_evaluation=(0, 0, 1),
+        coarse_descend=(0, 1),
+        fine_descend=(0, 0, 1),
+    )
+
+
+def first_duplicate_image_witness(
+    mapping: Sequence[int],
+) -> dict[str, object] | None:
+    """Return the first deterministic witness that a finite map is noninjective."""
+
+    for left, right in combinations(range(len(mapping)), 2):
+        if mapping[left] == mapping[right]:
+            return {
+                "domain_elements": [left, right],
+                "common_image": mapping[left],
+            }
+    return None
+
+
+def canonical_fixed_fixture_data(
+    comparison: UniformComparison,
+    law_family: SingletonLawFamily,
+) -> dict[str, object]:
+    """Expose every fixed array used by the canonical firing calibration."""
+
+    return {
+        "name": comparison.name,
+        "target_counts": {
+            "coarse": comparison.coarse_target_count,
+            "fine": comparison.fine_target_count,
+        },
+        "factor_pi": list(comparison.factor_pi),
+        "coarse": {
+            "nerve": nerve_summary(comparison.morphism.coarse),
+            "chart_supports": supports_summary(comparison.coarse_chart_supports),
+            "edge_supports": supports_summary(comparison.coarse_edge_supports),
+            "face_supports": supports_summary(comparison.coarse_face_supports),
+        },
+        "fine": {
+            "nerve": nerve_summary(comparison.morphism.fine),
+            "chart_supports": supports_summary(comparison.fine_chart_supports),
+            "edge_supports": supports_summary(comparison.fine_edge_supports),
+            "face_supports": supports_summary(comparison.fine_face_supports),
+        },
+        "morphism": {
+            "chart_map_phi": list(comparison.morphism.vertex_map),
+            "edge_map": list(comparison.morphism.edge_map),
+            "face_map": list(comparison.morphism.face_map),
+        },
+        "law_family": {
+            "name": law_family.name,
+            "law_type": law_family.law_type,
+            "law_carrier": list(law_family.law_carrier),
+            "value_type": law_family.value_type,
+            "source_evaluation": list(law_family.source_evaluation),
+            "coarse_descend": list(law_family.coarse_descend),
+            "fine_descend": list(law_family.fine_descend),
+        },
+    }
+
+
+def canonical_fixed_fixture_assertions(
+    comparison: UniformComparison,
+    law_family: SingletonLawFamily,
+) -> tuple[dict[str, object], dict[str, bool]]:
+    """Fail closed unless the complete reviewed fixture is still byte-for-byte exact."""
+
+    actual = canonical_fixed_fixture_data(comparison, law_family)
+    expected = {
+        "name": "ResolutionInvarianceFiringData",
+        "target_counts": {"coarse": 2, "fine": 3},
+        "factor_pi": [0, 0, 1],
+        "coarse": {
+            "nerve": {
+                "vertices": 2,
+                "edges": [[0, 1], [1, 0], [0, 0]],
+                "faces": [[2, 2, 2]],
+            },
+            "chart_supports": [[0, 1], [0]],
+            "edge_supports": [[0], [0], [0, 1]],
+            "face_supports": [[0, 1]],
+        },
+        "fine": {
+            "nerve": {
+                "vertices": 3,
+                "edges": [[0, 2], [2, 0], [0, 0], [0, 1], [1, 1]],
+                "faces": [[2, 2, 2], [4, 4, 4]],
+            },
+            "chart_supports": [[0, 2], [0, 1], [0]],
+            "edge_supports": [[0], [0], [0, 2], [0], [0, 1]],
+            "face_supports": [[0, 2], [0, 1]],
+        },
+        "morphism": {
+            "chart_map_phi": [0, 0, 1],
+            "edge_map": [0, 1, 2, None, None],
+            "face_map": [0, None],
+        },
+        "law_family": {
+            "name": "canonical_nonconstant_law",
+            "law_type": "PUnit",
+            "law_carrier": ["unit"],
+            "value_type": "Fin 2",
+            "source_evaluation": [0, 0, 1],
+            "coarse_descend": [0, 1],
+            "fine_descend": [0, 0, 1],
+        },
+    }
+    assertions = {
+        "fixture_name": actual["name"] == expected["name"],
+        "target_counts": actual["target_counts"] == expected["target_counts"],
+        "factor_pi": actual["factor_pi"] == expected["factor_pi"],
+        "coarse_nerve": actual["coarse"]["nerve"]
+        == expected["coarse"]["nerve"],
+        "coarse_chart_supports": actual["coarse"]["chart_supports"]
+        == expected["coarse"]["chart_supports"],
+        "coarse_edge_supports": actual["coarse"]["edge_supports"]
+        == expected["coarse"]["edge_supports"],
+        "coarse_face_supports": actual["coarse"]["face_supports"]
+        == expected["coarse"]["face_supports"],
+        "fine_nerve": actual["fine"]["nerve"] == expected["fine"]["nerve"],
+        "fine_chart_supports": actual["fine"]["chart_supports"]
+        == expected["fine"]["chart_supports"],
+        "fine_edge_supports": actual["fine"]["edge_supports"]
+        == expected["fine"]["edge_supports"],
+        "fine_face_supports": actual["fine"]["face_supports"]
+        == expected["fine"]["face_supports"],
+        "chart_map_phi": actual["morphism"]["chart_map_phi"]
+        == expected["morphism"]["chart_map_phi"],
+        "edge_map": actual["morphism"]["edge_map"]
+        == expected["morphism"]["edge_map"],
+        "face_map": actual["morphism"]["face_map"]
+        == expected["morphism"]["face_map"],
+        "law_family_name": actual["law_family"]["name"]
+        == expected["law_family"]["name"],
+        "law_type_PUnit": actual["law_family"]["law_type"]
+        == expected["law_family"]["law_type"],
+        "law_carrier_unit_singleton": actual["law_family"]["law_carrier"]
+        == expected["law_family"]["law_carrier"],
+        "value_type_Fin_2": actual["law_family"]["value_type"]
+        == expected["law_family"]["value_type"],
+        "law_family_arrays": actual["law_family"] == expected["law_family"],
+        "complete_fixed_fixture": actual == expected,
+    }
+    return actual, assertions
+
+
+def canonical_nonvacuity_evidence(
+    comparison: UniformComparison,
+) -> tuple[dict[str, object], dict[str, bool]]:
+    """Compute the distinct nonvacuity features of the firing fixture."""
+
+    morphism = comparison.morphism
+    pi_witness = first_duplicate_image_witness(comparison.factor_pi)
+    phi_witness = first_duplicate_image_witness(morphism.vertex_map)
+    map_properties = {
+        "pi_fine_target_to_coarse_target": {
+            "mapping": list(comparison.factor_pi),
+            "surjective": set(comparison.factor_pi)
+            == set(range(comparison.coarse_target_count)),
+            "noninjective_witness": pi_witness,
+        },
+        "phi_fine_chart_to_coarse_chart": {
+            "mapping": list(morphism.vertex_map),
+            "surjective": set(morphism.vertex_map)
+            == set(range(morphism.coarse.vertices)),
+            "noninjective_witness": phi_witness,
+        },
+    }
+    mapped_faces = [
+        {
+            "fine_face": fine_face,
+            "coarse_face": coarse_face,
+            "fine_boundary": list(morphism.fine.faces[fine_face]),
+            "mapped_boundary": [
+                morphism.edge_map[edge]
+                for edge in morphism.fine.faces[fine_face]
+            ],
+            "coarse_boundary": list(morphism.coarse.faces[coarse_face]),
+        }
+        for fine_face, coarse_face in enumerate(morphism.face_map)
+        if coarse_face is not None
+    ]
+    degenerate_edges = [
+        {
+            "fine_edge": fine_edge,
+            "endpoints": list(morphism.fine.edges[fine_edge]),
+            "mapped_endpoints": [
+                morphism.vertex_map[endpoint]
+                for endpoint in morphism.fine.edges[fine_edge]
+            ],
+            "support": sorted(comparison.fine_edge_supports[fine_edge]),
+        }
+        for fine_edge, coarse_edge in enumerate(morphism.edge_map)
+        if coarse_edge is None
+    ]
+    degenerate_faces = [
+        {
+            "fine_face": fine_face,
+            "boundary": list(morphism.fine.faces[fine_face]),
+            "mapped_boundary": [
+                morphism.edge_map[edge]
+                for edge in morphism.fine.faces[fine_face]
+            ],
+            "support": sorted(comparison.fine_face_supports[fine_face]),
+        }
+        for fine_face, coarse_face in enumerate(morphism.face_map)
+        if coarse_face is None
+    ]
+    one_label = comparison.coordinate_subcomparison(frozenset((1,)))
+    one_label_signature = {
+        "coarse_targets_A": sorted(one_label.coarse_targets),
+        "fine_targets_pi_preimage_A": sorted(one_label.fine_targets),
+        "coarse_original_cells": {
+            "charts": list(one_label.coarse.vertices),
+            "edges": list(one_label.coarse.edges),
+            "faces": list(one_label.coarse.faces),
+        },
+        "fine_original_cells": {
+            "charts": list(one_label.fine.vertices),
+            "edges": list(one_label.fine.edges),
+            "faces": list(one_label.fine.faces),
+        },
+        "coarse_incidence": nerve_summary(one_label.morphism.coarse),
+        "fine_incidence": nerve_summary(one_label.morphism.fine),
+        "restricted_maps": {
+            "chart_map_phi": list(one_label.morphism.vertex_map),
+            "edge_map": list(one_label.morphism.edge_map),
+            "face_map": list(one_label.morphism.face_map),
+        },
+    }
+    whole_coarse_cells = (
+        tuple(range(morphism.coarse.vertices)),
+        tuple(range(len(morphism.coarse.edges))),
+        tuple(range(len(morphism.coarse.faces))),
+    )
+    whole_fine_cells = (
+        tuple(range(morphism.fine.vertices)),
+        tuple(range(len(morphism.fine.edges))),
+        tuple(range(len(morphism.fine.faces))),
+    )
+    selected_coarse_cells = (
+        one_label.coarse.vertices,
+        one_label.coarse.edges,
+        one_label.coarse.faces,
+    )
+    selected_fine_cells = (
+        one_label.fine.vertices,
+        one_label.fine.edges,
+        one_label.fine.faces,
+    )
+    evidence = {
+        "map_properties": map_properties,
+        "mapped_faces": mapped_faces,
+        "degenerate_edges": degenerate_edges,
+        "degenerate_faces": degenerate_faces,
+        "proper_one_label_subnerve": one_label_signature,
+    }
+    assertions = {
+        "pi_surjective": map_properties[
+            "pi_fine_target_to_coarse_target"
+        ]["surjective"],
+        "pi_separately_noninjective": pi_witness
+        == {"domain_elements": [0, 1], "common_image": 0},
+        "phi_surjective": map_properties[
+            "phi_fine_chart_to_coarse_chart"
+        ]["surjective"],
+        "phi_separately_noninjective": phi_witness
+        == {"domain_elements": [0, 1], "common_image": 0},
+        "mapped_face_present": mapped_faces
+        == [
+            {
+                "fine_face": 0,
+                "coarse_face": 0,
+                "fine_boundary": [2, 2, 2],
+                "mapped_boundary": [2, 2, 2],
+                "coarse_boundary": [2, 2, 2],
+            }
+        ],
+        "degenerate_edges_present": degenerate_edges
+        == [
+            {
+                "fine_edge": 3,
+                "endpoints": [0, 1],
+                "mapped_endpoints": [0, 0],
+                "support": [0],
+            },
+            {
+                "fine_edge": 4,
+                "endpoints": [1, 1],
+                "mapped_endpoints": [0, 0],
+                "support": [0, 1],
+            },
+        ],
+        "degenerate_face_present": degenerate_faces
+        == [
+            {
+                "fine_face": 1,
+                "boundary": [4, 4, 4],
+                "mapped_boundary": [None, None, None],
+                "support": [0, 1],
+            }
+        ],
+        "one_label_subnerve_exact": one_label_signature
+        == {
+            "coarse_targets_A": [1],
+            "fine_targets_pi_preimage_A": [2],
+            "coarse_original_cells": {
+                "charts": [0],
+                "edges": [2],
+                "faces": [0],
+            },
+            "fine_original_cells": {
+                "charts": [0],
+                "edges": [2],
+                "faces": [0],
+            },
+            "coarse_incidence": {
+                "vertices": 1,
+                "edges": [[0, 0]],
+                "faces": [[0, 0, 0]],
+            },
+            "fine_incidence": {
+                "vertices": 1,
+                "edges": [[0, 0]],
+                "faces": [[0, 0, 0]],
+            },
+            "restricted_maps": {
+                "chart_map_phi": [0],
+                "edge_map": [0],
+                "face_map": [0],
+            },
+        },
+        "one_label_subnerve_is_proper_on_both_sides": (
+            selected_coarse_cells != whole_coarse_cells
+            and selected_fine_cells != whole_fine_cells
+        ),
+    }
+    return evidence, assertions
+
+
+def canonical_firing_class_evidence(
+    generated: LawGeneratedComparison,
+) -> tuple[dict[str, object], dict[str, bool]]:
+    """Directly certify the concrete firing cocycle and its generated image."""
+
+    coarse_firing = Matrix.from_mutable(
+        [
+            [Q(1 if cell == 0 else 0)]
+            for cell, _value in generated.coarse.edge_basis
+        ],
+        cols=1,
+    )
+    fine_image = generated.pullback1 @ coarse_firing
+    coarse_cycle_value = generated.coarse.d1 @ coarse_firing
+    fine_cycle_value = generated.fine.d1 @ fine_image
+    coarse_boundary_rank = generated.coarse.d0.rank()
+    fine_boundary_rank = generated.fine.d0.rank()
+    coarse_augmented_rank = Matrix.hstack(
+        generated.coarse.d0,
+        coarse_firing,
+    ).rank()
+    fine_augmented_rank = Matrix.hstack(
+        generated.fine.d0,
+        fine_image,
+    ).rank()
+    directed_period = Matrix.from_mutable(
+        [
+            [
+                Q(1 if value == 0 and cell in (0, 1) else 0)
+                for cell, value in generated.coarse.edge_basis
+            ]
+        ],
+        cols=len(generated.coarse.edge_basis),
+    )
+    period_on_boundaries = directed_period @ generated.coarse.d0
+    period_on_firing = directed_period @ coarse_firing
+    h1_map = generated.h1_map_matrix()
+    evidence = {
+        "coarse_firing_rule": "one exactly on coarse edge cell 0",
+        "coarse_firing_1_cochain": matrix_summary(coarse_firing),
+        "coarse_coboundary_rank": coarse_boundary_rank,
+        "coarse_coboundary_plus_firing_rank": coarse_augmented_rank,
+        "coarse_cycle_value": matrix_summary(coarse_cycle_value),
+        "directed_period_functional": matrix_summary(directed_period),
+        "directed_period_on_coboundaries": matrix_summary(period_on_boundaries),
+        "directed_period_on_firing": matrix_summary(period_on_firing),
+        "generated_fine_image": matrix_summary(fine_image),
+        "fine_coboundary_rank": fine_boundary_rank,
+        "fine_coboundary_plus_image_rank": fine_augmented_rank,
+        "fine_cycle_value": matrix_summary(fine_cycle_value),
+        "induced_H1_map": matrix_summary(h1_map.induced_map),
+    }
+    assertions = {
+        "coarse_firing_is_fixed_nonzero_cochain": coarse_firing
+        == Matrix.from_mutable(((1,), (0,), (0,), (0,))),
+        "coarse_firing_is_cycle": coarse_cycle_value.is_zero(),
+        "directed_period_annihilates_all_coboundaries": (
+            period_on_boundaries.is_zero()
+        ),
+        "coarse_firing_has_nonzero_directed_period": period_on_firing
+        == Matrix.from_mutable(((1,),)),
+        "coarse_firing_is_nonboundary": coarse_augmented_rank
+        > coarse_boundary_rank,
+        "generated_fine_image_is_fixed": fine_image
+        == Matrix.from_mutable(((1,), (0,), (0,), (0,), (0,), (0,))),
+        "generated_fine_image_is_cycle": fine_cycle_value.is_zero(),
+        "generated_fine_image_is_nonboundary": fine_augmented_rank
+        > fine_boundary_rank,
+        "firing_representatives_are_the_computed_H1_bases": (
+            coarse_firing == h1_map.coarse_representatives
+            and fine_image == h1_map.fine_representatives
+        ),
+        "firing_class_maps_nontrivially": h1_map.induced_map
+        == Matrix.from_mutable(((1,),)),
+    }
+    return evidence, assertions
+
+
 def canonical_firing_report() -> dict[str, object]:
     comparison = canonical_firing_fixture()
     evaluation = comparison_evaluation(comparison)
@@ -1028,36 +2122,78 @@ def canonical_firing_report() -> dict[str, object]:
     }
     zero = block_by_targets[(0,)]["h1"]
     one = block_by_targets[(1,)]["h1"]
-    global_analysis = direct_sum_analysis(
+    law_family = canonical_firing_law_family()
+    generated = build_law_generated_comparison(
+        comparison,
+        law_family,
+    )
+    block_sum = build_value_block_direct_sum(
+        comparison,
+        law_family.coarse_descend,
+        generated.values,
+    )
+    exact_assertions = exact_law_comparison_assertions(generated, block_sum)
+    fixed_fixture, fixed_fixture_assertions = canonical_fixed_fixture_assertions(
+        comparison,
+        law_family,
+    )
+    nonvacuity, nonvacuity_assertions = canonical_nonvacuity_evidence(comparison)
+    firing_class, firing_class_assertions = canonical_firing_class_evidence(
+        generated
+    )
+    global_analysis = generated.analysis()
+    expected_zero = {
+        "coarse_h1_dimension": 1,
+        "fine_h1_dimension": 1,
+        "comparison_rank": 1,
+        "injective": True,
+        "surjective": True,
+        "isomorphism": True,
+    }
+    expected_one = {
+        "coarse_h1_dimension": 0,
+        "fine_h1_dimension": 0,
+        "comparison_rank": 0,
+        "injective": True,
+        "surjective": True,
+        "isomorphism": True,
+    }
+    computed_assertions = {
+        "singleton_nonconstant_law": law_family.is_nonconstant()
+        and generated.values == (0, 1),
+        "actual_law_family_fields": all(
+            law_family.assertions(comparison).values()
+        ),
+        "coarse_K0_K1_dimensions": (
+            len(generated.coarse.chart_basis),
+            len(generated.coarse.edge_basis),
+            len(generated.coarse.face_basis),
+        )
+        == (3, 4, 2),
+        "fine_K0_K1_dimensions": (
+            len(generated.fine.chart_basis),
+            len(generated.fine.edge_basis),
+            len(generated.fine.face_basis),
+        )
+        == (4, 6, 3),
+        "global_H1": global_analysis == H1Analysis(1, 1, 1, True, True, True),
+        "zero_block_H1": zero == expected_zero,
+        "one_block_H1": one == expected_one,
+        "uniform_all_nonempty_A": evaluation["uniform"],
+        "all_C0_C6": all(evaluation["conditions"]["aggregate"].values()),
+        "global_and_block_H1_equal": generated.analysis() == block_sum.analysis(),
+    }
+    block_reduction_pass = all(exact_assertions.values())
+    canonical_oracle_pass = all(
         (
-            comparison.coordinate_subcomparison(frozenset((0,))).analysis(),
-            comparison.coordinate_subcomparison(frozenset((1,))).analysis(),
+            block_reduction_pass,
+            all(fixed_fixture_assertions.values()),
+            all(nonvacuity_assertions.values()),
+            all(firing_class_assertions.values()),
+            all(computed_assertions.values()),
         )
     )
-    passed = (
-        zero
-        == {
-            "coarse_h1_dimension": 1,
-            "fine_h1_dimension": 1,
-            "comparison_rank": 1,
-            "injective": True,
-            "surjective": True,
-            "isomorphism": True,
-        }
-        and one
-        == {
-            "coarse_h1_dimension": 0,
-            "fine_h1_dimension": 0,
-            "comparison_rank": 0,
-            "injective": True,
-            "surjective": True,
-            "isomorphism": True,
-        }
-        and global_analysis == H1Analysis(1, 1, 1, True, True, True)
-        and evaluation["uniform"]
-        and all(evaluation["conditions"]["aggregate"].values())
-    )
-    if not passed:
+    if not canonical_oracle_pass:
         raise AssertionError("canonical firing oracle mismatch")
     return {
         **evaluation,
@@ -1065,20 +2201,167 @@ def canonical_firing_report() -> dict[str, object]:
             "value_zero": block_by_targets[(0,)],
             "value_one": block_by_targets[(1,)],
         },
+        "singleton_nonconstant_law_family": {
+            "Law": law_family.law_type,
+            "Law_carrier": list(law_family.law_carrier),
+            "Value": law_family.value_type,
+            "coarse_descend": list(law_family.coarse_descend),
+            "fine_descend": list(law_family.fine_descend),
+            "source_evaluation": list(law_family.source_evaluation),
+            "assertions": law_family.assertions(comparison),
+        },
+        "law_generated_global": law_comparison_summary(generated),
+        "value_block_A_subnerve_direct_sum": law_comparison_summary(block_sum),
+        "exact_global_block_matrix_equality": exact_assertions,
+        "canonical_fixed_fixture": fixed_fixture,
+        "canonical_fixed_fixture_assertions": fixed_fixture_assertions,
+        "canonical_nonvacuity_evidence": nonvacuity,
+        "canonical_nonvacuity_assertions": nonvacuity_assertions,
+        "canonical_firing_class_evidence": firing_class,
+        "canonical_firing_class_assertions": firing_class_assertions,
+        "computed_oracle_assertions": computed_assertions,
         "global_supported_direct_sum": asdict(global_analysis),
-        "block_reduction_pass": True,
-        "canonical_oracle_pass": True,
+        "block_reduction_pass": block_reduction_pass,
+        "canonical_oracle_pass": canonical_oracle_pass,
     }
+
+
+def subcomparison_value_block(
+    subcomparison: CoordinateSubcomparison,
+    value: LawValue,
+) -> LawGeneratedComparison:
+    coarse = LawCoordinateComplex(
+        chart_basis=tuple((cell, value) for cell in subcomparison.coarse.vertices),
+        edge_basis=tuple((cell, value) for cell in subcomparison.coarse.edges),
+        face_basis=tuple((cell, value) for cell in subcomparison.coarse.faces),
+        d0=subcomparison.morphism.coarse.d0(),
+        d1=subcomparison.morphism.coarse.d1(),
+    )
+    fine = LawCoordinateComplex(
+        chart_basis=tuple((cell, value) for cell in subcomparison.fine.vertices),
+        edge_basis=tuple((cell, value) for cell in subcomparison.fine.edges),
+        face_basis=tuple((cell, value) for cell in subcomparison.fine.faces),
+        d0=subcomparison.morphism.fine.d0(),
+        d1=subcomparison.morphism.fine.d1(),
+    )
+    result = LawGeneratedComparison(
+        values=(value,),
+        coarse=coarse,
+        fine=fine,
+        pullback0=subcomparison.morphism.cell_pullback(0),
+        pullback1=subcomparison.morphism.cell_pullback(1),
+        pullback2=subcomparison.morphism.cell_pullback(2),
+    )
+    result.analysis()
+    return result
+
+
+def incidence_signature_from_generated_basis(
+    nerve: Nerve,
+    complex_: LawCoordinateComplex,
+    value: LawValue,
+) -> dict[str, object]:
+    vertices = tuple(cell for cell, basis_value in complex_.chart_basis if basis_value == value)
+    edges = tuple(cell for cell, basis_value in complex_.edge_basis if basis_value == value)
+    faces = tuple(cell for cell, basis_value in complex_.face_basis if basis_value == value)
+    vertex_index = {cell: index for index, cell in enumerate(vertices)}
+    edge_index = {cell: index for index, cell in enumerate(edges)}
+    restricted = Nerve(
+        len(vertices),
+        tuple(
+            (vertex_index[nerve.edges[edge][0]], vertex_index[nerve.edges[edge][1]])
+            for edge in edges
+        ),
+        tuple(
+            tuple(edge_index[edge] for edge in nerve.faces[face])
+            for face in faces
+        ),
+    )
+    return {
+        "original_cells": {
+            "charts": list(vertices),
+            "edges": list(edges),
+            "faces": list(faces),
+        },
+        "incidence": nerve_summary(restricted),
+    }
+
+
+def partial_map_signature_from_generated_basis(
+    comparison: UniformComparison,
+    generated_block: LawGeneratedComparison,
+    value: LawValue,
+) -> dict[str, list[dict[str, int | None]]]:
+    mappings: tuple[Sequence[int | None], ...] = (
+        comparison.morphism.vertex_map,
+        comparison.morphism.edge_map,
+        comparison.morphism.face_map,
+    )
+    result = {}
+    for dimension, label in enumerate(("charts", "edges", "faces")):
+        result[label] = [
+            {"fine_cell": cell, "coarse_cell": mappings[dimension][cell]}
+            for cell, basis_value in generated_block.fine.basis(dimension)
+            if basis_value == value
+        ]
+    return result
+
+
+def value_coordinate_dedup_stats(
+    comparison: UniformComparison,
+    generated_block: LawGeneratedComparison,
+    coarse_descend: tuple[LawValue, ...],
+    fine_descend: tuple[LawValue, ...],
+    value: LawValue,
+) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for side, nerve, chart_supports, descend, complex_ in (
+        (
+            "coarse",
+            comparison.morphism.coarse,
+            comparison.coarse_chart_supports,
+            coarse_descend,
+            generated_block.coarse,
+        ),
+        (
+            "fine",
+            comparison.morphism.fine,
+            comparison.fine_chart_supports,
+            fine_descend,
+            generated_block.fine,
+        ),
+    ):
+        side_stats = {}
+        for dimension, label in enumerate(("charts", "edges", "faces")):
+            supports = cell_supports_by_dimension(nerve, chart_supports, dimension)
+            raw_target_occurrences = sum(
+                sum(descend[target] == value for target in support)
+                for support in supports
+            )
+            coordinate_count = len(complex_.basis(dimension))
+            side_stats[label] = {
+                "raw_supported_target_occurrences": raw_target_occurrences,
+                "deduplicated_cell_law_value_coordinates": coordinate_count,
+                "deduplicated_occurrences": raw_target_occurrences - coordinate_count,
+            }
+        result[side] = side_stats
+    return result
 
 
 def indicator_factor_report(
     name: str,
-    factor_pi: tuple[int, ...],
-    coarse_target_count: int,
+    comparison: UniformComparison,
 ) -> dict[str, object]:
-    """Numerically realize every A as the True fiber of one Unit/Bool law."""
+    """Realize every A and compare its actual True block cell-for-cell."""
 
-    fine_target_count = len(factor_pi)
+    factor_pi = comparison.factor_pi
+    coarse_target_count = comparison.coarse_target_count
+    fine_target_count = comparison.fine_target_count
+    source = tuple(range(fine_target_count))
+    fine_read = tuple(range(fine_target_count))
+    coarse_read = tuple(factor_pi[target] for target in fine_read)
+    unit_law_carrier = ("unit",)
+    bool_values = (False, True)
     cases = []
     for targets in nonempty_subsets(coarse_target_count):
         coarse_descent = tuple(target in targets for target in range(coarse_target_count))
@@ -1095,11 +2378,125 @@ def indicator_factor_report(
             for target, coarse_target in enumerate(factor_pi)
             if coarse_target in targets
         )
+        law_family = SingletonLawFamily(
+            name=f"indicator_{name}_A_{'_'.join(map(str, sorted(targets)))}",
+            value_type="Bool",
+            source_evaluation=law_evaluation,
+            coarse_descend=coarse_descent,
+            fine_descend=fine_descent,
+        )
+        generated = build_law_generated_comparison(
+            comparison,
+            law_family,
+        )
+        true_block = extract_generated_value_block(generated, True)
+        subcomparison = comparison.coordinate_subcomparison(targets)
+        expected_true_block = subcomparison_value_block(subcomparison, True)
+        block_assertions = exact_law_comparison_assertions(
+            true_block,
+            expected_true_block,
+        )
+        coarse_signature = incidence_signature_from_generated_basis(
+            comparison.morphism.coarse,
+            true_block.coarse,
+            True,
+        )
+        fine_signature = incidence_signature_from_generated_basis(
+            comparison.morphism.fine,
+            true_block.fine,
+            True,
+        )
+        partial_map_signature = partial_map_signature_from_generated_basis(
+            comparison,
+            true_block,
+            True,
+        )
+        expected_partial_map_signature = {
+            label: [
+                {
+                    "fine_cell": cell,
+                    "coarse_cell": mappings[cell],
+                }
+                for cell in selected_cells
+            ]
+            for label, mappings, selected_cells in (
+                (
+                    "charts",
+                    comparison.morphism.vertex_map,
+                    subcomparison.fine.vertices,
+                ),
+                (
+                    "edges",
+                    comparison.morphism.edge_map,
+                    subcomparison.fine.edges,
+                ),
+                (
+                    "faces",
+                    comparison.morphism.face_map,
+                    subcomparison.fine.faces,
+                ),
+            )
+        }
+        actual_signatures = {
+            "coarse": coarse_signature,
+            "fine": fine_signature,
+            "partial_map_original_cells": partial_map_signature,
+        }
+        expected_signatures = {
+            "coarse": {
+                "original_cells": {
+                    "charts": list(subcomparison.coarse.vertices),
+                    "edges": list(subcomparison.coarse.edges),
+                    "faces": list(subcomparison.coarse.faces),
+                },
+                "incidence": nerve_summary(subcomparison.morphism.coarse),
+            },
+            "fine": {
+                "original_cells": {
+                    "charts": list(subcomparison.fine.vertices),
+                    "edges": list(subcomparison.fine.edges),
+                    "faces": list(subcomparison.fine.faces),
+                },
+                "incidence": nerve_summary(subcomparison.morphism.fine),
+            },
+            "partial_map_original_cells": expected_partial_map_signature,
+        }
+        signature_assertions = {
+            **block_assertions,
+            "coarse_original_cell_signature": coarse_signature["original_cells"]
+            == {
+                "charts": list(subcomparison.coarse.vertices),
+                "edges": list(subcomparison.coarse.edges),
+                "faces": list(subcomparison.coarse.faces),
+            },
+            "fine_original_cell_signature": fine_signature["original_cells"]
+            == {
+                "charts": list(subcomparison.fine.vertices),
+                "edges": list(subcomparison.fine.edges),
+                "faces": list(subcomparison.fine.faces),
+            },
+            "coarse_incidence": coarse_signature["incidence"]
+            == nerve_summary(subcomparison.morphism.coarse),
+            "fine_incidence": fine_signature["incidence"]
+            == nerve_summary(subcomparison.morphism.fine),
+            "partial_map_original_cell_signature": partial_map_signature
+            == expected_partial_map_signature,
+            "complete_original_cell_incidence_partial_map_signature": (
+                actual_signatures == expected_signatures
+            ),
+        }
         assertions = {
-            "fine_read_identity_surjective": True,
+            "fine_read_identity_surjective": (
+                len(fine_read) == fine_target_count
+                and all(fine_read[source_cell] == source_cell for source_cell in source)
+                and set(fine_read) == set(range(fine_target_count))
+            ),
             "coarse_read_pi_surjective": set(factor_pi)
             == set(range(coarse_target_count)),
-            "coarse_read_factors_through_fine": True,
+            "coarse_read_factors_through_fine": all(
+                coarse_read[source_cell] == factor_pi[fine_read[source_cell]]
+                for source_cell in source
+            ),
             "coarse_adequate": all(
                 coarse_descent[factor_pi[source]] == law_evaluation[source]
                 for source in range(fine_target_count)
@@ -1111,11 +2508,31 @@ def indicator_factor_report(
             ),
             "A_is_true_fiber": realized_coarse == targets,
             "pi_preimage_A_is_true_fiber": realized_fine == expected_fine,
-            "unit_law_family_fields_finite": True,
-            "bool_has_two_distinct_values": False is not True,
+            "unit_law_family_fields_finite": (
+                law_family.law_carrier == unit_law_carrier
+                and len(law_family.law_carrier) == len(set(unit_law_carrier)) == 1
+                and len(law_family.source_evaluation) == len(source)
+            ),
+            "actual_singleton_law_family_fields": all(
+                law_family.assertions(comparison).values()
+            ),
+            "bool_has_two_distinct_values": (
+                len(set(bool_values)) == 2
+                and bool_values[0] != bool_values[1]
+            ),
+            "true_coordinate_block_matches_A_subnerve_all_cells": all(
+                signature_assertions.values()
+            ),
         }
         if not all(assertions.values()):
             raise AssertionError(f"indicator realization failed for {name} A={targets}")
+        dedup = value_coordinate_dedup_stats(
+            comparison,
+            true_block,
+            coarse_descent,
+            fine_descent,
+            True,
+        )
         cases.append(
             {
                 "coarse_targets_A": sorted(targets),
@@ -1123,28 +2540,56 @@ def indicator_factor_report(
                 "coarse_bool_descent": list(coarse_descent),
                 "fine_bool_descent": list(fine_descent),
                 "law_evaluation_on_source_eq_fine_target": list(law_evaluation),
+                "actual_true_coordinate_block": law_comparison_summary(true_block),
+                "A_subnerve_constant_Q_block": law_comparison_summary(
+                    expected_true_block
+                ),
+                "actual_true_block_signatures": actual_signatures,
+                "A_subnerve_signatures": expected_signatures,
+                "cell_incidence_partial_map_assertions": signature_assertions,
+                "coordinate_dedup": dedup,
                 "assertions": assertions,
             }
         )
+    dedup_fired_by_dimension = {
+        label: any(
+            case["coordinate_dedup"][side][label]["deduplicated_occurrences"] > 0
+            for case in cases
+            for side in ("coarse", "fine")
+        )
+        for label in ("charts", "edges", "faces")
+    }
+    all_pass = (
+        all(all(case["assertions"].values()) for case in cases)
+        and all(
+            all(case["cell_incidence_partial_map_assertions"].values())
+            for case in cases
+        )
+        and all(dedup_fired_by_dimension.values())
+    )
+    if not all_pass:
+        raise AssertionError(f"indicator cell-signature gate failed for {name}")
     return {
         "name": name,
-        "source_count": fine_target_count,
-        "fine_read": list(range(fine_target_count)),
-        "coarse_read": list(factor_pi),
+        "source_count": len(source),
+        "fine_read": list(fine_read),
+        "coarse_read": list(coarse_read),
         "factor_pi": list(factor_pi),
         "law_type": "Unit",
+        "law_type_cardinality": len(set(unit_law_carrier)),
         "value_type": "Bool",
-        "value_type_cardinality": 2,
+        "value_type_cardinality": len(set(bool_values)),
         "nonempty_subset_count": len(cases),
         "cases": cases,
-        "all_pass": True,
+        "dedup_fired_by_dimension": dedup_fired_by_dimension,
+        "all_pass": all_pass,
     }
 
 
 def indicator_realizability_report() -> dict[str, object]:
     factors = (
-        indicator_factor_report("Fin3_to_Fin2", (0, 0, 1), 2),
-        indicator_factor_report("Fin4_to_Fin3", (0, 0, 1, 2), 3),
+        indicator_factor_report("Fin3_to_Fin2", canonical_firing_fixture()),
+        indicator_factor_report("Fin4_to_Fin3", legacy_positive_fixture()),
     )
     return {
         "factors": list(factors),
@@ -1165,6 +2610,13 @@ def r0_report() -> dict[str, object]:
             "b_derived_support_hole": b,
             "c_block_reduction": {
                 "actual_law_blocks": firing["actual_law_blocks"],
+                "law_generated_global": firing["law_generated_global"],
+                "value_block_A_subnerve_direct_sum": firing[
+                    "value_block_A_subnerve_direct_sum"
+                ],
+                "exact_global_block_matrix_equality": firing[
+                    "exact_global_block_matrix_equality"
+                ],
                 "global_supported_direct_sum": firing[
                     "global_supported_direct_sum"
                 ],

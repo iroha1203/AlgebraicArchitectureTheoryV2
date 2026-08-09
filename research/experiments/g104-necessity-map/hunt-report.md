@@ -115,9 +115,9 @@ engine は次の5群を別々の oracle として検査する。
 | --- | --- | --- |
 | (a) | `FaceLiftObstruction` / `EdgeFiberObstruction` / `LoopLiftObstruction` | それぞれ C4 / C5 / C6 の既知 failure と H¹ map の非全単射 / 非単射を再現 |
 | (b) | 値分配 derived support hole | global `dim H¹ = 4 / 1`、rank 1。A-block で相対 C2 が発火し、この例を除外 |
-| (c) | 非定数 law の block 直和 | global の H¹ 次元と rank が各 law-value block の和に一致し、cell signature が A-subnerve と一致 |
-| (d) | 全非空 A の indicator law | singleton Law、2値 Value、両 adequacy、`π`-可換、true block と A-subnerve の cell signature が一致 |
-| (e) | 現行 `ResolutionInvarianceFiringWitness` | 現行 C0–C6、zero/one block、global `dim H¹ = 1 / 1`、rank 1、nonvacuity を再現 |
+| (c) | 非定数 law の block 直和 | law-generated global K0/K1 basis・`d0`・`d1`・3次数の pullback・H¹ map を A-subnerve block 直和とは独立に構成し、全行列と basis が exact 一致 |
+| (d) | 全非空 A の indicator law | singleton Law、2値 Value、両 adequacy、`π`-可換に加え、true block と A-subnerve の全 cell・incidence・partial map・行列・H¹ が一致 |
+| (e) | 現行 `ResolutionInvarianceFiringWitness` | 完全固定 data、`Law=PUnit`、`Value=Fin 2`、現行 C0–C6、zero/one block、具体的 firing cochain と fine image、global `dim H¹ = 1 / 1`、rank 1、nonvacuity を再現 |
 
 現行 oracle の reading factor は `π = (0, 0, 1)`、nerve chart map は
 `φ = (0, 0, 1)` である。値が同じでも型と責務が異なるため、engine では別 field として保持する。
@@ -128,10 +128,30 @@ engine は次の5群を別々の oracle として検査する。
 初回実装は obstruction 3件の incidence と H¹ を再現したが、reading factor を便宜的な
 `1 → 1` にしていた。独立レビューでこれを modeling 欠陥として検出し、初回 R1 出力を
 証拠から除外した。3件を Target `3 / 4`、`π = (0,0,1,2)`、full chart support に直し、
-R0 を先に再実行してから R1 をやり直した。
+R0 を先に再実行してから R1 をやり直した。この補正は Issue #3948 comment
+`5230365884` に固定した。
+
+その後、固定 head の4本独立査読で、(c) の global 側が A-block 直和から再定義されていたこと、
+(d) が indicator の factor/adequacy だけを検査して cell-level 同一性を検査していなかったこと、
+engine の face well-formedness が Lean の3 endpoint equality より弱かったことを検出した。
+これは還元の数学的反例ではなく calibration/modeling failure であるため、旧 stop-C streak を
+checkpoint 根拠から外し、次を実装して R0 を再校正した。
+
+- global law-generated basis・`d0`・`d1`・partial pullback・H¹ map を block 経路と独立構成。
+- 両 canonical factor の全10非空 A で indicator true block と A-subnerve の
+  chart/edge/face、incidence、partial map、行列、H¹ を exact 比較。
+- Lean と同じ3つの face endpoint equality を `Nerve` constructor invariant に追加。
+- canonical firing fixture の全配列・support・`π`・`φ`・cell map、
+  `Law=PUnit`、carrier singleton、`Value=Fin 2` を fail-closed 固定。
+- coarse firing cochain `(1,0,0,0)` と generated fine image
+  `(1,0,0,0,0,0)` の cycle/nonboundary と H¹ map `[[1]]` を計算。
+
+最終結果:
 
 - 有効 R0 payload SHA-256:
-  `f56a210eba2647dd0e14b34e0532da4d62efc966c1335ccce51e3f1d3290f8c4`
+  `dd982e5ded6395371c421e1d6223c2bf7489a07b723797fdeda55d99a172b455`
+- 有効 R1 payload SHA-256:
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
 - (a)–(e): 全 pass
 - 現行 zero block: coarse/fine H¹ `1 / 1`、rank `1`
 - 現行 one block: coarse/fine H¹ `0 / 0`、rank `0`
@@ -139,7 +159,9 @@ R0 を先に再実行してから R1 をやり直した。
 - derived support hole: `4 / 1`、rank `1`、相対 C2 failure は
   `A={0}` と `A={1}`
 
-この補正と再実行は Issue #3948 の comment `5230365884` に固定した。
+最終 calibration と時系列訂正は Issue #3948 comment `5230818358` に固定した。
+これは PRD の「calibration 不一致の解消」に当たる進展であり、それ以前の no-progress streak を
+resetする。
 
 ## R1: 必要性地図
 
@@ -224,51 +246,77 @@ Round 1 の `Chain3` は local swap `x0~x1~x2` の推移性を示す。Round 2 �
 `CertifiedSwap` はこの無向関係の反射推移閉包である。C5* は lift が高々1 class、
 C6* は各 class が fine self-loop代表を持つことを要求する。
 
-### 候補固定後の監査訂正
+### 候補固定後の監査と時系列訂正
 
-| round | strict expansion | query | progress audit |
+| round | strict expansion | query | 監査上の扱い |
 | --- | --- | --- | --- |
-| 4 | closed 2D identity core 3件、total 608 | 二方向0、新反例0 | 4項目すべて空、no-progress 1/2 |
-| 5 | identity square、Target `4/5`、chart mask `6^4=1,296`、全15 A、total 1,904 | 新規19,440 A-blockで二方向0 | faceを持たず、同一blocker roundとして無効 |
+| 4 | closed 2D identity core 3件、total 608 | 二方向0、新反例0 | no-progress |
+| 5 | identity square、Target `4/5`、chart mask `6^4=1,296`、全15 A、total 1,904 | 新規19,440 A-blockで二方向0 | face-chain blockerを試さず、stop streakには不適格 |
+| 6 | nonidentity linear face-chain、lift数4/5、free pair 0、total 1,906 | 二方向0、新反例0 | historical no-progress |
+| 7 | nonidentity branching tree / cycle、Target `4/5`、全15 A、free pair 0、total 1,908 | 二方向0、新反例0 | historical no-progress |
 
-独立レビューは、Round 5 が face-chain blockerを試していないこと、case IDが fixture nameを
-含むこと、Round 1 payload hashが final sourceから再現できないことを指摘した。停止 C の初回判定を
-撤回し、name-free semantic IDへ変更して全件を再計算した。この補正は progress として streakを
-resetした。再同期後の Round 1–5 hash は Issue #3948 comment `5230523348` に固定している。
+独立レビューは、Round 5 が同一 blockerを試していないこと、case IDが fixture nameを含むこと、
+Round 1 payload hashが final sourceから再現できないことを指摘した。初回 stop-C 判定を撤回し、
+name-free semantic IDへ変更して全件を再計算した。再同期後の Round 1–7 hash は Issue #3948
+comment `5230523348` に固定している。この provenance / ID補正は PRD が列挙する4種の
+「進展」には数えず、独立した監査訂正として記録する。
 
-### 同一blockerを直接含む最終2ラウンド
+Round 6/7 の result SHA-256 はそれぞれ
+`26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429` と
+`6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56` である。
+ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは PRD 上の進展なので、
+この2 roundを最終 stop streakには用いない。
 
-| round | strict expansion | query | progress audit |
-| --- | --- | --- | --- |
-| 6 | nonidentity linear face-chain、lift数4/5、free pair 0、raw total 1,906 | 二方向0、新反例0 | 4項目すべて空、no-progress 1/2 |
-| 7 | nonidentity branching tree / cycle face-chain、Target `4/5`、全15 A、free pair 0、raw total 1,908 | 二方向0、新反例0 | 4項目すべて空、no-progress 2/2 |
+### 最終 R0 補正後のラウンド
 
-Round 6 result SHA-256 は
-`26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429`、
-Round 7 は
-`6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56`。
+| round | strict expansion | payload SHA-256 | query / progress | stop streak |
+| --- | --- | --- | --- | --- |
+| 8 | full-support KILL path 6 lifts、SLOT circular ladder、total 1,910 | `a239fbd921b7fd97de25ad0d00a43b5d5195116c9ecbf8d83e1f1911dffe3178` | 二方向0、4項目空 | 最終R0 Issue同期・実行許可前にqueryしたため diagnostic only、0/2 |
+| 9 | mixed KILL/SLOT diamond、split-support figure-eight、全15 A、total 1,912 | `596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb` | 二方向0、4項目空 | valid no-progress 1/2 |
+| 10 | overlapping-support mixed K2,3、3-chart K4+star face-chain、全15 A、total 1,914 | `6f2a6287ae3f9c85300711b01b701ba6393dd2d5d44b3e2ebb748df923017a6f` | 二方向0、4項目空 | valid no-progress 2/2 |
+
+Round 8 は数学的な finite diagnostic として母集団に保持するが、停止条件の監査単位には数えない。
+Round 9 は最終 R0 comment `5230818358` の後に事前登録・実行し、result comment
+`5230876303` に固定した。Round 10 は comment `5230881464` で事前登録し、実行前の
+静的敵対レビューを通してから初回 queryを行った。初回実行記録は21 tests成功
+（参考 wall time 124.093秒）であり、result comment `5230966215` に固定した。
+
+Round 10 の strict-expansion auditは次を同時に満たした。
+
+- prior/total raw・full semantic SHA・20-hex unique は `1912 / 1914`、collision 0。
+- 新規2 fixtureの30 A-blockと既存1,912件で十分性破れ・必要性破れはいずれも0。
+- lift/chart/許容target relabelに不変な colored graph/support canonical codeは
+  R6–R10の10 fixtureで全て異なり、support driftを検出する。
+- free pairはwhole/全Aで0。wholeで C0*/C5*/C6*、全Aで C1*–C4*が成立し、
+  全Aのcomparisonが同型。
+- 新規 verdict、新規 canonical counterexample、candidate改訂、追加 calibration fixは全て空。
 
 ## 停止条件 C
 
-終端は **C(停滞)** である。最後の進展は Round 5 後の独立監査に伴う provenance / ID補正であり、
-その後 Round 6 と Round 7 は同じ blocker
-`PB-R2-NONFREE-GLOBAL-FACE-CHAIN` に帰着して2ラウンド連続で進展がなかった。
+終端は **C(停滞)** である。最後の進展は Issue #3948 comment `5230818358` に固定した
+最終 R0 calibration failure の解消である。その後、Round 8は無効な diagnosticとして除外し、
+Round 9とRound 10が同じ blocker
+`PB-R2-NONFREE-GLOBAL-FACE-CHAIN` に帰着して2ラウンド連続で進展なしとなった。
 
 blocker は、固定半径の `FaceTwin` / one-pass free pair / `SLOT` / `KILL` だけから、
-free pair を持たない任意の2次元 coreで遠方の face-chain が cycleを消すかを導く一般手証明が
-閉じないことである。これは固定した有限 local grammar と有限母集団の coverage blocker であり、
-incidence/support 条項全体についての2点分離一般論法ではない。従って停止 B とは判定しない。
+free pairを持たない任意の retained 2次元 face-chain graphが cycleを消すかを導く一般手証明が
+閉じないことである。これは固定した有限 local grammar と有限母集団の coverage blockerであり、
+incidence/support 条項全体についての2点分離一般論法ではない。従って停止 Bとは判定しない。
+`CERTIFIED-v3` の characterization statusは `undecided` である。
 
 coverage limit:
 
-- R1 core は4 templateと登録 Target boundだけを全数化した。
-- R2 Round 6 はlinear relation graph 2件、Round 7 はbranching tree / cycle各1件だけである。
-- 最終4 fixtureはnonidentityでfree pairを持たないが、任意graph size・任意support分配は覆わない。
-- arbitrary large nerve、nonidentity refinement、任意 face multiplicity、全 support grammarは
-  未被覆である。
+- R1の全数化は4 core template、登録 Target bound、590 compatible comparisonsと
+  required fixture catalog 13件に限る。
+- R2はname-free semantic case 1,914件と、linear / branching / cycle / ladder / diamond /
+  figure-eight / K2,3 / K4+star の固定 fixtureだけを exact 評価した。
+- Round 10の chart block間には非loop edgeやfaceがなく、cross-chart coupled incidenceは未被覆である。
+- 任意graph size、任意chart数、任意 face multiplicity、任意 compatible support distribution、
+  arbitrary large nerveとnonidentity refinementの一般形は未被覆である。
 
-この checkpoint は task完了ではない。Issue #3948は open、PRDは削除・改訂せず、
-人間裁定を待つ。`CERTIFIED-v3` を必要十分条件として主張せず、第二段 GOAL も起票しない。
+この checkpoint は task完了ではない。Issue #3948は open、PRDは保持し、draft PRのまま
+人間裁定を待つ。有限 zero-resultを証明または停止 Bとは称さず、`CERTIFIED-v3` を必要十分条件や
+確定 theorem candidateとして主張せず、第二段 GOALも起票しない。
 
 ## 再現契約
 
@@ -286,4 +334,4 @@ shasum -a 256 results.json
 - 乱数なし。
 - serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
 - canonical `results.json` SHA-256:
-  `d55b2f2650e6b799ba3a0bf00324ea274c9bcef6760838f51565606a8d6532dd`
+  `3d0173edac824dc04d661e4846d50937f52fdf3d29cc84ddec00fda629f23453`

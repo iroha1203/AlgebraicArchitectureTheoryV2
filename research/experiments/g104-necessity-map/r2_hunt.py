@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from fractions import Fraction
 from hashlib import sha256
-from itertools import product
+from itertools import permutations, product
 import json
 from typing import Iterable, Iterator
 
@@ -27,6 +27,8 @@ from necessity_map import (
     derived_cell_supports,
     legacy_positive_fixture,
     nonempty_subsets,
+    r0_report,
+    r1_report,
     r1_necessity_witnesses,
     required_fixture_catalog_summary,
     support_hole_fixture,
@@ -79,6 +81,122 @@ CERTIFIED_SPEC = "\n".join(
     )
 )
 CERTIFIED_SEMANTIC_SHA256 = sha256(CERTIFIED_SPEC.encode("ascii")).hexdigest()
+
+REGISTERED_ROUND_PAYLOAD_SHA256 = (
+    "82aa4aa6895bbde75e5092f265f18d217fa66c17b63c16ebad92011a239861de",
+    "ebc6f486a661e4fa53598d0c53efaaacf3cd1c4535e79fa31afedc222f7b260a",
+    "bcd3408ebe16429dec1a136a64c1ee4fffc99c6adcd31c548cd90cdf9cb6e381",
+    "d35620af9bfee3bf2e301ad91b562f3e788a063873a0042cee8425c20d72ce94",
+    "09012de4338717f4332336a4a51b1d6103e59264f600c17827004d17699982c4",
+    "26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429",
+    "6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56",
+)
+FINAL_R0_SEMANTIC_SHA256 = (
+    "dd982e5ded6395371c421e1d6223c2bf7489a07b723797fdeda55d99a172b455"
+)
+FINAL_R1_SEMANTIC_SHA256 = (
+    "ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a"
+)
+ROUND8_DIAGNOSTIC_PAYLOAD_SHA256 = (
+    "a239fbd921b7fd97de25ad0d00a43b5d5195116c9ecbf8d83e1f1911dffe3178"
+)
+ROUND9_VALID_PAYLOAD_SHA256 = (
+    "596fe4631155389798e5590953f7582048b3b37da7766859115f66a197f8aceb"
+)
+ROUND9_RESULT_ISSUE_COMMENT = 5230876303
+
+
+def _canonical_report_sha256(report: dict[str, object]) -> str:
+    rendered = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return sha256(rendered.encode("utf-8")).hexdigest()
+
+
+def _assert_registered_round_payload_hashes(
+    actual: tuple[str, ...],
+) -> None:
+    if actual != REGISTERED_ROUND_PAYLOAD_SHA256:
+        raise AssertionError("Round8 registered Round1-7 payload SHA drift")
+
+
+def _assert_round9_hash_baseline(
+    *,
+    r0_sha256: str,
+    r1_sha256: str,
+    round8_sha256: str,
+    round8: dict[str, object],
+) -> None:
+    population = round8.get("population", {})
+    progress = round8.get("progress_audit", {})
+    baseline_hashes = round8.get("baseline_payload_sha256", {})
+    candidate = round8.get("candidate", {})
+    if not (
+        r0_sha256 == FINAL_R0_SEMANTIC_SHA256
+        and r1_sha256 == FINAL_R1_SEMANTIC_SHA256
+        and round8_sha256 == ROUND8_DIAGNOSTIC_PAYLOAD_SHA256
+        and round8.get("valid") is False
+        and progress.get("streak_after_round") == 0
+        and tuple(baseline_hashes.values()) == REGISTERED_ROUND_PAYLOAD_SHA256
+        and candidate.get("semantic_id") == CERTIFIED_SEMANTIC_ID
+        and candidate.get("semantic_sha256") == CERTIFIED_SEMANTIC_SHA256
+        and population.get("total_raw_cases") == 1910
+        and population.get("prior_full_semantic_payload_ids") == 1908
+        and population.get("prior_truncated_semantic_payload_ids") == 1908
+        and len(population.get("new_full_semantic_payload_ids", ())) == 2
+        and len(population.get("new_truncated_semantic_payload_ids", ())) == 2
+        and population.get("full_sha256_collision_count") == 0
+        and population.get("truncated_20hex_collision_count") == 0
+    ):
+        raise AssertionError("Round9 R0/R1/Round1-8 hash baseline drift")
+
+
+def _assert_round10_hash_baseline(
+    *,
+    round9_sha256: str,
+    round9: dict[str, object],
+) -> None:
+    """Fail closed before admitting either prior or new Round10 queries."""
+
+    baseline = round9.get("baseline_payload_sha256", {})
+    diagnostic = round9.get("round8_diagnostic_baseline", {})
+    candidate = round9.get("candidate", {})
+    population = round9.get("population", {})
+    queries = round9.get("queries", {})
+    progress = round9.get("progress_audit", {})
+    blocker = round9.get("same_blocker_evidence", {})
+    if not (
+        round9_sha256 == ROUND9_VALID_PAYLOAD_SHA256
+        and round9.get("valid") is True
+        and round9.get("final_R0_calibration_comment") == 5230818358
+        and baseline.get("r0") == FINAL_R0_SEMANTIC_SHA256
+        and baseline.get("r1") == FINAL_R1_SEMANTIC_SHA256
+        and tuple(baseline.get("round1_through_round7", ()))
+        == REGISTERED_ROUND_PAYLOAD_SHA256
+        and baseline.get("round8_diagnostic")
+        == ROUND8_DIAGNOSTIC_PAYLOAD_SHA256
+        and diagnostic.get("valid") is False
+        and diagnostic.get("streak_after_round") == 0
+        and diagnostic.get("counted_in_stop_streak") is False
+        and candidate.get("semantic_id") == CERTIFIED_SEMANTIC_ID
+        and candidate.get("semantic_sha256") == CERTIFIED_SEMANTIC_SHA256
+        and population.get("prior_raw_cases_recomputed") == 1910
+        and population.get("prior_full_semantic_payload_ids") == 1910
+        and population.get("prior_truncated_semantic_payload_ids") == 1910
+        and len(population.get("new_full_semantic_payload_ids", ())) == 2
+        and len(population.get("new_truncated_semantic_payload_ids", ())) == 2
+        and population.get("total_raw_cases") == 1912
+        and population.get("total_full_semantic_payload_ids") == 1912
+        and population.get("total_truncated_semantic_payload_ids") == 1912
+        and population.get("full_sha256_collision_count") == 0
+        and population.get("truncated_20hex_collision_count") == 0
+        and queries.get("prior_sufficiency_or_necessity_break_count") == 0
+        and queries.get("new_sufficiency_break_count") == 0
+        and queries.get("new_necessity_break_count") == 0
+        and queries.get("new_counterexample_count") == 0
+        and progress.get("progress") is False
+        and progress.get("streak_after_round") == 1
+        and blocker.get("valid_no_progress_1_of_2") is True
+    ):
+        raise AssertionError("Round10 R0/R1/Round1-9 hash baseline drift")
 
 
 @dataclass(frozen=True)
@@ -923,6 +1041,540 @@ def round7_face_chain_graphs() -> tuple[UniformComparison, ...]:
     )
 
 
+R8_L6_KILL_RELATIONS = (
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (4, 5),
+)
+R8_CL3_SLOT_RELATIONS = (
+    (0, 1),
+    (1, 2),
+    (2, 0),
+    (3, 4),
+    (4, 5),
+    (5, 3),
+    (0, 3),
+    (1, 4),
+    (2, 5),
+)
+R9_DIAMOND_KILL_RELATIONS = ((0, 1), (1, 2), (2, 0))
+R9_DIAMOND_SLOT_RELATIONS = ((1, 3), (3, 2))
+R9_FIGURE8_KILL_RELATIONS = (
+    (0, 1),
+    (1, 2),
+    (2, 0),
+    (0, 3),
+    (3, 4),
+    (4, 0),
+)
+R10_A_KILL_RELATIONS = ((0, 2), (0, 3), (1, 4))
+R10_A_SLOT_RELATIONS = ((0, 4), (1, 2), (1, 3))
+R10_B_K4_KILL_RELATIONS = ((0, 1), (1, 2), (2, 0))
+R10_B_K4_SLOT_RELATIONS = ((0, 3), (1, 3), (2, 3))
+R10_B_STAR_KILL_RELATIONS = ((0, 1),)
+R10_B_STAR_SLOT_RELATIONS = ((0, 2), (0, 3))
+
+
+def _checked_relations(
+    lift_count: int,
+    relations: tuple[tuple[int, int], ...],
+) -> tuple[tuple[int, int], ...]:
+    if not 1 <= lift_count <= 6:
+        raise ValueError("relation grammar supports one through six lifts")
+    normalized = tuple(
+        (min(left, right), max(left, right)) for left, right in relations
+    )
+    if any(
+        not (0 <= left < right < lift_count) for left, right in normalized
+    ):
+        raise ValueError("relation leaves the lift vertex set or is a self-edge")
+    if len(normalized) != len(set(normalized)):
+        raise ValueError("duplicate relation")
+    return normalized
+
+
+def relation_grammar_fixture(
+    name: str,
+    lift_count: int,
+    *,
+    kill_relations: tuple[tuple[int, int], ...] = (),
+    slot_relations: tuple[tuple[int, int], ...] = (),
+) -> UniformComparison:
+    """Build the preregistered exact common KILL/SLOT grammar."""
+
+    checked_kill = _checked_relations(lift_count, kill_relations)
+    checked_slot = _checked_relations(lift_count, slot_relations)
+    if set(checked_kill) & set(checked_slot):
+        raise ValueError("one unordered pair cannot have two relation colors")
+
+    kill_count = len(kill_relations)
+    slot_count = len(slot_relations)
+    coarse_edges = tuple(
+        (0, 0) for _ in range(1 + kill_count + 2 * slot_count)
+    )
+    fine_edges = tuple(
+        (0, 0) for _ in range(lift_count + kill_count + 2 * slot_count)
+    )
+    coarse_faces: list[tuple[int, int, int]] = []
+    fine_faces: list[tuple[int, int, int]] = []
+    face_map: list[int] = []
+
+    # KILL(u,v): Z=(z,z,z), F=(e,e,z) and their exact fine lifts.
+    for index, (left, right) in enumerate(kill_relations):
+        coarse_z = 1 + index
+        fine_z = lift_count + index
+        coarse_face_start = len(coarse_faces)
+        coarse_faces.extend(
+            ((coarse_z, coarse_z, coarse_z), (0, 0, coarse_z))
+        )
+        fine_faces.extend(
+            ((fine_z, fine_z, fine_z), (left, right, fine_z))
+        )
+        face_map.extend((coarse_face_start, coarse_face_start + 1))
+
+    # SLOT(u,v): one coarse (e,a,b), and two fine faces differing only in e.
+    coarse_slot_edge_start = 1 + kill_count
+    fine_slot_edge_start = lift_count + kill_count
+    for index, (left, right) in enumerate(slot_relations):
+        coarse_a = coarse_slot_edge_start + 2 * index
+        coarse_b = coarse_a + 1
+        fine_a = fine_slot_edge_start + 2 * index
+        fine_b = fine_a + 1
+        coarse_face = len(coarse_faces)
+        coarse_faces.append((0, coarse_a, coarse_b))
+        fine_faces.extend(
+            ((left, fine_a, fine_b), (right, fine_a, fine_b))
+        )
+        face_map.extend((coarse_face, coarse_face))
+
+    edge_map = (
+        tuple(0 for _ in range(lift_count))
+        + tuple(1 + index for index in range(kill_count))
+        + tuple(
+            coarse_slot_edge_start + index for index in range(2 * slot_count)
+        )
+    )
+    coarse = Nerve(1, coarse_edges, tuple(coarse_faces))
+    fine = Nerve(1, fine_edges, tuple(fine_faces))
+    return UniformComparison(
+        name=name,
+        morphism=NerveMorphism(
+            coarse,
+            fine,
+            (0,),
+            edge_map,
+            tuple(face_map),
+        ),
+        coarse_target_count=4,
+        fine_target_count=5,
+        factor_pi=(0, 0, 1, 2, 3),
+        coarse_chart_supports=(frozenset((0, 1, 2, 3)),),
+        fine_chart_supports=(frozenset((0, 1, 2, 3, 4)),),
+    )
+
+
+def round8_relation_fixtures() -> tuple[UniformComparison, ...]:
+    return (
+        relation_grammar_fixture(
+            "R8-L6-KILL",
+            6,
+            kill_relations=R8_L6_KILL_RELATIONS,
+        ),
+        relation_grammar_fixture(
+            "R8-CL3-SLOT",
+            6,
+            slot_relations=R8_CL3_SLOT_RELATIONS,
+        ),
+    )
+
+
+def round9_figure8_split_support_fixture() -> UniformComparison:
+    coarse_edges = tuple((0, 0) for _ in range(7)) + ((1, 1),)
+    fine_edges = tuple((0, 0) for _ in range(11)) + ((1, 1),)
+    coarse_faces: list[tuple[int, int, int]] = []
+    fine_faces: list[tuple[int, int, int]] = []
+    for index, (left, right) in enumerate(R9_FIGURE8_KILL_RELATIONS):
+        coarse_z = 1 + index
+        fine_z = 5 + index
+        coarse_faces.extend(
+            ((coarse_z, coarse_z, coarse_z), (0, 0, coarse_z))
+        )
+        fine_faces.extend(
+            ((fine_z, fine_z, fine_z), (left, right, fine_z))
+        )
+    coarse = Nerve(2, coarse_edges, tuple(coarse_faces))
+    fine = Nerve(2, fine_edges, tuple(fine_faces))
+    return UniformComparison(
+        name="R9-FIGURE8-SPLIT-SUPPORT",
+        morphism=NerveMorphism(
+            coarse,
+            fine,
+            (0, 1),
+            (0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7),
+            tuple(range(12)),
+        ),
+        coarse_target_count=4,
+        fine_target_count=5,
+        factor_pi=(0, 0, 1, 2, 3),
+        coarse_chart_supports=(frozenset((0, 1)), frozenset((2, 3))),
+        fine_chart_supports=(
+            frozenset((0, 1, 2)),
+            frozenset((3, 4)),
+        ),
+    )
+
+
+def round9_relation_fixtures() -> tuple[UniformComparison, ...]:
+    return (
+        relation_grammar_fixture(
+            "R9-DIAMOND-MIXED",
+            4,
+            kill_relations=R9_DIAMOND_KILL_RELATIONS,
+            slot_relations=R9_DIAMOND_SLOT_RELATIONS,
+        ),
+        round9_figure8_split_support_fixture(),
+    )
+
+
+def round10_k23_mixed_overlap_fixture() -> UniformComparison:
+    coarse_faces = (
+        (1, 1, 1),
+        (0, 0, 1),
+        (2, 2, 2),
+        (0, 0, 2),
+        (3, 3, 3),
+        (0, 0, 3),
+        (0, 4, 5),
+        (0, 6, 7),
+        (0, 8, 9),
+    )
+    fine_faces = (
+        (5, 5, 5),
+        (0, 2, 5),
+        (6, 6, 6),
+        (0, 3, 6),
+        (7, 7, 7),
+        (1, 4, 7),
+        (0, 8, 9),
+        (4, 8, 9),
+        (1, 10, 11),
+        (2, 10, 11),
+        (1, 12, 13),
+        (3, 12, 13),
+    )
+    coarse = Nerve(
+        2,
+        tuple((0, 0) for _ in range(10)) + ((1, 1),),
+        coarse_faces,
+    )
+    fine = Nerve(
+        2,
+        tuple((0, 0) for _ in range(14)) + ((1, 1),),
+        fine_faces,
+    )
+    return UniformComparison(
+        name="R10-A-K23-MIXED-OVERLAP",
+        morphism=NerveMorphism(
+            coarse,
+            fine,
+            (0, 1),
+            (0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+            (0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8),
+        ),
+        coarse_target_count=4,
+        fine_target_count=5,
+        factor_pi=(0, 0, 1, 2, 3),
+        coarse_chart_supports=(frozenset((0, 1, 2)), frozenset((2, 3))),
+        fine_chart_supports=(
+            frozenset((0, 1, 2, 3)),
+            frozenset((3, 4)),
+        ),
+    )
+
+
+def round10_k4_star_multichart_fixture() -> UniformComparison:
+    coarse_faces = (
+        (1, 1, 1),
+        (0, 0, 1),
+        (2, 2, 2),
+        (0, 0, 2),
+        (3, 3, 3),
+        (0, 0, 3),
+        (0, 4, 5),
+        (0, 6, 7),
+        (0, 8, 9),
+        (11, 11, 11),
+        (10, 10, 11),
+        (10, 12, 13),
+        (10, 14, 15),
+    )
+    fine_faces = (
+        (4, 4, 4),
+        (0, 1, 4),
+        (5, 5, 5),
+        (1, 2, 5),
+        (6, 6, 6),
+        (2, 0, 6),
+        (0, 7, 8),
+        (3, 7, 8),
+        (1, 9, 10),
+        (3, 9, 10),
+        (2, 11, 12),
+        (3, 11, 12),
+        (17, 17, 17),
+        (13, 14, 17),
+        (13, 18, 19),
+        (15, 18, 19),
+        (13, 20, 21),
+        (16, 20, 21),
+    )
+    coarse = Nerve(
+        3,
+        tuple((0, 0) for _ in range(10))
+        + tuple((1, 1) for _ in range(6))
+        + ((2, 2),),
+        coarse_faces,
+    )
+    fine = Nerve(
+        3,
+        tuple((0, 0) for _ in range(13))
+        + tuple((1, 1) for _ in range(9))
+        + ((2, 2),),
+        fine_faces,
+    )
+    return UniformComparison(
+        name="R10-B-K4-STAR-CHAIN-SUPPORT",
+        morphism=NerveMorphism(
+            coarse,
+            fine,
+            (0, 1, 2),
+            (
+                0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                10, 10, 10, 10, 11, 12, 13, 14, 15, 16,
+            ),
+            (0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 12),
+        ),
+        coarse_target_count=4,
+        fine_target_count=5,
+        factor_pi=(0, 0, 1, 2, 3),
+        coarse_chart_supports=(
+            frozenset((0, 1)),
+            frozenset((1, 2)),
+            frozenset((2, 3)),
+        ),
+        fine_chart_supports=(
+            frozenset((0, 1, 2)),
+            frozenset((2, 3)),
+            frozenset((3, 4)),
+        ),
+    )
+
+
+def round10_relation_fixtures() -> tuple[UniformComparison, ...]:
+    return (
+        round10_k23_mixed_overlap_fixture(),
+        round10_k4_star_multichart_fixture(),
+    )
+
+
+def relation_graph_canonical_code(
+    lift_count: int,
+    *,
+    kill_relations: tuple[tuple[int, int], ...] = (),
+    slot_relations: tuple[tuple[int, int], ...] = (),
+) -> str:
+    """Return the all-vertex-permutation minimum 0/1/2 colored-edge word."""
+
+    kill = _checked_relations(lift_count, kill_relations)
+    slot = _checked_relations(lift_count, slot_relations)
+    if set(kill) & set(slot):
+        raise ValueError("one unordered pair cannot have two relation colors")
+    colors = {relation: 1 for relation in kill}
+    colors.update({relation: 2 for relation in slot})
+    words = (
+        tuple(
+            colors.get(
+                tuple(sorted((ordering[left], ordering[right]))),
+                0,
+            )
+            for left in range(lift_count)
+            for right in range(left + 1, lift_count)
+        )
+        for ordering in permutations(range(lift_count))
+    )
+    return f"{lift_count}:" + "".join(str(color) for color in min(words))
+
+
+def _relation_graph_invariant(
+    lift_count: int,
+    *,
+    kill_relations: tuple[tuple[int, int], ...] = (),
+    slot_relations: tuple[tuple[int, int], ...] = (),
+) -> dict[str, object]:
+    kill = _checked_relations(lift_count, kill_relations)
+    slot = _checked_relations(lift_count, slot_relations)
+    relations = kill + slot
+    degrees = [0 for _ in range(lift_count)]
+    adjacency = {vertex: set() for vertex in range(lift_count)}
+    for left, right in relations:
+        degrees[left] += 1
+        degrees[right] += 1
+        adjacency[left].add(right)
+        adjacency[right].add(left)
+    components = 0
+    remaining = set(range(lift_count))
+    while remaining:
+        components += 1
+        frontier = [min(remaining)]
+        reached = set(frontier)
+        while frontier:
+            current = frontier.pop()
+            for neighbour in sorted(adjacency[current] - reached):
+                reached.add(neighbour)
+                frontier.append(neighbour)
+        remaining -= reached
+    color_word = (
+        f"K^{len(kill)}" if kill and not slot else
+        f"S^{len(slot)}" if slot and not kill else
+        f"K^{len(kill)}S^{len(slot)}"
+    )
+    return {
+        "n": lift_count,
+        "m": len(relations),
+        "degrees": sorted(degrees),
+        "beta1": len(relations) - lift_count + components,
+        "colors": color_word,
+    }
+
+
+def relation_graph_support_code(
+    comparison: UniformComparison,
+    lift_count: int,
+    *,
+    kill_relations: tuple[tuple[int, int], ...] = (),
+    slot_relations: tuple[tuple[int, int], ...] = (),
+) -> str:
+    payload = {
+        "relation_graph_canonical_code": relation_graph_canonical_code(
+            lift_count,
+            kill_relations=kill_relations,
+            slot_relations=slot_relations,
+        ),
+        "coarse_chart_count": comparison.morphism.coarse.vertices,
+        "fine_chart_count": comparison.morphism.fine.vertices,
+        "coarse_chart_supports": [
+            sorted(support) for support in comparison.coarse_chart_supports
+        ],
+        "fine_chart_supports": [
+            sorted(support) for support in comparison.fine_chart_supports
+        ],
+        "factor_pi": list(comparison.factor_pi),
+        "vertex_map": list(comparison.morphism.vertex_map),
+    }
+    rendered = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return sha256(rendered.encode("ascii")).hexdigest()
+
+
+@dataclass(frozen=True)
+class RelationBlockCodeSpec:
+    lift_count: int
+    kill_relations: tuple[tuple[int, int], ...]
+    slot_relations: tuple[tuple[int, int], ...] = ()
+
+
+@dataclass(frozen=True)
+class ChartCodeSpec:
+    coarse_support: frozenset[int]
+    fine_support: frozenset[int]
+    relation_blocks: tuple[RelationBlockCodeSpec, ...] = ()
+    identity_loop_count: int = 0
+
+
+def colored_graph_support_canonical_code(
+    *,
+    factor_pi: tuple[int, ...],
+    chart_records: tuple[ChartCodeSpec, ...],
+    coarse_cell_counts: tuple[int, int, int],
+    fine_cell_counts: tuple[int, int, int],
+) -> dict[str, str]:
+    """Canonicalize lift, chart, and pi-compatible target relabelings."""
+
+    fine_target_count = len(factor_pi)
+    coarse_target_count = max(factor_pi, default=-1) + 1
+    if not (
+        coarse_target_count > 0
+        and set(factor_pi) == set(range(coarse_target_count))
+        and len(chart_records) == coarse_cell_counts[0] == fine_cell_counts[0]
+        and all(record.identity_loop_count >= 0 for record in chart_records)
+        and all(
+            set(record.coarse_support) <= set(range(coarse_target_count))
+            and set(record.fine_support) <= set(range(fine_target_count))
+            for record in chart_records
+        )
+    ):
+        raise ValueError("invalid colored graph/support canonicalization input")
+
+    block_codes = tuple(
+        tuple(
+            sorted(
+                relation_graph_canonical_code(
+                    block.lift_count,
+                    kill_relations=block.kill_relations,
+                    slot_relations=block.slot_relations,
+                )
+                for block in record.relation_blocks
+            )
+        )
+        for record in chart_records
+    )
+    fiber_profile = sorted(
+        sum(mapped == coarse for mapped in factor_pi)
+        for coarse in range(coarse_target_count)
+    )
+    candidates: list[str] = []
+    for coarse_permutation in permutations(range(coarse_target_count)):
+        for fine_permutation in permutations(range(fine_target_count)):
+            if not all(
+                coarse_permutation[factor_pi[target]]
+                == factor_pi[fine_permutation[target]]
+                for target in range(fine_target_count)
+            ):
+                continue
+            transformed_records = sorted(
+                [
+                    [
+                        sorted(
+                            coarse_permutation[target]
+                            for target in record.coarse_support
+                        ),
+                        sorted(
+                            fine_permutation[target]
+                            for target in record.fine_support
+                        ),
+                        list(block_codes[index]),
+                        record.identity_loop_count,
+                    ]
+                    for index, record in enumerate(chart_records)
+                ]
+            )
+            payload = [
+                [coarse_target_count, fine_target_count],
+                fiber_profile,
+                transformed_records,
+                [list(coarse_cell_counts), list(fine_cell_counts)],
+            ]
+            candidates.append(json.dumps(payload, separators=(",", ":")))
+    if not candidates:
+        raise AssertionError("no pi-compatible target relabeling")
+    compact_json = min(candidates)
+    return {
+        "compact_json": compact_json,
+        "sha256": sha256(compact_json.encode("ascii")).hexdigest(),
+    }
+
+
 def _required_catalog() -> tuple[UniformComparison, ...]:
     return (
         *calibration_fixtures(),
@@ -957,11 +1609,19 @@ def _core_population() -> Iterator[UniformComparison]:
                     )
 
 
-def _case_id(comparison: UniformComparison) -> str:
+def _case_semantic_payload_json(comparison: UniformComparison) -> str:
     semantic_summary = dict(comparison.summary())
     semantic_summary.pop("name")
-    payload = json.dumps(semantic_summary, sort_keys=True, separators=(",", ":"))
-    return sha256(payload.encode("utf-8")).hexdigest()[:20]
+    return json.dumps(semantic_summary, sort_keys=True, separators=(",", ":"))
+
+
+def _case_semantic_sha256(comparison: UniformComparison) -> str:
+    payload = _case_semantic_payload_json(comparison)
+    return sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _case_id(comparison: UniformComparison) -> str:
+    return _case_semantic_sha256(comparison)[:20]
 
 
 def _case_result(
@@ -1488,6 +2148,1718 @@ def round7_report() -> dict[str, object]:
             "remaining_gap": "No general proof for arbitrary retained face-chain graphs.",
         },
         "coverage_limit": "One branching tree and one cycle relation graph at full Target support; arbitrary graph size and support distribution are not covered.",
+    }
+
+
+def _all_comparisons_through_round7() -> Iterator[UniformComparison]:
+    yield from _core_population()
+    yield from _required_catalog()
+    yield chain3_fixture()
+    yield unkilled_twin_fixture()
+    yield from closed_2d_expansion_fixtures()
+    yield from mixed_support_square_variants()
+    yield from round6_face_chains()
+    yield from round7_face_chain_graphs()
+
+
+def _registered_relation_graph_codes() -> dict[str, str]:
+    rows = (
+        (
+            "R6-L4-KILL",
+            4,
+            ((0, 1), (1, 2), (2, 3)),
+            (),
+        ),
+        (
+            "R6-L5-KILL",
+            5,
+            ((0, 1), (1, 2), (2, 3), (3, 4)),
+            (),
+        ),
+        (
+            "R7-B0-KILL",
+            5,
+            ((0, 1), (1, 2), (1, 3), (3, 4)),
+            (),
+        ),
+        (
+            "R7-B1-KILL",
+            4,
+            ((0, 1), (1, 2), (2, 3), (3, 0)),
+            (),
+        ),
+        (
+            "R8-L6-KILL",
+            6,
+            R8_L6_KILL_RELATIONS,
+            (),
+        ),
+        (
+            "R8-CL3-SLOT",
+            6,
+            (),
+            R8_CL3_SLOT_RELATIONS,
+        ),
+    )
+    return {
+        name: relation_graph_canonical_code(
+            lift_count,
+            kill_relations=kill,
+            slot_relations=slot,
+        )
+        for name, lift_count, kill, slot in rows
+    }
+
+
+def _all_comparisons_through_round8() -> Iterator[UniformComparison]:
+    yield from _all_comparisons_through_round7()
+    yield from round8_relation_fixtures()
+
+
+def _all_comparisons_through_round9() -> Iterator[UniformComparison]:
+    yield from _all_comparisons_through_round8()
+    yield from round9_relation_fixtures()
+
+
+def _registered_relation_graph_support_codes_through_round9(
+) -> dict[str, dict[str, str]]:
+    round6 = round6_face_chains()
+    round7 = round7_face_chain_graphs()
+    round8 = round8_relation_fixtures()
+    round9 = round9_relation_fixtures()
+    rows = (
+        (
+            "R6-L4-KILL",
+            round6[0],
+            4,
+            ((0, 1), (1, 2), (2, 3)),
+            (),
+        ),
+        (
+            "R6-L5-KILL",
+            round6[1],
+            5,
+            ((0, 1), (1, 2), (2, 3), (3, 4)),
+            (),
+        ),
+        (
+            "R7-B0-KILL",
+            round7[0],
+            5,
+            ((0, 1), (1, 2), (1, 3), (3, 4)),
+            (),
+        ),
+        (
+            "R7-B1-KILL",
+            round7[1],
+            4,
+            ((0, 1), (1, 2), (2, 3), (3, 0)),
+            (),
+        ),
+        (
+            "R8-L6-KILL",
+            round8[0],
+            6,
+            R8_L6_KILL_RELATIONS,
+            (),
+        ),
+        (
+            "R8-CL3-SLOT",
+            round8[1],
+            6,
+            (),
+            R8_CL3_SLOT_RELATIONS,
+        ),
+        (
+            "R9-DIAMOND-MIXED",
+            round9[0],
+            4,
+            R9_DIAMOND_KILL_RELATIONS,
+            R9_DIAMOND_SLOT_RELATIONS,
+        ),
+        (
+            "R9-FIGURE8-SPLIT-SUPPORT",
+            round9[1],
+            5,
+            R9_FIGURE8_KILL_RELATIONS,
+            (),
+        ),
+    )
+    return {
+        name: {
+            "relation_graph_canonical_code": relation_graph_canonical_code(
+                lift_count,
+                kill_relations=kill,
+                slot_relations=slot,
+            ),
+            "relation_graph_support_code": relation_graph_support_code(
+                comparison,
+                lift_count,
+                kill_relations=kill,
+                slot_relations=slot,
+            ),
+        }
+        for name, comparison, lift_count, kill, slot in rows
+    }
+
+
+def _comparison_cell_counts(
+    comparison: UniformComparison,
+) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+    return (
+        (
+            comparison.morphism.coarse.vertices,
+            len(comparison.morphism.coarse.edges),
+            len(comparison.morphism.coarse.faces),
+        ),
+        (
+            comparison.morphism.fine.vertices,
+            len(comparison.morphism.fine.edges),
+            len(comparison.morphism.fine.faces),
+        ),
+    )
+
+
+def _registered_colored_graph_support_codes_through_round10(
+) -> dict[str, dict[str, str]]:
+    round6 = round6_face_chains()
+    round7 = round7_face_chain_graphs()
+    round8 = round8_relation_fixtures()
+    round9 = round9_relation_fixtures()
+    round10 = round10_relation_fixtures()
+    rows = (
+        (
+            "R6-L4-KILL",
+            round6[0],
+            (
+                ChartCodeSpec(
+                    frozenset((0,)),
+                    frozenset((0,)),
+                    (RelationBlockCodeSpec(4, ((0, 1), (1, 2), (2, 3))),),
+                ),
+            ),
+        ),
+        (
+            "R6-L5-KILL",
+            round6[1],
+            (
+                ChartCodeSpec(
+                    frozenset((0,)),
+                    frozenset((0,)),
+                    (
+                        RelationBlockCodeSpec(
+                            5,
+                            ((0, 1), (1, 2), (2, 3), (3, 4)),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        (
+            "R7-B0-KILL",
+            round7[0],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (
+                        RelationBlockCodeSpec(
+                            5,
+                            ((0, 1), (1, 2), (1, 3), (3, 4)),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        (
+            "R7-B1-KILL",
+            round7[1],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (
+                        RelationBlockCodeSpec(
+                            4,
+                            ((0, 1), (1, 2), (2, 3), (3, 0)),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        (
+            "R8-L6-KILL",
+            round8[0],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (RelationBlockCodeSpec(6, R8_L6_KILL_RELATIONS),),
+                ),
+            ),
+        ),
+        (
+            "R8-CL3-SLOT",
+            round8[1],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (RelationBlockCodeSpec(6, (), R8_CL3_SLOT_RELATIONS),),
+                ),
+            ),
+        ),
+        (
+            "R9-DIAMOND-MIXED",
+            round9[0],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2, 3)),
+                    frozenset((0, 1, 2, 3, 4)),
+                    (
+                        RelationBlockCodeSpec(
+                            4,
+                            R9_DIAMOND_KILL_RELATIONS,
+                            R9_DIAMOND_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        (
+            "R9-FIGURE8-SPLIT-SUPPORT",
+            round9[1],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1)),
+                    frozenset((0, 1, 2)),
+                    (RelationBlockCodeSpec(5, R9_FIGURE8_KILL_RELATIONS),),
+                ),
+                ChartCodeSpec(
+                    frozenset((2, 3)),
+                    frozenset((3, 4)),
+                    identity_loop_count=1,
+                ),
+            ),
+        ),
+        (
+            "R10-A-K23-MIXED-OVERLAP",
+            round10[0],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1, 2)),
+                    frozenset((0, 1, 2, 3)),
+                    (
+                        RelationBlockCodeSpec(
+                            5,
+                            R10_A_KILL_RELATIONS,
+                            R10_A_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+                ChartCodeSpec(
+                    frozenset((2, 3)),
+                    frozenset((3, 4)),
+                    identity_loop_count=1,
+                ),
+            ),
+        ),
+        (
+            "R10-B-K4-STAR-CHAIN-SUPPORT",
+            round10[1],
+            (
+                ChartCodeSpec(
+                    frozenset((0, 1)),
+                    frozenset((0, 1, 2)),
+                    (
+                        RelationBlockCodeSpec(
+                            4,
+                            R10_B_K4_KILL_RELATIONS,
+                            R10_B_K4_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+                ChartCodeSpec(
+                    frozenset((1, 2)),
+                    frozenset((2, 3)),
+                    (
+                        RelationBlockCodeSpec(
+                            4,
+                            R10_B_STAR_KILL_RELATIONS,
+                            R10_B_STAR_SLOT_RELATIONS,
+                        ),
+                    ),
+                ),
+                ChartCodeSpec(
+                    frozenset((2, 3)),
+                    frozenset((3, 4)),
+                    identity_loop_count=1,
+                ),
+            ),
+        ),
+    )
+    result: dict[str, dict[str, str]] = {}
+    for name, comparison, charts in rows:
+        coarse_counts, fine_counts = _comparison_cell_counts(comparison)
+        result[name] = colored_graph_support_canonical_code(
+            factor_pi=comparison.factor_pi,
+            chart_records=charts,
+            coarse_cell_counts=coarse_counts,
+            fine_cell_counts=fine_counts,
+        )
+    return result
+
+
+def round8_report() -> dict[str, object]:
+    """Run the preregistered longer-linear/circular-ladder strict expansion."""
+
+    if not (
+        CERTIFIED_SEMANTIC_ID == "R2-CSTAR-CERTIFIED-v3"
+        and CERTIFIED_SEMANTIC_SHA256
+        == "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa"
+    ):
+        raise AssertionError("Round8 candidate semantic payload drifted")
+
+    # Re-run and byte-canonically hash every registered payload before admitting
+    # either prior or new Round8 queries.
+    prior_reports = (
+        round1_report(),
+        round2_report(),
+        round3_report(),
+        round4_report(),
+        round5_report(),
+        round6_report(),
+        round7_report(),
+    )
+    actual_round_payload_sha256 = tuple(
+        _canonical_report_sha256(report) for report in prior_reports
+    )
+    _assert_registered_round_payload_hashes(actual_round_payload_sha256)
+    prior_round = prior_reports[-1]
+    prior_comparisons = tuple(_all_comparisons_through_round7())
+    prior_full_ids = tuple(
+        _case_semantic_sha256(comparison) for comparison in prior_comparisons
+    )
+    prior_short_ids = tuple(identifier[:20] for identifier in prior_full_ids)
+    if not (
+        prior_round["population"]["total_raw_cases"] == 1908
+        and len(prior_comparisons) == 1908
+        and len(set(prior_full_ids)) == 1908
+        and len(set(prior_short_ids)) == 1908
+    ):
+        raise AssertionError("Round8 prior 1908-case baseline is invalid")
+
+    fixtures = round8_relation_fixtures()
+    expansion = []
+    for comparison in fixtures:
+        case = _case_result(
+            comparison,
+            "round8_relation_grammar",
+            c5_mode="certified",
+        )
+        case["semantic_sha256"] = _case_semantic_sha256(comparison)
+        expansion.append(case)
+    expected_relations = (
+        tuple(sorted(_checked_relations(6, R8_L6_KILL_RELATIONS))),
+        tuple(sorted(_checked_relations(6, R8_CL3_SLOT_RELATIONS))),
+    )
+    expected_cells = ((1, 6, 10, 1, 11, 10), (1, 19, 9, 1, 24, 18))
+    expected_h1 = (
+        H1Analysis(1, 1, 1, True, True, True),
+        H1Analysis(10, 10, 10, True, True, True),
+    )
+    expected_invariants = (
+        {
+            "n": 6,
+            "m": 5,
+            "degrees": [1, 1, 2, 2, 2, 2],
+            "beta1": 0,
+            "colors": "K^5",
+        },
+        {
+            "n": 6,
+            "m": 9,
+            "degrees": [3, 3, 3, 3, 3, 3],
+            "beta1": 4,
+            "colors": "S^9",
+        },
+    )
+    actual_invariants = (
+        _relation_graph_invariant(
+            6,
+            kill_relations=R8_L6_KILL_RELATIONS,
+        ),
+        _relation_graph_invariant(
+            6,
+            slot_relations=R8_CL3_SLOT_RELATIONS,
+        ),
+    )
+
+    for comparison, case, cells, analysis, relations in zip(
+        fixtures,
+        expansion,
+        expected_cells,
+        expected_h1,
+        expected_relations,
+    ):
+        coarse = comparison.morphism.coarse
+        fine = comparison.morphism.fine
+        actual_cells = (
+            coarse.vertices,
+            len(coarse.edges),
+            len(coarse.faces),
+            fine.vertices,
+            len(fine.edges),
+            len(fine.faces),
+        )
+        direct_edges = tuple(
+            tuple(edge)
+            for edge in case["candidate"]["whole"]["direct_lifttwin"]["0"][
+                "direct_edges"
+            ]
+        )
+        block_analyses = comparison.block_analyses()
+        all_reductions = (
+            case["candidate"]["whole"],
+            *case["candidate"]["per_subset"],
+        )
+        if not (
+            actual_cells == cells
+            and sum(mapped == 0 for mapped in comparison.morphism.edge_map) == 6
+            and len(block_analyses) == 15
+            and all(item == analysis for _, item in block_analyses)
+            and case["uniform"]
+            and case["candidate"]["all"]
+            and direct_edges == relations
+            and all(
+                not reduction["coarse_reduction"]["removed_free_pairs"]
+                and not reduction["fine_reduction"]["removed_free_pairs"]
+                for reduction in all_reductions
+            )
+        ):
+            raise AssertionError(
+                f"Round8 fixture/modeling calibration failed: {comparison.name}"
+            )
+    if actual_invariants != expected_invariants:
+        raise AssertionError("Round8 colored relation-graph invariant mismatch")
+
+    graph_codes = _registered_relation_graph_codes()
+    if len(set(graph_codes.values())) != len(graph_codes):
+        raise AssertionError("Round6/7/8 canonical colored-graph code collision")
+
+    new_full_ids = tuple(case["semantic_sha256"] for case in expansion)
+    new_short_ids = tuple(case["id"] for case in expansion)
+    all_full_ids = prior_full_ids + new_full_ids
+    all_short_ids = prior_short_ids + new_short_ids
+    full_collision_count = len(all_full_ids) - len(set(all_full_ids))
+    truncated_collision_count = len(all_short_ids) - len(set(all_short_ids))
+    if not (
+        all(full.startswith(short) for full, short in zip(new_full_ids, new_short_ids))
+        and not (set(new_full_ids) & set(prior_full_ids))
+        and not (set(new_short_ids) & set(prior_short_ids))
+        and len(set(new_full_ids)) == len(set(new_short_ids)) == 2
+        and len(all_full_ids) == len(all_short_ids) == 1910
+        and full_collision_count == truncated_collision_count == 0
+    ):
+        raise AssertionError("Round8 semantic payload strict-expansion mismatch")
+
+    prior_counterexamples: list[dict[str, str]] = []
+    for comparison in prior_comparisons:
+        result = _case_result(comparison, "round0_through_round7", c5_mode="certified")
+        if result["sufficiency_break"] or result["necessity_break"]:
+            prior_counterexamples.append(
+                {
+                    "id": result["id"],
+                    "semantic_sha256": _case_semantic_sha256(comparison),
+                    "query": (
+                        "sufficiency_break"
+                        if result["sufficiency_break"]
+                        else "necessity_break"
+                    ),
+                }
+            )
+    if prior_counterexamples:
+        raise AssertionError("Round8 prior 1908-case query baseline is invalid")
+    new_counterexamples = [
+        case
+        for case in expansion
+        if case["sufficiency_break"] or case["necessity_break"]
+    ]
+    new_verdicts = sorted(
+        {
+            "CSTAR-not-sufficient"
+            for case in new_counterexamples
+            if case["sufficiency_break"]
+        }
+        | {
+            "CSTAR-not-necessary"
+            for case in new_counterexamples
+            if case["necessity_break"]
+        }
+    )
+    new_canonical_counterexamples = [
+        case["semantic_sha256"] for case in new_counterexamples
+    ]
+    candidate_semantic_change = False
+    additional_calibration_fixes: list[str] = []
+    progress = bool(
+        new_verdicts
+        or new_canonical_counterexamples
+        or candidate_semantic_change
+        or additional_calibration_fixes
+    )
+
+    return {
+        "round": "R2-round-8",
+        "preregistered_issue_comment": 5230713854,
+        "calibration_reset_comment": 5230709695,
+        "valid": False,
+        "invalid_reason": (
+            "Round8 query ran before final R0(e) Issue synchronization and "
+            "coordinator release"
+        ),
+        "diagnostic_zero_result": not progress,
+        "baseline_payload_sha256": {
+            f"round{index}": payload_hash
+            for index, payload_hash in enumerate(
+                actual_round_payload_sha256,
+                start=1,
+            )
+        },
+        "candidate": {
+            "semantic_id": CERTIFIED_SEMANTIC_ID,
+            "semantic_sha256": CERTIFIED_SEMANTIC_SHA256,
+            "spec": CERTIFIED_SPEC,
+        },
+        "population": {
+            "prior_raw_cases_recomputed": len(prior_comparisons),
+            "prior_full_semantic_payload_ids": len(set(prior_full_ids)),
+            "prior_truncated_semantic_payload_ids": len(set(prior_short_ids)),
+            "new_relation_grammar_cases": 2,
+            "new_full_semantic_payload_ids": list(new_full_ids),
+            "new_truncated_semantic_payload_ids": list(new_short_ids),
+            "full_sha256_collision_count": full_collision_count,
+            "truncated_20hex_collision_count": truncated_collision_count,
+            "strict_superset": True,
+            "total_raw_cases": 1910,
+            "new_A_block_queries": sum(
+                len(comparison.block_analyses()) for comparison in fixtures
+            ),
+            "all_cases_evaluated": True,
+        },
+        "canonical_colored_relation_graph_codes": graph_codes,
+        "relation_graph_invariants": {
+            comparison.name: invariant
+            for comparison, invariant in zip(fixtures, actual_invariants)
+        },
+        "queries": {
+            "prior_sufficiency_or_necessity_break_count": len(
+                prior_counterexamples
+            ),
+            "prior_counterexamples": prior_counterexamples,
+            "new_sufficiency_break_count": sum(
+                case["sufficiency_break"] for case in expansion
+            ),
+            "new_necessity_break_count": sum(
+                case["necessity_break"] for case in expansion
+            ),
+            "new_counterexample_count": len(new_counterexamples),
+            "new_counterexample_ids": [
+                case["semantic_sha256"] for case in new_counterexamples
+            ],
+        },
+        "expansion_cases": expansion,
+        "progress_audit": {
+            "new_verdicts": new_verdicts,
+            "new_canonical_nonisomorphic_counterexamples": (
+                new_canonical_counterexamples
+            ),
+            "candidate_semantic_change": candidate_semantic_change,
+            "additional_calibration_fixes": additional_calibration_fixes,
+            "progress": progress,
+            "streak_after_round": 0,
+        },
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "same_blocker_evidence": {
+            "valid_no_progress_1_of_2": False,
+            "finite_registered_graphs_close": True,
+            "remaining_gap": "No general proof for an arbitrary retained nonfree face-chain relation graph.",
+        },
+        "coverage_limit": "The two fixed full-support six-lift relation graphs (a KILL path and the SLOT circular ladder C3 x K2) plus the recomputed prior 1908 cases; arbitrary relation graphs, larger lift sets, and mixed KILL/SLOT graphs are not covered.",
+    }
+
+
+def round9_report() -> dict[str, object]:
+    """Run the preregistered mixed-color/split-support strict expansion."""
+
+    if not (
+        CERTIFIED_SEMANTIC_ID == "R2-CSTAR-CERTIFIED-v3"
+        and CERTIFIED_SEMANTIC_SHA256
+        == "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa"
+    ):
+        raise AssertionError("Round9 candidate semantic payload drifted")
+
+    r0 = r0_report()
+    r1 = r1_report()
+    round8 = round8_report()
+    r0_sha256 = _canonical_report_sha256(r0)
+    r1_sha256 = _canonical_report_sha256(r1)
+    round8_sha256 = _canonical_report_sha256(round8)
+    _assert_round9_hash_baseline(
+        r0_sha256=r0_sha256,
+        r1_sha256=r1_sha256,
+        round8_sha256=round8_sha256,
+        round8=round8,
+    )
+
+    prior_comparisons = tuple(_all_comparisons_through_round8())
+    prior_full_ids = tuple(
+        _case_semantic_sha256(comparison) for comparison in prior_comparisons
+    )
+    prior_short_ids = tuple(identifier[:20] for identifier in prior_full_ids)
+    if not (
+        len(prior_comparisons) == 1910
+        and len(set(prior_full_ids)) == 1910
+        and len(set(prior_short_ids)) == 1910
+    ):
+        raise AssertionError("Round9 prior 1910-case semantic ID baseline drift")
+
+    prior_counterexamples: list[dict[str, str]] = []
+    for comparison in prior_comparisons:
+        result = _case_result(
+            comparison,
+            "round0_through_round8",
+            c5_mode="certified",
+        )
+        if result["sufficiency_break"] or result["necessity_break"]:
+            prior_counterexamples.append(
+                {
+                    "id": result["id"],
+                    "semantic_sha256": _case_semantic_sha256(comparison),
+                    "query": (
+                        "sufficiency_break"
+                        if result["sufficiency_break"]
+                        else "necessity_break"
+                    ),
+                }
+            )
+    if prior_counterexamples:
+        raise AssertionError("Round9 prior 1910-case query baseline drift")
+
+    diamond, figure8 = round9_relation_fixtures()
+    fixtures = (diamond, figure8)
+    expansion = []
+    colored_relations = (
+        {
+            "KILL": tuple(sorted(_checked_relations(4, R9_DIAMOND_KILL_RELATIONS))),
+            "SLOT": tuple(sorted(_checked_relations(4, R9_DIAMOND_SLOT_RELATIONS))),
+        },
+        {
+            "KILL": tuple(sorted(_checked_relations(5, R9_FIGURE8_KILL_RELATIONS))),
+            "SLOT": (),
+        },
+    )
+    for comparison, registered_colors in zip(fixtures, colored_relations):
+        case = _case_result(
+            comparison,
+            "round9_relation_grammar",
+            c5_mode="certified",
+        )
+        case["semantic_sha256"] = _case_semantic_sha256(comparison)
+        actual_direct = tuple(
+            tuple(edge)
+            for edge in case["candidate"]["whole"]["direct_lifttwin"]["0"][
+                "direct_edges"
+            ]
+        )
+        registered_direct = tuple(
+            sorted(registered_colors["KILL"] + registered_colors["SLOT"])
+        )
+        case["certified_colored_adjacency"] = {
+            "KILL": [list(edge) for edge in registered_colors["KILL"]],
+            "SLOT": [list(edge) for edge in registered_colors["SLOT"]],
+            "actual_uncolored": [list(edge) for edge in actual_direct],
+            "unintended_edge_count": len(set(actual_direct) - set(registered_direct)),
+        }
+        case["all_block_h1"] = [
+            {
+                "coarse_targets_A": sorted(targets),
+                "h1": asdict(analysis),
+            }
+            for targets, analysis in comparison.block_analyses()
+        ]
+        expansion.append(case)
+
+    diamond_expected_h1 = H1Analysis(3, 3, 3, True, True, True)
+    diamond_blocks = diamond.block_analyses()
+    diamond_expected_faces = (
+        (1, 1, 1),
+        (0, 0, 1),
+        (2, 2, 2),
+        (0, 0, 2),
+        (3, 3, 3),
+        (0, 0, 3),
+        (0, 4, 5),
+        (0, 6, 7),
+    )
+    diamond_expected_fine_faces = (
+        (4, 4, 4),
+        (0, 1, 4),
+        (5, 5, 5),
+        (1, 2, 5),
+        (6, 6, 6),
+        (2, 0, 6),
+        (1, 7, 8),
+        (3, 7, 8),
+        (3, 9, 10),
+        (2, 9, 10),
+    )
+    if not (
+        diamond.morphism.coarse.vertices == diamond.morphism.fine.vertices == 1
+        and len(diamond.morphism.coarse.edges) == 8
+        and len(diamond.morphism.coarse.faces) == 8
+        and len(diamond.morphism.fine.edges) == 11
+        and len(diamond.morphism.fine.faces) == 10
+        and diamond.morphism.coarse.faces == diamond_expected_faces
+        and diamond.morphism.fine.faces == diamond_expected_fine_faces
+        and diamond.morphism.vertex_map == (0,)
+        and diamond.morphism.edge_map == (0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7)
+        and diamond.morphism.face_map == (0, 1, 2, 3, 4, 5, 6, 6, 7, 7)
+        and diamond.coarse_chart_supports == (frozenset((0, 1, 2, 3)),)
+        and diamond.fine_chart_supports == (frozenset((0, 1, 2, 3, 4)),)
+        and len(diamond_blocks) == 15
+        and all(analysis == diamond_expected_h1 for _, analysis in diamond_blocks)
+    ):
+        raise AssertionError("Round9 DIAMOND exact fixture/H1 calibration mismatch")
+
+    figure8_blocks = figure8.block_analyses()
+    first_support = frozenset((0, 1))
+    second_support = frozenset((2, 3))
+    support_distribution = {
+        "first_support_only": 0,
+        "second_support_only": 0,
+        "both_supports": 0,
+    }
+    for targets, analysis in figure8_blocks:
+        meets_first = bool(targets & first_support)
+        meets_second = bool(targets & second_support)
+        dimension = int(meets_first) + int(meets_second)
+        expected = H1Analysis(
+            dimension,
+            dimension,
+            dimension,
+            True,
+            True,
+            True,
+        )
+        if analysis != expected:
+            raise AssertionError("Round9 FIGURE8 A-block H1 calibration mismatch")
+        if meets_first and meets_second:
+            support_distribution["both_supports"] += 1
+        elif meets_first:
+            support_distribution["first_support_only"] += 1
+        elif meets_second:
+            support_distribution["second_support_only"] += 1
+    if not (
+        figure8.morphism.coarse.vertices == figure8.morphism.fine.vertices == 2
+        and len(figure8.morphism.coarse.edges) == 8
+        and len(figure8.morphism.coarse.faces) == 12
+        and len(figure8.morphism.fine.edges) == 12
+        and len(figure8.morphism.fine.faces) == 12
+        and figure8.morphism.vertex_map == (0, 1)
+        and figure8.morphism.edge_map == (0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7)
+        and figure8.morphism.face_map == tuple(range(12))
+        and figure8.coarse_chart_supports
+        == (frozenset((0, 1)), frozenset((2, 3)))
+        and figure8.fine_chart_supports
+        == (frozenset((0, 1, 2)), frozenset((3, 4)))
+        and len(figure8_blocks) == 15
+        and support_distribution
+        == {
+            "first_support_only": 3,
+            "second_support_only": 3,
+            "both_supports": 9,
+        }
+    ):
+        raise AssertionError("Round9 FIGURE8 exact fixture/support calibration mismatch")
+
+    expected_invariants = (
+        {
+            "n": 4,
+            "m": 5,
+            "degrees": [2, 2, 3, 3],
+            "beta1": 2,
+            "colors": "K^3S^2",
+        },
+        {
+            "n": 5,
+            "m": 6,
+            "degrees": [2, 2, 2, 2, 4],
+            "beta1": 2,
+            "colors": "K^6",
+        },
+    )
+    actual_invariants = (
+        _relation_graph_invariant(
+            4,
+            kill_relations=R9_DIAMOND_KILL_RELATIONS,
+            slot_relations=R9_DIAMOND_SLOT_RELATIONS,
+        ),
+        _relation_graph_invariant(
+            5,
+            kill_relations=R9_FIGURE8_KILL_RELATIONS,
+        ),
+    )
+    for case, registered_colors in zip(expansion, colored_relations):
+        registered_direct = tuple(
+            sorted(registered_colors["KILL"] + registered_colors["SLOT"])
+        )
+        actual_direct = tuple(
+            tuple(edge)
+            for edge in case["certified_colored_adjacency"]["actual_uncolored"]
+        )
+        all_reductions = (
+            case["candidate"]["whole"],
+            *case["candidate"]["per_subset"],
+        )
+        if not (
+            case["uniform"]
+            and case["candidate"]["all"]
+            and actual_direct == registered_direct
+            and case["certified_colored_adjacency"]["unintended_edge_count"] == 0
+            and all(
+                not reduction["coarse_reduction"]["removed_free_pairs"]
+                and not reduction["fine_reduction"]["removed_free_pairs"]
+                for reduction in all_reductions
+            )
+        ):
+            raise AssertionError("Round9 candidate/free-pair/adjacency calibration mismatch")
+    if actual_invariants != expected_invariants:
+        raise AssertionError("Round9 colored relation-graph invariant mismatch")
+
+    graph_support_codes = _registered_relation_graph_support_codes_through_round9()
+    graph_codes = tuple(
+        item["relation_graph_canonical_code"]
+        for item in graph_support_codes.values()
+    )
+    support_codes = tuple(
+        item["relation_graph_support_code"]
+        for item in graph_support_codes.values()
+    )
+    if not (
+        len(graph_support_codes) == 8
+        and len(set(graph_codes)) == 8
+        and len(set(support_codes)) == 8
+    ):
+        raise AssertionError("Round9 graph/support canonicalization collision")
+
+    new_full_ids = tuple(case["semantic_sha256"] for case in expansion)
+    new_short_ids = tuple(case["id"] for case in expansion)
+    all_full_ids = prior_full_ids + new_full_ids
+    all_short_ids = prior_short_ids + new_short_ids
+    full_collision_count = len(all_full_ids) - len(set(all_full_ids))
+    short_collision_count = len(all_short_ids) - len(set(all_short_ids))
+    if not (
+        all(full.startswith(short) for full, short in zip(new_full_ids, new_short_ids))
+        and not (set(new_full_ids) & set(prior_full_ids))
+        and not (set(new_short_ids) & set(prior_short_ids))
+        and len(set(new_full_ids)) == len(set(new_short_ids)) == 2
+        and len(all_full_ids) == len(all_short_ids) == 1912
+        and full_collision_count == short_collision_count == 0
+    ):
+        raise AssertionError("Round9 semantic payload strict-expansion mismatch")
+
+    new_counterexamples = [
+        case
+        for case in expansion
+        if case["sufficiency_break"] or case["necessity_break"]
+    ]
+    new_verdicts = sorted(
+        {
+            "CSTAR-not-sufficient"
+            for case in new_counterexamples
+            if case["sufficiency_break"]
+        }
+        | {
+            "CSTAR-not-necessary"
+            for case in new_counterexamples
+            if case["necessity_break"]
+        }
+    )
+    new_canonical_counterexamples = [
+        case["semantic_sha256"] for case in new_counterexamples
+    ]
+    candidate_semantic_change = False
+    additional_calibration_fixes: list[str] = []
+    progress = bool(
+        new_verdicts
+        or new_canonical_counterexamples
+        or candidate_semantic_change
+        or additional_calibration_fixes
+    )
+
+    return {
+        "round": "R2-round-9",
+        "preregistered_issue_comment": 5230824089,
+        "final_R0_calibration_comment": 5230818358,
+        "valid": True,
+        "baseline_payload_sha256": {
+            "r0": r0_sha256,
+            "r1": r1_sha256,
+            "round1_through_round7": list(REGISTERED_ROUND_PAYLOAD_SHA256),
+            "round8_diagnostic": round8_sha256,
+        },
+        "round8_diagnostic_baseline": {
+            "valid": round8["valid"],
+            "streak_after_round": round8["progress_audit"]["streak_after_round"],
+            "diagnostic_zero_result": round8["diagnostic_zero_result"],
+            "counted_in_stop_streak": False,
+        },
+        "candidate": {
+            "semantic_id": CERTIFIED_SEMANTIC_ID,
+            "semantic_sha256": CERTIFIED_SEMANTIC_SHA256,
+            "spec": CERTIFIED_SPEC,
+        },
+        "population": {
+            "prior_raw_cases_recomputed": len(prior_comparisons),
+            "prior_full_semantic_payload_ids": len(set(prior_full_ids)),
+            "prior_truncated_semantic_payload_ids": len(set(prior_short_ids)),
+            "new_relation_grammar_cases": 2,
+            "new_full_semantic_payload_ids": list(new_full_ids),
+            "new_truncated_semantic_payload_ids": list(new_short_ids),
+            "full_sha256_collision_count": full_collision_count,
+            "truncated_20hex_collision_count": short_collision_count,
+            "strict_superset": True,
+            "total_raw_cases": 1912,
+            "total_full_semantic_payload_ids": len(set(all_full_ids)),
+            "total_truncated_semantic_payload_ids": len(set(all_short_ids)),
+            "new_A_block_queries": sum(
+                len(comparison.block_analyses()) for comparison in fixtures
+            ),
+            "all_cases_evaluated": True,
+        },
+        "canonical_relation_graph_support_codes": graph_support_codes,
+        "relation_graph_invariants": {
+            comparison.name: invariant
+            for comparison, invariant in zip(fixtures, actual_invariants)
+        },
+        "figure8_A_block_distribution": support_distribution,
+        "queries": {
+            "prior_sufficiency_or_necessity_break_count": len(
+                prior_counterexamples
+            ),
+            "prior_counterexamples": prior_counterexamples,
+            "new_sufficiency_break_count": sum(
+                case["sufficiency_break"] for case in expansion
+            ),
+            "new_necessity_break_count": sum(
+                case["necessity_break"] for case in expansion
+            ),
+            "new_counterexample_count": len(new_counterexamples),
+            "new_counterexample_ids": [
+                case["semantic_sha256"] for case in new_counterexamples
+            ],
+        },
+        "expansion_cases": expansion,
+        "progress_audit": {
+            "new_verdicts": new_verdicts,
+            "new_canonical_nonisomorphic_counterexamples": (
+                new_canonical_counterexamples
+            ),
+            "candidate_semantic_change": candidate_semantic_change,
+            "additional_calibration_fixes": additional_calibration_fixes,
+            "progress": progress,
+            "streak_after_round": 0 if progress else 1,
+        },
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "same_blocker_evidence": {
+            "valid_no_progress_1_of_2": not progress,
+            "finite_mixed_or_split_support_cases_close": True,
+            "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs and arbitrary support distributions.",
+        },
+        "coverage_limit": "The fixed mixed-color diamond and one fixed split-support figure-eight, plus the recomputed prior 1910 cases; arbitrary graph size, certificate coloring, face multiplicity, and support distribution are not covered.",
+    }
+
+
+def _normalized_direct_edges(
+    case: dict[str, object],
+    coarse_edge: int,
+) -> tuple[tuple[int, int], ...]:
+    detail = case["candidate"]["whole"]["direct_lifttwin"][str(coarse_edge)]
+    lifts = tuple(detail["lifts"])
+    local_index = {lift: index for index, lift in enumerate(lifts)}
+    return tuple(
+        sorted(
+            (local_index[left], local_index[right])
+            for left, right in detail["direct_edges"]
+        )
+    )
+
+
+def _target_relabelled_chart_records(
+    chart_records: tuple[ChartCodeSpec, ...],
+    *,
+    coarse_permutation: tuple[int, ...],
+    fine_permutation: tuple[int, ...],
+) -> tuple[ChartCodeSpec, ...]:
+    return tuple(
+        ChartCodeSpec(
+            frozenset(
+                coarse_permutation[target]
+                for target in record.coarse_support
+            ),
+            frozenset(
+                fine_permutation[target]
+                for target in record.fine_support
+            ),
+            record.relation_blocks,
+            record.identity_loop_count,
+        )
+        for record in chart_records
+    )
+
+
+def round10_report() -> dict[str, object]:
+    """Run the preregistered K2,3/K4+star multichart expansion."""
+
+    if not (
+        CERTIFIED_SEMANTIC_ID == "R2-CSTAR-CERTIFIED-v3"
+        and CERTIFIED_SEMANTIC_SHA256
+        == "cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa"
+    ):
+        raise AssertionError("Round10 candidate semantic payload drifted")
+
+    # The complete registered Round9 payload is the query-admission gate.  A
+    # drift, a nonzero prior query, or loss of the first valid no-progress
+    # observation stops this round before any Round10 fixture is evaluated.
+    round9 = round9_report()
+    round9_sha256 = _canonical_report_sha256(round9)
+    _assert_round10_hash_baseline(
+        round9_sha256=round9_sha256,
+        round9=round9,
+    )
+
+    prior_comparisons = tuple(_all_comparisons_through_round9())
+    prior_full_ids = tuple(
+        _case_semantic_sha256(comparison) for comparison in prior_comparisons
+    )
+    prior_short_ids = tuple(identifier[:20] for identifier in prior_full_ids)
+    if not (
+        len(prior_comparisons) == 1912
+        and len(set(prior_full_ids)) == 1912
+        and len(set(prior_short_ids)) == 1912
+    ):
+        raise AssertionError("Round10 prior 1912-case semantic ID baseline drift")
+
+    prior_counterexamples: list[dict[str, str]] = []
+    for comparison in prior_comparisons:
+        result = _case_result(
+            comparison,
+            "round0_through_round9",
+            c5_mode="certified",
+        )
+        if result["sufficiency_break"] or result["necessity_break"]:
+            prior_counterexamples.append(
+                {
+                    "id": result["id"],
+                    "semantic_sha256": _case_semantic_sha256(comparison),
+                    "query": (
+                        "sufficiency_break"
+                        if result["sufficiency_break"]
+                        else "necessity_break"
+                    ),
+                }
+            )
+    if prior_counterexamples:
+        raise AssertionError("Round10 prior 1912-case query baseline drift")
+
+    k23, k4_star = round10_relation_fixtures()
+    fixtures = (k23, k4_star)
+    expansion: list[dict[str, object]] = []
+    for comparison in fixtures:
+        case = _case_result(
+            comparison,
+            "round10_multichart_relation_grammar",
+            c5_mode="certified",
+        )
+        case["semantic_payload_json"] = _case_semantic_payload_json(comparison)
+        case["semantic_sha256"] = _case_semantic_sha256(comparison)
+        if sha256(case["semantic_payload_json"].encode("utf-8")).hexdigest() != case[
+            "semantic_sha256"
+        ]:
+            raise AssertionError("Round10 full semantic JSON/SHA mismatch")
+        case["all_block_h1"] = [
+            {
+                "coarse_targets_A": sorted(targets),
+                "h1": asdict(analysis),
+            }
+            for targets, analysis in comparison.block_analyses()
+        ]
+        expansion.append(case)
+
+    k23_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (0, 4, 5), (0, 6, 7), (0, 8, 9),
+    )
+    k23_expected_fine_faces = (
+        (5, 5, 5), (0, 2, 5),
+        (6, 6, 6), (0, 3, 6),
+        (7, 7, 7), (1, 4, 7),
+        (0, 8, 9), (4, 8, 9),
+        (1, 10, 11), (2, 10, 11),
+        (1, 12, 13), (3, 12, 13),
+    )
+    if not (
+        _comparison_cell_counts(k23) == ((2, 11, 9), (2, 15, 12))
+        and k23.morphism.coarse.faces == k23_expected_coarse_faces
+        and k23.morphism.fine.faces == k23_expected_fine_faces
+        and k23.morphism.vertex_map == (0, 1)
+        and k23.morphism.edge_map
+        == (0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        and k23.morphism.face_map
+        == (0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8)
+        and k23.coarse_target_count == 4
+        and k23.fine_target_count == 5
+        and k23.factor_pi == (0, 0, 1, 2, 3)
+        and k23.coarse_chart_supports
+        == (frozenset((0, 1, 2)), frozenset((2, 3)))
+        and k23.fine_chart_supports
+        == (frozenset((0, 1, 2, 3)), frozenset((3, 4)))
+    ):
+        raise AssertionError("Round10 K2,3 exact fixture calibration mismatch")
+
+    k4_star_expected_coarse_faces = (
+        (1, 1, 1), (0, 0, 1),
+        (2, 2, 2), (0, 0, 2),
+        (3, 3, 3), (0, 0, 3),
+        (0, 4, 5), (0, 6, 7), (0, 8, 9),
+        (11, 11, 11), (10, 10, 11),
+        (10, 12, 13), (10, 14, 15),
+    )
+    k4_star_expected_fine_faces = (
+        (4, 4, 4), (0, 1, 4),
+        (5, 5, 5), (1, 2, 5),
+        (6, 6, 6), (2, 0, 6),
+        (0, 7, 8), (3, 7, 8),
+        (1, 9, 10), (3, 9, 10),
+        (2, 11, 12), (3, 11, 12),
+        (17, 17, 17), (13, 14, 17),
+        (13, 18, 19), (15, 18, 19),
+        (13, 20, 21), (16, 20, 21),
+    )
+    if not (
+        _comparison_cell_counts(k4_star) == ((3, 17, 13), (3, 23, 18))
+        and k4_star.morphism.coarse.faces == k4_star_expected_coarse_faces
+        and k4_star.morphism.fine.faces == k4_star_expected_fine_faces
+        and k4_star.morphism.vertex_map == (0, 1, 2)
+        and k4_star.morphism.edge_map
+        == (
+            0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            10, 10, 10, 10, 11, 12, 13, 14, 15, 16,
+        )
+        and k4_star.morphism.face_map
+        == (0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 12)
+        and k4_star.coarse_target_count == 4
+        and k4_star.fine_target_count == 5
+        and k4_star.factor_pi == (0, 0, 1, 2, 3)
+        and k4_star.coarse_chart_supports
+        == (
+            frozenset((0, 1)),
+            frozenset((1, 2)),
+            frozenset((2, 3)),
+        )
+        and k4_star.fine_chart_supports
+        == (
+            frozenset((0, 1, 2)),
+            frozenset((2, 3)),
+            frozenset((3, 4)),
+        )
+    ):
+        raise AssertionError("Round10 K4+star exact fixture calibration mismatch")
+
+    h1_expected_tables: dict[str, list[dict[str, object]]] = {}
+    h1_dimension_histograms: dict[str, dict[str, int]] = {}
+    k23_first_support = frozenset((0, 1, 2))
+    k23_second_support = frozenset((2, 3))
+    k4_star_expected_dimensions = {
+        frozenset((0,)): 4,
+        frozenset((1,)): 7,
+        frozenset((2,)): 4,
+        frozenset((3,)): 1,
+        frozenset((0, 1)): 7,
+        frozenset((0, 2)): 8,
+        frozenset((0, 3)): 5,
+        frozenset((1, 2)): 8,
+        frozenset((1, 3)): 8,
+        frozenset((2, 3)): 4,
+        frozenset((0, 1, 2)): 8,
+        frozenset((0, 1, 3)): 8,
+        frozenset((0, 2, 3)): 8,
+        frozenset((1, 2, 3)): 8,
+        frozenset((0, 1, 2, 3)): 8,
+    }
+    expected_histograms = (
+        {"1": 1, "4": 3, "5": 11},
+        {"1": 1, "4": 3, "5": 1, "7": 2, "8": 8},
+    )
+    for fixture_index, comparison in enumerate(fixtures):
+        table: list[dict[str, object]] = []
+        histogram: dict[str, int] = {}
+        blocks = comparison.block_analyses()
+        if len(blocks) != 15:
+            raise AssertionError("Round10 fixture did not enumerate all 15 A")
+        for targets, analysis in blocks:
+            expected_dimension = (
+                4 * int(bool(targets & k23_first_support))
+                + int(bool(targets & k23_second_support))
+                if fixture_index == 0
+                else k4_star_expected_dimensions[targets]
+            )
+            expected = H1Analysis(
+                expected_dimension,
+                expected_dimension,
+                expected_dimension,
+                True,
+                True,
+                True,
+            )
+            if analysis != expected:
+                raise AssertionError("Round10 exact A-block H1 calibration mismatch")
+            dimension_key = str(expected_dimension)
+            histogram[dimension_key] = histogram.get(dimension_key, 0) + 1
+            table.append(
+                {
+                    "coarse_targets_A": sorted(targets),
+                    "expected_h1": asdict(expected),
+                }
+            )
+        if histogram != expected_histograms[fixture_index]:
+            raise AssertionError("Round10 A-block H1 histogram mismatch")
+        h1_expected_tables[comparison.name] = table
+        h1_dimension_histograms[comparison.name] = histogram
+
+    registered_colored_adjacencies = (
+        {
+            "K23": {
+                "coarse_edge": 0,
+                "KILL": tuple(sorted(_checked_relations(5, R10_A_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(5, R10_A_SLOT_RELATIONS))),
+            },
+        },
+        {
+            "K4": {
+                "coarse_edge": 0,
+                "KILL": tuple(sorted(_checked_relations(4, R10_B_K4_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(4, R10_B_K4_SLOT_RELATIONS))),
+            },
+            "STAR": {
+                "coarse_edge": 10,
+                "KILL": tuple(sorted(_checked_relations(4, R10_B_STAR_KILL_RELATIONS))),
+                "SLOT": tuple(sorted(_checked_relations(4, R10_B_STAR_SLOT_RELATIONS))),
+            },
+        },
+    )
+    for fixture_index, (comparison, case) in enumerate(zip(fixtures, expansion)):
+        adjacency_report: dict[str, dict[str, object]] = {}
+        for block_name, registered in registered_colored_adjacencies[
+            fixture_index
+        ].items():
+            registered_edges = tuple(
+                sorted(registered["KILL"] + registered["SLOT"])
+            )
+            actual_edges = _normalized_direct_edges(
+                case,
+                registered["coarse_edge"],
+            )
+            adjacency_report[block_name] = {
+                "coarse_edge": registered["coarse_edge"],
+                "KILL": [list(edge) for edge in registered["KILL"]],
+                "SLOT": [list(edge) for edge in registered["SLOT"]],
+                "actual_uncolored": [list(edge) for edge in actual_edges],
+                "unintended_edge_count": len(
+                    set(actual_edges) - set(registered_edges)
+                ),
+            }
+            if actual_edges != registered_edges:
+                raise AssertionError("Round10 exact colored adjacency mismatch")
+        case["certified_colored_adjacency"] = adjacency_report
+
+        whole_details = case["candidate"]["whole"]["direct_lifttwin"]
+        nontrivial_edges = {
+            registered["coarse_edge"]
+            for registered in registered_colored_adjacencies[fixture_index].values()
+        }
+        auxiliary_details = tuple(
+            detail
+            for edge, detail in whole_details.items()
+            if int(edge) not in nontrivial_edges
+        )
+        all_reductions = (
+            case["candidate"]["whole"],
+            *case["candidate"]["per_subset"],
+        )
+        if not (
+            case["uniform"]
+            and case["candidate"]["all"]
+            and all(case["candidate"]["aggregate"].values())
+            and len(case["candidate"]["per_subset"]) == 15
+            and all(
+                not reduction["coarse_reduction"]["removed_free_pairs"]
+                and not reduction["fine_reduction"]["removed_free_pairs"]
+                for reduction in all_reductions
+            )
+            and len(whole_details) == len(comparison.morphism.coarse.edges)
+            and all(
+                len(detail["lifts"]) == 1
+                and detail["direct_edges"] == []
+                and len(detail["components"]) == 1
+                for detail in auxiliary_details
+            )
+        ):
+            raise AssertionError("Round10 C*/free-pair/auxiliary-lift mismatch")
+
+    expected_relation_invariants = {
+        "R10-A-K23-MIXED-OVERLAP": {
+            "K23": {
+                "n": 5,
+                "m": 6,
+                "degrees": [2, 2, 2, 3, 3],
+                "beta1": 2,
+                "colors": "K^3S^3",
+            },
+        },
+        "R10-B-K4-STAR-CHAIN-SUPPORT": {
+            "K4": {
+                "n": 4,
+                "m": 6,
+                "degrees": [3, 3, 3, 3],
+                "beta1": 3,
+                "colors": "K^3S^3",
+            },
+            "STAR": {
+                "n": 4,
+                "m": 3,
+                "degrees": [1, 1, 1, 3],
+                "beta1": 0,
+                "colors": "K^1S^2",
+            },
+        },
+    }
+    actual_relation_invariants = {
+        k23.name: {
+            "K23": _relation_graph_invariant(
+                5,
+                kill_relations=R10_A_KILL_RELATIONS,
+                slot_relations=R10_A_SLOT_RELATIONS,
+            ),
+        },
+        k4_star.name: {
+            "K4": _relation_graph_invariant(
+                4,
+                kill_relations=R10_B_K4_KILL_RELATIONS,
+                slot_relations=R10_B_K4_SLOT_RELATIONS,
+            ),
+            "STAR": _relation_graph_invariant(
+                4,
+                kill_relations=R10_B_STAR_KILL_RELATIONS,
+                slot_relations=R10_B_STAR_SLOT_RELATIONS,
+            ),
+        },
+    }
+    if actual_relation_invariants != expected_relation_invariants:
+        raise AssertionError("Round10 colored relation invariant mismatch")
+
+    graph_support_codes = _registered_colored_graph_support_codes_through_round10()
+    graph_full_ids = tuple(item["sha256"] for item in graph_support_codes.values())
+    graph_short_ids = tuple(identifier[:20] for identifier in graph_full_ids)
+    graph_payloads = tuple(
+        item["compact_json"] for item in graph_support_codes.values()
+    )
+    if not (
+        len(graph_support_codes) == 10
+        and len(set(graph_full_ids)) == 10
+        and len(set(graph_short_ids)) == 10
+        and len(set(graph_payloads)) == 10
+    ):
+        raise AssertionError("Round10 graph/support canonicalization collision")
+
+    k23_charts = (
+        ChartCodeSpec(
+            frozenset((0, 1, 2)),
+            frozenset((0, 1, 2, 3)),
+            (
+                RelationBlockCodeSpec(
+                    5,
+                    R10_A_KILL_RELATIONS,
+                    R10_A_SLOT_RELATIONS,
+                ),
+            ),
+        ),
+        ChartCodeSpec(
+            frozenset((2, 3)),
+            frozenset((3, 4)),
+            identity_loop_count=1,
+        ),
+    )
+    k4_star_charts = (
+        ChartCodeSpec(
+            frozenset((0, 1)),
+            frozenset((0, 1, 2)),
+            (
+                RelationBlockCodeSpec(
+                    4,
+                    R10_B_K4_KILL_RELATIONS,
+                    R10_B_K4_SLOT_RELATIONS,
+                ),
+            ),
+        ),
+        ChartCodeSpec(
+            frozenset((1, 2)),
+            frozenset((2, 3)),
+            (
+                RelationBlockCodeSpec(
+                    4,
+                    R10_B_STAR_KILL_RELATIONS,
+                    R10_B_STAR_SLOT_RELATIONS,
+                ),
+            ),
+        ),
+        ChartCodeSpec(
+            frozenset((2, 3)),
+            frozenset((3, 4)),
+            identity_loop_count=1,
+        ),
+    )
+    k23_base_code = graph_support_codes[k23.name]
+    k4_star_base_code = graph_support_codes[k4_star.name]
+    lift_relabel = (4, 2, 0, 3, 1)
+    lift_relabelled_charts = (
+        ChartCodeSpec(
+            k23_charts[0].coarse_support,
+            k23_charts[0].fine_support,
+            (
+                RelationBlockCodeSpec(
+                    5,
+                    tuple(
+                        (lift_relabel[left], lift_relabel[right])
+                        for left, right in R10_A_KILL_RELATIONS
+                    ),
+                    tuple(
+                        (lift_relabel[left], lift_relabel[right])
+                        for left, right in R10_A_SLOT_RELATIONS
+                    ),
+                ),
+            ),
+        ),
+        k23_charts[1],
+    )
+    lift_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=k23.factor_pi,
+        chart_records=lift_relabelled_charts,
+        coarse_cell_counts=(2, 11, 9),
+        fine_cell_counts=(2, 15, 12),
+    )
+    chart_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=k4_star.factor_pi,
+        chart_records=tuple(reversed(k4_star_charts)),
+        coarse_cell_counts=(3, 17, 13),
+        fine_cell_counts=(3, 23, 18),
+    )
+    target_relabelled_code = colored_graph_support_canonical_code(
+        factor_pi=k4_star.factor_pi,
+        chart_records=_target_relabelled_chart_records(
+            k4_star_charts,
+            coarse_permutation=(0, 2, 1, 3),
+            fine_permutation=(0, 1, 3, 2, 4),
+        ),
+        coarse_cell_counts=(3, 17, 13),
+        fine_cell_counts=(3, 23, 18),
+    )
+    support_drift_code = colored_graph_support_canonical_code(
+        factor_pi=k23.factor_pi,
+        chart_records=(
+            ChartCodeSpec(
+                frozenset((0, 1)),
+                frozenset((0, 1, 2)),
+                k23_charts[0].relation_blocks,
+            ),
+            k23_charts[1],
+        ),
+        coarse_cell_counts=(2, 11, 9),
+        fine_cell_counts=(2, 15, 12),
+    )
+    if not (
+        lift_relabelled_code == k23_base_code
+        and chart_relabelled_code == k4_star_base_code
+        and target_relabelled_code == k4_star_base_code
+        and support_drift_code != k23_base_code
+        and len(k4_star_charts) == 3
+        and sum(bool(chart.relation_blocks) for chart in k4_star_charts) == 2
+    ):
+        raise AssertionError("Round10 graph/support relabel or drift calibration mismatch")
+
+    new_full_ids = tuple(case["semantic_sha256"] for case in expansion)
+    new_short_ids = tuple(case["id"] for case in expansion)
+    all_full_ids = prior_full_ids + new_full_ids
+    all_short_ids = prior_short_ids + new_short_ids
+    full_collision_count = len(all_full_ids) - len(set(all_full_ids))
+    short_collision_count = len(all_short_ids) - len(set(all_short_ids))
+    if not (
+        all(full.startswith(short) for full, short in zip(new_full_ids, new_short_ids))
+        and not (set(new_full_ids) & set(prior_full_ids))
+        and not (set(new_short_ids) & set(prior_short_ids))
+        and len(set(new_full_ids)) == len(set(new_short_ids)) == 2
+        and len(all_full_ids) == len(all_short_ids) == 1914
+        and full_collision_count == short_collision_count == 0
+    ):
+        raise AssertionError("Round10 semantic payload strict-expansion mismatch")
+
+    new_counterexamples = [
+        case
+        for case in expansion
+        if case["sufficiency_break"] or case["necessity_break"]
+    ]
+    new_verdicts = sorted(
+        {
+            "CSTAR-not-sufficient"
+            for case in new_counterexamples
+            if case["sufficiency_break"]
+        }
+        | {
+            "CSTAR-not-necessary"
+            for case in new_counterexamples
+            if case["necessity_break"]
+        }
+    )
+    new_canonical_counterexamples = [
+        case["semantic_sha256"] for case in new_counterexamples
+    ]
+    candidate_semantic_change = False
+    additional_calibration_fixes: list[str] = []
+    progress = bool(
+        new_verdicts
+        or new_canonical_counterexamples
+        or candidate_semantic_change
+        or additional_calibration_fixes
+    )
+    stop_condition_c = not progress
+
+    return {
+        "round": "R2-round-10",
+        "preregistered_issue_comment": 5230881464,
+        "final_R0_calibration_comment": 5230818358,
+        "round9_result_comment": ROUND9_RESULT_ISSUE_COMMENT,
+        "valid": True,
+        "baseline_payload_sha256": {
+            "r0": FINAL_R0_SEMANTIC_SHA256,
+            "r1": FINAL_R1_SEMANTIC_SHA256,
+            "round1_through_round7": list(REGISTERED_ROUND_PAYLOAD_SHA256),
+            "round8_diagnostic": ROUND8_DIAGNOSTIC_PAYLOAD_SHA256,
+            "round9_valid": round9_sha256,
+        },
+        "round8_diagnostic_baseline": {
+            "valid": False,
+            "counted_in_stop_streak": False,
+        },
+        "round9_valid_baseline": {
+            "valid": round9["valid"],
+            "streak_after_round": round9["progress_audit"]["streak_after_round"],
+            "valid_no_progress_1_of_2": round9["same_blocker_evidence"][
+                "valid_no_progress_1_of_2"
+            ],
+        },
+        "candidate": {
+            "semantic_id": CERTIFIED_SEMANTIC_ID,
+            "semantic_sha256": CERTIFIED_SEMANTIC_SHA256,
+            "spec": CERTIFIED_SPEC,
+        },
+        "population": {
+            "prior_raw_cases_recomputed": len(prior_comparisons),
+            "prior_full_semantic_payload_ids": len(set(prior_full_ids)),
+            "prior_truncated_semantic_payload_ids": len(set(prior_short_ids)),
+            "new_multichart_relation_cases": 2,
+            "new_full_semantic_payload_ids": list(new_full_ids),
+            "new_truncated_semantic_payload_ids": list(new_short_ids),
+            "full_sha256_collision_count": full_collision_count,
+            "truncated_20hex_collision_count": short_collision_count,
+            "strict_superset": True,
+            "total_raw_cases": 1914,
+            "total_full_semantic_payload_ids": len(set(all_full_ids)),
+            "total_truncated_semantic_payload_ids": len(set(all_short_ids)),
+            "new_A_block_queries": sum(
+                len(comparison.block_analyses()) for comparison in fixtures
+            ),
+            "all_cases_evaluated": True,
+        },
+        "canonical_colored_graph_support_codes": {
+            name: {
+                **code,
+                "id20": code["sha256"][:20],
+            }
+            for name, code in graph_support_codes.items()
+        },
+        "canonical_code_audit": {
+            "prior_registered_code_count": 8,
+            "new_registered_code_count": 2,
+            "registered_code_count": len(graph_support_codes),
+            "full_sha256_collision_count": len(graph_full_ids) - len(set(graph_full_ids)),
+            "truncated_20hex_collision_count": len(graph_short_ids) - len(set(graph_short_ids)),
+            "compact_json_collision_count": len(graph_payloads) - len(set(graph_payloads)),
+            "lift_relabel_invariant": lift_relabelled_code == k23_base_code,
+            "chart_relabel_invariant": chart_relabelled_code == k4_star_base_code,
+            "target_relabel_invariant": target_relabelled_code == k4_star_base_code,
+            "support_drift_detected": support_drift_code != k23_base_code,
+            "strict_new": True,
+        },
+        "relation_graph_invariants": actual_relation_invariants,
+        "A_block_expected_h1": h1_expected_tables,
+        "A_block_dimension_histograms": h1_dimension_histograms,
+        "queries": {
+            "prior_sufficiency_or_necessity_break_count": len(
+                prior_counterexamples
+            ),
+            "prior_counterexamples": prior_counterexamples,
+            "new_sufficiency_break_count": sum(
+                case["sufficiency_break"] for case in expansion
+            ),
+            "new_necessity_break_count": sum(
+                case["necessity_break"] for case in expansion
+            ),
+            "new_counterexample_count": len(new_counterexamples),
+            "new_counterexample_ids": [
+                case["semantic_sha256"] for case in new_counterexamples
+            ],
+        },
+        "expansion_cases": expansion,
+        "progress_audit": {
+            "new_verdicts": new_verdicts,
+            "new_canonical_nonisomorphic_counterexamples": (
+                new_canonical_counterexamples
+            ),
+            "candidate_semantic_change": candidate_semantic_change,
+            "additional_calibration_fixes": additional_calibration_fixes,
+            "progress": progress,
+            "streak_after_round": 0 if progress else 2,
+        },
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "same_blocker_evidence": {
+            "valid_no_progress_2_of_2": not progress,
+            "finite_multichart_relation_cases_close": True,
+            "remaining_gap": "No general proof for arbitrary retained nonfree face-chain graphs and arbitrary compatible multichart support distributions.",
+        },
+        "stop_audit": {
+            "stop_condition_A_completion": False,
+            "stop_condition_B_finite_exhaustion": False,
+            "stop_condition_C_two_valid_same_blocker_no_progress": stop_condition_c,
+            "terminal_reason": (
+                "Stop-C: two consecutive valid same-blocker no-progress rounds"
+                if stop_condition_c
+                else None
+            ),
+        },
+        "coverage_limit": "The exact K2,3 mixed overlap-support fixture and exact K4-plus-star three-chart chain-support fixture, all 15 nonempty A for each, plus the recomputed prior 1912 cases. Cross-chart nonloop edges or faces, arbitrary graph size and coloring, arbitrary face multiplicity, and arbitrary compatible support distributions remain outside this finite coverage.",
     }
 
 
