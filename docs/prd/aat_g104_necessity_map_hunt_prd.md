@@ -222,7 +222,8 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 3. 非退化正例: C\* を満たし G-104 (v) 相当の発火条件(π 非単射・両側 H¹ 非零・
    2元以上の fiber・C4 / C5 / C6 非空虚・値分配で subnerve ≠ 全体)を伴う正例を
    少なくとも1つ固定する。
-4. report・results.json・README(off-loop 注記)を整備する。
+4. report・commit対象のresults summary・full results.jsonのcanonical生成契約・
+   README(off-loop 注記)を整備する。
 
 ## 停止条件と終端(どれかに達したら報告して停止)
 
@@ -279,13 +280,14 @@ closeout で実施する。
    (第二段の GOAL カードにそのまま書ける形)が固定されている。
 4. C\* 候補(中間候補を含む)に cohomological 条項が混入していない
    (R2-4 の資格制限)。
-5. 成果物一式(engine、tests、results.json、report、README)が
-   `research/experiments/g104-necessity-map/` に置かれ、README 冒頭に
+5. 成果物一式(engine、tests、commit対象のresults summary、report、README)が
+   `research/experiments/g104-necessity-map/` に置かれ、full results.jsonの
+   canonical generatorが同じartifact内にあり、README 冒頭に
    「off-loop 探索 artifact であり、GOAL 完了の証拠ではない」と明記されている。
-6. 再現契約: results.json が決定的に再現される(再実行で SHA-256 一致)。
-   canonical 生成コマンド、固定入力と bound、乱数不使用(使用する場合は seed
-   固定)、serialization 規約(key 順序・数値表現)、期待 hash の記載場所
-   (README と report)を必須項目とする。
+6. 再現契約: commit対象のresults summaryとrepo外で生成するfull results.jsonが
+   ともに決定的に再現される(再実行で各SHA-256一致)。両artifactのcanonical生成
+   コマンド、固定入力と bound、乱数不使用(使用する場合は seed固定)、serialization
+   規約(key 順序・数値表現)、各期待hashの記載場所(README と report)を必須項目とする。
 7. 変更禁止対象(`research/experiments/g104-condition-hunt/`、G-104 カード、
    `research/reports/`、`research/lean/ResearchLean/` 配下)に diff がない。
 8. 成果 PR 1本が **non-draft** で、固定 head へのレビューと CI green を経て
@@ -297,8 +299,9 @@ closeout で実施する。
 checkpoint の受理は task 完了・Issue close・PRD 削除のいずれの根拠にもならない
 (PRD は改訂対象として残り、Issue は open のまま人間裁定を待つ)。
 
-- 共通: completion AC の 5(成果物と README 注記)・6(再現契約。得られた
-  範囲の results に適用)・7(変更禁止対象)と日本語規律を同水準で満たす。
+- 共通: completion AC の 5(commit対象のresults summary、full results.json生成契約、
+  成果物と README 注記)・6(summaryとfull JSONの再現契約。得られた範囲のresultsに
+  適用)・7(変更禁止対象)と日本語規律を同水準で満たす。
   checkpoint の提出 PR は draft でよい。
 - C 終端: 停滞点までの partial verdict 地図+blocker の特定+coverage limit が
   report にある(停止条件節の監査単位の記録で裏づける)。pre-R1 停止
