@@ -223,8 +223,10 @@ H¹-neutral になることであり、現行条項そのものを必要条件�
    retained FaceTwin class liftを要求する。
 5. C5*/C6* は fine edge lift の syntactic swap relationを使う。
 
-候補定義に H¹、comparison rank、kernel/cokernel、全 A comparison の全単射を使わない。
-H¹ は候補とは独立な二方向 query のラベルとしてだけ計算する。
+候補定義に global / A-block H¹、comparison rank、global kernel/cokernel、全 A
+comparison の全単射を使わない。唯一の例外はPRDが許可した C3* の局所 fiber
+cycle/boundary linear algebraである。global / A-block H¹ とcomparison rankは、候補とは
+独立な二方向 query のラベルとしてだけ計算する。
 
 ### progress round
 

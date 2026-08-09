@@ -2,8 +2,9 @@
 """Deterministic R2 candidate evaluation for the G-104 necessity map.
 
 The predicates in this module use only finite incidence, derived Target
-supports, and the partial cell map.  Cohomology is used only by the two
-counterexample queries, never by the candidate clauses themselves.
+supports, and the partial cell map.  The sole local linear-algebra exception is
+the preregistered C3 fiber cycle/boundary test; global or A-block H1 and the
+comparison rank are used only by the two counterexample queries.
 """
 
 from __future__ import annotations
