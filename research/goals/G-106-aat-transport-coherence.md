@@ -7,22 +7,34 @@
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
   proved-in-research artifact(`Doct_U` / `transportAlong` / opcartesian
   普遍性。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
-  unported)を土台として参照する。確定事項3点(下記)は固定済みであり、
+  unported)を土台として参照する。確定事項4点(下記)は固定済みであり、
   active 昇格は人間の判断による。
 - `tracking issue`: 未起票(active 昇格時に起票する)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
 - `確定事項`: 次の4点を固定した。active 昇格は人間の判断のみを残す。
-  (1) **2-障害の係数系**: 合成可能な三つ組ごとの **raw defect** を、その
-    合成の終点 package の **fiber 内自己同型群**に値を取るデータとして
-    定義する。与えられた比較射族の二通りの結合の差は、opcartesian
-    普遍性(G-101)により一意の fiber 自己同型として測れる。辺に沿う
-    作用は transport による共役(whiskering)で固定し、積順序は後続
-    合成を左に固定する。cocycle 等式は三重合成の二通り評価の一致として
-    立てる。reselection(coboundary)は合成可能対ごとの fiber 自己同型
-    割当による比較射族の書き換えとして定義する。**消滅は raw 2-cochain
-    が reselection 作用の orbit で恒等 cochain に到達すること**として、
-    coherent 化可能とは独立の述語で定義する — (iii) は定義展開ではなく、
-    この orbit 述語と coherence 等式系の同時可解の同値として証明する。
+  (1) **2-障害の係数系(次数契約込み)**: データの置き場を図式の次数で
+    固定する。
+    - **辺(morphism)**: opcartesian lift(確定事項 (4))。
+    - **合成可能対**: 入力の **comparator** `c_{τ,σ} : F_τ ∘ F_σ ≅ F_{τσ}`
+      (fiber 同型。確定事項 (4))。
+    - **合成可能三つ組**: **raw defect**。三つ組の二通りの結合を
+      comparator で評価した差を、opcartesian 普遍性(G-101)により
+      三つ組の終点 package の **fiber 内自己同型**として測る。これが
+      raw 2-cochain である。
+    - **合成可能四つ組**: **cocycle 等式**。raw defect の整合式は
+      四つ組上で立てる。
+    - **reselection(coboundary)**: **辺ごと**の fiber 自己同型割当
+      (1-cochain)が誘導する comparator の書き換え(隣接する対の
+      comparator を共役+境界積で書き換える標準作用。作用の具体式は
+      カードの積順序 — 後続合成を左 — で固定する)。**合成可能対ごとの
+      comparator の直接書き換えは gauge に含めない** — それを許すと
+      任意の同型 comparator 族が canonical 族へ送れて障害が恒等的に
+      自明化するためである(無内容化の排除)。
+    辺に沿う作用は transport による共役(whiskering)で固定する。
+    **消滅は raw 2-cochain が辺 reselection 作用の orbit で恒等 cochain に
+    到達すること**として、coherent 化可能とは独立の述語で定義する —
+    (iii) は定義展開ではなく、この orbit 述語と(書き換え後の族に対する)
+    coherence 等式系の同時可解の同値として証明する。
     可換化した不変量は採らない — 可換化で消える非可換情報が (c) 三者
     調停 witness の実質になりうるためである。gerbe / 一般 pseudofunctor
     coherence 理論は経由しない(mathlib の一般論は個別補題の流用に限る)。
@@ -37,12 +49,16 @@
   (4) **admissible 比較データ**: 各辺の lift は **opcartesian** である
     ことを定義に含めて要求する(局所資格。非 opcartesian lift による
     authored inconsistency の持ち込みを排除する)。障害の自由度は lift
-    ではなく、**外部から与えられる比較射の族**(lift 間の fiber 射で底
-    可換なもの)に置く。gauge で動かせるのは fiber 自己同型による
-    reselection のみで、lift の opcartesian 性と底射影は固定する。
-    canonical 比較への強制置換(witness の消去)は認めない。これが
-    「局所的には正当だが大域 coherence が失敗しうる」中間クラスの固定で
-    ある。
+    ではなく、**外部から与えられる comparator の族**に置く。comparator は
+    lift 間の**底可換な fiber 同型**(可逆)であることを定義に含める —
+    G-101 の一般 `PackageTotalHom` は可逆と限らず、自己同型群値の差が
+    定義できないためである(可逆性を弱める場合は同型性を別 theorem で
+    導出する契約に差し替えるが、既定は同型要求)。gauge で動かせるのは
+    **辺ごとの** fiber 自己同型割当が誘導する reselection のみで
+    (確定事項 (1) の次数契約)、lift の opcartesian 性と底射影は固定
+    する。canonical 比較への強制置換(witness の消去)は認めない。
+    これが「局所的には正当(対ごとに同型で翻訳可能)だが大域 coherence が
+    失敗しうる」中間クラスの固定である。
 - `research aim`: 輸送の比較射の合成が閉じない障害を 2-cocycle 型の
   不変量として立て、二つの障害現象 — (b) doctrine 圏の菱形の
   二経路輸送の食い違い、(c) 三つ以上の reading の pairwise 調停の
@@ -89,7 +105,9 @@
   再選択で消える障害を非自明と数えること(coboundary 剰余を取らない
   不変量)、消滅述語を coherent 化可能の言い換えとして定義し (iii) を
   定義展開で放電する構成、canonical 比較への強制置換で witness を消す
-  構成、非 opcartesian lift の持ち込みで障害を捏造する構成、
+  構成、非 opcartesian lift・非可逆 comparator の持ち込みで障害を捏造
+  する構成、comparator の対ごとの直接書き換えを gauge に数えて障害を
+  自明化する構成、
   比較射の族を空にして vacuous に「閉じない」とする構成、
   pairwise 翻訳が実在しない三者 witness(非結合ではなく単なる翻訳
   不能)、(v) を共通 schema への収納だけで済ませ一致 theorem を欠く
@@ -107,9 +125,10 @@
      が構成でき、隣接合成の整合(coherence 等式)が成り立つ。
   2. **(ii) 2-障害の定義**: 有限図式上の admissible 比較データ
      (確定事項 (4))に対し、合成の閉じなさを測る fiber 内自己同型群値の
-     非可換 raw 2-cochain(確定事項 (1))を定義し、cocycle 条件と、
-     reselection(coboundary)による同値、および消滅の orbit 述語
-     (coherent 化可能と独立の定義)を証明・構成する。
+     非可換 raw 2-cochain(三つ組上。確定事項 (1) の次数契約)を定義し、
+     cocycle 等式(四つ組上)と、辺 reselection(coboundary)による
+     同値、および消滅の orbit 述語(coherent 化可能と独立の定義)を
+     証明・構成する。
   3. **(iii) 消滅と整合の同値**: 一般 carrier `U` 上の有限図式(菱形・
      三角形とその有限合成。確定事項 (2))で、(ii) の orbit 述語による
      2-障害の消滅と coherent な再選択の存在が同値である(定義展開に
@@ -154,15 +173,18 @@
   - `Doct_U / transportAlong / opcartesian 普遍性`: `ambient-boundary`
     (G-101 の proved-in-research artifact の参照のみ。unported である
     ことを本カードは変更しない)。
-  - `admissible 比較データ`: `ambient-boundary`(入力。各辺 lift の
-    opcartesian 資格を定義に含め、witness で実例を与える。非 opcartesian
-    lift は入力として認めない。確定事項 (4))。
+  - `admissible 比較データ`: `direction-hypothesis`(入力データだが、
+    各辺 lift の opcartesian 資格と comparator の fiber 同型性という実質的
+    方向仮定を含むため。定義に含め、witness で実例を与える。
+    非 opcartesian lift・非可逆 comparator は入力として認めない。
+    確定事項 (4))。結論相当でない理由: 資格は辺・対ごとの局所条件で
+    あり、図式大域の coherence・消滅を参照しない。
   - `合成比較射と canonical coherence`: `discharge-required`。普遍性から
     導出し、coherence を field に入れない。
   - `2-障害の定義`: `discharge-required`。三つ組上の fiber 内自己同型群値
-    raw defect・共役作用・reselection 作用・消滅の orbit 述語
-    (確定事項 (1))。coboundary 剰余を定義に含め、消滅述語は coherent
-    化可能と独立に定義する。
+    raw defect・四つ組上の cocycle 等式・辺ごとの reselection 作用・
+    消滅の orbit 述語(確定事項 (1) の次数契約)。coboundary 剰余を定義に
+    含め、消滅述語は coherent 化可能と独立に定義する。
   - `消滅同値`: `discharge-required`。一般 carrier 上の有限図式で主張する
     (確定事項 (2))。定義展開による放電は認めない。
   - `菱形 witness / 三者調停 witness`: `discharge-required`。再選択で

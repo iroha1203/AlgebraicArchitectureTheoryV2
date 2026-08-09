@@ -40,9 +40,16 @@
   データから被覆 nerve を生成する明示構成(カード内で定義)、Atom-indexed
   係数複体(`TwoPhase/CoefficientComplex.lean` の
   `AtomIndexedNerveData` / `AtomIndexedCoefficientComplex`)を対象とする。
+  量化の有限性境界を分ける: **(i)(ii) は一般 carrier で主張する。
+  (iii)(iv)(v) は有限 regime**(`U.Atom` と `D.Source` の Fintype、
+  decidable な extracts。G-102 複体の Fintype 要求と整合する入力有限性)を
+  ambient として仮定する。係数体は `ℚ` に固定する。台の族が Source を
+  覆うことは要求しない(「被覆」の語は nerve 構成の慣用として使い、
+  covering 性をどの主張にも使わない)。
   doctrine の構文成分(vocabulary / resolution / normalize)を動かす変形、
   carrier を動かす主張、blame の gauge 理論(coboundary 移動の分類)、
-  係数の同型分類は含めない。
+  係数の同型分類、台の包含を持たない variant 対の間の comparison は
+  含めない。
 - `capability categories`: invariance、cover-generation、
   coefficient-localization、comparability、counterexample。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
@@ -83,30 +90,50 @@
      同型への弱化は認めない。
   2. **(ii) 全 Atom nerve の可変性(対比反例)**: 全 pair 版
      `nerveOf_all` が `fam` 内の取り替えで実際に変わる有限反例。
-  3. **(iii) 係数の局在**: 係数複体は variant ごとに同一の生成規則
-     (G-102 `AtomIndexedCoefficientComplex` の構成を `D[γ]` の抽出
-     データへ適用)で構成し、各 variant の `ConditionE` 成立は仮定側に
-     置く。このとき構造部分複体は (i) の等式の下で canonical に一致し、
-     変形族内の取り替えは商(semantic)側の係数だけを動かす。
-  4. **(iv) 比較可能性**: (i)(iii) の帰結として、`D[γ]` と `D[γ']` の
-     係数複体の間に構造座標上の恒等から生成する canonical cochain map を
-     構成し、それが誘導する障害類の comparison が同一の構造 nerve 上で
-     well-defined である(comparison を opaque field や仮定で受けない)。
-  5. **(v) 発火 witness**: 非恒等な取り替えで、nerve は不変のまま
-     障害類が実際に変わる有限 witness。**(iv) の comparison の下で類
-     そのものが異なる — 差が coboundary に落ちない — こと**を要求し、
+  3. **(iii) 係数の局在**: 係数複体は variant ごとに、次の**係数生成
+     規則**で抽出データから構成する(G-102 の
+     `AtomIndexedCoefficientComplex` は構成済み複体を受ける容れ物で
+     あり constructor ではないため、生成は本カードが固定する。生成した
+     複体を G-102 型へ instance 化して接続し、`all` を結論相当データと
+     して先渡ししない):
+     - **座標 index**: 各 cell の係数 basis は対 `(cell, s)`。`s` は
+       cell の**導出台**上の点(chart の台 = `supp_γ`、edge / face の
+       台は端点 / boundary の台の交わりとして導出。独立な台宣言は
+       持たない)。係数体は `ℚ`。
+     - **differential**: 同一 label `s` の恒等対応による Čech 交代和
+       (`d₀` = 端点差、`d₁` = boundary 交代和)。label 不在は零。
+     - **phase**: chart basis `(a, s)` の phase = `fam.Structural (s, a)`
+       (base 分類の共有)。edge / face basis は関与する全 chart で
+       structural のとき structural。構造部分複体 = structural basis の
+       span。
+     各 variant の `ConditionE` 成立は仮定側に置く。このとき構造部分
+     複体は (i) の等式の下で**全 variant で同一**であり、変形族内の
+     取り替えは商(semantic)側の係数だけを動かす。
+  4. **(iv) 比較可能性(包含対)**: 台の包含を持つ variant 対
+     (すべての atom で `supp_γ(a) ⊆ supp_γ'(a)`)に対し、label-wise の
+     制限(projection)`all_γ' → all_γ` が cochain map であることを
+     生成規則から theorem として導き(導出台の交わり構造により制限が
+     differential と可換になる)、それが誘導する障害類の comparison が
+     同一の構造 nerve 上で well-defined であることを示す(comparison を
+     opaque field や仮定で受けない)。包含を持たない一般対の comparison
+     は claim しない(frontier)。
+  5. **(v) 発火 witness**: 非恒等な取り替え(包含対)で、nerve は不変の
+     まま障害類が実際に変わる有限 witness。**(iv) の comparison の下で
+     類そのものが異なる — 差が coboundary に落ちない — こと**を要求し、
      同一類の代表差・cochain 値差だけの発火は数えない。両相非空を要求
      する。
-  (i)(iii)(iv) は一般の `D` / `fam` について証明する。witness
-  ((ii)(v))は既存 `FiniteModel` の carrier へ具体化する。
+  (i)(ii) は一般の `D` / `fam`、(iii)(iv) は有限 regime の `D` / `fam` に
+  ついて証明する。witness((ii)(v))は既存 `FiniteModel` の carrier へ
+  具体化する。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/StructuralCover/` 配下。`Formal/AG` は
   参照のみ。G-105 の完了面は (i)–(v) まで。blame 代表の移動・gauge
   fixing・doctrine 間の複体 comparison の一般論は主張しない。
 - `target proof artifacts`: `nerveOf` 生成構成(台 Čech nerve)の定義、
   構造 nerve 不変性(等式)theorem、全 Atom nerve 可変性反例、
-  variant-indexed 係数複体の構成 def、variant 間 canonical cochain map の
-  構成 def、係数局在 theorem、比較可能性 theorem、類差発火 witness、
+  係数生成規則(座標・導出台・differential・phase)の def と G-102 型への
+  instance 化、包含対の制限 cochain map の構成 def とその cochain 性
+  theorem、係数局在 theorem、比較可能性 theorem、類差発火 witness、
   report `research/reports/G-105-aat-structural-cover-invariance.md`。
 - `target proof strategy`: I0 nerve 生成構成の定義 -> I1 構造 nerve
   不変性 -> I2 全 Atom nerve 可変性反例 -> I3 係数局在と比較可能性 ->
@@ -138,7 +165,8 @@
   certificate や structure field で受け取るだけでは放電と数えない。
   各 variant の `ConditionE` だけは (iii)(iv) の仮定側に置ける。
 - `target material premise ledger`:
-  - `carrier U / FiniteModel`: `ambient-boundary`。
+  - `carrier U / FiniteModel`: `ambient-boundary`。(iii)(iv)(v) では
+    有限 regime(`Fintype`・decidable extracts)を入力有限性として含む。
   - `依存 profile / 二相分解`: `ambient-boundary`(G-102 の確定 artifact
     `TwoPhase/DependencyProfile.lean` の参照のみ。再定義しない)。
   - `nerve 生成構成`: `discharge-required`。カード固定の台 Čech nerve
@@ -147,11 +175,12 @@
     から**等式**として導出する。不変性を構成の field に入れない。
   - `全 Atom nerve 可変性`: `discharge-required`。有限反例。型不一致
     vacuity は不可。
-  - `variant-indexed 係数複体と variant 間 comparison`:
-    `discharge-required`。各 variant の複体を同一生成規則から構成し、
-    構造部分複体の canonical 一致と variant 間 canonical cochain map
-    (構造座標恒等から生成)を theorem 化する。comparison を opaque
-    field で受けることは放電と数えない。
+  - `係数生成規則と variant 間 comparison`: `discharge-required`。
+    カード固定の生成規則(`(cell, s)` 座標・導出台・Čech differential・
+    base phase 分類)から各 variant の複体を構成して G-102 型へ
+    instance 化し、構造部分複体の全 variant 同一性と、包含対の制限
+    cochain map の cochain 性を theorem 化する。`all` complex や
+    comparison を opaque field で受けることは放電と数えない。
   - `各 variant の ConditionE`: `direction-hypothesis`。(iii)(iv) の
     含意の仮定側。結論相当でない理由: 単一 variant 内部の構造 support
     保存条件(G-102 で特定済みの条件 E)であり、variant 間 comparison・
