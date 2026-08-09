@@ -76,7 +76,8 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 ### 予想される帰結
 
 現行の C0–C6 がそのまま必要十分の右辺になる見込みは低い。例えば C0(台合併)は、
-破れても当該 A-subnerve が H¹ 的に無内容なら一様不変性が保たれうる。本ハントの
+その破れに関与する係数座標の A-subnerve がすべて H¹ 的に無内容なら、破れても
+一様不変性が保たれうる。本ハントの
 実体は「必要性の証明」ではなく、**必要でない条項の検出と、その弱化による C\* の
 研磨**である。
 
@@ -151,8 +152,11 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    定数係数比較への還元・自然性 = `LawValueBlockComparison*.lean` /
    `LawValueBlockComparisonNaturality.lean`、descend の π-可換 =
    `ComparisonData.lean` の `lawDescend_comparisonFactor`)。対応がない conjunct
-   (indicator law の adequacy と値 fiber による任意非空 `A` の実現、全単射の
-   block ごと判定への分解)は手証明を必須とする。
+   (indicator law の adequacy と値 fiber による任意非空 `A` の実現 — 単一 law の
+   family が `FiniteLawFamily` の全 field(`Fintype Law`・`DecidableEq (Value law)`
+   等)を満たして構成できること、当該 law の `Value` 型に相異なる2値が取れる
+   ことを下位 conjunct に含む —、全単射の block ごと判定への分解)は手証明を
+   必須とする。
 4. R0 の失敗は次の2種を峻別する(混同は Failure Contract 違反):
    - **calibration failure((a)–(e) の不一致)**: engine 実装または modeling の
      欠陥として扱い、engine を修正して再 calibration する。oracle 不一致から
@@ -177,7 +181,10 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    engine 実装依存にしないため)。最低限、既知反例3種・値分配例・G-103 由来
    proper pair の規模(coarse chart 3 / fine chart 4 級)を包含すること。
 2. 各データについて、全非空 `A ⊆ Target_q` の A-subnerve 定数係数比較を判定し、
-   一様不変性を決定する。同時に相対化 C の条項 vector を全 `A` について評価する。
+   一様不変性を決定する。条項 vector の評価は G-104 カードの条項スコープに
+   厳密に従う: **C1–C4 は各 `A`-subnerve ごと、C0・C5・C6 は nerve 全体で
+   1回**評価する(C5・C6 を subnerve 内へ制限して評価すると別の弱い条項に
+   なり、verdict が壊れる)。
 3. 各条項 `Ci`(C0–C6)の verdict を、**verdict ごとの evidence schema** に従って
    確定する(schema の混用・省略は不可):
    - `not-necessary`: evidence = **再現可能な必要性反例**(一様不変 ∧ Ci 破れの
@@ -192,8 +199,10 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 ### R2: C\* 研磨ループ
 
 1. `not-necessary` 判定の条項ごとに破れ機構を一段分析し、incidence / support
-   レベルの弱化 `Ci*` を提案する(例: 条項の適用対象を「H¹ に寄与しうる subnerve
-   構成」へ絞る形の incidence 条件)。
+   レベルの弱化 `Ci*` を提案する(例: 条項の適用対象を、fiber グラフが閉路を
+   持つ subnerve、あるいは lift を要求される粗側 cell が subnerve 内に実在する
+   場合に限る、といった incidence 文での絞り込み。「H¹ に寄与する」のような
+   cohomology 語彙での絞り込みは R2-4 により不可)。
 2. C\* 候補全体に対し**二方向の反例探索**を行う:
    - 十分性破れ: C\* 成立 ∧ ある `A`-block が非全単射。
    - 必要性破れ: 一様不変 ∧ C\* 破れ。
