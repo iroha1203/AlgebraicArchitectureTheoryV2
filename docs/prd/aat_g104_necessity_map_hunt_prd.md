@@ -17,13 +17,15 @@
 この問いが本 PRD の採否判定規律である。成果物は次の形でこの問いに答えていなければ
 受理しない。
 
-1. C0–C6 の**7条項すべて**に、witness 付きの verdict
-   (`not-necessary` / `necessary-evidence` / `undecided`)が付いている。
-2. C\* 候補について、停止条件 A(確定)・B(構造的否定)・C(停滞)のいずれかへの
+1. C0–C6 の**7条項すべて**に、verdict ごとの evidence schema(R1-3 で定義)に
+   従う証拠付きの verdict(`not-necessary` / `necessary-evidence` / `undecided`)が
+   付いている(C / R0-fail 終端の場合は、当該終端の必須成果物で代替する)。
+2. 終端 A(確定)・B(構造的否定)・C(停滞)・R0-fail(還元反証)のいずれかへの
    到達が明示されている。
 
-条項の一部を後続送りにした報告、witness や探索 bound を欠いた verdict は、
-問いに答えたと数えない(**スコープの縮小禁止**)。
+条項の意図的な後続送り、evidence schema を欠いた verdict、事前登録なしの探索
+bound は、問いに答えたと数えない(**スコープの縮小禁止**)。blocker と coverage
+limit の記録を伴う C / R0-fail 終端の報告は縮小と数えない。
 
 ## 現状診断
 
@@ -93,6 +95,11 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
     (`lawDescend_comparisonFactor`)
   - `research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean`
     (K0 / K1 生成複体)
+  - 同 dir 配下の現行確定実体(calibration (e) と R0 手順3 の対応表で参照):
+    `ResolutionInvarianceConditions.lean`、`LawValueCoordinateSubnerve.lean`、
+    `GeneratedComparisonMap.lean`、`LawValueBlockDecomposition.lean`、
+    `LawValueBlockComparison*.lean`(`Naturality` 含む)、
+    `ResolutionInvarianceFiringWitness.lean`
 
 ## target statement(task 固有。一次仕様 = 本節)
 
@@ -124,24 +131,49 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    - (d) **indicator 実現可能性の検査**: 任意の非空 `A ⊆ Target_q` に対し
      indicator law が adequate な law family を成し、その座標 subnerve が
      A-subnerve に一致することをテストで固定する。
-3. (c)(d) が破れた場合は探索に入らず停止して報告する(還元が誤りなら量化の
-   定義から立て直す必要があり、本 PRD の前提が崩れるため)。
+   - (e) **現行 canonical 実体の oracle 化**: 歴史的 fixture 3種だけで calibration を
+     通過してはならない。現行 G-104 の確定実体
+     (`ResolutionInvarianceConditions.lean` = 現行条件C、
+     `LawValueCoordinateSubnerve.lean` = 座標 subnerve、
+     `GeneratedComparisonMap.lean` = 生成 comparison map、
+     `LawValueBlockComparisonNaturality.lean` = block 自然性、
+     `ResolutionInvarianceFiringWitness.lean` = 現行発火 witness)の固定データと
+     判定を engine 上で再構成し、Lean の結論と一致させる。
+3. **還元の一般手証明**(探索非依存): 値部分集合還元
+   (一様不変性 ⟺ 全非空 `A` の A-subnerve 定数係数比較全単射)を、fixture の
+   数値一致とは別に、一般の数学的手証明として report 付録に固定する。conjunct を
+   分解し、既存 Lean declaration に対応がある conjunct は対応表で引用する
+   (block 直和分解 = `LawValueBlockDecomposition.lean`、block の subnerve
+   定数係数比較への還元・自然性 = `LawValueBlockComparison*.lean` /
+   `LawValueBlockComparisonNaturality.lean`、descend の π-可換 =
+   `ComparisonData.lean` の `lawDescend_comparisonFactor`)。対応がない conjunct
+   (indicator law の adequacy と値 fiber による任意非空 `A` の実現、全単射の
+   block ごと判定への分解)は手証明を必須とする。
+4. (c)(d)(e) または手順3の手証明が破れた場合は探索に入らず、**R0-fail 終端**
+   (停止条件節)として破れの反例データと機構分析を固定して停止する(還元が
+   誤りなら量化の定義から立て直す必要があり、本 PRD の前提が崩れるため)。
 
 ### R1: 必要性地図
 
 1. comparison data(粗側 / 細側 nerve、`φ`、`π`、chart 台)を bounded normal form で
-   全数列挙する。bound は計算量から決めて report に固定する。最低限、既知反例
-   3種・値分配例・G-103 由来 proper pair の規模(coarse chart 3 / fine chart 4 級)を
-   包含すること。
+   全数列挙する。bound と normal form(粗側 / 細側 Target のサイズ、chart / edge /
+   face 数、chart 台パターン、`π` / `φ` の列挙範囲、退化 cell の許容、同型類除去・
+   枝刈りが列挙の被覆を欠かさないことの根拠)は、**探索実行前に** Issue #3948 へ
+   コメントで事前登録してから run する。結果を見た後の bound 変更は新ラウンド
+   として再登録し、全ラウンドを report に記録する(`necessary-evidence` の母集団を
+   engine 実装依存にしないため)。最低限、既知反例3種・値分配例・G-103 由来
+   proper pair の規模(coarse chart 3 / fine chart 4 級)を包含すること。
 2. 各データについて、全非空 `A ⊆ Target_q` の A-subnerve 定数係数比較を判定し、
    一様不変性を決定する。同時に相対化 C の条項 vector を全 `A` について評価する。
-3. 各条項 `Ci`(C0–C6)の verdict を確定する:
-   - `not-necessary`: **一様不変 ∧ Ci 破れ**の comparison data(必要性反例)を
-     witness として固定。非退化な反例(ある `A` で両側 H¹ 非零、かつ Ci の破れが
+3. 各条項 `Ci`(C0–C6)の verdict を、**verdict ごとの evidence schema** に従って
+   確定する(schema の混用・省略は不可):
+   - `not-necessary`: evidence = **再現可能な必要性反例**(一様不変 ∧ Ci 破れの
+     comparison data)。非退化な反例(ある `A` で両側 H¹ 非零、かつ Ci の破れが
      非空虚に発火)を優先探索し、bound 内に退化例しか無い場合はその旨を明記する。
-   - `necessary-evidence`: bound 内に必要性反例ゼロ。Ci の破れから非全単射
-     block を生む機構スケッチを添える(bound 内無反例は証明ではない)。
-   - `undecided`: どちらの証拠も揃わない場合。理由を明記する。
+   - `necessary-evidence`: evidence = **事前登録済み探索母集団の明示+反例
+     ゼロ件の zero-result+Ci の破れから非全単射 block を生む機構スケッチ**
+     (bound 内無反例は証明ではない)。
+   - `undecided`: evidence = **blocker の特定+試行履歴+coverage limit** の記録。
 4. 7条項の verdict 表を report に置く。
 
 ### R2: C\* 研磨ループ
@@ -170,23 +202,45 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    少なくとも1つ固定する。
 4. report・results.json・README(off-loop 注記)を整備する。
 
-## 停止条件(どれかに達したら報告して停止)
+## 停止条件と終端(どれかに達したら報告して停止)
+
+各終端に必須成果物・Issue #3948 の扱い・本 PRD の扱いを固定する。いずれの
+終端でも PRD の削除は PRD guideline の削除条件に従う(C / R0-fail 終端では
+PRD は削除せず改訂対象として残す)。
 
 - **A(成功)**: C\* が (1) R1 の必要性地図と整合 (2) 二方向の bounded 探索で
-  反例ゼロ(bound と探索空間の normal form を報告) (3) 非退化正例あり
-  (4) 各条項の独立性証拠あり (5) 両方向の手証明スケッチ付き。
-- **B(構造的否定)**: incidence / support レベルの条項系では一様不変性を
-  特徴づけられないことの強い証拠(2点分離型の一般論法、または探索範囲で
-  全候補が二方向のいずれかの反例を持つこと)。
+  反例ゼロ(事前登録済み bound と探索空間の normal form を報告) (3) 非退化
+  正例あり (4) 各条項の独立性証拠あり (5) 両方向の手証明スケッチ付き。
+  必須成果物 = acceptance criteria 全点。Issue は close 可、第二段の起票へ進む。
+- **B(構造的否定)**: **探索範囲に依存しない一般論法(2点分離型)**により、
+  incidence / support レベルの条項系では一様不変性を特徴づけられないことを
+  示した場合に限る。条項の文法・有限生成規則・複雑度 bound を固定した有限
+  候補族の全滅は B と数えず、coverage limit 付きの限定的結論として report に
+  置き、C 終端の証拠として扱う。必須成果物 = 一般論法の report 固定+R0 / R1
+  成果物。Issue は close 可(人間裁定へ)。
 - **C(停滞)**: 同一 blocker で2ラウンド進展がなければ中間報告で停止。
+  必須成果物 = 停滞点までの partial verdict 地図+blocker の特定+coverage
+  limit。この終端では7条項完備の verdict 地図を要求しない(blocker 記録付きの
+  停滞は縮小禁止の対象外)。Issue は open のまま人間裁定を待つ。
+- **R0-fail(還元反証)**: R0 の calibration (c)(d)(e) または還元の一般手証明が
+  破れた場合。必須成果物 = 破れの再現可能な反例データ+機構分析+一様不変性の
+  量化定義を立て直すための示唆。**負の成果として受理可能**(還元の誤りの発見は
+  本ハントの正当な成果である)。Issue は open のまま、本 PRD を量化定義から
+  改訂する。
 
 ## acceptance criteria
 
-1. R0 calibration 4点((a)–(d))が回帰テストとして固定され、全 pass している。
-2. C0–C6 の7条項すべてに verdict と witness が付いた必要性地図が report にあり、
-   探索 bound と normal form が明記されている。
-3. 停止条件 A / B / C のいずれかへの到達が report で明示され、A の場合は C\* の
-   条項文(第二段の GOAL カードにそのまま書ける形)が固定されている。
+1. R0 calibration 5点((a)–(e))が回帰テストとして固定され全 pass し、還元の
+   一般手証明(R0 手順3。Lean declaration との conjunct 対応表込み)が report
+   付録に固定されている。**または** R0-fail 終端の必須成果物が固定されている
+   (この場合、以降の AC 2–4 は適用しない)。
+2. (A / B 終端)C0–C6 の7条項すべてに、verdict ごとの evidence schema に従う
+   証拠付きの verdict が付いた必要性地図が report にあり、事前登録済みの探索
+   bound と normal form(Issue #3948 への登録記録)が明記されている。
+   (C 終端)停滞点までの partial verdict 地図+blocker+coverage limit が
+   report にある。
+3. 終端 A / B / C / R0-fail のいずれかへの到達が report で明示され、A の場合は
+   C\* の条項文(第二段の GOAL カードにそのまま書ける形)が固定されている。
 4. C\* 候補(中間候補を含む)に cohomological 条項が混入していない
    (R2-4 の資格制限)。
 5. 成果物一式(engine、tests、results.json、report、README)が
@@ -199,9 +253,13 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 
 ## Failure Contract(本タスクの失敗判定)
 
-- calibration 不一致のまま探索に入った。
-- R0-(c)(d) の還元検証が破れたのに量化の定義を暗黙に差し替えて続行した。
-- verdict を witness なし・bound 不明のまま宣言した。
+- calibration 不一致のまま探索に入った((e) の現行実体 oracle を欠いたまま
+  歴史的 fixture 3種のみで通過した場合を含む)。
+- R0-(c)(d)(e) の還元検証または一般手証明が破れたのに、R0-fail 終端を踏まず
+  量化の定義を暗黙に差し替えて続行した。
+- bound と normal form を Issue へ事前登録せずに探索した。
+- verdict を evidence schema なし・bound 不明のまま宣言した。
+- 有限候補族の全滅を停止条件 B(構造的否定)と称した。
 - C\* に cohomological 条項(またはその量化形)が混入した。
 - 変更禁止対象に手を入れた。
 - 同一 blocker で2ラウンド停滞したのに停止条件 C を踏まずに続行した。
@@ -209,7 +267,7 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 ## non-goals
 
 - Lean 証明(C\* の必要十分定理の形式化は第二段 GOAL の仕事)。
-- G-107 系 GOAL カードの起草(本ハントの人間裁定後に別途)。
+- 第二段 GOAL カードの起草(本ハントの人間裁定後に別途。番号は起票時に確定)。
 - G-104 カード・report・`ResearchLean` の改訂(完了 GOAL は不変)。
 - 論文A本文の変更。
 - 係数体の一般化(`ℚ` 固定)、無限 regime、doctrine 間 comparison。
@@ -217,6 +275,8 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 ## 停止後の接続(参考)
 
 人間裁定の後、第二段として C\*(または現行 C)の必要十分定理を target-theorem
-GOAL(次番号、現時点 G-107)として固定し、両方向の Lean 証明を research loop で
-行う。論文Aへは、停止条件 A なら特徴づけ定理として、B / C なら現行 Atlas 定理+
-必要性地図(条項独立性と反例目録)を実証素材として載せる。
+GOAL として固定し、両方向の Lean 証明を `$target-theorem-loop` で行う
+(`research/README.md` の routing に従う)。GOAL 番号は本 PRD では固定せず、
+第二段の起票時に Issue 側で確定する。論文Aへは、終端 A なら特徴づけ定理として、
+B / C なら現行 Atlas 定理+必要性地図(条項独立性と反例目録)を実証素材として
+載せる。
