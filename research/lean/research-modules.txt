@@ -300,6 +300,11 @@ ResearchLean.AG.SFT.ConwayTwoTopology	ResearchLean/AG/SFT/ConwayTwoTopology.lean
 ResearchLean.AG.SFTDynamics.ForceSchema	ResearchLean/AG/SFTDynamics/ForceSchema.lean
 ResearchLean.AG.SFTDynamics.MergeResidue	ResearchLean/AG/SFTDynamics/MergeResidue.lean
 ResearchLean.AG.SFTDynamics.TraceSite	ResearchLean/AG/SFTDynamics/TraceSite.lean
+ResearchLean.AG.StructuralCover.CoefficientGeneration	ResearchLean/AG/StructuralCover/CoefficientGeneration.lean
+ResearchLean.AG.StructuralCover.GeneratedH1Vanishing	ResearchLean/AG/StructuralCover/GeneratedH1Vanishing.lean
+ResearchLean.AG.StructuralCover.NerveGeneration	ResearchLean/AG/StructuralCover/NerveGeneration.lean
+ResearchLean.AG.StructuralCover.RestrictionComparison	ResearchLean/AG/StructuralCover/RestrictionComparison.lean
+ResearchLean.AG.StructuralCover.StructuralLocalization	ResearchLean/AG/StructuralCover/StructuralLocalization.lean
 ResearchLean.AG.TwoPhase.DependencyProfile	ResearchLean/AG/TwoPhase/DependencyProfile.lean
 ResearchLean.AG.TwoPhase.CoefficientComplex	ResearchLean/AG/TwoPhase/CoefficientComplex.lean
 ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/CohomologyComparison.lean

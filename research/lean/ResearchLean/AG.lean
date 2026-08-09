@@ -304,6 +304,11 @@ import ResearchLean.AG.SFT.ConwayTwoTopology
 import ResearchLean.AG.SFTDynamics.ForceSchema
 import ResearchLean.AG.SFTDynamics.MergeResidue
 import ResearchLean.AG.SFTDynamics.TraceSite
+import ResearchLean.AG.StructuralCover.CoefficientGeneration
+import ResearchLean.AG.StructuralCover.GeneratedH1Vanishing
+import ResearchLean.AG.StructuralCover.NerveGeneration
+import ResearchLean.AG.StructuralCover.RestrictionComparison
+import ResearchLean.AG.StructuralCover.StructuralLocalization
 import ResearchLean.AG.TwoPhase.DependencyProfile
 import ResearchLean.AG.TwoPhase.CoefficientComplex
 import ResearchLean.AG.TwoPhase.CohomologyComparison
