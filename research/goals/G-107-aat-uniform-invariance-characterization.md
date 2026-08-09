@@ -102,9 +102,9 @@
   nerve 射 `φ`・hereditary 退化宣言・π-両立)と K0 / K1 生成係数を
   そのまま使い、次の定義群をカードで固定する。
   - **一様不変性**: comparison data が一様不変であるとは、**任意の**
-    adequate `FiniteLawFamily` の K0 / K1 生成係数について、生成
-    comparison map(G-104 (i) の canonical 写像)が H¹ の全単射を誘導する
-    ことをいう。
+    `FiniteLawFamily`(pair `q ≤ q'` がその family について adequate で
+    あるもの)の K0 / K1 生成係数について、生成 comparison map
+    (G-104 (i) の canonical 写像)が H¹ の全単射を誘導することをいう。
   - **A-subnerve**: 非空 `A ⊆ q.Target` に対し、粗側は K1 導出台が `A` と
     交わる cell、細側は導出台が `π⁻¹(A)` と交わる cell が成す supported
     部分 nerve(台は `A` / `π⁻¹(A)` との交わりへ制限して読む)。係数は
@@ -118,9 +118,10 @@
        選択順序・結果依存の再適用はしない)。残った edge / FaceTwin 類を
        retained と呼ぶ。
     3. **cycle-critical edge**: retained edge のうち、self-loop、または
-       当該 edge を除いても両端点間に path が残るもの。**critical
-       chart**: cycle-critical edge の端点、または retained FaceTwin 類の
-       boundary edge の端点。
+       当該 edge を除いた **retained edge だけ**の無向グラフで両端点間に
+       path が残るもの(free-pair 除去済みの edge は path に使えない)。
+       **critical chart**: cycle-critical edge の端点、または retained
+       FaceTwin 類の boundary edge の端点。
     4. **active fine chart / port**: mapped 像が cycle-critical 粗側 edge
        である retained 細側 edge の端点、または mapped 像が retained
        粗側 FaceTwin 類の member である retained 細側 face の boundary
@@ -137,9 +138,9 @@
       retained 細側 edge(lift)を持つ。
     - **C3\*(局所 fiber acyclicity。明示の例外条項)**: 各粗側 chart
       fiber で、retained かつ退化宣言された fiber 内 edge が張る任意の
-      `ℚ`-係数 1-cycle は、退化宣言 member を持ち boundary 3辺すべてが
-      当該 fiber の当該 edge 集合にある retained 細側 face boundary の
-      `ℚ`-線形結合で張られる。
+      `ℚ`-係数 1-cycle は、**退化宣言された member を少なくとも一つ持つ
+      retained FaceTwin 類で、boundary 3辺すべてが当該 fiber の当該
+      edge 集合にあるもの**の boundary の `ℚ`-線形結合で張られる。
     - **C4\***: 各 retained 粗側 FaceTwin 類は、mapped 像がその類の
       member である retained 細側 face を少なくとも一つ持つ。
     - **CertifiedDirect**(同一 cycle-critical 粗側 edge へ写る retained
