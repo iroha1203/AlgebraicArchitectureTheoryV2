@@ -1,4 +1,4 @@
-# G-105-aat-structural-cover-invariance — 構造被覆の底不変性
+# G-105-aat-structural-cover-invariance — 構造台 Čech nerve の底不変性
 
 - `id`: `G-105-aat-structural-cover-invariance`
 - `status`: `active`
@@ -13,7 +13,8 @@
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§2 幾何対応仮説、§8 候補9)
 - `research aim`: 「構造が空間を運び、意味が係数を運ぶ」を theorem に
   する。構造 Atom の定義(依存 profile が宣言変形族に不感)から、構造
-  Atom が張る被覆 nerve は語用論的 doctrine 変更(変形族内の semantic
+  Atom の台の族が張る Čech nerve(covering 性は要求しない)は語用論的
+  doctrine 変更(変形族内の semantic
   成分の取り替え)で不変であり、取り替えで動くのは係数側だけであることを
   導く。これにより、異なる言語ゲーム(semantic 変種)の障害類が**同一
   複体上の類**として比較可能になることを固定する。二相分解が単なる分類
@@ -40,10 +41,12 @@
   データから被覆 nerve を生成する明示構成(カード内で定義)、Atom-indexed
   係数複体(`TwoPhase/CoefficientComplex.lean` の
   `AtomIndexedNerveData` / `AtomIndexedCoefficientComplex`)を対象とする。
-  量化の有限性境界を分ける: **(i)(ii) は一般 carrier で主張する。
-  (iii)(iv)(v) は有限 regime**(`U.Atom` と `D.Source` の Fintype、
-  decidable な extracts。G-102 複体の Fintype 要求と整合する入力有限性)を
-  ambient として仮定する。係数体は `ℚ` に固定する。台の族が Source を
+  量化の階層を固定する: **(i) は一般 carrier の一般 theorem、
+  (iii)(iv) は有限 regime**(`U.Atom` と `D.Source` の Fintype、
+  decidable な extracts。G-102 複体の Fintype 要求と整合する入力有限性)
+  **の一般 theorem、(ii)(v) は有限存在 witness**(全称ではない —
+  全 pair が structural な族では可変性は成り立たないため、(ii) を一般
+  量化しない)。有限 regime は ambient として仮定する。係数体は `ℚ` に固定する。台の族が Source を
   覆うことは要求しない(「被覆」の語は nerve 構成の慣用として使い、
   covering 性をどの主張にも使わない)。
   doctrine の構文成分(vocabulary / resolution / normalize)を動かす変形、
@@ -65,8 +68,8 @@
   全 Atom が構造的(semantic pair 不在)で対比が消える例、nerve 生成
   構成が定数(Atom に依らない)で不変性が構成の退化から従う例、係数の
   「変動」が零複体間の自明差である例、(v) の変動が同一類の代表差・
-  cochain 値差にすぎない発火、定義の言い換えだけで対比反例を
-  欠く完了主張。
+  cochain 値差にすぎない発火、datum を共有しない類対の事後選択による
+  発火、定義の言い換えだけで対比反例を欠く完了主張。
 - `frontier`: blame の doctrine 間比較(gauge 側)の予備観察、構文成分
   まで動かした場合に何が壊れるかの観察、nerve 生成構成の変種(relation
   Atom 主導 / component Atom 主導)の比較。
@@ -115,16 +118,22 @@
      生成規則から theorem として導き(導出台の交わり構造により制限が
      differential と可換になる)、それが誘導する障害類の comparison が
      同一の構造 nerve 上で well-defined であることを示す(comparison を
-     opaque field や仮定で受けない)。包含を持たない一般対の comparison
+     opaque field や仮定で受けない)。比較対象の類には共通 provenance を
+     要求する: **宣言 local datum**(γ' 側複体の 1-cocycle。宣言入力とし、
+     cocycle 性は theorem で検査する)から、γ 側の類を制限写像の像として
+     生成し、生成と comparison の整合(naturality: 生成後の比較 =
+     比較後の生成)を theorem 化する。事後選択した無関係な類の対は
+     (v) の発火に使えない。包含を持たない一般対の comparison
      は claim しない(frontier)。
   5. **(v) 発火 witness**: 非恒等な取り替え(包含対)で、nerve は不変の
-     まま障害類が実際に変わる有限 witness。**(iv) の comparison の下で
-     類そのものが異なる — 差が coboundary に落ちない — こと**を要求し、
-     同一類の代表差・cochain 値差だけの発火は数えない。両相非空を要求
-     する。
-  (i)(ii) は一般の `D` / `fam`、(iii)(iv) は有限 regime の `D` / `fam` に
-  ついて証明する。witness((ii)(v))は既存 `FiniteModel` の carrier へ
-  具体化する。
+     まま**共通 local datum から生成した類の診断が実際に変わる**有限
+     witness: `[ω_γ'] ≠ 0` かつその比較像 `[ω_γ] = 0`(semantic 台の
+     除去が類を潰す — 制限の非単射発火)。同一類の代表差・cochain 値差
+     だけの発火、datum を共有しない類対による発火は数えない。両相非空を
+     要求する。
+  (i) は一般の `D` / `fam` について、(iii)(iv) は有限 regime の一般の
+  `D` / `fam` について証明する。(ii)(v) は有限存在 witness であり、既存
+  `FiniteModel` の carrier へ具体化する。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/StructuralCover/` 配下。`Formal/AG` は
   参照のみ。G-105 の完了面は (i)–(v) まで。blame 代表の移動・gauge
@@ -133,7 +142,8 @@
   構造 nerve 不変性(等式)theorem、全 Atom nerve 可変性反例、
   係数生成規則(座標・導出台・differential・phase)の def と G-102 型への
   instance 化、包含対の制限 cochain map の構成 def とその cochain 性
-  theorem、係数局在 theorem、比較可能性 theorem、類差発火 witness、
+  theorem、宣言 local datum からの類生成 def と naturality theorem、
+  係数局在 theorem、比較可能性 theorem、診断変化発火 witness、
   report `research/reports/G-105-aat-structural-cover-invariance.md`。
 - `target proof strategy`: I0 nerve 生成構成の定義 -> I1 構造 nerve
   不変性 -> I2 全 Atom nerve 可変性反例 -> I3 係数局在と比較可能性 ->
@@ -187,20 +197,26 @@
     障害類の一致を参照しない。
   - `係数局在と比較可能性`: `discharge-required`。構造部分複体の固定と
     semantic 側だけの変動を theorem で示す。
-  - `類差発火 witness`: `discharge-required`。(iv) の comparison の下で
-    類が異なることまで含む。route integrity audit で使う。
+  - `distinguished class の生成と naturality`: `discharge-required`。
+    宣言 local datum(1-cocycle)からの variant-indexed 類生成と、生成の
+    制限写像との可換を theorem 化する。datum を共有しない類対の事後
+    選択は放電と数えない。
+  - `診断変化発火 witness`: `discharge-required`。共通 datum 生成類の
+    `[ω_γ'] ≠ 0 ∧ [ω_γ] = 0` まで含む。route integrity audit で使う。
 - `target anti-weakening rule`: (i) を「nerve の濃度が等しい」等の弱い
   不変量や明示同型へ弱めない(等式で主張する)。(ii) を
   欠いた不変性だけの完了を認めない。(iii) の局在を「係数が変わりうる」
   の存在主張へ弱めない(構造部分の固定を含む)。(iv) の comparison を
-  同型の仮定・opaque field で先取りしない。(v) を代表差・cochain 値差へ
-  弱めない(comparison の下の類の差で主張する)。結論相当データを
+  同型の仮定・opaque field で先取りしない。(v) を代表差・cochain 値差・
+  datum 非共有の類対へ弱めない(共通 datum 生成類の診断変化で主張
+  する)。結論相当データを
   theorem argument、typeclass、structure field、certificate field へ
   移さない。
 - `target route integrity gate`: nerve 生成・不変性・反例・witness の
-  provenance を doctrine 構成データ、変形族、生成構成、review 済み
-  predecessor へ追跡する。変形族退化・全 Atom 構造的・定数生成構成に
-  よる発火を completion に使わない。
+  provenance を doctrine 構成データ、変形族、生成構成、宣言 local datum、
+  review 済み predecessor へ追跡する。(v) の類が宣言 datum から生成規則
+  経由で構成されたこと(事後選択でないこと)を追跡対象に含める。変形族
+  退化・全 Atom 構造的・定数生成構成による発火を completion に使わない。
 - `target failure policy`: (i)(iii)(iv) の反例(構造 nerve が変形族内で
   変わる等)は `target-refuted` とし、依存 profile または nerve 生成構成の
   改訂案を返す — これは二相分解の設計欠陥の検出として価値がある。
