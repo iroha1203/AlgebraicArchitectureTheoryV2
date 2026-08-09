@@ -58,7 +58,9 @@
   G-103 の確定定義(`Reading` / `FiniteLawFamily` / `Adequate` /
   `CoarserThan`)、well-formed な comparison data(K1 導出台つき有限
   nerve・face boundary の端点整合・退化宣言の hereditary 性・chart 台の
-  π-両立)、K0 / K1 に従う law 由来係数、係数体 `ℚ` 固定。量化対象は
+  π-両立)、K0 / K1 に従う law 由来係数、係数体 `ℚ` 固定。Source と
+  両読みの Target の非空性は ambient に仮定する(空 regime は claim に
+  含めず、`A = q.Target` scope はこの仮定の下で well-defined)。量化対象は
   **一様不変性**であり、pointwise の必要性(単一 law family での
   全単射 ⟹ C)は主張しない(G-104 期の探索で不成立が確定済み)。C\* の
   評価 scope はカード固定(C1\*–C4\* は各非空 `A` の A-subnerve ごと、
@@ -101,9 +103,12 @@
   (条項別の対偶構成)→ U5 witnesses。
 
 - `target theorem`: **Uniform Invariance Characterization Theorem**
-  (一様不変性の特徴づけ定理)。G-104 カードの comparison data
-  (`L`-adequate pair `q ≤ q'`・factor `π`・K1 導出台つき nerve 対・
-  nerve 射 `φ`・hereditary 退化宣言・π-両立)と K0 / K1 生成係数を
+  (一様不変性の特徴づけ定理)。G-104 カードの comparison data 構成から
+  law family に依存しない部分 — 読み対 `q ≤ q'`(`CoarserThan`)、粗さ
+  から G-103 factorization で誘導される canonical factor `π`
+  (`comparisonFactor`。supplied factor は認めない)、K1 導出台つき
+  nerve 対、nerve 射 `φ`、hereditary 退化宣言、π-両立 — を
+  **comparison geometry** として固定し、K0 / K1 生成係数の生成規則を
   そのまま使い、次の定義群をカードで固定する。
   - **一様不変性**: comparison data(comparison geometry = 読み対
     `q ≤ q'`・factor `π`・nerve 対・nerve 射 `φ`・chart 台)を固定した
@@ -283,8 +288,11 @@
   `$math-lean-review research/goals/G-107-aat-uniform-invariance-characterization.md G-107-aat-uniform-invariance-characterization`
   の4査読がすべて `No major findings` であること。
 - `target premise discharge policy`: 入力に残せるのは comparison
-  geometry の構成データ(有限 Source、読み対 `q ≤ q'` と `π`、nerve /
-  nerve 射 / chart 台)だけである。law family と adequacy は一様不変性の
+  geometry の構成データ(有限非空 Source、読み対 `q ≤ q'` の
+  `CoarserThan` witness、nerve / nerve 射 / chart 台)だけである。factor
+  `π` は粗さから誘導される canonical `comparisonFactor` のみを指し、
+  supplied factor・compatibility certificate を入力として受け取ることは
+  放電と数えない。law family と adequacy は一様不変性の
   内部量化であり、入力・premise として固定した family に対する pointwise
   定理を completion と数えない。値部分集合還元、前処理の well-definedness、
   free-pair 除去の比較不変性、certificate 閉包補題、十分性・必要性の
@@ -292,9 +300,11 @@
   C\* の成立・一様不変性・全単射性を theorem argument、typeclass、
   structure field、certificate field で受け取るだけでは放電と数えない。
 - `target material premise ledger`:
-  - `有限 Source / 読み対と粗さ順序(comparison geometry)`:
+  - `有限非空 Source / 読み対と粗さ順序(comparison geometry)`:
     `ambient-boundary`。G-103 確定 artifact(`Reading` / `CoarserThan` /
-    `factorsThrough_iff_coarserThan`)の参照のみ。
+    `factorsThrough_iff_coarserThan`)の参照のみ。Target の非空性を
+    含む。factor `π` は canonical `comparisonFactor` として導出し、
+    supplied factor を入力幾何に含めない。
   - `law family と adequacy`: premise ではない。一様不変性の**内部量化**
     (束縛変数と domain condition)としてのみ現れる。`ambient-boundary`
     として受け取り固定 family の pointwise bijectivity theorem を作る
