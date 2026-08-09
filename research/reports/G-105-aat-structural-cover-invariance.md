@@ -394,6 +394,8 @@ tracking_issue_closed: false
   [`research/lean/ResearchLean/AG/StructuralCover/RestrictionComparison.lean`](../lean/ResearchLean/AG/StructuralCover/RestrictionComparison.lean)
 - primary declarations:
   - `ActualSupportIncluded`
+  - `NerveGenerationWitness.original_support_included_expanded`
+  - `NerveGenerationWitness.expanded_support_not_included_original`
   - `includedChartMap`, `includedEdgeMap`, `includedFaceMap`
   - `includedGeneratedChartMap`, `includedGeneratedEdgeMap`,
     `includedGeneratedFaceMap`
@@ -403,7 +405,7 @@ tracking_issue_closed: false
 - verification:
   - manifest 登録済み単一ファイル focused check: pass
   - parent serial targeted module build: pass
-  - namespace axiom audit: 21 declarations、standard axioms only
+  - namespace axiom audit: 23 declarations、standard axioms only
   - 主要 theorem / constructor の `#print axioms`: standard axioms only
   - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`: clean
 - T3 independent audit: `approve / proof-obligation-discharged`
@@ -416,7 +418,8 @@ tracking_issue_closed: false
   共通 raw datum の有限発火 witness。
 - certificate provenance: `ActualSupportIncluded` は `replaceSemantic.extracts` 間の
   点ごとの含意であり、各 support proof の輸送に使用される。
-  comparison Hom や H¹ map を入力しない。
+  comparison Hom や H¹ map を入力しない。有限 fixture は元 support から拡大
+  support への成立例と、逆包含の不成立例を持つ。
 - proof-use: tuple と source label を保つ五つの boundary compatibility が
   `comm0` / `comm1` を生成し、別仮定 `d₁ z = 0` が restricted cocycle を作る。
 - structure-field escape: none found。`ThreeCochainComplex.Hom` は入力ではなく

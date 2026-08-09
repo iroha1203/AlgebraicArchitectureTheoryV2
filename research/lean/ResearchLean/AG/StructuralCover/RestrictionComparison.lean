@@ -36,6 +36,37 @@ def ActualSupportIncluded {U : AtomCarrier.{u}} {D : ExtractionDoctrine U}
     small.replaceSemantic.extracts source atom →
       large.replaceSemantic.extracts source atom
 
+namespace NerveGenerationWitness
+
+open FiniteModel
+
+/-- The original finite fixture support is genuinely included in the expanded support. -/
+theorem original_support_included_expanded :
+    ActualSupportIncluded (SemanticVariant.original doctrine) expandedVariant := by
+  intro source atom horiginal
+  have hbase : doctrine.extracts source atom := by
+    simpa using horiginal
+  exact (expandedVariant_extracts_iff source atom).2
+    (Or.inl ((doctrine_extracts_iff source atom).1 hbase))
+
+/-- The expanded finite fixture support is not included back in the original support. -/
+theorem expanded_support_not_included_original :
+    ¬ ActualSupportIncluded expandedVariant (SemanticVariant.original doctrine) := by
+  intro hinclude
+  have hexpanded :
+      expandedVariant.replaceSemantic.extracts PUnit.unit
+        FiniteAtom.componentC :=
+    (expandedVariant_extracts_iff PUnit.unit FiniteAtom.componentC).2
+      (Or.inr rfl)
+  have horiginal := hinclude PUnit.unit FiniteAtom.componentC hexpanded
+  have hbase : doctrine.extracts PUnit.unit FiniteAtom.componentC := by
+    simpa using horiginal
+  have heq :=
+    (doctrine_extracts_iff PUnit.unit FiniteAtom.componentC).1 hbase
+  exact FiniteAtom.noConfusion heq
+
+end NerveGenerationWitness
+
 /-- A generated small-support chart maps to the same Atom in the large support. -/
 def includedChartMap {U : AtomCarrier.{u}} {D : ExtractionDoctrine U}
     {small large : SemanticVariant D} (hinclude : ActualSupportIncluded small large)
