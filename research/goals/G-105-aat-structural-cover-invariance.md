@@ -4,12 +4,11 @@
 - `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
-- `predecessor`: G-102(二相係数の障害 support 定理、`target-theorem-proved`
-  2026-08-03、report
+- `predecessor`: G-102(二相係数の障害 support 定理、`target-theorem-proved`。
+  report
   [research/reports/G-102-aat-two-phase-obstruction.md](../reports/G-102-aat-two-phase-obstruction.md))。
   依存 profile / 二相分解 / Atom-indexed 係数複体の確定 artifact
   (`research/lean/ResearchLean/AG/TwoPhase/` 配下)を正本として参照する。
-  本カードの語彙は 2026-08-09 に同期済み。
 - `tracking issue`: [#3950](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3950)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§2 幾何対応仮説、§8 候補9)
 - `research aim`: 「構造が空間を運び、意味が係数を運ぶ」を theorem に

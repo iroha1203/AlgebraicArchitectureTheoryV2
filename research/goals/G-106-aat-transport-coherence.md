@@ -7,25 +7,26 @@
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
   proved-in-research artifact(`Doct_U` / `transportAlong` / opcartesian
   普遍性。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
-  unported)を土台として参照する。G-102〜G-104 は完了済みであり、
-  確定事項3点(下記)も固定済み。active 昇格は隊列の人間判断のみを残す。
+  unported)を土台として参照する。確定事項3点(下記)は固定済みであり、
+  active 昇格は人間の判断による。
 - `tracking issue`: 未起票(active 昇格時に起票する)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
-- `確定事項(2026-08-09 固定。旧・昇格前確定事項)`: 次の3点を固定した。
-  active 昇格は隊列の人間判断のみを残す。
+- `確定事項`: 次の3点を固定した。active 昇格は人間の判断のみを残す。
   (1) **2-障害の係数型**: fiber 内自己同型群に値を取る**非可換 2-cochain**
   を、有限図式上の具体データとして直接定義する(gerbe / 一般
   pseudofunctor coherence 理論は経由しない。mathlib の一般論は個別補題の
   流用に限る)。可換化した不変量は採らない — 可換化で消える非可換情報が
-  (c) 三者調停 witness の実質になりうるためであり、アーベル群化による
-  情報落ちは G-104 条件Cハントの教訓(正値性の喪失、候補8 の系譜)とも
-  整合する。coboundary は lift 再選択(fiber 自己同型による書き換え)で
-  定義し、2-障害は coboundary 剰余として立てる。
-  (2) **消滅同値の regime**: `FiniteModel` carrier 上の有限図式(菱形・
-  三角形およびその有限合成)に限定して「消滅 ⟺ coherent 化可能」を
-  主張する。無限図式・一般 regime への拡張は frontier に置く。
+  (c) 三者調停 witness の実質になりうるためである。coboundary は lift
+  再選択(fiber 自己同型による書き換え)で定義し、2-障害は coboundary
+  剰余として立てる。
+  (2) **消滅同値の regime**: 一般 carrier `U` 上の**有限図式**(菱形・
+  三角形およびその有限合成)で「消滅 ⟺ coherent 化可能」を主張する
+  (claim boundary の対象範囲と同一。carrier の有限性は要求しない —
+  同値の両方向は与えられた coboundary データの書き換えで立ち、fiber の
+  有限性を要しない見込みのため)。witness は `FiniteModel` へ具体化する。
+  無限図式への拡張は frontier に置く。
   (3) **完了面**: 最小完了面 = (b)(c) の witness+統一機構。(a) は正例
-  (canonical cleavage の整合)として完了面に含める(既定案を採用)。
+  (canonical cleavage の整合)として完了面に含める。
 - `research aim`: 輸送の比較射の合成が閉じない障害を 2-cocycle 型の
   不変量として立て、三つの現象 — (a) 塔の cleavage の段間合成(段ごとに
   lift が在っても end-to-end で失敗しうる)、(b) doctrine 圏の菱形の
@@ -87,7 +88,7 @@
      対し、合成の閉じなさを測る fiber 内自己同型群値の非可換 2-cochain
      (確定事項 (1))を定義し、cocycle 条件と、lift 再選択(coboundary)に
      よる同値を証明する。
-  3. **(iii) 消滅と整合の同値**: `FiniteModel` 上の有限図式(菱形・
+  3. **(iii) 消滅と整合の同値**: 一般 carrier `U` 上の有限図式(菱形・
      三角形とその有限合成。確定事項 (2))で、2-障害の消滅と coherent な
      再選択の存在が同値である。
   4. **(iv) 障害 witness 2種**: (b) 菱形の二経路輸送が再選択で消えない
@@ -132,7 +133,7 @@
     導出し、coherence を field に入れない。
   - `2-障害の定義`: `discharge-required`。fiber 内自己同型群値の非可換
     2-cochain(確定事項 (1))。coboundary 剰余を定義に含める。
-  - `消滅同値`: `discharge-required`。`FiniteModel` 上の有限図式に限る
+  - `消滅同値`: `discharge-required`。一般 carrier 上の有限図式で主張する
     (確定事項 (2))。
   - `菱形 witness / 三者調停 witness`: `discharge-required`。再選択で
     消える障害・pairwise 翻訳不在の構成は放電と数えない。
