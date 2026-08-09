@@ -2,6 +2,7 @@
 
 - 一次仕様: [`research/goals/G-105-aat-structural-cover-invariance.md`](../goals/G-105-aat-structural-cover-invariance.md)
 - tracking Issue: [#3950](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3950)
+- evidence PR: [#3953](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3953)
 - target theorem: Structural Cover Base Invariance Theorem
 - proof state: `target-refuted`
 - completion candidate: `no`
