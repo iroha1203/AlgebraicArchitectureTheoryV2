@@ -7,18 +7,95 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 import build_results
 import r2_hunt
 
 
+class Round12ParentBoundaryTest(unittest.TestCase):
+    def test_round_keys_are_the_fixed_twelve_key_tuple(self) -> None:
+        expected = (
+            "round1_direct",
+            "round2_component",
+            "round3_certified",
+            "round4_closed_2d",
+            "round5_mixed_support",
+            "round6_nonfree_linear_face_chain",
+            "round7_nonfree_branching_face_chain",
+            "round8_invalid_diagnostic_relation_grammar",
+            "round9_valid_mixed_relation_support",
+            "round10_valid_multichart_face_chain",
+            "round11_post_punit_wheel_bipartite",
+            "round12_post_punit_octahedral_partitioned",
+        )
+        self.assertIsInstance(
+            build_results.R2_ROUND_KEYS_THROUGH_ROUND12,
+            tuple,
+        )
+        self.assertEqual(len(build_results.R2_ROUND_KEYS_THROUGH_ROUND12), 12)
+        self.assertEqual(build_results.R2_ROUND_KEYS_THROUGH_ROUND12, expected)
+        self.assertIs(
+            build_results.R2_ROUND_KEYS,
+            build_results.R2_ROUND_KEYS_THROUGH_ROUND12,
+        )
+        self.assertIs(
+            build_results.R2_ROUND_PROVENANCE,
+            build_results.R2_ROUND_PROVENANCE_THROUGH_ROUND12,
+        )
+        self.assertEqual(
+            tuple(build_results.R2_ROUND_PROVENANCE_THROUGH_ROUND12),
+            expected,
+        )
+
+
 class BuildResultsSummaryTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.full = build_results.results_report()
+        cls.through12_full = build_results.results_report_through_round12()
+        with patch.object(
+            build_results,
+            "results_report_through_round12",
+            return_value=cls.through12_full,
+        ) as full_helper:
+            cls.full = build_results.results_report()
+        cls.full_helper_mock = full_helper
         cls.full_rendered = build_results.render_json(cls.full)
-        cls.summary = build_results.results_summary_report(cls.full)
+        cls.through12_summary = (
+            build_results.results_summary_report_through_round12(
+                cls.through12_full
+            )
+        )
+        with patch.object(
+            build_results,
+            "results_summary_report_through_round12",
+            wraps=build_results.results_summary_report_through_round12,
+        ) as summary_helper:
+            cls.summary = build_results.results_summary_report(cls.full)
+        cls.summary_helper_mock = summary_helper
         cls.summary_rendered = build_results.render_json(cls.summary)
+
+    def test_through_round12_helpers_match_public_canonical_bytes(self) -> None:
+        self.full_helper_mock.assert_called_once_with()
+        self.summary_helper_mock.assert_called_once_with(self.full)
+
+        through12_full_rendered = build_results.render_json(self.through12_full)
+        self.assertEqual(through12_full_rendered, self.full_rendered)
+        self.assertEqual(
+            sha256(through12_full_rendered.encode("utf-8")).hexdigest(),
+            build_results.FULL_RESULTS_EXPECTED_SHA256,
+        )
+        self.assertIsNot(self.full, self.through12_full)
+
+        through12_summary_rendered = build_results.render_json(
+            self.through12_summary
+        )
+        self.assertEqual(through12_summary_rendered, self.summary_rendered)
+        self.assertEqual(
+            sha256(through12_summary_rendered.encode("utf-8")).hexdigest(),
+            build_results.SUMMARY_RESULTS_EXPECTED_SHA256,
+        )
+        self.assertIsNot(self.summary, self.through12_summary)
 
     def test_registered_full_audit_hashes_are_unchanged(self) -> None:
         self.assertEqual(
@@ -200,6 +277,7 @@ class BuildResultsSummaryTest(unittest.TestCase):
 
         full_before_mutation = build_results.render_json(self.full)
         detached = build_results.results_summary_report(self.full)
+        self.assertIsNot(detached, self.full)
         detached["r0"]["gates"]["c_block_reduction"]["global_h1"][
             "comparison_rank"
         ] = -1

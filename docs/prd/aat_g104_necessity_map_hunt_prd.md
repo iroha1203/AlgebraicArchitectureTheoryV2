@@ -7,6 +7,9 @@
   GitHub Issue の dependency で管理する。
 - 実装者: Codex(prd-loop)。探索は #3912 と同じく vibe coding による off-loop
   ハントであり、research loop の cycle ではない。
+- 人間裁定(3): Issue #3948 comment `5244071526` により、R2 の許容観測を
+  `G_local-v1` に固定し、停止条件 B をこの grammar に相対化した2点分離として
+  監査する。半径一般化と grammar 横断の絶対的不可能性は本 PRD の対象外とする。
 
 ## 問い
 
@@ -116,6 +119,104 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
 手証明スケッチ、または構造的否定)であり、証明ではない。第二段の GOAL カードが
 この statement を target theorem として固定し直す。
 
+### 人間裁定(3): 許容観測 grammar `G_local-v1`
+
+R2 の候補 C\* が comparison data から読める情報を、次の有限観測写像
+`Obs_G` に固定する。入力 scope は whole を1回と全非空 `A`-scope(全数、sampling
+なし)である。C0\* / C5\* / C6\* は whole で1回、C1\*–C4\* は各 `A` で評価し、
+それ以外の観測 component は whole と各 `A` の双方で構成する。whole と `A` の
+いずれでも、v5 の irreducible terminal の**retained cell / retained FaceTwin class
+だけ**を読む。removed cell / certificate archive は読まない。
+
+1. v5 で固定済みの C0\*–C6\* truth vector。whole record は C0\* / C5\* / C6\*、
+   各 `A` record は C1\*–C4\* を持ち、aggregate 7-vector は後者を全 `A` で AND
+   した派生値としてのみ持つ。
+2. 当該 scope の全 irreducible terminal の trace に現れる登録済み packet kind の
+   **和集合**。閉じた registry は `v4-coarse` / `v4-fine-only` /
+   `coordinate-dependency` / `closed-doubled-cycle` の4種であり、terminal ごとの
+   trace tuple、packet の cell 引数、removed cell archive は保持しない。
+3. chart / vertex / edge / face を根とする半径1の typed incidence ball。
+   chart は現モデルの nerve vertex に付随する chart-label role、vertex は incidence
+   role として別の root type にする。各 retained nerve vertex `v` には chart-role
+   `c_v` をちょうど1個だけ置き、`chart-at` は `c_v` と同じ `v` を結ぶ1辺だけである。
+   chart から incident edge / face へ直接 relation を張らず、`chart-at` は chart-role
+   と incidence-vertex の一対一対応を表す。carrier は root と side-local incidence
+   relation をちょうど1 step で辿れる retained cell に限り、relation は chart-at、
+   edge の endpoint slot 0 / 1、face の ordered boundary slot 0 / 1 / 2 と符号
+   `+ / - / +` だけである。partial cell map は相手側 cell への辺を作らず、
+   `None / mapped` の unary label だけを持つ。fine の chart / vertex は total map の
+   actual status `mapped`、fine の edge / face は actual partial-map statusを使う。
+   coarse の chart / vertex / edge / face は比較元として canonical constant `mapped`
+   に正規化し、`not-applicable` 等の第3値を導入しない。半径外へ出る incidence
+   half-edge は、型と slot だけを持つ匿名 stub とし、異なる stub の同一性・共有性・
+   接続先 ID を保持しない。
+   **ball内部でもexact degreeを保持しない**。ただし半径1内のneighbor identityは
+   保持する。各neighborについて `(neighbor label, rootと同じneighborを結ぶ全
+   slot / sign付きrelationのmultiset, clip₂した半径外typed stub histogram)` という
+   descriptorを作る。これにより、例えばself-loop edgeのendpoint slot 0 / 1が同じ
+   vertexへ入ることと、異なる2 vertexへ入ることは区別する。その上で同型なneighbor
+   descriptorの個数を `clip₂` し、`≥2` のneighbor / stubを個体として展開しない。
+   descriptor間または半径外stub間のidentity / sharednessは保持せず、3個と6個を
+   区別するnode countも残さない。この内部truncation後の rooted typed star
+   signatureについてだけroot-preserving canonical formをserializeする。さらに、
+   各terminal / rootから得たball typeをID-free histogramへ集約し、その外側occurrence
+   multiplicityも `clip₂` する。内部・外部を問わず、count-derived valueはこの3値
+   以外を持たず、parity、modulo、追加threshold、count間の算術比較を派生させない。
+4. label は side、root / cell type、上記 slot / sign、partial-map status、scoped
+   support signature とその `π` image、および次の**閉じた6 flag**だけである。
+   target の名前は後述の `π`-preserving relabel で消し、support の cardinality 等の
+   派生 count は追加しない。
+   - `critical`: retained edge / vertex が v5 terminal の `critical_edges` /
+     `critical_vertices` に属する。
+   - `guard`: retained coarse edge が v5 の C5\* / C6\* guard domain に属する。
+   - `port`: retained fine vertex が v5 C1\* の critical port 集合に属する。
+   - `bridge`: retained edge が non-self-loop で、当該 edge を除くとその両 endpoint
+     を結ぶ retained path が無い。
+   - `self-loop`: retained edge の両 endpoint が同じ。
+   - `FaceTwin`: retained face が2個以上の actual member を持つ retained FaceTwin
+     class に属する。
+   domain 外の root では flag は false とする。flag の追加・削除・再定義は grammar
+   改訂であり progress + streak reset とする。
+5. 非空 `A` は全数評価するが、raw target 名、raw subset bitset、列挙順を serialize
+   しない。coarse / fine target の同時置換 `(σ, σ')` で
+   `σ ∘ π = π ∘ σ'` を満たすものの全 orbit について、whole record と全 `A` record
+   の colored serialization を最小化する。`A` record はその canonical form の
+   sorted histogram とし、同一 record の multiplicity も `clip₂` する。したがって
+   tuple は `π`-preserving target relabel に不変で、raw `A` の ID / order や exact
+   occurrence count `> 2` を復元できない。
+
+候補 C\* は `Obs_G` の成分に対する有限 Boolean 式と全 `A` 量化だけを許す。
+次は許容観測に含めない。
+
+- raw cell ID、fixture 名、semantic / canonical SHA、population membership。
+- `2` を超える exact cell / face / component count。
+- exact global cycle length、full incidence graph の isomorphism lookup。
+- matrix / determinant、global または A-block H¹、comparison rank / injectivity /
+  surjectivity。
+- atom registry にない rewrite / packet atom。
+- parity / modulo / `0 / 1 / ≥2` 以外の threshold、半径外 stub の identity / sharedness、
+  raw `A` bitset / order、T3 / T6 を識別する専用 atom。
+
+grammar 本文、`Obs_G` evaluator source、その transitive structural helper closure、
+有限 atom registry、serialization 規約を
+一つの semantic SHA に束ね、2点分離の実行前に Issue #3948 へ事前登録する。
+`Obs_G` module は Round 15 label ledger / uniformity truth / Stop B checker を import
+または参照してはならない。依存方向は `structural input → Obs_G serialization →
+equality checker ← immutable label ledger` の一方向に固定し、evaluator の reachable
+call graph に ledger、fixture名別truth、payload/comment provenance symbol が無いことを
+source監査する。
+grammar 改訂は進展であり streak を reset する。v1 は半径1、multiplicity
+truncation `0 / 1 / ≥2` に固定し、任意半径への一般化を本 PRD へ持ち込まない。
+
+この grammar における構造的否定は次の2点分離命題である。
+
+> `Obs_G(D₁) = Obs_G(D₂)` だが一様不変性の truth が異なる2 data が存在すれば、
+> `G_local-v1` で表現可能ないかなる incidence / support 条項系も一様不変性を
+> 特徴づけられない。
+
+許容候補は定義上 `Obs_G` を通じてのみ入力を読むため、この結論は有限候補列挙や
+探索 bound に依存しない。一方、他の grammar でも特徴づけ不能だとは主張しない。
+
 ## 実装計画
 
 ### R0: engine fork と calibration gate
@@ -213,8 +314,61 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    消滅・rank 一致と同値または片方向に近い条項、およびその `A`-量化
    (「全 `A` で全単射」を条項と称する恒真化)は不受理。明示の例外は C3 型の
    局所 fiber acyclicity のみ(G-104 カードの理由の範囲を超えて拡張しない)。
+   人間裁定(3)以後の候補は、さらに `G_local-v1` の有限観測写像を通じてのみ
+   comparison data を読み、raw incidence への literal lookup を行わない。
 
-### R3: まとめ
+### R2-B: `G_local-v1` 2点分離
+
+0. **PRD amendment gate**: 本節と停止条件 B / completion AC / Failure Contract の
+   改訂 blob を完成させ、PRD file SHA-256 と git blob SHA、採択した人間裁定 comment
+   `5244071526` を Issue #3948 へ `progress=true` / `streak=0` として同期する。
+   同期 comment ID / created_at / updated_at と両SHAを一次台帳に固定する。この同期を
+   確認するまでは `Obs_G` 実装、semantic SHA 生成、Round 16 事前登録、T3 / T6
+   evaluator / checker の実行を禁止する。
+1. grammar 本文・`Obs_G` evaluator・transitive structural helper closure・閉じた atom
+   registry・serialization の単一 semantic
+   SHA と、T3 / T6 witness の固定入力・期待 component 一致を、分離 checker 実行前に
+   Issue #3948 へ事前登録する。入力は Round 15 preregistration comment `5235347217`
+   の exact arrays / maps / supports と同じ name-free structural serializationであり、
+   source path `r2_hunt.py::round15_verification_fixtures()` から fixture名を除いて
+   `_case_semantic_payload_json` で構成し、登録 manifest path
+   `round15_preregistration_manifest.fixtures[name=...].name_free_semantic_sha256` と照合する。
+   T3 は semantic SHA
+   `452517a5dd3df09eea96f4de0c0b737f274384c239267aeba2d5ba06fda616a2`、
+   T6 は `0e92de476cd0af4dbeb80290afff463354da87c01c4548bab5d7806927d1d180`
+   に一致しなければならない。checker admissionは `Obs_G` を呼ぶ前に、この2 digestと
+   registered fixture projectionの全arrays / maps / supportsをexact検査する。別dataへ
+   Round 15 labelを貼るfallbackを置かない。
+2. evaluator の import / call-graph provenance を監査し、global / A-block H¹、
+   comparison rank / injectivity / surjectivity、population query を読まないことを
+   fail-closed test で固定する。C3 の既登録局所例外を observation label として
+   読むことは許すが、分離 checker 自身が H¹ を再計算してはならない。さらに
+   `Obs_G` reachable closureが `ROUND15_LABEL_LEDGER`、uniformity truth、result comment /
+   payload provenance、Stop B verdictをimport / readしないことをexact symbol監査する。
+3. `TERNARY-CYCLE-3` と `TERNARY-CYCLE-6` について、`Obs_G` の固定 serializationを
+   component ごとに exact 比較する。hand expectation と evaluator が不一致なら
+   calibration failure とし、valid result を生成しない。
+4. 反対側 label は caller 引数から受け取らず、commit 対象の immutable
+   `ROUND15_LABEL_LEDGER` だけから取得する。この ledger は次を canonical
+   serialization と自身のSHAで固定し、そのSHAを手順1の単一 semantic SHAへ含める。
+   - Round 15 result comment `5235636358`、created_at / updated_at
+     `2026-08-10T03:46:15Z`。
+   - canonical payload SHA-256
+     `21b59632026d5ec0f104700f26808a8455e2ca607802a108c6934f68e8911969`、
+     canonical bytes `97,792`、UTF-8 / `ensure_ascii=False` / indent 2 / sorted keys /
+     trailing LF。
+   - `exact_verification.fixtures[name="TERNARY-CYCLE-3"].uniform = true` と
+     `exact_verification.fixtures[name="TERNARY-CYCLE-6"].uniform = false` の2 field。
+   checker admission は label を読む前に、ledger の payload SHA / bytes /
+   serialization / comment metadata / field path / value と登録SHAを exact 検査する。
+   Round 15 full payloadやqueryを再生成せず、新規 H¹ / candidate / population queryを
+   行わない。ledger の hard-codeを provenance なしの truth oracleとして使うこと、
+   caller-supplied labelへのfallbackを置くことも禁止する。
+5. `Obs_G` equality と異なる label を確認した場合、verdict
+   `CSTAR-not-expressible-in-G_local-v1`、一般2点分離 proof、provenance、coverage
+   limit を artifact と report に固定し、停止条件 B を監査する。
+
+### R3-A: 終端 A のまとめ
 
 1. 手証明スケッチ: C\* ⟺ 一様不変性の両方向を、block ごとの相対複体経由
    (既存 hunt-report §4 スケッチの拡張)で素描する。
@@ -224,6 +378,23 @@ frontier の「自由係数反例の law 実現可能性の判定」の消化を
    少なくとも1つ固定する。
 4. report・commit対象のresults summary・full results.jsonのcanonical生成契約・
    README(off-loop 注記)を整備する。
+
+### R3-B: 終端 B のまとめ
+
+1. `G_local-v1` grammar / `Obs_G` evaluator / transitive helper closure / atom registry /
+   serialization / immutable Round 15 label ledger を単一SHAへ束ね、Issue の事前登録値と
+   sourceからの再計算を一致させる。
+2. `Obs_G(TERNARY-CYCLE-3)` と `Obs_G(TERNARY-CYCLE-6)` の whole / 全 `A` componentを
+   exact serializationで比較し、各 componentの一致表と最終bytes一致を固定する。
+   hand expectationとの不一致は calibration failureとしてvalid artifactを生成しない。
+3. import / call-graph / provenance監査により、`Obs_G` とcheckerが禁止観測を読まず、
+   labelが手順 R2-B-4 のledgerだけから来ることを示す。
+4. 任意の許容条項系 `P` が定義上 `P = p ∘ Obs_G` と factorすること、従って同一fiber
+   上の異なるuniformity truthを分離できないことを、finite candidate enumerationや
+   exploration boundに依存しない一般論法として固定する。
+5. verdict `CSTAR-not-expressible-in-G_local-v1`、grammar相対性、coverage limit、
+   results summary / full artifact生成契約 / report / READMEを固定する。終端 A 専用の
+   C\* iff手証明・条項独立性・非退化正例は終端 B の受理条件に流用しない。
 
 ## 停止条件と終端(どれかに達したら報告して停止)
 
@@ -237,11 +408,15 @@ PRD は削除せず改訂対象として残す)。
   必須成果物 = completion acceptance criteria 全点。Issue の close は成果 PR
   (non-draft)の merge 後に行い、第二段の起票へ進む。
 - **B(構造的否定)**: **探索範囲に依存しない一般論法(2点分離型)**により、
-  incidence / support レベルの条項系では一様不変性を特徴づけられないことを
-  示した場合に限る。条項の文法・有限生成規則・複雑度 bound を固定した有限
-  候補族の全滅は B と数えず、coverage limit 付きの限定的結論として report に
-  置き、C 終端の証拠として扱う。必須成果物 = 一般論法の report 固定+R0 / R1
-  成果物。Issue の close は成果 PR(non-draft)の merge 後(人間裁定へ)。
+  `G_local-v1` で表現可能ないかなる incidence / support 条項系も一様不変性を
+  特徴づけられないことを示した場合に限る。具体的には、同じ `Obs_G` を持ちながら
+  一様不変性の truth が異なる2 dataを固定し、許容候補が `Obs_G` を通じてのみ
+  入力を読むことから分離不能性を導く。これは grammar 相対の否定であり、全 grammar
+  横断の絶対的不可能性ではない。固定した有限候補族の全滅だけでは B と数えない。
+  必須成果物 = 単一SHAで固定した grammar / evaluator / atom registry / serialization、
+  H¹ oracle 非依存監査、component-wise `Obs_G` equality、Round 15 label provenance、
+  一般2点分離 proof、R0 / R1 成果物、coverage limit。Issue の close は成果 PR
+  (non-draft)の merge 後(人間裁定へ)。
 - **C(停滞)**: 同一 blocker で2ラウンド進展がなければ中間報告で停止。
   監査単位を固定する: **ラウンド** = R1-1 / R2 では事前登録単位(bound または
   候補 C\* の改訂を伴う Issue への登録1回)、**R1 到達前(R0)では engine 修正
@@ -277,9 +452,12 @@ closeout で実施する。
    verdict が付いた必要性地図が report にあり、事前登録済みの探索 bound と
    normal form(Issue #3948 への登録記録)が明記されている。
 3. 終端 A または B への到達が report で明示され、A の場合は C\* の条項文
-   (第二段の GOAL カードにそのまま書ける形)が固定されている。
+   (第二段の GOAL カードにそのまま書ける形)が固定されている。B の場合は
+   `CSTAR-not-expressible-in-G_local-v1` の2点分離命題、grammar 相対性、
+   absolute claim を行わない coverage limit が固定されている。
 4. C\* 候補(中間候補を含む)に cohomological 条項が混入していない
-   (R2-4 の資格制限)。
+   (R2-4 の資格制限)。人間裁定(3)以後の候補と Stop B checker は
+   `G_local-v1` の許容観測だけを読み、禁止リストへの依存がない。
 5. 成果物一式(engine、tests、commit対象のresults summary、report、README)が
    `research/experiments/g104-necessity-map/` に置かれ、full results.jsonの
    canonical generatorが同じartifact内にあり、README 冒頭に
@@ -293,6 +471,24 @@ closeout で実施する。
 8. 成果 PR 1本が **non-draft** で、固定 head へのレビューと CI green を経て
    merge 済みであり、Issue #3948 への完了同期が済んでいる。draft PR のままの
    完了宣言は不可。応答・commit・PR は日本語。
+9. **B-specific evidence**: 単一 semantic SHA が grammar本文・evaluator source・
+   transitive structural helper closure・閉じたatom registry・serialization・
+   immutable Round 15 label ledgerをexactに拘束する。T3 / T6について whole / 全非空
+   `A` の component-wise `Obs_G` equalityと最終bytes一致があり、hand expectation
+   mismatchはvalid resultを生成しない。import / call-graph監査、Round 15 payload SHA /
+   result comment / exact field pathへ至るlabel provenance、caller label拒否、新規H¹ /
+   candidate / population queryゼロを固定する。任意の許容条項が `Obs_G` を通じて
+   factorする一般証明はfinite enumerationとexploration boundに依存してはならない。
+   `Obs_G`のreachable closureにはlabel ledger / uniformity truth / Stop B provenanceが
+   無く、T3 / T6入力のname-free structural SHAがRound 15登録値
+   `452517a5dd3df09eea96f4de0c0b737f274384c239267aeba2d5ba06fda616a2` /
+   `0e92de476cd0af4dbeb80290afff463354da87c01c4548bab5d7806927d1d180`
+   と一致することもfail-closedに固定する。
+10. PRD削除前に、`G_local-v1` の恒久contract、verdict、provenance、coverage limit、
+    再現手順を `research/experiments/g104-necessity-map/` のengine source / tests /
+    commit対象results summary / report / READMEへ移し、Issue commentや本PRDだけを
+    source of truthとして残さない。その後、PRD path / filename / title / 固有identifier
+    のrepository全体zero-reference scanを行う。
 
 ## checkpoint 受理条件(C / R0-fail 終端。task 完了ではない)
 
@@ -323,9 +519,30 @@ checkpoint の受理は task 完了・Issue close・PRD 削除のいずれの根
 - bound と normal form を Issue へ事前登録せずに探索した。
 - verdict を evidence schema なし・bound 不明のまま宣言した。
 - 有限候補族の全滅を停止条件 B(構造的否定)と称した。
+- 人間裁定(3)のPRD改訂をIssueへfile SHA / blob SHA付きでprogress同期する前に、
+  `Obs_G`実装、semantic SHA生成、Round 16事前登録、T3 / T6評価を開始した。
+- `G_local-v1` の grammar本文・evaluator・transitive structural helper closure・
+  atom registry・serialization・immutable label ledgerを単一SHAで事前登録せず
+  2点分離を実行した。
+- `Obs_G` evaluator / checker が raw ID、exact global cycle length、full graph
+  lookup、matrix、global / A-block H¹、comparison rank等の禁止観測を読んだ。
+- `clip₂`以外のparity / modulo / threshold / exact countを派生させた、半径外stubの
+  identity / sharednessやraw `A` ID / orderを保持した、またはT3 / T6を識別する専用
+  atomをregistryへ加えた。
+- T3 / T6 の反対側 label を新規H¹ queryで再計算した、またはRound 15 payloadへの
+  provenanceを欠いたまま使用した。
+- checkerがcaller-supplied / hard-coded labelへfallbackした、label ledgerの登録SHA・
+  payload SHA・comment metadata・field pathを検査する前にlabelを読んだ。
+- `Obs_G` evaluator / reachable helperがRound 15 label ledger、uniformity truth、result
+  comment / payload provenance、Stop B verdictをimport / readした、またはT3 / T6の
+  structural input digest / exact arrays / maps / supportsを検査せず既存labelを貼った。
+- grammar 相対の分離不能性を、全 incidence / support grammar 横断の絶対的不可能性と
+  して報告した。
 - C\* に cohomological 条項(またはその量化形)が混入した。
 - 変更禁止対象に手を入れた。
 - 同一 blocker で2ラウンド停滞したのに停止条件 C を踏まずに続行した。
+- `G_local-v1` の恒久contract / status / provenanceを現行artifactへ移す前、または
+  PRD固有referenceのzero-reference scan前にPRDを削除した。
 
 ## non-goals
 
@@ -334,6 +551,7 @@ checkpoint の受理は task 完了・Issue close・PRD 削除のいずれの根
 - G-104 カード・report・`ResearchLean` の改訂(完了 GOAL は不変)。
 - 論文A本文の変更。
 - 係数体の一般化(`ℚ` 固定)、無限 regime、doctrine 間 comparison。
+- 半径1を任意の固定半径 `r` へ一般化すること、および全 grammar 横断の表現不能性。
 
 ## 停止後の接続(参考)
 
@@ -341,6 +559,7 @@ checkpoint の受理は task 完了・Issue close・PRD 削除のいずれの根
 GOAL として固定し、両方向の Lean 証明を `$target-theorem-loop` で行う
 (`research/README.md` の routing に従う)。GOAL 番号は本 PRD では固定せず、
 第二段の起票時に Issue 側で確定する。論文Aへは、終端 A なら特徴づけ定理として、
-B なら現行 Atlas 定理+必要性地図(条項独立性と反例目録)を実証素材として
-載せる。C 終端の場合に論文へ載せてよいのは、得られた partial verdict 地図と
+B なら現行 Atlas 定理+必要性地図(条項独立性と反例目録)+`G_local-v1` 相対の
+非局所性を実証素材として載せ、G-107 の target failure policy 経由で statement
+改訂提案を起票する。C 終端の場合に論文へ載せてよいのは、得られた partial verdict 地図と
 blocker の記録に限る(完備な必要性地図として表示しない)。

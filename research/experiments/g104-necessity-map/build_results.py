@@ -22,7 +22,7 @@ SUMMARY_RESULTS_EXPECTED_SHA256 = (
 CHECKPOINT_AMENDMENT_ISSUE_COMMENT = 5231857267
 ROUND1_THROUGH_ROUND7_HASH_RESYNC_ISSUE_COMMENT = 5230523348
 
-R2_ROUND_KEYS = (
+R2_ROUND_KEYS_THROUGH_ROUND12 = (
     "round1_direct",
     "round2_component",
     "round3_certified",
@@ -36,11 +36,12 @@ R2_ROUND_KEYS = (
     "round11_post_punit_wheel_bipartite",
     "round12_post_punit_octahedral_partitioned",
 )
+R2_ROUND_KEYS = R2_ROUND_KEYS_THROUGH_ROUND12
 
 # Historical result comment IDs cannot be added to the registered round payloads
 # without changing their hashes.  This immutable projection-only ledger records
 # the public Issue #3948 chronology fixed before amendment comment 5231857267.
-R2_ROUND_PROVENANCE = {
+R2_ROUND_PROVENANCE_THROUGH_ROUND12 = {
     "round1_direct": {
         "preregistration_issue_comments": [5230386108, 5230405605],
         "additional_pre_run_issue_comments": [5230443070],
@@ -138,9 +139,17 @@ R2_ROUND_PROVENANCE = {
         "history_classification": "final_valid_no_progress_2_of_2",
     },
 }
+R2_ROUND_PROVENANCE = R2_ROUND_PROVENANCE_THROUGH_ROUND12
+
+if tuple(R2_ROUND_PROVENANCE_THROUGH_ROUND12) != (
+    R2_ROUND_KEYS_THROUGH_ROUND12
+):
+    raise AssertionError("Round-12 provenance keys do not match the parent boundary")
 
 
-def results_report() -> dict[str, object]:
+def results_report_through_round12() -> dict[str, object]:
+    """Build the immutable parent checkpoint through R2 Round 12."""
+
     r0 = necessity_map.r0_report()
     r1 = necessity_map.r1_report()
     r2 = {
@@ -262,6 +271,12 @@ def results_report() -> dict[str, object]:
             ),
         },
     }
+
+
+def results_report() -> dict[str, object]:
+    """Return the current canonical full report, detached from its parent build."""
+
+    return deepcopy(results_report_through_round12())
 
 
 def render_json(report: dict[str, object]) -> str:
@@ -534,7 +549,7 @@ def _normalized_progress_audit(
         }
     else:
         audit = dict(report["progress_audit"])
-    audit["progress"] = R2_ROUND_PROVENANCE[key]["progress"]
+    audit["progress"] = R2_ROUND_PROVENANCE_THROUGH_ROUND12[key]["progress"]
     audit.setdefault("streak_after_round", None)
     return audit
 
@@ -544,7 +559,7 @@ def _round_summary(
     report: dict[str, object],
     previous_raw_cases: int,
 ) -> dict[str, object]:
-    provenance = R2_ROUND_PROVENANCE[key]
+    provenance = R2_ROUND_PROVENANCE_THROUGH_ROUND12[key]
     population = _population_summary(report["population"])
     recorded_streak = _normalized_progress_audit(key, report)[
         "streak_after_round"
@@ -590,16 +605,18 @@ def _round_summary(
     }
 
 
-def results_summary_report(
+def results_summary_report_through_round12(
     full_report: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    full = results_report() if full_report is None else full_report
+    """Project the immutable parent checkpoint through R2 Round 12."""
+
+    full = results_report_through_round12() if full_report is None else full_report
     r0 = full["r0"]
     r1 = full["r1"]
     r2 = full["r2"]
     rounds = []
     previous_raw_cases = 0
-    for key in R2_ROUND_KEYS:
+    for key in R2_ROUND_KEYS_THROUGH_ROUND12:
         round_summary = _round_summary(key, r2[key], previous_raw_cases)
         rounds.append(round_summary)
         previous_raw_cases = round_summary["population"]["raw_cases"]
@@ -647,6 +664,14 @@ def results_summary_report(
         },
     }
     return deepcopy(summary)
+
+
+def results_summary_report(
+    full_report: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """Return the current canonical summary via the fixed Round-12 parent API."""
+
+    return results_summary_report_through_round12(full_report)
 
 
 def parser() -> argparse.ArgumentParser:
