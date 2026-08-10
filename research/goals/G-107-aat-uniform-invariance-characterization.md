@@ -4,6 +4,15 @@
 - `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
+- `target status`: `target-refuted`(2026-08-11、`target failure policy` の
+  (iii) 反例条項を適用)。登録 C\* candidate(CERTIFIED-v3 +
+  support-active 差分)は exact 有限反例 `CONTRACTIBLE-TRIANGLE`
+  (`Z_univ \ C*` の点。条項系 C\* 節の改訂記録に固定)で反証済み。C\* の
+  再 calibration は hunt 後継 round(Issue #3948。v4・v5 も invalid)の
+  人間裁定待ちであり、有効 candidate の採用は statement 変更として
+  semantic ID の事前登録と 4 lane 正式再査読を経る。それまで
+  target-theorem loop は起動しない。runtime state は tracking
+  Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
@@ -40,10 +49,17 @@
   一般の射に jump data `J_L := (dim ker, dim coker)` を付け、reading
   空間を plateau と jump locus を持つ有限 poset persistence module として
   読む。G-107 の一様不変性は law family を全量化するため、本カードが
-  特徴づけるのは単一 `D_L` の同型領域ではなく、全 adequate `L` にわたる
-  共通部分 **universal zero-jump 領域**
-  `Z_univ := { 射 | ∀ adequate L, J_L = (0, 0) }` である(target の正確な
-  読みは `C* ⟺ Z_univ`)。functor 水準の主張(射の合成整合、圏上の
+  特徴づけるのは単一 `D_L` の同型領域ではなく、law 非依存の comparison
+  geometry の射 `f`(読み対 `q ≤ q'` と canonical `π`)を共通定義域と
+  して先に固定し、全 law family にわたり交差した **universal zero-jump
+  領域**
+  `Z_univ := { f | ∀ L, Adequate L q → Adequate L q' → J_L(f) = (0, 0) }`
+  である(`Adequate` は reading 相対なので、両端の adequacy を仮定側で
+  束縛する。`Read_L` ごとの射をそのまま交差するのではない)。この
+  `Z_univ` 表記は pairwise の program 水準 candidate であり、本カードの
+  claim は (ii)(iii) の全単射形のみ — `J_L = (0, 0)` と
+  `Function.Bijective` を結ぶ有限次元 bridge を含む functor 水準の
+  正確化は後続カードで固定する。functor 水準の主張(射の合成整合、圏上の
   局所定数性、jump data の一般論)は本カードでは claim しない。合成整合は
   輸送の 2-cell 整合(G-106 の領分)に接続するため、後続カードで固定する。
   この構図の下で反例は層別に読む。(iii) の反例(uniform ∧ ¬C\*)は
@@ -220,6 +236,23 @@
     law-generated 係数からも不可視な cell を条項が読む経路 — 必要性
     (iii) の A-block 反証経路と一致しない読み — を塞ぐ是正であり、
     対応関係は anti-weakening rule の改訂記録規則で管理する。
+    **改訂記録(2026-08-11、`target-refuted`)**: この C\*
+    (CERTIFIED-v3 + support-active)は必要性 (iii) の exact 有限反例
+    `CONTRACTIBLE-TRIANGLE` で反証された。fixture = 非零 H¹ の
+    self-loop 成分と H¹-neutral な filled triangle 成分の直和、粗側
+    Target 2点・細側 Target 3点、`π = (0, 0, 1)`(`fine = id` と取れば
+    `comparisonFactor_unique` により supplied factor ではなく canonical
+    factor として実現される)。全非空 `A`(`{0}` = 1→1 rank 1、
+    `{1}` = 0→0 rank 0、`{0,1}` = 1→1 rank 1)で比較は同型 = 一様
+    不変だが、C0\*・C1\*・C2\*・C4\* が破れる。機構 = one-pass
+    free-pair 除去は `(e, e, e)` 型のみを読むため、boundary 3辺が相異なる
+    filled triangle の H¹-neutral な retained face 構造を還元できない。
+    fixture の正本は Issue #3948 required catalog(exact normal form
+    登録済み)。後継 candidate v4(`SUPPORT-ACTIVE-JOINT-COLLAPSE`)・
+    v5(`COORDINATE-DOUBLED-CYCLE`)も invalid(Issue #3948 Round 14 /
+    15)。本節の C\* 条項本文は反証済み candidate の記録として保持し、
+    差し替えは有効 candidate の semantic ID 事前登録・statement 改訂・
+    正式再査読を経てのみ行う。
   この設定で次を証明する。
   1. **(i) 値部分集合還元**: comparison data が一様不変であることと、
      すべての非空 `A ⊆ q.Target` について A-subnerve の定数 `ℚ` 係数 H¹
@@ -290,7 +323,10 @@
   閉包の cycle 消滅補題、条項系 C\* の定義、**C\* の決定手続**(有限
   入力から構成する `Decidable (CStar data)` instance、または boolean
   checker とその sound / complete theorem。非構成的な古典 instance で
-  済ませない)、十分性 theorem、必要性 theorem、現行 C 非必要性
+  済ませない。入力は `DecidableEq` を持つ有限 target / cell・`Finset`
+  support・実行可能な factor 計算を備えた computable presentation として
+  定義し、既存 comparison geometry への sound / complete 対応 theorem を
+  伴う)、十分性 theorem、必要性 theorem、現行 C 非必要性
   witness 7種、非退化発火 witness portfolio、
   report `research/reports/G-107-aat-uniform-invariance-characterization.md`。
 - `target proof strategy`: U0 値部分集合還元(hunt-report §R0 の conjunct
@@ -369,7 +405,14 @@
   - `C\* の決定手続`: `discharge-required`。有限入力からの decision
     procedure(`Decidable` instance または bool checker + sound /
     complete theorem)を構成する。非構成的な古典 instance(`Classical.dec`
-    等)で済ませることは放電と数えない。
+    等)で済ませることは放電と数えない。既存 API の chart 台は `Set`、
+    canonical factor は `Classical.choose` 由来であり、そのままでは
+    計算可能な equality / membership を供給しないため、`DecidableEq` を
+    持つ有限 target / cell・`Finset` support・実行可能な factor を備えた
+    **computable presentation** を定義し、既存 comparison geometry との
+    sound / complete(または同値)対応 theorem を併せて放電する。
+    presentation の導入だけで対応 theorem を欠く checker は放電と
+    数えない。
   - `必要性の条項別構成 (iii)`: `discharge-required`。各条項の破れから
     非全単射 A-block を構成する。hunt の零結果を証明根拠にしない。
   - `現行 C 非必要性 witness 7種 (iv)`: `discharge-required`。存在
