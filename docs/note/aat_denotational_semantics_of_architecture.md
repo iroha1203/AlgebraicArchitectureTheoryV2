@@ -469,3 +469,31 @@ candidateとして扱う。
   換金する。affine水準が恒真化した場合はfunctor定義の独立性を作り直す。
 - 昇格条件: base changeカードの完了(または並走スコープの確定)と、
   set / groupoid分岐の裁定。それまで本草案はノート内に置く。
+
+## 11. 研究プログラムの名 — Semantic Geometry of Architecture
+
+本ノートから開く研究プログラムを次の名で呼ぶ。
+
+> **Semantic Geometry of Architecture**
+>
+> Atomとlawから生成される意味のモジュライと、その存在・障害・変形・
+> 特異性・reading間輸送・Scheme / Stack表現可能性を研究する幾何。
+
+語順が内容である。これは幾何を道具に意味を説明する geometric semantics では
+ない。coherent semantic realization そのものがモジュライをなし、意味が空間を
+持つ — その空間を研究する幾何である。表示的意味論(§1〜§8)はこの
+プログラムへの入口であり、意味の幾何(§9)と山頂candidate(§10)がその
+最初の行程表にあたる。
+
+位置づけは三層で固定する。
+
+```text
+AAT — 純粋数学的土台(第I〜X部)
+Semantic Geometry of Architecture — AATの上に開く研究プログラム
+SAGA — その中の証明済み定理系列の一つ(貼り合わせ・修理・descent、第X部)
+```
+
+命名規律: 本リポジトリでは、この名を**略さない**。頭字語はGrothendieckの
+Séminaire de Géométrie Algébriqueと衝突するため使用せず、常に
+Semantic Geometry of Architecture と綴る。既存の確立語彙 SAGA(第X部の
+定理系列)とは別物であり、併記する場合は上の三層で区別する。
