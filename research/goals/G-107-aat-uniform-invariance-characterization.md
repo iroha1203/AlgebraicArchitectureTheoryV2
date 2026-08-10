@@ -31,6 +31,22 @@
   comparison data から決定可能になり、Atlas 定理は十分条件の定理から
   特徴づけ定理へ昇格する。あわせて、law 量化を有限対象(粗側 Target の
   非空部分集合)へ落とす**値部分集合還元**を theorem として固定する。
+  本定理は、reading 圏上の診断 local-system 構想(`program context`)に
+  おける**同型領域の特徴づけ**として位置づく。
+- `program context`(上位構図、2026-08-11 追記): 本カードの特徴づけ定理は
+  次の構想の pair 水準の核である — law family 量化を固定した読みの圏
+  `Read_L` 上で診断 `D_L(q) := H¹` を functor として構成し、C\* を満たす
+  射は同型へ写り(本カード (ii)(iii) が pair 水準で固定する内容)、一般の
+  射には `(dim ker, dim coker)` の jump data を付け、reading 空間を
+  plateau と jump locus を持つ有限 poset persistence module として読む。
+  functor 水準の主張(射の合成整合、圏上の局所定数性、jump data の一般論)
+  は本カードでは claim しない。合成整合は輸送の 2-cell 整合(G-106 の
+  領分)に接続するため、後続カードで固定する。この構図の下では、(iii) の
+  反例は特徴づけの失敗ではなく jump locus のデータとして換金される
+  (`target failure policy` の受理構図と整合)。関連考察は表示的意味論
+  ノート
+  [docs/note/aat_denotational_semantics_of_architecture.md](../../docs/note/aat_denotational_semantics_of_architecture.md)
+  §10(Resolution Diagnostic Local-System)。
 - `core tension`: 三つの稜線がある。第一に**特徴づけの実質**: C\* が
   cohomology 語彙を密輸すれば「全 A で全単射」の恒真化に堕ちる。C\* は
   FaceTwin 類・one-pass free-pair 除去・cycle-critical cell・SLOT / KILL
@@ -95,7 +111,11 @@
   最簡化(条項の冗長性判定)、blocker 帰納の被覆拡張(lift 数無制限・
   cross-chart nonloop incidence)、定量版(非全単射 block の次元下界)、
   第VIII部測定理論・論文Aへの特徴づけ定理としての接続、hunt bound の
-  拡張探索との相互フィード(反例が出た場合の C\* 改訂ループ)。
+  拡張探索との相互フィード(反例が出た場合の C\* 改訂ループ)、
+  reading 圏 `Read_L` 上の functor 化と C\*-locus 上の局所定数性
+  (local-system 化。`program context` の後続カード素材)、一般射の
+  `(dim ker, dim coker)` jump data(前掲の定量版の圏水準版)、
+  persistence module 読みの有限計算可能性。
 - `spine`(仮説的道筋。壊してよい): U0 値部分集合還元の Lean 化 →
   U1 前処理(FaceTwin / free-pair / critical)の定義と free-pair 除去の
   H¹ 比較不変性 → U2 CertifiedSwap 閉包の cycle 消滅補題(blocker の
