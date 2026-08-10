@@ -383,6 +383,15 @@ candidateとして扱う。
   空でないことの判定=障害類消滅(第X部定理8.2)、選択の自由度=`H^0` torsor、
   first-order repair方向=`I/I^2` が、この空間の幾何の記述として一列に並ぶ。
   §9の幾何の層は、この定義の下で読みから構成へ昇格する。
+- **Semantic Scheme Representability(山頂candidate)**。係数代数 `R` ごとの
+  coherent lawful realization を集めるfunctor `Sem_{A,r}(R)` が、architecture
+  scheme `M_{A,r}` により `Sem_{A,r}(R) ≃ Hom(Spec R, M_{A,r})` として
+  表現されること。law=方程式系により、chart局所の表現可能性は
+  law algebraの商の `Spec` としてほぼ定義から従い、主張の実質はcover上の
+  descent貼り合わせにある。成立すれば `AATSch` の名が定理として換金され、
+  Atlas定理はsemantic schemeの座標非依存性の `H^1` shadowとして再配置される。
+  実現の自己同型を数える場合、目標はscheme表現可能性からstack表現可能性へ
+  上がる。カード草案は本節末尾。
 - **Resolution Diagnostic Local-System**。law family `L` に対するreadingの圏
   `Read_L` を構成し、診断 `D_L(q) := H^1(C_L(q))` をfunctorとして立てる。
   条件Cを満たす射は同型へ写り、一般の射には `(dim ker, dim coker)` を付ける。
@@ -418,3 +427,45 @@ candidateとして扱う。
   Period Separationが素材になる。
 - **二相構造(§7)の tooling 側での明示化**。設計時に選択した equation system を
   そのまま LawPolicy 入力として引き渡す運用の具体化。
+
+### カード草案 — Semantic Scheme Representability(昇格前の素描)
+
+本草案はGOALカードではない。research/goals/ への昇格時にcard contractへ
+書き直す前提の素描であり、statementの固定もレビューもまだ経ていない。
+
+- 仮id: `G-1xx-aat-semantic-scheme-representability`
+- research aim(素描): Atomとlawから生成されたcoherent realization functor
+  `Sem_{A,r} : CommAlg -> Set`(またはGroupoid)を、係数代数に自然な同値
+  `Sem_{A,r}(R) ≃ Hom(Spec R, M_{A,r})` で表現するarchitecture scheme
+  `M_{A,r}` を、law algebraとobstruction idealのaffine chartから
+  貼り合わせて構成する。表現同値はadmissibleなreading変更と両立する。
+- core tension(素描): 最大リスクは循環定義。realization functorを
+  `M` への射として定義すれば表現可能性は恒真に堕ちる。functorは
+  Atom / lawデータからの**R値方程式解**として独立に定義し、表現可能性を
+  定理側に置く。affine chart水準はlaw algebraの商の `Spec` でほぼ定義的に
+  従うため、主張の実質は (a) functorの独立定義の非退化性、(b) cover上の
+  descent貼り合わせ、(c) reading変更との両立、の三点に置く。
+- 前提機構(着手条件): ①K0 / K1係数生成契約の**base change**
+  (`ℚ` 固定からR-代数への一般化)— 最初の技術的関門であり、単独の
+  先行カード候補。②set値 / groupoid値の分岐の裁定(実現の自己同型を
+  数えるか)。groupoid値ならscheme表現可能性ではなくstack表現可能性が
+  目標になり、輸送の2-cell整合(G-106)が前提に入る。
+- 依存(素描): law=方程式系(G-06)、descent定理(第X部・conormal)、
+  G-101(reading間輸送)、G-106(高次整合。stack版のみ)、
+  local-system構想(G-107 program context)、係数base change(未着手)。
+- target theorem候補(素描、未固定):
+
+  ```text
+  Semantic Scheme Representability (candidate):
+  有限regimeと明示descent条件の下で、Atom / lawから独立に定義された
+  coherent realization functor Sem_{A,r} に対し、law algebraの
+  affine chartの貼り合わせとして構成される M_{A,r} が存在し、
+  R に自然な同値 Sem_{A,r}(R) ≃ Hom(Spec R, M_{A,r}) が成り立つ。
+  admissibleなreading変更 q ≤ q' に対し、表現はcanonical射で両立する。
+  ```
+
+- failure policy(素描): scheme表現可能性が閉じない場合、その障害
+  (実現の自己同型・貼り合わせの2-障害)はstack昇格の必要性の証拠として
+  換金する。affine水準が恒真化した場合はfunctor定義の独立性を作り直す。
+- 昇格条件: base changeカードの完了(または並走スコープの確定)と、
+  set / groupoid分岐の裁定。それまで本草案はノート内に置く。
