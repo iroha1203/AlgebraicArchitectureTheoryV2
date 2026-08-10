@@ -32,19 +32,29 @@
   特徴づけ定理へ昇格する。あわせて、law 量化を有限対象(粗側 Target の
   非空部分集合)へ落とす**値部分集合還元**を theorem として固定する。
   本定理は、reading 圏上の診断 local-system 構想(`program context`)に
-  おける**同型領域の特徴づけ**として位置づく。
-- `program context`(上位構図、2026-08-11 追記): 本カードの特徴づけ定理は
-  次の構想の pair 水準の核である — law family 量化を固定した読みの圏
-  `Read_L` 上で診断 `D_L(q) := H¹` を functor として構成し、C\* を満たす
-  射は同型へ写り(本カード (ii)(iii) が pair 水準で固定する内容)、一般の
-  射には `(dim ker, dim coker)` の jump data を付け、reading 空間を
-  plateau と jump locus を持つ有限 poset persistence module として読む。
-  functor 水準の主張(射の合成整合、圏上の局所定数性、jump data の一般論)
-  は本カードでは claim しない。合成整合は輸送の 2-cell 整合(G-106 の
-  領分)に接続するため、後続カードで固定する。この構図の下では、(iii) の
-  反例は特徴づけの失敗ではなく jump locus のデータとして換金される
-  (`target failure policy` の受理構図と整合)。関連考察は表示的意味論
-  ノート
+  おける **universal zero-jump 領域の特徴づけ**として位置づく。
+- `program context`(上位構図、2026-08-11 追記。同日レビューで
+  zero-jump locus / jump locus の層を是正): 本カードの特徴づけ定理は
+  次の構想の pair 水準の核である — 各 adequate law family `L` を固定した
+  読みの圏 `Read_L` 上で診断 `D_L(q) := H¹` を functor として構成し、
+  一般の射に jump data `J_L := (dim ker, dim coker)` を付け、reading
+  空間を plateau と jump locus を持つ有限 poset persistence module として
+  読む。G-107 の一様不変性は law family を全量化するため、本カードが
+  特徴づけるのは単一 `D_L` の同型領域ではなく、全 adequate `L` にわたる
+  共通部分 **universal zero-jump 領域**
+  `Z_univ := { 射 | ∀ adequate L, J_L = (0, 0) }` である(target の正確な
+  読みは `C* ⟺ Z_univ`)。functor 水準の主張(射の合成整合、圏上の
+  局所定数性、jump data の一般論)は本カードでは claim しない。合成整合は
+  輸送の 2-cell 整合(G-106 の領分)に接続するため、後続カードで固定する。
+  この構図の下で反例は層別に読む。(iii) の反例(uniform ∧ ¬C\*)は
+  `Z_univ \ C*` の点 — 全 jump data が `(0, 0)` の **universal zero-jump
+  点**であって jump locus の点ではなく、syntactic な C\*-locus が
+  semantic な同型領域を過小近似しているずれを測るデータになる。ただし
+  それは現 C\* による特徴づけの反証なので、`target failure policy` に
+  従い target 改訂を要する(換金は構図の側であり、target statement の
+  免罪ではない)。(ii) の反例(C\* ∧ ¬uniform)は `C* \ Z_univ` の点で
+  あり、こちらには真の jump がある。一般の nonuniform 射は law-indexed
+  jump profile のデータとなる。関連考察は表示的意味論ノート
   [docs/note/aat_denotational_semantics_of_architecture.md](../../docs/note/aat_denotational_semantics_of_architecture.md)
   §10(Resolution Diagnostic Local-System)。
 - `core tension`: 三つの稜線がある。第一に**特徴づけの実質**: C\* が
@@ -115,7 +125,10 @@
   reading 圏 `Read_L` 上の functor 化と C\*-locus 上の局所定数性
   (local-system 化。`program context` の後続カード素材)、一般射の
   `(dim ker, dim coker)` jump data(前掲の定量版の圏水準版)、
-  persistence module 読みの有限計算可能性。
+  persistence module 読みの有限計算可能性、canonical 反例族
+  (CONTRACTIBLE-TRIANGLE / TERNARY-CYCLE 系列)を素材とする非局所性
+  定理化(固定した局所観測 grammar では `Z_univ` を切り出せないことの
+  定理化。成立すれば C\* 探索の失敗様式そのものが定理に換金される)。
 - `spine`(仮説的道筋。壊してよい): U0 値部分集合還元の Lean 化 →
   U1 前処理(FaceTwin / free-pair / critical)の定義と free-pair 除去の
   H¹ 比較不変性 → U2 CertifiedSwap 閉包の cycle 消滅補題(blocker の
