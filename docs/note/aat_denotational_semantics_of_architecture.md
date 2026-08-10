@@ -95,6 +95,13 @@ reflectionは表示上の性質から追加仮定(coverage、witness completenes
 
 ---
 
+最後に、この対応表は二水準を区別して読む。第VII部の `R : AATSch -> Target` は
+常に与えられる **total analytic reading** であり、入力があれば必ず値を返す。
+一方、第X部の大域切断は存在自体が定理の対象になる **coherent semantic
+realization** である。表示的意味論の語彙では、前者が表示関手、後者が
+「大域的な意味」にあたる。この区別が、§6の存在定理を正しく読む前提になる:
+readingは常に取れるが、整合的な実現は取れるとは限らない。
+
 ## 4. Atomの位置 — 構文と意味の一元生成
 
 部品対応表の中で、Atomの役割は他の部品と同格ではない。この意味論の
@@ -302,6 +309,10 @@ targetを `StateAlgebra` / `EffectSpace` に取った場合の specialization �
   制御する点で先へ進む。
 - **抽象解釈(Cousot)**: 意味論の解像度階層をGalois接続で統一する伝統。
   §6の二方向階層はこれと対比され、adequacyの両側崩落が差分になる。
+- **層論的contextuality(Abramsky–Brandenburgerの系譜)**: 経験的モデルの
+  大域切断の不在をČech的障害として読む先行。大域切断の障害を診断に使う手には
+  ここに先例がある。AATの差分は、site・係数・law・readingがAtomから一緒に
+  生成され、reading間の輸送と解像度不変性まで同じ理論に入ることにある。
 - **工学系譜(reflexion models)**: 設計モデルと抽出モデルの差分計算の実践。
   §7の二相構造は、この実践から設計記述と実装観測の二重管理を取り除き、
   差分を類としてwell-definedに局在化した形にあたる。
@@ -367,6 +378,23 @@ AATはそこに幾何を与える。存在定理の先に形の理論を持つ�
 後続候補は次のとおり。いずれも本ノートの範囲には含めず、証明はすべて未着手の
 candidateとして扱う。
 
+- **意味のモジュライ化**。将来の定義候補 `Sem_r(A) := Γ(X_A^r, P_r)` として、
+  意味論の返り値を単一の値ではなく大域実現の空間(空でありうる)に置く。
+  空でないことの判定=障害類消滅(第X部定理8.2)、選択の自由度=`H^0` torsor、
+  first-order repair方向=`I/I^2` が、この空間の幾何の記述として一列に並ぶ。
+  §9の幾何の層は、この定義の下で読みから構成へ昇格する。
+- **Resolution Diagnostic Local-System**。law family `L` に対するreadingの圏
+  `Read_L` を構成し、診断 `D_L(q) := H^1(C_L(q))` をfunctorとして立てる。
+  条件Cを満たす射は同型へ写り、一般の射には `(dim ker, dim coker)` を付ける。
+  一様不変性のiff特徴づけは「同型領域の特徴づけ」としてこの構図に吸収され、
+  反例は失敗ではなくjump locusのデータになる。functor性の合成整合は
+  2-cell整合(後述の二層構成)の領分であり、終着はreading圏上のsemanticsの
+  fibration / stack。reading空間は有限poset上のpersistence module
+  (プラトーとjump locus)として読める。
+- **semantic saturationの定理化**。生成された全-support nerveがsourceごとに
+  cone化して `H^1 = 0` になる形式化結果は、「情報を無差別に充填すると
+  診断幾何が消える」ことの定理として再読できる。law-selected nerve・
+  relative cohomology・semantic quotientの必要性を導く方向のcandidate。
 - **破れの2-cell化(lax表示)の二層構成**。語りの層=lax表示、定義と定理の層=
   有限presentation+gauge orbit(draft段階のGOAL候補の2-cell raw defect)。
   この分業により、一般coherence理論を経由せずにlax語彙で語れる。
