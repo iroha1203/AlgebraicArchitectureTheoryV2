@@ -23,11 +23,11 @@
   2026-08-11)。**v3 再査読(2026-08-11、Major revisions)**: (iii) の
   現記述(G-104 条件 C からの新 premise なし持ち上げ)は Lean 実体
   (`ConditionC` は law-indexed、C1–C4 が `LawValueLabel` 量化)と
-  不整合で導出不能と確定 — failure policy の規定どおり **claim scope
-  裁定中**((i)(ii)(iv)(v) は独立再現で維持、反例なし)。裁定 →
-  (iii) 改稿 → 新 fixed head の 4 lane 正式再査読を経るまで
-  target-theorem loop は起動しない。runtime state は tracking
-  Issue #3954。
+  不整合で導出不能と確定((i)(ii)(iv)(v) は独立再現で維持、反例
+  なし)。**scope 裁定(2026-08-11、案b採用)**: (iii) を幾何述語
+  `ConditionCAllA` + bridge theorem の2段構成へ改稿した(claim (iii)
+  参照)。新 fixed head の 4 lane 正式再査読を経るまで target-theorem
+  loop は起動しない。runtime state は tracking Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
@@ -59,9 +59,11 @@
   law family 全体で量化した H¹ comparison の全単射性)⟺ `∀ 非空 A,
   J_A = (0, 0)` という還元定理と、computable presentation 上の
   sound / complete decider を固定する — 一様不変性の判定の正本を条項系
-  ではなく計算に置く。第二柱=**Atlas positioning**: G-104 の受理済み
-  artifact から条件 C ⟹ 零 defect(一様量化つき)を corollary として
-  固定し、C0–C6 の各条項が個別には必要でないこと(7 witness)とあわせ
+  ではなく計算に置く。第二柱=**Atlas positioning**: 幾何述語
+  `ConditionCAllA`(条件 C の A-subnerve 読み替え)⟹ 零 defect を、
+  bridge theorem((i) の block ≅ A-subnerve 同定の再利用)+ G-104
+  受理済み pointwise theorem の2段で固定し、C0–C6 の各条項が個別には
+  必要でないこと(7 witness)とあわせ
   `Condition-C locus ⊊ uniform locus` の包含と真性を定める。第三柱=
   **observation nonfactorization**: 半径1の登録観測 grammar
   `G_local-v1` を通して零判定が factor しないこと(T3 / T6 2点分離の
@@ -109,12 +111,15 @@
   Lean 化)と、computable presentation 上の sound / complete decider が
   立って初めて「判定の正本は計算」と言える。engine の `is_uniform()` は
   exact evidence であって正本ではない — この差を theorem で埋めるのが
-  第一柱である。第二に**Atlas corollary の導出可能性**: 条件 C ⟹ 零
-  defect(一様量化つき)が G-104 の受理済み artifact から**新しい
-  material premise なしで**導けるか。G-104 の量化構造(条件 C は law
-  family に言及しない)から導ける見込みだが、検証で新前提が要ると判明
-  した場合は scope 裁定に戻す(failure policy)。第三に**非分解性の
-  忠実性**: (v) の分離定理は、Lean 側の観測写像 `Obs_G` が登録済み恒久
+  第一柱である。第二に**bridge の実質**: `ConditionCAllA` から任意 law
+  の law-indexed `ConditionC`(Lean 実体は C1–C4 が `LawValueLabel`
+  量化)を導く bridge が、(i) の block ≅ A-subnerve 同定の再利用で
+  閉じるか。label の値 fiber と `A` の対応は (i) の機構そのものだが、
+  C1–C4 の各条項が同定を通して transport できることは条項ごとの検証を
+  要する — ここが positioning 柱を G-104 の再宣言から隔てる本体である
+  (v3 初稿の「条件 C は law 非言及」前提は Lean 実体と不整合で導出
+  不能と確定し、scope 裁定(案b)で本形へ改稿、2026-08-11)。第三に
+  **非分解性の忠実性**: (v) の分離定理は、Lean 側の観測写像 `Obs_G` が登録済み恒久
   contract の grammar と一致して初めて意味を持つ。転写を粗くすれば分離は
   自明化し(別の弱い grammar についての定理に堕ちる)、細かくすれば偽に
   なる。忠実転写の構成要素対応表と、T3 / T6 の label を登録 ledger の
@@ -173,8 +178,9 @@
   構成、T3 / T6 の label を assumption・axiom・登録 ledger 参照で
   済ませる構成、非分解性 (v) を条項系候補の有限列挙の全滅で代用する
   弱化、判定結果の answer-encoding を観測成分へ持ち込み (v) を無内容化
-  する構成、(iii) の corollary 化を「G-104 の結論の再宣言」だけで
-  済ませる構成(一様量化への持ち上げを明示しない wrapper)。
+  する構成、(iii) の bridge を fixture 全数検証・型変換 wrapper で
+  済ませる構成、`ConditionCAllA` を law 全量化 premise へ畳んで幾何
+  決定可能性を失わせる構成。
 - `frontier`: **structural certificate の再設計**(設計ノート §4 の
   機構カタログ4点組の整備 → criticality-reflection 型条項を含む後継
   certificate。G-108 候補であり本カードでは主張しない)、
@@ -192,8 +198,8 @@
   persistence module 読みの有限計算可能性。
 - `spine`(仮説的道筋。壊してよい): U0 `J_A` の定義と値部分集合還元の
   Lean 化((i))→ U1 computable presentation と sound / complete
-  decider((ii))→ U2 Atlas corollary(G-104 artifact からの一様量化
-  つき導出。(iii))→ U3 C 非必要性 witness 7種((iv))→ U4 非分解性
+  decider((ii))→ U2 `ConditionCAllA` 定義+bridge theorem+G-104
+  適用((iii))→ U3 C 非必要性 witness 7種((iv))→ U4 非分解性
   (`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable 計算 →
   (i)(ii) 経由の label 導出 → 分離 theorem。(v))→ U5 report。
 
@@ -406,13 +412,22 @@
      `computedFactor = comparisonFactor` 一致 theorem を含む。非構成的な
      古典 instance で済ませない)。一様不変性の判定の正本を条項系では
      なく本 decider に置く。
-  3. **(iii) Atlas positioning(包含)**: G-104 の条件 C(C0–C6)が
-     成立するならば `∀ 非空 A, J_A = (0, 0)`(一様不変)である。これは
-     G-104 の受理済み theorem(Diagnostic Resolution Invariance)から
-     **新しい material premise なしで**導く corollary であり、条件 C が
-     law family に言及しないことから一様量化への持ち上げを明示的に
-     theorem 化する(単なる再宣言 wrapper は不可)。(iv) の witness に
-     より包含は真(`Condition-C locus ⊊ uniform locus`)。
+  3. **(iii) Atlas positioning(包含)**: 幾何述語 **`ConditionCAllA`**
+     — G-104 の C0・C5・C6(Lean 実体で law 非依存の条項)と、C1–C4 の
+     law-value label-block 評価を**全非空 `A` の A-subnerve 評価へ
+     移した**読み替え条項との conjunction — が成立するならば、
+     comparison data は一様不変(`∀ 非空 A, J_A = (0, 0)`)である。
+     証明は2段: **bridge theorem** `ConditionCAllA M → ∀ laws hcoarse
+     hfine, M.ConditionC laws hcoarse hfine`(law-value label の block
+     と値部分集合 `A`(label の値 fiber)の対応 = (i) の block ≅
+     A-subnerve 同定の再利用。C1–C4 の条項ごとの transport)+ G-104
+     受理済み pointwise theorem(`generatedComparisonH1Map_bijective`)
+     の各 law への適用。`Condition-C locus` は `{ M | ConditionCAllA
+     M }` として**幾何決定可能**に固定され、(iv) の witness により包含は
+     真(`Condition-C locus ⊊ uniform locus`)。bridge は新しい axiom /
+     premise ではなく discharge-required theorem である(scope 裁定
+     2026-08-11 = 案b採用。law 全量化 premise 化
+     (`ConditionCForAllAdequate` 型)への弱化は認めない)。
   4. **(iv) 現行条件 C の非必要性地図**: G-104 の C0–C6 の**各条項**に
      ついて、一様不変(全非空 `A` で比較が全単射)だが当該条項が破れる
      有限 witness を固定する(7 witness)。非退化性の scope は条項の型
@@ -476,9 +491,12 @@
   (`Decidable (UniformPresentation P)` instance
   または bool checker + sound / complete theorem。kernel / range /
   quotient rank 計算の soundness theorem を含む。非構成的な古典
-  instance で済ませない)、**Atlas corollary**(条件 C ⟹ 一様不変。
-  G-104 受理済み theorem からの一様量化つき導出で、持ち上げ論法を明示の
-  theorem として含む)、**観測写像 `Obs_G` の定義と恒久 contract 構成
+  instance で済ませない)、**`ConditionCAllA` の定義**(C0 / C5 / C6 +
+  C1–C4 の A-subnerve 評価。law family・H¹ を参照しない幾何述語)、
+  **bridge theorem**(`ConditionCAllA M → ∀ laws hcoarse hfine,
+  M.ConditionC laws hcoarse hfine`)、**Atlas positioning theorem**
+  (bridge + G-104 適用による `ConditionCAllA → 一様不変`)、
+  **観測写像 `Obs_G` の定義と恒久 contract 構成
   要素対応表**、T3 / T6 fixture 定義(登録 structural input との対応
   記録つき)、観測等値 theorem (v)(a)、T3 一様不変 theorem (v)(b)・
   T6 非一様 theorem (v)(c)、分離 theorem (v)(d)、現行 C 非必要性
@@ -486,11 +504,11 @@
   report `research/reports/G-107-aat-uniform-invariance-characterization.md`。
 - `target proof strategy`: U0 `J_A` 定義と defect 還元(hunt-report §R0
   の conjunct 対応表に従う)→ U1 `FiniteComparisonPresentation` と
-  sound / complete decider → U2 Atlas corollary(G-104 theorem の一様
-  量化つき持ち上げ。anchor: G-104 カードは「(i)(ii)(iii) は一般の有限
-  Source / `L` / adequate pair / comparison data について証明する」と
-  `L` 一般で固定済みであり、条件 C の評価対象は law family に言及しない
-  nerve / 台 / 退化宣言である — 持ち上げはこの2点の明示化)→ U3 C
+  sound / complete decider → U2 `ConditionCAllA` の定義と bridge
+  theorem(C1–C4 の label-block 評価を (i) の block ≅ A-subnerve 同定で
+  A-subnerve 評価へ transport、条項ごとに証明)→ G-104 pointwise
+  theorem(`generatedComparisonH1Map_bijective`)の適用で Atlas
+  positioning theorem を得る → U3 C
   非必要性 witness 7種 → U4 非分解性
   (`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable 計算 →
   (i)(ii) 経由の label 導出 → 分離 theorem)→ U5 report。
@@ -507,8 +525,8 @@
   `ResolutionInvariance/LawValueBlockComparison*.lean`(block comparison
   と naturality)、`CanonicalResolution/Reading.lean`(`FiniteLawFamily` /
   `Adequate`)、G-102 の `ThreeCochainComplex` / `H1` / `h1Map`、
-  Atlas corollary は G-104 の main theorem(Diagnostic Resolution
-  Invariance)受理済み artifact。hunt
+  Atlas positioning は bridge theorem 経由で G-104 の main theorem
+  (`generatedComparisonH1Map_bijective`)受理済み artifact を適用する。hunt
   artifact の固定 fixture(R1 witness 7種ほか、
   `results-summary.json` の完全データ)は witness 素材として転写して
   よい(engine 実装への依存は持ち込まない)。(v) の転写照合先は
@@ -531,7 +549,7 @@
   放電と数えない。law family と adequacy は一様不変性の
   内部量化であり、入力・premise として固定した family に対する pointwise
   定理を completion と数えない。defect 還元、decider の sound /
-  complete、Atlas corollary の一様量化持ち上げ、witness の非退化性、
+  complete、bridge theorem と Atlas positioning、witness の非退化性、
   非分解性の忠実転写と分離はすべて completion までに生成・証明する。
   一様不変性・全単射性・零判定の結果を theorem argument、typeclass、
   structure field、certificate field で受け取るだけでは放電と数えない。
@@ -571,11 +589,18 @@
     古典 instance(`Classical.dec` 等)は放電と数えない。uniformity
     label・条項 bit・supplied factor を presentation field として
     受け取ることも放電と数えない。
-  - `Atlas corollary (iii)`: `discharge-required`。G-104 の受理済み
-    theorem のみを根拠とし、一様量化への持ち上げ(条件 C の law family
-    非依存性の明示)を theorem 化する。新しい material premise の導入は
-    放電と数えず、必要と判明した場合は failure policy の scope 裁定に
-    戻す。結論の再宣言 wrapper は放電と数えない。
+  - `ConditionCAllA (iii)`: `direction-hypothesis`(含意の仮定側の幾何
+    述語)。C0・C5・C6 と C1–C4 の A-subnerve 評価だけから成り、law
+    family・comparison map・H¹・rank を参照しない(C3 系局所例外は
+    G-104 と同範囲)。結論相当 premise ではない理由: 有限幾何データ上の
+    decidable 条項であり、(iv) の witness が示すとおり一様不変性より
+    真に強い。
+  - `bridge theorem (iii)`: `discharge-required`。`ConditionCAllA M →
+    ∀ laws hcoarse hfine, M.ConditionC laws hcoarse hfine` を、(i) の
+    block ≅ A-subnerve 同定を通した C1–C4 の条項ごとの transport で
+    証明する。fixture 全数検証・law 全量化 premise 化
+    (`ConditionCForAllAdequate` 型)・単なる型変換 wrapper で代用
+    しない。G-104 側の定義は参照のみ(再定義しない)。
   - `歴史記録の条項系 C\*(CStarV3SupportActive)`: premise ではない。
     v3 の claim に現れず、研究史・mechanism artifact としてのみ保持
     する。(v) の観測成分は `GLocalV1ConditionVector`(恒久 grammar の
@@ -606,9 +631,10 @@
   有限個の law family の標本検査へ弱めない。law family を theorem 外側の
   固定 premise へ移して一様量化を pointwise 化しない。(ii) の decider を
   fixture 集合上の一致検査へ、sound / complete theorem なしの checker へ
-  弱めない。(iii) を G-104 結論の再宣言 wrapper で済ませない — 一様量化
-  への持ち上げを明示の theorem として要求し、新しい material premise を
-  導入して「corollary」と称することを認めない。(v) について: `Obs_G` を
+  弱めない。(iii) の `ConditionCAllA` を law-indexed 述語・law 全量化
+  premise(`ConditionCForAllAdequate` 型)・H¹ / rank 参照条項へ差し替え
+  ない。bridge theorem を fixture 検証・型変換 wrapper で済ませない。
+  (v) について: `Obs_G` を
   登録 grammar より粗く(成分省略・truncation 粗大化)定義して観測等値を
   自明化しない。逆に禁止情報(exact cycle 長・H¹・rank・raw ID・判定
   結果の answer-encoding 等)を成分へ追加しない。T3 / T6 の label を
@@ -622,7 +648,8 @@
   field へ移さない。
 - `target route integrity gate`: 三本柱の theorem・witness の provenance
   を law family、読みの比較射(G-103 factorization)、nerve 構成データ、
-  review 済み predecessor(Atlas corollary は G-104 main theorem)、
+  review 済み predecessor(Atlas positioning は bridge 経由で G-104
+  main theorem)、
   および hunt の登録 fixture(name-free semantic SHA)へ追跡する。
   (v) の witness provenance は登録 structural input の semantic SHA と
   恒久 contract SHA へ追跡する。恒等比較・零 H¹ だけの vacuous witness、
@@ -635,12 +662,15 @@
   GOAL 改訂提案を返す(優先度は最上位)。(ii) の decider の欠陥
   (unsound / incomplete)は反証ではなく実装・対応 theorem の不備として
   是正する — ただし `J_A` の定義自体の矛盾が出た場合は (i) と同格の
-  GOAL 改訂事案。(iii) が G-104 受理済み artifact から新しい material
-  premise なしで導けないと判明した場合は、`target-refuted` ではなく
-  **scope 裁定**として人間へ返す(G-104 側の量化構造の確認事案であり、
-  (iii) の削除・弱化・G-104 改訂のいずれかを提案する)。(iii) への
-  semantic 反例(条件 C 成立かつ非一様)が出た場合は G-104 本体の反証を
-  意味するため、最優先で G-104 の review 体制へ escalate する。(v) は
+  GOAL 改訂事案。(iii) の反例(`ConditionCAllA` 成立かつ非一様)は
+  fail-closed 原則どおりまず `target-refuted` を記録し、その後に破れの
+  層を切り分ける: 反例の witnessing law について law-indexed
+  `ConditionC` も成立していれば **G-104 本体の反証**として最優先で
+  G-104 の review 体制へ escalate、law-indexed `ConditionC` が不成立
+  なら **bridge の反例**であり (iii) の幾何評価 scope の欠陥として
+  GOAL 改訂案(A-subnerve 読み替えの再設計)を返す。bridge theorem が
+  反例なしに証明として閉じないだけの場合は blocker として扱う(下記の
+  二 cycle 規則)。(v) は
   記録後の原因切り分けを層別に行う: 忠実転写した `obsG` の下で観測等値
   (a) が不成立、または (b)(c) の label が hunt 登録値と食い違う場合、
   対応表を監査して転写の欠陥(modeling)なら転写をやり直し、対応表
