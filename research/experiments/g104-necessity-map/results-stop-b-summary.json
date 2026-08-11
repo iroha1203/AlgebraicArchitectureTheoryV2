@@ -1,7 +1,104 @@
 {
   "artifact": "G-104 G_local-v1 final Stop-B terminal summary",
+  "current_external_registration": {
+    "contract_canonical_bytes": 314114,
+    "contract_sha256": "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8",
+    "created_at": "2026-08-11T01:43:10Z",
+    "issue_comment": 5248074852,
+    "parent_full_canonical_bytes": 3446023,
+    "parent_full_sha256": "7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede",
+    "parent_summary_canonical_bytes": 95635,
+    "parent_summary_sha256": "556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e",
+    "round12_payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
+    "updated_at": "2026-08-11T01:43:10Z"
+  },
+  "current_parent_through_round12": {
+    "admission": {
+      "external_registration_exact": true,
+      "full": {
+        "canonical_bytes": 3446023,
+        "canonical_sha256": "7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede",
+        "serialization": {
+          "encoding": "UTF-8",
+          "ensure_ascii": false,
+          "indent": 2,
+          "sort_keys": true,
+          "trailing_newline": true
+        }
+      },
+      "reproduced_fail_closed": true,
+      "round12_payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
+      "round_count": 12,
+      "summary": {
+        "canonical_bytes": 95635,
+        "canonical_sha256": "556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e",
+        "serialization": {
+          "encoding": "UTF-8",
+          "ensure_ascii": false,
+          "indent": 2,
+          "sort_keys": true,
+          "trailing_newline": true
+        }
+      }
+    },
+    "r0": {
+      "pass": true,
+      "payload_sha256": "37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf",
+      "phase": "R0"
+    },
+    "r1": {
+      "pass": true,
+      "payload_sha256": "ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a",
+      "phase": "R1",
+      "preregistered_issue_comment": 5230270861,
+      "verdicts": [
+        {
+          "clause": "C0",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C0_not_necessary"
+        },
+        {
+          "clause": "C1",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C1_not_necessary"
+        },
+        {
+          "clause": "C2",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C2_not_necessary"
+        },
+        {
+          "clause": "C3",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C3_not_necessary"
+        },
+        {
+          "clause": "C4",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C4_not_necessary"
+        },
+        {
+          "clause": "C5",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C5_not_necessary"
+        },
+        {
+          "clause": "C6",
+          "evidence_schema_satisfied": true,
+          "verdict": "not-necessary",
+          "witness": "C6_not_necessary"
+        }
+      ]
+    }
+  },
   "full_results": {
-    "canonical_bytes": 4850081,
+    "canonical_bytes": 4851553,
     "canonical_generator": {
       "argv": [
         "python3",
@@ -13,7 +110,7 @@
       ],
       "working_directory": "repository-root"
     },
-    "canonical_sha256": "b8ac9461efe3dc4a039f986fa70daa0ab95842d83d7c9ddcb77d7024ffefc95e",
+    "canonical_sha256": "e889f527efbc2bf1b495d047b08dd156b6dd9fe8bab92d38dc4ff45f183e204b",
     "serialization": {
       "encoding": "UTF-8",
       "ensure_ascii": false,
@@ -23,6 +120,20 @@
     }
   },
   "historical_provenance": {
+    "round13_parent": {
+      "current_parent_reconstruction_claimed": false,
+      "full": {
+        "canonical_bytes": 3446046,
+        "canonical_sha256": "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306"
+      },
+      "git_commit": "ded12203d2f95fa8f83aadfd3a1e453f6e7efa06",
+      "role": "opaque-git-and-issue-history-provenance",
+      "round12_payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
+      "summary": {
+        "canonical_bytes": 95410,
+        "canonical_sha256": "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5"
+      }
+    },
     "stop_b_execution_and_downstream_sync": {
       "downstream_sync": [
         {
@@ -66,6 +177,25 @@
         "role": "opaque-git-and-issue-history-provenance"
       },
       "role": "opaque history bridge; no current-source reconstruction claim"
+    },
+    "superseded_permanent_migration": {
+      "checker_regression": {
+        "canonical_bytes": 56940,
+        "created_at": "2026-08-10T22:28:47Z",
+        "issue_comment": 5246749681,
+        "sha256": "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca",
+        "updated_at": "2026-08-10T22:28:47Z"
+      },
+      "contract_registration": {
+        "canonical_bytes": 314821,
+        "created_at": "2026-08-10T22:22:12Z",
+        "issue_comment": 5246699114,
+        "sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+        "updated_at": "2026-08-10T22:22:12Z"
+      },
+      "current_source_reconstruction_claimed": false,
+      "git_commit": "c3a6bada111978a08d82bff5fceffbbea2aa0f51",
+      "role": "opaque-git-and-issue-history-provenance"
     }
   },
   "historical_rounds_13_through_15": [
@@ -136,90 +266,6 @@
       "valid": true
     }
   ],
-  "parent_through_round12": {
-    "admission": {
-      "full": {
-        "canonical_bytes": 3446046,
-        "canonical_sha256": "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306",
-        "serialization": {
-          "encoding": "UTF-8",
-          "ensure_ascii": false,
-          "indent": 2,
-          "sort_keys": true,
-          "trailing_newline": true
-        }
-      },
-      "reproduced_fail_closed": true,
-      "round12_payload_sha256": "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
-      "round_count": 12,
-      "summary": {
-        "canonical_bytes": 95410,
-        "canonical_sha256": "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5",
-        "serialization": {
-          "encoding": "UTF-8",
-          "ensure_ascii": false,
-          "indent": 2,
-          "sort_keys": true,
-          "trailing_newline": true
-        }
-      }
-    },
-    "r0": {
-      "pass": true,
-      "payload_sha256": "37873129ed7d2d6fc0375b721e6e95bd213966836ed8b29484224fd88321d3cf",
-      "phase": "R0"
-    },
-    "r1": {
-      "pass": true,
-      "payload_sha256": "ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a",
-      "phase": "R1",
-      "preregistered_issue_comment": 5230270861,
-      "verdicts": [
-        {
-          "clause": "C0",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C0_not_necessary"
-        },
-        {
-          "clause": "C1",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C1_not_necessary"
-        },
-        {
-          "clause": "C2",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C2_not_necessary"
-        },
-        {
-          "clause": "C3",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C3_not_necessary"
-        },
-        {
-          "clause": "C4",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C4_not_necessary"
-        },
-        {
-          "clause": "C5",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C5_not_necessary"
-        },
-        {
-          "clause": "C6",
-          "evidence_schema_satisfied": true,
-          "verdict": "not-necessary",
-          "witness": "C6_not_necessary"
-        }
-      ]
-    }
-  },
   "randomness": "none",
   "schema_version": 2,
   "serialization": {
@@ -233,9 +279,10 @@
     "checker_admission": {
       "admitted": true,
       "all_components_equal": true,
+      "checker_regression_exact": true,
       "checker_result": {
-        "canonical_bytes": 56940,
-        "canonical_sha256": "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca",
+        "canonical_bytes": 56881,
+        "canonical_sha256": "645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9",
         "serialization": {
           "encoding": "UTF-8",
           "ensure_ascii": true,
@@ -283,25 +330,20 @@
       "whole_rooted_ball_histogram": true
     },
     "coverage_limit": "This is a two-point separation result relative only to the registered finite observation grammar G_local-v1, not an absolute impossibility result for other grammars.",
-    "current_permanent_contract_provenance": {
-      "migration_created_at": "2026-08-10T22:22:12Z",
-      "migration_issue_comment": 5246699114,
-      "migration_updated_at": "2026-08-10T22:22:12Z",
-      "sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
+    "current_checker_regression": {
+      "canonical_bytes": 56881,
+      "created_at": "2026-08-11T01:51:03Z",
+      "issue_comment": 5248116625,
+      "sha256": "645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9",
+      "updated_at": "2026-08-11T01:51:03Z"
     },
+    "current_permanent_contract_sha256": "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8",
     "general_two_point_argument": "Every admissible condition family factors through Obs_G. Equal Obs_G values force equal condition values, while the admitted immutable Round15 ledger gives different uniformity truth values for these two structural inputs.",
     "labels": {
       "TERNARY-CYCLE-3": true,
       "TERNARY-CYCLE-6": false
     },
     "labels_differ": true,
-    "migration_invariants": {
-      "historical_labels_admitted_after_observation": true,
-      "observation_meaning_unchanged": true,
-      "old_checker_reconstruction_claimed": false,
-      "old_manifest_reconstruction_claimed": false,
-      "query_zero_contract_unchanged": true
-    },
     "observation_evidence": {
       "common_observation_canonical_bytes": 53279,
       "common_observation_sha256": "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc",
@@ -329,16 +371,12 @@
     "permanent_contract": {
       "admitted": true,
       "builder_direct_contract_requests": 1,
-      "canonical_bytes": 314821,
-      "canonical_sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+      "canonical_bytes": 314114,
+      "canonical_sha256": "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8",
       "checker_internal_contract_admission_reconstructions": 1,
-      "current_permanent_contract_provenance": {
-        "migration_created_at": "2026-08-10T22:22:12Z",
-        "migration_issue_comment": 5246699114,
-        "migration_updated_at": "2026-08-10T22:22:12Z",
-        "sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
-      },
+      "current_permanent_contract_sha256": "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8",
       "effective_contract_constructions": 2,
+      "external_registration_exact": true,
       "serialization": {
         "encoding": "UTF-8",
         "ensure_ascii": true,
@@ -349,11 +387,6 @@
         "sort_keys": true,
         "trailing_newline": false
       }
-    },
-    "permanent_contract_regression_provenance": {
-      "created_at": "2026-08-10T22:28:47Z",
-      "issue_comment": 5246749681,
-      "updated_at": "2026-08-10T22:28:47Z"
     },
     "query_counts": {
       "Obs_G_structural_evaluations": 2,
@@ -370,6 +403,15 @@
     "semantic_id": "G_local-v1",
     "valid": true,
     "verdict": "CSTAR-not-expressible-in-G_local-v1",
+    "verification_invariants": {
+      "historical_common_observation_bridge_matched": true,
+      "historical_round15_label_separation_reproduced": true,
+      "new_global_or_A_block_H1_queries": 0,
+      "new_population_queries": 0,
+      "new_v5_candidate_evaluation_calls": 0,
+      "old_checker_reconstruction_claimed": false,
+      "old_manifest_reconstruction_claimed": false
+    },
     "witness_structural_sha256": {
       "TERNARY-CYCLE-3": "452517a5dd3df09eea96f4de0c0b737f274384c239267aeba2d5ba06fda616a2",
       "TERNARY-CYCLE-6": "0e92de476cd0af4dbeb80290afff463354da87c01c4548bab5d7806927d1d180"

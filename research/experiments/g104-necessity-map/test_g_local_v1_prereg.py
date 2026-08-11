@@ -701,7 +701,7 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
         self.assertIn('"common_observation_sha256": sha256(', source)
         self.assertIn('"common_observation": observations[', source)
         self.assertIn('"historical_execution_provenance":', source)
-        self.assertIn('"current_permanent_contract_provenance":', source)
+        self.assertIn('"current_permanent_contract_sha256":', source)
         self.assertIn('"historical_bridge": historical_observation_bridge', source)
         self.assertIn('"Obs_G_structural_evaluations": 2', source)
         self.assertIn('"new_v5_candidate_evaluation_calls": 0', source)
@@ -729,30 +729,12 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
         self.assertNotIn("v5_candidate_evaluation", identifiers)
         self.assertEqual(
             stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_SHA256,
-            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT,
-            5246699114,
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT,
-            "2026-08-10T22:22:12Z",
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT,
-            "2026-08-10T22:22:12Z",
+            "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8",
         )
         admission_source = inspect.getsource(
             stop_b._admit_current_permanent_contract
         )
-        for field in (
-            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
-        ):
-            self.assertIn(field, admission_source)
+        self.assertIn("G_LOCAL_V1_PERMANENT_CONTRACT_SHA256", admission_source)
         unregistered_gate_index = admission_source.index(
             "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256 is None"
         )
@@ -769,6 +751,16 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
         self.assertLess(contract_generation_index, digest_index)
         self.assertLess(digest_index, registered_comparison_index)
         self.assertNotIn("G_LOCAL_V1_HISTORICAL_EXECUTION", admission_source)
+        for marker in (
+            "MIGRATION_ISSUE_COMMENT",
+            "MIGRATION_CREATED_AT",
+            "MIGRATION_UPDATED_AT",
+            "EXPECTED_REGISTRATION",
+            "migration_issue_comment",
+            "migration_created_at",
+            "migration_updated_at",
+        ):
+            self.assertNotIn(marker, admission_source)
         bridge_source = inspect.getsource(
             stop_b._admit_historical_observation_bridge
         )
@@ -781,14 +773,36 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
         self.assertIn("common_observation_canonical_bytes", bridge_source)
         self.assertNotIn("checker_sha256", bridge_source)
         self.assertNotIn("manifest_sha256", bridge_source)
+        self.assertIn(
+            '"historical_common_observation_bridge_matched":',
+            source,
+        )
+        self.assertIn(
+            '"historical_round15_label_separation_reproduced":',
+            source,
+        )
+        self.assertNotIn('"observation_meaning_unchanged":', source)
+        self.assertNotIn('"query_zero_contract_unchanged":', source)
+        self.assertNotIn('"current_permanent_contract_provenance":', source)
+        self.assertNotIn('"migration_issue_comment":', source)
+        self.assertNotIn('"migration_created_at":', source)
+        self.assertNotIn('"migration_updated_at":', source)
+        self.assertIn('"verification_invariants":', source)
+        checker_module_source = (HERE / "g_local_v1_stop_b.py").read_text(
+            encoding="utf-8"
+        )
+        for deleted_registration_symbol in (
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_EXPECTED_REGISTRATION",
+        ):
+            self.assertNotIn(deleted_registration_symbol, checker_module_source)
 
     def test_unregistered_contract_fails_before_manifest_generation(self) -> None:
         with patch.multiple(
             stop_b,
             G_LOCAL_V1_PERMANENT_CONTRACT_SHA256=None,
-            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT=None,
-            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT=None,
-            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT=None,
         ):
             with patch.object(
                 stop_b,
@@ -800,6 +814,40 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
                 ):
                     stop_b._admit_current_permanent_contract()
                 manifest_mock.assert_not_called()
+
+    def test_contract_sha_drift_fails_before_witness_observation_and_ledger(
+        self,
+    ) -> None:
+        drifted_contract = {"sha_drift": True}
+        actual_sha = sha256(_compact(drifted_contract).encode("utf-8")).hexdigest()
+        drifted_sha = ("0" if actual_sha[0] != "0" else "1") + actual_sha[1:]
+        with patch.object(
+            stop_b,
+            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
+            drifted_sha,
+        ), patch.object(
+            stop_b,
+            "g_local_v1_permanent_contract_manifest",
+            return_value=drifted_contract,
+        ) as manifest_mock, patch.object(
+            stop_b,
+            "_admit_witness_structures",
+        ) as witness_mock, patch.object(
+            stop_b.structural,
+            "observe_g_local_v1",
+        ) as observation_mock, patch.object(
+            stop_b,
+            "_admit_round15_ledger",
+        ) as ledger_mock:
+            with self.assertRaisesRegex(
+                AssertionError,
+                "permanent contract drift",
+            ):
+                stop_b.check_g_local_v1_stop_b()
+            manifest_mock.assert_called_once_with()
+            witness_mock.assert_not_called()
+            observation_mock.assert_not_called()
+            ledger_mock.assert_not_called()
 
     def test_pure_contract_cannot_call_evaluator_fixture_or_oracle(self) -> None:
         forbidden = AssertionError("pure contract crossed dependency boundary")
@@ -823,18 +871,11 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
             contract["kind"],
             "G-local-v1-permanent-structural-contract-v1",
         )
-        self.assertEqual(
-            sha256(_compact(contract).encode("utf-8")).hexdigest(),
-            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
-        )
         self.assertIs(contract["current_registration_values_in_contract"], False)
         self.assertEqual(
             contract["current_registration_fields"],
             [
                 "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
             ],
         )
         self.assertEqual(
@@ -970,9 +1011,6 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
         )
         registration_fields = (
             "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
         )
 
         def rewrite_registration_values(
@@ -1023,18 +1061,6 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
             "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256": (
                 "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256: str | None = None"
             ),
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT": (
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT: "
-                "int | None = None"
-            ),
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT": (
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT: "
-                "str | None = None"
-            ),
-            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT": (
-                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT: "
-                "str | None = None"
-            ),
         }
         normalized_lines = checker_normalized.splitlines()
         for field, expected_line in expected_pre_registration_lines.items():
@@ -1050,9 +1076,6 @@ class GLocalV1PermanentContractTests(unittest.TestCase):
             checker_text,
             {
                 registration_fields[0]: b'"registered-sha"',
-                registration_fields[1]: b"123456789",
-                registration_fields[2]: b'"2026-08-10T19:00:00Z"',
-                registration_fields[3]: b'"2026-08-10T19:00:00Z"',
             },
         )
         self.assertEqual(

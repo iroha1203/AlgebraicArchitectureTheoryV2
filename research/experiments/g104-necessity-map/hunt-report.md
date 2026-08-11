@@ -332,7 +332,8 @@ Round 12時点の終端は、post-PUnitのRound 11/12が同一blocker
 `PB-R2-NONFREE-GLOBAL-FACE-CHAIN` で2 round連続no-progressとなったため有効なStop C
 checkpointだった。ただしRound 13–15がcandidate改訂、calibration fix、新規canonical
 counterexampleを生じたため、これは最終terminalではない。Round 12までの1,918 caseと
-parent artifactは履歴・admission evidenceとして不変に保持する。
+数学payloadはcurrent lifecycle-free parentへ保持する。Round 13がadmitした旧serialized
+parentはopaque Git / Issue provenanceとしてだけ保持し、current builderから再構築しない。
 
 ## `G_local-v1`: 固定有限観測 grammar
 
@@ -366,12 +367,36 @@ full graph lookup、global / A-block H¹、comparison rank、uniformity truthは
 
 ### source bundleと恒久contract
 
-current permanent structural contractは Issue #3948 comment `5246699114`、timestamp
-`2026-08-10T22:22:12Z`、compact canonical bytes `314821`、SHA-256
-`955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af`
-に固定した。contract生成はfixture constructor、`Obs_G`、v5 candidate/terminal query、
-H¹、Round 13–15 report、populationを呼ばない。移行後regressionは Issue #3948 comment
-`5246749681`、timestamp `2026-08-10T22:28:47Z` に同期した。
+current external registration ledgerはIssue comment `5248074852`
+(`2026-08-11T01:43:10Z`, created=updated)で事前登録された。pure contractの
+SHA/bytes、sanitized Round-12 parent full/summaryのSHA/bytes、Round-12 payload、Issue comment/timeを
+一つのrecordで結ぶ。Issue provenanceの正本はbuilderだけであり、parent JSONやchecker sourceに
+埋め込まない。contract生成はfixture constructor、`Obs_G`、v5 candidate/terminal query、H¹、
+Round 13–15 report、populationを呼ばない。
+pre-registration contract candidateは
+`5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8` / `314114` bytesである。
+
+固定順序は次である。
+
+```text
+parent full generation
+  → parent full hash pin
+  → parent summary calibration
+  → pure contract candidate generation
+  → Issue external registration
+  → contract SHA-only source pin
+  → checker execution
+  → checker regression synchronization
+  → builder admission / projection
+```
+
+checker regressionはIssue comment `5248116625` (`2026-08-11T01:51:03Z`, created=updated)に
+registrationとは別domainとして固定した。compact checker SHA-256は
+`645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9` / `56881` bytesである。
+旧permanent contract `955b75d7…a7531af` / `314821` bytes / comment `5246699114` と旧current checker
+`834d9754…9ebca` / `56940` bytes / regression comment `5246749681` は、旧 `32e5…/0d644…`
+execution bridgeとは別のopaque historical migration recordである。Git commit
+`c3a6bada111978a08d82bff5fceffbbea2aa0f51` に結び、current sourceからの再構築を主張しない。
 `immutable_round15_label_ledger.sha256` はledger自体のcanonical SHAであり、
 `round15_immutable_ledger_provenance.sha256` はwitness projectionを認証したRound 15
 registered manifestのSHAであってledger SHAではない。
@@ -382,8 +407,7 @@ source bundleは次を一つのsemantic packetに固定する。
 - immutableな `r2_hunt.py` / `necessity_map.py` のnormalized full-source fingerprint、import binding、
   referenced dataclass field、runtime source binding。
 - `Q = Fraction`、Matrix/Nerveのexact source、C3直達symbolとbase推移locator。
-- current contract registration 4 fieldのRHSだけを `None` に正規化したchecker
-  full-source fingerprint。
+- current contract SHA fieldのRHSだけを `None` に正規化したchecker full-source fingerprint。
 - top-level rebind禁止、closed packet/flag/relation registry、serialization contract。
 
 これにより、候補・H¹ label・Round 15 ledgerを観測器へ逆流させず、同時に観測意味を担う
@@ -422,9 +446,12 @@ root histogram、最終canonical bytesを個別比較し、すべて一致した
 この検証で実行する `Obs_G` structural evaluationは2件である。新しいRound 15 candidate
 classification call、global / A-block H¹ query、population queryはすべて0であり、既知truthを
 探索候補へ混入させていない。
+artifactの `verification_invariants` は、上記common observation bridgeとRound 15 label分離の
+実一致、3種のqueryのexact zero、旧manifest/checkerの非再構築だけを記録する。任意の入力に
+ついて旧新観測の意味が不変であるという広い主張は含めない。
 
-current checkerのcompact canonical bytesは `56940`、SHA-256は
-`834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca` である。両fixtureの
+current checkerは
+`645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9` / `56881` bytesである。両fixtureの
 common `Obs_G` はcompact canonical bytes `53279`、SHA-256
 `742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc` に一致する。
 
@@ -493,16 +520,20 @@ shasum -a 256 \
 - 乱数なし。
 - parent / final result serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
 - `Obs_G` serializationはUTF-8、`ensure_ascii=True`、compact sorted JSON、末尾改行なし。
-- immutable parent `results-summary.json` SHA-256:
-  `afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5`
-- immutable parent regenerated full `results.json` SHA-256:
-  `cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306`
+- current parent `results-summary.json`: SHA-256
+  `556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e`、`95635` bytes
+- current parent regenerated full `results.json`: SHA-256
+  `7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede`、`3446023` bytes
 - final `results-stop-b-summary.json` SHA-256:
-  `9de3a00f37c20393df01985f5c43eeec6ec21f6906083e01636dd8dfdab93502`
+  `77d34471daae5743ad095ad1a90845aee758ced3075b00afbf021c0f08be1cd3`、`15908` bytes
 - final regenerated full Stop-B JSON SHA-256:
-  `b8ac9461efe3dc4a039f986fa70daa0ab95842d83d7c9ddcb77d7024ffefc95e`
+  `e889f527efbc2bf1b495d047b08dd156b6dd9fe8bab92d38dc4ff45f183e204b`、`4851553` bytes
+- 最終 full regression: `125 tests / 1506.494s / OK`。full / summaryは別パス再生成で
+  byte-for-byte一致。
 
-Issue #3948 comment `5231857267` のcheckpoint amendmentにより、Round 12までのfull JSONは
-hashで固定された導出物、slim summaryはcommit対象となった。旧repo fileのSHA
-`cabfbcae…2306` は regenerated parent full JSON の期待値へ役割を変更しただけである。
-このparent artifactを変更せず、Stop-B generator / summaryを別artifactとして積み上げる。
+Round 13が実際にadmitした旧parent full
+`cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306` と旧summary
+`afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5` は、Git commit
+`ded12203d2f95fa8f83aadfd3a1e453f6e7efa06` のopaque historical provenanceとしてだけ保持する。
+current parentは同じRound 12数学payloadをlifecycle-free schemaで生成し、Stop-B full / summaryは
+このsanitized current parentをembedする。旧parent bytesをcurrent builderから再構築しない。

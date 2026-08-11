@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate deterministic full and summary checkpoint result artifacts."""
+"""Generate deterministic Round-12 mathematical parent artifacts."""
 
 from __future__ import annotations
 
@@ -13,14 +13,58 @@ import necessity_map
 import r2_hunt
 
 
-FULL_RESULTS_EXPECTED_SHA256 = (
+HISTORICAL_ROUND13_PARENT_FULL_SHA256 = (
     "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306"
 )
-SUMMARY_RESULTS_EXPECTED_SHA256 = (
+HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256 = (
     "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5"
+)
+# Filled after the lifecycle-free current parent has been generated and each
+# projection calibrated.  The Stop-B builder separately requires the complete
+# external registration and remains fail-closed before that registration.
+FULL_RESULTS_EXPECTED_SHA256: str | None = (
+    "7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede"
+)
+SUMMARY_RESULTS_EXPECTED_SHA256: str | None = (
+    "556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e"
 )
 CHECKPOINT_AMENDMENT_ISSUE_COMMENT = 5231857267
 ROUND1_THROUGH_ROUND7_HASH_RESYNC_ISSUE_COMMENT = 5230523348
+ROUND12_LAST_PROVENANCE_CORRECTION = (
+    "indicator law_type corrected from historical Unit label to the actual "
+    "PUnit field; counted as search progress and reset the Stop-C streak"
+)
+ROUND12_PARENT_TERMINAL_KEYS = frozenset(
+    {
+        "kind",
+        "role",
+        "r1_verdict_map_complete",
+        "r2_characterization_complete",
+        "last_progress_event",
+        "last_progress_issue_comment",
+        "last_provenance_correction",
+        "round8_diagnostic_counted_in_stop_streak",
+        "historical_pre_punit_rounds_not_counted_in_final_streak",
+        "consecutive_no_progress_rounds",
+        "round9_result_issue_comment",
+        "round10_preregistration_issue_comment",
+        "historical_retracted_stop_c_result_issue_comment",
+        "round11_preregistration_issue_comment",
+        "round11_result_issue_comment",
+        "round11_payload_sha256",
+        "round12_preregistration_issue_comment",
+        "round12_result_issue_comment",
+        "round12_payload_sha256",
+        "stop_c_result_issue_comment",
+        "final_population",
+        "blocker_id",
+        "coverage_limit",
+    }
+)
+ROUND12_PARENT_SUMMARY_TERMINAL_KEYS = ROUND12_PARENT_TERMINAL_KEYS | {
+    "stop_audit",
+    "same_blocker_evidence",
+}
 
 R2_ROUND_KEYS_THROUGH_ROUND12 = (
     "round1_direct",
@@ -220,56 +264,58 @@ def results_report_through_round12() -> dict[str, object]:
     ):
         raise AssertionError("Stop-C terminal audit is not satisfied")
 
+    terminal = {
+        "kind": "C",
+        "role": "historical-mathematical-stop-C-checkpoint",
+        "r1_verdict_map_complete": True,
+        "r2_characterization_complete": False,
+        "last_progress_event": "R0(d) PUnit provenance calibration fix",
+        "last_progress_issue_comment": 5231149474,
+        "last_provenance_correction": ROUND12_LAST_PROVENANCE_CORRECTION,
+        "round8_diagnostic_counted_in_stop_streak": False,
+        "historical_pre_punit_rounds_not_counted_in_final_streak": [
+            "R2-round-8",
+            "R2-round-9",
+            "R2-round-10",
+        ],
+        "consecutive_no_progress_rounds": ["R2-round-11", "R2-round-12"],
+        "round9_result_issue_comment": 5230876303,
+        "round10_preregistration_issue_comment": 5230881464,
+        "historical_retracted_stop_c_result_issue_comment": 5230966215,
+        "round11_preregistration_issue_comment": 5231154236,
+        "round11_result_issue_comment": 5231263023,
+        "round11_payload_sha256": round11_sha256,
+        "round12_preregistration_issue_comment": 5231270132,
+        "round12_result_issue_comment": 5231343121,
+        "round12_payload_sha256": round12_sha256,
+        "stop_c_result_issue_comment": 5231343121,
+        "final_population": 1918,
+        "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
+        "coverage_limit": (
+            "Finite exact populations through 1918 semantic cases, fixed W5, "
+            "K3,3, octahedral, house, and star graphs, and lift count at most "
+            "six only; no general theorem for arbitrary retained non-free "
+            "face-chain graphs, certificate coloring, chart count, cross-chart "
+            "coupled incidence, face multiplicity, or compatible support "
+            "distribution."
+        ),
+    }
+    if not (
+        set(terminal) == ROUND12_PARENT_TERMINAL_KEYS
+        and terminal["last_provenance_correction"]
+        == ROUND12_LAST_PROVENANCE_CORRECTION
+    ):
+        raise AssertionError("Round-12 parent terminal schema drift")
     return {
-        "artifact": "G-104 C0-C6 necessity map off-loop checkpoint",
+        "artifact": "G-104 C0-C6 necessity map Round-12 mathematical parent",
+        "schema_version": 2,
         "arithmetic": "exact fractions.Fraction linear algebra over Q",
         "randomness": "none",
         "serialization": "UTF-8, LF, indent=2, sort_keys=True, trailing newline",
         "r0": r0,
         "r1": r1,
         "r2": r2,
-        "terminal": {
-            "kind": "C",
-            "task_complete": False,
-            "issue_remains_open": True,
-            "prd_retained": True,
-            "draft_pr_checkpoint": True,
-            "r1_verdict_map_complete": True,
-            "r2_characterization_complete": False,
-            "last_progress_event": "R0(d) PUnit provenance calibration fix",
-            "last_progress_issue_comment": 5231149474,
-            "last_provenance_correction": (
-                "indicator law_type corrected from historical Unit label to the "
-                "actual PUnit field; counted as PRD progress and reset Stop-C streak"
-            ),
-            "round8_diagnostic_counted_in_stop_streak": False,
-            "historical_pre_punit_rounds_not_counted_in_final_streak": [
-                "R2-round-8",
-                "R2-round-9",
-                "R2-round-10",
-            ],
-            "consecutive_no_progress_rounds": ["R2-round-11", "R2-round-12"],
-            "round9_result_issue_comment": 5230876303,
-            "round10_preregistration_issue_comment": 5230881464,
-            "historical_retracted_stop_c_result_issue_comment": 5230966215,
-            "round11_preregistration_issue_comment": 5231154236,
-            "round11_result_issue_comment": 5231263023,
-            "round11_payload_sha256": round11_sha256,
-            "round12_preregistration_issue_comment": 5231270132,
-            "round12_result_issue_comment": 5231343121,
-            "round12_payload_sha256": round12_sha256,
-            "stop_c_result_issue_comment": 5231343121,
-            "final_population": 1918,
-            "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
-            "coverage_limit": (
-                "Finite exact populations through 1918 semantic cases, fixed W5, "
-                "K3,3, octahedral, house, and star graphs, and lift count at most "
-                "six only; no general theorem for arbitrary retained non-free "
-                "face-chain graphs, certificate coloring, chart count, cross-chart "
-                "coupled incidence, face multiplicity, or compatible support "
-                "distribution."
-            ),
-        },
+        "terminal": terminal,
     }
 
 
@@ -608,7 +654,7 @@ def _round_summary(
 def results_summary_report_through_round12(
     full_report: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """Project the immutable parent checkpoint through R2 Round 12."""
+    """Project the current mathematical parent through R2 Round 12."""
 
     full = results_report_through_round12() if full_report is None else full_report
     r0 = full["r0"]
@@ -629,9 +675,15 @@ def results_summary_report_through_round12(
             "round12_post_punit_octahedral_partitioned"
         ]["same_blocker_evidence"],
     }
+    if not (
+        set(terminal) == ROUND12_PARENT_SUMMARY_TERMINAL_KEYS
+        and terminal["last_provenance_correction"]
+        == ROUND12_LAST_PROVENANCE_CORRECTION
+    ):
+        raise AssertionError("Round-12 summary terminal schema drift")
     summary = {
-        "artifact": "G-104 C0-C6 necessity map slim checkpoint summary",
-        "schema_version": 1,
+        "artifact": "G-104 C0-C6 necessity map Round-12 parent summary",
+        "schema_version": 2,
         "randomness": full["randomness"],
         "serialization": full["serialization"],
         "provenance": {
@@ -639,8 +691,23 @@ def results_summary_report_through_round12(
                 CHECKPOINT_AMENDMENT_ISSUE_COMMENT
             ),
             "full_results": {
-                "repository_status": "derived; not committed",
-                "canonical_generator": "build_results.py --output <path>",
+                "canonical_generator": {
+                    "working_directory": "repository-root",
+                    "argv": [
+                        "python3",
+                        (
+                            "research/experiments/g104-necessity-map/"
+                            "build_results.py"
+                        ),
+                        "--output",
+                        "/tmp/g104-necessity-map-results-through-round12.json",
+                        "--summary-output",
+                        (
+                            "research/experiments/g104-necessity-map/"
+                            "results-summary.json"
+                        ),
+                    ],
+                },
                 "expected_sha256": FULL_RESULTS_EXPECTED_SHA256,
             },
             "round1_through_round7_hash_resync_issue_comment": (

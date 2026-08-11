@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build the deterministic G_local-v1 final Stop-B artifacts.
 
-Round 1 through Round 12 are regenerated through the immutable parent API.
+Round 1 through Round 12 are regenerated through the current lifecycle-free
+mathematical parent API.
 Rounds 13 through 15 are provenance-only history: this builder never reruns
 their reports, candidates, populations, or H1 queries.  The builder directly
 requests the pure G_local-v1 permanent contract once and the Stop-B checker
@@ -31,34 +32,100 @@ from g_local_v1_stop_b import (
 import r2_hunt as historical_source
 
 
-PARENT_FULL_EXPECTED_SHA256 = (
+HISTORICAL_ROUND13_PARENT_FULL_SHA256 = (
     "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306"
 )
-PARENT_SUMMARY_EXPECTED_SHA256 = (
+HISTORICAL_ROUND13_PARENT_FULL_BYTES = 3_446_046
+HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256 = (
     "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5"
 )
-PARENT_SUMMARY_EXPECTED_BYTES = 95_410
+HISTORICAL_ROUND13_PARENT_SUMMARY_BYTES = 95_410
+HISTORICAL_ROUND13_PARENT_GIT_COMMIT = (
+    "ded12203d2f95fa8f83aadfd3a1e453f6e7efa06"
+)
+HISTORICAL_PERMANENT_MIGRATION_GIT_COMMIT = (
+    "c3a6bada111978a08d82bff5fceffbbea2aa0f51"
+)
 PARENT_ROUND12_EXPECTED_SHA256 = (
     "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90"
 )
 
-PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256 = (
-    "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
+# Calibrated candidate SHA/byte fields are staged here first.  The Issue fields
+# remain None until the pure contract and sanitized parent artifacts are
+# registered together, and every admission below requires the complete record.
+# Mathematical sources contain hashes only; this builder is the sole owner of
+# external Issue provenance.
+CURRENT_EXTERNAL_REGISTRATION: dict[str, object] | None = {
+    "contract_sha256": (
+        "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8"
+    ),
+    "contract_canonical_bytes": 314_114,
+    "parent_full_sha256": (
+        "7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede"
+    ),
+    "parent_full_canonical_bytes": 3_446_023,
+    "parent_summary_sha256": (
+        "556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e"
+    ),
+    "parent_summary_canonical_bytes": 95_635,
+    "round12_payload_sha256": PARENT_ROUND12_EXPECTED_SHA256,
+    "issue_comment": 5248074852,
+    "created_at": "2026-08-11T01:43:10Z",
+    "updated_at": "2026-08-11T01:43:10Z",
+}
+CURRENT_EXTERNAL_REGISTRATION_KEYS = frozenset(
+    {
+        "contract_sha256",
+        "contract_canonical_bytes",
+        "parent_full_sha256",
+        "parent_full_canonical_bytes",
+        "parent_summary_sha256",
+        "parent_summary_canonical_bytes",
+        "round12_payload_sha256",
+        "issue_comment",
+        "created_at",
+        "updated_at",
+    }
 )
-PERMANENT_CONTRACT_COMPACT_EXPECTED_BYTES = 314_821
-CHECKER_RESULT_COMPACT_EXPECTED_SHA256 = (
-    "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca"
+CURRENT_CHECKER_REGRESSION: dict[str, object] | None = {
+    "sha256": (
+        "645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9"
+    ),
+    "canonical_bytes": 56_881,
+    "issue_comment": 5248116625,
+    "created_at": "2026-08-11T01:51:03Z",
+    "updated_at": "2026-08-11T01:51:03Z",
+}
+CURRENT_CHECKER_REGRESSION_KEYS = frozenset(
+    {"sha256", "canonical_bytes", "issue_comment", "created_at", "updated_at"}
 )
-CHECKER_RESULT_COMPACT_EXPECTED_BYTES = 56_940
 COMMON_OBSERVATION_EXPECTED_SHA256 = (
     "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc"
 )
 COMMON_OBSERVATION_EXPECTED_BYTES = 53_279
 
-PERMANENT_CONTRACT_REGRESSION_PROVENANCE = {
-    "issue_comment": 5246749681,
-    "created_at": "2026-08-10T22:28:47Z",
-    "updated_at": "2026-08-10T22:28:47Z",
+HISTORICAL_PERMANENT_MIGRATION_PROVENANCE = {
+    "role": "opaque-git-and-issue-history-provenance",
+    "git_commit": HISTORICAL_PERMANENT_MIGRATION_GIT_COMMIT,
+    "contract_registration": {
+        "sha256": (
+            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
+        ),
+        "canonical_bytes": 314_821,
+        "issue_comment": 5246699114,
+        "created_at": "2026-08-10T22:22:12Z",
+        "updated_at": "2026-08-10T22:22:12Z",
+    },
+    "checker_regression": {
+        "sha256": (
+            "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca"
+        ),
+        "canonical_bytes": 56_940,
+        "issue_comment": 5246749681,
+        "created_at": "2026-08-10T22:28:47Z",
+        "updated_at": "2026-08-10T22:28:47Z",
+    },
+    "current_source_reconstruction_claimed": False,
 }
 HISTORICAL_STOP_B_EXECUTION_PROVENANCE = {
     "role": "opaque-git-and-issue-history-provenance",
@@ -105,6 +172,21 @@ CANONICAL_SERIALIZATION = {
     "sort_keys": True,
     "trailing_newline": True,
 }
+STOP_B_TERMINAL_KEYS = frozenset(
+    {
+        "kind",
+        "role",
+        "verdict",
+        "stop_condition_reached",
+        "stop_condition_A_completion",
+        "stop_condition_B_G_local_v1_two_point_separation",
+        "stop_condition_B_finite_exhaustion",
+        "stop_condition_C_two_valid_same_blocker_no_progress",
+        "grammar_relative",
+        "absolute_impossibility_claim",
+        "coverage_limit",
+    }
+)
 COMPACT_CHECK_SERIALIZATION = {
     "encoding": "UTF-8",
     "ensure_ascii": True,
@@ -233,47 +315,80 @@ def _compact_record(value: object) -> dict[str, object]:
     }
 
 
-def _admit_parent_relation(
-    parent_full: dict[str, object],
-    full_record: dict[str, object],
-    summary_record: dict[str, object],
-) -> str:
+def _external_record_complete(
+    record: dict[str, object] | None,
+    expected_keys: frozenset[str],
+) -> bool:
+    return (
+        record is not None
+        and set(record) == expected_keys
+        and all(value is not None for value in record.values())
+    )
+
+
+def _round12_payload_sha256(parent_full: dict[str, object]) -> str:
     round12 = parent_full["r2"][
         "round12_post_punit_octahedral_partitioned"
     ]
-    round12_sha256 = _rendered_record(render_json(round12))[
+    return _rendered_record(render_json(round12))[
         "canonical_sha256"
     ]
+
+
+def _admit_historical_round13_parent(
+    round12_sha256: str,
+) -> dict[str, object]:
     if not (
         historical_source.ROUND13_PARENT_RESULTS_JSON_SHA256
-        == PARENT_FULL_EXPECTED_SHA256
-        == full_record["canonical_sha256"]
+        == HISTORICAL_ROUND13_PARENT_FULL_SHA256
         and historical_source.ROUND13_PARENT_RESULTS_SUMMARY_JSON_SHA256
-        == PARENT_SUMMARY_EXPECTED_SHA256
-        == summary_record["canonical_sha256"]
+        == HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256
         and historical_source.ROUND13_PARENT_ROUND12_PAYLOAD_SHA256
         == PARENT_ROUND12_EXPECTED_SHA256
         == round12_sha256
+        and parent_source.HISTORICAL_ROUND13_PARENT_FULL_SHA256
+        == HISTORICAL_ROUND13_PARENT_FULL_SHA256
+        and parent_source.HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256
+        == HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256
     ):
-        raise AssertionError("Round12-to-Round13 parent relation drift")
-    return round12_sha256
+        raise AssertionError("historical Round13 parent provenance drift")
+    return {
+        "role": "opaque-git-and-issue-history-provenance",
+        "git_commit": HISTORICAL_ROUND13_PARENT_GIT_COMMIT,
+        "full": {
+            "canonical_sha256": HISTORICAL_ROUND13_PARENT_FULL_SHA256,
+            "canonical_bytes": HISTORICAL_ROUND13_PARENT_FULL_BYTES,
+        },
+        "summary": {
+            "canonical_sha256": HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256,
+            "canonical_bytes": HISTORICAL_ROUND13_PARENT_SUMMARY_BYTES,
+        },
+        "round12_payload_sha256": PARENT_ROUND12_EXPECTED_SHA256,
+        "current_parent_reconstruction_claimed": False,
+    }
 
 
-def _admit_parent_checkpoint() -> tuple[
+def _admit_current_parent() -> tuple[
+    dict[str, object],
     dict[str, object],
     dict[str, object],
     dict[str, object],
 ]:
+    registration = CURRENT_EXTERNAL_REGISTRATION
     if not (
-        parent_source.FULL_RESULTS_EXPECTED_SHA256
-        == PARENT_FULL_EXPECTED_SHA256
+        _external_record_complete(
+            registration,
+            CURRENT_EXTERNAL_REGISTRATION_KEYS,
+        )
+        and parent_source.FULL_RESULTS_EXPECTED_SHA256
+        == registration["parent_full_sha256"]
         and parent_source.SUMMARY_RESULTS_EXPECTED_SHA256
-        == PARENT_SUMMARY_EXPECTED_SHA256
+        == registration["parent_summary_sha256"]
         and len(parent_source.R2_ROUND_KEYS_THROUGH_ROUND12) == 12
         and parent_source.R2_ROUND_KEYS
         is parent_source.R2_ROUND_KEYS_THROUGH_ROUND12
     ):
-        raise AssertionError("immutable Round-12 parent constants drift")
+        raise AssertionError("current Round-12 parent is not registered")
 
     parent_full = results_report_through_round12()
     parent_summary = results_summary_report_through_round12(parent_full)
@@ -286,30 +401,51 @@ def _admit_parent_checkpoint() -> tuple[
         raise AssertionError("parent and Stop-B serialization contracts differ")
     full_record = _rendered_record(full_rendered)
     summary_record = _rendered_record(summary_rendered)
-    round12_sha256 = _admit_parent_relation(
-        parent_full,
-        full_record,
-        summary_record,
+    round12_sha256 = _round12_payload_sha256(parent_full)
+    historical_round13_parent = _admit_historical_round13_parent(
+        round12_sha256
     )
     if not (
-        full_record["canonical_sha256"] == PARENT_FULL_EXPECTED_SHA256
+        full_record["canonical_sha256"]
+        == registration["parent_full_sha256"]
+        and full_record["canonical_bytes"]
+        == registration["parent_full_canonical_bytes"]
         and summary_record["canonical_sha256"]
-        == PARENT_SUMMARY_EXPECTED_SHA256
+        == registration["parent_summary_sha256"]
         and summary_record["canonical_bytes"]
-        == PARENT_SUMMARY_EXPECTED_BYTES
+        == registration["parent_summary_canonical_bytes"]
+        and round12_sha256
+        == registration["round12_payload_sha256"]
+        == PARENT_ROUND12_EXPECTED_SHA256
+        and full_record["canonical_sha256"]
+        != HISTORICAL_ROUND13_PARENT_FULL_SHA256
+        and summary_record["canonical_sha256"]
+        != HISTORICAL_ROUND13_PARENT_SUMMARY_SHA256
+        and parent_full["schema_version"] == 2
         and parent_full["terminal"]["kind"] == "C"
-        and parent_summary["schema_version"] == 1
+        and parent_full["terminal"]["role"]
+        == "historical-mathematical-stop-C-checkpoint"
+        and set(parent_full["terminal"])
+        == parent_source.ROUND12_PARENT_TERMINAL_KEYS
+        and parent_full["terminal"]["last_provenance_correction"]
+        == parent_source.ROUND12_LAST_PROVENANCE_CORRECTION
+        and parent_summary["schema_version"] == 2
+        and set(parent_summary["terminal"])
+        == parent_source.ROUND12_PARENT_SUMMARY_TERMINAL_KEYS
+        and parent_summary["terminal"]["last_provenance_correction"]
+        == parent_source.ROUND12_LAST_PROVENANCE_CORRECTION
         and tuple(parent_full["r2"])
         == parent_source.R2_ROUND_KEYS_THROUGH_ROUND12
     ):
-        raise AssertionError("immutable Round-12 parent reproduction failed")
+        raise AssertionError("current Round-12 parent reproduction failed")
     return parent_full, parent_summary, {
         "full": full_record,
         "summary": summary_record,
         "round12_payload_sha256": round12_sha256,
         "round_count": 12,
+        "external_registration_exact": True,
         "reproduced_fail_closed": True,
-    }
+    }, historical_round13_parent
 
 
 def _admit_historical_rounds() -> tuple[dict[str, object], ...]:
@@ -432,32 +568,22 @@ def _admit_historical_rounds() -> tuple[dict[str, object], ...]:
 def _admit_permanent_contract(
     contract: dict[str, object],
 ) -> dict[str, object]:
+    registration = CURRENT_EXTERNAL_REGISTRATION
+    if not _external_record_complete(
+        registration,
+        CURRENT_EXTERNAL_REGISTRATION_KEYS,
+    ):
+        raise AssertionError("current permanent contract is not registered")
     record = _compact_record(contract)
-    source_provenance = {
-        "sha256": stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_SHA256,
-        "migration_issue_comment": (
-            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT
-        ),
-        "migration_created_at": (
-            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT
-        ),
-        "migration_updated_at": (
-            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT
-        ),
-    }
-    expected_provenance = {
-        "sha256": PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256,
-        "migration_issue_comment": 5246699114,
-        "migration_created_at": "2026-08-10T22:22:12Z",
-        "migration_updated_at": "2026-08-10T22:22:12Z",
-    }
+    source_sha256 = stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_SHA256
     historical_bridge = contract["historical_execution_bridge"]
     admitted = (
-        source_provenance == expected_provenance
+        set(registration) == CURRENT_EXTERNAL_REGISTRATION_KEYS
+        and source_sha256 == registration["contract_sha256"]
         and record["canonical_sha256"]
-        == PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256
+        == registration["contract_sha256"]
         and record["canonical_bytes"]
-        == PERMANENT_CONTRACT_COMPACT_EXPECTED_BYTES
+        == registration["contract_canonical_bytes"]
         and contract["kind"]
         == "G-local-v1-permanent-structural-contract-v1"
         and contract["current_registration_values_in_contract"] is False
@@ -495,7 +621,8 @@ def _admit_permanent_contract(
         raise AssertionError("G_local-v1 permanent contract admission failed")
     return {
         **record,
-        "current_permanent_contract_provenance": source_provenance,
+        "current_permanent_contract_sha256": source_sha256,
+        "external_registration_exact": True,
         "builder_direct_contract_requests": 1,
         "checker_internal_contract_admission_reconstructions": 1,
         "effective_contract_constructions": 2,
@@ -507,6 +634,19 @@ def _admit_checker_result(
     result: dict[str, object],
     contract: dict[str, object],
 ) -> dict[str, object]:
+    registration = CURRENT_EXTERNAL_REGISTRATION
+    regression = CURRENT_CHECKER_REGRESSION
+    if not (
+        _external_record_complete(
+            registration,
+            CURRENT_EXTERNAL_REGISTRATION_KEYS,
+        )
+        and _external_record_complete(
+            regression,
+            CURRENT_CHECKER_REGRESSION_KEYS,
+        )
+    ):
+        raise AssertionError("current Stop-B checker is not registered")
     checker_record = _compact_record(result)
     observation = result["observation_evidence"]["common_observation"]
     observation_record = _compact_record(observation)
@@ -530,17 +670,13 @@ def _admit_checker_result(
         "new_global_or_A_block_H1_queries": 0,
         "new_population_queries": 0,
     }
-    expected_contract_provenance = {
-        "sha256": PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256,
-        "migration_issue_comment": 5246699114,
-        "migration_created_at": "2026-08-10T22:22:12Z",
-        "migration_updated_at": "2026-08-10T22:22:12Z",
-    }
     admitted = (
-        checker_record["canonical_sha256"]
-        == CHECKER_RESULT_COMPACT_EXPECTED_SHA256
+        set(registration) == CURRENT_EXTERNAL_REGISTRATION_KEYS
+        and set(regression) == CURRENT_CHECKER_REGRESSION_KEYS
+        and checker_record["canonical_sha256"]
+        == regression["sha256"]
         and checker_record["canonical_bytes"]
-        == CHECKER_RESULT_COMPACT_EXPECTED_BYTES
+        == regression["canonical_bytes"]
         and observation_record["canonical_sha256"]
         == COMMON_OBSERVATION_EXPECTED_SHA256
         and observation_record["canonical_bytes"]
@@ -556,8 +692,8 @@ def _admit_checker_result(
         and result["verdict"]
         == "CSTAR-not-expressible-in-G_local-v1"
         and result["semantic_id"] == "G_local-v1"
-        and result["current_permanent_contract_provenance"]
-        == expected_contract_provenance
+        and result["current_permanent_contract_sha256"]
+        == registration["contract_sha256"]
         and result["historical_execution_provenance"]
         == contract["historical_execution_bridge"]["record"]
         and result["observations_equal"] is True
@@ -567,11 +703,13 @@ def _admit_checker_result(
         == {"TERNARY-CYCLE-3": True, "TERNARY-CYCLE-6": False}
         and result["labels_differ"] is True
         and all(result[key] == value for key, value in query_counts.items())
-        and result["migration_invariants"]
+        and result["verification_invariants"]
         == {
-            "observation_meaning_unchanged": True,
-            "historical_labels_admitted_after_observation": True,
-            "query_zero_contract_unchanged": True,
+            "historical_common_observation_bridge_matched": True,
+            "historical_round15_label_separation_reproduced": True,
+            "new_v5_candidate_evaluation_calls": 0,
+            "new_global_or_A_block_H1_queries": 0,
+            "new_population_queries": 0,
             "old_manifest_reconstruction_claimed": False,
             "old_checker_reconstruction_claimed": False,
         }
@@ -582,6 +720,7 @@ def _admit_checker_result(
         "checker_result": checker_record,
         "common_observation": observation_record,
         "query_counts": query_counts,
+        "checker_regression_exact": True,
         "component_count": len(component_equality),
         "all_components_equal": all(component_equality.values()),
         "admitted": admitted,
@@ -589,7 +728,7 @@ def _admit_checker_result(
 
 
 def _terminal_metadata(coverage_limit: str) -> dict[str, object]:
-    return {
+    terminal = {
         "kind": "B",
         "role": "final-mathematical-terminal",
         "verdict": "CSTAR-not-expressible-in-G_local-v1",
@@ -602,6 +741,9 @@ def _terminal_metadata(coverage_limit: str) -> dict[str, object]:
         "absolute_impossibility_claim": False,
         "coverage_limit": coverage_limit,
     }
+    if set(terminal) != STOP_B_TERMINAL_KEYS:
+        raise AssertionError("Stop-B terminal schema drift")
+    return terminal
 
 
 def stop_b_results_report() -> dict[str, object]:
@@ -611,7 +753,12 @@ def stop_b_results_report() -> dict[str, object]:
     one builder run has two effective contract constructions in total.
     """
 
-    parent_full, parent_summary, parent_admission = _admit_parent_checkpoint()
+    (
+        parent_full,
+        parent_summary,
+        parent_admission,
+        historical_round13_parent,
+    ) = _admit_current_parent()
     history = _admit_historical_rounds()
     contract = g_local_v1_permanent_contract_manifest()
     contract_admission = _admit_permanent_contract(contract)
@@ -623,13 +770,20 @@ def stop_b_results_report() -> dict[str, object]:
         "schema_version": 2,
         "randomness": "none",
         "serialization": deepcopy(CANONICAL_SERIALIZATION),
-        "immutable_parent_through_round12": {
+        "current_external_registration": deepcopy(
+            CURRENT_EXTERNAL_REGISTRATION
+        ),
+        "current_parent_through_round12": {
             "admission": parent_admission,
             "full_report": deepcopy(parent_full),
             "summary_report": deepcopy(parent_summary),
         },
         "historical_rounds_13_through_15": list(history),
         "historical_provenance": {
+            "round13_parent": historical_round13_parent,
+            "superseded_permanent_migration": deepcopy(
+                HISTORICAL_PERMANENT_MIGRATION_PROVENANCE
+            ),
             "superseded_execution_bridge": deepcopy(
                 contract["historical_execution_bridge"]
             ),
@@ -648,8 +802,8 @@ def stop_b_results_report() -> dict[str, object]:
                     "immutable_round15_label_ledger"
                 ]["sha256"],
             },
-            "permanent_contract_regression_provenance": deepcopy(
-                PERMANENT_CONTRACT_REGRESSION_PROVENANCE
+            "current_checker_regression": deepcopy(
+                CURRENT_CHECKER_REGRESSION
             ),
             "checker_result": deepcopy(checker_result),
             "checker_admission": checker_admission,
@@ -668,8 +822,29 @@ def stop_b_results_summary(
     """
 
     full = stop_b_results_report() if full_report is None else full_report
+    if set(full["terminal"]) != STOP_B_TERMINAL_KEYS:
+        raise AssertionError("Stop-B summary terminal schema drift")
+    if not (
+        _external_record_complete(
+            CURRENT_EXTERNAL_REGISTRATION,
+            CURRENT_EXTERNAL_REGISTRATION_KEYS,
+        )
+        and full["current_external_registration"]
+        == CURRENT_EXTERNAL_REGISTRATION
+        and set(full["current_external_registration"])
+        == CURRENT_EXTERNAL_REGISTRATION_KEYS
+        and _external_record_complete(
+            CURRENT_CHECKER_REGRESSION,
+            CURRENT_CHECKER_REGRESSION_KEYS,
+        )
+        and full["g_local_v1"]["current_checker_regression"]
+        == CURRENT_CHECKER_REGRESSION
+        and set(full["g_local_v1"]["current_checker_regression"])
+        == CURRENT_CHECKER_REGRESSION_KEYS
+    ):
+        raise AssertionError("Stop-B external provenance projection drift")
     full_record = _rendered_record(render_json(full))
-    parent = full["immutable_parent_through_round12"]
+    parent = full["current_parent_through_round12"]
     parent_summary = parent["summary_report"]
     stop_b = full["g_local_v1"]
     checker = stop_b["checker_result"]
@@ -683,7 +858,10 @@ def stop_b_results_summary(
             **full_record,
             "canonical_generator": deepcopy(CANONICAL_GENERATOR),
         },
-        "parent_through_round12": {
+        "current_external_registration": deepcopy(
+            full["current_external_registration"]
+        ),
+        "current_parent_through_round12": {
             "admission": deepcopy(parent["admission"]),
             "r0": {
                 key: deepcopy(parent_summary["r0"][key])
@@ -710,11 +888,11 @@ def stop_b_results_summary(
             "verdict": checker["verdict"],
             "semantic_id": checker["semantic_id"],
             "permanent_contract": deepcopy(stop_b["contract_admission"]),
-            "current_permanent_contract_provenance": deepcopy(
-                checker["current_permanent_contract_provenance"]
-            ),
-            "permanent_contract_regression_provenance": deepcopy(
-                stop_b["permanent_contract_regression_provenance"]
+            "current_permanent_contract_sha256": checker[
+                "current_permanent_contract_sha256"
+            ],
+            "current_checker_regression": deepcopy(
+                stop_b["current_checker_regression"]
             ),
             "round15_hash_roles": deepcopy(stop_b["round15_hash_roles"]),
             "round15_label_ledger_sha256": checker[
@@ -750,8 +928,8 @@ def stop_b_results_summary(
             },
             "labels": deepcopy(checker["labels"]),
             "labels_differ": checker["labels_differ"],
-            "migration_invariants": deepcopy(
-                checker["migration_invariants"]
+            "verification_invariants": deepcopy(
+                checker["verification_invariants"]
             ),
             "general_two_point_argument": checker[
                 "general_two_point_argument"
@@ -760,6 +938,8 @@ def stop_b_results_summary(
         },
         "terminal": deepcopy(full["terminal"]),
     }
+    if set(summary["terminal"]) != STOP_B_TERMINAL_KEYS:
+        raise AssertionError("Stop-B summary terminal projection drift")
     rendered = render_json(summary)
     if len(rendered.encode("utf-8")) >= 100_000:
         raise AssertionError("Stop-B slim summary exceeds 100KB")

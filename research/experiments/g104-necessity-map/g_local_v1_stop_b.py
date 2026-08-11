@@ -9,7 +9,7 @@ The pure permanent contract does not construct either witness and does not
 call the observation evaluator or checker.  Historical execution values are
 opaque Git/Issue provenance rather than a claim that an old manifest can be
 reconstructed from current source.  The checker fails closed until the current
-permanent contract has separately registered migration provenance.
+permanent contract SHA has been registered.
 """
 
 from __future__ import annotations
@@ -137,13 +137,10 @@ G_LOCAL_V1_HISTORICAL_EXECUTION = {
     "old_checker_reconstructed_from_current_source": False,
 }
 
-# Filled only after the permanent contract has been generated, reviewed, and
-# posted as a migration record.  None keeps every pre-registration checker
-# call fail-closed and is excluded from the permanent source fingerprint.
-G_LOCAL_V1_PERMANENT_CONTRACT_SHA256: str | None = "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
-G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT: int | None = 5246699114
-G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT: str | None = "2026-08-10T22:22:12Z"
-G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT: str | None = "2026-08-10T22:22:12Z"
+# Filled only after the permanent contract has been generated and reviewed.
+# None keeps every pre-registration checker call fail-closed and is excluded
+# from the permanent source fingerprint.
+G_LOCAL_V1_PERMANENT_CONTRACT_SHA256: str | None = "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8"
 
 
 def _compact_json(value: object) -> str:
@@ -700,9 +697,6 @@ G_LOCAL_V1_SOURCE_NORMALIZATION = {
 }
 G_LOCAL_V1_PERMANENT_CONTRACT_REGISTRATION_FIELDS = (
     "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
-    "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
-    "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
-    "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
 )
 G_LOCAL_V1_PERMANENT_CONTRACT_REGISTRATION_NORMALIZATION = {
     "base_normalization": G_LOCAL_V1_SOURCE_NORMALIZATION,
@@ -1810,12 +1804,7 @@ def g_local_v1_permanent_contract_manifest_sha256() -> str:
 
 
 def _admit_current_permanent_contract() -> dict[str, object]:
-    if (
-        G_LOCAL_V1_PERMANENT_CONTRACT_SHA256 is None
-        or G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT is None
-        or G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT is None
-        or G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT is None
-    ):
+    if G_LOCAL_V1_PERMANENT_CONTRACT_SHA256 is None:
         raise AssertionError("G_local-v1 permanent contract is not registered")
     contract = g_local_v1_permanent_contract_manifest()
     actual_sha = sha256(_compact_json(contract).encode("utf-8")).hexdigest()
@@ -2163,7 +2152,7 @@ def check_g_local_v1_stop_b() -> dict[str, object]:
 
     # Uniformity truth is deliberately admitted only after exact structural
     # equality, hand calibration, final bytes equality, and the observation
-    # migration bridge have all succeeded.
+    # history bridge have all succeeded.
     labels = _admit_round15_ledger(contract)
     if len(set(labels.values())) != 2:
         raise AssertionError("Round15 admitted labels do not separate")
@@ -2173,18 +2162,9 @@ def check_g_local_v1_stop_b() -> dict[str, object]:
         "verdict": "CSTAR-not-expressible-in-G_local-v1",
         "semantic_id": structural.G_LOCAL_V1_SEMANTIC_ID,
         "historical_execution_provenance": G_LOCAL_V1_HISTORICAL_EXECUTION,
-        "current_permanent_contract_provenance": {
-            "sha256": G_LOCAL_V1_PERMANENT_CONTRACT_SHA256,
-            "migration_issue_comment": (
-                G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT
-            ),
-            "migration_created_at": (
-                G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT
-            ),
-            "migration_updated_at": (
-                G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT
-            ),
-        },
+        "current_permanent_contract_sha256": (
+            G_LOCAL_V1_PERMANENT_CONTRACT_SHA256
+        ),
         "round15_label_ledger_sha256": round15_label_ledger_sha256(),
         "witness_structural_sha256": G_LOCAL_V1_WITNESS_INPUT_SHA256,
         "observations_equal": all(component_equality.values()),
@@ -2212,10 +2192,16 @@ def check_g_local_v1_stop_b() -> dict[str, object]:
         "new_v5_candidate_evaluation_calls": 0,
         "new_global_or_A_block_H1_queries": 0,
         "new_population_queries": 0,
-        "migration_invariants": {
-            "observation_meaning_unchanged": True,
-            "historical_labels_admitted_after_observation": True,
-            "query_zero_contract_unchanged": True,
+        "verification_invariants": {
+            "historical_common_observation_bridge_matched": (
+                historical_observation_bridge["matched"]
+            ),
+            "historical_round15_label_separation_reproduced": (
+                len(set(labels.values())) == 2
+            ),
+            "new_v5_candidate_evaluation_calls": 0,
+            "new_global_or_A_block_H1_queries": 0,
+            "new_population_queries": 0,
             "old_manifest_reconstruction_claimed": False,
             "old_checker_reconstruction_claimed": False,
         },

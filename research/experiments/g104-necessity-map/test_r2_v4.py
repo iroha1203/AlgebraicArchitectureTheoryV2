@@ -115,6 +115,48 @@ from r2_hunt import (
 )
 
 
+def historical_round13_parent_admission() -> dict[str, object]:
+    """Replay the registered Round-13 parent gate without rebuilding it.
+
+    The current Round-12 artifact intentionally has new lifecycle-free bytes.
+    Round 13 remains a regression of its registered historical payload, so the
+    test supplies the exact old admission record instead of asking current
+    ``build_results`` code to reconstruct an obsolete artifact.
+    """
+
+    if not (
+        r2_hunt.ROUND13_PARENT_RESULTS_JSON_SHA256
+        == ROUND13_PARENT_RESULTS_JSON_SHA256
+        == (
+            "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306"
+        )
+        and r2_hunt.ROUND13_PARENT_RESULTS_SUMMARY_JSON_SHA256
+        == ROUND13_PARENT_RESULTS_SUMMARY_JSON_SHA256
+        == (
+            "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5"
+        )
+        and r2_hunt.ROUND13_PARENT_ROUND12_PAYLOAD_SHA256
+        == ROUND13_PARENT_ROUND12_PAYLOAD_SHA256
+        == (
+            "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90"
+        )
+    ):
+        raise AssertionError("historical Round13 parent admission drift")
+    return {
+        "results.json": {
+            "canonical_sha256": ROUND13_PARENT_RESULTS_JSON_SHA256,
+            "canonical_bytes": 3_446_046,
+        },
+        "results-summary.json": {
+            "canonical_sha256": ROUND13_PARENT_RESULTS_SUMMARY_JSON_SHA256,
+            "canonical_bytes": 95_410,
+            "committed_bytes_exact": True,
+        },
+        "round12_payload_sha256": ROUND13_PARENT_ROUND12_PAYLOAD_SHA256,
+        "all_gates_pass": True,
+    }
+
+
 class R2V4PureTest(unittest.TestCase):
     def test_v4_semantic_spec_is_ascii_and_deterministic(self) -> None:
         self.assertEqual(
@@ -976,15 +1018,27 @@ class R2Round13PureManifestTest(unittest.TestCase):
             ),
             patch.object(
                 r2_hunt,
+                "_round13_parent_artifact_admission",
+                side_effect=historical_round13_parent_admission,
+            ) as parent_gate,
+            patch.object(
+                r2_hunt,
                 "_round13_population_query",
             ) as query,
         ):
             with self.assertRaises(AssertionError):
                 round13_report()
+        parent_gate.assert_called_once_with()
         query.assert_not_called()
 
     def test_round13_exact_admitted_report_and_full_evaluation(self) -> None:
-        report = round13_report()
+        with patch.object(
+            r2_hunt,
+            "_round13_parent_artifact_admission",
+            side_effect=historical_round13_parent_admission,
+        ) as parent_gate:
+            report = round13_report()
+        parent_gate.assert_called_once_with()
         self.assertEqual(
             set(report),
             {
@@ -1750,7 +1804,13 @@ class R2Round14PurePreregistrationTest(unittest.TestCase):
         query.assert_called_once_with(manifest)
 
     def test_round14_exact_admitted_report_and_reproduction(self) -> None:
-        report = round14_report()
+        with patch.object(
+            r2_hunt,
+            "_round13_parent_artifact_admission",
+            side_effect=historical_round13_parent_admission,
+        ) as parent_gate:
+            report = round14_report()
+        parent_gate.assert_called_once_with()
         self.assertEqual(
             set(report),
             {
@@ -3275,7 +3335,13 @@ class R2V5Round15AdmissionAndReportTest(unittest.TestCase):
         query.assert_called_once_with(manifest, mutual_h1)
 
     def test_round15_exact_admitted_report_and_registered_controls(self) -> None:
-        report = round15_report()
+        with patch.object(
+            r2_hunt,
+            "_round13_parent_artifact_admission",
+            side_effect=historical_round13_parent_admission,
+        ) as parent_gate:
+            report = round15_report()
+        parent_gate.assert_called_once_with()
         self.assertEqual(
             set(report),
             {
