@@ -420,7 +420,10 @@
      証明は2段: **bridge theorem** `ConditionCAllA M → ∀ laws hcoarse
      hfine, M.ConditionC laws hcoarse hfine`(law-value label の block
      と値部分集合 `A`(label の値 fiber)の対応 = (i) の block ≅
-     A-subnerve 同定の再利用。C1–C4 の条項ごとの transport)+ G-104
+     A-subnerve 同定の再利用。C1–C4 の条項ごとの transport。値 fiber が
+     空の label は block が空で条項は vacuous に成立する — 同定の空
+     ケースとして bridge 内で明示に扱い、非空 fiber の label だけが
+     `ConditionCAllA` の非空 `A` 量化を使う)+ G-104
      受理済み pointwise theorem(`generatedComparisonH1Map_bijective`)
      の各 law への適用。`Condition-C locus` は `{ M | ConditionCAllA
      M }` として**幾何決定可能**に固定され、(iv) の witness により包含は
@@ -438,10 +441,14 @@
      target、または lift 対の導出台)と交わる非空 `A` の block で両側
      H¹ 非零が成立すること。hunt の R1 witness 群
      (`results-summary.json` に固定済みの完全 fixture)を Lean へ転写
-     してよい。これは Atlas 定理の条件 C のどの条項も必要でないことの
-     theorem 水準の地図であり、(iii) の包含に真性を与え、(v) とあわせて
-     「既証明の十分域は真に狭く、この観測言語では必要十分に届かない」
-     構図を固定する。
+     してよい。各 witness は、law-indexed 条項の破れに加えて、**対応する
+     A-subnerve 評価条項(`ConditionCAllA` の当該成分)の破れを直接の
+     decidable 計算で併記**する — (iii) の包含真性(`¬ConditionCAllA`)
+     が transport の逆向きに依存せず witness 上の直接検査で立つように
+     するためである。これは Atlas 定理の条件 C のどの条項も必要でない
+     ことの theorem 水準の地図であり、(iii) の包含に真性を与え、(v) と
+     あわせて「既証明の十分域は真に狭く、この観測言語では必要十分に
+     届かない」構図を固定する。
   5. **(v) observation nonfactorization**: `G_local-v1` で
      表現可能ないかなる条項系も一様不変性を特徴づけない。正確には、
      witness 対 `T3`(`TERNARY-CYCLE-3`)・`T6`(`TERNARY-CYCLE-6`)を
@@ -562,8 +569,8 @@
   - `law family と adequacy`: premise ではない。一様不変性の**内部量化**
     (束縛変数と domain condition)としてのみ現れる。`ambient-boundary`
     として受け取り固定 family の pointwise bijectivity theorem を作る
-    ことは、本カードが除外した pointwise 必要性への弱化であり completion
-    と数えない。
+    ことは、一様量化の pointwise 化(本カードが禁止する弱化)であり
+    completion と数えない。
   - `comparison data(nerve / nerve 射 / K1 導出台 / hereditary 退化宣言 /
     π-両立)`: `ambient-boundary`(入力幾何)。well-formedness は G-104 の
     定義を継承する。
@@ -626,7 +633,9 @@
   - `現行 C 非必要性 witness 7種 (iv)`: `discharge-required`。存在
     witness。(iv) の scope 規定(相対条項は同一 `A` での同時発火、全体
     条項は破れ関与データと交わる `A` での両側非零)を満たす。型不一致
-    vacuity・零 H¹ だけの破れは不可。(iii) の包含真性の根拠を兼ねる。
+    vacuity・零 H¹ だけの破れは不可。各 witness に `¬ConditionCAllA` の
+    直接 decidable 検査(破れる A-subnerve 評価条項の記録)を併記し、
+    (iii) の包含真性の根拠を transport 非依存で兼ねる。
 - `target anti-weakening rule`: (i) を fixture 検証へ、一様不変性を
   有限個の law family の標本検査へ弱めない。law family を theorem 外側の
   固定 premise へ移して一様量化を pointwise 化しない。(ii) の decider を
