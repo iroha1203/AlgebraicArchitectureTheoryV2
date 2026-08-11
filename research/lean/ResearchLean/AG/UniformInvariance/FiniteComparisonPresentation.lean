@@ -22,6 +22,13 @@ representative, commutation, and equality with the upstream canonical factor.
 The same equality is then used when constructing semantic support
 compatibility.
 
+The source enumeration is explicit because `Finset.toList` has no compiler
+code in the current Lean runtime; deriving a list from `Fintype.elems` would
+make the representative definition non-executable.  Search itself uses the
+standard `List.find?` operation.  Enumeration order, duplicates, and the
+fallback do not affect the semantics, as certified by the canonical-factor
+equality theorem below.
+
 We reject an arbitrary factor field, a canonical-factor equality field, and an
 opaque completed-geometry field: each would disconnect the future checker from
 the semantics it is meant to decide.  Overlap-component predicates of the
@@ -41,11 +48,8 @@ universe u
 /-- Return the first list entry satisfying a Boolean predicate, or a supplied
 fallback when no entry satisfies it. -/
 def firstMatchingOr {α : Type u} (fallback : α) (predicate : α → Bool) :
-    List α → α
-  | [] => fallback
-  | entry :: entries =>
-      if predicate entry then entry
-      else firstMatchingOr fallback predicate entries
+    List α → α :=
+  fun entries => (entries.find? predicate).getD fallback
 
 /-- A finite search returns a satisfying entry whenever the searched list
 contains one. -/
@@ -53,18 +57,12 @@ theorem firstMatchingOr_satisfies {α : Type u} (fallback : α)
     (predicate : α → Bool) (entries : List α)
     (hexists : ∃ entry ∈ entries, predicate entry = true) :
     predicate (firstMatchingOr fallback predicate entries) = true := by
-  induction entries with
-  | nil => simp at hexists
-  | cons entry entries ih =>
-      by_cases hentry : predicate entry = true
-      · simp [firstMatchingOr, hentry]
-      · have htail : ∃ tailEntry ∈ entries,
-            predicate tailEntry = true := by
-          obtain ⟨witness, hwitness, hsatisfies⟩ := hexists
-          rcases List.mem_cons.mp hwitness with rfl | hwitness
-          · exact (hentry hsatisfies).elim
-          · exact ⟨witness, hwitness, hsatisfies⟩
-        simp [firstMatchingOr, hentry, ih htail]
+  cases hfound : entries.find? predicate with
+  | none =>
+      obtain ⟨entry, hentry, hsatisfies⟩ := hexists
+      exact ((List.find?_eq_none.mp hfound entry hentry) hsatisfies).elim
+  | some entry =>
+      simpa [firstMatchingOr, hfound] using List.find?_some hfound
 
 /-! ## Raw finite comparison data -/
 

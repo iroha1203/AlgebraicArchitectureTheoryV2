@@ -706,7 +706,7 @@ tracking_issue_closed: false
   - manifest 登録済み単一ファイル focused check: pass
   - `ResearchLean.AG.UniformInvariance.FiniteComparisonPresentation` の
     targeted module build: pass
-  - namespace axiom audit: 111 declarations、standard axioms only
+  - namespace axiom audit: 110 declarations、standard axioms only
   - 主要 10 declaration の `#print axioms`: `propext`、
     `Classical.choice`、`Quot.sound` のみ
   - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
