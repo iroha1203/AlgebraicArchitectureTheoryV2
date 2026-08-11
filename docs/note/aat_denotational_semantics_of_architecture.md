@@ -395,15 +395,23 @@ candidateとして扱う。
 - **Resolution Diagnostic Local-System**。law family `L` に対するreadingの圏
   `Read_L` を構成し、診断 `D_L(q) := H^1(C_L(q))` をfunctorとして立てる。
   条件Cを満たす射は同型へ写り、一般の射にはjump data
-  `J_L := (dim ker, dim coker)` を付ける。一様不変性のiff特徴づけ(G-107)が
-  切り出すのは、単一 `D_L` の同型領域ではなく、全adequate law familyに
-  わたる共通部分 `Z_univ := { f | ∀ adequate L, J_L(f) = (0, 0) }`
-  (universal zero-jump領域)である。特徴づけへの反例は層別に読む。
+  `J_L := (dim ker, dim coker)` を付ける。この構図で一様不変性の診断
+  (G-107)が対象とするのは、単一 `D_L` の同型領域ではなく、全adequate
+  law familyにわたる共通部分
+  `Z_univ := { f | ∀ adequate L, J_L(f) = (0, 0) }`
+  (universal zero-jump領域)である。条項系への反例は層別に読む。
   uniform ∧ ¬C 型は `Z_univ \ C` のuniversal zero-jump点であり、jumpは
   どこにもない — syntacticなC-locusがsemanticな同型領域を過小近似している
-  証拠として条件系改訂を駆動する。C ∧ ¬uniform 型は真のjumpを持つ
-  `C \ Z_univ` の点。jump locusのデータになるのは後者と一般のnonuniform射で
-  あり、前者を jump locus と呼ぶのは層の取り違えになる。functor性の合成整合は
+  証拠となる(exact fixture: CONTRACTIBLE-TRIANGLE)。C ∧ ¬uniform 型は
+  真のjumpを持つ `C \ Z_univ` の点である(exact fixture:
+  PROPER-CHAIN3-PLUS-BRIDGE-DIGON — 条項系が粗側cycleの解像だけを検査し、
+  非critical領域上の細側cycle新規生成を見ない穴)。jump locusのデータに
+  なるのは後者と一般のnonuniform射であり、前者を jump locus と呼ぶのは
+  層の取り違えになる。なお `Z_univ` を有限syntactic条項系で切り出すiff
+  プログラムは、登録済み半径1観測grammar `G_local-v1` に相対する分離
+  不能性(T3/T6の2点分離、Stop B終端)で閉じており、現在の開問題は
+  「決定可能な内側近似はどこまで押せるか」と「どの大域情報を1成分
+  足せば特徴づけに届くか」である。functor性の合成整合は
   2-cell整合(後述の二層構成)の領分であり、終着はreading圏上のsemanticsの
   fibration / stack。reading空間は有限poset上のpersistence module
   (プラトーとjump locus)として読める。
