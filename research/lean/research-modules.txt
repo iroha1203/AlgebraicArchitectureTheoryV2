@@ -312,3 +312,4 @@ ResearchLean.AG.TwoPhase.ForestSupport	ResearchLean/AG/TwoPhase/ForestSupport.le
 ResearchLean.AG.TwoPhase.FiniteWitnesses	ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
 ResearchLean.AG.UniformInvariance.ASubnerveReduction	ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean
 ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity	ResearchLean/AG/UniformInvariance/GlobalBlockBijectivity.lean
+ResearchLean.AG.UniformInvariance.IndicatorLawFamily	ResearchLean/AG/UniformInvariance/IndicatorLawFamily.lean
