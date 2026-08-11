@@ -321,5 +321,7 @@ import ResearchLean.AG.UniformInvariance.FiniteComparisonPresentation
 import ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity
 import ResearchLean.AG.UniformInvariance.IndicatorLawFamily
 import ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect
+import ResearchLean.AG.UniformInvariance.UniformPresentationDecider
+import ResearchLean.AG.UniformInvariance.UniformPresentationInstancePairs
 import ResearchLean.AG.UniformInvariance.UniformityReduction
 import ResearchLean.AG.UniformInvariance.UniformityInstancePairs

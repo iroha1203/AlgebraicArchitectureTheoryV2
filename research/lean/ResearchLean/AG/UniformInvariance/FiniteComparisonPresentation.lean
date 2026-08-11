@@ -22,12 +22,14 @@ representative, commutation, and equality with the upstream canonical factor.
 The same equality is then used when constructing semantic support
 compatibility.
 
-The source enumeration is explicit because `Finset.toList` has no compiler
-code in the current Lean runtime; deriving a list from `Fintype.elems` would
-make the representative definition non-executable.  Search itself uses the
-standard `List.find?` operation.  Enumeration order, duplicates, and the
-fallback do not affect the semantics, as certified by the canonical-factor
-equality theorem below.
+The source and coarse-target enumerations are explicit because
+`Finset.toList` has no compiler code in the current Lean runtime; deriving a
+list from `Fintype.elems` would make the representative search and the later
+all-subset checker non-executable.  Search itself uses the standard
+`List.find?` operation.  Source-enumeration order, duplicates, and the fallback
+do not affect the semantics, as certified by the canonical-factor equality
+theorem below.  Coarse-target duplicates only repeat later checks; coverage is
+the material property used by the checker completeness theorem.
 
 We reject an arbitrary factor field, a canonical-factor equality field, and an
 opaque completed-geometry field: each would disconnect the future checker from
@@ -80,6 +82,9 @@ structure FiniteComparisonPresentation where
   CoarseTarget : Type u
   coarseTargetFintype : Fintype CoarseTarget
   coarseTargetDecidableEq : DecidableEq CoarseTarget
+  coarseTargetEntries : List CoarseTarget
+  coarseTarget_mem_coarseTargetEntries :
+    ∀ target, target ∈ coarseTargetEntries
   FineTarget : Type u
   fineTargetFintype : Fintype FineTarget
   fineTargetDecidableEq : DecidableEq FineTarget

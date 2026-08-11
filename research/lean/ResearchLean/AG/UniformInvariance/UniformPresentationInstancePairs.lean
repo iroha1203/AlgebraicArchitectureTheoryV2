@@ -1,0 +1,506 @@
+import ResearchLean.AG.UniformInvariance.UniformPresentationDecider
+import Formal.Util.AssertStandardAxioms
+
+/-!
+# Executed positive and negative uniform-presentation instances
+
+This module fires the Cycle 9 checker on two nonvacuous raw finite comparison
+presentations.  Both presentations have one target, one chart, one coarse
+self-loop edge, and no faces.  The positive presentation has one fine
+self-loop, while the negative presentation has two parallel fine self-loops,
+both mapping to the unique coarse edge.
+
+The same generic checker reads both raw tables.  Neither fixture stores a
+matrix, rank, defect, uniformity proof, or expected Boolean result.  The rank
+one firing theorems below certify that the comparison map is not being tested
+only on zero cohomology.
+-/
+
+namespace AAT.AG.ResolutionInvariance
+
+open CanonicalResolution Cohomology
+open ExecutableRationalLinearAlgebra
+
+namespace UniformPresentationInstancePairs
+
+/-- Raw singleton-target comparison data with a caller-specified finite type
+of parallel fine self-loop edges. -/
+private def selfLoopPresentation (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    FiniteComparisonPresentation where
+  Source := PUnit
+  sourceFintype := inferInstance
+  sourceDecidableEq := inferInstance
+  sourceDefault := PUnit.unit
+  sourceEntries := [PUnit.unit]
+  source_mem_sourceEntries := by
+    intro source
+    cases source
+    simp
+  CoarseTarget := PUnit
+  coarseTargetFintype := inferInstance
+  coarseTargetDecidableEq := inferInstance
+  coarseTargetEntries := [PUnit.unit]
+  coarseTarget_mem_coarseTargetEntries := by
+    intro target
+    cases target
+    simp
+  FineTarget := PUnit
+  fineTargetFintype := inferInstance
+  fineTargetDecidableEq := inferInstance
+  coarseRead := fun _ => PUnit.unit
+  fineRead := fun _ => PUnit.unit
+  coarseRead_surjective := by
+    intro target
+    cases target
+    exact ⟨PUnit.unit, rfl⟩
+  fineRead_surjective := by
+    intro target
+    cases target
+    exact ⟨PUnit.unit, rfl⟩
+  rawCoarserThan := by
+    intro left right hequal
+    rfl
+  CoarseChart := PUnit
+  coarseChartFintype := inferInstance
+  coarseChartDecidableEq := inferInstance
+  CoarseEdge := PUnit
+  coarseEdgeFintype := inferInstance
+  coarseEdgeDecidableEq := inferInstance
+  CoarseFace := PEmpty
+  coarseFaceFintype := inferInstance
+  coarseFaceDecidableEq := inferInstance
+  coarseEdgeLeft := fun _ => PUnit.unit
+  coarseEdgeRight := fun _ => PUnit.unit
+  coarseFaceEdge0 := fun face => nomatch face
+  coarseFaceEdge1 := fun face => nomatch face
+  coarseFaceEdge2 := fun face => nomatch face
+  coarseFaceEdge0_left := by
+    intro face
+    exact nomatch face
+  coarseFaceEdge0_right := by
+    intro face
+    exact nomatch face
+  coarseFaceEdge1_right := by
+    intro face
+    exact nomatch face
+  coarseChartSupport := fun _ => Finset.univ
+  coarseChartSupport_nonempty := by
+    intro chart
+    exact ⟨PUnit.unit, Finset.mem_univ _⟩
+  FineChart := PUnit
+  fineChartFintype := inferInstance
+  fineChartDecidableEq := inferInstance
+  FineEdge := FineEdge
+  fineEdgeFintype := inferInstance
+  fineEdgeDecidableEq := inferInstance
+  FineFace := PEmpty
+  fineFaceFintype := inferInstance
+  fineFaceDecidableEq := inferInstance
+  fineEdgeLeft := fun _ => PUnit.unit
+  fineEdgeRight := fun _ => PUnit.unit
+  fineFaceEdge0 := fun face => nomatch face
+  fineFaceEdge1 := fun face => nomatch face
+  fineFaceEdge2 := fun face => nomatch face
+  fineFaceEdge0_left := by
+    intro face
+    exact nomatch face
+  fineFaceEdge0_right := by
+    intro face
+    exact nomatch face
+  fineFaceEdge1_right := by
+    intro face
+    exact nomatch face
+  fineChartSupport := fun _ => Finset.univ
+  fineChartSupport_nonempty := by
+    intro chart
+    exact ⟨PUnit.unit, Finset.mem_univ _⟩
+  chartMap := fun _ => PUnit.unit
+  edgeMap := fun _ => some PUnit.unit
+  faceMap := fun face => nomatch face
+  edge_some_left := by
+    intro fineEdge coarseEdge hequal
+    cases coarseEdge
+    rfl
+  edge_some_right := by
+    intro fineEdge coarseEdge hequal
+    cases coarseEdge
+    rfl
+  edge_none_fiber := by
+    intro fineEdge hequal
+    simp at hequal
+  face_some_edge0 := by
+    intro fineFace
+    exact nomatch fineFace
+  face_some_edge1 := by
+    intro fineFace
+    exact nomatch fineFace
+  face_some_edge2 := by
+    intro fineFace
+    exact nomatch fineFace
+  face_none_edge0 := by
+    intro fineFace
+    exact nomatch fineFace
+  face_none_edge1 := by
+    intro fineFace
+    exact nomatch fineFace
+  face_none_edge2 := by
+    intro fineFace
+    exact nomatch fineFace
+  chartSupport_compatible_source := by
+    intro fineChart source hsource
+    exact Finset.mem_univ _
+
+/-- Positive raw presentation: one coarse and one fine self-loop edge. -/
+def positivePresentation : FiniteComparisonPresentation :=
+  selfLoopPresentation PUnit
+
+/-- Negative raw presentation: one coarse self-loop and two parallel fine
+self-loop edges, both mapped to the coarse edge. -/
+def negativePresentation : FiniteComparisonPresentation :=
+  selfLoopPresentation Bool
+
+/-- The unique selected coarse edge in the full target subset of either raw
+fixture. -/
+private def fullCoarseEdge (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ :=
+  ⟨PUnit.unit, by
+    simp [FiniteComparisonPresentation.coarseEdgesIn,
+      FiniteComparisonPresentation.coarseEdgeSupportFinset,
+      selfLoopPresentation]⟩
+
+/-- A selected fine edge in the full target subset of a self-loop fixture. -/
+private def fullFineEdge (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge]
+    (edge : FineEdge) :
+    (selfLoopPresentation FineEdge).FineEdgeIn Finset.univ :=
+  ⟨edge, by
+    simp [FiniteComparisonPresentation.fineEdgesIn,
+      FiniteComparisonPresentation.fineEdgeSupportFinset,
+      FiniteComparisonPresentation.finePreimageFinset,
+      FiniteComparisonPresentation.computedFactor,
+      FiniteComparisonPresentation.computedRepresentative,
+      firstMatchingOr, selfLoopPresentation]⟩
+
+/-- Forgetting the selection proof identifies the full selected coarse-edge
+type with the singleton coarse-edge table. -/
+private def fullCoarseEdgeEquiv (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ ≃ PUnit where
+  toFun edge := edge.1
+  invFun _ := fullCoarseEdge FineEdge
+  left_inv edge := Subtype.ext (by rfl)
+  right_inv target := by cases target; rfl
+
+/-- Forgetting the selection proof identifies the full selected fine-edge
+type with the raw fine-edge table. -/
+private def fullFineEdgeEquiv (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).FineEdgeIn Finset.univ ≃ FineEdge where
+  toFun edge := edge.1
+  invFun := fullFineEdge FineEdge
+  left_inv edge := Subtype.ext (by rfl)
+  right_inv edge := rfl
+
+/-- The positive block matrix has a unit entry in its comparison block. -/
+private theorem positive_h1RankBlockMatrix_entry :
+    positivePresentation.h1RankBlockMatrix Finset.univ
+      (Sum.inr (fullFineEdge PUnit PUnit.unit))
+      (Sum.inl (fullCoarseEdge PUnit)) = 1 := by
+  simp [FiniteComparisonPresentation.h1RankBlockMatrix,
+    LinearMap.toMatrix'_apply,
+    FiniteComparisonPresentation.h1RankBlockLinearMap,
+    FiniteComparisonPresentation.edgePullback1LinearMap,
+    FiniteComparisonPresentation.edgeMapOptionIn,
+    FiniteComparisonPresentation.fineD0LinearMap,
+    positivePresentation, selfLoopPresentation,
+    fullFineEdge, fullCoarseEdge]
+
+/-- The negative block matrix has a unit entry in its comparison block. -/
+private theorem negative_h1RankBlockMatrix_entry :
+    negativePresentation.h1RankBlockMatrix Finset.univ
+      (Sum.inr (fullFineEdge Bool false))
+      (Sum.inl (fullCoarseEdge Bool)) = 1 := by
+  simp [FiniteComparisonPresentation.h1RankBlockMatrix,
+    LinearMap.toMatrix'_apply,
+    FiniteComparisonPresentation.h1RankBlockLinearMap,
+    FiniteComparisonPresentation.edgePullback1LinearMap,
+    FiniteComparisonPresentation.edgeMapOptionIn,
+    FiniteComparisonPresentation.fineD0LinearMap,
+    negativePresentation, selfLoopPresentation,
+    fullFineEdge, fullCoarseEdge]
+
+/-- Empty face tables make the raw coarse degree-one matrix zero. -/
+private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).coarseD1Matrix Finset.univ = 0 := by
+  ext face edge
+  exact nomatch face.1
+
+/-- Self-loop endpoints make the raw coarse degree-zero matrix zero. -/
+private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).coarseD0Matrix Finset.univ = 0 := by
+  ext edge chart
+  rw [FiniteComparisonPresentation.coarseD0Matrix,
+    LinearMap.toMatrix'_apply]
+  have hendpoints :
+      (selfLoopPresentation FineEdge).coarseEdgeRightIn Finset.univ edge =
+        (selfLoopPresentation FineEdge).coarseEdgeLeftIn Finset.univ edge := by
+    apply Subtype.ext
+    rfl
+  simp [FiniteComparisonPresentation.coarseD0LinearMap]
+  rw [hendpoints]
+  ring
+
+/-- Self-loop endpoints make the raw fine degree-zero matrix zero. -/
+private theorem fineD0Matrix_eq_zero (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).fineD0Matrix Finset.univ = 0 := by
+  ext edge chart
+  rw [FiniteComparisonPresentation.fineD0Matrix,
+    LinearMap.toMatrix'_apply]
+  have hendpoints :
+      (selfLoopPresentation FineEdge).fineEdgeRightIn Finset.univ edge =
+        (selfLoopPresentation FineEdge).fineEdgeLeftIn Finset.univ edge := by
+    apply Subtype.ext
+    rfl
+  simp [FiniteComparisonPresentation.fineD0LinearMap]
+  rw [hendpoints]
+  ring
+
+/-- Empty face tables make the raw fine degree-one matrix zero. -/
+private theorem fineD1Matrix_eq_zero (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).fineD1Matrix Finset.univ = 0 := by
+  ext face edge
+  exact nomatch face.1
+
+/-- The raw H¹ block matrix is the outer product of the all-one fine-edge
+column with the row selecting the unique coarse-edge coordinate. -/
+private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
+    [Fintype FineEdge] [DecidableEq FineEdge] :
+    (selfLoopPresentation FineEdge).h1RankBlockMatrix Finset.univ =
+      Matrix.vecMulVec (fun _ => (1 : ℚ))
+        (fun index => match index with
+          | Sum.inl _ => 1
+          | Sum.inr _ => 0) := by
+  ext row column
+  cases row with
+  | inl face => exact nomatch face.1
+  | inr edge =>
+      cases column with
+      | inl coarseEdge =>
+          rw [FiniteComparisonPresentation.h1RankBlockMatrix,
+            LinearMap.toMatrix'_apply]
+          have hmap :
+              (selfLoopPresentation FineEdge).edgeMapOptionIn
+                Finset.univ edge = some (fullCoarseEdge FineEdge) := by
+            simp [FiniteComparisonPresentation.edgeMapOptionIn,
+              selfLoopPresentation, fullCoarseEdge]
+          have hcoarse : coarseEdge = fullCoarseEdge FineEdge := by
+            apply Subtype.ext
+            rfl
+          simp [FiniteComparisonPresentation.h1RankBlockLinearMap,
+            FiniteComparisonPresentation.edgePullback1LinearMap,
+            FiniteComparisonPresentation.fineD0LinearMap,
+            Matrix.vecMulVec, hmap, hcoarse]
+      | inr chart =>
+          rw [FiniteComparisonPresentation.h1RankBlockMatrix,
+            LinearMap.toMatrix'_apply]
+          have hendpoints :
+              (selfLoopPresentation FineEdge).fineEdgeRightIn
+                  Finset.univ edge =
+                (selfLoopPresentation FineEdge).fineEdgeLeftIn
+                  Finset.univ edge := by
+            apply Subtype.ext
+            rfl
+          cases hmap : (selfLoopPresentation FineEdge).edgeMapOptionIn
+              Finset.univ edge <;>
+            simp [FiniteComparisonPresentation.h1RankBlockLinearMap,
+              FiniteComparisonPresentation.edgePullback1LinearMap,
+              FiniteComparisonPresentation.fineD0LinearMap,
+              Matrix.vecMulVec, hmap] <;>
+            rw [hendpoints] <;> ring
+
+/-- The positive raw presentation computes a nonzero rank-one induced H¹
+comparison on its unique nonempty target subset. -/
+theorem positive_fullTarget_h1Rank :
+    positivePresentation.computedASubnerveH1Rank Finset.univ = 1 := by
+  rw [FiniteComparisonPresentation.computedASubnerveH1Rank,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    rationalMatrixRank_eq_rank]
+  have hblockLe :
+      (positivePresentation.h1RankBlockMatrix Finset.univ).rank ≤ 1 := by
+    rw [positivePresentation, h1RankBlockMatrix_eq_vecMulVec]
+    exact Matrix.rank_vecMulVec_le _ _
+  have hblockPos :
+      0 < (positivePresentation.h1RankBlockMatrix Finset.univ).rank :=
+    rank_pos_of_entry_ne_zero
+      (positivePresentation.h1RankBlockMatrix Finset.univ) (by
+        rw [positive_h1RankBlockMatrix_entry]
+        norm_num)
+  have hblock :
+      (positivePresentation.h1RankBlockMatrix Finset.univ).rank = 1 := by
+    omega
+  have hcoarseD1 :
+      (positivePresentation.coarseD1Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, coarseD1Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD0 :
+      (positivePresentation.fineD0Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, fineD0Matrix_eq_zero, Matrix.rank_zero]
+  omega
+
+/-- The negative raw presentation also computes a nonzero rank-one induced H¹
+comparison on its unique nonempty target subset. -/
+theorem negative_fullTarget_h1Rank :
+    negativePresentation.computedASubnerveH1Rank Finset.univ = 1 := by
+  rw [FiniteComparisonPresentation.computedASubnerveH1Rank,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    rationalMatrixRank_eq_rank]
+  have hblockLe :
+      (negativePresentation.h1RankBlockMatrix Finset.univ).rank ≤ 1 := by
+    rw [negativePresentation, h1RankBlockMatrix_eq_vecMulVec]
+    exact Matrix.rank_vecMulVec_le _ _
+  have hentry :
+      negativePresentation.h1RankBlockMatrix Finset.univ
+        (Sum.inr (fullFineEdge Bool false))
+        (Sum.inl (fullCoarseEdge Bool)) ≠ 0 := by
+    rw [negative_h1RankBlockMatrix_entry]
+    norm_num
+  have hblockPos :
+      0 < (negativePresentation.h1RankBlockMatrix Finset.univ).rank :=
+    rank_pos_of_entry_ne_zero
+      (negativePresentation.h1RankBlockMatrix Finset.univ) hentry
+  have hblock :
+      (negativePresentation.h1RankBlockMatrix Finset.univ).rank = 1 := by
+    omega
+  have hcoarseD1 :
+      (negativePresentation.coarseD1Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, coarseD1Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD0 :
+      (negativePresentation.fineD0Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, fineD0Matrix_eq_zero, Matrix.rank_zero]
+  omega
+
+/-- The positive raw presentation fires the exact evaluator at nonzero H¹
+rank with zero kernel and cokernel defect. -/
+theorem positive_fullTarget_firing :
+    positivePresentation.computedASubnerveH1Rank Finset.univ = 1 ∧
+      positivePresentation.computedASubnerveDefect Finset.univ = (0, 0) := by
+  refine ⟨positive_fullTarget_h1Rank, ?_⟩
+  rw [FiniteComparisonPresentation.computedASubnerveDefect,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    positive_fullTarget_h1Rank]
+  have hcoarseCard :
+      Fintype.card (positivePresentation.CoarseEdgeIn Finset.univ) = 1 := by
+    simpa [positivePresentation] using
+      Fintype.card_congr (fullCoarseEdgeEquiv PUnit)
+  have hfineCard :
+      Fintype.card (positivePresentation.FineEdgeIn Finset.univ) = 1 := by
+    simpa [positivePresentation] using
+      Fintype.card_congr (fullFineEdgeEquiv PUnit)
+  have hcoarseD1 :
+      (positivePresentation.coarseD1Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, coarseD1Matrix_eq_zero, Matrix.rank_zero]
+  have hcoarseD0 :
+      (positivePresentation.coarseD0Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, coarseD0Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD1 :
+      (positivePresentation.fineD1Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, fineD1Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD0 :
+      (positivePresentation.fineD0Matrix Finset.univ).rank = 0 := by
+    rw [positivePresentation, fineD0Matrix_eq_zero, Matrix.rank_zero]
+  simp [hcoarseCard, hfineCard, hcoarseD1, hcoarseD0, hfineD1, hfineD0]
+
+/-- The negative raw presentation fires the exact evaluator at nonzero H¹
+rank with a one-dimensional cokernel defect. -/
+theorem negative_fullTarget_firing :
+    negativePresentation.computedASubnerveH1Rank Finset.univ = 1 ∧
+      negativePresentation.computedASubnerveDefect Finset.univ = (0, 1) := by
+  refine ⟨negative_fullTarget_h1Rank, ?_⟩
+  rw [FiniteComparisonPresentation.computedASubnerveDefect,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
+    negative_fullTarget_h1Rank]
+  have hcoarseCard :
+      Fintype.card (negativePresentation.CoarseEdgeIn Finset.univ) = 1 := by
+    simpa [negativePresentation] using
+      Fintype.card_congr (fullCoarseEdgeEquiv Bool)
+  have hfineCard :
+      Fintype.card (negativePresentation.FineEdgeIn Finset.univ) = 2 := by
+    simpa [negativePresentation] using
+      Fintype.card_congr (fullFineEdgeEquiv Bool)
+  have hcoarseD1 :
+      (negativePresentation.coarseD1Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, coarseD1Matrix_eq_zero, Matrix.rank_zero]
+  have hcoarseD0 :
+      (negativePresentation.coarseD0Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, coarseD0Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD1 :
+      (negativePresentation.fineD1Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, fineD1Matrix_eq_zero, Matrix.rank_zero]
+  have hfineD0 :
+      (negativePresentation.fineD0Matrix Finset.univ).rank = 0 := by
+    rw [negativePresentation, fineD0Matrix_eq_zero, Matrix.rank_zero]
+  simp [hcoarseCard, hfineCard, hcoarseD1, hcoarseD0, hfineD1, hfineD0]
+
+/-- The generic all-subset checker returns true on the positive raw
+presentation. -/
+theorem positive_uniformPresentationCheck :
+    positivePresentation.uniformPresentationCheck = true := by
+  apply (FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff_allNonemptyDefects
+    positivePresentation).2
+  intro A hA
+  have hunit : PUnit.unit ∈ A := by
+    obtain ⟨target, htarget⟩ := hA
+    cases target
+    exact htarget
+  have hAuniv : A = Finset.univ := by
+    ext target
+    cases target
+    simp [hunit]
+  rw [hAuniv]
+  exact positive_fullTarget_firing.2
+
+/-- The generic all-subset checker returns false on the negative raw
+presentation. -/
+theorem negative_uniformPresentationCheck :
+    negativePresentation.uniformPresentationCheck = false := by
+  cases hcheck : negativePresentation.uniformPresentationCheck with
+  | false => rfl
+  | true =>
+      have hall :=
+        (FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff_allNonemptyDefects
+          negativePresentation).1 hcheck
+      have hzero := hall Finset.univ
+        (⟨PUnit.unit, Finset.mem_univ _⟩ : (Finset.univ :
+          Finset negativePresentation.CoarseTarget).Nonempty)
+      rw [negative_fullTarget_firing.2] at hzero
+      norm_num at hzero
+
+/-- The positive raw presentation satisfies the full semantic uniformity
+predicate, by soundness of the same checker that was executed above. -/
+theorem positive_uniformPresentation :
+    UniformPresentation positivePresentation :=
+  positivePresentation.uniformPresentationCheck_eq_true_iff.mp
+    positive_uniformPresentationCheck
+
+/-- The negative raw presentation fails the full semantic uniformity
+predicate, by completeness of the same checker that was executed above. -/
+theorem negative_not_uniformPresentation :
+    ¬ UniformPresentation negativePresentation := by
+  intro huniform
+  have htrue := negativePresentation.uniformPresentationCheck_eq_true_iff.mpr
+    huniform
+  rw [negative_uniformPresentationCheck] at htrue
+  contradiction
+
+end UniformPresentationInstancePairs
+
+end AAT.AG.ResolutionInvariance
+
+#assert_standard_axioms_only AAT.AG.ResolutionInvariance
