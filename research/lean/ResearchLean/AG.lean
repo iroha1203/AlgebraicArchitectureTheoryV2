@@ -315,6 +315,7 @@ import ResearchLean.AG.TwoPhase.CohomologyComparison
 import ResearchLean.AG.TwoPhase.ForestSupport
 import ResearchLean.AG.TwoPhase.FiniteWitnesses
 import ResearchLean.AG.UniformInvariance.ASubnerveReduction
+import ResearchLean.AG.UniformInvariance.AtlasPositioning
 import ResearchLean.AG.UniformInvariance.ConditionCAllA
 import ResearchLean.AG.UniformInvariance.ConditionCAllABridge
 import ResearchLean.AG.UniformInvariance.ConditionCAllAChecker
