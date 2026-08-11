@@ -46,8 +46,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `Matrix.rank`、literal range finrank、Cycle 5 の kernel/cokernel defect と
   一致する一般 sound / complete 線形代数 kernel。射影・包含・重複列・恒等・
   零行列で同じ evaluator を発火させた。
-- 未完了: presentation 固有の actual A-subnerve H¹ defect 計算、
-  `UniformPresentation` と sound / complete executable checker、Atlas positioning、
+- 完了(Cycle 8): raw `FiniteComparisonPresentation` と任意の有限 target subset
+  `A` から coarse / fine selected cells、両 `d0` / `d1`、actual partial
+  comparison `f1`、H¹ block matrix を生成し、Cycle 7 evaluator による
+  `computedASubnerveDefect` を literal `aSubnerveDefect` と一致させた。空 `A`
+  も含み、boundary を無視した `f1`-rank shortcut は専用 fixture で排除した。
+- 未完了: `UniformPresentation` と sound / complete all-subset executable
+  checker、その positive / negative raw presentation 発火、Atlas positioning、
   7 witness、observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -947,6 +952,147 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: derive each actual A-subnerve H1 comparison defect from the finite presentation and connect it to this evaluator before defining the all-A checker
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 8 — presentation A-subnerve matrices and actual defect correspondence
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean`](../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)
+- primary declarations:
+  - `ThreeCochainComplex.Hom.h1RankBlockLinearMap`
+  - `ThreeCochainComplex.Hom.finrank_range_h1Map_eq_h1RankBlock`
+  - `ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0`
+  - `FiniteComparisonPresentation.h1RankBlockMatrix`
+  - `FiniteComparisonPresentation.computedASubnerveH1Rank`
+  - `FiniteComparisonPresentation.computedASubnerveDefect`
+  - `FiniteComparisonPresentation.computedASubnerveDefect_eq_aSubnerveDefect`
+  - `BoundaryShortcutCounterexample.f1_rank_ne_h1Map_rank`
+- verification:
+  - manifest 登録済み単一ファイル focused check: pass
+  - `ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect` の targeted
+    module build: pass (3715 jobs)
+  - `AAT.AG.TwoPhase.ThreeCochainComplex.Hom` namespace axiom audit:
+    4 declarations、standard axioms only
+  - `AAT.AG.ResolutionInvariance` namespace axiom audit:
+    97 declarations、standard axioms only
+  - 主要 5 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - placeholder、hidden / bidirectional Unicode、privacy、
+    Formal→Research 逆 import、`git diff --check`: clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - 初回の generic `Hom` namespace audit 収載漏れを1行の永続 audit 追加で
+    解消し、focused check と targeted build を再実行した。
+
+### Premise delta
+
+- discharged: raw finite support / incidence tables と任意の `Finset A` からの
+  coarse / fine selected cells、computed-factor preimage、両 `d0` / `d1`、
+  actual partial `f1`、H¹ block matrix、computed defect の生成。raw / semantic
+  cell・incidence・map correspondence、block-rank exact sequence、Cycle 7 rank
+  correctnessを通して、空 `A` を含む
+  `computedASubnerveDefect_eq_aSubnerveDefect` を証明した。
+- remaining: `UniformPresentation`、全 subset 零 defect checker と sound /
+  complete theorem、nonvacuous positive / negative raw presentations、
+  `ConditionCAllA` checker / bridge / Atlas positioning / firing 正例、7 witness、
+  `Obs_G` / T3 / T6 / nonfactorization theorem。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: selected cells は raw `Finset` support と `A` の
+  実交差から生成し、fine subset は executable `computedFactor` の有限 preimage
+  から生成する。matrix は raw incidence / partial edge table で構成した linear
+  map の標準 `LinearMap.toMatrix'`、rank は Cycle 7 の exact rational evaluator
+  から生成する。semantic 側は correctness theorem の中だけで canonical factor
+  equality と cell reindexingを用いて接続する。
+- proof-use: chart-support compatibility は mapped selected cell の構成に、endpoint /
+  face incidence は raw differential と semantic differential の可換性に、partial
+  edge table と hereditary law は actual `f1` との `none` / `some` 両分岐の一致に
+  実使用される。block theorem は mapped cycles + target boundaries と block range
+  の2本の exact sequence、rank-nullity、literal quotient finrankを使用する。
+- structure-field escape: none found。presentation に matrix、basis、rank、H¹、
+  defect、uniformity、checker result の field を追加せず、新 structure / Prop も
+  導入していない。
+- route integrity: pass。raw support → selected cells / incidence → raw linear maps →
+  generated matrices → Cycle 7 exact rank → computed defect → canonical cell
+  reindexing → actual literal defect の順を保つ。
+- boundary sensitivity: source H¹ finrank `1`、target H¹ finrank `0`、underlying
+  `f1` range finrank `1`、induced H¹-map range finrank `0` の regression fixture に
+  より、`H¹(f)` rank を `f1` rank で置換する shortcut を排除した。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  supplied certificate / `Classical.dec` / GOAL-report reinterpretation はいずれも
+  `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 8
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: derive every actual A-subnerve H1 comparison defect from the finite presentation
+proof_obligation_delta: raw finite tables now generate the H1 block matrix and exact defect for every finite A, equal to the literal actual A-subnerve defect
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: fdc1b13987110d1c7a31a7a08513edd44376b477
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean
+    declarations:
+      - ThreeCochainComplex.Hom.h1RankBlockLinearMap
+      - ThreeCochainComplex.Hom.finrank_range_h1Map_eq_h1RankBlock
+      - ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0
+      - FiniteComparisonPresentation.h1RankBlockMatrix
+      - FiniteComparisonPresentation.computedASubnerveH1Rank
+      - FiniteComparisonPresentation.computedASubnerveDefect
+      - FiniteComparisonPresentation.computedASubnerveDefect_eq_aSubnerveDefect
+      - BoundaryShortcutCounterexample.f1_rank_ne_h1Map_rank
+premise_delta:
+  discharged:
+    - raw selected cells and computed-factor preimage for every finite A
+    - raw and semantic incidence, differential, and actual partial-f1 correspondence
+    - exact block-rank recovery of literal quotient-H1 rank
+    - executable presentation defect equality with actual A-subnerve defect, including empty A
+    - boundary-sensitive rejection of the underlying-f1 rank shortcut
+  remaining:
+    - UniformPresentation and executable all-subset zero-defect checker
+    - checker soundness and completeness
+    - nonvacuous positive and negative raw presentation firing
+    - ConditionCAllA checker, bridge, Atlas positioning, and firing positive example
+    - seven non-necessity witnesses
+    - Obs_G, T3/T6 labels, and nonfactorization
+certificate_provenance:
+  discharged:
+    - cells, incidence, matrices, ranks, and defects are generated from raw finite tables and Cycle 7 exact rank
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - finite decidable target and cell data
+    - raw support, incidence, partial-map, and compatibility laws
+    - computed-factor equality with the canonical comparison factor
+    - Cycle 7 rational rank correctness
+    - finite-dimensional exact-sequence, rank-nullity, and quotient-finrank formulas
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define UniformPresentation and an executable all-subset zero-defect checker, prove soundness and completeness, and fire nonvacuous positive and negative raw presentations
 completion_candidate: false
 tracking_issue_closed: false
 ```
