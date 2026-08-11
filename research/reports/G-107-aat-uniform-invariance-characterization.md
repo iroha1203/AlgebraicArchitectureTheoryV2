@@ -36,8 +36,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `(finrank ker, finrank (codomain / range))` と零 defect / 全単射性の有限次元
   iff。actual A-subnerve H¹ map へ特殊化し、Cycle 4 と結合して一様不変性と
   全非空 `A` の `J_A = (0, 0)` の iff、すなわち claim (i) を閉じた。
-- 未完了: finite computable presentation と sound / complete decider、Atlas
-  positioning、7 witness、observation nonfactorization。
+- 完了(Cycle 6): finite / decidable な raw reading・nerve・support・partial
+  morphism table と明示 source enumeration から、実行可能
+  `computedFactor`、canonical `comparisonFactor` との一致、actual G-104
+  comparison geometry、全 projection / support correspondence を生成する
+  `FiniteComparisonPresentation` の route-integrity 基盤。
+- 未完了: `UniformPresentation` と sound / complete executable defect decider、
+  Atlas positioning、7 witness、observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -674,6 +679,134 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct FiniteComparisonPresentation and the executable sound-complete zero-defect decider required by claim (ii)
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 6 — finite comparison presentation and canonical route integrity
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean`](../lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean)
+- primary declarations:
+  - `FiniteComparisonPresentation`
+  - `FiniteComparisonPresentation.coarseReading`
+  - `FiniteComparisonPresentation.fineReading`
+  - `FiniteComparisonPresentation.computedRepresentative`
+  - `FiniteComparisonPresentation.fineRead_computedRepresentative`
+  - `FiniteComparisonPresentation.computedFactor`
+  - `FiniteComparisonPresentation.computedFactor_commutes`
+  - `FiniteComparisonPresentation.computedFactor_eq_comparisonFactor`
+  - `FiniteComparisonPresentation.coarseSupportedNerve`
+  - `FiniteComparisonPresentation.fineSupportedNerve`
+  - `FiniteComparisonPresentation.toGeometry`
+- verification:
+  - manifest 登録済み単一ファイル focused check: pass
+  - `ResearchLean.AG.UniformInvariance.FiniteComparisonPresentation` の
+    targeted module build: pass
+  - namespace axiom audit: 110 declarations、standard axioms only
+  - 主要 10 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
+    clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+
+### Premise delta
+
+- discharged: finite / decidable target と cell、`Finset` support、reading
+  table、incidence table、hereditary partial comparison table、明示的 source
+  enumeration からの executable factor 生成、canonical factor との一致、
+  actual comparison geometry と raw / semantic correspondence。
+- remaining: `UniformPresentation`、presentation 上の `J_A` 有限計算、
+  sound / complete zero-defect checker、checker を true / false 両側で発火させる
+  nonvacuous positive / negative raw presentation、claim (iii)–(v)。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: factor は `sourceEntries` 上の Boolean search で fine
+  target の source representative を選び、raw coarse reading を適用して生成する。
+  search correctness は enumeration coverage と fine-reading surjectivity から得る。
+  canonical equality は raw kernel inclusion による commutation と G-104
+  `comparisonFactor_unique` から導出する。
+- proof-use: source enumeration coverage、両 reading の surjectivity、raw kernel
+  inclusion、support compatibility、endpoint / face incidence coherence、hereditary
+  degeneracy の各 premise は search proof、factor commutation、supported nerve / morphism
+  構成に実使用される。
+- structure-field escape: none found。assembled geometry、supplied factor、factor
+  equality、H¹、rank、defect、uniformity、checker result の field はない。
+- route integrity: pass。raw table → executable factor → canonical equality →
+  generated supported nerves / morphism の順を保ち、projection API で reading、
+  support、chart / edge / face map、両 nerve の全 incidence が raw table に戻る。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  GOAL-report reinterpretation はいずれも `none-found`。
+- cycle boundary: `UniformPresentation` は導入時に §1.4 の positive /
+  negative instance pair が必要なため、checker と同じ次 cycle で導入する。
+  本 cycle での defer は固定 target の削除ではなく proof DAG の導入順である。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 6
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: finite comparison presentation and canonical route-integrity foundation
+proof_obligation_delta: raw finite tables now generate the executable factor, canonical comparison geometry, and all raw-semantic projection correspondences
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 7ab6fe33ce4942ffa25235557618cfbcd4146083
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean
+    declarations:
+      - FiniteComparisonPresentation
+      - FiniteComparisonPresentation.computedRepresentative
+      - FiniteComparisonPresentation.computedFactor
+      - FiniteComparisonPresentation.computedFactor_commutes
+      - FiniteComparisonPresentation.computedFactor_eq_comparisonFactor
+      - FiniteComparisonPresentation.coarseSupportedNerve
+      - FiniteComparisonPresentation.fineSupportedNerve
+      - FiniteComparisonPresentation.toGeometry
+premise_delta:
+  discharged:
+    - executable source enumeration and representative search
+    - computed factor commutation and equality with the canonical comparison factor
+    - raw-data-generated supported nerves and actual comparison morphism
+    - reading, support, map, endpoint, and face-incidence projection correspondence
+  remaining:
+    - UniformPresentation and executable zero-defect checker
+    - soundness and completeness against actual uniform invariance
+    - nonvacuous positive and negative raw presentations
+    - ConditionCAllA positioning, seven witnesses, and observation nonfactorization
+certificate_provenance:
+  discharged:
+    - factor and geometry are generated from raw finite tables and their well-formedness proofs
+  unresolved:
+    - checker, ConditionCAllA, witness, and nonfactorization provenance
+proof_use_audit:
+  used_material_premises:
+    - source enumeration coverage and reading surjectivity
+    - raw coarse-kernel inclusion
+    - support compatibility and all incidence and hereditary-degeneracy laws
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define UniformPresentation and prove an executable sound-complete zero-defect checker with nonvacuous positive and negative raw presentations
 completion_candidate: false
 tracking_issue_closed: false
 ```
