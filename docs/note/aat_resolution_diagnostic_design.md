@@ -203,9 +203,10 @@ structural certificate 設計(G-108 以降)の素材へ移る。
 ## 8. 方法論的教訓
 
 1. **bounded zero-result を方向の安全性と読まない**。CERTIFIED-v3 の
-   2,166 case 二方向反例ゼロは bounded 証拠であり、十分性方向には候補系譜で
-   反例史(Chain3・UnkilledTwin)があった。「この方向は安全」という要約が
-   反例の一世代後に覆るのは、要約が証拠の型(bounded / 一般)を落とした
+   checkpoint 時点 1,918 case 二方向反例ゼロは bounded 証拠であり
+   (2,166 は Round 15 の v5 用 union)、十分性方向には候補系譜で反例史
+   (UnkilledTwin)があった。「この方向は安全」という要約が反例の
+   一世代後に覆るのは、要約が証拠の型(bounded / 一般)を落とした
    ときである。
 2. **観測限界の定理は語彙の資格制限に相対してのみ意味を持つ**。
    anti-answer-encoding の規律なしに「iff 不可能」を語らない。
