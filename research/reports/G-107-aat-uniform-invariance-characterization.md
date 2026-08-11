@@ -468,11 +468,13 @@ tracking_issue_closed: false
   なることを incidence と canonical self-factor から構成し、既存の非零
   `coarseFiringClass` の actual image も非零と証明した。反例は adequate な
   G-104 failure の actual nonbijective global mapを内部量化へ特殊化し、同値定理
-  から nonempty A 上の actual nonbijective map の存在まで導出した。零 H¹・
-  inadequacy・stored result bit による instance ではない。
+  から nonempty A 上の actual nonbijective map の存在まで導出した。反例は
+  coarse H¹=0 と fine の既証明非零 class で非全射を示すため、両側零 H¹ の
+  vacuity ではない。inadequacy・stored result bit による instance でもない。
 - review finding resolution: 初回 4-lane review の P1（新規 Prop 2述語の
-  §1.4 instance pair 欠落）へ直接対応した。statement / proof / GOAL scope は
-  不変で、正負 instance と非空虚性 theorem のみを追加した。
+  §1.4 instance pair 欠落）を受け、正負 instance と非空虚性 theorem を追加した。
+  statement / proof / GOAL scope は不変。宣言と import の追加を含むため
+  direct-response 資格は用いず、修正後 fixed head を正式 4-lane で再査読する。
 
 ### Target cycle ledger
 
