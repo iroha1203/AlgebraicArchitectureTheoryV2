@@ -310,3 +310,4 @@ ResearchLean.AG.TwoPhase.CoefficientComplex	ResearchLean/AG/TwoPhase/Coefficient
 ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/CohomologyComparison.lean
 ResearchLean.AG.TwoPhase.ForestSupport	ResearchLean/AG/TwoPhase/ForestSupport.lean
 ResearchLean.AG.TwoPhase.FiniteWitnesses	ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
+ResearchLean.AG.UniformInvariance.ASubnerveReduction	ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean
