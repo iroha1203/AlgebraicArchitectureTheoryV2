@@ -26,8 +26,14 @@
   不整合で導出不能と確定((i)(ii)(iv)(v) は独立再現で維持、反例
   なし)。**scope 裁定(2026-08-11、案b採用)**: (iii) を幾何述語
   `ConditionCAllA` + bridge theorem の2段構成へ改稿した(claim (iii)
-  参照)。新 fixed head の 4 lane 正式再査読を経るまで target-theorem
-  loop は起動しない。runtime state は tracking Issue #3954。
+  参照)。**statement 確定(2026-08-11、owner 裁定)**: 4 lane 査読
+  4巡(数学的反例は3巡連続ゼロ。最終2巡の finding は completion
+  contract の精密化のみ)を経て、レビュー飽和の判断により本 head を
+  もって statement を fix する — 以後の査読往復は行わず、残る検証は
+  target-theorem loop の cycle 内(§1.4 instance 検査・T3 audit・
+  final review)で行う。カード同期 PR のマージ後に
+  $target-theorem-loop を起動してよい。runtime state は tracking
+  Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
