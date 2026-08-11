@@ -51,9 +51,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   comparison `f1`、H¹ block matrix を生成し、Cycle 7 evaluator による
   `computedASubnerveDefect` を literal `aSubnerveDefect` と一致させた。空 `A`
   も含み、boundary を無視した `f1`-rank shortcut は専用 fixture で排除した。
-- 未完了: `UniformPresentation` と sound / complete all-subset executable
-  checker、その positive / negative raw presentation 発火、Atlas positioning、
-  7 witness、observation nonfactorization。
+- 完了(Cycle 9): explicit coarse-target enumeration の全 sublist を実行走査する
+  `uniformPresentationCheck` と、full semantic `UniformPresentation` との sound /
+  complete iff。Cycle 8 の exact defect bridge と Cycle 5 の semantic defect iffを
+  接続し、rank-one の positive / negative raw self-loop presentations で同じ
+  checkerを `true / false` 両側に発火させ、claim (ii) を閉じた。
+- 未完了: `ConditionCAllA` checker / bridge / Atlas positioning / firing 正例、
+  7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -1110,6 +1114,165 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: define UniformPresentation and an executable all-subset zero-defect checker, prove soundness and completeness, and fire nonvacuous positive and negative raw presentations
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 9 — executable all-subset uniform-presentation decider
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`research/lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean`](../lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationDecider.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformPresentationDecider.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean)
+- primary declarations:
+  - `UniformPresentation`
+  - `FiniteComparisonPresentation.exists_sublists_toFinset_eq`
+  - `FiniteComparisonPresentation.uniformPresentationCheck`
+  - `FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff_allNonemptyDefects`
+  - `FiniteComparisonPresentation.allNonemptyComputedASubnerveDefect_eq_zero_iff`
+  - `FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff`
+  - `UniformPresentationInstancePairs.positivePresentation`
+  - `UniformPresentationInstancePairs.negativePresentation`
+  - `UniformPresentationInstancePairs.positive_fullTarget_firing`
+  - `UniformPresentationInstancePairs.negative_fullTarget_firing`
+  - `UniformPresentationInstancePairs.positive_uniformPresentationCheck`
+  - `UniformPresentationInstancePairs.negative_uniformPresentationCheck`
+  - `UniformPresentationInstancePairs.positive_uniformPresentation`
+  - `UniformPresentationInstancePairs.negative_not_uniformPresentation`
+- verification:
+  - `FiniteComparisonPresentation`、`UniformPresentationDecider`、
+    `UniformPresentationInstancePairs` の focused check: pass
+  - `ResearchLean.AG.UniformInvariance.UniformPresentationInstancePairs` の
+    targeted module build: pass (3717 jobs)
+  - namespace axiom audit: `112 / 6 / 10` declarations、standard axioms only
+  - 主要 8 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - direct executable evaluation:
+    positive rank / defect / checker = `1 / (0, 0) / true`、
+    negative rank / defect / checker = `1 / (0, 1) / false`
+  - placeholder、hidden / bidirectional Unicode、privacy、
+    Formal→Research 逆 import、tracked / untracked `git diff --check`: clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - explicit target List coverage、全 Finset / 全 Set bridge、checker body、
+    Cycle 8 / Cycle 5 theorem の proof-use、raw instance pair、rank-one
+    nonvacuity、field-content、private helper、no-unfoldを独立監査し、
+    blocking finding なし。
+
+### Premise delta
+
+- discharged: explicit coarse-target List の coverage から任意の `Finset` を
+  `List.sublists` 内の sublist の `toFinset` として生成し、`List.all` で全非空
+  subset の exact zero defect を判定する。有限 target 上の任意の `Set` を
+  `Set.Finite.toFinset` でこの量化へ移し、Cycle 8 の
+  `computedASubnerveDefect_eq_aSubnerveDefect` と Cycle 5 の
+  `uniformInvariance_iff_allNonemptyASubnerveDefect_eq_zero` を通して
+  `uniformPresentationCheck = true ↔ UniformPresentation` を両方向に証明した。
+  同じ checkerを nonvacuous positive / negative raw presentationで発火させた。
+- remaining: `ConditionCAllA` の law / H¹ / rank 非参照の幾何定義、
+  presentation-level checker と sound / complete theorem、bridge / Atlas
+  positioning / firing 正例、7 non-necessity witnesses、`Obs_G` の全成分転写、
+  T3 / T6 labels・観測等値・分離 theorem。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: checker は explicit raw target List、raw support /
+  incidence / partial-map tables、Cycle 8 exact defect evaluatorだけを読む。
+  `FiniteComparisonPresentation` への追加 field は target List と全要素 coverage
+  proof のみ。positive / negative は同じ raw self-loop constructorを
+  `FineEdge = PUnit / Bool` で発火し、matrix、rank、defect、uniformity、expected
+  Booleanを保存しない。
+- proof-use: `coarseTarget_mem_coarseTargetEntries` は任意 Finset の coverageに、
+  `computedASubnerveDefect_eq_aSubnerveDefect` は raw / actual defect 接続に、
+  `uniformInvariance_iff_allNonemptyASubnerveDefect_eq_zero` は full semantic iffに
+  実使用される。positive / negative checker verdictは一般 sound / complete
+  theoremを通り、rank-one proof は checker / semantic truthを仮定せず raw block
+  matrixの outer-product rankから独立に導く。
+- structure-field escape: none found。新 field は raw enumeration と coverageのみで、
+  rank、defect、uniformity、checker result、all-subset zero certificate はない。
+- route integrity: pass。explicit target List → all sublists → `toFinset` →
+  raw matrices / exact rational rank → computed defect → actual defect →
+  full semantic `UniformInvariance` の順を保つ。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  semantic checker embedding / `Classical.dec` / supplied result bit / fixture lookup /
+  GOAL-report reinterpretation はいずれも `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 9
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: complete claim ii with an executable all-subset uniform-presentation decider
+proof_obligation_delta: explicit target enumeration now drives a sound-complete checker connected to full semantic uniformity and fired on rank-one positive and negative raw presentations
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: bd630a2a7371c973d6644b19902ec2fb1e220566
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean
+    declarations:
+      - FiniteComparisonPresentation.coarseTargetEntries
+      - FiniteComparisonPresentation.coarseTarget_mem_coarseTargetEntries
+  - file: research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationDecider.lean
+    declarations:
+      - UniformPresentation
+      - FiniteComparisonPresentation.exists_sublists_toFinset_eq
+      - FiniteComparisonPresentation.uniformPresentationCheck
+      - FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff_allNonemptyDefects
+      - FiniteComparisonPresentation.allNonemptyComputedASubnerveDefect_eq_zero_iff
+      - FiniteComparisonPresentation.uniformPresentationCheck_eq_true_iff
+  - file: research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean
+    declarations:
+      - UniformPresentationInstancePairs.positivePresentation
+      - UniformPresentationInstancePairs.negativePresentation
+      - UniformPresentationInstancePairs.positive_fullTarget_firing
+      - UniformPresentationInstancePairs.negative_fullTarget_firing
+      - UniformPresentationInstancePairs.positive_uniformPresentationCheck
+      - UniformPresentationInstancePairs.negative_uniformPresentationCheck
+      - UniformPresentationInstancePairs.positive_uniformPresentation
+      - UniformPresentationInstancePairs.negative_not_uniformPresentation
+premise_delta:
+  discharged:
+    - every finite coarse-target subset is generated from the explicit target List
+    - executable all-nonempty-subset zero-defect checking
+    - raw computed defect to arbitrary semantic Set defect correspondence
+    - checker truth iff full semantic UniformPresentation
+    - rank-one positive and negative raw presentation firing through the same checker
+  remaining:
+    - ConditionCAllA definition, checker, bridge, Atlas positioning, and positive firing
+    - seven non-necessity witnesses
+    - Obs_G component transcription, T3/T6 labels, observational equality, and separation
+certificate_provenance:
+  discharged:
+    - target subsets, matrices, ranks, defects, and checker results are generated from raw finite tables
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - explicit target-list coverage
+    - Cycle 8 presentation defect correctness
+    - Cycle 5 semantic defect characterization
+    - raw incidence and partial-map data in both instance firings
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define law-H1-rank-free ConditionCAllA from C0/C5/C6 and all-nonempty-A C1-C4 A-subnerve clauses before constructing its executable checker
 completion_candidate: false
 tracking_issue_closed: false
 ```
