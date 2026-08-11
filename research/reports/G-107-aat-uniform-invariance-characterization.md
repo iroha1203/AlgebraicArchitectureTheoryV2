@@ -32,7 +32,11 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   全非空 `A` の actual A-subnerve H¹ comparison 全単射性の iff。Cycle 1 の
   cochain equivalence / naturality を actual H¹ quotient へ持ち上げ、Cycle 2 の
   global / blockwise iff と Cycle 3 の indicator family を両方向に接続した。
-- 未完了: `J_A` と finite-dimensional zero-defect bridge、decider、Atlas
+- 完了(Cycle 5): rational linear map の exact defect
+  `(finrank ker, finrank (codomain / range))` と零 defect / 全単射性の有限次元
+  iff。actual A-subnerve H¹ map へ特殊化し、Cycle 4 と結合して一様不変性と
+  全非空 `A` の `J_A = (0, 0)` の iff、すなわち claim (i) を閉じた。
+- 未完了: finite computable presentation と sound / complete decider、Atlas
   positioning、7 witness、observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -549,6 +553,127 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: define J_A on the actual A-subnerve H1 map and prove J_A equals zero iff that map is bijective
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 5 — exact defect semantics and completion of claim (i)
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean`](../lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean)
+- primary declarations:
+  - `blockDefect`
+  - `blockDefect_eq_zero_iff_bijective`
+  - `TargetSupportedNerveMorphism.aSubnerveDefect`
+  - `TargetSupportedNerveMorphism.aSubnerveDefect_eq_zero_iff_bijective`
+  - `TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveDefect_eq_zero`
+- verification:
+  - manifest 登録済み単一ファイル focused check: pass
+  - `ResearchLean.AG.UniformInvariance.DefectSemantics` の targeted module
+    build: pass
+  - namespace axiom audit: 5 declarations、standard axioms only
+  - 主要 3 theorem の `#print axioms`: `propext`、`Classical.choice`、
+    `Quot.sound` のみ
+  - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
+    clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+
+### Premise delta
+
+- discharged: generic finite-dimensional rational linear map について、kernel と
+  literal cokernel quotient の finrank がともに零であることと全単射性の iff。
+  actual `aSubnerveComparisonHom A` の H¹ map へ特殊化し、Cycle 4 の iff と
+  各非空 `A` で接続して claim (i) の defect 還元を完成した。
+- remaining: `FiniteComparisonPresentation`、executable sound / complete defect
+  decider、`ConditionCAllA` checker / bridge / firing、7 witness、`Obs_G` と
+  T3 / T6 分離。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: `blockDefect` は actual linear map の kernel、range、
+  codomain quotient から直接生成する。inverse、rank equality、defect value、
+  bijectivity certificate を argument / field として受け取らない。actual
+  specialization の finite-dimensional instance は有限 A-subnerve complex の
+  H¹ quotient から既存 instance として得る。
+- proof-use: forward direction は第1成分から `ker = ⊥` と injectivity、第2
+  成分と quotient finrank formula から `range = ⊤` と surjectivity を導く。
+  reverse direction も injectivity と surjectivity を別々に各成分へ使う。
+  最終 iff は Cycle 4 の uniform / all-nonempty-A iff と pointwise defect
+  bridge を両方向・任意非空 `A` で実使用する。
+- structure-field escape: none found。defect は `M` と `A` から actual H¹ map
+  を経て計算され、comparison structure に新 field を加えない。
+- route integrity: pass。`M → aSubnerveComparisonHom A → actual h1Map →
+  ker / range / quotient → finrank pair` の経路であり、fine subset は既存の
+  canonical `comparisonFactor ⁻¹' A` のまま保持される。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  GOAL-report reinterpretation はいずれも `none-found`。
+- instance nonvacuity: 新設した `blockDefect` / `aSubnerveDefect` はデータ定義で
+  新しい Prop wrapper ではない。Cycle 4 の非零 H¹ 正例と actual nonbijective
+  負例が、同値を通して零 defect locus の両側を既に発火させる。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 5
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: finite kernel-cokernel defect bridge and completion of claim (i)
+proof_obligation_delta: exact actual-map defect semantics now characterizes uniform invariance on every nonempty A
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 74a992bc571fc3a71fa46f44cff2f7b1100974b1
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean
+    declarations:
+      - blockDefect
+      - blockDefect_eq_zero_iff_bijective
+      - TargetSupportedNerveMorphism.aSubnerveDefect
+      - TargetSupportedNerveMorphism.aSubnerveDefect_eq_zero_iff_bijective
+      - TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveDefect_eq_zero
+premise_delta:
+  discharged:
+    - finite-dimensional zero defect iff actual linear map bijective
+    - actual A-subnerve zero defect iff actual H1 map bijective
+    - uniform invariance iff zero defect for every nonempty A
+    - fixed GOAL claim (i)
+  remaining:
+    - FiniteComparisonPresentation and executable sound-complete decider
+    - ConditionCAllA checker, bridge, firing instance, and G-104 connection
+    - seven non-necessity witnesses
+    - Obs_G fidelity and T3-T6 nonfactorization
+certificate_provenance:
+  discharged:
+    - defect is generated directly from the actual H1 map kernel, range, and quotient
+    - actual finite-dimensional instances are inherited from finite cochain complexes
+  unresolved:
+    - presentation, decider, ConditionCAllA, witness, and nonfactorization provenance
+proof_use_audit:
+  used_material_premises:
+    - both zero-defect coordinates and both directions of bijectivity
+    - finite-dimensionality of the generic domain and codomain
+    - Cycle 4 uniformity reduction and the pointwise defect bridge for every nonempty A
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct FiniteComparisonPresentation and the executable sound-complete zero-defect decider required by claim (ii)
 completion_candidate: false
 tracking_issue_closed: false
 ```
