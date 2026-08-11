@@ -1849,3 +1849,161 @@ next_obligation: prove ConditionCAllA M -> forall laws hcoarse hfine, M.Conditio
 completion_candidate: false
 tracking_issue_closed: false
 ```
+
+## Cycle 13 — ConditionCAllA から全 adequate law の ConditionC への bridge
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean)
+  - [`research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean`](../lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean)
+- primary declarations:
+  - `TargetSupportedNerveMorphism.conditionC1At_of_conditionC1AtTargetSubset_labelValueFiber`
+  - `TargetSupportedNerveMorphism.conditionC2At_of_conditionC2AtTargetSubset_labelValueFiber`
+  - `TargetSupportedNerveMorphism.conditionC3At_of_conditionC3AtTargetSubset_labelValueFiber`
+  - `TargetSupportedNerveMorphism.conditionC4At_of_conditionC4AtTargetSubset_labelValueFiber`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberCycle_iff_coordinateFiberCycle_labelValueFiber`
+  - `TargetSupportedNerveMorphism.conditionC_of_conditionCAllA`
+- verification:
+  - `ResolutionInvarianceConditions.lean` focused check: pass
+  - `ConditionCAllABridge.lean` focused check: pass
+  - `ResearchLean.AG.ResolutionInvariance.ResolutionInvarianceConditions`
+    targeted module build: pass (3705 jobs)
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllABridge` targeted module
+    build: pass (3708 jobs)
+  - bridge namespace axiom audit: 33 declarations、standard axioms only
+  - C1 / C2 / C3 / C4 transportと最終bridgeの `#print axioms`:
+    `propext`、`Classical.choice`、`Quot.sound` のみ
+  - placeholder、`unsafe`、`native_decide`、`Classical.dec`、hidden /
+    bidirectional Unicode、privacy、Formal→Research逆import、aggregate / manifest、
+    tracked / untracked whitespace scan: clean
+  - Research全体のfull build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - bridge source SHA-256
+    `85c0e157ff99539e96016ddbc1ce5f17603bee4c6f82de1094abb2c6c524d0da`
+    の固定snapshotを独立監査した。
+  - final theoremがlaw familyと両 adequacy witnessを結論内で全量化し、
+    `ConditionCAllA`以外の幾何premiseを加えないことを確認した。
+  - C3の block cycle ↔ A-subnerve cycle、internal faceの3 slot、
+    incoming / outgoing、`+ - +` face boundaryの有限和再添字化を両方向で
+    再構成し、blocking findingはなかった。
+  - G-104側の13追加APIは既存definition / theorem bodyを変更せず、
+    constructor / projection / iff / normalizationの no-unfold APIだけを追加する。
+
+### Premise delta
+
+- discharged: `ConditionCAllA M → ∀ laws hcoarse hfine,
+  M.ConditionC laws hcoarse hfine`。各 `LawValueLabel`に対し
+  `labelValueFiber_nonempty`でcoarse fiberの非空性を得て、全非空 `A`
+  の C1--C4 projectionを適用した。
+- discharged: `labelValueFiber_eq_preimage`由来の dependent-cell
+  equivalenceでfine側canonical preimageをlabel-value blockへ移し、chart /
+  edge / face、endpoint、face incidence、partial edge / face mapを条項ごとに
+  transportした。subset equalityは equivalence構成中で生成・消費し、
+  最終theoremの仮定に残さない。
+- discharged: C3は block chainをactual A-subnerve chainへpull backし、fiber
+  support / conservation、internal-face support、3つのface incidenceと有限和を使って
+  filling chainをblock側へ戻した。cochain / H¹ equivalenceだけによる
+  代用はしていない。
+- remaining: bridgeをG-104の `generatedComparisonH1Map_bijective`に全lawごとに
+  適用する Atlas positioning theorem。続いて C0--C6非必要性witness 7種、
+  `Obs_G` / T3 / T6 / observation nonfactorization。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: coarse fiberはsource-generated law labelのactual value fiber、
+  fine fiberはcanonical `comparisonFactor`によるその逆像である。cell
+  equivalenceは既存support intersectionと `labelValueFiber_eq_preimage`から構成し、
+  supplied transport certificateを受け取らない。
+- proof-use: C0 / C5 / C6は `ConditionCAllA` projectionを直接使い、C1--C4は
+  任意labelに対する非空fiberのsubset clauseを使う。C1はadjacency path、
+  C2 / C4はexact partial-map image、C3はcycleの双方向transport、internal
+  faces、incoming / outgoing、face-boundaryを実使用する。
+- structure-field escape: none found。`ConditionC`は結論側の Prop structureとして
+  C0--C6をproof body内で構成し、field / instanceとして前提化しない。
+- route integrity: pass。`ConditionCAllA` → 非空coarse label fiber → canonical
+  fine preimage → actual cell / incidence / partial-map transport → law-indexed
+  `ConditionC`の順を保つ。
+- cheat-route audit: fixture-only検証 / `ConditionCForAllAdequate` 型premise /
+  supplied equality・certificate / cochain-equivalence-only代用 / one-way-as-equivalence /
+  target fitting / GOAL-report reinterpretationはいずれも `none-found`。
+
+### Carried quality obligations from Cycle 12
+
+Cycle 13 bridgeの中心claim・依存・公理に影響しないため本cycleに混ぜず、
+G-107最終完了前の narrow quality-remediationとして次の2件を保持する。
+
+1. `PresentationASubnerveDefect.lean`のselected-cell membershipに対する
+   private characterization APIを公開no-unfold APIにし、
+   `ConditionCAllAFiring.lean`の該当直接definition展開をそのAPI利用へ移す。
+2. Cycle 12で追加されたprivate helper宣言に個別docstringを付与し、
+   Lean品質基準 §3.2 の機械coverageを閉じる。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 13
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove ConditionCAllA M -> forall laws hcoarse hfine, M.ConditionC laws hcoarse hfine by direct label-fiber/A-subnerve transport of C1-C4
+proof_obligation_delta: the law-free all-subset Atlas condition now implies the original G-104 ConditionC for every adequate finite law family, with cell incidence, partial maps, local cycles, internal faces, and finite boundaries transported explicitly
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: df635a06c82ac2ef23abd51aa3f58110b1897615
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean
+    declarations:
+      - TargetSupportedNerveMorphism.conditionC1At_of_conditionC1AtTargetSubset_labelValueFiber
+      - TargetSupportedNerveMorphism.conditionC2At_of_conditionC2AtTargetSubset_labelValueFiber
+      - TargetSupportedNerveMorphism.conditionC3At_of_conditionC3AtTargetSubset_labelValueFiber
+      - TargetSupportedNerveMorphism.conditionC4At_of_conditionC4AtTargetSubset_labelValueFiber
+      - TargetSupportedNerveMorphism.targetSubsetFiberCycle_iff_coordinateFiberCycle_labelValueFiber
+      - TargetSupportedNerveMorphism.conditionC_of_conditionCAllA
+  - file: research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean
+    declarations:
+      - thirteen public no-unfold constructor, projection, iff, and finite-sum normalization APIs
+premise_delta:
+  discharged:
+    - ConditionCAllA implies ConditionC for every finite law family adequate for both readings
+    - every source-generated label has a nonempty coarse value fiber
+    - the fine value fiber equals the canonical inverse image of the coarse fiber
+    - chart, edge, face, endpoint, face-incidence, and partial-map transport
+    - bidirectional local-cycle and internal-face transport with exact finite boundaries
+  remaining:
+    - Atlas positioning theorem
+    - seven non-necessity witnesses
+    - Obs_G, T3/T6 labels, observational equality, and separation
+    - two noncentral Cycle 12 quality-remediation items
+certificate_provenance:
+  discharged:
+    - all cell equivalences are generated from actual support intersections and canonical label fibers
+    - subset equality is generated by law descent and canonical comparisonFactor commutation
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - all C0-C6 components of ConditionCAllA
+    - arbitrary laws and both adequacy witnesses quantified inside the conclusion
+    - labelValueFiber_nonempty and canonical preimage equality
+    - endpoint and face incidence, partial maps, and all C3 finite sums
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove the Atlas positioning theorem by applying conditionC_of_conditionCAllA and the accepted G-104 generatedComparisonH1Map_bijective theorem to every adequate law family
+completion_candidate: false
+tracking_issue_closed: false
+```
