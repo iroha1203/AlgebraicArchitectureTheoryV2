@@ -590,6 +590,33 @@ theorem targetSubsetFiberAdjacent_of_edge
           fineEdge) := by
   exact ⟨fineEdge, hfiber, Or.inl ⟨rfl, rfl⟩⟩
 
+/-- Characterize A-subnerve fiber adjacency by a fiber edge and its two
+possible endpoint orientations. -/
+theorem targetSubsetFiberAdjacent_iff
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (A : Set coarseReading.Target)
+    (coarseChart : coarse.ChartInTargetSubset A)
+    (left right : fine.ChartInTargetSubset
+      (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A)) :
+    M.TargetSubsetFiberAdjacent A coarseChart left right ↔
+      ∃ fineEdge : fine.EdgeInTargetSubset
+          (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A),
+        M.TargetSubsetFiberEdge A coarseChart fineEdge ∧
+          ((fine.targetSubsetEdgeLeft
+                (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A)
+                fineEdge = left ∧
+              fine.targetSubsetEdgeRight
+                (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A)
+                fineEdge = right) ∨
+            (fine.targetSubsetEdgeLeft
+                (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A)
+                fineEdge = right ∧
+              fine.targetSubsetEdgeRight
+                (comparisonFactor coarseReading fineReading hcoarser ⁻¹' A)
+                fineEdge = left)) :=
+  Iff.rfl
+
 /-- A-subnerve fiber adjacency is symmetric. -/
 theorem TargetSubsetFiberAdjacent.symm
     (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser

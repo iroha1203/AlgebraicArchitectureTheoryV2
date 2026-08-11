@@ -202,6 +202,7 @@ theorem not_targetSubsetFiberEdge :
 theorem positive_targetSubsetFiberAdjacent :
     positiveMorphism.TargetSubsetFiberAdjacent coarseAll (coarseChart 0)
       (fineChart 0) (fineChart 1) := by
+  rw [positiveMorphism.targetSubsetFiberAdjacent_iff]
   refine ⟨fineEdge 3, positive_targetSubsetFiberEdge, Or.inl ⟨?_, ?_⟩⟩
   · apply Subtype.ext
     rfl
@@ -212,6 +213,7 @@ theorem positive_targetSubsetFiberAdjacent :
 theorem not_targetSubsetFiberAdjacent :
     ¬ positiveMorphism.TargetSubsetFiberAdjacent coarseAll (coarseChart 0)
       (fineChart 1) (fineChart 1) := by
+  rw [positiveMorphism.targetSubsetFiberAdjacent_iff]
   rintro ⟨edge, _hfiber, hendpoints⟩
   refine fineEdge_cases
     (P := fun current =>
@@ -635,7 +637,7 @@ theorem acyclicityFailure_not_conditionC3AtTargetSubset :
       AcyclicityFailureActual.loopChain_cycle
   have heq := hboundary AcyclicityFailureActual.fineEdge
   simp [AcyclicityFailureActual.loopChain,
-    TargetSupportedNerveMorphism.targetSubsetFaceBoundary] at heq
+    TargetSupportedNerveMorphism.targetSubsetFaceBoundary_apply] at heq
 
 /-! ## The aggregate positive and negative pair -/
 

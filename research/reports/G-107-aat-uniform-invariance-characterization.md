@@ -1315,6 +1315,7 @@ tracking_issue_closed: false
   - `TargetSupportedNerveMorphism.aSubnerveEdgeMapOption_eq_some_iff`
   - `TargetSupportedNerveMorphism.aSubnerveFaceMapOption_eq_some_iff`
   - `TargetSupportedNerveMorphism.targetSubsetFiberEdge_iff_endpoint_cells`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberAdjacent_iff`
   - `TargetSupportedNerveMorphism.targetSubsetFiberCycle_mk`
   - `TargetSupportedNerveMorphism.conditionCAllA_intro`
   - `ConditionCAllAInstancePairs.positive_targetSubsetFiberEdge`
@@ -1340,7 +1341,7 @@ tracking_issue_closed: false
     check: pass
   - `ResearchLean.AG.UniformInvariance.ConditionCAllAInstancePairs` targeted
     module build: pass (3709 jobs)
-  - namespace axiom audit: API module 58 declarations、instance module 56
+  - namespace axiom audit: API module 59 declarations、instance module 56
     declarations、いずれも standard axioms only
   - 主要 7 declaration の `#print axioms`: `propext`、
     `Classical.choice`、`Quot.sound` のみ
@@ -1379,6 +1380,10 @@ tracking_issue_closed: false
 - この品質 instance は constant-law G-104 fixtureであり、固定 GOAL が別途要求する
   `ResolutionInvarianceFiringData` の nonconstant-law・両側非零 H¹ firingを
   代替しない。
+- 修正 head の正式査読中間監査で、face-boundary 負例の `simp` listに定義名が
+  1箇所残ることと adjacency の named eliminator欠落を検出した。前者を
+  `targetSubsetFaceBoundary_apply` 利用へ置換し、後者に
+  `targetSubsetFiberAdjacent_iff` を追加して正負例を同API経由へ統一した。
 
 ### Premise delta
 
@@ -1450,6 +1455,7 @@ lean_artifacts:
       - TargetSupportedNerveMorphism.aSubnerveEdgeMapOption_eq_some_iff
       - TargetSupportedNerveMorphism.aSubnerveFaceMapOption_eq_some_iff
       - TargetSupportedNerveMorphism.targetSubsetFiberEdge_iff_endpoint_cells
+      - TargetSupportedNerveMorphism.targetSubsetFiberAdjacent_iff
       - TargetSupportedNerveMorphism.targetSubsetFiberCycle_mk
       - TargetSupportedNerveMorphism.conditionCAllA_intro
   - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAInstancePairs.lean
