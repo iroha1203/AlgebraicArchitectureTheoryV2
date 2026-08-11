@@ -311,3 +311,4 @@ ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/Cohomolog
 ResearchLean.AG.TwoPhase.ForestSupport	ResearchLean/AG/TwoPhase/ForestSupport.lean
 ResearchLean.AG.TwoPhase.FiniteWitnesses	ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
 ResearchLean.AG.UniformInvariance.ASubnerveReduction	ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean
+ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity	ResearchLean/AG/UniformInvariance/GlobalBlockBijectivity.lean
