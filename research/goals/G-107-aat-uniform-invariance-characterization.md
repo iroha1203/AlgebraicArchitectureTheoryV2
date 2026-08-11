@@ -4,18 +4,22 @@
 - `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
-- `target status`: `statement-v2`(2026-08-11 改訂、4 lane 正式再査読
-  待ち。受理までは target-theorem loop を起動しない)。初版 statement
-  (一様不変性 ⟺ C\* の必要十分特徴づけ)は exact 有限反例
-  `CONTRACTIBLE-TRIANGLE` により `target-refuted`(2026-08-11。改訂記録=
-  条項系 C\* 節)。hunt 後継 round(v4・v5 も invalid)と人間裁定
-  (選択肢1: 許容観測 grammar `G_local-v1` の固定)を経て、ハントは
-  **Stop B**(verdict `CSTAR-not-expressible-in-G_local-v1`、grammar
-  相対の2点分離)で終端・完了した(Issue #3948 closed / COMPLETED、
-  恒久 artifact `research/experiments/g104-necessity-map/`)。v2 は
-  `target failure policy` の規定どおり、この帰結を**十分性+非局所性の
-  二本柱 statement** へ改訂したものである(ユーザー裁定 2026-08-11)。
-  runtime state は tracking Issue #3954。
+- `target status`: `target-refuted`(2026-08-11、v2 再査読で (ii)
+  十分性への exact 有限反例 `PROPER-CHAIN3-PLUS-BRIDGE-DIGON` が成立、
+  `target failure policy` の (ii) 反例条項を適用)。経緯: 初版 statement
+  (一様不変性 ⟺ C\* の必要十分特徴づけ)は `CONTRACTIBLE-TRIANGLE` で
+  反証 → hunt 後継 round(v4・v5 も invalid)と人間裁定(選択肢1:
+  許容観測 grammar `G_local-v1` の固定)を経てハントは **Stop B**
+  (verdict `CSTAR-not-expressible-in-G_local-v1`)で終端(Issue #3948
+  closed / COMPLETED)→ v2(十分性+非局所性の二本柱、ユーザー裁定)へ
+  改訂 → v2 の (ii) も上記反例で反証(改訂記録=条項系 C\* 節)。現登録
+  C\*(CERTIFIED-v3 + support-active)は**両方向とも** exact 反例を
+  持つ。存続しうる theorem family((i) 還元・恒久 grammar に対する
+  (iii) 非局所性・(iv) C 非必要性地図)の保持範囲と、C\* 後継 candidate
+  (criticality-reflection 型条項の追加など。新 semantic ID の事前登録と
+  独立再査読を要する)の有無は**人間裁定待ち**。裁定・statement 改訂・
+  新 fixed head の正式再査読を経るまで target-theorem loop は起動
+  しない。runtime state は tracking Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
@@ -52,7 +56,10 @@
   特徴づけ不可能性の両方が定理水準で確定し、なぜ Atlas 定理が十分条件の
   定理に**とどまるのか**が構造的説明を持つ。本定理は、reading 圏上の
   診断 local-system 構想(`program context`)における **universal
-  zero-jump 領域の内側近似と観測限界**として位置づく。
+  zero-jump 領域の内側近似と観測限界**として位置づく。(注記
+  2026-08-11: v2 の (ii) は再査読の exact 反例で反証済み — `target
+  status` と条項系 C\* 節の改訂記録2を参照。存続 family の再構成は
+  人間裁定待ち。)
 - `program context`(上位構図、2026-08-11 追記。同日レビューで
   zero-jump locus / jump locus の層を是正): 本カードの二本柱定理は
   次の構想の pair 水準の核である — 各 adequate law family `L` を固定した
@@ -77,8 +84,8 @@
   `C*-locus ⊆ Z_univ`(C\* 領域では jump が起きない = 内側近似)を、
   反証 fixture 群(CONTRACTIBLE-TRIANGLE / TERNARY-CYCLE-3。いずれも
   `Z_univ \ C*` の universal zero-jump 点)は包含の真性を、非局所性
-  (iii) は「`Z_univ` の境界は半径1の局所観測 grammar からはどの条項系に
-  も不可視」であることを固定する。(ii) の反例(C\* ∧ ¬uniform)が
+  (iii) は「`Z_univ` とその補集合の分離は半径1の局所観測 grammar の
+  どの条項系にも不可能」であることを固定する。(ii) の反例(C\* ∧ ¬uniform)が
   現れた場合は `C* \ Z_univ` の真の jump であり `target-refuted` と
   なる。一般の nonuniform 射は law-indexed jump profile のデータと
   なる。関連考察は表示的意味論ノート
@@ -279,28 +286,65 @@
     登録済み)。後継 candidate v4(`SUPPORT-ACTIVE-JOINT-COLLAPSE`)・
     v5(`COORDINATE-DOUBLED-CYCLE`)も invalid(Issue #3948 Round 14 /
     15)。**statement v2 での位置(2026-08-11)**: ハント終端(Stop B:
-    `CSTAR-not-expressible-in-G_local-v1`)を受け、本カードは C\* を
-    必要十分候補ではなく**十分条件としてのみ**主張する。条項本文は
-    十分性 (ii) の仮定側として現役であり(十分性方向は hunt 全 round で
-    反例ゼロ)、上記の反証記録は (iii) 非局所性の背景と (iv) 地図の
-    証拠として保持する。
+    `CSTAR-not-expressible-in-G_local-v1`)を受け、v2 は C\* を
+    必要十分候補ではなく十分条件としてのみ主張する形へ改訂された。
+    十分性方向の証拠は CERTIFIED-v3 の最終 bounded population
+    (2,166 case)における反例ゼロだが、これは bounded 証拠であり、
+    候補系譜には Chain3(v1)・UnkilledTwin(v2)という十分性方向の
+    反例史がある。
+    **改訂記録2(2026-08-11、v2 も `target-refuted`)**: v2 の十分性
+    (ii) も exact 有限反例 `PROPER-CHAIN3-PLUS-BRIDGE-DIGON` で反証
+    された。fixture = Chain3 成分と「粗側 bridge 1本(`E = (1,2)`)/
+    細側 parallel lift 2本(`u`、`v`)」の直和。Source = Bool、細側
+    read = 恒等、粗側 read = 定数(Target 1点)、canonical
+    `π = (0, 0)`(`comparisonFactor_unique` により canonical 実現)、
+    退化宣言なし、粗側台 `{0}`・細側台 `{0,1}`。唯一の非空 `A = {0}`
+    で粗側 H¹ = 1・細側 H¹ = 2・比較 rank 1 = 非全射(非一様)だが、
+    C0\*–C6\* は全条項成立する。機構 = 粗側 `E` は bridge であり
+    cycle-critical でないため現 C\* はその lift を C2\* / C5\* の対象に
+    しないが、細側では `u − v` の digon が新しい H¹ 類を作る — 現 C\*
+    は「粗側 cycle の解像」を検査するが「非 critical 領域上の細側
+    cycle の新規生成」を検査しない。定数 law family は両読みに
+    adequate なので (i) に依存しない直接反例である。検証=レビュー側
+    exact evaluator+Claude の engine 再現・独立有理線形代数(全符号
+    規約で細側 H¹ > 比較 rank)・機構手検証の三重。純 incidence 条項
+    での改訂素材として criticality-reflection 型(mapped retained
+    細側 cycle-critical edge の粗側像も cycle-critical)が挙がって
+    いるが、これを足すだけで十分性が回復する証明はない。C\* 後継は
+    新 semantic ID の事前登録と独立再査読を経る。H¹・rank・
+    `NoNewFineCycle` のような結論相当 field を C\* または comparison
+    入力へ密輸しない。
   - **観測写像 `Obs_G`(半径1 grammar `G_local-v1` の忠実転写)**:
-    comparison data の computable presentation 上の写像で、次の有限成分の
-    組を返す: (1) C0\*–C6\* の truth vector、(2) 前処理 terminal に
-    現れる登録 packet kind の集合、(3) chart / vertex / edge / face を
-    根とする半径1 typed incidence ball の histogram(cell type・ordered
-    boundary slot / sign・partial cell-map の None / mapped・support
-    signature・`π` 像を label とし、multiplicity は `0 / 1 / ≥2` へ
-    切り詰める)、(4) critical / guard / port / bridge / self-loop /
-    FaceTwin の登録 boolean flag 群、(5) 全非空 `A` にわたる上記の
-    tuple。定義は登録済み恒久 contract
+    量化域と型を signature 水準で固定する —
+    `FiniteComparisonPresentation`(`DecidableEq` 有限 target / cell・
+    `Finset` support・実行可能 factor を備えた computable
+    presentation)、`toGeometry : FiniteComparisonPresentation →
+    comparison geometry`、`computedFactor` と canonical
+    `comparisonFactor` の一致 theorem、presentation 非依存の観測値型
+    `GLocalV1ObsValue`、`UniformPresentation P := 一様不変
+    (P.toGeometry)`、そして `obsG : FiniteComparisonPresentation →
+    GLocalV1ObsValue`。`obsG` は恒久 grammar の**独立転写**であり、本
+    カード (ii) の条項系(`CStarV3SupportActive`: CERTIFIED-v3 +
+    support-active の one-pass reduction 上)とは**別型・別述語**として
+    固定する。恒久 grammar の semantics は登録 contract に従う:
+    `GLocalV1V5Reduction`(v5 reduction の全 irreducible terminal と
+    removal DAG)の上で、(1) terminal 全体で読む条項 conjunction
+    vector `GLocalV1ConditionVector`(C0 / C5 / C6 と C1–C4。
+    `CStarV3SupportActive` との一般同値は主張しない — T3 / T6 上の
+    数値一致は同値の証拠ではない)、(2) removal DAG の全 path に現れる
+    packet-kind union、(3) 全 terminal の rooted typed incidence ball
+    (半径1)の aggregation を `A`-label を捨てた clip2(`0 / 1 / ≥2`)
+    histogram で読む成分、(4) 登録 boolean flag 群、(5) `π`-preserving
+    target relabel orbit 上の最小化。定義は登録済み恒久 contract
     (`G-local-v1-permanent-structural-contract-v1`、canonical SHA-256
     `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`)
     の観測成分の**忠実転写**であり、成分の省略・追加・truncation 変更を
     しない(構成要素対応表を artifact に固定する)。忠実転写の義務は
     定義水準(全成分の定義+対応表)と T3 / T6 上の評価であり、packet
     rewrite の一般論(合流性など)は義務に含めない(T3 / T6 では packet
-    成分は空集合と評価される)。
+    成分は空集合と評価される)。uniformity label・terminal 列挙・条項
+    bit・supplied factor を presentation の field として受け取ることは
+    放電と数えない。
   この設定で次を証明する。
   1. **(i) 値部分集合還元**: comparison data が一様不変であることと、
      すべての非空 `A ⊆ q.Target` について A-subnerve の定数 `ℚ` 係数 H¹
@@ -321,13 +365,17 @@
      表現可能ないかなる条項系も一様不変性を特徴づけない。正確には、
      witness 対 `T3`(`TERNARY-CYCLE-3`)・`T6`(`TERNARY-CYCLE-6`)を
      hunt の登録 structural input から Lean へ転写し、次の4 theorem で
-     固定する: **(a) 観測等値** `Obs_G T3 = Obs_G T6`(computable
-     presentation 上の決定可能計算)、**(b)** `T3` は一様不変((i) 経由
-     の有限 A-block 判定。全非空 `A` で 1→1 / 0→0 / 1→1)、**(c)**
-     `T6` は一様不変でない(`A = {0}` の block で粗側 H¹ 次元 3・細側
-     1 の非全単射)、**(d) 分離**: 観測値上の任意の述語 `p` について
-     `∀ data, (p (Obs_G data) ↔ 一様不変 data)` は成立しない
-     ((a)–(c) の帰結だが、量化形を theorem として固定する)。主張は
+     固定する: **(a) 観測等値** `obsG T3 = obsG T6`(computable
+     presentation 上の決定可能計算)、**(b)** `T3` は
+     `UniformPresentation`((i) 経由の有限 A-block 判定。全非空 `A` で
+     1→1 / 0→0 / 1→1)、**(c)** `T6` は `UniformPresentation` でない
+     (`A = {0}` の block で粗側 H¹ 次元 3・細側 1 の非全単射)、
+     **(d) 分離**: `∀ p : GLocalV1ObsValue → Prop, ¬ ∀ P :
+     FiniteComparisonPresentation, (p (obsG P) ↔ UniformPresentation
+     P)`((a)–(c) の帰結だが、量化形を theorem として固定する)。
+     (d) の量化は **computable presentation 全体に限定**する — abstract
+     comparison geometry 全体への量化は presentation 存在定理と
+     presentation 変更不変性を要するため本カードでは主張しない。主張は
      `G_local-v1` **相対**であり、他 grammar・絶対的不可能性・半径
      一般化を含まない。Round 15 の登録 label と Stop-B checker の結果は
      転写の照合先(証拠)であり、(a)–(c) の証明根拠ではない。
@@ -467,7 +515,10 @@
     pair を持たない任意の retained face 構造への一般帰納で証明し、有限
     fixture 族の全数検証で代用しない。
   - `条項系 C\*`: (ii) の `direction-hypothesis`(含意の仮定側)。
-    (iii) では観測成分(C0\*–C6\* truth vector)として現れる。結論相当
+    (iii) の観測成分は `GLocalV1ConditionVector`(恒久 grammar の
+    all-terminal 条項 vector)であり、本条項系
+    (`CStarV3SupportActive`)とは**別型・別述語**として固定する
+    (一般同値を主張しない)。結論相当
     premise ではない理由: C\* は有限 incidence / support データと退化
     宣言だけから決定可能な条項系であり、comparison map・両側 H¹・rank を
     参照しない(明示の例外は C3\* の局所 fiber acyclicity のみで、
@@ -534,27 +585,30 @@
   semantic SHA と恒久 contract SHA へ追跡する。恒等比較・零 H¹・critical
   cell 空・空虚 certificate だけの発火、proof 後の GOAL 読み替えを
   completion に使わない。
-- `target failure policy`: (ii) の反例(C\* 成立かつ非全単射 A-block)は
-  `target-refuted` とし、反例 fixture を固定した上で、同じ syntactic
-  文法(FaceTwin / free-pair / critical / certificate)内での C\* 改訂案を
-  返す — cohomological 条項への差し替えは改訂案として認めない。(iii) の
-  失敗は層別に扱う: 忠実転写した `Obs_G` の下で観測等値 (a) が Lean 上で
-  不成立、または (b)(c) の label が hunt 登録値と食い違う場合は、まず
-  転写の欠陥(modeling)として対応表を監査して転写をやり直す。対応表
-  どおりの転写でも不一致が残る場合は登録恒久 artifact 側の欠陥として
-  Issue を起こし、Stop-B 証拠の再検証が終わるまで本カードを
-  `target-blocked` とする((iii) は登録 grammar と独立に真偽が立つ主張
-  ではないため、`target-refuted` ではなく証拠層の是正として扱う)。分離
-  (d) は (a)–(c) からの論理的帰結であり独立の反例を持たない。(i) の
-  破れ(還元の反証)は一様不変性の量化定義の欠陥として本 GOAL を停止し、
-  GOAL 改訂提案を返す(優先度は最上位)。
+- `target failure policy`: fail-closed を原則とする — カードが固定した
+  subclaim((ii)、(iii)(a)–(c)、(iv)、(v))のいずれかが偽と確定した
+  場合、まず `target-refuted` を記録する。artifact / statement の改訂は
+  その後の別操作であり、記録を先送りする理由にしない。(ii) の反例
+  (C\* 成立かつ非全単射 A-block)は `target-refuted` とし、反例
+  fixture を固定した上で、同じ syntactic 文法(FaceTwin / free-pair /
+  critical / certificate)内での C\* 改訂案を返す — cohomological 条項
+  への差し替えは改訂案として認めない。(iii) は記録後の原因切り分けを
+  層別に行う: 忠実転写した `obsG` の下で観測等値 (a) が不成立、または
+  (b)(c) の label が hunt 登録値と食い違う場合、対応表を監査して転写の
+  欠陥(modeling)なら転写をやり直し、対応表どおりでも不一致が残る
+  場合は登録恒久 artifact 側の欠陥として Issue を起こして Stop-B 証拠の
+  再検証まで `target-blocked` を重ねる。分離 (d) は (a)–(c) からの
+  論理的帰結であり独立の反例を持たない。(i) の破れ(還元の反証)は
+  一様不変性の量化定義の欠陥として本 GOAL を停止し、GOAL 改訂提案を
+  返す(優先度は最上位)。
   補助補題(free-pair 除去の比較不変性・certificate 閉包補題)への反例は
   それだけでは `target-refuted` にしない — 補題を経由しない別経路が
   ありうるため proof strategy(spine)の撤回・改訂として扱い、(ii)
-  本体の反例だけを `target-refuted` の根拠にする((iii) の失敗は前掲の
-  とおり証拠層の是正または `target-blocked`)。(iv) は witness 構成が
-  成功条件であり、hunt fixture の転写不一致(Lean 側判定と食い違う)は
-  modeling 欠陥として witness を作り直す。ある条項について「一様不変 ⟹
+  本体と (iii)(a)–(c) の固定 subclaim の反証だけを `target-refuted` の
+  根拠にする。(iv)(v) は witness 構成が成功条件であり、hunt fixture の
+  転写不一致(Lean 側判定と食い違う)は modeling 欠陥として witness を
+  作り直す — ただしカードが固定した witness subclaim 自体が偽と確定
+  した場合は前掲の fail-closed 原則に従いまず記録する。ある条項について「一様不変 ⟹
   当該条項」が theorem として成立した場合(witness 不存在の証明)は、
   当該条項が実は必要だったという発見として、(iv) の当該項目を削除し
   C\* との関係を再検討する GOAL 改訂案を返す。(v) の発火項目の一部が
