@@ -839,7 +839,7 @@ tracking_issue_closed: false
   - manifest 登録済み単一ファイル focused check: pass
   - `ResearchLean.AG.UniformInvariance.ExecutableRationalRank` の targeted
     module build: pass (3713 jobs)
-  - namespace axiom audit: 28 declarations、standard axioms only
+  - namespace axiom audit: 26 declarations、standard axioms only
   - 主要 10 declaration の `#print axioms`: `propext`、
     `Classical.choice`、`Quot.sound` のみ
   - generic evaluator の `#eval`: projection / inclusion / duplicated-column /
@@ -866,8 +866,9 @@ tracking_issue_closed: false
 - certificate provenance: executable definitions は matrix entries、有限
   `Fin k → n` selection、rational arithmetic、Gram determinant の有限判定だけを
   読む。`Matrix.rank`、basis、kernel、range、quotient、supplied rank / defect、
-  `Classical.dec` は evaluator body にない。column-span basis と古典選択は
-  completeness proof 内だけで使う。
+  `Classical.dec` は evaluator body にない。有限 row / column index の
+  `Fintype` だけで探索でき、別の `DecidableEq` premise は要求しない。
+  column-span basis と古典選択は completeness proof 内だけで使う。
 - proof-use: forward は非零 Gram determinant から selected-column independence、
   selected span の単調性を通して `k ≤ rank` を導く。reverse は column span の
   finrank-size independent familyを `Fin.castLE` で制限し、実列 index の selection
@@ -927,6 +928,7 @@ certificate_provenance:
     - actual A-subnerve matrix extraction and uniform checker integration
 proof_use_audit:
   used_material_premises:
+    - finite row and column index types; no separate DecidableEq premise
     - both directions of Gram determinant versus selected-column independence
     - selected-column span monotonicity and a full column-span independent family
     - matrix rank width bound

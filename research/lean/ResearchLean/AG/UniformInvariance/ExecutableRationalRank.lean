@@ -24,6 +24,31 @@ finite-dimensional quotient formula.
 The final examples execute the same generic evaluator on rectangular
 projection and inclusion matrices, a duplicated-column matrix, the identity,
 and the zero matrix.  No fixture lookup occurs in the evaluator.
+
+## Position and premises
+
+This file is the executable linear-algebra API supporting claim (ii), not the
+all-subset checker itself.  Its ambient inputs are exactly a rational matrix
+with finite row and column index types.  The finite search does not require a
+separate `DecidableEq` premise on the column type; semantic rank, basis,
+kernel, range, and quotient data are derived only in correctness theorems.
+Unless noted as an executable fixture, declarations below are API helpers or
+correctness lemmas for `rationalMatrixRank` and `rationalMatrixDefect`.
+
+## Implementation notes
+
+Column selection uses the standard `Matrix.submatrix` API, and independence is
+tested by the determinant of the selected Gram matrix.  Exhaustive finite Gram
+search was chosen because it treats every rectangular matrix and every possible
+rank uniformly while reducing directly to rational arithmetic and determinant
+evaluation.  A semantic `Matrix.rank` wrapper was rejected because it is not an
+executable computation.  A custom Gaussian-elimination implementation was
+rejected because it would introduce a second pivot algorithm and a separate
+correctness surface when bounded finite search already meets the fixed finite
+presentation contract.  A square-matrix determinant alone was rejected because
+it cannot recover lower ranks or rectangular rank.  Finally, supplied bases,
+ranks, and defects were rejected because they would move the result into an
+input certificate instead of deriving it from matrix entries.
 -/
 
 namespace AAT.AG.ResolutionInvariance
@@ -38,13 +63,16 @@ variable {m : Type u} {n : Type v}
 
 /-! ## Finite Gram search -/
 
-/-- Select the columns indexed by a finite function.  This is raw entry
-projection and contains no rank or independence information. -/
+/-- API helper for the Gram search: select columns by the standard
+`Matrix.submatrix` reindexing.  It has no premise beyond the input matrix and
+contains no rank or independence information. -/
 def selectedColumns (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n) :
     Matrix m (Fin k) ℚ :=
   A.submatrix id selection
 
-/-- The square Gram matrix of a selected finite column family. -/
+/-- API helper for `selectionIndependent`: the square Gram matrix of a selected
+column family.  `Fintype m` is the finite-row input needed for matrix
+multiplication, not a rank certificate. -/
 def columnGram [Fintype m] (A : Matrix m n ℚ) {k : ℕ}
     (selection : Fin k → n) : Matrix (Fin k) (Fin k) ℚ :=
   (selectedColumns A selection)ᵀ * selectedColumns A selection
@@ -98,7 +126,9 @@ theorem columnGram_det_ne_zero_iff [Fintype m]
       Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero] at hgram
     exact hgram
 
-/-- Boolean Gram-determinant test for one column selection. -/
+/-- Executable predicate used by `hasNonzeroGramMinor`: test one selected Gram
+determinant.  Its only premise is the finite row index needed to form the Gram
+matrix. -/
 def selectionIndependent [Fintype m] (A : Matrix m n ℚ) {k : ℕ}
     (selection : Fin k → n) : Bool :=
   decide ((columnGram A selection).det ≠ 0)
@@ -111,10 +141,12 @@ theorem selectionIndependent_eq_true_iff [Fintype m]
       LinearIndependent ℚ (selectedColumns A selection).col := by
   simp [selectionIndependent, columnGram_det_ne_zero_iff]
 
-/-- Executably search all `k`-column selections for a nonzero Gram
-determinant.  The existential decision is the standard finite `Fintype`
-search; its predicate reads only rational matrix entries and determinants. -/
-def hasNonzeroGramMinor [Fintype m] [Fintype n] [DecidableEq n]
+/-- Main finite-search helper for the executable rank API: search all
+`k`-column selections for a nonzero Gram determinant.  The two `Fintype`
+instances are the finite-matrix inputs from claim (ii); the standard finite
+existential decision needs no separate column-equality premise.  The predicate
+reads only rational matrix entries and determinants. -/
+def hasNonzeroGramMinor [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) (k : ℕ) : Bool :=
   decide (∃ selection : Fin k → n,
     selectionIndependent A selection = true)
@@ -122,7 +154,7 @@ def hasNonzeroGramMinor [Fintype m] [Fintype n] [DecidableEq n]
 /-- The finite Boolean search succeeds exactly when it finds a linearly
 independent selected column family. -/
 theorem hasNonzeroGramMinor_eq_true_iff_exists
-    [Fintype m] [Fintype n] [DecidableEq n]
+    [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) (k : ℕ) :
     hasNonzeroGramMinor A k = true ↔
       ∃ selection : Fin k → n,
@@ -154,7 +186,7 @@ theorem selectedColumns_rank_eq
 /-- The executable Gram search is sound and complete for the semantic rank:
 it succeeds at size `k` exactly when `k ≤ A.rank`. -/
 theorem hasNonzeroGramMinor_eq_true_iff
-    [Fintype m] [Fintype n] [DecidableEq n]
+    [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) (k : ℕ) :
     hasNonzeroGramMinor A k = true ↔ k ≤ A.rank := by
   constructor
@@ -190,10 +222,12 @@ theorem hasNonzeroGramMinor_eq_true_iff
 
 /-! ## Exact executable rank and defect -/
 
-/-- Compute the largest accepted column-selection size.  The executable body
-uses only finite search, Boolean tests, rational arithmetic, and determinants;
-`Matrix.rank` and dimension APIs occur only in correctness theorems. -/
-def rationalMatrixRank [Fintype m] [Fintype n] [DecidableEq n]
+/-- Main executable rank API for the Cycle 7 proof obligation: compute the
+largest accepted column-selection size.  Its finite-index premises come from
+the finite presentation; the body uses only finite search, Boolean tests,
+rational arithmetic, and determinants.  `Matrix.rank` and dimension APIs occur
+only in correctness theorems. -/
+def rationalMatrixRank [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) : ℕ :=
   (Finset.range (Fintype.card n + 1)).sup fun k =>
     if hasNonzeroGramMinor A k then k else 0
@@ -201,7 +235,7 @@ def rationalMatrixRank [Fintype m] [Fintype n] [DecidableEq n]
 /-- The executable rational matrix rank equals the semantic matrix rank for
 every finite rectangular matrix. -/
 theorem rationalMatrixRank_eq_rank
-    [Fintype m] [Fintype n] [DecidableEq n]
+    [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) : rationalMatrixRank A = A.rank := by
   apply Nat.le_antisymm
   · apply Finset.sup_le
@@ -224,16 +258,18 @@ theorem rationalMatrixRank_eq_rank
 /-- The executable rank equals the dimension of the literal range of the
 matrix linear map. -/
 theorem rationalMatrixRank_eq_finrank_range
-    [Fintype m] [Fintype n] [DecidableEq n]
+    [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) :
     rationalMatrixRank A =
       Module.finrank ℚ (LinearMap.range A.mulVecLin) := by
   rw [rationalMatrixRank_eq_rank]
   rfl
 
-/-- Compute the exact domain-kernel and codomain-cokernel dimension pair from
-the executable rank. -/
-def rationalMatrixDefect [Fintype m] [Fintype n] [DecidableEq n]
+/-- Main executable defect API supporting claim (ii): compute the exact
+domain-kernel and codomain-cokernel dimension pair from the executable rank.
+Its only premises are the finite row and column index types; no kernel, range,
+rank, or defect certificate is supplied. -/
+def rationalMatrixDefect [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) : ℕ × ℕ :=
   (Fintype.card n - rationalMatrixRank A,
     Fintype.card m - rationalMatrixRank A)
@@ -241,7 +277,7 @@ def rationalMatrixDefect [Fintype m] [Fintype n] [DecidableEq n]
 /-- The executable dimension differences equal the literal kernel/cokernel
 defect used by the G-107 defect semantics. -/
 theorem rationalMatrixDefect_eq_blockDefect
-    [Fintype m] [Fintype n] [DecidableEq n]
+    [Fintype m] [Fintype n]
     (A : Matrix m n ℚ) :
     rationalMatrixDefect A = blockDefect A.mulVecLin := by
   rw [rationalMatrixDefect, rationalMatrixRank_eq_finrank_range]
@@ -284,14 +320,17 @@ theorem rank_pos_of_entry_ne_zero [Fintype m] [Fintype n]
 
 namespace Examples
 
-/-- The projection `ℚ² → ℚ` represented as a rectangular matrix. -/
+/-- Executable firing fixture for the generic rank API: the projection
+`ℚ² → ℚ` as a rectangular matrix.  It supplies no rank premise. -/
 def projectionMatrix : Matrix (Fin 1) (Fin 2) ℚ := !![1, 0]
 
-/-- The inclusion `ℚ → ℚ²` represented as a rectangular matrix. -/
+/-- Executable firing fixture for the generic rank API: the inclusion
+`ℚ → ℚ²` as a rectangular matrix.  It supplies no rank premise. -/
 def inclusionMatrix : Matrix (Fin 2) (Fin 1) ℚ := !![1; 0]
 
-/-- A two-column outer-product matrix whose columns are equal and hence have
-rank one. -/
+/-- Executable firing fixture for the generic rank API: a two-column
+outer-product matrix with equal columns.  Its rank sensitivity is proved rather
+than stored. -/
 def duplicateColumnMatrix : Matrix (Fin 2) (Fin 2) ℚ :=
   Matrix.vecMulVec (![1, 0] : Fin 2 → ℚ) (![1, 1] : Fin 2 → ℚ)
 
