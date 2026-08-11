@@ -964,23 +964,30 @@ tracking_issue_closed: false
 - Lean file:
   [`research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean`](../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)
 - primary declarations:
+  - `ThreeCochainComplex.Hom.range_h1Map`
   - `ThreeCochainComplex.Hom.h1RankBlockLinearMap`
   - `ThreeCochainComplex.Hom.finrank_range_h1Map_eq_h1RankBlock`
-  - `ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0`
+  - `ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0`
+  - `blockDefect_eq_finrank_sub_range`
   - `FiniteComparisonPresentation.h1RankBlockMatrix`
   - `FiniteComparisonPresentation.computedASubnerveH1Rank`
   - `FiniteComparisonPresentation.computedASubnerveDefect`
   - `FiniteComparisonPresentation.computedASubnerveDefect_eq_aSubnerveDefect`
   - `BoundaryShortcutCounterexample.f1_rank_ne_h1Map_rank`
 - verification:
-  - manifest 登録済み単一ファイル focused check: pass
+  - `CohomologyComparison`、`DefectSemantics`、manifest 登録済み Cycle 8
+    file の focused check: pass
+  - `CohomologyComparison` / `DefectSemantics` の targeted module build: pass
   - `ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect` の targeted
     module build: pass (3715 jobs)
-  - `AAT.AG.TwoPhase.ThreeCochainComplex.Hom` namespace axiom audit:
+  - `AAT.AG.TwoPhase` namespace axiom audit: 15 declarations、standard axioms only
+  - `DefectSemantics` の `AAT.AG.ResolutionInvariance` namespace axiom audit:
+    6 declarations、standard axioms only
+  - `AAT.AG.TwoPhase.ThreeCochainComplex` namespace axiom audit:
     4 declarations、standard axioms only
   - `AAT.AG.ResolutionInvariance` namespace axiom audit:
     97 declarations、standard axioms only
-  - 主要 5 declaration の `#print axioms`: `propext`、
+  - 主要 6 declaration の `#print axioms`: `propext`、
     `Classical.choice`、`Quot.sound` のみ
   - placeholder、hidden / bidirectional Unicode、privacy、
     Formal→Research 逆 import、`git diff --check`: clean
@@ -988,6 +995,10 @@ tracking_issue_closed: false
 - T3 independent audit: `approve / proof-obligation-discharged`
   - 初回の generic `Hom` namespace audit 収載漏れを1行の永続 audit 追加で
     解消し、focused check と targeted build を再実行した。
+  - 初回 PR 査読の API 品質 finding に対し、`h1Map` range と `blockDefect`
+    finrank 形を各定義側の公開 API に移し、Cycle 8 下流の直接 unfold を除去した。
+    complex 単体の H¹ 次元定理も `ThreeCochainComplex` 直下へ移動し、修正後
+    snapshot の独立 T3 を正式再実行して approve を得た。
 
 ### Premise delta
 
@@ -1048,12 +1059,18 @@ lean_artifacts:
     declarations:
       - ThreeCochainComplex.Hom.h1RankBlockLinearMap
       - ThreeCochainComplex.Hom.finrank_range_h1Map_eq_h1RankBlock
-      - ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0
+      - ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
       - FiniteComparisonPresentation.h1RankBlockMatrix
       - FiniteComparisonPresentation.computedASubnerveH1Rank
       - FiniteComparisonPresentation.computedASubnerveDefect
       - FiniteComparisonPresentation.computedASubnerveDefect_eq_aSubnerveDefect
       - BoundaryShortcutCounterexample.f1_rank_ne_h1Map_rank
+  - file: research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean
+    declarations:
+      - ThreeCochainComplex.Hom.range_h1Map
+  - file: research/lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean
+    declarations:
+      - blockDefect_eq_finrank_sub_range
 premise_delta:
   discharged:
     - raw selected cells and computed-factor preimage for every finite A

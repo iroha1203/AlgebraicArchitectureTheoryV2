@@ -87,8 +87,7 @@ private theorem range_h1CycleRangeQuotientMap (f : Hom K L) :
       LinearMap.range f.h1Map := by
   rw [h1CycleRangeQuotientMap, LinearMap.range_domRestrict,
     h1CycleRangeSum, Submodule.map_sup, Submodule.mkQ_map_self, sup_bot_eq]
-  unfold h1Map Submodule.mapQ
-  rw [Submodule.range_liftQ, LinearMap.range_comp]
+  exact f.range_h1Map.symm
 
 /-- The kernel of the restricted quotient is precisely the target-boundary
 subspace viewed inside the image-plus-boundary sum. -/
@@ -309,6 +308,8 @@ theorem finrank_range_h1Map_eq_h1RankBlock (f : Hom K L) :
   have hblock := finrank_h1RankBlock_eq_d1_add_cycleRangeSum f
   omega
 
+end Hom
+
 /-- The dimension of literal `H¹ = ker d1 / range d0` is the degree-one
 dimension minus the two differential ranks. -/
 theorem finrank_h1_eq_c1_sub_d1_sub_d0 (K : ThreeCochainComplex ℚ) :
@@ -322,7 +323,7 @@ theorem finrank_h1_eq_c1_sub_d1_sub_d0 (K : ThreeCochainComplex ℚ) :
         Module.finrank ℚ (LinearMap.ker K.d1) :=
     Submodule.finrank_quotient_add_finrank
       (LinearMap.range K.boundaryToCycles)
-  have hboundary := finrank_range_boundaryToCycles_eq_d0 K
+  have hboundary := Hom.finrank_range_boundaryToCycles_eq_d0 K
   rw [hboundary] at hquotient
   have hrankNullity :
       Module.finrank ℚ (LinearMap.range K.d1) +
@@ -331,13 +332,11 @@ theorem finrank_h1_eq_c1_sub_d1_sub_d0 (K : ThreeCochainComplex ℚ) :
     LinearMap.finrank_range_add_finrank_ker K.d1
   omega
 
-end Hom
-
 end ThreeCochainComplex
 
 end AAT.AG.TwoPhase
 
-#assert_standard_axioms_only AAT.AG.TwoPhase.ThreeCochainComplex.Hom
+#assert_standard_axioms_only AAT.AG.TwoPhase.ThreeCochainComplex
 
 namespace AAT.AG.ResolutionInvariance
 
@@ -1632,30 +1631,6 @@ theorem computedASubnerveH1Rank_eq_finrank_range_h1Map
   exact (P.toGeometry.aSubnerveComparisonHom
     (↑A : Set P.CoarseTarget)).finrank_range_h1Map_eq_h1RankBlock.symm
 
-/-- Kernel/cokernel defect expressed by domain/codomain dimensions and range
-rank.  This proof-only arithmetic form connects the computed cell counts to
-the literal quotient definition. -/
-private theorem blockDefect_eq_finrank_sub_range
-    {V W : Type*}
-    [AddCommGroup V] [Module ℚ V] [FiniteDimensional ℚ V]
-    [AddCommGroup W] [Module ℚ W] [FiniteDimensional ℚ W]
-    (linearMap : V →ₗ[ℚ] W) :
-    blockDefect linearMap =
-      (Module.finrank ℚ V -
-          Module.finrank ℚ (LinearMap.range linearMap),
-        Module.finrank ℚ W -
-          Module.finrank ℚ (LinearMap.range linearMap)) := by
-  unfold blockDefect
-  apply Prod.ext
-  · dsimp only
-    have hrankNullity :=
-      LinearMap.finrank_range_add_finrank_ker linearMap
-    omega
-  · dsimp only
-    have hquotient := Submodule.finrank_quotient_add_finrank
-      (LinearMap.range linearMap)
-    omega
-
 /-- Main Cycle 8 correctness theorem: for every finite coarse target subset,
 including the empty subset, the defect computed from raw presentation tables
 is the literal kernel/cokernel defect of the actual canonical A-subnerve H¹
@@ -1704,11 +1679,11 @@ theorem computedASubnerveDefect_eq_aSubnerveDefect
       _ = Fintype.card (P.FineEdgeIn A) :=
         (Fintype.card_congr (P.fineEdgeEquiv A)).symm
   have hcoarseH1 :=
-    ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0
+    ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
       (P.coarseSupportedNerve.targetSubsetComplex
         (↑A : Set P.CoarseTarget))
   have hfineH1 :=
-    ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0
+    ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
       (P.fineSupportedNerve.targetSubsetComplex
         (P.canonicalFinePreimage A))
   rw [hcoarseC1] at hcoarseH1
@@ -1788,7 +1763,7 @@ def comparison : ThreeCochainComplex.Hom sourceComplex targetComplex where
 
 /-- The source fixture has one-dimensional literal quotient-`H¹`. -/
 theorem source_h1_finrank : Module.finrank ℚ sourceComplex.H1 = 1 := by
-  rw [ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0]
+  rw [ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0]
   simp only [sourceComplex]
   rw [LinearMap.range_zero]
   simp
@@ -1796,7 +1771,7 @@ theorem source_h1_finrank : Module.finrank ℚ sourceComplex.H1 = 1 := by
 /-- The target fixture has zero-dimensional literal quotient-`H¹` because
 the identity `d0` makes every degree-one cocycle a boundary. -/
 theorem target_h1_finrank : Module.finrank ℚ targetComplex.H1 = 0 := by
-  rw [ThreeCochainComplex.Hom.finrank_h1_eq_c1_sub_d1_sub_d0]
+  rw [ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0]
   simp only [targetComplex]
   rw [LinearMap.range_zero, LinearMap.range_id]
   simp

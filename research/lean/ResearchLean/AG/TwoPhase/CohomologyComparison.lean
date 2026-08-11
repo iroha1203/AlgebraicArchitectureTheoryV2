@@ -96,6 +96,16 @@ theorem h1Map_mk (f : Hom source target)
       (LinearMap.range target.boundaryToCycles).mkQ (f.cyclesMap z) :=
   rfl
 
+/-- The range of the induced `H¹` map is the quotient image of the range of
+the degree-one cocycle map.  This is the range-level API for `h1Map`; clients
+need not unfold either `h1Map` or `Submodule.mapQ`. -/
+theorem range_h1Map (f : Hom source target) :
+    LinearMap.range f.h1Map =
+      (LinearMap.range f.cyclesMap).map
+        (LinearMap.range target.boundaryToCycles).mkQ := by
+  unfold h1Map Submodule.mapQ
+  rw [Submodule.range_liftQ, LinearMap.range_comp]
+
 end Hom
 
 end ThreeCochainComplex
