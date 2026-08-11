@@ -314,3 +314,4 @@ import ResearchLean.AG.TwoPhase.CoefficientComplex
 import ResearchLean.AG.TwoPhase.CohomologyComparison
 import ResearchLean.AG.TwoPhase.ForestSupport
 import ResearchLean.AG.TwoPhase.FiniteWitnesses
+import ResearchLean.AG.UniformInvariance.ASubnerveReduction
