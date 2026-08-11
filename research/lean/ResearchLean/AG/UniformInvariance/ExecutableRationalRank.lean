@@ -42,7 +42,7 @@ variable {m : Type u} {n : Type v}
 projection and contains no rank or independence information. -/
 def selectedColumns (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n) :
     Matrix m (Fin k) ℚ :=
-  fun i j => A i (selection j)
+  A.submatrix id selection
 
 /-- The square Gram matrix of a selected finite column family. -/
 def columnGram [Fintype m] (A : Matrix m n ℚ) {k : ℕ}
