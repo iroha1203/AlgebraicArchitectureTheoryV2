@@ -30,7 +30,7 @@ G-104 の Atlas 定理は「条件 C ⟹ H¹ comparison 全単射」の十分性
 
 | 世代 | candidate | 反例 | 破れの方向 |
 | --- | --- | --- | --- |
-| v1 | DIRECT | Chain3 | 十分性(swap 推移連鎖の未認証) |
+| v1 | DIRECT | Chain3 | 必要性(uniform だが swap 推移連鎖が未認証で条項破れ) |
 | v2 | COMPONENT | UnkilledTwin | 十分性(共出現 ≠ 差消滅) |
 | v3+sa | CERTIFIED + support-active | CONTRACTIBLE-TRIANGLE | 必要性(H¹-neutral な filled face) |
 | v4 | JOINT-COLLAPSE | NONFREE-MUTUAL-KILL-SPLIT | 必要性 |
@@ -172,7 +172,9 @@ profile である。両者は別物ではなく、値部分集合還元によっ
    真性が定理水準で立つ。
 3. **observation nonfactorization**: 恒久 `G_local-v1` の忠実 `Obs_G`、
    T3 / T6 の観測等値と反対 label、任意の `p` に対する factorization
-   不可能性(grammar 相対)。
+   不可能性(grammar 相対。量化域は computable presentation 全体に限定
+   する — abstract geometry への拡張は presentation 存在と変更不変性を
+   要するため candidate にとどめる)。
 
 この3本で `Condition-C locus ⊊ uniform locus` かつ `uniform locus は
 G_local-v1 を通して定義不能` という **Atlas 定理の正確な位置**が初めて
