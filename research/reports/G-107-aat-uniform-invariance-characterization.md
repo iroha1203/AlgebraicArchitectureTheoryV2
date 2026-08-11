@@ -59,10 +59,12 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
 - チェックポイント(Cycle 10): whole-nerve C0/C5/C6 と、全非空 target subset
   `A` および canonical fine preimage 上の actual A-subnerve C1--C4 からなる
   law / H¹ / rank / defect 非参照の幾何述語 `ConditionCAllA` を固定した。
-  これは direction hypothesis の定義 snapshot であり、checker correctness や
-  premise discharge ではないため `proof-checkpoint` として受理した。
-- 未完了: `ConditionCAllA` checker / sound-complete iff / 正負 instance pair /
-  bridge / Atlas positioning / firing 正例、
+  map・incidence・fiber cycle・C1--C4・集約条件の公開 no-unfold API と、
+  新規9 Propすべての actual A-subnerve 正負 instance pairも固定した。これは
+  direction hypothesis の品質付き definition checkpoint であり、checker
+  correctness や premise discharge ではないため `proof-checkpoint` のままである。
+- 未完了: `ConditionCAllA` checker / sound-complete iff / bridge / Atlas
+  positioning / G-107 指定の nonconstant-law firing 正例、
   7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -1290,6 +1292,7 @@ tracking_issue_closed: false
 - completion candidate: `no`
 - Lean file:
   [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllA.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllA.lean)
+  [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAInstancePairs.lean)
 - primary declarations:
   - `TargetSupportedNerveMorphism.aSubnerveChartMap`
   - `TargetSupportedNerveMorphism.aSubnerveEdgeMapOption`
@@ -1297,21 +1300,49 @@ tracking_issue_closed: false
   - `TargetSupportedNerveMorphism.TargetSubsetFiberEdge`
   - `TargetSupportedNerveMorphism.TargetSubsetFiberAdjacent`
   - `TargetSupportedNerveMorphism.targetSubsetFiberIncoming`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberIncoming_apply`
   - `TargetSupportedNerveMorphism.targetSubsetFiberOutgoing`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberOutgoing_apply`
   - `TargetSupportedNerveMorphism.TargetSubsetFiberCycle`
   - `TargetSupportedNerveMorphism.TargetSubsetInternalFace`
   - `TargetSupportedNerveMorphism.targetSubsetFaceBoundary`
+  - `TargetSupportedNerveMorphism.targetSubsetFaceBoundary_apply`
   - `TargetSupportedNerveMorphism.ConditionC1AtTargetSubset`
   - `TargetSupportedNerveMorphism.ConditionC2AtTargetSubset`
   - `TargetSupportedNerveMorphism.ConditionC3AtTargetSubset`
   - `TargetSupportedNerveMorphism.ConditionC4AtTargetSubset`
   - `TargetSupportedNerveMorphism.ConditionCAllA`
+  - `TargetSupportedNerveMorphism.aSubnerveEdgeMapOption_eq_some_iff`
+  - `TargetSupportedNerveMorphism.aSubnerveFaceMapOption_eq_some_iff`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberEdge_iff_endpoint_cells`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberCycle_mk`
+  - `TargetSupportedNerveMorphism.conditionCAllA_intro`
+  - `ConditionCAllAInstancePairs.positive_targetSubsetFiberEdge`
+  - `ConditionCAllAInstancePairs.not_targetSubsetFiberEdge`
+  - `ConditionCAllAInstancePairs.positive_targetSubsetFiberAdjacent`
+  - `ConditionCAllAInstancePairs.not_targetSubsetFiberAdjacent`
+  - `ConditionCAllAInstancePairs.positive_targetSubsetFiberCycle`
+  - `ConditionCAllAInstancePairs.not_targetSubsetFiberCycle`
+  - `ConditionCAllAInstancePairs.positive_targetSubsetInternalFace`
+  - `ConditionCAllAInstancePairs.not_targetSubsetInternalFace`
+  - `ConditionCAllAInstancePairs.positive_conditionC1AtTargetSubset`
+  - `ConditionCAllAInstancePairs.missing_not_conditionC1AtTargetSubset`
+  - `ConditionCAllAInstancePairs.positive_conditionC2AtTargetSubset`
+  - `ConditionCAllAInstancePairs.missing_not_conditionC2AtTargetSubset`
+  - `ConditionCAllAInstancePairs.positive_conditionC3AtTargetSubset`
+  - `ConditionCAllAInstancePairs.acyclicityFailure_not_conditionC3AtTargetSubset`
+  - `ConditionCAllAInstancePairs.positive_conditionC4AtTargetSubset`
+  - `ConditionCAllAInstancePairs.missing_not_conditionC4AtTargetSubset`
+  - `ConditionCAllAInstancePairs.positive_conditionCAllA`
+  - `ConditionCAllAInstancePairs.missing_not_conditionCAllA`
 - verification:
-  - `ConditionCAllA.lean` focused check: pass
-  - `ResearchLean.AG.UniformInvariance.ConditionCAllA` targeted module build:
-    pass (3707 jobs)
-  - namespace axiom audit: 15 declarations、standard axioms only
-  - 主要 5 declaration の `#print axioms`: `propext`、
+  - `ConditionCAllA.lean` と `ConditionCAllAInstancePairs.lean` の focused
+    check: pass
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllAInstancePairs` targeted
+    module build: pass (3709 jobs)
+  - namespace axiom audit: API module 58 declarations、instance module 56
+    declarations、いずれも standard axioms only
+  - 主要 7 declaration の `#print axioms`: `propext`、
     `Classical.choice`、`Quot.sound` のみ
   - placeholder、`Classical.dec`、`native_decide`、hidden / bidirectional
     Unicode、privacy、Formal→Research 逆 import、tracked / untracked
@@ -1322,9 +1353,32 @@ tracking_issue_closed: false
     canonical partial map、C3 の有限 rational cycle / internal-face boundary、
     全非空 `Set A` と canonical preimage を独立監査し、定義 snapshot には
     blocking finding なし。
-  - 本 cycle は direction hypothesis の定義だけで discharge-required premise の
-    theorem / finite witness / concrete certificate を含まないため、
+  - 初回修正 snapshot は incoming / outgoing / face-boundary の3有限和定義を
+    instance proof が直接 `unfold` していたため、§2.4 API gap として一度 reject。
+    generic `[simp]` evaluation lemma 3本を追加し、下流4箇所を API 経由へ置換した
+    直接対応再監査で finding 解消を確認した。
+  - 9組の正負例は predicate の品質 gate を閉じるが固定 GOAL の
+    discharge-required firing / checker / bridge を代替しないため、
     `proof-obligation-discharged` への昇格は不可。
+
+### Initial PR review finding and repair
+
+- initial fixed head の4本査読では、Math A lane が Lean品質基準 §1.4 の
+  正負 instance pairと §2.4 の same-unit no-unfold API 欠落を Major と判定した。
+  他3 lane は definition checkpoint として承認または minor扱いだったが、
+  共有 review protocol に従い Major を採用して実装へ戻した。
+- 修正後は map Option の raw characterization、endpoint / face incidence、
+  fiber edge / adjacency / cycle / internal face、C1--C4、`ConditionCAllA` の
+  constructor / eliminator、incoming / outgoing / face-boundary の有限和評価を
+  公開 API として追加した。
+- 既査読 G-104 fixture の raw reading・supported nerve・partial morphismだけを
+  actual `A = univ` subnerveへ読み直し、9 Propすべてで正負を発火させた。
+  central 正例では二 chart fiber、非零 self-loop cycle、internal face filling、
+  exact edge / face liftを実使用する。central 負例は missing-image C0、C3 負例は
+  face-free nonzero cycleを直接使う。result bitや filling certificate fieldはない。
+- この品質 instance は constant-law G-104 fixtureであり、固定 GOAL が別途要求する
+  `ResolutionInvarianceFiringData` の nonconstant-law・両側非零 H¹ firingを
+  代替しない。
 
 ### Premise delta
 
@@ -1333,8 +1387,8 @@ tracking_issue_closed: false
 - fixed at checkpoint: existing whole-nerve `ConditionC0` / `ConditionC5` /
   `ConditionC6` を一度だけ要求し、全非空 `A : Set coarseReading.Target` と
   `comparisonFactor ⁻¹' A` 上で actual A-subnerve C1--C4 を要求する幾何 predicate。
-- remaining: `conditionCAllACheck` と sound / complete iff、正例と正負 instance
-  pair、`labelValueFiber` transport による bridge、Atlas positioning、7
+- remaining: `conditionCAllACheck` と sound / complete iff、G-107指定の firing
+  正例、`labelValueFiber` transport による bridge、Atlas positioning、7
   non-necessity witnesses、`Obs_G`、T3 / T6、observation nonfactorization。
 
 ### Provenance / proof-use / escape audit
@@ -1346,6 +1400,9 @@ tracking_issue_closed: false
   endpoint-defined fiber graphだけを読み、誤って partial `edgeMap` を条件へ
   加えない。C2/C4 は canonical partial subset mapを、C3 は有限 rational
   cycle と internal-face boundaryを実使用する。
+- instance proof-use: 正例は raw incidenceから二 chart fiberの連結、非零
+  self-loop cycleの保存則、internal face boundary、edge / face liftを導出する。
+  負例は missing raw map または face-free nonzero cycleを直接発火させる。
 - structure-field escape: none found。全新規条件は `Prop` であり、path、lift、
   face chain は存在量化内にだけ現れる。law family、adequacy、H¹、rank、defect、
   uniformity、checker truth の field はない。
@@ -1364,7 +1421,7 @@ cycle: 10
 decision: approve
 result_type: proof-checkpoint
 proof_obligation: fix law-H1-rank-free ConditionCAllA semantics before constructing its executable checker
-proof_obligation_delta: the whole-nerve and every-nonempty-A geometric hypothesis is now fixed without discharging its executable or transport obligations
+proof_obligation_delta: the whole-nerve and every-nonempty-A geometric hypothesis, public no-unfold API including all finite-sum evaluation lemmas, and all nine positive-negative quality pairs are now fixed without discharging executable or transport obligations
 primary_specification:
   source: research/goals/G-107-aat-uniform-invariance-characterization.md
   version: 5c90c38ca3609e2e8852b75a140651be7b625d0f
@@ -1378,22 +1435,50 @@ lean_artifacts:
       - TargetSupportedNerveMorphism.TargetSubsetFiberEdge
       - TargetSupportedNerveMorphism.TargetSubsetFiberAdjacent
       - TargetSupportedNerveMorphism.targetSubsetFiberIncoming
+      - TargetSupportedNerveMorphism.targetSubsetFiberIncoming_apply
       - TargetSupportedNerveMorphism.targetSubsetFiberOutgoing
+      - TargetSupportedNerveMorphism.targetSubsetFiberOutgoing_apply
       - TargetSupportedNerveMorphism.TargetSubsetFiberCycle
       - TargetSupportedNerveMorphism.TargetSubsetInternalFace
       - TargetSupportedNerveMorphism.targetSubsetFaceBoundary
+      - TargetSupportedNerveMorphism.targetSubsetFaceBoundary_apply
       - TargetSupportedNerveMorphism.ConditionC1AtTargetSubset
       - TargetSupportedNerveMorphism.ConditionC2AtTargetSubset
       - TargetSupportedNerveMorphism.ConditionC3AtTargetSubset
       - TargetSupportedNerveMorphism.ConditionC4AtTargetSubset
       - TargetSupportedNerveMorphism.ConditionCAllA
+      - TargetSupportedNerveMorphism.aSubnerveEdgeMapOption_eq_some_iff
+      - TargetSupportedNerveMorphism.aSubnerveFaceMapOption_eq_some_iff
+      - TargetSupportedNerveMorphism.targetSubsetFiberEdge_iff_endpoint_cells
+      - TargetSupportedNerveMorphism.targetSubsetFiberCycle_mk
+      - TargetSupportedNerveMorphism.conditionCAllA_intro
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAInstancePairs.lean
+    declarations:
+      - ConditionCAllAInstancePairs.positive_targetSubsetFiberEdge
+      - ConditionCAllAInstancePairs.not_targetSubsetFiberEdge
+      - ConditionCAllAInstancePairs.positive_targetSubsetFiberAdjacent
+      - ConditionCAllAInstancePairs.not_targetSubsetFiberAdjacent
+      - ConditionCAllAInstancePairs.positive_targetSubsetFiberCycle
+      - ConditionCAllAInstancePairs.not_targetSubsetFiberCycle
+      - ConditionCAllAInstancePairs.positive_targetSubsetInternalFace
+      - ConditionCAllAInstancePairs.not_targetSubsetInternalFace
+      - ConditionCAllAInstancePairs.positive_conditionC1AtTargetSubset
+      - ConditionCAllAInstancePairs.missing_not_conditionC1AtTargetSubset
+      - ConditionCAllAInstancePairs.positive_conditionC2AtTargetSubset
+      - ConditionCAllAInstancePairs.missing_not_conditionC2AtTargetSubset
+      - ConditionCAllAInstancePairs.positive_conditionC3AtTargetSubset
+      - ConditionCAllAInstancePairs.acyclicityFailure_not_conditionC3AtTargetSubset
+      - ConditionCAllAInstancePairs.positive_conditionC4AtTargetSubset
+      - ConditionCAllAInstancePairs.missing_not_conditionC4AtTargetSubset
+      - ConditionCAllAInstancePairs.positive_conditionCAllA
+      - ConditionCAllAInstancePairs.missing_not_conditionCAllA
 premise_delta:
   discharged: []
   fixed_at_checkpoint:
     - whole-nerve C0, C5, and C6 together with every-nonempty-A C1-C4 semantics
   remaining:
     - conditionCAllACheck and its sound-complete iff
-    - positive example and positive-negative instance pair
+    - nonconstant-law firing example with both H1 sides nonzero
     - labelValueFiber transport bridge
     - Atlas positioning theorem
     - seven non-necessity witnesses
@@ -1409,6 +1494,7 @@ proof_use_audit:
     - existing whole-nerve ConditionC0, ConditionC5, and ConditionC6
     - actual A-subnerve support and incidence
     - canonical comparisonFactor and partial subset maps
+    - reviewed raw G-104 positive, missing-image, and face-free fixtures
   unused_material_premises: []
 structure_field_escape_audit:
   status: none-found
@@ -1421,8 +1507,7 @@ cheat_route_audit:
   vacuity_or_degeneracy: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-blocking_findings:
-  - proof-obligation-discharged promotion is unavailable because this cycle contains definitions but no discharge theorem or witness
+blocking_findings: []
 next_obligation: construct conditionCAllACheck on FiniteComparisonPresentation and prove conditionCAllACheck_eq_true_iff, including sound-complete handling of finite C1 reachability and rational C3 solvability
 completion_candidate: false
 tracking_issue_closed: false
