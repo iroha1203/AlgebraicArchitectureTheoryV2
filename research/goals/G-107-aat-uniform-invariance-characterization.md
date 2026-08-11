@@ -20,7 +20,14 @@
   (observation factorization 構図・成果物の四分法)を設計根拠として、
   **defect 還元と決定可能性/Atlas positioning/observation
   nonfactorization の三本柱**で固定する(ユーザー裁定+Codex 設計相談
-  2026-08-11)。runtime state は tracking Issue #3954。
+  2026-08-11)。**v3 再査読(2026-08-11、Major revisions)**: (iii) の
+  現記述(G-104 条件 C からの新 premise なし持ち上げ)は Lean 実体
+  (`ConditionC` は law-indexed、C1–C4 が `LawValueLabel` 量化)と
+  不整合で導出不能と確定 — failure policy の規定どおり **claim scope
+  裁定中**((i)(ii)(iv)(v) は独立再現で維持、反例なし)。裁定 →
+  (iii) 改稿 → 新 fixed head の 4 lane 正式再査読を経るまで
+  target-theorem loop は起動しない。runtime state は tracking
+  Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
@@ -65,7 +72,7 @@
   reading 圏上の診断 local-system 構想(`program context`)における
   **universal zero-jump 領域の座標・位置・観測限界**として位置づく。
 - `program context`(上位構図、2026-08-11 追記。同日レビューで
-  zero-jump locus / jump locus の層を是正): 本カードの二本柱定理は
+  zero-jump locus / jump locus の層を是正): 本カードの三本柱定理は
   次の構想の pair 水準の核である — 各 adequate law family `L` を固定した
   読みの圏 `Read_L` 上で診断 `D_L(q) := H¹` を functor として構成し、
   一般の射に jump data `J_L := (dim ker, dim coker)` を付け、reading
@@ -216,8 +223,11 @@
     定数 `ℚ`。
   - **defect profile `J_A`**: 非空 `A ⊆ q.Target` に対し、A-subnerve の
     定数 `ℚ` 係数 H¹ 比較写像 `f_A` の `J_A(f) := (dim ker H¹(f_A),
-    dim coker H¹(f_A))`。零判定 `J_A = (0, 0)` は当該 block の比較
-    全単射性と同値(有限次元)。`program context` の law 量化座標
+    dim coker H¹(f_A))`。coker は `codomain ⧸ LinearMap.range f_A`、
+    次元は `Module.finrank ℚ` で固定する。零判定 `J_A = (0, 0)` と当該
+    block の比較全単射性の同値は自明扱いせず、独立 theorem
+    `blockDefect_eq_zero_iff_bijective` として放電する(有限次元 bridge。
+    ledger 参照)。`program context` の law 量化座標
     `J_L` とは (i) の還元で結ばれる(semantic 座標と computational
     座標)。
   - **歴史記録: 前処理と条項系 C\*(v3 で active claim から除外)**:
@@ -355,12 +365,13 @@
     半径1 typed incidence ball(slot / 符号、radius 外 stub は cell
     type と slot へ切り詰め)、(2) critical / guard / port / bridge /
     self-loop / FaceTwin の6 flag、(3) scoped support とその `π` 像
-    (None / mapped の2値)、(4) 全 reachable collapse path に現れる
-    packet kind の和集合、(5) stub・neighbor descriptor・rooted ball・
-    equal A-record 個数の clip2(`0 / 1 / ≥2`)histogram、(6) 条項
+    (いずれも**集合値**)、(4) **map-status**(None / mapped の独立な
+    二値成分)、(5) 全 reachable collapse path に現れる
+    packet kind の和集合、(6) stub・neighbor descriptor・rooted ball・
+    equal A-record 個数の clip2(`0 / 1 / ≥2`)histogram、(7) 条項
     conjunction vector `GLocalV1ConditionVector`(whole C0 / C5 / C6 と
     `A` ごとの C1–C4 とその AND。`CStarV3SupportActive` との一般同値は
-    主張しない — T3 / T6 上の数値一致は同値の証拠ではない)、(7) `π`
+    主張しない — T3 / T6 上の数値一致は同値の証拠ではない)、(8) `π`
     を保つ target relabel による最小化。raw cell ID・`A` label・
     fixture 名・semantic hash・2超の exact 個数・global cycle 長・
     H¹ / rank / uniformity truth は観測しない(登録済み C3 局所例外
@@ -459,8 +470,12 @@
   同値 theorem を含む)、**`FiniteComparisonPresentation`**(`DecidableEq`
   を持つ有限 target / cell・`Finset` support・実行可能な factor 計算)と
   `toGeometry` 対応・`computedFactor = comparisonFactor` 一致 theorem、
-  **零判定 decider**(`Decidable (UniformPresentation P)` instance
-  または bool checker + sound / complete theorem。非構成的な古典
+  **有限次元 defect bridge** `blockDefect_eq_zero_iff_bijective`
+  (`J_A = (0, 0) ⟺ Function.Bijective f_A`。coker = quotient・
+  `Module.finrank ℚ` 固定)、**零判定 decider**
+  (`Decidable (UniformPresentation P)` instance
+  または bool checker + sound / complete theorem。kernel / range /
+  quotient rank 計算の soundness theorem を含む。非構成的な古典
   instance で済ませない)、**Atlas corollary**(条件 C ⟹ 一様不変。
   G-104 受理済み theorem からの一様量化つき導出で、持ち上げ論法を明示の
   theorem として含む)、**観測写像 `Obs_G` の定義と恒久 contract 構成
@@ -539,6 +554,12 @@
   - `defect 還元 (i)`: `discharge-required`。indicator law family の
     構成と adequacy、block ≅ A-subnerve 同定、global ⟺ blockwise 同値の
     3 conjunct を theorem 化する。fixture 上の数値一致で代用しない。
+  - `有限次元 defect bridge`: `discharge-required`。
+    `blockDefect_eq_zero_iff_bijective`(`J_A = (0, 0) ⟺` 当該 block
+    比較の全単射性。coker = `codomain ⧸ LinearMap.range f_A`、次元 =
+    `Module.finrank ℚ`)を独立 theorem として放電する。「有限次元だから
+    自明」を放電と数えない。(ii) の decider はこの bridge を経由して
+    soundness を得る。
   - `零判定 decider (ii)`: `discharge-required`。既存 API の chart 台は
     `Set`、canonical factor は `Classical.choose` 由来であり、そのままでは
     計算可能な equality / membership を供給しないため、`DecidableEq` を
@@ -563,7 +584,9 @@
   - `Obs_G の忠実転写 (v)`: `discharge-required`。登録恒久 contract
     (canonical SHA-256
     `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`)
-    の観測成分5種と Lean 定義の構成要素対応表を artifact に固定する。
+    の**全構成要素**(恒久 `G_LOCAL_V1_SPEC` の成分表を正本とする)と
+    Lean 定義の1対1構成要素対応表を artifact に固定する。カード内の
+    成分要約は概要であり、対応表の網羅性判定には使わない。
     成分の省略・追加・truncation 変更(粗視化・細密化)は放電と数えない。
     義務は定義水準+T3 / T6 上の評価であり、packet rewrite の一般論は
     含めない。
