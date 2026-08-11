@@ -70,8 +70,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   reachability、C3 は rational constraint / internal-face boundary matrixの複体則と
   exact rank criterionで判定する。同じ checkerを C1・C3・aggregate の正負 raw
   presentationsで発火させた。
-- 未完了: G-107 指定の nonconstant-law firing 正例、`ConditionCAllA` bridge、Atlas
-  positioning、
+- 完了(Cycle 12): G-104 の exact firing geometryを変更せず再利用し、全非空
+  target subset上の `firing_conditionCAllA` を直接証明した。同じ raw reading・
+  support・incidence・partial-map tableの executable presentation `pFire` を構成し、
+  raw C1--C4 の直接証明から generic checkerを `true` に発火させた。proper
+  canonical factor、nonconstant law、original geometry、checker truth、coarse / fine
+  両側の既存非零 H¹ classを1本の closed bundleへ接続した。
+- 未完了: `ConditionCAllA` bridge、Atlas positioning、
   7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -194,6 +199,7 @@ next_obligation: prove global generated H1 comparison bijective iff every source
 completion_candidate: false
 tracking_issue_closed: false
 ```
+
 ## Cycle 2 — global H¹ bijectivity iff blockwise bijectivity
 
 - decision: `approve`
@@ -1691,6 +1697,155 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct the fixed-GOAL nonconstant-law Pfire presentation and prove firing_conditionCAllA, conditionCAllACheck Pfire = true, and both-side nonzero H1 firing together
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 12 — nonconstant-law ConditionCAllA firing
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean)
+- primary declarations:
+  - `ResolutionInvarianceFiringWitness.firingCoarseChartSupportFinset`
+  - `ResolutionInvarianceFiringWitness.firingFineChartSupportFinset`
+  - `ResolutionInvarianceFiringWitness.pFire`
+  - `ResolutionInvarianceFiringWitness.pFire_computedFactor_eq_coarseRead`
+  - `ResolutionInvarianceFiringWitness.pFire_conditionCAllA`
+  - `ResolutionInvarianceFiringWitness.pFire_conditionCAllACheck`
+  - `ResolutionInvarianceFiringWitness.firing_conditionCAllA`
+  - `ResolutionInvarianceFiringWitness.fixed_conditionCAllA_firing`
+- verification:
+  - `ConditionCAllAFiring.lean` focused check: pass
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllAFiring` targeted module
+    build: pass (3749 jobs)
+  - namespace axiom audit: 25 declarations、standard axioms only
+  - 主要5 declarationの `#print axioms`: `propext`、`Classical.choice`、
+    `Quot.sound` のみ
+  - placeholder、`unsafe`、`native_decide`、`Classical.dec`、hidden /
+    bidirectional Unicode、privacy、Formal→Research逆import、aggregate / manifest、
+    tracked / untracked whitespace scan: clean
+  - Research全体のfull build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - source SHA-256
+    `28e54c152314cefc5d9eab394b0f543240c90e9a5cff04b9f565683c13390460`
+    の固定 snapshotを独立監査した。
+  - original geometryとraw presentationを別々に有限セルから再構成し、global
+    structure equality / `HEq` や checker result fieldで接続していない。
+  - C1の非自明connector、C3のsupport / conservation / internal-face filling、
+    singleton repeated-face branch、proper factor、nonconstant law、両側非零 H¹の
+    proof-useにblocking findingなし。
+
+### Premise delta
+
+- discharged: 固定GOALの `ConditionCAllA` 正例 instance。G-104 firing fixtureの
+  original `nerveMorphism` に対し、任意の非空 `A : Set (Fin 2)` を `0 ∈ A` と
+  `A = {1}` に分け、C1--C4を直接証明した。前者では三 fine chart、五 fine edge、
+  二 fine faceを保持し、connectorによるfiber connectivity、fiber外edgeの零、
+  conservationからのconnector係数零、二internal faceによるcycle fillingを使用する。
+  後者では唯一のcoarse/fine chart・self-loop edge・repeated faceを使用する。
+  whole-nerve C0/C5/C6と集約して `firing_conditionCAllA` を得た。
+- discharged: 同じ raw tablesだけから `pFire` を構成した。明示target subsetの
+  C1/C2/C4は有限決定、C3はraw cycle constraintとinternal-face boundaryを直接
+  解き、全非空subsetの `pFire_conditionCAllA` を証明したうえで、Cycle 11のgeneric
+  iffから `pFire.conditionCAllACheck = true` を得た。
+- discharged: `fixed_conditionCAllA_firing` により、`pFire` と元readingの一致、
+  computed / canonical factor一致、factorの非単射性、lawの非定常性、original
+  `ConditionCAllA`、checker truth、coarse / fine両側の非零H¹ class、canonical
+  imageの一致を一つのclosed theoremに固定した。
+- remaining: `ConditionCAllA M → ∀ laws hcoarse hfine,
+  M.ConditionC laws hcoarse hfine` の条項別transport bridge。続いてAtlas
+  positioning、C0--C6非必要性witness 7種、`Obs_G` / T3 / T6 / observation
+  nonfactorization。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: `pFire` は G-104 fixtureと同じ source / target型、raw
+  readings、cell incidence、chart / partial edge / partial face mapをfieldへ直接置く。
+  supportだけを既存 `Set` supportと点ごとに同値な `Finset` tableへ移し、source /
+  targetの実行用enumerationを加える。condition bit、path、face chain、matrix、rank、
+  H¹ class、checker result fieldは持たない。
+- proof-use: `pFire_computedFactor_eq_coarseRead` はraw source searchからの
+  `computedFactor_eq_comparisonFactor` とG-104 canonical uniqueness theoremを使用する。
+  raw C3はfiber外edge row、fiber chart conservation row、internal-face boundaryを
+  直接使用する。original C3はactual A-subnerveのincoming / outgoing / face-boundary
+  APIを通し、非零self-loop係数をinternal faceで充填する。
+- structure-field escape: none found。original geometry側の結論をraw presentationの
+  fieldに保持せず、両側をそれぞれtable / supportから証明する。
+- route integrity: pass。G-104 raw data → executable support / enumeration → canonical
+  factor → raw all-subset clauses → generic checker truth、およびG-104 original geometry
+  → actual all-subset clauses、の二経路をclosed bundleで合流させる。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  global structure `HEq` / supplied result・path・filling・rank certificate /
+  GOAL-report reinterpretation はいずれも `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 12
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: reuse the exact G-104 nonconstant-law firing fixture and connect original ConditionCAllA, the executable raw checker, and both nonzero H1 classes
+proof_obligation_delta: the exact G-104 firing geometry now satisfies ConditionCAllA on every nonempty target subset, its fieldwise raw finite presentation fires the generic checker, and one closed theorem joins the proper comparison, nonconstant law, checker truth, and both nonzero H1 classes
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 2c837d1ab6718e4fda0045731914b492ea9510f4
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean
+    declarations:
+      - ResolutionInvarianceFiringWitness.firingCoarseChartSupportFinset
+      - ResolutionInvarianceFiringWitness.firingFineChartSupportFinset
+      - ResolutionInvarianceFiringWitness.pFire
+      - ResolutionInvarianceFiringWitness.pFire_computedFactor_eq_coarseRead
+      - ResolutionInvarianceFiringWitness.pFire_conditionCAllA
+      - ResolutionInvarianceFiringWitness.pFire_conditionCAllACheck
+      - ResolutionInvarianceFiringWitness.firing_conditionCAllA
+      - ResolutionInvarianceFiringWitness.fixed_conditionCAllA_firing
+premise_delta:
+  discharged:
+    - original G-104 firing geometry satisfies ConditionCAllA for every nonempty target subset
+    - fieldwise raw presentation computes the same canonical comparison factor
+    - raw C1-C4 proofs cover every explicit nonempty target subset
+    - generic conditionCAllACheck fires true on the same presentation
+    - one closed theorem joins proper comparison, nonconstant law, original condition, checker truth, and both nonzero H1 classes
+  remaining:
+    - ConditionCAllA to all-adequate-law ConditionC bridge
+    - Atlas positioning theorem
+    - seven non-necessity witnesses
+    - Obs_G, T3/T6 labels, observational equality, and separation
+certificate_provenance:
+  discharged:
+    - presentation fields are the reviewed G-104 raw tables plus explicit finite enumerations and pointwise-equivalent Finset supports
+    - checker truth is proved from raw clauses through the generic sound-complete theorem
+    - both H1 nonzero facts and the canonical image are reused from the reviewed G-104 firing witness
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - canonical comparisonFactor and its noninjectivity
+    - nonconstant firing law and both adequacy witnesses
+    - actual A-subnerve endpoint, incidence, partial-map, and finite-sum APIs
+    - raw selected-cell, cycle-constraint, internal-face boundary, and checker correctness APIs
+    - existing coarse and fine nonzero H1 firing classes
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove ConditionCAllA M -> forall laws hcoarse hfine, M.ConditionC laws hcoarse hfine by transporting C1-C4 along the existing label-value-fiber/A-subnerve identifications
 completion_candidate: false
 tracking_issue_closed: false
 ```
