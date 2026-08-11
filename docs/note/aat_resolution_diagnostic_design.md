@@ -37,7 +37,8 @@ G-104 の Atlas 定理は「条件 C ⟹ H¹ comparison 全単射」の十分性
 | v5 | COORDINATE-DOUBLED | TERNARY-CYCLE-3 | 必要性 |
 | v3+sa(再) | 同上 | PROPER-CHAIN3-PLUS-BRIDGE-DIGON | 十分性(bridge lift の digon) |
 
-さらに人間裁定で観測 grammar `G_local-v1`(半径1 typed ball ほか5成分)を
+さらに人間裁定で観測 grammar `G_local-v1`(半径1 typed ball を含む登録
+観測成分。正確な成分表は恒久 contract を正本とする)を
 固定した上で、`TERNARY-CYCLE-3 / 6` の2点分離により
 **`CSTAR-not-expressible-in-G_local-v1`**(Stop B)が確定した。false negative
 と false positive が交互に現れ、最後に観測 grammar 相対の分離不能性が立った —
