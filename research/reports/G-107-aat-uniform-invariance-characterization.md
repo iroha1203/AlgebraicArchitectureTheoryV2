@@ -729,7 +729,7 @@ tracking_issue_closed: false
 - certificate provenance: factor は `sourceEntries` 上の Boolean search で fine
   target の source representative を選び、raw coarse reading を適用して生成する。
   search correctness は enumeration coverage と fine-reading surjectivity から得る。
-  canonical equality は raw kernel inclusion による commutation と G-103
+  canonical equality は raw kernel inclusion による commutation と G-104
   `comparisonFactor_unique` から導出する。
 - proof-use: source enumeration coverage、両 reading の surjectivity、raw kernel
   inclusion、support compatibility、endpoint / face incidence coherence、hereditary
