@@ -165,10 +165,17 @@ profile である。両者は別物ではなく、値部分集合還元によっ
 1. **defect 還元と決定可能性**: `J_A` の定義、一様不変 ⟺ `∀ A, J_A =
    (0, 0)`(還元定理の `J`-版)、computable presentation 上の
    sound / complete decider。
-2. **Atlas positioning**: G-104 の受理済み artifact から(新しい material
-   premise なしで)条件 C ⟹ 零 defect を一様量化つき corollary として固定
-   できるかを検証し、固定する。C0–C6 の各条項が個別には必要でないこと
-   (7 witness)とあわせ、`Condition-C locus ⊊ uniform locus` という包含の
+2. **Atlas positioning**: 幾何述語 `ConditionCAllA`(G-104 の law 非依存
+   条項 C0・C5・C6 と、C1–C4 の label-block 評価を全非空 `A` の
+   A-subnerve 評価へ移した読み替え条項の conjunction)⟹ 零 defect を、
+   bridge theorem(`ConditionCAllA → ∀ laws, ConditionC`。label の値
+   fiber と `A` の対応= (1) の還元機構の再利用)+ G-104 受理済み
+   pointwise theorem の2段で固定する。Lean 実体の `ConditionC` は
+   law-indexed(C1–C4 が `LawValueLabel` 量化)であり、素朴な量化交換は
+   不可 — この bridge 構成は 2026-08-11 の claim scope 裁定(案b)で
+   確定した。C0–C6 の各条項が個別には必要でないこと(7 witness)と
+   あわせ、`Condition-C locus := { M | ConditionCAllA M }`(幾何決定
+   可能)について `Condition-C locus ⊊ uniform locus` という包含の
    真性が定理水準で立つ。
 3. **observation nonfactorization**: 恒久 `G_local-v1` の忠実 `Obs_G`、
    T3 / T6 の観測等値と反対 label、任意の `p` に対する factorization
