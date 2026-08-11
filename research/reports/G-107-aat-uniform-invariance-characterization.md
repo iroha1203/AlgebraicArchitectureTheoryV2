@@ -41,8 +41,14 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `computedFactor`、canonical `comparisonFactor` との一致、actual G-104
   comparison geometry、全 projection / support correspondence を生成する
   `FiniteComparisonPresentation` の route-integrity 基盤。
-- 未完了: `UniformPresentation` と sound / complete executable defect decider、
-  Atlas positioning、7 witness、observation nonfactorization。
+- 完了(Cycle 7): 任意の有限 rectangular rational matrix の entries から
+  column selection と Gram determinant を有限探索して exact rank を計算し、
+  `Matrix.rank`、literal range finrank、Cycle 5 の kernel/cokernel defect と
+  一致する一般 sound / complete 線形代数 kernel。射影・包含・重複列・恒等・
+  零行列で同じ evaluator を発火させた。
+- 未完了: presentation 固有の actual A-subnerve H¹ defect 計算、
+  `UniformPresentation` と sound / complete executable checker、Atlas positioning、
+  7 witness、observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -807,6 +813,140 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: define UniformPresentation and prove an executable sound-complete zero-defect checker with nonvacuous positive and negative raw presentations
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 7 — executable rational rank and literal defect correctness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean`](../lean/ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean)
+- primary declarations:
+  - `ExecutableRationalLinearAlgebra.selectedColumns`
+  - `ExecutableRationalLinearAlgebra.columnGram`
+  - `ExecutableRationalLinearAlgebra.columnGram_det_ne_zero_iff`
+  - `ExecutableRationalLinearAlgebra.hasNonzeroGramMinor`
+  - `ExecutableRationalLinearAlgebra.hasNonzeroGramMinor_eq_true_iff`
+  - `ExecutableRationalLinearAlgebra.rationalMatrixRank`
+  - `ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_rank`
+  - `ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_finrank_range`
+  - `ExecutableRationalLinearAlgebra.rationalMatrixDefect`
+  - `ExecutableRationalLinearAlgebra.rationalMatrixDefect_eq_blockDefect`
+- verification:
+  - manifest 登録済み単一ファイル focused check: pass
+  - `ResearchLean.AG.UniformInvariance.ExecutableRationalRank` の targeted
+    module build: pass (3713 jobs)
+  - namespace axiom audit: 26 declarations、standard axioms only
+  - 主要 10 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - generic evaluator の `#eval`: projection / inclusion / duplicated-column /
+    identity / zero の rank は順に `1 / 1 / 1 / 2 / 0`、rectangular defect は
+    `(1, 0) / (0, 1)`
+  - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
+    clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+
+### Premise delta
+
+- discharged: 一般有限 rectangular rational matrix の executable exact rank、
+  Gram selection 判定の sound / complete、計算した domain-minus-rank /
+  codomain-minus-rank pair と literal
+  `(finrank ker, finrank (codomain ⧸ range))` の一致。
+- remaining: `FiniteComparisonPresentation` の各非空 `A` から actual
+  A-subnerve cochain / H¹ comparison matrix を生成し、この evaluator による
+  defect と `toGeometry.aSubnerveDefect A` を一致させること。全 `A` の零 defect
+  checker と `UniformPresentation` sound / completeness、claims (iii)–(v)。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: executable definitions は matrix entries、有限
+  `Fin k → n` selection、rational arithmetic、Gram determinant の有限判定だけを
+  読む。`Matrix.rank`、basis、kernel、range、quotient、supplied rank / defect、
+  `Classical.dec` は evaluator body にない。有限 row / column index の
+  `Fintype` だけで探索でき、別の `DecidableEq` premise は要求しない。
+  column-span basis と古典選択は completeness proof 内だけで使う。
+- proof-use: forward は非零 Gram determinant から selected-column independence、
+  selected span の単調性を通して `k ≤ rank` を導く。reverse は column span の
+  finrank-size independent familyを `Fin.castLE` で制限し、実列 index の selection
+  を構成する。exact defect bridge は range finrank、rank-nullity、literal quotient
+  finrank の3経路を実使用する。
+- structure-field escape: none found。新 structure、supplied basis / rank / defect、
+  checker result field はない。Cycle 6 presentation に field を追加していない。
+- route integrity: pass。entries → column selection → Gram determinant →
+  executable rank → exact linear defect の順を保ち、semantic rank / defect は
+  theorem の右辺にだけ現れる。
+- cheat-route audit: fixture lookup / square-only determinant / one-way soundness /
+  noncomputable rank wrapper / result certificate injection / GOAL reinterpretation は
+  いずれも `none-found`。
+- cycle boundary: 本 cycle は新しい uniformity Prop / certificate structureを
+  導入しないため §1.4 instance pair を発火させない。具体例は一般 evaluator の
+  rank感度と kernel/coker 座標順を検査するもので、後続の positive / negative
+  `UniformPresentation` pair の代用ではない。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 7
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: executable rational matrix rank evaluator and kernel-cokernel defect correctness
+proof_obligation_delta: finite Gram search now computes exact rank for every finite rectangular rational matrix and equals the literal linear defect
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 55d25af1c039cb8c0360e30fa1d65f7f9fc2e61f
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean
+    declarations:
+      - ExecutableRationalLinearAlgebra.columnGram_det_ne_zero_iff
+      - ExecutableRationalLinearAlgebra.hasNonzeroGramMinor_eq_true_iff
+      - ExecutableRationalLinearAlgebra.rationalMatrixRank
+      - ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_rank
+      - ExecutableRationalLinearAlgebra.rationalMatrixRank_eq_finrank_range
+      - ExecutableRationalLinearAlgebra.rationalMatrixDefect
+      - ExecutableRationalLinearAlgebra.rationalMatrixDefect_eq_blockDefect
+premise_delta:
+  discharged:
+    - executable exact rank for arbitrary finite rectangular rational matrices
+    - sound and complete Gram-selection criterion
+    - equality with literal kernel and quotient-cokernel finranks
+  remaining:
+    - presentation-level actual A-subnerve H1 matrix and defect correspondence
+    - all-nonempty-A zero-defect checker and UniformPresentation sound-completeness
+    - ConditionCAllA positioning, seven witnesses, and observation nonfactorization
+certificate_provenance:
+  discharged:
+    - evaluator output is generated only from matrix entries, finite selections, rational arithmetic, and determinants
+  unresolved:
+    - actual A-subnerve matrix extraction and uniform checker integration
+proof_use_audit:
+  used_material_premises:
+    - finite row and column index types; no separate DecidableEq premise
+    - both directions of Gram determinant versus selected-column independence
+    - selected-column span monotonicity and a full column-span independent family
+    - matrix rank width bound
+    - rank-nullity and literal range-quotient finrank formula
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: derive each actual A-subnerve H1 comparison defect from the finite presentation and connect it to this evaluator before defining the all-A checker
 completion_candidate: false
 tracking_issue_closed: false
 ```
