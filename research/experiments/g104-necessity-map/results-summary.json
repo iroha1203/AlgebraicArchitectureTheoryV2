@@ -1,11 +1,20 @@
 {
-  "artifact": "G-104 C0-C6 necessity map slim checkpoint summary",
+  "artifact": "G-104 C0-C6 necessity map Round-12 parent summary",
   "provenance": {
     "checkpoint_amendment_issue_comment": 5231857267,
     "full_results": {
-      "canonical_generator": "build_results.py --output <path>",
-      "expected_sha256": "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306",
-      "repository_status": "derived; not committed"
+      "canonical_generator": {
+        "argv": [
+          "python3",
+          "research/experiments/g104-necessity-map/build_results.py",
+          "--output",
+          "/tmp/g104-necessity-map-results-through-round12.json",
+          "--summary-output",
+          "research/experiments/g104-necessity-map/results-summary.json"
+        ],
+        "working_directory": "repository-root"
+      },
+      "expected_sha256": "7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede"
     },
     "post_punit_manifest_sha256": "7147f672e1f23a11c01c3a2c5ad31165eb32d4105f5fa3e7c6eec7d5a51044a9",
     "round1_through_round7_hash_resync_issue_comment": 5230523348
@@ -3248,7 +3257,7 @@
     ]
   },
   "randomness": "none",
-  "schema_version": 1,
+  "schema_version": 2,
   "serialization": "UTF-8, LF, indent=2, sort_keys=True, trailing newline",
   "terminal": {
     "blocker_id": "PB-R2-NONFREE-GLOBAL-FACE-CHAIN",
@@ -3257,7 +3266,6 @@
       "R2-round-12"
     ],
     "coverage_limit": "Finite exact populations through 1918 semantic cases, fixed W5, K3,3, octahedral, house, and star graphs, and lift count at most six only; no general theorem for arbitrary retained non-free face-chain graphs, certificate coloring, chart count, cross-chart coupled incidence, face multiplicity, or compatible support distribution.",
-    "draft_pr_checkpoint": true,
     "final_population": 1918,
     "historical_pre_punit_rounds_not_counted_in_final_streak": [
       "R2-round-8",
@@ -3265,14 +3273,13 @@
       "R2-round-10"
     ],
     "historical_retracted_stop_c_result_issue_comment": 5230966215,
-    "issue_remains_open": true,
     "kind": "C",
     "last_progress_event": "R0(d) PUnit provenance calibration fix",
     "last_progress_issue_comment": 5231149474,
-    "last_provenance_correction": "indicator law_type corrected from historical Unit label to the actual PUnit field; counted as PRD progress and reset Stop-C streak",
-    "prd_retained": true,
+    "last_provenance_correction": "indicator law_type corrected from historical Unit label to the actual PUnit field; counted as search progress and reset the Stop-C streak",
     "r1_verdict_map_complete": true,
     "r2_characterization_complete": false,
+    "role": "historical-mathematical-stop-C-checkpoint",
     "round10_preregistration_issue_comment": 5230881464,
     "round11_payload_sha256": "a9960aa342e67462fdef6ada3918424fe3b78d308d19888f7090deee977a4336",
     "round11_preregistration_issue_comment": 5231154236,
@@ -3294,7 +3301,6 @@
       "stop_condition_C_two_valid_same_blocker_no_progress": true,
       "terminal_reason": "Stop-C: two consecutive post-PUnit valid same-blocker no-progress rounds"
     },
-    "stop_c_result_issue_comment": 5231343121,
-    "task_complete": false
+    "stop_c_result_issue_comment": 5231343121
   }
 }
