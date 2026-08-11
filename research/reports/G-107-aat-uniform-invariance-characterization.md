@@ -63,8 +63,9 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   新規9 Propすべての actual A-subnerve 正負 instance pairも固定した。これは
   direction hypothesis の品質付き definition checkpoint であり、checker
   correctness や premise discharge ではないため `proof-checkpoint` のままである。
-- 完了(Cycle 11): finite raw presentation の target / cell / support / incidence /
-  partial-map tableだけを読む `conditionCAllACheck` を構成し、full semantic
+- 完了(Cycle 11): finite raw presentation の source / target enumeration、raw
+  readings、cell / support / incidence / partial-map tablesを読む
+  `conditionCAllACheck` を構成し、full semantic
   `ConditionCAllA` との sound / complete iffを証明した。C1 は有限 fiber graphの
   reachability、C3 は rational constraint / internal-face boundary matrixの複体則と
   exact rank criterionで判定する。同じ checkerを C1・C3・aggregate の正負 raw
@@ -1595,10 +1596,11 @@ tracking_issue_closed: false
 
 ### Provenance / proof-use / escape audit
 
-- certificate provenance: checkerは finite target / cell enumeration、raw support /
-  incidence / partial mapsだけを読む。result bit、path、filling chain、matrix、rank、
-  exactness certificateの fieldはなく、`computedFactor` は raw reading dataから計算し
-  canonical `comparisonFactor` との既存一致 theoremへ接続する。
+- certificate provenance: checkerは finite source / target enumeration、raw
+  readings、cell / support / incidence / partial mapsを読む。result bit、path、
+  filling chain、matrix、rank、exactness certificateの fieldはなく、
+  `computedFactor` は同じ raw reading dataから計算し canonical `comparisonFactor`
+  との既存一致 theoremへ接続する。
 - proof-use: C1 は endpoint-defined adjacencyと有限 graph reachabilityを実使用する。
   C3 は face-incidence identitiesから boundary が constraint kernelへ入る複体則を
   証明し、Cycle 7 rational rank correctnessを kernel / range exactnessへ接続する。

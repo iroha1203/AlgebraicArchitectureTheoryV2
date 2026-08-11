@@ -27,8 +27,9 @@ open ResolutionInvarianceConditionInstances
 /-! ## Nontrivial positive raw presentation -/
 
 /-- Raw finite presentation of the reviewed two-chart-fiber incidence
-fixture.  Readings and supports are singleton-valued here because this module
-tests the geometric checker rather than the later nonconstant-law firing. -/
+fixture.  The coarse target is singleton-valued, while the fine reading
+distinguishes the two sources.  This module tests the geometric checker rather
+than the later nonconstant-law firing. -/
 def positivePresentation : FiniteComparisonPresentation where
   Source := Fin 2
   sourceFintype := inferInstance
