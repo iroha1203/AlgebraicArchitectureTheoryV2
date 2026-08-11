@@ -1,25 +1,26 @@
-# G-107-aat-uniform-invariance-characterization — 一様不変性の十分性と非局所性(Atlas 定理の拡張と特徴づけ限界)
+# G-107-aat-uniform-invariance-characterization — 一様不変性の defect 意味論と Atlas 定理の位置
 
 - `id`: `G-107-aat-uniform-invariance-characterization`
 - `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
-- `target status`: `target-refuted`(2026-08-11、v2 再査読で (ii)
-  十分性への exact 有限反例 `PROPER-CHAIN3-PLUS-BRIDGE-DIGON` が成立、
-  `target failure policy` の (ii) 反例条項を適用)。経緯: 初版 statement
+- `target status`: `statement-v3`(2026-08-11 改訂、4 lane 正式再査読
+  待ち。受理までは target-theorem loop を起動しない)。改訂史: 初版
   (一様不変性 ⟺ C\* の必要十分特徴づけ)は `CONTRACTIBLE-TRIANGLE` で
-  反証 → hunt 後継 round(v4・v5 も invalid)と人間裁定(選択肢1:
-  許容観測 grammar `G_local-v1` の固定)を経てハントは **Stop B**
-  (verdict `CSTAR-not-expressible-in-G_local-v1`)で終端(Issue #3948
-  closed / COMPLETED)→ v2(十分性+非局所性の二本柱、ユーザー裁定)へ
-  改訂 → v2 の (ii) も上記反例で反証(改訂記録=条項系 C\* 節)。現登録
-  C\*(CERTIFIED-v3 + support-active)は**両方向とも** exact 反例を
-  持つ。存続しうる theorem family((i) 還元・恒久 grammar に対する
-  (iii) 非局所性・(iv) C 非必要性地図)の保持範囲と、C\* 後継 candidate
-  (criticality-reflection 型条項の追加など。新 semantic ID の事前登録と
-  独立再査読を要する)の有無は**人間裁定待ち**。裁定・statement 改訂・
-  新 fixed head の正式再査読を経るまで target-theorem loop は起動
-  しない。runtime state は tracking Issue #3954。
+  `target-refuted` → hunt 後継 round(v4・v5 も invalid)と人間裁定
+  (選択肢1: 許容観測 grammar `G_local-v1` の固定)を経てハントは
+  **Stop B**(verdict `CSTAR-not-expressible-in-G_local-v1`)で終端
+  (Issue #3948 closed / COMPLETED)→ v2(C\* 十分性+非局所性)へ改訂
+  → v2 の十分性も exact 反例 `PROPER-CHAIN3-PLUS-BRIDGE-DIGON` で
+  `target-refuted`(改訂記録=歴史節)。現登録 C\*(CERTIFIED-v3 +
+  support-active)は**両方向とも** exact 反例を持ち、v3 では active
+  claim から除外して研究史・mechanism artifact として保存する。v3 は
+  設計ノート
+  [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+  (observation factorization 構図・成果物の四分法)を設計根拠として、
+  **defect 還元と決定可能性/Atlas positioning/observation
+  nonfactorization の三本柱**で固定する(ユーザー裁定+Codex 設計相談
+  2026-08-11)。runtime state は tracking Issue #3954。
 - `predecessor`: G-104(Diagnostic Resolution Invariance Theorem、
   `target-theorem-proved`。report
   [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md))。
@@ -34,32 +35,35 @@
 - `tracking issue`: [#3954](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3954)
   (active 昇格はユーザー裁定 2026-08-09、成立はカード同期 PR のマージを
   もって)。
-- `source note`: [research/experiments/g104-necessity-map/hunt-report.md](../experiments/g104-necessity-map/hunt-report.md)
+- `source note`: [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+  (v3 の設計根拠正本: factorization 構図・機構分類・四分法)、
+  [research/experiments/g104-necessity-map/hunt-report.md](../experiments/g104-necessity-map/hunt-report.md)
   (§R0 一般手証明、§R2 候補系譜、blocker、Stop-B 終端)、
   `research/experiments/g104-necessity-map/results-stop-b-summary.json`
   (2点分離の恒久証拠と `G_local-v1` 恒久 contract)
 - `research aim`: G-104 の Atlas 定理は「条件 C ⟹ H¹ comparison 全単射」の
-  十分条件定理である。本 GOAL は当初その必要十分化(一様不変性 ⟺ C\*)を
-  target としたが、初版 statement は exact 有限反例で `target-refuted` と
-  なり、後継ハントは Stop B(`CSTAR-not-expressible-in-G_local-v1`)で
-  終端した(経緯は `target status` と条項系 C\* 節の改訂記録)。statement
-  v2 は、この帰結を二本柱の定理として固定する。第一柱=**十分性**:
-  入力の incidence / support データだけから決定可能な条項系 **C\***
-  (hunt が固定した candidate の theorem 化)が成立すれば、comparison
-  data は**一様不変**(係数側を adequate な law family 全体で量化した
-  H¹ comparison の全単射性)である。第二柱=**非局所性**: 半径1の登録
-  観測 grammar `G_local-v1` で表現可能な**いかなる**条項系も一様不変性を
-  特徴づけない(T3 / T6 2点分離の Lean 化。grammar 相対)。あわせて、
-  law 量化を有限対象(粗側 Target の非空部分集合)へ落とす**値部分集合
-  還元**を theorem として固定する。これにより「どの解像度比較が診断を
-  保つか」に対し、決定可能な十分条件の一般定理と、同じ観測言語内での
-  特徴づけ不可能性の両方が定理水準で確定し、なぜ Atlas 定理が十分条件の
-  定理に**とどまるのか**が構造的説明を持つ。本定理は、reading 圏上の
-  診断 local-system 構想(`program context`)における **universal
-  zero-jump 領域の内側近似と観測限界**として位置づく。(注記
-  2026-08-11: v2 の (ii) は再査読の exact 反例で反証済み — `target
-  status` と条項系 C\* 節の改訂記録2を参照。存続 family の再構成は
-  人間裁定待ち。)
+  十分条件定理である。本 GOAL は当初その必要十分化を、次いで C\* 十分性を
+  target としたが、いずれも exact 有限反例で反証され、ハントは Stop B で
+  終端した(経緯は `target status`)。v3 は設計ノートの observation
+  factorization 構図に従い、**Atlas 定理が semantic zero-locus のどこに
+  位置するか**を三本柱で定理水準に固定する。第一柱=**defect 還元と
+  決定可能性**: exact defect profile `J_A := (dim ker H¹(f_A),
+  dim coker H¹(f_A))` を定義し、**一様不変性**(係数側を adequate な
+  law family 全体で量化した H¹ comparison の全単射性)⟺ `∀ 非空 A,
+  J_A = (0, 0)` という還元定理と、computable presentation 上の
+  sound / complete decider を固定する — 一様不変性の判定の正本を条項系
+  ではなく計算に置く。第二柱=**Atlas positioning**: G-104 の受理済み
+  artifact から条件 C ⟹ 零 defect(一様量化つき)を corollary として
+  固定し、C0–C6 の各条項が個別には必要でないこと(7 witness)とあわせ
+  `Condition-C locus ⊊ uniform locus` の包含と真性を定める。第三柱=
+  **observation nonfactorization**: 半径1の登録観測 grammar
+  `G_local-v1` を通して零判定が factor しないこと(T3 / T6 2点分離の
+  Lean 化。grammar 相対)。三本で「計算・certificate・観測限界を混同
+  せずに Atlas 定理の正確な位置を定める」ことが v3 の到達像である。
+  条項系による判定の再現(iff)も新しい十分条件(C\* 後継)も v3 では
+  主張しない(後者は機構カタログ整備後の G-108 以降)。本定理は、
+  reading 圏上の診断 local-system 構想(`program context`)における
+  **universal zero-jump 領域の座標・位置・観測限界**として位置づく。
 - `program context`(上位構図、2026-08-11 追記。同日レビューで
   zero-jump locus / jump locus の層を是正): 本カードの二本柱定理は
   次の構想の pair 水準の核である — 各 adequate law family `L` を固定した
@@ -75,51 +79,53 @@
   である(`Adequate` は reading 相対なので、両端の adequacy を仮定側で
   束縛する。`Read_L` ごとの射をそのまま交差するのではない)。この
   `Z_univ` 表記は pairwise の program 水準 candidate であり、本カードの
-  claim は (ii) の全単射形と (iii) の分離形のみ — `J_L = (0, 0)` と
+  claim は block 水準の defect profile と分離形のみ — `J_L = (0, 0)` と
   `Function.Bijective` を結ぶ有限次元 bridge を含む functor 水準の
   正確化は後続カードで固定する。functor 水準の主張(射の合成整合、圏上の
   局所定数性、jump data の一般論)は本カードでは claim しない。合成整合は
   輸送の 2-cell 整合(G-106 の領分)に接続するため、後続カードで固定する。
-  この構図の下で v2 の二本柱は次のように置かれる。十分性 (ii) は
-  `C*-locus ⊆ Z_univ`(C\* 領域では jump が起きない = 内側近似)を、
-  反証 fixture 群(CONTRACTIBLE-TRIANGLE / TERNARY-CYCLE-3。いずれも
-  `Z_univ \ C*` の universal zero-jump 点)は包含の真性を、非局所性
-  (iii) は「`Z_univ` とその補集合の分離は半径1の局所観測 grammar の
-  どの条項系にも不可能」であることを固定する。(ii) の反例(C\* ∧ ¬uniform)が
-  現れた場合は `C* \ Z_univ` の真の jump であり `target-refuted` と
-  なる。一般の nonuniform 射は law-indexed jump profile のデータと
-  なる。関連考察は表示的意味論ノート
+  この構図の下で v3 の三本柱は次のように置かれる。`Z_univ` は defect
+  意味論 `J` の零 locus であり、(i)(ii) はその座標(law 量化の semantic
+  座標 `J_L` と有限 block の computational 座標 `J_A` の同値)と決定
+  可能性を、(iii)(iv) は `Condition-C locus ⊊ Z_univ` という Atlas
+  定理の位置を、(v) は「`Z_univ` とその補集合の分離は半径1の局所観測
+  grammar のどの条項系にも不可能」という観測限界を固定する。一般の
+  nonuniform 射は law-indexed jump profile のデータとなる。関連考察は
+  設計ノート
+  [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+  と表示的意味論ノート
   [docs/note/aat_denotational_semantics_of_architecture.md](../../docs/note/aat_denotational_semantics_of_architecture.md)
   §10(Resolution Diagnostic Local-System)。
-- `core tension`: 三つの稜線がある。第一に**十分性の中心補題**: 固定
-  半径の局所 certificate(SLOT / KILL)の反射推移閉包から、free pair を
-  持たない任意の retained face-chain 構造の上で lift 差 cycle の大域的
-  消滅を導く一般帰納が閉じるか。ここが計算探索の停滞点
-  (blocker `PB-R2-NONFREE-GLOBAL-FACE-CHAIN`: 有限の
-  linear / branching / cyclic / mixed / multichart fixture は全て閉じたが
-  一般手証明が無い)であり、本 GOAL が定理化で埋めるべき本体である。
-  C\* が cohomology 語彙を密輸すれば十分性は恒真化に堕ちるため、C\* は
-  FaceTwin 類・one-pass free-pair 除去・cycle-critical cell・SLOT / KILL
-  certificate という有限 syntactic データだけを読む条項系である
-  (G-104 anti-weakening の継承)。第二に**非局所性の忠実性**: (iii) の
-  分離定理は、Lean 側の観測写像 `Obs_G` が登録済み恒久 contract の
-  grammar と一致して初めて意味を持つ。転写を粗くすれば分離は自明化し
-  (別の弱い grammar についての定理に堕ちる)、細かくすれば偽になる。
-  忠実転写の構成要素対応表と、T3 / T6 の label を登録 ledger の参照では
-  なく Lean 内の有限計算((i) 経由)で再導出する規律が、この定理を
-  「登録 artifact の言い換え」から theorem へ隔てる。第三に**ずれの
-  幾何**: 十分性は `C*-locus ⊆ Z_univ` を、反証 fixture 群は包含の
-  真性を、非局所性はそのずれ(`Z_univ \ C*-locus`)が半径1観測から
-  不可視であることを与える。三つが揃って初めて「Atlas 定理の位置」—
-  何が証明でき、なぜこの観測言語では iff に届かないか — が定理水準で
+- `core tension`: 三つの稜線がある。第一に**還元と decider の正本性**:
+  一様不変性は law family の全量化を含む semantic 述語であり、これを
+  有限 block の `J_A` 零判定へ落とす還元定理(hunt-report §R0 手証明の
+  Lean 化)と、computable presentation 上の sound / complete decider が
+  立って初めて「判定の正本は計算」と言える。engine の `is_uniform()` は
+  exact evidence であって正本ではない — この差を theorem で埋めるのが
+  第一柱である。第二に**Atlas corollary の導出可能性**: 条件 C ⟹ 零
+  defect(一様量化つき)が G-104 の受理済み artifact から**新しい
+  material premise なしで**導けるか。G-104 の量化構造(条件 C は law
+  family に言及しない)から導ける見込みだが、検証で新前提が要ると判明
+  した場合は scope 裁定に戻す(failure policy)。第三に**非分解性の
+  忠実性**: (v) の分離定理は、Lean 側の観測写像 `Obs_G` が登録済み恒久
+  contract の grammar と一致して初めて意味を持つ。転写を粗くすれば分離は
+  自明化し(別の弱い grammar についての定理に堕ちる)、細かくすれば偽に
+  なる。忠実転写の構成要素対応表と、T3 / T6 の label を登録 ledger の
+  参照ではなく Lean 内の有限計算((i)(ii) 経由)で再導出する規律が、
+  この定理を「登録 artifact の言い換え」から theorem へ隔てる。三本が
+  揃って初めて「Atlas 定理の位置」— 判定は計算で決定可能、条件 C は
+  真に狭い十分域、零 locus は半径1観測から定義不能 — が定理水準で
   固定される。
 - `rival`: Čech 理論の Leray 型定理(局所非輪状性という十分条件のみで、
-  特徴づけの限界を語らない)、CEGAR 型の抽象化精細化(健全性方向のみ)、
+  位置も限界も語らない)、CEGAR 型の抽象化精細化(健全性方向のみ)、
   hunt の有限 zero-result(定理を伴わない計算的証拠)、有限モデル理論の
   局所性定理(Hanf / Gaifman 型。一般論の局所性 rank であり、特定領域の
-  登録観測 grammar への具体的分離を扱わない)。差は「decidable な十分
-  条件の一般定理と、同じ観測言語内での特徴づけ不可能性(2点分離)を、
-  同一有限モデル上の Lean witness つきで**対に**固定する」点に置く。
+  登録観測 grammar への具体的分離を扱わない)、answer-encoding による
+  自明な「特徴づけ」(判定結果をそのまま観測に含める構成。観測限界の
+  主張を無内容化する rival であり、grammar の資格制限への相対化で
+  排除する)。差は「decidable な零判定の正本と、既証明十分条件の位置
+  (包含+真性)と、同じ観測言語内での分離不可能性を、同一有限モデル上の
+  Lean witness つきで**一組に**固定する」点に置く。
 - `claim boundary`: G-104 カードの claim boundary を継承する: 有限 Source、
   G-103 の確定定義(`Reading` / `FiniteLawFamily` / `Adequate` /
   `CoarserThan`)、well-formed な comparison data(K1 導出台つき有限
@@ -133,59 +139,61 @@
   C0\*・C5\*・C6\* は support-active な全体 scope = `A = q.Target` の
   A-subnerve で1回。導出台が空の cell はどの scope にも現れない)。
   含めない: 無限 regime、
-  係数の一般化、doctrine 間 comparison、C\* の最簡性・条項系の一意性の
-  主張、hunt の bound 拡張(off-loop 探索の再開)そのもの、
-  **一様不変性の必要条件の主張(C\* または他条項による)**、
-  **`G_local-v1` 以外の grammar への不可能性・絶対的不可能性・
-  半径 `r ≥ 2` への一般化**(`T_n` 族の `n > 2r+1` 論法は frontier)。
-- `capability categories`: sufficiency、reduction、
-  certificate-closure、nonlocality、counterexample。
+  係数の一般化、doctrine 間 comparison、hunt の bound 拡張(off-loop
+  探索の再開)そのもの、**一様不変性の必要条件・iff・新しい十分条件
+  (C\* 後継 certificate)の主張**(certificate 再設計と modification
+  calculus は G-108 以降)、**`G_local-v1` 以外の grammar への
+  不可能性・絶対的不可能性・半径 `r ≥ 2` への一般化**(`T_n` 族の
+  `n > 2r+1` 論法は frontier)。
+- `capability categories`: reduction、decidability、positioning、
+  nonfactorization、counterexample。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
   置き、固定 statement と completion criteria だけで完了判定する。
-- `portfolio constraint`: 十分性(ii)だけ、または非局所性(iii)だけで完了
-  扱いしない。還元(i)・両柱・現行 C の非必要性 witness(iv)・非退化
-  正例(v)の全面の Lean artifact 接続を要求する。
+- `portfolio constraint`: 還元(i)だけ、decider(ii)だけ、または非分解性
+  (v)だけで完了扱いしない。三本柱((i)(ii) / (iii)(iv) / (v))の全面の
+  Lean artifact 接続を要求する。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証なら
   `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved` とする。
 - `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
   proof obligation delta で評価する。
-- `dullness filter`: 次を弾く。単一 chart・critical cell 空・retained
-  FaceTwin 類空で C\* が空虚に成立するだけの発火、両側 H¹ 零で全単射が
-  vacuous に成立する witness、free-pair 除去が全 face を消して C5\*・C6\*
-  が空虚化した witness、有限 zero-result(hunt の登録 case 群)を (ii) の
-  証明根拠と称すること、C\* の言い換え(同値な条項の再命名)だけの
-  「改訂」、反例が型不一致だけで成立する構成、一様不変性の検査を有限個の
-  law family の標本に置き換える弱化、(v) の発火項目を共通条件(一様
-  不変・非零 H¹・critical 非空)を満たさない fixture へ分離して充足と
-  数える構成、`Obs_G` を登録 grammar より粗く転写して観測等値 (iii)(a)
-  を自明化する構成、T3 / T6 の label を assumption・axiom・登録 ledger
-  参照で済ませる構成、非局所性 (iii) を条項系候補の有限列挙の全滅で
-  代用する弱化。
-- `frontier`: C\* 条項独立性の witness 目録(各条項を外すと十分性が破れる
-  有限例の系統的整備。hunt の UnkilledTwin は C5\* の独立性素材)、C\* の
-  最簡化(条項の冗長性判定)、G-104 の条件 C と C\* の含意関係の判定
-  (C ⟹ C\* か。十分条件としての強弱比較)、blocker 帰納の被覆拡張
-  (lift 数無制限・cross-chart nonloop incidence)、定量版(非全単射
-  block の次元下界)、第VIII部測定理論・論文Aへの
-  「十分条件+観測限界」の対としての接続、**半径 `r` 一般化**(任意固定
-  半径の typed ball が一致する `T_n` 対の構成、`n > 2r+1` 局所一致
-  論法。(iii) の witness 族化)、**拡張 grammar での特徴づけ再挑戦**
-  (neutral cycle 長などの大域不変量を1成分追加した grammar での iff。
-  後続 G-108 候補であり本カードでは主張しない)、reading 圏 `Read_L`
-  上の functor 化と C\*-locus 上の局所定数性(local-system 化。
-  `program context` の後続カード素材)、一般射の
-  `(dim ker, dim coker)` jump data(前掲の定量版の圏水準版)、
+- `dullness filter`: 次を弾く。両側 H¹ 零で全単射が vacuous に成立する
+  だけの fixture を (iii)(iv) の非退化根拠と数える構成、有限
+  zero-result(hunt の登録 case 群)を theorem の証明根拠と称すること、
+  反例・witness が型不一致だけで成立する構成、一様不変性の検査を有限個の
+  law family の標本に置き換える弱化、decider を fixture 集合上の一致
+  検査で代用する構成(sound / complete theorem を欠く checker)、
+  `Obs_G` を登録 grammar より粗く転写して観測等値 (v)(a) を自明化する
+  構成、T3 / T6 の label を assumption・axiom・登録 ledger 参照で
+  済ませる構成、非分解性 (v) を条項系候補の有限列挙の全滅で代用する
+  弱化、判定結果の answer-encoding を観測成分へ持ち込み (v) を無内容化
+  する構成、(iii) の corollary 化を「G-104 の結論の再宣言」だけで
+  済ませる構成(一様量化への持ち上げを明示しない wrapper)。
+- `frontier`: **structural certificate の再設計**(設計ノート §4 の
+  機構カタログ4点組の整備 → criticality-reflection 型条項を含む後継
+  certificate。G-108 候補であり本カードでは主張しない)、
+  **modification calculus**(cell 追加・除去・refinement・合成の `J_A`
+  への作用。第V部 repair 系譜との接続)、blocker
+  `PB-R2-NONFREE-GLOBAL-FACE-CHAIN` の定理化(certificate 再設計の
+  中心補題素材)、**半径 `r` 一般化**(任意固定半径の typed ball が
+  一致する `T_n` 対の構成、`n > 2r+1` 局所一致論法。(v) の witness
+  族化)、**observer 階層と拡張 grammar**(大域不変量1成分追加で特徴
+  づけに届くかの判定。未証明 candidate であり成功見込みとして前提化
+  しない)、定量版(`J_A` の次元下界・jump profile の分類)、第VIII部
+  測定理論・論文Aへの「零判定の正本+Atlas の位置+観測限界」としての
+  接続、reading 圏 `Read_L` 上の functor 化と zero-locus 上の局所
+  定数性(local-system 化。`program context` の後続カード素材)、
   persistence module 読みの有限計算可能性。
-- `spine`(仮説的道筋。壊してよい): U0 値部分集合還元の Lean 化 →
-  U1 前処理(FaceTwin / free-pair / critical)の定義と free-pair 除去の
-  H¹ 比較不変性 → U2 CertifiedSwap 閉包の cycle 消滅補題(blocker の
-  定理化。retained face-chain 構造上の帰納)→ U3 十分性 → U4 非局所性
+- `spine`(仮説的道筋。壊してよい): U0 `J_A` の定義と値部分集合還元の
+  Lean 化((i))→ U1 computable presentation と sound / complete
+  decider((ii))→ U2 Atlas corollary(G-104 artifact からの一様量化
+  つき導出。(iii))→ U3 C 非必要性 witness 7種((iv))→ U4 非分解性
   (`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable 計算 →
-  (i) 経由の label 導出 → 分離 theorem)→ U5 witnesses。
+  (i)(ii) 経由の label 導出 → 分離 theorem。(v))→ U5 report。
 
-- `target theorem`: **Uniform Invariance Sufficiency and Nonlocality
-  Theorem**(一様不変性の十分性・非局所性定理)。G-104 カードの
+- `target theorem`: **Uniform Invariance Defect Semantics and
+  Nonfactorization Theorem**(一様不変性の defect 意味論・非分解性
+  定理)。G-104 カードの
   comparison data 構成から
   law family に依存しない部分 — 読み対 `q ≤ q'`(`CoarserThan`)、粗さ
   から G-103 factorization で誘導される canonical factor `π`
@@ -207,6 +215,17 @@
     交わる cell、細側は導出台が `π⁻¹(A)` と交わる cell が成す supported
     部分 nerve(台は `A` / `π⁻¹(A)` との交わりへ制限して読む)。係数は
     定数 `ℚ`。
+  - **defect profile `J_A`**: 非空 `A ⊆ q.Target` に対し、A-subnerve の
+    定数 `ℚ` 係数 H¹ 比較写像 `f_A` の `J_A(f) := (dim ker H¹(f_A),
+    dim coker H¹(f_A))`。零判定 `J_A = (0, 0)` は当該 block の比較
+    全単射性と同値(有限次元)。`program context` の law 量化座標
+    `J_L` とは (i) の還元で結ばれる(semantic 座標と computational
+    座標)。
+  - **歴史記録: 前処理と条項系 C\*(v3 で active claim から除外)**:
+    以下の前処理と C\* の定義は、初版〜v2 の条項系候補
+    (`CStarV3SupportActive`)の記録である。v3 の claim には現れず、
+    両方向の exact 反例を持つ研究史・mechanism artifact として保存する
+    (改訂記録は本節末尾)。後継 certificate の設計は G-108 以降。
   - **前処理(reduction。各評価 scope — C1\*–C4\* は各 A-subnerve、
     C0\*・C5\*・C6\* は `A = q.Target` の support-active 全体 scope — の
     粗側・細側で別々に行う。導出台が空の cell はどの scope にも属さず、
@@ -323,8 +342,8 @@
     `comparisonFactor` の一致 theorem、presentation 非依存の観測値型
     `GLocalV1ObsValue`、`UniformPresentation P := 一様不変
     (P.toGeometry)`、そして `obsG : FiniteComparisonPresentation →
-    GLocalV1ObsValue`。`obsG` は恒久 grammar の**独立転写**であり、本
-    カード (ii) の条項系(`CStarV3SupportActive`: CERTIFIED-v3 +
+    GLocalV1ObsValue`。`obsG` は恒久 grammar の**独立転写**であり、
+    歴史記録の条項系(`CStarV3SupportActive`: CERTIFIED-v3 +
     support-active の one-pass reduction 上)とは**別型・別述語**として
     固定する。恒久 grammar の semantics は登録 contract に従う:
     `GLocalV1V5Reduction`(v5 reduction の全 irreducible terminal と
@@ -346,9 +365,10 @@
     bit・supplied factor を presentation の field として受け取ることは
     放電と数えない。
   この設定で次を証明する。
-  1. **(i) 値部分集合還元**: comparison data が一様不変であることと、
-     すべての非空 `A ⊆ q.Target` について A-subnerve の定数 `ℚ` 係数 H¹
-     比較が全単射であることは同値である。証明は hunt-report §R0 の
+  1. **(i) defect 還元(値部分集合還元の `J`-版)**: comparison data が
+     一様不変であることと、すべての非空 `A ⊆ q.Target` について
+     `J_A = (0, 0)`(A-subnerve の定数 `ℚ` 係数 H¹ 比較の全単射性)で
+     あることは同値である。証明は hunt-report §R0 の
      一般手証明の Lean 化であり、既存の block 直和分解
      (`lawGeneratedH1BlockEquiv`)・block 自然性
      (`generatedComparisonH1Map_block_naturality`)・descend の π-可換
@@ -356,12 +376,35 @@
      (law-value block と A-subnerve 複体の同定、global 全単射と
      blockwise 全単射の同値、indicator law family による任意非空 `A` の
      実現と adequacy)を新規に theorem 化する。
-  2. **(ii) 十分性**: C\* が成立するならば comparison data は一様不変で
-     ある。(i) により各 A-block の定数係数比較へ還元し、free-pair 除去の
-     H¹ 比較不変性と CertifiedSwap 閉包による lift 差 cycle の消滅補題
-     (blocker `PB-R2-NONFREE-GLOBAL-FACE-CHAIN` の定理化。free pair を
-     持たない任意の retained face 構造に対する一般帰納)を経由する。
-  3. **(iii) 非局所性(radius-1 inexpressibility)**: `G_local-v1` で
+  2. **(ii) 決定可能性**: `FiniteComparisonPresentation` 上の
+     `J_A` 計算と零判定の sound / complete decider を構成する
+     (`Decidable (UniformPresentation P)` instance または bool
+     checker + sound / complete theorem。`toGeometry` 対応と
+     `computedFactor = comparisonFactor` 一致 theorem を含む。非構成的な
+     古典 instance で済ませない)。一様不変性の判定の正本を条項系では
+     なく本 decider に置く。
+  3. **(iii) Atlas positioning(包含)**: G-104 の条件 C(C0–C6)が
+     成立するならば `∀ 非空 A, J_A = (0, 0)`(一様不変)である。これは
+     G-104 の受理済み theorem(Diagnostic Resolution Invariance)から
+     **新しい material premise なしで**導く corollary であり、条件 C が
+     law family に言及しないことから一様量化への持ち上げを明示的に
+     theorem 化する(単なる再宣言 wrapper は不可)。(iv) の witness に
+     より包含は真(`Condition-C locus ⊊ uniform locus`)。
+  4. **(iv) 現行条件 C の非必要性地図**: G-104 の C0–C6 の**各条項**に
+     ついて、一様不変(全非空 `A` で比較が全単射)だが当該条項が破れる
+     有限 witness を固定する(7 witness)。非退化性の scope は条項の型
+     ごとに固定する: **座標 subnerve 相対条項(G-104 の C1–C4)**は、
+     **同じ非空 `A`**(indicator 実現)で条項破れと両側 H¹ 非零が同時に
+     成立すること。**nerve 全体条項(G-104 の C0・C5・C6)**は、全体
+     scope での破れに加えて、その破れを構成するデータ(台差分の
+     target、または lift 対の導出台)と交わる非空 `A` の block で両側
+     H¹ 非零が成立すること。hunt の R1 witness 群
+     (`results-summary.json` に固定済みの完全 fixture)を Lean へ転写
+     してよい。これは Atlas 定理の条件 C のどの条項も必要でないことの
+     theorem 水準の地図であり、(iii) の包含に真性を与え、(v) とあわせて
+     「既証明の十分域は真に狭く、この観測言語では必要十分に届かない」
+     構図を固定する。
+  5. **(v) observation nonfactorization**: `G_local-v1` で
      表現可能ないかなる条項系も一様不変性を特徴づけない。正確には、
      witness 対 `T3`(`TERNARY-CYCLE-3`)・`T6`(`TERNARY-CYCLE-6`)を
      hunt の登録 structural input から Lean へ転写し、次の4 theorem で
@@ -379,40 +422,14 @@
      `G_local-v1` **相対**であり、他 grammar・絶対的不可能性・半径
      一般化を含まない。Round 15 の登録 label と Stop-B checker の結果は
      転写の照合先(証拠)であり、(a)–(c) の証明根拠ではない。
-  4. **(iv) 現行条件 C の非必要性地図**: G-104 の C0–C6 の**各条項**に
-     ついて、一様不変(全非空 `A` で比較が全単射)だが当該条項が破れる
-     有限 witness を固定する(7 witness)。非退化性の scope は条項の型
-     ごとに固定する: **座標 subnerve 相対条項(G-104 の C1–C4)**は、
-     **同じ非空 `A`**(indicator 実現)で条項破れと両側 H¹ 非零が同時に
-     成立すること。**nerve 全体条項(G-104 の C0・C5・C6)**は、全体
-     scope での破れに加えて、その破れを構成するデータ(台差分の
-     target、または lift 対の導出台)と交わる非空 `A` の block で両側
-     H¹ 非零が成立すること。hunt の R1 witness 群
-     (`results-summary.json` に固定済みの完全 fixture)を Lean へ転写
-     してよい。これは Atlas 定理の条件 C のどの条項も必要でないことの
-     theorem 水準の地図であり、(iii) とあわせて「十分条件は与えられるが
-     この観測言語では必要十分に届かない」構図を固定する。
-  5. **(v) 非退化発火 witness portfolio**: 発火 witness の portfolio を
-     固定する。**各 witness に共通で要求する条件**: C\* 全条項と一様
-     不変性が成立、`π` 非単射、**同一 witness 内**のある非空 `A` で両側
-     H¹ 非零、cycle-critical edge と retained FaceTwin 類がともに非空。
-     その上で、**portfolio 全体として**次の各項目を少なくとも一つの
-     witness で非空虚に発火させる: KILL certificate の実使用かつ
-     CertifiedSwap の推移閉包が direct 隣接を真に超えること
-     (Chain3 型)、SLOT certificate の実使用、C3\* の非空虚な発火
-     (retained な退化宣言 fiber 内 edge の非零 cycle が実際に face
-     boundary で張られる)、C6\* の非空虚な発火(critical 粗側
-     self-loop の、大きさ2以上の CertifiedSwap 類が細側 self-loop 代表を
-     持つ)、one-pass free-pair 除去が実際に少なくとも1対を除去する
-     こと。発火項目を、共通条件を満たさない fixture(H¹ 零・critical
-     集合空など)へ分離して充足と数えることは認めない。
-  (i)(ii) は一般の有限 Source と well-formed comparison data について
+  (i) は一般の有限 Source と well-formed comparison data について
   証明する(law family と adequacy は一様不変性の内部量化であり、
-  theorem の外側で固定しない)。(iii) は `Obs_G` の定義と witness 対の
-  転写により固定し、分離 theorem (d) の data 量化は一般とする。witness
-  ((iii) の T3 / T6、(iv)(v))は hunt artifact の固定 fixture
-  (`results-summary.json` / `results-stop-b-summary.json`)の転写
-  または新設で具体化してよい。
+  theorem の外側で固定しない)。(ii) は computable presentation 上で
+  構成する。(iii) は G-104 の受理済み artifact だけを根拠とする。(v) は
+  `Obs_G` の定義と witness 対の転写により固定し、分離 theorem (d) の
+  量化は presentation 全体とする。witness((iv)、(v) の T3 / T6)は
+  hunt artifact の固定 fixture(`results-summary.json` /
+  `results-stop-b-summary.json`)の転写または新設で具体化してよい。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/UniformInvariance/` 配下。
   `ResolutionInvariance/`(G-104)・`CanonicalResolution/`(G-103)・
@@ -420,33 +437,32 @@
   `research/experiments/g104-necessity-map/` は fixture 素材・転写照合先・
   戦略参照のための証拠 artifact であり、証明根拠として引用しない(engine /
   checker 実装への依存も持ち込まない)。G-107 の完了面は (i)–(v) まで。
-  非局所性 (iii) は登録恒久 contract の grammar **相対**であり、他の観測
+  非分解性 (v) は登録恒久 contract の grammar **相対**であり、他の観測
   grammar への不可能性・絶対的不可能性・半径 `r ≥ 2` への一般化は主張
-  しない。C\* の最簡性・一意性、hunt bound の拡張探索、論文A本文の
-  変更は主張しない。
-- `target proof artifacts`: 一様不変性の定義、A-subnerve 定数係数比較の
-  定義、値部分集合還元 theorem(indicator law family の構成 def と
+  しない。新しい structural certificate(C\* 後継)・modification
+  calculus・hunt bound の拡張探索・論文A本文の変更は主張しない。
+- `target proof artifacts`: 一様不変性の定義、A-subnerve 定数係数比較と
+  `J_A` の定義、defect 還元 theorem(indicator law family の構成 def と
   adequacy theorem、block ≅ A-subnerve 同定 theorem、global ⟺ blockwise
-  同値 theorem を含む)、前処理(FaceTwin / one-pass free-pair 除去 /
-  cycle-critical / port)の定義、free-pair 除去の H¹ 比較不変性 theorem、
-  CertifiedDirect(SLOT / KILL)と CertifiedSwap の定義、certificate
-  閉包の cycle 消滅補題、条項系 C\* の定義、**C\* の決定手続**(有限
-  入力から構成する `Decidable (CStar data)` instance、または boolean
-  checker とその sound / complete theorem。非構成的な古典 instance で
-  済ませない。入力は `DecidableEq` を持つ有限 target / cell・`Finset`
-  support・実行可能な factor 計算を備えた computable presentation として
-  定義し、既存 comparison geometry への sound / complete 対応 theorem を
-  伴う)、十分性 theorem、**観測写像 `Obs_G` の定義と恒久 contract 構成
+  同値 theorem を含む)、**`FiniteComparisonPresentation`**(`DecidableEq`
+  を持つ有限 target / cell・`Finset` support・実行可能な factor 計算)と
+  `toGeometry` 対応・`computedFactor = comparisonFactor` 一致 theorem、
+  **零判定 decider**(`Decidable (UniformPresentation P)` instance
+  または bool checker + sound / complete theorem。非構成的な古典
+  instance で済ませない)、**Atlas corollary**(条件 C ⟹ 一様不変。
+  G-104 受理済み theorem からの一様量化つき導出で、持ち上げ論法を明示の
+  theorem として含む)、**観測写像 `Obs_G` の定義と恒久 contract 構成
   要素対応表**、T3 / T6 fixture 定義(登録 structural input との対応
-  記録つき)、観測等値 theorem (iii)(a)、T3 一様不変 theorem (iii)(b)・
-  T6 非一様 theorem (iii)(c)、分離 theorem (iii)(d)、現行 C 非必要性
-  witness 7種、非退化発火 witness portfolio、
+  記録つき)、観測等値 theorem (v)(a)、T3 一様不変 theorem (v)(b)・
+  T6 非一様 theorem (v)(c)、分離 theorem (v)(d)、現行 C 非必要性
+  witness 7種、
   report `research/reports/G-107-aat-uniform-invariance-characterization.md`。
-- `target proof strategy`: U0 値部分集合還元(hunt-report §R0 の conjunct
-  対応表に従う)→ U1 前処理定義と free-pair 除去の比較不変性 → U2
-  certificate 閉包の cycle 消滅補題(blocker の定理化)→ U3 十分性 →
-  U4 非局所性(`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable
-  計算 → (i) 経由の label 導出 → 分離 theorem)→ U5 witnesses。
+- `target proof strategy`: U0 `J_A` 定義と defect 還元(hunt-report §R0
+  の conjunct 対応表に従う)→ U1 `FiniteComparisonPresentation` と
+  sound / complete decider → U2 Atlas corollary(G-104 theorem の一様
+  量化つき持ち上げ)→ U3 C 非必要性 witness 7種 → U4 非分解性
+  (`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable 計算 →
+  (i)(ii) 経由の label 導出 → 分離 theorem)→ U5 report。
   既存成果の利用 map:
   `ResolutionInvariance/ComparisonData.lean`(`comparisonFactor_commutes` /
   `lawDescend_unique` / `lawDescend_comparisonFactor`)、
@@ -459,10 +475,12 @@
   (`lawGeneratedH1BlockEquiv`)、
   `ResolutionInvariance/LawValueBlockComparison*.lean`(block comparison
   と naturality)、`CanonicalResolution/Reading.lean`(`FiniteLawFamily` /
-  `Adequate`)、G-102 の `ThreeCochainComplex` / `H1` / `h1Map`。hunt
-  artifact の固定 fixture(R1 witness 7種・Chain3・UnkilledTwin ほか、
+  `Adequate`)、G-102 の `ThreeCochainComplex` / `H1` / `h1Map`、
+  Atlas corollary は G-104 の main theorem(Diagnostic Resolution
+  Invariance)受理済み artifact。hunt
+  artifact の固定 fixture(R1 witness 7種ほか、
   `results-summary.json` の完全データ)は witness 素材として転写して
-  よい(engine 実装への依存は持ち込まない)。(iii) の転写照合先は
+  よい(engine 実装への依存は持ち込まない)。(v) の転写照合先は
   Stop-B 恒久 artifact(`g_local_v1.py` の観測成分定義・T3 / T6
   structural input・`results-stop-b-summary.json`)とする(同前、
   checker 実装への依存は持ち込まない)。固定 statement と完了条件は
@@ -481,10 +499,10 @@
   supplied factor・compatibility certificate を入力として受け取ることは
   放電と数えない。law family と adequacy は一様不変性の
   内部量化であり、入力・premise として固定した family に対する pointwise
-  定理を completion と数えない。値部分集合還元、前処理の well-definedness、
-  free-pair 除去の比較不変性、certificate 閉包補題、十分性・非局所性の
-  両柱、witness の非退化性はすべて completion までに生成・証明する。
-  C\* の成立・一様不変性・全単射性を theorem argument、typeclass、
+  定理を completion と数えない。defect 還元、decider の sound /
+  complete、Atlas corollary の一様量化持ち上げ、witness の非退化性、
+  非分解性の忠実転写と分離はすべて completion までに生成・証明する。
+  一様不変性・全単射性・零判定の結果を theorem argument、typeclass、
   structure field、certificate field で受け取るだけでは放電と数えない。
 - `target material premise ledger`:
   - `有限非空 Source / 読み対と粗さ順序(comparison geometry)`:
@@ -502,119 +520,101 @@
     定義を継承する。
   - `K0 / K1 生成係数と block 機構`: `ambient-boundary`。G-104 / G-102 の
     review 済み artifact の参照のみ(再定義しない)。
-  - `値部分集合還元 (i)`: `discharge-required`。indicator law family の
+  - `defect 還元 (i)`: `discharge-required`。indicator law family の
     構成と adequacy、block ≅ A-subnerve 同定、global ⟺ blockwise 同値の
     3 conjunct を theorem 化する。fixture 上の数値一致で代用しない。
-  - `前処理の well-definedness`: `discharge-required`。FaceTwin 類・
-    one-pass 同時除去の決定性(順序非依存)・scope ごとの再計算を定義に
-    固定する。
-  - `free-pair 除去の H¹ 比較不変性`: `discharge-required`。除去前後で
-    A-block 比較の全単射性が同値であることを theorem 化する。
-  - `CertifiedSwap 閉包の cycle 消滅補題`: `discharge-required`。本 GOAL の
-    中心補題(blocker `PB-R2-NONFREE-GLOBAL-FACE-CHAIN` の定理化)。free
-    pair を持たない任意の retained face 構造への一般帰納で証明し、有限
-    fixture 族の全数検証で代用しない。
-  - `条項系 C\*`: (ii) の `direction-hypothesis`(含意の仮定側)。
-    (iii) の観測成分は `GLocalV1ConditionVector`(恒久 grammar の
-    all-terminal 条項 vector)であり、本条項系
-    (`CStarV3SupportActive`)とは**別型・別述語**として固定する
-    (一般同値を主張しない)。結論相当
-    premise ではない理由: C\* は有限 incidence / support データと退化
-    宣言だけから決定可能な条項系であり、comparison map・両側 H¹・rank を
-    参照しない(明示の例外は C3\* の局所 fiber acyclicity のみで、
-    G-104 の C3 と同じく個々の chart fiber の内部データだけに依存する)。
-  - `C\* の決定手続`: `discharge-required`。有限入力からの decision
-    procedure(`Decidable` instance または bool checker + sound /
-    complete theorem)を構成する。非構成的な古典 instance(`Classical.dec`
-    等)で済ませることは放電と数えない。既存 API の chart 台は `Set`、
-    canonical factor は `Classical.choose` 由来であり、そのままでは
+  - `零判定 decider (ii)`: `discharge-required`。既存 API の chart 台は
+    `Set`、canonical factor は `Classical.choose` 由来であり、そのままでは
     計算可能な equality / membership を供給しないため、`DecidableEq` を
     持つ有限 target / cell・`Finset` support・実行可能な factor を備えた
-    **computable presentation** を定義し、既存 comparison geometry との
+    **`FiniteComparisonPresentation`** を定義し、`toGeometry` 対応・
+    `computedFactor = comparisonFactor` 一致 theorem・`J_A` 計算の
     sound / complete(または同値)対応 theorem を併せて放電する。
-    presentation の導入だけで対応 theorem を欠く checker は放電と
-    数えない。
-  - `Obs_G の忠実転写 (iii)`: `discharge-required`。登録恒久 contract
+    presentation の導入だけで対応 theorem を欠く checker、非構成的な
+    古典 instance(`Classical.dec` 等)は放電と数えない。uniformity
+    label・条項 bit・supplied factor を presentation field として
+    受け取ることも放電と数えない。
+  - `Atlas corollary (iii)`: `discharge-required`。G-104 の受理済み
+    theorem のみを根拠とし、一様量化への持ち上げ(条件 C の law family
+    非依存性の明示)を theorem 化する。新しい material premise の導入は
+    放電と数えず、必要と判明した場合は failure policy の scope 裁定に
+    戻す。結論の再宣言 wrapper は放電と数えない。
+  - `歴史記録の条項系 C\*(CStarV3SupportActive)`: premise ではない。
+    v3 の claim に現れず、研究史・mechanism artifact としてのみ保持
+    する。(v) の観測成分は `GLocalV1ConditionVector`(恒久 grammar の
+    all-terminal 条項 vector)であり、本条項系とは**別型・別述語**
+    (一般同値を主張しない)。
+  - `Obs_G の忠実転写 (v)`: `discharge-required`。登録恒久 contract
     (canonical SHA-256
     `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`)
     の観測成分5種と Lean 定義の構成要素対応表を artifact に固定する。
     成分の省略・追加・truncation 変更(粗視化・細密化)は放電と数えない。
     義務は定義水準+T3 / T6 上の評価であり、packet rewrite の一般論は
     含めない。
-  - `T3 / T6 witness の転写と label (iii)`: `discharge-required`。登録
+  - `T3 / T6 witness の転写と label (v)`: `discharge-required`。登録
     structural input(name-free semantic SHA)との対応を記録し、
-    T3 の一様不変・T6 の非一様を **(i) 経由の Lean 内有限計算**で証明
-    する。Round 15 ledger・Stop-B checker 結果の参照だけで label を
+    T3 の一様不変・T6 の非一様を **(i)(ii) 経由の Lean 内有限計算**で
+    証明する。Round 15 ledger・Stop-B checker 結果の参照だけで label を
     立てることは放電と数えない。
-  - `分離 theorem (iii)(d)`: `discharge-required`。factorization 論法
+  - `分離 theorem (v)(d)`: `discharge-required`。factorization 論法
     (観測値上の任意述語 `p` に対する反証)で証明し、条項系候補の有限
     列挙で代用しない。
   - `現行 C 非必要性 witness 7種 (iv)`: `discharge-required`。存在
     witness。(iv) の scope 規定(相対条項は同一 `A` での同時発火、全体
     条項は破れ関与データと交わる `A` での両側非零)を満たす。型不一致
-    vacuity・零 H¹ だけの破れは不可。
-  - `非退化発火 witness portfolio (v)`: `discharge-required`。各 witness の
-    共通条件(C\*・一様不変・`π` 非単射・同一 witness 内の非零 H¹・
-    critical 非空)と、portfolio 全体の発火項目(KILL 推移閉包・SLOT・
-    C3\*・C6\*・free-pair 除去)を (v) の規定どおり満たす。route
-    integrity audit で使う。
-- `target anti-weakening rule`: C\* に cohomological 条項(comparison
-  map・粗側複体・両側 global H¹ の同型・消滅・rank 一致と同値または
-  片方向に近い条項、およびその `A`-量化)を追加しない(C3\* の例外を
-  拡張しない)。(ii) を「事前登録済み bound 内で反例ゼロ」へ、(i) を
-  fixture 検証へ、一様不変性を有限個の law family の標本検査へ弱めない。
-  law family を theorem 外側の固定 premise へ移して一様量化を pointwise
-  化しない。(iii) について: `Obs_G` を登録 grammar より粗く(成分省略・
-  truncation 粗大化)定義して観測等値を自明化しない。逆に禁止情報
-  (exact cycle 長・H¹・rank・raw ID 等)を成分へ追加しない。T3 / T6 の
-  label を assumption・axiom・structure field 化しない。非局所性を
-  grammar 非相対の絶対主張へ強めない(過大主張の禁止)。証明の途中で
-  C\* の条項を黙って変えない — 変更が必要になった場合は
-  `target failure policy` 経由でカード改訂として扱い、hunt の
-  candidate SHA(`R2-CSTAR-CERTIFIED-v3` =
-  `cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa`)
-  との対応関係を改訂記録に残す。本カード時点の登録 candidate との差分は
-  support-active 全体 scope 化の1点だけ(条項系 C\* 節に固定)であり、
-  hunt を再開する場合は新 semantic ID として事前登録し直す。結論相当
+    vacuity・零 H¹ だけの破れは不可。(iii) の包含真性の根拠を兼ねる。
+- `target anti-weakening rule`: (i) を fixture 検証へ、一様不変性を
+  有限個の law family の標本検査へ弱めない。law family を theorem 外側の
+  固定 premise へ移して一様量化を pointwise 化しない。(ii) の decider を
+  fixture 集合上の一致検査へ、sound / complete theorem なしの checker へ
+  弱めない。(iii) を G-104 結論の再宣言 wrapper で済ませない — 一様量化
+  への持ち上げを明示の theorem として要求し、新しい material premise を
+  導入して「corollary」と称することを認めない。(v) について: `Obs_G` を
+  登録 grammar より粗く(成分省略・truncation 粗大化)定義して観測等値を
+  自明化しない。逆に禁止情報(exact cycle 長・H¹・rank・raw ID・判定
+  結果の answer-encoding 等)を成分へ追加しない。T3 / T6 の label を
+  assumption・axiom・structure field 化しない。非分解性を grammar
+  非相対の絶対主張へ強めない(過大主張の禁止)。歴史記録の C\*
+  (hunt candidate SHA `R2-CSTAR-CERTIFIED-v3` =
+  `cbb02677a055c69ecf0bb50a5de884fb55bbd4b4b59b75d256815eae69ec4daa`
+  + support-active 差分)を active claim へ黙って復帰させない — 後継
+  certificate は G-108 以降で新 semantic ID として事前登録する。結論相当
   データを theorem argument、typeclass、structure field、certificate
   field へ移さない。
-- `target route integrity gate`: 両柱の theorem・witness の provenance を
-  law family、読みの比較射(G-103 factorization)、nerve 構成データ、
-  review 済み predecessor、および hunt の登録 fixture(name-free semantic
-  SHA)へ追跡する。(iii) の witness provenance は登録 structural input の
-  semantic SHA と恒久 contract SHA へ追跡する。恒等比較・零 H¹・critical
-  cell 空・空虚 certificate だけの発火、proof 後の GOAL 読み替えを
-  completion に使わない。
+- `target route integrity gate`: 三本柱の theorem・witness の provenance
+  を law family、読みの比較射(G-103 factorization)、nerve 構成データ、
+  review 済み predecessor(Atlas corollary は G-104 main theorem)、
+  および hunt の登録 fixture(name-free semantic SHA)へ追跡する。
+  (v) の witness provenance は登録 structural input の semantic SHA と
+  恒久 contract SHA へ追跡する。恒等比較・零 H¹ だけの vacuous witness、
+  proof 後の GOAL 読み替えを completion に使わない。
 - `target failure policy`: fail-closed を原則とする — カードが固定した
-  subclaim((ii)、(iii)(a)–(c)、(iv)、(v))のいずれかが偽と確定した
-  場合、まず `target-refuted` を記録する。artifact / statement の改訂は
-  その後の別操作であり、記録を先送りする理由にしない。(ii) の反例
-  (C\* 成立かつ非全単射 A-block)は `target-refuted` とし、反例
-  fixture を固定した上で、同じ syntactic 文法(FaceTwin / free-pair /
-  critical / certificate)内での C\* 改訂案を返す — cohomological 条項
-  への差し替えは改訂案として認めない。(iii) は記録後の原因切り分けを
-  層別に行う: 忠実転写した `obsG` の下で観測等値 (a) が不成立、または
-  (b)(c) の label が hunt 登録値と食い違う場合、対応表を監査して転写の
-  欠陥(modeling)なら転写をやり直し、対応表どおりでも不一致が残る
-  場合は登録恒久 artifact 側の欠陥として Issue を起こして Stop-B 証拠の
-  再検証まで `target-blocked` を重ねる。分離 (d) は (a)–(c) からの
-  論理的帰結であり独立の反例を持たない。(i) の破れ(還元の反証)は
-  一様不変性の量化定義の欠陥として本 GOAL を停止し、GOAL 改訂提案を
-  返す(優先度は最上位)。
-  補助補題(free-pair 除去の比較不変性・certificate 閉包補題)への反例は
-  それだけでは `target-refuted` にしない — 補題を経由しない別経路が
-  ありうるため proof strategy(spine)の撤回・改訂として扱い、(ii)
-  本体と (iii)(a)–(c) の固定 subclaim の反証だけを `target-refuted` の
-  根拠にする。(iv)(v) は witness 構成が成功条件であり、hunt fixture の
-  転写不一致(Lean 側判定と食い違う)は modeling 欠陥として witness を
-  作り直す — ただしカードが固定した witness subclaim 自体が偽と確定
-  した場合は前掲の fail-closed 原則に従いまず記録する。ある条項について「一様不変 ⟹
-  当該条項」が theorem として成立した場合(witness 不存在の証明)は、
-  当該条項が実は必要だったという発見として、(iv) の当該項目を削除し
-  C\* との関係を再検討する GOAL 改訂案を返す。(v) の発火項目の一部が
-  共通条件と両立不能と判明した場合は、当該項目を別 witness へ分離する
-  GOAL 改訂案を返す(G-104 の witness 分離改訂の先例に従う)。
-  中心補題(certificate 閉包)を含む同じ blocker が二 cycle 続けば
-  `target-blocked` とし、bounded 版(lift 数や face-chain 長で切った弱い
+  subclaim((iii)、(iv)、(v)(a)–(c))のいずれかが偽と確定した場合、
+  まず `target-refuted` を記録する。artifact / statement の改訂はその後の
+  別操作であり、記録を先送りする理由にしない。層別の扱い: (i) の破れ
+  (還元の反証)は一様不変性の量化定義の欠陥として本 GOAL を停止し、
+  GOAL 改訂提案を返す(優先度は最上位)。(ii) の decider の欠陥
+  (unsound / incomplete)は反証ではなく実装・対応 theorem の不備として
+  是正する — ただし `J_A` の定義自体の矛盾が出た場合は (i) と同格の
+  GOAL 改訂事案。(iii) が G-104 受理済み artifact から新しい material
+  premise なしで導けないと判明した場合は、`target-refuted` ではなく
+  **scope 裁定**として人間へ返す(G-104 側の量化構造の確認事案であり、
+  (iii) の削除・弱化・G-104 改訂のいずれかを提案する)。(iii) への
+  semantic 反例(条件 C 成立かつ非一様)が出た場合は G-104 本体の反証を
+  意味するため、最優先で G-104 の review 体制へ escalate する。(v) は
+  記録後の原因切り分けを層別に行う: 忠実転写した `obsG` の下で観測等値
+  (a) が不成立、または (b)(c) の label が hunt 登録値と食い違う場合、
+  対応表を監査して転写の欠陥(modeling)なら転写をやり直し、対応表
+  どおりでも不一致が残る場合は登録恒久 artifact 側の欠陥として Issue を
+  起こして Stop-B 証拠の再検証まで `target-blocked` を重ねる。分離 (d)
+  は (a)–(c) からの論理的帰結であり独立の反例を持たない。(iv) は
+  witness 構成が成功条件であり、hunt fixture の転写不一致(Lean 側判定と
+  食い違う)は modeling 欠陥として witness を作り直す — ただしカードが
+  固定した witness subclaim 自体が偽と確定した場合は前掲の fail-closed
+  原則に従いまず記録する。ある条項について「一様不変 ⟹ 当該条項」が
+  theorem として成立した場合(witness 不存在の証明)は、当該条項が実は
+  必要だったという発見として、(iv) の当該項目を削除し (iii) の包含
+  真性の根拠を再検討する GOAL 改訂案を返す。同じ blocker が二 cycle
+  続けば `target-blocked` とし、bounded 版(fixture 集合で切った弱い
   定理)を成功と繰り上げない。claim boundary 外の機構が必要と判明した
   場合は本 GOAL を拡張せず、GOAL 改訂提案として返す。
