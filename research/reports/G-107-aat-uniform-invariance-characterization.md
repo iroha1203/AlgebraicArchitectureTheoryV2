@@ -28,8 +28,12 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   source-generated true label、canonical coarse fiber `= A` と fine fiber
   `= comparisonFactor ⁻¹' A`。外部 decidable-membership・supplied factor・
   補集合非空性を仮定しない。
-- 未完了: Cycle 1–3 の H¹-level 統合 reduction、defect profile、finite defect
-  bridge、decider、Atlas positioning、7 witness、observation nonfactorization。
+- 完了(Cycle 4): law family と両 adequacy を内部全量化する一様不変性と、
+  全非空 `A` の actual A-subnerve H¹ comparison 全単射性の iff。Cycle 1 の
+  cochain equivalence / naturality を actual H¹ quotient へ持ち上げ、Cycle 2 の
+  global / blockwise iff と Cycle 3 の indicator family を両方向に接続した。
+- 未完了: `J_A` と finite-dimensional zero-defect bridge、decider、Atlas
+  positioning、7 witness、observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -387,6 +391,132 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: assemble Cycles 1-3 into uniformity iff every nonempty A-subnerve H1 comparison is bijective
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 4 — uniformity iff all nonempty A-subnerve H¹ maps are bijective
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean)
+- primary declarations:
+  - `ThreeCochainComplex.CochainEquiv.h1Equiv`
+  - `ThreeCochainComplex.CochainEquiv.h1Equiv_naturality_apply`
+  - `TargetSupportedNerveMorphism.labelFiberComparison_h1_naturality`
+  - `TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_bijective_iff_labelFiber`
+  - `TargetSupportedNerveMorphism.UniformInvariance`
+  - `TargetSupportedNerveMorphism.AllNonemptyASubnerveH1Bijective`
+  - `TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveH1Bijective`
+- verification:
+  - manifest 登録済み単一ファイル focused check: pass
+  - `ResearchLean.AG.UniformInvariance.UniformityReduction` の targeted module
+    build: pass
+  - namespace axiom audit: 14 declarations、standard axioms only
+  - 主要 7 declaration の `#print axioms`: `propext`、`Classical.choice`、
+    `Quot.sound` のみ
+  - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
+    clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+
+### Premise delta
+
+- discharged: Cycle 1 の cochain equivalence を actual H¹ equivalence へ持ち上げ、
+  actual block / label-fiber maps の自然性と全単射性 iff を証明した。任意の
+  law family と両 adequacy を内部量化した一様不変性と、任意非空 `A` の
+  actual A-subnerve H¹ map の全単射性を両方向に接続した。
+- remaining: `J_A` の定義と finite-dimensional zero-defect bridge、sound /
+  complete decider、`ConditionCAllA` checker / bridge / firing、7 witness、
+  `Obs_G` と T3 / T6 分離。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: H¹ equivalence は Cycle 1 の degreewise linear
+  equivalence と differential compatibility から forward / inverse cochain Hom
+  を生成し、actual quotient map が互いに逆であることから構成する。H¹
+  naturality には Cycle 1 の degree-one naturality を渡し、外部 certificate
+  を受け取らない。
+- proof-use: forward direction は任意非空 `A` から Cycle 3 indicator family を
+  構成し、Cycle 2 global→blocks、actual block→fiber、exact fiber equality を
+  全て使う。reverse direction は任意 laws / adequacy / label について
+  `labelValueFiber_nonempty`、canonical exact preimage、fiber→block、Cycle 2
+  blocks→global を使う。
+- structure-field escape: none found。`Function.Bijective`、H¹ equivalence、
+  naturality、subset equality を comparison structure field として保持しない。
+  subset transport の equality と compatibility proof は主 theorem 内で Cycle 1 / 3
+  から生成され、全単射性や map equalityを供給しない。
+- route integrity: pass。actual `generatedComparisonH1Map` → actual block map →
+  actual `targetSubsetComparisonHom.h1Map` の順で両方向を接続する。固定 family、
+  rank equality、zero-H¹、`ConditionC` へ弱めない。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  GOAL-report reinterpretation はいずれも `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 4
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: uniform invariance iff every nonempty actual A-subnerve H1 comparison map is bijective
+proof_obligation_delta: Cycles 1-3 are assembled on actual H1 quotients into the unconditional bijectivity-level reduction
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 0360bdd76b9e366686a7d7bb767b2eac0cd3b158
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean
+    declarations:
+      - ThreeCochainComplex.CochainEquiv.h1Equiv
+      - ThreeCochainComplex.CochainEquiv.h1Equiv_naturality_apply
+      - TargetSupportedNerveMorphism.labelFiberComparison_h1_naturality
+      - TargetSupportedNerveMorphism.generatedBlockComparisonH1Map_bijective_iff_labelFiber
+      - TargetSupportedNerveMorphism.UniformInvariance
+      - TargetSupportedNerveMorphism.AllNonemptyASubnerveH1Bijective
+      - TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveH1Bijective
+premise_delta:
+  discharged:
+    - actual H1 equivalence and naturality generated from Cycle 1 cochain data
+    - actual block H1 bijectivity iff actual label-fiber A-subnerve H1 bijectivity
+    - uniform invariance iff all nonempty actual A-subnerve H1 maps are bijective
+  remaining:
+    - J_A and the finite-dimensional zero-defect bridge
+    - sound-complete executable decider
+    - ConditionCAllA checker, bridge, firing instance, and G-104 connection
+    - seven non-necessity witnesses
+    - Obs_G fidelity and T3-T6 nonfactorization
+certificate_provenance:
+  discharged:
+    - H1 equivalence is generated from degreewise equivalences and differential compatibility
+    - H1 naturality is generated from the reviewed degree-one naturality theorem
+    - all subset equalities used for dependent transport are generated inside the main theorem
+  unresolved:
+    - defect, decider, ConditionCAllA, witness, and nonfactorization provenance
+proof_use_audit:
+  used_material_premises:
+    - arbitrary law families and both adequacy proofs in UniformInvariance
+    - nonempty A and the generated indicator family in the forward direction
+    - nonempty canonical label fibers in the reverse direction
+    - canonical comparison factor and exact-preimage equalities in both directions
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define J_A on the actual A-subnerve H1 map and prove J_A equals zero iff that map is bijective
 completion_candidate: false
 tracking_issue_closed: false
 ```
