@@ -314,3 +314,4 @@ ResearchLean.AG.UniformInvariance.ASubnerveReduction	ResearchLean/AG/UniformInva
 ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity	ResearchLean/AG/UniformInvariance/GlobalBlockBijectivity.lean
 ResearchLean.AG.UniformInvariance.IndicatorLawFamily	ResearchLean/AG/UniformInvariance/IndicatorLawFamily.lean
 ResearchLean.AG.UniformInvariance.UniformityReduction	ResearchLean/AG/UniformInvariance/UniformityReduction.lean
+ResearchLean.AG.UniformInvariance.UniformityInstancePairs	ResearchLean/AG/UniformInvariance/UniformityInstancePairs.lean

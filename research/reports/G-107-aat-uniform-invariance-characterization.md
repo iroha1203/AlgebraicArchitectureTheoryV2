@@ -402,6 +402,8 @@ tracking_issue_closed: false
 - completion candidate: `no`
 - Lean file:
   [`research/lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean)
+  and
+  [`research/lean/ResearchLean/AG/UniformInvariance/UniformityInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformityInstancePairs.lean)
 - primary declarations:
   - `ThreeCochainComplex.CochainEquiv.h1Equiv`
   - `ThreeCochainComplex.CochainEquiv.h1Equiv_naturality_apply`
@@ -410,6 +412,10 @@ tracking_issue_closed: false
   - `TargetSupportedNerveMorphism.UniformInvariance`
   - `TargetSupportedNerveMorphism.AllNonemptyASubnerveH1Bijective`
   - `TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveH1Bijective`
+  - `TargetSupportedNerveMorphism.identityMorphism_uniformInvariance`
+  - `UniformInvarianceInstancePairs.positive_generatedComparisonH1Map_nonzero`
+  - `UniformInvarianceInstancePairs.negative_not_uniformInvariance`
+  - `UniformInvarianceInstancePairs.negative_exists_nonbijective_aSubnerveH1Map`
 - verification:
   - manifest 登録済み単一ファイル focused check: pass
   - `ResearchLean.AG.UniformInvariance.UniformityReduction` の targeted module
@@ -417,6 +423,10 @@ tracking_issue_closed: false
   - namespace axiom audit: 14 declarations、standard axioms only
   - 主要 7 declaration の `#print axioms`: `propext`、`Classical.choice`、
     `Quot.sound` のみ
+  - instance-pair module の targeted module build / focused check: pass
+  - instance-pair namespace axiom audit: 23 declarations、standard axioms only
+  - instance-pair 主要 6 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
   - placeholder、hidden / bidirectional Unicode、privacy、`git diff --check`:
     clean
   - Research 全体の full build: ユーザー指定により未実行
@@ -453,6 +463,16 @@ tracking_issue_closed: false
   rank equality、zero-H¹、`ConditionC` へ弱めない。
 - cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
   GOAL-report reinterpretation はいずれも `none-found`。
+- instance pair: 正例は G-104 firing supported nerve の hereditary identity
+  comparison。任意 A の actual selected-subset Hom が cochain / H¹ 上で恒等と
+  なることを incidence と canonical self-factor から構成し、既存の非零
+  `coarseFiringClass` の actual image も非零と証明した。反例は adequate な
+  G-104 failure の actual nonbijective global mapを内部量化へ特殊化し、同値定理
+  から nonempty A 上の actual nonbijective map の存在まで導出した。零 H¹・
+  inadequacy・stored result bit による instance ではない。
+- review finding resolution: 初回 4-lane review の P1（新規 Prop 2述語の
+  §1.4 instance pair 欠落）へ直接対応した。statement / proof / GOAL scope は
+  不変で、正負 instance と非空虚性 theorem のみを追加した。
 
 ### Target cycle ledger
 
@@ -479,11 +499,20 @@ lean_artifacts:
       - TargetSupportedNerveMorphism.UniformInvariance
       - TargetSupportedNerveMorphism.AllNonemptyASubnerveH1Bijective
       - TargetSupportedNerveMorphism.uniformInvariance_iff_allNonemptyASubnerveH1Bijective
+  - file: research/lean/ResearchLean/AG/UniformInvariance/UniformityInstancePairs.lean
+    declarations:
+      - TargetSupportedNerveMorphism.identityMorphism_uniformInvariance
+      - UniformInvarianceInstancePairs.positive_uniformInvariance
+      - UniformInvarianceInstancePairs.positive_generatedComparisonH1Map_nonzero
+      - UniformInvarianceInstancePairs.negative_not_uniformInvariance
+      - UniformInvarianceInstancePairs.negative_not_allNonemptyASubnerveH1Bijective
+      - UniformInvarianceInstancePairs.negative_exists_nonbijective_aSubnerveH1Map
 premise_delta:
   discharged:
     - actual H1 equivalence and naturality generated from Cycle 1 cochain data
     - actual block H1 bijectivity iff actual label-fiber A-subnerve H1 bijectivity
     - uniform invariance iff all nonempty actual A-subnerve H1 maps are bijective
+    - nonzero-H1 positive identity instance and adequate actual-map negative instance
   remaining:
     - J_A and the finite-dimensional zero-defect bridge
     - sound-complete executable decider
@@ -495,6 +524,7 @@ certificate_provenance:
     - H1 equivalence is generated from degreewise equivalences and differential compatibility
     - H1 naturality is generated from the reviewed degree-one naturality theorem
     - all subset equalities used for dependent transport are generated inside the main theorem
+    - positive and negative instances are derived from actual comparison geometry and maps
   unresolved:
     - defect, decider, ConditionCAllA, witness, and nonfactorization provenance
 proof_use_audit:

@@ -318,3 +318,4 @@ import ResearchLean.AG.UniformInvariance.ASubnerveReduction
 import ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity
 import ResearchLean.AG.UniformInvariance.IndicatorLawFamily
 import ResearchLean.AG.UniformInvariance.UniformityReduction
+import ResearchLean.AG.UniformInvariance.UniformityInstancePairs
