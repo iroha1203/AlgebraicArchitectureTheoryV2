@@ -179,8 +179,9 @@
   済ませる構成、非分解性 (v) を条項系候補の有限列挙の全滅で代用する
   弱化、判定結果の answer-encoding を観測成分へ持ち込み (v) を無内容化
   する構成、(iii) の bridge を fixture 全数検証・型変換 wrapper で
-  済ませる構成、`ConditionCAllA` を law 全量化 premise へ畳んで幾何
-  決定可能性を失わせる構成。
+  済ませる構成、`ConditionCAllA` を law 全量化 premise へ畳んで
+  presentation 水準の決定可能性を失わせる構成、`ConditionCAllA` の充足
+  locus が空(正例なし)のまま (iii) を完了と数える構成。
 - `frontier`: **structural certificate の再設計**(設計ノート §4 の
   機構カタログ4点組の整備 → criticality-reflection 型条項を含む後継
   certificate。G-108 候補であり本カードでは主張しない)、
@@ -431,9 +432,21 @@
      equivalence だけで済ませず、chart / edge / face・endpoint・face
      incidence・partial map の可換を補題群として固定する)+ G-104
      受理済み pointwise theorem(`generatedComparisonH1Map_bijective`)
-     の各 law への適用。`Condition-C locus` は `{ M | ConditionCAllA
-     M }` として**幾何決定可能**に固定され、(iv) の witness により包含は
-     真(`Condition-C locus ⊊ uniform locus`)。bridge は新しい axiom /
+     の各 law への適用。決定可能性の claim は (v) と同じ規律で
+     **presentation 水準に限定**する: checker が決定するのは
+     `{ P : FiniteComparisonPresentation | ConditionCAllA P.toGeometry }`
+     であり、abstract comparison geometry 上の locus
+     `{ M | ConditionCAllA M }` には包含(⊆ uniform locus)と真性のみを
+     主張する(任意 `M` の実効的 presentation 被覆と表現変更対応は
+     本カードでは主張しない)。(iv) の witness により包含は真
+     (`Condition-C locus ⊊ uniform locus`)。**非空虚性(正例)**:
+     `ConditionCAllA` の充足 instance として G-104 の firing fixture
+     (`ResolutionInvarianceFiringData`)を再利用し、
+     `firing_conditionCAllA : ConditionCAllA firingMorphism`、対応
+     presentation `Pfire` での `conditionCAllACheck Pfire = true`、
+     既存の両側非零 H¹ firing theorem への接続を固定する(§1.4 の
+     instance ペア義務。7 negative witness とあわせ checker の
+     true / false 両側が発火する)。bridge は新しい axiom /
      premise ではなく discharge-required theorem である(scope 裁定
      2026-08-11 = 案b採用。law 全量化 premise 化
      (`ConditionCForAllAdequate` 型)への弱化は認めない)。
@@ -516,6 +529,11 @@
   M.ConditionC laws hcoarse hfine`。先行補題 `labelValueFiber_nonempty`
   と incidence 可換補題群を含む)、**Atlas positioning theorem**
   (bridge + G-104 適用による `ConditionCAllA → 一様不変`)、
+  **`ConditionCAllA` の正例 instance**
+  (`firing_conditionCAllA : ConditionCAllA firingMorphism` — G-104
+  firing fixture の再利用、対応 presentation での
+  `conditionCAllACheck Pfire = true`、既存両側非零 H¹ firing theorem
+  への接続)、
   **観測写像 `Obs_G` の定義と恒久 contract 構成
   要素対応表**、T3 / T6 fixture 定義(登録 structural input との対応
   記録つき)、観測等値 theorem (v)(a)、T3 一様不変 theorem (v)(b)・
@@ -614,8 +632,10 @@
     family・comparison map・H¹・rank を参照しない(C3 系局所例外は
     G-104 と同範囲)。結論相当 premise ではない理由: 有限幾何データ上の
     条項であり、(iv) の witness が示すとおり一様不変性より真に強い。
-    「幾何決定可能」の claim は下記 checker の放電をもって成立する
-    (abstract 定義だけでは claim しない)。
+    決定可能性の claim は **presentation 水準**
+    (`{ P | ConditionCAllA P.toGeometry }`)に限定し、下記 checker の
+    放電をもって成立する(abstract locus には包含と真性のみ。任意
+    `M` の presentation 被覆・表現変更対応は主張しない)。
   - `ConditionCAllA checker (iii)`: `discharge-required`。
     `conditionCAllACheck : FiniteComparisonPresentation → Bool` と
     対応 theorem `conditionCAllACheck_eq_true_iff` を構成する。既存
@@ -626,6 +646,13 @@
     complete を theorem 化する。非構成的な古典 instance
     (`Classical.dec`)・supplied condition bit・checker 結果の
     structure field 化は放電と数えない。
+  - `ConditionCAllA 正例 instance (iii)`: `discharge-required`。§1.4 の
+    instance ペア義務(7 negative witness と対)。G-104 firing fixture
+    (`ResolutionInvarianceFiringData`)の再利用で
+    `firing_conditionCAllA` を証明し、対応 presentation で
+    `conditionCAllACheck = true` を発火させ、既存の両側非零 H¹ firing
+    theorem へ接続する。充足 locus が空のまま (iii) を完了扱いする
+    ことは認めない(Atlas positioning の仮定側の非空虚性)。
   - `bridge theorem (iii)`: `discharge-required`。`ConditionCAllA M →
     ∀ laws hcoarse hfine, M.ConditionC laws hcoarse hfine` を、(i) の
     block ≅ A-subnerve 同定を通した C1–C4 の条項ごとの transport で
@@ -671,9 +698,11 @@
   弱めない。(iii) の `ConditionCAllA` を law-indexed 述語・law 全量化
   premise(`ConditionCForAllAdequate` 型)・H¹ / rank 参照条項へ差し替え
   ない。bridge theorem を fixture 検証・型変換 wrapper で済ませない。
-  `ConditionCAllA` の「幾何決定可能」を `Classical.dec`・supplied
-  condition bit・事前計算済み checker 結果 field で満たしたと数えない
-  (実行可能 checker + sound / complete 対応 theorem のみが放電)。
+  `ConditionCAllA` の presentation 水準決定可能性を `Classical.dec`・
+  supplied condition bit・事前計算済み checker 結果 field で満たしたと
+  数えない(実行可能 checker + sound / complete 対応 theorem のみが
+  放電)。abstract locus の決定可能性を presentation checker だけで
+  主張しない(包含と真性のみ)。
   (v) について: `Obs_G` を
   登録 grammar より粗く(成分省略・truncation 粗大化)定義して観測等値を
   自明化しない。逆に禁止情報(exact cycle 長・H¹・rank・raw ID・判定
