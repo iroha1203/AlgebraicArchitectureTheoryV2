@@ -400,12 +400,17 @@ candidateとして扱う。
   law familyにわたる共通部分
   `Z_univ := { f | ∀ adequate L, J_L(f) = (0, 0) }`
   (universal zero-jump領域)である。条項系への反例は層別に読む。
-  uniform ∧ ¬C 型は `Z_univ \ C` のuniversal zero-jump点であり、jumpは
-  どこにもない — syntacticなC-locusがsemanticな同型領域を過小近似している
-  証拠となる(exact fixture: CONTRACTIBLE-TRIANGLE)。C ∧ ¬uniform 型は
-  真のjumpを持つ `C \ Z_univ` の点である(exact fixture:
-  PROPER-CHAIN3-PLUS-BRIDGE-DIGON — 条項系が粗側cycleの解像だけを検査し、
-  非critical領域上の細側cycle新規生成を見ない穴)。jump locusのデータに
+  記号は条項系ごとに分けて読む(以下 `C*` = 探索期の歴史候補
+  `CStarV3SupportActive`。G-104の条件Cおよび現行の幾何述語
+  `ConditionCAllA` とは別述語)。uniform ∧ ¬C* 型は `Z_univ \ C*` の
+  universal zero-jump点であり、jumpはどこにもない — syntacticな
+  条項locusがsemanticな同型領域を過小近似している証拠となる
+  (exact fixture: CONTRACTIBLE-TRIANGLE)。C* ∧ ¬uniform 型は
+  真のjumpを持つ `C* \ Z_univ` の点である(exact fixture:
+  PROPER-CHAIN3-PLUS-BRIDGE-DIGON — 歴史C*が粗側cycleの解像だけを
+  検査し、非critical領域上の細側cycle新規生成を見ない穴。同fixtureでは
+  G-104の条件C自体は成立しない — parallel liftによりC5相当が破れる —
+  ため、条件Cの十分性とは矛盾しない)。jump locusのデータに
   なるのは後者と一般のnonuniform射であり、前者を jump locus と呼ぶのは
   層の取り違えになる。なお `Z_univ` を有限syntactic条項系で切り出すiff
   プログラムは、登録済み半径1観測grammar `G_local-v1` に相対する分離
