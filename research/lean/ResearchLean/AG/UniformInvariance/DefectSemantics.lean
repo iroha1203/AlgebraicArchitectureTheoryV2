@@ -37,6 +37,31 @@ def blockDefect {V W : Type*}
   (Module.finrank ℚ (LinearMap.ker f),
     Module.finrank ℚ (W ⧸ LinearMap.range f))
 
+/-- In finite dimensions, the exact kernel/cokernel defect is equivalently
+the domain and codomain dimensions minus the range rank.  This is the
+dimension-level API for `blockDefect`; downstream correctness proofs need not
+unfold the literal quotient definition. -/
+theorem blockDefect_eq_finrank_sub_range
+    {V W : Type*}
+    [AddCommGroup V] [Module ℚ V] [FiniteDimensional ℚ V]
+    [AddCommGroup W] [Module ℚ W] [FiniteDimensional ℚ W]
+    (f : V →ₗ[ℚ] W) :
+    blockDefect f =
+      (Module.finrank ℚ V -
+          Module.finrank ℚ (LinearMap.range f),
+        Module.finrank ℚ W -
+          Module.finrank ℚ (LinearMap.range f)) := by
+  unfold blockDefect
+  apply Prod.ext
+  · dsimp only
+    have hrankNullity :=
+      LinearMap.finrank_range_add_finrank_ker f
+    omega
+  · dsimp only
+    have hquotient := Submodule.finrank_quotient_add_finrank
+      (LinearMap.range f)
+    omega
+
 /-- For a finite-dimensional rational linear map, exact kernel/cokernel
 defect vanishes if and only if the underlying map is bijective. -/
 theorem blockDefect_eq_zero_iff_bijective
