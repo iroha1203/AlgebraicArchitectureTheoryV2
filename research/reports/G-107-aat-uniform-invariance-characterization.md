@@ -56,7 +56,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   complete iff。Cycle 8 の exact defect bridge と Cycle 5 の semantic defect iffを
   接続し、rank-one の positive / negative raw self-loop presentations で同じ
   checkerを `true / false` 両側に発火させ、claim (ii) を閉じた。
-- 未完了: `ConditionCAllA` checker / bridge / Atlas positioning / firing 正例、
+- チェックポイント(Cycle 10): whole-nerve C0/C5/C6 と、全非空 target subset
+  `A` および canonical fine preimage 上の actual A-subnerve C1--C4 からなる
+  law / H¹ / rank / defect 非参照の幾何述語 `ConditionCAllA` を固定した。
+  これは direction hypothesis の定義 snapshot であり、checker correctness や
+  premise discharge ではないため `proof-checkpoint` として受理した。
+- 未完了: `ConditionCAllA` checker / sound-complete iff / 正負 instance pair /
+  bridge / Atlas positioning / firing 正例、
   7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -1273,6 +1279,151 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: define law-H1-rank-free ConditionCAllA from C0/C5/C6 and all-nonempty-A C1-C4 A-subnerve clauses before constructing its executable checker
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 10 — all-subset geometric Condition C semantics
+
+- decision: `approve`
+- result type: `proof-checkpoint`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllA.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllA.lean)
+- primary declarations:
+  - `TargetSupportedNerveMorphism.aSubnerveChartMap`
+  - `TargetSupportedNerveMorphism.aSubnerveEdgeMapOption`
+  - `TargetSupportedNerveMorphism.aSubnerveFaceMapOption`
+  - `TargetSupportedNerveMorphism.TargetSubsetFiberEdge`
+  - `TargetSupportedNerveMorphism.TargetSubsetFiberAdjacent`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberIncoming`
+  - `TargetSupportedNerveMorphism.targetSubsetFiberOutgoing`
+  - `TargetSupportedNerveMorphism.TargetSubsetFiberCycle`
+  - `TargetSupportedNerveMorphism.TargetSubsetInternalFace`
+  - `TargetSupportedNerveMorphism.targetSubsetFaceBoundary`
+  - `TargetSupportedNerveMorphism.ConditionC1AtTargetSubset`
+  - `TargetSupportedNerveMorphism.ConditionC2AtTargetSubset`
+  - `TargetSupportedNerveMorphism.ConditionC3AtTargetSubset`
+  - `TargetSupportedNerveMorphism.ConditionC4AtTargetSubset`
+  - `TargetSupportedNerveMorphism.ConditionCAllA`
+- verification:
+  - `ConditionCAllA.lean` focused check: pass
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllA` targeted module build:
+    pass (3707 jobs)
+  - namespace axiom audit: 15 declarations、standard axioms only
+  - 主要 5 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - placeholder、`Classical.dec`、`native_decide`、hidden / bidirectional
+    Unicode、privacy、Formal→Research 逆 import、tracked / untracked
+    `git diff --check`: clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-checkpoint`
+  - C0/C5/C6 の whole-nerve scope、C1 の endpoint-defined fiber、C2/C4 の
+    canonical partial map、C3 の有限 rational cycle / internal-face boundary、
+    全非空 `Set A` と canonical preimage を独立監査し、定義 snapshot には
+    blocking finding なし。
+  - 本 cycle は direction hypothesis の定義だけで discharge-required premise の
+    theorem / finite witness / concrete certificate を含まないため、
+    `proof-obligation-discharged` への昇格は不可。
+
+### Premise delta
+
+- discharged: なし。`ConditionCAllA` は固定 GOAL の direction hypothesis の
+  意味論を曖昧性なく固定したが、discharge-required premise を証明していない。
+- fixed at checkpoint: existing whole-nerve `ConditionC0` / `ConditionC5` /
+  `ConditionC6` を一度だけ要求し、全非空 `A : Set coarseReading.Target` と
+  `comparisonFactor ⁻¹' A` 上で actual A-subnerve C1--C4 を要求する幾何 predicate。
+- remaining: `conditionCAllACheck` と sound / complete iff、正例と正負 instance
+  pair、`labelValueFiber` transport による bridge、Atlas positioning、7
+  non-necessity witnesses、`Obs_G`、T3 / T6、observation nonfactorization。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: A-subnerve は実際の K1 support intersectionから、fine
+  subset は canonical `comparisonFactor` の逆像から定義される。新しい
+  certificate、supplied factor、checker verdict は入力に追加しない。
+- proof-use: C0/C5/C6 は既存 whole-nerve 条項として実使用される。C1 は
+  endpoint-defined fiber graphだけを読み、誤って partial `edgeMap` を条件へ
+  加えない。C2/C4 は canonical partial subset mapを、C3 は有限 rational
+  cycle と internal-face boundaryを実使用する。
+- structure-field escape: none found。全新規条件は `Prop` であり、path、lift、
+  face chain は存在量化内にだけ現れる。law family、adequacy、H¹、rank、defect、
+  uniformity、checker truth の field はない。
+- route integrity: pass。任意の非空 `A` を先に取り、coarse `A` と canonical fine
+  preimage 上の actual cell / incidence / partial mapsから各 clauseを定める。
+- cheat-route audit: target-fitting construction / vacuity / degeneracy /
+  one-way-as-equivalence / GOAL-report reinterpretation はいずれも `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 10
+decision: approve
+result_type: proof-checkpoint
+proof_obligation: fix law-H1-rank-free ConditionCAllA semantics before constructing its executable checker
+proof_obligation_delta: the whole-nerve and every-nonempty-A geometric hypothesis is now fixed without discharging its executable or transport obligations
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 5c90c38ca3609e2e8852b75a140651be7b625d0f
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllA.lean
+    declarations:
+      - TargetSupportedNerveMorphism.aSubnerveChartMap
+      - TargetSupportedNerveMorphism.aSubnerveEdgeMapOption
+      - TargetSupportedNerveMorphism.aSubnerveFaceMapOption
+      - TargetSupportedNerveMorphism.TargetSubsetFiberEdge
+      - TargetSupportedNerveMorphism.TargetSubsetFiberAdjacent
+      - TargetSupportedNerveMorphism.targetSubsetFiberIncoming
+      - TargetSupportedNerveMorphism.targetSubsetFiberOutgoing
+      - TargetSupportedNerveMorphism.TargetSubsetFiberCycle
+      - TargetSupportedNerveMorphism.TargetSubsetInternalFace
+      - TargetSupportedNerveMorphism.targetSubsetFaceBoundary
+      - TargetSupportedNerveMorphism.ConditionC1AtTargetSubset
+      - TargetSupportedNerveMorphism.ConditionC2AtTargetSubset
+      - TargetSupportedNerveMorphism.ConditionC3AtTargetSubset
+      - TargetSupportedNerveMorphism.ConditionC4AtTargetSubset
+      - TargetSupportedNerveMorphism.ConditionCAllA
+premise_delta:
+  discharged: []
+  fixed_at_checkpoint:
+    - whole-nerve C0, C5, and C6 together with every-nonempty-A C1-C4 semantics
+  remaining:
+    - conditionCAllACheck and its sound-complete iff
+    - positive example and positive-negative instance pair
+    - labelValueFiber transport bridge
+    - Atlas positioning theorem
+    - seven non-necessity witnesses
+    - Obs_G, T3/T6 labels, observational equality, and separation
+certificate_provenance:
+  discharged: []
+  unresolved:
+    - checker correctness and firing provenance
+    - bridge transport
+    - negative witness provenance
+proof_use_audit:
+  used_material_premises:
+    - existing whole-nerve ConditionC0, ConditionC5, and ConditionC6
+    - actual A-subnerve support and incidence
+    - canonical comparisonFactor and partial subset maps
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings:
+  - proof-obligation-discharged promotion is unavailable because this cycle contains definitions but no discharge theorem or witness
+next_obligation: construct conditionCAllACheck on FiniteComparisonPresentation and prove conditionCAllACheck_eq_true_iff, including sound-complete handling of finite C1 reachability and rational C3 solvability
 completion_candidate: false
 tracking_issue_closed: false
 ```
