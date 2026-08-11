@@ -311,6 +311,8 @@ ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/Cohomolog
 ResearchLean.AG.TwoPhase.ForestSupport	ResearchLean/AG/TwoPhase/ForestSupport.lean
 ResearchLean.AG.TwoPhase.FiniteWitnesses	ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
 ResearchLean.AG.UniformInvariance.ASubnerveReduction	ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean
+ResearchLean.AG.UniformInvariance.ConditionCAllA	ResearchLean/AG/UniformInvariance/ConditionCAllA.lean
+ResearchLean.AG.UniformInvariance.ConditionCAllAInstancePairs	ResearchLean/AG/UniformInvariance/ConditionCAllAInstancePairs.lean
 ResearchLean.AG.UniformInvariance.DefectSemantics	ResearchLean/AG/UniformInvariance/DefectSemantics.lean
 ResearchLean.AG.UniformInvariance.ExecutableRationalRank	ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean
 ResearchLean.AG.UniformInvariance.FiniteComparisonPresentation	ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean
