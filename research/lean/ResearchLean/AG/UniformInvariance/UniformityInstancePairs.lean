@@ -42,7 +42,7 @@ theorem comparisonFactor_refl_apply (q : Reading Source)
   exact (congrFun hfactor target).symm
 
 /-- The canonical self-comparison preserves every selected target subset. -/
-def identitySubsetMapsTo (q : Reading Source) (A : Set q.Target) :
+theorem identitySubsetMapsTo (q : Reading Source) (A : Set q.Target) :
     ∀ target, target ∈ A →
       comparisonFactor q q q.coarserThan_refl target ∈ A := by
   intro target htarget
