@@ -76,8 +76,16 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   raw C1--C4 の直接証明から generic checkerを `true` に発火させた。proper
   canonical factor、nonconstant law、original geometry、checker truth、coarse / fine
   両側の既存非零 H¹ classを1本の closed bundleへ接続した。
-- 未完了: `ConditionCAllA` bridge、Atlas positioning、
-  7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
+- 完了(Cycle 13): `ConditionCAllA` の全非空 A-subnerve C1--C4 を、任意の
+  source-generated law-value label の非空 fiber と canonical fine preimage 上の
+  G-104 block 条項へ直接 transport し、任意の law family と両 adequacy witnessに
+  対する law-indexed `ConditionC` を導く bridge theoremを証明した。
+- 完了(Cycle 14): Cycle 13 bridgeを任意の law familyへ適用し、G-104の受理済み
+  `generatedComparisonH1Map_bijective` と直接合成して
+  `ConditionCAllA M → M.UniformInvariance` を証明した。これにより claim (iii) の
+  Atlas包含方向を閉じた。
+- 未完了: C0--C6非必要性 witness 7種による包含真性、`Obs_G` / T3 / T6 /
+  observation nonfactorization、Cycle 12由来の非中心品質負債2件。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -2004,6 +2012,121 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: prove the Atlas positioning theorem by applying conditionC_of_conditionCAllA and the accepted G-104 generatedComparisonH1Map_bijective theorem to every adequate law family
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 14 — Atlas positioning inclusion
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`research/lean/ResearchLean/AG/UniformInvariance/AtlasPositioning.lean`](../lean/ResearchLean/AG/UniformInvariance/AtlasPositioning.lean)
+- primary declaration:
+  - `TargetSupportedNerveMorphism.uniformInvariance_of_conditionCAllA`
+- verification:
+  - focused check: pass
+  - `ResearchLean.AG.UniformInvariance.AtlasPositioning` targeted module build:
+    pass (3720 jobs)
+  - namespace axiom audit: 1 declaration、standard axioms only
+  - primary theorem の `#print axioms`:
+    `propext`、`Classical.choice`、`Quot.sound` のみ
+  - `git diff --check`、untracked whitespace、placeholder、`unsafe`、
+    `native_decide`、`Classical.dec`、hidden / bidirectional Unicode、privacy、
+    Formal→Research逆import、aggregate / manifest scan: clean
+  - Research全体のfull build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - source SHA-256:
+    `e54de5a3d3e4d4bdc63ce62175f89542d6a179471d4f5650fc654de4d2067fad`
+  - `UniformInvariance` が law family と両 adequacy witnessを内部全量化すること、
+    bridgeが同じ引数に対する `ConditionC` を構成すること、G-104 theoremがactual
+    global generated H¹ comparison mapの全単射性を返すことを独立に追跡した。
+  - blocking findingなし。
+
+### Premise delta
+
+- discharged: `ConditionCAllA M → M.UniformInvariance`。任意の `laws`、
+  `hcoarse`、`hfine` を `UniformInvariance` の内部量化から導入し、Cycle 13
+  bridgeで `ConditionC` を構成して、G-104の
+  `generatedComparisonH1Map_bijective` へ渡した。
+- remaining: C0--C6非必要性 witness 7種と包含真性、`Obs_G`忠実転写、T3 / T6
+  labels、観測等値、observation nonfactorization、Cycle 12品質負債2件。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: law-indexed `ConditionC` は外部certificateでなく
+  `conditionC_of_conditionCAllA` がproof内で生成する。全単射性はsupplied inverse、
+  defect equality、rank equalityでなくG-104 theoremがactual mapについて導く。
+- proof-use: `hAllA` はbridgeに、`laws` / `hcoarse` / `hfine` はbridgeとG-104
+  theoremの双方に実使用される。
+- structure-field escape: none found。`ConditionC` や全単射性resultをcomparison
+  geometryのfield / instanceとして受け取らない。
+- route integrity: pass。固定GOALが指定した bridge → G-104 pointwise theoremの
+  直接合成である。
+- cheat-route audit: fixed law wrapper、fixture-only発火、zero-defect premise、
+  supplied inverse / certificate、`ConditionCForAllAdequate` premiseはいずれも
+  `none-found`。
+
+### Carried quality obligations from Cycle 12
+
+Atlas theoremのimport closure・statement・proofには影響しないため、本Cycleでも
+次の2件を最終completion前のnarrow remediationとして保持する。
+
+1. selected-cell / fiber / internal-face membership characterizationの公開
+   no-unfold API化と、`ConditionCAllAFiring.lean`の直接definition展開の置換。
+2. Cycle 12 private helper群の個別docstring補完。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 14
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove ConditionCAllA M -> M.UniformInvariance by composing the all-laws bridge with the accepted G-104 generatedComparisonH1Map_bijective theorem
+proof_obligation_delta: the geometric all-subset ConditionC locus is now proved to lie inside the semantic uniform-invariance locus for arbitrary finite Source
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 02e1fcc3e458634062db9c9f5ce6744ffcda76e9
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/AtlasPositioning.lean
+    declarations:
+      - TargetSupportedNerveMorphism.uniformInvariance_of_conditionCAllA
+premise_delta:
+  discharged:
+    - ConditionCAllA implies semantic UniformInvariance with every law family and both adequacy witnesses internally quantified
+  remaining:
+    - seven non-necessity witnesses and strictness of the Condition-C inclusion
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+    - two noncentral Cycle 12 quality-remediation items
+certificate_provenance:
+  discharged:
+    - law-indexed ConditionC is generated by the Cycle 13 bridge
+    - actual H1 bijectivity is generated by the reviewed G-104 theorem
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - ConditionCAllA direction hypothesis
+    - arbitrary laws and both adequacy witnesses introduced from UniformInvariance
+    - Cycle 13 bridge and G-104 actual-map bijectivity theorem
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct and verify the seven C0-C6 non-necessity witnesses, each with the required nondegenerate A-subnerve H1 block and direct ConditionCAllA component failure
 completion_candidate: false
 tracking_issue_closed: false
 ```
