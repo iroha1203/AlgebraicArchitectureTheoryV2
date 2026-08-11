@@ -63,8 +63,14 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   新規9 Propすべての actual A-subnerve 正負 instance pairも固定した。これは
   direction hypothesis の品質付き definition checkpoint であり、checker
   correctness や premise discharge ではないため `proof-checkpoint` のままである。
-- 未完了: `ConditionCAllA` checker / sound-complete iff / bridge / Atlas
-  positioning / G-107 指定の nonconstant-law firing 正例、
+- 完了(Cycle 11): finite raw presentation の target / cell / support / incidence /
+  partial-map tableだけを読む `conditionCAllACheck` を構成し、full semantic
+  `ConditionCAllA` との sound / complete iffを証明した。C1 は有限 fiber graphの
+  reachability、C3 は rational constraint / internal-face boundary matrixの複体則と
+  exact rank criterionで判定する。同じ checkerを C1・C3・aggregate の正負 raw
+  presentationsで発火させた。
+- 未完了: G-107 指定の nonconstant-law firing 正例、`ConditionCAllA` bridge、Atlas
+  positioning、
   7 witness、`Obs_G` / T3 / T6 / observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -187,7 +193,6 @@ next_obligation: prove global generated H1 comparison bijective iff every source
 completion_candidate: false
 tracking_issue_closed: false
 ```
-
 ## Cycle 2 — global H¹ bijectivity iff blockwise bijectivity
 
 - decision: `approve`
@@ -1515,6 +1520,175 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct conditionCAllACheck on FiniteComparisonPresentation and prove conditionCAllACheck_eq_true_iff, including sound-complete handling of finite C1 reachability and rational C3 solvability
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 11 — executable all-subset Condition C checker
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAChecker.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAChecker.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean)
+- primary declarations:
+  - `ExecutableRationalLinearAlgebra.ker_le_range_iff_finrank_range_add_eq_card`
+  - `FiniteComparisonPresentation.exists_conditionC_sublists_toFinset_eq`
+  - `FiniteComparisonPresentation.fiberGraph`
+  - `FiniteComparisonPresentation.fiberGraph_reachable_iff_targetSubsetFiberAdjacent_reflTransGen`
+  - `FiniteComparisonPresentation.conditionC1AtTargetSubsetCheck_eq_true_iff`
+  - `FiniteComparisonPresentation.fiberCycleConstraintMatrix`
+  - `FiniteComparisonPresentation.internalFaceBoundaryMatrix`
+  - `FiniteComparisonPresentation.fiberCycleConstraint_comp_internalFaceBoundary`
+  - `FiniteComparisonPresentation.conditionC3FiberCheck_eq_true_iff`
+  - `FiniteComparisonPresentation.rawConditionC3At_iff_conditionC3AtTargetSubset`
+  - `FiniteComparisonPresentation.conditionC3AtTargetSubsetCheck_eq_true_iff`
+  - `FiniteComparisonPresentation.conditionCAllACheck`
+  - `FiniteComparisonPresentation.conditionCAllACheck_eq_true_iff`
+  - `ConditionCAllACheckerInstancePairs.positive_conditionC1AtTargetSubsetCheck`
+  - `ConditionCAllACheckerInstancePairs.disconnected_conditionC1AtTargetSubsetCheck`
+  - `ConditionCAllACheckerInstancePairs.positive_conditionC3AtTargetSubsetCheck`
+  - `ConditionCAllACheckerInstancePairs.faceFree_conditionC3AtTargetSubsetCheck`
+  - `ConditionCAllACheckerInstancePairs.positive_conditionCAllACheck`
+  - `ConditionCAllACheckerInstancePairs.faceFree_conditionCAllACheck`
+- verification:
+  - `ConditionCAllAChecker.lean` focused check: pass
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllACheckerInstancePairs`
+    targeted module build: pass (3739 jobs)
+  - namespace axiom audit: checker module 86 declarations、instance module 31
+    declarations、いずれも standard axioms only
+  - 主要 7 declaration の `#print axioms`: `propext`、
+    `Classical.choice`、`Quot.sound` のみ
+  - direct executable evaluation: positive / disconnected C1 = `true / false`、
+    positive / face-free C3 = `true / false`、positive / face-free aggregate =
+    `true / false`
+  - placeholder、`unsafe`、`native_decide`、hidden / bidirectional Unicode、
+    privacy、Formal→Research 逆 import、tracked / untracked `git diff --check`:
+    clean
+  - Research 全体の full build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - checker source hash `cca79dd846d26f6cc8fc0ba86e79c9c06f5f3c032e88b5c520960c3317b13236`、
+    instance source hash `c90c045ffe0d5e4623261737231fc5593e30c148f9a315802d4f0256130975fb`
+    の固定 snapshotを独立監査した。
+  - C0--C6 raw定義、C1 finite reachability、C3 raw complex / exact rank、
+    raw / semantic transport、全 subset coverage、main iff、正負6 firingに
+    blocking findingなし。
+  - checker obligationは閉じたが、品質 fixtureは固定 GOAL が要求する
+    nonconstant-law・両側非零 H¹ の `Pfire` ではなく、bridge / Atlas / witness /
+    observation系も未完なので completion candidate ではない。
+
+### Premise delta
+
+- discharged: finite raw presentationだけを入力とする `conditionCAllACheck` と
+  `conditionCAllACheck P = true ↔ P.toGeometry.ConditionCAllA`。C1 の endpoint
+  fiber graph上の有限 reachabilityと semantic `Relation.ReflTransGen` の同値、
+  C3 の fiber-support / conservation constraint、internal-face boundary、複体則、
+  exact rational rank criterion、raw / semantic chain・face・boundaryの双方向輸送、
+  explicit target Listから全非空 `Set`への subset coverageを閉じた。同じ generic
+  checkerを C1・C3・aggregate の正負側で発火させた。
+- remaining: G-104 firing fixtureを raw presentation `Pfire` として接続し、
+  `firing_conditionCAllA`、`conditionCAllACheck Pfire = true`、両側非零 H¹ を同時に
+  証明すること。続いて `ConditionCAllA` から law-indexed `ConditionC` への bridge、
+  Atlas positioning、C0--C6 の非必要性 witness 7種、`Obs_G`、T3 / T6、
+  observation nonfactorization。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: checkerは finite target / cell enumeration、raw support /
+  incidence / partial mapsだけを読む。result bit、path、filling chain、matrix、rank、
+  exactness certificateの fieldはなく、`computedFactor` は raw reading dataから計算し
+  canonical `comparisonFactor` との既存一致 theoremへ接続する。
+- proof-use: C1 は endpoint-defined adjacencyと有限 graph reachabilityを実使用する。
+  C3 は face-incidence identitiesから boundary が constraint kernelへ入る複体則を
+  証明し、Cycle 7 rational rank correctnessを kernel / range exactnessへ接続する。
+  最終 iffでは C0、全非空 A の C1--C4、C5、C6を全て使用する。
+- structure-field escape: none found。`FiniteComparisonPresentation` への field追加は
+  なく、instance fixturesも raw geometryと well-formednessだけを保持する。
+- route integrity: pass。raw tables → canonical factor / selected cells → fiber graph /
+  rational matrices → Bool checker → actual A-subnerve clauses → `ConditionCAllA` の順を
+  保つ。`UniformPresentationDecider` の semantic checkerを importして結果を迂回しない。
+- cheat-route audit: target-fitting construction / vacuity / one-way-as-equivalence /
+  `Classical.dec` / supplied result・path・filling・rank certificate /
+  GOAL-report reinterpretation はいずれも `none-found`。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 11
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct an executable finite raw ConditionCAllA checker with sound-complete C1 reachability and rational C3 solvability
+proof_obligation_delta: conditionCAllACheck now decides the full law-H1-rank-free ConditionCAllA predicate from raw finite geometry and fires on positive and negative C1, C3, and aggregate presentations
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 2633fc64af2b85e608648de4ca006791c550eaa1
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAChecker.lean
+    declarations:
+      - ExecutableRationalLinearAlgebra.ker_le_range_iff_finrank_range_add_eq_card
+      - FiniteComparisonPresentation.exists_conditionC_sublists_toFinset_eq
+      - FiniteComparisonPresentation.fiberGraph_reachable_iff_targetSubsetFiberAdjacent_reflTransGen
+      - FiniteComparisonPresentation.conditionC1AtTargetSubsetCheck_eq_true_iff
+      - FiniteComparisonPresentation.fiberCycleConstraint_comp_internalFaceBoundary
+      - FiniteComparisonPresentation.conditionC3FiberCheck_eq_true_iff
+      - FiniteComparisonPresentation.rawConditionC3At_iff_conditionC3AtTargetSubset
+      - FiniteComparisonPresentation.conditionC3AtTargetSubsetCheck_eq_true_iff
+      - FiniteComparisonPresentation.conditionCAllACheck
+      - FiniteComparisonPresentation.conditionCAllACheck_eq_true_iff
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean
+    declarations:
+      - ConditionCAllACheckerInstancePairs.positive_conditionC1AtTargetSubsetCheck
+      - ConditionCAllACheckerInstancePairs.disconnected_conditionC1AtTargetSubsetCheck
+      - ConditionCAllACheckerInstancePairs.positive_conditionC3AtTargetSubsetCheck
+      - ConditionCAllACheckerInstancePairs.faceFree_conditionC3AtTargetSubsetCheck
+      - ConditionCAllACheckerInstancePairs.positive_conditionCAllACheck
+      - ConditionCAllACheckerInstancePairs.faceFree_conditionCAllACheck
+premise_delta:
+  discharged:
+    - executable conditionCAllACheck from finite raw presentation data only
+    - checker truth iff full semantic ConditionCAllA
+    - finite C1 reachability iff semantic fiber connectivity
+    - rational C3 complex law and exact rank criterion
+    - raw-semantic C3 chain and boundary transport
+    - all explicit target subsets iff every nonempty semantic Set
+    - positive-negative C1, C3, and aggregate checker firing
+  remaining:
+    - nonconstant-law Pfire with checker true and both H1 sides nonzero
+    - ConditionCAllA to law-indexed ConditionC bridge
+    - Atlas positioning theorem
+    - seven non-necessity witnesses
+    - Obs_G, T3/T6 labels, observational equality, and separation
+certificate_provenance:
+  discharged:
+    - checker result, reachability, exactness, and ranks are derived from raw finite tables
+    - computedFactor is derived from raw readings and identified with the canonical factor
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - finite enumeration completeness and explicit target-list coverage
+    - raw incidence and support compatibility
+    - canonical-factor correspondence and selected-cell equivalences
+    - Cycle 7 exact rational rank correctness
+    - all C0-C6 components of ConditionCAllA
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct the fixed-GOAL nonconstant-law Pfire presentation and prove firing_conditionCAllA, conditionCAllACheck Pfire = true, and both-side nonzero H1 firing together
 completion_candidate: false
 tracking_issue_closed: false
 ```
