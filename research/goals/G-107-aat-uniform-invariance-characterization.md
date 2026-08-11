@@ -195,7 +195,10 @@
   測定理論・論文Aへの「零判定の正本+Atlas の位置+観測限界」としての
   接続、reading 圏 `Read_L` 上の functor 化と zero-locus 上の局所
   定数性(local-system 化。`program context` の後続カード素材)、
-  persistence module 読みの有限計算可能性。
+  persistence module 読みの有限計算可能性、(iv) witness の非退化
+  scope の因果強化(named failure と非零 H¹ を同一連結成分・代表台で
+  結ぶ版。現 scope(同じ `A` / 破れ関与データと交わる `A`)は固定
+  statement であり、強化は statement 改訂として扱う)。
 - `spine`(仮説的道筋。壊してよい): U0 `J_A` の定義と値部分集合還元の
   Lean 化((i))→ U1 computable presentation と sound / complete
   decider((ii))→ U2 `ConditionCAllA` 定義+bridge theorem+G-104
@@ -420,10 +423,13 @@
      証明は2段: **bridge theorem** `ConditionCAllA M → ∀ laws hcoarse
      hfine, M.ConditionC laws hcoarse hfine`(law-value label の block
      と値部分集合 `A`(label の値 fiber)の対応 = (i) の block ≅
-     A-subnerve 同定の再利用。C1–C4 の条項ごとの transport。値 fiber が
-     空の label は block が空で条項は vacuous に成立する — 同定の空
-     ケースとして bridge 内で明示に扱い、非空 fiber の label だけが
-     `ConditionCAllA` の非空 `A` 量化を使う)+ G-104
+     A-subnerve 同定の再利用。C1–C4 の条項ごとの transport。
+     `LawValueLabel` は `generated` field により source 生成であり、
+     `lawDescend_commutes` から**全 label の値 fiber は非空** — これを
+     先行補題 `labelValueFiber_nonempty` として固定し、各 label に
+     `ConditionCAllA` の非空 `A` 量化を適用する。transport は cochain
+     equivalence だけで済ませず、chart / edge / face・endpoint・face
+     incidence・partial map の可換を補題群として固定する)+ G-104
      受理済み pointwise theorem(`generatedComparisonH1Map_bijective`)
      の各 law への適用。`Condition-C locus` は `{ M | ConditionCAllA
      M }` として**幾何決定可能**に固定され、(iv) の witness により包含は
@@ -500,8 +506,15 @@
   quotient rank 計算の soundness theorem を含む。非構成的な古典
   instance で済ませない)、**`ConditionCAllA` の定義**(C0 / C5 / C6 +
   C1–C4 の A-subnerve 評価。law family・H¹ を参照しない幾何述語)、
+  **`ConditionCAllA` の実行可能 checker**
+  (`conditionCAllACheck : FiniteComparisonPresentation → Bool` と
+  `conditionCAllACheck_eq_true_iff : conditionCAllACheck P = true ↔
+  ConditionCAllA P.toGeometry`。C1 の有限到達可能性・C3 の有理線形
+  可解性への還元を含む sound / complete。`Classical.dec`・supplied
+  condition bit・checker 結果 field での代用は不可)、
   **bridge theorem**(`ConditionCAllA M → ∀ laws hcoarse hfine,
-  M.ConditionC laws hcoarse hfine`)、**Atlas positioning theorem**
+  M.ConditionC laws hcoarse hfine`。先行補題 `labelValueFiber_nonempty`
+  と incidence 可換補題群を含む)、**Atlas positioning theorem**
   (bridge + G-104 適用による `ConditionCAllA → 一様不変`)、
   **観測写像 `Obs_G` の定義と恒久 contract 構成
   要素対応表**、T3 / T6 fixture 定義(登録 structural input との対応
@@ -600,12 +613,27 @@
     述語)。C0・C5・C6 と C1–C4 の A-subnerve 評価だけから成り、law
     family・comparison map・H¹・rank を参照しない(C3 系局所例外は
     G-104 と同範囲)。結論相当 premise ではない理由: 有限幾何データ上の
-    decidable 条項であり、(iv) の witness が示すとおり一様不変性より
-    真に強い。
+    条項であり、(iv) の witness が示すとおり一様不変性より真に強い。
+    「幾何決定可能」の claim は下記 checker の放電をもって成立する
+    (abstract 定義だけでは claim しない)。
+  - `ConditionCAllA checker (iii)`: `discharge-required`。
+    `conditionCAllACheck : FiniteComparisonPresentation → Bool` と
+    対応 theorem `conditionCAllACheck_eq_true_iff` を構成する。既存
+    API の `Reading.Target` は任意型・`chartSupport` は `Set` で実行
+    可能 membership を持たず、C3 は `EdgeBlockCoordinate → ℚ` の関数
+    量化を含むため、C1 の有限到達可能性(`ReflTransGen` の有限探索
+    化)と C3 の有理線形可解性への還元を checker 側で構成し、sound /
+    complete を theorem 化する。非構成的な古典 instance
+    (`Classical.dec`)・supplied condition bit・checker 結果の
+    structure field 化は放電と数えない。
   - `bridge theorem (iii)`: `discharge-required`。`ConditionCAllA M →
     ∀ laws hcoarse hfine, M.ConditionC laws hcoarse hfine` を、(i) の
     block ≅ A-subnerve 同定を通した C1–C4 の条項ごとの transport で
-    証明する。fixture 全数検証・law 全量化 premise 化
+    証明する。先行補題 `labelValueFiber_nonempty`(`LawValueLabel.
+    generated` + `lawDescend_commutes` による全 label 値 fiber の
+    非空性)を含み、transport は cochain equivalence だけでなく
+    chart / edge / face・endpoint・face incidence・partial map の可換
+    補題群で支える。fixture 全数検証・law 全量化 premise 化
     (`ConditionCForAllAdequate` 型)・単なる型変換 wrapper で代用
     しない。G-104 側の定義は参照のみ(再定義しない)。
   - `歴史記録の条項系 C\*(CStarV3SupportActive)`: premise ではない。
@@ -643,6 +671,9 @@
   弱めない。(iii) の `ConditionCAllA` を law-indexed 述語・law 全量化
   premise(`ConditionCForAllAdequate` 型)・H¹ / rank 参照条項へ差し替え
   ない。bridge theorem を fixture 検証・型変換 wrapper で済ませない。
+  `ConditionCAllA` の「幾何決定可能」を `Classical.dec`・supplied
+  condition bit・事前計算済み checker 結果 field で満たしたと数えない
+  (実行可能 checker + sound / complete 対応 theorem のみが放電)。
   (v) について: `Obs_G` を
   登録 grammar より粗く(成分省略・truncation 粗大化)定義して観測等値を
   自明化しない。逆に禁止情報(exact cycle 長・H¹・rank・raw ID・判定
