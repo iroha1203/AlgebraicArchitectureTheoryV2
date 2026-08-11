@@ -174,10 +174,16 @@ profile である。両者は別物ではなく、値部分集合還元によっ
    pointwise theorem の2段で固定する。Lean 実体の `ConditionC` は
    law-indexed(C1–C4 が `LawValueLabel` 量化)であり、素朴な量化交換は
    不可 — この bridge 構成は 2026-08-11 の claim scope 裁定(案b)で
-   確定した。C0–C6 の各条項が個別には必要でないこと(7 witness)と
-   あわせ、`Condition-C locus := { M | ConditionCAllA M }`(幾何決定
-   可能)について `Condition-C locus ⊊ uniform locus` という包含の
-   真性が定理水準で立つ。
+   確定した。決定可能性は presentation 水準(実行可能 checker
+   `conditionCAllACheck` + sound / complete 対応 theorem。C1 の有限
+   到達可能性と C3 の有理線形可解性への還元を含む)に限定し、abstract
+   locus には包含と真性のみを主張する。bridge は先行補題
+   `labelValueFiber_nonempty`(全 label の値 fiber 非空)と incidence
+   可換補題群で支える。C0–C6 の各条項が個別には必要でないこと
+   (7 witness、各 witness に `¬ConditionCAllA` の直接検査を併記)と、
+   `ConditionCAllA` の正例 instance(G-104 firing fixture 再利用)と
+   あわせ、`Condition-C locus ⊊ uniform locus` という包含の真性が
+   非空虚に定理水準で立つ。契約詳細の正本は GOAL カード。
 3. **observation nonfactorization**: 恒久 `G_local-v1` の忠実 `Obs_G`、
    T3 / T6 の観測等値と反対 label、任意の `p` に対する factorization
    不可能性(grammar 相対。量化域は computable presentation 全体に限定
