@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the G_local-v1 Stop-B artifact builder."""
+"""Regression tests for the G_local-v1 final Stop-B artifact builder."""
 
 from __future__ import annotations
 
@@ -18,6 +18,23 @@ import build_stop_b_results as builder
 
 
 HERE = Path(__file__).resolve().parent
+
+
+def _paths_with_value(
+    value: object,
+    candidate: object,
+    path: tuple[str, ...] = (),
+) -> list[tuple[str, ...]]:
+    paths: list[tuple[str, ...]] = []
+    if candidate == value:
+        paths.append(path)
+    if isinstance(candidate, dict):
+        for key, child in candidate.items():
+            paths.extend(_paths_with_value(value, child, path + (str(key),)))
+    elif isinstance(candidate, (list, tuple)):
+        for index, child in enumerate(candidate):
+            paths.extend(_paths_with_value(value, child, path + (str(index),)))
+    return paths
 
 
 class StopBBuilderStaticTest(unittest.TestCase):
@@ -41,7 +58,7 @@ class StopBBuilderStaticTest(unittest.TestCase):
         for name in (
             "results_report_through_round12",
             "results_summary_report_through_round12",
-            "g_local_v1_preregistration_manifest",
+            "g_local_v1_permanent_contract_manifest",
             "check_g_local_v1_stop_b",
         ):
             with self.subTest(single_call=name):
@@ -58,7 +75,7 @@ class StopBBuilderStaticTest(unittest.TestCase):
                 self.assertNotIn(forbidden, called_names)
                 self.assertNotIn(forbidden, called_attributes)
 
-    def test_checker_reconstructs_the_registered_manifest_once(self) -> None:
+    def test_checker_reconstructs_current_permanent_contract_once(self) -> None:
         source = (HERE / "g_local_v1_stop_b.py").read_text(
             encoding="utf-8"
         )
@@ -80,14 +97,14 @@ class StopBBuilderStaticTest(unittest.TestCase):
         self.assertEqual(
             direct_calls(
                 "check_g_local_v1_stop_b",
-                "_admit_registered_manifest",
+                "_admit_current_permanent_contract",
             ),
             1,
         )
         self.assertEqual(
             direct_calls(
-                "_admit_registered_manifest",
-                "g_local_v1_preregistration_manifest",
+                "_admit_current_permanent_contract",
+                "g_local_v1_permanent_contract_manifest",
             ),
             1,
         )
@@ -129,7 +146,7 @@ class StopBBuilderStaticTest(unittest.TestCase):
             all(row["report_or_query_reexecuted"] is False for row in rows)
         )
 
-    def test_canonical_and_result_provenance_constants_are_exact(self) -> None:
+    def test_current_contract_generator_and_hash_constants_are_exact(self) -> None:
         self.assertEqual(
             builder.CANONICAL_SERIALIZATION,
             {
@@ -141,47 +158,55 @@ class StopBBuilderStaticTest(unittest.TestCase):
             },
         )
         self.assertEqual(
-            builder.STOP_B_RESULT_PROVENANCE,
+            builder.CANONICAL_GENERATOR,
             {
-                "issue_comment": 5245347326,
-                "created_at": "2026-08-10T20:04:41Z",
-                "updated_at": "2026-08-10T20:04:41Z",
+                "working_directory": "repository-root",
+                "argv": [
+                    "python3",
+                    (
+                        "research/experiments/g104-necessity-map/"
+                        "build_stop_b_results.py"
+                    ),
+                    "--output",
+                    "/tmp/g104-necessity-map-stop-b-results.json",
+                    "--summary-output",
+                    (
+                        "research/experiments/g104-necessity-map/"
+                        "results-stop-b-summary.json"
+                    ),
+                ],
             },
         )
         self.assertEqual(
-            builder.G107_STOP_B_SYNC_PROVENANCE,
-            (
-                {
-                    "surface": "PR-3955",
-                    "comment": 5245356130,
-                    "created_at": "2026-08-10T20:05:35Z",
-                    "updated_at": "2026-08-10T20:05:35Z",
-                },
-                {
-                    "surface": "Issue-3954",
-                    "comment": 5245356137,
-                    "created_at": "2026-08-10T20:05:35Z",
-                    "updated_at": "2026-08-10T20:05:35Z",
-                },
-            ),
+            builder.PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256,
+            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+        )
+        self.assertEqual(
+            builder.PERMANENT_CONTRACT_COMPACT_EXPECTED_BYTES,
+            314_821,
         )
         self.assertEqual(
             builder.CHECKER_RESULT_COMPACT_EXPECTED_SHA256,
-            "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80",
+            "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca",
         )
-        self.assertEqual(builder.CHECKER_RESULT_COMPACT_EXPECTED_BYTES, 55_566)
+        self.assertEqual(builder.CHECKER_RESULT_COMPACT_EXPECTED_BYTES, 56_940)
         self.assertEqual(
             builder.COMMON_OBSERVATION_EXPECTED_SHA256,
             "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc",
         )
         self.assertEqual(builder.COMMON_OBSERVATION_EXPECTED_BYTES, 53_279)
+        self.assertEqual(
+            builder.PERMANENT_CONTRACT_REGRESSION_PROVENANCE,
+            {
+                "issue_comment": 5246749681,
+                "created_at": "2026-08-10T22:28:47Z",
+                "updated_at": "2026-08-10T22:28:47Z",
+            },
+        )
 
     def test_cli_requires_an_explicit_output_path(self) -> None:
         with (
-            patch.object(
-                builder,
-                "stop_b_results_report",
-            ) as full_builder,
+            patch.object(builder, "stop_b_results_report") as full_builder,
             patch.object(sys, "argv", ["build_stop_b_results.py"]),
             self.assertRaises(SystemExit) as raised,
         ):
@@ -229,11 +254,11 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
                     side_effect=parent_summary_once,
                 )
             )
-            cls.manifest_mock = stack.enter_context(
+            cls.contract_mock = stack.enter_context(
                 patch.object(
                     builder,
-                    "g_local_v1_preregistration_manifest",
-                    wraps=builder.g_local_v1_preregistration_manifest,
+                    "g_local_v1_permanent_contract_manifest",
+                    wraps=builder.g_local_v1_permanent_contract_manifest,
                 )
             )
             cls.checker_mock = stack.enter_context(
@@ -262,7 +287,7 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
         cls.summary_again = builder.stop_b_results_summary(cls.full)
         cls.summary_rendered = builder.render_json(cls.summary)
 
-    def test_direct_requests_are_once_and_manifest_effective_total_is_two(
+    def test_direct_requests_are_once_and_contract_effective_total_is_two(
         self,
     ) -> None:
         self.__class__.parent_full_mock.assert_called_once_with()
@@ -273,20 +298,15 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
             self.__class__.parent_summary_argument,
             self.__class__.parent_full_value,
         )
-        self.__class__.manifest_mock.assert_called_once_with()
+        self.__class__.contract_mock.assert_called_once_with()
         self.__class__.checker_mock.assert_called_once_with()
-        manifest_admission = self.full["g_local_v1"]["manifest_admission"]
-        self.assertEqual(manifest_admission["builder_direct_manifest_requests"], 1)
+        admission = self.full["g_local_v1"]["contract_admission"]
+        self.assertEqual(admission["builder_direct_contract_requests"], 1)
         self.assertEqual(
-            manifest_admission[
-                "checker_internal_manifest_admission_reconstructions"
-            ],
+            admission["checker_internal_contract_admission_reconstructions"],
             1,
         )
-        self.assertEqual(
-            manifest_admission["effective_manifest_constructions"],
-            2,
-        )
+        self.assertEqual(admission["effective_contract_constructions"], 2)
         for mock in self.__class__.forbidden_mocks.values():
             mock.assert_not_called()
 
@@ -296,60 +316,64 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
         summary_text = builder.render_json(parent["summary_report"])
         self.assertEqual(
             sha256(full_text.encode("utf-8")).hexdigest(),
-            builder.PARENT_FULL_EXPECTED_SHA256,
+            "cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306",
         )
         self.assertEqual(
             sha256(summary_text.encode("utf-8")).hexdigest(),
-            builder.PARENT_SUMMARY_EXPECTED_SHA256,
+            "afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5",
         )
-        self.assertEqual(
-            len(summary_text.encode("utf-8")),
-            builder.PARENT_SUMMARY_EXPECTED_BYTES,
-        )
-        self.assertEqual(
-            parent["admission"]["full"]["canonical_sha256"],
-            builder.PARENT_FULL_EXPECTED_SHA256,
-        )
-        self.assertEqual(
-            parent["admission"]["summary"]["canonical_sha256"],
-            builder.PARENT_SUMMARY_EXPECTED_SHA256,
-        )
+        self.assertEqual(len(summary_text.encode("utf-8")), 95_410)
         self.assertEqual(
             parent["admission"]["round12_payload_sha256"],
             "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90",
         )
 
-    def test_manifest_checker_and_common_observation_hashes_are_exact(self) -> None:
+    def test_contract_checker_and_common_observation_hashes_are_exact(self) -> None:
         stop_b = self.full["g_local_v1"]
-        manifest = stop_b["preregistration_manifest"]
-        manifest_encoded = builder._compact_json(manifest).encode("utf-8")
+        contract = stop_b["permanent_contract_manifest"]
+        contract_encoded = builder._compact_json(contract).encode("utf-8")
         self.assertEqual(
-            sha256(manifest_encoded).hexdigest(),
-            stop_b["manifest_admission"]["registered_sha256"],
+            sha256(contract_encoded).hexdigest(),
+            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+        )
+        self.assertEqual(len(contract_encoded), 314_821)
+        self.assertEqual(
+            stop_b["round15_hash_roles"],
+            {
+                "registered_manifest_sha256": (
+                    "e5f2d6630ee2f37de409f5e2c0757eed17b24509ca3cd3f7d924c130b6219c3b"
+                ),
+                "label_ledger_sha256": (
+                    "2e7d95c35bb7490eda4d6fcd6a193bfde6122ddbc6e314bc2a52ed3f5c1828a0"
+                ),
+            },
+        )
+        self.assertEqual(
+            self.summary["stop_B"]["round15_hash_roles"],
+            stop_b["round15_hash_roles"],
         )
 
         checker = stop_b["checker_result"]
         checker_encoded = builder._compact_json(checker).encode("utf-8")
         self.assertEqual(
             sha256(checker_encoded).hexdigest(),
-            "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80",
+            "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca",
         )
-        self.assertEqual(
-            len(checker_encoded),
-            55_566,
-        )
+        self.assertEqual(len(checker_encoded), 56_940)
         common = checker["observation_evidence"]["common_observation"]
         common_encoded = builder._compact_json(common).encode("utf-8")
         self.assertEqual(
             sha256(common_encoded).hexdigest(),
             "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc",
         )
-        self.assertEqual(
-            len(common_encoded),
-            53_279,
-        )
+        self.assertEqual(len(common_encoded), 53_279)
 
-    def test_full_artifact_contains_history_checker_and_terminal_B(self) -> None:
+    def test_full_artifact_is_schema_v2_final_mathematical_terminal(self) -> None:
+        self.assertEqual(
+            self.full["artifact"],
+            "G-104 G_local-v1 final Stop-B result",
+        )
+        self.assertEqual(self.full["schema_version"], 2)
         self.assertEqual(
             self.full["historical_rounds_13_through_15"],
             list(builder.ROUND13_THROUGH_15_IMMUTABLE_HISTORY),
@@ -359,26 +383,9 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
         self.assertTrue(checker["stop_B"])
         self.assertTrue(checker["observations_equal"])
         self.assertTrue(all(checker["component_equality"].values()))
-        self.assertEqual(
-            {
-                key: checker[key]
-                for key in (
-                    "Obs_G_structural_evaluations",
-                    "new_v5_candidate_evaluation_calls",
-                    "new_global_or_A_block_H1_queries",
-                    "new_population_queries",
-                )
-            },
-            {
-                "Obs_G_structural_evaluations": 2,
-                "new_v5_candidate_evaluation_calls": 0,
-                "new_global_or_A_block_H1_queries": 0,
-                "new_population_queries": 0,
-            },
-        )
         terminal = self.full["terminal"]
         self.assertEqual(terminal["kind"], "B")
-        self.assertFalse(terminal["task_complete"])
+        self.assertEqual(terminal["role"], "final-mathematical-terminal")
         self.assertFalse(terminal["stop_condition_A_completion"])
         self.assertTrue(
             terminal["stop_condition_B_G_local_v1_two_point_separation"]
@@ -387,22 +394,50 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
         self.assertFalse(
             terminal["stop_condition_C_two_valid_same_blocker_no_progress"]
         )
-        self.assertTrue(terminal["issue_remains_open_until_non_draft_PR_merge"])
-        self.assertTrue(terminal["prd_retained_until_completion_closeout"])
         self.assertTrue(terminal["grammar_relative"])
         self.assertFalse(terminal["absolute_impossibility_claim"])
+        for lifecycle_key in (
+            "task_complete",
+            "issue_remains_open_until_non_draft_PR_merge",
+            "prd_retained_until_completion_closeout",
+            "repository_status",
+        ):
+            self.assertNotIn(lifecycle_key, terminal)
+            self.assertNotIn(lifecycle_key, self.summary["terminal"])
+        self.assertNotIn("repository_status", self.summary["full_results"])
+
+    def test_superseded_values_occur_only_as_opaque_history(self) -> None:
+        old_values = (
+            "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b5"
+            + "9969",
+            "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c036"
+            + "6c80",
+            int("52453" + "47326"),
+        )
+        for value in old_values:
+            paths = _paths_with_value(value, self.full)
+            self.assertTrue(paths, value)
+            for path in paths:
+                self.assertIn("historical", ".".join(path), path)
+        opaque = self.full["historical_provenance"]
         self.assertEqual(
-            terminal["result_provenance"],
-            builder.STOP_B_RESULT_PROVENANCE,
+            opaque["stop_b_execution_and_downstream_sync"]["role"],
+            "opaque-git-and-issue-history-provenance",
         )
         self.assertEqual(
-            terminal["G107_sync_provenance"],
-            list(builder.G107_STOP_B_SYNC_PROVENANCE),
+            opaque["superseded_execution_bridge"]["role"],
+            "opaque history bridge; no current-source reconstruction claim",
         )
 
     def test_summary_is_deterministic_bounded_and_references_full(self) -> None:
         self.assertEqual(self.summary, self.summary_again)
         self.assertEqual(builder.render_json(self.full), self.full_before_summary)
+        self.assertEqual(self.summary["schema_version"], 2)
+        self.assertEqual(
+            self.summary["artifact"],
+            "G-104 G_local-v1 final Stop-B terminal summary",
+        )
+        self.assertIs(self.summary["stop_B"]["reached"], True)
         full_encoded = self.full_rendered.encode("utf-8")
         self.assertEqual(
             self.summary["full_results"]["canonical_sha256"],
@@ -411,6 +446,10 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
         self.assertEqual(
             self.summary["full_results"]["canonical_bytes"],
             len(full_encoded),
+        )
+        self.assertEqual(
+            self.summary["full_results"]["canonical_generator"],
+            builder.CANONICAL_GENERATOR,
         )
         self.assertLess(len(self.summary_rendered.encode("utf-8")), 100_000)
         self.assertNotIn(
@@ -422,20 +461,34 @@ class StopBBuilderIntegrationTest(unittest.TestCase):
             self.full["g_local_v1"]["checker_result"]["component_equality"],
         )
         self.assertEqual(
-            self.summary["stop_B"]["result_provenance"],
-            builder.STOP_B_RESULT_PROVENANCE,
+            self.summary["stop_B"]["query_counts"],
+            self.full["g_local_v1"]["checker_admission"]["query_counts"],
+        )
+        self.assertEqual(
+            self.summary["historical_provenance"],
+            self.full["historical_provenance"],
         )
 
     def test_fail_closed_admissions_reject_hash_and_history_drift(self) -> None:
+        contract = deepcopy(
+            self.full["g_local_v1"]["permanent_contract_manifest"]
+        )
+        contract["checker_executed"] = True
+        with self.assertRaises(AssertionError):
+            builder._admit_permanent_contract(contract)
+
+        original_contract = self.full["g_local_v1"][
+            "permanent_contract_manifest"
+        ]
         checker = deepcopy(self.full["g_local_v1"]["checker_result"])
         checker["new_population_queries"] = 1
         with self.assertRaises(AssertionError):
-            builder._admit_checker_result(checker)
+            builder._admit_checker_result(checker, original_contract)
 
-        manifest = deepcopy(self.full["g_local_v1"]["preregistration_manifest"])
-        manifest["checker_executed"] = True
+        checker = deepcopy(self.full["g_local_v1"]["checker_result"])
+        checker["current_permanent_contract_provenance"]["sha256"] = "0" * 64
         with self.assertRaises(AssertionError):
-            builder._admit_manifest(manifest)
+            builder._admit_checker_result(checker, original_contract)
 
         with patch.object(
             builder.historical_source,

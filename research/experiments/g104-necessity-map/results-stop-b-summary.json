@@ -1,16 +1,71 @@
 {
-  "artifact": "G-104 G_local-v1 Stop-B slim result summary",
+  "artifact": "G-104 G_local-v1 final Stop-B terminal summary",
   "full_results": {
-    "canonical_bytes": 4842570,
-    "canonical_generator": "build_stop_b_results.py --output <full-path> --summary-output <summary-path>",
-    "canonical_sha256": "bf508a0997a9197012c67ba9b58de1c9afa242ddba8851e03a0ba15f1471e6f8",
-    "repository_status": "derived; not committed",
+    "canonical_bytes": 4850081,
+    "canonical_generator": {
+      "argv": [
+        "python3",
+        "research/experiments/g104-necessity-map/build_stop_b_results.py",
+        "--output",
+        "/tmp/g104-necessity-map-stop-b-results.json",
+        "--summary-output",
+        "research/experiments/g104-necessity-map/results-stop-b-summary.json"
+      ],
+      "working_directory": "repository-root"
+    },
+    "canonical_sha256": "b8ac9461efe3dc4a039f986fa70daa0ab95842d83d7c9ddcb77d7024ffefc95e",
     "serialization": {
       "encoding": "UTF-8",
       "ensure_ascii": false,
       "indent": 2,
       "sort_keys": true,
       "trailing_newline": true
+    }
+  },
+  "historical_provenance": {
+    "stop_b_execution_and_downstream_sync": {
+      "downstream_sync": [
+        {
+          "comment": 5245356130,
+          "created_at": "2026-08-10T20:05:35Z",
+          "surface": "PR-3955",
+          "updated_at": "2026-08-10T20:05:35Z"
+        },
+        {
+          "comment": 5245356137,
+          "created_at": "2026-08-10T20:05:35Z",
+          "surface": "Issue-3954",
+          "updated_at": "2026-08-10T20:05:35Z"
+        }
+      ],
+      "role": "opaque-git-and-issue-history-provenance",
+      "stop_b_result": {
+        "created_at": "2026-08-10T20:04:41Z",
+        "issue_comment": 5245347326,
+        "updated_at": "2026-08-10T20:04:41Z"
+      }
+    },
+    "superseded_execution_bridge": {
+      "current_checker_must_match_historical_common_observation": true,
+      "record": {
+        "git_commit": "ded12203d2f95fa8f83aadfd3a1e453f6e7efa06",
+        "old_checker_reconstructed_from_current_source": false,
+        "old_manifest_reconstructed_from_current_source": false,
+        "preregistration": {
+          "issue_comment": 5245279192,
+          "manifest_canonical_bytes": 311163,
+          "manifest_sha256": "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969"
+        },
+        "result": {
+          "checker_canonical_bytes": 55566,
+          "checker_sha256": "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80",
+          "common_observation_canonical_bytes": 53279,
+          "common_observation_sha256": "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc",
+          "issue_comment": 5245347326
+        },
+        "role": "opaque-git-and-issue-history-provenance"
+      },
+      "role": "opaque history bridge; no current-source reconstruction claim"
     }
   },
   "historical_rounds_13_through_15": [
@@ -166,7 +221,7 @@
     }
   },
   "randomness": "none",
-  "schema_version": 1,
+  "schema_version": 2,
   "serialization": {
     "encoding": "UTF-8",
     "ensure_ascii": false,
@@ -175,26 +230,12 @@
     "trailing_newline": true
   },
   "stop_B": {
-    "G107_sync_provenance": [
-      {
-        "comment": 5245356130,
-        "created_at": "2026-08-10T20:05:35Z",
-        "surface": "PR-3955",
-        "updated_at": "2026-08-10T20:05:35Z"
-      },
-      {
-        "comment": 5245356137,
-        "created_at": "2026-08-10T20:05:35Z",
-        "surface": "Issue-3954",
-        "updated_at": "2026-08-10T20:05:35Z"
-      }
-    ],
     "checker_admission": {
       "admitted": true,
       "all_components_equal": true,
       "checker_result": {
-        "canonical_bytes": 55566,
-        "canonical_sha256": "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80",
+        "canonical_bytes": 56940,
+        "canonical_sha256": "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca",
         "serialization": {
           "encoding": "UTF-8",
           "ensure_ascii": true,
@@ -242,12 +283,25 @@
       "whole_rooted_ball_histogram": true
     },
     "coverage_limit": "This is a two-point separation result relative only to the registered finite observation grammar G_local-v1, not an absolute impossibility result for other grammars.",
+    "current_permanent_contract_provenance": {
+      "migration_created_at": "2026-08-10T22:22:12Z",
+      "migration_issue_comment": 5246699114,
+      "migration_updated_at": "2026-08-10T22:22:12Z",
+      "sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
+    },
     "general_two_point_argument": "Every admissible condition family factors through Obs_G. Equal Obs_G values force equal condition values, while the admitted immutable Round15 ledger gives different uniformity truth values for these two structural inputs.",
     "labels": {
       "TERNARY-CYCLE-3": true,
       "TERNARY-CYCLE-6": false
     },
     "labels_differ": true,
+    "migration_invariants": {
+      "historical_labels_admitted_after_observation": true,
+      "observation_meaning_unchanged": true,
+      "old_checker_reconstruction_claimed": false,
+      "old_manifest_reconstruction_claimed": false,
+      "query_zero_contract_unchanged": true
+    },
     "observation_evidence": {
       "common_observation_canonical_bytes": 53279,
       "common_observation_sha256": "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc",
@@ -272,23 +326,19 @@
       }
     },
     "observations_equal": true,
-    "query_counts": {
-      "Obs_G_structural_evaluations": 2,
-      "new_global_or_A_block_H1_queries": 0,
-      "new_population_queries": 0,
-      "new_v5_candidate_evaluation_calls": 0
-    },
-    "registered_manifest": {
+    "permanent_contract": {
       "admitted": true,
-      "builder_direct_manifest_requests": 1,
-      "canonical_bytes": 311163,
-      "canonical_sha256": "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969",
-      "checker_internal_manifest_admission_reconstructions": 1,
-      "effective_manifest_constructions": 2,
-      "preregistration_created_at": "2026-08-10T19:57:54Z",
-      "preregistration_issue_comment": 5245279192,
-      "preregistration_updated_at": "2026-08-10T19:57:54Z",
-      "registered_sha256": "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969",
+      "builder_direct_contract_requests": 1,
+      "canonical_bytes": 314821,
+      "canonical_sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+      "checker_internal_contract_admission_reconstructions": 1,
+      "current_permanent_contract_provenance": {
+        "migration_created_at": "2026-08-10T22:22:12Z",
+        "migration_issue_comment": 5246699114,
+        "migration_updated_at": "2026-08-10T22:22:12Z",
+        "sha256": "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
+      },
+      "effective_contract_constructions": 2,
       "serialization": {
         "encoding": "UTF-8",
         "ensure_ascii": true,
@@ -300,10 +350,21 @@
         "trailing_newline": false
       }
     },
-    "result_provenance": {
-      "created_at": "2026-08-10T20:04:41Z",
-      "issue_comment": 5245347326,
-      "updated_at": "2026-08-10T20:04:41Z"
+    "permanent_contract_regression_provenance": {
+      "created_at": "2026-08-10T22:28:47Z",
+      "issue_comment": 5246749681,
+      "updated_at": "2026-08-10T22:28:47Z"
+    },
+    "query_counts": {
+      "Obs_G_structural_evaluations": 2,
+      "new_global_or_A_block_H1_queries": 0,
+      "new_population_queries": 0,
+      "new_v5_candidate_evaluation_calls": 0
+    },
+    "reached": true,
+    "round15_hash_roles": {
+      "label_ledger_sha256": "2e7d95c35bb7490eda4d6fcd6a193bfde6122ddbc6e314bc2a52ed3f5c1828a0",
+      "registered_manifest_sha256": "e5f2d6630ee2f37de409f5e2c0757eed17b24509ca3cd3f7d924c130b6219c3b"
     },
     "round15_label_ledger_sha256": "2e7d95c35bb7490eda4d6fcd6a193bfde6122ddbc6e314bc2a52ed3f5c1828a0",
     "semantic_id": "G_local-v1",
@@ -315,37 +376,16 @@
     }
   },
   "terminal": {
-    "G107_sync_provenance": [
-      {
-        "comment": 5245356130,
-        "created_at": "2026-08-10T20:05:35Z",
-        "surface": "PR-3955",
-        "updated_at": "2026-08-10T20:05:35Z"
-      },
-      {
-        "comment": 5245356137,
-        "created_at": "2026-08-10T20:05:35Z",
-        "surface": "Issue-3954",
-        "updated_at": "2026-08-10T20:05:35Z"
-      }
-    ],
     "absolute_impossibility_claim": false,
     "coverage_limit": "This is a two-point separation result relative only to the registered finite observation grammar G_local-v1, not an absolute impossibility result for other grammars.",
     "grammar_relative": true,
-    "issue_remains_open_until_non_draft_PR_merge": true,
     "kind": "B",
-    "prd_retained_until_completion_closeout": true,
-    "result_provenance": {
-      "created_at": "2026-08-10T20:04:41Z",
-      "issue_comment": 5245347326,
-      "updated_at": "2026-08-10T20:04:41Z"
-    },
+    "role": "final-mathematical-terminal",
     "stop_condition_A_completion": false,
     "stop_condition_B_G_local_v1_two_point_separation": true,
     "stop_condition_B_finite_exhaustion": false,
     "stop_condition_C_two_valid_same_blocker_no_progress": false,
     "stop_condition_reached": true,
-    "task_complete": false,
     "verdict": "CSTAR-not-expressible-in-G_local-v1"
   }
 }

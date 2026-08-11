@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Pure preregistration tests for the structural ``G_local-v1`` packet.
+"""Pure permanent-contract tests for the structural ``G_local-v1`` packet.
 
-These tests inspect literals, source, and the pure manifest only.  They do not
+These tests inspect literals, source, and the pure contract only.  They do not
 call the observation evaluator, the Stop-B checker, a witness constructor, an
 H1 routine, a v5 candidate/terminal routine, or a population/report query.
 """
@@ -22,6 +22,30 @@ import g_local_v1_stop_b as stop_b
 
 
 HERE = Path(__file__).resolve().parent
+HISTORICAL_EXECUTION_LITERAL = {
+    "role": "opaque-git-and-issue-history-provenance",
+    "git_commit": "ded12203d2f95fa8f83aadfd3a1e453f6e7efa06",
+    "preregistration": {
+        "issue_comment": 5245279192,
+        "manifest_sha256": (
+            "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969"
+        ),
+        "manifest_canonical_bytes": 311_163,
+    },
+    "result": {
+        "issue_comment": 5245347326,
+        "checker_sha256": (
+            "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80"
+        ),
+        "checker_canonical_bytes": 55_566,
+        "common_observation_sha256": (
+            "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc"
+        ),
+        "common_observation_canonical_bytes": 53_279,
+    },
+    "old_manifest_reconstructed_from_current_source": False,
+    "old_checker_reconstructed_from_current_source": False,
+}
 
 
 def _compact(value: object) -> str:
@@ -41,33 +65,13 @@ def _root_labels(record: dict[str, object]) -> list[dict[str, object]]:
     return [row["ball"]["root_label"] for row in _all_root_rows(record)]
 
 
-class GLocalV1PurePreregistrationTests(unittest.TestCase):
-    def test_final_prd_sync_and_round15_ledger_are_exact_literals(self) -> None:
-        self.assertEqual(stop_b.G_LOCAL_V1_HUMAN_ADJUDICATION_COMMENT, 5244071526)
+class GLocalV1PermanentContractTests(unittest.TestCase):
+    def test_historical_execution_and_round15_ledger_are_exact_literals(
+        self,
+    ) -> None:
         self.assertEqual(
-            stop_b.G_LOCAL_V1_SUPERSEDING_PRD_SYNC_COMMENT,
-            5244542097,
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_SUPERSEDING_PRD_SYNC_CREATED_AT,
-            "2026-08-10T18:49:26Z",
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_SUPERSEDING_PRD_SYNC_UPDATED_AT,
-            "2026-08-10T18:49:26Z",
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PRD_FILE_SHA256,
-            "6a74e0307b2aa10959bfb1de795afb687f0d1c5a4bb1efdb2cb3495a803ba6df",
-        )
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PRD_GIT_BLOB_SHA,
-            "752baac79538727b3675c2165bc58361bd36304e",
-        )
-        self.assertEqual(stop_b.G_LOCAL_V1_SUPERSEDED_SYNC_COMMENT, 5244424494)
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_SUPERSEDED_SYNC_ROLE,
-            "blob-identity-only-superseded",
+            stop_b.G_LOCAL_V1_HISTORICAL_EXECUTION,
+            HISTORICAL_EXECUTION_LITERAL,
         )
 
         ledger = stop_b.ROUND15_LABEL_LEDGER
@@ -83,6 +87,19 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
         self.assertEqual(
             stop_b.ROUND15_REGISTERED_MANIFEST_SHA256,
             "e5f2d6630ee2f37de409f5e2c0757eed17b24509ca3cd3f7d924c130b6219c3b",
+        )
+        contract = stop_b.g_local_v1_permanent_contract_manifest()
+        self.assertEqual(
+            contract["immutable_round15_label_ledger"]["sha256"],
+            "2e7d95c35bb7490eda4d6fcd6a193bfde6122ddbc6e314bc2a52ed3f5c1828a0",
+        )
+        self.assertEqual(
+            contract["round15_immutable_ledger_provenance"]["sha256"],
+            "e5f2d6630ee2f37de409f5e2c0757eed17b24509ca3cd3f7d924c130b6219c3b",
+        )
+        self.assertNotEqual(
+            contract["immutable_round15_label_ledger"]["sha256"],
+            contract["round15_immutable_ledger_provenance"]["sha256"],
         )
         self.assertEqual(
             ledger["result_provenance"],
@@ -666,19 +683,26 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
         signature = inspect.signature(stop_b.check_g_local_v1_stop_b)
         self.assertEqual(tuple(signature.parameters), ())
         source = inspect.getsource(stop_b.check_g_local_v1_stop_b)
-        manifest_index = source.index("_admit_registered_manifest()")
-        witness_index = source.index("_admit_witness_structures(manifest)")
+        contract_index = source.index("_admit_current_permanent_contract()")
+        witness_index = source.index("_admit_witness_structures(contract)")
         observation_index = source.index("structural.observe_g_local_v1")
         hand_index = source.index("_assert_hand_observation_components")
-        ledger_index = source.index("_admit_round15_ledger(manifest)")
-        self.assertLess(manifest_index, witness_index)
+        component_index = source.index("_observation_component_equality")
+        history_index = source.index("_admit_historical_observation_bridge")
+        ledger_index = source.index("_admit_round15_ledger(contract)")
+        self.assertLess(contract_index, witness_index)
         self.assertLess(witness_index, observation_index)
         self.assertLess(observation_index, hand_index)
-        self.assertLess(hand_index, ledger_index)
+        self.assertLess(hand_index, component_index)
+        self.assertLess(component_index, history_index)
+        self.assertLess(history_index, ledger_index)
         self.assertIn("component_equality = _observation_component_equality", source)
         self.assertIn('"component_equality": component_equality', source)
         self.assertIn('"common_observation_sha256": sha256(', source)
         self.assertIn('"common_observation": observations[', source)
+        self.assertIn('"historical_execution_provenance":', source)
+        self.assertIn('"current_permanent_contract_provenance":', source)
+        self.assertIn('"historical_bridge": historical_observation_bridge', source)
         self.assertIn('"Obs_G_structural_evaluations": 2', source)
         self.assertIn('"new_v5_candidate_evaluation_calls": 0', source)
         self.assertIn('"new_global_or_A_block_H1_queries": 0', source)
@@ -704,21 +728,81 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
         self.assertNotIn("is_uniform", identifiers)
         self.assertNotIn("v5_candidate_evaluation", identifiers)
         self.assertEqual(
-            stop_b.G_LOCAL_V1_REGISTERED_MANIFEST_SHA256,
-            "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969",
-        )
-        self.assertEqual(stop_b.G_LOCAL_V1_PREREGISTRATION_COMMENT, 5245279192)
-        self.assertEqual(
-            stop_b.G_LOCAL_V1_PREREGISTRATION_CREATED_AT,
-            "2026-08-10T19:57:54Z",
+            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_SHA256,
+            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
         )
         self.assertEqual(
-            stop_b.G_LOCAL_V1_PREREGISTRATION_UPDATED_AT,
-            "2026-08-10T19:57:54Z",
+            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT,
+            5246699114,
         )
+        self.assertEqual(
+            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT,
+            "2026-08-10T22:22:12Z",
+        )
+        self.assertEqual(
+            stop_b.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT,
+            "2026-08-10T22:22:12Z",
+        )
+        admission_source = inspect.getsource(
+            stop_b._admit_current_permanent_contract
+        )
+        for field in (
+            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
+        ):
+            self.assertIn(field, admission_source)
+        unregistered_gate_index = admission_source.index(
+            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256 is None"
+        )
+        contract_generation_index = admission_source.index(
+            "contract = g_local_v1_permanent_contract_manifest()"
+        )
+        digest_index = admission_source.index(
+            "actual_sha = sha256(_compact_json(contract)"
+        )
+        registered_comparison_index = admission_source.index(
+            "actual_sha != G_LOCAL_V1_PERMANENT_CONTRACT_SHA256"
+        )
+        self.assertLess(unregistered_gate_index, contract_generation_index)
+        self.assertLess(contract_generation_index, digest_index)
+        self.assertLess(digest_index, registered_comparison_index)
+        self.assertNotIn("G_LOCAL_V1_HISTORICAL_EXECUTION", admission_source)
+        bridge_source = inspect.getsource(
+            stop_b._admit_historical_observation_bridge
+        )
+        self.assertIn(
+            'expected_witness_names = {"TERNARY-CYCLE-3", "TERNARY-CYCLE-6"}',
+            bridge_source,
+        )
+        self.assertIn("set(witness_rows) == expected_witness_names", bridge_source)
+        self.assertIn("common_observation_sha256", bridge_source)
+        self.assertIn("common_observation_canonical_bytes", bridge_source)
+        self.assertNotIn("checker_sha256", bridge_source)
+        self.assertNotIn("manifest_sha256", bridge_source)
 
-    def test_pure_manifest_cannot_call_evaluator_fixture_or_oracle(self) -> None:
-        forbidden = AssertionError("pure manifest crossed dependency boundary")
+    def test_unregistered_contract_fails_before_manifest_generation(self) -> None:
+        with patch.multiple(
+            stop_b,
+            G_LOCAL_V1_PERMANENT_CONTRACT_SHA256=None,
+            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT=None,
+            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT=None,
+            G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT=None,
+        ):
+            with patch.object(
+                stop_b,
+                "g_local_v1_permanent_contract_manifest",
+            ) as manifest_mock:
+                with self.assertRaisesRegex(
+                    AssertionError,
+                    "permanent contract is not registered",
+                ):
+                    stop_b._admit_current_permanent_contract()
+                manifest_mock.assert_not_called()
+
+    def test_pure_contract_cannot_call_evaluator_fixture_or_oracle(self) -> None:
+        forbidden = AssertionError("pure contract crossed dependency boundary")
         patch_targets = (
             "r2_hunt.v5_candidate_evaluation",
             "r2_hunt.v5_immutable_calibration_report",
@@ -731,13 +815,30 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
         try:
             for manager in managers:
                 entered.append(manager.__enter__())
-            manifest = stop_b.g_local_v1_preregistration_manifest()
+            contract = stop_b.g_local_v1_permanent_contract_manifest()
         finally:
             for manager in reversed(managers):
                 manager.__exit__(None, None, None)
-        self.assertEqual(manifest["preregistered_issue_comment"], None)
         self.assertEqual(
-            manifest["manifest_serialization"],
+            contract["kind"],
+            "G-local-v1-permanent-structural-contract-v1",
+        )
+        self.assertEqual(
+            sha256(_compact(contract).encode("utf-8")).hexdigest(),
+            "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af",
+        )
+        self.assertIs(contract["current_registration_values_in_contract"], False)
+        self.assertEqual(
+            contract["current_registration_fields"],
+            [
+                "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
+            ],
+        )
+        self.assertEqual(
+            contract["contract_serialization"],
             {
                 "encoding": "UTF-8",
                 "ensure_ascii": True,
@@ -747,10 +848,10 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
                 "self_contained_hash": False,
             },
         )
-        self.assertIs(manifest["checker_executed"], False)
-        self.assertIs(manifest["observation_executed"], False)
-        self.assertIs(manifest["manifest_contains_its_own_sha256"], False)
-        self.assertNotIn("manifest_sha256", manifest)
+        self.assertIs(contract["checker_executed"], False)
+        self.assertIs(contract["observation_executed"], False)
+        self.assertIs(contract["contract_contains_its_own_sha256"], False)
+        self.assertNotIn("permanent_contract_sha256", contract)
 
         source = (HERE / "g_local_v1_stop_b.py").read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -759,7 +860,7 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             for node in tree.body
             if isinstance(node, ast.FunctionDef)
         }
-        pending = ["g_local_v1_preregistration_manifest"]
+        pending = ["g_local_v1_permanent_contract_manifest"]
         reachable: set[str] = set()
         while pending:
             name = pending.pop()
@@ -788,18 +889,26 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
                 "v5_terminal_states",
             }.isdisjoint(external_calls)
         )
+        self.assertTrue(
+            {
+                "check_g_local_v1_stop_b",
+                "_admit_current_permanent_contract",
+                "_admit_witness_structures",
+                "_admit_round15_ledger",
+            }.isdisjoint(reachable)
+        )
         self.assertEqual(
-            manifest["dependency_contract"],
+            contract["dependency_contract"],
             {
                 "direction": (
                     "structural-input->Obs_G-serialization->equality-checker<-"
                     "immutable-label-ledger"
                 ),
-                "manifest_calls_observation": False,
-                "manifest_calls_witness_constructors": False,
-                "manifest_calls_v5_candidate_or_terminal": False,
-                "manifest_calls_H1_rank_or_uniformity": False,
-                "manifest_calls_round13_14_15_report_or_population": False,
+                "contract_calls_observation": False,
+                "contract_calls_witness_constructors": False,
+                "contract_calls_v5_candidate_or_terminal": False,
+                "contract_calls_H1_rank_or_uniformity": False,
+                "contract_calls_round13_14_15_report_or_population": False,
                 "checker_accepts_caller_labels": False,
                 "registered_local_C3_exception_only": True,
                 "later_checker_Obs_G_structural_evaluations": 2,
@@ -809,9 +918,9 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             },
         )
 
-    def test_manifest_binds_exact_source_closures_and_hand_packet(self) -> None:
-        manifest = stop_b.g_local_v1_preregistration_manifest()
-        source = manifest["source_bundle"]
+    def test_contract_binds_exact_source_closures_and_hand_packet(self) -> None:
+        contract = stop_b.g_local_v1_permanent_contract_manifest()
+        source = contract["source_bundle"]
         g_text = (HERE / "g_local_v1.py").read_text(encoding="utf-8")
         self.assertEqual(
             source["observation_module"]["normalized_full_source"],
@@ -860,10 +969,10 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             .replace("\r", "\n")
         )
         registration_fields = (
-            "G_LOCAL_V1_REGISTERED_MANIFEST_SHA256",
-            "G_LOCAL_V1_PREREGISTRATION_COMMENT",
-            "G_LOCAL_V1_PREREGISTRATION_CREATED_AT",
-            "G_LOCAL_V1_PREREGISTRATION_UPDATED_AT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT",
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT",
         )
 
         def rewrite_registration_values(
@@ -910,6 +1019,33 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             checker_text,
             canonical_values,
         )
+        expected_pre_registration_lines = {
+            "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256": (
+                "G_LOCAL_V1_PERMANENT_CONTRACT_SHA256: str | None = None"
+            ),
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT": (
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT: "
+                "int | None = None"
+            ),
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT": (
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT: "
+                "str | None = None"
+            ),
+            "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT": (
+                "G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT: "
+                "str | None = None"
+            ),
+        }
+        normalized_lines = checker_normalized.splitlines()
+        for field, expected_line in expected_pre_registration_lines.items():
+            self.assertEqual(
+                [
+                    line
+                    for line in normalized_lines
+                    if line.startswith(f"{field}:")
+                ],
+                [expected_line],
+            )
         registered_variant = rewrite_registration_values(
             checker_text,
             {
@@ -945,8 +1081,8 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             len(checker_normalized.encode("utf-8")),
         )
         one_bit_drift = checker_text.replace(
-            "Immutable label ledger",
-            "Jmmutable label ledger",
+            "Permanent structural contract",
+            "Qermanent structural contract",
             1,
         )
         self.assertNotEqual(one_bit_drift, checker_text)
@@ -1179,7 +1315,15 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             ]
         }
         self.assertIn(
-            "g_local_v1_stop_b._admit_registered_manifest",
+            "g_local_v1_stop_b._admit_current_permanent_contract",
+            checker_runtime_bindings,
+        )
+        self.assertIn(
+            "g_local_v1_stop_b._admit_historical_observation_bridge",
+            checker_runtime_bindings,
+        )
+        self.assertIn(
+            "g_local_v1_stop_b.g_local_v1_permanent_contract_manifest",
             checker_runtime_bindings,
         )
         for module_key in (
@@ -1193,7 +1337,7 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
                 [],
             )
         self.assertEqual(
-            manifest["hand_expectation"]["expected_common_observation"],
+            contract["hand_expectation"]["expected_common_observation"],
             stop_b.G_LOCAL_V1_EXPECTED_COMMON_OBS,
         )
         self.assertEqual(
@@ -1203,7 +1347,7 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
                     row["registered_projection_source"],
                     row["registered_projection_value"],
                 )
-                for row in manifest["witness_inputs"]
+                for row in contract["witness_inputs"]
             ],
             [
                 (
@@ -1227,17 +1371,13 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             ],
         )
         self.assertIs(
-            manifest["hand_expectation"][
+            contract["hand_expectation"][
                 "engine_observation_called_to_build_expectation"
             ],
             False,
         )
         self.assertEqual(
-            manifest["prd_provenance"]["superseding_sync_comment"],
-            5244542097,
-        )
-        self.assertEqual(
-            manifest["round15_registered_manifest_provenance"],
+            contract["round15_immutable_ledger_provenance"],
             {
                 "issue_comment": 5235347217,
                 "created_at": "2026-08-10T02:51:13Z",
@@ -1259,7 +1399,32 @@ class GLocalV1PurePreregistrationTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            manifest["expected_later_verdict_if_reproduced"],
+            contract["historical_execution_bridge"],
+            {
+                "record": HISTORICAL_EXECUTION_LITERAL,
+                "role": (
+                    "opaque history bridge; no current-source reconstruction "
+                    "claim"
+                ),
+                "current_checker_must_match_historical_common_observation": (
+                    True
+                ),
+            },
+        )
+        self.assertIs(
+            contract["historical_execution_bridge"]["record"][
+                "old_manifest_reconstructed_from_current_source"
+            ],
+            False,
+        )
+        self.assertIs(
+            contract["historical_execution_bridge"]["record"][
+                "old_checker_reconstructed_from_current_source"
+            ],
+            False,
+        )
+        self.assertEqual(
+            contract["expected_later_verdict_if_reproduced"],
             "CSTAR-not-expressible-in-G_local-v1",
         )
 

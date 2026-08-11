@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Build the deterministic G_local-v1 Stop-B full and slim artifacts.
+"""Build the deterministic G_local-v1 final Stop-B artifacts.
 
 Round 1 through Round 12 are regenerated through the immutable parent API.
 Rounds 13 through 15 are provenance-only history: this builder never reruns
 their reports, candidates, populations, or H1 queries.  The builder directly
-requests the pure G_local-v1 manifest once and the Stop-B checker once.  The
-checker performs its own admitted manifest reconstruction, so the effective
-manifest construction count is exactly two.
+requests the pure G_local-v1 permanent contract once and the Stop-B checker
+once.  The checker performs its own admitted contract reconstruction, so the
+effective contract construction count is exactly two.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from build_results import (
 import g_local_v1_stop_b as stop_b_source
 from g_local_v1_stop_b import (
     check_g_local_v1_stop_b,
-    g_local_v1_preregistration_manifest,
+    g_local_v1_permanent_contract_manifest,
 )
 import r2_hunt as historical_source
 
@@ -42,34 +42,61 @@ PARENT_ROUND12_EXPECTED_SHA256 = (
     "c9ab928190491610ff1e394fb16fb4e132f117374a317505fbd2025ab5a09f90"
 )
 
-CHECKER_RESULT_COMPACT_EXPECTED_SHA256 = (
-    "0d644121840591cd4303fbda99d94cd887836b001d3993bd9d284bb3c0366c80"
+PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256 = (
+    "955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af"
 )
-CHECKER_RESULT_COMPACT_EXPECTED_BYTES = 55_566
+PERMANENT_CONTRACT_COMPACT_EXPECTED_BYTES = 314_821
+CHECKER_RESULT_COMPACT_EXPECTED_SHA256 = (
+    "834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca"
+)
+CHECKER_RESULT_COMPACT_EXPECTED_BYTES = 56_940
 COMMON_OBSERVATION_EXPECTED_SHA256 = (
     "742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc"
 )
 COMMON_OBSERVATION_EXPECTED_BYTES = 53_279
 
-STOP_B_RESULT_PROVENANCE = {
-    "issue_comment": 5245347326,
-    "created_at": "2026-08-10T20:04:41Z",
-    "updated_at": "2026-08-10T20:04:41Z",
+PERMANENT_CONTRACT_REGRESSION_PROVENANCE = {
+    "issue_comment": 5246749681,
+    "created_at": "2026-08-10T22:28:47Z",
+    "updated_at": "2026-08-10T22:28:47Z",
 }
-G107_STOP_B_SYNC_PROVENANCE = (
-    {
-        "surface": "PR-3955",
-        "comment": 5245356130,
-        "created_at": "2026-08-10T20:05:35Z",
-        "updated_at": "2026-08-10T20:05:35Z",
+HISTORICAL_STOP_B_EXECUTION_PROVENANCE = {
+    "role": "opaque-git-and-issue-history-provenance",
+    "stop_b_result": {
+        "issue_comment": 5245347326,
+        "created_at": "2026-08-10T20:04:41Z",
+        "updated_at": "2026-08-10T20:04:41Z",
     },
-    {
-        "surface": "Issue-3954",
-        "comment": 5245356137,
-        "created_at": "2026-08-10T20:05:35Z",
-        "updated_at": "2026-08-10T20:05:35Z",
-    },
-)
+    "downstream_sync": [
+        {
+            "surface": "PR-3955",
+            "comment": 5245356130,
+            "created_at": "2026-08-10T20:05:35Z",
+            "updated_at": "2026-08-10T20:05:35Z",
+        },
+        {
+            "surface": "Issue-3954",
+            "comment": 5245356137,
+            "created_at": "2026-08-10T20:05:35Z",
+            "updated_at": "2026-08-10T20:05:35Z",
+        },
+    ],
+}
+
+CANONICAL_GENERATOR = {
+    "working_directory": "repository-root",
+    "argv": [
+        "python3",
+        "research/experiments/g104-necessity-map/build_stop_b_results.py",
+        "--output",
+        "/tmp/g104-necessity-map-stop-b-results.json",
+        "--summary-output",
+        (
+            "research/experiments/g104-necessity-map/"
+            "results-stop-b-summary.json"
+        ),
+    ],
+}
 
 CANONICAL_SERIALIZATION = {
     "encoding": "UTF-8",
@@ -402,60 +429,84 @@ def _admit_historical_rounds() -> tuple[dict[str, object], ...]:
     return deepcopy(expected)
 
 
-def _admit_manifest(manifest: dict[str, object]) -> dict[str, object]:
-    record = _compact_record(manifest)
-    if not (
-        stop_b_source.G_LOCAL_V1_REGISTERED_MANIFEST_SHA256
-        == "32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969"
-        and stop_b_source.G_LOCAL_V1_PREREGISTRATION_COMMENT == 5245279192
-        and stop_b_source.G_LOCAL_V1_PREREGISTRATION_CREATED_AT
-        == "2026-08-10T19:57:54Z"
-        and stop_b_source.G_LOCAL_V1_PREREGISTRATION_UPDATED_AT
-        == "2026-08-10T19:57:54Z"
+def _admit_permanent_contract(
+    contract: dict[str, object],
+) -> dict[str, object]:
+    record = _compact_record(contract)
+    source_provenance = {
+        "sha256": stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_SHA256,
+        "migration_issue_comment": (
+            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_ISSUE_COMMENT
+        ),
+        "migration_created_at": (
+            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_CREATED_AT
+        ),
+        "migration_updated_at": (
+            stop_b_source.G_LOCAL_V1_PERMANENT_CONTRACT_MIGRATION_UPDATED_AT
+        ),
+    }
+    expected_provenance = {
+        "sha256": PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256,
+        "migration_issue_comment": 5246699114,
+        "migration_created_at": "2026-08-10T22:22:12Z",
+        "migration_updated_at": "2026-08-10T22:22:12Z",
+    }
+    historical_bridge = contract["historical_execution_bridge"]
+    admitted = (
+        source_provenance == expected_provenance
         and record["canonical_sha256"]
-        == stop_b_source.G_LOCAL_V1_REGISTERED_MANIFEST_SHA256
-        and manifest["preregistered_issue_comment"] is None
-        and manifest["checker_executed"] is False
-        and manifest["observation_executed"] is False
-        and manifest["manifest_contains_its_own_sha256"] is False
-        and manifest["dependency_contract"][
-            "manifest_calls_round13_14_15_report_or_population"
+        == PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256
+        and record["canonical_bytes"]
+        == PERMANENT_CONTRACT_COMPACT_EXPECTED_BYTES
+        and contract["kind"]
+        == "G-local-v1-permanent-structural-contract-v1"
+        and contract["current_registration_values_in_contract"] is False
+        and contract["checker_executed"] is False
+        and contract["observation_executed"] is False
+        and contract["contract_contains_its_own_sha256"] is False
+        and contract["dependency_contract"][
+            "contract_calls_round13_14_15_report_or_population"
         ]
         is False
-        and manifest["dependency_contract"][
+        and contract["dependency_contract"][
             "later_checker_new_global_or_A_block_H1_queries"
         ]
         == 0
-        and manifest["dependency_contract"][
+        and contract["dependency_contract"][
             "later_checker_new_population_queries"
         ]
         == 0
-        and manifest["immutable_round15_label_ledger"]["value"]
+        and contract["immutable_round15_label_ledger"]["value"]
         == stop_b_source.ROUND15_LABEL_LEDGER
-    ):
-        raise AssertionError("G_local-v1 pure manifest admission failed")
+        and historical_bridge["role"]
+        == "opaque history bridge; no current-source reconstruction claim"
+        and historical_bridge["record"]
+        == stop_b_source.G_LOCAL_V1_HISTORICAL_EXECUTION
+        and historical_bridge["record"][
+            "old_manifest_reconstructed_from_current_source"
+        ]
+        is False
+        and historical_bridge["record"][
+            "old_checker_reconstructed_from_current_source"
+        ]
+        is False
+    )
+    if not admitted:
+        raise AssertionError("G_local-v1 permanent contract admission failed")
     return {
         **record,
-        "registered_sha256": (
-            stop_b_source.G_LOCAL_V1_REGISTERED_MANIFEST_SHA256
-        ),
-        "preregistration_issue_comment": (
-            stop_b_source.G_LOCAL_V1_PREREGISTRATION_COMMENT
-        ),
-        "preregistration_created_at": (
-            stop_b_source.G_LOCAL_V1_PREREGISTRATION_CREATED_AT
-        ),
-        "preregistration_updated_at": (
-            stop_b_source.G_LOCAL_V1_PREREGISTRATION_UPDATED_AT
-        ),
-        "builder_direct_manifest_requests": 1,
-        "checker_internal_manifest_admission_reconstructions": 1,
-        "effective_manifest_constructions": 2,
-        "admitted": True,
+        "current_permanent_contract_provenance": source_provenance,
+        "builder_direct_contract_requests": 1,
+        "checker_internal_contract_admission_reconstructions": 1,
+        "effective_contract_constructions": 2,
+        "admitted": admitted,
     }
 
 
-def _admit_checker_result(result: dict[str, object]) -> dict[str, object]:
+def _admit_checker_result(
+    result: dict[str, object],
+    contract: dict[str, object],
+) -> dict[str, object]:
     checker_record = _compact_record(result)
     observation = result["observation_evidence"]["common_observation"]
     observation_record = _compact_record(observation)
@@ -479,7 +530,13 @@ def _admit_checker_result(result: dict[str, object]) -> dict[str, object]:
         "new_global_or_A_block_H1_queries": 0,
         "new_population_queries": 0,
     }
-    if not (
+    expected_contract_provenance = {
+        "sha256": PERMANENT_CONTRACT_COMPACT_EXPECTED_SHA256,
+        "migration_issue_comment": 5246699114,
+        "migration_created_at": "2026-08-10T22:22:12Z",
+        "migration_updated_at": "2026-08-10T22:22:12Z",
+    }
+    admitted = (
         checker_record["canonical_sha256"]
         == CHECKER_RESULT_COMPACT_EXPECTED_SHA256
         and checker_record["canonical_bytes"]
@@ -499,8 +556,10 @@ def _admit_checker_result(result: dict[str, object]) -> dict[str, object]:
         and result["verdict"]
         == "CSTAR-not-expressible-in-G_local-v1"
         and result["semantic_id"] == "G_local-v1"
-        and result["registered_manifest_sha256"]
-        == stop_b_source.G_LOCAL_V1_REGISTERED_MANIFEST_SHA256
+        and result["current_permanent_contract_provenance"]
+        == expected_contract_provenance
+        and result["historical_execution_provenance"]
+        == contract["historical_execution_bridge"]["record"]
         and result["observations_equal"] is True
         and set(component_equality) == expected_components
         and all(component_equality.values())
@@ -508,21 +567,31 @@ def _admit_checker_result(result: dict[str, object]) -> dict[str, object]:
         == {"TERNARY-CYCLE-3": True, "TERNARY-CYCLE-6": False}
         and result["labels_differ"] is True
         and all(result[key] == value for key, value in query_counts.items())
-    ):
+        and result["migration_invariants"]
+        == {
+            "observation_meaning_unchanged": True,
+            "historical_labels_admitted_after_observation": True,
+            "query_zero_contract_unchanged": True,
+            "old_manifest_reconstruction_claimed": False,
+            "old_checker_reconstruction_claimed": False,
+        }
+    )
+    if not admitted:
         raise AssertionError("G_local-v1 Stop-B checker result drift")
     return {
         "checker_result": checker_record,
         "common_observation": observation_record,
         "query_counts": query_counts,
         "component_count": len(component_equality),
-        "all_components_equal": True,
-        "admitted": True,
+        "all_components_equal": all(component_equality.values()),
+        "admitted": admitted,
     }
 
 
 def _terminal_metadata(coverage_limit: str) -> dict[str, object]:
     return {
         "kind": "B",
+        "role": "final-mathematical-terminal",
         "verdict": "CSTAR-not-expressible-in-G_local-v1",
         "stop_condition_reached": True,
         "stop_condition_A_completion": False,
@@ -531,32 +600,27 @@ def _terminal_metadata(coverage_limit: str) -> dict[str, object]:
         "stop_condition_C_two_valid_same_blocker_no_progress": False,
         "grammar_relative": True,
         "absolute_impossibility_claim": False,
-        "task_complete": False,
-        "issue_remains_open_until_non_draft_PR_merge": True,
-        "prd_retained_until_completion_closeout": True,
-        "result_provenance": deepcopy(STOP_B_RESULT_PROVENANCE),
-        "G107_sync_provenance": deepcopy(list(G107_STOP_B_SYNC_PROVENANCE)),
         "coverage_limit": coverage_limit,
     }
 
 
 def stop_b_results_report() -> dict[str, object]:
-    """Build full results with one direct manifest and one checker request.
+    """Build full results with one direct contract and one checker request.
 
-    The checker independently reconstructs and admits the manifest once, so
-    one builder run has two effective manifest constructions in total.
+    The checker independently reconstructs and admits the contract once, so
+    one builder run has two effective contract constructions in total.
     """
 
     parent_full, parent_summary, parent_admission = _admit_parent_checkpoint()
     history = _admit_historical_rounds()
-    manifest = g_local_v1_preregistration_manifest()
-    manifest_admission = _admit_manifest(manifest)
+    contract = g_local_v1_permanent_contract_manifest()
+    contract_admission = _admit_permanent_contract(contract)
     checker_result = check_g_local_v1_stop_b()
-    checker_admission = _admit_checker_result(checker_result)
+    checker_admission = _admit_checker_result(checker_result, contract)
     coverage_limit = checker_result["coverage_limit"]
     return {
-        "artifact": "G-104 G_local-v1 Stop-B full result",
-        "schema_version": 1,
+        "artifact": "G-104 G_local-v1 final Stop-B result",
+        "schema_version": 2,
         "randomness": "none",
         "serialization": deepcopy(CANONICAL_SERIALIZATION),
         "immutable_parent_through_round12": {
@@ -565,9 +629,28 @@ def stop_b_results_report() -> dict[str, object]:
             "summary_report": deepcopy(parent_summary),
         },
         "historical_rounds_13_through_15": list(history),
+        "historical_provenance": {
+            "superseded_execution_bridge": deepcopy(
+                contract["historical_execution_bridge"]
+            ),
+            "stop_b_execution_and_downstream_sync": deepcopy(
+                HISTORICAL_STOP_B_EXECUTION_PROVENANCE
+            ),
+        },
         "g_local_v1": {
-            "preregistration_manifest": deepcopy(manifest),
-            "manifest_admission": manifest_admission,
+            "permanent_contract_manifest": deepcopy(contract),
+            "contract_admission": contract_admission,
+            "round15_hash_roles": {
+                "registered_manifest_sha256": contract[
+                    "round15_immutable_ledger_provenance"
+                ]["sha256"],
+                "label_ledger_sha256": contract[
+                    "immutable_round15_label_ledger"
+                ]["sha256"],
+            },
+            "permanent_contract_regression_provenance": deepcopy(
+                PERMANENT_CONTRACT_REGRESSION_PROVENANCE
+            ),
             "checker_result": deepcopy(checker_result),
             "checker_admission": checker_admission,
         },
@@ -592,17 +675,13 @@ def stop_b_results_summary(
     checker = stop_b["checker_result"]
     evidence = checker["observation_evidence"]
     summary = {
-        "artifact": "G-104 G_local-v1 Stop-B slim result summary",
-        "schema_version": 1,
+        "artifact": "G-104 G_local-v1 final Stop-B terminal summary",
+        "schema_version": 2,
         "randomness": full["randomness"],
         "serialization": full["serialization"],
         "full_results": {
             **full_record,
-            "canonical_generator": (
-                "build_stop_b_results.py --output <full-path> "
-                "--summary-output <summary-path>"
-            ),
-            "repository_status": "derived; not committed",
+            "canonical_generator": deepcopy(CANONICAL_GENERATOR),
         },
         "parent_through_round12": {
             "admission": deepcopy(parent["admission"]),
@@ -624,11 +703,20 @@ def stop_b_results_summary(
         "historical_rounds_13_through_15": deepcopy(
             full["historical_rounds_13_through_15"]
         ),
+        "historical_provenance": deepcopy(full["historical_provenance"]),
         "stop_B": {
+            "reached": checker["stop_B"],
             "valid": checker["valid"],
             "verdict": checker["verdict"],
             "semantic_id": checker["semantic_id"],
-            "registered_manifest": deepcopy(stop_b["manifest_admission"]),
+            "permanent_contract": deepcopy(stop_b["contract_admission"]),
+            "current_permanent_contract_provenance": deepcopy(
+                checker["current_permanent_contract_provenance"]
+            ),
+            "permanent_contract_regression_provenance": deepcopy(
+                stop_b["permanent_contract_regression_provenance"]
+            ),
+            "round15_hash_roles": deepcopy(stop_b["round15_hash_roles"]),
             "round15_label_ledger_sha256": checker[
                 "round15_label_ledger_sha256"
             ],
@@ -662,14 +750,13 @@ def stop_b_results_summary(
             },
             "labels": deepcopy(checker["labels"]),
             "labels_differ": checker["labels_differ"],
+            "migration_invariants": deepcopy(
+                checker["migration_invariants"]
+            ),
             "general_two_point_argument": checker[
                 "general_two_point_argument"
             ],
             "coverage_limit": checker["coverage_limit"],
-            "result_provenance": deepcopy(STOP_B_RESULT_PROVENANCE),
-            "G107_sync_provenance": deepcopy(
-                list(G107_STOP_B_SYNC_PROVENANCE)
-            ),
         },
         "terminal": deepcopy(full["terminal"]),
     }

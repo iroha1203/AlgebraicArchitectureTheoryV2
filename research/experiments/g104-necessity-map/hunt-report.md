@@ -1,6 +1,7 @@
 # G-104 必要性地図ハント最終報告（停止条件 B）
 
 > **これは off-loop 探索 artifact であり、GOAL 完了の証拠ではない。**
+> `G_local-v1` 相対の数学的terminal Bを記録する。
 
 本報告は Issue #3948 の計算探索を記録する。G-104 のカード、完了 report、
 ResearchLean の確定実体は変更しない。
@@ -105,7 +106,7 @@ global/block iff の `true` 成分を読む。逆向きは任意の adequate fam
 global map の全単射を得る。
 
 この証明は `Source` の有限性を使って部分集合走査を有限化する。論理的な block 対応は同じ
-形で読めるが、本 PRD の計算還元は有限 regime に固定する。
+形で読めるが、本探索の計算還元は有限 regime に固定する。
 
 ## R0 calibration の固定 oracle
 
@@ -160,7 +161,7 @@ checkpoint 根拠から外し、次を実装して R0 を再校正した。
   `A={0}` と `A={1}`
 
 `Law=PUnit`、unit singleton carrier、`Value=Fin 2` の provenanceを含む最終 calibration と
-時系列訂正は Issue #3948 comment `5231149474` に固定した。これは PRD の
+時系列訂正は Issue #3948 comment `5231149474` に固定した。これは登録済みの
 「calibration 不一致の解消」に当たる最後の進展であり、それ以前の no-progress streak をresetする。
 
 ## R1: 必要性地図
@@ -224,7 +225,7 @@ H¹-neutral になることであり、現行条項そのものを必要条件�
 5. C5*/C6* は fine edge lift の syntactic swap relationを使う。
 
 候補定義に global / A-block H¹、comparison rank、global kernel/cokernel、全 A
-comparison の全単射を使わない。唯一の例外はPRDが許可した C3* の局所 fiber
+comparison の全単射を使わない。唯一の例外は登録済み C3* の局所 fiber
 cycle/boundary linear algebraである。global / A-block H¹ とcomparison rankは、候補とは
 独立な二方向 query のラベルとしてだけ計算する。
 
@@ -260,13 +261,13 @@ C6* は各 class が fine self-loop代表を持つことを要求する。
 独立レビューは、Round 5 が同一 blockerを試していないこと、case IDが fixture nameを含むこと、
 Round 1 payload hashが final sourceから再現できないことを指摘した。初回 stop-C 判定を撤回し、
 name-free semantic IDへ変更して全件を再計算した。再同期後の Round 1–7 hash は Issue #3948
-comment `5230523348` に固定している。この provenance / ID補正は PRD が列挙する4種の
+comment `5230523348` に固定している。この provenance / ID補正は登録済みの4種の
 「進展」には数えず、独立した監査訂正として記録する。
 
 Round 6/7 の result SHA-256 はそれぞれ
 `26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429` と
 `6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56` である。
-ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは PRD 上の進展なので、
+ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは探索上の進展なので、
 この2 roundを最終 stop streakには用いない。
 
 ### calibration進展をまたぐラウンド履歴
@@ -300,7 +301,7 @@ Round 11で1,916件、Round 12で1,918件になった。
 ## Round 13–15: Stop C後の進展
 
 Round 12のStop C checkpoint後、人間裁定はcandidate grammarの校正と局所表現可能性の
-監査を続行した。次の3 roundはいずれもPRDが定める進展を生じたため、Round 11/12の
+監査を続行した。次の3 roundはいずれも登録済みの進展定義を満たしたため、Round 11/12の
 no-progress streakを最終終端には用いない。
 
 | round | candidate / strict expansion | population | payload SHA-256 | 進展 |
@@ -361,15 +362,19 @@ v5の全irreducible terminalを対象にし、removed cellやcertificate argumen
 
 raw cell ID、A label、fixture name、semantic hash、2を超える正確な個数、global cycle length、
 full graph lookup、global / A-block H¹、comparison rank、uniformity truthは観測しない。
-PRDが既登録したC3の局所unmapped-fiber linear algebraだけが例外である。
+登録済みC3の局所unmapped-fiber linear algebraだけが例外である。
 
-### source bundleと事前登録
+### source bundleと恒久contract
 
-pure manifestは Issue #3948 comment `5245279192`、timestamp
-`2026-08-10T19:57:54Z`、SHA-256
-`32e5db03f8f66b091b2594954bd121e2c97c5bfb70fb049c50cd97a070b59969`
-で事前登録した。manifest生成はfixture constructor、`Obs_G`、v5 candidate/terminal query、
-H¹、Round 13–15 report、populationを呼ばない。
+current permanent structural contractは Issue #3948 comment `5246699114`、timestamp
+`2026-08-10T22:22:12Z`、compact canonical bytes `314821`、SHA-256
+`955b75d7f88c2d7e3f7e516cb83928127fed9cbd8d28bb50572b17c49a7531af`
+に固定した。contract生成はfixture constructor、`Obs_G`、v5 candidate/terminal query、
+H¹、Round 13–15 report、populationを呼ばない。移行後regressionは Issue #3948 comment
+`5246749681`、timestamp `2026-08-10T22:28:47Z` に同期した。
+`immutable_round15_label_ledger.sha256` はledger自体のcanonical SHAであり、
+`round15_immutable_ledger_provenance.sha256` はwitness projectionを認証したRound 15
+registered manifestのSHAであってledger SHAではない。
 
 source bundleは次を一つのsemantic packetに固定する。
 
@@ -377,11 +382,13 @@ source bundleは次を一つのsemantic packetに固定する。
 - immutableな `r2_hunt.py` / `necessity_map.py` のnormalized full-source fingerprint、import binding、
   referenced dataclass field、runtime source binding。
 - `Q = Fraction`、Matrix/Nerveのexact source、C3直達symbolとbase推移locator。
-- registration 4 fieldのRHSだけを `None` に正規化したchecker full-source fingerprint。
+- current contract registration 4 fieldのRHSだけを `None` に正規化したchecker
+  full-source fingerprint。
 - top-level rebind禁止、closed packet/flag/relation registry、serialization contract。
 
 これにより、候補・H¹ label・Round 15 ledgerを観測器へ逆流させず、同時に観測意味を担う
-sourceの1-bit driftをregistered manifest gateで拒否する。
+sourceの1-bit driftをcurrent permanent contract gateで拒否する。旧実行記録はcurrent sourceから
+再構成したとは主張せず、opaque Git / Issue provenanceとしてだけ保持する。
 
 ### immutable ledgerとcomponent equality
 
@@ -397,10 +404,11 @@ exact_verification.fixtures[name="TERNARY-CYCLE-6"].uniform = false
 checkerの依存順は固定されている。
 
 ```text
-registered manifest admission
+current permanent contract admission
   → exact witness structure admission
   → 2件の Obs_G とhand-authored component calibration
   → component-wise equalityとfinal canonical bytes equality
+  → historical common Obs SHA / bytes bridge
   → immutable ledger admission
   → label separationとStop B
 ```
@@ -414,6 +422,11 @@ root histogram、最終canonical bytesを個別比較し、すべて一致した
 この検証で実行する `Obs_G` structural evaluationは2件である。新しいRound 15 candidate
 classification call、global / A-block H¹ query、population queryはすべて0であり、既知truthを
 探索候補へ混入させていない。
+
+current checkerのcompact canonical bytesは `56940`、SHA-256は
+`834d97547d037ebe76fea942a95996f2b2a0bdcfe9f14eda73bc450c4ac9ebca` である。両fixtureの
+common `Obs_G` はcompact canonical bytes `53279`、SHA-256
+`742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc` に一致する。
 
 ## 一般factorization証明
 
@@ -437,13 +450,13 @@ canonical bytesとしても同じ `Obs_G` を持つため、任意のそのよ�
 
 | 停止条件 | 判定 | 根拠 |
 | --- | --- | --- |
-| A | false | characterization theoremまたはtask completionには到達していない |
+| A | false | characterization theoremとしての必要十分条件は得られていない |
 | B | true | uniformity truthの異なる2件が同じ `Obs_G` を持つため、全 `G_local-v1`-expressible familyを一般factorizationで排除した |
 | C | false | Round 13–15が新規反例・candidate改訂・calibration fixを生じ、historical no-progress streakを最終終端に使わない |
 
-Stop-B resultは Issue #3948 comment `5245347326` に固定した。G-107への同期はcomments
-`5245356130` / `5245356137` である。数学的な探索terminalはBだが、このartifactを取り込む
-実装PRがmergeされるまでは `task_complete=false` とする。
+数学的な探索はfinal terminal Bに到達した。artifactはA=false、B=true、C=falseと
+`G_local-v1` 相対の数学的根拠だけを固定する。Issue / PR の可変なlifecycle stateはartifactの
+正本にせず、旧実行・同期記録はopaque Git / Issue provenanceとして分離する。
 
 coverage limit:
 
@@ -456,20 +469,24 @@ coverage limit:
 
 ## 再現契約
 
+repository rootをworking directoryとする。
+
 ```bash
-cd research/experiments/g104-necessity-map
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest \
-  test_necessity_map.py test_r2_hunt.py test_r2_v4.py \
-  test_g_local_v1_prereg.py test_build_results.py test_build_stop_b_results.py
-PYTHONDONTWRITEBYTECODE=1 python3 build_results.py \
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+  -s research/experiments/g104-necessity-map
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  research/experiments/g104-necessity-map/build_results.py \
   --output /tmp/g104-necessity-map-results-through-round12.json \
-  --summary-output results-summary.json
-PYTHONDONTWRITEBYTECODE=1 python3 build_stop_b_results.py \
+  --summary-output research/experiments/g104-necessity-map/results-summary.json
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  research/experiments/g104-necessity-map/build_stop_b_results.py \
   --output /tmp/g104-necessity-map-stop-b-results.json \
-  --summary-output results-stop-b-summary.json
+  --summary-output research/experiments/g104-necessity-map/results-stop-b-summary.json
 shasum -a 256 \
-  results-summary.json /tmp/g104-necessity-map-results-through-round12.json \
-  results-stop-b-summary.json /tmp/g104-necessity-map-stop-b-results.json
+  research/experiments/g104-necessity-map/results-summary.json \
+  /tmp/g104-necessity-map-results-through-round12.json \
+  research/experiments/g104-necessity-map/results-stop-b-summary.json \
+  /tmp/g104-necessity-map-stop-b-results.json
 ```
 
 - Python standard libraryのみ。global / A-block exact linear algebraは `fractions.Fraction` 上。
@@ -481,9 +498,9 @@ shasum -a 256 \
 - immutable parent regenerated full `results.json` SHA-256:
   `cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306`
 - final `results-stop-b-summary.json` SHA-256:
-  `82d7bd904ffc2dcacf55966bc071385946abf3bab8967aba4970732e7f9b9bc0`
+  `9de3a00f37c20393df01985f5c43eeec6ec21f6906083e01636dd8dfdab93502`
 - final regenerated full Stop-B JSON SHA-256:
-  `bf508a0997a9197012c67ba9b58de1c9afa242ddba8851e03a0ba15f1471e6f8`
+  `b8ac9461efe3dc4a039f986fa70daa0ab95842d83d7c9ddcb77d7024ffefc95e`
 
 Issue #3948 comment `5231857267` のcheckpoint amendmentにより、Round 12までのfull JSONは
 hashで固定された導出物、slim summaryはcommit対象となった。旧repo fileのSHA
