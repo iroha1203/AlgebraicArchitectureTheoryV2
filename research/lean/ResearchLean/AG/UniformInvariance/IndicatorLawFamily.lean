@@ -49,6 +49,8 @@ noncomputable def indicatorLawFamily (q : Reading Source)
     eval := fun _ source => targetSubsetIndicator A (q.read source)
   }
 
+/-- Evaluation of the generated family normalizes to the target-subset
+indicator after applying the coarse reading. -/
 @[simp]
 theorem indicatorLawFamily_eval (q : Reading Source) (A : Set q.Target)
     (law : (indicatorLawFamily q A).Law) (source : Source) :
@@ -125,12 +127,16 @@ noncomputable def indicatorLawFamilyTrueLabel (q : Reading Source)
   rw [hsource]
   simp [targetSubsetIndicator, htarget]
 
+/-- The law projection of the generated true label normalizes to the unique
+singleton law. -/
 @[simp]
 theorem indicatorLawFamilyTrueLabel_law (q : Reading Source)
     (A : Set q.Target) (hA : A.Nonempty) :
     (indicatorLawFamilyTrueLabel q A hA).law = PUnit.unit := by
   rfl
 
+/-- The value projection of the generated true label normalizes to lifted
+Boolean truth. -/
 @[simp]
 theorem indicatorLawFamilyTrueLabel_value (q : Reading Source)
     (A : Set q.Target) (hA : A.Nonempty) :
