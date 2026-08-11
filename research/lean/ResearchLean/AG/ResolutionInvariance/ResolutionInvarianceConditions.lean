@@ -84,6 +84,26 @@ def CoordinateFiberEdge
     M.chartBlockCoordinateMap laws hcoarse hfine label
       (fine.edgeRightBlockCoordinate laws hfine label fineEdge) = coarseChart
 
+/-- Characterize a block fiber edge by the images of its two endpoint
+coordinates.  This is the public elimination rule for `CoordinateFiberEdge`. -/
+theorem coordinateFiberEdge_iff
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coarseChart : coarse.ChartBlockCoordinate laws hcoarse label)
+    (fineEdge : fine.EdgeBlockCoordinate laws hfine label) :
+    M.CoordinateFiberEdge laws hcoarse hfine label coarseChart fineEdge ↔
+      M.chartBlockCoordinateMap laws hcoarse hfine label
+          (fine.edgeLeftBlockCoordinate laws hfine label fineEdge) =
+        coarseChart ∧
+      M.chartBlockCoordinateMap laws hcoarse hfine label
+          (fine.edgeRightBlockCoordinate laws hfine label fineEdge) =
+        coarseChart :=
+  Iff.rfl
+
 /-- Undirected adjacency inside one exact coordinate fiber. -/
 def CoordinateFiberAdjacent
     (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
@@ -100,6 +120,43 @@ def CoordinateFiberAdjacent
           fine.edgeRightBlockCoordinate laws hfine label fineEdge = right) ∨
         (fine.edgeLeftBlockCoordinate laws hfine label fineEdge = right ∧
           fine.edgeRightBlockCoordinate laws hfine label fineEdge = left))
+
+/-- Characterize block-fiber adjacency by a fiber edge and either orientation
+of its endpoints.  This is the public elimination rule for adjacency. -/
+theorem coordinateFiberAdjacent_iff
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coarseChart : coarse.ChartBlockCoordinate laws hcoarse label)
+    (left right : fine.ChartBlockCoordinate laws hfine label) :
+    M.CoordinateFiberAdjacent laws hcoarse hfine label coarseChart left right ↔
+      ∃ fineEdge : fine.EdgeBlockCoordinate laws hfine label,
+        M.CoordinateFiberEdge laws hcoarse hfine label coarseChart fineEdge ∧
+          ((fine.edgeLeftBlockCoordinate laws hfine label fineEdge = left ∧
+              fine.edgeRightBlockCoordinate laws hfine label fineEdge = right) ∨
+            (fine.edgeLeftBlockCoordinate laws hfine label fineEdge = right ∧
+              fine.edgeRightBlockCoordinate laws hfine label fineEdge = left)) :=
+  Iff.rfl
+
+/-- Block-fiber adjacency is symmetric. -/
+theorem CoordinateFiberAdjacent.symm
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {left right : fine.ChartBlockCoordinate laws hfine label}
+    (hadjacent : M.CoordinateFiberAdjacent laws hcoarse hfine label
+      coarseChart left right) :
+    M.CoordinateFiberAdjacent laws hcoarse hfine label
+      coarseChart right left := by
+  obtain ⟨fineEdge, hfiber, hendpoints⟩ := hadjacent
+  exact ⟨fineEdge, hfiber, hendpoints.elim Or.inr Or.inl⟩
 
 /-- C1 on one coordinate subnerve: every coarse block-chart fiber is nonempty
 and connected by the full endpoint-defined fiber graph. -/
@@ -169,6 +226,24 @@ def coordinateFiberIncoming [Fintype Source]
       chain edge
     else 0
 
+/-- Normalize an incoming block-fiber coefficient sum to its defining finite
+edge sum. -/
+@[simp] theorem coordinateFiberIncoming_apply [Fintype Source]
+    (laws : FiniteLawFamily Source)
+    {q : Reading Source} (hadequate : laws.Adequate q)
+    (D : TargetSupportedNerve q) (label : LawValueLabel laws)
+    (chain : D.EdgeBlockCoordinate laws hadequate label → ℚ)
+    (chart : D.ChartBlockCoordinate laws hadequate label) :
+    coordinateFiberIncoming laws hadequate D label chain chart =
+      (by
+        classical
+        exact ∑ edge,
+          if D.edgeRightBlockCoordinate laws hadequate label edge = chart then
+            chain edge
+          else 0) := by
+  classical
+  rfl
+
 /-- Outgoing coefficient sum of a finite block-edge chain at one fine block
 chart. -/
 def coordinateFiberOutgoing [Fintype Source]
@@ -182,6 +257,24 @@ def coordinateFiberOutgoing [Fintype Source]
     if D.edgeLeftBlockCoordinate laws hadequate label edge = chart then
       chain edge
     else 0
+
+/-- Normalize an outgoing block-fiber coefficient sum to its defining finite
+edge sum. -/
+@[simp] theorem coordinateFiberOutgoing_apply [Fintype Source]
+    (laws : FiniteLawFamily Source)
+    {q : Reading Source} (hadequate : laws.Adequate q)
+    (D : TargetSupportedNerve q) (label : LawValueLabel laws)
+    (chain : D.EdgeBlockCoordinate laws hadequate label → ℚ)
+    (chart : D.ChartBlockCoordinate laws hadequate label) :
+    coordinateFiberOutgoing laws hadequate D label chain chart =
+      (by
+        classical
+        exact ∑ edge,
+          if D.edgeLeftBlockCoordinate laws hadequate label edge = chart then
+            chain edge
+          else 0) := by
+  classical
+  rfl
 
 /-- A rational one-cycle supported on the endpoint-defined graph over one
 coarse block chart. -/
@@ -203,6 +296,63 @@ def CoordinateFiberCycle [Fintype Source]
         coordinateFiberIncoming laws hfine fine label chain fineChart =
           coordinateFiberOutgoing laws hfine fine label chain fineChart
 
+/-- Constructor for a rational cycle on one endpoint-defined block fiber. -/
+theorem coordinateFiberCycle_mk [Fintype Source]
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coarseChart : coarse.ChartBlockCoordinate laws hcoarse label)
+    (chain : fine.EdgeBlockCoordinate laws hfine label → ℚ)
+    (hsupport : ∀ fineEdge,
+      ¬ M.CoordinateFiberEdge laws hcoarse hfine label coarseChart fineEdge →
+        chain fineEdge = 0)
+    (hconservation : ∀ fineChart,
+      M.chartBlockCoordinateMap laws hcoarse hfine label fineChart =
+          coarseChart →
+        coordinateFiberIncoming laws hfine fine label chain fineChart =
+          coordinateFiberOutgoing laws hfine fine label chain fineChart) :
+    M.CoordinateFiberCycle laws hcoarse hfine label coarseChart chain :=
+  ⟨hsupport, hconservation⟩
+
+/-- A block-fiber cycle vanishes away from its endpoint-defined fiber graph. -/
+theorem CoordinateFiberCycle.support [Fintype Source]
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {chain : fine.EdgeBlockCoordinate laws hfine label → ℚ}
+    (hcycle : M.CoordinateFiberCycle laws hcoarse hfine label coarseChart chain)
+    (fineEdge)
+    (houtside :
+      ¬ M.CoordinateFiberEdge laws hcoarse hfine label coarseChart fineEdge) :
+    chain fineEdge = 0 :=
+  hcycle.1 fineEdge houtside
+
+/-- A block-fiber cycle satisfies flow conservation at every chart of its
+fiber. -/
+theorem CoordinateFiberCycle.conservation [Fintype Source]
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {chain : fine.EdgeBlockCoordinate laws hfine label → ℚ}
+    (hcycle : M.CoordinateFiberCycle laws hcoarse hfine label coarseChart chain)
+    (fineChart)
+    (hmap : M.chartBlockCoordinateMap laws hcoarse hfine label fineChart =
+      coarseChart) :
+    coordinateFiberIncoming laws hfine fine label chain fineChart =
+      coordinateFiberOutgoing laws hfine fine label chain fineChart :=
+  hcycle.2 fineChart hmap
+
 /-- A fine block face is internal to one coordinate fiber when each of its
 three block edges has both endpoints in that fiber. -/
 def CoordinateInternalFace
@@ -220,6 +370,73 @@ def CoordinateInternalFace
       (fine.faceEdge1BlockCoordinate laws hfine label fineFace) ∧
     M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
       (fine.faceEdge2BlockCoordinate laws hfine label fineFace)
+
+/-- Constructor for an internal block face from its three fiber edges. -/
+theorem coordinateInternalFace_mk
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (coarseChart : coarse.ChartBlockCoordinate laws hcoarse label)
+    (fineFace : fine.FaceBlockCoordinate laws hfine label)
+    (hedge0 : M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge0BlockCoordinate laws hfine label fineFace))
+    (hedge1 : M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge1BlockCoordinate laws hfine label fineFace))
+    (hedge2 : M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge2BlockCoordinate laws hfine label fineFace)) :
+    M.CoordinateInternalFace laws hcoarse hfine label coarseChart fineFace :=
+  ⟨hedge0, hedge1, hedge2⟩
+
+/-- Boundary edge zero of an internal block face lies in the same fiber. -/
+theorem CoordinateInternalFace.edge0
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {fineFace : fine.FaceBlockCoordinate laws hfine label}
+    (hface : M.CoordinateInternalFace laws hcoarse hfine label
+      coarseChart fineFace) :
+    M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge0BlockCoordinate laws hfine label fineFace) :=
+  hface.1
+
+/-- Boundary edge one of an internal block face lies in the same fiber. -/
+theorem CoordinateInternalFace.edge1
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {fineFace : fine.FaceBlockCoordinate laws hfine label}
+    (hface : M.CoordinateInternalFace laws hcoarse hfine label
+      coarseChart fineFace) :
+    M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge1BlockCoordinate laws hfine label fineFace) :=
+  hface.2.1
+
+/-- Boundary edge two of an internal block face lies in the same fiber. -/
+theorem CoordinateInternalFace.edge2
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    {coarseChart : coarse.ChartBlockCoordinate laws hcoarse label}
+    {fineFace : fine.FaceBlockCoordinate laws hfine label}
+    (hface : M.CoordinateInternalFace laws hcoarse hfine label
+      coarseChart fineFace) :
+    M.CoordinateFiberEdge laws hcoarse hfine label coarseChart
+      (fine.faceEdge2BlockCoordinate laws hfine label fineFace) :=
+  hface.2.2
 
 /-- The oriented block-edge boundary of a finite rational block-face chain. -/
 def coordinateFaceBoundary [Fintype Source]
@@ -242,6 +459,33 @@ def coordinateFaceBoundary [Fintype Source]
       if D.faceEdge2BlockCoordinate laws hadequate label face = edge then
         faces face
       else 0
+
+/-- Normalize an oriented block-face boundary to its three defining finite
+face sums. -/
+@[simp] theorem coordinateFaceBoundary_apply [Fintype Source]
+    (laws : FiniteLawFamily Source)
+    {q : Reading Source} (hadequate : laws.Adequate q)
+    (D : TargetSupportedNerve q) (label : LawValueLabel laws)
+    (faces : D.FaceBlockCoordinate laws hadequate label → ℚ)
+    (edge : D.EdgeBlockCoordinate laws hadequate label) :
+    coordinateFaceBoundary laws hadequate D label faces edge =
+      (by
+        classical
+        exact
+          (∑ face,
+            if D.faceEdge0BlockCoordinate laws hadequate label face = edge then
+              faces face
+            else 0) -
+          (∑ face,
+            if D.faceEdge1BlockCoordinate laws hadequate label face = edge then
+              faces face
+            else 0) +
+          ∑ face,
+            if D.faceEdge2BlockCoordinate laws hadequate label face = edge then
+              faces face
+            else 0) := by
+  classical
+  rfl
 
 /-- C3 on one coordinate subnerve: every local rational fiber cycle is a
 rational linear combination of boundaries of internal block faces. -/
