@@ -133,11 +133,10 @@
   π-両立)、K0 / K1 に従う law 由来係数、係数体 `ℚ` 固定。Source と
   両読みの Target の非空性は ambient に仮定する(空 regime は claim に
   含めず、`A = q.Target` scope はこの仮定の下で well-defined)。量化対象は
-  **一様不変性**であり、pointwise の必要性(単一 law family での
-  全単射 ⟹ C)は主張しない(G-104 期の探索で不成立が確定済み)。C\* の
-  評価 scope はカード固定(C1\*–C4\* は各非空 `A` の A-subnerve ごと、
-  C0\*・C5\*・C6\* は support-active な全体 scope = `A = q.Target` の
-  A-subnerve で1回。導出台が空の cell はどの scope にも現れない)。
+  **一様不変性**であり、一様量化を pointwise 化する弱化(単一 law
+  family に対する定理を completion と数えること)は認めない(pointwise
+  必要性の不成立は G-104 期に確定済み)。歴史記録の C\* の評価 scope は
+  歴史節の記載を正とする。
   含めない: 無限 regime、
   係数の一般化、doctrine 間 comparison、hunt の bound 拡張(off-loop
   探索の再開)そのもの、**一様不変性の必要条件・iff・新しい十分条件
@@ -222,10 +221,11 @@
     `J_L` とは (i) の還元で結ばれる(semantic 座標と computational
     座標)。
   - **歴史記録: 前処理と条項系 C\*(v3 で active claim から除外)**:
-    以下の前処理と C\* の定義は、初版〜v2 の条項系候補
+    続く**2項目(前処理・条項系 C\*)のみ**が、初版〜v2 の条項系候補
     (`CStarV3SupportActive`)の記録である。v3 の claim には現れず、
     両方向の exact 反例を持つ研究史・mechanism artifact として保存する
-    (改訂記録は本節末尾)。後継 certificate の設計は G-108 以降。
+    (改訂記録は条項系 C\* 項の末尾)。その後の **`Obs_G` は active
+    定義**である。後継 certificate の設計は G-108 以降。
   - **前処理(reduction。各評価 scope — C1\*–C4\* は各 A-subnerve、
     C0\*・C5\*・C6\* は `A = q.Target` の support-active 全体 scope — の
     粗側・細側で別々に行う。導出台が空の cell はどの scope にも属さず、
@@ -307,10 +307,12 @@
     15)。**statement v2 での位置(2026-08-11)**: ハント終端(Stop B:
     `CSTAR-not-expressible-in-G_local-v1`)を受け、v2 は C\* を
     必要十分候補ではなく十分条件としてのみ主張する形へ改訂された。
-    十分性方向の証拠は CERTIFIED-v3 の最終 bounded population
-    (2,166 case)における反例ゼロだが、これは bounded 証拠であり、
-    候補系譜には Chain3(v1)・UnkilledTwin(v2)という十分性方向の
-    反例史がある。
+    十分性方向の証拠は、登録 CERTIFIED-v3 の checkpoint 時点 population
+    (1,918 case)における二方向反例ゼロだが、これは bounded 証拠で
+    あり、support-active 差分つき現行変種を全登録 population で事前登録
+    評価した artifact は存在しない。候補系譜には UnkilledTwin(v2)と
+    いう十分性方向の反例史がある(Chain3(v1)は必要性方向 —
+    uniform だが直接隣接 graph が path で条項破れ)。
     **改訂記録2(2026-08-11、v2 も `target-refuted`)**: v2 の十分性
     (ii) も exact 有限反例 `PROPER-CHAIN3-PLUS-BRIDGE-DIGON` で反証
     された。fixture = Chain3 成分と「粗側 bridge 1本(`E = (1,2)`)/
@@ -346,15 +348,25 @@
     歴史記録の条項系(`CStarV3SupportActive`: CERTIFIED-v3 +
     support-active の one-pass reduction 上)とは**別型・別述語**として
     固定する。恒久 grammar の semantics は登録 contract に従う:
-    `GLocalV1V5Reduction`(v5 reduction の全 irreducible terminal と
-    removal DAG)の上で、(1) terminal 全体で読む条項 conjunction
-    vector `GLocalV1ConditionVector`(C0 / C5 / C6 と C1–C4。
-    `CStarV3SupportActive` との一般同値は主張しない — T3 / T6 上の
-    数値一致は同値の証拠ではない)、(2) removal DAG の全 path に現れる
-    packet-kind union、(3) 全 terminal の rooted typed incidence ball
-    (半径1)の aggregation を `A`-label を捨てた clip2(`0 / 1 / ≥2`)
-    histogram で読む成分、(4) 登録 boolean flag 群、(5) `π`-preserving
-    target relabel orbit 上の最小化。定義は登録済み恒久 contract
+    full support-active scope 1回+全非空 `A`-scope(順序なし全件)を
+    読み、各 scope では `GLocalV1V5Reduction`(v5 reduction の全
+    irreducible terminal。removed cell・certificate argument は観測
+    しない)の上で次の成分を取る — (1) retained cell を root とする
+    半径1 typed incidence ball(slot / 符号、radius 外 stub は cell
+    type と slot へ切り詰め)、(2) critical / guard / port / bridge /
+    self-loop / FaceTwin の6 flag、(3) scoped support とその `π` 像
+    (None / mapped の2値)、(4) 全 reachable collapse path に現れる
+    packet kind の和集合、(5) stub・neighbor descriptor・rooted ball・
+    equal A-record 個数の clip2(`0 / 1 / ≥2`)histogram、(6) 条項
+    conjunction vector `GLocalV1ConditionVector`(whole C0 / C5 / C6 と
+    `A` ごとの C1–C4 とその AND。`CStarV3SupportActive` との一般同値は
+    主張しない — T3 / T6 上の数値一致は同値の証拠ではない)、(7) `π`
+    を保つ target relabel による最小化。raw cell ID・`A` label・
+    fixture 名・semantic hash・2超の exact 個数・global cycle 長・
+    H¹ / rank / uniformity truth は観測しない(登録済み C3 局所例外
+    のみ)。**成分の正確な定義は hunt-report §`G_local-v1` と恒久
+    contract を正本**とし、本要約との差異は正本が優先する(対応表は
+    正本に対して固定する)。定義は登録済み恒久 contract
     (`G-local-v1-permanent-structural-contract-v1`、canonical SHA-256
     `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`)
     の観測成分の**忠実転写**であり、成分の省略・追加・truncation 変更を
@@ -410,8 +422,8 @@
      hunt の登録 structural input から Lean へ転写し、次の4 theorem で
      固定する: **(a) 観測等値** `obsG T3 = obsG T6`(computable
      presentation 上の決定可能計算)、**(b)** `T3` は
-     `UniformPresentation`((i) 経由の有限 A-block 判定。全非空 `A` で
-     1→1 / 0→0 / 1→1)、**(c)** `T6` は `UniformPresentation` でない
+     `UniformPresentation`((i)(ii) 経由の有限 A-block 判定。全非空
+     `A` で 1→1 / 0→0 / 1→1)、**(c)** `T6` は `UniformPresentation` でない
      (`A = {0}` の block で粗側 H¹ 次元 3・細側 1 の非全単射)、
      **(d) 分離**: `∀ p : GLocalV1ObsValue → Prop, ¬ ∀ P :
      FiniteComparisonPresentation, (p (obsG P) ↔ UniformPresentation
@@ -460,7 +472,11 @@
 - `target proof strategy`: U0 `J_A` 定義と defect 還元(hunt-report §R0
   の conjunct 対応表に従う)→ U1 `FiniteComparisonPresentation` と
   sound / complete decider → U2 Atlas corollary(G-104 theorem の一様
-  量化つき持ち上げ)→ U3 C 非必要性 witness 7種 → U4 非分解性
+  量化つき持ち上げ。anchor: G-104 カードは「(i)(ii)(iii) は一般の有限
+  Source / `L` / adequate pair / comparison data について証明する」と
+  `L` 一般で固定済みであり、条件 C の評価対象は law family に言及しない
+  nerve / 台 / 退化宣言である — 持ち上げはこの2点の明示化)→ U3 C
+  非必要性 witness 7種 → U4 非分解性
   (`Obs_G` 定義 → T3 / T6 転写 → 観測等値の decidable 計算 →
   (i)(ii) 経由の label 導出 → 分離 theorem)→ U5 report。
   既存成果の利用 map:
