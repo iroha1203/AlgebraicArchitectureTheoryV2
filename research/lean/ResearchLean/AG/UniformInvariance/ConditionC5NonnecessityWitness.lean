@@ -62,7 +62,11 @@ def rawEdgeMap (edge : Fin 3) : Option (Fin 2) :=
   some (fineEdgeChart edge)
 
 /-- Exact finite R1 C5 presentation.  Its fields are only raw finite geometry
-and well-formedness proofs; no uniqueness or cohomology answer is stored. -/
+and well-formedness proofs; no uniqueness or cohomology answer is stored.
+
+Position: existing C5 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance

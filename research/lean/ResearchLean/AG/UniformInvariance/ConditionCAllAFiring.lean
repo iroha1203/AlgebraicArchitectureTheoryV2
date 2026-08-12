@@ -55,7 +55,11 @@ theorem mem_firingFineChartSupportFinset_iff
 
 /-! ## The raw presentation of the reviewed firing fixture -/
 
-/-- Executable finite presentation of the exact G-104 firing geometry. -/
+/-- Executable finite presentation of the exact G-104 firing geometry.
+
+Position: existing nonvacuous firing fixture reused by the Cycle 23
+production-kernel validation.  Its new explicit entry lists are complete raw
+coverage data, not reducer, observation, or expected-result fields. -/
 def pFire : FiniteComparisonPresentation where
   Source := Source
   sourceFintype := inferInstance

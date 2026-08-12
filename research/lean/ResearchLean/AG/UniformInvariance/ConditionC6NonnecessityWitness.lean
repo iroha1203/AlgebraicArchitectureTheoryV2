@@ -60,7 +60,11 @@ def rawChartMap (chart : Fin 3) : Fin 2 :=
   if chart = 0 then 0 else 1
 
 /-- Exact finite R1 C6 presentation.  Its fields contain only finite raw
-geometry and well-formedness proofs; no C6 or H¹ answer is stored. -/
+geometry and well-formedness proofs; no C6 or H¹ answer is stored.
+
+Position: existing C6 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance

@@ -79,7 +79,11 @@ def fineChartSupport (chart : Fin 3) : Finset (Fin 3) :=
 /-- The exact finite raw presentation underlying the R1 C3 witness.  This is
 the Cycle 15 fixture constructor feeding the main theorem: its fields come
 only from canonical raw readings, incidence, support, partial maps, and their
-well-formedness proofs, never from a factor, rank, H¹, C3, or truth result. -/
+well-formedness proofs, never from a factor, rank, H¹, C3, or truth result.
+
+Position: existing C3 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance

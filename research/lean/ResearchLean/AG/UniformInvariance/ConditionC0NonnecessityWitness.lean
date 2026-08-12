@@ -52,7 +52,11 @@ def fineChartSupport (chart : Fin 2) : Finset (Fin 3) :=
 
 /-- Exact finite R1 C0 presentation.  Its fields are only finite readings,
 one self-loop incidence table, empty face tables, supports, identity cell
-maps, and well-formedness proofs; it stores no factor, H¹, rank, or result. -/
+maps, and well-formedness proofs; it stores no factor, H¹, rank, or result.
+
+Position: existing C0 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance

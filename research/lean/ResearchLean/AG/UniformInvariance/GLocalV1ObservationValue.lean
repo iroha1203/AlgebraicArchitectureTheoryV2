@@ -33,13 +33,19 @@ universe u
 
 /-! ## Closed registries -/
 
-/-- The side of a cell in a comparison presentation. -/
+/-- The side of a cell in a comparison presentation.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1Side
   | coarse
   | fine
   deriving DecidableEq, Repr, Ord
 
-/-- The four typed cell roles retained by the radius-one incidence record. -/
+/-- The four typed cell roles retained by the radius-one incidence record.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1CellType
   | chart
   | vertex
@@ -47,13 +53,19 @@ inductive GLocalV1CellType
   | face
   deriving DecidableEq, Repr, Ord
 
-/-- The only map-status information exposed by the permanent grammar. -/
+/-- The only map-status information exposed by the permanent grammar.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1MapStatus
   | none
   | mapped
   deriving DecidableEq, Repr, Ord
 
-/-- The four collapse-packet kinds registered by permanent `G_local-v1`. -/
+/-- The four collapse-packet kinds registered by permanent `G_local-v1`.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1PacketKind
   | v4Coarse
   | v4FineOnly
@@ -61,7 +73,10 @@ inductive GLocalV1PacketKind
   | closedDoubledCycle
   deriving DecidableEq, Repr, Ord
 
-/-- Typed and signed incidence relations visible inside a rooted ball. -/
+/-- Typed and signed incidence relations visible inside a rooted ball.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1Relation
   | chartAt
   | endpoint0
@@ -72,7 +87,10 @@ inductive GLocalV1Relation
   deriving DecidableEq, Repr, Ord
 
 /-- The coarser slot registry used by outward stubs.  Endpoint zero and face
-boundary zero intentionally share `slot0`, and signs are discarded. -/
+boundary zero intentionally share `slot0`, and signs are discarded.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1StubSlot
   | chartAt
   | slot0
@@ -80,13 +98,21 @@ inductive GLocalV1StubSlot
   | slot2
   deriving DecidableEq, Repr, Ord
 
-/-- A positive occurrence count clipped at two. -/
+/-- A positive occurrence count clipped at two.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1Multiplicity
   | one
   | atLeastTwo
   deriving DecidableEq, Repr, Ord
 
-/-- Clip a natural count at two; zero is represented by no histogram row. -/
+/-- Clip a natural count at two; zero is represented by no histogram row.
+
+Position: observation-value API for the permanent multiplicity component in fixed
+GOAL claim (v).  The count comes from an explicit occurrence list and is clipped
+exactly as in `g_local_v1.py`; no presentation result or certificate is supplied.
+-/
 def gLocalV1Clip2 : Nat → Option GLocalV1Multiplicity
   | 0 => none
   | 1 => some .one
@@ -94,23 +120,39 @@ def gLocalV1Clip2 : Nat → Option GLocalV1Multiplicity
 
 /-! ## Canonical histograms -/
 
-/-- One canonical histogram row. -/
+/-- One canonical histogram row.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1HistogramRow (α : Type u) where
   payload : α
   multiplicity : GLocalV1Multiplicity
   deriving DecidableEq, Repr, Ord
 
 /-- A normalized list of clipped multiplicity rows.  Observation constructors
-produce this type only through `gLocalV1Histogram`. -/
+produce this type only through `gLocalV1Histogram`.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1Histogram (α : Type u) where
   rows : List (GLocalV1HistogramRow α)
   deriving DecidableEq, Repr, Ord
 
-/-- The deterministic weak order induced by a type's `Ord` instance. -/
+/-- The deterministic weak order induced by a type's `Ord` instance.
+
+Position: ordering API used by the permanent histogram normalizer and final orbit
+minimum in fixed GOAL claim (v).  Its only premise is the caller's `Ord` instance;
+it receives no presentation result, relabel, or certificate.
+-/
 def gLocalV1OrdLE {α : Type u} [Ord α] (left right : α) : Bool :=
   (compare left right).isLE
 
-/-- Normalize a complete occurrence list into sorted, unique, clip-two rows. -/
+/-- Normalize a complete occurrence list into sorted, unique, clip-two rows.
+
+Position: canonical histogram constructor for the permanent multiplicity component
+in fixed GOAL claim (v).  It consumes the complete explicit occurrence list and
+computes sorting, deduplication, and clip-two counts without a supplied histogram.
+-/
 def gLocalV1Histogram {α : Type u} [Ord α] [DecidableEq α]
     (occurrences : List α) : GLocalV1Histogram α :=
   let sorted := occurrences.mergeSort gLocalV1OrdLE
@@ -122,7 +164,10 @@ def gLocalV1Histogram {α : Type u} [Ord α] [DecidableEq α]
 /-! ## Closed observation records -/
 
 /-- The six registered unary flags.  Flags outside their documented cell
-domain are set to `false` by the observation constructor. -/
+domain are set to `false` by the observation constructor.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1Flags where
   critical : Bool
   guard : Bool
@@ -133,7 +178,10 @@ structure GLocalV1Flags where
   deriving DecidableEq, Repr, Ord
 
 /-- A target-relabelled cell label.  Supports and factor images are sorted
-lists of relabelled target codes, never raw cell or subset identifiers. -/
+lists of relabelled target codes, never raw cell or subset identifiers.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1CellLabel where
   side : GLocalV1Side
   cellType : GLocalV1CellType
@@ -144,34 +192,49 @@ structure GLocalV1CellLabel where
   deriving DecidableEq, Repr, Ord
 
 /-- An outward radius-two clipping stub, retaining only cell type and the
-collapsed incidence slot. -/
+collapsed incidence slot.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1OutwardStub where
   cellType : GLocalV1CellType
   slot : GLocalV1StubSlot
   deriving DecidableEq, Repr, Ord
 
 /-- One neighbor group in a radius-one rooted ball.  Relations retain their
-full slot/sign multiplicity; outward stubs are clipped separately. -/
+full slot/sign multiplicity; outward stubs are clipped separately.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1NeighborDescriptor where
   neighborLabel : GLocalV1CellLabel
   relations : List GLocalV1Relation
   outwardStubHistogram : GLocalV1Histogram GLocalV1OutwardStub
   deriving DecidableEq, Repr, Ord
 
-/-- A root-preserving, side-local radius-one typed incidence ball. -/
+/-- A root-preserving, side-local radius-one typed incidence ball.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1RootedBall where
   rootLabel : GLocalV1CellLabel
   neighborDescriptors : GLocalV1Histogram GLocalV1NeighborDescriptor
   deriving DecidableEq, Repr, Ord
 
-/-- Whole-scope condition coordinates. -/
+/-- Whole-scope condition coordinates.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1WholeConditions where
   c0 : Bool
   c5 : Bool
   c6 : Bool
   deriving DecidableEq, Repr, Ord
 
-/-- Nonempty-target-subset condition coordinates. -/
+/-- Nonempty-target-subset condition coordinates.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1AConditions where
   c1 : Bool
   c2 : Bool
@@ -180,14 +243,20 @@ structure GLocalV1AConditions where
   deriving DecidableEq, Repr, Ord
 
 /-- A scope record formed from the universal terminal condition, the union of
-all outgoing packet kinds over all reachable states, and all terminal balls. -/
+all outgoing packet kinds over all reachable states, and all terminal balls.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1ScopeRecord (Conditions : Type u) where
   conditions : Conditions
   packetKindUnion : List GLocalV1PacketKind
   rootedBallHistogram : GLocalV1Histogram GLocalV1RootedBall
   deriving DecidableEq, Repr, Ord
 
-/-- The aggregate seven-coordinate permanent condition vector. -/
+/-- The aggregate seven-coordinate permanent condition vector.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1ConditionVector where
   c0 : Bool
   c1 : Bool
@@ -198,7 +267,10 @@ structure GLocalV1ConditionVector where
   c6 : Bool
   deriving DecidableEq, Repr, Ord
 
-/-- Presentation-independent permanent `G_local-v1` observation value. -/
+/-- Presentation-independent permanent `G_local-v1` observation value.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 structure GLocalV1ObsValue where
   aggregate : GLocalV1ConditionVector
   whole : GLocalV1ScopeRecord GLocalV1WholeConditions
@@ -208,7 +280,10 @@ structure GLocalV1ObsValue where
 /-! ## Permanent contract inventory -/
 
 /-- The sixteen registered contract rows, used to audit that every permanent
-component has one definition-level owner in the Lean observation kernel. -/
+component has one definition-level owner in the Lean observation kernel.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 inductive GLocalV1ContractComponent
   | scope
   | terminal
@@ -229,23 +304,35 @@ inductive GLocalV1ContractComponent
   deriving DecidableEq, Repr, Ord
 
 /-- The complete permanent contract-component registry, in specification
-order. -/
+order.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 def gLocalV1ContractComponents : List GLocalV1ContractComponent :=
   [.scope, .terminal, .conditions, .packets, .chartRole, .ball, .relations,
     .mapStatus, .neighbor, .stubs, .multiplicity, .flags, .supports, .faces,
     .targets, .forbidden]
 
 /-- The immutable upstream source contract hash recorded for provenance.  It
-is not a field of, or input to, `GLocalV1ObsValue`. -/
+is not a field of, or input to, `GLocalV1ObsValue`.
+
+Position: contract data/API definition for fixed GOAL claim (v). Any material input comes from the closed permanent `g_local_v1.py` value registry or an explicit occurrence list; no presentation result, semantic label, or certificate is supplied.
+-/
 def gLocalV1PermanentContractSha256 : String :=
   "5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8"
 
-/-- The registry contains exactly sixteen contract components. -/
+/-- The registry contains exactly sixteen contract components.
+
+Position: API theorem for the fixed GOAL claim (v) observation contract. Any premise comes from the closed registry data defined in this module; it assumes no presentation result, semantic label, or certificate.
+-/
 theorem gLocalV1ContractComponents_length :
     gLocalV1ContractComponents.length = 16 := by
   decide
 
-/-- Every contract component occurs exactly once in the registry. -/
+/-- Every contract component occurs exactly once in the registry.
+
+Position: API theorem for the fixed GOAL claim (v) observation contract. Any premise comes from the closed registry data defined in this module; it assumes no presentation result, semantic label, or certificate.
+-/
 theorem gLocalV1ContractComponents_nodup :
     gLocalV1ContractComponents.Nodup := by
   decide

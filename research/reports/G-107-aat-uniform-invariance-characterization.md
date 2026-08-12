@@ -3688,6 +3688,16 @@ certificate / serialization / target-fitting routeをmodule docstringに記録�
 上記primary specificationは観測、reducer、base structure、contract manifestの
 ownerを分離している。
 
+その修正headのformal review再実行では、private theoremがnamespace-prefixの
+AxiomAuditへ収載されないことと、Cycle 23で新規・body変更された宣言の
+declaration-level position / material-premise provenanceが不完全であることを
+指摘された。negative theoremはpublic audited theoremへ移し、namespace auditを
+11 declarationsへ更新した。docstringは4新規module 261件、
+`UniformPresentationInstancePairs` 13件、explicit entry-list fieldsを追加した
+既存fixture presentation 11件の計285宣言を宣言単位で監査・補完した。
+これはvisibility監査と記録品質の修正であり、presentation field、定理statement、
+reducer / observation semantics、premise ledgerは変更していない。
+
 ### Primary declarations
 
 - codomain / contract:
@@ -3768,7 +3778,7 @@ ownerを分離している。
     standard-only
   - modified presentation / fixture clients pass
   - `UniformPresentationInstancePairs.lean` formal-review remediation pass;
-    namespace audit 10 declarations, standard-only
+    namespace audit 11 declarations, standard-only
 - targeted module build:
   - `ResearchLean.AG.UniformInvariance.GLocalV1V5Reduction` pass, 3716 jobs
   - `ResearchLean.AG.UniformInvariance.GLocalV1KernelInstancePairs` pass,
@@ -3794,15 +3804,15 @@ source SHA-256:
 - `FiniteComparisonPresentation.lean`:
   `ff29a0a815d8252afa5beefea4e49000b26b5a12b4d303d20f7d0ba6e89c5f14`
 - `GLocalV1ObservationValue.lean`:
-  `cec9008e29171dd97b03b038aafb8a7eb2e2e2d1beccce6dbd738130cb0b1499`
+  `da49dd200dc114dda71ecda2e0317e698d506150cb6dea3e1f99c5a8f742536e`
 - `GLocalV1V5Reduction.lean`:
-  `b25498754dfa7448a7c150a3152ebc3decf7a104cdfe20e9e4029c8724030c4f`
+  `e38d87f04a399181b93b1d623706cd4d74dc4dcaba77d0eff93d2088ce315e9c`
 - `GLocalV1Observation.lean`:
-  `6e8e7a5112f90a437a08ca4e34a7972ec8ad809ccf33cf95850241407581fd43`
+  `b7cdbca7ec1889d2704044083c070b91ebfeab8d3020cdb6ba0750b787531b7a`
 - `GLocalV1KernelInstancePairs.lean`:
-  `6805de14950439191082d5893fc3393d8722c74b3677bd354c33adceb83b6c57`
+  `2c25186225fa4fad2ed16e539da9834dc4544d81ef0970d1fcda99095fad79cc`
 - `UniformPresentationInstancePairs.lean`:
-  `4afda082df2e1ec94269eb530bc3d7ad82eb59b705b02b32fb46999bbadd9477`
+  `4aa018da7f277e0029a24bca24fa8e5f9437dc5e097703fdab280ae44e05090c`
 - `AG.lean`:
   `0e8b62a38f595b223eb1f091e374afd481f314ad6295da7aead3095b8ff1f975`
 - `research-modules.txt`:

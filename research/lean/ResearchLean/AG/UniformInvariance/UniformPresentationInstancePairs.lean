@@ -23,26 +23,35 @@ open ExecutableRationalLinearAlgebra
 
 namespace UniformPresentationInstancePairs
 
-/-- Executable enumeration carried by the generic self-loop fixture helpers. -/
+/-- Executable enumeration carried by the generic self-loop fixture helpers.
+
+Position: private §1.4 certificate structure for the positive/negative checker
+fixtures.  It supplies only a complete finite edge list; it carries no matrix,
+rank, defect, or expected checker result. -/
 private class SelfLoopEntries (α : Type) where
   entries : List α
   complete : ∀ value, value ∈ entries
 
-/-- The singleton self-loop fixture uses its unique unit entry. -/
+/-- The singleton self-loop fixture uses its unique unit entry.
+
+Position: positive §1.4 instance for `SelfLoopEntries`; the complete list is
+computed from `PUnit`, not from the positive checker's expected result. -/
 private instance : SelfLoopEntries PUnit where
   entries := [PUnit.unit]
   complete := by intro value; cases value; simp
 
-/-- The two-edge self-loop fixture explicitly enumerates both Boolean edges. -/
+/-- The two-edge self-loop fixture explicitly enumerates both Boolean edges.
+
+Position: second finite §1.4 instance used by the negative raw fixture; the list
+comes from `Bool` and supplies no rank, defect, or checker certificate. -/
 private instance : SelfLoopEntries Bool where
   entries := [false, true]
   complete := by intro value; cases value <;> simp
 
-/-- The fixture enumeration certificate is genuinely finite: no certificate
-can cover the infinite type `Nat`.  This is the negative §1.4 instance for the
-private helper structure; infinitude, rather than any checker result or
-presentation-specific conclusion, supplies the obstruction. -/
-private theorem not_nonempty_selfLoopEntries_nat :
+/-- Publicly audited negative §1.4 theorem for the private fixture-enumeration
+certificate: no finite list can cover `Nat`.  Infinitude, rather than any checker
+result or presentation-specific conclusion, supplies the obstruction. -/
+theorem not_nonempty_selfLoopEntries_nat :
     ¬ Nonempty (SelfLoopEntries Nat) := by
   rintro ⟨certificate⟩
   obtain ⟨value, hvalue⟩ :=
@@ -50,7 +59,11 @@ private theorem not_nonempty_selfLoopEntries_nat :
   exact hvalue (by simpa using certificate.complete value)
 
 /-- Raw singleton-target comparison data with a caller-specified finite type
-of parallel fine self-loop edges. -/
+of parallel fine self-loop edges.
+
+Position: private raw-presentation constructor supporting the positive and
+negative uniformity checker instances.  `SelfLoopEntries` supplies only complete
+cell coverage; all maps and ranks are computed from the self-loop tables. -/
 private def selfLoopPresentation (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     FiniteComparisonPresentation where
@@ -201,7 +214,10 @@ def negativePresentation : FiniteComparisonPresentation :=
 /-- The unique selected coarse edge in the full target subset of either raw
 fixture.  This private instance helper is derived through the public
 raw-selection API and supplies a basis coordinate for rank computation; it
-does not store a rank or checker result. -/
+does not store a rank or checker result.
+
+Position: private selected-cell API for the self-loop matrix proofs.  Its
+material premise is complete raw edge coverage, not a supplied basis or matrix. -/
 private def fullCoarseEdge (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ :=
@@ -214,7 +230,10 @@ private def fullCoarseEdge (FineEdge : Type)
 
 /-- A selected fine edge in the full target subset of a self-loop fixture.
 This private instance helper is derived through the public raw-selection API
-and supplies a basis coordinate, not a comparison certificate. -/
+and supplies a basis coordinate, not a comparison certificate.
+
+Position: private selected-cell API for the self-loop matrix proofs.  Its edge
+argument and complete raw coverage determine the coordinate without a result bit. -/
 private def fullFineEdge (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge]
     (edge : FineEdge) :
@@ -227,7 +246,10 @@ private def fullFineEdge (FineEdge : Type)
     simp [selfLoopPresentation]⟩
 
 /-- Forgetting the selection proof identifies the full selected coarse-edge
-type with the singleton coarse-edge table. -/
+type with the singleton coarse-edge table.
+
+Position: private equivalence API supporting the fixture rank proofs.  It is
+derived from the full raw selection and accepts no supplied basis equivalence. -/
 private def fullCoarseEdgeEquiv (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ ≃ PUnit where
@@ -237,7 +259,10 @@ private def fullCoarseEdgeEquiv (FineEdge : Type)
   right_inv target := by cases target; rfl
 
 /-- Forgetting the selection proof identifies the full selected fine-edge
-type with the raw fine-edge table. -/
+type with the raw fine-edge table.
+
+Position: private equivalence API supporting the fixture rank proofs.  It is
+derived from raw edge coverage and accepts no supplied basis equivalence. -/
 private def fullFineEdgeEquiv (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).FineEdgeIn Finset.univ ≃ FineEdge where
@@ -288,7 +313,10 @@ private theorem negative_h1RankBlockMatrix_entry :
   simp [
     negativePresentation, selfLoopPresentation, fullFineEdge, fullCoarseEdge]
 
-/-- Empty face tables make the raw coarse degree-one matrix zero. -/
+/-- Empty face tables make the raw coarse degree-one matrix zero.
+
+Position: private matrix-evaluation API for the uniformity instance proofs.  The
+zero conclusion comes from the raw empty coarse-face table, not a zero-matrix field. -/
 private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).coarseD1Matrix Finset.univ = 0 := by
@@ -297,7 +325,10 @@ private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
 
 /-- Self-loop endpoints make the raw coarse degree-zero matrix zero.  This
 private instance API uses the definition-owner matrix/linear-map evaluation
-lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
+lemmas and the explicit endpoint equality, with no supplied zero matrix.
+
+Position: private matrix-evaluation API for the uniformity instance proofs; its
+material inputs are the raw self-loop endpoints and complete selected-edge table. -/
 private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).coarseD0Matrix Finset.univ = 0 := by
@@ -315,7 +346,10 @@ private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
 
 /-- Self-loop endpoints make the raw fine degree-zero matrix zero.  This
 private instance API uses the definition-owner matrix/linear-map evaluation
-lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
+lemmas and the explicit endpoint equality, with no supplied zero matrix.
+
+Position: private matrix-evaluation API for the uniformity instance proofs; its
+material inputs are the raw fine self-loop endpoints and complete edge table. -/
 private theorem fineD0Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).fineD0Matrix Finset.univ = 0 := by
@@ -331,7 +365,10 @@ private theorem fineD0Matrix_eq_zero (FineEdge : Type)
   rw [hendpoints]
   ring
 
-/-- Empty face tables make the raw fine degree-one matrix zero. -/
+/-- Empty face tables make the raw fine degree-one matrix zero.
+
+Position: private matrix-evaluation API for the uniformity instance proofs.  The
+zero conclusion comes from the raw empty fine-face table, not a zero-matrix field. -/
 private theorem fineD1Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).fineD1Matrix Finset.univ = 0 := by
@@ -341,7 +378,11 @@ private theorem fineD1Matrix_eq_zero (FineEdge : Type)
 /-- The raw H¹ block matrix is the outer product of the all-one fine-edge
 column with the row selecting the unique coarse-edge coordinate.  This private
 instance API derives every entry through the public block-map evaluation
-surface and raw self-loop tables; it supplies neither the matrix nor its rank. -/
+surface and raw self-loop tables; it supplies neither the matrix nor its rank.
+
+Position: private block-matrix API feeding the semantic rank theorem for both
+fixtures.  Complete raw edge coverage and computed map entries are its only
+material inputs; the outer-product formula is proved rather than supplied. -/
 private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).h1RankBlockMatrix Finset.univ =

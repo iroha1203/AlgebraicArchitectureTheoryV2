@@ -29,7 +29,11 @@ open ResolutionInvarianceConditionInstances
 /-- Raw finite presentation of the reviewed two-chart-fiber incidence
 fixture.  The coarse target is singleton-valued, while the fine reading
 distinguishes the two sources.  This module tests the geometric checker rather
-than the later nonconstant-law firing. -/
+than the later nonconstant-law firing.
+
+Position: existing positive checker fixture reused by the Cycle 23
+production-kernel validation.  Its new explicit entry lists are complete raw
+coverage data, not condition, observation, or expected-result fields. -/
 def positivePresentation : FiniteComparisonPresentation where
   Source := Fin 2
   sourceFintype := inferInstance
@@ -172,7 +176,11 @@ def positivePresentation : FiniteComparisonPresentation where
 
 /-! ## Isolated C1 and C3 negative raw presentations -/
 
-/-- Two fine charts in one coarse fiber with no fine edges. -/
+/-- Two fine charts in one coarse fiber with no fine edges.
+
+Position: existing disconnected-fiber checker fixture reused by the Cycle 23
+production-kernel validation.  Its new explicit entry lists are complete raw
+coverage data, not reachability, observation, or expected-result fields. -/
 def disconnectedFiberPresentation : FiniteComparisonPresentation where
   Source := PUnit
   sourceFintype := inferInstance
@@ -263,7 +271,11 @@ def disconnectedFiberPresentation : FiniteComparisonPresentation where
     intro fineChart source hsource
     exact Finset.mem_univ _
 
-/-- One fine self-loop in a single chart fiber and no fine faces. -/
+/-- One fine self-loop in a single chart fiber and no fine faces.
+
+Position: existing face-free checker fixture reused by the Cycle 23
+production-kernel validation.  Its new explicit entry lists are complete raw
+coverage data, not cycle, observation, or expected-result fields. -/
 def faceFreeCyclePresentation : FiniteComparisonPresentation where
   Source := Fin 2
   sourceFintype := inferInstance

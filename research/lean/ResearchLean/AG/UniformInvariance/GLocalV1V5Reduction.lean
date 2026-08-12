@@ -42,42 +42,63 @@ namespace FiniteComparisonPresentation
 
 /-! ## Scoped raw tables and FaceTwin classes -/
 
-/-- Coarse targets selected by a target subset. -/
+/-- Coarse targets selected by a target subset.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseScopeTargets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.CoarseTarget := A
 
-/-- Fine targets lying over a selected coarse-target subset. -/
+/-- Fine targets lying over a selected coarse-target subset.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineScopeTargets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineTarget :=
   Finset.univ.filter fun target => P.computedFactor target ∈ A
 
-/-- Scoped support of a coarse chart. -/
+/-- Scoped support of a coarse chart.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseChartSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (chart : P.CoarseChart) :
     Finset P.CoarseTarget :=
   P.coarseChartSupport chart ∩ A
 
-/-- Scoped support of a fine chart. -/
+/-- Scoped support of a fine chart.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineChartSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (chart : P.FineChart) :
     Finset P.FineTarget :=
   P.fineChartSupport chart ∩ P.gLocalV1FineScopeTargets A
 
-/-- Derived scoped support of a coarse edge. -/
+/-- Derived scoped support of a coarse edge.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseEdgeSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.CoarseEdge) :
     Finset P.CoarseTarget :=
   P.gLocalV1CoarseChartSupport A (P.coarseEdgeLeft edge) ∩
     P.gLocalV1CoarseChartSupport A (P.coarseEdgeRight edge)
 
-/-- Derived scoped support of a fine edge. -/
+/-- Derived scoped support of a fine edge.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineEdgeSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.FineEdge) :
     Finset P.FineTarget :=
   P.gLocalV1FineChartSupport A (P.fineEdgeLeft edge) ∩
     P.gLocalV1FineChartSupport A (P.fineEdgeRight edge)
 
-/-- Derived scoped support of a coarse face. -/
+/-- Derived scoped support of a coarse face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFace) :
     Finset P.CoarseTarget :=
@@ -85,7 +106,10 @@ def gLocalV1CoarseFaceSupport (P : FiniteComparisonPresentation)
     P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge1 face) ∩
       P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge2 face)
 
-/-- Derived scoped support of a fine face. -/
+/-- Derived scoped support of a fine face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineFaceSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFace) :
     Finset P.FineTarget :=
@@ -93,38 +117,59 @@ def gLocalV1FineFaceSupport (P : FiniteComparisonPresentation)
     P.gLocalV1FineEdgeSupport A (P.fineFaceEdge1 face) ∩
       P.gLocalV1FineEdgeSupport A (P.fineFaceEdge2 face)
 
-/-- Scoped coarse charts. -/
+/-- Scoped coarse charts.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseCharts (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.CoarseChart :=
   Finset.univ.filter fun chart => (P.gLocalV1CoarseChartSupport A chart).Nonempty
 
-/-- Scoped fine charts. -/
+/-- Scoped fine charts.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineCharts (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineChart :=
   Finset.univ.filter fun chart => (P.gLocalV1FineChartSupport A chart).Nonempty
 
-/-- Scoped coarse edges. -/
+/-- Scoped coarse edges.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.CoarseEdge :=
   Finset.univ.filter fun edge => (P.gLocalV1CoarseEdgeSupport A edge).Nonempty
 
-/-- Scoped fine edges. -/
+/-- Scoped fine edges.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineEdge :=
   Finset.univ.filter fun edge => (P.gLocalV1FineEdgeSupport A edge).Nonempty
 
-/-- Scoped coarse faces. -/
+/-- Scoped coarse faces.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaces (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.CoarseFace :=
   Finset.univ.filter fun face => (P.gLocalV1CoarseFaceSupport A face).Nonempty
 
-/-- Scoped fine faces. -/
+/-- Scoped fine faces.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineFaces (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineFace :=
   Finset.univ.filter fun face => (P.gLocalV1FineFaceSupport A face).Nonempty
 
 /-- A coarse FaceTwin key is exactly the ordered boundary triple together with
-its scoped support. -/
+its scoped support.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 structure GLocalV1CoarseFaceTwinKey (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) where
   edge0 : P.CoarseEdge
@@ -134,7 +179,10 @@ structure GLocalV1CoarseFaceTwinKey (P : FiniteComparisonPresentation)
   deriving DecidableEq, Fintype
 
 /-- A fine FaceTwin key is exactly the ordered boundary triple together with
-its scoped support. -/
+its scoped support.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 structure GLocalV1FineFaceTwinKey (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) where
   edge0 : P.FineEdge
@@ -143,38 +191,56 @@ structure GLocalV1FineFaceTwinKey (P : FiniteComparisonPresentation)
   support : Finset P.FineTarget
   deriving DecidableEq, Fintype
 
-/-- The coarse FaceTwin key generated by one scoped raw face. -/
+/-- The coarse FaceTwin key generated by one scoped raw face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceKey (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFace) :
     P.GLocalV1CoarseFaceTwinKey A :=
   ⟨P.coarseFaceEdge0 face, P.coarseFaceEdge1 face, P.coarseFaceEdge2 face,
     P.gLocalV1CoarseFaceSupport A face⟩
 
-/-- The fine FaceTwin key generated by one scoped raw face. -/
+/-- The fine FaceTwin key generated by one scoped raw face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineFaceKey (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFace) :
     P.GLocalV1FineFaceTwinKey A :=
   ⟨P.fineFaceEdge0 face, P.fineFaceEdge1 face, P.fineFaceEdge2 face,
     P.gLocalV1FineFaceSupport A face⟩
 
-/-- All coarse FaceTwin classes generated by the scoped raw face table. -/
+/-- All coarse FaceTwin classes generated by the scoped raw face table.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1CoarseFaceTwinKey A) :=
   (P.gLocalV1CoarseFaces A).image (P.gLocalV1CoarseFaceKey A)
 
-/-- All fine FaceTwin classes generated by the scoped raw face table. -/
+/-- All fine FaceTwin classes generated by the scoped raw face table.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineFaceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1FineFaceTwinKey A) :=
   (P.gLocalV1FineFaces A).image (P.gLocalV1FineFaceKey A)
 
-/-- Actual coarse members of one generated FaceTwin class. -/
+/-- Actual coarse members of one generated FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (key : P.GLocalV1CoarseFaceTwinKey A) :
     Finset P.CoarseFace :=
   (P.gLocalV1CoarseFaces A).filter fun face =>
     P.gLocalV1CoarseFaceKey A face = key
 
-/-- Actual fine members of one generated FaceTwin class. -/
+/-- Actual fine members of one generated FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (key : P.GLocalV1FineFaceTwinKey A) :
     Finset P.FineFace :=
@@ -182,7 +248,12 @@ def gLocalV1FineFaceMembers (P : FiniteComparisonPresentation)
 
 /-! ## Finite graph primitives -/
 
-/-- One undirected reachability expansion inside a selected vertex/edge set. -/
+/-- One undirected reachability expansion inside a selected vertex/edge set.
+
+Position: finite-graph expansion API used by the v5 connectivity and critical-edge
+recognizers in fixed GOAL claim (v).  Vertices, edges, and endpoints are supplied
+as raw finite data; no reachability trace or connectivity certificate is accepted.
+-/
 def gLocalV1ReachabilityStep {V E : Type*} [Fintype V]
     [DecidableEq V] [DecidableEq E]
     (vertices : Finset V) (edges : Finset E) (left right : E → V)
@@ -193,7 +264,12 @@ def gLocalV1ReachabilityStep {V E : Type*} [Fintype V]
         (right edge ∈ reached ∧ left edge = vertex))
 
 /-- Bounded undirected reachability closure.  `Fintype.card V` expansions are
-enough because each strict expansion adds a new vertex. -/
+enough because each strict expansion adds a new vertex.
+
+Position: bounded reachability API used by the v5 connectivity and critical-edge
+recognizers in fixed GOAL claim (v).  It iterates the raw expansion for the finite
+vertex-cardinality bound and accepts no path or closure certificate.
+-/
 def gLocalV1ReachabilityClosure {V E : Type*} [Fintype V]
     [DecidableEq V] [DecidableEq E]
     (vertices : Finset V) (edges : Finset E) (left right : E → V)
@@ -201,7 +277,12 @@ def gLocalV1ReachabilityClosure {V E : Type*} [Fintype V]
   Nat.iterate (gLocalV1ReachabilityStep vertices edges left right)
     (Fintype.card V) {start}
 
-/-- Pairwise connectivity in a finite undirected subgraph. -/
+/-- Pairwise connectivity in a finite undirected subgraph.
+
+Position: v5 reducer predicate for the connected-fiber tests in fixed GOAL claim
+(v).  It computes pairwise reachability from the supplied finite graph and accepts
+no connectivity proof or expected Boolean value.
+-/
 def gLocalV1Connected {V E : Type*} [Fintype V]
     [DecidableEq V] [DecidableEq E]
     (vertices : Finset V) (edges : Finset E) (left right : E → V) : Bool :=
@@ -209,7 +290,12 @@ def gLocalV1Connected {V E : Type*} [Fintype V]
     target ∈ gLocalV1ReachabilityClosure vertices edges left right start)
 
 /-- Whether the endpoints of an edge remain connected after deleting it.  A
-self-loop is critical by reflexivity, exactly as in the permanent source. -/
+self-loop is critical by reflexivity, exactly as in the permanent source.
+
+Position: v5 reducer API for the critical-edge flags in fixed GOAL claim (v).  It
+deletes the selected raw edge and recomputes bounded reachability; no alternate
+path or criticality certificate is supplied.
+-/
 def gLocalV1PathWithoutEdge {V E : Type*} [Fintype V]
     [DecidableEq V] [DecidableEq E]
     (vertices : Finset V) (edges : Finset E) (left right : E → V)
@@ -220,7 +306,10 @@ def gLocalV1PathWithoutEdge {V E : Type*} [Fintype V]
 
 /-! ## States, packets, and retained-cell measure -/
 
-/-- A retained-cell state of the full v5 reduction. -/
+/-- A retained-cell state of the full v5 reduction.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 structure GLocalV1V5State (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) where
   coarseEdges : Finset P.CoarseEdge
@@ -230,7 +319,10 @@ structure GLocalV1V5State (P : FiniteComparisonPresentation)
   deriving DecidableEq
 
 /-- One generated v5 packet.  Only the registered kind and removal sets are
-stored; no validity, result, terminal, or observation certificate is a field. -/
+stored; no validity, result, terminal, or observation certificate is a field.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 structure GLocalV1V5Packet (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) where
   kind : GLocalV1PacketKind
@@ -241,19 +333,28 @@ structure GLocalV1V5Packet (P : FiniteComparisonPresentation)
   residualFineEdges : Finset P.FineEdge
   deriving DecidableEq
 
-/-- Initial state retaining every scoped edge and generated FaceTwin class. -/
+/-- Initial state retaining every scoped edge and generated FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1InitialState (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : P.GLocalV1V5State A :=
   ⟨P.gLocalV1CoarseEdges A, P.gLocalV1CoarseFaceClasses A,
     P.gLocalV1FineEdges A, P.gLocalV1FineFaceClasses A⟩
 
-/-- Total retained-edge/FaceTwin measure. -/
+/-- Total retained-edge/FaceTwin measure.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def GLocalV1V5State.measure {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} (state : P.GLocalV1V5State A) : Nat :=
   state.coarseEdges.card + state.coarseFaceClasses.card +
     state.fineEdges.card + state.fineFaceClasses.card
 
-/-- Apply packet removal sets to a retained-cell state. -/
+/-- Apply packet removal sets to a retained-cell state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def GLocalV1V5Packet.apply {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} (packet : P.GLocalV1V5Packet A)
     (state : P.GLocalV1V5State A) : P.GLocalV1V5State A :=
@@ -265,7 +366,10 @@ def GLocalV1V5Packet.apply {P : FiniteComparisonPresentation}
 /-- Componentwise retained-cell inclusion between reduction states.  This is
 the invariant that lets executable clients enumerate only subsets of the
 canonical initial raw tables, rather than every inhabitant of the ambient
-finite key types. -/
+finite key types.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 structure GLocalV1V5State.SubstateOf {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} (left right : P.GLocalV1V5State A) : Prop where
   coarseEdges : left.coarseEdges ⊆ right.coarseEdges
@@ -273,13 +377,19 @@ structure GLocalV1V5State.SubstateOf {P : FiniteComparisonPresentation}
   fineEdges : left.fineEdges ⊆ right.fineEdges
   fineFaceClasses : left.fineFaceClasses ⊆ right.fineFaceClasses
 
-/-- Every retained-cell state is a substate of itself. -/
+/-- Every retained-cell state is a substate of itself.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem GLocalV1V5State.substateOf_refl {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} (state : P.GLocalV1V5State A) :
     state.SubstateOf state :=
   ⟨fun _ h => h, fun _ h => h, fun _ h => h, fun _ h => h⟩
 
-/-- Componentwise retained-cell inclusion is transitive. -/
+/-- Componentwise retained-cell inclusion is transitive.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem GLocalV1V5State.SubstateOf.trans {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} {left middle right : P.GLocalV1V5State A}
     (hleft : left.SubstateOf middle) (hmiddle : middle.SubstateOf right) :
@@ -289,7 +399,10 @@ theorem GLocalV1V5State.SubstateOf.trans {P : FiniteComparisonPresentation}
     fun _ h => hmiddle.fineEdges (hleft.fineEdges h),
     fun _ h => hmiddle.fineFaceClasses (hleft.fineFaceClasses h)⟩
 
-/-- Applying a packet only removes retained cells. -/
+/-- Applying a packet only removes retained cells.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem GLocalV1V5Packet.apply_substateOf {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} (packet : P.GLocalV1V5Packet A)
     (state : P.GLocalV1V5State A) : (packet.apply state).SubstateOf state := by
@@ -301,40 +414,58 @@ theorem GLocalV1V5Packet.apply_substateOf {P : FiniteComparisonPresentation}
 
 /-! ## Packet-recognizer primitives -/
 
-/-- Signed `+,-,+` coefficient of an edge in an ordered face boundary. -/
+/-- Signed `+,-,+` coefficient of an edge in an ordered face boundary.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1SignedCoefficient {E : Type*} [DecidableEq E]
     (edge0 edge1 edge2 edge : E) : Int :=
   (if edge0 = edge then 1 else 0) - (if edge1 = edge then 1 else 0) +
     (if edge2 = edge then 1 else 0)
 
-/-- Coarse FaceTwin classes in which an edge occurs in the ordered boundary. -/
+/-- Coarse FaceTwin classes in which an edge occurs in the ordered boundary.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseOccurrenceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (edge : P.CoarseEdge) : Finset (P.GLocalV1CoarseFaceTwinKey A) :=
   state.coarseFaceClasses.filter fun key =>
     key.edge0 = edge ∨ key.edge1 = edge ∨ key.edge2 = edge
 
-/-- Fine FaceTwin classes in which an edge occurs in the ordered boundary. -/
+/-- Fine FaceTwin classes in which an edge occurs in the ordered boundary.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineOccurrenceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (edge : P.FineEdge) : Finset (P.GLocalV1FineFaceTwinKey A) :=
   state.fineFaceClasses.filter fun key =>
     key.edge0 = edge ∨ key.edge1 = edge ∨ key.edge2 = edge
 
-/-- Actual retained coarse faces. -/
+/-- Actual retained coarse faces.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1RetainedCoarseFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseFace :=
   state.coarseFaceClasses.biUnion (P.gLocalV1CoarseFaceMembers A)
 
-/-- Actual retained fine faces. -/
+/-- Actual retained fine faces.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1RetainedFineFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineFace :=
   state.fineFaceClasses.biUnion (P.gLocalV1FineFaceMembers A)
 
 /-- Whether a fine FaceTwin class has any actual member mapping into one
-selected coarse FaceTwin class. -/
+selected coarse FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineClassHitsCoarseClass (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (fineKey : P.GLocalV1FineFaceTwinKey A)
     (coarseKey : P.GLocalV1CoarseFaceTwinKey A) : Bool :=
@@ -343,7 +474,10 @@ def gLocalV1FineClassHitsCoarseClass (P : FiniteComparisonPresentation)
       P.faceMap fineFace = some coarseFace)
 
 /-- Whether every actual member of a fine FaceTwin class maps into one coarse
-FaceTwin class. -/
+FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineClassMapsIntoCoarseClass (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (fineKey : P.GLocalV1FineFaceTwinKey A)
     (coarseKey : P.GLocalV1CoarseFaceTwinKey A) : Bool :=
@@ -351,7 +485,10 @@ def gLocalV1FineClassMapsIntoCoarseClass (P : FiniteComparisonPresentation)
     ∃ coarseFace ∈ P.gLocalV1CoarseFaceMembers A coarseKey,
       P.faceMap fineFace = some coarseFace)
 
-/-- Fine classes meeting a selected set of coarse classes. -/
+/-- Fine classes meeting a selected set of coarse classes.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1SelectedFinePreimageClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseClasses : Finset (P.GLocalV1CoarseFaceTwinKey A)) :
@@ -361,7 +498,10 @@ def gLocalV1SelectedFinePreimageClasses (P : FiniteComparisonPresentation)
       P.gLocalV1FineClassHitsCoarseClass A fineKey coarseKey)
 
 /-- The selected fine preimage is unambiguous exactly when every hit class
-maps all actual members into a single selected coarse class. -/
+maps all actual members into a single selected coarse class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FinePreimageUnambiguous (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseClasses : Finset (P.GLocalV1CoarseFaceTwinKey A)) : Bool :=
@@ -369,7 +509,10 @@ def gLocalV1FinePreimageUnambiguous (P : FiniteComparisonPresentation)
   decide (∀ fineKey ∈ preimages, ∃ coarseKey ∈ coarseClasses,
     P.gLocalV1FineClassMapsIntoCoarseClass A fineKey coarseKey)
 
-/-- Residual fine edges mapping into a selected coarse-edge set. -/
+/-- Residual fine edges mapping into a selected coarse-edge set.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ResidualFineEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdges : Finset P.CoarseEdge) :
@@ -378,7 +521,10 @@ def gLocalV1ResidualFineEdges (P : FiniteComparisonPresentation)
     decide (∃ coarseEdge ∈ coarseEdges, P.edgeMap edge = some coarseEdge)
 
 /-- Residual mapped edges are removable precisely when they are face-free,
-non-self-loop bridges after the provisional removals. -/
+non-self-loop bridges after the provisional removals.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ResidualEdgesRemovable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (residual : Finset P.FineEdge) : Bool :=
@@ -388,7 +534,10 @@ def gLocalV1ResidualEdgesRemovable (P : FiniteComparisonPresentation)
       gLocalV1PathWithoutEdge (P.gLocalV1FineCharts A) state.fineEdges
         P.fineEdgeLeft P.fineEdgeRight edge = false)
 
-/-- All injective v4 pivot assignments for a fixed fine preimage. -/
+/-- All injective v4 pivot assignments for a fixed fine preimage.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1V4PivotAssignments (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdge : P.CoarseEdge)
@@ -403,7 +552,10 @@ def gLocalV1V4PivotAssignments (P : FiniteComparisonPresentation)
           P.gLocalV1FineOccurrenceClasses A state (assignment key) = {key.1}) ∧
         Function.Injective assignment)
 
-/-- Fine pivot edges used by one v4 assignment. -/
+/-- Fine pivot edges used by one v4 assignment.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1V4PivotEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget)
     (preimages : Finset (P.GLocalV1FineFaceTwinKey A))
@@ -413,7 +565,10 @@ def gLocalV1V4PivotEdges (P : FiniteComparisonPresentation)
 
 /-! ## The two v4 unit packet families -/
 
-/-- All v4 coarse-unit packets generated at a state. -/
+/-- All v4 coarse-unit packets generated at a state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1V4CoarsePackets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -438,7 +593,10 @@ def gLocalV1V4CoarsePackets (P : FiniteComparisonPresentation)
         else ∅
       else ∅
 
-/-- All v4 fine-only unit packets generated at a state. -/
+/-- All v4 fine-only unit packets generated at a state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1V4FineOnlyPackets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -453,7 +611,10 @@ def gLocalV1V4FineOnlyPackets (P : FiniteComparisonPresentation)
         {⟨.v4FineOnly, ∅, ∅, {fineKey}, {fineEdge}, ∅⟩}
       else ∅
 
-/-- All inherited v4 packet variants at a state. -/
+/-- All inherited v4 packet variants at a state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1V4Packets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -461,14 +622,20 @@ def gLocalV1V4Packets (P : FiniteComparisonPresentation)
 
 /-! ## Coordinate-dependency packets -/
 
-/-- Retained coarse self-loops available to the two v5 global recognizers. -/
+/-- Retained coarse self-loops available to the two v5 global recognizers.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1RetainedCoarseSelfLoops (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseEdge :=
   state.coarseEdges.filter fun edge =>
     P.coarseEdgeLeft edge = P.coarseEdgeRight edge
 
-/-- Coarse FaceTwin classes whose ordered boundary meets a selected edge set. -/
+/-- Coarse FaceTwin classes whose ordered boundary meets a selected edge set.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseClassesMeeting (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (edges : Finset P.CoarseEdge) :
@@ -480,7 +647,10 @@ def gLocalV1CoarseClassesMeeting (P : FiniteComparisonPresentation)
 exactly one signed unit coordinate among all retained coarse edges, that
 coordinate lies in the selected edge set, and the pivots cover the selected
 set.  Inspecting the full retained support matches the permanent beta-support
-recognizer and prevents an unselected nonzero coordinate from being hidden. -/
+recognizer and prevents an unselected nonzero coordinate from being hidden.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoordinateCoarseAssignments (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (selectedEdges : Finset P.CoarseEdge)
@@ -497,7 +667,10 @@ def gLocalV1CoordinateCoarseAssignments (P : FiniteComparisonPresentation)
         (∀ edge ∈ selectedEdges, ∃ key, assignment key = edge))
 
 /-- Assign every selected fine preimage class to the unique selected coarse
-FaceTwin class containing all of its mapped actual members. -/
+FaceTwin class containing all of its mapped actual members.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineClassAssignments (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget)
     (selectedClasses : Finset (P.GLocalV1CoarseFaceTwinKey A))
@@ -508,7 +681,10 @@ def gLocalV1FineClassAssignments (P : FiniteComparisonPresentation)
       P.gLocalV1FineClassMapsIntoCoarseClass A key.1 (assignment key).1)
 
 /-- Fine unit-coordinate assignments compatible with coarse coordinate pivots
-and the partial edge map. -/
+and the partial edge map.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoordinateFineAssignments (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (selectedClasses : Finset (P.GLocalV1CoarseFaceTwinKey A))
@@ -526,7 +702,10 @@ def gLocalV1CoordinateFineAssignments (P : FiniteComparisonPresentation)
           edge = assignment key) ∧
       P.edgeMap (assignment key) = some (coarseAssignment (classAssignment key)))
 
-/-- The set image of a coordinate fine-pivot assignment. -/
+/-- The set image of a coordinate fine-pivot assignment.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoordinateFinePivots (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget)
     (preimages : Finset (P.GLocalV1FineFaceTwinKey A))
@@ -534,7 +713,10 @@ def gLocalV1CoordinateFinePivots (P : FiniteComparisonPresentation)
     Finset P.FineEdge :=
   preimages.attach.image assignment
 
-/-- Full coordinate-dependency packet enumeration. -/
+/-- Full coordinate-dependency packet enumeration.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoordinatePackets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -576,7 +758,10 @@ def gLocalV1CoordinatePackets (P : FiniteComparisonPresentation)
 
 /-- A selected coarse relation set is exactly one directed simple doubled
 cycle: every source and target occurs once, all relations have `(u,v,u)`, and
-the directed incidence graph is connected. -/
+the directed incidence graph is connected.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1IsCoarseDoubledCycle (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget)
     (selectedEdges : Finset P.CoarseEdge)
@@ -593,14 +778,20 @@ def gLocalV1IsCoarseDoubledCycle (P : FiniteComparisonPresentation)
       gLocalV1Connected selectedEdges selectedClasses
         (fun key => key.edge0) (fun key => key.edge1) = true)
 
-/-- Fine sheet edges used by a family of doubled preimage classes. -/
+/-- Fine sheet edges used by a family of doubled preimage classes.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1DoubledSheetEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget)
     (preimages : Finset (P.GLocalV1FineFaceTwinKey A)) : Finset P.FineEdge :=
   preimages.biUnion fun key => {key.edge0, key.edge1}
 
 /-- Validate the fine disjoint union of directed covering cycles above a
-selected coarse doubled cycle. -/
+selected coarse doubled cycle.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1IsFineDoubledCover (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (selectedClasses : Finset (P.GLocalV1CoarseFaceTwinKey A))
@@ -621,7 +812,10 @@ def gLocalV1IsFineDoubledCover (P : FiniteComparisonPresentation)
         (preimages.filter fun key => key.edge1 = edge).card = 1) ∧
       sheetEdges ⊆ state.fineEdges)
 
-/-- Full closed-doubled-cycle packet enumeration. -/
+/-- Full closed-doubled-cycle packet enumeration.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1DoubledCyclePackets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -655,7 +849,10 @@ def gLocalV1DoubledCyclePackets (P : FiniteComparisonPresentation)
     else ∅
 
 /-- All four raw permanent packet families generated at one state, before the
-strict-decrease guard is applied. -/
+strict-decrease guard is applied.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1RawPacketVariants (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
@@ -664,14 +861,20 @@ def gLocalV1RawPacketVariants (P : FiniteComparisonPresentation)
 
 /-- All permanent packet variants.  The guard is computed from the removal
 sets and makes strict decrease an executable invariant rather than a supplied
-certificate. -/
+certificate.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1PacketVariants (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5Packet A) :=
   (P.gLocalV1RawPacketVariants A state).filter fun packet =>
     (packet.apply state).measure < state.measure
 
-/-- Every generated v5 packet strictly decreases the retained-cell measure. -/
+/-- Every generated v5 packet strictly decreases the retained-cell measure.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_packet_strict (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (packet : P.GLocalV1V5Packet A)
@@ -679,26 +882,38 @@ theorem gLocalV1_packet_strict (P : FiniteComparisonPresentation)
     (packet.apply state).measure < state.measure := by
   exact (Finset.mem_filter.mp hpacket).2
 
-/-- One generated reduction transition. -/
+/-- One generated reduction transition.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def GLocalV1Step (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (left right : P.GLocalV1V5State A) : Prop :=
   ∃ packet ∈ P.gLocalV1PacketVariants A left, packet.apply left = right
 
-/-- The transition relation is decidable by finite packet search. -/
+/-- The transition relation is decidable by finite packet search.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 instance gLocalV1StepDecidable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : DecidableRel (P.GLocalV1Step A) := by
   intro left right
   unfold GLocalV1Step
   infer_instance
 
-/-- Every reduction transition strictly decreases retained-cell measure. -/
+/-- Every reduction transition strictly decreases retained-cell measure.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_step_strict (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hstep : P.GLocalV1Step A left right) : right.measure < left.measure := by
   obtain ⟨packet, hpacket, rfl⟩ := hstep
   exact P.gLocalV1_packet_strict A left packet hpacket
 
-/-- Every generated reduction step only removes retained cells. -/
+/-- Every generated reduction step only removes retained cells.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_step_substateOf (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hstep : P.GLocalV1Step A left right) : right.SubstateOf left := by
@@ -709,7 +924,10 @@ theorem gLocalV1_step_substateOf (P : FiniteComparisonPresentation)
 
 /-- All states reachable from one state.  The recursive call visits every
 outgoing packet, and terminates solely by `gLocalV1_packet_strict`; there is no
-externally chosen depth bound or selected trace. -/
+externally chosen depth bound or selected trace.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ReachableFrom (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5State A) :=
@@ -719,25 +937,37 @@ termination_by state.measure
 decreasing_by
   exact P.gLocalV1_packet_strict A state packet.1 packet.2
 
-/-- Complete reachable-state set from the canonical initial state. -/
+/-- Complete reachable-state set from the canonical initial state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ReachableStates (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1V5State A) :=
   P.gLocalV1ReachableFrom A (P.gLocalV1InitialState A)
 
 /-- Intrinsic reachability is the reflexive-transitive closure of generated
-packet transitions. -/
+packet transitions.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def GLocalV1Reachable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Prop :=
   Relation.ReflTransGen (P.GLocalV1Step A) (P.gLocalV1InitialState A) state
 
-/-- Irreducibility means that no registered packet remains. -/
+/-- Irreducibility means that no registered packet remains.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def GLocalV1Irreducible (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Prop :=
   P.gLocalV1PacketVariants A state = ∅
 
 /-- A generated reduction step refutes irreducibility of its source state.
 This is the public elimination API for `GLocalV1Irreducible`; downstream
-fixtures need not expose the packet-enumeration definition. -/
+fixtures need not expose the packet-enumeration definition.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_not_irreducible_of_step (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {state next : P.GLocalV1V5State A}
     (hstep : P.GLocalV1Step A state next) :
@@ -748,7 +978,10 @@ theorem gLocalV1_not_irreducible_of_step (P : FiniteComparisonPresentation)
   rw [hIrreducible] at hpacket
   simp at hpacket
 
-/-- All irreducible leaves reached by the full reduction DAG. -/
+/-- All irreducible leaves reached by the full reduction DAG.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1TerminalFrom (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset (P.GLocalV1V5State A) :=
@@ -761,20 +994,29 @@ termination_by state.measure
 decreasing_by
   exact P.gLocalV1_packet_strict A state packet.1 packet.2
 
-/-- All distinct irreducible terminals of the canonical initial state. -/
+/-- All distinct irreducible terminals of the canonical initial state.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1TerminalStates (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1V5State A) :=
   P.gLocalV1TerminalFrom A (P.gLocalV1InitialState A)
 
 /-- The initial retained-cell measure plus one is an explicit upper bound on
-the number of states in every strict reduction trace. -/
+the number of states in every strict reduction trace.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ReachabilityFuel (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Nat :=
   (P.gLocalV1InitialState A).measure + 1
 
 /-! ## Reachability and terminal completeness -/
 
-/-- Every state belongs to its own recursively enumerated reachable set. -/
+/-- Every state belongs to its own recursively enumerated reachable set.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_self_mem_reachableFrom (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     state ∈ P.gLocalV1ReachableFrom A state := by
@@ -782,7 +1024,10 @@ theorem gLocalV1_self_mem_reachableFrom (P : FiniteComparisonPresentation)
   simp
 
 /-- A successor's reachable set is included in its predecessor's reachable
-set. -/
+set.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_reachableFrom_step_subset (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hstep : P.GLocalV1Step A left right) :
@@ -794,7 +1039,10 @@ theorem gLocalV1_reachableFrom_step_subset (P : FiniteComparisonPresentation)
   apply Finset.mem_biUnion.mpr
   exact ⟨⟨packet, hpacket⟩, by simp, htarget⟩
 
-/-- Reachability closure reverses to inclusion of recursive reachable sets. -/
+/-- Reachability closure reverses to inclusion of recursive reachable sets.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_reachableFrom_mono (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hreach : Relation.ReflTransGen (P.GLocalV1Step A) left right) :
@@ -806,7 +1054,10 @@ theorem gLocalV1_reachableFrom_mono (P : FiniteComparisonPresentation)
         ih (P.gLocalV1_reachableFrom_step_subset A hstep htarget)
 
 /-- Recursive enumeration contains only states reached by generated packet
-transitions. -/
+transitions.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_reachableFrom_implies (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (left right : P.GLocalV1V5State A)
     (hmem : right ∈ P.gLocalV1ReachableFrom A left) :
@@ -824,7 +1075,10 @@ theorem gLocalV1_mem_reachableFrom_implies (P : FiniteComparisonPresentation)
         exact Relation.ReflTransGen.head ⟨packet.1, hpacket, rfl⟩ htail
 
 /-- The complete recursive reachable set is exactly reflexive-transitive
-packet reachability. -/
+packet reachability.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem mem_gLocalV1ReachableStates_iff (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     state ∈ P.gLocalV1ReachableStates A ↔ P.GLocalV1Reachable A state := by
@@ -839,14 +1093,20 @@ theorem mem_gLocalV1ReachableStates_iff (P : FiniteComparisonPresentation)
 /-- One breadth expansion of a finite state set.  Unlike the structural
 well-founded recursion, this union visits a state at most once per measure
 layer and therefore implements the memoization discipline of the permanent
-v5 source. -/
+v5 source.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ReachabilityExpansion (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (states : Finset (P.GLocalV1V5State A)) :
     Finset (P.GLocalV1V5State A) :=
   states ∪ states.biUnion fun state =>
     (P.gLocalV1PacketVariants A state).image fun packet => packet.apply state
 
-/-- One breadth expansion retains every previously reached state. -/
+/-- One breadth expansion retains every previously reached state.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1ReachabilityExpansion_self_subset
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (states : Finset (P.GLocalV1V5State A)) :
@@ -854,7 +1114,10 @@ theorem gLocalV1ReachabilityExpansion_self_subset
   intro state hstate
   exact Finset.mem_union_left _ hstate
 
-/-- Breadth expansion is monotone in its finite state set. -/
+/-- Breadth expansion is monotone in its finite state set.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1ReachabilityExpansion_mono
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     {left right : Finset (P.GLocalV1V5State A)} (hsubset : left ⊆ right) :
@@ -868,7 +1131,10 @@ theorem gLocalV1ReachabilityExpansion_mono
     apply Finset.mem_biUnion.mpr
     exact ⟨source, hsubset hsource, himage⟩
 
-/-- Iterated breadth expansion is monotone in its seed set. -/
+/-- Iterated breadth expansion is monotone in its seed set.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1ReachabilityExpansion_iterate_mono
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (steps : Nat) {left right : Finset (P.GLocalV1V5State A)}
@@ -881,7 +1147,10 @@ theorem gLocalV1ReachabilityExpansion_iterate_mono
       rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
       exact ih (P.gLocalV1ReachabilityExpansion_mono A hsubset)
 
-/-- Increasing the breadth-iteration count preserves all reached states. -/
+/-- Increasing the breadth-iteration count preserves all reached states.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1ReachabilityExpansion_iterate_subset_succ
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (steps : Nat) (states : Finset (P.GLocalV1V5State A)) :
@@ -892,7 +1161,10 @@ theorem gLocalV1ReachabilityExpansion_iterate_subset_succ
     (P.gLocalV1ReachabilityExpansion_self_subset A states)
 
 /-- Membership after fewer breadth iterations persists after any larger
-iteration count. -/
+iteration count.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_iterate_of_le (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (states : Finset (P.GLocalV1V5State A))
     {small large : Nat} (hle : small ≤ large)
@@ -904,7 +1176,10 @@ theorem gLocalV1_mem_iterate_of_le (P : FiniteComparisonPresentation)
   | succ large _ ih =>
       exact P.gLocalV1ReachabilityExpansion_iterate_subset_succ A large states ih
 
-/-- A generated successor is present after one breadth expansion. -/
+/-- A generated successor is present after one breadth expansion.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_expansion_of_step (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (states : Finset (P.GLocalV1V5State A))
     {left right : P.GLocalV1V5State A} (hleft : left ∈ states)
@@ -916,7 +1191,10 @@ theorem gLocalV1_mem_expansion_of_step (P : FiniteComparisonPresentation)
   exact ⟨left, hleft, Finset.mem_image.mpr ⟨packet, hpacket, rfl⟩⟩
 
 /-- Iterated breadth expansion contains only intrinsically reachable states,
-provided every seed state is reachable. -/
+provided every seed state is reachable.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_iterate_reachable
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (start : P.GLocalV1V5State A) (steps : Nat)
@@ -939,7 +1217,10 @@ theorem gLocalV1_iterate_reachable
 
 /-- The structural well-founded reachable set is contained in the bounded
 memoized breadth expansion.  The bound is the retained-cell measure plus one,
-because every generated step strictly decreases that measure. -/
+because every generated step strictly decreases that measure.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_reachableFrom_implies_mem_iterate
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (left right : P.GLocalV1V5State A)
@@ -975,13 +1256,19 @@ theorem gLocalV1_mem_reachableFrom_implies_mem_iterate
           Nat.succ_le_succ hmeasure
         exact P.gLocalV1_mem_iterate_of_le A {left} hsteps hlifted
 
-/-- Memoized complete reachable-state set. -/
+/-- Memoized complete reachable-state set.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1MemoizedReachableStates (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1V5State A) :=
   (P.gLocalV1ReachabilityExpansion A)^[P.gLocalV1ReachabilityFuel A]
     {P.gLocalV1InitialState A}
 
-/-- Memoized bounded reachability is exactly intrinsic packet reachability. -/
+/-- Memoized bounded reachability is exactly intrinsic packet reachability.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem mem_gLocalV1MemoizedReachableStates_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) :
@@ -1000,13 +1287,19 @@ theorem mem_gLocalV1MemoizedReachableStates_iff
     exact P.gLocalV1_mem_reachableFrom_implies_mem_iterate A _ state
       ((P.mem_gLocalV1ReachableStates_iff A state).mpr hreach)
 
-/-- Memoized executable terminal-state set. -/
+/-- Memoized executable terminal-state set.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1MemoizedTerminalStates (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1V5State A) :=
   (P.gLocalV1MemoizedReachableStates A).filter fun state =>
     P.gLocalV1PacketVariants A state = ∅
 
-/-- Memoized terminal membership is exactly reachable irreducibility. -/
+/-- Memoized terminal membership is exactly reachable irreducibility.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem mem_gLocalV1MemoizedTerminalStates_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) :
@@ -1016,7 +1309,10 @@ theorem mem_gLocalV1MemoizedTerminalStates_iff
     P.mem_gLocalV1MemoizedReachableStates_iff, GLocalV1Irreducible]
 
 /-- Every reachable state is componentwise contained in the canonical initial
-raw-table state. -/
+raw-table state.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_reachable_substateOf_initial
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) (hreach : P.GLocalV1Reachable A state) :
@@ -1026,7 +1322,10 @@ theorem gLocalV1_reachable_substateOf_initial
   | tail _ hstep ih =>
       exact (P.gLocalV1_step_substateOf A hstep).trans ih
 
-/-- An irreducible state is the unique leaf of its own terminal recursion. -/
+/-- An irreducible state is the unique leaf of its own terminal recursion.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_self_mem_terminalFrom_of_irreducible
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) (hirreducible : P.GLocalV1Irreducible A state) :
@@ -1035,7 +1334,10 @@ theorem gLocalV1_self_mem_terminalFrom_of_irreducible
   simp [GLocalV1Irreducible] at hirreducible
   simp [hirreducible]
 
-/-- A successor's terminal leaves are leaves of its predecessor. -/
+/-- A successor's terminal leaves are leaves of its predecessor.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_terminalFrom_step_subset (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hstep : P.GLocalV1Step A left right) :
@@ -1049,7 +1351,10 @@ theorem gLocalV1_terminalFrom_step_subset (P : FiniteComparisonPresentation)
   apply Finset.mem_biUnion.mpr
   exact ⟨⟨packet, hpacket⟩, by simp, htarget⟩
 
-/-- Reachability closure reverses to inclusion of terminal-leaf sets. -/
+/-- Reachability closure reverses to inclusion of terminal-leaf sets.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_terminalFrom_mono (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) {left right : P.GLocalV1V5State A}
     (hreach : Relation.ReflTransGen (P.GLocalV1Step A) left right) :
@@ -1060,7 +1365,10 @@ theorem gLocalV1_terminalFrom_mono (P : FiniteComparisonPresentation)
       exact fun target htarget =>
         ih (P.gLocalV1_terminalFrom_step_subset A hstep htarget)
 
-/-- Every recursively generated terminal is intrinsically irreducible. -/
+/-- Every recursively generated terminal is intrinsically irreducible.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_terminalFrom_irreducible
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (left right : P.GLocalV1V5State A)
@@ -1079,7 +1387,10 @@ theorem gLocalV1_mem_terminalFrom_irreducible
         exact ih (packet.1.apply left)
           (P.gLocalV1_packet_strict A left packet.1 packet.2) right hright
 
-/-- Every recursively generated terminal is reached by generated packets. -/
+/-- Every recursively generated terminal is reached by generated packets.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_mem_terminalFrom_reachable
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (left right : P.GLocalV1V5State A)
@@ -1098,7 +1409,10 @@ theorem gLocalV1_mem_terminalFrom_reachable
           (P.gLocalV1_packet_strict A left packet.1 packet.2) right hright
         exact Relation.ReflTransGen.head ⟨packet.1, packet.2, rfl⟩ htail
 
-/-- Terminal membership is exactly reachable irreducibility. -/
+/-- Terminal membership is exactly reachable irreducibility.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem mem_gLocalV1TerminalStates_iff_reachable_irreducible
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) :
@@ -1113,7 +1427,10 @@ theorem mem_gLocalV1TerminalStates_iff_reachable_irreducible
       (P.gLocalV1_self_mem_terminalFrom_of_irreducible A state hirreducible)
 
 /-- Every terminal state is componentwise contained in the canonical initial
-raw-table state. -/
+raw-table state.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1_terminal_substateOf_initial
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A)
@@ -1124,7 +1441,10 @@ theorem gLocalV1_terminal_substateOf_initial
       hterminal).1
 
 /-- The memoized terminal set equals the structural well-founded terminal
-set, so executable observation and proof-level terminal semantics coincide. -/
+set, so executable observation and proof-level terminal semantics coincide.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1MemoizedTerminalStates_eq_terminalStates
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
     P.gLocalV1MemoizedTerminalStates A = P.gLocalV1TerminalStates A := by
@@ -1135,7 +1455,10 @@ theorem gLocalV1MemoizedTerminalStates_eq_terminalStates
 /-- Termination API for the raw v5 reducer: strict retained-cell decrease makes
 the recursively generated terminal set nonempty from every state.  The premise
 comes only from the computed packet recognizers, not a supplied terminal or
-trace certificate. -/
+trace certificate.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1TerminalFrom_nonempty (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     (P.gLocalV1TerminalFrom A state).Nonempty := by
@@ -1153,7 +1476,10 @@ theorem gLocalV1TerminalFrom_nonempty (P : FiniteComparisonPresentation)
         refine ⟨terminal, Finset.mem_biUnion.mpr ?_⟩
         exact ⟨⟨packet, hpacket⟩, by simp, hterminal⟩
 
-/-- The full v5 reduction always produces at least one irreducible terminal. -/
+/-- The full v5 reduction always produces at least one irreducible terminal.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1TerminalStates_nonempty (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) :
     (P.gLocalV1TerminalStates A).Nonempty :=
@@ -1163,21 +1489,30 @@ theorem gLocalV1TerminalStates_nonempty (P : FiniteComparisonPresentation)
 
 /-- Executable all-path packet summary used by the permanent scope record.  It
 collects kinds from every computed outgoing packet of every memoized reachable
-state; a selected reduction trace is deliberately not an input. -/
+state; a selected reduction trace is deliberately not an input.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1PacketKindFinset (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset GLocalV1PacketKind :=
   (P.gLocalV1MemoizedReachableStates A).biUnion fun state =>
     (P.gLocalV1PacketVariants A state).image GLocalV1V5Packet.kind
 
 /-- Canonical-list API for the all-path packet-kind summary.  The closed
-four-kind registry fixes output order without adding a packet certificate. -/
+four-kind registry fixes output order without adding a packet certificate.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1PacketKindUnion (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : List GLocalV1PacketKind :=
   [.v4Coarse, .v4FineOnly, .coordinateDependency, .closedDoubledCycle].filter
     fun kind => kind ∈ P.gLocalV1PacketKindFinset A
 
 /-- A packet kind occurs exactly when an outgoing packet of that kind exists at
-some reachable state. -/
+some reachable state.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem mem_gLocalV1PacketKindUnion_iff_reachable_packet
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (kind : GLocalV1PacketKind) :
@@ -1192,7 +1527,10 @@ theorem mem_gLocalV1PacketKindUnion_iff_reachable_packet
 
 /-! ## Terminal critical cells and registered flags -/
 
-/-- Coarse retained edges lying on a cycle, with self-loops included. -/
+/-- Coarse retained edges lying on a cycle, with self-loops included.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseCriticalEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseEdge :=
@@ -1200,7 +1538,10 @@ def gLocalV1CoarseCriticalEdges (P : FiniteComparisonPresentation)
     gLocalV1PathWithoutEdge (P.gLocalV1CoarseCharts A) state.coarseEdges
       P.coarseEdgeLeft P.coarseEdgeRight edge
 
-/-- Fine retained edges lying on a cycle, with self-loops included. -/
+/-- Fine retained edges lying on a cycle, with self-loops included.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineCriticalEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineEdge :=
@@ -1208,18 +1549,27 @@ def gLocalV1FineCriticalEdges (P : FiniteComparisonPresentation)
     gLocalV1PathWithoutEdge (P.gLocalV1FineCharts A) state.fineEdges
       P.fineEdgeLeft P.fineEdgeRight edge
 
-/-- Endpoint vertices of a coarse edge family. -/
+/-- Endpoint vertices of a coarse edge family.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseEdgeVertices (P : FiniteComparisonPresentation)
     (edges : Finset P.CoarseEdge) : Finset P.CoarseChart :=
   edges.biUnion fun edge => {P.coarseEdgeLeft edge, P.coarseEdgeRight edge}
 
-/-- Endpoint vertices of a fine edge family. -/
+/-- Endpoint vertices of a fine edge family.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineEdgeVertices (P : FiniteComparisonPresentation)
     (edges : Finset P.FineEdge) : Finset P.FineChart :=
   edges.biUnion fun edge => {P.fineEdgeLeft edge, P.fineEdgeRight edge}
 
 /-- Coarse critical vertices are endpoints of critical edges and of every
-boundary edge in each retained FaceTwin class. -/
+boundary edge in each retained FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseCriticalVertices (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseChart :=
@@ -1228,7 +1578,10 @@ def gLocalV1CoarseCriticalVertices (P : FiniteComparisonPresentation)
       P.gLocalV1CoarseEdgeVertices {key.edge0, key.edge1, key.edge2}
 
 /-- Fine critical vertices are endpoints of critical edges and of every
-boundary edge in each retained FaceTwin class. -/
+boundary edge in each retained FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineCriticalVertices (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineChart :=
@@ -1236,7 +1589,10 @@ def gLocalV1FineCriticalVertices (P : FiniteComparisonPresentation)
     state.fineFaceClasses.biUnion fun key =>
       P.gLocalV1FineEdgeVertices {key.edge0, key.edge1, key.edge2}
 
-/-- Whether a retained fine FaceTwin class maps into retained coarse faces. -/
+/-- Whether a retained fine FaceTwin class maps into retained coarse faces.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineClassMapsToRetainedFace (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (key : P.GLocalV1FineFaceTwinKey A) : Bool :=
@@ -1246,7 +1602,10 @@ def gLocalV1FineClassMapsToRetainedFace (P : FiniteComparisonPresentation)
 
 /-- Fine vertices active for C0/C1: endpoints of retained edges mapping to a
 coarse critical edge, together with endpoints of retained faces mapping to a
-retained coarse face. -/
+retained coarse face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ActiveFineVertices (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineChart :=
@@ -1258,14 +1617,20 @@ def gLocalV1ActiveFineVertices (P : FiniteComparisonPresentation)
       P.gLocalV1FineClassMapsToRetainedFace A state key).biUnion fun key =>
         P.gLocalV1FineEdgeVertices {key.edge0, key.edge1, key.edge2}
 
-/-- Active fine ports over one coarse vertex. -/
+/-- Active fine ports over one coarse vertex.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1Ports (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) : Finset P.FineChart :=
   (P.gLocalV1ActiveFineVertices A state).filter fun fineChart =>
     P.chartMap fineChart = coarseChart
 
-/-- Coarse non-self-loop bridges retained at a terminal. -/
+/-- Coarse non-self-loop bridges retained at a terminal.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CoarseBridges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseEdge :=
@@ -1274,7 +1639,10 @@ def gLocalV1CoarseBridges (P : FiniteComparisonPresentation)
       gLocalV1PathWithoutEdge (P.gLocalV1CoarseCharts A) state.coarseEdges
         P.coarseEdgeLeft P.coarseEdgeRight edge = false
 
-/-- Fine non-self-loop bridges retained at a terminal. -/
+/-- Fine non-self-loop bridges retained at a terminal.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineBridges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineEdge :=
@@ -1283,14 +1651,20 @@ def gLocalV1FineBridges (P : FiniteComparisonPresentation)
       gLocalV1PathWithoutEdge (P.gLocalV1FineCharts A) state.fineEdges
         P.fineEdgeLeft P.fineEdgeRight edge = false
 
-/-- Compatibility alias for the permanent bridge flag on the fine side. -/
+/-- Compatibility alias for the permanent bridge flag on the fine side.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1Bridges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineEdge :=
   P.gLocalV1FineBridges A state
 
 /-- Guarded coarse edges are coarse critical edges together with images of fine
-critical edges. -/
+critical edges.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1GuardedCoarseEdges (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.CoarseEdge :=
@@ -1302,7 +1676,10 @@ def gLocalV1GuardedCoarseEdges (P : FiniteComparisonPresentation)
 
 /-! ## Certified SLOT/KILL swap relation -/
 
-/-- Whether two edges form the unordered pair selected in one boundary slot. -/
+/-- Whether two edges form the unordered pair selected in one boundary slot.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1BoundarySlotPair {E : Type u} [DecidableEq E]
     (leftBoundary rightBoundary : E × E × E) (left right : E) : Bool :=
   let pairMatches (a b : E) := ({a, b} : Finset E) = {left, right}
@@ -1320,7 +1697,10 @@ def gLocalV1BoundarySlotPair {E : Type u} [DecidableEq E]
         leftBoundary.2.2 ≠ rightBoundary.2.2 ∧
         pairMatches leftBoundary.2.2 rightBoundary.2.2))
 
-/-- The registered SLOT certificate for a direct LiftTwin relation. -/
+/-- The registered SLOT certificate for a direct LiftTwin relation.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1SlotCertified (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (left right : P.FineEdge) : Bool :=
@@ -1338,7 +1718,10 @@ def gLocalV1SlotCertified (P : FiniteComparisonPresentation)
         (P.fineFaceEdge0 rightFace, P.fineFaceEdge1 rightFace,
           P.fineFaceEdge2 rightFace) left right = true)
 
-/-- The registered KILL certificate for a direct LiftTwin relation. -/
+/-- The registered KILL certificate for a direct LiftTwin relation.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1KillCertified (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdge : P.CoarseEdge) (left right : P.FineEdge) : Bool :=
@@ -1375,7 +1758,10 @@ def gLocalV1KillCertified (P : FiniteComparisonPresentation)
 
 /-- Direct certified SLOT-or-KILL adjacency between two retained lifts.  The
 permanent relation first requires equal scoped edge supports and only then
-tests either certificate. -/
+tests either certificate.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CertifiedPair (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdge : P.CoarseEdge) (left right : P.FineEdge) : Bool :=
@@ -1384,7 +1770,10 @@ def gLocalV1CertifiedPair (P : FiniteComparisonPresentation)
     (P.gLocalV1SlotCertified A state left right ||
       P.gLocalV1KillCertified A state coarseEdge left right)
 
-/-- Retained fine lifts of one coarse edge. -/
+/-- Retained fine lifts of one coarse edge.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1FineLifts (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdge : P.CoarseEdge) :
@@ -1392,7 +1781,10 @@ def gLocalV1FineLifts (P : FiniteComparisonPresentation)
   state.fineEdges.filter fun fineEdge => P.edgeMap fineEdge = some coarseEdge
 
 /-- The direct certified swap graph, represented as an undirected family of
-ordered edge pairs. -/
+ordered edge pairs.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1CertifiedSwapGraph (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseEdge : P.CoarseEdge) : Finset (P.FineEdge × P.FineEdge) :=
@@ -1403,7 +1795,10 @@ def gLocalV1CertifiedSwapGraph (P : FiniteComparisonPresentation)
 /-! ## Permanent terminal conditions C0--C6 -/
 
 /-- Permanent C0 on one terminal: the factor-image union of active fine chart
-supports equals each original coarse critical chart support. -/
+supports equals each original coarse critical chart support.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC0 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseChart ∈ P.gLocalV1CoarseCriticalVertices A state,
@@ -1412,7 +1807,10 @@ def gLocalV1ConditionC0 (P : FiniteComparisonPresentation)
         P.gLocalV1CoarseChartSupport A coarseChart)
 
 /-- Permanent C1 on one terminal: every critical coarse-chart port fiber is
-nonempty and connected using all scoped fine edges, not only retained edges. -/
+nonempty and connected using all scoped fine edges, not only retained edges.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC1 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseChart ∈ P.gLocalV1CoarseCriticalVertices A state,
@@ -1421,14 +1819,20 @@ def gLocalV1ConditionC1 (P : FiniteComparisonPresentation)
         (P.gLocalV1FineEdges A) P.fineEdgeLeft P.fineEdgeRight = true)
 
 /-- Permanent C2 on one terminal: every original coarse critical edge has a
-retained mapped fine lift. -/
+retained mapped fine lift.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC2 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseEdge ∈ P.gLocalV1CoarseCriticalEdges A state,
     ∃ fineEdge ∈ state.fineEdges, P.edgeMap fineEdge = some coarseEdge)
 
 /-- Whether a retained fine edge belongs to the local unmapped fiber over one
-coarse chart. -/
+coarse chart.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1LocalFineEdge (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart)
@@ -1438,7 +1842,10 @@ def gLocalV1LocalFineEdge (P : FiniteComparisonPresentation)
     P.chartMap (P.fineEdgeRight edge) = coarseChart
 
 /-- Whether a retained fine FaceTwin class contributes its one registered
-boundary row to a local unmapped fiber. -/
+boundary row to a local unmapped fiber.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1LocalFineFaceClass (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) (key : P.GLocalV1FineFaceTwinKey A) : Prop :=
@@ -1448,7 +1855,10 @@ def gLocalV1LocalFineFaceClass (P : FiniteComparisonPresentation)
     P.gLocalV1LocalFineEdge A state coarseChart key.edge1 ∧
     P.gLocalV1LocalFineEdge A state coarseChart key.edge2
 
-/-- Local unmapped edge membership is constructively decidable. -/
+/-- Local unmapped edge membership is constructively decidable.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 instance gLocalV1LocalFineEdgeDecidable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) (edge : P.FineEdge) :
@@ -1456,7 +1866,10 @@ instance gLocalV1LocalFineEdgeDecidable (P : FiniteComparisonPresentation)
   unfold gLocalV1LocalFineEdge
   infer_instance
 
-/-- Local unmapped FaceTwin membership is constructively decidable. -/
+/-- Local unmapped FaceTwin membership is constructively decidable.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 instance gLocalV1LocalFineFaceClassDecidable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) (key : P.GLocalV1FineFaceTwinKey A) :
@@ -1464,26 +1877,38 @@ instance gLocalV1LocalFineFaceClassDecidable (P : FiniteComparisonPresentation)
   unfold gLocalV1LocalFineFaceClass
   infer_instance
 
-/-- Fine charts in one local unmapped fiber. -/
+/-- Fine charts in one local unmapped fiber.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 abbrev GLocalV1LocalChart (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (coarseChart : P.CoarseChart) :=
   {chart : P.FineChart // chart ∈ P.gLocalV1FineCharts A ∧
     P.chartMap chart = coarseChart}
 
-/-- Retained unmapped fine edges in one local fiber. -/
+/-- Retained unmapped fine edges in one local fiber.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 abbrev GLocalV1LocalEdge (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) :=
   {edge : P.FineEdge // P.gLocalV1LocalFineEdge A state coarseChart edge}
 
-/-- Retained FaceTwin boundary rows in one local unmapped fiber. -/
+/-- Retained FaceTwin boundary rows in one local unmapped fiber.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 abbrev GLocalV1LocalFace (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) :=
   {key : P.GLocalV1FineFaceTwinKey A //
     P.gLocalV1LocalFineFaceClass A state coarseChart key}
 
-/-- Local fiber `d0` matrix. -/
+/-- Local fiber `d0` matrix.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1LocalD0Matrix (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) :
@@ -1493,7 +1918,10 @@ def gLocalV1LocalD0Matrix (P : FiniteComparisonPresentation)
     (if P.fineEdgeRight edge.1 = chart.1 then 1 else 0) -
       (if P.fineEdgeLeft edge.1 = chart.1 then 1 else 0)
 
-/-- Local fiber `d1` matrix with one row per retained FaceTwin class. -/
+/-- Local fiber `d1` matrix with one row per retained FaceTwin class.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1LocalD1Matrix (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) :
@@ -1502,7 +1930,10 @@ def gLocalV1LocalD1Matrix (P : FiniteComparisonPresentation)
   fun face edge =>
     (gLocalV1SignedCoefficient face.1.edge0 face.1.edge1 face.1.edge2 edge.1 : ℚ)
 
-/-- Executable local unmapped H1 dimension, used only to decide C3. -/
+/-- Executable local unmapped H1 dimension, used only to decide C3.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1LocalUnmappedH1Dimension (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (coarseChart : P.CoarseChart) : Nat :=
@@ -1511,14 +1942,20 @@ def gLocalV1LocalUnmappedH1Dimension (P : FiniteComparisonPresentation)
       rationalMatrixRank (P.gLocalV1LocalD0Matrix A state coarseChart)
 
 /-- Permanent registered C3 exception: every local unmapped fiber has exact
-rational H1 dimension zero. -/
+rational H1 dimension zero.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC3 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseChart ∈ P.gLocalV1CoarseCharts A,
     P.gLocalV1LocalUnmappedH1Dimension A state coarseChart = 0)
 
 /-- C3's Boolean is true exactly when every registered local unmapped H1
-dimension is zero. -/
+dimension is zero.
+
+Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
+-/
 theorem gLocalV1ConditionC3_eq_true_iff_localUnmappedH1Zero
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (state : P.GLocalV1V5State A) :
@@ -1528,7 +1965,10 @@ theorem gLocalV1ConditionC3_eq_true_iff_localUnmappedH1Zero
   simp [gLocalV1ConditionC3]
 
 /-- Permanent C4 on one terminal: each retained coarse FaceTwin class is hit
-by an actual retained fine face. -/
+by an actual retained fine face.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC4 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseKey ∈ state.coarseFaceClasses,
@@ -1538,7 +1978,10 @@ def gLocalV1ConditionC4 (P : FiniteComparisonPresentation)
       P.faceMap fineFace = some coarseFace)
 
 /-- Permanent C5 on guarded coarse edges: every retained lift set is connected
-in the certified SLOT/KILL swap graph. -/
+in the certified SLOT/KILL swap graph.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC5 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseEdge ∈ P.gLocalV1GuardedCoarseEdges A state,
@@ -1547,7 +1990,10 @@ def gLocalV1ConditionC5 (P : FiniteComparisonPresentation)
       Prod.fst Prod.snd = true)
 
 /-- Permanent C6 on guarded coarse self-loops: every certified lift component
-contains a fine self-loop. -/
+contains a fine self-loop.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1ConditionC6 (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) : Bool :=
   decide (∀ coarseEdge ∈ P.gLocalV1GuardedCoarseEdges A state,
@@ -1560,7 +2006,10 @@ def gLocalV1ConditionC6 (P : FiniteComparisonPresentation)
 
 /-! ## Universal terminal evaluation -/
 
-/-- Universal whole-scope condition record over every irreducible terminal. -/
+/-- Universal whole-scope condition record over every irreducible terminal.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1WholeConditions (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : GLocalV1WholeConditions where
   c0 := decide (∀ state ∈ P.gLocalV1MemoizedTerminalStates A,
@@ -1571,7 +2020,10 @@ def gLocalV1WholeConditions (P : FiniteComparisonPresentation)
     P.gLocalV1ConditionC6 A state = true)
 
 /-- Universal nonempty-subset condition record over every irreducible
-terminal. -/
+terminal.
+
+Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
+-/
 def gLocalV1AConditions (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : GLocalV1AConditions where
   c1 := decide (∀ state ∈ P.gLocalV1MemoizedTerminalStates A,

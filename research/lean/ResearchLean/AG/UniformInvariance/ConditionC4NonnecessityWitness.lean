@@ -55,7 +55,11 @@ def fineChartSupport (chart : Fin 2) : Finset (Fin 3) :=
   if chart = 0 then {0, 1} else {2}
 
 /-- Exact finite R1 C4 presentation.  Its two coarse faces and one fine face
-are raw incidence data; no face-lift, H¹, rank, or truth certificate is stored. -/
+are raw incidence data; no face-lift, H¹, rank, or truth certificate is stored.
+
+Position: existing C4 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance

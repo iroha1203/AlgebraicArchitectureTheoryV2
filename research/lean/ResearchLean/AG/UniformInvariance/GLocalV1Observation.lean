@@ -37,7 +37,10 @@ namespace FiniteComparisonPresentation
 
 /-- Any finite subset of a covered explicit list is represented by one of its
 sublists.  This is the generic completeness bridge used by state and scope
-enumeration; it does not select a terminal or observation. -/
+enumeration; it does not select a terminal or observation.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem exists_sublists_toFinset_eq_of_complete {α : Type*} [DecidableEq α]
     (entries : List α) (complete : ∀ value, value ∈ entries)
     (subset : Finset α) :
@@ -50,7 +53,10 @@ theorem exists_sublists_toFinset_eq_of_complete {α : Type*} [DecidableEq α]
 /-- Any finite set whose members occur in an explicit list is represented by
 one of the list's sublists.  Unlike the ambient-type completeness bridge, this
 version records the exact bounded-state invariant used by terminal
-enumeration. -/
+enumeration.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem exists_sublists_toFinset_eq_of_subset {α : Type*} [DecidableEq α]
     (entries : List α) (subset : Finset α)
     (covered : ∀ value ∈ subset, value ∈ entries) :
@@ -67,22 +73,34 @@ theorem exists_sublists_toFinset_eq_of_subset {α : Type*} [DecidableEq α]
       List.mem_filter.mpr ⟨covered value hvalue, by simp [hvalue]⟩
     simpa using hmem
 
-/-- Duplicate-free explicit coarse-target enumeration. -/
+/-- Duplicate-free explicit coarse-target enumeration.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def coarseTargetEntriesDedup (P : FiniteComparisonPresentation) :
     List P.CoarseTarget :=
   P.coarseTargetEntries.dedup
 
 /-- Duplicate-free explicit fine-target enumeration generated from source
-entries and the surjective raw fine reading. -/
+entries and the surjective raw fine reading.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def fineTargetEntries (P : FiniteComparisonPresentation) : List P.FineTarget :=
   (P.sourceEntries.map P.fineRead).dedup
 
-/-- Every coarse target occurs in the duplicate-free explicit enumeration. -/
+/-- Every coarse target occurs in the duplicate-free explicit enumeration.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem coarseTargetEntriesDedup_complete (P : FiniteComparisonPresentation)
     (target : P.CoarseTarget) : target ∈ P.coarseTargetEntriesDedup := by
   simp [coarseTargetEntriesDedup, P.coarseTarget_mem_coarseTargetEntries target]
 
-/-- Every fine target occurs in the source-generated explicit enumeration. -/
+/-- Every fine target occurs in the source-generated explicit enumeration.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem fineTargetEntries_complete (P : FiniteComparisonPresentation)
     (target : P.FineTarget) : target ∈ P.fineTargetEntries := by
   obtain ⟨source, hsource⟩ := P.fineRead_surjective target
@@ -90,43 +108,68 @@ theorem fineTargetEntries_complete (P : FiniteComparisonPresentation)
   simp only [fineTargetEntries, List.mem_dedup, List.mem_map]
   exact ⟨source, P.source_mem_sourceEntries source, rfl⟩
 
-/-- Executable coarse-target code. -/
+/-- Executable coarse-target code.
+
+Position: target-relabel API for fixed GOAL claim (v).  The code is computed from
+the duplicate-free covered coarse-target list and is later checked as a permutation;
+no target name, relabel certificate, or expected code is supplied.
+-/
 def coarseTargetCode (P : FiniteComparisonPresentation)
     (target : P.CoarseTarget) : Nat :=
   P.coarseTargetEntriesDedup.idxOf target
 
-/-- Executable fine-target code. -/
+/-- Executable fine-target code.
+
+Position: target-relabel API for fixed GOAL claim (v).  The code is computed from
+the source-generated fine-target list and is later checked as a permutation and
+against `computedFactor`; no expected code or commutation certificate is supplied.
+-/
 def fineTargetCode (P : FiniteComparisonPresentation)
     (target : P.FineTarget) : Nat :=
   P.fineTargetEntries.idxOf target
 
 /-- Coarse-target coding is injective because the deduplicated enumeration is
-complete. -/
+complete.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem coarseTargetCode_injective (P : FiniteComparisonPresentation) :
     Function.Injective P.coarseTargetCode := by
   intro left right hequal
   exact (List.idxOf_inj (P.coarseTargetEntriesDedup_complete left)).mp hequal
 
 /-- Fine-target coding is injective because the source-generated deduplicated
-enumeration is complete. -/
+enumeration is complete.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem fineTargetCode_injective (P : FiniteComparisonPresentation) :
     Function.Injective P.fineTargetCode := by
   intro left right hequal
   exact (List.idxOf_inj (P.fineTargetEntries_complete left)).mp hequal
 
-/-- Every coarse target code lies inside the generated code range. -/
+/-- Every coarse target code lies inside the generated code range.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem coarseTargetCode_lt_length (P : FiniteComparisonPresentation)
     (target : P.CoarseTarget) :
     P.coarseTargetCode target < P.coarseTargetEntriesDedup.length :=
   List.idxOf_lt_length_iff.mpr (P.coarseTargetEntriesDedup_complete target)
 
-/-- Every fine target code lies inside the generated code range. -/
+/-- Every fine target code lies inside the generated code range.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem fineTargetCode_lt_length (P : FiniteComparisonPresentation)
     (target : P.FineTarget) :
     P.fineTargetCode target < P.fineTargetEntries.length :=
   List.idxOf_lt_length_iff.mpr (P.fineTargetEntries_complete target)
 
-/-- The numerical identity table evaluates to the original coarse code. -/
+/-- The numerical identity table evaluates to the original coarse code.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem range_getD_coarseTargetCode (P : FiniteComparisonPresentation)
     (target : P.CoarseTarget) :
@@ -137,7 +180,10 @@ theorem range_getD_coarseTargetCode (P : FiniteComparisonPresentation)
     List.getElem?_range (by simpa using P.coarseTargetCode_lt_length target)]
   rfl
 
-/-- The numerical identity table evaluates to the original fine code. -/
+/-- The numerical identity table evaluates to the original fine code.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem range_getD_fineTargetCode (P : FiniteComparisonPresentation)
     (target : P.FineTarget) :
@@ -148,7 +194,10 @@ theorem range_getD_fineTargetCode (P : FiniteComparisonPresentation)
     List.getElem?_range (by simpa using P.fineTargetCode_lt_length target)]
   rfl
 
-/-- Decoding an explicit fine target at its generated code returns that target. -/
+/-- Decoding an explicit fine target at its generated code returns that target.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem fineTargetEntries_getD_fineTargetCode
     (P : FiniteComparisonPresentation) (target : P.FineTarget) :
@@ -162,32 +211,47 @@ theorem fineTargetEntries_getD_fineTargetCode
 
 /-- A simultaneous target relabel represented by two finite code tables.
 Validity is checked by `gLocalV1TargetRelabelValid`; the structure stores no
-observation, expected equality, or certificate field. -/
+observation, expected equality, or certificate field.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 structure GLocalV1TargetRelabel (P : FiniteComparisonPresentation) where
   coarse : List Nat
   fine : List Nat
   deriving DecidableEq, Repr, Ord
 
 /-- Relabel one coarse target code, falling back only outside the generated
-permutation domain. -/
+permutation domain.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CoarseRelabelCode (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) (target : P.CoarseTarget) : Nat :=
   relabel.coarse.getD (P.coarseTargetCode target) (P.coarseTargetCode target)
 
 /-- Relabel one fine target code, falling back only outside the generated
-permutation domain. -/
+permutation domain.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1FineRelabelCode (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) (target : P.FineTarget) : Nat :=
   relabel.fine.getD (P.fineTargetCode target) (P.fineTargetCode target)
 
 /-- Decode the relabeled fine target.  Generated permutations keep the lookup
-inside `fineTargetEntries`; the fallback makes the raw candidate total. -/
+inside `fineTargetEntries`; the fallback makes the raw candidate total.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1FineRelabelTarget (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) (target : P.FineTarget) : P.FineTarget :=
   P.fineTargetEntries.getD (P.gLocalV1FineRelabelCode relabel target) target
 
 /-- Executable validity of a simultaneous relabel: both tables are complete
-permutations and the computed factor commutes on every explicit fine target. -/
+permutations and the computed factor commutes on every explicit fine target.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1TargetRelabelValid (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) : Bool :=
   decide (relabel.coarse.Perm
@@ -198,13 +262,19 @@ def gLocalV1TargetRelabelValid (P : FiniteComparisonPresentation)
         P.coarseTargetCode
           (P.computedFactor (P.gLocalV1FineRelabelTarget relabel target))
 
-/-- Identity target coding, generated internally. -/
+/-- Identity target coding, generated internally.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1IdentityRelabel (P : FiniteComparisonPresentation) :
     P.GLocalV1TargetRelabel where
   coarse := List.range P.coarseTargetEntriesDedup.length
   fine := List.range P.fineTargetEntries.length
 
-/-- Identity relabeling preserves every coarse code. -/
+/-- Identity relabeling preserves every coarse code.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem gLocalV1CoarseRelabelCode_identity
     (P : FiniteComparisonPresentation) (target : P.CoarseTarget) :
@@ -212,7 +282,10 @@ theorem gLocalV1CoarseRelabelCode_identity
       P.coarseTargetCode target := by
   exact P.range_getD_coarseTargetCode target
 
-/-- Identity relabeling preserves every fine code. -/
+/-- Identity relabeling preserves every fine code.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem gLocalV1FineRelabelCode_identity
     (P : FiniteComparisonPresentation) (target : P.FineTarget) :
@@ -220,7 +293,10 @@ theorem gLocalV1FineRelabelCode_identity
       P.fineTargetCode target := by
   exact P.range_getD_fineTargetCode target
 
-/-- Identity relabeling decodes to the original fine target. -/
+/-- Identity relabeling decodes to the original fine target.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 @[simp]
 theorem gLocalV1FineRelabelTarget_identity
     (P : FiniteComparisonPresentation) (target : P.FineTarget) :
@@ -229,7 +305,10 @@ theorem gLocalV1FineRelabelTarget_identity
   exact P.fineTargetEntries_getD_fineTargetCode target
 
 /-- The internally generated identity tables satisfy permutation and factor
-commutation validity. -/
+commutation validity.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1IdentityRelabel_valid (P : FiniteComparisonPresentation) :
     P.gLocalV1TargetRelabelValid P.gLocalV1IdentityRelabel = true := by
   have hcoarse :
@@ -255,7 +334,10 @@ theorem gLocalV1IdentityRelabel_valid (P : FiniteComparisonPresentation) :
 
 /-- Finite candidate relabels.  The identity is present unconditionally; every
 other candidate is generated by finite code tables, boundedness, injectivity,
-and the π-commutation equation. -/
+and the π-commutation equation.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1TargetRelabels (P : FiniteComparisonPresentation) :
     List P.GLocalV1TargetRelabel :=
   P.gLocalV1IdentityRelabel ::
@@ -265,7 +347,10 @@ def gLocalV1TargetRelabels (P : FiniteComparisonPresentation) :
         if P.gLocalV1TargetRelabelValid relabel then some relabel else none).dedup
 
 /-- The generated list contains exactly the identity and the valid
-factor-preserving permutation pairs. -/
+factor-preserving permutation pairs.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem mem_gLocalV1TargetRelabels_iff (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) :
     relabel ∈ P.gLocalV1TargetRelabels ↔
@@ -298,7 +383,10 @@ theorem mem_gLocalV1TargetRelabels_iff (P : FiniteComparisonPresentation)
       · simp [hvalid]
 
 /-- Equivalently, the candidate list is exactly the complete valid relabel
-family; the explicit identity head is justified by its validity theorem. -/
+family; the explicit identity head is justified by its validity theorem.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem mem_gLocalV1TargetRelabels_iff_valid
     (P : FiniteComparisonPresentation) (relabel : P.GLocalV1TargetRelabel) :
     relabel ∈ P.gLocalV1TargetRelabels ↔
@@ -310,7 +398,10 @@ theorem mem_gLocalV1TargetRelabels_iff_valid
     · exact hvalid
   · exact Or.inr
 
-/-- The internally generated relabel family is nonempty. -/
+/-- The internally generated relabel family is nonempty.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1TargetRelabels_nonempty (P : FiniteComparisonPresentation) :
     P.gLocalV1TargetRelabels ≠ [] := by
   simp [gLocalV1TargetRelabels]
@@ -318,7 +409,10 @@ theorem gLocalV1TargetRelabels_nonempty (P : FiniteComparisonPresentation) :
 /-! ## Terminal cell universe and incidence -/
 
 /-- Side-local retained cells, with chart-role and incidence-vertex copies
-kept separate. -/
+kept separate.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 inductive GLocalV1Cell (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
   | coarseChart : P.CoarseChart → GLocalV1Cell P A state
@@ -333,7 +427,10 @@ inductive GLocalV1Cell (P : FiniteComparisonPresentation)
 
 /-- Retained terminal cell filter.  Every scoped chart receives one chart-role
 and one incidence-vertex cell; only retained edges and actual retained face
-members survive. -/
+members survive.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellList (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     List (P.GLocalV1Cell A state) :=
@@ -358,14 +455,20 @@ def gLocalV1CellList (P : FiniteComparisonPresentation)
         some (.fineFace face)
       else none)
 
-/-- Cell side. -/
+/-- Cell side.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def GLocalV1Cell.side {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} {state : P.GLocalV1V5State A} :
     P.GLocalV1Cell A state → GLocalV1Side
   | .coarseChart _ | .coarseVertex _ | .coarseEdge _ | .coarseFace _ => .coarse
   | .fineChart _ | .fineVertex _ | .fineEdge _ | .fineFace _ => .fine
 
-/-- Cell type. -/
+/-- Cell type.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def GLocalV1Cell.cellType {P : FiniteComparisonPresentation}
     {A : Finset P.CoarseTarget} {state : P.GLocalV1V5State A} :
     P.GLocalV1Cell A state → GLocalV1CellType
@@ -374,7 +477,10 @@ def GLocalV1Cell.cellType {P : FiniteComparisonPresentation}
   | .coarseEdge _ | .fineEdge _ => .edge
   | .coarseFace _ | .fineFace _ => .face
 
-/-- Actual scoped support of a cell, encoded after target relabel. -/
+/-- Actual scoped support of a cell, encoded after target relabel.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellSupportCodes (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (relabel : P.GLocalV1TargetRelabel) : P.GLocalV1Cell A state → List Nat
@@ -397,7 +503,10 @@ def gLocalV1CellSupportCodes (P : FiniteComparisonPresentation)
       (P.gLocalV1FineFaceSupport A face).image
         (P.gLocalV1FineRelabelCode relabel) |>.sort (· ≤ ·)
 
-/-- Factor-image codes of a cell support. -/
+/-- Factor-image codes of a cell support.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellPiImageCodes (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (relabel : P.GLocalV1TargetRelabel) : P.GLocalV1Cell A state → List Nat
@@ -423,7 +532,10 @@ def gLocalV1CellPiImageCodes (P : FiniteComparisonPresentation)
         (fun target => P.gLocalV1CoarseRelabelCode relabel
           (P.computedFactor target)) |>.sort (· ≤ ·)
 
-/-- Registered binary map status. -/
+/-- Registered binary map status.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellMapStatus (P : FiniteComparisonPresentation)
     {A : Finset P.CoarseTarget} {state : P.GLocalV1V5State A} :
     P.GLocalV1Cell A state → GLocalV1MapStatus
@@ -431,17 +543,26 @@ def gLocalV1CellMapStatus (P : FiniteComparisonPresentation)
   | .fineFace face => if (P.faceMap face).isSome then .mapped else .none
   | _ => .mapped
 
-/-- FaceTwin class multiplicity flag for an actual coarse face. -/
+/-- FaceTwin class multiplicity flag for an actual coarse face.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceTwinFlag (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFace) : Bool :=
   2 ≤ (P.gLocalV1CoarseFaceMembers A (P.gLocalV1CoarseFaceKey A face)).card
 
-/-- FaceTwin class multiplicity flag for an actual fine face. -/
+/-- FaceTwin class multiplicity flag for an actual fine face.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1FineFaceTwinFlag (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFace) : Bool :=
   2 ≤ (P.gLocalV1FineFaceMembers A (P.gLocalV1FineFaceKey A face)).card
 
-/-- Closed six-flag record, false outside the registered domains. -/
+/-- Closed six-flag record, false outside the registered domains.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellFlags (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     P.GLocalV1Cell A state → GLocalV1Flags
@@ -466,7 +587,10 @@ def gLocalV1CellFlags (P : FiniteComparisonPresentation)
       ⟨false, false, false, false, false, P.gLocalV1FineFaceTwinFlag A face⟩
   | _ => ⟨false, false, false, false, false, false⟩
 
-/-- Permanent cell label generated from one terminal cell. -/
+/-- Permanent cell label generated from one terminal cell.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CellLabel (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (relabel : P.GLocalV1TargetRelabel) (cell : P.GLocalV1Cell A state) :
@@ -476,7 +600,10 @@ def gLocalV1CellLabel (P : FiniteComparisonPresentation)
     P.gLocalV1CellPiImageCodes A state relabel cell,
     P.gLocalV1CellFlags A state cell⟩
 
-/-- All full slot/sign relations between two retained cells. -/
+/-- All full slot/sign relations between two retained cells.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1IncidenceRelations (P : FiniteComparisonPresentation)
     {A : Finset P.CoarseTarget} {state : P.GLocalV1V5State A}
     (root neighbor : P.GLocalV1Cell A state) : List GLocalV1Relation :=
@@ -507,7 +634,10 @@ def gLocalV1IncidenceRelations (P : FiniteComparisonPresentation)
     | _, _ => []
   direct
 
-/-- Collapse a full relation to the outward-stub slot registry. -/
+/-- Collapse a full relation to the outward-stub slot registry.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1RelationStubSlot : GLocalV1Relation → GLocalV1StubSlot
   | .chartAt => .chartAt
   | .endpoint0 | .boundary0Pos => .slot0
@@ -518,19 +648,28 @@ def gLocalV1RelationStubSlot : GLocalV1Relation → GLocalV1StubSlot
 
 /-- Explicit enumeration of the coarse FaceTwin keys generated by the raw
 face table.  Reduction only deletes these keys, so no ambient key powerset is
-needed. -/
+needed.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1CoarseFaceClassEntries (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : List (P.GLocalV1CoarseFaceTwinKey A) :=
   (P.coarseFaceEntries.map (P.gLocalV1CoarseFaceKey A)).dedup
 
 /-- Explicit enumeration of the fine FaceTwin keys generated by the raw face
-table.  Reduction only deletes these keys. -/
+table.  Reduction only deletes these keys.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1FineFaceClassEntries (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : List (P.GLocalV1FineFaceTwinKey A) :=
   (P.fineFaceEntries.map (P.gLocalV1FineFaceKey A)).dedup
 
 /-- The explicit coarse key list covers every initially generated FaceTwin
-class. -/
+class.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1CoarseFaceClassEntries_complete
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (key : P.GLocalV1CoarseFaceTwinKey A)
@@ -541,7 +680,10 @@ theorem gLocalV1CoarseFaceClassEntries_complete
   exact ⟨face, P.coarseFace_mem_coarseFaceEntries face, rfl⟩
 
 /-- The explicit fine key list covers every initially generated FaceTwin
-class. -/
+class.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1FineFaceClassEntries_complete
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (key : P.GLocalV1FineFaceTwinKey A)
@@ -553,7 +695,10 @@ theorem gLocalV1FineFaceClassEntries_complete
 
 /-- Every retained-edge/FaceTwin state over the explicit raw tables.  The
 terminal filter below selects the canonical leaves of the full v5 reduction;
-no selected trace or terminal certificate is supplied. -/
+no selected trace or terminal certificate is supplied.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1AllStateList (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : List (P.GLocalV1V5State A) :=
   P.coarseEdgeEntries.dedup.sublists.flatMap fun coarseEdges =>
@@ -564,7 +709,10 @@ def gLocalV1AllStateList (P : FiniteComparisonPresentation)
             fineEdges.toFinset, fineFaces.toFinset⟩
 
 /-- The explicit state list covers every componentwise substate of the
-canonical raw-table initial state. -/
+canonical raw-table initial state.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1AllStateList_complete (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (hsubstate : state.SubstateOf (P.gLocalV1InitialState A)) :
@@ -597,7 +745,10 @@ theorem gLocalV1AllStateList_complete (P : FiniteComparisonPresentation)
   cases hfineFaces
   rfl
 
-/-- Histogram of radius-two outward stubs from one root-neighbor pair. -/
+/-- Histogram of radius-two outward stubs from one root-neighbor pair.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1OutwardStubHistogram (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (root neighbor : P.GLocalV1Cell A state) :
@@ -609,7 +760,10 @@ def gLocalV1OutwardStubHistogram (P : FiniteComparisonPresentation)
           ⟨outside.cellType, gLocalV1RelationStubSlot relation⟩
 
 /-- Neighbor descriptor occurrences around one root, grouped only after actual
-neighbor identity has retained the complete root-neighbor relation multiset. -/
+neighbor identity has retained the complete root-neighbor relation multiset.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1NeighborDescriptors (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (relabel : P.GLocalV1TargetRelabel) (root : P.GLocalV1Cell A state) :
@@ -621,7 +775,10 @@ def gLocalV1NeighborDescriptors (P : FiniteComparisonPresentation)
         relations.mergeSort gLocalV1OrdLE,
         P.gLocalV1OutwardStubHistogram A state root neighbor⟩
 
-/-- Root-preserving side-local radius-one ball. -/
+/-- Root-preserving side-local radius-one ball.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1RootedBall (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A)
     (relabel : P.GLocalV1TargetRelabel) (root : P.GLocalV1Cell A state) :
@@ -630,7 +787,10 @@ def gLocalV1RootedBall (P : FiniteComparisonPresentation)
     gLocalV1Histogram (P.gLocalV1NeighborDescriptors A state relabel root)⟩
 
 /-- One clipped histogram over all root occurrences of all distinct terminal
-states. -/
+states.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1TerminalBallHistogram (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (relabel : P.GLocalV1TargetRelabel) :
     GLocalV1Histogram GLocalV1RootedBall :=
@@ -642,19 +802,28 @@ def gLocalV1TerminalBallHistogram (P : FiniteComparisonPresentation)
 
 /-! ## Whole, all-subset, and canonical candidate records -/
 
-/-- Full coarse-target scope reconstructed from the explicit complete list. -/
+/-- Full coarse-target scope reconstructed from the explicit complete list.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1FullTargetSubset (P : FiniteComparisonPresentation) :
     Finset P.CoarseTarget :=
   P.coarseTargetEntriesDedup.toFinset
 
-/-- The explicit full scope is extensionally the whole finite coarse target. -/
+/-- The explicit full scope is extensionally the whole finite coarse target.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1FullTargetSubset_eq_univ (P : FiniteComparisonPresentation) :
     P.gLocalV1FullTargetSubset = Finset.univ := by
   ext target
   simp [gLocalV1FullTargetSubset,
     P.coarseTargetEntriesDedup_complete target]
 
-/-- Whole-scope record, computed exactly once at the full target set. -/
+/-- Whole-scope record, computed exactly once at the full target set.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1WholeRecord (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) :
     GLocalV1ScopeRecord GLocalV1WholeConditions :=
@@ -662,14 +831,20 @@ def gLocalV1WholeRecord (P : FiniteComparisonPresentation)
   ⟨P.gLocalV1WholeConditions A, P.gLocalV1PacketKindUnion A,
     P.gLocalV1TerminalBallHistogram A relabel⟩
 
-/-- Every nonempty coarse-target subset, once each. -/
+/-- Every nonempty coarse-target subset, once each.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1NonemptyTargetSubsets (P : FiniteComparisonPresentation) :
     List (Finset P.CoarseTarget) :=
   (P.coarseTargetEntriesDedup.sublists.filterMap fun targets =>
     let A := targets.toFinset
     if A.Nonempty then some A else none).dedup
 
-/-- A subset occurs in the executable scope list exactly when it is nonempty. -/
+/-- A subset occurs in the executable scope list exactly when it is nonempty.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem mem_gLocalV1NonemptyTargetSubsets_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
     A ∈ P.gLocalV1NonemptyTargetSubsets ↔ A.Nonempty := by
@@ -692,13 +867,19 @@ theorem mem_gLocalV1NonemptyTargetSubsets_iff
     refine ⟨targets, htargets, ?_⟩
     simp [htargetsA, hA]
 
-/-- Every nonempty target subset occurs exactly once. -/
+/-- Every nonempty target subset occurs exactly once.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem gLocalV1NonemptyTargetSubsets_nodup (P : FiniteComparisonPresentation) :
     P.gLocalV1NonemptyTargetSubsets.Nodup := by
   exact List.nodup_dedup _
 
 /-- One nonempty-subset record.  The subset itself is deliberately absent from
-the returned value. -/
+the returned value.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1ARecord (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) (A : Finset P.CoarseTarget) :
     GLocalV1ScopeRecord GLocalV1AConditions :=
@@ -706,7 +887,10 @@ def gLocalV1ARecord (P : FiniteComparisonPresentation)
     P.gLocalV1TerminalBallHistogram A relabel⟩
 
 /-- Aggregate the seven permanent condition coordinates before histogram
-clipping. -/
+clipping.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1ConditionVector (P : FiniteComparisonPresentation) :
     GLocalV1ConditionVector :=
   let whole := P.gLocalV1WholeConditions P.gLocalV1FullTargetSubset
@@ -719,7 +903,10 @@ def gLocalV1ConditionVector (P : FiniteComparisonPresentation) :
     whole.c5, whole.c6⟩
 
 /-- Candidate observation at one internally generated factor-preserving target
-relabel. -/
+relabel.
+
+Position: definition in the permanent observation API supporting fixed GOAL claim (v). Any material input comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no relabel or observation certificate is supplied.
+-/
 def gLocalV1Candidate (P : FiniteComparisonPresentation)
     (relabel : P.GLocalV1TargetRelabel) : GLocalV1ObsValue :=
   ⟨P.gLocalV1ConditionVector, P.gLocalV1WholeRecord relabel,
@@ -727,21 +914,34 @@ def gLocalV1Candidate (P : FiniteComparisonPresentation)
       P.gLocalV1NonemptyTargetSubsets.map fun A =>
         P.gLocalV1ARecord relabel A⟩
 
-/-- Minimum of a nonempty list under the derived structured order. -/
+/-- Minimum of a nonempty list under the derived structured order.
+
+Position: internal minimum API used by the main `obsG` definition for fixed GOAL
+claim (v).  It folds the generated candidate list under the structured order; the
+fallback is the generated identity candidate, not a supplied expected observation.
+-/
 def gLocalV1Minimum (fallback : GLocalV1ObsValue) :
     List GLocalV1ObsValue → GLocalV1ObsValue
   | [] => fallback
   | candidate :: candidates => candidates.foldl
       (fun best next => if gLocalV1OrdLE next best then next else best) candidate
 
-/-- The executable permanent observation. -/
+/-- The executable permanent observation.
+
+Position: main definition-level observation for fixed GOAL claim (v).  It generates
+all valid factor-preserving relabels and their candidates from the raw presentation,
+then takes their structured minimum; no relabel, label, or result is supplied.
+-/
 def obsG (P : FiniteComparisonPresentation) : GLocalV1ObsValue :=
   let identityCandidate := P.gLocalV1Candidate P.gLocalV1IdentityRelabel
   gLocalV1Minimum identityCandidate
     (P.gLocalV1TargetRelabels.map P.gLocalV1Candidate)
 
 /-- `obsG` is definitionally the structured minimum over all internally
-generated factor-preserving relabel candidates. -/
+generated factor-preserving relabel candidates.
+
+Position: observation API theorem supporting fixed GOAL claim (v). Any material premise comes from complete explicit entries, reducer-generated states or terminals, and the computed factor; no supplied relabel or observation is assumed.
+-/
 theorem obsG_eq_min_piPreservingRelabels (P : FiniteComparisonPresentation) :
     P.obsG =
       gLocalV1Minimum (P.gLocalV1Candidate P.gLocalV1IdentityRelabel)
