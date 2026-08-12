@@ -126,8 +126,9 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   C2 / full `ConditionC`を反証し、同じblockのcoarse / fine両H¹非零も固定した。
   law-block C2からlabel-fiber A-subnerve C2へのreverse transportと、selected coarse
   endpointのdefinition-owner evaluation APIも追加した。
-- 完了(Cycle 20): exact R1 `C4_not_necessary` のraw reading・nerve・support・
-  partial face mapをfieldwise転写した。両nerveは同じ2本のself-loopを持ち、
+- 完了(Cycle 20): exact R1 `C4_not_necessary` のfactor・target counts・nerve・
+  support・partial face mapをfieldwise転写し、source / readingsはfactorのcanonical
+  realizationとして構成した。両nerveは同じ2本のself-loopを持ち、
   coarse側だけがboundary `(1,1,1)` のrepeated faceを2枚、fine側が1枚持つ。
   repeated-face cocycle条件の一致とselected edge cochain equivalenceから、全target
   subsetのactual quotient-H¹ map全単射性を直接証明した。同じfull subset
@@ -3150,9 +3151,11 @@ canonical fixtureではC4が`A={1}`と`A={0,1}`で破れるが、前者の両側
 C4 witnessにnonconstant lawを要求しない。proper factor、実在するmissing coarse
 face lift、同じfull blockの両側非零H¹がnonvacuityを担う。
 
-raw tableはSource / FineTarget `Fin 3`、CoarseTarget `Fin 2`、coarse reading
-`[0,0,1]`、fine reading `id`、両nerveのcharts / self-loop edges `Fin 2`、coarse
-faces `Fin 2`、fine face `Fin 1`だけからなる。全face boundaryはedge 1の
+canonical R1 payloadが直接固定するfactor・target counts・両nerve・support・cell mapを
+Lean tableへfieldwise転写し、Source / FineTarget `Fin 3`、CoarseTarget `Fin 2`、
+coarse reading `[0,0,1]`、fine reading `id`はそのfactorのcanonical realizationとして
+構成した。両nerveのcharts / self-loop edgesは`Fin 2`、coarse facesは`Fin 2`、
+fine faceは`Fin 1`である。全face boundaryはedge 1の
 `(1,1,1)`であり、sole fine faceはcoarse face 0へ写る。coarse chart supportsは
 `[{0},{1}]`、fine chart supportsは`[{0,1},{2}]`、chart / edge mapはidentityである。
 factor、face lift、matrix、rank、H¹、defect、condition / checker bit、uniformity
@@ -3199,7 +3202,7 @@ classのperiod argumentと、actual H¹ map injectivityによるfine像の非零
 source SHA-256:
 
 - `ConditionC4NonnecessityWitness.lean`:
-  `10d10d82cbcc24882f889637988d4f6d76177db1ae202c981ef552425fdba787`
+  `918eaccf9b0830aaf37f25d5c8298ed9a116f310328b89db539b3f986f5fff5a`
 - `ConditionCAllABridge.lean`:
   `b9ad08a7b496d21f85d2278f41dc8e997e418a4ca77a0b8e61e775266ad86c4c`
 - `LawValueBlockComparison.lean`:
@@ -3226,7 +3229,7 @@ primary_specification:
   status: recorded
 premise_delta:
   discharged:
-    - exact canonical R1 raw fixture and fieldwise provenance
+    - exact canonical R1 factor, targets, nerves, supports, and maps with a canonical source-reading realization
     - all-target-subset actual quotient-H1 bijectivity
     - direct raw and semantic C4 failure on A={0,1}
     - direct ConditionCAllA and checker failure

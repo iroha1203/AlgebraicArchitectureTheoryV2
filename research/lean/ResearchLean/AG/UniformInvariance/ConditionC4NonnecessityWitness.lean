@@ -24,8 +24,12 @@ spaces are nonzero.
 The finite presentation stores only raw readings, incidence, support, partial
 cell maps, and their well-formedness proofs.  It stores no factor, lift,
 matrix, rank, cohomology class, defect, condition result, checker result, or
-uniformity certificate.  The experiment artifact is provenance for the raw
-table, not a premise of a Lean theorem below.
+uniformity certificate.  The experiment payload directly fixes the factor,
+target counts, nerves, supports, and cell maps.  The `Fin 3` source and the two
+reading tables below form the canonical finite realization of that factor;
+they are not fields copied from the payload.  The artifact is provenance for
+this directly fixed geometry and its canonical realization, not a premise of
+a Lean theorem below.
 -/
 
 namespace AAT.AG.ResolutionInvariance
