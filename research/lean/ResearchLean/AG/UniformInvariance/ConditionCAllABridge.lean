@@ -584,6 +584,55 @@ theorem conditionC1At_of_conditionC1AtTargetSubset_labelValueFiber
     simpa [coarseChart, selectedLeft, selectedRight, coarseEquiv, fineEquiv]
       using hpathBlock
 
+/-- C1 on one G-104 law-value block implies C1 on the actual A-subnerve of
+the corresponding coarse label fiber.  This is the reverse transport to
+`conditionC1At_of_conditionC1AtTargetSubset_labelValueFiber`; it reindexes
+the full endpoint-defined connectivity path rather than treating the two
+predicates as definitionally equal. -/
+theorem conditionC1AtTargetSubset_of_conditionC1At_labelValueFiber
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (hC1 : M.ConditionC1At laws hcoarse hfine label) :
+    M.ConditionC1AtTargetSubset
+      (labelValueFiber laws coarseReading hcoarse label) := by
+  intro coarseChart
+  let coarseEquiv := coarse.labelFiberChartEquivBlock laws hcoarse label
+  let fineEquiv := fine.labelPreimageChartEquivBlock laws coarseReading
+    hcoarser hcoarse hfine label
+  let coarseBlock := coarseEquiv coarseChart
+  obtain ⟨⟨fineBlock, hmap⟩, hconnected⟩ := hC1 coarseBlock
+  let fineChart := fineEquiv.symm fineBlock
+  constructor
+  · refine ⟨fineChart, ?_⟩
+    apply coarseEquiv.injective
+    rw [M.labelPreimageEquivBlock_chartMap laws hcoarse hfine label fineChart]
+    simpa [fineChart, coarseBlock, coarseEquiv, fineEquiv] using hmap
+  · intro left right hleft hright
+    have hleftBlock :
+        M.chartBlockCoordinateMap laws hcoarse hfine label
+            (fineEquiv left) = coarseBlock := by
+      rw [← M.labelPreimageEquivBlock_chartMap laws hcoarse hfine label left]
+      exact congrArg coarseEquiv hleft
+    have hrightBlock :
+        M.chartBlockCoordinateMap laws hcoarse hfine label
+            (fineEquiv right) = coarseBlock := by
+      rw [← M.labelPreimageEquivBlock_chartMap laws hcoarse hfine label right]
+      exact congrArg coarseEquiv hright
+    have hpath := hconnected (fineEquiv left) (fineEquiv right)
+      hleftBlock hrightBlock
+    apply Relation.ReflTransGen.lift' fineEquiv.symm _ hpath
+    intro first second hadjacent
+    apply Relation.ReflTransGen.single
+    apply
+      (M.targetSubsetFiberAdjacent_iff_coordinateFiberAdjacent_labelValueFiber
+        laws hcoarse hfine label coarseChart
+        (fineEquiv.symm first) (fineEquiv.symm second)).2
+    simpa [coarseBlock, coarseEquiv, fineEquiv] using hadjacent
+
 /-- C2 on the actual A-subnerve of one coarse label fiber implies exact edge
 lifting on the corresponding G-104 law-value block. -/
 theorem conditionC2At_of_conditionC2AtTargetSubset_labelValueFiber

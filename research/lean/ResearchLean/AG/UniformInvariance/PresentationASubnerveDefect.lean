@@ -713,6 +713,15 @@ def fineEdgeLeftIn (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).1, hA⟩⟩
 
+/-- The raw selected fine left endpoint exposes the underlying incidence-table
+endpoint.  This definition-owner rule keeps downstream finite fixtures from
+expanding the selection proof carried by `fineEdgeLeftIn`. -/
+@[simp]
+theorem fineEdgeLeftIn_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A) :
+    (P.fineEdgeLeftIn A edge).1 = P.fineEdgeLeft edge.1 :=
+  rfl
+
 /-- Right endpoint in the raw fine selected cells. -/
 def fineEdgeRightIn (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A) :
@@ -727,6 +736,14 @@ def fineEdgeRightIn (P : FiniteComparisonPresentation)
   obtain ⟨hsupport, hA⟩ := Finset.mem_inter.mp htarget
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).2, hA⟩⟩
+
+/-- The raw selected fine right endpoint exposes the underlying incidence-table
+endpoint.  This companion definition-owner rule hides the selection proof. -/
+@[simp]
+theorem fineEdgeRightIn_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A) :
+    (P.fineEdgeRightIn A edge).1 = P.fineEdgeRight edge.1 :=
+  rfl
 
 /-- Boundary edge zero in the raw fine selected cells. -/
 def fineFaceEdge0In (P : FiniteComparisonPresentation)
@@ -790,6 +807,14 @@ def chartMapIn (P : FiniteComparisonPresentation)
     P.computedFactor_mem_coarseChartSupport chart.1 target hsupport, ?_⟩⟩
   simpa only [finePreimageFinset, Finset.mem_filter, Finset.mem_univ,
     true_and] using hpreimage
+
+/-- The raw selected chart map exposes the underlying chart-map table.  This
+definition-owner rule records that selection changes only the proof field. -/
+@[simp]
+theorem chartMapIn_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (chart : P.FineChartIn A) :
+    (P.chartMapIn A chart).1 = P.chartMap chart.1 :=
+  rfl
 
 /-- The raw partial edge comparison restricted to selected cells.  A
 nondegenerate raw edge maps to a selected coarse edge; `none` remains the zero
