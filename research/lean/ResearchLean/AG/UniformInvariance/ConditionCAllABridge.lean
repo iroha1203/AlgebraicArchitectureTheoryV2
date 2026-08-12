@@ -656,6 +656,35 @@ theorem conditionC2At_of_conditionC2AtTargetSubset_labelValueFiber
     hcoarse hfine label fineEdge coarseEdge hmap
   simpa [coarseEdge, coarseEquiv, fineEquiv] using hmapBlock
 
+/-- Exact edge lifting on one G-104 law-value block transports back to C2 on
+the actual A-subnerve of the corresponding coarse label fiber.  This reverse
+API uses the canonical cell equivalences and exposes no supplied lift map. -/
+theorem conditionC2AtTargetSubset_of_conditionC2At_labelValueFiber
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (hC2 : M.ConditionC2At laws hcoarse hfine label) :
+    M.ConditionC2AtTargetSubset
+      (labelValueFiber laws coarseReading hcoarse label) := by
+  intro coarseEdge
+  let coarseEquiv := coarse.labelFiberEdgeEquivBlock laws hcoarse label
+  let fineEquiv := fine.labelPreimageEdgeEquivBlock laws coarseReading
+    hcoarser hcoarse hfine label
+  let coarseBlock := coarseEquiv coarseEdge
+  obtain ⟨fineBlock, hmapBlock⟩ := hC2 coarseBlock
+  let fineEdge := fineEquiv.symm fineBlock
+  refine ⟨fineEdge, ?_⟩
+  apply (M.aSubnerveEdgeMapOption_eq_some_iff
+    (labelValueFiber laws coarseReading hcoarse label)
+    fineEdge coarseEdge).2
+  have hwhole :=
+    M.edgeMap_eq_some_of_edgeBlockCoordinateMapOption_eq_some laws hcoarse
+      hfine label fineBlock coarseBlock hmapBlock
+  simpa [fineEdge, coarseBlock, coarseEquiv, fineEquiv] using hwhole
+
 /-- C4 on the actual A-subnerve of one coarse label fiber implies exact face
 lifting on the corresponding G-104 law-value block. -/
 theorem conditionC4At_of_conditionC4AtTargetSubset_labelValueFiber
