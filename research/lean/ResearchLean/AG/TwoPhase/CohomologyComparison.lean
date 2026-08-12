@@ -34,6 +34,14 @@ def boundaryToCycles (K : ThreeCochainComplex k) :
   map_add' x y := by ext; simp
   map_smul' scalar x := by ext; simp
 
+/-- Evaluate a degree-zero boundary after it is packaged as a cocycle.  This
+public definition-owner API exposes only the existing differential and
+introduces no boundary-membership or cohomology premise. -/
+@[simp]
+theorem boundaryToCycles_apply (K : ThreeCochainComplex k) (cochain : K.C0) :
+    (K.boundaryToCycles cochain).1 = K.d0 cochain :=
+  rfl
+
 /-- Degree-one cohomology of a finite three-term complex. -/
 abbrev H1 (K : ThreeCochainComplex k) : Type w :=
   (LinearMap.ker K.d1) ⧸ LinearMap.range K.boundaryToCycles
@@ -71,6 +79,27 @@ def cyclesMap (f : Hom source target) :
     exact map_zero f.f2⟩
   map_add' x y := by ext; simp
   map_smul' scalar x := by ext; simp
+
+/-- Evaluate the cocycle restriction of a cochain morphism on underlying
+degree-one cochains.  This public definition-owner API exposes the existing
+`f1` action and carries no cycle, boundary, or cohomology conclusion as an
+extra premise. -/
+@[simp]
+theorem cyclesMap_apply (f : Hom source target)
+    (cycle : LinearMap.ker source.d1) :
+    (f.cyclesMap cycle).1 = f.f1 cycle.1 :=
+  rfl
+
+/-- Evaluate a difference of mapped cocycles on underlying degree-one
+cochains.  This companion definition-owner API exposes only linearity of
+`cyclesMap`, avoiding downstream expansion of the kernel subtype's inherited
+subtraction. -/
+@[simp]
+theorem cyclesMap_sub_apply (f : Hom source target)
+    (left right : LinearMap.ker source.d1) :
+    (f.cyclesMap left - f.cyclesMap right).1 =
+      f.f1 left.1 - f.f1 right.1 :=
+  rfl
 
 /-- A cochain map sends degree-one boundaries to degree-one boundaries. -/
 theorem boundaries_le_comap (f : Hom source target) :

@@ -99,7 +99,14 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   witnessと既存uniformity instance clientを同APIへ移し、対象定義の直接展開を
   owner内部に限定した。同時にCycle 15の全新規・body変更宣言を再列挙し、各
   docstringへ固定GOAL / fixture上のpositionとmaterial-premise provenanceを記録した。
-- 未完了: C0 / C1 / C2 / C4 / C5 / C6非必要性 witness 6種、`Obs_G` / T3 / T6 /
+- 完了(Cycle 17): exact R1 `C0_not_necessary` raw presentationをfieldwise転写した。
+  全target subsetでactual H¹ comparisonの全単射性を、共通selected edgeの
+  degree-one linear equivalence、fine側零boundary、coarse側零cocycle constraintから
+  literal quotient上で直接証明した。coarse chart 1・target 0のsupport差によりraw /
+  semantic C0と`ConditionCAllA`を直接反証し、nonconstant indicator law上のfull
+  `ConditionC` failureへ接続した。同じfailed targetを含む`A={0}`でexplicit
+  self-loop quotient classとactual map injectivityからcoarse / fine両H¹非零も固定した。
+- 未完了: C1 / C2 / C4 / C5 / C6非必要性 witness 5種、`Obs_G` / T3 / T6 /
   observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -2546,6 +2553,232 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct and verify the exact R1 C0_not_necessary witness with semantic uniformity, direct law-indexed and ConditionCAllA C0 failure, and a nonzero H1 block meeting the failed support datum
+completion_candidate: false
+tracking_issue_closed: false
+```
+## Cycle 17 — exact R1 C0 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- T1-selected obligation: exact R1 `C0_not_necessary` raw presentationを固定し、
+  full semantic uniformity、direct raw / semantic C0 failure、direct
+  `ConditionCAllA` failure、nonconstant indicator law上のfull `ConditionC`
+  failure、failed support targetを含む同じ非空blockでのcoarse / fine両H¹非零を
+  closed theorem packageへ接続する。
+
+### Exact raw presentation and provenance
+
+`ConditionC0NonnecessityWitness.lean`の`R1ConditionC0Witness.presentation`は、
+次のraw tableだけをfieldに持つ。
+
+- Source / FineTargetは`Fin 3`、CoarseTargetは`Fin 2`、coarse readingは
+  `[0,0,1]`、fine readingはidentity。
+- coarse / fine nerveはいずれもchart `Fin 2`、chart 0のself-loop edge
+  `Fin 1`、empty face `Fin 0`。
+- coarse chart supportは`[{0},{0,1}]`、fine chart supportは
+  `[{0,1},{2}]`。
+- chart mapはidentity、edge mapは`some`、face mapはempty。
+
+canonical R1 parent payload SHA-256は
+`ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`。
+canonical generatorをread-onlyで再実行し、name-free semantic SHA-256
+`9222cd14e8e9ff2685b346f9e27ec239ccb86c91a53870811b3a3b4f8da07348`
+を独立再現した。factor、両nerve、support、cell mapをLean tableとfieldwise照合した。
+実験artifactは転写provenanceでありLean theoremのpremiseではない。
+`computedFactor_eq_coarseRead`と`comparisonFactor_eq_coarseRead`は、明示source
+enumerationとcanonical uniquenessからproper factor `[0,0,1]`を生成する。
+
+### Semantic uniformity and direct C0 failure
+
+`A : Finset (Fin 2)`を任意に固定する。coarse / fine selected edgeは同じraw
+self-loopに一致するため`selectedEdgeEquiv A`とactual
+`semanticEdgeCochainEquiv A`を構成した。actual canonical comparisonの`f1`がこの
+linear equivalenceに一致することをpublic partial-map APIから証明する。fine側の
+`d0`はself-loop incidenceにより零、coarse側の`d1`はface typeがemptyなので零である。
+したがってliteral quotient-H¹上で次を直接得る。
+
+- injectivity: fine quotientで等しい二classの差はfine boundaryだが、そのboundaryは
+  零。degree-one equivalenceのinjectivityでcoarse cycleが一致する。
+- surjectivity: 任意fine cycleをdegree-one equivalenceの逆でcoarse cochainへ戻す。
+  coarse `d1=0`によりcoarse cycleとなり、そのactual H¹ imageが元のclassに一致する。
+
+この`aSubnerveComparisonHom_h1Map_bijective A`をgeneric raw-to-actual defect theoremへ
+接続し、全`A`で`computedASubnerveDefect A = (0,0)`、checker true、full
+`UniformPresentation presentation`を得た。checker実行値も空subsetを含む4 subsetで
+`[(0,0),(0,0),(0,0),(0,0)]`、`uniformPresentationCheck=true`と独立確認した。
+
+C0 failureはcoarse chart 1・coarse target 0に固定する。coarse supportには0が入るが、
+chart fiberの唯一のfine chart 1はfine target 2だけをsupportし、そのcanonical imageは1
+である。`failedSupportDatum`から`not_rawConditionC0`、`conditionC0Check=false`、
+`not_conditionC0`を得る。`ConditionCAllA`のwhole-nerve C0 projectionで
+`not_conditionCAllA`を直接証明し、aggregate checkerもfalseへ接続した。
+
+target-zero indicator familyはsource 0と2を実際に区別するnonconstant law familyで、
+coarse / fine adequacyはgeneric indicator theoremから得る。このfamily上で仮定したfull
+law-indexed `ConditionC`の`c0` fieldを`not_conditionC0`へ適用し、
+`indicator_not_conditionC`を閉じた。C0はlaw-independentだが、main theoremでは
+proved-nonconstant familyと両adequacyを実際にinstantiateしている。
+
+### Same-datum H¹ nonvacuity
+
+failed target 0を含む`targetZero={0}`は両nerveのself-loopを選ぶ。coarse actual loopの
+evaluation periodを構成し、全coboundaryのperiodが零、constant-one cocycleのperiodが1
+であることからliteral quotient class `coarseTargetZeroClass`が非零と示した。fine classは
+actual target-zero H¹ mapのimageとして構成し、上記all-subset theoremのinjectivityで
+非零を保つ。これにより同じblockで両側finrankが正となる。
+
+### Public no-unfold API delta
+
+本witnessがgeneric actual-complex定義を下流で展開しないよう、既存定義の計算則だけを
+各definition ownerの対応定義直後へ次のpublic theoremとして追加した。
+
+- `TargetSupportedNerve.targetSubsetComplex_d0_apply`
+- `TargetSupportedNerve.targetSubsetComplex_d1_apply`
+- `ThreeCochainComplex.boundaryToCycles_apply`
+- `ThreeCochainComplex.Hom.cyclesMap_apply`
+- `ThreeCochainComplex.Hom.cyclesMap_sub_apply`
+
+前2本は`ASubnerveReduction.lean`、後3本は係数体一般の
+`TwoPhase/CohomologyComparison.lean`に置いた。いずれもendpoint / face incidence、
+既存`d0`、既存`f1`のdefinition-owner evaluationを返す`rfl` theoremで、新premise・
+field・matrix・rank・H¹・resultを追加しない。
+
+### Lean artifacts and verification
+
+- Lean files:
+  - `research/lean/ResearchLean/AG/UniformInvariance/ConditionC0NonnecessityWitness.lean`
+  - `research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean`
+  - `research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean`
+  - `research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean`
+  - `research/lean/ResearchLean/AG.lean`
+  - `research/lean/research-modules.txt`
+- primary declarations:
+  - `R1ConditionC0Witness.presentation`
+  - `R1ConditionC0Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC0Witness.uniformPresentation`
+  - `R1ConditionC0Witness.not_conditionC0`
+  - `R1ConditionC0Witness.not_conditionCAllA`
+  - `R1ConditionC0Witness.indicator_not_conditionC`
+  - `R1ConditionC0Witness.targetZero_both_h1_pos`
+  - `R1ConditionC0Witness.c0_not_necessary`
+- focused elaboration:
+  - `CohomologyComparison.lean`: pass、18 declarations standard axioms only
+  - `ASubnerveReduction.lean`: pass、99 declarations standard axioms only
+  - `PresentationASubnerveDefect.lean`: pass、TwoPhase 4 / ResolutionInvariance 128 declarations standard axioms only
+  - `ConditionC0NonnecessityWitness.lean`: pass、57 declarations standard axioms only
+- targeted module build:
+  - `CohomologyComparison`: pass (3692 jobs)
+  - `PresentationASubnerveDefect`: pass (3715 jobs)
+  - `ConditionC0NonnecessityWitness`: pass (3739 jobs)
+- direct execution:
+  - `conditionC0Check=false`
+  - `conditionCAllACheck=false`
+  - `uniformPresentationCheck=true`
+  - computed defects on `∅,{0},{1},{0,1}` are all `(0,0)`
+- major 9 declarations / new API `#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / changed-public-artifact / research-package / separation gates: pass
+- `git diff --check`: pass
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `ConditionC0NonnecessityWitness.lean`:
+  `d9ab09fd400cd4a130defc5a8dd8eeebeecfe79d3c50338f7ac11f213ff3ec0e`
+- `ASubnerveReduction.lean`:
+  `af3f89ed9c5ff83d74885d0dc29dd0948cf9453cef0fc83346d587db5dd82218`
+- `CohomologyComparison.lean`:
+  `fd16285ce4434559138fa7c170d34de694679bd5d8d04dd82174a075e6bb4ae3`
+- `PresentationASubnerveDefect.lean`:
+  `611852da7b857b95512f89af438e347c1c65ff1498c85a8ed29d267b8da43968`
+- `AG.lean`:
+  `8233125c8fc75d2ce3f7273fa5e31799f81e36a35ff09e834d94c4decacd6fa6`
+- `research-modules.txt`:
+  `151e122679aae5c93005c1c480f46a60968cd58eb2beb4d8db14a53e49480e26`
+
+Independent T3は上記fixed snapshotを、canonical R1 provenance、literal quotient-H¹、
+C0 failure scope、law-indexed failure、same-datum nonvacuity、premise / field-content、
+route integrity、public API境界の観点で独立監査した。canonical generatorから
+name-free semantic SHA-256を再現し、Lean tableとのfieldwise一致も独立確認した。
+blocking findingはなく、exact C0 non-necessity witnessという固定GOALの
+`discharge-required`義務1件を放電した。残る5 witnessと観測非分解性義務があるため、
+completion candidateではない。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 17
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: construct and verify the exact R1 C0_not_necessary witness with semantic uniformity, direct law-indexed and ConditionCAllA C0 failure, and a nonzero H1 block meeting the failed support datum
+proof_obligation_delta: the exact R1 C0 non-necessity witness is discharged without changing the fixed target, presentation field boundary, or remaining witness and observation obligations
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: ba375202480ab9025dfe694529e9f4bf14325aaa
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionC0NonnecessityWitness.lean
+    declarations:
+      - R1ConditionC0Witness.presentation
+      - R1ConditionC0Witness.aSubnerveComparisonHom_h1Map_bijective
+      - R1ConditionC0Witness.uniformPresentation
+      - R1ConditionC0Witness.not_rawConditionC0
+      - R1ConditionC0Witness.not_conditionC0
+      - R1ConditionC0Witness.not_conditionCAllA
+      - R1ConditionC0Witness.indicator_not_conditionC
+      - R1ConditionC0Witness.targetZero_both_h1_pos
+      - R1ConditionC0Witness.c0_not_necessary
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean
+    declarations:
+      - TargetSupportedNerve.targetSubsetComplex_d0_apply
+      - TargetSupportedNerve.targetSubsetComplex_d1_apply
+  - file: research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean
+    declarations:
+      - ThreeCochainComplex.boundaryToCycles_apply
+      - ThreeCochainComplex.Hom.cyclesMap_apply
+      - ThreeCochainComplex.Hom.cyclesMap_sub_apply
+premise_delta:
+  discharged:
+    - exact R1 C0_not_necessary raw fixture and fieldwise canonical provenance
+    - actual quotient-H1 comparison bijectivity for every target subset
+    - direct raw C0, semantic C0, ConditionCAllA, and checker failure
+    - law-indexed ConditionC failure for a proved-nonconstant indicator family
+    - coarse and fine actual H1 nonvanishing on A={0}, which contains the failed target
+  remaining:
+    - C1 C2 C4 C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+certificate_provenance:
+  discharged:
+    - presentation fields contain only raw readings, incidence, support, partial cell maps, and well-formedness proofs
+    - canonical factor is generated from source enumeration and uniqueness
+    - actual H1 bijectivity is proved on literal quotients rather than supplied by a checker result
+    - the R1 experiment is transfer provenance only and is not a Lean premise
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw readings and source enumeration
+    - self-loop endpoint incidence and empty face incidence
+    - selected partial edge map
+    - coarse and fine chart-support tables
+    - target-zero indicator semantics and generated adequacy
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct and verify the exact R1 C1_not_necessary witness with the C1 failure and coarse and fine actual H1 nonvanishing connected on the same target subset
 completion_candidate: false
 tracking_issue_closed: false
 ```
