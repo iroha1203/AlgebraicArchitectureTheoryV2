@@ -91,10 +91,11 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   これによりC3の非必要性とAtlas包含の真性を閉じた。初回PR査読で指摘された
   selected-cell API境界も同Cycle内で補修し、computed preimage、raw support、
   coarse / fine selected cells、partial edge mapの公開characterizationを追加して、
-  UniformInvariance subtreeの既存fixture clientすべてでgeneric definition展開を
-  公開API利用へ移した。
+  UniformInvariance subtreeの既存fixture clientすべてでこれらselected-cell系
+  generic definitionの展開を公開API利用へ移した。
 - 未完了: C0 / C1 / C2 / C4 / C5 / C6非必要性 witness 6種、`Obs_G` / T3 / T6 /
-  observation nonfactorization、Cycle 12由来のprivate helper docstring品質負債1件。
+  observation nonfactorization、finite cochain / block-map evaluation の公開
+  no-unfold APIと新規・変更宣言docstringのposition / premise provenance監査。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -2227,7 +2228,8 @@ tracking_issue_closed: false
   `ConditionCAllA`の直接failure、C3 witnessによるAtlas包含の真性。
 - remaining: C0 / C1 / C2 / C4 / C5 / C6の個別non-necessity witness、
   `Obs_G`忠実転写、T3 / T6 labels、観測等値、observation
-  nonfactorization、Cycle 12 private helper群の個別docstring補完。
+  nonfactorization、finite cochain / block-map evaluationの公開no-unfold API、
+  新規・変更宣言docstringのposition / premise provenance監査。
 
 ### Provenance / proof-use / escape audit
 
@@ -2275,8 +2277,15 @@ tracking_issue_closed: false
 - 強いall-subset theoremに置換され参照されない `targetOne` / `targetFull` と、
   それらに付随して不要になったpreimage補助APIを削除した。
 
-これによりCycle 12品質負債のうちno-unfold API項目は閉じた。最終completion前に
-残る品質義務は、Cycle 12 private helper群への個別docstring補完1件である。
+これによりCycle 12品質負債のうちselected-cell / support / preimage / partial-map
+characterization APIは閉じた。修正後fixed-head査読では、generic D0 / D1、edge
+pullback、H¹ block map / matrixのapplication・entry APIがまだ不足し、新witnessと
+既存instance-pair clientに `change` / definition展開が残ると指摘された。また、
+このPRでbodyを変更したprivate helper 5件には同Cycle内で個別docstringを追加したが、
+新規・変更宣言全体について一次仕様との対応、主定理/API補題としてのposition、premise
+provenanceを§3.2に照らして精査・補完する品質義務は残る。いずれもCycle 15の数学
+statement、premise discharge、certificate provenanceを落とさない非中心findingであり、
+最終completion前にnarrow remediationとして閉じる。
 
 ### Target cycle ledger
 
@@ -2315,7 +2324,8 @@ premise_delta:
   remaining:
     - C0 C1 C2 C4 C5 C6 non-necessity witnesses
     - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
-    - Cycle 12 private-helper docstring remediation
+    - finite cochain and block-map no-unfold evaluation APIs
+    - new and changed declaration docstring position and premise-provenance audit
 certificate_provenance:
   discharged:
     - canonical R1 report and name-free semantic hashes independently reproduced
@@ -2341,7 +2351,10 @@ cheat_route_audit:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
-next_obligation: formalize the exact R1 C0_not_necessary witness with uniformity, direct C0 and ConditionCAllA failure, and nonzero H1 on both sides of a nonempty block meeting the failure data
+nonblocking_quality_findings:
+  - generic D0 D1 edge-pullback and H1 block-map or matrix clients still unfold their definitions
+  - new and changed declaration docstrings require a full position and premise-provenance audit
+next_obligation: close the finite cochain and block-map no-unfold APIs and the changed-declaration docstring audit before resuming the exact R1 C0_not_necessary witness
 completion_candidate: false
 tracking_issue_closed: false
 ```

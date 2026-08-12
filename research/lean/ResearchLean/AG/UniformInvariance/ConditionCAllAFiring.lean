@@ -215,6 +215,9 @@ private theorem subset_cases (A : Finset pFire.CoarseTarget) :
     A = ∅ ∨ A = {(0 : coarseReading.Target)} ∨
       A = {(1 : coarseReading.Target)} ∨ A = Finset.univ := by
   fin_cases A <;> decide
+
+/-- Cycle 12 firing support helper: raw fine-edge support and the canonical
+factor place every fine edge in a subset containing coarse target zero. -/
 private theorem fineEdge_mem_of_zero_mem
     (A : Finset coarseReading.Target) (hzero : (0 : coarseReading.Target) ∈ A)
     (edge : fineNerve.EdgeComponent) : edge ∈ pFire.fineEdgesIn A := by
@@ -226,6 +229,8 @@ private theorem fineEdge_mem_of_zero_mem
   · rw [pFire_computedFactor_eq_coarseRead]
     simpa [coarseRead] using hzero
 
+/-- Cycle 12 firing support helper: raw face support and the canonical factor
+place every fine face in a subset containing coarse target zero. -/
 private theorem fineFace_mem_of_zero_mem
     (A : Finset coarseReading.Target) (hzero : (0 : coarseReading.Target) ∈ A)
     (face : fineNerve.FaceComponent) : face ∈ pFire.fineFacesIn A := by
@@ -238,6 +243,8 @@ private theorem fineFace_mem_of_zero_mem
   · rw [pFire_computedFactor_eq_coarseRead]
     simpa [coarseRead] using hzero
 
+/-- Cycle 12 firing support helper: raw chart support and the canonical factor
+place every fine chart in a subset containing coarse target zero. -/
 private theorem fineChart_mem_of_zero_mem
     (A : Finset coarseReading.Target) (hzero : (0 : coarseReading.Target) ∈ A)
     (chart : fineNerve.Chart) : chart ∈ pFire.fineChartsIn A := by
@@ -247,6 +254,8 @@ private theorem fineChart_mem_of_zero_mem
   · rw [pFire_computedFactor_eq_coarseRead]
     simpa [coarseRead] using hzero
 
+/-- Cycle 12 firing support helper: raw coarse-chart support selects every
+coarse chart in a subset containing target zero. -/
 private theorem coarseChart_mem_of_zero_mem
     (A : Finset coarseReading.Target) (hzero : (0 : coarseReading.Target) ∈ A)
     (chart : coarseNerve.Chart) : chart ∈ pFire.coarseChartsIn A := by
@@ -501,6 +510,8 @@ private def oneFineEdge : pFire.FineEdgeIn oneSubset :=
 private def oneFineFace : pFire.FineFaceIn oneSubset :=
   ⟨(0 : fineNerve.FaceComponent), by decide⟩
 
+/-- Cycle 12 singleton-subset helper: raw selected-chart membership identifies
+every coarse chart over target one with the named representative. -/
 private theorem oneCoarseChart_eq (chart : pFire.CoarseChartIn oneSubset) :
     chart = oneCoarseChart := by
   rcases chart with ⟨chart, hchart⟩
