@@ -351,31 +351,6 @@ theorem aSubnerveComparisonHom_f1_eq_semanticEquiv
   exact edgePullback1_eq_rawEdgeCochainEquiv A
     (presentation.coarseEdgeCochainEquiv A cochain)
 
-/-- Every coarse degree-zero boundary vanishes because both coarse edges are
-self-loops. -/
-theorem coarse_d0_zero (A : Finset (Fin 2))
-    (cochain : (coarseComplex A).C0) :
-    (coarseComplex A).d0 cochain = 0 := by
-  funext edge
-  rw [TargetSupportedNerve.targetSubsetComplex_d0_apply]
-  have hloop :
-      presentation.coarseSupportedNerve.targetSubsetEdgeRight
-          (↑A : Set (Fin 2)) edge =
-        presentation.coarseSupportedNerve.targetSubsetEdgeLeft
-          (↑A : Set (Fin 2)) edge := by
-    apply Subtype.ext
-    rfl
-  rw [hloop, sub_self]
-  rfl
-
-/-- Every fine degree-one differential vanishes because the fine face type is
-empty. -/
-theorem fine_d1_zero (A : Finset (Fin 2))
-    (cochain : (fineComplex A).C1) :
-    (fineComplex A).d1 cochain = 0 := by
-  funext face
-  exact Fin.elim0 face.1
-
 /-- A raw fine degree-zero boundary vanishes on the chart-zero self-loop. -/
 theorem fineD0_eq_zero_at_loop
     (A : Finset (Fin 2))

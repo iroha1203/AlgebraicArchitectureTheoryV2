@@ -3482,7 +3482,7 @@ H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame
 
 ### Verification
 
-- focused elaboration: `ConditionC6NonnecessityWitness.lean` pass、68 declarations
+- focused elaboration: `ConditionC6NonnecessityWitness.lean` pass、66 declarations
   standard-only
 - targeted module build:
   `ResearchLean.AG.UniformInvariance.ConditionC6NonnecessityWitness` pass、3739 jobs
@@ -3498,7 +3498,7 @@ H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame
 source SHA-256:
 
 - `ConditionC6NonnecessityWitness.lean`:
-  `c46df89046bbaa497dbc5a98861de5598cce8b66c0b3ea06c646f40a117183be`
+  `ad70ec6b8bc345d4d7b8ae305b2a03f8f943e9e72ab34668ca21c873a89ae5df`
 - `AG.lean`:
   `c39d2eeacd05247fff90f547e5d1ef2aaa3d63534c5af10031d423ccfb6d28c5`
 - `research-modules.txt`:
@@ -3537,7 +3537,7 @@ proof_use_audit:
   used_material_premises:
     - raw readings and source enumeration
     - self-loop and interval incidence, chart supports, and partial edge map
-    - coarse repeated-face equation and empty fine face table
+    - coarse repeated-face equation
     - explicit fine interval boundary primitive
     - generated indicator law and the ConditionC c6 field
     - actual H1 map injectivity on the same full subset
