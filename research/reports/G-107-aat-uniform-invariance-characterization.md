@@ -106,7 +106,17 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   semantic C0と`ConditionCAllA`を直接反証し、nonconstant indicator law上のfull
   `ConditionC` failureへ接続した。同じfailed targetを含む`A={0}`でexplicit
   self-loop quotient classとactual map injectivityからcoarse / fine両H¹非零も固定した。
-- 未完了: C1 / C2 / C4 / C5 / C6非必要性 witness 5種、`Obs_G` / T3 / T6 /
+- 完了(Cycle 18): exact R1 `C1_not_necessary` raw
+  presentationをfieldwise転写した。登録failure scopeのうち、C1 failureと両側
+  H¹非零が同じsubsetで成立するfull target `A={0,1}`を選び、coarse chart 1の
+  fiberにあるdistinct fine charts 1,2がsole self-loop at chart 0では到達不能で
+  あることをraw finite graphから直接証明した。全target subsetのactual H¹ map
+  全単射、semantic uniformity、actual C1 / `ConditionCAllA` failure、generated
+  indicator label上のlaw-indexed C1 / full `ConditionC` failure、同じfull blockの
+  coarse / fine両H¹非零を接続した。law-block C1からlabel-fiber A-subnerve C1への
+  reverse transportとselected-cell / fiber-graph evaluation APIもdefinition ownerに
+  追加した。
+- 未完了: C2 / C4 / C5 / C6非必要性 witness 4種、`Obs_G` / T3 / T6 /
   observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -229,6 +239,7 @@ next_obligation: prove global generated H1 comparison bijective iff every source
 completion_candidate: false
 tracking_issue_closed: false
 ```
+
 
 ## Cycle 2 — global H¹ bijectivity iff blockwise bijectivity
 
@@ -2779,6 +2790,154 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct and verify the exact R1 C1_not_necessary witness with the C1 failure and coarse and fine actual H1 nonvanishing connected on the same target subset
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 18 — exact R1 C1 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`ConditionC1NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC1NonnecessityWitness.lean)
+  - [`ConditionCAllABridge.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean)
+  - [`ConditionCAllAChecker.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAChecker.lean)
+  - [`PresentationASubnerveDefect.lean`](../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)
+- canonical R1 parent SHA-256:
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
+- canonical name-free semantic SHA-256:
+  `59e02ca26270c672ee5b96791f48742f3e7171f165d5c236f8c796626ed1310a`
+- primary declarations:
+  - `R1ConditionC1Witness.presentation`
+  - `R1ConditionC1Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC1Witness.uniformPresentation`
+  - `R1ConditionC1Witness.not_rawConditionC1At`
+  - `R1ConditionC1Witness.not_conditionC1AtTargetSubset`
+  - `R1ConditionC1Witness.not_conditionCAllA`
+  - `R1ConditionC1Witness.indicator_not_conditionC1`
+  - `R1ConditionC1Witness.indicator_not_conditionC`
+  - `R1ConditionC1Witness.targetFull_both_h1_pos`
+  - `R1ConditionC1Witness.c1_not_necessary`
+- new owner APIs:
+  - `TargetSupportedNerveMorphism.conditionC1AtTargetSubset_of_conditionC1At_labelValueFiber`
+  - `FiniteComparisonPresentation.fineEdgeLeftIn_coe`
+  - `FiniteComparisonPresentation.fineEdgeRightIn_coe`
+  - `FiniteComparisonPresentation.chartMapIn_coe`
+  - `FiniteComparisonPresentation.fiberGraph_adj_iff`
+
+### Fixed same-A scope and proof route
+
+canonical fixtureではC1が`A={1}`と`A={0,1}`で破れるが、前者は両側H¹が
+`0→0`である。固定GOALの相対条項scopeは**同じ非空A**で条項破れと両側
+H¹非零を要求するため、登録failure scopeに含まれ、H¹ profileが`1→1`
+rank 1である`targetFull={0,1}`を選んだ。full-subset indicatorはconstant true
+だが、固定GOALはC1 witnessにnonconstant lawを要求しない。proper factor、
+source-generated nonempty label、distinct fine charts 1,2の実在、raw fiber graphの
+非連結、および同じblockの両側非零H¹がnonvacuityを担う。
+
+raw tableはSource / FineTarget `Fin 3`、CoarseTarget `Fin 2`、coarse reading
+`[0,0,1]`、fine reading `id`、coarse charts `Fin 2`、fine charts `Fin 3`、
+両側のsole chart-zero self-loop、empty faces、coarse supports `[{0},{1}]`、
+fine supports `[{0,1},{2},{2}]`、chart map `[0,1,1]`、edge map `[some 0]`
+だけから成る。factor、path、rank、H¹、defect、condition / checker bit、uniformity
+certificateはfieldにない。canonical factorはsource enumerationから生成する。
+
+全finite `A`についてselected degree-one cochain equivalence、fine `d0=0`、
+coarse `d1=0`からliteral quotient H¹ mapのinjectivity / surjectivityを別々に
+証明し、全defect零とfull semantic `UniformPresentation`へ接続した。
+full subsetではfine charts 1,2がcoarse chart 1へ写る一方、sole fine edgeは
+chart 0 self-loopなのでfiber adjacencyは空である。これをraw finite graph上で
+証明し、raw / actual C1、`ConditionCAllA`、checkerを直接反証した。
+
+law-indexed failureには、law-block C1からlabel-fiber A-subnerve C1へのgeneric
+reverse transportを追加した。既存chart equivalenceとadjacency iffを逆向きに使い、
+`ReflTransGen` path全体を輸送する。generated true label fiber `= targetFull`と
+組み合わせ、law-indexed `ConditionC1`およびfull `ConditionC`を反証した。
+same-A H¹非零はactual coarse self-loop quotient classのperiod argumentと、actual
+H¹ mapのinjectivityによるfine imageの非零性から得た。
+
+### Verification
+
+- focused elaboration:
+  - `PresentationASubnerveDefect.lean`: pass、TwoPhase 4 / ResolutionInvariance 131 declarations standard-only
+  - `ConditionCAllAChecker.lean`: pass、87 declarations standard-only
+  - `ConditionCAllABridge.lean`: pass、35 declarations standard-only
+  - `ConditionC1NonnecessityWitness.lean`: pass、64 declarations standard-only
+- targeted builds: 3715 / 3737 / 3708 / 3740 jobs、すべてpass
+- direct execution: C1 check `false`、aggregate check `false`、uniform check
+  `true`、`∅,{0},{1},{0,1}`のcomputed defectは全て`(0,0)`
+- reverse bridge、4 owner APIs、主要witness declarationsの`#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / research-package / separation gates: pass
+- placeholder / hidden-BiDi / privacy / `git diff --check`: clean
+- independent T3: `approve / proof-obligation-discharged`、blocking findingなし
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `ConditionC1NonnecessityWitness.lean`:
+  `c26df93fbc654780bef0d2ada0085bf576aa3c89de7621bcb52bc0ddd3e885f5`
+- `ConditionCAllABridge.lean`:
+  `bb23fd0ae23195f140c4470dff2b9b246e24bbe8f9f102a17b40a177ac2d02e2`
+- `ConditionCAllAChecker.lean`:
+  `5ab5ae97a5471eb6179a60bf85f9490c9eb888fb2c94c0c73a352ba953eb8aed`
+- `PresentationASubnerveDefect.lean`:
+  `7392c3d1afc1e91186a1a98af20d98a2fd51c1c5a9c23dcf31e08202005c72c6`
+- `AG.lean`:
+  `54740dc4fc5928ef8f801bca21dd48c569a0417331d6096f1d0a43218adef5f5`
+- `research-modules.txt`:
+  `c9f5a0bd99d5c9a30129095bcb533d23a4beeebb8fbe260fa21ed5b98ab334f1`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 18
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: exact R1 C1_not_necessary witness with law-indexed and direct A-subnerve C1 failure and coarse and fine actual H1 nonvanishing on the same A={0,1}
+proof_obligation_delta: exact C1 witness is discharged without changing the fixed target or presentation field boundary
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+premise_delta:
+  discharged:
+    - exact R1 raw fixture and canonical provenance
+    - all-target-subset actual quotient-H1 bijectivity
+    - direct raw and semantic C1 failure on A={0,1}
+    - direct ConditionCAllA and checker failure
+    - law-indexed ConditionC1 and full ConditionC failure on the generated label
+    - coarse and fine actual H1 nonvanishing on the same A={0,1}
+  remaining:
+    - C2 C4 C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+certificate_provenance:
+  status: raw-table-generated
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw readings and source enumeration
+    - self-loop incidence, chart supports, chart map, and partial edge map
+    - generated indicator label and exact fiber equality
+    - reverse path transport through canonical chart equivalences
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: exact R1 C2_not_necessary witness with same-A clause failure and coarse/fine actual H1 nonvanishing
 completion_candidate: false
 tracking_issue_closed: false
 ```

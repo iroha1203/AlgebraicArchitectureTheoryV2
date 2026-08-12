@@ -319,6 +319,7 @@ import ResearchLean.AG.UniformInvariance.AtlasPositioning
 import ResearchLean.AG.UniformInvariance.ConditionCAllA
 import ResearchLean.AG.UniformInvariance.ConditionCAllABridge
 import ResearchLean.AG.UniformInvariance.ConditionC0NonnecessityWitness
+import ResearchLean.AG.UniformInvariance.ConditionC1NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionC3NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionCAllAChecker
 import ResearchLean.AG.UniformInvariance.ConditionCAllACheckerInstancePairs

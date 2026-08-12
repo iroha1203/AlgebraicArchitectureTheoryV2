@@ -148,6 +148,19 @@ def fiberGraph (P : FiniteComparisonPresentation)
     SimpleGraph (P.FineChartIn A) :=
   SimpleGraph.fromRel (P.rawFiberAdjacent A coarseChart)
 
+/-- Adjacency in the executable fiber graph is exactly unequal raw vertices
+joined by raw fiber adjacency in either orientation.  This definition-owner
+API lets finite counterexamples reason about the graph without unfolding its
+`SimpleGraph.fromRel` representation. -/
+theorem fiberGraph_adj_iff (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (coarseChart : P.CoarseChartIn A)
+    (left right : P.FineChartIn A) :
+    (P.fiberGraph A coarseChart).Adj left right ↔
+      left ≠ right ∧
+        (P.rawFiberAdjacent A coarseChart left right ∨
+          P.rawFiberAdjacent A coarseChart right left) :=
+  SimpleGraph.fromRel_adj _ _ _
+
 /-- Adjacency in the raw fiber graph is constructively decidable. -/
 instance fiberGraphAdjDecidable (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (coarseChart : P.CoarseChartIn A) :
