@@ -320,7 +320,9 @@ def faceFreeCyclePresentation : FiniteComparisonPresentation where
 
 /-! ## Named selected cells and raw finite formulas -/
 
-/-- A selected coarse chart of the positive full target subset. -/
+/-- A selected coarse chart of the positive full target subset.  This private
+checker-fixture datum is derived through the public raw-selection API and
+supports the positive C1/C3 firing; it is not a stored path certificate. -/
 def positiveCoarseChart (chart : Fin 2) :
     positivePresentation.CoarseChartIn Finset.univ :=
   ⟨chart, by
@@ -328,7 +330,9 @@ def positiveCoarseChart (chart : Fin 2) :
     exact ⟨PUnit.unit, by simp [positivePresentation], Finset.mem_univ _⟩
   ⟩
 
-/-- A selected fine chart of the positive full target subset. -/
+/-- A selected fine chart of the positive full target subset.  This private
+checker-fixture datum is derived through the public raw-selection API and
+supports the positive reachability/filling computation. -/
 def positiveFineChart (chart : Fin 3) :
     positivePresentation.FineChartIn Finset.univ :=
   ⟨chart, by
@@ -336,7 +340,9 @@ def positiveFineChart (chart : Fin 3) :
     exact ⟨(0 : Fin 2), by simp [positivePresentation], Finset.mem_univ _⟩
   ⟩
 
-/-- A selected fine edge of the positive full target subset. -/
+/-- A selected fine edge of the positive full target subset.  This private
+checker-fixture datum is derived from raw endpoint support via the owner API,
+not from a supplied C1 or C3 witness. -/
 def positiveFineEdge (edge : Fin 4) :
     positivePresentation.FineEdgeIn Finset.univ :=
   ⟨edge, by
@@ -346,7 +352,9 @@ def positiveFineEdge (edge : Fin 4) :
     fin_cases edge <;> simp [positivePresentation]
   ⟩
 
-/-- A selected fine face of the positive full target subset. -/
+/-- A selected fine face of the positive full target subset.  This private
+checker-fixture datum is derived from raw boundary support via the owner API
+and feeds the explicit C3 filling calculation. -/
 def positiveFineFace (face : Fin 2) :
     positivePresentation.FineFaceIn Finset.univ :=
   ⟨face, by
@@ -570,7 +578,9 @@ theorem positive_rawConditionC3At :
     rw [hchain]
     exact LinearMap.map_zero _
 
-/-- Named selected coarse chart of the face-free fixture. -/
+/-- Named selected coarse chart of the face-free fixture.  This private
+negative-fixture datum comes from the public raw-selection API and anchors the
+direct C3 failure, rather than encoding the checker result. -/
 def faceFreeCoarseChart :
     faceFreeCyclePresentation.CoarseChartIn Finset.univ :=
   ⟨PUnit.unit, by
@@ -579,7 +589,9 @@ def faceFreeCoarseChart :
     exact ⟨PUnit.unit, by simp [faceFreeCyclePresentation], Finset.mem_univ _⟩
   ⟩
 
-/-- Named selected fine self-loop of the face-free fixture. -/
+/-- Named selected fine self-loop of the face-free fixture.  This private
+negative-fixture datum comes from raw support through the owner API and is the
+explicit nonzero cycle used to refute C3. -/
 def faceFreeFineEdge :
     faceFreeCyclePresentation.FineEdgeIn Finset.univ :=
   ⟨PUnit.unit, by

@@ -388,14 +388,17 @@ def finePreimageFinset (P : FiniteComparisonPresentation)
   Finset.univ.filter fun target => P.computedFactor target ∈ A
 
 /-- Membership in the executable fine preimage is evaluation of the computed
-factor against the coarse target subset. -/
+factor against the coarse target subset.  This public Cycle 15 owner API lets
+fixture clients normalize preimage membership without unfolding the search
+definition; all data come from `computedFactor` and `A`. -/
 theorem mem_finePreimageFinset_iff (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (target : P.FineTarget) :
     target ∈ P.finePreimageFinset A ↔ P.computedFactor target ∈ A := by
   simp only [finePreimageFinset, Finset.mem_filter, Finset.mem_univ, true_and]
 
 /-- Membership in a raw coarse edge support is simultaneous membership at
-its two endpoint charts. -/
+its two endpoint charts.  This public Cycle 15 owner API exposes the support
+normal form for clients and derives solely from raw endpoint incidence. -/
 theorem mem_coarseEdgeSupportFinset_iff_raw
     (P : FiniteComparisonPresentation) (edge : P.CoarseEdge)
     (target : P.CoarseTarget) :
@@ -405,7 +408,8 @@ theorem mem_coarseEdgeSupportFinset_iff_raw
   simp only [coarseEdgeSupportFinset, Finset.mem_inter]
 
 /-- Membership in a raw fine edge support is simultaneous membership at its
-two endpoint charts. -/
+two endpoint charts.  This public Cycle 15 owner API exposes the support
+normal form for clients and derives solely from raw endpoint incidence. -/
 theorem mem_fineEdgeSupportFinset_iff_raw
     (P : FiniteComparisonPresentation) (edge : P.FineEdge)
     (target : P.FineTarget) :
@@ -415,7 +419,9 @@ theorem mem_fineEdgeSupportFinset_iff_raw
   simp only [fineEdgeSupportFinset, Finset.mem_inter]
 
 /-- Membership in a raw coarse face support is simultaneous membership in
-the supports of its three boundary edges. -/
+the supports of its three boundary edges.  This public Cycle 15 owner API
+exposes the support normal form from raw face incidence and adds no filling
+premise. -/
 theorem mem_coarseFaceSupportFinset_iff_raw
     (P : FiniteComparisonPresentation) (face : P.CoarseFace)
     (target : P.CoarseTarget) :
@@ -426,7 +432,8 @@ theorem mem_coarseFaceSupportFinset_iff_raw
   simp only [coarseFaceSupportFinset, Finset.mem_inter]
 
 /-- Membership in a raw fine face support is simultaneous membership in the
-supports of its three boundary edges. -/
+supports of its three boundary edges.  This public Cycle 15 owner API exposes
+the support normal form from raw face incidence and adds no filling premise. -/
 theorem mem_fineFaceSupportFinset_iff_raw
     (P : FiniteComparisonPresentation) (face : P.FineFace)
     (target : P.FineTarget) :
@@ -473,7 +480,9 @@ def fineFacesIn (P : FiniteComparisonPresentation)
     (P.fineFaceSupportFinset face ∩ P.finePreimageFinset A).Nonempty
 
 /-- Raw coarse-chart selection is witnessed by a target in both the chart
-support and the selected coarse subset. -/
+support and the selected coarse subset.  This public Cycle 15 owner API is the
+no-unfold characterization used by fixture clients; its witnesses come from
+raw support and `A`. -/
 theorem mem_coarseChartsIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (chart : P.CoarseChart) :
     chart ∈ P.coarseChartsIn A ↔
@@ -488,7 +497,9 @@ theorem mem_coarseChartsIn_iff_raw (P : FiniteComparisonPresentation)
     exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
 
 /-- Raw coarse-edge selection is witnessed by a target in both the generated
-edge support and the selected coarse subset. -/
+edge support and the selected coarse subset.  This public Cycle 15 owner API is
+the no-unfold characterization used by fixture clients; it introduces no
+selected-edge certificate. -/
 theorem mem_coarseEdgesIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.CoarseEdge) :
     edge ∈ P.coarseEdgesIn A ↔
@@ -503,7 +514,9 @@ theorem mem_coarseEdgesIn_iff_raw (P : FiniteComparisonPresentation)
     exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
 
 /-- Raw coarse-face selection is witnessed by a target in both the generated
-face support and the selected coarse subset. -/
+face support and the selected coarse subset.  This public Cycle 15 owner API is
+the no-unfold characterization used by fixture clients; it introduces no
+selected-face or filling certificate. -/
 theorem mem_coarseFacesIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFace) :
     face ∈ P.coarseFacesIn A ↔
@@ -518,7 +531,9 @@ theorem mem_coarseFacesIn_iff_raw (P : FiniteComparisonPresentation)
     exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
 
 /-- Raw fine-chart selection is witnessed by a supported fine target whose
-computed factor lies in the selected coarse subset. -/
+computed factor lies in the selected coarse subset.  This public Cycle 15
+owner API exposes the executable-preimage selection rule and uses only raw
+support plus the computed factor. -/
 theorem mem_fineChartsIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (chart : P.FineChart) :
     chart ∈ P.fineChartsIn A ↔
@@ -536,7 +551,9 @@ theorem mem_fineChartsIn_iff_raw (P : FiniteComparisonPresentation)
       (P.mem_finePreimageFinset_iff A target).2 hA⟩⟩
 
 /-- Raw fine-edge selection is witnessed by a supported fine target whose
-computed factor lies in the selected coarse subset. -/
+computed factor lies in the selected coarse subset.  This public Cycle 15
+owner API exposes the executable-preimage selection rule and uses only raw
+support plus the computed factor. -/
 theorem mem_fineEdgesIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.FineEdge) :
     edge ∈ P.fineEdgesIn A ↔
@@ -554,7 +571,9 @@ theorem mem_fineEdgesIn_iff_raw (P : FiniteComparisonPresentation)
       (P.mem_finePreimageFinset_iff A target).2 hA⟩⟩
 
 /-- Raw fine-face selection is witnessed by a supported fine target whose
-computed factor lies in the selected coarse subset. -/
+computed factor lies in the selected coarse subset.  This public Cycle 15
+owner API exposes the executable-preimage selection rule and uses only raw
+support plus the computed factor. -/
 theorem mem_fineFacesIn_iff_raw (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFace) :
     face ∈ P.fineFacesIn A ↔
@@ -824,7 +843,9 @@ theorem edgeMapOptionIn_eq_none (P : FiniteComparisonPresentation)
   split <;> simp_all
 
 /-- A selected fine edge maps to a specified selected coarse edge exactly
-when their underlying raw edge-table entry is the corresponding `some`. -/
+when their underlying raw edge-table entry is the corresponding `some`.  This
+public Cycle 15 owner API lets comparison clients reason about the restricted
+partial map from raw table data, without unfolding its dependent construction. -/
 theorem edgeMapOptionIn_eq_some_iff (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A)
     (coarseEdge : P.CoarseEdgeIn A) :
@@ -851,6 +872,18 @@ def coarseD0LinearMap (P : FiniteComparisonPresentation)
     simp
     ring
 
+/-- Public evaluation API for `coarseD0LinearMap`: it exposes the endpoint
+incidence formula used by downstream cochain arguments without unfolding the
+executable definition.  Its only data are the raw coarse endpoints stored in
+the presentation, so it adds no mathematical premise. -/
+theorem coarseD0LinearMap_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (cochain : P.CoarseChartIn A → ℚ)
+    (edge : P.CoarseEdgeIn A) :
+    P.coarseD0LinearMap A cochain edge =
+      cochain (P.coarseEdgeRightIn A edge) -
+        cochain (P.coarseEdgeLeftIn A edge) :=
+  rfl
+
 /-- Raw coarse degree-one differential on the selected finite cell types. -/
 def coarseD1LinearMap (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) :
@@ -868,6 +901,18 @@ def coarseD1LinearMap (P : FiniteComparisonPresentation)
     simp
     ring
 
+/-- Public evaluation API for `coarseD1LinearMap`: it exposes the oriented
+three-edge boundary formula used by downstream cochain arguments.  The formula
+is generated only from the presentation's raw coarse face-incidence table. -/
+theorem coarseD1LinearMap_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (cochain : P.CoarseEdgeIn A → ℚ)
+    (face : P.CoarseFaceIn A) :
+    P.coarseD1LinearMap A cochain face =
+      cochain (P.coarseFaceEdge0In A face) -
+          cochain (P.coarseFaceEdge1In A face) +
+        cochain (P.coarseFaceEdge2In A face) :=
+  rfl
+
 /-- Raw fine degree-zero differential on the computed-preimage cells. -/
 def fineD0LinearMap (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) :
@@ -883,6 +928,17 @@ def fineD0LinearMap (P : FiniteComparisonPresentation)
     ext edge
     simp
     ring
+
+/-- Public evaluation API for `fineD0LinearMap`: it exposes the endpoint
+incidence formula on the computed-preimage cells for downstream clients.  The
+formula depends only on raw fine endpoints and the selected-cell input. -/
+theorem fineD0LinearMap_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (cochain : P.FineChartIn A → ℚ)
+    (edge : P.FineEdgeIn A) :
+    P.fineD0LinearMap A cochain edge =
+      cochain (P.fineEdgeRightIn A edge) -
+        cochain (P.fineEdgeLeftIn A edge) :=
+  rfl
 
 /-- Raw fine degree-one differential on the computed-preimage cells. -/
 def fineD1LinearMap (P : FiniteComparisonPresentation)
@@ -901,6 +957,18 @@ def fineD1LinearMap (P : FiniteComparisonPresentation)
     simp
     ring
 
+/-- Public evaluation API for `fineD1LinearMap`: it exposes the oriented
+three-edge boundary formula on computed-preimage cells.  The formula is
+generated from raw fine face incidence and introduces no certificate input. -/
+theorem fineD1LinearMap_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (cochain : P.FineEdgeIn A → ℚ)
+    (face : P.FineFaceIn A) :
+    P.fineD1LinearMap A cochain face =
+      cochain (P.fineFaceEdge0In A face) -
+          cochain (P.fineFaceEdge1In A face) +
+        cochain (P.fineFaceEdge2In A face) :=
+  rfl
+
 /-- Raw degree-one comparison pullback, extended by zero on a degenerate fine
 edge.  Its only branching datum is the presentation's partial edge table. -/
 def edgePullback1LinearMap (P : FiniteComparisonPresentation)
@@ -913,6 +981,17 @@ def edgePullback1LinearMap (P : FiniteComparisonPresentation)
   map_smul' scalar cochain := by
     ext edge
     cases hmap : P.edgeMapOptionIn A edge <;> simp [hmap]
+
+/-- Public evaluation API for `edgePullback1LinearMap`: downstream comparison
+proofs may evaluate the partial-map branch without unfolding the linear-map
+constructor.  The branch is the computed selected edge table, not a supplied
+comparison certificate. -/
+theorem edgePullback1LinearMap_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (cochain : P.CoarseEdgeIn A → ℚ)
+    (edge : P.FineEdgeIn A) :
+    P.edgePullback1LinearMap A cochain edge =
+      (P.edgeMapOptionIn A edge).elim 0 cochain :=
+  rfl
 
 /-- Raw H¹-rank block map on sum-indexed coordinate functions.  The two row
 blocks are exactly `[d1_K, 0]` and `[f1, -d0_L]`. -/
@@ -948,6 +1027,31 @@ def h1RankBlockLinearMap (P : FiniteComparisonPresentation)
         cases hmap : P.edgeMapOptionIn A edge <;>
           simp [edgePullback1LinearMap, fineD0LinearMap, hmap] <;>
             ring
+
+/-- Public left-row evaluation API for `h1RankBlockLinearMap`.  It identifies
+the coarse-face block with the raw coarse `d1`, allowing rank and fixture
+clients to use the generated incidence map rather than its implementation. -/
+theorem h1RankBlockLinearMap_apply_inl (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget)
+    (cochain : P.CoarseEdgeIn A ⊕ P.FineChartIn A → ℚ)
+    (face : P.CoarseFaceIn A) :
+    P.h1RankBlockLinearMap A cochain (Sum.inl face) =
+      P.coarseD1LinearMap A (fun edge => cochain (Sum.inl edge)) face :=
+  rfl
+
+/-- Public right-row evaluation API for `h1RankBlockLinearMap`.  It identifies
+the fine-edge block with raw edge pullback minus fine `d0`; both terms are
+computed from presentation tables and no rank or H¹ value is supplied. -/
+theorem h1RankBlockLinearMap_apply_inr (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget)
+    (cochain : P.CoarseEdgeIn A ⊕ P.FineChartIn A → ℚ)
+    (edge : P.FineEdgeIn A) :
+    P.h1RankBlockLinearMap A cochain (Sum.inr edge) =
+      P.edgePullback1LinearMap A
+          (fun coarseEdge => cochain (Sum.inl coarseEdge)) edge -
+        P.fineD0LinearMap A
+          (fun chart => cochain (Sum.inr chart)) edge :=
+  rfl
 
 /-- Executable matrix of the raw coarse degree-zero differential. -/
 def coarseD0Matrix (P : FiniteComparisonPresentation)
@@ -986,6 +1090,71 @@ def h1RankBlockMatrix (P : FiniteComparisonPresentation)
     Matrix (P.CoarseFaceIn A ⊕ P.FineEdgeIn A)
       (P.CoarseEdgeIn A ⊕ P.FineChartIn A) ℚ :=
   LinearMap.toMatrix' (P.h1RankBlockLinearMap A)
+
+/-! The following matrix-entry APIs keep downstream executable fixtures on the
+public linear-map surface.  They expose `toMatrix'` evaluation but do not add
+matrix, rank, defect, or result data to `FiniteComparisonPresentation`. -/
+
+/-- Public entry API for the coarse degree-zero matrix.  It positions the
+matrix as the coordinate presentation of the raw `coarseD0LinearMap`; the
+standard basis vector is generated by `LinearMap.toMatrix'`. -/
+theorem coarseD0Matrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.CoarseEdgeIn A)
+    (chart : P.CoarseChartIn A) :
+    P.coarseD0Matrix A edge chart =
+      P.coarseD0LinearMap A (Pi.single chart 1) edge := by
+  rw [coarseD0Matrix, LinearMap.toMatrix'_apply]
+
+/-- Public entry API for the coarse degree-one matrix.  It connects executable
+matrix entries to `coarseD1LinearMap` on the generated standard basis, with no
+additional incidence or rank premise. -/
+theorem coarseD1Matrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A)
+    (edge : P.CoarseEdgeIn A) :
+    P.coarseD1Matrix A face edge =
+      P.coarseD1LinearMap A (Pi.single edge 1) face := by
+  rw [coarseD1Matrix, LinearMap.toMatrix'_apply]
+
+/-- Public entry API for the fine degree-zero matrix.  It connects executable
+matrix entries to `fineD0LinearMap` on the generated standard basis and uses
+only the computed-preimage cell types. -/
+theorem fineD0Matrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A)
+    (chart : P.FineChartIn A) :
+    P.fineD0Matrix A edge chart =
+      P.fineD0LinearMap A (Pi.single chart 1) edge := by
+  rw [fineD0Matrix, LinearMap.toMatrix'_apply]
+
+/-- Public entry API for the fine degree-one matrix.  It connects executable
+matrix entries to `fineD1LinearMap` on the generated standard basis and adds
+no face-boundary certificate. -/
+theorem fineD1Matrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.FineFaceIn A)
+    (edge : P.FineEdgeIn A) :
+    P.fineD1Matrix A face edge =
+      P.fineD1LinearMap A (Pi.single edge 1) face := by
+  rw [fineD1Matrix, LinearMap.toMatrix'_apply]
+
+/-- Public entry API for the degree-one comparison matrix.  It evaluates the
+raw `edgePullback1LinearMap` on a generated standard basis, so clients need not
+unfold either the matrix or partial comparison linear map. -/
+theorem edgePullback1Matrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (fineEdge : P.FineEdgeIn A)
+    (coarseEdge : P.CoarseEdgeIn A) :
+    P.edgePullback1Matrix A fineEdge coarseEdge =
+      P.edgePullback1LinearMap A (Pi.single coarseEdge 1) fineEdge := by
+  rw [edgePullback1Matrix, LinearMap.toMatrix'_apply]
+
+/-- Public entry API for the executable H¹ block matrix.  It positions each
+entry as evaluation of the generic raw block map on a standard basis; rank and
+defect remain downstream computations rather than presentation fields. -/
+theorem h1RankBlockMatrix_apply (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget)
+    (row : P.CoarseFaceIn A ⊕ P.FineEdgeIn A)
+    (column : P.CoarseEdgeIn A ⊕ P.FineChartIn A) :
+    P.h1RankBlockMatrix A row column =
+      P.h1RankBlockLinearMap A (Pi.single column 1) row := by
+  rw [h1RankBlockMatrix, LinearMap.toMatrix'_apply]
 
 /-- Rank of the induced H¹ comparison computed from the raw block matrix and
 the two exact-sequence correction ranks. -/
@@ -1066,7 +1235,9 @@ theorem mem_fineFaceSupportFinset_iff
     mem_fineEdgeSupportFinset_iff]
   tauto
 
-/-- Raw coarse chart selection is the semantic chart-subset predicate. -/
+/-- Raw coarse chart selection is the semantic chart-subset predicate.  This
+public Cycle 15 owner API connects executable selected cells to the actual
+A-subnerve; the only inputs are `P`, `A`, and a raw chart. -/
 theorem mem_coarseChartsIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (chart : P.CoarseChart) :
@@ -1082,7 +1253,9 @@ theorem mem_coarseChartsIn_iff
   · rintro ⟨target, hsupport, hA⟩
     exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
 
-/-- Raw coarse edge selection is the semantic edge-subset predicate. -/
+/-- Raw coarse edge selection is the semantic edge-subset predicate.  This
+public Cycle 15 owner API connects executable selected cells to the actual
+A-subnerve from raw support, with no comparison certificate. -/
 theorem mem_coarseEdgesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (edge : P.CoarseEdge) :
@@ -1100,7 +1273,9 @@ theorem mem_coarseEdgesIn_iff
     exact ⟨target, Finset.mem_inter.mpr
       ⟨(P.mem_coarseEdgeSupportFinset_iff edge target).2 hsupport, hA⟩⟩
 
-/-- Raw coarse face selection is the semantic face-subset predicate. -/
+/-- Raw coarse face selection is the semantic face-subset predicate.  This
+public Cycle 15 owner API connects executable selected cells to the actual
+A-subnerve from raw support, with no filling certificate. -/
 theorem mem_coarseFacesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (face : P.CoarseFace) :
@@ -1118,7 +1293,9 @@ theorem mem_coarseFacesIn_iff
     exact ⟨target, Finset.mem_inter.mpr
       ⟨(P.mem_coarseFaceSupportFinset_iff face target).2 hsupport, hA⟩⟩
 
-/-- Raw fine chart selection is the canonical semantic preimage predicate. -/
+/-- Raw fine chart selection is the canonical semantic preimage predicate.
+This public Cycle 15 owner API connects computed-factor selection to the
+canonical comparison preimage using the proved factor equality. -/
 theorem mem_fineChartsIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (chart : P.FineChart) :
@@ -1147,7 +1324,9 @@ theorem mem_fineChartsIn_iff
     simpa only [finePreimageFinset, Finset.mem_filter, Finset.mem_univ,
       true_and] using hA
 
-/-- Raw fine edge selection is the canonical semantic preimage predicate. -/
+/-- Raw fine edge selection is the canonical semantic preimage predicate.
+This public Cycle 15 owner API connects computed-factor selection to the
+canonical comparison preimage using raw support and factor equality. -/
 theorem mem_fineEdgesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (edge : P.FineEdge) :
@@ -1177,7 +1356,9 @@ theorem mem_fineEdgesIn_iff
     simpa only [finePreimageFinset, Finset.mem_filter, Finset.mem_univ,
       true_and] using hA
 
-/-- Raw fine face selection is the canonical semantic preimage predicate. -/
+/-- Raw fine face selection is the canonical semantic preimage predicate.
+This public Cycle 15 owner API connects computed-factor selection to the
+canonical comparison preimage using raw support and factor equality. -/
 theorem mem_fineFacesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (face : P.FineFace) :

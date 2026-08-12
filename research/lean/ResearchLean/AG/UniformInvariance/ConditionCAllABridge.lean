@@ -1104,7 +1104,9 @@ the actual A-subnerve of the corresponding coarse label fiber.
 
 Together with `conditionC3At_of_conditionC3AtTargetSubset_labelValueFiber`,
 this exposes both directions of the canonical cell reindexing without asking
-clients to unfold the cycle or face-boundary definitions. -/
+clients to unfold the cycle or face-boundary definitions.  Its sole material
+premise `hC3` is the original G-104 law-block clause; finite source data is the
+ambient hypothesis needed for the boundary reindexing. -/
 theorem conditionC3AtTargetSubset_of_conditionC3At_labelValueFiber
     [Fintype Source]
     (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
