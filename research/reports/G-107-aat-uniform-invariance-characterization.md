@@ -93,7 +93,7 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   coarse / fine selected cells、partial edge mapの公開characterizationを追加して、
   UniformInvariance subtreeの既存fixture clientすべてでこれらselected-cell系
   generic definitionの展開を公開API利用へ移した。
-- 完了(Cycle 16): finite presentationのcoarse / fine `d0`・`d1` linear mapと
+- 品質チェックポイント(Cycle 16): finite presentationのcoarse / fine `d0`・`d1` linear mapと
   matrix、edge pullback、H¹ block linear mapとmatrixに、raw incidence / partial-map
   tableからのpublic application / entry APIを定義ownerへ13本追加した。Cycle 15
   witnessと既存uniformity instance clientを同APIへ移し、対象定義の直接展開を
@@ -2366,7 +2366,7 @@ tracking_issue_closed: false
 ## Cycle 16 — finite cochain API and declaration provenance remediation
 
 - decision: `approve`
-- result type: `proof-obligation-discharged`
+- result type: `proof-checkpoint`
 - completion candidate: `no`
 - T1-selected obligation: finite coarse/fine `d0`・`d1` linear map / matrix、
   edge pullback、H¹ block linear map / matrixのdefinition-owner evaluation APIを
@@ -2453,18 +2453,20 @@ source SHA-256:
 - `ConditionCAllAFiring.lean`:
   `20cdbcc175459d3f7ffd2442942e6b5399fffedd85643a4cec616338d137ed0b`
 - `ConditionCAllACheckerInstancePairs.lean`:
-  `a59bba15f3fba21c28c0e53c706bc43e912312f7df299442a927992ba7050722`
+  `56c33441bd17b6e2feb34ea25241e3336c243d8b44e76f97a32e92580269b0ce`
 - `UniformPresentationInstancePairs.lean`:
   `e2b6b834cdba4e93915dcabb621a6183b2a8e5be248ccdedf7c265e3f1c5db92`
 - `ConditionCAllABridge.lean`:
   `f618349ce92f41cea6afbfa19f8cfe59860b8d83d1376c7e870ee0a6f30cb953`
 - `ConditionC3NonnecessityWitness.lean`:
-  `7d142b1bb535bc89d49a1c9d55c69ef0d8cfda42c881296e57e521528cc7fbea`
+  `9e8a303998506768ecd47849aa590f8824aa1e142361e8211909b9d51679cee0`
 
 Independent T3はこのfixed snapshotを、API owner / client use、全Cycle 15
 declaration docstring、premise、field-content、route integrity、static scanの観点で
-独立監査し、blocking findingなしで `approve / proof-obligation-discharged` と判定した。
-13 APIはいずれも既存raw dataから導くowner theoremであり、対象12 definitionの
+独立監査し、blocking findingなしでAPI / docstring品質gateの実体を承認した。
+PR査読では、これは固定GOALの`discharge-required` premiseを閉じるcycleではないため、
+result typeを`proof-checkpoint`に較正した。13 APIはいずれも既存raw dataから導く
+owner theoremであり、対象12 definitionの
 direct expansionはowner内部にだけ残る。Cycle 15全新規・body変更宣言のdocstringも
 proof bodyと照合し、position / material-premise provenanceが記録されたことを確認した。
 
@@ -2476,7 +2478,7 @@ goal: G-107-aat-uniform-invariance-characterization
 target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
 cycle: 16
 decision: approve
-result_type: proof-obligation-discharged
+result_type: proof-checkpoint
 proof_obligation: close the finite cochain and block-map no-unfold APIs and the Cycle 15 changed-declaration docstring audit
 proof_obligation_delta: the Cycle 15 quality gate is discharged without changing the fixed target, mathematical definitions, presentation fields, or premise ledger
 primary_specification:
@@ -2509,15 +2511,17 @@ lean_artifacts:
       - UniformPresentationInstancePairs.positive_fullTarget_h1Rank
       - UniformPresentationInstancePairs.negative_fullTarget_h1Rank
 premise_delta:
-  discharged:
+  discharged: []
+  remaining:
+    - C0 C1 C2 C4 C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+quality_remediation:
+  closed:
     - public definition-owner evaluation APIs for coarse and fine d0 and d1 maps and matrices
     - public definition-owner evaluation API for selected-edge pullback
     - public row APIs for the H1 block map and entry API for its matrix
     - governed client migration away from direct generic definition expansion
     - declaration-by-declaration Cycle 15 docstring position and premise-provenance audit
-  remaining:
-    - C0 C1 C2 C4 C5 C6 non-necessity witnesses
-    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
 certificate_provenance:
   discharged:
     - all evaluation theorems are derived from raw incidence, selected partial-map tables, or standard-basis evaluation
