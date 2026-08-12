@@ -43,9 +43,35 @@ namespace AAT.AG.TwoPhase
 
 namespace ThreeCochainComplex
 
+/-- Evaluate a degree-zero boundary after it is packaged as a cocycle.  This
+public no-unfold API exposes only the existing differential and introduces no
+boundary membership or H¹ premise. -/
+@[simp]
+theorem boundaryToCycles_apply (K : ThreeCochainComplex ℚ) (cochain : K.C0) :
+    (K.boundaryToCycles cochain).1 = K.d0 cochain :=
+  rfl
+
 namespace Hom
 
 variable {K L : ThreeCochainComplex ℚ}
+
+/-- Evaluate the cocycle restriction of a cochain morphism on underlying
+degree-one cochains.  This public no-unfold API exposes the existing `f1`
+action and carries no cycle, boundary, or H¹ conclusion as an extra premise. -/
+@[simp]
+theorem cyclesMap_apply (f : Hom K L) (cycle : LinearMap.ker K.d1) :
+    (f.cyclesMap cycle).1 = f.f1 cycle.1 :=
+  rfl
+
+/-- Evaluate a difference of mapped cocycles on underlying degree-one
+cochains.  This companion API exposes only linearity of `cyclesMap`, avoiding
+downstream expansion of the kernel subtype's inherited subtraction. -/
+@[simp]
+theorem cyclesMap_sub_apply (f : Hom K L)
+    (left right : LinearMap.ker K.d1) :
+    (f.cyclesMap left - f.cyclesMap right).1 =
+      f.f1 left.1 - f.f1 right.1 :=
+  rfl
 
 /-- API construction for the presentation defect theorem: the block map whose
 range records source coboundary failure together with the target class of the

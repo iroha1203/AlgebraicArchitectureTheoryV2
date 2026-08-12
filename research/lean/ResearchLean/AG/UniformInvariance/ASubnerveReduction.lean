@@ -240,6 +240,33 @@ def targetSubsetComplex (D : TargetSupportedNerve q)
   d1 := D.targetSubsetD1 A
   d1_comp_d0 := D.targetSubset_d1_comp_d0 A
 
+/-- Evaluate the degree-zero differential of an actual constant-rational
+A-subnerve complex at one selected edge.  This public definition-owner API
+exposes only endpoint incidence, so downstream witnesses need not unfold
+`targetSubsetComplex` or `targetSubsetD0`. -/
+@[simp]
+theorem targetSubsetComplex_d0_apply (D : TargetSupportedNerve q)
+    (A : Set q.Target) (cochain : (D.targetSubsetComplex A).C0)
+    (edge : D.EdgeInTargetSubset A) :
+    (D.targetSubsetComplex A).d0 cochain edge =
+      cochain (D.targetSubsetEdgeRight A edge) -
+        cochain (D.targetSubsetEdgeLeft A edge) :=
+  rfl
+
+/-- Evaluate the degree-one differential of an actual constant-rational
+A-subnerve complex at one selected face.  This public definition-owner API
+returns the inherited three-slot incidence formula and introduces no filling
+or cohomology premise. -/
+@[simp]
+theorem targetSubsetComplex_d1_apply (D : TargetSupportedNerve q)
+    (A : Set q.Target) (cochain : (D.targetSubsetComplex A).C1)
+    (face : D.FaceInTargetSubset A) :
+    (D.targetSubsetComplex A).d1 cochain face =
+      cochain (D.targetSubsetFaceEdge0 A face) -
+        cochain (D.targetSubsetFaceEdge1 A face) +
+          cochain (D.targetSubsetFaceEdge2 A face) :=
+  rfl
+
 end TargetSupportedNerve
 
 /-! ## Canonical law-value fibers -/
