@@ -194,6 +194,33 @@ theorem faceBlockCoordinateMapOption_eq_some
     subst mappedFace
     rfl
 
+/-- An exact block-face image exposes the corresponding whole-nerve face
+image.  This definition-owner elimination API derives the raw partial-map
+equality from the existing block equality and stores no lift certificate. -/
+theorem faceMap_eq_some_of_faceBlockCoordinateMapOption_eq_some
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (fineFace : fine.FaceBlockCoordinate laws hfine label)
+    (coarseFace : coarse.FaceBlockCoordinate laws hcoarse label)
+    (hmap : M.faceBlockCoordinateMapOption laws hcoarse hfine label fineFace =
+      some coarseFace) :
+    M.faceMap fineFace.1.cell = some coarseFace.1.cell := by
+  unfold faceBlockCoordinateMapOption at hmap
+  split at hmap
+  · contradiction
+  · rename_i mappedFace hwhole
+    have hcoordinate := Option.some.inj hmap
+    have hcell := congrArg
+      (fun coordinate : coarse.FaceBlockCoordinate laws hcoarse label =>
+        coordinate.1.cell)
+      hcoordinate
+    change mappedFace = coarseFace.1.cell at hcell
+    simpa [hcell] using hwhole
+
 /-! ## Incidence compatibility inside one block -/
 
 /-- Mapped-edge transport commutes with the left endpoint inside one block. -/
