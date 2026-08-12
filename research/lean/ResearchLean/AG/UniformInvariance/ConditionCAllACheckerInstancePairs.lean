@@ -324,38 +324,37 @@ def faceFreeCyclePresentation : FiniteComparisonPresentation where
 def positiveCoarseChart (chart : Fin 2) :
     positivePresentation.CoarseChartIn Finset.univ :=
   ⟨chart, by
-    simp [FiniteComparisonPresentation.coarseChartsIn,
-      positivePresentation]
+    apply (positivePresentation.mem_coarseChartsIn_iff_raw Finset.univ chart).2
+    exact ⟨PUnit.unit, by simp [positivePresentation], Finset.mem_univ _⟩
   ⟩
 
 /-- A selected fine chart of the positive full target subset. -/
 def positiveFineChart (chart : Fin 3) :
     positivePresentation.FineChartIn Finset.univ :=
   ⟨chart, by
-    simp [FiniteComparisonPresentation.fineChartsIn,
-      FiniteComparisonPresentation.finePreimageFinset,
-      positivePresentation]
+    apply (positivePresentation.mem_fineChartsIn_iff_raw Finset.univ chart).2
+    exact ⟨(0 : Fin 2), by simp [positivePresentation], Finset.mem_univ _⟩
   ⟩
 
 /-- A selected fine edge of the positive full target subset. -/
 def positiveFineEdge (edge : Fin 4) :
     positivePresentation.FineEdgeIn Finset.univ :=
   ⟨edge, by
-    simp [FiniteComparisonPresentation.fineEdgesIn,
-      FiniteComparisonPresentation.fineEdgeSupportFinset,
-      FiniteComparisonPresentation.finePreimageFinset,
-      positivePresentation]
+    apply (positivePresentation.mem_fineEdgesIn_iff_raw Finset.univ edge).2
+    refine ⟨(0 : Fin 2), ?_, Finset.mem_univ _⟩
+    rw [positivePresentation.mem_fineEdgeSupportFinset_iff_raw]
+    fin_cases edge <;> simp [positivePresentation]
   ⟩
 
 /-- A selected fine face of the positive full target subset. -/
 def positiveFineFace (face : Fin 2) :
     positivePresentation.FineFaceIn Finset.univ :=
   ⟨face, by
-    simp [FiniteComparisonPresentation.fineFacesIn,
-      FiniteComparisonPresentation.fineFaceSupportFinset,
-      FiniteComparisonPresentation.fineEdgeSupportFinset,
-      FiniteComparisonPresentation.finePreimageFinset,
-      positivePresentation]
+    apply (positivePresentation.mem_fineFacesIn_iff_raw Finset.univ face).2
+    refine ⟨(0 : Fin 2), ?_, Finset.mem_univ _⟩
+    rw [positivePresentation.mem_fineFaceSupportFinset_iff_raw]
+    simp only [positivePresentation.mem_fineEdgeSupportFinset_iff_raw]
+    fin_cases face <;> simp [positivePresentation]
   ⟩
 
 /-- Every selected positive coarse chart is its named raw chart. -/
@@ -575,18 +574,20 @@ theorem positive_rawConditionC3At :
 def faceFreeCoarseChart :
     faceFreeCyclePresentation.CoarseChartIn Finset.univ :=
   ⟨PUnit.unit, by
-    simp [FiniteComparisonPresentation.coarseChartsIn,
-      faceFreeCyclePresentation]
+    apply (faceFreeCyclePresentation.mem_coarseChartsIn_iff_raw
+      Finset.univ PUnit.unit).2
+    exact ⟨PUnit.unit, by simp [faceFreeCyclePresentation], Finset.mem_univ _⟩
   ⟩
 
 /-- Named selected fine self-loop of the face-free fixture. -/
 def faceFreeFineEdge :
     faceFreeCyclePresentation.FineEdgeIn Finset.univ :=
   ⟨PUnit.unit, by
-    simp [FiniteComparisonPresentation.fineEdgesIn,
-      FiniteComparisonPresentation.fineEdgeSupportFinset,
-      FiniteComparisonPresentation.finePreimageFinset,
-      faceFreeCyclePresentation]
+    apply (faceFreeCyclePresentation.mem_fineEdgesIn_iff_raw
+      Finset.univ PUnit.unit).2
+    refine ⟨(0 : Fin 2), ?_, Finset.mem_univ _⟩
+    rw [faceFreeCyclePresentation.mem_fineEdgeSupportFinset_iff_raw]
+    simp [faceFreeCyclePresentation]
   ⟩
 
 /-- The constant-one chain on the sole selected face-free self-loop. -/

@@ -88,9 +88,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   target subsetでactual H¹ comparisonが全単射であることをcochain equivalenceから
   証明した。同じ `A={0}` でactual C3の直接failureとcoarse / fine両側の非零H¹を
   固定し、nonconstant indicator lawのlaw-indexed C3 failureへ逆transportした。
-  これによりC3の非必要性とAtlas包含の真性を閉じた。
+  これによりC3の非必要性とAtlas包含の真性を閉じた。初回PR査読で指摘された
+  selected-cell API境界も同Cycle内で補修し、computed preimage、raw support、
+  coarse / fine selected cells、partial edge mapの公開characterizationを追加して、
+  UniformInvariance subtreeの既存fixture clientすべてでgeneric definition展開を
+  公開API利用へ移した。
 - 未完了: C0 / C1 / C2 / C4 / C5 / C6非必要性 witness 6種、`Obs_G` / T3 / T6 /
-  observation nonfactorization、Cycle 12由来の非中心品質負債2件。
+  observation nonfactorization、Cycle 12由来のprivate helper docstring品質負債1件。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -2143,6 +2147,11 @@ tracking_issue_closed: false
 - result type: `proof-obligation-discharged`
 - completion candidate: `no`
 - Lean files:
+  - [`research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditionInstances.lean`](../lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditionInstances.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean`](../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean)
   - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean)
   - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean)
 - primary declarations:
@@ -2160,11 +2169,28 @@ tracking_issue_closed: false
   - `R1ConditionC3Witness.indicator_not_conditionC3`
   - `R1ConditionC3Witness.c3_not_necessary`
 - verification:
+  - `PresentationASubnerveDefect`、`ConditionCAllAFiring`、
+    `ConditionCAllACheckerInstancePairs`、`UniformPresentationInstancePairs`、
+    `ResolutionInvarianceConditionInstances`、witnessのfocused check: pass、警告なし
+  - `ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect`
+    targeted module build: pass (3715 jobs)
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllAFiring`
+    targeted module build: pass (3749 jobs)
+  - `ResearchLean.AG.UniformInvariance.ConditionCAllACheckerInstancePairs`
+    targeted module build: pass (3739 jobs)。このcold pathで
+    `ResolutionInvarianceConditionInstances`も再buildされpass
+  - `ResearchLean.AG.UniformInvariance.UniformPresentationInstancePairs`
+    targeted module build: pass (3717 jobs)
   - witness focused check: pass、警告なし
   - `ResearchLean.AG.UniformInvariance.ConditionC3NonnecessityWitness`
     targeted module build: pass (3740 jobs)
-  - witness namespace axiom audit: 87 declarations、standard axioms only
-  - bridgeを含む主要6 declarationの型確認と `#print axioms`:
+  - namespace axiom audit: `PresentationASubnerveDefect` 115 declarations、
+    firing 25 declarations、checker pairs 31 declarations、uniform pairs 10
+    declarations、G-104 condition instances 129 declarations、witness 82
+    declarations、standard axioms only
+  - 公開remediation API、G-104 condition instance、checker/uniform pairs、
+    firing、bridge、witnessを含む主要10 declarationの
+    型確認と `#print axioms`:
     `propext`、`Classical.choice`、`Quot.sound` のみ
   - canonical R1 report SHA-256とname-free semantic SHA-256を既存canonical
     generatorから再現し、raw tableをfieldwise照合
@@ -2174,10 +2200,20 @@ tracking_issue_closed: false
   - Research全体のfull build: ユーザー指定により未実行
 - T3 independent audit: `approve / proof-obligation-discharged`
   - source SHA-256:
+    - `ResolutionInvarianceConditionInstances.lean`:
+      `595a3701f892ccb84e31491b0d84b2655fa76f0fa5622577d533a15694b0d196`
+    - `PresentationASubnerveDefect.lean`:
+      `b8267d009fa721fd5f4180aadffa028f11aa743ae15cdd6ebac6647f67fe891d`
+    - `ConditionCAllAFiring.lean`:
+      `0a7024322e9943573037444e68e7ecdb5de5b80ea0a3d2566aa045c0454a68b0`
+    - `ConditionCAllACheckerInstancePairs.lean`:
+      `c0538b99b1429fe85242e9acec9d80e0c7d2207a4f52966b9373d5308a3d9bb9`
+    - `UniformPresentationInstancePairs.lean`:
+      `60f59652bbcd7913238fee15936821d1e0942a2fe9407be93b932b33a7e3ce8d`
     - `ConditionCAllABridge.lean`:
       `2389d0e417bc7be28c4fb0576262428deb5c4cf6f046c322c8b31536446bc4d3`
     - `ConditionC3NonnecessityWitness.lean`:
-      `2aea45d2cf173c5b6c77cab3b642967f5d82be68454aed9e404b13c45f515cda`
+      `d75934b019e6a1b1c512dc69ba4e88338c5274ebac4ddf88cf74041ec9623b7f`
   - all-subset actual cochain / H¹ equivalence、target-zero C3 failure、同じ
     canonical-preimage comparison上の両側非零H¹、indicator true-fiber逆transport、
     raw field内容を独立に追跡し、blocking findingなし。
@@ -2191,7 +2227,7 @@ tracking_issue_closed: false
   `ConditionCAllA`の直接failure、C3 witnessによるAtlas包含の真性。
 - remaining: C0 / C1 / C2 / C4 / C5 / C6の個別non-necessity witness、
   `Obs_G`忠実転写、T3 / T6 labels、観測等値、observation
-  nonfactorization、Cycle 12品質負債2件。
+  nonfactorization、Cycle 12 private helper群の個別docstring補完。
 
 ### Provenance / proof-use / escape audit
 
@@ -2220,14 +2256,27 @@ tracking_issue_closed: false
   `set_option maxHeartbeats 400000 in` はcompile上限であり、数学premiseや
   certificateではない。
 
-### Carried quality obligations from Cycle 12
+### Cycle 15 review remediation and remaining quality obligation
 
-本witnessの中心claimには影響しないため、次の2件は最終completion前のnarrow
-remediationとして引き続き保持する。
+初回fixed headのLean査読は、新witnessの中心経路がgeneric selected-cell / partial-map
+定義を直接展開し、Cycle 12から保持していたAPI負債を拡大していると判定した。
+同Cycle内で次を補修し、新headでfocused / targeted / axiom検証を再実行した。
 
-1. selected-cell / fiber / internal-face membership characterizationの公開
-   no-unfold API化と、`ConditionCAllAFiring.lean`の直接definition展開の置換。
-2. Cycle 12 private helper群の個別docstring補完。
+- `finePreimageFinset`、raw edge / face support、coarse / fine chart / edge / face
+  selection、`edgeMapOptionIn = some`の公開evaluation APIを追加した。
+- 既存6本のraw-selected-cell / actual-subnerve membership characterizationを
+  privateから公開APIへ昇格した。
+- `ConditionCAllAFiring.lean`、本witness、Cycle 9 / 11 instance pairsを含む
+  UniformInvariance subtreeの全fixture clientから、これらgeneric定義の直接展開を
+  除去した。
+- 公開API追加後のcold targeted rebuildで露出したG-104 condition instanceの
+  brittle `simp` 1箇所を、既存incoming / outgoing formula APIの明示 `rw` と同じ
+  finite normalizationへ置換した。statement、fixture、chain、結論は不変である。
+- 強いall-subset theoremに置換され参照されない `targetOne` / `targetFull` と、
+  それらに付随して不要になったpreimage補助APIを削除した。
+
+これによりCycle 12品質負債のうちno-unfold API項目は閉じた。最終completion前に
+残る品質義務は、Cycle 12 private helper群への個別docstring補完1件である。
 
 ### Target cycle ledger
 
@@ -2266,7 +2315,7 @@ premise_delta:
   remaining:
     - C0 C1 C2 C4 C5 C6 non-necessity witnesses
     - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
-    - two noncentral Cycle 12 quality-remediation items
+    - Cycle 12 private-helper docstring remediation
 certificate_provenance:
   discharged:
     - canonical R1 report and name-free semantic hashes independently reproduced

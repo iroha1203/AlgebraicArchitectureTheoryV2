@@ -221,58 +221,21 @@ theorem comparisonFactor_eq_coarseRead :
 /-- The singleton coarse target on which the unfilled self-loop is selected. -/
 def targetZero : Finset (Fin 2) := {0}
 
-/-- The singleton coarse target carrying the contractible face component. -/
-def targetOne : Finset (Fin 2) := {1}
-
-/-- The full two-point coarse target set. -/
-def targetFull : Finset (Fin 2) := Finset.univ
-
 /-- Target zero is a nonempty semantic subset. -/
 theorem targetZero_nonempty :
     (↑targetZero : Set (Fin 2)).Nonempty := by
   exact ⟨0, by simp [targetZero]⟩
-
-/-- The executable preimage of target zero is exactly the two fine targets
-zero and one. -/
-theorem finePreimage_targetZero :
-    presentation.finePreimageFinset targetZero =
-      ({0, 1} : Finset (Fin 3)) := by
-  ext target
-  simp only [FiniteComparisonPresentation.finePreimageFinset,
-    Finset.mem_filter, Finset.mem_univ, true_and]
-  rw [computedFactor_eq_coarseRead]
-  fin_cases target <;> decide
-
-/-- Membership in every executable fine preimage is computed by the raw
-proper factor. -/
-theorem mem_finePreimage_iff (A : Finset (Fin 2)) (target : Fin 3) :
-    target ∈ presentation.finePreimageFinset A ↔ coarseRead target ∈ A := by
-  simp only [FiniteComparisonPresentation.finePreimageFinset,
-    Finset.mem_filter, Finset.mem_univ, true_and]
-  rw [computedFactor_eq_coarseRead]
-
-/-- The whole executable preimage table is the finite filter of the raw
-factor, an equality convenient for support-table calculations. -/
-theorem finePreimage_eq_filter (A : Finset (Fin 2)) :
-    presentation.finePreimageFinset A =
-      Finset.univ.filter (fun target : Fin 3 => coarseRead target ∈ A) := by
-  apply Finset.ext
-  intro target
-  change Fin 3 at target
-  simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using
-    mem_finePreimage_iff A target
 
 /-- Coarse and fine selected chart tables have the same underlying chart
 indices for every coarse target subset. -/
 theorem fineChartsIn_eq_coarseChartsIn (A : Finset (Fin 2)) :
     presentation.fineChartsIn A = presentation.coarseChartsIn A := by
   ext chart
-  simp only [FiniteComparisonPresentation.fineChartsIn,
-    FiniteComparisonPresentation.coarseChartsIn, Finset.mem_filter,
-    Finset.mem_univ, true_and]
-  rw [finePreimage_eq_filter]
+  rw [presentation.mem_fineChartsIn_iff_raw,
+    presentation.mem_coarseChartsIn_iff_raw,
+    computedFactor_eq_coarseRead]
   fin_cases chart <;>
-    simp [Finset.Nonempty, presentation, fineChartSupport,
+    simp [presentation, fineChartSupport,
       coarseChartSupport, coarseRead]
 
 /-- Coarse and fine selected edge tables have the same underlying edge
@@ -280,14 +243,13 @@ indices for every coarse target subset. -/
 theorem fineEdgesIn_eq_coarseEdgesIn (A : Finset (Fin 2)) :
     presentation.fineEdgesIn A = presentation.coarseEdgesIn A := by
   ext edge
-  simp only [FiniteComparisonPresentation.fineEdgesIn,
-    FiniteComparisonPresentation.coarseEdgesIn, Finset.mem_filter,
-    Finset.mem_univ, true_and]
-  rw [finePreimage_eq_filter]
+  rw [presentation.mem_fineEdgesIn_iff_raw,
+    presentation.mem_coarseEdgesIn_iff_raw,
+    computedFactor_eq_coarseRead]
+  simp only [presentation.mem_fineEdgeSupportFinset_iff_raw,
+    presentation.mem_coarseEdgeSupportFinset_iff_raw]
   fin_cases edge <;>
-    simp [Finset.Nonempty,
-      FiniteComparisonPresentation.fineEdgeSupportFinset,
-      FiniteComparisonPresentation.coarseEdgeSupportFinset, presentation,
+    simp [presentation,
       fineChartSupport, coarseChartSupport, edgeLeft, edgeRight, coarseRead]
 
 /-- Coarse and fine selected face tables have the same underlying face
@@ -295,16 +257,15 @@ indices for every coarse target subset. -/
 theorem fineFacesIn_eq_coarseFacesIn (A : Finset (Fin 2)) :
     presentation.fineFacesIn A = presentation.coarseFacesIn A := by
   ext face
-  simp only [FiniteComparisonPresentation.fineFacesIn,
-    FiniteComparisonPresentation.coarseFacesIn, Finset.mem_filter,
-    Finset.mem_univ, true_and]
-  rw [finePreimage_eq_filter]
+  rw [presentation.mem_fineFacesIn_iff_raw,
+    presentation.mem_coarseFacesIn_iff_raw,
+    computedFactor_eq_coarseRead]
+  simp only [presentation.mem_fineFaceSupportFinset_iff_raw,
+    presentation.mem_coarseFaceSupportFinset_iff_raw,
+    presentation.mem_fineEdgeSupportFinset_iff_raw,
+    presentation.mem_coarseEdgeSupportFinset_iff_raw]
   fin_cases face
-  simp [Finset.Nonempty,
-    FiniteComparisonPresentation.fineFaceSupportFinset,
-    FiniteComparisonPresentation.coarseFaceSupportFinset,
-    FiniteComparisonPresentation.fineEdgeSupportFinset,
-    FiniteComparisonPresentation.coarseEdgeSupportFinset, presentation,
+  simp [presentation,
     fineChartSupport, coarseChartSupport, faceEdge0, faceEdge1, faceEdge2,
     edgeLeft, edgeRight, coarseRead]
 
@@ -444,8 +405,8 @@ from the original total identity edge table. -/
 theorem edgeMapOptionIn_eq_some_selected (A : Finset (Fin 2))
     (edge : presentation.FineEdgeIn A) :
     presentation.edgeMapOptionIn A edge = some (selectedEdgeEquiv A edge) := by
-  simp [FiniteComparisonPresentation.edgeMapOptionIn, presentation,
-    selectedEdgeEquiv]
+  exact (presentation.edgeMapOptionIn_eq_some_iff A edge
+    (selectedEdgeEquiv A edge)).2 rfl
 
 /-- Raw degree-one comparison pullback is exactly edge reindexing. -/
 theorem edgePullback1_eq_rawEdgeCochainEquiv (A : Finset (Fin 2))
@@ -727,21 +688,23 @@ def loopChain : presentation.FineEdgeIn targetZero → ℚ :=
 theorem fineChartAtTargetZero_eq_zero
     (chart : presentation.FineChartIn targetZero) : chart.1 = (0 : Fin 3) := by
   rcases chart with ⟨chart, hmem⟩
-  simp only [FiniteComparisonPresentation.fineChartsIn,
-    Finset.mem_filter, Finset.mem_univ, true_and] at hmem
-  rw [finePreimage_targetZero] at hmem
-  fin_cases chart <;> simp [presentation, fineChartSupport] at hmem ⊢
+  have hselected :=
+    (presentation.mem_fineChartsIn_iff_raw targetZero chart).1 hmem
+  rw [computedFactor_eq_coarseRead] at hselected
+  fin_cases chart <;>
+    simp [presentation, fineChartSupport, coarseRead, targetZero] at hselected ⊢
 
 /-- Every fine edge selected over target zero is edge zero. -/
 theorem fineEdgeAtTargetZero_eq_zero
     (edge : presentation.FineEdgeIn targetZero) : edge.1 = (0 : Fin 3) := by
   rcases edge with ⟨edge, hmem⟩
-  simp only [FiniteComparisonPresentation.fineEdgesIn,
-    Finset.mem_filter, Finset.mem_univ, true_and] at hmem
-  rw [finePreimage_targetZero] at hmem
+  have hselected :=
+    (presentation.mem_fineEdgesIn_iff_raw targetZero edge).1 hmem
+  simp only [presentation.mem_fineEdgeSupportFinset_iff_raw] at hselected
+  rw [computedFactor_eq_coarseRead] at hselected
   fin_cases edge <;>
-    simp [FiniteComparisonPresentation.fineEdgeSupportFinset,
-      presentation, fineChartSupport, edgeLeft, edgeRight] at hmem ⊢
+    simp [presentation, fineChartSupport, edgeLeft, edgeRight, coarseRead,
+      targetZero] at hselected ⊢
 
 /-- The selected self-loop satisfies the raw fiber-cycle constraint. -/
 theorem loopChain_constraint :
@@ -788,14 +751,14 @@ theorem loopChain_constraint :
 theorem noFineFaceAtTargetZero
     (face : presentation.FineFaceIn targetZero) : False := by
   rcases face with ⟨face, hmem⟩
-  simp only [FiniteComparisonPresentation.fineFacesIn,
-    Finset.mem_filter, Finset.mem_univ, true_and] at hmem
-  rw [finePreimage_targetZero] at hmem
+  have hselected :=
+    (presentation.mem_fineFacesIn_iff_raw targetZero face).1 hmem
+  simp only [presentation.mem_fineFaceSupportFinset_iff_raw,
+    presentation.mem_fineEdgeSupportFinset_iff_raw] at hselected
+  rw [computedFactor_eq_coarseRead] at hselected
   fin_cases face
-  simp [FiniteComparisonPresentation.fineFaceSupportFinset,
-      FiniteComparisonPresentation.fineEdgeSupportFinset,
-      presentation, fineChartSupport, faceEdge0, faceEdge1, faceEdge2,
-      edgeLeft, edgeRight] at hmem
+  simp [presentation, fineChartSupport, faceEdge0, faceEdge1, faceEdge2,
+    edgeLeft, edgeRight, coarseRead, targetZero] at hselected
 
 /-! ## Nonzero H1 on the same target-zero block -/
 

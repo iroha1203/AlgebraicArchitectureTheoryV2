@@ -387,6 +387,55 @@ def finePreimageFinset (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineTarget :=
   Finset.univ.filter fun target => P.computedFactor target ∈ A
 
+/-- Membership in the executable fine preimage is evaluation of the computed
+factor against the coarse target subset. -/
+theorem mem_finePreimageFinset_iff (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (target : P.FineTarget) :
+    target ∈ P.finePreimageFinset A ↔ P.computedFactor target ∈ A := by
+  simp only [finePreimageFinset, Finset.mem_filter, Finset.mem_univ, true_and]
+
+/-- Membership in a raw coarse edge support is simultaneous membership at
+its two endpoint charts. -/
+theorem mem_coarseEdgeSupportFinset_iff_raw
+    (P : FiniteComparisonPresentation) (edge : P.CoarseEdge)
+    (target : P.CoarseTarget) :
+    target ∈ P.coarseEdgeSupportFinset edge ↔
+      target ∈ P.coarseChartSupport (P.coarseEdgeLeft edge) ∧
+        target ∈ P.coarseChartSupport (P.coarseEdgeRight edge) := by
+  simp only [coarseEdgeSupportFinset, Finset.mem_inter]
+
+/-- Membership in a raw fine edge support is simultaneous membership at its
+two endpoint charts. -/
+theorem mem_fineEdgeSupportFinset_iff_raw
+    (P : FiniteComparisonPresentation) (edge : P.FineEdge)
+    (target : P.FineTarget) :
+    target ∈ P.fineEdgeSupportFinset edge ↔
+      target ∈ P.fineChartSupport (P.fineEdgeLeft edge) ∧
+        target ∈ P.fineChartSupport (P.fineEdgeRight edge) := by
+  simp only [fineEdgeSupportFinset, Finset.mem_inter]
+
+/-- Membership in a raw coarse face support is simultaneous membership in
+the supports of its three boundary edges. -/
+theorem mem_coarseFaceSupportFinset_iff_raw
+    (P : FiniteComparisonPresentation) (face : P.CoarseFace)
+    (target : P.CoarseTarget) :
+    target ∈ P.coarseFaceSupportFinset face ↔
+      (target ∈ P.coarseEdgeSupportFinset (P.coarseFaceEdge0 face) ∧
+        target ∈ P.coarseEdgeSupportFinset (P.coarseFaceEdge1 face)) ∧
+          target ∈ P.coarseEdgeSupportFinset (P.coarseFaceEdge2 face) := by
+  simp only [coarseFaceSupportFinset, Finset.mem_inter]
+
+/-- Membership in a raw fine face support is simultaneous membership in the
+supports of its three boundary edges. -/
+theorem mem_fineFaceSupportFinset_iff_raw
+    (P : FiniteComparisonPresentation) (face : P.FineFace)
+    (target : P.FineTarget) :
+    target ∈ P.fineFaceSupportFinset face ↔
+      (target ∈ P.fineEdgeSupportFinset (P.fineFaceEdge0 face) ∧
+        target ∈ P.fineEdgeSupportFinset (P.fineFaceEdge1 face)) ∧
+          target ∈ P.fineEdgeSupportFinset (P.fineFaceEdge2 face) := by
+  simp only [fineFaceSupportFinset, Finset.mem_inter]
+
 /-- Coarse charts whose raw support meets `A`. -/
 def coarseChartsIn (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.CoarseChart :=
@@ -422,6 +471,105 @@ def fineFacesIn (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineFace :=
   Finset.univ.filter fun face =>
     (P.fineFaceSupportFinset face ∩ P.finePreimageFinset A).Nonempty
+
+/-- Raw coarse-chart selection is witnessed by a target in both the chart
+support and the selected coarse subset. -/
+theorem mem_coarseChartsIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (chart : P.CoarseChart) :
+    chart ∈ P.coarseChartsIn A ↔
+      ∃ target, target ∈ P.coarseChartSupport chart ∧ target ∈ A := by
+  rw [coarseChartsIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    exact ⟨target, (Finset.mem_inter.mp htarget).1,
+      (Finset.mem_inter.mp htarget).2⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
+
+/-- Raw coarse-edge selection is witnessed by a target in both the generated
+edge support and the selected coarse subset. -/
+theorem mem_coarseEdgesIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.CoarseEdge) :
+    edge ∈ P.coarseEdgesIn A ↔
+      ∃ target, target ∈ P.coarseEdgeSupportFinset edge ∧ target ∈ A := by
+  rw [coarseEdgesIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    exact ⟨target, (Finset.mem_inter.mp htarget).1,
+      (Finset.mem_inter.mp htarget).2⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
+
+/-- Raw coarse-face selection is witnessed by a target in both the generated
+face support and the selected coarse subset. -/
+theorem mem_coarseFacesIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.CoarseFace) :
+    face ∈ P.coarseFacesIn A ↔
+      ∃ target, target ∈ P.coarseFaceSupportFinset face ∧ target ∈ A := by
+  rw [coarseFacesIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    exact ⟨target, (Finset.mem_inter.mp htarget).1,
+      (Finset.mem_inter.mp htarget).2⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
+
+/-- Raw fine-chart selection is witnessed by a supported fine target whose
+computed factor lies in the selected coarse subset. -/
+theorem mem_fineChartsIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (chart : P.FineChart) :
+    chart ∈ P.fineChartsIn A ↔
+      ∃ target, target ∈ P.fineChartSupport chart ∧
+        P.computedFactor target ∈ A := by
+  rw [fineChartsIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    obtain ⟨hsupport, hpreimage⟩ := Finset.mem_inter.mp htarget
+    exact ⟨target, hsupport,
+      (P.mem_finePreimageFinset_iff A target).1 hpreimage⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport,
+      (P.mem_finePreimageFinset_iff A target).2 hA⟩⟩
+
+/-- Raw fine-edge selection is witnessed by a supported fine target whose
+computed factor lies in the selected coarse subset. -/
+theorem mem_fineEdgesIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.FineEdge) :
+    edge ∈ P.fineEdgesIn A ↔
+      ∃ target, target ∈ P.fineEdgeSupportFinset edge ∧
+        P.computedFactor target ∈ A := by
+  rw [fineEdgesIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    obtain ⟨hsupport, hpreimage⟩ := Finset.mem_inter.mp htarget
+    exact ⟨target, hsupport,
+      (P.mem_finePreimageFinset_iff A target).1 hpreimage⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport,
+      (P.mem_finePreimageFinset_iff A target).2 hA⟩⟩
+
+/-- Raw fine-face selection is witnessed by a supported fine target whose
+computed factor lies in the selected coarse subset. -/
+theorem mem_fineFacesIn_iff_raw (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.FineFace) :
+    face ∈ P.fineFacesIn A ↔
+      ∃ target, target ∈ P.fineFaceSupportFinset face ∧
+        P.computedFactor target ∈ A := by
+  rw [fineFacesIn, Finset.mem_filter]
+  simp only [Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨target, htarget⟩
+    obtain ⟨hsupport, hpreimage⟩ := Finset.mem_inter.mp htarget
+    exact ⟨target, hsupport,
+      (P.mem_finePreimageFinset_iff A target).1 hpreimage⟩
+  · rintro ⟨target, hsupport, hA⟩
+    exact ⟨target, Finset.mem_inter.mpr ⟨hsupport,
+      (P.mem_finePreimageFinset_iff A target).2 hA⟩⟩
 
 /-- Executable coarse chart index type for the `A`-subnerve. -/
 abbrev CoarseChartIn (P : FiniteComparisonPresentation)
@@ -675,6 +823,16 @@ theorem edgeMapOptionIn_eq_none (P : FiniteComparisonPresentation)
   unfold edgeMapOptionIn
   split <;> simp_all
 
+/-- A selected fine edge maps to a specified selected coarse edge exactly
+when their underlying raw edge-table entry is the corresponding `some`. -/
+theorem edgeMapOptionIn_eq_some_iff (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.FineEdgeIn A)
+    (coarseEdge : P.CoarseEdgeIn A) :
+    P.edgeMapOptionIn A edge = some coarseEdge ↔
+      P.edgeMap edge.1 = some coarseEdge.1 := by
+  unfold edgeMapOptionIn
+  split <;> simp_all [Subtype.ext_iff]
+
 /-! ## Executable cochain maps and matrices -/
 
 /-- Raw coarse degree-zero differential on the selected finite cell types. -/
@@ -909,7 +1067,7 @@ theorem mem_fineFaceSupportFinset_iff
   tauto
 
 /-- Raw coarse chart selection is the semantic chart-subset predicate. -/
-private theorem mem_coarseChartsIn_iff
+theorem mem_coarseChartsIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (chart : P.CoarseChart) :
     chart ∈ P.coarseChartsIn A ↔
@@ -925,7 +1083,7 @@ private theorem mem_coarseChartsIn_iff
     exact ⟨target, Finset.mem_inter.mpr ⟨hsupport, hA⟩⟩
 
 /-- Raw coarse edge selection is the semantic edge-subset predicate. -/
-private theorem mem_coarseEdgesIn_iff
+theorem mem_coarseEdgesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (edge : P.CoarseEdge) :
     edge ∈ P.coarseEdgesIn A ↔
@@ -943,7 +1101,7 @@ private theorem mem_coarseEdgesIn_iff
       ⟨(P.mem_coarseEdgeSupportFinset_iff edge target).2 hsupport, hA⟩⟩
 
 /-- Raw coarse face selection is the semantic face-subset predicate. -/
-private theorem mem_coarseFacesIn_iff
+theorem mem_coarseFacesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (face : P.CoarseFace) :
     face ∈ P.coarseFacesIn A ↔
@@ -961,7 +1119,7 @@ private theorem mem_coarseFacesIn_iff
       ⟨(P.mem_coarseFaceSupportFinset_iff face target).2 hsupport, hA⟩⟩
 
 /-- Raw fine chart selection is the canonical semantic preimage predicate. -/
-private theorem mem_fineChartsIn_iff
+theorem mem_fineChartsIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (chart : P.FineChart) :
     chart ∈ P.fineChartsIn A ↔
@@ -990,7 +1148,7 @@ private theorem mem_fineChartsIn_iff
       true_and] using hA
 
 /-- Raw fine edge selection is the canonical semantic preimage predicate. -/
-private theorem mem_fineEdgesIn_iff
+theorem mem_fineEdgesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (edge : P.FineEdge) :
     edge ∈ P.fineEdgesIn A ↔
@@ -1020,7 +1178,7 @@ private theorem mem_fineEdgesIn_iff
       true_and] using hA
 
 /-- Raw fine face selection is the canonical semantic preimage predicate. -/
-private theorem mem_fineFacesIn_iff
+theorem mem_fineFacesIn_iff
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
     (face : P.FineFace) :
     face ∈ P.fineFacesIn A ↔
