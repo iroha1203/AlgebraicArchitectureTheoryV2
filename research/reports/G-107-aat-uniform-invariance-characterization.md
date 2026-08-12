@@ -146,7 +146,17 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   C5、`ConditionCAllA`、aggregate checker、generated indicator law上のfull
   `ConditionC`を直接反証し、同じfull subset `A={0,1}`がduplicate pairの共通supportと
   交わること、およびcoarse / fine両actual H¹の非零性を接続した。
-- 未完了: C6非必要性 witness、`Obs_G` / T3 / T6 /
+- 完了(Cycle 22): exact R1 `C6_not_necessary` のfactor・target counts・nerve・
+  support・partial edge mapをfieldwise転写し、source / readingsはfactorのcanonical
+  realizationとして構成した。fine interval edge `(1,2)`がcoarse chart-one
+  self-loopへ写るためwhole-nerve endpoint reflection C6は破れる。一方、coarse
+  repeated face equationがmapped loop係数を消し、fine interval cochainはexplicit
+  chart primitiveのboundaryになることを実使用して、全target subsetのactual
+  quotient-H¹ mapのinjectivity / surjectivityを直接証明した。C6、
+  `ConditionCAllA`、aggregate checker、generated indicator law上のfull
+  `ConditionC`を直接反証し、同じfull subset `A={0,1}`がfailed edge supportと
+  交わること、およびcoarse / fine両actual H¹の非零性を接続した。
+- 未完了: `Obs_G` fidelity、T3 / T6 Lean内labels、observational equality、
   observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -3411,6 +3421,140 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: exact R1 C6_not_necessary witness with direct whole-nerve C6 and ConditionCAllA failure, common-support same-A intersection, and coarse/fine actual H1 nonvanishing
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 22 — exact R1 C6 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`ConditionC6NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC6NonnecessityWitness.lean)
+- canonical R1 parent SHA-256:
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
+- canonical name-free semantic SHA-256:
+  `01839cd41c6418c92315cf1ea4693647c3109f077c32961cf929fefa1f98e91f`
+- fixed `results-summary.json` SHA-256:
+  `556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e`
+- primary declarations:
+  - `R1ConditionC6Witness.presentation`
+  - `R1ConditionC6Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC6Witness.uniformPresentation`
+  - `R1ConditionC6Witness.not_rawConditionC6`
+  - `R1ConditionC6Witness.not_conditionC6`
+  - `R1ConditionC6Witness.not_conditionCAllA`
+  - `R1ConditionC6Witness.indicator_not_conditionC`
+  - `R1ConditionC6Witness.failedFineEdge_support_meets_targetFull`
+  - `R1ConditionC6Witness.targetFull_both_h1_pos`
+  - `R1ConditionC6Witness.c6_not_necessary`
+
+### Fixed same-A scope and proof route
+
+canonical R1 payloadが直接固定するfactor・target counts・両nerve・support・cell mapを
+Lean tableへfieldwise転写し、Source / FineTarget `Fin 3`、CoarseTarget `Fin 2`、
+coarse reading `[0,0,1]`、fine reading `id`はfactorのcanonical realizationとして
+構成した。coarse nerveはchart-zeroとchart-oneのself-loop、およびchart-one loop上の
+1枚のrepeated faceを持つ。fine nerveはchart-zero self-loopとchart 1から2への
+interval edgeを持ち、faceはない。fine loop / intervalはそれぞれcoarse loop 0 / 1へ
+写る。factor、endpoint-reflection certificate、matrix、rank、H¹、defect、condition /
+checker bit、uniformity certificateはpresentation fieldにない。
+
+任意のfinite target subset `A`についてselected coarse / fine edge tableをraw supportから
+同定し、actual degree-one comparisonをedge cochain equivalenceとして固定した。literal
+quotient H¹のinjectivityでは、fine boundary差のchart-zero loop係数が零であることと、
+coarse repeated-face cocycle equationがchart-one loop係数を零にすることを組み合わせて
+coarse cycle差を消した。surjectivityではfine cycleのloop係数をcoarse側へ射影し、残る
+fine interval係数をchart 2に置くexplicit raw primitiveの`d0`として吸収した。これにより
+actual quotient H¹ mapのinjectivity / surjectivityを別々に証明し、全subsetのdefect零、
+generic all-subset checker、full semantic `UniformPresentation`へ接続した。
+
+whole nerveではfine interval edge `(1,2)`がcoarse chart-one self-loopへ写るため、raw C6を
+直接反証し、generic raw / semantic iffでsemantic C6へ接続した。`ConditionCAllA`はその
+`conditionC6` projection、law-indexed `ConditionC`はgenerated full-indicator family上の
+`c6` fieldを使って直接反証した。full subset `targetFull={0,1}`はfailed interval edgeの
+fine support target 2をcanonical factorで受け取る。同じfull subset上でcoarse
+chart-zero self-loopのliteral quotient classがperiod argumentにより非零であり、actual
+H¹ mapのinjectivityからfine像も非零となる。C6 failureはtarget-one component、明示
+H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame-A intersectionと
+両側非零H¹を主張し、それより強いsame-component因果性は主張しない。
+
+### Verification
+
+- focused elaboration: `ConditionC6NonnecessityWitness.lean` pass、68 declarations
+  standard-only
+- targeted module build:
+  `ResearchLean.AG.UniformInvariance.ConditionC6NonnecessityWitness` pass、3739 jobs
+- direct execution: C6 check `false`、aggregate check `false`、uniform check `true`、
+  `∅,{0},{1},{0,1}`のcomputed defectは全て`(0,0)`
+- primary 10 declarationsの`#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / research-package / separation gates: pass
+- placeholder / hidden-BiDi / privacy / `git diff --check`: clean
+- independent T3: `approve / proof-obligation-discharged`、blocking findingなし
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `ConditionC6NonnecessityWitness.lean`:
+  `c46df89046bbaa497dbc5a98861de5598cce8b66c0b3ea06c646f40a117183be`
+- `AG.lean`:
+  `c39d2eeacd05247fff90f547e5d1ef2aaa3d63534c5af10031d423ccfb6d28c5`
+- `research-modules.txt`:
+  `33a376d4aa1be78f70cabbb4786bb0d9e2cfbb584e3edf0474e766015c13346b`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 22
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: exact R1 C6_not_necessary witness with direct whole-nerve C6 and ConditionCAllA failure, failed-edge-support same-A intersection, and coarse and fine actual H1 nonvanishing
+proof_obligation_delta: exact C6 witness is discharged without changing the fixed target or presentation field boundary
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+premise_delta:
+  discharged:
+    - exact canonical R1 factor, targets, nerves, supports, and maps with a canonical source-reading realization
+    - all-target-subset actual quotient-H1 bijectivity
+    - direct raw and semantic whole-nerve C6 failure
+    - direct ConditionCAllA and checker failure through the C6 projection
+    - law-indexed full ConditionC failure through its C6 field
+    - failed-edge support meeting A={0,1}
+    - coarse and fine actual H1 nonvanishing on the same A={0,1}
+  remaining:
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+certificate_provenance:
+  status: raw-table-generated
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw readings and source enumeration
+    - self-loop and interval incidence, chart supports, and partial edge map
+    - coarse repeated-face equation and empty fine face table
+    - explicit fine interval boundary primitive
+    - generated indicator law and the ConditionC c6 field
+    - actual H1 map injectivity on the same full subset
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: define the faithful G_local-v1 observation map Obs_G and fix its permanent-contract component correspondence before transferring T3 and T6
 completion_candidate: false
 tracking_issue_closed: false
 ```
