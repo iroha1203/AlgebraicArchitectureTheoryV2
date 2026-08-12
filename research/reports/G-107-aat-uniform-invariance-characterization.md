@@ -156,8 +156,17 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `ConditionCAllA`、aggregate checker、generated indicator law上のfull
   `ConditionC`を直接反証し、同じfull subset `A={0,1}`がfailed edge supportと
   交わること、およびcoarse / fine両actual H¹の非零性を接続した。
-- 未完了: `Obs_G` fidelity、T3 / T6 Lean内labels、observational equality、
-  observation nonfactorization。
+- 完了(Cycle 23): permanent `G_local-v1` contractの16 componentと出力型、
+  full v5の4 packet family、strict decrease、structural reachability、memoized exact
+  closure、terminal completeness、all-reachable-state packet union、C0--C6評価を
+  finite raw presentationから生成するdefinition-level kernelを固定した。
+  side-local radius-one rooted balls、clipped histograms、全非空target subset record、
+  internally generated factor-preserving target relabelのstructured minimumから
+  executable `obsG` を構成した。permanent source SHAはprovenance定数に限定し、
+  observationのinput / field / premiseには使用しない。
+- 未完了: T3 / T6 raw structural presentationのLean転写、全component評価、
+  `obsG T3 = obsG T6`、(i)(ii)を通じたLean内semantic labels、observation
+  nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -3555,6 +3564,283 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: define the faithful G_local-v1 observation map Obs_G and fix its permanent-contract component correspondence before transferring T3 and T6
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 23 — permanent `G_local-v1` reducer and definition-level `Obs_G`
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- primary specification:
+  - fixed GOAL claim (v) and permanent-observation requirements
+  - `research/experiments/g104-necessity-map/r2_hunt.py` permanent v5 reducer /
+    observation implementation
+- permanent contract source SHA-256:
+  `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`
+- primary Lean files:
+  - [`GLocalV1ObservationValue.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1ObservationValue.lean)
+  - [`GLocalV1V5Reduction.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1V5Reduction.lean)
+  - [`GLocalV1Observation.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1Observation.lean)
+  - [`GLocalV1KernelInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1KernelInstancePairs.lean)
+- presentation / fixture compatibility files:
+  - [`FiniteComparisonPresentation.lean`](../lean/ResearchLean/AG/UniformInvariance/FiniteComparisonPresentation.lean)
+  - [`UniformPresentationInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean)
+  - [`ConditionCAllACheckerInstancePairs.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllACheckerInstancePairs.lean)
+  - [`ConditionCAllAFiring.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean)
+  - `ConditionC0NonnecessityWitness.lean` through
+    `ConditionC6NonnecessityWitness.lean`
+- aggregate / manifest:
+  - [`ResearchLean/AG.lean`](../lean/ResearchLean/AG.lean)
+  - [`research-modules.txt`](../lean/research-modules.txt)
+
+### Definition-level fidelity packet
+
+`GLocalV1ObsValue` はpermanent contractが許す次のdataだけを持つ。
+
+- aggregate C0--C6 condition vector
+- whole-scope condition recordとside-local radius-one rooted-ball histogram
+- 全非空coarse-target subsetのscope record histogram
+- multiplicity `0 / 1 / ≥2`のclipped normal form
+
+raw cell ID、raw subset ID、fixture name、semantic hash、exact multiplicity above two、
+parity、global cycle length、full graph lookup、H¹、comparison rank、uniformity、
+checker / result bit、supplied observation / terminal / labelはfieldに含まない。
+`gLocalV1PermanentContractSha256` はprovenanceを固定する独立定数であり、
+`obsG`のargument、field、proof premiseには使用しない。
+
+full v5 reducerはraw scoped cells / supports / incidence / partial mapsから次を
+実行可能に生成する。
+
+1. inherited v4 coarse packet
+2. inherited v4 fine-only packet
+3. coordinate-dependency packet
+4. closed-doubled-cycle packet
+
+packetはremoved-cell setsだけを持ち、validity / terminal / condition / result
+certificateを持たない。`gLocalV1PacketVariants` のcomputed guardが厳密な
+retained-cell measure decreaseを課し、`gLocalV1ReachableFrom` はこのdecreaseで
+構造再帰する。`gLocalV1MemoizedReachableStates` / `TerminalStates`は
+structural reachability / reachable irreducible statesとiffであり、
+`gLocalV1PacketKindUnion` はselected traceではなく全reachable stateの全outgoing
+packetのkind unionである。
+
+### Permanent 16-component correspondence
+
+| component | Lean owner | correspondence fixed in this cycle |
+| --- | --- | --- |
+| scope | `gLocalV1WholeRecord`, `gLocalV1NonemptyTargetSubsets`, `gLocalV1ARecord` | full support-active scopeを1回、全非空`A`を重複なく1回ずつ生成 |
+| terminal | `gLocalV1MemoizedTerminalStates` | 全reachable irreducible terminalとexact iff |
+| conditions | `gLocalV1WholeConditions`, `gLocalV1AConditions`, `gLocalV1ConditionVector` | whole C0/C5/C6と各`A`のC1--C4を全terminal上で評価 |
+| packets | `gLocalV1PacketVariants`, `gLocalV1PacketKindUnion` | 4 packet familyと全reachable-state packet union |
+| chart-role | `GLocalV1Cell`, `gLocalV1CellList`, `gLocalV1IncidenceRelations` | chart / vertex rootと`chartAt`を区別 |
+| ball | `gLocalV1RootedBall`, `gLocalV1TerminalBallHistogram` | side-local root-preserving radius-one typed incidence star |
+| relations | `GLocalV1Relation`, `gLocalV1IncidenceRelations` | `chartAt`, endpoints 0/1, boundary 0+/1−/2+ |
+| map-status | `GLocalV1MapStatus`, `gLocalV1CellMapStatus` | coarseとfine chart/vertexは`mapped`、fine edge/faceはactual partial map |
+| neighbor | `gLocalV1NeighborDescriptors` | actual neighborごとにrelation multisetをgroupしidentityは出力しない |
+| stubs | `gLocalV1OutwardStubHistogram` | outside cell typeとcollapsed slotだけを保持 |
+| multiplicity | `GLocalV1Multiplicity`, `gLocalV1Histogram` | `0 / 1 / ≥2`にclipし同rowを正規化 |
+| flags | `GLocalV1Flags`, `gLocalV1CellFlags` | critical / guard / port / bridge / self-loop / FaceTwinの6 Bool |
+| supports | `gLocalV1CellSupportCodes`, `gLocalV1CellPiImageCodes` | scoped supportと`computedFactor`によるπ-image |
+| faces | FaceTwin key / class / member declarations | ordered boundary triple + support、actual face root、multiplicity flag |
+| targets | target entries/codes, `GLocalV1TargetRelabel`, `obsG` | complete permutation pairsのπ-commutationを内部検査しstructured minimum |
+| forbidden | `GLocalV1ObsValue` field inventory | H¹/rank/uniformity/result/certificate/raw IDを含まない |
+
+`obsG` はcomplete explicit target entriesからcoarse / fine code permutationsを生成し、
+`computedFactor`とのcommutationを内部検査した全valid relabel candidateの
+structured minimumである。このCycleはLean内のdefinition-level fidelityを固定するもので、
+Python JSONとのbyte-for-byte serialization equalityは主張しない。
+
+### First T3 rejection and repairs
+
+初回independent T3は次の4件を指摘し、snapshotをrejectした。
+
+1. coordinate coarse assignmentがselected edgesだけでsigned supportを調べ、
+   permanent `_v5_beta_support` の全retained coarse edges上の一意性を落としていた。
+2. `gLocalV1CertifiedPair` がSLOT / KILL認証の前にlift左右のscoped edge
+   support同値を要求していなかった。
+3. `SubstateOf`, `Step`, `Reachable`, `Irreducible`, `LocalFineEdge`,
+   `LocalFineFaceClass` の新規Prop述語に正負instance pairがなかった。
+4. `UniformPresentationInstancePairs` の新規private `SelfLoopEntries`
+   2 instanceに個別docstringがなかった。
+
+修正snapshotはcoarse assignmentのuniquenessを`state.coarseEdges`全体上で検査し、
+`gLocalV1CertifiedPair` でsupport equalityをcertificate前のguardにした。
+`GLocalV1KernelInstancePairs` はreview済みpFire raw fixtureで六述語それぞれの
+正負theoremを同じgeneric kernelに発火させた。追加監査で見つかった
+`GLocalV1Irreducible` のdownstream定義展開は、definition ownerの公開API
+`gLocalV1_not_irreducible_of_step` を追加して除去した。修正後T3は全findingの
+実体解消とpermanent sourceへの対応を再構成し、
+`approve / proof-obligation-discharged`を返した。
+
+### Primary declarations
+
+- codomain / contract:
+  - `GLocalV1ObsValue`
+  - `GLocalV1Histogram`
+  - `gLocalV1Histogram`
+  - `GLocalV1ContractComponent`
+  - `gLocalV1ContractComponents`
+  - `gLocalV1PermanentContractSha256`
+- reducer / closure:
+  - `GLocalV1V5State`
+  - `GLocalV1V5Packet`
+  - `gLocalV1PacketVariants`
+  - `GLocalV1Step`
+  - `GLocalV1Reachable`
+  - `GLocalV1Irreducible`
+  - `gLocalV1_not_irreducible_of_step`
+  - `mem_gLocalV1MemoizedReachableStates_iff`
+  - `mem_gLocalV1MemoizedTerminalStates_iff`
+  - `gLocalV1MemoizedTerminalStates_eq_terminalStates`
+  - `mem_gLocalV1PacketKindUnion_iff_reachable_packet`
+  - `gLocalV1ConditionC0` through `gLocalV1ConditionC6`
+- observation:
+  - `GLocalV1TargetRelabel`
+  - `mem_gLocalV1TargetRelabels_iff_valid`
+  - `gLocalV1AllStateList_complete`
+  - `gLocalV1RootedBall`
+  - `gLocalV1TerminalBallHistogram`
+  - `gLocalV1ConditionVector`
+  - `gLocalV1Candidate`
+  - `obsG`
+  - `obsG_eq_min_piPreservingRelabels`
+- instance-pair gate:
+  - `initial_substateOf_self` / `outside_not_substateOf_emptyInitial`
+  - `exists_initial_step` / `not_initial_step_self`
+  - `initial_reachable` / `outside_not_reachable`
+  - `exists_irreducible` / `initial_not_irreducible`
+  - `fineEdgeThree_local` / `fineEdgeZero_not_local`
+  - `fineFaceOne_local` / `fineFaceZero_not_local`
+
+### Premise, provenance, and proof-use audit
+
+- discharged:
+  - permanent 16-component output boundary and forbidden-field inventory
+  - full four-family v5 packet generation and computed strict decrease
+  - structural reachability, exact memoized closure, terminal completeness
+  - all-reachable-state packet-kind union
+  - terminal C0--C6 evaluation and target-relabel orbit minimum
+  - six new Prop kernels' nonvacuous positive / negative instances
+- remaining:
+  - registered T3 / T6 raw structural presentations and fieldwise provenance
+  - all `Obs_G` component evaluations and `obsG T3 = obsG T6`
+  - T3 uniform / T6 nonuniform semantic labels inside Lean
+  - predicate factorization refutation and final nonfactorization theorem
+- used material premises:
+  - explicit finite target / cell entries and completeness proofs
+  - raw readings, supports, incidence, partial chart / edge / face maps
+  - canonical `computedFactor`
+  - full v4 / coordinate / doubled-cycle recognizers
+  - structural reachability and terminal evaluation
+  - retained critical cells, ports, bridges, SLOT / KILL witnesses
+  - factor-preserving target relabels
+- unused material premises: none found
+- structure-field escape: none found
+- target-fitting / vacuity / one-way-as-equivalence / GOAL reinterpretation:
+  none found
+
+### Verification
+
+- focused elaboration:
+  - `GLocalV1V5Reduction.lean` pass; namespace audit 234 declarations,
+    standard-only
+  - `GLocalV1Observation.lean` pass; namespace audit 141 declarations,
+    standard-only
+  - `GLocalV1KernelInstancePairs.lean` pass; namespace audit 22 declarations,
+    standard-only
+  - modified presentation / fixture clients pass
+- targeted module build:
+  - `ResearchLean.AG.UniformInvariance.GLocalV1V5Reduction` pass, 3716 jobs
+  - `ResearchLean.AG.UniformInvariance.GLocalV1KernelInstancePairs` pass,
+    3753 jobs; this route also rebuilds `GLocalV1Observation`
+- direct executable smoke on reviewed pFire input:
+  - aggregate condition vector: C0--C6 all `true`
+  - whole rooted-ball histogram: 15 rows
+  - nonempty-subset record histogram: 3 rows
+- primary declaration `#print axioms`:
+  - contract length / nodup: axiom-free
+  - closure, terminal, observation, no-unfold, and instance-pair declarations:
+    `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / research-package / separation gates: pass
+- placeholder / forbidden primitive / hidden-BiDi / privacy /
+  `git diff --check`: clean
+- independent T3: `approve / proof-obligation-discharged`, blocking finding none
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `FiniteComparisonPresentation.lean`:
+  `ff29a0a815d8252afa5beefea4e49000b26b5a12b4d303d20f7d0ba6e89c5f14`
+- `GLocalV1ObservationValue.lean`:
+  `13f00980d8981b0cdb024047b0bc9144630f4a82f8333e09784ed45a4df924aa`
+- `GLocalV1V5Reduction.lean`:
+  `3fa96886d1133b7a6b1fcc4ebe2b7aacf9c2d44170a285f87742cae97462473f`
+- `GLocalV1Observation.lean`:
+  `ae7df4ba088e6b530e8a6192f3d54b116cc86d0d7c45af5658eda9a43adfd454`
+- `GLocalV1KernelInstancePairs.lean`:
+  `a4b78db0ea14c26cf3f4160d986a3190c3fb05532e85f843b4ba102a6ba37f5f`
+- `UniformPresentationInstancePairs.lean`:
+  `3683f572960c24e21071dedd5ab89d4633561eab7ac060d4fc1c1802f54b9546`
+- `AG.lean`:
+  `0e8b62a38f595b223eb1f091e374afd481f314ad6295da7aead3095b8ff1f975`
+- `research-modules.txt`:
+  `b56056d87147877c04e68d7c3c1fadf64812010eda336525246a795a0f90e70e`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 23
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: faithful definition-level permanent G_local-v1 reducer and Obs_G packet
+proof_obligation_delta: permanent 16-component codomain, full v5 reduction, all-terminal evaluation, and executable target-relabel minimum are generated from finite raw presentation data
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md and permanent r2_hunt.py source
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4 / 5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8
+  status: recorded
+premise_delta:
+  discharged:
+    - permanent G_local-v1 16-component output and forbidden-field boundary
+    - full v5 four-family reducer with computed strict decrease
+    - structural reachability, exact memoized closure, and terminal completeness
+    - all-reachable-state packet-kind union and all-terminal C0-C6 evaluation
+    - internally generated factor-preserving target relabel orbit minimum
+    - positive and negative instances for six new Prop kernels
+  remaining:
+    - registered T3 and T6 structural presentation transfer
+    - T3 and T6 component evaluation and obsG equality
+    - T3 uniform and T6 nonuniform semantic labels inside Lean
+    - observation nonfactorization
+certificate_provenance:
+  status: raw-table-generated
+  unresolved:
+    - T3 and T6 fieldwise transfer and semantic SHA correspondence
+proof_use_audit:
+  used_material_premises:
+    - complete finite target and cell enumerations
+    - raw readings, supports, incidence, partial maps, and computedFactor
+    - all four packet recognizers and computed strict-decrease guard
+    - structural reachability, terminal completeness, and all-terminal evaluation
+    - target relabel permutation and factor-commutation checks
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: transfer registered T3 and T6 structural inputs, evaluate every Obs_G component, prove obsG equality, and derive semantic labels in Lean
 completion_candidate: false
 tracking_issue_closed: false
 ```

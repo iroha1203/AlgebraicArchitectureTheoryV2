@@ -332,6 +332,10 @@ import ResearchLean.AG.UniformInvariance.ConditionCAllAInstancePairs
 import ResearchLean.AG.UniformInvariance.DefectSemantics
 import ResearchLean.AG.UniformInvariance.ExecutableRationalRank
 import ResearchLean.AG.UniformInvariance.FiniteComparisonPresentation
+import ResearchLean.AG.UniformInvariance.GLocalV1ObservationValue
+import ResearchLean.AG.UniformInvariance.GLocalV1V5Reduction
+import ResearchLean.AG.UniformInvariance.GLocalV1Observation
+import ResearchLean.AG.UniformInvariance.GLocalV1KernelInstancePairs
 import ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity
 import ResearchLean.AG.UniformInvariance.IndicatorLawFamily
 import ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect

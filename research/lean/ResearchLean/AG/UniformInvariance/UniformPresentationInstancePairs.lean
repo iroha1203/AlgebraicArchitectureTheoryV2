@@ -23,10 +23,25 @@ open ExecutableRationalLinearAlgebra
 
 namespace UniformPresentationInstancePairs
 
+/-- Executable enumeration carried by the generic self-loop fixture helpers. -/
+private class SelfLoopEntries (α : Type) where
+  entries : List α
+  complete : ∀ value, value ∈ entries
+
+/-- The singleton self-loop fixture uses its unique unit entry. -/
+private instance : SelfLoopEntries PUnit where
+  entries := [PUnit.unit]
+  complete := by intro value; cases value; simp
+
+/-- The two-edge self-loop fixture explicitly enumerates both Boolean edges. -/
+private instance : SelfLoopEntries Bool where
+  entries := [false, true]
+  complete := by intro value; cases value <;> simp
+
 /-- Raw singleton-target comparison data with a caller-specified finite type
 of parallel fine self-loop edges. -/
 private def selfLoopPresentation (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     FiniteComparisonPresentation where
   Source := PUnit
   sourceFintype := inferInstance
@@ -64,12 +79,18 @@ private def selfLoopPresentation (FineEdge : Type)
   CoarseChart := PUnit
   coarseChartFintype := inferInstance
   coarseChartDecidableEq := inferInstance
+  coarseChartEntries := [PUnit.unit]
+  coarseChart_mem_coarseChartEntries := by intro chart; cases chart; simp
   CoarseEdge := PUnit
   coarseEdgeFintype := inferInstance
   coarseEdgeDecidableEq := inferInstance
+  coarseEdgeEntries := [PUnit.unit]
+  coarseEdge_mem_coarseEdgeEntries := by intro edge; cases edge; simp
   CoarseFace := PEmpty
   coarseFaceFintype := inferInstance
   coarseFaceDecidableEq := inferInstance
+  coarseFaceEntries := []
+  coarseFace_mem_coarseFaceEntries := by intro face; exact nomatch face
   coarseEdgeLeft := fun _ => PUnit.unit
   coarseEdgeRight := fun _ => PUnit.unit
   coarseFaceEdge0 := fun face => nomatch face
@@ -91,12 +112,18 @@ private def selfLoopPresentation (FineEdge : Type)
   FineChart := PUnit
   fineChartFintype := inferInstance
   fineChartDecidableEq := inferInstance
+  fineChartEntries := [PUnit.unit]
+  fineChart_mem_fineChartEntries := by intro chart; cases chart; simp
   FineEdge := FineEdge
   fineEdgeFintype := inferInstance
   fineEdgeDecidableEq := inferInstance
+  fineEdgeEntries := SelfLoopEntries.entries
+  fineEdge_mem_fineEdgeEntries := SelfLoopEntries.complete
   FineFace := PEmpty
   fineFaceFintype := inferInstance
   fineFaceDecidableEq := inferInstance
+  fineFaceEntries := []
+  fineFace_mem_fineFaceEntries := by intro face; exact nomatch face
   fineEdgeLeft := fun _ => PUnit.unit
   fineEdgeRight := fun _ => PUnit.unit
   fineFaceEdge0 := fun face => nomatch face
@@ -165,7 +192,7 @@ fixture.  This private instance helper is derived through the public
 raw-selection API and supplies a basis coordinate for rank computation; it
 does not store a rank or checker result. -/
 private def fullCoarseEdge (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ :=
   ⟨PUnit.unit, by
     apply ((selfLoopPresentation FineEdge).mem_coarseEdgesIn_iff_raw
@@ -178,7 +205,7 @@ private def fullCoarseEdge (FineEdge : Type)
 This private instance helper is derived through the public raw-selection API
 and supplies a basis coordinate, not a comparison certificate. -/
 private def fullFineEdge (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge]
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge]
     (edge : FineEdge) :
     (selfLoopPresentation FineEdge).FineEdgeIn Finset.univ :=
   ⟨edge, by
@@ -191,7 +218,7 @@ private def fullFineEdge (FineEdge : Type)
 /-- Forgetting the selection proof identifies the full selected coarse-edge
 type with the singleton coarse-edge table. -/
 private def fullCoarseEdgeEquiv (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ ≃ PUnit where
   toFun edge := edge.1
   invFun _ := fullCoarseEdge FineEdge
@@ -201,7 +228,7 @@ private def fullCoarseEdgeEquiv (FineEdge : Type)
 /-- Forgetting the selection proof identifies the full selected fine-edge
 type with the raw fine-edge table. -/
 private def fullFineEdgeEquiv (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).FineEdgeIn Finset.univ ≃ FineEdge where
   toFun edge := edge.1
   invFun := fullFineEdge FineEdge
@@ -252,7 +279,7 @@ private theorem negative_h1RankBlockMatrix_entry :
 
 /-- Empty face tables make the raw coarse degree-one matrix zero. -/
 private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).coarseD1Matrix Finset.univ = 0 := by
   ext face edge
   exact nomatch face.1
@@ -261,7 +288,7 @@ private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
 private instance API uses the definition-owner matrix/linear-map evaluation
 lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
 private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).coarseD0Matrix Finset.univ = 0 := by
   ext edge chart
   rw [(selfLoopPresentation FineEdge).coarseD0Matrix_apply,
@@ -279,7 +306,7 @@ private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
 private instance API uses the definition-owner matrix/linear-map evaluation
 lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
 private theorem fineD0Matrix_eq_zero (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).fineD0Matrix Finset.univ = 0 := by
   ext edge chart
   rw [(selfLoopPresentation FineEdge).fineD0Matrix_apply,
@@ -295,7 +322,7 @@ private theorem fineD0Matrix_eq_zero (FineEdge : Type)
 
 /-- Empty face tables make the raw fine degree-one matrix zero. -/
 private theorem fineD1Matrix_eq_zero (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).fineD1Matrix Finset.univ = 0 := by
   ext face edge
   exact nomatch face.1
@@ -305,7 +332,7 @@ column with the row selecting the unique coarse-edge coordinate.  This private
 instance API derives every entry through the public block-map evaluation
 surface and raw self-loop tables; it supplies neither the matrix nor its rank. -/
 private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
-    [Fintype FineEdge] [DecidableEq FineEdge] :
+    [Fintype FineEdge] [DecidableEq FineEdge] [SelfLoopEntries FineEdge] :
     (selfLoopPresentation FineEdge).h1RankBlockMatrix Finset.univ =
       Matrix.vecMulVec (fun _ => (1 : ℚ))
         (fun index => match index with

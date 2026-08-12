@@ -90,12 +90,18 @@ def presentation : FiniteComparisonPresentation where
   CoarseChart := Fin 2
   coarseChartFintype := inferInstance
   coarseChartDecidableEq := inferInstance
+  coarseChartEntries := List.finRange 2
+  coarseChart_mem_coarseChartEntries := by intro chart; simp
   CoarseEdge := Fin 2
   coarseEdgeFintype := inferInstance
   coarseEdgeDecidableEq := inferInstance
+  coarseEdgeEntries := List.finRange 2
+  coarseEdge_mem_coarseEdgeEntries := by intro edge; simp
   CoarseFace := Fin 1
   coarseFaceFintype := inferInstance
   coarseFaceDecidableEq := inferInstance
+  coarseFaceEntries := List.finRange 1
+  coarseFace_mem_coarseFaceEntries := by intro face; simp
   coarseEdgeLeft := id
   coarseEdgeRight := id
   coarseFaceEdge0 := fun _ => 1
@@ -111,12 +117,18 @@ def presentation : FiniteComparisonPresentation where
   FineChart := Fin 3
   fineChartFintype := inferInstance
   fineChartDecidableEq := inferInstance
+  fineChartEntries := List.finRange 3
+  fineChart_mem_fineChartEntries := by intro chart; simp
   FineEdge := Fin 2
   fineEdgeFintype := inferInstance
   fineEdgeDecidableEq := inferInstance
+  fineEdgeEntries := List.finRange 2
+  fineEdge_mem_fineEdgeEntries := by intro edge; simp
   FineFace := Fin 0
   fineFaceFintype := inferInstance
   fineFaceDecidableEq := inferInstance
+  fineFaceEntries := List.finRange 0
+  fineFace_mem_fineFaceEntries := by intro face; exact nomatch face
   fineEdgeLeft := fineEdgeLeft
   fineEdgeRight := fineEdgeRight
   fineFaceEdge0 := Fin.elim0
