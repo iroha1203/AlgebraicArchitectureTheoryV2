@@ -62,7 +62,11 @@ def rawEdgeMap (edge : Fin 3) : Option (Fin 2) :=
   some (fineEdgeChart edge)
 
 /-- Exact finite R1 C5 presentation.  Its fields are only raw finite geometry
-and well-formedness proofs; no uniqueness or cohomology answer is stored. -/
+and well-formedness proofs; no uniqueness or cohomology answer is stored.
+
+Position: existing C5 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance
@@ -92,12 +96,18 @@ def presentation : FiniteComparisonPresentation where
   CoarseChart := Fin 2
   coarseChartFintype := inferInstance
   coarseChartDecidableEq := inferInstance
+  coarseChartEntries := List.finRange 2
+  coarseChart_mem_coarseChartEntries := by intro chart; simp
   CoarseEdge := Fin 2
   coarseEdgeFintype := inferInstance
   coarseEdgeDecidableEq := inferInstance
+  coarseEdgeEntries := List.finRange 2
+  coarseEdge_mem_coarseEdgeEntries := by intro edge; simp
   CoarseFace := Fin 1
   coarseFaceFintype := inferInstance
   coarseFaceDecidableEq := inferInstance
+  coarseFaceEntries := List.finRange 1
+  coarseFace_mem_coarseFaceEntries := by intro face; simp
   coarseEdgeLeft := id
   coarseEdgeRight := id
   coarseFaceEdge0 := fun _ => 1
@@ -113,12 +123,18 @@ def presentation : FiniteComparisonPresentation where
   FineChart := Fin 2
   fineChartFintype := inferInstance
   fineChartDecidableEq := inferInstance
+  fineChartEntries := List.finRange 2
+  fineChart_mem_fineChartEntries := by intro chart; simp
   FineEdge := Fin 3
   fineEdgeFintype := inferInstance
   fineEdgeDecidableEq := inferInstance
+  fineEdgeEntries := List.finRange 3
+  fineEdge_mem_fineEdgeEntries := by intro edge; simp
   FineFace := Fin 2
   fineFaceFintype := inferInstance
   fineFaceDecidableEq := inferInstance
+  fineFaceEntries := List.finRange 2
+  fineFace_mem_fineFaceEntries := by intro face; simp
   fineEdgeLeft := fineEdgeChart
   fineEdgeRight := fineEdgeChart
   fineFaceEdge0 := fineFaceEdge

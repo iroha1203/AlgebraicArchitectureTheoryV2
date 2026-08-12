@@ -22,14 +22,16 @@ representative, commutation, and equality with the upstream canonical factor.
 The same equality is then used when constructing semantic support
 compatibility.
 
-The source and coarse-target enumerations are explicit because
+The source, coarse-target, and six nerve-cell enumerations are explicit because
 `Finset.toList` has no compiler code in the current Lean runtime; deriving a
 list from `Fintype.elems` would make the representative search and the later
-all-subset checker non-executable.  Search itself uses the standard
-`List.find?` operation.  Source-enumeration order, duplicates, and the fallback
-do not affect the semantics, as certified by the canonical-factor equality
-theorem below.  Coarse-target duplicates only repeat later checks; coverage is
-the material property used by the checker completeness theorem.
+all-subset and finite-reduction observers non-executable.  These lists carry
+only coverage of already supplied finite types; they do not carry a reduction
+state, terminal, condition bit, or observation.  Search itself uses the
+standard `List.find?` operation.  Source-enumeration order, duplicates, and the
+fallback do not affect the semantics, as certified by the canonical-factor
+equality theorem below.  Duplicate entries only repeat finite generation;
+coverage is the material property used by completeness theorems.
 
 We reject an arbitrary factor field, a canonical-factor equality field, and an
 opaque completed-geometry field: each would disconnect the future checker from
@@ -69,25 +71,26 @@ theorem firstMatchingOr_satisfies {α : Type u} (fallback : α)
 /-! ## Raw finite comparison data -/
 
 /-- A finite, executable presentation of the comparison geometry used by
-G-107.  Its proof fields express only reading surjectivity, incidence,
-hereditary degeneracy, support nonemptiness, and source-level support
-compatibility; no cohomology or uniformity result is stored. -/
+G-107.  Its proof fields express only finite-list coverage, reading
+surjectivity, incidence, hereditary degeneracy, support nonemptiness, and
+source-level support compatibility; no reduction terminal, cohomology,
+uniformity, condition, or observation result is stored. -/
 structure FiniteComparisonPresentation where
   Source : Type u
-  sourceFintype : Fintype Source
-  sourceDecidableEq : DecidableEq Source
+  sourceFintype : Fintype Source := by infer_instance
+  sourceDecidableEq : DecidableEq Source := by infer_instance
   sourceDefault : Source
   sourceEntries : List Source
   source_mem_sourceEntries : ∀ source, source ∈ sourceEntries
   CoarseTarget : Type u
-  coarseTargetFintype : Fintype CoarseTarget
-  coarseTargetDecidableEq : DecidableEq CoarseTarget
+  coarseTargetFintype : Fintype CoarseTarget := by infer_instance
+  coarseTargetDecidableEq : DecidableEq CoarseTarget := by infer_instance
   coarseTargetEntries : List CoarseTarget
   coarseTarget_mem_coarseTargetEntries :
     ∀ target, target ∈ coarseTargetEntries
   FineTarget : Type u
-  fineTargetFintype : Fintype FineTarget
-  fineTargetDecidableEq : DecidableEq FineTarget
+  fineTargetFintype : Fintype FineTarget := by infer_instance
+  fineTargetDecidableEq : DecidableEq FineTarget := by infer_instance
   coarseRead : Source → CoarseTarget
   fineRead : Source → FineTarget
   coarseRead_surjective : Function.Surjective coarseRead
@@ -95,14 +98,20 @@ structure FiniteComparisonPresentation where
   rawCoarserThan : ∀ ⦃left right : Source⦄,
     fineRead left = fineRead right → coarseRead left = coarseRead right
   CoarseChart : Type u
-  coarseChartFintype : Fintype CoarseChart
-  coarseChartDecidableEq : DecidableEq CoarseChart
+  coarseChartFintype : Fintype CoarseChart := by infer_instance
+  coarseChartDecidableEq : DecidableEq CoarseChart := by infer_instance
+  coarseChartEntries : List CoarseChart
+  coarseChart_mem_coarseChartEntries : ∀ chart, chart ∈ coarseChartEntries
   CoarseEdge : Type u
-  coarseEdgeFintype : Fintype CoarseEdge
-  coarseEdgeDecidableEq : DecidableEq CoarseEdge
+  coarseEdgeFintype : Fintype CoarseEdge := by infer_instance
+  coarseEdgeDecidableEq : DecidableEq CoarseEdge := by infer_instance
+  coarseEdgeEntries : List CoarseEdge
+  coarseEdge_mem_coarseEdgeEntries : ∀ edge, edge ∈ coarseEdgeEntries
   CoarseFace : Type u
-  coarseFaceFintype : Fintype CoarseFace
-  coarseFaceDecidableEq : DecidableEq CoarseFace
+  coarseFaceFintype : Fintype CoarseFace := by infer_instance
+  coarseFaceDecidableEq : DecidableEq CoarseFace := by infer_instance
+  coarseFaceEntries : List CoarseFace
+  coarseFace_mem_coarseFaceEntries : ∀ face, face ∈ coarseFaceEntries
   coarseEdgeLeft : CoarseEdge → CoarseChart
   coarseEdgeRight : CoarseEdge → CoarseChart
   coarseFaceEdge0 : CoarseFace → CoarseEdge
@@ -121,14 +130,20 @@ structure FiniteComparisonPresentation where
   coarseChartSupport_nonempty : ∀ chart,
     (coarseChartSupport chart).Nonempty
   FineChart : Type u
-  fineChartFintype : Fintype FineChart
-  fineChartDecidableEq : DecidableEq FineChart
+  fineChartFintype : Fintype FineChart := by infer_instance
+  fineChartDecidableEq : DecidableEq FineChart := by infer_instance
+  fineChartEntries : List FineChart
+  fineChart_mem_fineChartEntries : ∀ chart, chart ∈ fineChartEntries
   FineEdge : Type u
-  fineEdgeFintype : Fintype FineEdge
-  fineEdgeDecidableEq : DecidableEq FineEdge
+  fineEdgeFintype : Fintype FineEdge := by infer_instance
+  fineEdgeDecidableEq : DecidableEq FineEdge := by infer_instance
+  fineEdgeEntries : List FineEdge
+  fineEdge_mem_fineEdgeEntries : ∀ edge, edge ∈ fineEdgeEntries
   FineFace : Type u
-  fineFaceFintype : Fintype FineFace
-  fineFaceDecidableEq : DecidableEq FineFace
+  fineFaceFintype : Fintype FineFace := by infer_instance
+  fineFaceDecidableEq : DecidableEq FineFace := by infer_instance
+  fineFaceEntries : List FineFace
+  fineFace_mem_fineFaceEntries : ∀ face, face ∈ fineFaceEntries
   fineEdgeLeft : FineEdge → FineChart
   fineEdgeRight : FineEdge → FineChart
   fineFaceEdge0 : FineFace → FineEdge

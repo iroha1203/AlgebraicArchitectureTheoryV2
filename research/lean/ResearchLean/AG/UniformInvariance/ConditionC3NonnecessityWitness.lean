@@ -79,7 +79,11 @@ def fineChartSupport (chart : Fin 3) : Finset (Fin 3) :=
 /-- The exact finite raw presentation underlying the R1 C3 witness.  This is
 the Cycle 15 fixture constructor feeding the main theorem: its fields come
 only from canonical raw readings, incidence, support, partial maps, and their
-well-formedness proofs, never from a factor, rank, H¹, C3, or truth result. -/
+well-formedness proofs, never from a factor, rank, H¹, C3, or truth result.
+
+Position: existing C3 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance
@@ -113,12 +117,18 @@ def presentation : FiniteComparisonPresentation where
   CoarseChart := Fin 3
   coarseChartFintype := inferInstance
   coarseChartDecidableEq := inferInstance
+  coarseChartEntries := List.finRange 3
+  coarseChart_mem_coarseChartEntries := by intro chart; simp
   CoarseEdge := Fin 3
   coarseEdgeFintype := inferInstance
   coarseEdgeDecidableEq := inferInstance
+  coarseEdgeEntries := List.finRange 3
+  coarseEdge_mem_coarseEdgeEntries := by intro edge; simp
   CoarseFace := Fin 1
   coarseFaceFintype := inferInstance
   coarseFaceDecidableEq := inferInstance
+  coarseFaceEntries := List.finRange 1
+  coarseFace_mem_coarseFaceEntries := by intro face; simp
   coarseEdgeLeft := edgeLeft
   coarseEdgeRight := edgeRight
   coarseFaceEdge0 := faceEdge0
@@ -143,12 +153,18 @@ def presentation : FiniteComparisonPresentation where
   FineChart := Fin 3
   fineChartFintype := inferInstance
   fineChartDecidableEq := inferInstance
+  fineChartEntries := List.finRange 3
+  fineChart_mem_fineChartEntries := by intro chart; simp
   FineEdge := Fin 3
   fineEdgeFintype := inferInstance
   fineEdgeDecidableEq := inferInstance
+  fineEdgeEntries := List.finRange 3
+  fineEdge_mem_fineEdgeEntries := by intro edge; simp
   FineFace := Fin 1
   fineFaceFintype := inferInstance
   fineFaceDecidableEq := inferInstance
+  fineFaceEntries := List.finRange 1
+  fineFace_mem_fineFaceEntries := by intro face; simp
   fineEdgeLeft := edgeLeft
   fineEdgeRight := edgeRight
   fineFaceEdge0 := faceEdge0

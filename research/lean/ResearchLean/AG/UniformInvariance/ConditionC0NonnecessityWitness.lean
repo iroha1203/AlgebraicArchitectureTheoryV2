@@ -52,7 +52,11 @@ def fineChartSupport (chart : Fin 2) : Finset (Fin 3) :=
 
 /-- Exact finite R1 C0 presentation.  Its fields are only finite readings,
 one self-loop incidence table, empty face tables, supports, identity cell
-maps, and well-formedness proofs; it stores no factor, H¹, rank, or result. -/
+maps, and well-formedness proofs; it stores no factor, H¹, rank, or result.
+
+Position: existing C0 witness input reused by the Cycle 23 production-kernel
+validation.  Its new explicit entry lists are complete coverage data derived
+from the raw finite types, not reducer, observation, or expected-result fields. -/
 def presentation : FiniteComparisonPresentation where
   Source := Fin 3
   sourceFintype := inferInstance
@@ -82,12 +86,18 @@ def presentation : FiniteComparisonPresentation where
   CoarseChart := Fin 2
   coarseChartFintype := inferInstance
   coarseChartDecidableEq := inferInstance
+  coarseChartEntries := List.finRange 2
+  coarseChart_mem_coarseChartEntries := by intro chart; simp
   CoarseEdge := Fin 1
   coarseEdgeFintype := inferInstance
   coarseEdgeDecidableEq := inferInstance
+  coarseEdgeEntries := List.finRange 1
+  coarseEdge_mem_coarseEdgeEntries := by intro edge; simp
   CoarseFace := Fin 0
   coarseFaceFintype := inferInstance
   coarseFaceDecidableEq := inferInstance
+  coarseFaceEntries := List.finRange 0
+  coarseFace_mem_coarseFaceEntries := by intro face; exact nomatch face
   coarseEdgeLeft := fun _ => 0
   coarseEdgeRight := fun _ => 0
   coarseFaceEdge0 := fun face => nomatch face
@@ -103,12 +113,18 @@ def presentation : FiniteComparisonPresentation where
   FineChart := Fin 2
   fineChartFintype := inferInstance
   fineChartDecidableEq := inferInstance
+  fineChartEntries := List.finRange 2
+  fineChart_mem_fineChartEntries := by intro chart; simp
   FineEdge := Fin 1
   fineEdgeFintype := inferInstance
   fineEdgeDecidableEq := inferInstance
+  fineEdgeEntries := List.finRange 1
+  fineEdge_mem_fineEdgeEntries := by intro edge; simp
   FineFace := Fin 0
   fineFaceFintype := inferInstance
   fineFaceDecidableEq := inferInstance
+  fineFaceEntries := List.finRange 0
+  fineFace_mem_fineFaceEntries := by intro face; exact nomatch face
   fineEdgeLeft := fun _ => 0
   fineEdgeRight := fun _ => 0
   fineFaceEdge0 := fun face => nomatch face
