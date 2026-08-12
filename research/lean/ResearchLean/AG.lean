@@ -322,6 +322,7 @@ import ResearchLean.AG.UniformInvariance.ConditionC0NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionC1NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionC2NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionC3NonnecessityWitness
+import ResearchLean.AG.UniformInvariance.ConditionC4NonnecessityWitness
 import ResearchLean.AG.UniformInvariance.ConditionCAllAChecker
 import ResearchLean.AG.UniformInvariance.ConditionCAllACheckerInstancePairs
 import ResearchLean.AG.UniformInvariance.ConditionCAllAFiring

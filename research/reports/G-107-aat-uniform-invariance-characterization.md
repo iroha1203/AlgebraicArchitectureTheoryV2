@@ -126,7 +126,17 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   C2 / full `ConditionC`を反証し、同じblockのcoarse / fine両H¹非零も固定した。
   law-block C2からlabel-fiber A-subnerve C2へのreverse transportと、selected coarse
   endpointのdefinition-owner evaluation APIも追加した。
-- 未完了: C4 / C5 / C6非必要性 witness 3種、`Obs_G` / T3 / T6 /
+- 完了(Cycle 20): exact R1 `C4_not_necessary` のraw reading・nerve・support・
+  partial face mapをfieldwise転写した。両nerveは同じ2本のself-loopを持ち、
+  coarse側だけがboundary `(1,1,1)` のrepeated faceを2枚、fine側が1枚持つ。
+  repeated-face cocycle条件の一致とselected edge cochain equivalenceから、全target
+  subsetのactual quotient-H¹ map全単射性を直接証明した。同じfull subset
+  `A={0,1}`でcoarse face 1にfine liftがないことからraw / semantic C4、
+  `ConditionCAllA`、checker、generated indicator label上のlaw-indexed C4 / full
+  `ConditionC`を反証し、同じblockのcoarse / fine両H¹非零も固定した。law-block
+  C4からlabel-fiber A-subnerve C4へのreverse transportと、block face map equality
+  からwhole face map equalityを取り出すdefinition-owner APIも追加した。
+- 未完了: C5 / C6非必要性 witness 2種、`Obs_G` / T3 / T6 /
   observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -3097,6 +3107,158 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: exact R1 C4_not_necessary witness with same-A clause failure and coarse/fine actual H1 nonvanishing
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 20 — exact R1 C4 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`ConditionC4NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC4NonnecessityWitness.lean)
+  - [`ConditionCAllABridge.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean)
+  - [`LawValueBlockComparison.lean`](../lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparison.lean)
+- canonical R1 parent SHA-256:
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
+- canonical name-free semantic SHA-256:
+  `5e6e1cb8fdaf2e0015007e80f029528455c587d56a40a47299d075323e366a74`
+- fixed `results-summary.json` SHA-256:
+  `556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e`
+- primary declarations:
+  - `R1ConditionC4Witness.presentation`
+  - `R1ConditionC4Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC4Witness.uniformPresentation`
+  - `R1ConditionC4Witness.not_rawConditionC4At`
+  - `R1ConditionC4Witness.not_conditionC4AtTargetSubset`
+  - `R1ConditionC4Witness.not_conditionCAllA`
+  - `R1ConditionC4Witness.indicator_not_conditionC4`
+  - `R1ConditionC4Witness.indicator_not_conditionC`
+  - `R1ConditionC4Witness.targetFull_both_h1_pos`
+  - `R1ConditionC4Witness.c4_not_necessary`
+- new owner APIs:
+  - `TargetSupportedNerveMorphism.faceMap_eq_some_of_faceBlockCoordinateMapOption_eq_some`
+  - `TargetSupportedNerveMorphism.conditionC4AtTargetSubset_of_conditionC4At_labelValueFiber`
+
+### Fixed same-A scope and proof route
+
+canonical fixtureではC4が`A={1}`と`A={0,1}`で破れるが、前者の両側H¹は
+`0→0`である。固定GOALが要求するsame-A clause failureと両側H¹非零を満たす
+ため、登録failure scopeに含まれ、H¹ profileが`1→1` rank 1である
+`targetFull={0,1}`を採用した。full-subset indicatorはconstant trueだが、固定GOALは
+C4 witnessにnonconstant lawを要求しない。proper factor、実在するmissing coarse
+face lift、同じfull blockの両側非零H¹がnonvacuityを担う。
+
+raw tableはSource / FineTarget `Fin 3`、CoarseTarget `Fin 2`、coarse reading
+`[0,0,1]`、fine reading `id`、両nerveのcharts / self-loop edges `Fin 2`、coarse
+faces `Fin 2`、fine face `Fin 1`だけからなる。全face boundaryはedge 1の
+`(1,1,1)`であり、sole fine faceはcoarse face 0へ写る。coarse chart supportsは
+`[{0},{1}]`、fine chart supportsは`[{0,1},{2}]`、chart / edge mapはidentityである。
+factor、face lift、matrix、rank、H¹、defect、condition / checker bit、uniformity
+certificateはpresentation fieldにない。canonical factorはsource enumerationから生成する。
+
+任意のfinite `A`について、coarse / fine selected edge tableをraw supportから同定し、
+degree-one cochain equivalenceを構成した。fine `d0`はself-loop incidenceにより零である。
+fine cocycleをedge equivalenceでcoarseへ戻す際は、unique fine repeated faceの
+`d1=0`がedge-1係数の零性を与え、同じboundaryを持つ2枚のcoarse face双方の
+`d1=0`へ輸送される。これによりliteral quotient H¹上のinjectivity / surjectivityを
+別々に証明し、全defect零、generic all-subset checker、full semantic
+`UniformPresentation`へ接続した。
+
+full subsetではcoarse face 1がselectedされる一方、sole fine faceはcoarse face 0へ
+しか写らない。これをraw partial face tableから直接示し、raw / semantic C4、
+`ConditionCAllA`、aggregate checkerを反証した。law-indexed failureには、law-block
+C4のfine face liftをcanonical face equivalenceでactual label-fiber A-subnerveへ戻す
+reverse transportを追加した。そのproofが必要とするblock equalityのelimination APIは、
+T3の初回指摘を受けて`faceBlockCoordinateMapOption`のdefinition ownerである
+`LawValueBlockComparison.lean`へ配置し、owner外のdefinition展開を除去した。
+generated true label fiber `= targetFull`と組み合わせ、law-indexed C4およびfull
+`ConditionC`を反証した。same-A H¹非零はactual coarse chart-zero self-loop quotient
+classのperiod argumentと、actual H¹ map injectivityによるfine像の非零性から得た。
+
+### Verification
+
+- focused elaboration: `ConditionC4NonnecessityWitness.lean` pass、62 declarations
+  standard-only
+- targeted builds:
+  - `LawValueBlockComparison.lean`: pass、31 declarations standard-only
+  - `ResolutionInvarianceConditions.lean`: pass、base同一、46 declarations standard-only
+  - `ConditionCAllABridge.lean`: pass、37 declarations standard-only
+  - `ConditionC4NonnecessityWitness.lean`: pass、aggregate 3740 jobs
+- direct execution: C4 check `false`、aggregate check `false`、uniform check
+  `true`、`∅,{0},{1},{0,1}`のcomputed defectは全て`(0,0)`
+- owner extraction API、reverse bridge、主要witness declarationsの`#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / research-package / separation gates: pass
+- placeholder / hidden-BiDi / privacy / `git diff --check`: clean
+- independent T3: `approve / proof-obligation-discharged`、初回owner-placement findingは
+  修正後snapshotで解消、blocking findingなし
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `ConditionC4NonnecessityWitness.lean`:
+  `10d10d82cbcc24882f889637988d4f6d76177db1ae202c981ef552425fdba787`
+- `ConditionCAllABridge.lean`:
+  `b9ad08a7b496d21f85d2278f41dc8e997e418a4ca77a0b8e61e775266ad86c4c`
+- `LawValueBlockComparison.lean`:
+  `0e48d2f141906b45bd09060abc01aa5dda6aa4a2e7ae739ffbc4e8a6f8b57815`
+- `AG.lean`:
+  `35aa919c372279e320f556da43c54bf39a9ba0e89ca8310415ed0c9af0afe262`
+- `research-modules.txt`:
+  `c73729e0973fabd8ed9d0426604124d9bef0b9f0b43c9d1a7e39299d1e3560f2`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 20
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: exact R1 C4_not_necessary witness with law-indexed and direct A-subnerve C4 failure and coarse and fine actual H1 nonvanishing on the same A={0,1}
+proof_obligation_delta: exact C4 witness is discharged without changing the fixed target or presentation field boundary
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+premise_delta:
+  discharged:
+    - exact canonical R1 raw fixture and fieldwise provenance
+    - all-target-subset actual quotient-H1 bijectivity
+    - direct raw and semantic C4 failure on A={0,1}
+    - direct ConditionCAllA and checker failure
+    - law-indexed ConditionC4 and full ConditionC failure on the generated label
+    - coarse and fine actual H1 nonvanishing on the same A={0,1}
+  remaining:
+    - C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+certificate_provenance:
+  status: raw-table-generated
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw readings and source enumeration
+    - self-loop and repeated-face incidence, chart supports, and partial face map
+    - generated indicator label and exact fiber equality
+    - reverse C4 transport through canonical face equivalences
+    - actual H1 map injectivity on the same full subset
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: exact R1 C5_not_necessary witness with same-A clause failure and coarse/fine actual H1 nonvanishing
 completion_candidate: false
 tracking_issue_closed: false
 ```

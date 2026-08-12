@@ -708,6 +708,36 @@ theorem conditionC4At_of_conditionC4AtTargetSubset_labelValueFiber
     hcoarse hfine label fineFace coarseFace hmap
   simpa [coarseFace, coarseEquiv, fineEquiv] using hmapBlock
 
+/-- Exact face lifting on one G-104 law-value block transports back to C4 on
+the actual A-subnerve of the corresponding coarse label fiber.  The lift is
+reconstructed through the canonical face equivalences and the raw partial
+face map, rather than accepted as a supplied A-subnerve certificate. -/
+theorem conditionC4AtTargetSubset_of_conditionC4At_labelValueFiber
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (hC4 : M.ConditionC4At laws hcoarse hfine label) :
+    M.ConditionC4AtTargetSubset
+      (labelValueFiber laws coarseReading hcoarse label) := by
+  intro coarseFace
+  let coarseEquiv := coarse.labelFiberFaceEquivBlock laws hcoarse label
+  let fineEquiv := fine.labelPreimageFaceEquivBlock laws coarseReading
+    hcoarser hcoarse hfine label
+  let coarseBlock := coarseEquiv coarseFace
+  obtain ⟨fineBlock, hmapBlock⟩ := hC4 coarseBlock
+  let fineFace := fineEquiv.symm fineBlock
+  refine ⟨fineFace, ?_⟩
+  apply (M.aSubnerveFaceMapOption_eq_some_iff
+    (labelValueFiber laws coarseReading hcoarse label)
+    fineFace coarseFace).2
+  have hwhole :=
+    M.faceMap_eq_some_of_faceBlockCoordinateMapOption_eq_some laws hcoarse
+      hfine label fineBlock coarseBlock hmapBlock
+  simpa [fineFace, coarseBlock, coarseEquiv, fineEquiv] using hwhole
+
 /-! ## Finite-sum and local-cycle transport for C3 -/
 
 /-- Incoming flow on the canonical fine preimage is the incoming block flow
