@@ -642,6 +642,15 @@ def coarseEdgeLeftIn (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).1, hA⟩⟩
 
+/-- The raw selected coarse left endpoint exposes the underlying incidence
+table.  This definition-owner rule lets downstream finite witnesses inspect
+the endpoint without unfolding the selected-cell construction. -/
+@[simp]
+theorem coarseEdgeLeftIn_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.CoarseEdgeIn A) :
+    (P.coarseEdgeLeftIn A edge).1 = P.coarseEdgeLeft edge.1 :=
+  rfl
+
 /-- Right endpoint in the raw coarse selected cells. -/
 def coarseEdgeRightIn (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (edge : P.CoarseEdgeIn A) :
@@ -655,6 +664,15 @@ def coarseEdgeRightIn (P : FiniteComparisonPresentation)
   obtain ⟨hsupport, hA⟩ := Finset.mem_inter.mp htarget
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).2, hA⟩⟩
+
+/-- The raw selected coarse right endpoint exposes the underlying incidence
+table.  This companion definition-owner rule hides the selected-cell proof
+while retaining the raw endpoint as the only datum. -/
+@[simp]
+theorem coarseEdgeRightIn_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (edge : P.CoarseEdgeIn A) :
+    (P.coarseEdgeRightIn A edge).1 = P.coarseEdgeRight edge.1 :=
+  rfl
 
 /-- Boundary edge zero in the raw coarse selected cells. -/
 def coarseFaceEdge0In (P : FiniteComparisonPresentation)
