@@ -1,4 +1,3 @@
-import ResearchLean.AG.UniformInvariance.ConditionCAllABridge
 import ResearchLean.AG.UniformInvariance.ConditionCAllAChecker
 import ResearchLean.AG.UniformInvariance.UniformPresentationDecider
 import Formal.Util.AssertStandardAxioms
@@ -313,8 +312,8 @@ theorem edgePullback1LinearMap_injective (A : Finset (Fin 2)) :
 
 /-! ## Raw repeated-face cocycle control -/
 
-/-- A nonzero selected fine edge coefficient vanishes in every fine raw
-cocycle, because its own repeated face is selected and has that boundary. -/
+/-- The coefficient of a selected fine edge with nonzero index vanishes in
+every fine raw cocycle, because its own repeated face has that boundary. -/
 theorem fine_nonzero_edge_eq_zero_of_d1_eq_zero
     (A : Finset (Fin 2))
     (cochain : presentation.FineEdgeIn A → ℚ)

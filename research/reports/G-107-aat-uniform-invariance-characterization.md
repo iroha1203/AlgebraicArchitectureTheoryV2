@@ -3334,7 +3334,7 @@ H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame
 - focused elaboration: `ConditionC5NonnecessityWitness.lean` pass、71 declarations
   standard-only
 - targeted module build:
-  `ResearchLean.AG.UniformInvariance.ConditionC5NonnecessityWitness` pass、3740 jobs
+  `ResearchLean.AG.UniformInvariance.ConditionC5NonnecessityWitness` pass、3739 jobs
 - direct execution: C5 check `false`、aggregate check `false`、uniform check `true`、
   `∅,{0},{1},{0,1}`のcomputed defectは全て`(0,0)`
 - primary 10 declarationsの`#print axioms`:
@@ -3344,12 +3344,17 @@ H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame
 - independent T3: `approve / proof-obligation-discharged`、blocking findingなし。
   T3後に未使用fixture helperを削除し、両側H¹結合 theoremをmain proofで実使用する
   狭い品質修正を行い、focused / targeted / direct execution / axiom auditを再実行した
+- 初回formal reviewで冗長な`ConditionCAllABridge` direct importと、edge indexを
+  coefficientの非零性とも読めるdocstringを指摘された。direct importを削除し、
+  docstringをnonzero edge indexへ限定して、同じ検証packetを修正後snapshotで再実行した
+- 修正後fixed snapshotのindependent T3も
+  `approve / proof-obligation-discharged`、blocking findingなし
 - Research full build: ユーザー指定により未実行
 
 source SHA-256:
 
 - `ConditionC5NonnecessityWitness.lean`:
-  `98ba0ec353b77c0f32357ac12b5782e86d47e03301a5483e98b9859426375450`
+  `b2a853bf6349c07d50f36e5fd8b849c04e408e2c684bf25fbb57671d16583de5`
 - `AG.lean`:
   `0779f19205eb8a8ad7bba54fc10e170d0dee9b2b045dd79d8dc0f4bbec9ffeb7`
 - `research-modules.txt`:
