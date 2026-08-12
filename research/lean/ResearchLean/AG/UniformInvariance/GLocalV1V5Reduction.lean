@@ -6,18 +6,29 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Executable permanent `G_local-v1` v5 reduction
 
-This module transcribes the permanent v5 rewrite DAG from the registered
-`G_local_v1.py` source.  Every scope, FaceTwin class, packet, reachable state,
-terminal, critical cell, and condition is generated from the raw tables of a
-`FiniteComparisonPresentation`.  Packets store removal sets only: validity,
-terminal status, condition values, and expected observations are never supplied
-as fields.
+This module transcribes the permanent v5 rewrite DAG implemented by the
+registered `r2_hunt.py` structural reducer.  Every scope, FaceTwin class,
+packet, reachable state, terminal, critical cell, and condition is generated
+from the raw tables of a `FiniteComparisonPresentation`.  Packets store removal
+sets only: validity, terminal status, condition values, and expected
+observations are never supplied as fields.
 
 The four packet families are the two v4 unit families, coordinate dependency,
 and the closed doubled cycle.  Reachability is enumerated by layers.  Its fuel
 is the initial retained-edge/FaceTwin count plus one, and every generated
 packet strictly reduces that count.  Packet-kind union ranges over every
 outgoing packet of every reachable state, not a selected terminal trace.
+
+## Implementation notes
+
+States retain only surviving raw cells and packets retain only removal sets;
+recognizer validity, strict decrease, reachability, irreducibility, and terminal
+conditions remain derived predicates.  Supplying a certified trace, a chosen
+terminal, or precomputed condition bits was rejected because each would encode
+part of the observation.  Executable list/finset closure is paired with
+structural reachability theorems instead of using an opaque relation closure,
+so later observation code computes every path while proofs retain the intrinsic
+semantics.
 -/
 
 namespace AAT.AG.ResolutionInvariance
@@ -1121,7 +1132,10 @@ theorem gLocalV1MemoizedTerminalStates_eq_terminalStates
   rw [P.mem_gLocalV1MemoizedTerminalStates_iff,
     P.mem_gLocalV1TerminalStates_iff_reachable_irreducible]
 
-/-- Terminal recursion is nonempty from every state. -/
+/-- Termination API for the raw v5 reducer: strict retained-cell decrease makes
+the recursively generated terminal set nonempty from every state.  The premise
+comes only from the computed packet recognizers, not a supplied terminal or
+trace certificate. -/
 theorem gLocalV1TerminalFrom_nonempty (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     (P.gLocalV1TerminalFrom A state).Nonempty := by
@@ -1147,13 +1161,16 @@ theorem gLocalV1TerminalStates_nonempty (P : FiniteComparisonPresentation)
 
 /-! ## All-path packet-kind union -/
 
-/-- Packet kinds seen on every outgoing edge of every reachable state. -/
+/-- Executable all-path packet summary used by the permanent scope record.  It
+collects kinds from every computed outgoing packet of every memoized reachable
+state; a selected reduction trace is deliberately not an input. -/
 def gLocalV1PacketKindFinset (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset GLocalV1PacketKind :=
   (P.gLocalV1MemoizedReachableStates A).biUnion fun state =>
     (P.gLocalV1PacketVariants A state).image GLocalV1V5Packet.kind
 
-/-- Canonically ordered all-path packet-kind union. -/
+/-- Canonical-list API for the all-path packet-kind summary.  The closed
+four-kind registry fixes output order without adding a packet certificate. -/
 def gLocalV1PacketKindUnion (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : List GLocalV1PacketKind :=
   [.v4Coarse, .v4FineOnly, .coordinateDependency, .closedDoubledCycle].filter

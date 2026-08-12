@@ -12,6 +12,16 @@ scope has several generated packets, and its local unmapped fiber contains an
 actual edge and FaceTwin row.  The negative reachability example adds one raw
 coarse edge to the empty scope, so its failure is structural rather than a
 checker bit supplied by the fixture.
+
+## Implementation notes
+
+The pairs reuse the reviewed `pFire` raw presentation and the same generic
+reducer that defines `obsG`; no expected predicate value is stored in a
+fixture.  Six unrelated synthetic presentations and Boolean `decide` examples
+were rejected because they could exercise a target-fitted fragment instead of
+the production kernel.  Negative examples therefore change only raw retained
+state or mapped-cell membership, and positive examples are derived from actual
+generated packets and local unmapped cells.
 -/
 
 namespace AAT.AG.ResolutionInvariance

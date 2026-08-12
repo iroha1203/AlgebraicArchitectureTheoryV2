@@ -12,14 +12,19 @@ all registered multiplicities at two, computes the whole scope once and every
 nonempty coarse-target scope once, and minimizes the structured value over all
 simultaneous target relabels preserving the computed factor.
 
+## Implementation notes
+
 Target codes are the first indices in explicit presentation enumerations.  The
 fine enumeration is generated from the explicit source list and surjective raw
 fine reading, so no noncomputable `Fintype.equivFin` enters the executable
 definition.  Relabels are finite functions on target codes satisfying
 bijectivity and factor commutation; identity is generated internally.  The
 structured `Ord` minimum is a canonical representative of this finite orbit.
-No claim of byte-for-byte equality with the Python JSON encoding is made here;
-the next cycle proves the registered T3/T6 component correspondence.
+An arbitrary supplied relabel and a byte-ordered JSON minimum were rejected:
+the former is a certificate escape and the latter would make the Lean value
+depend on an external serialization.  No claim of byte-for-byte equality with
+the Python JSON encoding is made here; the next cycle proves the registered
+T3/T6 component correspondence.
 -/
 
 namespace AAT.AG.ResolutionInvariance

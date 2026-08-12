@@ -3575,9 +3575,15 @@ tracking_issue_closed: false
 - completion candidate: `no`
 - primary specification:
   - fixed GOAL claim (v) and permanent-observation requirements
-  - `research/experiments/g104-necessity-map/r2_hunt.py` permanent v5 reducer /
-    observation implementation
-- permanent contract source SHA-256:
+  - `research/experiments/g104-necessity-map/g_local_v1.py`: permanent
+    16-component observation contract, observation constructor, and serializer
+  - `research/experiments/g104-necessity-map/r2_hunt.py`: permanent v5
+    structural reducer and condition helpers
+  - `research/experiments/g104-necessity-map/necessity_map.py`: base restriction
+    structures consumed by the reducer
+  - `research/experiments/g104-necessity-map/g_local_v1_stop_b.py`: permanent
+    contract manifest and canonical source-bundle owner
+- permanent contract source-bundle SHA-256:
   `5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8`
 - primary Lean files:
   - [`GLocalV1ObservationValue.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1ObservationValue.lean)
@@ -3674,6 +3680,14 @@ Python JSONとのbyte-for-byte serialization equalityは主張しない。
 実体解消とpermanent sourceへの対応を再構成し、
 `approve / proof-obligation-discharged`を返した。
 
+Formal reviewではさらに、`SelfLoopEntries` certificateの非充足側と、
+非自明なkernel設計の明示的なImplementation notes、恒久sourceの役割別
+provenanceを要求した。`not_nonempty_selfLoopEntries_nat` は有限listで無限型を
+被覆できないことからnegative instanceを固定し、4 kernel moduleは棄却した
+certificate / serialization / target-fitting routeをmodule docstringに記録した。
+上記primary specificationは観測、reducer、base structure、contract manifestの
+ownerを分離している。
+
 ### Primary declarations
 
 - codomain / contract:
@@ -3723,6 +3737,8 @@ Python JSONとのbyte-for-byte serialization equalityは主張しない。
   - all-reachable-state packet-kind union
   - terminal C0--C6 evaluation and target-relabel orbit minimum
   - six new Prop kernels' nonvacuous positive / negative instances
+  - finite `SelfLoopEntries` certificateのpositive instanceとinfinite-`Nat`
+    negative instance
 - remaining:
   - registered T3 / T6 raw structural presentations and fieldwise provenance
   - all `Obs_G` component evaluations and `obsG T3 = obsG T6`
@@ -3751,10 +3767,14 @@ Python JSONとのbyte-for-byte serialization equalityは主張しない。
   - `GLocalV1KernelInstancePairs.lean` pass; namespace audit 22 declarations,
     standard-only
   - modified presentation / fixture clients pass
+  - `UniformPresentationInstancePairs.lean` formal-review remediation pass;
+    namespace audit 10 declarations, standard-only
 - targeted module build:
   - `ResearchLean.AG.UniformInvariance.GLocalV1V5Reduction` pass, 3716 jobs
   - `ResearchLean.AG.UniformInvariance.GLocalV1KernelInstancePairs` pass,
     3753 jobs; this route also rebuilds `GLocalV1Observation`
+  - `ResearchLean.AG.UniformInvariance.UniformPresentationInstancePairs` pass,
+    3717 jobs
 - direct executable smoke on reviewed pFire input:
   - aggregate condition vector: C0--C6 all `true`
   - whole rooted-ball histogram: 15 rows
@@ -3774,15 +3794,15 @@ source SHA-256:
 - `FiniteComparisonPresentation.lean`:
   `ff29a0a815d8252afa5beefea4e49000b26b5a12b4d303d20f7d0ba6e89c5f14`
 - `GLocalV1ObservationValue.lean`:
-  `13f00980d8981b0cdb024047b0bc9144630f4a82f8333e09784ed45a4df924aa`
+  `cec9008e29171dd97b03b038aafb8a7eb2e2e2d1beccce6dbd738130cb0b1499`
 - `GLocalV1V5Reduction.lean`:
-  `3fa96886d1133b7a6b1fcc4ebe2b7aacf9c2d44170a285f87742cae97462473f`
+  `b25498754dfa7448a7c150a3152ebc3decf7a104cdfe20e9e4029c8724030c4f`
 - `GLocalV1Observation.lean`:
-  `ae7df4ba088e6b530e8a6192f3d54b116cc86d0d7c45af5658eda9a43adfd454`
+  `6e8e7a5112f90a437a08ca4e34a7972ec8ad809ccf33cf95850241407581fd43`
 - `GLocalV1KernelInstancePairs.lean`:
-  `a4b78db0ea14c26cf3f4160d986a3190c3fb05532e85f843b4ba102a6ba37f5f`
+  `6805de14950439191082d5893fc3393d8722c74b3677bd354c33adceb83b6c57`
 - `UniformPresentationInstancePairs.lean`:
-  `3683f572960c24e21071dedd5ab89d4633561eab7ac060d4fc1c1802f54b9546`
+  `4afda082df2e1ec94269eb530bc3d7ad82eb59b705b02b32fb46999bbadd9477`
 - `AG.lean`:
   `0e8b62a38f595b223eb1f091e374afd481f314ad6295da7aead3095b8ff1f975`
 - `research-modules.txt`:
@@ -3800,7 +3820,12 @@ result_type: proof-obligation-discharged
 proof_obligation: faithful definition-level permanent G_local-v1 reducer and Obs_G packet
 proof_obligation_delta: permanent 16-component codomain, full v5 reduction, all-terminal evaluation, and executable target-relabel minimum are generated from finite raw presentation data
 primary_specification:
-  source: research/goals/G-107-aat-uniform-invariance-characterization.md and permanent r2_hunt.py source
+  source:
+    goal: research/goals/G-107-aat-uniform-invariance-characterization.md
+    observation: research/experiments/g104-necessity-map/g_local_v1.py
+    reducer: research/experiments/g104-necessity-map/r2_hunt.py
+    base_restrictions: research/experiments/g104-necessity-map/necessity_map.py
+    contract_manifest: research/experiments/g104-necessity-map/g_local_v1_stop_b.py
   version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4 / 5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8
   status: recorded
 premise_delta:
@@ -3811,6 +3836,7 @@ premise_delta:
     - all-reachable-state packet-kind union and all-terminal C0-C6 evaluation
     - internally generated factor-preserving target relabel orbit minimum
     - positive and negative instances for six new Prop kernels
+    - positive and negative instances for the finite fixture enumeration certificate
   remaining:
     - registered T3 and T6 structural presentation transfer
     - T3 and T6 component evaluation and obsG equality

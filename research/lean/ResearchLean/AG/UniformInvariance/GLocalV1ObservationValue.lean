@@ -15,6 +15,16 @@ absent histogram row; every row therefore has multiplicity `one` or
 `atLeastTwo`.  `gLocalV1Histogram` is the single normalization constructor used
 by the observation pipeline: it sorts payloads, removes duplicate rows, and
 computes the clipped count from the complete occurrence list.
+
+## Implementation notes
+
+Closed Lean inductives and structures mirror the sixteen rows of the permanent
+`g_local_v1.py` observation contract while keeping serialization outside the
+mathematical value.  Raw JSON objects and string-tagged records were rejected:
+they would expose encoding choices and could carry forbidden fixture identifiers.
+Exact multiplicities above two were also rejected because the permanent
+grammar deliberately identifies them; the normalized clip-two histogram is the
+single owner of that quotient.
 -/
 
 namespace AAT.AG.ResolutionInvariance

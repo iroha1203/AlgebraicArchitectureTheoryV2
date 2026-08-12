@@ -38,6 +38,17 @@ private instance : SelfLoopEntries Bool where
   entries := [false, true]
   complete := by intro value; cases value <;> simp
 
+/-- The fixture enumeration certificate is genuinely finite: no certificate
+can cover the infinite type `Nat`.  This is the negative §1.4 instance for the
+private helper structure; infinitude, rather than any checker result or
+presentation-specific conclusion, supplies the obstruction. -/
+private theorem not_nonempty_selfLoopEntries_nat :
+    ¬ Nonempty (SelfLoopEntries Nat) := by
+  rintro ⟨certificate⟩
+  obtain ⟨value, hvalue⟩ :=
+    Infinite.exists_notMem_finset certificate.entries.toFinset
+  exact hvalue (by simpa using certificate.complete value)
+
 /-- Raw singleton-target comparison data with a caller-specified finite type
 of parallel fine self-loop edges. -/
 private def selfLoopPresentation (FineEdge : Type)
