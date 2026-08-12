@@ -2631,7 +2631,7 @@ actual target-zero H¹ mapのimageとして構成し、上記all-subset theorem�
 ### Public no-unfold API delta
 
 本witnessがgeneric actual-complex定義を下流で展開しないよう、既存定義の計算則だけを
-次のpublic theoremとして追加した。
+各definition ownerの対応定義直後へ次のpublic theoremとして追加した。
 
 - `TargetSupportedNerve.targetSubsetComplex_d0_apply`
 - `TargetSupportedNerve.targetSubsetComplex_d1_apply`
@@ -2639,14 +2639,17 @@ actual target-zero H¹ mapのimageとして構成し、上記all-subset theorem�
 - `ThreeCochainComplex.Hom.cyclesMap_apply`
 - `ThreeCochainComplex.Hom.cyclesMap_sub_apply`
 
-いずれもendpoint / face incidence、既存`d0`、既存`f1`のdefinition-owner evaluationを
-返す`rfl` theoremで、新premise・field・matrix・rank・H¹・resultを追加しない。
+前2本は`ASubnerveReduction.lean`、後3本は係数体一般の
+`TwoPhase/CohomologyComparison.lean`に置いた。いずれもendpoint / face incidence、
+既存`d0`、既存`f1`のdefinition-owner evaluationを返す`rfl` theoremで、新premise・
+field・matrix・rank・H¹・resultを追加しない。
 
 ### Lean artifacts and verification
 
 - Lean files:
   - `research/lean/ResearchLean/AG/UniformInvariance/ConditionC0NonnecessityWitness.lean`
   - `research/lean/ResearchLean/AG/UniformInvariance/ASubnerveReduction.lean`
+  - `research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean`
   - `research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean`
   - `research/lean/ResearchLean/AG.lean`
   - `research/lean/research-modules.txt`
@@ -2660,9 +2663,12 @@ actual target-zero H¹ mapのimageとして構成し、上記all-subset theorem�
   - `R1ConditionC0Witness.targetZero_both_h1_pos`
   - `R1ConditionC0Witness.c0_not_necessary`
 - focused elaboration:
+  - `CohomologyComparison.lean`: pass、18 declarations standard axioms only
   - `ASubnerveReduction.lean`: pass、99 declarations standard axioms only
+  - `PresentationASubnerveDefect.lean`: pass、TwoPhase 4 / ResolutionInvariance 128 declarations standard axioms only
   - `ConditionC0NonnecessityWitness.lean`: pass、57 declarations standard axioms only
 - targeted module build:
+  - `CohomologyComparison`: pass (3692 jobs)
   - `PresentationASubnerveDefect`: pass (3715 jobs)
   - `ConditionC0NonnecessityWitness`: pass (3739 jobs)
 - direct execution:
@@ -2682,8 +2688,10 @@ source SHA-256:
   `d9ab09fd400cd4a130defc5a8dd8eeebeecfe79d3c50338f7ac11f213ff3ec0e`
 - `ASubnerveReduction.lean`:
   `af3f89ed9c5ff83d74885d0dc29dd0948cf9453cef0fc83346d587db5dd82218`
+- `CohomologyComparison.lean`:
+  `fd16285ce4434559138fa7c170d34de694679bd5d8d04dd82174a075e6bb4ae3`
 - `PresentationASubnerveDefect.lean`:
-  `dd45dd908f55de7027983d79d8d63807a09e0b9028de56bc85c4cad922a39ccf`
+  `611852da7b857b95512f89af438e347c1c65ff1498c85a8ed29d267b8da43968`
 - `AG.lean`:
   `8233125c8fc75d2ce3f7273fa5e31799f81e36a35ff09e834d94c4decacd6fa6`
 - `research-modules.txt`:
@@ -2728,7 +2736,7 @@ lean_artifacts:
     declarations:
       - TargetSupportedNerve.targetSubsetComplex_d0_apply
       - TargetSupportedNerve.targetSubsetComplex_d1_apply
-  - file: research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean
+  - file: research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean
     declarations:
       - ThreeCochainComplex.boundaryToCycles_apply
       - ThreeCochainComplex.Hom.cyclesMap_apply
