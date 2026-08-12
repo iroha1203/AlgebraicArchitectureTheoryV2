@@ -3989,7 +3989,7 @@ fixed source SHA-256:
 - `GLocalV1V5Reduction.lean`:
   `daa981d533b3d7b4fbf35a794375c374d80329010fec65a3bbcb240abf14041a`
 - `GLocalV1T3T6Witnesses.lean`:
-  `37a4204e431d59a3114dce16a9746694b4bbd32f8bf6f60dda8f6844508dec08`
+  `969d55907c6571bee3f37bf7582eb394e1c520e46b43543c37914876050608df`
 - `AG.lean`:
   `1dbe9c76e3500d7c1c0780b454d1835e1fdba6896e893fc1709edfaaab005260`
 - `research-modules.txt`:

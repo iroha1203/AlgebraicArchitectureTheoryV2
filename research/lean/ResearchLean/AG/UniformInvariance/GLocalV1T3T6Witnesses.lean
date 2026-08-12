@@ -328,7 +328,7 @@ semantic label. -/
 /-- Distinct T3 faces have distinct coarse FaceTwin keys in every scope.
 
 Position: fixture-normalization API supporting the structural packet exclusion
-for claim (v)(b).  Injectivity is derived from the registered slot-zero face
+for claim (v)(a).  Injectivity is derived from the registered slot-zero face
 table and does not assume packet emptiness, an observation, or a label. -/
 theorem t3_faceKey_injective (A : Finset (Fin 2)) :
     Function.Injective (t3Presentation.gLocalV1CoarseFaceKey A) := by
@@ -340,7 +340,7 @@ theorem t3_faceKey_injective (A : Finset (Fin 2)) :
 /-- Every T3 face is selected by every nonempty registered target scope.
 
 Position: fixture-normalization API for the T3 packet-exclusion proof in
-claim (v)(b).  The premise is exactly nonemptiness of the explicit coarse
+claim (v)(a).  The premise is exactly nonemptiness of the explicit coarse
 target scope; no reducer result or expected observation is supplied. -/
 theorem t3_face_mem_coarseFaces_of_nonempty (A : Finset (Fin 2))
     (hA : A.Nonempty) (face : Fin 3) :
@@ -355,7 +355,7 @@ theorem t3_face_mem_coarseFaces_of_nonempty (A : Finset (Fin 2))
 /-- A nonzero T3 signed face coefficient occurs in a second face.
 
 Position: raw finite-incidence lemma excluding singleton coarse occurrences
-in the T3 initial state for claim (v)(b).  It uses only the registered three
+in the T3 initial state for claim (v)(a).  It uses only the registered three
 face rows and does not consume a packet, terminal, or observation value. -/
 theorem t3_face_has_other_occurrence (face : Fin 3) (edge : Fin 4)
     (hcoeff : gLocalV1SignedCoefficient
@@ -369,7 +369,7 @@ theorem t3_face_has_other_occurrence (face : Fin 3) (edge : Fin 4)
 
 /-- The T3 initial state has no packet at any nonempty target scope.
 
-Position: primary T3 route-integrity theorem for claim (v)(b).  It applies
+Position: primary T3 route-integrity theorem for claim (v)(a).  It applies
 the definition-owner packet-family eliminator to raw incidence/support facts;
 it neither enumerates assignment spaces nor supplies an expected terminal,
 observation, defect, checker result, or semantic label. -/
@@ -432,7 +432,7 @@ theorem t3_initial_packet_empty_of_nonempty (A : Finset (Fin 2))
 /-- Distinct T6 faces have distinct coarse FaceTwin keys in every scope.
 
 Position: fixture-normalization API supporting the structural packet exclusion
-for claim (v)(b).  Injectivity is derived from the registered slot-zero face
+for claim (v)(a).  Injectivity is derived from the registered slot-zero face
 table and does not assume packet emptiness, an observation, or a label. -/
 theorem t6_faceKey_injective (A : Finset (Fin 2)) :
     Function.Injective (t6Presentation.gLocalV1CoarseFaceKey A) := by
@@ -444,7 +444,7 @@ theorem t6_faceKey_injective (A : Finset (Fin 2)) :
 /-- Every T6 face is selected by every nonempty registered target scope.
 
 Position: fixture-normalization API for the T6 packet-exclusion proof in
-claim (v)(b).  The premise is exactly nonemptiness of the explicit coarse
+claim (v)(a).  The premise is exactly nonemptiness of the explicit coarse
 target scope; no reducer result or expected observation is supplied. -/
 theorem t6_face_mem_coarseFaces_of_nonempty (A : Finset (Fin 2))
     (hA : A.Nonempty) (face : Fin 6) :
@@ -459,7 +459,7 @@ theorem t6_face_mem_coarseFaces_of_nonempty (A : Finset (Fin 2))
 /-- A nonzero T6 signed face coefficient occurs in a second face.
 
 Position: raw finite-incidence lemma excluding singleton coarse occurrences
-in the T6 initial state for claim (v)(b).  It uses only the registered six
+in the T6 initial state for claim (v)(a).  It uses only the registered six
 face rows and does not consume a packet, terminal, or observation value. -/
 theorem t6_face_has_other_occurrence (face : Fin 6) (edge : Fin 7)
     (hcoeff : gLocalV1SignedCoefficient
@@ -473,7 +473,7 @@ theorem t6_face_has_other_occurrence (face : Fin 6) (edge : Fin 7)
 
 /-- The T6 initial state has no packet at any nonempty target scope.
 
-Position: primary T6 route-integrity theorem for claim (v)(b).  It applies
+Position: primary T6 route-integrity theorem for claim (v)(a).  It applies
 the definition-owner packet-family eliminator to raw incidence/support facts;
 it neither enumerates assignment spaces nor supplies an expected terminal,
 observation, defect, checker result, or semantic label. -/
@@ -536,7 +536,7 @@ theorem t6_initial_packet_empty_of_nonempty (A : Finset (Fin 2))
 /-- T3 has no initial reduction packet at target zero.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t3_targetZero_initial_packet_empty :
     t3Presentation.gLocalV1PacketVariants targetZero
@@ -546,7 +546,7 @@ theorem t3_targetZero_initial_packet_empty :
 /-- T3 has no initial reduction packet at target one.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t3_targetOne_initial_packet_empty :
     t3Presentation.gLocalV1PacketVariants targetOne
@@ -556,7 +556,7 @@ theorem t3_targetOne_initial_packet_empty :
 /-- T3 has no initial reduction packet at the full target.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t3_targetFull_initial_packet_empty :
     t3Presentation.gLocalV1PacketVariants targetFull
@@ -566,7 +566,7 @@ theorem t3_targetFull_initial_packet_empty :
 /-- T6 has no initial reduction packet at target zero.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t6_targetZero_initial_packet_empty :
     t6Presentation.gLocalV1PacketVariants targetZero
@@ -576,7 +576,7 @@ theorem t6_targetZero_initial_packet_empty :
 /-- T6 has no initial reduction packet at target one.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t6_targetOne_initial_packet_empty :
     t6Presentation.gLocalV1PacketVariants targetOne
@@ -586,7 +586,7 @@ theorem t6_targetOne_initial_packet_empty :
 /-- T6 has no initial reduction packet at the full target.
 
 Position: raw reducer firing fact for the observation fast path in claim
-(v)(b).  It computes the generic packet kernel from the registered tables and
+(v)(a).  It computes the generic packet kernel from the registered tables and
 does not supply a terminal, observation, or label. -/
 theorem t6_targetFull_initial_packet_empty :
     t6Presentation.gLocalV1PacketVariants targetFull
