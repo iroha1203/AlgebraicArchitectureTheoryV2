@@ -1099,6 +1099,69 @@ theorem conditionC3At_of_conditionC3AtTargetSubset_labelValueFiber
       _ = coordinateFaceBoundary laws hfine fine label facesBlock fineEdge := by
         simp [selectedEdge, edgeEquiv]
 
+/-- Rational fiber-cycle filling on one G-104 law-value block implies C3 on
+the actual A-subnerve of the corresponding coarse label fiber.
+
+Together with `conditionC3At_of_conditionC3AtTargetSubset_labelValueFiber`,
+this exposes both directions of the canonical cell reindexing without asking
+clients to unfold the cycle or face-boundary definitions. -/
+theorem conditionC3AtTargetSubset_of_conditionC3At_labelValueFiber
+    [Fintype Source]
+    (M : TargetSupportedNerveMorphism coarseReading fineReading hcoarser
+      coarse fine)
+    (laws : FiniteLawFamily Source)
+    (hcoarse : laws.Adequate coarseReading)
+    (hfine : laws.Adequate fineReading)
+    (label : LawValueLabel laws)
+    (hC3 : M.ConditionC3At laws hcoarse hfine label) :
+    M.ConditionC3AtTargetSubset
+      (labelValueFiber laws coarseReading hcoarse label) := by
+  intro coarseChart chain hcycle
+  let coarseEquiv := coarse.labelFiberChartEquivBlock laws hcoarse label
+  let edgeEquiv := fine.labelPreimageEdgeEquivBlock laws coarseReading
+    hcoarser hcoarse hfine label
+  let faceEquiv := fine.labelPreimageFaceEquivBlock laws coarseReading
+    hcoarser hcoarse hfine label
+  let blockChain : fine.EdgeBlockCoordinate laws hfine label → ℚ :=
+    fun edge ↦ chain (edgeEquiv.symm edge)
+  have hcycleBlock :
+      M.CoordinateFiberCycle laws hcoarse hfine label
+        (coarseEquiv coarseChart) blockChain := by
+    exact
+      (M.targetSubsetFiberCycle_iff_coordinateFiberCycle_labelValueFiber
+        laws hcoarse hfine label coarseChart chain).1 hcycle
+  obtain ⟨facesBlock, hfacesSupport, hfacesBoundary⟩ :=
+    hC3 (coarseEquiv coarseChart) blockChain hcycleBlock
+  let facesA : fine.FaceInTargetSubset
+      (comparisonFactor coarseReading fineReading hcoarser ⁻¹'
+        labelValueFiber laws coarseReading hcoarse label) → ℚ :=
+    fun face ↦ facesBlock (faceEquiv face)
+  refine ⟨facesA, ?_, ?_⟩
+  · intro fineFace hnotInternal
+    apply hfacesSupport (faceEquiv fineFace)
+    intro hblock
+    apply hnotInternal
+    exact
+      (M.targetSubsetInternalFace_iff_coordinateInternalFace_labelValueFiber
+        laws hcoarse hfine label coarseChart fineFace).2
+        (by simpa [coarseEquiv, faceEquiv] using hblock)
+  · intro fineEdge
+    have hboundary := hfacesBoundary (edgeEquiv fineEdge)
+    have hreindex :=
+      targetSubsetFaceBoundary_eq_coordinateFaceBoundary_labelValueFiber
+        (coarseReading := coarseReading) (fineReading := fineReading)
+        (hcoarser := hcoarser) laws hcoarse hfine label facesA fineEdge
+    calc
+      chain fineEdge = blockChain (edgeEquiv fineEdge) := by
+        simp [blockChain, edgeEquiv]
+      _ = coordinateFaceBoundary laws hfine fine label facesBlock
+          (edgeEquiv fineEdge) := hboundary
+      _ = targetSubsetFaceBoundary fine
+          (comparisonFactor coarseReading fineReading hcoarser ⁻¹'
+            labelValueFiber laws coarseReading hcoarse label)
+          facesA fineEdge := by
+        simpa [facesA, faceEquiv, edgeEquiv] using hreindex.symm
+
 /-! ## The all-laws bridge -/
 
 /-- The law-free all-subset Atlas condition implies the original G-104

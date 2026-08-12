@@ -84,7 +84,12 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `generatedComparisonH1Map_bijective` と直接合成して
   `ConditionCAllA M → M.UniformInvariance` を証明した。これにより claim (iii) の
   Atlas包含方向を閉じた。
-- 未完了: C0--C6非必要性 witness 7種による包含真性、`Obs_G` / T3 / T6 /
+- 完了(Cycle 15): R1 `C3_not_necessary` raw presentationをfieldwise転写し、全
+  target subsetでactual H¹ comparisonが全単射であることをcochain equivalenceから
+  証明した。同じ `A={0}` でactual C3の直接failureとcoarse / fine両側の非零H¹を
+  固定し、nonconstant indicator lawのlaw-indexed C3 failureへ逆transportした。
+  これによりC3の非必要性とAtlas包含の真性を閉じた。
+- 未完了: C0 / C1 / C2 / C4 / C5 / C6非必要性 witness 6種、`Obs_G` / T3 / T6 /
   observation nonfactorization、Cycle 12由来の非中心品質負債2件。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -207,6 +212,7 @@ next_obligation: prove global generated H1 comparison bijective iff every source
 completion_candidate: false
 tracking_issue_closed: false
 ```
+
 
 ## Cycle 2 — global H¹ bijectivity iff blockwise bijectivity
 
@@ -2127,6 +2133,166 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: construct and verify the seven C0-C6 non-necessity witnesses, each with the required nondegenerate A-subnerve H1 block and direct ConditionCAllA component failure
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 15 — exact C3 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean files:
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean)
+  - [`research/lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean)
+- primary declarations:
+  - `TargetSupportedNerveMorphism.conditionC3AtTargetSubset_of_conditionC3At_labelValueFiber`
+  - `R1ConditionC3Witness.presentation`
+  - `R1ConditionC3Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC3Witness.uniformPresentationCheck_true`
+  - `R1ConditionC3Witness.uniformPresentation`
+  - `R1ConditionC3Witness.conditionC3AtTargetSubsetCheck_false`
+  - `R1ConditionC3Witness.not_conditionC3AtTargetSubset`
+  - `R1ConditionC3Witness.conditionCAllACheck_false`
+  - `R1ConditionC3Witness.not_conditionCAllA`
+  - `R1ConditionC3Witness.targetZero_both_h1_pos`
+  - `R1ConditionC3Witness.indicatorLaw_nonconstant`
+  - `R1ConditionC3Witness.indicator_not_conditionC3`
+  - `R1ConditionC3Witness.c3_not_necessary`
+- verification:
+  - witness focused check: pass、警告なし
+  - `ResearchLean.AG.UniformInvariance.ConditionC3NonnecessityWitness`
+    targeted module build: pass (3740 jobs)
+  - witness namespace axiom audit: 87 declarations、standard axioms only
+  - bridgeを含む主要6 declarationの型確認と `#print axioms`:
+    `propext`、`Classical.choice`、`Quot.sound` のみ
+  - canonical R1 report SHA-256とname-free semantic SHA-256を既存canonical
+    generatorから再現し、raw tableをfieldwise照合
+  - `git diff --check`、placeholder、`unsafe`、`native_decide`、
+    `Classical.dec`、hidden / bidirectional Unicode、privacy、
+    Formal→Research逆import、aggregate / manifest scan: clean
+  - Research全体のfull build: ユーザー指定により未実行
+- T3 independent audit: `approve / proof-obligation-discharged`
+  - source SHA-256:
+    - `ConditionCAllABridge.lean`:
+      `2389d0e417bc7be28c4fb0576262428deb5c4cf6f046c322c8b31536446bc4d3`
+    - `ConditionC3NonnecessityWitness.lean`:
+      `2aea45d2cf173c5b6c77cab3b642967f5d82be68454aed9e404b13c45f515cda`
+  - all-subset actual cochain / H¹ equivalence、target-zero C3 failure、同じ
+    canonical-preimage comparison上の両側非零H¹、indicator true-fiber逆transport、
+    raw field内容を独立に追跡し、blocking findingなし。
+
+### Premise delta
+
+- discharged: exact R1 `C3_not_necessary` presentationの全非空 `A` に対する
+  `UniformPresentation`、`A={0}` におけるactual
+  `ConditionC3AtTargetSubset` failureと同じcomparisonの両側非零H¹、
+  nonconstant indicator lawによるlaw-indexed `ConditionC3` failure、
+  `ConditionCAllA`の直接failure、C3 witnessによるAtlas包含の真性。
+- remaining: C0 / C1 / C2 / C4 / C5 / C6の個別non-necessity witness、
+  `Obs_G`忠実転写、T3 / T6 labels、観測等値、observation
+  nonfactorization、Cycle 12品質負債2件。
+
+### Provenance / proof-use / escape audit
+
+- certificate provenance: canonical R1 report SHA-256
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
+  とname-free semantic SHA-256
+  `9bbb58959ac5840b3a50befbf3132fcf0b2e7dbaf41f91695c406a8c15ec5cc0`
+  を独立再現した。factor `[0,0,1]`、両nerve、support、identity cell mapを
+  fieldwise照合した。実験結果は転写照合先でありLean proof premiseではない。
+- proof-use: raw support / preimage / incidenceから全 `A` のselected cell
+  equivalenceとactual cochain equivalenceを構成し、actual comparison `f1`との
+  equalityからactual quotient-H¹ mapの全単射性を得た。target-zeroのisolated
+  self-loop、flow conservation、face不在からraw / semantic C3 failureを得た。
+  coarse quotient-H¹ classのunit periodとactual mapのinjectivityから同じ `A` の
+  fine H¹非零を得た。indicator adequacy、true-fiber equality、新しい逆transport
+  theoremはlaw-indexed C3反証に実使用される。
+- structure-field escape: none found。presentationはraw reading、enumeration、
+  incidence、support、partial cell map、well-formednessのみを持つ。factor、matrix、
+  rank、H¹、defect、condition / checker result、certificate fieldを持たない。
+- route integrity: pass。個別rank profileを保存する代わりに、全 `Finset A` のactual
+  comparisonをcochain equivalenceで直接全単射にする、より強いrouteを用いた。
+- cheat-route audit: opaque decision bit、fixed-indicator-only uniformity、
+  conclusion-equivalent field、supplied factor、零H¹によるvacuity、
+  one-way-as-equivalenceはいずれも `none-found`。
+- localized elaboration: `selectedFaceEquiv`だけに置いた
+  `set_option maxHeartbeats 400000 in` はcompile上限であり、数学premiseや
+  certificateではない。
+
+### Carried quality obligations from Cycle 12
+
+本witnessの中心claimには影響しないため、次の2件は最終completion前のnarrow
+remediationとして引き続き保持する。
+
+1. selected-cell / fiber / internal-face membership characterizationの公開
+   no-unfold API化と、`ConditionCAllAFiring.lean`の直接definition展開の置換。
+2. Cycle 12 private helper群の個別docstring補完。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 15
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: formalize the exact R1 C3_not_necessary raw presentation with all-subset uniformity, direct C3 failure, and nonzero H1 on both sides of the same failing subset
+proof_obligation_delta: C3 is now proved non-necessary, and one uniform presentation outside ConditionCAllA establishes strictness of the Atlas inclusion
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 98cb58f76e65d7d8c54224b34a423a994f844064
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean
+    declarations:
+      - TargetSupportedNerveMorphism.conditionC3AtTargetSubset_of_conditionC3At_labelValueFiber
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean
+    declarations:
+      - R1ConditionC3Witness.presentation
+      - R1ConditionC3Witness.uniformPresentation
+      - R1ConditionC3Witness.not_conditionC3AtTargetSubset
+      - R1ConditionC3Witness.targetZero_both_h1_pos
+      - R1ConditionC3Witness.indicator_not_conditionC3
+      - R1ConditionC3Witness.c3_not_necessary
+premise_delta:
+  discharged:
+    - exact R1 C3_not_necessary raw presentation is semantically uniform on every nonempty target subset
+    - actual C3 and ConditionCAllA fail directly on target zero
+    - coarse and fine H1 are both nonzero on that same target-zero comparison
+    - a nonconstant indicator law realizes the same law-indexed C3 failure
+    - the Condition-C locus is a strict subset of the uniform-invariance locus
+  remaining:
+    - C0 C1 C2 C4 C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+    - two noncentral Cycle 12 quality-remediation items
+certificate_provenance:
+  discharged:
+    - canonical R1 report and name-free semantic hashes independently reproduced
+    - raw factor, nerves, supports, and cell maps matched field by field
+    - actual factor and H1 results generated in Lean rather than stored in the presentation
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw finite reading support incidence and partial cell-map tables
+    - all-subset actual cochain equivalence and actual H1 comparison
+    - target-zero loop conservation, face absence, and quotient-period witness
+    - indicator adequacy, true-fiber equality, and reverse C3 transport
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: formalize the exact R1 C0_not_necessary witness with uniformity, direct C0 and ConditionCAllA failure, and nonzero H1 on both sides of a nonempty block meeting the failure data
 completion_candidate: false
 tracking_issue_closed: false
 ```
