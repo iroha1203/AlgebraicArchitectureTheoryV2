@@ -874,8 +874,8 @@ theorem loopChain_cycle :
       (coordinate := chart) ?_
     intro cell hmap
     fin_cases cell <;>
-      simp [coordinateFiberIncoming_formula, coordinateFiberOutgoing_formula,
-        loopChain, fineNerve, chartMap, Fin.sum_univ_succ] at hmap ⊢
+      rw [coordinateFiberIncoming_formula, coordinateFiberOutgoing_formula] <;>
+        simp [loopChain, fineNerve, chartMap, Fin.sum_univ_succ] at hmap ⊢
 
 /-- Negative §1.4 instance: the outside-edge chain violates fiber support. -/
 theorem not_badSupportChain_cycle :
