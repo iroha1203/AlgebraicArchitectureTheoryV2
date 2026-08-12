@@ -7,9 +7,10 @@ import Formal.Util.AssertStandardAxioms
 # A uniform comparison outside the C1 locus
 
 This module formalizes the exact `C1_not_necessary` fixture from the bounded
-R1 necessity map for `G-107-aat-uniform-invariance-characterization`.  The raw
-presentation is copied field by field from the deterministic R1 payload: its
-parent payload has SHA-256
+R1 necessity map for `G-107-aat-uniform-invariance-characterization`.  The
+deterministic payload fixes the factor, target counts, nerves, supports, and
+cell maps; the source and readings below are a canonical realization of that
+factor.  The parent payload has SHA-256
 `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`,
 and the canonical name-free serializer recomputes SHA-256
 `59e02ca26270c672ee5b96791f48742f3e7171f165d5c236f8c796626ed1310a`.

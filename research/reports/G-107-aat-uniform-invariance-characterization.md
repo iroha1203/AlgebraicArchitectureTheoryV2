@@ -106,8 +106,9 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   semantic C0と`ConditionCAllA`を直接反証し、nonconstant indicator law上のfull
   `ConditionC` failureへ接続した。同じfailed targetを含む`A={0}`でexplicit
   self-loop quotient classとactual map injectivityからcoarse / fine両H¹非零も固定した。
-- 完了(Cycle 18): exact R1 `C1_not_necessary` raw
-  presentationをfieldwise転写した。登録failure scopeのうち、C1 failureと両側
+- 完了(Cycle 18): exact R1 `C1_not_necessary` のfactor・target counts・nerve・
+  support・cell mapをfieldwise転写し、source / readingsはfactorのcanonical
+  realizationとして構成した。登録failure scopeのうち、C1 failureと両側
   H¹非零が同じsubsetで成立するfull target `A={0,1}`を選び、coarse chart 1の
   fiberにあるdistinct fine charts 1,2がsole self-loop at chart 0では到達不能で
   あることをraw finite graphから直接証明した。全target subsetのactual H¹ map
@@ -2808,6 +2809,9 @@ tracking_issue_closed: false
   `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
 - canonical name-free semantic SHA-256:
   `59e02ca26270c672ee5b96791f48742f3e7171f165d5c236f8c796626ed1310a`
+- canonical payloadが直接固定するfactor・target counts・nerve・support・cell mapを
+  Lean tableへfieldwise転写し、`Source`・source enumeration・coarse/fine readingsは
+  そのfactorのcanonical realizationとして構成した。
 - primary declarations:
   - `R1ConditionC1Witness.presentation`
   - `R1ConditionC1Witness.aSubnerveComparisonHom_h1Map_bijective`
@@ -2877,7 +2881,7 @@ H¹ mapのinjectivityによるfine imageの非零性から得た。
 source SHA-256:
 
 - `ConditionC1NonnecessityWitness.lean`:
-  `c26df93fbc654780bef0d2ada0085bf576aa3c89de7621bcb52bc0ddd3e885f5`
+  `9450c73ad19a7c6fb3117c37207842b6234f5f8e944a88139f8da2cc5467d9f5`
 - `ConditionCAllABridge.lean`:
   `bb23fd0ae23195f140c4470dff2b9b246e24bbe8f9f102a17b40a177ac2d02e2`
 - `ConditionCAllAChecker.lean`:
