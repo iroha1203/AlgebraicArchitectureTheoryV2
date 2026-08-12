@@ -137,7 +137,16 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   `ConditionC`を反証し、同じblockのcoarse / fine両H¹非零も固定した。law-block
   C4からlabel-fiber A-subnerve C4へのreverse transportと、block face map equality
   からwhole face map equalityを取り出すdefinition-owner APIも追加した。
-- 未完了: C5 / C6非必要性 witness 2種、`Obs_G` / T3 / T6 /
+- 完了(Cycle 21): exact R1 `C5_not_necessary` のfactor・target counts・nerve・
+  support・partial edge mapをfieldwise転写し、source / readingsはfactorのcanonical
+  realizationとして構成した。coarse側のchart-one self-loop 1本へ、fine側のdistinctな
+  chart-one self-loop 2本が写るためwhole-nerve lift uniqueness C5は破れる。一方、
+  coarse側のrepeated face equationとfine側2本のrepeated face equationを実使用して、
+  全target subsetのactual quotient-H¹ mapのinjectivity / surjectivityを直接証明した。
+  C5、`ConditionCAllA`、aggregate checker、generated indicator law上のfull
+  `ConditionC`を直接反証し、同じfull subset `A={0,1}`がduplicate pairの共通supportと
+  交わること、およびcoarse / fine両actual H¹の非零性を接続した。
+- 未完了: C6非必要性 witness、`Obs_G` / T3 / T6 /
   observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
@@ -3262,6 +3271,146 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: exact R1 C5_not_necessary witness with same-A clause failure and coarse/fine actual H1 nonvanishing
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 21 — exact R1 C5 non-necessity witness
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- Lean file:
+  [`ConditionC5NonnecessityWitness.lean`](../lean/ResearchLean/AG/UniformInvariance/ConditionC5NonnecessityWitness.lean)
+- canonical R1 parent SHA-256:
+  `ff2d9fa12eb64bf343d3148f081e1164d4216d8548e53d90550eb53886dd359a`
+- canonical name-free semantic SHA-256:
+  `a1907afb86e6a570e244676e48358f9d21a87077ee868b09308177aef04b7ca4`
+- fixed `results-summary.json` SHA-256:
+  `556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e`
+- primary declarations:
+  - `R1ConditionC5Witness.presentation`
+  - `R1ConditionC5Witness.aSubnerveComparisonHom_h1Map_bijective`
+  - `R1ConditionC5Witness.uniformPresentation`
+  - `R1ConditionC5Witness.not_rawConditionC5`
+  - `R1ConditionC5Witness.not_conditionC5`
+  - `R1ConditionC5Witness.not_conditionCAllA`
+  - `R1ConditionC5Witness.indicator_not_conditionC`
+  - `R1ConditionC5Witness.failedLiftPair_support_meets_targetFull`
+  - `R1ConditionC5Witness.targetFull_both_h1_pos`
+  - `R1ConditionC5Witness.c5_not_necessary`
+
+### Fixed same-A scope and proof route
+
+canonical R1 payloadが直接固定するfactor・target counts・両nerve・support・cell mapを
+Lean tableへfieldwise転写し、Source / FineTarget `Fin 3`、CoarseTarget `Fin 2`、
+coarse reading `[0,0,1]`、fine reading `id`はfactorのcanonical realizationとして
+構成した。coarse nerveは2本のself-loopとchart-one loop上の1枚のrepeated face、
+fine nerveは同じchart-zero loop、2本のdistinctなchart-one loop、それぞれに1枚の
+repeated faceを持つ。fine chart-one loops 1, 2はともにcoarse loop 1へ写る。
+factor、duplicate-lift certificate、matrix、rank、H¹、defect、condition / checker bit、
+uniformity certificateはpresentation fieldにない。
+
+任意のfinite target subset `A`について、selected coarse edgeからcanonical fine liftを
+raw partial edge tableで構成し、fine edgeからcoarse imageへの射影がその左逆であることを
+証明した。fine cocycleでは2枚のrepeated face equationがduplicate edge 1, 2の係数を
+個別に零にし、coarse projectionがcoarse repeated-face equationを満たす。これにより
+actual degree-one pullbackのinjectivityとfine cycle上のsurjectivityを得て、literal
+quotient H¹上のinjectivity / surjectivityを別々に証明した。全subsetのdefect零、generic
+all-subset checker、full semantic `UniformPresentation`はこのactual-map theoremから導いた。
+
+whole nerveではdistinctなfine edges 1, 2が同じcoarse edge 1へ写るため、raw C5を直接
+反証し、generic raw / semantic iffでsemantic C5へ接続した。`ConditionCAllA`はその
+`conditionC5` projection、law-indexed `ConditionC`はgenerated full-indicator family上の
+`c5` fieldを使って直接反証した。full subset `targetFull={0,1}`はduplicate pairの共通
+fine support target 2をcanonical factorで受け取る。同じfull subset上でcoarse
+chart-zero self-loopのliteral quotient classがperiod argumentにより非零であり、actual
+H¹ mapのinjectivityからfine像も非零となる。C5 failureはtarget-one component、明示
+H¹ classはtarget-zero componentにあるので、固定GOALが要求するsame-A intersectionと
+両側非零H¹を主張し、それより強いsame-component因果性は主張しない。
+
+### Verification
+
+- focused elaboration: `ConditionC5NonnecessityWitness.lean` pass、71 declarations
+  standard-only
+- targeted module build:
+  `ResearchLean.AG.UniformInvariance.ConditionC5NonnecessityWitness` pass、3739 jobs
+- direct execution: C5 check `false`、aggregate check `false`、uniform check `true`、
+  `∅,{0},{1},{0,1}`のcomputed defectは全て`(0,0)`
+- primary 10 declarationsの`#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound` only
+- import-direction / research-package / separation gates: pass
+- placeholder / hidden-BiDi / privacy / `git diff --check`: clean
+- independent T3: `approve / proof-obligation-discharged`、blocking findingなし。
+  T3後に未使用fixture helperを削除し、両側H¹結合 theoremをmain proofで実使用する
+  狭い品質修正を行い、focused / targeted / direct execution / axiom auditを再実行した
+- 初回formal reviewで冗長な`ConditionCAllABridge` direct importと、edge indexを
+  coefficientの非零性とも読めるdocstringを指摘された。direct importを削除し、
+  docstringをnonzero edge indexへ限定して、同じ検証packetを修正後snapshotで再実行した
+- 修正後fixed snapshotのindependent T3も
+  `approve / proof-obligation-discharged`、blocking findingなし
+- Research full build: ユーザー指定により未実行
+
+source SHA-256:
+
+- `ConditionC5NonnecessityWitness.lean`:
+  `b2a853bf6349c07d50f36e5fd8b849c04e408e2c684bf25fbb57671d16583de5`
+- `AG.lean`:
+  `0779f19205eb8a8ad7bba54fc10e170d0dee9b2b045dd79d8dc0f4bbec9ffeb7`
+- `research-modules.txt`:
+  `39c5d570d5bdb37dc0b07588b3815ff5ceee4c150e3d1078b461a3f2d577c83b`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 21
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: exact R1 C5_not_necessary witness with direct C5 and ConditionCAllA failure, common-support same-A intersection, and coarse and fine actual H1 nonvanishing
+proof_obligation_delta: exact C5 witness is discharged without changing the fixed target or presentation field boundary
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+premise_delta:
+  discharged:
+    - exact canonical R1 factor, targets, nerves, supports, and maps with a canonical source-reading realization
+    - all-target-subset actual quotient-H1 bijectivity
+    - direct raw and semantic whole-nerve C5 failure
+    - direct ConditionCAllA and checker failure through the C5 projection
+    - law-indexed full ConditionC failure through its C5 field
+    - duplicate-pair common support meeting A={0,1}
+    - coarse and fine actual H1 nonvanishing on the same A={0,1}
+  remaining:
+    - C6 non-necessity witness
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+certificate_provenance:
+  status: raw-table-generated
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw readings and source enumeration
+    - self-loop incidence, chart supports, and duplicate partial edge map
+    - one coarse and two fine repeated-face equations
+    - generated indicator law and the ConditionC c5 field
+    - actual H1 map injectivity on the same full subset
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: exact R1 C6_not_necessary witness with direct whole-nerve C6 and ConditionCAllA failure, common-support same-A intersection, and coarse/fine actual H1 nonvanishing
 completion_candidate: false
 tracking_issue_closed: false
 ```
