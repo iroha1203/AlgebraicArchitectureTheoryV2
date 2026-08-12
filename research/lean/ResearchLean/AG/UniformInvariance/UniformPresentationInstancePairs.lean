@@ -161,7 +161,9 @@ def negativePresentation : FiniteComparisonPresentation :=
   selfLoopPresentation Bool
 
 /-- The unique selected coarse edge in the full target subset of either raw
-fixture. -/
+fixture.  This private instance helper is derived through the public
+raw-selection API and supplies a basis coordinate for rank computation; it
+does not store a rank or checker result. -/
 private def fullCoarseEdge (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] :
     (selfLoopPresentation FineEdge).CoarseEdgeIn Finset.univ :=
@@ -172,7 +174,9 @@ private def fullCoarseEdge (FineEdge : Type)
     rw [(selfLoopPresentation FineEdge).mem_coarseEdgeSupportFinset_iff_raw]
     simp [selfLoopPresentation]⟩
 
-/-- A selected fine edge in the full target subset of a self-loop fixture. -/
+/-- A selected fine edge in the full target subset of a self-loop fixture.
+This private instance helper is derived through the public raw-selection API
+and supplies a basis coordinate, not a comparison certificate. -/
 private def fullFineEdge (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge]
     (edge : FineEdge) :
@@ -204,7 +208,10 @@ private def fullFineEdgeEquiv (FineEdge : Type)
   left_inv edge := Subtype.ext (by rfl)
   right_inv edge := rfl
 
-/-- The positive block matrix has a unit entry in its comparison block. -/
+/-- The positive block matrix has a unit entry in its comparison block.  This
+private instance API computes the entry through the generic block-map
+evaluation lemmas from the raw partial edge table; the unit value is not
+stored in `positivePresentation`. -/
 private theorem positive_h1RankBlockMatrix_entry :
     positivePresentation.h1RankBlockMatrix Finset.univ
       (Sum.inr (fullFineEdge PUnit PUnit.unit))
@@ -215,26 +222,17 @@ private theorem positive_h1RankBlockMatrix_entry :
         some (fullCoarseEdge PUnit) :=
     (positivePresentation.edgeMapOptionIn_eq_some_iff Finset.univ
       (fullFineEdge PUnit PUnit.unit) (fullCoarseEdge PUnit)).2 rfl
-  change
-    (positivePresentation.edgeMapOptionIn Finset.univ
-          (fullFineEdge PUnit PUnit.unit)).elim 0
-          (fun coarseEdge =>
-            (Pi.single (Sum.inl (fullCoarseEdge PUnit)) 1 :
-              (positivePresentation.CoarseEdgeIn Finset.univ ⊕
-                positivePresentation.FineChartIn Finset.univ → ℚ))
-                (Sum.inl coarseEdge)) -
-        positivePresentation.fineD0LinearMap Finset.univ
-          (fun chart =>
-            (Pi.single (Sum.inl (fullCoarseEdge PUnit)) 1 :
-              (positivePresentation.CoarseEdgeIn Finset.univ ⊕
-                positivePresentation.FineChartIn Finset.univ → ℚ))
-                (Sum.inr chart))
-          (fullFineEdge PUnit PUnit.unit) = 1
-  rw [hmap]
-  simp [FiniteComparisonPresentation.fineD0LinearMap,
+  rw [positivePresentation.h1RankBlockMatrix_apply,
+    positivePresentation.h1RankBlockLinearMap_apply_inr,
+    positivePresentation.edgePullback1LinearMap_apply,
+    positivePresentation.fineD0LinearMap_apply, hmap]
+  simp [
     positivePresentation, selfLoopPresentation, fullFineEdge, fullCoarseEdge]
 
-/-- The negative block matrix has a unit entry in its comparison block. -/
+/-- The negative block matrix has a unit entry in its comparison block.  This
+private instance API computes the entry through the generic block-map
+evaluation lemmas from the raw partial edge table; the unit value is not
+stored in `negativePresentation`. -/
 private theorem negative_h1RankBlockMatrix_entry :
     negativePresentation.h1RankBlockMatrix Finset.univ
       (Sum.inr (fullFineEdge Bool false))
@@ -245,23 +243,11 @@ private theorem negative_h1RankBlockMatrix_entry :
         some (fullCoarseEdge Bool) :=
     (negativePresentation.edgeMapOptionIn_eq_some_iff Finset.univ
       (fullFineEdge Bool false) (fullCoarseEdge Bool)).2 rfl
-  change
-    (negativePresentation.edgeMapOptionIn Finset.univ
-          (fullFineEdge Bool false)).elim 0
-          (fun coarseEdge =>
-            (Pi.single (Sum.inl (fullCoarseEdge Bool)) 1 :
-              (negativePresentation.CoarseEdgeIn Finset.univ ⊕
-                negativePresentation.FineChartIn Finset.univ → ℚ))
-                (Sum.inl coarseEdge)) -
-        negativePresentation.fineD0LinearMap Finset.univ
-          (fun chart =>
-            (Pi.single (Sum.inl (fullCoarseEdge Bool)) 1 :
-              (negativePresentation.CoarseEdgeIn Finset.univ ⊕
-                negativePresentation.FineChartIn Finset.univ → ℚ))
-                (Sum.inr chart))
-          (fullFineEdge Bool false) = 1
-  rw [hmap]
-  simp [FiniteComparisonPresentation.fineD0LinearMap,
+  rw [negativePresentation.h1RankBlockMatrix_apply,
+    negativePresentation.h1RankBlockLinearMap_apply_inr,
+    negativePresentation.edgePullback1LinearMap_apply,
+    negativePresentation.fineD0LinearMap_apply, hmap]
+  simp [
     negativePresentation, selfLoopPresentation, fullFineEdge, fullCoarseEdge]
 
 /-- Empty face tables make the raw coarse degree-one matrix zero. -/
@@ -271,35 +257,39 @@ private theorem coarseD1Matrix_eq_zero (FineEdge : Type)
   ext face edge
   exact nomatch face.1
 
-/-- Self-loop endpoints make the raw coarse degree-zero matrix zero. -/
+/-- Self-loop endpoints make the raw coarse degree-zero matrix zero.  This
+private instance API uses the definition-owner matrix/linear-map evaluation
+lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
 private theorem coarseD0Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] :
     (selfLoopPresentation FineEdge).coarseD0Matrix Finset.univ = 0 := by
   ext edge chart
-  rw [FiniteComparisonPresentation.coarseD0Matrix,
-    LinearMap.toMatrix'_apply]
+  rw [(selfLoopPresentation FineEdge).coarseD0Matrix_apply,
+    (selfLoopPresentation FineEdge).coarseD0LinearMap_apply]
   have hendpoints :
       (selfLoopPresentation FineEdge).coarseEdgeRightIn Finset.univ edge =
         (selfLoopPresentation FineEdge).coarseEdgeLeftIn Finset.univ edge := by
     apply Subtype.ext
     rfl
-  simp [FiniteComparisonPresentation.coarseD0LinearMap]
+  simp
   rw [hendpoints]
   ring
 
-/-- Self-loop endpoints make the raw fine degree-zero matrix zero. -/
+/-- Self-loop endpoints make the raw fine degree-zero matrix zero.  This
+private instance API uses the definition-owner matrix/linear-map evaluation
+lemmas and the explicit endpoint equality, with no supplied zero matrix. -/
 private theorem fineD0Matrix_eq_zero (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] :
     (selfLoopPresentation FineEdge).fineD0Matrix Finset.univ = 0 := by
   ext edge chart
-  rw [FiniteComparisonPresentation.fineD0Matrix,
-    LinearMap.toMatrix'_apply]
+  rw [(selfLoopPresentation FineEdge).fineD0Matrix_apply,
+    (selfLoopPresentation FineEdge).fineD0LinearMap_apply]
   have hendpoints :
       (selfLoopPresentation FineEdge).fineEdgeRightIn Finset.univ edge =
         (selfLoopPresentation FineEdge).fineEdgeLeftIn Finset.univ edge := by
     apply Subtype.ext
     rfl
-  simp [FiniteComparisonPresentation.fineD0LinearMap]
+  simp
   rw [hendpoints]
   ring
 
@@ -311,7 +301,9 @@ private theorem fineD1Matrix_eq_zero (FineEdge : Type)
   exact nomatch face.1
 
 /-- The raw H¹ block matrix is the outer product of the all-one fine-edge
-column with the row selecting the unique coarse-edge coordinate. -/
+column with the row selecting the unique coarse-edge coordinate.  This private
+instance API derives every entry through the public block-map evaluation
+surface and raw self-loop tables; it supplies neither the matrix nor its rank. -/
 private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
     [Fintype FineEdge] [DecidableEq FineEdge] :
     (selfLoopPresentation FineEdge).h1RankBlockMatrix Finset.univ =
@@ -325,8 +317,10 @@ private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
   | inr edge =>
       cases column with
       | inl coarseEdge =>
-          rw [FiniteComparisonPresentation.h1RankBlockMatrix,
-            LinearMap.toMatrix'_apply]
+          rw [(selfLoopPresentation FineEdge).h1RankBlockMatrix_apply,
+            (selfLoopPresentation FineEdge).h1RankBlockLinearMap_apply_inr,
+            (selfLoopPresentation FineEdge).edgePullback1LinearMap_apply,
+            (selfLoopPresentation FineEdge).fineD0LinearMap_apply]
           have hmap :
               (selfLoopPresentation FineEdge).edgeMapOptionIn
                 Finset.univ edge = some (fullCoarseEdge FineEdge) := by
@@ -335,13 +329,13 @@ private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
           have hcoarse : coarseEdge = fullCoarseEdge FineEdge := by
             apply Subtype.ext
             rfl
-          simp [FiniteComparisonPresentation.h1RankBlockLinearMap,
-            FiniteComparisonPresentation.edgePullback1LinearMap,
-            FiniteComparisonPresentation.fineD0LinearMap,
-            Matrix.vecMulVec, hmap, hcoarse]
+          subst coarseEdge
+          simp [Matrix.vecMulVec, hmap]
       | inr chart =>
-          rw [FiniteComparisonPresentation.h1RankBlockMatrix,
-            LinearMap.toMatrix'_apply]
+          rw [(selfLoopPresentation FineEdge).h1RankBlockMatrix_apply,
+            (selfLoopPresentation FineEdge).h1RankBlockLinearMap_apply_inr,
+            (selfLoopPresentation FineEdge).edgePullback1LinearMap_apply,
+            (selfLoopPresentation FineEdge).fineD0LinearMap_apply]
           have hendpoints :
               (selfLoopPresentation FineEdge).fineEdgeRightIn
                   Finset.univ edge =
@@ -351,10 +345,7 @@ private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
             rfl
           cases hmap : (selfLoopPresentation FineEdge).edgeMapOptionIn
               Finset.univ edge <;>
-            simp [FiniteComparisonPresentation.h1RankBlockLinearMap,
-              FiniteComparisonPresentation.edgePullback1LinearMap,
-              FiniteComparisonPresentation.fineD0LinearMap,
-              Matrix.vecMulVec, hmap] <;>
+            simp [Matrix.vecMulVec] <;>
             rw [hendpoints] <;> ring
 
 /-- The positive raw presentation computes a nonzero rank-one induced H¹

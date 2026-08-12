@@ -93,9 +93,14 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   coarse / fine selected cells、partial edge mapの公開characterizationを追加して、
   UniformInvariance subtreeの既存fixture clientすべてでこれらselected-cell系
   generic definitionの展開を公開API利用へ移した。
+- 品質チェックポイント(Cycle 16): finite presentationのcoarse / fine `d0`・`d1` linear mapと
+  matrix、edge pullback、H¹ block linear mapとmatrixに、raw incidence / partial-map
+  tableからのpublic application / entry APIを定義ownerへ13本追加した。Cycle 15
+  witnessと既存uniformity instance clientを同APIへ移し、対象定義の直接展開を
+  owner内部に限定した。同時にCycle 15の全新規・body変更宣言を再列挙し、各
+  docstringへ固定GOAL / fixture上のpositionとmaterial-premise provenanceを記録した。
 - 未完了: C0 / C1 / C2 / C4 / C5 / C6非必要性 witness 6種、`Obs_G` / T3 / T6 /
-  observation nonfactorization、finite cochain / block-map evaluation の公開
-  no-unfold APIと新規・変更宣言docstringのposition / premise provenance監査。
+  observation nonfactorization。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -217,7 +222,6 @@ next_obligation: prove global generated H1 comparison bijective iff every source
 completion_candidate: false
 tracking_issue_closed: false
 ```
-
 
 ## Cycle 2 — global H¹ bijectivity iff blockwise bijectivity
 
@@ -2355,6 +2359,193 @@ nonblocking_quality_findings:
   - generic D0 D1 edge-pullback and H1 block-map or matrix clients still unfold their definitions
   - new and changed declaration docstrings require a full position and premise-provenance audit
 next_obligation: close the finite cochain and block-map no-unfold APIs and the changed-declaration docstring audit before resuming the exact R1 C0_not_necessary witness
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 16 — finite cochain API and declaration provenance remediation
+
+- decision: `approve`
+- result type: `proof-checkpoint`
+- completion candidate: `no`
+- T1-selected obligation: finite coarse/fine `d0`・`d1` linear map / matrix、
+  edge pullback、H¹ block linear map / matrixのdefinition-owner evaluation APIを
+  公開し、Cycle 15 clientをdirect unfoldingから移行する。同じbounded cycleで
+  Cycle 15全新規・body変更宣言のdocstring position / material-premise provenance
+  を監査・補完する。
+
+### Lean delta
+
+`FiniteComparisonPresentation`の既存data field・definition signature・計算bodyを
+変えず、次の13 theoremを`PresentationASubnerveDefect.lean`の定義直後に追加した。
+
+- linear-map application API:
+  - `coarseD0LinearMap_apply`
+  - `coarseD1LinearMap_apply`
+  - `fineD0LinearMap_apply`
+  - `fineD1LinearMap_apply`
+  - `edgePullback1LinearMap_apply`
+  - `h1RankBlockLinearMap_apply_inl`
+  - `h1RankBlockLinearMap_apply_inr`
+- matrix-entry API:
+  - `coarseD0Matrix_apply`
+  - `coarseD1Matrix_apply`
+  - `fineD0Matrix_apply`
+  - `fineD1Matrix_apply`
+  - `edgePullback1Matrix_apply`
+  - `h1RankBlockMatrix_apply`
+
+各APIは既存raw incidence / selected partial-map tableまたは
+`LinearMap.toMatrix'`のstandard basis評価を返すだけで、新しい仮定、fixture固有値、
+matrix、rank、defect、H¹ class、checker resultをfieldまたは引数に追加しない。
+
+client移行:
+
+- `ConditionC3NonnecessityWitness.rawCochainEquiv_comm0`はcoarse/fine `d0`
+  application APIを使用。
+- `rawCochainEquiv_comm1`はcoarse/fine `d1` application APIを使用。
+- `edgePullback1_eq_rawEdgeCochainEquiv`はedge-pullback application APIを使用。
+- `UniformPresentationInstancePairs`のpositive/negative block entry、coarse/fine
+  zero `d0` matrix、full block-matrix formulaはlinear-map / matrix entry APIを使用。
+- repository-wide scanでは対象12 definitionの`unfold` / downstream
+  `simp [definition]` / `rw [definition]`はdefinition owner内部だけに残り、client
+  subtreeには残らない。
+
+### Cycle 15 declaration docstring audit
+
+固定base `98cb58f76e65d7d8c54224b34a423a994f844064`からCycle 15 merge
+`09eb070e195ea61a59580d877a69ac702805ed95`までの新規・body変更宣言を再列挙した。
+
+- exact R1 witness: raw table datum、selected-cell / cochain API、actual comparison、
+  target-zero C3 obstruction、literal quotient-H¹ nonvacuity、indicator bridge、main
+  theoremの各positionと、raw table / preceding theorem由来のpremiseを全docstringに記録。
+- presentation owner: Cycle 15で追加・公開化したpreimage / support / selection /
+  partial-map APIとCycle 16評価APIに、owner APIとしてのpositionとraw-data provenance
+  を記録。
+- existing fixture clients: G-104 cycle theorem、checker selected cells、firing private
+  helpers、uniformity rank fixtureのbody変更宣言に、元cycle/instance上のpositionと
+  support・incidence・partial-map由来を記録。
+- reverse C3 bridge: G-104 law-block clauseが唯一のmaterial premiseであり、finite
+  sourceはboundary reindexのambient inputであることを宣言docstringへ記録。
+
+### Verification
+
+- focused elaboration: 対象7 Lean fileすべてpass、変更由来warningなし。
+- targeted module build:
+  - `PresentationASubnerveDefect`: pass (3715 jobs)
+  - `UniformPresentationInstancePairs`: pass (3717 jobs)
+  - `ConditionC3NonnecessityWitness`: pass (3740 jobs)
+- namespace axiom audit:
+  - `PresentationASubnerveDefect`: 128 declarations、standard axioms only
+  - `ConditionCAllABridge`: 34 declarations、standard axioms only
+  - checker pairs / firing / uniform pairs / G-104 instances / R1 witness:
+    `31 / 25 / 10 / 129 / 82` declarations、standard axioms only
+- 新規13 APIと主要client theorem 4件の`#print axioms`:
+  `propext` / `Classical.choice` / `Quot.sound`のみ。
+- Research full build: ユーザー指定により未実行。
+
+source SHA-256:
+
+- `ResolutionInvarianceConditionInstances.lean`:
+  `36187cf0dc402b060643415acd462f552a376f6d10bec3ef43e8a0bed02e4080`
+- `PresentationASubnerveDefect.lean`:
+  `611852da7b857b95512f89af438e347c1c65ff1498c85a8ed29d267b8da43968`
+- `ConditionCAllAFiring.lean`:
+  `20cdbcc175459d3f7ffd2442942e6b5399fffedd85643a4cec616338d137ed0b`
+- `ConditionCAllACheckerInstancePairs.lean`:
+  `56c33441bd17b6e2feb34ea25241e3336c243d8b44e76f97a32e92580269b0ce`
+- `UniformPresentationInstancePairs.lean`:
+  `e2b6b834cdba4e93915dcabb621a6183b2a8e5be248ccdedf7c265e3f1c5db92`
+- `ConditionCAllABridge.lean`:
+  `f618349ce92f41cea6afbfa19f8cfe59860b8d83d1376c7e870ee0a6f30cb953`
+- `ConditionC3NonnecessityWitness.lean`:
+  `9e8a303998506768ecd47849aa590f8824aa1e142361e8211909b9d51679cee0`
+
+Independent T3はこのfixed snapshotを、API owner / client use、全Cycle 15
+declaration docstring、premise、field-content、route integrity、static scanの観点で
+独立監査し、blocking findingなしでAPI / docstring品質gateの実体を承認した。
+PR査読では、これは固定GOALの`discharge-required` premiseを閉じるcycleではないため、
+result typeを`proof-checkpoint`に較正した。13 APIはいずれも既存raw dataから導く
+owner theoremであり、対象12 definitionの
+direct expansionはowner内部にだけ残る。Cycle 15全新規・body変更宣言のdocstringも
+proof bodyと照合し、position / material-premise provenanceが記録されたことを確認した。
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 16
+decision: approve
+result_type: proof-checkpoint
+proof_obligation: close the finite cochain and block-map no-unfold APIs and the Cycle 15 changed-declaration docstring audit
+proof_obligation_delta: the Cycle 15 quality gate is discharged without changing the fixed target, mathematical definitions, presentation fields, or premise ledger
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: 98cb58f76e65d7d8c54224b34a423a994f844064
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean
+    declarations:
+      - FiniteComparisonPresentation.coarseD0LinearMap_apply
+      - FiniteComparisonPresentation.coarseD1LinearMap_apply
+      - FiniteComparisonPresentation.fineD0LinearMap_apply
+      - FiniteComparisonPresentation.fineD1LinearMap_apply
+      - FiniteComparisonPresentation.edgePullback1LinearMap_apply
+      - FiniteComparisonPresentation.h1RankBlockLinearMap_apply_inl
+      - FiniteComparisonPresentation.h1RankBlockLinearMap_apply_inr
+      - FiniteComparisonPresentation.coarseD0Matrix_apply
+      - FiniteComparisonPresentation.coarseD1Matrix_apply
+      - FiniteComparisonPresentation.fineD0Matrix_apply
+      - FiniteComparisonPresentation.fineD1Matrix_apply
+      - FiniteComparisonPresentation.edgePullback1Matrix_apply
+      - FiniteComparisonPresentation.h1RankBlockMatrix_apply
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ConditionC3NonnecessityWitness.lean
+    declarations:
+      - R1ConditionC3Witness.rawCochainEquiv_comm0
+      - R1ConditionC3Witness.rawCochainEquiv_comm1
+      - R1ConditionC3Witness.edgePullback1_eq_rawEdgeCochainEquiv
+  - file: research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationInstancePairs.lean
+    declarations:
+      - UniformPresentationInstancePairs.positive_fullTarget_h1Rank
+      - UniformPresentationInstancePairs.negative_fullTarget_h1Rank
+premise_delta:
+  discharged: []
+  remaining:
+    - C0 C1 C2 C4 C5 C6 non-necessity witnesses
+    - Obs_G fidelity, T3/T6 labels, observational equality, and nonfactorization
+quality_remediation:
+  closed:
+    - public definition-owner evaluation APIs for coarse and fine d0 and d1 maps and matrices
+    - public definition-owner evaluation API for selected-edge pullback
+    - public row APIs for the H1 block map and entry API for its matrix
+    - governed client migration away from direct generic definition expansion
+    - declaration-by-declaration Cycle 15 docstring position and premise-provenance audit
+certificate_provenance:
+  discharged:
+    - all evaluation theorems are derived from raw incidence, selected partial-map tables, or standard-basis evaluation
+    - no matrix, rank, defect, H1 class, result bit, or certificate field was added
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - raw endpoint and face-incidence tables
+    - selected partial edge map
+    - public owner APIs in all governed downstream clients
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: construct and verify the exact R1 C0_not_necessary witness with semantic uniformity, direct law-indexed and ConditionCAllA C0 failure, and a nonzero H1 block meeting the failed support datum
 completion_candidate: false
 tracking_issue_closed: false
 ```
