@@ -164,7 +164,14 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   internally generated factor-preserving target relabelのstructured minimumから
   executable `obsG` を構成した。permanent source SHAはprovenance定数に限定し、
   observationのinput / field / premiseには使用しない。
-- 未完了: T3 / T6 raw structural presentationのLean転写、全component評価、
+- blocker解消(Cycle 24): preregistered `TERNARY-CYCLE-3` / `TERNARY-CYCLE-6`
+  のraw finite presentationsを構成し、permanent v5 kernelのv4 coarse・v4
+  fine-only・coordinate・doubled-cycleの4 packet familyをraw retained
+  incidence / support / map factsから消去するdefinition-owner APIを固定した。
+  その結果、T3 / T6それぞれの3非空target scopeすべてでinitial packet setが
+  空であることを、巨大なhigher-order assignment列挙やexpected terminal / Obs / label
+  を入力せず証明した。
+- 未完了: T3 / T6の全observation componentのfieldwise normal formと独立評価、
   `obsG T3 = obsG T6`、(i)(ii)を通じたLean内semantic labels、observation
   nonfactorization。
 
@@ -3877,6 +3884,192 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: transfer registered T3 and T6 structural inputs, evaluate every Obs_G component, prove obsG equality, and derive semantic labels in Lean
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 24 — registered T3/T6 transfer and structural packet-emptiness blocker fix
+
+- decision: `approve`
+- result type: `blocker-fixed`
+- completion candidate: `no`
+- proof obligation: preregistered T3 / T6 raw presentationsに対し、permanent
+  v5 reducerのinitial packet emptinessを全6非空scopeで、巨大な直接判定を
+  使わずraw structureから証明する。
+- Lean files:
+  - [`GLocalV1V5Reduction.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1V5Reduction.lean)
+  - [`GLocalV1T3T6Witnesses.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Witnesses.lean)
+  - [`ResearchLean/AG.lean`](../lean/ResearchLean/AG.lean)
+  - [`research-modules.txt`](../lean/research-modules.txt)
+
+### Raw presentation and route integrity
+
+`t3Presentation` / `t6Presentation`は、permanent sourceの
+`_identity_split_payload`と登録T3 / T6 inputにあるtarget counts、factor
+`[0,0,1]`、nerve、chart support、identity cell mapsをraw finite tablesとして
+転写する。Lean側の`Source = FineTarget = Fin 3`、`fineRead = id`、explicit
+entry listsはそのcanonical finite realizationである。presentation fieldsは
+reading、enumeration、incidence、support、partial maps、well-formedness proofsに
+限られ、factor result、reducer state、packet、terminal、observation、rank、defect、
+checker truth、uniformity、semantic labelを保持しない。
+
+登録name-free structural SHA-256はT3
+`452517a5dd3df09eea96f4de0c0b737f274384c239267aeba2d5ba06fda616a2`、T6
+`0e92de476cd0af4dbeb80290afff463354da87c01c4548bab5d7806927d1d180`。
+いずれもdocumentation locatorであり、Lean definition / proof premiseではない。
+
+definition ownerへraw support、FaceTwin key / class、initial-state class、occurrence
+membershipのconstructor / destructor / projection APIと、v4 coarse、v4 fine-only、
+coordinate、doubled-cycleの4 family eliminatorを追加した。aggregate theorem
+`gLocalV1PacketVariants_eq_empty_of_face_support`は次のraw factsだけからfull
+packet unionを空にする。
+
+- 各nonzero signed boundary occurrenceは別のfaceにも現れる。
+- 各FaceTwin classはdistinctな2本のnonzero retained edgeを持つ。
+- fine edge mapはtotal identityである。
+- 各faceのslot 0とslot 2は異なる。
+
+これにより任意のnonempty `A : Finset (Fin 2)`でT3 / T6 initial packet setが
+空となり、`targetZero = {0}`、`targetOne = {1}`、`targetFull = univ`の全6 closed
+factsを得た。higher-order assignment spaceへの`decide` / `native_decide`、expected
+packet / terminal / observation / labelは用いない。
+
+primary declarations:
+
+- owner no-unfold / incidence API 12本:
+  - `mem_gLocalV1CoarseFaceSupport_iff_raw`
+  - `mem_gLocalV1CoarseFaces_iff_raw`
+  - `coarseFaceEdge0_mem_gLocalV1CoarseEdges`
+  - `coarseFaceEdge1_mem_gLocalV1CoarseEdges`
+  - `gLocalV1CoarseFaceKey_edge0` / `_edge1` / `_edge2` / `_support`
+  - `mem_gLocalV1CoarseFaceClasses_iff`
+  - `gLocalV1InitialState_coarseFaceClasses`
+  - `mem_gLocalV1InitialState_coarseFaceClasses_iff`
+  - `mem_gLocalV1CoarseOccurrenceClasses_iff`
+- owner packet eliminators 6本:
+  - `gLocalV1V4CoarsePackets_eq_empty_of_no_unit`
+  - `gLocalV1V4FineOnlyPackets_eq_empty_of_all_mapped`
+  - `gLocalV1CoordinateCoarseAssignments_eq_empty_of_two_nonzero`
+  - `gLocalV1CoordinatePackets_eq_empty_of_two_nonzero`
+  - `gLocalV1DoubledCyclePackets_eq_empty_of_no_doubled_face`
+  - `gLocalV1PacketVariants_eq_empty_of_face_support`
+- witness spine:
+  - `t3Presentation` / `t6Presentation`
+  - `t3_computedFactor_apply` / `t6_computedFactor_apply`
+  - `t3_initial_packet_empty_of_nonempty`
+  - `t6_initial_packet_empty_of_nonempty`
+  - `t3_targetZero_initial_packet_empty`
+  - `t3_targetOne_initial_packet_empty`
+  - `t3_targetFull_initial_packet_empty`
+  - `t6_targetZero_initial_packet_empty`
+  - `t6_targetOne_initial_packet_empty`
+  - `t6_targetFull_initial_packet_empty`
+
+### Verification and independent T3
+
+- focused owner / witness: pass。namespace auditsは253 / 32 declarations、standard
+  axioms only。
+- targeted owner / witness builds: pass、3716 / 3717 jobs。
+- master eliminator、T3 / T6 generic emptiness、T3 target-zero、T6 target-fullの
+  direct `#print axioms`はすべて
+  `[propext, Classical.choice, Quot.sound]`のみ。
+- `git diff --check`、Research import direction(228 modules)、package direction、
+  separation fixtures、changed public artifact scan: pass。
+- placeholder / forbidden primitive / hidden-BiDi / privacy / Formal→Research
+  reverse-import scan: no finding。
+- Research full build: ユーザー指示により未実行。
+
+独立T3の初回監査は、clientがgeneric FaceTwin / initial-state / occurrence filterを
+直接利用する§2.4 API gapを検出した。ownerへmembership / projection APIを置きclientを
+移行した最終snapshotを再監査し、`approve / blocker-fixed`、blocking findingなしと
+判定した。
+
+fixed source SHA-256:
+
+- `GLocalV1V5Reduction.lean`:
+  `daa981d533b3d7b4fbf35a794375c374d80329010fec65a3bbcb240abf14041a`
+- `GLocalV1T3T6Witnesses.lean`:
+  `969d55907c6571bee3f37bf7582eb394e1c520e46b43543c37914876050608df`
+- `AG.lean`:
+  `1dbe9c76e3500d7c1c0780b454d1835e1fdba6896e893fc1709edfaaab005260`
+- `research-modules.txt`:
+  `913d0ced0c230255f98a31c115a481b28d0b7aabbe53bcfa680ac532644b2525`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 24
+decision: approve
+result_type: blocker-fixed
+proof_obligation: prove initial packet emptiness for all six preregistered T3/T6 nonempty scopes without higher-order direct decision
+proof_obligation_delta: registered raw presentations and definition-owner four-family eliminators remove the concrete Obs_G evaluation-route blocker
+primary_specification:
+  source:
+    goal: research/goals/G-107-aat-uniform-invariance-characterization.md
+    observation: research/experiments/g104-necessity-map/g_local_v1.py
+    reducer: research/experiments/g104-necessity-map/r2_hunt.py
+    contract_manifest: research/experiments/g104-necessity-map/g_local_v1_stop_b.py
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4 / 5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1V5Reduction.lean
+    declarations:
+      - mem_gLocalV1CoarseOccurrenceClasses_iff
+      - gLocalV1PacketVariants_eq_empty_of_face_support
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Witnesses.lean
+    declarations:
+      - t3Presentation
+      - t6Presentation
+      - t3_initial_packet_empty_of_nonempty
+      - t6_initial_packet_empty_of_nonempty
+      - t3_targetZero_initial_packet_empty
+      - t3_targetOne_initial_packet_empty
+      - t3_targetFull_initial_packet_empty
+      - t6_targetZero_initial_packet_empty
+      - t6_targetOne_initial_packet_empty
+      - t6_targetFull_initial_packet_empty
+premise_delta:
+  discharged:
+    - registered T3/T6 raw finite presentation construction
+    - pointwise computed factor normalization to [0,0,1]
+    - all four initial packet families excluded from raw retained structure
+    - initial packet emptiness for every nonempty target subset of both presentations
+    - six closed target-zero/target-one/target-full packet-emptiness facts
+  remaining:
+    - complete observation-component fieldwise normal forms and provenance
+    - independent T3 and T6 Obs_G evaluations and their equality
+    - T3 uniform and T6 nonuniform semantic labels through the sound-complete checker
+    - observation predicate-factorization refutation
+certificate_provenance:
+  discharged:
+    - raw registered target, factor, nerve, support, incidence, and identity cell-map tables
+    - packet emptiness generated from raw occurrence, coefficient, support, and map facts
+  unresolved:
+    - observation-level evaluation and semantic labels
+proof_use_audit:
+  used_material_premises:
+    - nonempty target scopes and complete raw face tables
+    - distinct face keys and second occurrences of nonzero boundary coefficients
+    - total fine edge maps and two nonzero retained edges per FaceTwin class
+    - absence of doubled slot-zero/slot-two faces
+    - all four packet-family exclusions in the aggregate eliminator
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: complete fieldwise T3/T6 Obs_G normal forms, prove both evaluations and obsG equality, then derive T3 uniform and T6 nonuniform labels through the existing checker
 completion_candidate: false
 tracking_issue_closed: false
 ```

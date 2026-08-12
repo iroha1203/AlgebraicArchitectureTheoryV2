@@ -336,6 +336,7 @@ import ResearchLean.AG.UniformInvariance.GLocalV1ObservationValue
 import ResearchLean.AG.UniformInvariance.GLocalV1V5Reduction
 import ResearchLean.AG.UniformInvariance.GLocalV1Observation
 import ResearchLean.AG.UniformInvariance.GLocalV1KernelInstancePairs
+import ResearchLean.AG.UniformInvariance.GLocalV1T3T6Witnesses
 import ResearchLean.AG.UniformInvariance.GlobalBlockBijectivity
 import ResearchLean.AG.UniformInvariance.IndicatorLawFamily
 import ResearchLean.AG.UniformInvariance.PresentationASubnerveDefect
