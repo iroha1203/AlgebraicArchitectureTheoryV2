@@ -165,6 +165,93 @@ def gLocalV1FineFaces (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineFace :=
   Finset.univ.filter fun face => (P.gLocalV1FineFaceSupport A face).Nonempty
 
+/-- Raw chart-support characterization of scoped coarse-face support.
+
+Position: definition-owner no-unfold API for structural packet proofs in fixed
+GOAL claim (v).  The right side exposes only raw incidence, chart support, and
+target-subset membership; it assumes no packet, terminal, observation, or
+semantic label. -/
+theorem mem_gLocalV1CoarseFaceSupport_iff_raw
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) (target : P.CoarseTarget) :
+    target ∈ P.gLocalV1CoarseFaceSupport A face ↔
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeLeft (P.coarseFaceEdge0 face)) ∧
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeRight (P.coarseFaceEdge0 face)) ∧
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeLeft (P.coarseFaceEdge1 face)) ∧
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeRight (P.coarseFaceEdge1 face)) ∧
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeLeft (P.coarseFaceEdge2 face)) ∧
+      target ∈ P.coarseChartSupport
+        (P.coarseEdgeRight (P.coarseFaceEdge2 face)) ∧
+      target ∈ A := by
+  simp [gLocalV1CoarseFaceSupport, gLocalV1CoarseEdgeSupport,
+    gLocalV1CoarseChartSupport, and_left_comm, and_comm]
+
+/-- A raw coarse face is scoped exactly when one selected target lies in all
+six endpoint-chart supports of its ordered boundary.
+
+Position: definition-owner no-unfold API for registered T3/T6 packet proofs in
+fixed GOAL claim (v).  The existential witness comes from raw support and not
+from a packet, reduction result, observation, or label certificate. -/
+theorem mem_gLocalV1CoarseFaces_iff_raw
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    face ∈ P.gLocalV1CoarseFaces A ↔
+      ∃ target,
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeLeft (P.coarseFaceEdge0 face)) ∧
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeRight (P.coarseFaceEdge0 face)) ∧
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeLeft (P.coarseFaceEdge1 face)) ∧
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeRight (P.coarseFaceEdge1 face)) ∧
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeLeft (P.coarseFaceEdge2 face)) ∧
+        target ∈ P.coarseChartSupport
+          (P.coarseEdgeRight (P.coarseFaceEdge2 face)) ∧
+        target ∈ A := by
+  simp only [gLocalV1CoarseFaces, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.nonempty_iff_ne_empty, ne_eq, Finset.eq_empty_iff_forall_notMem,
+    not_forall, Classical.not_not]
+  exact exists_congr fun target => P.mem_gLocalV1CoarseFaceSupport_iff_raw A face target
+
+/-- Slot zero of every scoped coarse face is a scoped coarse edge.
+
+Position: definition-owner incidence API for structural packet proofs in fixed
+GOAL claim (v).  It derives edge support from the raw face-support
+intersection and assumes no packet, reduction, observation, or label. -/
+theorem coarseFaceEdge0_mem_gLocalV1CoarseEdges
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) (hface : face ∈ P.gLocalV1CoarseFaces A) :
+    P.coarseFaceEdge0 face ∈ P.gLocalV1CoarseEdges A := by
+  have hsupport : (P.gLocalV1CoarseFaceSupport A face).Nonempty :=
+    (Finset.mem_filter.mp hface).2
+  obtain ⟨target, htarget⟩ := hsupport
+  have hedge0 : target ∈ P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge0 face) :=
+    (Finset.mem_inter.mp (Finset.mem_inter.mp htarget).1).1
+  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, ⟨target, hedge0⟩⟩
+
+/-- Slot one of every scoped coarse face is a scoped coarse edge.
+
+Position: definition-owner incidence API for structural packet proofs in fixed
+GOAL claim (v).  It derives edge support from the raw face-support
+intersection and assumes no packet, reduction, observation, or label. -/
+theorem coarseFaceEdge1_mem_gLocalV1CoarseEdges
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) (hface : face ∈ P.gLocalV1CoarseFaces A) :
+    P.coarseFaceEdge1 face ∈ P.gLocalV1CoarseEdges A := by
+  have hsupport : (P.gLocalV1CoarseFaceSupport A face).Nonempty :=
+    (Finset.mem_filter.mp hface).2
+  obtain ⟨target, htarget⟩ := hsupport
+  have hedge1 : target ∈ P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge1 face) :=
+    (Finset.mem_inter.mp (Finset.mem_inter.mp htarget).1).2
+  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, ⟨target, hedge1⟩⟩
+
 /-- A coarse FaceTwin key is exactly the ordered boundary triple together with
 its scoped support.
 
@@ -201,6 +288,43 @@ def gLocalV1CoarseFaceKey (P : FiniteComparisonPresentation)
   ⟨P.coarseFaceEdge0 face, P.coarseFaceEdge1 face, P.coarseFaceEdge2 face,
     P.gLocalV1CoarseFaceSupport A face⟩
 
+/-- Slot-zero projection of a generated coarse FaceTwin key.
+
+Position: definition-owner normalization API for packet clients in fixed GOAL
+claim (v).  It rewrites a generated key projection to raw face incidence. -/
+@[simp] theorem gLocalV1CoarseFaceKey_edge0
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    (P.gLocalV1CoarseFaceKey A face).edge0 = P.coarseFaceEdge0 face := rfl
+
+/-- Slot-one projection of a generated coarse FaceTwin key.
+
+Position: definition-owner normalization API for packet clients in fixed GOAL
+claim (v).  It rewrites a generated key projection to raw face incidence. -/
+@[simp] theorem gLocalV1CoarseFaceKey_edge1
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    (P.gLocalV1CoarseFaceKey A face).edge1 = P.coarseFaceEdge1 face := rfl
+
+/-- Slot-two projection of a generated coarse FaceTwin key.
+
+Position: definition-owner normalization API for packet clients in fixed GOAL
+claim (v).  It rewrites a generated key projection to raw face incidence. -/
+@[simp] theorem gLocalV1CoarseFaceKey_edge2
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    (P.gLocalV1CoarseFaceKey A face).edge2 = P.coarseFaceEdge2 face := rfl
+
+/-- Support projection of a generated coarse FaceTwin key.
+
+Position: definition-owner normalization API for packet clients in fixed GOAL
+claim (v).  It rewrites the key support to raw derived face support. -/
+@[simp] theorem gLocalV1CoarseFaceKey_support
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    (P.gLocalV1CoarseFaceKey A face).support =
+      P.gLocalV1CoarseFaceSupport A face := rfl
+
 /-- The fine FaceTwin key generated by one scoped raw face.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -218,6 +342,20 @@ Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL
 def gLocalV1CoarseFaceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1CoarseFaceTwinKey A) :=
   (P.gLocalV1CoarseFaces A).image (P.gLocalV1CoarseFaceKey A)
+
+/-- Membership in generated coarse FaceTwin classes is witnessed by a scoped
+raw face with that key.
+
+Position: definition-owner constructor/destructor API for packet clients in
+fixed GOAL claim (v).  It exposes only the raw scoped-face witness and accepts
+no selected class, packet, terminal, observation, or label certificate. -/
+theorem mem_gLocalV1CoarseFaceClasses_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (key : P.GLocalV1CoarseFaceTwinKey A) :
+    key ∈ P.gLocalV1CoarseFaceClasses A ↔
+      ∃ face ∈ P.gLocalV1CoarseFaces A,
+        P.gLocalV1CoarseFaceKey A face = key := by
+  exact Finset.mem_image
 
 /-- All fine FaceTwin classes generated by the scoped raw face table.
 
@@ -342,6 +480,30 @@ def gLocalV1InitialState (P : FiniteComparisonPresentation)
   ⟨P.gLocalV1CoarseEdges A, P.gLocalV1CoarseFaceClasses A,
     P.gLocalV1FineEdges A, P.gLocalV1FineFaceClasses A⟩
 
+/-- Coarse FaceTwin classes retained by the generated initial state.
+
+Position: definition-owner projection API for packet clients in fixed GOAL
+claim (v).  It exposes the generated raw class set and no terminal or
+observation result. -/
+@[simp] theorem gLocalV1InitialState_coarseFaceClasses
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    (P.gLocalV1InitialState A).coarseFaceClasses =
+      P.gLocalV1CoarseFaceClasses A := rfl
+
+/-- Initial-state coarse FaceTwin membership is witnessed by a scoped raw face.
+
+Position: definition-owner eliminator for registered packet proofs in fixed
+GOAL claim (v).  The witness is generated from raw scope/incidence and assumes
+no packet emptiness, terminal, observation, or semantic label. -/
+theorem mem_gLocalV1InitialState_coarseFaceClasses_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (key : P.GLocalV1CoarseFaceTwinKey A) :
+    key ∈ (P.gLocalV1InitialState A).coarseFaceClasses ↔
+      ∃ face ∈ P.gLocalV1CoarseFaces A,
+        P.gLocalV1CoarseFaceKey A face = key := by
+  rw [P.gLocalV1InitialState_coarseFaceClasses,
+    P.mem_gLocalV1CoarseFaceClasses_iff]
+
 /-- Total retained-edge/FaceTwin measure.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -432,6 +594,21 @@ def gLocalV1CoarseOccurrenceClasses (P : FiniteComparisonPresentation)
     (edge : P.CoarseEdge) : Finset (P.GLocalV1CoarseFaceTwinKey A) :=
   state.coarseFaceClasses.filter fun key =>
     key.edge0 = edge ∨ key.edge1 = edge ∨ key.edge2 = edge
+
+/-- Membership in the retained coarse occurrence family is retained-class
+membership together with occurrence in one ordered boundary slot.
+
+Position: definition-owner constructor/destructor API for structural packet
+clients in fixed GOAL claim (v).  It exposes only retained raw incidence and
+accepts no packet, terminal, observation, or semantic-label certificate. -/
+theorem mem_gLocalV1CoarseOccurrenceClasses_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.CoarseEdge)
+    (key : P.GLocalV1CoarseFaceTwinKey A) :
+    key ∈ P.gLocalV1CoarseOccurrenceClasses A state edge ↔
+      key ∈ state.coarseFaceClasses ∧
+        (key.edge0 = edge ∨ key.edge1 = edge ∨ key.edge2 = edge) := by
+  exact Finset.mem_filter
 
 /-- Fine FaceTwin classes in which an edge occurs in the ordered boundary.
 
@@ -870,6 +1047,181 @@ def gLocalV1PacketVariants (P : FiniteComparisonPresentation)
     Finset (P.GLocalV1V5Packet A) :=
   (P.gLocalV1RawPacketVariants A state).filter fun packet =>
     (packet.apply state).measure < state.measure
+
+/-! ## Structural packet-emptiness API -/
+
+/-- The v4 coarse-unit family is empty when no retained edge occurs with unit
+coefficient in exactly one retained coarse FaceTwin class.
+
+Position: definition-owner elimination API for registered structural inputs in
+fixed GOAL claim (v).  The only premise is the raw occurrence/coefficient
+failure at the supplied state; no packet result, terminal, trace, observation,
+or semantic label is supplied. -/
+theorem gLocalV1V4CoarsePackets_eq_empty_of_no_unit
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hno : ∀ coarseKey ∈ state.coarseFaceClasses,
+      ∀ coarseEdge ∈ state.coarseEdges,
+        ¬ (P.gLocalV1CoarseOccurrenceClasses A state coarseEdge = {coarseKey} ∧
+          Int.natAbs (gLocalV1SignedCoefficient coarseKey.edge0 coarseKey.edge1
+            coarseKey.edge2 coarseEdge) = 1)) :
+    P.gLocalV1V4CoarsePackets A state = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro packet hpacket
+  rw [gLocalV1V4CoarsePackets] at hpacket
+  simp only [Finset.mem_biUnion] at hpacket
+  obtain ⟨coarseKey, hkey, coarseEdge, hedge, hpacket⟩ := hpacket
+  split at hpacket
+  · exact hno coarseKey hkey coarseEdge hedge (by assumption)
+  · simp at hpacket
+
+/-- The v4 fine-only family is empty when every retained fine edge has a
+defined coarse image.
+
+Position: definition-owner elimination API for registered structural inputs in
+fixed GOAL claim (v).  Its premise is the raw partial-edge-map table on the
+retained state, not a packet, terminal, observation, or expected result. -/
+theorem gLocalV1V4FineOnlyPackets_eq_empty_of_all_mapped
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hmapped : ∀ fineEdge ∈ state.fineEdges, P.edgeMap fineEdge ≠ none) :
+    P.gLocalV1V4FineOnlyPackets A state = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro packet hpacket
+  rw [gLocalV1V4FineOnlyPackets] at hpacket
+  simp only [Finset.mem_biUnion] at hpacket
+  obtain ⟨fineKey, _hkey, fineEdge, hedge, hpacket⟩ := hpacket
+  split at hpacket
+  · rename_i hcondition
+    exact hmapped fineEdge hedge hcondition.2.1
+  · simp at hpacket
+
+/-- Coordinate coarse assignments are empty when every selected FaceTwin
+class contains two distinct retained edges with nonzero signed coefficient.
+
+Position: definition-owner elimination API for the coordinate packet family
+in fixed GOAL claim (v).  The premises inspect raw retained support only and
+do not provide an assignment, packet, terminal, observation, or label. -/
+theorem gLocalV1CoordinateCoarseAssignments_eq_empty_of_two_nonzero
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (selectedEdges : Finset P.CoarseEdge)
+    (selectedClasses : Finset (P.GLocalV1CoarseFaceTwinKey A))
+    (hclasses : selectedClasses.Nonempty)
+    (htwo : ∀ key ∈ selectedClasses,
+      ∃ left ∈ state.coarseEdges, ∃ right ∈ state.coarseEdges,
+        left ≠ right ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 left ≠ 0 ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 right ≠ 0) :
+    P.gLocalV1CoordinateCoarseAssignments A state selectedEdges selectedClasses = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro assignment hassignment
+  have hvalid := of_decide_eq_true (Finset.mem_filter.mp hassignment).2
+  obtain ⟨key, hkey⟩ := hclasses
+  obtain ⟨left, hleft, right, hright, hne, hleftCoeff, hrightCoeff⟩ :=
+    htwo key hkey
+  let keySub : {key // key ∈ selectedClasses} := ⟨key, hkey⟩
+  have hleftEq : left = assignment keySub :=
+    (hvalid.1 keySub).2.2 left hleft hleftCoeff
+  have hrightEq : right = assignment keySub :=
+    (hvalid.1 keySub).2.2 right hright hrightCoeff
+  exact hne (hleftEq.trans hrightEq.symm)
+
+/-- The coordinate-dependency packet family is empty when every retained
+coarse FaceTwin class has two distinct nonzero boundary coordinates.
+
+Position: definition-owner elimination API for registered structural inputs in
+fixed GOAL claim (v).  It derives emptiness from the raw signed-support table;
+no assignment, packet, terminal, observation, or semantic label is supplied. -/
+theorem gLocalV1CoordinatePackets_eq_empty_of_two_nonzero
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (htwo : ∀ key ∈ state.coarseFaceClasses,
+      ∃ left ∈ state.coarseEdges, ∃ right ∈ state.coarseEdges,
+        left ≠ right ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 left ≠ 0 ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 right ≠ 0) :
+    P.gLocalV1CoordinatePackets A state = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro packet hpacket
+  rw [gLocalV1CoordinatePackets] at hpacket
+  simp only [Finset.mem_biUnion] at hpacket
+  obtain ⟨selectedEdges, _hselectedEdges, hpacket⟩ := hpacket
+  split at hpacket
+  · rename_i _hnonempty
+    let selectedClasses := P.gLocalV1CoarseClassesMeeting A state selectedEdges
+    split at hpacket
+    · rename_i hclasses
+      simp only [Finset.mem_biUnion] at hpacket
+      obtain ⟨assignment, hassignment, _⟩ := hpacket
+      have hempty :
+          P.gLocalV1CoordinateCoarseAssignments A state selectedEdges selectedClasses = ∅ := by
+        apply P.gLocalV1CoordinateCoarseAssignments_eq_empty_of_two_nonzero
+          A state selectedEdges selectedClasses hclasses
+        intro key hkey
+        exact htwo key (Finset.mem_filter.mp hkey).1
+      rw [hempty] at hassignment
+      simp at hassignment
+    · simp at hpacket
+  · simp at hpacket
+
+/-- The closed-doubled-cycle packet family is empty when no retained coarse
+FaceTwin class repeats its slot-zero edge in slot two.
+
+Position: definition-owner elimination API for registered structural inputs in
+fixed GOAL claim (v).  Its premise is the raw ordered face table only; no
+cycle packet, terminal, observation, or label is supplied. -/
+theorem gLocalV1DoubledCyclePackets_eq_empty_of_no_doubled_face
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hno : ∀ key ∈ state.coarseFaceClasses, key.edge0 ≠ key.edge2) :
+    P.gLocalV1DoubledCyclePackets A state = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro packet hpacket
+  rw [gLocalV1DoubledCyclePackets] at hpacket
+  simp only [Finset.mem_biUnion] at hpacket
+  obtain ⟨selectedEdges, _hselectedEdges, hpacket⟩ := hpacket
+  let selectedClasses := P.gLocalV1CoarseClassesMeeting A state selectedEdges
+  split at hpacket
+  · rename_i hcycle
+    have hvalid := of_decide_eq_true hcycle
+    have hclasses : selectedClasses.Nonempty := by
+      apply Finset.card_pos.mp
+      rw [hvalid.2.1]
+      exact lt_of_lt_of_le (by decide : 0 < 2) hvalid.1
+    obtain ⟨key, hkey⟩ := hclasses
+    exact hno key (Finset.mem_filter.mp hkey).1 (hvalid.2.2.1 key hkey).1
+  · simp at hpacket
+
+/-- The complete permanent packet kernel is empty under the four structural
+failures for v4 coarse, v4 fine-only, coordinate, and doubled-cycle packets.
+
+Position: definition-owner packet-emptiness API used by the registered T3/T6
+transfer in fixed GOAL claim (v).  Every premise is a raw retained-table fact;
+no packet result, reducer terminal, observation, rank, checker value, or label
+is an input. -/
+theorem gLocalV1PacketVariants_eq_empty_of_face_support
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hunit : ∀ coarseKey ∈ state.coarseFaceClasses,
+      ∀ coarseEdge ∈ state.coarseEdges,
+        ¬ (P.gLocalV1CoarseOccurrenceClasses A state coarseEdge = {coarseKey} ∧
+          Int.natAbs (gLocalV1SignedCoefficient coarseKey.edge0 coarseKey.edge1
+            coarseKey.edge2 coarseEdge) = 1))
+    (hmapped : ∀ fineEdge ∈ state.fineEdges, P.edgeMap fineEdge ≠ none)
+    (htwo : ∀ key ∈ state.coarseFaceClasses,
+      ∃ left ∈ state.coarseEdges, ∃ right ∈ state.coarseEdges,
+        left ≠ right ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 left ≠ 0 ∧
+        gLocalV1SignedCoefficient key.edge0 key.edge1 key.edge2 right ≠ 0)
+    (hdoubled : ∀ key ∈ state.coarseFaceClasses, key.edge0 ≠ key.edge2) :
+    P.gLocalV1PacketVariants A state = ∅ := by
+  rw [gLocalV1PacketVariants, gLocalV1RawPacketVariants, gLocalV1V4Packets,
+    P.gLocalV1V4CoarsePackets_eq_empty_of_no_unit A state hunit,
+    P.gLocalV1V4FineOnlyPackets_eq_empty_of_all_mapped A state hmapped,
+    P.gLocalV1CoordinatePackets_eq_empty_of_two_nonzero A state htwo,
+    P.gLocalV1DoubledCyclePackets_eq_empty_of_no_doubled_face A state hdoubled]
+  simp
 
 /-- Every generated v5 packet strictly decreases the retained-cell measure.
 
