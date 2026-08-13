@@ -405,8 +405,10 @@ external certificateのいずれとしても使用しない。
 - targeted `GLocalV1T3T6Uniformity` build: pass、3720 jobs。
 - targeted `PresentationASubnerveDefect` build: pass、3715 jobs、namespace auditは
   143 declarations、standard axioms only。
-- primary owner API / profile / semantic endpoint 15 declarationsのdirect
-  `#print axioms`はすべて`[propext, Classical.choice, Quot.sound]`のみ。
+- 新規theorem 40件とproof変更theorem 1件の全41 declarationsを個別にdirect
+  `#print axioms`した。selected-face projection 6件は
+  `[propext, Quot.sound]`のみ、残る35件は
+  `[propext, Classical.choice, Quot.sound]`のみ。
 - 新moduleは43 top-level declarations
   (29 public theorem、4 public abbreviation、10 documented private typed def)。
   43件すべてにdeclaration docstring、fixed GOAL position、raw premise / provenanceを
