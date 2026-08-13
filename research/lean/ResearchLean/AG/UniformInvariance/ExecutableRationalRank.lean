@@ -183,6 +183,41 @@ theorem selectedColumns_rank_eq
   have hcard := linearIndependent_iff_card_eq_finrank_span.mp h
   simpa using hcard.symm
 
+/-- A finite matrix has rank `k` when an explicitly selected `k`-column
+family has nonzero Gram determinant and spans every original column.
+
+Position: definition-owner elimination API for exact finite-rank clients of
+the Gram kernel.  The determinant and spanning facts remain proof obligations
+at every use; neither a rank nor a basis is supplied as matrix data. -/
+theorem rank_eq_of_selectedColumns_basis
+    [Fintype m] [Fintype n]
+    (A : Matrix m n ℚ) {k : ℕ} (selection : Fin k → n)
+    (hdet : (columnGram A selection).det ≠ 0)
+    (hspan : ∀ column, A.col column ∈
+      Submodule.span ℚ (Set.range (selectedColumns A selection).col)) :
+    A.rank = k := by
+  have hindependent :
+      LinearIndependent ℚ (selectedColumns A selection).col :=
+    (columnGram_det_ne_zero_iff A selection).1 hdet
+  have hlower : k ≤ A.rank := by
+    calc
+      k = (selectedColumns A selection).rank :=
+        (selectedColumns_rank_eq A selection hindependent).symm
+      _ ≤ A.rank := selectedColumns_rank_le A selection
+  apply Nat.le_antisymm _ hlower
+  rw [Matrix.rank_eq_finrank_span_cols]
+  calc
+    Module.finrank ℚ (Submodule.span ℚ (Set.range A.col)) ≤
+        Module.finrank ℚ
+          (Submodule.span ℚ (Set.range (selectedColumns A selection).col)) := by
+      apply Submodule.finrank_mono
+      rw [Submodule.span_le]
+      rintro _ ⟨column, rfl⟩
+      exact hspan column
+    _ = (selectedColumns A selection).rank :=
+      (Matrix.rank_eq_finrank_span_cols _).symm
+    _ = k := selectedColumns_rank_eq A selection hindependent
+
 /-- The executable Gram search is sound and complete for the semantic rank:
 it succeeds at size `k` exactly when `k ≤ A.rank`. -/
 theorem hasNonzeroGramMinor_eq_true_iff

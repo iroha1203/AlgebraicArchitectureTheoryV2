@@ -178,8 +178,16 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   fieldwiseに組み立て、両`obsG`がpresentation非依存の同じclosed structural
   normal formへ評価されることから`obsG T3 = obsG T6`を証明し、claim (v)(a)を
   閉じた。common valueはpresentation field・premise・checker bit・labelではない。
-- 未完了: (i)(ii)を通じたT3 uniform / T6 nonuniformのLean内semantic labelsと、
-  それらを用いたobservation predicate nonfactorization theorem (v)(d)。
+- 完了(Cycle 26): 登録T3について3非空target scopeのactual quotient-H¹次元、
+  induced-map rank、computed defectをそれぞれ`1→1 / rank 1 / (0,0)`、
+  `0→0 / rank 0 / (0,0)`、`1→1 / rank 1 / (0,0)`とexactに証明し、既存の
+  sound-complete checkerから`UniformPresentation t3Presentation`を得た。登録T6は
+  target-zero scopeでcoarse / fine actual H¹次元をexactに`3 / 1`と証明し、actual
+  H¹ map非全単射、computed defect非零、checker false、
+  `¬ UniformPresentation t6Presentation`へ接続した。観測等値module・外部label・
+  結論相当field/certificateは使わない。
+- 未完了: Cycle 25の同一`obsG`とCycle 26の異なるsemantic labelを用いた、
+  quantified observation predicate nonfactorization theorem (v)(d)。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -298,6 +306,213 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: prove global generated H1 comparison bijective iff every source-generated block comparison is bijective
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 26 — exact T3/T6 semantic labels through the finite checker
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- proof obligation: fixed GOAL claims (v)(b)–(c)として、登録T3の3非空blockの
+  actual quotient-H¹ profileをexactに求めてsemantic uniformityを証明し、登録T6の
+  target-zero blockでexact `3→1` dimension mismatchを証明してsemantic
+  nonuniformityを導く。Cycle 25の`Obs_G`評価や外部登録labelは証拠に使わない。
+- Lean files:
+  - [`ExecutableRationalRank.lean`](../lean/ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean)
+  - [`PresentationASubnerveDefect.lean`](../lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean)
+  - [`GLocalV1T3T6Uniformity.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Uniformity.lean)
+  - [`ResearchLean/AG.lean`](../lean/ResearchLean/AG.lean)
+  - [`research-modules.txt`](../lean/research-modules.txt)
+
+### Exact profiles and semantic endpoints
+
+T3では、registered raw supportからselected coarse / fine edge数を3非空scopeごとに
+`(4,1)`、`(3,3)`、`(4,4)`と求めた。全raw edgeがself-loopなので両`d0` matrixは
+零である。`d1` rankはtarget-zeroで`3 / 0`、target-oneとfullで`3 / 3`である。
+H¹ block matrix rankはそれぞれ`4 / 3 / 4`である。したがってactual quotient-H¹
+とcomputed evaluatorは次の同じprofileを返す。
+
+| T3 scope | coarse H¹ | fine H¹ | induced rank | computed defect |
+| --- | ---: | ---: | ---: | --- |
+| `targetZero = {0}` | 1 | 1 | 1 | `(0,0)` |
+| `targetOne = {1}` | 0 | 0 | 0 | `(0,0)` |
+| `targetFull = {0,1}` | 1 | 1 | 1 | `(0,0)` |
+
+`Fin 2`の全非空subsetをこの3 caseへ分類し、
+`uniformPresentationCheck_eq_true_iff_allNonemptyDefects`でcheckerをtrueにした後、
+sound-complete semantic bridgeから`UniformPresentation t3Presentation`を得る。
+
+T6のtarget-zeroではselected edge数がcoarse / fineで`7 / 1`、両`d0` rankは零、
+`d1` rankは`4 / 0`である。従ってactual quotient-H¹次元はexactに`3 / 1`である。
+有限次元線形同値ならfinrankが一致するためactual H¹ mapは全単射でありえない。
+この反証をgeneric defect correctnessとzero-defect iff bijectiveへ渡してcomputed defect
+非零を得て、all-nonempty-defects checker iffからchecker false、さらにsemantic iffから
+`¬ UniformPresentation t6Presentation`を導く。T6の期待defect値やchecker bitを
+直接評価・入力する経路は使わない。
+
+primary declarations:
+
+- definition-owner rank / dimension API:
+  - `rank_eq_of_selectedColumns_basis`
+  - `coarseFaceEdge0In_coe` / `coarseFaceEdge1In_coe` /
+    `coarseFaceEdge2In_coe`
+  - `fineFaceEdge0In_coe` / `fineFaceEdge1In_coe` /
+    `fineFaceEdge2In_coe`
+  - `computedASubnerveH1Rank_eq_rankFormula`
+  - `computedASubnerveDefect_eq_rankFormula`
+  - `coarseH1Finrank_eq_card_sub_rationalMatrixRanks`
+  - `fineH1Finrank_eq_card_sub_rationalMatrixRanks`
+- registered profile / endpoint declarations:
+  - `t3_targetZero_profile`
+  - `t3_targetOne_profile`
+  - `t3_targetFull_profile`
+  - `t3_uniformPresentationCheck`
+  - `t3_uniformPresentation`
+  - `t6_targetZero_h1_profile`
+  - `t6_targetZero_h1Map_not_bijective`
+  - `t6_targetZero_defect_ne_zero`
+  - `t6_uniformPresentationCheck`
+  - `t6_not_uniformPresentation`
+
+### Rank proof route and provenance
+
+generic `rank_eq_of_selectedColumns_basis`は、指定列のGram determinant非零による
+rank下界と、全列が指定列spanに入ることによる上界からmatrix rankをexactに決める。
+fixture clientは期待rankをpresentation fieldや外部certificateとして受け取らず、
+raw matrixから列選択、determinant、span relationをその場で構成する。
+
+- T3の各`d1`とH¹ block rankは、raw face incidenceから選んだ全rank列のGram
+  determinant非零と、anchor / fine-chart零列を含む残余列のspan membershipで閉じる。
+- T6 target-zero coarse `d1`はneutral列1--4のGram determinant非零に加え、anchor
+  列を零、残るneutral列5,6をそれぞれ
+  `c5 = c1 + c2 - c4`、`c6 = -c1 + c3 + c4`として明示的にspanへ入れる。
+- actual H¹ dimensionはgeneric three-cochain-complex rank formulaを、selected edge
+  equivalenceとexecutable matrix-rank correctnessへ輸送するdefinition-owner APIから
+  得る。computed induced rank / defectは公開rank formula APIから得る。
+
+登録T3 / T6 presentationはCycle 24から不変で、raw reading、enumeration、nerve、
+support、incidence、partial maps、well-formedness proofだけを保持する。新moduleは
+`GLocalV1T3T6Observation`をimportせず、Cycle 25のcommon observation/equality、
+Round-15 / Stop-B label、rank / defect / checker resultをfield・premise・typeclass・
+external certificateのいずれとしても使用しない。
+
+### Verification and quality audit
+
+- focused `GLocalV1T3T6Uniformity`: pass、namespace auditは33 declarations、
+  standard axioms only、warningなし。
+- targeted `GLocalV1T3T6Uniformity` build: pass、3720 jobs。
+- targeted `PresentationASubnerveDefect` build: pass、3715 jobs、namespace auditは
+  143 declarations、standard axioms only。
+- primary owner API / profile / semantic endpoint 15 declarationsのdirect
+  `#print axioms`はすべて`[propext, Classical.choice, Quot.sound]`のみ。
+- 新moduleは43 top-level declarations
+  (29 public theorem、4 public abbreviation、10 documented private typed def)。
+  43件すべてにdeclaration docstring、fixed GOAL position、raw premise / provenanceを
+  記録した。owner側の新規11 theoremもdefinition直後またはrank ownerに配置し、
+  同じprovenance境界を記録した。
+- clientはgeneric selected-cell、matrix-rank、computed defect definitionを直接展開せず、
+  definition-owner projection / formula APIを使用する。fixture-local raw incidence tableと
+  explicit rational finite matrixだけを正規化する。
+- `git diff --check`、Research import direction(228 modules)、package direction、
+  separation fixtures: pass。
+- placeholder / forbidden primitive / hidden-BiDi / privacy / Formal→Research reverse
+  import scan: no finding。
+- Research full build: ユーザー指示により未実行。
+- independent T3: `approve / proof-obligation-discharged`、blocking findingなし。
+  T3 reviewerはLean/lake/buildを実行せず、固定sourceと直接依存からrank、dimension、
+  defect、checker、semantic labelの全経路を独立再構成した。
+
+fixed source SHA-256:
+
+- `ExecutableRationalRank.lean`:
+  `79835a78a693cfbb758708780e54704d27caae9f443d4a53a01d810490b87f09`
+- `PresentationASubnerveDefect.lean`:
+  `ad41fb92ae2b1558733104f48e7d69a39dd305df6e28a3b14dad95d9a88fd140`
+- `GLocalV1T3T6Uniformity.lean`:
+  `02c23047480f2ee3df7e63ea872f3e25a24111c12f14cebe0ff5209f54be648c`
+- `AG.lean`:
+  `426c063c2bc41eba919f377968c42271e3f588d2992601520111e76dcd2e4e9f`
+- `research-modules.txt`:
+  `6d3a879a6fd43acabd5b49f684035207b0613a6babc9d728a13996a2610cc2a5`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 26
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove exact T3 uniform and T6 nonuniform semantic labels through the existing sound-complete finite checker
+proof_obligation_delta: fixed GOAL claims (v)(b) and (v)(c) are independently audited Lean theorems over the preregistered raw presentations
+primary_specification:
+  source:
+    goal: research/goals/G-107-aat-uniform-invariance-characterization.md
+    registered_presentations: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Witnesses.lean
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/ExecutableRationalRank.lean
+    declarations:
+      - rank_eq_of_selectedColumns_basis
+  - file: research/lean/ResearchLean/AG/UniformInvariance/PresentationASubnerveDefect.lean
+    declarations:
+      - coarseH1Finrank_eq_card_sub_rationalMatrixRanks
+      - fineH1Finrank_eq_card_sub_rationalMatrixRanks
+      - computedASubnerveH1Rank_eq_rankFormula
+      - computedASubnerveDefect_eq_rankFormula
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Uniformity.lean
+    declarations:
+      - t3_targetZero_profile
+      - t3_targetOne_profile
+      - t3_targetFull_profile
+      - t3_uniformPresentationCheck
+      - t3_uniformPresentation
+      - t6_targetZero_h1_profile
+      - t6_targetZero_h1Map_not_bijective
+      - t6_targetZero_defect_ne_zero
+      - t6_uniformPresentationCheck
+      - t6_not_uniformPresentation
+premise_delta:
+  discharged:
+    - exact T3 actual H1 dimensions 1/0/1 on the three nonempty target scopes
+    - exact T3 induced-map ranks 1/0/1 and zero computed defects on all three scopes
+    - sound-complete checker truth and UniformPresentation for T3
+    - exact T6 target-zero coarse/fine actual H1 dimensions 3 and 1
+    - T6 target-zero actual H1-map nonbijectivity and nonzero computed defect
+    - sound-complete checker falsity and not UniformPresentation for T6
+  remaining:
+    - quantified observation predicate-factorization refutation from equal obsG and distinct semantic labels
+certificate_provenance:
+  discharged:
+    - registered raw selected-cell counts, self-loop endpoints, face-incidence matrices, and canonical factor
+    - explicit selected columns, rational Gram determinants, and spanning relations
+    - generic literal quotient-H1 dimension and computed-defect correctness bridges
+  unresolved:
+    - final quantified nonfactorization theorem
+proof_use_audit:
+  used_material_premises:
+    - all three nonempty T3 target scopes and their complete selected raw incidence tables
+    - exact T3 differential and H1-block ranks
+    - T6 target-zero selected edge counts, exact differential ranks, and the two residual-column relations
+    - generic rank formula, defect correctness, zero-defect iff bijective, and checker semantic iff
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: prove the quantified observation predicate-factorization refutation from Cycle 25 obsG equality and Cycle 26 semantic label separation
 completion_candidate: false
 tracking_issue_closed: false
 ```
