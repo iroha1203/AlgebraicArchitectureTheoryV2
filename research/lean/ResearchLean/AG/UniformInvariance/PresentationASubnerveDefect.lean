@@ -688,6 +688,18 @@ def coarseFaceEdge0In (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp (Finset.mem_inter.mp hsupport).1).1, hA⟩⟩
 
+/-- The selected coarse slot-zero face edge exposes its underlying raw
+incidence entry.
+
+Position: definition-owner projection API for finite rank clients.  Selection
+changes only the proof of support membership and supplies no boundary-rank or
+cohomology certificate. -/
+@[simp]
+theorem coarseFaceEdge0In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A) :
+    (P.coarseFaceEdge0In A face).1 = P.coarseFaceEdge0 face.1 :=
+  rfl
+
 /-- Boundary edge one in the raw coarse selected cells. -/
 def coarseFaceEdge1In (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A) :
@@ -702,6 +714,17 @@ def coarseFaceEdge1In (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp (Finset.mem_inter.mp hsupport).1).2, hA⟩⟩
 
+/-- The selected coarse slot-one face edge exposes its underlying raw
+incidence entry.
+
+Position: companion definition-owner projection API for finite rank clients;
+its only provenance is the raw face-boundary table. -/
+@[simp]
+theorem coarseFaceEdge1In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A) :
+    (P.coarseFaceEdge1In A face).1 = P.coarseFaceEdge1 face.1 :=
+  rfl
+
 /-- Boundary edge two in the raw coarse selected cells. -/
 def coarseFaceEdge2In (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A) :
@@ -715,6 +738,17 @@ def coarseFaceEdge2In (P : FiniteComparisonPresentation)
   obtain ⟨hsupport, hA⟩ := Finset.mem_inter.mp htarget
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).2, hA⟩⟩
+
+/-- The selected coarse slot-two face edge exposes its underlying raw
+incidence entry.
+
+Position: third definition-owner projection API for finite rank clients;
+selection proof data are erased while raw incidence is preserved. -/
+@[simp]
+theorem coarseFaceEdge2In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.CoarseFaceIn A) :
+    (P.coarseFaceEdge2In A face).1 = P.coarseFaceEdge2 face.1 :=
+  rfl
 
 /-- Left endpoint in the raw fine selected cells. -/
 def fineEdgeLeftIn (P : FiniteComparisonPresentation)
@@ -778,6 +812,20 @@ def fineFaceEdge0In (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp (Finset.mem_inter.mp hsupport).1).1, hA⟩⟩
 
+/-- The raw selected fine boundary edge zero exposes the underlying
+incidence-table edge.  This definition-owner rule keeps finite rank clients
+from expanding the support-membership proof stored by `fineFaceEdge0In`.
+
+Position: public evaluation API for the selected fine-face boundary used by
+the Cycle 26 exact degree-one matrix calculations.  Its premise provenance is
+only the raw face incidence and the selected-cell membership carried by
+`face`; it does not consume a rank, defect, checker, or semantic label. -/
+@[simp]
+theorem fineFaceEdge0In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.FineFaceIn A) :
+    (P.fineFaceEdge0In A face).1 = P.fineFaceEdge0 face.1 :=
+  rfl
+
 /-- Boundary edge one in the raw fine selected cells. -/
 def fineFaceEdge1In (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFaceIn A) :
@@ -793,6 +841,20 @@ def fineFaceEdge1In (P : FiniteComparisonPresentation)
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp (Finset.mem_inter.mp hsupport).1).2, hA⟩⟩
 
+/-- The raw selected fine boundary edge one exposes the underlying
+incidence-table edge.  This companion definition-owner rule hides the
+selection proof from downstream matrix-entry normalization.
+
+Position: public evaluation API for the selected fine-face boundary used by
+the Cycle 26 exact degree-one matrix calculations.  Its premise provenance is
+only the raw face incidence and selected-cell membership; no computed rank,
+defect, checker value, or desired label is supplied. -/
+@[simp]
+theorem fineFaceEdge1In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.FineFaceIn A) :
+    (P.fineFaceEdge1In A face).1 = P.fineFaceEdge1 face.1 :=
+  rfl
+
 /-- Boundary edge two in the raw fine selected cells. -/
 def fineFaceEdge2In (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (face : P.FineFaceIn A) :
@@ -807,6 +869,20 @@ def fineFaceEdge2In (P : FiniteComparisonPresentation)
   obtain ⟨hsupport, hA⟩ := Finset.mem_inter.mp htarget
   exact ⟨target, Finset.mem_inter.mpr
     ⟨(Finset.mem_inter.mp hsupport).2, hA⟩⟩
+
+/-- The raw selected fine boundary edge two exposes the underlying
+incidence-table edge.  This completes the definition-owner evaluation surface
+for the three fine-face boundary slots.
+
+Position: public evaluation API for the selected fine-face boundary used by
+the Cycle 26 exact degree-one matrix calculations.  Its premise provenance is
+only the raw face incidence and selected-cell membership; it is independent
+of every rank, defect, checker result, and semantic label. -/
+@[simp]
+theorem fineFaceEdge2In_coe (P : FiniteComparisonPresentation)
+    (A : Finset P.CoarseTarget) (face : P.FineFaceIn A) :
+    (P.fineFaceEdge2In A face).1 = P.fineFaceEdge2 face.1 :=
+  rfl
 
 /-- The raw chart comparison sends every selected fine chart to a selected
 coarse chart using computed-factor support compatibility. -/
@@ -1218,8 +1294,39 @@ def computedASubnerveDefect (P : FiniteComparisonPresentation)
           P.computedASubnerveH1Rank A,
     Fintype.card (P.FineEdgeIn A) -
       rationalMatrixRank (P.fineD1Matrix A) -
-        rationalMatrixRank (P.fineD0Matrix A) -
+      rationalMatrixRank (P.fineD0Matrix A) -
           P.computedASubnerveH1Rank A)
+
+/-- Definition-owner evaluation API for the computed induced-H¹ rank.
+
+Position: public finite-rank formula used by concrete presentation clients.
+Every term is generated from raw block/differential matrices; the theorem
+introduces no rank premise, expected value, or presentation field. -/
+theorem computedASubnerveH1Rank_eq_rankFormula
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    P.computedASubnerveH1Rank A =
+      rationalMatrixRank (P.h1RankBlockMatrix A) -
+        rationalMatrixRank (P.coarseD1Matrix A) -
+          rationalMatrixRank (P.fineD0Matrix A) :=
+  rfl
+
+/-- Definition-owner evaluation API for the computed kernel/cokernel defect.
+
+Position: public finite-cardinality/rank formula for checker and witness
+clients.  Its only provenance is selected raw cell counts and generated matrix
+ranks; no semantic label or conclusion-equivalent certificate is accepted. -/
+theorem computedASubnerveDefect_eq_rankFormula
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    P.computedASubnerveDefect A =
+      (Fintype.card (P.CoarseEdgeIn A) -
+          rationalMatrixRank (P.coarseD1Matrix A) -
+            rationalMatrixRank (P.coarseD0Matrix A) -
+              P.computedASubnerveH1Rank A,
+        Fintype.card (P.FineEdgeIn A) -
+          rationalMatrixRank (P.fineD1Matrix A) -
+            rationalMatrixRank (P.fineD0Matrix A) -
+              P.computedASubnerveH1Rank A) :=
+  rfl
 
 /-! ## Raw cells versus the canonical semantic A-subnerve -/
 
@@ -2013,18 +2120,23 @@ theorem computedASubnerveH1Rank_eq_finrank_range_h1Map
   exact (P.toGeometry.aSubnerveComparisonHom
     (↑A : Set P.CoarseTarget)).finrank_range_h1Map_eq_h1RankBlock.symm
 
-/-- Main Cycle 8 correctness theorem: for every finite coarse target subset,
-including the empty subset, the defect computed from raw presentation tables
-is the literal kernel/cokernel defect of the actual canonical A-subnerve H¹
-comparison. -/
-theorem computedASubnerveDefect_eq_aSubnerveDefect
+/-- The actual coarse `A`-subnerve `H¹` dimension is the selected raw edge
+count minus the two executable differential ranks.
+
+Position: definition-owner dimension API for fixed GOAL claim (v)(b)–(c).
+Its premises are only a finite presentation and target subset; the edge count
+and ranks are computed from raw selected cells, while the literal quotient
+dimension is obtained from the generic three-cochain-complex rank formula. -/
+theorem coarseH1Finrank_eq_card_sub_rationalMatrixRanks
     (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
-    P.computedASubnerveDefect A =
-      P.toGeometry.aSubnerveDefect (↑A : Set P.CoarseTarget) := by
+    Module.finrank ℚ
+        (P.coarseSupportedNerve.targetSubsetComplex
+          (↑A : Set P.CoarseTarget)).H1 =
+      Fintype.card (P.CoarseEdgeIn A) -
+        rationalMatrixRank (P.coarseD1Matrix A) -
+          rationalMatrixRank (P.coarseD0Matrix A) := by
   classical
-  let comparison := P.toGeometry.aSubnerveComparisonHom
-    (↑A : Set P.CoarseTarget)
-  have hcoarseC1 :
+  have hC1 :
       Module.finrank ℚ
           (P.coarseSupportedNerve.targetSubsetComplex
             (↑A : Set P.CoarseTarget)).C1 =
@@ -2042,7 +2154,42 @@ theorem computedASubnerveDefect_eq_aSubnerveDefect
               (↑A : Set P.CoarseTarget)) := by simp
       _ = Fintype.card (P.CoarseEdgeIn A) :=
         (Fintype.card_congr (P.coarseEdgeEquiv A)).symm
-  have hfineC1 :
+  have hH1 :=
+    ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
+      (P.coarseSupportedNerve.targetSubsetComplex
+        (↑A : Set P.CoarseTarget))
+  rw [hC1] at hH1
+  change Module.finrank ℚ
+      (P.coarseSupportedNerve.targetSubsetComplex
+        (↑A : Set P.CoarseTarget)).H1 =
+      Fintype.card (P.CoarseEdgeIn A) -
+        Module.finrank ℚ (LinearMap.range
+          (P.coarseSupportedNerve.targetSubsetD1
+            (↑A : Set P.CoarseTarget))) -
+          Module.finrank ℚ (LinearMap.range
+            (P.coarseSupportedNerve.targetSubsetD0
+              (↑A : Set P.CoarseTarget))) at hH1
+  rw [P.rationalMatrixRank_coarseD1Matrix_eq A,
+    P.rationalMatrixRank_coarseD0Matrix_eq A]
+  exact hH1
+
+/-- The actual fine preimage-subnerve `H¹` dimension is the selected raw edge
+count minus the two executable differential ranks.
+
+Position: fine-side companion of the definition-owner dimension API for fixed
+GOAL claim (v)(b)–(c).  The canonical preimage, edge count, and matrix ranks
+are all generated from raw presentation data; no dimension or label
+certificate is accepted as input. -/
+theorem fineH1Finrank_eq_card_sub_rationalMatrixRanks
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    Module.finrank ℚ
+        (P.fineSupportedNerve.targetSubsetComplex
+          (P.canonicalFinePreimage A)).H1 =
+      Fintype.card (P.FineEdgeIn A) -
+        rationalMatrixRank (P.fineD1Matrix A) -
+          rationalMatrixRank (P.fineD0Matrix A) := by
+  classical
+  have hC1 :
       Module.finrank ℚ
           (P.fineSupportedNerve.targetSubsetComplex
             (P.canonicalFinePreimage A)).C1 =
@@ -2060,26 +2207,11 @@ theorem computedASubnerveDefect_eq_aSubnerveDefect
               (P.canonicalFinePreimage A)) := by simp
       _ = Fintype.card (P.FineEdgeIn A) :=
         (Fintype.card_congr (P.fineEdgeEquiv A)).symm
-  have hcoarseH1 :=
-    ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
-      (P.coarseSupportedNerve.targetSubsetComplex
-        (↑A : Set P.CoarseTarget))
-  have hfineH1 :=
+  have hH1 :=
     ThreeCochainComplex.finrank_h1_eq_c1_sub_d1_sub_d0
       (P.fineSupportedNerve.targetSubsetComplex
         (P.canonicalFinePreimage A))
-  rw [hcoarseC1] at hcoarseH1
-  rw [hfineC1] at hfineH1
-  change Module.finrank ℚ
-      (P.coarseSupportedNerve.targetSubsetComplex
-        (↑A : Set P.CoarseTarget)).H1 =
-      Fintype.card (P.CoarseEdgeIn A) -
-        Module.finrank ℚ (LinearMap.range
-          (P.coarseSupportedNerve.targetSubsetD1
-            (↑A : Set P.CoarseTarget))) -
-          Module.finrank ℚ (LinearMap.range
-            (P.coarseSupportedNerve.targetSubsetD0
-              (↑A : Set P.CoarseTarget))) at hcoarseH1
+  rw [hC1] at hH1
   change Module.finrank ℚ
       (P.fineSupportedNerve.targetSubsetComplex
         (P.canonicalFinePreimage A)).H1 =
@@ -2089,7 +2221,24 @@ theorem computedASubnerveDefect_eq_aSubnerveDefect
             (P.canonicalFinePreimage A))) -
           Module.finrank ℚ (LinearMap.range
             (P.fineSupportedNerve.targetSubsetD0
-              (P.canonicalFinePreimage A))) at hfineH1
+              (P.canonicalFinePreimage A))) at hH1
+  rw [P.rationalMatrixRank_fineD1Matrix_eq A,
+    P.rationalMatrixRank_fineD0Matrix_eq A]
+  exact hH1
+
+/-- Main Cycle 8 correctness theorem: for every finite coarse target subset,
+including the empty subset, the defect computed from raw presentation tables
+is the literal kernel/cokernel defect of the actual canonical A-subnerve H¹
+comparison. -/
+theorem computedASubnerveDefect_eq_aSubnerveDefect
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    P.computedASubnerveDefect A =
+      P.toGeometry.aSubnerveDefect (↑A : Set P.CoarseTarget) := by
+  classical
+  let comparison := P.toGeometry.aSubnerveComparisonHom
+    (↑A : Set P.CoarseTarget)
+  have hcoarseH1 := P.coarseH1Finrank_eq_card_sub_rationalMatrixRanks A
+  have hfineH1 := P.fineH1Finrank_eq_card_sub_rationalMatrixRanks A
   rw [computedASubnerveDefect,
     P.rationalMatrixRank_coarseD1Matrix_eq A,
     P.rationalMatrixRank_coarseD0Matrix_eq A,
@@ -2100,9 +2249,13 @@ theorem computedASubnerveDefect_eq_aSubnerveDefect
   rw [blockDefect_eq_finrank_sub_range comparison.h1Map]
   apply Prod.ext
   · dsimp only
-    rw [hcoarseH1]
+    rw [hcoarseH1,
+      P.rationalMatrixRank_coarseD1Matrix_eq A,
+      P.rationalMatrixRank_coarseD0Matrix_eq A]
   · dsimp only
-    rw [hfineH1]
+    rw [hfineH1,
+      P.rationalMatrixRank_fineD1Matrix_eq A,
+      P.rationalMatrixRank_fineD0Matrix_eq A]
 
 end FiniteComparisonPresentation
 
