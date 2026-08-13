@@ -15,7 +15,7 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#3897](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3897) closed as `COMPLETED`.
 - `report`: [research/reports/G-103-aat-canonical-resolution.md](../reports/G-103-aat-canonical-resolution.md)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§5–6、§7.1、§8 候補6、§12 スライス d)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§5–6、§7.1、§8 候補6、§12 スライス d)
 - `research aim`: 有限 Source 上の law family `L` に対して ambient
   joint-kernel quotient `q_L`(`x ~_L y ⟺ ∀ l ∈ L, eval_l x = eval_l y`)を
   構成し、最粗の `L`-adequate reading であること(普遍性)と有限 regime

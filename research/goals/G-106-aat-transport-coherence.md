@@ -10,7 +10,7 @@
   unported)を土台として参照する。確定事項4点(下記)は固定済み。
 - `tracking issue`: [#3998](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3998)
   (active 昇格はユーザー裁定、成立はカード同期 PR のマージをもって)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
 - `確定事項`: 次の4点を固定した(active 昇格はユーザー裁定済み。成立は
   カード同期 PR のマージをもって)。
   (1) **2-障害の係数系(有限 presentation 上の次数契約)**: 図式は

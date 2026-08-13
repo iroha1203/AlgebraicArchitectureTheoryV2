@@ -12,7 +12,7 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#3888](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3888) closed as `COMPLETED`.
 - `report`: [research/reports/G-101-aat-atom-foundation.md](../reports/G-101-aat-atom-foundation.md)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)
 - `research aim`: doctrine の射の圏 `Doct_U` と pointed 圏 `ExtInst_U` を立て、
   exact 射に沿う package 輸送を opcartesian lift として構成・特徴づけ、輸送データ
   (`SignedExactCoreReadingHom` の全 field)が一本の構成から供給されることを示す。

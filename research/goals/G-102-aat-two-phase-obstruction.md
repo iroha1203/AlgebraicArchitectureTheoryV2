@@ -12,7 +12,7 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#3892](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3892) closed as `COMPLETED`.
 - `report`: [research/reports/G-102-aat-two-phase-obstruction.md](../reports/G-102-aat-two-phase-obstruction.md)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§2、§8 候補1)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§2、§8 候補1)
 - `research aim`: Atom の構造 / 意味の二相を kind ラベルではなく抽出の依存
   profile(宣言された semantic-reading 変形族に対する `extracts` 真偽の
   不変性)から導出的に定義し、有限被覆の係数複体を二相の短完全列

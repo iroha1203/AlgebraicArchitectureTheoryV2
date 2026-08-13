@@ -38,10 +38,10 @@ Issue を正本とし、本ノートには持ち込まない。
 
 **上流考察ノート**(定義・分割の初出。正本ではない):
 
-- [表示的意味論ノート](aat_denotational_semantics_of_architecture.md)(プログラム定義=§11、山頂 candidate=§10)
-- [解像度診断の設計ノート](aat_resolution_diagnostic_design.md)(observation factorization、成果物の四分法)
-- [Atom Is All You Need 考察ノート](atom_is_all_you_need_discussion.md)(§3.5 達成階梯、§10 スキームへの橋、§12 論文ロードマップ)
-- [G-104 係数生成契約ノート](aat_g104_coefficient_generation_contract.md)(K0 / K1 契約の設計経緯)
+- [表示的意味論ノート](n1004_aat_denotational_semantics_of_architecture.md)(プログラム定義=§11、山頂 candidate=§10)
+- [解像度診断の設計ノート](n1003_aat_resolution_diagnostic_design.md)(observation factorization、成果物の四分法)
+- [Atom Is All You Need 考察ノート](n1001_atom_is_all_you_need_discussion.md)(§3.5 達成階梯、§10 スキームへの橋、§12 論文ロードマップ)
+- [G-104 係数生成契約ノート](n1002_aat_g104_coefficient_generation_contract.md)(K0 / K1 契約の設計経緯)
 
 ---
 

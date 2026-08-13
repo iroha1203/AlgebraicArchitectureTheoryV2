@@ -45,7 +45,7 @@
   support-active)は**両方向とも** exact 反例を持ち、v3 では active
   claim から除外して研究史・mechanism artifact として保存する。v3 は
   設計ノート
-  [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+  [docs/note/n1003_aat_resolution_diagnostic_design.md](../../docs/note/n1003_aat_resolution_diagnostic_design.md)
   (observation factorization 構図・成果物の四分法)を設計根拠として、
   **defect 還元と決定可能性/Atlas positioning/observation
   nonfactorization の三本柱**で固定する(ユーザー裁定+Codex 設計相談
@@ -77,7 +77,7 @@
 - `tracking issue`: [#3954](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3954)
   (active 昇格はユーザー裁定 2026-08-09、成立はカード同期 PR のマージを
   もって)。
-- `source note`: [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+- `source note`: [docs/note/n1003_aat_resolution_diagnostic_design.md](../../docs/note/n1003_aat_resolution_diagnostic_design.md)
   (v3 の設計根拠正本: factorization 構図・機構分類・四分法)、
   [research/experiments/g104-necessity-map/hunt-report.md](../experiments/g104-necessity-map/hunt-report.md)
   (§R0 一般手証明、§R2 候補系譜、blocker、Stop-B 終端)、
@@ -136,9 +136,9 @@
   grammar のどの条項系にも不可能」という観測限界を固定する。一般の
   nonuniform 射は law-indexed jump profile のデータとなる。関連考察は
   設計ノート
-  [docs/note/aat_resolution_diagnostic_design.md](../../docs/note/aat_resolution_diagnostic_design.md)
+  [docs/note/n1003_aat_resolution_diagnostic_design.md](../../docs/note/n1003_aat_resolution_diagnostic_design.md)
   と表示的意味論ノート
-  [docs/note/aat_denotational_semantics_of_architecture.md](../../docs/note/aat_denotational_semantics_of_architecture.md)
+  [docs/note/n1004_aat_denotational_semantics_of_architecture.md](../../docs/note/n1004_aat_denotational_semantics_of_architecture.md)
   §10(Resolution Diagnostic Local-System)。
 - `core tension`: 三つの稜線がある。第一に**還元と decider の正本性**:
   一様不変性は law family の全量化を含む semantic 述語であり、これを
