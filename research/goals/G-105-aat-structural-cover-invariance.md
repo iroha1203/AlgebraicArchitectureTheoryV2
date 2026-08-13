@@ -1,7 +1,7 @@
 # G-105-aat-structural-cover-invariance — 構造台 Čech nerve の底不変性
 
 - `id`: `G-105-aat-structural-cover-invariance`
-- `status`: `active`
+- `status`: `target-refuted`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
 - `predecessor`: G-102(二相係数の障害 support 定理、`target-theorem-proved`。
@@ -232,3 +232,22 @@
   (ii) は反例構成が成功条件であり、「全 Atom nerve も常に不変」と証明
   された場合は生成構成が Atom を読んでいない仕様欠陥として GOAL 改訂案を
   返す。同じ blocker が二 cycle 続けば `target-blocked`。
+- `refutation record`(2026-08-11 裁定): Cycle 7 で (v) 発火 witness の
+  不可能性が証明された。固定した source-labelled 係数生成規則の下で、
+  各 source の supported chart が全 ordered pair / triple を生成して
+  summand が cone になり、任意 generated raw cocycle が boundary になる
+  (`generatedAllComplex_h1Zero` / `generated_firing_witness_impossible`、
+  T3 audit approve)。report
+  [research/reports/G-105-aat-structural-cover-invariance.md](../reports/G-105-aat-structural-cover-invariance.md)
+  の proof state `target-refuted` を本カードの status へ同期する。
+  Cycle 1–6 で放電済みの (i)–(iv) artifact(canonical nerve 生成、構造
+  nerve 等式、全 Atom nerve 可変性反例、係数生成規則と phase 対応、
+  包含対 restriction cochain map と H¹ naturality、構造局在と variant 間
+  固定)は有効な成果として保持する。
+- `salvage reading`(semantic saturation): 反証の内容は「全-support 生成
+  規則は診断幾何を普遍的に消す」という定理である — 情報を無差別に充填
+  した nerve は source ごとに cone 化し、H¹ の内容が残らない。これは
+  law-selected nerve・relative cohomology・semantic quotient H¹ のいずれかの
+  選択が非自明診断の成立要件であることの証拠であり、saturation の
+  定理化(後続カード)の正例素材になる。本カードではこの再読を claim
+  しない(記録のみ)。改訂路線の固定は後続カードで行う。
