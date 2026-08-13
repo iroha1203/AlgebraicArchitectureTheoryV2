@@ -628,7 +628,72 @@ calculus の対象 `J_A` の輸送的性質が固まるため)。
 
 ---
 
-## 6. 論文・発信への含意
+## 6. 発展提案の記録 — universal comparison family 構想
+
+本節は、統合 candidate 群(§3)と登路(§4–5)へのレビュー往復で提示された
+発展方向の記録である。いずれも未証の candidate であり、採否と採り込み先は
+各カード・ノートの起草時に裁定する。
+
+1. **S0 の universal comparison category 化。** 辞書を対象対応に留めず、
+   基底 = reading 圏、fiber = (cover、supported nerve、equation 係数
+   `Q_E`、law-generated 係数、comparison data)の Grothendieck
+   construction / fibration として立てる。その上に semantic 側・equation
+   側・law-generated 側の三つの Čech complex functor を置くと、S1 は係数
+   比較、S3 は自然変換、G-106 はその pseudofunctorial coherence として
+   読める。strict な辞書が不成立の場合の後退も、essential image・span・
+   localization として分類できる — SAGA cover の像が G-107 nerve class の
+   真部分であること(§3 S0)は欠点ではなく essential-image theorem の
+   材料になる。
+2. **defect object の mapping cone 化。** 一般 base での `J_A` 相対化は、
+   点ごとの数値の module 置換ではなく、cochain 比較
+   `C_A^coarse → C_A^fine` の mapping cone(derived には cofiber)を
+   defect object に据える。体上の fiber では長完全列が ker / coker defect
+   を回収し、一般 base では cone の cohomology sheaf と Fitting ideal が
+   jump strata を与える。quasi-isomorphism locus が「全次数で診断が保存
+   される領域」になり、H¹ を超えて higher obstruction へ同じ形式が延びる。
+   係数 base change カード(§5)の最初の設計判断は「どの complex を
+   perfect とするか」に置く(Fitting ideal の base-change 性と perfect
+   complex の cohomology base change には標準的足場がある)。
+3. **三つの moduli の分離。** 潜んでいる空間は少なくとも三つある —
+   `B_read`(reading・cover・law・係数の選択空間)、`M_sem`(semantic
+   realization / repair の moduli。SHIGURE 候補)、`D_defect ⊂ B_read`
+   (comparison cone の cohomology が跳ぶ determinantal locus)。jump
+   locus はまず選択空間の上に立ち、SHIGURE はその上の realization stack
+   (または両者を結ぶ universal family)として現れる。SAGA residual は
+   family 上の obstruction section、repairable locus はその zero locus。
+   この整理の下で S4 は「uniform / quasi-isomorphism locus 上で粗と細の
+   residual zero locus が一致する」という locus 比較の幾何的 statement
+   に、S5 はその補集合の stratification になる。
+4. **groupoid 先行設計(set / groupoid 裁定の解消案)。** `H^0` torsor と
+   gauge 自己同型が既に理論の中心にある以上、SHIGURE を最初から groupoid
+   値 prestack として設計し、set 値は「inertia(自己同型群)が自明な
+   locus での 0-truncation / coarse moduli」として結果で回収する。この
+   順序なら G6 の役割は「set か groupoid かを外から選ぶ」ことではなく
+   「inertia が自明になる locus を測る」ことになり、scheme 版と stack
+   版は競合候補ではなく「stack = 本体、scheme = trivial-inertia locus /
+   coarse 対象」として統一される。山頂カード起草時の裁定事項。
+5. **G-105 後継の homotopy type 制御化。** apex 条件付き cone 化定理を
+   最小定理としつつ、生成規則が作る fiber の contractibility / cofinality
+   を判定して「どの selection が cohomology を殺し、どの selection が
+   cycle を残すか」を特徴づける方向へ育てる。三方式(law-selection・
+   relative cohomology・semantic quotient)の比較は「何を削るか」では
+   なく「どの derived invariant を保存するか」で行う。
+
+**S0 ノートのスコープへの助言。** 完全な辞書を最初から狙わず、三点だけを
+固定する: (1) essential image となる cover / nerve class、(2) comparison
+complex を作れる最小データ、(3) reading 合成に対して strict / pseudo /
+lax のどこまでが無条件か。この三点が出れば、G-106 が証明すべき
+coherence・base change で perfect にすべき対象・SHIGURE の base が同時に
+決まる。
+
+**総括の記録。** 次の飛躍は個別の S0–S5 を増やすことではなく、
+**comparison cone を持つ universal family を一つ定義し、SAGA・G-107・
+G-106・SHIGURE をその異なる切断として読む**ことにある。この構想を統合
+設計(S0 ノート)の開始点に置く。
+
+---
+
+## 7. 論文・発信への含意
 
 - **論文A(基礎論)**: 実証節 PRD は起草可能(Atom ノート §12)。第三段の
   解像度スイープは、G-107 により「adequate 範囲内の H¹ 安定」の判定が
@@ -649,7 +714,7 @@ calculus の対象 `J_A` の輸送的性質が固まるため)。
 
 ---
 
-## 7. 範囲・規律
+## 8. 範囲・規律
 
 - 本ノートは正本ではない。G-107 / G-105 の事実関係は各 report を正本と
   する。プログラムの定義は表示的意味論ノート §11 に、成果物の分割は設計
