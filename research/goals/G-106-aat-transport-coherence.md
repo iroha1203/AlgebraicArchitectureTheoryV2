@@ -1,17 +1,18 @@
 # G-106-aat-transport-coherence — 輸送整合の2-障害族
 
 - `id`: `G-106-aat-transport-coherence`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
   proved-in-research artifact(`Doct_U` / `transportAlong` / opcartesian
   普遍性。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
-  unported)を土台として参照する。確定事項4点(下記)は固定済みであり、
-  active 昇格は人間の判断による。
-- `tracking issue`: 未起票(active 昇格時に起票する)
+  unported)を土台として参照する。確定事項4点(下記)は固定済み。
+- `tracking issue`: [#3998](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3998)
+  (active 昇格はユーザー裁定、成立はカード同期 PR のマージをもって)
 - `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§3.5、§8 候補17)
-- `確定事項`: 次の4点を固定した。active 昇格は人間の判断のみを残す。
+- `確定事項`: 次の4点を固定した(active 昇格はユーザー裁定済み。成立は
+  カード同期 PR のマージをもって)。
   (1) **2-障害の係数系(有限 presentation 上の次数契約)**: 図式は
     **有限 presentation** とする — 0-cell = doctrine 対象、1-cell = 射、
     **2-cell = 平行な path 対の宣言関係**(底で合成が一致する二つの有限
