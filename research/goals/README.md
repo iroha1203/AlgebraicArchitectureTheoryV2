@@ -18,7 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-105-aat-structural-cover-invariance](G-105-aat-structural-cover-invariance.md)
 - [G-107-aat-uniform-invariance-characterization](G-107-aat-uniform-invariance-characterization.md)
 
 ## draft（人間の確認待ち）
@@ -42,7 +41,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## inactive
 
-（なし）
+- [G-105-aat-structural-cover-invariance](G-105-aat-structural-cover-invariance.md)
+  (`target-refuted`。改訂裁定待ち — 反証記録と salvage reading はカードを参照)
 
 ## GOAL カードの型
 
