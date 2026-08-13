@@ -16,7 +16,7 @@ GOAL カードと将来の本文改訂のための candidate であり、本ノ�
   (候補系譜 v1–v5、反例群、`G_local-v1`、Stop B)
 - `research/experiments/g104-necessity-map/results-stop-b-summary.json`
   (2点分離の恒久証拠)
-- [表示的意味論ノート §10](aat_denotational_semantics_of_architecture.md)
+- [表示的意味論ノート §10](n1004_aat_denotational_semantics_of_architecture.md)
   (診断 local-system 構想、`Z_univ`)
 - G-107 カードと PR #3955 のレビュー往復(反例の三重検証記録)
 

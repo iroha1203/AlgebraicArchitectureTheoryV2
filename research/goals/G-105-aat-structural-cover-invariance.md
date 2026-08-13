@@ -10,7 +10,7 @@
   依存 profile / 二相分解 / Atom-indexed 係数複体の確定 artifact
   (`research/lean/ResearchLean/AG/TwoPhase/` 配下)を正本として参照する。
 - `tracking issue`: [#3950](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3950)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§2 幾何対応仮説、§8 候補9)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§2 幾何対応仮説、§8 候補9)
 - `research aim`: 「構造が空間を運び、意味が係数を運ぶ」を theorem に
   する。構造 Atom の定義(依存 profile が宣言変形族に不感)から、構造
   Atom の台の族が張る Čech nerve(covering 性は要求しない)は語用論的

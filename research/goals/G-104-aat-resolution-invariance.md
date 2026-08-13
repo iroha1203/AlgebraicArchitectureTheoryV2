@@ -21,7 +21,7 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#3902](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3902) closed as `COMPLETED`.
 - `report`: [research/reports/G-104-aat-resolution-invariance.md](../reports/G-104-aat-resolution-invariance.md)
-- `source note`: [docs/note/atom_is_all_you_need_discussion.md](../../docs/note/atom_is_all_you_need_discussion.md)(§5、§8 候補4)
+- `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§5、§8 候補4)
 - `research aim`: 二つの `L`-adequate な読み `q ≤ q'`(G-103 の粗さ順序
   `CoarserThan`)に対し、law 由来の係数で計算した障害類が、読みの比較射が
   誘導する comparison map の下で canonical に同型になる条件を特定し、
