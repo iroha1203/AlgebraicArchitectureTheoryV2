@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-107-aat-uniform-invariance-characterization.md`](../goals/G-107-aat-uniform-invariance-characterization.md)
 - tracking Issue: [#3954](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3954)
 - target theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
-- proof state: `active`
-- completion candidate: `no`
+- proof state: `target-proof-checkpoint`
+- completion candidate: `yes`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
@@ -186,8 +186,12 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   H¹ map非全単射、computed defect非零、checker false、
   `¬ UniformPresentation t6Presentation`へ接続した。観測等値module・外部label・
   結論相当field/certificateは使わない。
-- 未完了: Cycle 25の同一`obsG`とCycle 26の異なるsemantic labelを用いた、
-  quantified observation predicate nonfactorization theorem (v)(d)。
+- 完了(Cycle 27): 任意のProp-valued predicate `p`がpermanent `obsG`を通じて
+  computable finite presentation全体の`UniformPresentation`を特徴づけると仮定し、
+  T3のsemantic uniformityから得る`p (obsG T3)`をCycle 25の観測等値でT6へ
+  輸送した後、仮定したiffからT6 uniformityを導いてCycle 26のnonuniformityと
+  矛盾させた。これによりfixed GOAL (v)(d)を量化形のまま閉じた。残る
+  proof obligationはなく、正式completion reviewとlifecycle gate待ちである。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -307,6 +311,131 @@ cheat_route_audit:
 blocking_findings: []
 next_obligation: prove global generated H1 comparison bijective iff every source-generated block comparison is bijective
 completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 27 — quantified permanent-observation nonfactorization
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `yes`
+- proof obligation: fixed GOAL claim (v)(d)として、任意の
+  `p : GLocalV1ObsValue → Prop`が全computable finite comparison presentation上で
+  `p (obsG P) ↔ UniformPresentation P`を満たすことを、Cycle 25の同一観測と
+  Cycle 26の異なるsemantic labelから反証する。
+- Lean files:
+  - [`GLocalV1Nonfactorization.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1Nonfactorization.lean)
+  - [`ResearchLean/AG.lean`](../lean/ResearchLean/AG.lean)
+  - [`research-modules.txt`](../lean/research-modules.txt)
+
+### Exact quantified theorem and proof use
+
+primary declaration:
+
+- `uniformPresentation_not_factors_through_obsG`
+
+statement:
+
+```lean
+∀ p : GLocalV1ObsValue → Prop,
+  ¬ (∀ P : FiniteComparisonPresentation.{0},
+    p (obsG P) ↔ UniformPresentation P)
+```
+
+`FiniteComparisonPresentation.{0}`は、固定GOALが量化対象にするcomputable finite
+presentationをLeanの実行対象universe `Type`として明示したものである。abstract
+comparison geometryや非実行的な高位universeへ主張を拡張せず、登録T3 / T6を含む
+presentation型の全instanceを量化する。
+
+proofは仮定したfactorization iffの両方向を実使用する。
+
+1. `(hfactor t3Presentation).mpr t3_uniformPresentation`から
+   `p (obsG t3Presentation)`を得る。
+2. `t3_obsG_eq_t6_obsG`で同じpredicate truthをT6 observationへ輸送する。
+3. `(hfactor t6Presentation).mp`から`UniformPresentation t6Presentation`を得て、
+   `t6_not_uniformPresentation`と矛盾させる。
+
+predicateの列挙、decidability、特定の条項系、checker bit、rank / H¹ / defect、
+`commonObservation`、Round-15 / Stop-B external labelは新theoremのfield・premise・
+proof inputにしない。新structure・class・certificate・owner APIも追加しない。
+
+### Verification and completion checkpoint
+
+- focused `GLocalV1Nonfactorization`: pass、namespace auditは1 declaration、
+  standard axioms only、warningなし。
+- targeted `GLocalV1Nonfactorization` build: pass、3723 jobs。
+- primary theoremのdirect `#print axioms`:
+  `[propext, Classical.choice, Quot.sound]`のみ。
+- theorem bodyは観測等値、T3 positive label、T6 negative labelをすべて実使用し、
+  hypothetical iffの両方向を使う。
+- `git diff --check`、Research import direction、package direction、separation gates、
+  changed public artifact scan: pass。
+- placeholder / forbidden primitive / hidden-BiDi / privacy / Formal→Research reverse
+  import scan: no finding。
+- Research full build: ユーザー指示により未実行。
+- 独立T3: pending。T3通過後、completion candidateとして正式4-lane
+  `math-lean-review`とPR / CI / merge / Issue closure gateへ進む。
+
+fixed source SHA-256:
+
+- `GLocalV1Nonfactorization.lean`:
+  `269d301c0bfc41386c659f18297f062f345641d2ed295282ca3580ad8ac848b2`
+- `AG.lean`:
+  `8e73d007ec8fb658e0a83a749ed68697373eeec63db15c395f18fdfc157de8b1`
+- `research-modules.txt`:
+  `64442e233fed51106ca4d8bd3c608d837722fcdb8e20edc184d2172ec3db6c16`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 27
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: prove the quantified predicate-factorization refutation from equal permanent observations and opposite semantic uniformity labels
+proof_obligation_delta: fixed GOAL claim (v)(d) is a closed Lean theorem over every Prop-valued observation predicate and all computable finite comparison presentations
+primary_specification:
+  source: research/goals/G-107-aat-uniform-invariance-characterization.md
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1Nonfactorization.lean
+    declarations:
+      - uniformPresentation_not_factors_through_obsG
+premise_delta:
+  discharged:
+    - permanent obsG equality of registered T3 and T6
+    - semantic UniformPresentation of registered T3
+    - semantic non-UniformPresentation of registered T6
+    - quantified predicate-factorization refutation with both iff directions used
+  remaining: []
+certificate_provenance:
+  discharged:
+    - direct composition of the independently audited Cycle 25 and Cycle 26 theorem endpoints
+  unresolved: []
+proof_use_audit:
+  used_material_premises:
+    - t3_obsG_eq_t6_obsG
+    - t3_uniformPresentation
+    - t6_not_uniformPresentation
+    - both directions of the hypothetical factorization equivalence
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: final independent math-lean completion review and lifecycle gates
+completion_candidate: true
 tracking_issue_closed: false
 ```
 
