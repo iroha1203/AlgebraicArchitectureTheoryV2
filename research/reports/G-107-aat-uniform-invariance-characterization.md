@@ -408,6 +408,29 @@ remediation source SHA-256:
 - `ConditionCAllACheckerInstancePairs.lean`:
   `b288a63a2fc2f8b53620a997d57e169b4cc0b9428080607997a22cc0a7b53cc8`
 
+### Formal completion review remediation — source and lifecycle synchronization
+
+上記API修正を含むfixed head `91914515207735238c019407f907ba6abb457be9`
+に対するformal four-lane rerunでは、数学B / Lean Bが`No major findings`、
+数学A / Lean Aがそれぞれ次の中心外Minorを1件ずつ返した。
+
+- PR本文のGitHub CI状態が「実行中」のまま、fixed headの7/7 SUCCESSと同期して
+  いなかった。
+- `GLocalV1T3T6Witnesses`末尾commentが、既に
+  `GLocalV1T3T6Uniformity`で閉じたT3/T6 semantic labelを次cycleへdeferすると
+  記述していた。
+
+前者はPR本文を7/7 SUCCESSへ同期し、後者は現在の依存DAG、すなわちraw fixture、
+independent observation normal form、independent semantic label、最終separation theoremの
+順を記すcommentへ更新した。Lean側の変更はcommentだけで、declaration、statement、
+proof body、import、aggregate、manifest、fixed GOALに変更はない。完了gateの規律に従い、
+この修正を含む新fixed headでformal four-lane reviewを全件再実行する。
+
+source-synchronization SHA-256:
+
+- `GLocalV1T3T6Witnesses.lean`:
+  `51b73ec819ea5768acf36baae25b11d29fadc6f6bcf49426dbbb6444b494ca6f`
+
 fixed source SHA-256:
 
 - `GLocalV1Nonfactorization.lean`:
