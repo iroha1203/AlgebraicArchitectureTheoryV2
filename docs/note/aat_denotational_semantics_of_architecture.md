@@ -225,6 +225,7 @@ semantic obstruction(第I部 定義8.1)として定義され、obstruction circu
 | Atlas定理(Diagnostic Resolution Invariance) | 表示的意味論のwell-definedness定理。固定条件C(C0–C6)を満たすresolution comparisonの下で、読みの解像度を変えてもH^1診断がcanonical同型で両立する。条件を外すと不変性が破れる反例3種を同じtheorem packageが保持する |
 | Period Separation(第VII部 定理6.1) | 表示の細分の存在定理。粗い表示で一致する対象が細かい表示で分離される |
 | 第VII部 §4 preservation / reflection | 意味論の健全性・完全性の問いのアーキテクチャ版 |
+| G-107(Uniform Invariance Defect Semantics and Nonfactorization Theorem、2026-08-13 proved) | well-definedness の完全な地図。零 locus の座標(`J_A` 還元)・決定可能性(sound / complete decider)・既知の安全域の位置(`Condition-C locus ⊊ uniform locus`、7 witness で真性)・観測限界(`G_local-v1` 相対の非分解性)を一組で固定 |
 
 特にAtlas定理の位置づけを固定しておく。表示的意味論が意味論の名に値するためには、
 意味が構文の提示の仕方(読みの解像度の選択)に依存してはならない。
@@ -416,7 +417,13 @@ candidateとして扱う。
   プログラムは、登録済み半径1観測grammar `G_local-v1` に相対する分離
   不能性(T3/T6の2点分離、Stop B終端)で閉じており、現在の開問題は
   「決定可能な内側近似はどこまで押せるか」と「どの大域情報を1成分
-  足せば特徴づけに届くか」である。functor性の合成整合は
+  足せば特徴づけに届くか」である。(2026-08-13 更新)この pair 水準の
+  三本柱は G-107 の `target-theorem-proved` で完了した — `Z_univ` の
+  座標((i) `J_A` 還元)・決定可能性((ii) sound / complete decider)・
+  `Condition-C locus ⊊ Z_univ`((iii)(iv))・`G_local-v1` 非分解性
+  ((v)、grammar 相対)がいずれも Lean theorem として固定された
+  (正本 = G-107 report)。上記の開問題2点は後続カードの frontier に
+  残る。functor性の合成整合は
   2-cell整合(後述の二層構成)の領分であり、終着はreading圏上のsemanticsの
   fibration / stack。reading空間は有限poset上のpersistence module
   (プラトーとjump locus)として読める。

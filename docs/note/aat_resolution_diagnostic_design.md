@@ -195,6 +195,11 @@ G_local-v1 を通して定義不能` という **Atlas 定理の正確な位置*
 定まる。claim を痩せさせる撤退ではなく、計算・certificate・観測限界・変形を
 混ぜずに位置を定める改訂である。
 
+(2026-08-13 追記)この設計帰結は G-107 の `target-theorem-proved` として
+完了した。claim (i)–(v) 全放電、formal four-lane review 全 lane
+`No major findings`。事実関係の正本は
+[G-107 report](../../research/reports/G-107-aat-uniform-invariance-characterization.md)。
+
 現 C\*(CERTIFIED-v3 + support-active)は active claim から除外し、両方向の
 exact 反例(CONTRACTIBLE-TRIANGLE / PROPER-CHAIN3-PLUS-BRIDGE-DIGON)を持つ
 研究史・mechanism artifact として保存する。中心補題候補だった certificate
