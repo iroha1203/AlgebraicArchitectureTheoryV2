@@ -373,7 +373,8 @@ proof inputにしない。新structure・class・certificate・owner APIも追�
 - placeholder / forbidden primitive / hidden-BiDi / privacy / Formal→Research reverse
   import scan: no finding。
 - Research full build: ユーザー指示により未実行。
-- 独立T3: pending。T3通過後、completion candidateとして正式4-lane
+- 独立T3: `approve / proof-obligation-discharged`、blocking findingなし、
+  remaining obligationなし。completion candidateとして正式4-lane
   `math-lean-review`とPR / CI / merge / Issue closure gateへ進む。
 
 fixed source SHA-256:
