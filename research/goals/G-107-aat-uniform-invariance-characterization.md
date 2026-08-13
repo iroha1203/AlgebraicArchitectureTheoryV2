@@ -1,11 +1,40 @@
 # G-107-aat-uniform-invariance-characterization — 一様不変性の defect 意味論と Atlas 定理の位置
 
 - `id`: `G-107-aat-uniform-invariance-characterization`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Uniform Invariance Defect
+  Semantics and Nonfactorization Theorem の claim (i)–(v) を全放電
+  ($target-theorem-loop Cycle 1–27、2026-08-11〜13)。主要宣言:
+  (i) `uniformInvariance_iff_allNonemptyASubnerveH1Bijective` /
+  `uniformInvariance_iff_allNonemptyASubnerveDefect_eq_zero`(defect 還元)
+  と有限次元 bridge `blockDefect_eq_zero_iff_bijective`、
+  (ii) `uniformPresentationCheck` +
+  `uniformPresentationCheck_eq_true_iff`(sound / complete decider)、
+  (iii) bridge theorem `conditionC_of_conditionCAllA` +
+  `uniformInvariance_of_conditionCAllA`(Atlas positioning)+
+  実行可能 checker `conditionCAllACheck_eq_true_iff` + 正例 instance
+  `firing_conditionCAllA` / `pFire_conditionCAllACheck`、
+  (iv) `ConditionC0NonnecessityWitness`〜`ConditionC6NonnecessityWitness`
+  (7 witness、各 witness に `¬ConditionCAllA` 直接検査併記)、
+  (v) `t3_obsG_eq_t6_obsG`(観測等値)・`t3_uniformPresentation`・
+  `t6_not_uniformPresentation`・
+  `uniformPresentation_not_factors_through_obsG`(量化形分離)。
+  formal four-lane `$math-lean-review`(数学 A / B・Lean A / B)は全 lane
+  `No major findings`。fixed GOAL SHA-256 `dd6fd9ad…07d4`、fixed review
+  head `84050e95`、実装 PR
+  [#3994](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3994)
+  (merge `4c80532d`)+完了判定同期 PR
+  [#3995](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3995)
+  (merge `344b44fb`)。primary / remediation declarations の直接公理監査は
+  `propext` / `Classical.choice` / `Quot.sound` のみ、GitHub checks 7/7
+  (Research full build はユーザー指示により未実行。focused / targeted /
+  axiom coverage と区別して記録)。`Formal/AG` への移植は未実施
+  (porting status: `unported`)。
+- `completed at`: `2026-08-13 JST`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
-- `target status`: `statement-v3`(2026-08-11 改訂、4 lane 正式再査読
-  待ち。受理までは target-theorem loop を起動しない)。改訂史: 初版
+- `target status`: `target-theorem-proved`(2026-08-13。v3 statement で
+  完了。以下は statement 改訂史の記録)。改訂史: 初版
   (一様不変性 ⟺ C\* の必要十分特徴づけ)は `CONTRACTIBLE-TRIANGLE` で
   `target-refuted` → hunt 後継 round(v4・v5 も invalid)と人間裁定
   (選択肢1: 許容観測 grammar `G_local-v1` の固定)を経てハントは

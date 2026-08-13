@@ -45,8 +45,9 @@ GitHub checksは7/7 SUCCESSだが、green `lake build`と`research integrity gat
 ResearchLean packageをelaborateしないため、これらのCI結果はfocused / targeted /
 axiom coverageと区別する。Research full buildはユーザー指示により未実行である。
 
-tracking Issue #3954はtarget-theorem-loop固有規律に従い`Refs`のまま保持し、
-人間の明示的close指示がないためopenを維持する。これは数学的未完了を表さない。
+tracking Issue #3954は、2026-08-14の人間の明示close指示(完了処理)により
+`COMPLETED`でclose済みである。GOALカードは`status: completed`へ移行し、
+lifecycle同期を完了した。
 
 ```yaml
 ledger_type: target_theorem_completion
@@ -84,7 +85,7 @@ completed_proof_obligations:
   - claim (v) permanent observation nonfactorization
 remaining_proof_obligations: []
 blockers: []
-tracking_issue_closed: false
+tracking_issue_closed: true
 fixed_goal_sha256: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4
 fixed_review_head: 84050e9592635418198a41cbc23f2051f023b861
 implementation_pr: 3994
