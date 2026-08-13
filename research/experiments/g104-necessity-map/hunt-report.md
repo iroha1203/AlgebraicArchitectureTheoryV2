@@ -1,6 +1,7 @@
-# G-104 条件 C 必要性地図ハント報告
+# G-104 必要性地図ハント最終報告（停止条件 B）
 
 > **これは off-loop 探索 artifact であり、GOAL 完了の証拠ではない。**
+> `G_local-v1` 相対の数学的terminal Bを記録する。
 
 本報告は Issue #3948 の計算探索を記録する。G-104 のカード、完了 report、
 ResearchLean の確定実体は変更しない。
@@ -105,7 +106,7 @@ global/block iff の `true` 成分を読む。逆向きは任意の adequate fam
 global map の全単射を得る。
 
 この証明は `Source` の有限性を使って部分集合走査を有限化する。論理的な block 対応は同じ
-形で読めるが、本 PRD の計算還元は有限 regime に固定する。
+形で読めるが、本探索の計算還元は有限 regime に固定する。
 
 ## R0 calibration の固定 oracle
 
@@ -160,7 +161,7 @@ checkpoint 根拠から外し、次を実装して R0 を再校正した。
   `A={0}` と `A={1}`
 
 `Law=PUnit`、unit singleton carrier、`Value=Fin 2` の provenanceを含む最終 calibration と
-時系列訂正は Issue #3948 comment `5231149474` に固定した。これは PRD の
+時系列訂正は Issue #3948 comment `5231149474` に固定した。これは登録済みの
 「calibration 不一致の解消」に当たる最後の進展であり、それ以前の no-progress streak をresetする。
 
 ## R1: 必要性地図
@@ -224,7 +225,7 @@ H¹-neutral になることであり、現行条項そのものを必要条件�
 5. C5*/C6* は fine edge lift の syntactic swap relationを使う。
 
 候補定義に global / A-block H¹、comparison rank、global kernel/cokernel、全 A
-comparison の全単射を使わない。唯一の例外はPRDが許可した C3* の局所 fiber
+comparison の全単射を使わない。唯一の例外は登録済み C3* の局所 fiber
 cycle/boundary linear algebraである。global / A-block H¹ とcomparison rankは、候補とは
 独立な二方向 query のラベルとしてだけ計算する。
 
@@ -260,13 +261,13 @@ C6* は各 class が fine self-loop代表を持つことを要求する。
 独立レビューは、Round 5 が同一 blockerを試していないこと、case IDが fixture nameを含むこと、
 Round 1 payload hashが final sourceから再現できないことを指摘した。初回 stop-C 判定を撤回し、
 name-free semantic IDへ変更して全件を再計算した。再同期後の Round 1–7 hash は Issue #3948
-comment `5230523348` に固定している。この provenance / ID補正は PRD が列挙する4種の
+comment `5230523348` に固定している。この provenance / ID補正は登録済みの4種の
 「進展」には数えず、独立した監査訂正として記録する。
 
 Round 6/7 の result SHA-256 はそれぞれ
 `26de136bd3ace9b399560242655ad7027be2e82d67749aeaa4e199163f7d2429` と
 `6cd110d05b6e1537589ac5f002818a68d0778f3534190f125abd14438eac4c56` である。
-ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは PRD 上の進展なので、
+ただし、その後に R0(c)/(d)/(e) の calibration failureを修正したことは探索上の進展なので、
 この2 roundを最終 stop streakには用いない。
 
 ### calibration進展をまたぐラウンド履歴
@@ -297,64 +298,242 @@ post-PUnitの有効ラウンドは次のIssue記録に固定した。
 counterexample、candidate改訂、追加calibration fixはいずれも生じなかった。有限母集団は
 Round 11で1,916件、Round 12で1,918件になった。
 
-## 停止条件 C
+## Round 13–15: Stop C後の進展
 
-終端は **C(停滞)** である。最後の進展は Issue #3948 comment `5231149474` に固定した
-post-PUnit R0 calibration failureの解消である。その後、Round 11とRound 12が同じ blocker
-`PB-R2-NONFREE-GLOBAL-FACE-CHAIN` に帰着して2ラウンド連続で進展なしとなった。
+Round 12のStop C checkpoint後、人間裁定はcandidate grammarの校正と局所表現可能性の
+監査を続行した。次の3 roundはいずれも登録済みの進展定義を満たしたため、Round 11/12の
+no-progress streakを最終終端には用いない。
+
+| round | candidate / strict expansion | population | payload SHA-256 | 進展 |
+| --- | --- | ---: | --- | --- |
+| 13 | `R2-CSTAR-SUPPORT-ACTIVE-JOINT-COLLAPSE-v4`、cross-chart triangle support | 2,160 | `e15fc8dcb99ea7e8e17b1a52cc045379f9757c558a92f25e9d1bfc2bda5450e3` | candidate semantic change、guard calibration fix |
+| 14 | v4、`NONFREE-MUTUAL-KILL-SPLIT` | 2,161 | `17c9907928a63cdf97e474e7f8813447601010ede07bbe7a43b525ef8551b450` | canonical necessity counterexample |
+| 15 | `R2-CSTAR-COORDINATE-DOUBLED-CYCLE-v5`、固定control 5件追加 | 2,166 | `21b59632026d5ec0f104700f26808a8455e2ca607802a108c6934f68e8911969` | candidate semantic change、`TERNARY-CYCLE-3` counterexample |
+
+Round 13は、各support-active scopeでcoarse/fineをjoint stateとして縮約し、全irreducible
+terminalを普遍量化するv4へ候補を改訂した。C5/C6は、coarse critical edgeとfine critical
+edgeのmapped imageの和をguard domainとする。固定boundの242新規caseを全数評価し、二方向
+反例は0だったが、v3からv4へのsemantic changeとguard calibration fixが進展である。
+resultは Issue #3948 comment `5234839619` に固定した。
+
+Round 14の `NONFREE-MUTUAL-KILL-SPLIT` は全非空 A でH¹ mapが同型だが、v4 aggregateが
+`[false,false,false,true,false,true,true]` となる。この1件でv4は必要条件でないことが確定し、
+category verdict `CSTAR-not-necessary` を得た。resultは comment `5235064396` に固定した。
+
+Round 15は、coordinate dependency packetとclosed doubled-cycle atomを追加してv5へ改訂した。
+`WEIGHTED-2` は通る一方、singular perfect match、orphan self-loop、ternary cycleのnegative
+controlを区別する。15個の新規A-blockを全数評価した結果、`TERNARY-CYCLE-3` はuniformだが
+v5 candidate false、`TERNARY-CYCLE-6` はnonuniformかつcandidate falseだった。従ってv5も
+必要条件ではない。resultは comment `5235636358` に固定した。
+
+## historical Stop C checkpoint
+
+Round 12時点の終端は、post-PUnitのRound 11/12が同一blocker
+`PB-R2-NONFREE-GLOBAL-FACE-CHAIN` で2 round連続no-progressとなったため有効なStop C
+checkpointだった。ただしRound 13–15がcandidate改訂、calibration fix、新規canonical
+counterexampleを生じたため、これは最終terminalではない。Round 12までの1,918 caseと
+数学payloadはcurrent lifecycle-free parentへ保持する。Round 13がadmitした旧serialized
+parentはopaque Git / Issue provenanceとしてだけ保持し、current builderから再構築しない。
+
+## `G_local-v1`: 固定有限観測 grammar
+
+人間裁定は、候補をさらに改訂してblind finite searchを続ける代わりに、Round 15で分離した
+2 fixtureが同じ有限local observationを持つことを一般factorizationに持ち上げる経路を選んだ。
+semantic IDは `G_local-v1` である。
+
+### 観測する構造
+
+`Obs_G` はfull support-active scopeを1回、全非空 A-scopeを順序なしで全件読む。各scopeでは
+v5の全irreducible terminalを対象にし、removed cellやcertificate argumentを観測しない。
+観測成分は次で閉じる。
+
+1. retained chart / vertex / edge / actual face memberをrootとするradius-one typed incidence ball。
+2. chart-at、endpoint slot `0/1`、face slot `0/1/2` と符号 `+/-/+`。同じneighborへの全relationは
+   まとめて保持し、radius外のstubはcell typeとslotだけに落とす。
+3. critical、guard、port、bridge、self-loop、`FaceTwin` の6 flag。各retained `FaceTwin`
+   classのactual memberは別々のface rootとし、class multiplicityは `FaceTwin` flagだけで読む。
+4. scoped supportとその `π` image。coarse cell、fine chart/vertexはmapped、fine edge/faceだけを
+   actual `None` / mappedの2値で読む。
+5. `v4-coarse`、`v4-fine-only`、`coordinate-dependency`、`closed-doubled-cycle` の全reachable
+   collapse pathに現れるpacket kindの和集合。
+6. outward stub、equal neighbor descriptor、rooted ball、equal A-recordの個数を
+   `0 / 1 / at-least-2` にclipしたhistogram。
+7. `π` を保つcoarse/fine target relabelで最小化したwhole record、A-record histogram、
+   whole C0/C5/C6、AごとのC1–C4とそのAND vector。
+
+raw cell ID、A label、fixture name、semantic hash、2を超える正確な個数、global cycle length、
+full graph lookup、global / A-block H¹、comparison rank、uniformity truthは観測しない。
+登録済みC3の局所unmapped-fiber linear algebraだけが例外である。
+
+### source bundleと恒久contract
+
+current external registration ledgerはIssue comment `5248074852`
+(`2026-08-11T01:43:10Z`, created=updated)で事前登録された。pure contractの
+SHA/bytes、sanitized Round-12 parent full/summaryのSHA/bytes、Round-12 payload、Issue comment/timeを
+一つのrecordで結ぶ。Issue provenanceの正本はbuilderだけであり、parent JSONやchecker sourceに
+埋め込まない。contract生成はfixture constructor、`Obs_G`、v5 candidate/terminal query、H¹、
+Round 13–15 report、populationを呼ばない。
+pre-registration contract candidateは
+`5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8` / `314114` bytesである。
+
+固定順序は次である。
+
+```text
+parent full generation
+  → parent full hash pin
+  → parent summary calibration
+  → pure contract candidate generation
+  → Issue external registration
+  → contract SHA-only source pin
+  → checker execution
+  → checker regression synchronization
+  → builder admission / projection
+```
+
+checker regressionはIssue comment `5248116625` (`2026-08-11T01:51:03Z`, created=updated)に
+registrationとは別domainとして固定した。compact checker SHA-256は
+`645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9` / `56881` bytesである。
+旧permanent contract `955b75d7…a7531af` / `314821` bytes / comment `5246699114` と旧current checker
+`834d9754…9ebca` / `56940` bytes / regression comment `5246749681` は、旧 `32e5…/0d644…`
+execution bridgeとは別のopaque historical migration recordである。Git commit
+`c3a6bada111978a08d82bff5fceffbbea2aa0f51` に結び、current sourceからの再構築を主張しない。
+`immutable_round15_label_ledger.sha256` はledger自体のcanonical SHAであり、
+`round15_immutable_ledger_provenance.sha256` はwitness projectionを認証したRound 15
+registered manifestのSHAであってledger SHAではない。
+
+source bundleは次を一つのsemantic packetに固定する。
+
+- `g_local_v1.py` のnormalized full sourceとreachable structural helper closure。
+- immutableな `r2_hunt.py` / `necessity_map.py` のnormalized full-source fingerprint、import binding、
+  referenced dataclass field、runtime source binding。
+- `Q = Fraction`、Matrix/Nerveのexact source、C3直達symbolとbase推移locator。
+- current contract SHA fieldのRHSだけを `None` に正規化したchecker full-source fingerprint。
+- top-level rebind禁止、closed packet/flag/relation registry、serialization contract。
+
+これにより、候補・H¹ label・Round 15 ledgerを観測器へ逆流させず、同時に観測意味を担う
+sourceの1-bit driftをcurrent permanent contract gateで拒否する。旧実行記録はcurrent sourceから
+再構成したとは主張せず、opaque Git / Issue provenanceとしてだけ保持する。
+
+### immutable ledgerとcomponent equality
+
+label ledgerはRound 15 result payload
+`21b59632026d5ec0f104700f26808a8455e2ca607802a108c6934f68e8911969`
+だけをtruth sourceにし、次のexact fieldを固定する。
+
+```text
+exact_verification.fixtures[name="TERNARY-CYCLE-3"].uniform = true
+exact_verification.fixtures[name="TERNARY-CYCLE-6"].uniform = false
+```
+
+checkerの依存順は固定されている。
+
+```text
+current permanent contract admission
+  → exact witness structure admission
+  → 2件の Obs_G とhand-authored component calibration
+  → component-wise equalityとfinal canonical bytes equality
+  → historical common Obs SHA / bytes bridge
+  → immutable ledger admission
+  → label separationとStop B
+```
+
+両fixtureのaggregateはともに
+`[false,false,false,true,false,true,true]`、wholeは
+`C0=false,C5=true,C6=true`、A0は `C1=false,C2=false,C3=true,C4=false`、
+A1/fullはC1–C4が全てtrueである。packet union、whole condition、全A histogram、全side/type
+root histogram、最終canonical bytesを個別比較し、すべて一致した後でのみledgerを読む。
+
+この検証で実行する `Obs_G` structural evaluationは2件である。新しいRound 15 candidate
+classification call、global / A-block H¹ query、population queryはすべて0であり、既知truthを
+探索候補へ混入させていない。
+artifactの `verification_invariants` は、上記common observation bridgeとRound 15 label分離の
+実一致、3種のqueryのexact zero、旧manifest/checkerの非再構築だけを記録する。任意の入力に
+ついて旧新観測の意味が不変であるという広い主張は含めない。
+
+current checkerは
+`645d4ca27215bcd6687734bf2abff87a3a7bb0e778134c051b546937e7ebfde9` / `56881` bytesである。両fixtureの
+common `Obs_G` はcompact canonical bytes `53279`、SHA-256
+`742e6395bb21221fcac070975cbe9505d49d0c75f826289984288776836aa7dc` に一致する。
+
+## 一般factorization証明
+
+`G_local-v1` で表現可能な任意の admissible condition family `P` を取る。「表現可能」とは、
+ある関数 `f` が存在して
+
+```text
+P(comparison) = f(Obs_G(comparison))
+```
+
+と因子化することである。`TERNARY-CYCLE-3` と `TERNARY-CYCLE-6` はcomponent-wiseにも
+canonical bytesとしても同じ `Obs_G` を持つため、任意のそのような `P` は両者に同じ値を返す。
+一方、immutable ledger上の一様不変性は `true / false` と異なる。従って、一様不変性と同値な
+必要十分condition familyは `G_local-v1` では表現できない。
+
+この証明は有限母集団のzero-resultを一般化したものではなく、二点分離と関数の因子化だけを使う。
+結論は登録した有限観測grammarに相対的である。radiusを増やす、global/nonlocal certificateを読む、
+別のunbounded invariantを加えるなど、`G_local-v1` 外のgrammarに対する絶対不可能性は主張しない。
+
+## 最終停止条件 B
 
 | 停止条件 | 判定 | 根拠 |
 | --- | --- | --- |
-| A | false | characterization theoremまたはtask completionには到達していない |
-| B | false | 1,918件の有限母集団は一般 incidence/support 空間を尽くさない |
-| C | true | post-PUnitの有効Round 11/12が同一blockerで連続no-progress |
+| A | false | characterization theoremとしての必要十分条件は得られていない |
+| B | true | uniformity truthの異なる2件が同じ `Obs_G` を持つため、全 `G_local-v1`-expressible familyを一般factorizationで排除した |
+| C | false | Round 13–15が新規反例・candidate改訂・calibration fixを生じ、historical no-progress streakを最終終端に使わない |
 
-blocker は、固定半径の `FaceTwin` / one-pass free pair / `SLOT` / `KILL` だけから、
-free pairを持たない任意の retained 2次元 face-chain graphが cycleを消すかを導く一般手証明が
-閉じないことである。これは固定した有限 local grammar と有限母集団の coverage blockerであり、
-incidence/support 条項全体についての2点分離一般論法ではない。従って停止 Bとは判定しない。
-`CERTIFIED-v3` の characterization statusは `undecided` である。
+数学的な探索はfinal terminal Bに到達した。artifactはA=false、B=true、C=falseと
+`G_local-v1` 相対の数学的根拠だけを固定する。Issue / PR の可変なlifecycle stateはartifactの
+正本にせず、旧実行・同期記録はopaque Git / Issue provenanceとして分離する。
 
 coverage limit:
 
-- R1の全数化は4 core template、登録 Target bound、590 compatible comparisonsと
-  required fixture catalog 13件に限る。
-- R2はname-free semantic case 1,918件と、W5、K3,3、octahedral、house、starを含む
-  登録済み固定fixtureだけを exact 評価した。lift数は6以下である。
-- chart間のnonloop edge / faceを持つcross-chart coupled incidenceは未被覆である。
-- 任意graph size、任意certificate coloring、任意face multiplicity、任意chart数、
-  任意compatible support distribution、arbitrary large nerveとnonidentity refinementの
-  一般形は未被覆である。
-
-この checkpoint は `task_complete=false` である。Issue #3948は open、PRDはretained、
-PRはdraftのまま人間裁定を待つ。有限 zero-resultを証明または停止 Bとは称さず、
-`CERTIFIED-v3` を必要十分条件や確定 theorem candidateとして主張せず、第二段 GOALも起票しない。
+- R1全数化は4 core template、登録Target bound、590 compatible comparisonsとrequired catalog。
+- Round 15までのfinite queryはname-free semantic case 2,166件と登録fixtureに限る。
+- Stop Bはradius-one、closed 4 packet kind、closed 6 flag、multiplicity clip2、
+  `π`-preserving target orbitからなるexact `G_local-v1` に相対的である。
+- 任意graph size、任意nonlocal certificate coloring、任意face multiplicity、任意chart数、
+  任意compatible support distribution、別のglobal invariantを読むgrammarは未判定である。
 
 ## 再現契約
 
-canonical生成:
+repository rootをworking directoryとする。
 
 ```bash
-cd research/experiments/g104-necessity-map
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test_necessity_map.py test_r2_hunt.py test_build_results.py
-PYTHONDONTWRITEBYTECODE=1 python3 build_results.py \
-  --output /tmp/g104-necessity-map-results.json \
-  --summary-output results-summary.json
-shasum -a 256 results-summary.json /tmp/g104-necessity-map-results.json
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+  -s research/experiments/g104-necessity-map
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  research/experiments/g104-necessity-map/build_results.py \
+  --output /tmp/g104-necessity-map-results-through-round12.json \
+  --summary-output research/experiments/g104-necessity-map/results-summary.json
+PYTHONDONTWRITEBYTECODE=1 python3 \
+  research/experiments/g104-necessity-map/build_stop_b_results.py \
+  --output /tmp/g104-necessity-map-stop-b-results.json \
+  --summary-output research/experiments/g104-necessity-map/results-stop-b-summary.json
+shasum -a 256 \
+  research/experiments/g104-necessity-map/results-summary.json \
+  /tmp/g104-necessity-map-results-through-round12.json \
+  research/experiments/g104-necessity-map/results-stop-b-summary.json \
+  /tmp/g104-necessity-map-stop-b-results.json
 ```
 
-- Python standard libraryのみ。
-- exact linear algebraは `fractions.Fraction` 上。
+- Python standard libraryのみ。global / A-block exact linear algebraは `fractions.Fraction` 上。
 - 乱数なし。
-- serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
-- commit対象の canonical `results-summary.json` SHA-256:
-  `afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5`
-- repo外で再生成する canonical full `results.json` SHA-256:
-  `cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306`
-- 統合回帰: `47 tests / 633.323s / OK`
-- 査読後のprojection強化 focused再検証: `3 tests / 316.488s / OK`
+- parent / final result serializationは UTF-8、LF、`indent=2`、`sort_keys=True`、末尾改行あり。
+- `Obs_G` serializationはUTF-8、`ensure_ascii=True`、compact sorted JSON、末尾改行なし。
+- current parent `results-summary.json`: SHA-256
+  `556c7279626a4395bc2446bc2f2a1f9af725c24e3ce6aacddfe59cc8ab11ee3e`、`95635` bytes
+- current parent regenerated full `results.json`: SHA-256
+  `7d01eb3a8fb22334644f6a8c6cef1f7cde235e9f17e4607da85969a17109eede`、`3446023` bytes
+- final `results-stop-b-summary.json` SHA-256:
+  `77d34471daae5743ad095ad1a90845aee758ced3075b00afbf021c0f08be1cd3`、`15908` bytes
+- final regenerated full Stop-B JSON SHA-256:
+  `e889f527efbc2bf1b495d047b08dd156b6dd9fe8bab92d38dc4ff45f183e204b`、`4851553` bytes
+- 最終 full regression: `125 tests / 1506.494s / OK`。full / summaryは別パス再生成で
+  byte-for-byte一致。
 
-Issue #3948 comment `5231857267` のcheckpoint amendmentにより、フルJSONは
-hashで固定された導出物、slim summaryはcommit対象となった。旧repo fileのSHA
-`cabfbcae…2306` は regenerated full JSON の期待値へ役割を変更しただけであり、
-このprovenance correctionはPRD上の進展ではなく、Stop C判定とstreakを変更しない。
+Round 13が実際にadmitした旧parent full
+`cabfbcae7075280a6d10de3c819c25ca2396a21deaed2099bafdd71daa252306` と旧summary
+`afa334056b52938044c0acad9b693a0c437300382b855f32450af5750020caa5` は、Git commit
+`ded12203d2f95fa8f83aadfd3a1e453f6e7efa06` のopaque historical provenanceとしてだけ保持する。
+current parentは同じRound 12数学payloadをlifecycle-free schemaで生成し、Stop-B full / summaryは
+このsanitized current parentをembedする。旧parent bytesをcurrent builderから再構築しない。
