@@ -57,6 +57,17 @@ def gLocalV1FineScopeTargets (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineTarget :=
   Finset.univ.filter fun target => P.computedFactor target ∈ A
 
+/-- Expand the fine targets lying over one coarse target scope.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a).  Its
+right side uses only the computed canonical factor and the raw scope; it
+contains no expected observation, reducer result, or semantic label. -/
+theorem gLocalV1FineScopeTargets_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    P.gLocalV1FineScopeTargets A =
+      Finset.univ.filter fun target => P.computedFactor target ∈ A := by
+  rfl
+
 /-- Scoped support of a coarse chart.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -66,6 +77,16 @@ def gLocalV1CoarseChartSupport (P : FiniteComparisonPresentation)
     Finset P.CoarseTarget :=
   P.coarseChartSupport chart ∩ A
 
+/-- Expand scoped coarse-chart support into raw support and the target scope.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a), exposing
+only raw support intersection and no expected retained-cell result. -/
+theorem gLocalV1CoarseChartSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (chart : P.CoarseChart) :
+    P.gLocalV1CoarseChartSupport A chart = P.coarseChartSupport chart ∩ A := by
+  rfl
+
 /-- Scoped support of a fine chart.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -74,6 +95,17 @@ def gLocalV1FineChartSupport (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (chart : P.FineChart) :
     Finset P.FineTarget :=
   P.fineChartSupport chart ∩ P.gLocalV1FineScopeTargets A
+
+/-- Expand scoped fine-chart support into raw support and canonical preimage.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a), exposing
+only raw support intersection and no expected retained-cell result. -/
+theorem gLocalV1FineChartSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (chart : P.FineChart) :
+    P.gLocalV1FineChartSupport A chart =
+      P.fineChartSupport chart ∩ P.gLocalV1FineScopeTargets A := by
+  rfl
 
 /-- Derived scoped support of a coarse edge.
 
@@ -85,6 +117,18 @@ def gLocalV1CoarseEdgeSupport (P : FiniteComparisonPresentation)
   P.gLocalV1CoarseChartSupport A (P.coarseEdgeLeft edge) ∩
     P.gLocalV1CoarseChartSupport A (P.coarseEdgeRight edge)
 
+/-- Expand scoped coarse-edge support through its two raw endpoints.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a).  It
+contains only raw incidence-derived support and no expected edge label. -/
+theorem gLocalV1CoarseEdgeSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (edge : P.CoarseEdge) :
+    P.gLocalV1CoarseEdgeSupport A edge =
+      P.gLocalV1CoarseChartSupport A (P.coarseEdgeLeft edge) ∩
+        P.gLocalV1CoarseChartSupport A (P.coarseEdgeRight edge) := by
+  rfl
+
 /-- Derived scoped support of a fine edge.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -94,6 +138,18 @@ def gLocalV1FineEdgeSupport (P : FiniteComparisonPresentation)
     Finset P.FineTarget :=
   P.gLocalV1FineChartSupport A (P.fineEdgeLeft edge) ∩
     P.gLocalV1FineChartSupport A (P.fineEdgeRight edge)
+
+/-- Expand scoped fine-edge support through its two raw endpoints.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a).  It
+contains only raw incidence-derived support and no expected edge label. -/
+theorem gLocalV1FineEdgeSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (edge : P.FineEdge) :
+    P.gLocalV1FineEdgeSupport A edge =
+      P.gLocalV1FineChartSupport A (P.fineEdgeLeft edge) ∩
+        P.gLocalV1FineChartSupport A (P.fineEdgeRight edge) := by
+  rfl
 
 /-- Derived scoped support of a coarse face.
 
@@ -106,6 +162,19 @@ def gLocalV1CoarseFaceSupport (P : FiniteComparisonPresentation)
     P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge1 face) ∩
       P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge2 face)
 
+/-- Expand scoped coarse-face support through its three raw boundary edges.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a).  It
+contains only raw incidence-derived support and no expected face label. -/
+theorem gLocalV1CoarseFaceSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    P.gLocalV1CoarseFaceSupport A face =
+      P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge0 face) ∩
+        P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge1 face) ∩
+          P.gLocalV1CoarseEdgeSupport A (P.coarseFaceEdge2 face) := by
+  rfl
+
 /-- Derived scoped support of a fine face.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -116,6 +185,19 @@ def gLocalV1FineFaceSupport (P : FiniteComparisonPresentation)
   P.gLocalV1FineEdgeSupport A (P.fineFaceEdge0 face) ∩
     P.gLocalV1FineEdgeSupport A (P.fineFaceEdge1 face) ∩
       P.gLocalV1FineEdgeSupport A (P.fineFaceEdge2 face)
+
+/-- Expand scoped fine-face support through its three raw boundary edges.
+
+Position: definition-owner equation API for fixed GOAL claim (v)(a).  It
+contains only raw incidence-derived support and no expected face label. -/
+theorem gLocalV1FineFaceSupport_apply
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.FineFace) :
+    P.gLocalV1FineFaceSupport A face =
+      P.gLocalV1FineEdgeSupport A (P.fineFaceEdge0 face) ∩
+        P.gLocalV1FineEdgeSupport A (P.fineFaceEdge1 face) ∩
+          P.gLocalV1FineEdgeSupport A (P.fineFaceEdge2 face) := by
+  rfl
 
 /-- Scoped coarse charts.
 
@@ -164,6 +246,82 @@ Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL
 def gLocalV1FineFaces (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset P.FineFace :=
   Finset.univ.filter fun face => (P.gLocalV1FineFaceSupport A face).Nonempty
+
+/-- A coarse chart is scoped exactly when its support meets the selected
+target subset.
+
+Position: definition-owner membership API used by the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  The right side is derived
+from raw chart support and supplies no reducer, observation, or label result. -/
+@[simp] theorem mem_gLocalV1CoarseCharts_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (chart : P.CoarseChart) :
+    chart ∈ P.gLocalV1CoarseCharts A ↔
+      (P.gLocalV1CoarseChartSupport A chart).Nonempty := by
+  simp [gLocalV1CoarseCharts]
+
+/-- A fine chart is scoped exactly when its canonical-preimage support meets
+the selected target subset.
+
+Position: fine-side definition-owner membership API for fixed GOAL claim
+(v)(a); its only data are raw support and the computed factor. -/
+@[simp] theorem mem_gLocalV1FineCharts_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (chart : P.FineChart) :
+    chart ∈ P.gLocalV1FineCharts A ↔
+      (P.gLocalV1FineChartSupport A chart).Nonempty := by
+  simp [gLocalV1FineCharts]
+
+/-- A coarse edge is scoped exactly when its endpoint-support intersection is
+nonempty.
+
+Position: definition-owner membership API for the finite cell-list
+normalization in fixed GOAL claim (v)(a); no terminal or observation value is
+assumed. -/
+@[simp] theorem mem_gLocalV1CoarseEdges_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (edge : P.CoarseEdge) :
+    edge ∈ P.gLocalV1CoarseEdges A ↔
+      (P.gLocalV1CoarseEdgeSupport A edge).Nonempty := by
+  simp [gLocalV1CoarseEdges]
+
+/-- A fine edge is scoped exactly when its endpoint-support intersection is
+nonempty.
+
+Position: fine-side definition-owner membership API for fixed GOAL claim
+(v)(a), derived only from raw endpoint incidence and support. -/
+@[simp] theorem mem_gLocalV1FineEdges_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (edge : P.FineEdge) :
+    edge ∈ P.gLocalV1FineEdges A ↔
+      (P.gLocalV1FineEdgeSupport A edge).Nonempty := by
+  simp [gLocalV1FineEdges]
+
+/-- A coarse face is scoped exactly when its three-edge support intersection
+is nonempty.
+
+Position: compact definition-owner membership API for fixed GOAL claim
+(v)(a).  The more detailed raw-support eliminator below remains available to
+packet proofs. -/
+@[simp] theorem mem_gLocalV1CoarseFaces_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    face ∈ P.gLocalV1CoarseFaces A ↔
+      (P.gLocalV1CoarseFaceSupport A face).Nonempty := by
+  simp [gLocalV1CoarseFaces]
+
+/-- A fine face is scoped exactly when its three-edge support intersection is
+nonempty.
+
+Position: fine-side definition-owner membership API for the registered T3/T6
+cell-list evaluation in fixed GOAL claim (v)(a); it assumes no FaceTwin or
+observation certificate. -/
+@[simp] theorem mem_gLocalV1FineFaces_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.FineFace) :
+    face ∈ P.gLocalV1FineFaces A ↔
+      (P.gLocalV1FineFaceSupport A face).Nonempty := by
+  simp [gLocalV1FineFaces]
 
 /-- Raw chart-support characterization of scoped coarse-face support.
 
@@ -365,6 +523,20 @@ def gLocalV1FineFaceClasses (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1FineFaceTwinKey A) :=
   (P.gLocalV1FineFaces A).image (P.gLocalV1FineFaceKey A)
 
+/-- Membership in generated fine FaceTwin classes is witnessed by a scoped
+raw fine face with that key.
+
+Position: fine-side definition-owner constructor/destructor API for fixed
+GOAL claim (v)(a).  The witness comes from raw scope and incidence, not from a
+selected class, reducer result, observation, or semantic label. -/
+theorem mem_gLocalV1FineFaceClasses_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (key : P.GLocalV1FineFaceTwinKey A) :
+    key ∈ P.gLocalV1FineFaceClasses A ↔
+      ∃ face ∈ P.gLocalV1FineFaces A,
+        P.gLocalV1FineFaceKey A face = key := by
+  exact Finset.mem_image
+
 /-- Actual coarse members of one generated FaceTwin class.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -375,6 +547,20 @@ def gLocalV1CoarseFaceMembers (P : FiniteComparisonPresentation)
   (P.gLocalV1CoarseFaces A).filter fun face =>
     P.gLocalV1CoarseFaceKey A face = key
 
+/-- A coarse face belongs to one FaceTwin member set exactly when it is scoped
+and has the requested generated key.
+
+Position: definition-owner membership API for fixed GOAL claim (v)(a).  Both
+conjuncts are raw geometry facts; no class certificate or observation result
+is supplied. -/
+@[simp] theorem mem_gLocalV1CoarseFaceMembers_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (key : P.GLocalV1CoarseFaceTwinKey A) (face : P.CoarseFace) :
+    face ∈ P.gLocalV1CoarseFaceMembers A key ↔
+      face ∈ P.gLocalV1CoarseFaces A ∧
+        P.gLocalV1CoarseFaceKey A face = key := by
+  exact Finset.mem_filter
+
 /-- Actual fine members of one generated FaceTwin class.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -383,6 +569,19 @@ def gLocalV1FineFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (key : P.GLocalV1FineFaceTwinKey A) :
     Finset P.FineFace :=
   (P.gLocalV1FineFaces A).filter fun face => P.gLocalV1FineFaceKey A face = key
+
+/-- A fine face belongs to one FaceTwin member set exactly when it is scoped
+and has the requested generated key.
+
+Position: fine-side definition-owner membership API for fixed GOAL claim
+(v)(a), derived only from raw scope and incidence. -/
+@[simp] theorem mem_gLocalV1FineFaceMembers_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (key : P.GLocalV1FineFaceTwinKey A) (face : P.FineFace) :
+    face ∈ P.gLocalV1FineFaceMembers A key ↔
+      face ∈ P.gLocalV1FineFaces A ∧
+        P.gLocalV1FineFaceKey A face = key := by
+  exact Finset.mem_filter
 
 /-! ## Finite graph primitives -/
 
@@ -415,6 +614,33 @@ def gLocalV1ReachabilityClosure {V E : Type*} [Fintype V]
   Nat.iterate (gLocalV1ReachabilityStep vertices edges left right)
     (Fintype.card V) {start}
 
+/-- The start vertex belongs to every bounded reachability closure.
+
+Position: definition-owner reflexivity API for critical self-loop flags in
+fixed GOAL claim (v)(a).  It follows from the monotone raw expansion and
+accepts no path or reachability certificate. -/
+@[simp] theorem mem_gLocalV1ReachabilityClosure_self
+    {V E : Type*} [Fintype V] [DecidableEq V] [DecidableEq E]
+    (vertices : Finset V) (edges : Finset E) (left right : E → V)
+    (start : V) :
+    start ∈ gLocalV1ReachabilityClosure vertices edges left right start := by
+  unfold gLocalV1ReachabilityClosure
+  generalize Fintype.card V = fuel
+  have hiterate : ∀ (steps : Nat) (reached : Finset V), start ∈ reached →
+      start ∈ Nat.iterate
+        (gLocalV1ReachabilityStep vertices edges left right) steps reached := by
+    intro steps
+    induction steps with
+    | zero =>
+        intro reached hstart
+        exact hstart
+    | succ steps ih =>
+        intro reached hstart
+        rw [Function.iterate_succ_apply]
+        apply ih
+        exact Finset.mem_union_left _ hstart
+  exact hiterate fuel {start} (by simp)
+
 /-- Pairwise connectivity in a finite undirected subgraph.
 
 Position: v5 reducer predicate for the connected-fiber tests in fixed GOAL claim
@@ -441,6 +667,22 @@ def gLocalV1PathWithoutEdge {V E : Type*} [Fintype V]
   right omitted ∈
     gLocalV1ReachabilityClosure vertices (edges.erase omitted) left right
       (left omitted)
+
+/-- Deleting a self-loop still leaves its two equal endpoints connected.
+
+Position: definition-owner critical-edge normal form for fixed GOAL claim
+(v)(a).  The only premise is the raw endpoint equality; no alternate path or
+criticality result is supplied. -/
+@[simp] theorem gLocalV1PathWithoutEdge_eq_true_of_selfLoop
+    {V E : Type*} [Fintype V] [DecidableEq V] [DecidableEq E]
+    (vertices : Finset V) (edges : Finset E) (left right : E → V)
+    (edge : E) (hloop : left edge = right edge) :
+    gLocalV1PathWithoutEdge vertices edges left right edge = true := by
+  unfold gLocalV1PathWithoutEdge
+  rw [← hloop]
+  exact decide_eq_true
+    (mem_gLocalV1ReachabilityClosure_self vertices (edges.erase edge)
+      left right (left edge))
 
 /-! ## States, packets, and retained-cell measure -/
 
@@ -479,6 +721,33 @@ def gLocalV1InitialState (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : P.GLocalV1V5State A :=
   ⟨P.gLocalV1CoarseEdges A, P.gLocalV1CoarseFaceClasses A,
     P.gLocalV1FineEdges A, P.gLocalV1FineFaceClasses A⟩
+
+/-- The generated initial state retains exactly all scoped coarse edges.
+
+Position: definition-owner projection API for fixed GOAL claim (v)(a); it
+exposes a raw scope component and no terminal or observation result. -/
+@[simp] theorem gLocalV1InitialState_coarseEdges
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    (P.gLocalV1InitialState A).coarseEdges = P.gLocalV1CoarseEdges A := rfl
+
+/-- The generated initial state retains exactly all scoped fine edges.
+
+Position: fine-side definition-owner projection API for fixed GOAL claim
+(v)(a), exposing only the raw scoped-edge family. -/
+@[simp] theorem gLocalV1InitialState_fineEdges
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    (P.gLocalV1InitialState A).fineEdges = P.gLocalV1FineEdges A := rfl
+
+/-- The generated initial state retains exactly all generated fine FaceTwin
+classes.
+
+Position: definition-owner projection API for fixed GOAL claim (v)(a); the
+right side is generated from raw scoped faces and contains no reduction or
+observation certificate. -/
+@[simp] theorem gLocalV1InitialState_fineFaceClasses
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget) :
+    (P.gLocalV1InitialState A).fineFaceClasses =
+      P.gLocalV1FineFaceClasses A := rfl
 
 /-- Coarse FaceTwin classes retained by the generated initial state.
 
@@ -637,6 +906,84 @@ def gLocalV1RetainedFineFaceMembers (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) (state : P.GLocalV1V5State A) :
     Finset P.FineFace :=
   state.fineFaceClasses.biUnion (P.gLocalV1FineFaceMembers A)
+
+/-- A retained coarse face is witnessed by one retained generated FaceTwin
+class containing it.
+
+Position: definition-owner eliminator for the Cycle 25 cell-list evaluation
+in fixed GOAL claim (v)(a).  The witness is raw state membership and supplies
+no terminal, histogram, or observation value. -/
+theorem mem_gLocalV1RetainedCoarseFaceMembers_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (face : P.CoarseFace) :
+    face ∈ P.gLocalV1RetainedCoarseFaceMembers A state ↔
+      ∃ key ∈ state.coarseFaceClasses,
+        face ∈ P.gLocalV1CoarseFaceMembers A key := by
+  exact Finset.mem_biUnion
+
+/-- A retained fine face is witnessed by one retained generated FaceTwin
+class containing it.
+
+Position: fine-side definition-owner eliminator for fixed GOAL claim (v)(a),
+using only raw state and member-set data. -/
+theorem mem_gLocalV1RetainedFineFaceMembers_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (face : P.FineFace) :
+    face ∈ P.gLocalV1RetainedFineFaceMembers A state ↔
+      ∃ key ∈ state.fineFaceClasses,
+        face ∈ P.gLocalV1FineFaceMembers A key := by
+  exact Finset.mem_biUnion
+
+/-- At the generated initial state, retained coarse faces are exactly the
+scoped raw coarse faces.
+
+Position: definition-owner initial-state normalization API for fixed GOAL
+claim (v)(a).  The proof reconstructs each generated key from the face itself;
+it assumes no preselected face family or observation result. -/
+@[simp] theorem mem_gLocalV1RetainedCoarseFaceMembers_initial_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.CoarseFace) :
+    face ∈ P.gLocalV1RetainedCoarseFaceMembers A
+        (P.gLocalV1InitialState A) ↔
+      face ∈ P.gLocalV1CoarseFaces A := by
+  constructor
+  · intro hface
+    obtain ⟨key, _hkey, hmember⟩ :=
+      (P.mem_gLocalV1RetainedCoarseFaceMembers_iff A _ face).mp hface
+    exact (P.mem_gLocalV1CoarseFaceMembers_iff A key face).mp hmember |>.1
+  · intro hface
+    apply (P.mem_gLocalV1RetainedCoarseFaceMembers_iff A _ face).mpr
+    refine ⟨P.gLocalV1CoarseFaceKey A face, ?_, ?_⟩
+    · rw [P.gLocalV1InitialState_coarseFaceClasses]
+      exact Finset.mem_image.mpr ⟨face, hface, rfl⟩
+    · exact (P.mem_gLocalV1CoarseFaceMembers_iff A _ face).mpr
+        ⟨hface, rfl⟩
+
+/-- At the generated initial state, retained fine faces are exactly the scoped
+raw fine faces.
+
+Position: fine-side definition-owner initial-state normalization API for fixed
+GOAL claim (v)(a).  The generated-key witness is reconstructed from raw face
+incidence, with no terminal or observation certificate. -/
+@[simp] theorem mem_gLocalV1RetainedFineFaceMembers_initial_iff
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (face : P.FineFace) :
+    face ∈ P.gLocalV1RetainedFineFaceMembers A
+        (P.gLocalV1InitialState A) ↔
+      face ∈ P.gLocalV1FineFaces A := by
+  constructor
+  · intro hface
+    obtain ⟨key, _hkey, hmember⟩ :=
+      (P.mem_gLocalV1RetainedFineFaceMembers_iff A _ face).mp hface
+    exact (P.mem_gLocalV1FineFaceMembers_iff A key face).mp hmember |>.1
+  · intro hface
+    apply (P.mem_gLocalV1RetainedFineFaceMembers_iff A _ face).mpr
+    refine ⟨P.gLocalV1FineFaceKey A face, ?_, ?_⟩
+    · rw [P.gLocalV1InitialState_fineFaceClasses]
+      exact (P.mem_gLocalV1FineFaceClasses_iff A _).mpr
+        ⟨face, hface, rfl⟩
+    · exact (P.mem_gLocalV1FineFaceMembers_iff A _ face).mpr
+        ⟨hface, rfl⟩
 
 /-- Whether a fine FaceTwin class has any actual member mapping into one
 selected coarse FaceTwin class.
@@ -1455,6 +1802,40 @@ def gLocalV1ReachabilityExpansion (P : FiniteComparisonPresentation)
   states ∪ states.biUnion fun state =>
     (P.gLocalV1PacketVariants A state).image fun packet => packet.apply state
 
+/-- A state with no generated packet is a fixed point of one memoized breadth
+expansion.
+
+Position: definition-owner fast-path API for the registered observation
+evaluation in fixed GOAL claim (v)(a).  The sole material premise is the
+packet kernel's empty output at the supplied raw state; no reachable set,
+terminal state, observation, or semantic label is supplied. -/
+theorem gLocalV1ReachabilityExpansion_singleton_of_packetVariants_eq_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hpacket : P.gLocalV1PacketVariants A state = ∅) :
+    P.gLocalV1ReachabilityExpansion A {state} = {state} := by
+  ext target
+  simp [gLocalV1ReachabilityExpansion, hpacket]
+
+/-- Every finite breadth iteration fixes a packet-free singleton state.
+
+Position: definition-owner fast-path API for the registered observation
+evaluation in fixed GOAL claim (v)(a).  It derives the entire bounded
+iteration from raw packet emptiness and assumes no trace, terminal set,
+observation, or semantic label. -/
+theorem gLocalV1ReachabilityExpansion_iterate_singleton_of_packetVariants_eq_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A)
+    (hpacket : P.gLocalV1PacketVariants A state = ∅) (steps : Nat) :
+    (P.gLocalV1ReachabilityExpansion A)^[steps] {state} = {state} := by
+  induction steps with
+  | zero => rfl
+  | succ steps ih =>
+      rw [Function.iterate_succ_apply,
+        P.gLocalV1ReachabilityExpansion_singleton_of_packetVariants_eq_empty
+          A state hpacket,
+        ih]
+
 /-- One breadth expansion retains every previously reached state.
 
 Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
@@ -1617,6 +1998,21 @@ def gLocalV1MemoizedReachableStates (P : FiniteComparisonPresentation)
   (P.gLocalV1ReachabilityExpansion A)^[P.gLocalV1ReachabilityFuel A]
     {P.gLocalV1InitialState A}
 
+/-- If the canonical initial state has no packet, memoized reachability is the
+initial singleton without enumerating the ambient state space.
+
+Position: definition-owner terminal fast-path API for the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  The premise is the raw
+packet-kernel computation at the initial state; the reachable result is
+derived rather than supplied. -/
+theorem gLocalV1MemoizedReachableStates_eq_singleton_of_initial_packet_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (hpacket : P.gLocalV1PacketVariants A
+      (P.gLocalV1InitialState A) = ∅) :
+    P.gLocalV1MemoizedReachableStates A = {P.gLocalV1InitialState A} := by
+  exact P.gLocalV1ReachabilityExpansion_iterate_singleton_of_packetVariants_eq_empty
+    A _ hpacket _
+
 /-- Memoized bounded reachability is exactly intrinsic packet reachability.
 
 Position: reducer API theorem supporting fixed GOAL claim (v). Any material premise concerns raw `FiniteComparisonPresentation` tables or generated states and packets; no trace, terminal, condition, or observation certificate is assumed.
@@ -1647,6 +2043,23 @@ def gLocalV1MemoizedTerminalStates (P : FiniteComparisonPresentation)
     (A : Finset P.CoarseTarget) : Finset (P.GLocalV1V5State A) :=
   (P.gLocalV1MemoizedReachableStates A).filter fun state =>
     P.gLocalV1PacketVariants A state = ∅
+
+/-- If the canonical initial state has no packet, it is the unique memoized
+terminal state.
+
+Position: definition-owner terminal fast-path API for the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  It derives terminality
+and uniqueness from the raw packet kernel and assumes no terminal or
+observation certificate. -/
+theorem gLocalV1MemoizedTerminalStates_eq_singleton_of_initial_packet_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (hpacket : P.gLocalV1PacketVariants A
+      (P.gLocalV1InitialState A) = ∅) :
+    P.gLocalV1MemoizedTerminalStates A = {P.gLocalV1InitialState A} := by
+  rw [gLocalV1MemoizedTerminalStates,
+    P.gLocalV1MemoizedReachableStates_eq_singleton_of_initial_packet_empty
+      A hpacket]
+  simp [hpacket]
 
 /-- Memoized terminal membership is exactly reachable irreducibility.
 
@@ -1860,6 +2273,24 @@ def gLocalV1PacketKindUnion (P : FiniteComparisonPresentation)
   [.v4Coarse, .v4FineOnly, .coordinateDependency, .closedDoubledCycle].filter
     fun kind => kind ∈ P.gLocalV1PacketKindFinset A
 
+/-- Initial packet emptiness makes the complete all-path packet-kind union
+empty.
+
+Position: definition-owner all-path fast-path API for the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  It uses raw initial
+packet emptiness through the derived reachable singleton and assumes no
+selected trace, packet summary, observation, or semantic label. -/
+theorem gLocalV1PacketKindUnion_eq_nil_of_initial_packet_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (hpacket : P.gLocalV1PacketVariants A
+      (P.gLocalV1InitialState A) = ∅) :
+    P.gLocalV1PacketKindUnion A = [] := by
+  rw [gLocalV1PacketKindUnion]
+  have hreachable :=
+    P.gLocalV1MemoizedReachableStates_eq_singleton_of_initial_packet_empty
+      A hpacket
+  simp [gLocalV1PacketKindFinset, hreachable, hpacket]
+
 /-- A packet kind occurs exactly when an outgoing packet of that kind exists at
 some reachable state.
 
@@ -1901,6 +2332,37 @@ def gLocalV1FineCriticalEdges (P : FiniteComparisonPresentation)
     gLocalV1PathWithoutEdge (P.gLocalV1FineCharts A) state.fineEdges
       P.fineEdgeLeft P.fineEdgeRight edge
 
+/-- A retained coarse self-loop is a coarse critical edge.
+
+Position: definition-owner flag API for the registered observation evaluation
+in fixed GOAL claim (v)(a).  Its premises are exactly retained membership and
+raw endpoint equality. -/
+theorem mem_gLocalV1CoarseCriticalEdges_of_mem_of_selfLoop
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.CoarseEdge)
+    (hmem : edge ∈ state.coarseEdges)
+    (hloop : P.coarseEdgeLeft edge = P.coarseEdgeRight edge) :
+    edge ∈ P.gLocalV1CoarseCriticalEdges A state := by
+  simp only [gLocalV1CoarseCriticalEdges, Finset.mem_filter, hmem, true_and]
+  exact gLocalV1PathWithoutEdge_eq_true_of_selfLoop
+    (P.gLocalV1CoarseCharts A) state.coarseEdges
+    P.coarseEdgeLeft P.coarseEdgeRight edge hloop
+
+/-- A retained fine self-loop is a fine critical edge.
+
+Position: fine-side definition-owner flag API for fixed GOAL claim (v)(a),
+derived from retained membership and raw endpoint equality only. -/
+theorem mem_gLocalV1FineCriticalEdges_of_mem_of_selfLoop
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.FineEdge)
+    (hmem : edge ∈ state.fineEdges)
+    (hloop : P.fineEdgeLeft edge = P.fineEdgeRight edge) :
+    edge ∈ P.gLocalV1FineCriticalEdges A state := by
+  simp only [gLocalV1FineCriticalEdges, Finset.mem_filter, hmem, true_and]
+  exact gLocalV1PathWithoutEdge_eq_true_of_selfLoop
+    (P.gLocalV1FineCharts A) state.fineEdges
+    P.fineEdgeLeft P.fineEdgeRight edge hloop
+
 /-- Endpoint vertices of a coarse edge family.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -1917,6 +2379,30 @@ def gLocalV1FineEdgeVertices (P : FiniteComparisonPresentation)
     (edges : Finset P.FineEdge) : Finset P.FineChart :=
   edges.biUnion fun edge => {P.fineEdgeLeft edge, P.fineEdgeRight edge}
 
+/-- Raw membership characterization of the endpoints of a coarse edge family.
+
+Position: definition-owner no-unfold API for observation flags in fixed GOAL
+claim (v)(a).  It exposes only one retained edge and its raw endpoints. -/
+@[simp] theorem mem_gLocalV1CoarseEdgeVertices_iff
+    (P : FiniteComparisonPresentation) (edges : Finset P.CoarseEdge)
+    (chart : P.CoarseChart) :
+    chart ∈ P.gLocalV1CoarseEdgeVertices edges ↔
+      ∃ edge ∈ edges,
+        chart = P.coarseEdgeLeft edge ∨ chart = P.coarseEdgeRight edge := by
+  simp [gLocalV1CoarseEdgeVertices]
+
+/-- Raw membership characterization of the endpoints of a fine edge family.
+
+Position: fine-side definition-owner no-unfold API for observation flags in
+fixed GOAL claim (v)(a). -/
+@[simp] theorem mem_gLocalV1FineEdgeVertices_iff
+    (P : FiniteComparisonPresentation) (edges : Finset P.FineEdge)
+    (chart : P.FineChart) :
+    chart ∈ P.gLocalV1FineEdgeVertices edges ↔
+      ∃ edge ∈ edges,
+        chart = P.fineEdgeLeft edge ∨ chart = P.fineEdgeRight edge := by
+  simp [gLocalV1FineEdgeVertices]
+
 /-- Coarse critical vertices are endpoints of critical edges and of every
 boundary edge in each retained FaceTwin class.
 
@@ -1929,6 +2415,25 @@ def gLocalV1CoarseCriticalVertices (P : FiniteComparisonPresentation)
     state.coarseFaceClasses.biUnion fun key =>
       P.gLocalV1CoarseEdgeVertices {key.edge0, key.edge1, key.edge2}
 
+/-- An endpoint of a coarse critical edge is a coarse critical vertex.
+
+Position: definition-owner flag API for the registered T3/T6 observation
+evaluation in fixed GOAL claim (v)(a). Its premises expose only raw critical
+membership and endpoint incidence; no flag or observation is supplied. -/
+theorem mem_gLocalV1CoarseCriticalVertices_of_criticalEdge_endpoint
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.CoarseEdge)
+    (chart : P.CoarseChart)
+    (hcritical : edge ∈ P.gLocalV1CoarseCriticalEdges A state)
+    (hendpoint : chart = P.coarseEdgeLeft edge ∨
+      chart = P.coarseEdgeRight edge) :
+    chart ∈ P.gLocalV1CoarseCriticalVertices A state := by
+  rw [gLocalV1CoarseCriticalVertices, Finset.mem_union]
+  apply Or.inl
+  simp only [gLocalV1CoarseEdgeVertices, Finset.mem_biUnion,
+    Finset.mem_insert, Finset.mem_singleton]
+  exact ⟨edge, hcritical, hendpoint⟩
+
 /-- Fine critical vertices are endpoints of critical edges and of every
 boundary edge in each retained FaceTwin class.
 
@@ -1940,6 +2445,24 @@ def gLocalV1FineCriticalVertices (P : FiniteComparisonPresentation)
   P.gLocalV1FineEdgeVertices (P.gLocalV1FineCriticalEdges A state) ∪
     state.fineFaceClasses.biUnion fun key =>
       P.gLocalV1FineEdgeVertices {key.edge0, key.edge1, key.edge2}
+
+/-- An endpoint of a fine critical edge is a fine critical vertex.
+
+Position: fine-side definition-owner flag API for fixed GOAL claim (v)(a).
+Only raw critical membership and endpoint incidence are premises. -/
+theorem mem_gLocalV1FineCriticalVertices_of_criticalEdge_endpoint
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.FineEdge)
+    (chart : P.FineChart)
+    (hcritical : edge ∈ P.gLocalV1FineCriticalEdges A state)
+    (hendpoint : chart = P.fineEdgeLeft edge ∨
+      chart = P.fineEdgeRight edge) :
+    chart ∈ P.gLocalV1FineCriticalVertices A state := by
+  rw [gLocalV1FineCriticalVertices, Finset.mem_union]
+  apply Or.inl
+  simp only [gLocalV1FineEdgeVertices, Finset.mem_biUnion,
+    Finset.mem_insert, Finset.mem_singleton]
+  exact ⟨edge, hcritical, hendpoint⟩
 
 /-- Whether a retained fine FaceTwin class maps into retained coarse faces.
 
@@ -1968,6 +2491,31 @@ def gLocalV1ActiveFineVertices (P : FiniteComparisonPresentation)
     (state.fineFaceClasses.filter fun key =>
       P.gLocalV1FineClassMapsToRetainedFace A state key).biUnion fun key =>
         P.gLocalV1FineEdgeVertices {key.edge0, key.edge1, key.edge2}
+
+/-- An endpoint of a retained fine edge mapped to a coarse critical edge is
+an active fine vertex.
+
+Position: definition-owner flag API for fixed GOAL claim (v)(a). The
+premises are retained membership, the raw map, coarse critical membership,
+and endpoint incidence; no active-set or observation certificate is supplied. -/
+theorem mem_gLocalV1ActiveFineVertices_of_mapped_criticalEdge_endpoint
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (fineEdge : P.FineEdge)
+    (coarseEdge : P.CoarseEdge) (chart : P.FineChart)
+    (hfine : fineEdge ∈ state.fineEdges)
+    (hcritical : coarseEdge ∈ P.gLocalV1CoarseCriticalEdges A state)
+    (hmap : P.edgeMap fineEdge = some coarseEdge)
+    (hendpoint : chart = P.fineEdgeLeft fineEdge ∨
+      chart = P.fineEdgeRight fineEdge) :
+    chart ∈ P.gLocalV1ActiveFineVertices A state := by
+  rw [gLocalV1ActiveFineVertices, Finset.mem_union]
+  apply Or.inl
+  simp only [gLocalV1FineEdgeVertices, Finset.mem_biUnion,
+    Finset.mem_insert, Finset.mem_singleton]
+  refine ⟨fineEdge, ?_, hendpoint⟩
+  rw [Finset.mem_filter]
+  refine ⟨hfine, ?_⟩
+  simp [hcritical, hmap]
 
 /-- Active fine ports over one coarse vertex.
 
@@ -2003,6 +2551,28 @@ def gLocalV1FineBridges (P : FiniteComparisonPresentation)
       gLocalV1PathWithoutEdge (P.gLocalV1FineCharts A) state.fineEdges
         P.fineEdgeLeft P.fineEdgeRight edge = false
 
+/-- A coarse self-loop is never in the non-self-loop bridge registry.
+
+Position: definition-owner bridge-flag API for fixed GOAL claim (v)(a); its
+only premise is the raw endpoint equality. -/
+theorem not_mem_gLocalV1CoarseBridges_of_selfLoop
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.CoarseEdge)
+    (hloop : P.coarseEdgeLeft edge = P.coarseEdgeRight edge) :
+    edge ∉ P.gLocalV1CoarseBridges A state := by
+  simp [gLocalV1CoarseBridges, hloop]
+
+/-- A fine self-loop is never in the non-self-loop bridge registry.
+
+Position: fine-side definition-owner bridge-flag API for fixed GOAL claim
+(v)(a), derived solely from raw endpoint equality. -/
+theorem not_mem_gLocalV1FineBridges_of_selfLoop
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.FineEdge)
+    (hloop : P.fineEdgeLeft edge = P.fineEdgeRight edge) :
+    edge ∉ P.gLocalV1FineBridges A state := by
+  simp [gLocalV1FineBridges, hloop]
+
 /-- Compatibility alias for the permanent bridge flag on the fine side.
 
 Position: definition/predicate in the permanent v5 reducer supporting fixed GOAL claim (v). Any material input comes from raw `FiniteComparisonPresentation` tables or a generated retained-cell state; no trace, terminal, condition, or observation certificate is supplied.
@@ -2025,6 +2595,18 @@ def gLocalV1GuardedCoarseEdges (P : FiniteComparisonPresentation)
       match P.edgeMap edge with
       | none => ∅
       | some coarseEdge => {coarseEdge}
+
+/-- Every coarse critical edge is guarded.
+
+Position: definition-owner flag API for fixed GOAL claim (v)(a). It derives
+guarded membership from raw critical membership and assumes no flag value. -/
+theorem mem_gLocalV1GuardedCoarseEdges_of_mem_critical
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (state : P.GLocalV1V5State A) (edge : P.CoarseEdge)
+    (hcritical : edge ∈ P.gLocalV1CoarseCriticalEdges A state) :
+    edge ∈ P.gLocalV1GuardedCoarseEdges A state := by
+  rw [gLocalV1GuardedCoarseEdges, Finset.mem_union]
+  exact Or.inl hcritical
 
 /-! ## Certified SLOT/KILL swap relation -/
 
@@ -2371,6 +2953,28 @@ def gLocalV1WholeConditions (P : FiniteComparisonPresentation)
   c6 := decide (∀ state ∈ P.gLocalV1MemoizedTerminalStates A,
     P.gLocalV1ConditionC6 A state = true)
 
+/-- Initial packet emptiness reduces the universal whole-scope condition
+record to the three conditions computed at the canonical initial state.
+
+Position: definition-owner condition fast-path API for the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  The raw packet-kernel
+premise derives the unique terminal; no condition vector, observation, or
+semantic label is supplied. -/
+theorem gLocalV1WholeConditions_eq_initial_of_initial_packet_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (hpacket : P.gLocalV1PacketVariants A
+      (P.gLocalV1InitialState A) = ∅) :
+    P.gLocalV1WholeConditions A =
+      ⟨P.gLocalV1ConditionC0 A (P.gLocalV1InitialState A),
+       P.gLocalV1ConditionC5 A (P.gLocalV1InitialState A),
+       P.gLocalV1ConditionC6 A (P.gLocalV1InitialState A)⟩ := by
+  rw [gLocalV1WholeConditions]
+  have hterminal :=
+    P.gLocalV1MemoizedTerminalStates_eq_singleton_of_initial_packet_empty
+      A hpacket
+  rw [hterminal]
+  simp
+
 /-- Universal nonempty-subset condition record over every irreducible
 terminal.
 
@@ -2386,6 +2990,29 @@ def gLocalV1AConditions (P : FiniteComparisonPresentation)
     P.gLocalV1ConditionC3 A state = true)
   c4 := decide (∀ state ∈ P.gLocalV1MemoizedTerminalStates A,
     P.gLocalV1ConditionC4 A state = true)
+
+/-- Initial packet emptiness reduces the universal subset condition record to
+the four conditions computed at the canonical initial state.
+
+Position: definition-owner condition fast-path API for the registered T3/T6
+observation evaluation in fixed GOAL claim (v)(a).  The raw packet-kernel
+premise derives the unique terminal; no subset record, observation, checker
+label, or semantic label is supplied. -/
+theorem gLocalV1AConditions_eq_initial_of_initial_packet_empty
+    (P : FiniteComparisonPresentation) (A : Finset P.CoarseTarget)
+    (hpacket : P.gLocalV1PacketVariants A
+      (P.gLocalV1InitialState A) = ∅) :
+    P.gLocalV1AConditions A =
+      ⟨P.gLocalV1ConditionC1 A (P.gLocalV1InitialState A),
+       P.gLocalV1ConditionC2 A (P.gLocalV1InitialState A),
+       P.gLocalV1ConditionC3 A (P.gLocalV1InitialState A),
+       P.gLocalV1ConditionC4 A (P.gLocalV1InitialState A)⟩ := by
+  rw [gLocalV1AConditions]
+  have hterminal :=
+    P.gLocalV1MemoizedTerminalStates_eq_singleton_of_initial_packet_empty
+      A hpacket
+  rw [hterminal]
+  simp
 
 end FiniteComparisonPresentation
 end AAT.AG.ResolutionInvariance

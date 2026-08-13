@@ -171,9 +171,15 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
   その結果、T3 / T6それぞれの3非空target scopeすべてでinitial packet setが
   空であることを、巨大なhigher-order assignment列挙やexpected terminal / Obs / label
   を入力せず証明した。
-- 未完了: T3 / T6の全observation componentのfieldwise normal formと独立評価、
-  `obsG T3 = obsG T6`、(i)(ii)を通じたLean内semantic labels、observation
-  nonfactorization。
+- 完了(Cycle 25): T3 / T6それぞれについて、3非空target scopeの全retained
+  cellをroot labelとneighbor histogramへ分解し、permanent clip-two kernelで
+  rooted-ball histogramを独立正規化した。全condition coordinates、all-path
+  packet-kind union、factor-preserving target relabel orbit、whole / A-scope recordを
+  fieldwiseに組み立て、両`obsG`がpresentation非依存の同じclosed structural
+  normal formへ評価されることから`obsG T3 = obsG T6`を証明し、claim (v)(a)を
+  閉じた。common valueはpresentation field・premise・checker bit・labelではない。
+- 未完了: (i)(ii)を通じたT3 uniform / T6 nonuniformのLean内semantic labelsと、
+  それらを用いたobservation predicate nonfactorization theorem (v)(d)。
 
 ## Cycle 1 — law-value block and A-subnerve identification
 
@@ -292,6 +298,249 @@ cheat_route_audit:
   goal_or_report_reinterpretation: none-found
 blocking_findings: []
 next_obligation: prove global generated H1 comparison bijective iff every source-generated block comparison is bijective
+completion_candidate: false
+tracking_issue_closed: false
+```
+
+## Cycle 25 — registered T3/T6 full `Obs_G` evaluation and equality
+
+- decision: `approve`
+- result type: `proof-obligation-discharged`
+- completion candidate: `no`
+- proof obligation: fixed GOAL claim (v)(a)として、登録T3 / T6 presentationの
+  permanent `obsG`を互いに独立に全成分評価し、同じclosed structural normal
+  formへ到達することから`obsG T3 = obsG T6`を証明する。
+- Lean files:
+  - [`GLocalV1ObservationValue.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1ObservationValue.lean)
+  - [`GLocalV1V5Reduction.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1V5Reduction.lean)
+  - [`GLocalV1Observation.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1Observation.lean)
+  - [`GLocalV1T3T6Witnesses.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Witnesses.lean)
+  - [`GLocalV1T3T6Observation.lean`](../lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Observation.lean)
+  - [`ResearchLean/AG.lean`](../lean/ResearchLean/AG.lean)
+  - [`research-modules.txt`](../lean/research-modules.txt)
+
+### Closed observation and independent evaluation route
+
+`commonObservation`はpermanent observation型のconstructorとliteral rowだけから
+作るclosed dataであり、T3 / T6 presentation、`obsG`、H¹ / rank / defect、
+uniformity checker、semantic label、fixture hashをdependency coneに持たない。
+その成分は次のとおりである。
+
+- aggregate condition vector:
+  `(C0,C1,C2,C3,C4,C5,C6) = (false,false,false,true,false,true,true)`。
+- whole record: `(C0,C5,C6) = (false,true,true)`、packet-kind unionは空、
+  full-scope rooted-ball histogramは`commonFullBalls`。
+- target-zero record: `(C1,C2,C3,C4) = (false,false,true,false)`、packet-kind
+  unionは空、histogramは`commonA0Balls`。
+- target-one / full records: `(true,true,true,true)`、packet-kind unionは空、
+  histogramはそれぞれ`commonA1Balls` / `commonFullBalls`。
+- A-scope record familyは上記3 rowのpermanent histogramであり、scope IDやraw
+  cell IDをobservation valueへ追加しない。
+
+T3 / T6は同じidentity-split familyとして、factor-preserving relabelがidentityと
+fine-target swap `[1,0,2]`の2種類だけであることを、complete coarse / fine
+permutation tableとfactor commutationから証明した。両relabelについて全cell labelが
+不変であることをraw supportとcanonical code imageから示し、minimum comparatorを
+展開せず、生成された全candidateが`commonObservation`であるというowner APIから
+それぞれの`obsG`評価を閉じた。
+
+primary declarations:
+
+- owner histogram / lawful-order API:
+  - `gLocalV1Histogram_eq_of_perm`
+  - `gLocalV1Histogram_replicate_add_two_eq_two`
+  - `gLocalV1Histogram_cons_three_eq_cons_two`
+  - `gLocalV1Histogram_cons_six_eq_cons_two`
+  - `gLocalV1Histogram_append_replicate_add_two_eq_two_of_lawfulOrd`
+  - `gLocalV1RootedBallHistogram_append_replicate_add_two_eq_two`
+- owner reducer / observation no-unfold API:
+  - `mem_gLocalV1ReachabilityClosure_self`
+  - `gLocalV1PathWithoutEdge_eq_true_of_selfLoop`
+  - `mem_gLocalV1CoarseCriticalEdges_of_mem_of_selfLoop`
+  - `mem_gLocalV1FineCriticalEdges_of_mem_of_selfLoop`
+  - `mem_gLocalV1CoarseCriticalVertices_of_criticalEdge_endpoint`
+  - `mem_gLocalV1FineCriticalVertices_of_criticalEdge_endpoint`
+  - `mem_gLocalV1ActiveFineVertices_of_mapped_criticalEdge_endpoint`
+  - `not_mem_gLocalV1CoarseBridges_of_selfLoop`
+  - `not_mem_gLocalV1FineBridges_of_selfLoop`
+  - `mem_gLocalV1GuardedCoarseEdges_of_mem_critical`
+  - `gLocalV1CellList_apply`
+  - `gLocalV1CellLabel_apply`
+  - `gLocalV1OutwardStubHistogram_eq_of_cellList_eq`
+  - `gLocalV1NeighborDescriptors_eq_of_cellList_eq`
+  - `gLocalV1RootedBall_apply`
+  - `gLocalV1InitialBallHistogram_eq_of_occurrences_eq`
+  - `gLocalV1InitialBallHistogram_eq_of_cellLabel_eq`
+  - `gLocalV1Minimum_eq_of_forall_mem_eq`
+  - `obsG_eq_of_forall_mem_targetRelabels_candidate_eq`
+- registered evaluation endpoints:
+  - `c25T3MemTargetRelabels_iff` / `c25T6MemTargetRelabels_iff`
+  - `t3ConditionVector` / `t6ConditionVector`
+  - `t3A0RootedBallOccurrences` / `t3A1RootedBallOccurrences` /
+    `t3FullRootedBallOccurrences`
+  - `t6A0RootedBallOccurrences` / `t6A1RootedBallOccurrences` /
+    `t6FullRootedBallOccurrences`
+  - `c25T3CandidateIdentity` / `c25T3CandidateSwap`
+  - `c25T6CandidateIdentity` / `c25T6CandidateSwap`
+  - `t3_obsG_eq_commonObservation`
+  - `t6_obsG_eq_commonObservation`
+  - `t3_obsG_eq_t6_obsG`
+
+### Fieldwise rooted-ball normalization and route integrity
+
+各`(presentation, A)` in
+`{T3,T6} × {targetZero,targetOne,targetFull}`について、complete retained cell
+listをowner APIから評価した。各retained rootは次の3段階で処理する。
+
+1. raw support / factor-image code、map status、self-loop critical / guarded /
+   nonbridge flags、FaceTwin injectivityからroot labelを求める。
+2. complete cell listとraw incidenceからneighbor descriptor occurrenceを列挙し、
+   outward-stub histogramとneighbor histogramを各層で独立に正規化する。
+3. `gLocalV1RootedBall_apply`でlabelとneighbor histogramを合成し、cell-list
+   map全体をcomplete raw occurrence listへ移す。
+
+T3のneutral edge / face multiplicity 3とT6のmultiplicity 6は、permanent
+clip-two quotientの定義owner theoremにより同じmultiplicity 2へ正規化する。
+raw occurrence list equalityを要求したり、T6の巨大なstate / Gram / relabel探索を
+直接評価したりしない。各histogram層ではpermutation invarianceとrepeat-block
+saturationだけを使う。Cycle 24のsix initial-packet-empty factsからreachable terminal
+stateがinitial stateだけであることを導き、all-path packet unionも空に固定する。
+
+presentation fieldsはCycle 24から不変で、raw reading、enumeration、nerve、support、
+incidence、partial maps、well-formedness proofsだけを保持する。`commonObservation`は
+theorem RHSのclosed normal formであってpresentation field / premise / certificateでは
+ない。T3 / T6の両評価は別々のcell-list・incidence・support theoremを消費し、最終
+equalityはその2本の評価定理だけを合成する。
+
+### Verification and quality audit
+
+- focused new observation module: pass、namespace auditは225 declarations、standard
+  axioms only、warningなし。
+- targeted `GLocalV1T3T6Observation` build: pass、3719 jobs。依存して変更した
+  `GLocalV1ObservationValue` / `GLocalV1V5Reduction` /
+  `GLocalV1T3T6Witnesses` / `GLocalV1Observation`も同runで再構築され、namespace
+  auditsは562 / 296 / 34 / 192 declarations、standard axioms only。
+- primary 3 theoremのdirect `#print axioms`はすべて
+  `[propext, Classical.choice, Quot.sound]`のみ。
+- new observation moduleは245 top-level declarations
+  (193 public theorem、32 public data def、20 documented private typed def)。全宣言に
+  declaration docstring、fixed GOAL position、raw premise / provenanceを記録した。
+- clientはgeneric observation / reducer definitionを直接展開せず、definition-owner
+  `*_apply` / membership / composition APIを使用する。fixture-local presentationとraw
+  support / incidence tableだけを有限正規化する。
+- 未使用`hand*` wrapper、raw type alias、transport wrapperを削除し、最終主定理を
+  除く新規fixture declarationは受理spineまたはowner APIへ接続した。
+- `git diff --check`、Research import direction(228 modules)、package direction、
+  separation fixtures: pass。
+- placeholder / forbidden primitive / hidden-BiDi / privacy / Formal→Research reverse
+  import scan: no finding。
+- Research full build: ユーザー指示により未実行。
+
+fixed source SHA-256:
+
+- `GLocalV1ObservationValue.lean`:
+  `4f7112f545fc54ec248e51bf3e7db290519ec049643eafc4efe89007be0cda5d`
+- `GLocalV1V5Reduction.lean`:
+  `5b0a8781f5f15005900a629236935d812c4330c96badc5c58fe0c5defe8b6dc8`
+- `GLocalV1Observation.lean`:
+  `00e0a04cc907ea9325cc5c98d5c0d226515deb2c30a8280842f6790236f930cc`
+- `GLocalV1T3T6Witnesses.lean`:
+  `42b7720c39de656e97ebee5f87a98281127e5a5ac03222bb63f3d41f44ae5e39`
+- `GLocalV1T3T6Observation.lean`:
+  `4e4edc8a1b71479dc8619a3a5cbbafc6ddf05b5e650d33df06f80a7aa69f2138`
+- `AG.lean`:
+  `2a67b9e3d951c910f8f8deb214eded95d5a33b2c58ffe5d637db58b644f98dd9`
+- `research-modules.txt`:
+  `4e7e34736a4d3e02392e0992fff94d49de692bed8d23ec350164f1d97c40bede`
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-107-aat-uniform-invariance-characterization
+target_theorem: Uniform Invariance Defect Semantics and Nonfactorization Theorem
+cycle: 25
+decision: approve
+result_type: proof-obligation-discharged
+proof_obligation: independently evaluate full permanent obsG for registered T3 and T6 to one closed structural normal form and prove obsG T3 = obsG T6
+proof_obligation_delta: fixed GOAL claim (v)(a) is now a Lean theorem over the preregistered computable presentations
+primary_specification:
+  source:
+    goal: research/goals/G-107-aat-uniform-invariance-characterization.md
+    observation: research/experiments/g104-necessity-map/g_local_v1.py
+    reducer: research/experiments/g104-necessity-map/r2_hunt.py
+    contract_manifest: research/experiments/g104-necessity-map/g_local_v1_stop_b.py
+  version: dd6fd9ad81d52c1ec32f51e63fbafb986f6322ac1cbf970dc9db5bbae56407d4 / 5a14faf44049b8906200d5dbd052bc9fd5669ff84dfb6452e6137e98dfbd51c8
+  status: recorded
+lean_artifacts:
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1ObservationValue.lean
+    declarations:
+      - gLocalV1Histogram_eq_of_perm
+      - gLocalV1Histogram_append_replicate_add_two_eq_two_of_lawfulOrd
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1V5Reduction.lean
+    declarations:
+      - mem_gLocalV1ReachabilityClosure_self
+      - gLocalV1PathWithoutEdge_eq_true_of_selfLoop
+      - gLocalV1MemoizedTerminalStates_eq_singleton_of_initial_packet_empty
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1Observation.lean
+    declarations:
+      - gLocalV1CellList_apply
+      - gLocalV1CellLabel_apply
+      - gLocalV1NeighborDescriptors_eq_of_cellList_eq
+      - gLocalV1RootedBall_apply
+      - gLocalV1InitialBallHistogram_eq_of_occurrences_eq
+      - obsG_eq_of_forall_mem_targetRelabels_candidate_eq
+  - file: research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Observation.lean
+    declarations:
+      - commonObservation
+      - t3_obsG_eq_commonObservation
+      - t6_obsG_eq_commonObservation
+      - t3_obsG_eq_t6_obsG
+premise_delta:
+  discharged:
+    - complete T3/T6 nonempty target-scope enumeration
+    - complete factor-preserving target-relabel orbit enumeration
+    - all seven condition coordinates for both presentations
+    - all-path packet-kind union for all six nonempty scopes
+    - every retained-cell label and radius-one neighbor histogram at all six scopes
+    - T3 threefold and T6 sixfold occurrence saturation through the same permanent clip-two quotient
+    - independent full candidate evaluation for identity and swap relabels on each presentation
+    - independent T3 and T6 obsG evaluations and their equality
+  remaining:
+    - T3 UniformPresentation through the existing sound-complete finite checker
+    - T6 not UniformPresentation through the existing sound-complete finite checker
+    - quantified observation predicate-factorization refutation
+certificate_provenance:
+  discharged:
+    - registered raw target, factor, nerve, support, incidence, and identity cell-map tables
+    - complete generated target relabels and factor commutation
+    - complete retained-cell and radius-one incidence occurrence lists
+    - Cycle 24 raw initial-packet emptiness and its terminal/all-path consequences
+    - presentation-independent closed common observation built from permanent constructors only
+  unresolved:
+    - semantic uniformity labels and final factorization contradiction
+proof_use_audit:
+  used_material_premises:
+    - all six nonempty scope cell lists and raw support/incidence/map tables
+    - self-loop endpoint equalities, critical/guarded/nonbridge consequences, and FaceTwin key injectivity
+    - complete outward-stub and neighbor occurrence lists at each retained root
+    - permanent clip-two histogram quotient at every nested histogram layer
+    - identity and fine-swap relabel validity, completeness, and cell-label invariance
+    - Cycle 24 packet emptiness for terminal and all-path packet rows
+  unused_material_premises: []
+structure_field_escape_audit:
+  status: none-found
+  concerns: []
+route_integrity_audit:
+  status: pass
+  concerns: []
+cheat_route_audit:
+  target_fitting_construction: none-found
+  vacuity_or_degeneracy: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+blocking_findings: []
+next_obligation: derive T3 UniformPresentation and T6 not UniformPresentation through the existing sound-complete finite checker, without using the registered external labels
 completion_candidate: false
 tracking_issue_closed: false
 ```
