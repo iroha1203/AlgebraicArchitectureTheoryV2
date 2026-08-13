@@ -461,6 +461,10 @@ candidateとして扱う。
 書き直す前提の素描であり、statementの固定もレビューもまだ経ていない。
 
 - 仮id: `G-1xx-aat-semantic-scheme-representability`
+- 呼び名: **SHIGURE**(Semantic–Hom Identification: Geometric Universal
+  Representability Equivalence)。呼び名は山頂 candidate の地位に留め、
+  正式名 Semantic Scheme Representability を維持する(証明前の昇格は
+  しない。Atlas 定理の命名規律を踏襲)。
 - research aim(素描): Atomとlawから生成されたcoherent realization functor
   `Sem_{A,r} : CommAlg -> Set`(またはGroupoid)を、係数代数に自然な同値
   `Sem_{A,r}(R) ≃ Hom(Spec R, M_{A,r})` で表現するarchitecture scheme
