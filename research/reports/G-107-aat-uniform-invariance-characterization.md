@@ -377,6 +377,37 @@ proof inputにしない。新structure・class・certificate・owner APIも追�
   remaining obligationなし。completion candidateとして正式4-lane
   `math-lean-review`とPR / CI / merge / Issue closure gateへ進む。
 
+### Formal completion review remediation
+
+初回formal completion reviewでは数学A/B・Lean Bが中心claimを承認し、Lean Aが
+既存instance clientのdefinition-owner API迂回を1件のnon-blocking findingとして
+検出した。数学statement、fixture、proof obligation、最終nonfactorization theoremは
+変更せず、次を修正した。
+
+- `UniformPresentationInstancePairs`のrank / defect評価4箇所を
+  `computedASubnerveH1Rank_eq_rankFormula` /
+  `computedASubnerveDefect_eq_rankFormula`へ移行した。
+- `ConditionCAllACheckerInstancePairs.positive_conditionCAllACheck`をchecker本体の
+  直接展開から`conditionCAllACheck_eq_true_iff`と各component correctness APIによる
+  semantic constructionへ移行した。
+- ResearchLean全体scanで対象3 definitionの直接`rw` / `simp` / `unfold`は
+  definition owner内部だけに残ることを確認した。
+
+修正後のfocused elaborationは両fileともpassし、namespace auditはそれぞれ
+11 / 31 declarationsでstandard axioms only。targeted module buildも
+`UniformPresentationInstancePairs` 3717 jobs、
+`ConditionCAllACheckerInstancePairs` 3739 jobsでpassした。変更した5 theoremの
+direct `#print axioms`はすべて`propext` / `Classical.choice` / `Quot.sound`のみ。
+完了判定gateの規律に従いdirect-response資格は用いず、この修正を含むfixed headで
+4-lane formal completion reviewを全件再実行する。
+
+remediation source SHA-256:
+
+- `UniformPresentationInstancePairs.lean`:
+  `98f24a7bca0174f165806ad4a4eac74f4cdcb105b5e0f55b479ba3d22149f0ac`
+- `ConditionCAllACheckerInstancePairs.lean`:
+  `b288a63a2fc2f8b53620a997d57e169b4cc0b9428080607997a22cc0a7b53cc8`
+
 fixed source SHA-256:
 
 - `GLocalV1Nonfactorization.lean`:

@@ -772,8 +772,14 @@ theorem positive_conditionCAllACheck :
         Finset.univ).mp positive_conditionC3AtTargetSubsetCheck
     · exact (positivePresentation.conditionC4AtTargetSubsetCheck_eq_true_iff
         Finset.univ).mp (by decide)
-  simp [FiniteComparisonPresentation.conditionCAllACheck, h0, hsubsets, h5,
-    h6]
+  apply positivePresentation.conditionCAllACheck_eq_true_iff.mpr
+  exact positivePresentation.toGeometry.conditionCAllA_intro
+    (positivePresentation.conditionC0Check_eq_true_iff.mp h0)
+    (positivePresentation.allNonemptyFiniteSubsetClauses_iff.mp
+      (positivePresentation.conditionC1ToC4AllNonemptySubsetsCheck_eq_true_iff.mp
+        hsubsets))
+    (positivePresentation.conditionC5Check_eq_true_iff.mp h5)
+    (positivePresentation.conditionC6Check_eq_true_iff.mp h6)
 
 /-- The same generic all-clause checker rejects the face-free-cycle raw
 presentation. -/
