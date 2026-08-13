@@ -4,11 +4,12 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Registered T3/T6 witnesses for the permanent `G_local-v1` observation
 
-This module begins the transfer of the two preregistered Round-15
+This module transfers the two preregistered Round-15
 identity-split inputs `TERNARY-CYCLE-3` and `TERNARY-CYCLE-6` into raw finite
-comparison presentations.  It discharges the route-integrity blocker for the
-next production `obsG` evaluation by proving that every registered nonempty
-scope is already irreducible under the full permanent packet kernel.
+comparison presentations.  It supplies the route-integrity input consumed by
+the companion `GLocalV1T3T6Observation` evaluation by proving that every
+registered nonempty scope is already irreducible under the full permanent
+packet kernel.
 
 The presentations contain only explicit readings, finite cell tables,
 incidence, supports, and identity partial cell maps.  They do not contain the
@@ -29,7 +30,8 @@ presentations supply their different face tables.  Packet emptiness is not
 decided by enumerating higher-order assignment spaces: definition-owner
 elimination theorems reduce it to the four raw table facts excluding v4
 coarse, v4 fine-only, coordinate, and doubled-cycle packets.  Expected
-observation data and semantic labels are deliberately absent from this cycle.
+observation data and semantic labels are deliberately absent from these raw
+fixture presentations.
 -/
 
 namespace AAT.AG.ResolutionInvariance
@@ -633,8 +635,9 @@ theorem t6_targetFull_initial_packet_empty :
       (t6Presentation.gLocalV1InitialState targetFull) = ∅ := by
   exact t6_initial_packet_empty_of_nonempty targetFull (by decide)
 
-/-! The independent full observation normal form and both semantic label
-firings are deliberately deferred to the next proof-obligation cycle. -/
+/-! The companion `GLocalV1T3T6Observation` module derives the independent
+full observation normal forms from these raw fixtures.  Both semantic label
+firings remain deferred to the next proof-obligation cycle. -/
 
 end GLocalV1T3T6Witnesses
 end AAT.AG.ResolutionInvariance

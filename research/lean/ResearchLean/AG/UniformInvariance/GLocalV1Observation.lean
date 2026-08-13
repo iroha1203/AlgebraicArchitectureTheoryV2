@@ -23,8 +23,9 @@ structured `Ord` minimum is a canonical representative of this finite orbit.
 An arbitrary supplied relabel and a byte-ordered JSON minimum were rejected:
 the former is a certificate escape and the latter would make the Lean value
 depend on an external serialization.  No claim of byte-for-byte equality with
-the Python JSON encoding is made here; the next cycle proves the registered
-T3/T6 component correspondence.
+the Python JSON encoding is made here.  The companion
+`GLocalV1T3T6Observation` module proves the registered T3/T6 component
+correspondence and full observation equality from this API.
 -/
 
 namespace AAT.AG.ResolutionInvariance

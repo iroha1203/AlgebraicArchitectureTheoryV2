@@ -980,7 +980,8 @@ incidence, with no terminal or observation certificate. -/
     apply (P.mem_gLocalV1RetainedFineFaceMembers_iff A _ face).mpr
     refine ⟨P.gLocalV1FineFaceKey A face, ?_, ?_⟩
     · rw [P.gLocalV1InitialState_fineFaceClasses]
-      exact Finset.mem_image.mpr ⟨face, hface, rfl⟩
+      exact (P.mem_gLocalV1FineFaceClasses_iff A _).mpr
+        ⟨face, hface, rfl⟩
     · exact (P.mem_gLocalV1FineFaceMembers_iff A _ face).mpr
         ⟨hface, rfl⟩
 

@@ -441,11 +441,11 @@ fixed source SHA-256:
 - `GLocalV1ObservationValue.lean`:
   `4f7112f545fc54ec248e51bf3e7db290519ec049643eafc4efe89007be0cda5d`
 - `GLocalV1V5Reduction.lean`:
-  `23d35e2ce9444f95dca86140b698c56c0c38454e1f05a0d01035cc5681f76c51`
+  `5b0a8781f5f15005900a629236935d812c4330c96badc5c58fe0c5defe8b6dc8`
 - `GLocalV1Observation.lean`:
-  `5185f978df16c3d8fb5ccaf21c40eab545748ce4134a9a846ee804db97d2036a`
+  `00e0a04cc907ea9325cc5c98d5c0d226515deb2c30a8280842f6790236f930cc`
 - `GLocalV1T3T6Witnesses.lean`:
-  `38b54536097d84b685d741c944935a9f0ddf35597dd0bfa0f592c1252e67158c`
+  `42b7720c39de656e97ebee5f87a98281127e5a5ac03222bb63f3d41f44ae5e39`
 - `GLocalV1T3T6Observation.lean`:
   `4e4edc8a1b71479dc8619a3a5cbbafc6ddf05b5e650d33df06f80a7aa69f2138`
 - `AG.lean`:
