@@ -325,6 +325,46 @@ semantic label. -/
     t6Presentation.computedFactor target = coarseRead target := by
   fin_cases target <;> decide
 
+/-- Fine targets zero and one occur together in every scoped T3 chart support.
+
+Position: fixture-owner support symmetry API for fixed GOAL claim (v)(a).
+The symmetry follows from the registered support table and canonical factor
+`[0,0,1]`; no relabel result, observation, or semantic label is assumed. -/
+theorem t3_fineChartSupport_zero_iff_one
+    (A : Finset t3Presentation.CoarseTarget)
+    (chart : t3Presentation.FineChart) :
+    (⟨0, by omega⟩ : Fin 3) ∈
+        t3Presentation.gLocalV1FineChartSupport A chart ↔
+      (⟨1, by omega⟩ : Fin 3) ∈
+        t3Presentation.gLocalV1FineChartSupport A chart := by
+  rw [t3Presentation.gLocalV1FineChartSupport_apply,
+    t3Presentation.gLocalV1FineScopeTargets_apply]
+  simp_rw [t3_computedFactor_apply]
+  change Fin 2 at chart
+  fin_cases chart <;>
+    simp [t3Presentation, identitySplitPresentation, fineChartSupport,
+      coarseRead]
+
+/-- Fine targets zero and one occur together in every scoped T6 chart support.
+
+Position: fixture-owner support symmetry API for fixed GOAL claim (v)(a).
+The symmetry follows from the registered support table and canonical factor
+`[0,0,1]`; no relabel result, observation, or semantic label is assumed. -/
+theorem t6_fineChartSupport_zero_iff_one
+    (A : Finset t6Presentation.CoarseTarget)
+    (chart : t6Presentation.FineChart) :
+    (⟨0, by omega⟩ : Fin 3) ∈
+        t6Presentation.gLocalV1FineChartSupport A chart ↔
+      (⟨1, by omega⟩ : Fin 3) ∈
+        t6Presentation.gLocalV1FineChartSupport A chart := by
+  rw [t6Presentation.gLocalV1FineChartSupport_apply,
+    t6Presentation.gLocalV1FineScopeTargets_apply]
+  simp_rw [t6_computedFactor_apply]
+  change Fin 2 at chart
+  fin_cases chart <;>
+    simp [t6Presentation, identitySplitPresentation, fineChartSupport,
+      coarseRead]
+
 /-- Distinct T3 faces have distinct coarse FaceTwin keys in every scope.
 
 Position: fixture-normalization API supporting the structural packet exclusion
