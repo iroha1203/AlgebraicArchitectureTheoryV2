@@ -431,7 +431,7 @@ private theorem h1RankBlockMatrix_eq_vecMulVec (FineEdge : Type)
 comparison on its unique nonempty target subset. -/
 theorem positive_fullTarget_h1Rank :
     positivePresentation.computedASubnerveH1Rank Finset.univ = 1 := by
-  rw [FiniteComparisonPresentation.computedASubnerveH1Rank,
+  rw [positivePresentation.computedASubnerveH1Rank_eq_rankFormula,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     rationalMatrixRank_eq_rank]
   have hblockLe :
@@ -459,7 +459,7 @@ theorem positive_fullTarget_h1Rank :
 comparison on its unique nonempty target subset. -/
 theorem negative_fullTarget_h1Rank :
     negativePresentation.computedASubnerveH1Rank Finset.univ = 1 := by
-  rw [FiniteComparisonPresentation.computedASubnerveH1Rank,
+  rw [negativePresentation.computedASubnerveH1Rank_eq_rankFormula,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     rationalMatrixRank_eq_rank]
   have hblockLe :
@@ -493,7 +493,7 @@ theorem positive_fullTarget_firing :
     positivePresentation.computedASubnerveH1Rank Finset.univ = 1 ∧
       positivePresentation.computedASubnerveDefect Finset.univ = (0, 0) := by
   refine ⟨positive_fullTarget_h1Rank, ?_⟩
-  rw [FiniteComparisonPresentation.computedASubnerveDefect,
+  rw [positivePresentation.computedASubnerveDefect_eq_rankFormula,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     positive_fullTarget_h1Rank]
@@ -525,7 +525,7 @@ theorem negative_fullTarget_firing :
     negativePresentation.computedASubnerveH1Rank Finset.univ = 1 ∧
       negativePresentation.computedASubnerveDefect Finset.univ = (0, 1) := by
   refine ⟨negative_fullTarget_h1Rank, ?_⟩
-  rw [FiniteComparisonPresentation.computedASubnerveDefect,
+  rw [negativePresentation.computedASubnerveDefect_eq_rankFormula,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     rationalMatrixRank_eq_rank, rationalMatrixRank_eq_rank,
     negative_fullTarget_h1Rank]

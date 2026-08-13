@@ -636,8 +636,10 @@ theorem t6_targetFull_initial_packet_empty :
   exact t6_initial_packet_empty_of_nonempty targetFull (by decide)
 
 /-! The companion `GLocalV1T3T6Observation` module derives the independent
-full observation normal forms from these raw fixtures.  Both semantic label
-firings remain deferred to the next proof-obligation cycle. -/
+full observation normal forms from these raw fixtures.  The
+`GLocalV1T3T6Uniformity` module derives the T3/T6 semantic labels independently
+from the raw presentations, and `GLocalV1Nonfactorization` combines those
+labels with the observation equality to close the separation theorem. -/
 
 end GLocalV1T3T6Witnesses
 end AAT.AG.ResolutionInvariance
