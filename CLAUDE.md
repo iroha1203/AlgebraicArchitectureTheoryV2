@@ -4,6 +4,7 @@ Claude Code がこのモノレポで作業するための入口。
 エージェント共通の正式な作業ガイドは [AGENTS.md](AGENTS.md) であり、両者が食い違う場合は
 AGENTS.md を正とする。作業規律の正本は各 guideline にある(ルーティングは AGENTS.md の
 「モノレポの地図と guideline ルーティング」)。
+研究がなりたい姿は [研究の全体目標(研究の憲法)](docs/research_goal.md) にある。
 
 - [Workflow guideline(横断規律)](docs/workflow/guideline.md)
 - [AAT / Lean guideline](docs/aat/guideline.md)

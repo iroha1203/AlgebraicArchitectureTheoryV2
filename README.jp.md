@@ -26,6 +26,9 @@ SFT makes software evolution computable.
 ```
 
 プロジェクトの核となる哲学は [AGENTS.md](AGENTS.md) の「PHILOSOPHY」節にまとめています。
+研究の憲法は [研究の全体目標](docs/research_goal.md) です。いまの姿ではなく、
+なりたい姿を書いた文書で、理論はこの言葉に追いつくように進みます。
+憲法をいまの理論に合わせて弱めることはしません。
 研究ループの実行入口は [research/README.md](research/README.md) で、GOAL の定義は
 [research/goals](research/goals/README.md) に置きます。
 
@@ -61,7 +64,7 @@ SFT makes software evolution computable.
 
 ## 読む順序
 
-1. [AGENTS.md の PHILOSOPHY 節](AGENTS.md)
+1. [研究の全体目標(研究の憲法)](docs/research_goal.md)
 2. [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md)
 3. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)
