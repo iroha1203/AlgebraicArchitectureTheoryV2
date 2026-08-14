@@ -7,8 +7,6 @@
 - Beyond existence lies one more question. **What is the shape of the space of meanings?** I name the geometry that studies this question **Semantic Geometry of Architecture**, and announce it here as a research program.
 - The summit is scheme representability: the conjecture that an architecture carries its own space of meanings. A roadmap closes the article.
 
-![Cover: from a software city at the foot of the mountain, a dashed climbing route leads to a glowing summit bearing Sem_{A,r}(R) ≅ Hom(Spec R, M_{A,r}); the base band shows AAT, the SAGA theorems, the Atlas theorem, and SFT](../assets/semantic_geometry_of_architecture_cover.png)
-
 ## The Commutative Diagram in the Meeting Room
 
 I once watched a design argument end over a single diagram.
@@ -77,20 +75,23 @@ Meaning is given **locally** first: a state where meaning is pinned down only ov
 
 And that existence theorem is already proved inside AAT. Call the algebraic fingerprint that aggregates the disagreements on overlaps the **obstruction class**. Over semantic coefficients:
 
-```text
-a global meaning exists ⟺ the obstruction class is zero
-Nonempty P_sem(W) ⟺ [r_sem] = 0
-```
+$$
+\text{a global meaning exists} \iff \text{the obstruction class is zero}
+$$
 
-Here `P_sem(W)` is the space of global semantic states over the chosen cover `W`, and `[r_sem]` is the obstruction class computed from that cover. A second theorem of the same shape stands on the **repair** side. Call a state where a law's violation has been fixed part-by-part a **lift**. Each part is fixed. Can all of them be fixed at once? The family of local lifts `s` determines a class
+$$
+\mathrm{Nonempty}\, P_{\mathrm{sem}}(W) \iff [r_{\mathrm{sem}}] = 0
+$$
 
-```text
-∂_U(s) ∈ ČechH¹(U, ConDef)
-```
+Here \(P_{\mathrm{sem}}(W)\) is the space of global semantic states over the chosen cover \(W\), and \([r_{\mathrm{sem}}]\) is the obstruction class computed from that cover. A second theorem of the same shape stands on the **repair** side. Call a state where a law's violation has been fixed part-by-part a **lift**. Each part is fixed. Can all of them be fixed at once? The family of local lifts \(s\) determines a class
 
-(`ConDef` is the coefficient of repair directions), and `∂_U(s) = 0` is equivalent to the existence of a global lift. The distance between "fixable locally" and "fixable globally" is concentrated into this one class. What the symbol `ČechH¹` actually contains, we will compute by hand later — counting one-cent coins.
+$$
+\partial_U(s) \in \check{H}^1(U, \mathrm{ConDef})
+$$
 
-If meaning exists, is it unique? That, too, is a theorem. Global meaning is not unique. The set of solutions moves freely along a single orbit under the action of a group `H⁰` — the group of degrees of freedom coherent across the whole cover (a **torsor structure**). In place of uniqueness, **the freedom of choosing a meaning is measured exactly, as a group.**
+(\(\mathrm{ConDef}\) is the coefficient of repair directions), and \(\partial_U(s) = 0\) is equivalent to the existence of a global lift. The distance between "fixable locally" and "fixable globally" is concentrated into this one class. What the symbol \(\check{H}^1\) actually contains, we will compute by hand later — counting one-cent coins.
+
+If meaning exists, is it unique? That, too, is a theorem. Global meaning is not unique. The set of solutions moves freely along a single orbit under the action of a group \(H^0\) — the group of degrees of freedom coherent across the whole cover (a **torsor structure**). In place of uniqueness, **the freedom of choosing a meaning is measured exactly, as a group.**
 
 Where did classical denotational semantics go? It did not disappear. **It sits inside this picture as the degenerate case where the cover is trivial and the obstruction class always vanishes.** Architecture lives outside that degeneracy.
 
@@ -128,7 +129,7 @@ The algebraic geometry of AAT builds this question into the substance of diagnos
 
 **Breakage can be dissected.** Obstructions are not only measured as classes; they are dissected in the vocabulary of singularities and monodromy. The same "non-commuting" can be an isolated gluing mistake or a torsion that winds through the whole design. Different pathologies; different surgery.
 
-**Repair is deformation theory.** The dual of the coefficient `I/I²` attached to the obstruction ideal `I` (this is what `ConDef` was) gives the **tangent space** of first-order deformations that move a design toward legality. Repair candidates are not an ad-hoc list of patches. **The space of repair candidates is itself a geometric object.**
+**Repair is deformation theory.** The dual of the coefficient \(I/I^2\) attached to the obstruction ideal \(I\) (this is what \(\mathrm{ConDef}\) was) gives the **tangent space** of first-order deformations that move a design toward legality. Repair candidates are not an ad-hoc list of patches. **The space of repair candidates is itself a geometric object.**
 
 **Evolution is geometry in the time direction.** The history of design changes reads as a family of spaces of meaning.
 
@@ -156,7 +157,7 @@ theorem generatedComparisonH1Map_bijective [Fintype Source]
       (M.generatedComparisonH1Map laws hcoarse hfine)
 ```
 
-Read it line by line. `M` is the comparison morphism connecting a coarse reading and a fine one. `laws` is a finite family of laws. `hcoarse` and `hfine` say that both readings are adequate — able to speak that family. The conclusion: the comparison map between the two diagnoses `H¹` is a bijection. That is the exact form of "coarsening loses no defect; refining fabricates none". And the hypothesis `hC` — calibration condition C — is precisely what the four refutations carved out. Each refutation added a condition; the no-go forced the coefficients to be rebuilt; then the theorem closed in this form. **The scars remain as the hypotheses of the theorem.**
+Read it line by line. `M` is the comparison morphism connecting a coarse reading and a fine one. `laws` is a finite family of laws. `hcoarse` and `hfine` say that both readings are adequate — able to speak that family. The conclusion: the comparison map between the two diagnoses \(H^1\) is a bijection. That is the exact form of "coarsening loses no defect; refining fabricates none". And the hypothesis `hC` — calibration condition C — is precisely what the four refutations carved out. Each refutation added a condition; the no-go forced the coefficients to be rebuilt; then the theorem closed in this form. **The scars remain as the hypotheses of the theorem.**
 
 A second hunt ran alongside the theorem itself: the attempt to carve out, with finite syntactic conditions, the exact boundary where invariance holds. That one is still open. Three generations of candidate definitions fell to counterexamples in succession, and what remained was a negative result: **within the registered observation vocabulary that sees no further than adjacent parts, that boundary is indistinguishable in principle.** The separation proof is anchored by Lean counterexamples; pinning it down at theorem level is the current target of the climb.
 
@@ -180,27 +181,33 @@ Money flows through three modules. After the PR, they speak three different roun
 
 The actual demo measures over a somewhat larger complex; we extract the skeleton. A part, together with the declaration of the range it is responsible for, is called a **chart**. Our three modules are three charts. The overlaps — the interfaces between modules — are also three, and they form a ring. Measure the disagreement on each overlap:
 
-```text
-r(display → payment)  = 849 − 850    = −1
-r(payment → ledger)   = 849.75 − 849 = +0.75
-r(ledger → display)   = 850 − 849.75 = +0.25
-```
+$$
+r(\text{display} \to \text{payment}) = 849 - 850 = -1
+$$
+
+$$
+r(\text{payment} \to \text{ledger}) = 849.75 - 849 = +0.75
+$$
+
+$$
+r(\text{ledger} \to \text{display}) = 850 - 849.75 = +0.25
+$$
 
 This is the raw data of the obstruction.
 
-Can it be repaired? A repair means moving each chart's value within what that chart's law allows. Display and payment can move only in whole cents — screens and cards live in the world of integer cents. The ledger cannot move at all — being exact is the ledger's law. Moving chart `X` by `c(X)` changes each disagreement to
+Can it be repaired? A repair means moving each chart's value within what that chart's law allows. Display and payment can move only in whole cents — screens and cards live in the world of integer cents. The ledger cannot move at all — being exact is the ledger's law. Moving chart \(X\) by \(c(X)\) changes each disagreement to
 
-```text
-r'(X→Y) = r(X→Y) + c(Y) − c(X)
-```
+$$
+r'(X \to Y) = r(X \to Y) + c(Y) - c(X)
+$$
 
-And here arithmetic decides everything. `c(display)` and `c(payment)` are integers; `c(ledger)` is 0. So no repair can change the **fractional part** of any disagreement. The `+0.75` and the `+0.25` survive every local repair.
+And here arithmetic decides everything. \(c(\text{display})\) and \(c(\text{payment})\) are integers; \(c(\text{ledger})\) is 0. So no repair can change the **fractional part** of any disagreement. The \(+0.75\) and the \(+0.25\) survive every local repair.
 
-`H¹` is a quotient: the space of measured disagreements, divided by the space of disagreements that local repairs can produce. The fractional parts that just survived are a nonzero class in that quotient. What produces the residue is not the shape of the ring as such. It is **the poverty of the moves the laws allow**: two parties that can move only in integers, and one that cannot move at all. **The moment you take the quotient under this constraint system, a residue that no local repair can erase stands as a global invariant.** Try minimizing it yourself. Set `c(payment) = 1` and the residual shrinks to `(0, −0.25, +0.25)` — but since the fractional part of `+0.75` cannot be erased, some overlap must always retain a quarter of a cent. That is the size of this design's obstruction class. In the demo, a CI gate detects the class and blocks the PR; after a repair that unifies the conventions, it passes. The whole pipeline runs as an example in the repository.
+\(H^1\) is a quotient: the space of measured disagreements, divided by the space of disagreements that local repairs can produce. The fractional parts that just survived are a nonzero class in that quotient. What produces the residue is not the shape of the ring as such. It is **the poverty of the moves the laws allow**: two parties that can move only in integers, and one that cannot move at all. **The moment you take the quotient under this constraint system, a residue that no local repair can erase stands as a global invariant.** Try minimizing it yourself. Set \(c(\text{payment}) = 1\) and the residual shrinks to \((0, -0.25, +0.25)\) — but since the fractional part of \(+0.75\) cannot be erased, some overlap must always retain a quarter of a cent. That is the size of this design's obstruction class. In the demo, a CI gate detects the class and blocks the PR; after a repair that unifies the conventions, it passes. The whole pipeline runs as an example in the repository.
 
 In passing, the classical embedding also becomes a proposition. If the cover has a single chart, there are no overlaps. The place where disagreements would live is zero, so the obstruction vanishes by definition. Classical denotational semantics — where whole-program meaning always existed — is the degenerate special case of this arithmetic. (This is degeneracy in the choice of cover, a different axis from the reading resolution that the Atlas theorem protects.) The claim of Turn 2 is not rhetoric; it is the generalization of this computation.
 
-This `H¹` is not some exotic import. Linters, contract tests, consistency checkers — what they measure are local conditions: inside single files, on single interfaces. The moment you try to measure "the disagreement that no local fix can remove", you are computing this quotient, by definition. **Your consistency tools have been approximating `H¹` without knowing its name.**
+This \(H^1\) is not some exotic import. Linters, contract tests, consistency checkers — what they measure are local conditions: inside single files, on single interfaces. The moment you try to measure "the disagreement that no local fix can remove", you are computing this quotient, by definition. **Your consistency tools have been approximating \(H^1\) without knowing its name.**
 
 And the shape has a pedigree. Bell's theorem of quantum mechanics, in sheaf language, says this: all local observations are pairwise consistent, yet no global section explains them simultaneously (the sheaf-theoretic contextuality of Abramsky and Brandenburger). The skeleton — a presheaf, and the absence of a global section — is the same as the computation we just did. The ring of three rounding conventions is locally correct everywhere; only the global ledger fails to exist. **The mathematics that showed quantum mechanics admits no classical global explanation is measuring why your microservices cannot reconcile one cent.** The scale differs. The shape does not.
 
@@ -208,19 +215,19 @@ And the shape has a pedigree. Bell's theorem of quantum mechanics, in sheaf lang
 
 This map has a summit. No one has reached it.
 
-Algebraic geometry has an operation called `Spec`. From a commutative ring `R` — an algebraic system in which you can add and multiply — it builds a space `Spec R` that geometrizes the ring's equational content. Seeing systems of equations as spaces: the founding move of algebraic geometry.
+Algebraic geometry has an operation called \(\operatorname{Spec}\). From a commutative ring \(R\) — an algebraic system in which you can add and multiply — it builds a space \(\operatorname{Spec} R\) that geometrizes the ring's equational content. Seeing systems of equations as spaces: the founding move of algebraic geometry.
 
-The conjecture. For the collection `Sem_{A,r}(R)` of coherent realizations of meaning over coefficients `R`, generated from Atoms and laws (`A` is the architecture, `r` the choice of reading), there exists a geometric object `M_{A,r}` and a natural bijection
+The conjecture. For the collection \(\mathrm{Sem}_{A,r}(R)\) of coherent realizations of meaning over coefficients \(R\), generated from Atoms and laws (\(A\) is the architecture, \(r\) the choice of reading), there exists a geometric object \(M_{A,r}\) and a natural bijection
 
-```text
-Sem_{A,r}(R) ≃ Hom(Spec R, M_{A,r})
-```
+$$
+\mathrm{Sem}_{A,r}(R) \simeq \operatorname{Hom}(\operatorname{Spec} R,\, M_{A,r})
+$$
 
-**An architecture `A` carries its own space of meanings `M_{A,r}`.** To choose a realization of meaning is to choose a map into this space. If it holds, the space of meanings stands as an intrinsic geometric object, independent of the choice of reading and of the convenience of observation. The existence theorems, the freedom of choice, the tangent space of repairs — all of them line up again as properties of this one space.
+**An architecture \(A\) carries its own space of meanings \(M_{A,r}\).** To choose a realization of meaning is to choose a map into this space. If it holds, the space of meanings stands as an intrinsic geometric object, independent of the choice of reading and of the convenience of observation. The existence theorems, the freedom of choice, the tangent space of repairs — all of them line up again as properties of this one space.
 
 The shape of this conjecture is not an accident. Algebraic geometry contains a turn of perspective called the **functor of points** (Grothendieck's relative point of view). A space is not given directly as a set of points; it is **known by the totality of maps into it, from all coefficients**. To know a space and to know the maps into it are the same thing (the Yoneda lemma). So the conjecture — the collection of realizations of meaning coincides with the maps into some space — traces the legitimate way of defining a space of meaning. And the history of moduli problems teaches how steep this road is. The moduli of elliptic curves fails to have a fine moduli scheme because its objects have automorphisms, a failure that forced the invention of stacks. If architectural realizations carry automorphisms, this summit too rises from scheme to stack. The terrain, branch point included, is already mapped in the classics.
 
-The greatest enemy of this conjecture is not an external counterexample but **circular definition**. Define realizations from the start as maps into `M`, and representability holds vacuously. Only by defining the collection independently — as **solutions of equations** out of Atoms and laws — and then proving that it coincides with maps into a space, does the claim deserve the name of a theorem. The local part is expected to follow almost by definition, as a matter of solution spaces of equations; the substance of the claim concentrates in the gluing. The heart of this conjecture, too, is descent.
+The greatest enemy of this conjecture is not an external counterexample but **circular definition**. Define realizations from the start as maps into \(M_{A,r}\), and representability holds vacuously. Only by defining the collection independently — as **solutions of equations** out of Atoms and laws — and then proving that it coincides with maps into a space, does the claim deserve the name of a theorem. The local part is expected to follow almost by definition, as a matter of solution spaces of equations; the substance of the claim concentrates in the gluing. The heart of this conjecture, too, is descent.
 
 How the conjecture can die has also been designed. If representability fails to close at the scheme level, the obstruction — automorphisms of realizations, higher gluing obstructions — is not a failure: it is cashed in as evidence that the ascent to stacks is necessary. If the affine level trivializes, the independent definition of the functor gets rebuilt. What happens upon refutation is decided in advance. The discipline of the cliffs applies to the future as well.
 
@@ -234,18 +241,11 @@ The word order is the content. This is not geometric semantics — geometry used
 
 The overall position:
 
-```text
-AAT
-  the pure mathematical foundation: the statics of the space of meaning
-Semantic Geometry of Architecture
-  the research program opening on top of AAT — this article
-The SAGA theorems
-  a proved theorem series inside it (gluing, repair, descent)
-The Atlas theorem
-  a proved solitary peak inside it (resolution invariance; well-definedness)
-SFT (Software Field Theory)
-  the dynamics on the space of meaning: development as trajectory
-```
+- **AAT** — the pure mathematical foundation: the statics of the space of meaning
+- **Semantic Geometry of Architecture** — the research program opening on top of AAT — this article
+- **The SAGA theorems** — a proved theorem series inside it (gluing, repair, descent)
+- **The Atlas theorem** — a proved solitary peak inside it (resolution invariance; well-definedness)
+- **SFT (Software Field Theory)** — the dynamics on the space of meaning: development as trajectory
 
 One rule attaches to the name. It is **never abbreviated**. The acronym would collide with Grothendieck's Séminaire de Géométrie Algébrique, a monument of algebraic geometry. Out of respect for that SGA, this program is always written out in full. If you are not prepared to write a long name every time, you have no business hanging "geometry" over your door.
 
@@ -261,9 +261,9 @@ The route is drawn. The first technical gate is **base change of coefficients** 
 
 The scaffolding is all public.
 
-- Theory and Lean formalization: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
-- The SAGA paper (Zenodo): https://doi.org/10.5281/zenodo.21603761
-- The Atlas theorem write-up (the record of four refutations): link to be added on publication
+- [Theory and Lean formalization](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)
+- [The SAGA paper (Zenodo)](https://doi.org/10.5281/zenodo.21603761)
+- [The Atlas theorem](https://blog.iroha1203.dev/atlas-theorem-how-far-can-you-zoom-out)
 
 ## Coming Back Down
 
