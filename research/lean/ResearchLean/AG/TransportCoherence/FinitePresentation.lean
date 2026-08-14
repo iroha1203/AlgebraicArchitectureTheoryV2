@@ -33,23 +33,47 @@ inductive PresentedPath {V : Type u} (Edge : V → V → Type u) : V → V → T
   | cons {i j k : V} (edge : Edge i j) (tail : PresentedPath Edge j k) :
       PresentedPath Edge i k
 
+namespace PresentedPath
+
+/-- Concatenate two finite presented paths. -/
+def append {V : Type u} {Edge : V → V → Type u} {i j k : V}
+    (first : PresentedPath Edge i j) (second : PresentedPath Edge j k) :
+    PresentedPath Edge i k :=
+  match first with
+  | .nil _ => second
+  | .cons edge tail => .cons edge (append tail second)
+
+/-- Appending an identity path on the right changes no presented path. -/
+@[simp]
+theorem append_nil {V : Type u} {Edge : V → V → Type u} {i j : V}
+    (path : PresentedPath Edge i j) :
+    path.append (.nil j) = path := by
+  induction path with
+  | nil vertex => rfl
+  | cons edge tail inductionHypothesis =>
+      simp only [append, inductionHypothesis]
+
+/-- Concatenation of presented paths is associative. -/
+@[simp]
+theorem append_assoc {V : Type u} {Edge : V → V → Type u}
+    {i j k l : V} (first : PresentedPath Edge i j)
+    (second : PresentedPath Edge j k) (third : PresentedPath Edge k l) :
+    (first.append second).append third = first.append (second.append third) := by
+  induction first with
+  | nil vertex => rfl
+  | cons edge tail inductionHypothesis =>
+      simp only [append, inductionHypothesis]
+
+end PresentedPath
+
 /-- Orientation of a declared 2-cell face inside a 3-cell pasting. -/
 inductive FaceOrientation
   | forward
   | backward
   deriving DecidableEq
 
-/--
-The finite G-106 presentation geometry.
-
-Vertices and edge generators are interpreted as doctrines and exact morphisms
-by admissible data below.  A 2-cell stores two finite parallel paths.  A 3-cell
-stores two finite oriented lists of 2-cells, each placed between declared
-incoming and outgoing whiskering paths with common endpoints.  Thus boundary
-pasting and orientation are input geometry, as required by the fixed GOAL; no
-syzygy equation is stored.
--/
-structure FiniteTransportPresentation where
+/-- The finite 0/1/2-cell skeleton underlying a G-106 presentation. -/
+structure FiniteTransportTwoPresentation where
   /-- Finite family of 0-cell labels. -/
   Vertex : Type u
   /-- Explicit finiteness witness for the 0-cells. -/
@@ -70,6 +94,110 @@ structure FiniteTransportPresentation where
   twoLeft : (cell : TwoCell) → PresentedPath Edge (twoSource cell) (twoTarget cell)
   /-- Second path in a declared parallel-path relation. -/
   twoRight : (cell : TwoCell) → PresentedPath Edge (twoSource cell) (twoTarget cell)
+
+namespace FiniteTransportTwoPresentation
+
+/-- Paths in a finite 0/1/2-cell presentation skeleton. -/
+abbrev Path (G : FiniteTransportTwoPresentation.{u}) := PresentedPath G.Edge
+
+end FiniteTransportTwoPresentation
+
+/--
+One oriented 2-cell rewrite placed inside a common source-to-target path.
+
+The incoming prefix and outgoing suffix determine the complete path before and
+after the rewrite; they are geometry, not a cocycle equation or certificate.
+-/
+structure WhiskeredFace (G : FiniteTransportTwoPresentation.{u})
+    (source target : G.Vertex) where
+  /-- The local declared 2-cell being rewritten. -/
+  cell : G.TwoCell
+  /-- Prefix from the outer source to the local 2-cell source. -/
+  incoming : G.Path source (G.twoSource cell)
+  /-- Suffix from the local 2-cell target to the outer target. -/
+  outgoing : G.Path (G.twoTarget cell) target
+  /-- Whether the local relation is used left-to-right or right-to-left. -/
+  orientation : FaceOrientation
+
+namespace WhiskeredFace
+
+/-- Local path before applying an oriented whiskered face. -/
+def localBefore {G : FiniteTransportTwoPresentation.{u}}
+    {source target : G.Vertex} (face : WhiskeredFace G source target) :
+    G.Path (G.twoSource face.cell) (G.twoTarget face.cell) :=
+  match face.orientation with
+  | .forward => G.twoLeft face.cell
+  | .backward => G.twoRight face.cell
+
+/-- Local path after applying an oriented whiskered face. -/
+def localAfter {G : FiniteTransportTwoPresentation.{u}}
+    {source target : G.Vertex} (face : WhiskeredFace G source target) :
+    G.Path (G.twoSource face.cell) (G.twoTarget face.cell) :=
+  match face.orientation with
+  | .forward => G.twoRight face.cell
+  | .backward => G.twoLeft face.cell
+
+/-- Complete outer path before applying a whiskered face. -/
+def before {G : FiniteTransportTwoPresentation.{u}}
+    {source target : G.Vertex} (face : WhiskeredFace G source target) :
+    G.Path source target :=
+  face.incoming.append (face.localBefore.append face.outgoing)
+
+/-- Complete outer path after applying a whiskered face. -/
+def after {G : FiniteTransportTwoPresentation.{u}}
+    {source target : G.Vertex} (face : WhiskeredFace G source target) :
+    G.Path source target :=
+  face.incoming.append (face.localAfter.append face.outgoing)
+
+end WhiskeredFace
+
+/--
+A typed rewrite step between two complete paths.  The equality fields force the
+step indices to be exactly the oriented whiskered face's before and after paths.
+-/
+structure RewriteStep (G : FiniteTransportTwoPresentation.{u})
+    {source target : G.Vertex} (before after : G.Path source target) where
+  /-- Oriented local face placed inside the two complete paths. -/
+  face : WhiskeredFace G source target
+  /-- The indexed input path is the face's complete pre-rewrite path. -/
+  before_eq : before = face.before
+  /-- The indexed output path is the face's complete post-rewrite path. -/
+  after_eq : after = face.after
+
+namespace WhiskeredFace
+
+/-- Every whiskered face gives its tautological typed rewrite step. -/
+def asStep {G : FiniteTransportTwoPresentation.{u}}
+    {source target : G.Vertex} (face : WhiskeredFace G source target) :
+    RewriteStep G face.before face.after where
+  face := face
+  before_eq := rfl
+  after_eq := rfl
+
+end WhiskeredFace
+
+/--
+A finite vertical pasting of oriented 2-cell rewrites.  The shared middle-path
+index in `cons` makes adjacent rewrites composable by construction.
+-/
+inductive RewritePasting (G : FiniteTransportTwoPresentation.{u})
+    {source target : G.Vertex} :
+    G.Path source target → G.Path source target → Type u
+  | nil (path : G.Path source target) : RewritePasting G path path
+  | cons {before middle finish : G.Path source target}
+      (step : RewriteStep G before middle)
+      (tail : RewritePasting G middle finish) :
+      RewritePasting G before finish
+
+/--
+The finite G-106 presentation geometry.
+
+The inherited skeleton stores finite 0/1/2-cell generators.  Every 3-cell is a
+pair of finite typed rewrite pastings with the same complete start and finish
+paths.  Thus face incidence, adjacency, the common outer paths, and orientation
+are input geometry; no syzygy equation is stored.
+-/
+structure FiniteTransportPresentation extends FiniteTransportTwoPresentation.{u} where
   /-- Finite family of declared 3-cell syzygies. -/
   ThreeCell : Type u
   /-- Explicit finiteness witness for the 3-cells. -/
@@ -78,22 +206,20 @@ structure FiniteTransportPresentation where
   threeSource : ThreeCell → Vertex
   /-- Common terminal vertex at which a 3-cell pasting is evaluated. -/
   threeTarget : ThreeCell → Vertex
-  /--
-  First oriented 2-cell pasting, including each face's incoming and outgoing
-  whiskering paths.
-  -/
+  /-- Complete starting path shared by both declared 3-cell pastings. -/
+  threeStart : (cell : ThreeCell) →
+    PresentedPath Edge (threeSource cell) (threeTarget cell)
+  /-- Complete finishing path shared by both declared 3-cell pastings. -/
+  threeFinish : (cell : ThreeCell) →
+    PresentedPath Edge (threeSource cell) (threeTarget cell)
+  /-- First typed oriented 2-cell rewrite pasting. -/
   threeLeft : (cell : ThreeCell) →
-    List (Σ face : TwoCell,
-      PresentedPath Edge (threeSource cell) (twoSource face) ×
-        PresentedPath Edge (twoTarget face) (threeTarget cell) × FaceOrientation)
-  /--
-  Second oriented 2-cell pasting, including each face's incoming and outgoing
-  whiskering paths.
-  -/
+    RewritePasting toFiniteTransportTwoPresentation
+      (threeStart cell) (threeFinish cell)
+  /-- Second typed oriented 2-cell rewrite pasting with the same outer paths. -/
   threeRight : (cell : ThreeCell) →
-    List (Σ face : TwoCell,
-      PresentedPath Edge (threeSource cell) (twoSource face) ×
-        PresentedPath Edge (twoTarget face) (threeTarget cell) × FaceOrientation)
+    RewritePasting toFiniteTransportTwoPresentation
+      (threeStart cell) (threeFinish cell)
 
 namespace FiniteTransportPresentation
 
@@ -189,6 +315,37 @@ theorem inv_atomEquiv_eq {U : AtomCarrier.{u}} {P : AATCorePackage U}
     PackageFiberAut.inv_base_eq]
   rfl
 
+/--
+Two endpoint-fiber automorphisms are equal when they have the same composite
+after one strongly cocartesian lift.
+-/
+theorem ext_of_strong_fac {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    (lift : PackageTotalHom P Q)
+    [(packageProjection U).IsStronglyCocartesian lift.base lift]
+    (left right : PackageFiberAut Q)
+    (fac : lift.comp (PackageFiberAut.hom left) =
+      lift.comp (PackageFiberAut.hom right)) :
+    left = right := by
+  letI : (packageProjection U).IsHomLift
+      (𝟙 (packagePoint Q)) left.1.hom := by
+    rw [← PackageFiberAut.hom_base_eq]
+    change (packageProjection U).IsHomLift
+      ((packageProjection U).map (PackageFiberAut.hom left))
+      (PackageFiberAut.hom left)
+    infer_instance
+  letI : (packageProjection U).IsHomLift
+      (𝟙 (packagePoint Q)) right.1.hom := by
+    rw [← PackageFiberAut.hom_base_eq]
+    change (packageProjection U).IsHomLift
+      ((packageProjection U).map (PackageFiberAut.hom right))
+      (PackageFiberAut.hom right)
+    infer_instance
+  apply Subtype.ext
+  apply Iso.ext
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) lift.base lift (𝟙 (packagePoint Q))
+  exact fac
+
 end PackageFiberAut
 
 /-! ## Admissible edge lifts and path evaluation -/
@@ -220,6 +377,28 @@ def pathLift {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     {i j : G.Vertex} → G.Path i j → PackageTotalHom (data.package i) (data.package j)
   | _, _, .nil vertex => PackageTotalHom.id (data.package vertex)
   | _, _, .cons edge tail => (data.edgeLift edge).comp (data.pathLift tail)
+
+/-- Path evaluation sends concatenation to composition of total lifts. -/
+theorem pathLift_append
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U) {i j k : G.Vertex}
+    (first : G.Path i j) (second : G.Path j k) :
+    data.pathLift (first.append second) =
+      (data.pathLift first).comp (data.pathLift second) := by
+  induction first with
+  | nil vertex =>
+      change data.pathLift second =
+        (PackageTotalHom.id (data.package vertex)).comp (data.pathLift second)
+      exact (@Category.id_comp
+        (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+        (data.package vertex) (data.package k) (data.pathLift second)).symm
+  | cons edge tail inductionHypothesis =>
+      simp only [PresentedPath.append, pathLift]
+      rw [inductionHypothesis]
+      exact (@Category.assoc
+        (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+        _ _ _ _ (data.edgeLift edge) (data.pathLift tail)
+        (data.pathLift second)).symm
 
 /--
 Every selected path lift is strongly cocartesian.  The proof uses only the
@@ -365,6 +544,17 @@ def reselectedPathLift {G : FiniteTransportPresentation.{u}}
     (path : G.Path i j) : PackageTotalHom (data.package i) (data.package j) :=
   (reselectLiftData data reselection).pathLift path
 
+/-- Reselected path evaluation also preserves finite concatenation. -/
+theorem reselectedPathLift_append
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U)
+    (reselection : EdgeReselection data) {i j k : G.Vertex}
+    (first : G.Path i j) (second : G.Path j k) :
+    reselectedPathLift data reselection (first.append second) =
+      (reselectedPathLift data reselection first).comp
+        (reselectedPathLift data reselection second) :=
+  (reselectLiftData data reselection).pathLift_append first second
+
 /-- Reselection preserves the composite exact base of every finite path. -/
 theorem reselectedPathLift_base_eq {G : FiniteTransportPresentation.{u}}
     {U : AtomCarrier.{u}} (data : AdmissibleLiftData G U)
@@ -472,19 +662,7 @@ theorem reselectedPathLift_mul {G : FiniteTransportPresentation.{u}}
       rw [reselectedEdgeLift_mul, inductionHypothesis]
       rfl
 
-/--
-The selected base relation of every 2-cell survives arbitrary edge
-reselection.  This is the path-level coboundary action's base compatibility.
--/
-theorem reselectedTwoCellBase {G : FiniteTransportPresentation.{u}}
-    {U : AtomCarrier.{u}} (data : AdmissibleTransportData G U)
-    (reselection : EdgeReselection data.lift) (cell : G.TwoCell) :
-    (reselectedPathLift data.lift reselection (G.twoLeft cell)).base =
-      (reselectedPathLift data.lift reselection (G.twoRight cell)).base := by
-  rw [reselectedPathLift_base_eq, reselectedPathLift_base_eq]
-  exact data.twoCellBase cell
-
-/-! ## Canonical comparisons and raw defects -/
+/-! ## Canonical comparison of strongly cocartesian lifts -/
 
 /--
 The canonical endpoint-fiber comparator between two strongly cocartesian lifts
@@ -537,6 +715,147 @@ theorem canonicalFiberComparator_fac
     (g := (Iso.refl (packagePoint Q)).hom)
     (f' := right.base) (hf' := rightBase) (φ' := right))
 
+/-! ## Endpoint gauges induced by successive edge reselection -/
+
+/--
+The endpoint gauge from the path evaluated in `current` coordinates to the
+same path after one further `increment`.  It is generated by G-101 uniqueness,
+not supplied as reselection data.
+-/
+noncomputable def pathReselectionTransition
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U)
+    (current increment : EdgeReselection data) {i j : G.Vertex}
+    (path : G.Path i j) : PackageFiberAut (data.package j) := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data current path).base
+      (reselectedPathLift data current path) :=
+    reselectedPathLift_isStronglyCocartesian data current path
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data (increment * current) path).base
+      (reselectedPathLift data (increment * current) path) :=
+    reselectedPathLift_isStronglyCocartesian data (increment * current) path
+  exact canonicalFiberComparator
+    (reselectedPathLift data current path)
+    (reselectedPathLift data (increment * current) path)
+    ((reselectedPathLift_base_eq data current path).trans
+      (reselectedPathLift_base_eq data (increment * current) path).symm)
+
+/-- The induced endpoint gauge factors one path evaluation into the next. -/
+@[simp]
+theorem pathReselectionTransition_fac
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U)
+    (current increment : EdgeReselection data) {i j : G.Vertex}
+    (path : G.Path i j) :
+    (reselectedPathLift data current path).comp
+        (PackageFiberAut.hom
+          (pathReselectionTransition data current increment path)) =
+      reselectedPathLift data (increment * current) path := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data current path).base
+      (reselectedPathLift data current path) :=
+    reselectedPathLift_isStronglyCocartesian data current path
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data (increment * current) path).base
+      (reselectedPathLift data (increment * current) path) :=
+    reselectedPathLift_isStronglyCocartesian data (increment * current) path
+  exact canonicalFiberComparator_fac
+    (reselectedPathLift data current path)
+    (reselectedPathLift data (increment * current) path)
+    ((reselectedPathLift_base_eq data current path).trans
+      (reselectedPathLift_base_eq data (increment * current) path).symm)
+
+/-- Identity increment induces the identity endpoint gauge. -/
+@[simp]
+theorem pathReselectionTransition_one
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U)
+    (current : EdgeReselection data) {i j : G.Vertex}
+    (path : G.Path i j) :
+    pathReselectionTransition data current 1 path = 1 := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data current path).base
+      (reselectedPathLift data current path) :=
+    reselectedPathLift_isStronglyCocartesian data current path
+  apply PackageFiberAut.ext_of_strong_fac
+    (reselectedPathLift data current path)
+  rw [pathReselectionTransition_fac]
+  rw [one_mul]
+  change reselectedPathLift data current path =
+    (reselectedPathLift data current path).comp (𝟙 (data.package j))
+  exact (@Category.comp_id
+    (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+    (data.package i) (data.package j)
+    (reselectedPathLift data current path)).symm
+
+/--
+Endpoint gauges compose in the same order as successive edge reselections.
+The product order follows mathlib's reverse-hom convention for `Aut`.
+-/
+theorem pathReselectionTransition_mul
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleLiftData G U)
+    (current increment middle : EdgeReselection data)
+    {i j : G.Vertex} (path : G.Path i j) :
+    pathReselectionTransition data current (middle * increment) path =
+      pathReselectionTransition data (increment * current) middle path *
+        pathReselectionTransition data current increment path := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data current path).base
+      (reselectedPathLift data current path) :=
+    reselectedPathLift_isStronglyCocartesian data current path
+  apply PackageFiberAut.ext_of_strong_fac
+    (reselectedPathLift data current path)
+  rw [pathReselectionTransition_fac]
+  change reselectedPathLift data ((middle * increment) * current) path =
+    (reselectedPathLift data current path).comp
+      ((pathReselectionTransition data current increment path).1.hom.comp
+        (pathReselectionTransition data (increment * current) middle path).1.hom)
+  calc
+    reselectedPathLift data ((middle * increment) * current) path =
+        reselectedPathLift data (middle * (increment * current)) path := by
+      rw [mul_assoc]
+    _ = (reselectedPathLift data (increment * current) path).comp
+          (PackageFiberAut.hom
+            (pathReselectionTransition data (increment * current) middle path)) :=
+      (pathReselectionTransition_fac data (increment * current) middle path).symm
+    _ = ((reselectedPathLift data current path).comp
+          (PackageFiberAut.hom
+            (pathReselectionTransition data current increment path))).comp
+          (PackageFiberAut.hom
+            (pathReselectionTransition data (increment * current) middle path)) := by
+      exact congrArg
+        (fun lift : PackageTotalHom (data.package i) (data.package j) =>
+          lift.comp (PackageFiberAut.hom
+            (pathReselectionTransition data (increment * current) middle path)))
+        (pathReselectionTransition_fac data current increment path).symm
+    _ = (reselectedPathLift data current path).comp
+          ((pathReselectionTransition data current increment path).1.hom.comp
+            (pathReselectionTransition data (increment * current) middle path).1.hom) :=
+      (@Category.assoc
+        (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+        (data.package i) (data.package j) (data.package j) (data.package j)
+        (reselectedPathLift data current path)
+        (PackageFiberAut.hom
+          (pathReselectionTransition data current increment path))
+        (PackageFiberAut.hom
+          (pathReselectionTransition data (increment * current) middle path)))
+
+/--
+The selected base relation of every 2-cell survives arbitrary edge
+reselection.  This is the path-level coboundary action's base compatibility.
+-/
+theorem reselectedTwoCellBase {G : FiniteTransportPresentation.{u}}
+    {U : AtomCarrier.{u}} (data : AdmissibleTransportData G U)
+    (reselection : EdgeReselection data.lift) (cell : G.TwoCell) :
+    (reselectedPathLift data.lift reselection (G.twoLeft cell)).base =
+      (reselectedPathLift data.lift reselection (G.twoRight cell)).base := by
+  rw [reselectedPathLift_base_eq, reselectedPathLift_base_eq]
+  exact data.twoCellBase cell
+
+/-! ## Canonical 2-cell comparisons and raw defects -/
+
 /--
 The canonical G-106/J1 comparison between the two reselected lifts of a
 declared 2-cell.  Both strong-lift instances and their base equality are derived
@@ -587,6 +906,96 @@ theorem canonicalTwoCellComparator_fac
     (reselectedTwoCellBase data reselection cell)
 
 /--
+The two path endpoint gauges give the noncommutative transformation square for
+the canonical 2-cell comparator under successive edge reselection.
+-/
+theorem canonicalTwoCellComparator_transition_fac
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment : EdgeReselection data.lift) (cell : G.TwoCell) :
+    canonicalTwoCellComparator data (increment * current) cell *
+        pathReselectionTransition data.lift current increment (G.twoLeft cell) =
+      pathReselectionTransition data.lift current increment (G.twoRight cell) *
+        canonicalTwoCellComparator data current cell := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (reselectedPathLift data.lift current (G.twoLeft cell)).base
+      (reselectedPathLift data.lift current (G.twoLeft cell)) :=
+    reselectedPathLift_isStronglyCocartesian
+      data.lift current (G.twoLeft cell)
+  apply PackageFiberAut.ext_of_strong_fac
+    (reselectedPathLift data.lift current (G.twoLeft cell))
+  change
+    (reselectedPathLift data.lift current (G.twoLeft cell)).comp
+        ((pathReselectionTransition data.lift current increment
+            (G.twoLeft cell)).1.hom.comp
+          (canonicalTwoCellComparator data (increment * current) cell).1.hom) =
+      (reselectedPathLift data.lift current (G.twoLeft cell)).comp
+        ((canonicalTwoCellComparator data current cell).1.hom.comp
+          (pathReselectionTransition data.lift current increment
+            (G.twoRight cell)).1.hom)
+  calc
+    (reselectedPathLift data.lift current (G.twoLeft cell)).comp
+        ((pathReselectionTransition data.lift current increment
+            (G.twoLeft cell)).1.hom.comp
+          (canonicalTwoCellComparator data (increment * current) cell).1.hom) =
+      ((reselectedPathLift data.lift current (G.twoLeft cell)).comp
+        (PackageFiberAut.hom
+          (pathReselectionTransition data.lift current increment
+            (G.twoLeft cell)))).comp
+        (PackageFiberAut.hom
+          (canonicalTwoCellComparator data (increment * current) cell)) :=
+      (@Category.assoc
+        (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+        _ _ _ _ _ _ _).symm
+    _ = (reselectedPathLift data.lift (increment * current)
+          (G.twoLeft cell)).comp
+        (PackageFiberAut.hom
+          (canonicalTwoCellComparator data (increment * current) cell)) := by
+      rw [pathReselectionTransition_fac]
+    _ = reselectedPathLift data.lift (increment * current)
+          (G.twoRight cell) :=
+      canonicalTwoCellComparator_fac data (increment * current) cell
+    _ = (reselectedPathLift data.lift current (G.twoRight cell)).comp
+          (PackageFiberAut.hom
+            (pathReselectionTransition data.lift current increment
+              (G.twoRight cell))) :=
+      (pathReselectionTransition_fac data.lift current increment
+        (G.twoRight cell)).symm
+    _ = ((reselectedPathLift data.lift current (G.twoLeft cell)).comp
+          (PackageFiberAut.hom
+            (canonicalTwoCellComparator data current cell))).comp
+          (PackageFiberAut.hom
+            (pathReselectionTransition data.lift current increment
+              (G.twoRight cell))) := by
+      rw [canonicalTwoCellComparator_fac]
+    _ = (reselectedPathLift data.lift current (G.twoLeft cell)).comp
+        ((canonicalTwoCellComparator data current cell).1.hom.comp
+          (pathReselectionTransition data.lift current increment
+            (G.twoRight cell)).1.hom) :=
+      (@Category.assoc
+        (AATCorePackage U) (PackageTotalHom.packageTotalCategory U)
+        _ _ _ _ _ _ _)
+
+/--
+Solved form of the canonical-comparator transformation: the right-path gauge
+acts on the left and the inverse left-path gauge acts on the right.
+-/
+theorem canonicalTwoCellComparator_transition
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment : EdgeReselection data.lift) (cell : G.TwoCell) :
+    canonicalTwoCellComparator data (increment * current) cell =
+      pathReselectionTransition data.lift current increment (G.twoRight cell) *
+        canonicalTwoCellComparator data current cell *
+          (pathReselectionTransition data.lift current increment
+            (G.twoLeft cell))⁻¹ := by
+  apply mul_right_cancel
+    (b := pathReselectionTransition data.lift current increment
+      (G.twoLeft cell))
+  rw [canonicalTwoCellComparator_transition_fac]
+  simp [mul_assoc]
+
+/--
 The unconditional raw G-106/J1 defect on one declared 2-cell:
 `delta = u * phi⁻¹`, whose underlying categorical composite is
 `phi.inv ≫ u.hom` in mathlib's `Aut` multiplication convention.
@@ -611,6 +1020,28 @@ theorem rawTwoCellDefect_hom
         (PackageFiberAut.hom (data.comparator cell)) :=
   rfl
 
+/--
+Explicit noncommutative coboundary formula for the raw defect.  Since the
+authored comparator is fixed rather than gauge-rewritten, its conjugate of the
+left-path endpoint gauge appears on the left.
+-/
+theorem rawTwoCellDefect_transition
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment : EdgeReselection data.lift) (cell : G.TwoCell) :
+    rawTwoCellDefect data (increment * current) cell =
+      (data.comparator cell *
+          pathReselectionTransition data.lift current increment
+            (G.twoLeft cell) *
+          (data.comparator cell)⁻¹) *
+        rawTwoCellDefect data current cell *
+          (pathReselectionTransition data.lift current increment
+            (G.twoRight cell))⁻¹ := by
+  rw [rawTwoCellDefect, rawTwoCellDefect,
+    canonicalTwoCellComparator_transition]
+  simp only [mul_inv_rev, inv_inv]
+  simp [mul_assoc]
+
 /-- The raw 2-cochain over all declared 2-cells after one edge reselection. -/
 abbrev DefectCochain {G : FiniteTransportPresentation.{u}}
     {U : AtomCarrier.{u}} (data : AdmissibleTransportData G U) :=
@@ -629,6 +1060,121 @@ noncomputable def initialRawDefectCochain
     (data : AdmissibleTransportData G U) : DefectCochain data :=
   rawDefectCochain data 1
 
+/--
+Coordinate-dependent action of one additional edge reselection on a raw
+2-cochain.  Both parallel paths contribute their generated endpoint gauges;
+the authored comparator itself remains fixed.
+-/
+noncomputable def reselectionTranslate
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment : EdgeReselection data.lift)
+    (cochain : DefectCochain data) : DefectCochain data :=
+  fun cell =>
+    (data.comparator cell *
+        pathReselectionTransition data.lift current increment
+          (G.twoLeft cell) *
+        (data.comparator cell)⁻¹) *
+      cochain cell *
+        (pathReselectionTransition data.lift current increment
+          (G.twoRight cell))⁻¹
+
+/-- Identity edge reselection acts trivially on every 2-cochain. -/
+@[simp]
+theorem reselectionTranslate_one
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current : EdgeReselection data.lift) (cochain : DefectCochain data) :
+    reselectionTranslate data current 1 cochain = cochain := by
+  funext cell
+  simp [reselectionTranslate]
+
+/--
+The coordinate-dependent cochain translation respects successive edge
+reselection.  This is the genuine noncommutative coboundary action law.
+-/
+theorem reselectionTranslate_mul
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment middle : EdgeReselection data.lift)
+    (cochain : DefectCochain data) :
+    reselectionTranslate data (increment * current) middle
+        (reselectionTranslate data current increment cochain) =
+      reselectionTranslate data current (middle * increment) cochain := by
+  funext cell
+  simp only [reselectionTranslate, pathReselectionTransition_mul]
+  simp [mul_assoc]
+
+/-- The raw cochain transforms by the explicit coboundary action. -/
+theorem rawDefectCochain_transition
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (current increment : EdgeReselection data.lift) :
+    rawDefectCochain data (increment * current) =
+      reselectionTranslate data current increment
+        (rawDefectCochain data current) := by
+  funext cell
+  exact rawTwoCellDefect_transition data current increment cell
+
+/-- State space on which edge reselections act with their current coordinate. -/
+structure ReselectionCochainState
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U) where
+  /-- Current edge-trivialization coordinate. -/
+  coordinate : EdgeReselection data.lift
+  /-- Raw-cochain coordinate carried by the state. -/
+  cochain : DefectCochain data
+
+/-- Apply one incremental edge reselection to a cochain state. -/
+noncomputable def reselectionStep
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (increment : EdgeReselection data.lift)
+    (state : ReselectionCochainState data) : ReselectionCochainState data where
+  coordinate := increment * state.coordinate
+  cochain := reselectionTranslate data state.coordinate increment state.cochain
+
+/-- Identity reselection is the identity state transformation. -/
+@[simp]
+theorem reselectionStep_one
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (state : ReselectionCochainState data) :
+    reselectionStep data 1 state = state := by
+  cases state
+  simp [reselectionStep]
+
+/-- Successive state transformations multiply in execution order. -/
+theorem reselectionStep_mul
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (increment middle : EdgeReselection data.lift)
+    (state : ReselectionCochainState data) :
+    reselectionStep data middle (reselectionStep data increment state) =
+      reselectionStep data (middle * increment) state := by
+  cases state
+  simp [reselectionStep, reselectionTranslate_mul, mul_assoc]
+
+/-- Initial action state before any edge is reselected. -/
+noncomputable def initialReselectionState
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U) : ReselectionCochainState data where
+  coordinate := 1
+  cochain := initialRawDefectCochain data
+
+/-- Acting on the initial state computes the raw cochain at that reselection. -/
+theorem reselectionStep_initial_cochain
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U)
+    (reselection : EdgeReselection data.lift) :
+    (reselectionStep data reselection
+      (initialReselectionState data)).cochain =
+        rawDefectCochain data reselection := by
+  change reselectionTranslate data 1 reselection
+      (rawDefectCochain data 1) = rawDefectCochain data reselection
+  simpa only [mul_one] using
+    (rawDefectCochain_transition data 1 reselection).symm
+
 /-- The identity 2-cochain, defined without reference to coherentizability. -/
 def identityDefectCochain
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
@@ -644,6 +1190,25 @@ def InReselectionOrbit
     (data : AdmissibleTransportData G U) (cochain : DefectCochain data) : Prop :=
   ∃ reselection : EdgeReselection data.lift,
     rawDefectCochain data reselection = cochain
+
+/--
+The image definition of `InReselectionOrbit` is exactly the cochain projection
+of the genuine reselection action orbit of the initial state.
+-/
+theorem inReselectionOrbit_iff_action
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : AdmissibleTransportData G U) (cochain : DefectCochain data) :
+    InReselectionOrbit data cochain ↔
+      ∃ reselection : EdgeReselection data.lift,
+        (reselectionStep data reselection
+          (initialReselectionState data)).cochain = cochain := by
+  constructor
+  · rintro ⟨reselection, equality⟩
+    exact ⟨reselection,
+      (reselectionStep_initial_cochain data reselection).trans equality⟩
+  · rintro ⟨reselection, equality⟩
+    exact ⟨reselection,
+      (reselectionStep_initial_cochain data reselection).symm.trans equality⟩
 
 /-- The baseline raw cochain belongs to its edge-reselection orbit. -/
 theorem initialRawDefectCochain_mem_orbit
@@ -777,26 +1342,33 @@ noncomputable def orientedFaceDefect
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     (data : AdmissibleTransportData G U)
     (reselection : EdgeReselection data.lift) {source target : G.Vertex}
-    (face : Σ cell : G.TwoCell,
-      G.Path source (G.twoSource cell) ×
-        G.Path (G.twoTarget cell) target × FaceOrientation) :
+    (face : WhiskeredFace G.toFiniteTransportTwoPresentation source target) :
     PackageFiberAut (data.lift.package target) :=
   let transported := whiskerFiberAut data.lift reselection
-    (rawTwoCellDefect data reselection face.1) face.2.2.1
-  match face.2.2.2 with
+    (rawTwoCellDefect data reselection face.cell) face.outgoing
+  match face.orientation with
   | .forward => transported
   | .backward => transported⁻¹
 
-/-- Ordered product of an oriented 2-cell pasting at a common target. -/
+/--
+Ordered product of a typed oriented 2-cell pasting at its common target.
+
+The incoming prefix is used by the pasting indices to validate each complete
+rewrite.  The coefficient value already lives at the local face target, so only
+the outgoing suffix transports it to the common terminal fiber.
+-/
 noncomputable def defectPastingProduct
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     (data : AdmissibleTransportData G U)
     (reselection : EdgeReselection data.lift) {source target : G.Vertex}
-    (faces : List (Σ cell : G.TwoCell,
-      G.Path source (G.twoSource cell) ×
-        G.Path (G.twoTarget cell) target × FaceOrientation)) :
+    {before finish : G.Path source target}
+    (pasting : RewritePasting G.toFiniteTransportTwoPresentation before finish) :
     PackageFiberAut (data.lift.package target) :=
-  (faces.map (orientedFaceDefect data reselection)).prod
+  match pasting with
+  | .nil _ => 1
+  | .cons step tail =>
+      orientedFaceDefect data reselection step.face *
+        defectPastingProduct data reselection tail
 
 /--
 The explicit G-106 syzygy direction hypothesis.  It consists only of the local
