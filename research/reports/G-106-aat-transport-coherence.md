@@ -867,5 +867,226 @@ audits:
 - corrected report head `c6d2916aa33be497bb048870072216499c3acba2` の
   finding 限定直接対応 review: 4/4 `Pass`
 - PR #4007 required CI: 7/7 success
-- merge: pending
+- PR #4007 merged as `1697367b93c6c5f8dd36af993b674f97f34ebe3f`
+- Research package 全体 build: hard rule に従い未実行
+
+## Cycle 5 — specialized formulas and unified obstruction agreement
+
+### Target cycle selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-106-aat-transport-coherence
+cycle: 5
+goal_blob_sha: 2ad51d10ece5d5f18a10c1d9e824296fb5c21a65
+base_oid: 1697367b93c6c5f8dd36af993b674f97f34ebe3f
+tracking_issue: 3998
+report_path: research/reports/G-106-aat-transport-coherence.md
+selection:
+  proof_state_ref: issue #3998 Cycle 4 merge comment; GOAL target (v); accepted J0-J3 artifacts
+  proof_dag_predecessors:
+    - Cycle 1 canonical adjacent-composition coherence
+    - Cycle 2 raw 2-cell defect and edge-reselection orbit
+    - Cycle 3 vanishing iff coherentizable and disk absorption
+    - Cycle 4 unified noncommutative route evaluator and finite closed witnesses
+  proof_obligation: define diamond and triangle raw obstruction, conjugacy class, and all-reselection nonvanishing independently of the generic 3-cell aliases, then prove each agrees with the unified typed-pasting instance; connect disk absorption and J2 orbit nonvanishing through the same evaluator
+  selection_reason: GOAL (v) explicitly rejects schema membership alone, while the Cycle 4 finite raw/class names were direct aliases of the generic closed-pasting definitions
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/TransportCoherence/UnifiedObstruction.lean
+    - singleDiskPastingRawDefect_after_absorption
+    - finiteDoubleDiamondSpecializedRawObstruction_eq_closedPastingRawObstruction
+    - finiteDoubleDiamondSpecializedObstructionClass_eq_closedPastingObstructionClass
+    - finiteDoubleDiamondSpecializedNonvanishing_iff_closedPastingNonvanishing
+    - finiteTransportTriangleSpecializedRawObstruction_eq_closedPastingRawObstruction
+    - finiteTransportTriangleSpecializedObstructionClass_eq_closedPastingObstructionClass
+    - finiteTransportTriangleSpecializedNonvanishing_iff_closedPastingNonvanishing
+  risks:
+    - defining the specialized values as aliases of closedPastingRawObstruction would leave J4 undischarged
+    - multiplying local triangle raw defects would erase intervening canonical factors in the noncommutative coefficient group
+    - raw equality without class and all-reselection predicate agreement would understate GOAL (v)
+    - a nonvanishing predicate at one chosen coordinate would weaken the orbit-relative claim
+    - deriving the result from an assumed coherence or nonvanishing certificate would violate premise discharge
+  unchecked:
+    - fixed-head independent mathematics and Lean review
+    - required PR CI and merge
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: the disk, double diamond, and three-reading triangle now meet in one route-level mechanism; the two closed witnesses have independently authored specialized raw formulas, classes, and all-reselection predicates with explicit equality or iff theorems to the unified instances
+  completion_candidate: yes
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/TransportCoherence/UnifiedObstruction.lean
+    - ClosedPastingObstructionNonvanishing
+    - coherentAt_closedPastingRawObstruction_eq_one
+    - closedPastingObstructionNonvanishing_not_coherentizable
+    - closedPastingObstructionNonvanishing_not_obstructionVanishes
+    - singleDiskWhiskeredFace
+    - singleDiskRewriteStep
+    - singleDiskPasting
+    - singleDiskPastingRawDefect_eq_rawTwoCellDefect
+    - singleDiskPastingRawDefect_after_absorption
+    - finiteDoubleDiamondSpecializedRawObstruction
+    - finiteDoubleDiamondSpecializedObstructionClass
+    - FiniteDoubleDiamondSpecializedNonvanishing
+    - finiteDoubleDiamondPastingRawDefect_eq_rawTwoCellDefect
+    - finiteDoubleDiamondSpecializedRawObstruction_eq_closedPastingRawObstruction
+    - finiteDoubleDiamondSpecializedRawObstruction_eq_finiteRawObstruction
+    - finiteDoubleDiamondSpecializedObstructionClass_eq_closedPastingObstructionClass
+    - finiteDoubleDiamondSpecializedObstructionClass_eq_finiteObstructionClass
+    - finiteDoubleDiamondSpecializedNonvanishing_iff_closedPastingNonvanishing
+    - finiteDoubleDiamondSpecialized_nonvanishing
+    - finiteDoubleDiamondClosedPasting_nonvanishing
+    - finiteDoubleDiamondClosedPasting_not_obstructionVanishes
+    - finiteTransportTriangleSpecializedIndirectRawDefect
+    - finiteTransportTriangleSpecializedDirectRawDefect
+    - finiteTransportTriangleSpecializedRawObstruction
+    - finiteTransportTriangleSpecializedObstructionClass
+    - FiniteTransportTriangleSpecializedNonvanishing
+    - finiteTransportTriangleSpecializedIndirectRawDefect_eq_pastingRawDefect
+    - finiteTransportTriangleSpecializedDirectRawDefect_eq_pastingRawDefect
+    - finiteTransportTriangleSpecializedRawObstruction_eq_closedPastingRawObstruction
+    - finiteTransportTriangleSpecializedRawObstruction_eq_finiteRawObstruction
+    - finiteTransportTriangleSpecializedObstructionClass_eq_closedPastingObstructionClass
+    - finiteTransportTriangleSpecializedObstructionClass_eq_finiteObstructionClass
+    - finiteTransportTriangleSpecializedNonvanishing_iff_closedPastingNonvanishing
+    - finiteTransportTriangleSpecialized_nonvanishing
+    - finiteTransportTriangleClosedPasting_nonvanishing
+    - finiteTransportTriangleClosedPasting_not_obstructionVanishes
+  evidence:
+    - ClosedPastingObstructionNonvanishing quantifies over every allowed edge reselection and is defined only from the closed conjugacy class
+    - coherentAt_closedPastingRawObstruction_eq_one derives route identity from pointwise coherence through syzygyCompatible_of_coherentAt and canonical route uniqueness
+    - the two general consequence theorems turn a nonidentity closed class into failure of coherentizability and then failure of the independent J1 orbit predicate through the J2 iff
+    - the one-step disk pasting reduces definitionally and propositionally to rawTwoCellDefect; the existing explicit absorbing reselection therefore makes the unified route value identity
+    - the specialized diamond raw formula is the ratio of its two local J1 defects and mentions no generic 3-cell evaluator
+    - finiteDoubleDiamondPastingRawDefect_eq_rawTwoCellDefect proves both one-face routes reduce to those local defects before the closed equality is concluded
+    - diamond raw equality, class equality, and the all-reselection nonvanishing iff are separate Lean theorems; the previous finite raw/class names are also recovered explicitly
+    - the specialized triangle indirect quotient uses authored temporal product swap12 times swap01 and canonical temporal product phi12 times phi01 before inversion
+    - the specialized direct quotient uses authored product swap01 times swap12 and the local phi02; the specialized closed value compares these two complete quotients
+    - the two route reduction theorems independently unfold the typed pastings and empty whiskers, proving the specialized triangle formula equals the generic route evaluator without multiplying local raw defects
+    - triangle raw equality, class equality, and the all-reselection nonvanishing iff are separate Lean theorems; the previous finite raw/class names are also recovered explicitly
+    - the existing explicit S3 noncommutation witness supplies specialized nonvanishing, which the agreement theorem transports back to the unified J2 consequence
+  claim_mapping:
+    theorem_names:
+      - coherentAt_closedPastingRawObstruction_eq_one
+      - closedPastingObstructionNonvanishing_not_obstructionVanishes
+      - singleDiskPastingRawDefect_eq_rawTwoCellDefect
+      - singleDiskPastingRawDefect_after_absorption
+      - finiteDoubleDiamondPastingRawDefect_eq_rawTwoCellDefect
+      - finiteDoubleDiamondSpecializedRawObstruction_eq_closedPastingRawObstruction
+      - finiteDoubleDiamondSpecializedObstructionClass_eq_closedPastingObstructionClass
+      - finiteDoubleDiamondSpecializedNonvanishing_iff_closedPastingNonvanishing
+      - finiteDoubleDiamondSpecialized_nonvanishing
+      - finiteTransportTriangleSpecializedIndirectRawDefect_eq_pastingRawDefect
+      - finiteTransportTriangleSpecializedDirectRawDefect_eq_pastingRawDefect
+      - finiteTransportTriangleSpecializedRawObstruction_eq_closedPastingRawObstruction
+      - finiteTransportTriangleSpecializedObstructionClass_eq_closedPastingObstructionClass
+      - finiteTransportTriangleSpecializedNonvanishing_iff_closedPastingNonvanishing
+      - finiteTransportTriangleSpecialized_nonvanishing
+    source_labels:
+      - GOAL target theorem (i) disk absorption positive instance
+      - GOAL target theorem (ii) raw route defect and conditional syzygy mechanism
+      - GOAL target theorem (iii) orbit vanishing iff coherentizable
+      - GOAL target theorem (iv-b) double-diamond closed witness
+      - GOAL target theorem (iv-c) three-reading closed witness
+      - GOAL target theorem (v) explicit specialized/unified agreement
+    conjuncts:
+      - the disk positive example evaluates in the same route quotient as the closed obstructions
+      - pointwise coherence forces the unified closed route class to be identity
+      - all-coordinate closed-class nonvanishing forces both non-coherentizability and J1 orbit nonvanishing
+      - the independently written diamond raw, class, and nonvanishing predicate equal the unified instance
+      - the independently written noncommutative triangle raw, class, and nonvanishing predicate equal the unified instance
+    undischarged_assumptions:
+      - SyzygyCompatible remains only the GOAL-authorized direction hypothesis for positive cocycle statements; no J4 agreement or nonvanishing theorem assumes it
+    acceptance_point: J4 is discharged by six explicit raw/class/nonvanishing agreement theorems plus route-reduction lemmas; no specialized definition is a wrapper around closedPastingRawObstruction or closedPastingObstructionClass
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - disk raw route reduction and absorption in the unified evaluator
+      - general closed-class nonvanishing connection to J2
+      - independent specialized double-diamond raw formula and class
+      - independent specialized three-reading raw formula with canonical-factor preservation
+      - raw, class, and all-reselection nonvanishing agreement for both closed witnesses
+      - explicit recovery of the existing Cycle 4 finite raw/class names
+      - J4 unification of J0-J3 artifacts
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - canonical factors in every specialized route are generated by canonicalTwoCellComparator from G-101
+      - diamond specialized data are the independently defined J1 raw defects of its two declared faces
+      - triangle authored factors are the explicit finite S3 translators and its canonical factors are separately generated for c01, c12, and c02
+      - all-reselection nonvanishing is proved from the concrete finite class theorems, not accepted as an input field
+    unresolved: []
+  proof_use:
+    used:
+      - the disk typed step and empty suffix reduce route raw to its local 2-cell defect
+      - both diamond faces are reduced separately before their ratio is compared
+      - both triangle pastings are unfolded separately, fixing temporal order and preserving phi12 and phi01
+      - class agreement follows from proved raw agreement rather than quotient-level assertion alone
+      - nonvanishing iff consumes class agreement at every reselection coordinate
+      - the generic negative consequence consumes the independently proved J2 vanishing/coherentizable equivalence
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused check passed for UnifiedObstruction.lean with 36 declarations and standard axioms only
+    - targeted module build passed for UnifiedObstruction with 1741 jobs
+    - direct axiom audit covered all 36 report-named declarations; only propext, Classical.choice, and Quot.sound occur
+    - UnifiedObstruction source SHA-256 99362bc5b570d84d39c49a8d284d8d2c1eebc3fd8fc3460ff2c1541199daf062
+    - AG.lean source SHA-256 2123ca8e0f8102017e51e51e6428f74c6e349b024a9269f5bb2a560a7b7af5ef
+    - research-modules.txt SHA-256 f73d8f827e86acfd120484cede5eaee3b3e8ea1bfcc8974b25824d79218a2da3
+    - placeholder and forbidden primitive, hidden and bidirectional Unicode, privacy, import direction, package direction, manifest, and git diff checks passed
+  review_history: []
+  blocking_findings: []
+  next_obligation: run the fixed-head four-lane mathematics and Lean review, required PR CI, merge, and the separate final math-lean-review completion gate
+```
+
+### Cycle candidate spine declarations
+
+- `ClosedPastingObstructionNonvanishing`
+- `coherentAt_closedPastingRawObstruction_eq_one`
+- `closedPastingObstructionNonvanishing_not_coherentizable`
+- `closedPastingObstructionNonvanishing_not_obstructionVanishes`
+- `singleDiskPastingRawDefect_eq_rawTwoCellDefect`
+- `singleDiskPastingRawDefect_after_absorption`
+- `finiteDoubleDiamondSpecializedRawObstruction`
+- `finiteDoubleDiamondSpecializedObstructionClass`
+- `FiniteDoubleDiamondSpecializedNonvanishing`
+- `finiteDoubleDiamondPastingRawDefect_eq_rawTwoCellDefect`
+- `finiteDoubleDiamondSpecializedRawObstruction_eq_closedPastingRawObstruction`
+- `finiteDoubleDiamondSpecializedObstructionClass_eq_closedPastingObstructionClass`
+- `finiteDoubleDiamondSpecializedNonvanishing_iff_closedPastingNonvanishing`
+- `finiteDoubleDiamondSpecialized_nonvanishing`
+- `finiteTransportTriangleSpecializedIndirectRawDefect`
+- `finiteTransportTriangleSpecializedDirectRawDefect`
+- `finiteTransportTriangleSpecializedRawObstruction`
+- `finiteTransportTriangleSpecializedObstructionClass`
+- `FiniteTransportTriangleSpecializedNonvanishing`
+- `finiteTransportTriangleSpecializedIndirectRawDefect_eq_pastingRawDefect`
+- `finiteTransportTriangleSpecializedDirectRawDefect_eq_pastingRawDefect`
+- `finiteTransportTriangleSpecializedRawObstruction_eq_closedPastingRawObstruction`
+- `finiteTransportTriangleSpecializedObstructionClass_eq_closedPastingObstructionClass`
+- `finiteTransportTriangleSpecializedNonvanishing_iff_closedPastingNonvanishing`
+- `finiteTransportTriangleSpecialized_nonvanishing`
+
+### Verification checkpoint
+
+- focused check: `UnifiedObstruction.lean` pass、`36` declarations、standard axioms only
+- targeted module build: `UnifiedObstruction` (`1741` jobs) pass
+- report 記載36 declarations の direct `#print axioms`:
+  `propext`、`Classical.choice`、`Quot.sound` のみ
+- source SHA-256:
+  `UnifiedObstruction.lean` =
+  `99362bc5b570d84d39c49a8d284d8d2c1eebc3fd8fc3460ff2c1541199daf062`、
+  `AG.lean` =
+  `2123ca8e0f8102017e51e51e6428f74c6e349b024a9269f5bb2a560a7b7af5ef`、
+  `research-modules.txt` =
+  `f73d8f827e86acfd120484cede5eaee3b3e8ea1bfcc8974b25824d79218a2da3`
+- placeholder / forbidden primitive、hidden / bidirectional Unicode、privacy、
+  Research import 方向、package 依存方向、manifest、`git diff --check`: clean
+- fixed-head independent review、required CI、merge: pending
 - Research package 全体 build: hard rule に従い未実行

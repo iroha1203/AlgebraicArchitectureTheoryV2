@@ -314,6 +314,7 @@ import ResearchLean.AG.TransportCoherence.FinitePresentation
 import ResearchLean.AG.TransportCoherence.VanishingCoherence
 import ResearchLean.AG.TransportCoherence.PastingObstruction
 import ResearchLean.AG.TransportCoherence.FiniteWitnesses
+import ResearchLean.AG.TransportCoherence.UnifiedObstruction
 import ResearchLean.AG.TwoPhase.DependencyProfile
 import ResearchLean.AG.TwoPhase.CoefficientComplex
 import ResearchLean.AG.TwoPhase.CohomologyComparison
