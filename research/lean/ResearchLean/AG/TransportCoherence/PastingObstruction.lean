@@ -560,7 +560,8 @@ noncomputable def closedPastingObstructionClass
 
 /--
 The closed raw class is exactly the conjugacy class of the authored route
-mismatch.  This is the coordinate-free form of the gauge-invariant witness.
+mismatch at the given edge coordinate.  Concrete witnesses with empty outgoing
+whiskers prove cross-reselection invariance separately.
 -/
 theorem closedPastingObstructionClass_eq_authoredMismatchClass
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
