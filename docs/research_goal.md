@@ -1,242 +1,114 @@
 # 研究の全体目標
 
-> **ソフトウェア工学の再設計――ソフトウェア進化を計算可能にする。**
+> **ソフトウェアの意味は空間をなす。**
+> **その幾何を研究し、ソフトウェア進化をその空間の中の運動として計算可能にする。**
 
-ソフトウェア工学は、変化し続ける software を扱う学問である。
-設計、実装、Issue、PR、review、CI、運用、開発組織、AI agent による変更生成は、
-software evolution を構成する作用であり、architecture の状態と次に到達しうる状態を絶えず変える。
+この研究プログラムを **Semantic Geometry of Architecture** と呼ぶ。
+Atom と Law から生成される意味のモジュライ(ありうる意味の全体がなす空間)と、
+その存在、障害、変形、特異性、reading 間の輸送、表現可能性を研究する幾何である。
 
-この研究は、software architecture を幾何として構成し、その上に software evolution の力学を築く。
-architecture の状態、局所性、貼り合わせ、obstruction、repair を数学的対象にし、
-変更の trajectory、分岐、合流、feedback、governance を定理と計算の対象にする。
+ソフトウェア工学は、変化し続ける software を扱う学問である。設計、実装、レビュー、
+CI、運用、AI による変更生成は、software evolution を構成する作用である。
+それらは、architecture の意味と、次に到達しうる意味を絶えず変える。この研究は、その全体を
+一つの数学で扱う。意味の空間を AAT が構成し、その上の運動を SFT が記述し、
+ArchSig がすべてを現実のソースコードの上の計測に降ろす。
 
-この構想は、M. M. Lehman が開いたソフトウェア進化研究の系譜を受け継ぐ。
-運用環境の中で継続的に変化する software という対象を、代数幾何、形式化、有限計測、
-開発力学へ接続し、software engineering の新しい計算基盤を作る。
+## AAT — 意味は空間をなす
 
-## この研究を貫く思想
+software architecture の意味は、Atom と Law から生成される空間をなす。
 
-### ソフトウェア工学の Rising Sea
+Atom は、architectural fact の最小単位である。Law は、Atom の集まり(family)の
+上に置かれた方程式である。複数の Law は連立方程式として同時に働き、意味は、
+そのすべてを満たす解、すなわち零点として住まう。
+どの局所でどの構成が成立し、それらがどう貼り合い、どこで貼り合いが破れるか。
+その全体が一つの幾何的対象、意味の空間を形成する。
 
-Grothendieck は、難問を一つずつこじ開ける代わりに、理論の抽象度を上げ、問題が自然に解ける水準まで
-数学の水位を上げた。この方法は *la mer qui monte*、Rising Sea と呼ばれる。
+この空間は、幾何学の正当な対象として表現される。architecture のあらゆる大域的な
+破れは、この空間の障害として座標を持つ。局所では正しいのに全体で壊れる。
+ソフトウェア工学がもっとも苦しんできたこの現象は、部分の重なりに住む障害類の
+計算である。修理は、この空間の変形として存在する。修理の不可能性もまた、
+同じ空間の性質として証明される。
 
-ソフトウェア工学にも同じ方法を適用する。テスト、contract、review、CI は局所的な対象を精密に扱う。
-一方、各部分が成立しているのに全体が貼り合わない問題は、部分の重なりに住む。
-そこでコードや module を直接追い続ける水準から、Atom、Law、site、sheaf、cover、cohomology の水準へ上がる。
-すると「局所は成立するが大域で壊れる」という難問は、貼り合わせと obstruction class の通常の計算になる。
+コードを一行ずつ追う水準に留まる限り、この現象は無数の個別事例である。
+Grothendieck は、難問を個別にこじ開ける代わりに理論の水位を上げ、問題が自然に
+解ける高さまで海を持ち上げた。la mer qui monte、上昇する海と呼ばれる方法である。
+この研究は、同じ海をソフトウェア工学に引く。水位を上げ、意味の空間に立てば、
+無数の個別事例は同じ幾何の、道具の揃った通常の計算である。そして、海が上がっても
+現場は沈まない。E2E の失敗、暗黙の interface への仮定、共有された状態。水位が
+上がるほど、現場の問題は座標を得て、定理になり、計測に降りる。
 
-Rising Sea は現場の問題を理論の中心に保つ。E2E failure、暗黙の interface assumption、共有 state、
-時間順序の不整合が、理論によって座標を持つ。座標を持つ対象は定理にでき、計測でき、tooling に渡せる。
+## SFT — 進化は意味の空間の中の運動である
 
-### なぜ代数幾何なのか
+software evolution は、意味の空間の中の運動である。
 
-software architecture では、複数の Law が同時に作用し、局所的に成立する構成を大域へ貼り合わせ、
-破れを修復しながら変形する。代数幾何は、この全体を一つの数学として扱う。
+開発とは、この空間を進む軌道である。developer、組織、AI、artifact が生む変更は、
+開発という一つの系に働く力である。レビュー、CI、governance は、運動を選ぶ制御である。
+並列な開発の分岐と合流、変更順序の効き方、安定化と崩壊、長期の保守、移行、終焉。
+これらは意味の空間の力学であり、**到達しうる未来は計算できる**。
 
-```text
-複数の Law             -> 連立方程式、ideal、lawful locus
-局所 context            -> site、cover、sheaf、section
-局所データの貼り合わせ -> descent、cohomology、obstruction
-repair と変更可能性     -> deformation、singularity、cotangent complex
-高次の整合              -> derived / stacky geometry、gerbe、higher obstruction
-時間発展                -> trace 上の geometry と SFT dynamics
-```
+AI は、多数の変更候補を短時間に生成し、software evolution の速度と探索範囲を
+拡大する。この生成は、意味の空間の中に力として配置され、governance はその
+制御理論である。速く書ける時代に問われるのは、どこへ向かって動いているかである。
+SFT は、その問いを感想ではなく力学の問題にする。
 
-この選択により、個別の設計問題ごとに新しい比喩や専用指標を発明する作業が、既存の数学的構造を使う作業へ変わる。
-Law の相互作用は ideal の演算になり、局所 repair の大域化は descent になり、その妨げは cohomology class になる。
-理論の水位が上がるほど、現場で別々に見えていた問題が、道具の揃った同じ幾何現象として現れる。
+## ArchSig — 定理のあるところ、計測がある
 
-### Atom が AAT の純粋性と可搬性を担う
+理論が語るすべての量は、現実のソースコードの上で有限に計測できる。
 
-AAT は Atom を primitive architectural fact として公理化する。Atom 公理系が architectural fact の存在と
-有限 composition を担い、Law はその上に方程式と零点条件を与える。この順序により、AAT の定義と定理は
-parser、AST、repository layout、特定の analyzer の実装から自由な純粋数学として成立する。
+ArchSig は、この研究の決定論的な計算核である。同じ入力からは必ず同じ計測結果を
+返し、理論の判定を、証拠と来歴(provenance)の付いた certificate として再現する。
+ArchMap が観測を記録し、LawPolicy が Law の選択を記録し、ArchSig が計算する。
+ArchView はその幾何を可視化し、FieldSig は計測を evolution の力学へ渡す。
 
-観測は、既にある Atom family を選択された reading で読む。ArchMap は source に根ざした有限な Atom evidence を
-記録し、LawPolicy はどの Law を選ぶかを記録し、ArchSig は両者から数学的な計測を行う。
-存在、観測、制度選択、計算の責務が分かれることで、どの段階の根拠から結論が生まれたかを追跡できる。
+定理のあるところ、計測がある。計測のあるところ、定理がある。理論だけが
+積み上がることも、計測だけが漂流することも、この研究は許さない。確率的な読解が
+観測を供給し、決定論的な計算が検証する。AI の読解力と数学の再現性は、
+この分業で両立する。
 
-Atom は、programming language や framework を越える共通 carrier でもある。Rust、Java、TypeScript、
-異なる ADL や repository structure から得た事実も、同じ Atom vocabulary へ写された後は、同じ Law、
-同じ obstruction、同じ theorem の対象になる。多言語 system も一つの architecture geometry として扱える。
+## Lean — 憲法の執行
 
-### 確率的な意味読解と決定論的な計測を分業する
+この文書の断定は、機械が検査できる形で証明される。
 
-semantic Atom の供給には、source の使われ方を読む能力が要る。観測と制度選択は、
-追跡可能な入力 artifact として扱う。
+Lean は、定義、仮定、定理、証明の連鎖を機械的に検査し、この憲法と理論のあいだの
+整合を執行する。証明は、最小限の仮定の上に立つ。置いた仮定は、放電し切る。
+放電されない仮定は、証明の顔をした宣言である。信じなくても確かめられる形に
+すること。それが、この文書で断定を名乗るための資格である。
 
-ArchSig は、その入力を受け取る決定論的な計算核である。同じ入力から同じ計測結果を返し、
-Rust の可搬性を活かした cross-platform build によって複数の OS と processor architecture へ届けられる。
-確率的な生成と決定論的な検証を直列につなぐことで、AI の読解力と数学的計測の再現性を両立する。
+## 禁忌
 
-## 研究計画の全体像
+この研究が滅びる仕方は知られている。次の九つを禁忌とする。
 
-このプロジェクトは、次の連鎖を一つの研究計画として進める。
+1. **向きの逆転** — ゴールの断定を、理論の現状に合わせて弱めてはならない。
+   断定した文を、直後の前提句で回収してはならない。理論が追いつけない断定は、
+   弱める対象ではなく、証明すべき負債である。
+2. **山頂の切り下げ** — 表現可能性の主張を弱めて、到達を宣言してはならない。
+   山頂は動かさない。登って越える。
+3. **反例の埋葬** — 反例と no-go(不可能の証明)を、失敗として葬ってはならない。
+   反証は山の形を教える一級の成果であり、反証されたゴールは、輪郭を得て資産に変わる。
+4. **看板の数学** — 幾何のない場所に、幾何の言葉を貼ってはならない。比喩に定理の
+   代役をさせてはならない。名前は、証明の後に来る。
+5. **恒真の定理化** — 定義どうしの言い換えに、定理の名を与えてはならない。
+   定理は、失敗しえた主張だけが名乗る。
+6. **指標の発明** — 構造から導かれない数を、並べてはならない。単一スコアを
+   複数スコアに割っても、空間から降りてこない数は同じ病である。すべての計測量は、
+   意味の空間から降りてくる。
+7. **理論と計測の離婚** — 計測に降りない定理を積んではならない。定理に根を
+   持たない計測を作ってはならない。どちらも、単独では健康に見える。
+8. **宣言の報告化** — この文書に、達成と進行状態を書き込んではならない。
+   到達点を記録した瞬間、憲法は前を向くのをやめる。
+9. **指摘ゼロの偶像化** — レビュー指摘ゼロを、目標にしてはならない。防衛的な
+   過剰設計は、指摘より深く理論の骨を折る。レビューは量ではなく配置である。
 
-```text
-architectural fact を言葉にする
-  -> Atom と Law から AAT geometry を構成する
-  -> Lean で数学的主張を形式化する
-  -> ArchMap / ArchSig で選択された有限 instance を計測する
-  -> SFT が architecture geometry を evolution dynamics へ接続する
-  -> trajectory、reachable future、feedback、governance を計算する
-```
+## つくる人へ
 
-各領域の役割は次のとおりである。
+> **新しい時代の、つくる人を支える理論にする。**
 
-- **AAT** は、software architecture を Atom と Law から立ち上がる代数幾何として構成する。
-- **Lean** は、AAT と SFT の定義、仮定、定理、比較写像、有限実例を形式的に検査する。
-- **ArchMap / ArchSig** は、選択された観測と法・方程式の有限 instance を計測可能な artifact にする。
-- **SFT** は、AAT geometry の上に変更、分岐、合流、力、安定性、観測、制御の力学を構成する。
-- **AI、review、CI、運用 feedback** は、開発系に作用する力と制御として SFT の研究対象になる。
+AI の時代が来た。エンジニアでなくても、ソフトウェアをつくれる時代である。
+しかし、間口が広がっただけで、ソフトウェアの本質的な難しさ、進化の険しさは
+消えていない。動くものは速くできる。それでも、局所では正しいのに全体で壊れ、
+変更は思わぬ場所へ波及し、進化は容易に道を失う。
 
-この全体計画を一文で表すと、次のようになる。
-
-> AAT の幾何によって software architecture を計算可能な対象にし、SFT の力学によって
-> software evolution の trajectory と reachable future を計算可能にする。
-
-## AAT：architecture を幾何にする
-
-AAT（Algebraic Architecture Theory / 代数幾何的アーキテクチャ論）の primitive は Atom である。
-Atom は、同じ意味を保つ最小単位となる、型付きの primitive architectural fact である。
-component、dependency、contract、effect、state、authority、responsibility、compensation、
-invariant、業務意味を、選択された vocabulary の中で同じ基礎単位として扱う。
-
-Law は Atom family の上に方程式、関係、零点条件を与える。複数の Law は連立方程式として働き、
-obstruction ideal と lawful locus を形成する。architecture context は site を構成し、局所データは
-sheaf と section になり、局所データの貼り合わせに残る差は cohomology class として現れる。
-
-```text
-Atom universe and axiom system
-  -> Atom family
-  -> architecture object
-  -> AAT site and sheaves
-  -> law algebra and obstruction ideal sheaf
-  -> lawful locus and architecture scheme
-  -> obstruction cohomology
-  -> repair, deformation, singularity
-  -> derived / stacky structure
-```
-
-AAT は、次の問いを同じ数学的基盤上で扱う。
-
-- どの architectural fact と Law から architecture object が構成されるか。
-- 複数の Law が同時に成立する lawful locus はどのような幾何か。
-- 局所的に成立する構成や repair は、大域的な対象へ貼り合うか。
-- 貼り合わせを妨げる obstruction は、どの cohomology class に現れるか。
-- 選択された operation による repair と deformation はどの方向に存在するか。
-- singularity、monodromy、higher / derived / stacky structure は architecture の何を記述するか。
-
-これにより、architecture review は、選択された reading の中で Law、局所性、obstruction、repair を
-共有し、構成と証拠に基づいて判断する診断へ進む。
-
-## Lean：数学的主張を検査可能にする
-
-Lean は、AAT と SFT の数学を declaration と proof に固定する。
-定理の statement、使用する仮定、comparison data の由来、witness の構成、依存する theorem chain を
-機械的に検査できる形にする。
-
-この研究では、数学本文の claim と Lean declaration を対応させる。形式化は、次の成果を担う。
-
-- Atom、site、sheaf、law algebra、cohomology、evolution data の定義を型として固定する。
-- 局所から大域への定理、比較定理、存在定理、零・非零判定を proof として固定する。
-- 仮定から結論までの proof-use と certificate provenance を明示する。
-- 有限実例と反例を、一般定理の statement と照合できる形にする。
-
-Formal theorem、仮定相対の推論、analytic reading、empirical hypothesis は、それぞれの根拠と
-有効な対象を明示して管理する。この区別により、数学、形式化、計測、実証研究が一つの研究系列として
-互いの成果を正確に受け渡せる。
-
-## ArchMap / ArchSig：幾何を有限計測へ接続する
-
-ArchMap は、選択された Atom vocabulary の中で観測した atom を記録する
-有限 artifact である。LawPolicy と MeasurementProfile は、選択された Law の reading と
-有限 measurement regime を固定する。
-
-ArchSig は、これらの入力から lawful locus、obstruction、coverage、witness を計算し、
-再検証可能な measurement artifact を生成する。ArchView はその幾何を可視化し、FieldSig は計測結果を
-SFT の evolution measurement と governance input へ渡す。
-
-```text
-selected architecture evidence
-  -> ArchMap
-  -> LawPolicy / MeasurementProfile
-  -> ArchSig measurement artifact
-  -> ArchView visualization
-  -> FieldSig handoff to SFT
-```
-
-tooling の価値は、理論が定めた有限な計算を実 artifact の evidence に接続し、review、CI、分析、
-実証研究で再利用できる certificate にすることにある。選択された入力と計測規約を artifact に保存することで、
-結論の provenance と再現可能性を保つ。
-
-## SFT：architecture geometry を進化の力学にする
-
-SFT（Software Field Theory / ソフトウェアの場の理論）は、AAT geometry の上に
-software evolution の dynamics を構成する。中心対象は、時間、architecture の状態、変更を生む源、
-運動を選ぶ方針、観測を組み合わせた開発系である。
-
-```text
-Development System
-  time:        branch と merge を含む development trace
-  space:       trace 上に配置された AAT geometry の族
-  sources:     developer、organization、AI、artifact が生む作用
-  policy:      review、CI、governance が選ぶ運動の規律
-  measurement: trajectory に沿って得られる計測の族
-```
-
-この構成により、PR、review、CI、AI proposal、operational feedback は、開発系に作用する力として読める。
-並列開発と merge は descent、変更順序の非可換性は curvature と holonomy、安定化方針は
-Lyapunov 型の量、長期的な保守・移行・終焉は trajectory の regime として研究対象になる。
-
-SFT は、次の問いを扱う。
-
-- artifact、practice、organization、AI は、どの変更を生成し、どの trajectory を選びやすくするか。
-- 並列な変更はどの条件で合流し、どの不整合が貼り合わせに残るか。
-- review、CI、policy、runtime feedback は、開発系をどのように観測し制御するか。
-- architecture の repairability と変形可能性は、reachable future をどう形づくるか。
-- 実際の outcome は計測と方針をどう更新し、次の software evolution へどう還流するか。
-
-## AI 駆動開発への接続
-
-AI agent は、多数の変更候補を短時間に生成し、software evolution の速度、分岐、探索範囲を拡大する。
-この研究は、その生成力を architecture geometry と development dynamics の中で扱う。
-
-AAT は proposal が作用する architecture object、Law、obstruction、repair を与える。
-SFT は proposal を開発系の力として配置し、その trajectory と合流可能性を扱う。
-ArchSig と FieldSig は選択された evidence を計測し、review と CI は観測結果に基づく制御を実行する。
-これらを接続することで、AI による生成を software evolution の理解と governance へ結びつける。
-
-## 現場・数学・形式化・計測を一つにつなぐ
-
-この研究は、software engineering の現場で生まれた問いを、数学、形式化、計測、進化理論へ縦に接続する。
-
-```text
-現場の architecture / evolution 問題
-  -> Atom と Law による問題設定
-  -> algebraic geometry と dynamics
-  -> theorem と Lean formalization
-  -> ArchSig による有限計測
-  -> empirical study と engineering feedback
-  -> 次の数学的問題
-```
-
-局所 repair の大域化、複数 Law の相互作用、並列変更の合流、AI proposal の選択、長期的な安定化といった
-現場の問いが、定義、定理、certificate、dataset を生む。得られた成果は再び現場の観測と実験へ戻り、
-次の theorem candidate と evolution model を生む。この循環が研究を進める engine である。
-
-## 詳細文書
-
-この文書は研究全体の長期的なビジョンと各領域の関係を示す入口である。
-数学的定義、形式化 status、tooling contract、進行中の研究状態は、それぞれの一次資料で管理する。
-
-1. [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md)
-2. [AAT / SFT Interface](sft/aat_interface.md)
-3. [ソフトウェアの場の理論](sft/software_field_theory.md)
-4. [Lean 形式化](../Formal/)
-5. [AAT Tooling Documentation](tool/README.md)
-6. [研究 GOAL](../research/goals/README.md)
-
-定理候補と完了条件は研究 GOAL、実行状態は GitHub Issue、証明済みの宣言は Lean source、
-tooling の挙動は実装・schema・test、実証結果は対応する dataset と report を正本とする。
+AAT、SFT、ArchSig は、統一された理論に基づく確かな道具を提供する。
+つくる人は、幾何を学ばなくてよい。理論が水面下で空間を支え、道具が判定と根拠を
+届ける。自分のつくったソフトウェアの意味と、その進化の行き先を、誰もが確かめられる
+ようにする。ソフトウェアをつくる人が増えるほど、この理論は多くの人を支える。

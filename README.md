@@ -19,6 +19,9 @@ SFT makes software evolution computable.
 ```
 
 The project's core philosophy is stated in the PHILOSOPHY section of [AGENTS.md](AGENTS.md).
+The research constitution is [docs/research_goal.md](docs/research_goal.md) (Japanese):
+it describes not where the research is, but where it commits to arrive. The theory
+grows to meet those words; the constitution is never weakened to match the present.
 The research-loop operating entry is [research/README.md](research/README.md), with
 GOAL definitions under [research/goals](research/goals/README.md).
 
@@ -58,7 +61,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## Reading Order
 
-1. [AGENTS.md PHILOSOPHY section](AGENTS.md)
+1. [Research constitution](docs/research_goal.md)
 2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
 3. [Software Field Theory](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)

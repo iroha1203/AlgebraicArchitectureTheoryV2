@@ -56,6 +56,9 @@
 
 ## モノレポの地図と guideline ルーティング
 
+研究がなりたい姿は [研究の全体目標(研究の憲法)](docs/research_goal.md) にある。
+理論はこの言葉に追いつくように進み、憲法をいまの理論に合わせて弱めることはしない。
+
 作業前に、触る領域の guideline と [workflow guideline](docs/workflow/guideline.md)
 (横断規律)を読む。
 
