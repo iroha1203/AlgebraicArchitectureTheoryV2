@@ -1337,67 +1337,6 @@ theorem whiskerFiberAut_fac
     (fiberAutThenPath data reselection automorphism path)
     (fiberAutThenPath_base_eq data reselection automorphism path).symm
 
-/-- Evaluate one oriented, whiskered raw-defect face at a 3-cell target. -/
-noncomputable def orientedFaceDefect
-    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : AdmissibleTransportData G U)
-    (reselection : EdgeReselection data.lift) {source target : G.Vertex}
-    (face : WhiskeredFace G.toFiniteTransportTwoPresentation source target) :
-    PackageFiberAut (data.lift.package target) :=
-  let transported := whiskerFiberAut data.lift reselection
-    (rawTwoCellDefect data reselection face.cell) face.outgoing
-  match face.orientation with
-  | .forward => transported
-  | .backward => transported⁻¹
-
-/--
-Ordered product of a typed oriented 2-cell pasting at its common target.
-
-The incoming prefix is used by the pasting indices to validate each complete
-rewrite.  The coefficient value already lives at the local face target, so only
-the outgoing suffix transports it to the common terminal fiber.
--/
-noncomputable def defectPastingProduct
-    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : AdmissibleTransportData G U)
-    (reselection : EdgeReselection data.lift) {source target : G.Vertex}
-    {before finish : G.Path source target}
-    (pasting : RewritePasting G.toFiniteTransportTwoPresentation before finish) :
-    PackageFiberAut (data.lift.package target) :=
-  match pasting with
-  | .nil _ => 1
-  | .cons step tail =>
-      orientedFaceDefect data reselection step.face *
-        defectPastingProduct data reselection tail
-
-/--
-The explicit G-106 syzygy direction hypothesis.  It consists only of the local
-3-cell boundary equations declared by the finite presentation and does not
-mention global orbit vanishing or coherentizability.
--/
-def SyzygyCompatible
-    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : AdmissibleTransportData G U)
-    (reselection : EdgeReselection data.lift) : Prop :=
-  ∀ cell : G.ThreeCell,
-    defectPastingProduct data reselection (G.threeLeft cell) =
-      defectPastingProduct data reselection (G.threeRight cell)
-
-/--
-Under the declared syzygy direction hypothesis, the unconditional raw defect
-satisfies the corresponding 3-cell cocycle equation.  No cocycle claim is made
-from admissibility alone.
--/
-theorem rawDefect_cocycle_of_syzygy
-    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : AdmissibleTransportData G U)
-    (reselection : EdgeReselection data.lift)
-    (compatible : SyzygyCompatible data reselection)
-    (cell : G.ThreeCell) :
-    defectPastingProduct data reselection (G.threeLeft cell) =
-      defectPastingProduct data reselection (G.threeRight cell) :=
-  compatible cell
-
 end AAT.AG.TransportCoherence
 
 #assert_standard_axioms_only AAT.AG.TransportCoherence

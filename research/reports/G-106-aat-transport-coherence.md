@@ -22,6 +22,13 @@ report はそれらを再定義しない。target-theorem mode なので SCORE �
 J0 は J1 の canonical comparator `φ` の provenance を与える。J2 は J1、J3 は
 J1--J2、J4 は J1--J3 に依存する。
 
+> **台帳補正:** Cycle 4 の非可換 witness 構成中に、Cycle 2 の旧
+> `orientedFaceDefect` / `defectPastingProduct` が複数 face の canonical
+> factors を保持せず、backward face の積順も一般には正しくないことを検出した。
+> Cycle 2 の finite geometry、raw 2-cell defect、edge reselection、orbit は
+> そのまま有効だが、3-cell evaluator と syzygy theorem は Cycle 4 の
+> `PastingObstruction.lean` にある route-level 定義と proof に置き換える。
+
 ## Cycle 1 — canonical composite transport and adjacent coherence
 
 ### Target cycle selection
@@ -637,4 +644,211 @@ audits:
   package 依存方向、manifest、`git diff --check`: clean
 - fixed-head 4 lane review: 4/4 `No major findings`
 - required CI: 7/7 success
+- Research package 全体 build: hard rule に従い未実行
+
+## Cycle 4 — noncommutative pasting repair and finite closed witnesses
+
+### Target cycle selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-106-aat-transport-coherence
+cycle: 4
+goal_blob_sha: 2ad51d10ece5d5f18a10c1d9e824296fb5c21a65
+base_oid: 37cfa1ab46f0d6f0fd4c1807df798b7688ed5584
+tracking_issue: 3998
+report_path: research/reports/G-106-aat-transport-coherence.md
+selection:
+  proof_state_ref: issue #3998 Cycle 3 merge comment; GOAL target (iv); accepted J1 typed presentation and J2 vanishing equivalence
+  proof_dag_predecessors:
+    - Cycle 1 G-101-generated canonical comparison and coherence
+    - Cycle 2 typed finite presentation, raw 2-cell defect, and edge reselection orbit
+    - Cycle 3 transportObstructionVanishes_iff_coherentizable
+  proof_obligation: repair the noncommutative 3-cell pasting evaluator and construct over FiniteModel.carrier both a closed double-2-cell diamond and a three-reading triangle whose obstructions remain nontrivial throughout the allowed edge-reselection orbit
+  selection_reason: the two finite witnesses discharge J3, while route-level authored/canonical composition is required to prevent a false positive caused by multiplying local raw defects in the wrong noncommutative order
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/TransportCoherence/PastingObstruction.lean
+    - research/lean/ResearchLean/AG/TransportCoherence/FiniteWitnesses.lean
+    - pastingComparator
+    - canonicalPastingComparator_unique
+    - closedPastingRawObstruction_eq_conjugate
+    - finiteDoubleDiamond_not_coherentizable
+    - finiteTransportTriangle_not_coherentizable
+  risks:
+    - Aut multiplication reverses underlying categorical composition, so temporal order must be tail times head
+    - a product of per-face raw defects loses intervening canonical factors in the noncommutative case
+    - backward orientation must invert authored and canonical comparators separately before taking their quotient
+    - the witness must use genuine nonidentity transport and nonempty 3-cell geometry
+    - pairwise translation must be explicitly realizable even though no common reselection solves all equations
+  unchecked:
+    - fixed-head independent review and CI
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: route comparators now compose authored and G-101 canonical factors separately in temporal order; the closed raw obstruction is proved conjugate to the authored route mismatch; explicit double-diamond and noncommutative three-reading presentations over FiniteModel.carrier have nonidentity reselection-invariant conjugacy classes and cannot be coherentized
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/TransportCoherence/PastingObstruction.lean
+    - TwoCellComparatorFamily
+    - orientedFaceComparator
+    - orientedFaceAuthoredComparator
+    - orientedFaceCanonicalComparator
+    - orientedFaceDefect
+    - pastingComparator
+    - authoredPastingComparator
+    - canonicalPastingComparator
+    - pastingRawDefect
+    - defectPastingProduct
+    - canonicalTwoCellComparator_inv_fac
+    - orientedFaceCanonicalComparator_fac
+    - rewriteStepCanonicalComparator_fac
+    - canonicalPastingComparator_fac
+    - canonicalPastingComparator_unique
+    - syzygyCompatible_of_coherentAt
+    - rawDefect_cocycle_of_syzygy
+    - closedPastingRawObstruction
+    - authoredPastingMismatch
+    - closedPastingRawObstruction_eq_conjugate
+    - closedPastingRawObstruction_eq_one_iff
+    - closedPastingObstructionClass
+    - closedPastingObstructionClass_eq_authoredMismatchClass
+    - research/lean/ResearchLean/AG/TransportCoherence/FiniteWitnesses.lean
+    - finiteWitnessSignature
+    - finiteWitnessTransportHom_atomEquiv_ne_refl
+    - finiteWitnessFiberPermutation
+    - finiteWitnessSwap01
+    - finiteWitnessSwap12
+    - finiteWitness_swaps_do_not_commute
+    - doubleDiamondPresentation
+    - finiteDoubleDiamond_face_coherent
+    - finiteDoubleDiamond_not_coherentizable
+    - finiteDoubleDiamond_obstruction_does_not_vanish
+    - finiteDoubleDiamond_class_reselection_invariant
+    - transportTrianglePresentation
+    - finiteTransportTriangle_pairwise_coherent
+    - finiteTransportTriangle_edge_atomEquiv_ne_refl
+    - finiteTransportTriangle_not_coherentizable
+    - finiteTransportTriangle_obstruction_does_not_vanish
+    - finiteTransportTriangle_class_reselection_invariant
+  evidence:
+    - pastingComparator recurses as tail times head, matching the underlying categorical execution order of mathlib Aut multiplication
+    - authored and canonical oriented face comparators are inverted separately for backward faces and are composed independently before forming their route-level quotient
+    - canonicalPastingComparator_fac is proved by induction over the indexed RewritePasting; canonicalPastingComparator_unique then follows from the same G-101 strongly cocartesian extensionality as J0
+    - rawDefect_cocycle_of_syzygy is no longer a restatement of its premise: authored route equality and independently proved canonical route uniqueness jointly imply raw route equality
+    - closedPastingRawObstruction_eq_conjugate identifies every closed raw value with a conjugate of the authored route mismatch, and the resulting ConjClasses value is its coordinate-free class
+    - finiteWitnessSignature has three selected Fin 3 axes whose coordinates record the axis itself; adjacent axis permutations therefore act on used reading data
+    - every witness edge is the existing finiteTransportExactDoctrineHom canonical lift and has a proved nonidentity Atom equivalence
+    - the double diamond has two distinct 2-cells on the same two one-edge paths and one genuine 3-cell comparing their one-step pastings
+    - each diamond face is coherent under its own explicit edge reselection, but simultaneous coherence would identify identity with finiteWitnessSwap01
+    - the triangle has three parallel edges, c01/c12/c02 pairwise cells, and one genuine 3-cell comparing c01 followed by c12 with c02
+    - each triangle pair is coherent under an explicit pair-specific reselection, while simultaneous coherence would force swap12 times swap01 to equal swap01 times swap12
+    - kernel computation on Fin 3 proves the adjacent swaps do not commute; this contradiction contains no assumed nonvanishing or coherence certificate
+    - J2 converts both independently proved non-coherentizability results into orbit nonvanishing
+  claim_mapping:
+    theorem_names:
+      - closedPastingRawObstruction_eq_conjugate
+      - closedPastingObstructionClass_eq_authoredMismatchClass
+      - finiteDoubleDiamond_not_coherentizable
+      - finiteDoubleDiamond_obstruction_does_not_vanish
+      - finiteDoubleDiamond_class_reselection_invariant
+      - finiteTransportTriangle_pairwise_coherent
+      - finiteTransportTriangle_not_coherentizable
+      - finiteTransportTriangle_obstruction_does_not_vanish
+      - finiteTransportTriangle_class_reselection_invariant
+    source_labels:
+      - GOAL target theorem (ii) syzygy-conditional noncommutative cocycle
+      - GOAL target theorem (iv-b) closed diamond witness
+      - GOAL target theorem (iv-c) three-reading mediation witness
+      - GOAL fixed fact (5) closed witness shape
+      - GOAL route-integrity and dullness gates
+    conjuncts:
+      - complete typed pastings preserve noncommutative comparator order and canonical factors
+      - a closed double-2-cell diamond has a nontrivial conjugacy class at every allowed edge coordinate
+      - all three pairwise translations in the triangle are individually realizable
+      - no single edge coordinate makes the three pairwise translations jointly coherent
+      - the triangle class is nontrivial and independent of edge reselection
+    undischarged_assumptions:
+      - SyzygyCompatible remains only the GOAL-authorized direction hypothesis for positive cocycle statements
+    acceptance_point: both nonvanishing results are generated from explicit finite geometry, nonidentity strongly cocartesian transport, concrete S3 endpoint automorphisms, and J1-J2 theorems; no coherence or vanishing field is stored
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - noncommutative typed-pasting evaluator with canonical-factor preservation
+      - syzygy-conditional route cocycle theorem
+      - closed raw obstruction and conjugacy-class extraction
+      - double-diamond orbit-nonvanishing witness over FiniteModel.carrier
+      - pairwise-realizable but jointly incoherent three-reading witness over FiniteModel.carrier
+    remaining:
+      - specialized diamond and triangle obstruction agreement theorems required by J4
+  certificate_provenance:
+    discharged:
+      - witness edges are canonical transportAlongHom values for the reviewed finiteTransportExactDoctrineHom and inherit strong cocartesianness
+      - endpoint permutations are constructed as explicit target-package automorphisms with identity base and visible Fin 3 axis action
+      - route canonical comparators and their uniqueness are generated from G-101 factorization rather than supplied as witness fields
+    unresolved: []
+  proof_use:
+    used:
+      - typed RewritePasting adjacency determines the two route products and their temporal order
+      - canonical factorization for every face, including backward orientation, drives the route induction
+      - the sole 3-cell in each witness compares nonempty declared pastings with common start and finish paths
+      - separate pairwise reselections prove local translator realizability
+      - concrete adjacent permutations and their coordinate action prove the noncommutative inequality
+      - J2 general equivalence turns failure of simultaneous CoherentAt into orbit nonvanishing
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused checks passed for PastingObstruction.lean and FiniteWitnesses.lean
+    - targeted module builds passed for PastingObstruction with 1729 jobs and FiniteWitnesses with 1740 jobs
+    - namespace audits report 30 PastingObstruction declarations and 151 cumulative FiniteWitnesses declarations with standard axioms only
+    - direct axiom audit covered all 40 report-named declarations; only propext, Classical.choice, and Quot.sound occur
+    - PastingObstruction source SHA-256 1d90bffbacc02537411fa289aadb19ffb6d1dc1cc312971ff42cfe90351302fe
+    - FiniteWitnesses source SHA-256 36138e48fd890d2bc4e96d07babf753cbeb4b761f5f5095a7af046a976c2d97b
+    - placeholder, hidden and bidirectional Unicode, privacy, import direction, package direction, manifest, and git diff checks passed
+  review_history: []
+  blocking_findings: []
+  next_obligation: prove specialized raw obstruction, conjugacy class, and nonvanishing statements agree with the unified route-level definitions for both finite witnesses
+```
+
+### Cycle candidate spine declarations
+
+- `pastingComparator`
+- `canonicalPastingComparator_fac`
+- `canonicalPastingComparator_unique`
+- `rawDefect_cocycle_of_syzygy`
+- `closedPastingRawObstruction_eq_conjugate`
+- `closedPastingObstructionClass_eq_authoredMismatchClass`
+- `finiteWitness_swaps_do_not_commute`
+- `doubleDiamondPresentation`
+- `finiteDoubleDiamond_face_coherent`
+- `finiteDoubleDiamond_not_coherentizable`
+- `finiteDoubleDiamond_obstruction_does_not_vanish`
+- `finiteDoubleDiamond_class_reselection_invariant`
+- `transportTrianglePresentation`
+- `finiteTransportTriangle_pairwise_coherent`
+- `finiteTransportTriangle_not_coherentizable`
+- `finiteTransportTriangle_obstruction_does_not_vanish`
+- `finiteTransportTriangle_class_reselection_invariant`
+
+### Verification checkpoint
+
+- focused check: `PastingObstruction.lean` pass、`30` declarations、standard axioms only
+- focused check: `FiniteWitnesses.lean` pass、`151` cumulative declarations、standard axioms only
+- targeted module build: `PastingObstruction` (`1729` jobs) と
+  `FiniteWitnesses` (`1740` jobs) pass
+- report 記載40 declarations の direct `#print axioms`:
+  `propext`、`Classical.choice`、`Quot.sound` のみ
+- source SHA-256:
+  `PastingObstruction.lean` =
+  `1d90bffbacc02537411fa289aadb19ffb6d1dc1cc312971ff42cfe90351302fe`、
+  `FiniteWitnesses.lean` =
+  `36138e48fd890d2bc4e96d07babf753cbeb4b761f5f5095a7af046a976c2d97b`
+- placeholder、hidden / bidirectional Unicode、privacy、Research import 方向、
+  package 依存方向、manifest、`git diff --check`: clean
+- fixed-head 4 lane review、required CI、merge: pending
 - Research package 全体 build: hard rule に従い未実行
