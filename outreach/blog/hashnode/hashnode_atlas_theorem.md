@@ -10,8 +10,6 @@
 - The agent **refuted its own target statement four times** before the summit. A no-go argument then showed that no shape-only condition can ever suffice, forcing the coefficient definition itself to be rebuilt. Five working days, 31 modules / 13,028 lines of Lean, four-lane adversarial review.
 - The article walks from pixel art and the sampling theorem, through the four refutations and the discovered condition C, to what this means for code review in the era of AI-written code.
 
-![Cover: an oil portrait and its pixel-art counterpart, joined by the comparison map H¹(fine) ≅ H¹(coarse)](../assets/atlas_theorem_cover.png)
-
 A photorealistic portrait and a 16×16 pixel-art sprite can show you the same face. Comics theorist Scott McCloud called this **amplification through simplification**: removing lines doesn't discard information, it sharpens the essence.
 
 Can we say the same about software architecture diagnostics? **Look at your system at service granularity or at module granularity, and the same bugs show up in the same places** — not as a feeling, but as a proven guarantee.
@@ -61,25 +59,25 @@ In Lean, this is pinned down as a bundle of five claims: (i) the construction of
 
 ### The stage — nerves, readings, coefficients
 
-An observation of an architecture is represented as a **nerve**, a finite combinatorial structure. The vertices are **charts**: a part together with a declaration of the region it covers (its **support**). A dependency or overlap between two charts is an **edge**; a declaration that three charts have been checked consistent is a **face** (a triangle). The axioms demanded of a nerve are minimal: each face's three edges (its boundary triple) must meet at matching endpoints — for some charts `A, B, C` they line up as `e₀ : A → B`, `e₁ : A → C`, `e₂ : B → C`. That is all.
+An observation of an architecture is represented as a **nerve**, a finite combinatorial structure. The vertices are **charts**: a part together with a declaration of the region it covers (its **support**). A dependency or overlap between two charts is an **edge**; a declaration that three charts have been checked consistent is a **face** (a triangle). The axioms demanded of a nerve are minimal: each face's three edges (its boundary triple) must meet at matching endpoints — for some charts \(A, B, C\) they line up as \(e_0 : A \to B\), \(e_1 : A \to C\), \(e_2 : B \to C\). That is all.
 
-The choice of resolution is a **reading**. When one reading is a coarsening of another, a **factor map `π`** sending fine values to coarse values exists uniquely (the coarseness order and this factorization are imported wholesale from a theorem proved earlier in the same repository). The fine and coarse nerves are connected by a **nerve morphism `φ`** whose chart / edge / face correspondences commute with endpoints and boundaries. This is the formalization of "the sprite corresponds to the original portrait."
+The choice of resolution is a **reading**. When one reading is a coarsening of another, a **factor map** \(\pi\) sending fine values to coarse values exists uniquely (the coarseness order and this factorization are imported wholesale from a theorem proved earlier in the same repository). The fine and coarse nerves are connected by a **nerve morphism** \(\varphi\) whose chart / edge / face correspondences commute with endpoints and boundaries. This is the formalization of "the sprite corresponds to the original portrait."
 
 Coefficients are generated from laws. Each law in the law family is pushed through the reading (**descended**), and from the descended evaluation values, a generation contract called K0 / K1 (given in full below) builds a coefficient space over each cell, assembling a three-term complex:
 
-```
-C⁰ (on charts) --d₀--> C¹ (on edges) --d₁--> C² (on faces)
-```
+$$
+C^0\ \text{(on charts)} \xrightarrow{\ d_0\ } C^1\ \text{(on edges)} \xrightarrow{\ d_1\ } C^2\ \text{(on faces)}
+$$
 
-`d₀` takes "the difference of values at an edge's two endpoints"; `d₁` takes "the alternating sum over a face's three edges, `e₀ − e₁ + e₂`." Since `d₁ ∘ d₀ = 0` (this too is a theorem derived from the endpoint matching of faces, not an axiom), the **first cohomology**
+\(d_0\) takes "the difference of values at an edge's two endpoints"; \(d_1\) takes "the alternating sum over a face's three edges, \(e_0 - e_1 + e_2\)." Since \(d_1 \circ d_0 = 0\) (this too is a theorem derived from the endpoint matching of faces, not an axiom), the **first cohomology**
 
-```
-H¹ = (1-cochains killed by d₁) / (image of d₀)
-```
+$$
+H^1 = \frac{\text{1-cochains killed by } d_1}{\text{image of } d_0}
+$$
 
-is defined. This is what "diagnostic class (fingerprint)" means. The intuition: every pair of adjacent parts is locally consistent, yet **going around a loop, the books don't balance**. Only that "twist" survives the quotient into `H¹`. That is why a defect's fingerprint lives not inside any single file but in the gluing structure.
+is defined. This is what "diagnostic class (fingerprint)" means. The intuition: every pair of adjacent parts is locally consistent, yet **going around a loop, the books don't balance**. Only that "twist" survives the quotient into \(H^1\). That is why a defect's fingerprint lives not inside any single file but in the gluing structure.
 
-Finally, the **comparison map**. From the nerve morphism `φ` and the descent-compatibility of the coefficients, a map of complexes (a cochain map) arises, inducing a map between the `H¹`s. The core claim (ii) of the Atlas theorem says: **under condition C, this induced map is a bijection**. Surjectivity means "coarsening hides no diagnostics"; injectivity means "coarsening fabricates no diagnostics."
+Finally, the **comparison map**. From the nerve morphism \(\varphi\) and the descent-compatibility of the coefficients, a map of complexes (a cochain map) arises, inducing a map between the \(H^1\)s. The core claim (ii) of the Atlas theorem says: **under condition C, this induced map is a bijection**. Surjectivity means "coarsening hides no diagnostics"; injectivity means "coarsening fabricates no diagnostics."
 
 The pixel-art metaphor from the opening is not decoration. It matches this structure part for part.
 
@@ -158,29 +156,35 @@ The coefficient side first.
 
 **K1 (derived supports)**. Only charts may declare a support (a covered region). An edge's support is derived as the intersection of its two endpoint charts' supports; a face's support as the intersection of its three boundary edges'. Allow independent support declarations per cell, and the no-go's "support hole" — zeroing out just one edge's coefficients by hand — becomes constructible. So the freedom to declare is itself removed.
 
-**K0 (generated coefficients)**. The coefficient field is fixed to `ℚ`. Each cell's coefficient coordinates are pairs `(law, value)`, where the values are the **distinct** values the descended law evaluation takes on the cell's support, each with multiplicity one. Indexing by occurrence counts or support sizes is not permitted — this kills the no-go's "duplication." The spaces in each degree are
+**K0 (generated coefficients)**. The coefficient field is fixed to \(\mathbb{Q}\). Each cell's coefficient coordinates are pairs \((\text{law}, \text{value})\), where the values are the **distinct** values the descended law evaluation takes on the cell's support, each with multiplicity one. Indexing by occurrence counts or support sizes is not permitted — this kills the no-go's "duplication." The spaces in each degree are
 
-```
-C⁰ = ℚ-valued functions on {(chart, law, value)}
-C¹ = ℚ-valued functions on {(edge, law, value)}
-C² = ℚ-valued functions on {(face, law, value)}
-```
+$$
+C^0 = \mathbb{Q}\text{-valued functions on } \{(\text{chart}, \text{law}, \text{value})\}
+$$
 
-and the differentials are generated coordinate-wise: the `(edge, law, value)` component of `d₀` is the difference of the two endpoint charts' matching `(law, value)` components; the `(face, law, value)` component of `d₁` is the alternating sum `e₀ − e₁ + e₂` over the boundary triple. Matching labels correspond identically; absent labels give zero. **No other coordinate correspondence is generated.** `d₁ ∘ d₀ = 0` is derived as a theorem by per-label computation from the endpoint matching of faces, never assumed. The comparison map's coefficient part is likewise not declared but generated, as the identity on `(law, value)` from the `π`-compatibility of descent. Adding, duplicating, or omitting coordinates is forbidden across the board. The word "contract" is meant literally: the substance of this language is how little it lets you declare.
+$$
+C^1 = \mathbb{Q}\text{-valued functions on } \{(\text{edge}, \text{law}, \text{value})\}
+$$
 
-**Coordinate subnerves and relativization**. For each coefficient coordinate `(law, value)`, the cells carrying that coordinate (the cells on whose derived support the descended evaluation takes that value) form a sub-nerve, the **coordinate subnerve**. Under K0/K1, `H¹` and the comparison map **decompose as direct sums** over coordinates, and each block reduces to a one-dimensional constant-coefficient comparison over its subnerve. This decomposition is the mathematical justification for relativizing: the geometric conditions C1–C4 need only be imposed per coordinate subnerve, while the global C0, C5, C6 are imposed on the whole nerve.
+$$
+C^2 = \mathbb{Q}\text{-valued functions on } \{(\text{face}, \text{law}, \text{value})\}
+$$
+
+and the differentials are generated coordinate-wise: the \((\text{edge}, \text{law}, \text{value})\) component of \(d_0\) is the difference of the two endpoint charts' matching \((\text{law}, \text{value})\) components; the \((\text{face}, \text{law}, \text{value})\) component of \(d_1\) is the alternating sum \(e_0 - e_1 + e_2\) over the boundary triple. Matching labels correspond identically; absent labels give zero. **No other coordinate correspondence is generated.** \(d_1 \circ d_0 = 0\) is derived as a theorem by per-label computation from the endpoint matching of faces, never assumed. The comparison map's coefficient part is likewise not declared but generated, as the identity on \((\text{law}, \text{value})\) from the \(\pi\)-compatibility of descent. Adding, duplicating, or omitting coordinates is forbidden across the board. The word "contract" is meant literally: the substance of this language is how little it lets you declare.
+
+**Coordinate subnerves and relativization**. For each coefficient coordinate \((\text{law}, \text{value})\), the cells carrying that coordinate (the cells on whose derived support the descended evaluation takes that value) form a sub-nerve, the **coordinate subnerve**. Under K0/K1, \(H^1\) and the comparison map **decompose as direct sums** over coordinates, and each block reduces to a one-dimensional constant-coefficient comparison over its subnerve. This decomposition is the mathematical justification for relativizing: the geometric conditions C1–C4 need only be imposed per coordinate subnerve, while the global C0, C5, C6 are imposed on the whole nerve.
 
 With that, condition C in full:
 
-- **C0 (cover-image agreement)**: each coarse chart's support equals the union of the `π`-images of the supports of the fine charts in its fiber
+- **C0 (cover-image agreement)**: each coarse chart's support equals the union of the \(\pi\)-images of the supports of the fine charts in its fiber
 - **C1 (fiber connectivity)**: in each coordinate subnerve, each coarse chart's fiber graph (the fine charts mapping to it, plus the fine edges staying within the fiber) is nonempty and connected
 - **C2 (edge-lift existence)**: in each coordinate subnerve, every coarse edge has a lift within the subnerve
-- **C3 (local fiber acyclicity)**: in each coordinate subnerve, every rational 1-cycle on a fiber graph is spanned by `ℚ`-linear combinations of boundaries of fine faces whose boundary edges all lie in the fiber. A local condition, equivalent to the vanishing of the fiber's first homology
+- **C3 (local fiber acyclicity)**: in each coordinate subnerve, every rational 1-cycle on a fiber graph is spanned by \(\mathbb{Q}\)-linear combinations of boundaries of fine faces whose boundary edges all lie in the fiber. A local condition, equivalent to the vanishing of the fiber's first homology
 - **C4 (coarse-face lift)**: in each coordinate subnerve, every coarse face has at least one fine face mapping to it — **the spoils of refutation 1**
-- **C5 (unique coarse-edge lift)**: each coarse edge's `φ`-fiber has at most one element; with C2, exactly one — **the spoils of refutation 2**
+- **C5 (unique coarse-edge lift)**: each coarse edge's \(\varphi\)-fiber has at most one element; with C2, exactly one — **the spoils of refutation 2**
 - **C6 (self-loop endpoint reflection)**: every fine edge mapping to a coarse self-loop is itself a self-loop — **the spoils of refutation 3**
 
-Finally, the condition list carries a **prohibition rule**. C may not contain any clause equivalent — or close to equivalent, even one-directionally — to "the comparison map is an isomorphism" or "one side's `H¹` vanishes." That would smuggle the conclusion into the hypotheses. The single explicit exception is C3, a local condition that sees only the internal data of individual fibers, the analogue of the Leray-type local acyclicity assumptions imposed on covers in classical Čech theory. The boundary between legitimate assumption and smuggling is itself fixed as part of the condition list — because the prover is an AI agent. Escape routes are closed at the specification.
+Finally, the condition list carries a **prohibition rule**. C may not contain any clause equivalent — or close to equivalent, even one-directionally — to "the comparison map is an isomorphism" or "one side's \(H^1\) vanishes." That would smuggle the conclusion into the hypotheses. The single explicit exception is C3, a local condition that sees only the internal data of individual fibers, the analogue of the Leray-type local acyclicity assumptions imposed on covers in classical Čech theory. The boundary between legitimate assumption and smuggling is itself fixed as part of the condition list — because the prover is an AI agent. Escape routes are closed at the specification.
 
 ## Refutation 4, and the summit
 
@@ -190,7 +194,7 @@ From there it was a straight run. Restarted once more after the repair, the loop
 
 ### The route to the top — structure of the proof
 
-**Stage one: block decomposition.** Under the K0/K1 generation rules, prove as theorems that the complexes, `H¹`, and the comparison map decompose as direct sums over the coefficient coordinates `(law, value)`. Each block reduces to a **one-dimensional constant-coefficient** comparison over its coordinate subnerve. The global problem splits into a direct sum of the simplest possible pieces. From here on, attack block by block.
+**Stage one: block decomposition.** Under the K0/K1 generation rules, prove as theorems that the complexes, \(H^1\), and the comparison map decompose as direct sums over the coefficient coordinates \((\text{law}, \text{value})\). Each block reduces to a **one-dimensional constant-coefficient** comparison over its coordinate subnerve. The global problem splits into a direct sum of the simplest possible pieces. From here on, attack block by block.
 
 **Stage two: injectivity.** Analyze the kernel of the block comparison map and show that a nonzero coarse diagnostic class cannot die on the fine side. This is where C6 earns its keep — it closes the accident path found by refutation 3, where a nonzero coarse class evaporates below. (Refutation 4's hereditarity works earlier still, underwriting the very constructibility of the comparison map.)
 
