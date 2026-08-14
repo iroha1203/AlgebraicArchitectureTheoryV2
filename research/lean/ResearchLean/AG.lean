@@ -309,6 +309,7 @@ import ResearchLean.AG.StructuralCover.GeneratedH1Vanishing
 import ResearchLean.AG.StructuralCover.NerveGeneration
 import ResearchLean.AG.StructuralCover.RestrictionComparison
 import ResearchLean.AG.StructuralCover.StructuralLocalization
+import ResearchLean.AG.TransportCoherence.CanonicalCoherence
 import ResearchLean.AG.TwoPhase.DependencyProfile
 import ResearchLean.AG.TwoPhase.CoefficientComplex
 import ResearchLean.AG.TwoPhase.CohomologyComparison

@@ -305,6 +305,7 @@ ResearchLean.AG.StructuralCover.GeneratedH1Vanishing	ResearchLean/AG/StructuralC
 ResearchLean.AG.StructuralCover.NerveGeneration	ResearchLean/AG/StructuralCover/NerveGeneration.lean
 ResearchLean.AG.StructuralCover.RestrictionComparison	ResearchLean/AG/StructuralCover/RestrictionComparison.lean
 ResearchLean.AG.StructuralCover.StructuralLocalization	ResearchLean/AG/StructuralCover/StructuralLocalization.lean
+ResearchLean.AG.TransportCoherence.CanonicalCoherence	ResearchLean/AG/TransportCoherence/CanonicalCoherence.lean
 ResearchLean.AG.TwoPhase.DependencyProfile	ResearchLean/AG/TwoPhase/DependencyProfile.lean
 ResearchLean.AG.TwoPhase.CoefficientComplex	ResearchLean/AG/TwoPhase/CoefficientComplex.lean
 ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/CohomologyComparison.lean
