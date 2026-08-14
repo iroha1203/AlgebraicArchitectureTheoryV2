@@ -681,8 +681,7 @@ selection:
     - backward orientation must invert authored and canonical comparators separately before taking their quotient
     - the witness must use genuine nonidentity transport and nonempty 3-cell geometry
     - pairwise translation must be explicitly realizable even though no common reselection solves all equations
-  unchecked:
-    - fixed-head independent review and CI
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: route comparators now compose authored and G-101 canonical factors separately in temporal order; the closed raw obstruction is proved conjugate to the authored route mismatch; explicit double-diamond and noncommutative three-reading presentations over FiniteModel.carrier have nonidentity reselection-invariant conjugacy classes and cannot be coherentized
@@ -816,9 +815,11 @@ audits:
     - PastingObstruction source SHA-256 43473c7bbb08992967976c54c56ebefbd55c09214d2eb33a9e8399a51a5a0bb5
     - FiniteWitnesses source SHA-256 36138e48fd890d2bc4e96d07babf753cbeb4b761f5f5095a7af046a976c2d97b
     - placeholder, hidden and bidirectional Unicode, privacy, import direction, package direction, manifest, and git diff checks passed
+    - required PR CI passed 7/7 at corrected report head c6d2916aa33be497bb048870072216499c3acba2
   review_history:
     - content head dcdf01a85f4efbf24406884750d379062ad32915 received No major findings from all four independent mathematics and Lean lanes
     - reviewers found only documentation and ledger omissions: generic class wording was narrowed, the moved evaluator was named in the FinitePresentation header, and the three class-nonvanishing declarations were added to the report mapping
+    - corrected head c6d2916aa33be497bb048870072216499c3acba2 received 4/4 direct correspondence Pass; reviewers confirmed that no Lean declaration, proof, import, or GOAL statement changed and that every finding was resolved without claim broadening
   blocking_findings: []
   next_obligation: prove specialized raw obstruction, conjugacy class, and nonvanishing statements agree with the unified route-level definitions for both finite witnesses
 ```
@@ -863,5 +864,8 @@ audits:
   package 依存方向、manifest、`git diff --check`: clean
 - content head `dcdf01a85f4efbf24406884750d379062ad32915` の fixed-head
   4 lane review: 4/4 `No major findings`
-- finding 限定の docs / ledger 補正への直接対応、required CI、merge: pending
+- corrected report head `c6d2916aa33be497bb048870072216499c3acba2` の
+  finding 限定直接対応 review: 4/4 `Pass`
+- PR #4007 required CI: 7/7 success
+- merge: pending
 - Research package 全体 build: hard rule に従い未実行
