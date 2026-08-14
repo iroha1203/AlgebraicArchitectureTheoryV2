@@ -1,100 +1,56 @@
-# Target Theorem Loop Cycle Ledger
+# Target Cycle Ledger
 
-## Target Cycle Result
+rootは実装前に`selection`を埋め、結果と監査を追記して実装・reportと同じPRに収録する。これはproposalであり、受理判定は固定headの標準PR reviewに置く。
 
-````text
-Target theorem cycle result
-
-target theorem: <name from GOAL card>
-cycle: <N>
-decision: <approve | reject>
-result type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
-proof obligation: <one obligation chosen by T1 selector>
-proof obligation delta: <what changed>
-completion candidate: <yes | no>
-
-Evidence:
-- <Lean theorem / theorem package / finite witness / concrete certificate / blocker evidence>
-
-Premise delta:
-- discharged: <premise list or none>
-- remaining: <premise list or none>
-
-Certificate provenance:
-- discharged: <certificate / witness / construction provenance or none>
-- unresolved: <explicit certificate / field / membership still assumed or none>
-
-Proof-use audit:
-- <main theorem premise use / unused premise finding>
-
-Structure-field escape audit:
-- <field-content finding or none>
-
-Route-integrity audit:
-- <input-boundary construction / canonical-free property / nonvacuity / target-fitting finding>
-
-Cheat-route audit:
-- target-fitting construction: <none-found | found | cannot-determine>
-- vacuity or degeneracy: <none-found | found | cannot-determine>
-- one-way theorem as equivalence: <none-found | found | cannot-determine>
-- GOAL / report reinterpretation: <none-found | found | cannot-determine>
-
-Blocking findings:
-- <finding or none>
-
-Next obligation:
-- <next proof obligation>
-
-Ledger:
 ```yaml
 ledger_type: target_cycle_result
 goal: <goal-id>
-target_theorem: <target>
 cycle: <N>
-decision: <approve | reject>
-result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
-proof_obligation: <short>
-proof_obligation_delta: <short>
-primary_specification:
-  source: <Issue, PRD, GOAL, or other task artifact>
-  version: <version or null>
-  status: <recorded | revised>
-lean_artifacts:
-  - file: <repo-relative path or null>
-    declarations:
-      - <declaration>
-premise_delta:
-  discharged:
-    - <premise>
-  remaining:
-    - <premise>
-certificate_provenance:
-  discharged:
-    - <certificate provenance>
-  unresolved:
-    - <unresolved certificate / field / membership>
-proof_use_audit:
-  used_material_premises:
-    - <premise>
-  unused_material_premises:
-    - <premise>
-structure_field_escape_audit:
-  status: <none-found | concern-found | cannot-determine>
-  concerns:
-    - <field-content concern>
-route_integrity_audit:
-  status: <pass | fail | cannot-determine>
-  concerns:
-    - <route-integrity concern>
-cheat_route_audit:
-  target_fitting_construction: <none-found | found | cannot-determine>
-  vacuity_or_degeneracy: <none-found | found | cannot-determine>
+goal_blob_sha: <sha>
+base_oid: <commit>
+tracking_issue: <number>
+report_path: <repo-relative path>
+selection:
+  proof_state_ref: <Issue/report/Lean ref>
+  proof_dag_predecessors: [<node/ref>]
+  proof_obligation: <one obligation>
+  selection_reason: <proof-distance delta>
+  expected_result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint>
+  lean_targets: [<file/declaration>]
+  risks: [<statement/premise/provenance/proof-use/field/route/detail>]
+  unchecked: [<item/reason>]
+result:
+  proposed_result_type: <proof-obligation-discharged | blocker-fixed | proof-checkpoint | rejected>
+  proof_obligation_delta: <what changed>
+  completion_candidate: <yes | no>
+  lean_artifacts: [<file/declaration>]
+  evidence: [<theorem/witness/certificate/blocker ref>]
+  claim_mapping:
+    theorem_names: [<name>]
+    source_labels: [<GOAL/body label>]
+    conjuncts: [<claim/declaration mapping>]
+    undischarged_assumptions: [<premise>]
+    acceptance_point: <why this result type>
+    port_status: <unported | not-applicable>
+audits:
+  premise_delta:
+    discharged: [<premise/evidence>]
+    remaining: [<premise/reason>]
+  certificate_provenance:
+    discharged: [<certificate/source theorem>]
+    unresolved: [<certificate/field/membership>]
+  proof_use:
+    used: [<premise/declaration>]
+    unused: [<premise/declaration>]
+  structure_field_escape: <none-found | concern-found | cannot-determine>
+  route_integrity: <pass | fail | cannot-determine>
+  target_fitting: <none-found | found | cannot-determine>
+  vacuity: <none-found | found | cannot-determine>
   one_way_as_equivalence: <none-found | found | cannot-determine>
   goal_or_report_reinterpretation: <none-found | found | cannot-determine>
-blocking_findings:
-  - <finding>
-next_obligation: <short>
-completion_candidate: <true | false>
-tracking_issue_closed: false
+  validation_refs: [<command/result/hash>]
+  blocking_findings: [<finding>]
+  next_obligation: <short>
 ```
-````
+
+優先順は未放電premise、certificate生成gap、proof-use gap、field escape、statement対応gap、proof DAG未接続node、再利用可能なblockerとする。全文再要約や候補poolは作らない。selectionの中心項目に未確認があればcompletion candidateにしない。

@@ -131,9 +131,10 @@ no-go 風の説明は免罪符にしない。
   必要な場合は実行せず、統括エージェントまたはCIが担う未確認項目として返す。
 - 本体のフル `lake build` はローカルで実行しない。PR 作成後の CI で実行し、その結果を完了確認に使う。
 - `lake build <module>` は、統括エージェントが対象 module の確認として必要な場合だけ実行する。
-- Research package(`research/lean/`)の full build は CI で実行しない。必要な場合だけ
-  統括エージェントが `cd research/lean && lake build` をローカルで1回実行し、
-  サブエージェントは実行しない。
+- Research package(`research/lean/`)の全体buildは実行しない。`cd research/lean && lake build`、
+  全Research module、aggregate root、全file loopをelaborateする同等操作を、親・
+  サブエージェント・CIのいずれも実行しない。Researchの検証はfocused file check、
+  必要なtargeted module check、axiom・placeholder・Unicode・privacy scanで行う。
 
 ## Lean status discipline
 
