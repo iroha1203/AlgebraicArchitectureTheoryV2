@@ -196,7 +196,7 @@
   `Formal/AG/Examples/FiniteModel.lean`(witness 素材)。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean である
-  こと。ledger の `discharge-required` を放電し、T3 audit を通し、
+  こと。ledger の `discharge-required` を放電し、固定headの標準PR reviewを通し、
   Lean / report / tracking Issue を同期し、
   `$math-lean-review research/goals/G-106-aat-transport-coherence.md G-106-aat-transport-coherence`
   の4査読がすべて `No major findings` であること。

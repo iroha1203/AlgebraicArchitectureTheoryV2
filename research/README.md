@@ -15,7 +15,7 @@ GOAL(研究で成し遂げたいこと)
   → 研究フェーズとしてキリが良ければ止まり、そうでなければ同じ GOAL で次へ進む
 ```
 
-`target-theorem` の GOAL では、探索型ループとは別に大定理証明専用ループを使う。SCORE と候補カードは使わず、次に潰す proof obligation を一つ選び、Lean theorem / finite witness / concrete certificate または blocker として固定する。完了条件は GOAL カードの `target theorem completion criteria` を満たすことであり、target theorem 本体が未証明なら checkpoint に留める。完了判定では final_review_packet を作り、`$math-lean-review` の 4 並列査読を必須 gate にし、実行できない場合、reviewer veto がある場合、または `No major findings` 以外の場合は `target-theorem-proved` にしない。
+`target-theorem` の GOAL では、探索型ループとは別に大定理証明専用ループを使う。SCORE と候補カードは使わず、次に潰す proof obligation を一つ選び、Lean theorem / finite witness / concrete certificate または blocker として固定する。完了条件は GOAL カードの `target theorem completion criteria` を満たすことであり、target theorem 本体が未証明なら checkpoint に留める。完了判定では final_review_packet を作り、`$math-lean-review` の4本の独立査読を必須 gate にし、全査読を完了できない場合、reviewer veto がある場合、または `No major findings` 以外の場合は `target-theorem-proved` にしない。
 
 探索型の流れを自動で回すのが `$research-loop` であり、`$research-loop <goal-id>` で起動する。`research mode: target-theorem` の GOAL は `$target-theorem-loop <goal-id>` で起動する。回せるのは active な GOAL だけで、draft を active に昇格させるのは人間が判断する。各段のゲート、止まる条件、安全規則は、探索型は [`$research-loop` の定義](../.codex/skills/research-loop/SKILL.md)、大定理証明型は [`$target-theorem-loop` の定義](../.codex/skills/target-theorem-loop/SKILL.md) にある。
 
@@ -60,7 +60,7 @@ completed な GOAL の Lean 成果物は、証拠を固定した上で現役 tre
 
 ## 状態の正本
 
-ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`goals/<goal-id>.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `goals/<goal-id>.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、target_cycle_result、`$math-lean-review` の completion gate 結果を置く。
+ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`goals/<goal-id>.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `goals/<goal-id>.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、review結果を置く。
 
 tracking Issue は、通常 GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。`target-theorem` では、GOAL カードの completion criteria を満たし、さらに `$math-lean-review` gate を通った場合だけ `target-theorem-proved` として止まる。target が未証明、または `$math-lean-review` が通らない場合は checkpoint にすぎない。
 
@@ -68,7 +68,7 @@ GOAL は `rival` を持つ。`rival` は、その GOAL が比較対象にする�
 
 ## 候補カードの状態
 
-探索型 GOAL の候補カードは一件につき一ファイルとし、frontmatter で二つの状態を持つ。`target-theorem` GOAL では候補カードを作らず、cycle result を report と tracking Issue に同期する。
+探索型 GOAL の候補カードは一件につき一ファイルとし、frontmatter で二つの状態を持つ。`target-theorem` GOAL では候補カードを作らない。
 
 ひとつは候補そのものの進み具合を表す `status` で、生成された時点の `idea` から、四審判を通った `picked`、選にもれたか検証に失敗した `archived` へと移る。もうひとつは証拠段階を表す `evidence_stage` で、`proved-in-research`、`conjectured-sorry`、`finite-evidence`、`orientation-evidence` などをとる。
 

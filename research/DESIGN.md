@@ -8,17 +8,17 @@
 
 **大定理証明モードを、SCORE 積み上げとは別の skill として分離する。** SCORE phase は広い frontier を探索し、研究能力の増分を積み上げるのに向いている。一方で、特定の大定理へ向かう研究では、毎サイクル一つの proof obligation を潰し、Lean theorem / finite witness / concrete certificate または blocker として固定する方が速く厳密である。このため `$research-loop` は探索型 GOAL 専用にし、`research mode: target-theorem` の GOAL は `$target-theorem-loop` で扱う。GOAL カードには target theorem、proof boundary、proof obligation priority、completion criteria を定義し、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、final review 結果を置く。target theorem の statement や completion criteria は人間が定める GOAL 定義であり、ループはそれを弱めて成功扱いしない。
 
-**大定理の完了判定は `$math-lean-review` を必須 gate にする。** Lean が通ること、PR が merge されたこと、cycle result が proved と言うことだけでは主定理の証明完了にならない。`$target-theorem-loop` の最終判定では、final_review_packet を作り、数学査読 2 本と Lean 査読 2 本の `$math-lean-review` を実行し、GOAL claim と Lean theorem package の強さ、仮定放電、依存補題、axiom audit、台帳整合、anti-weakening を fail-closed に確認する。`$math-lean-review` が実行できない、4 並列査読ができない、coverage gap が残る、reviewer veto がある、または `No major findings` 以外の verdict であれば、`target-theorem-proved` ではなく checkpoint とする。
+**PRレビューと大定理の完了判定を分ける。** 各PRは標準`$review-pr`で差分を監査する。完了候補は別の`$math-lean-review`4本で固定GOALと累積証拠を照合し、PRレビューの判定を代用しない。全査読を完了できない、coverage gapが残る、reviewer vetoがある、または`No major findings`以外ならcheckpointとする。
 
 **候補は四審判で落とす。** 審判 A は厳密性と claim boundary を見る。審判 B は GOAL への研究価値を見る。審判 C は repo 全体の価値、つまり AAT / SFT / Tooling / Website / Research の全体像に照らした自然さを見る。審判 D は GOAL の `rival` に対する有効性を見る。四者のどれかを通らない候補は、正しくても picked にしない。
 
 **ライバルを GOAL の報酬関数に入れる。** 研究成果は、内部的に綺麗な定式化であるだけでは足りない。静的解析器、ADL 解析器、architecture conformance checker、metric dashboard など、既存の強い相手がすでに与える能力を踏まえ、その相手に対して何を新しく扱えるかで評価する。候補カード、G2 審判 D、G4 SCORE 監査、report の `rival_delta` を連動させることで、既存手法の言い換えを高 SCORE にしない。
 
-**Lean をループの中の検証ゲートにする。** 生成した主張をそのまま信じないために、`lake build`、公理検査、Lean 形式化品質監査を通してからレポートに残す。定理候補は証明の穴(sorry)を残さず完全に証明し、予想は結論部だけを sorry で保留する。Lean 形式化品質監査では、命題が強すぎて自明化していないか、弱すぎて元の主張を失っていないか、claim boundary が型と仮定に反映されているかを見る。
+**Lean をループの中の検証ゲートにする。** 生成した主張をそのまま信じないために、対象fileのfocused elaboration、必要なtargeted module check、公理検査、Lean 形式化品質監査を通してからレポートに残す。定理候補は証明の穴(sorry)を残さず完全に証明し、予想は結論部だけを sorry で保留する。Lean 形式化品質監査では、命題が強すぎて自明化していないか、弱すぎて元の主張を失っていないか、claim boundary が型と仮定に反映されているかを見る。
 
-**検証は独立したライブラリ `ResearchLean` で行う。** Lean のライブラリ `Formal` は起点から参照を辿って到達するファイルしかビルドしないため、どこからも参照されていない壊れたファイルがあっても `lake build Formal` は通ってしまう。これでは検証の合否を判定できない。そこで `research/lean/ResearchLean/` のすべてのファイルをビルドする独立したライブラリを用意し、その成否を合格の信号とする。正式版である `Formal/AG` とは疎結合に保ち、依存は `research/lean/ResearchLean` から `Formal/AG` への一方向だけに限る。`Formal/AG` 本体は参照のみ可とし、このループでは直接編集しない。
+**検証は独立したライブラリ `ResearchLean` で行う。** 研究中のLean証拠を正式版`Formal/AG`から分離し、対象fileと必要なtargeted moduleだけを検証する。Research package全体、全Research module、aggregate root、全file loopのelaborationは実行しない。受理はfixed headに結びつくfocused結果、全報告宣言のaxiom audit、placeholder scan、独立PR reviewで判定する。依存は`ResearchLean`から`Formal/AG`への一方向だけに限り、`Formal/AG`本体はこのループでは参照のみとする。
 
-**状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。`goals/<goal-id>.md` の GOAL 定義、探索型 GOAL の候補カード frontmatter、target-theorem の cycle result、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つ台帳を置くと、サイクルのたびに両者がずれていく。だからサイクルの履歴と threshold 設定は Issue のコメントとして残し、そのための専用ファイルは作らない。target-theorem では候補カードを作らず、report と tracking Issue をサイクル完了時にまとめて同期する。
+**状態の正本は tracking Issue 一つに集める。** active SCORE threshold、current SCORE、カテゴリ別 SCORE、サイクル履歴は tracking Issue の状態である。`goals/<goal-id>.md` の GOAL 定義、探索型 GOAL の候補カード frontmatter、target-theorem の cycle result、検証結果のレポートはいずれも証拠 artifact であり、進行状態そのものではない。リポジトリの中にもう一つruntime台帳を作らない。target-theoremのcycle resultは実装PRに含め、merge後にtracking Issueへ索引する。
 
 **停止は通常 GOAL では完全達成ではなく研究フェーズの区切りとして読む。** 通常 GOAL は、完全達成を機械的に判定できる性質のものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。`target-theorem` GOAL では例外的に、GOAL カードの completion criteria を満たし、かつ `$math-lean-review` gate を通った target theorem proof が完了条件になる。ただし、この場合も tracking Issue の closure は人間判断であり、ループは proof completion summary を残して返す。
 

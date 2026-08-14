@@ -13,7 +13,7 @@
 - `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、証拠段階。
 - `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
 - `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
-- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、certificate provenance audit、proof-use audit、structure-field escape audit、T3 audit、report / tracking Issue 同期、final review packet、final `$math-lean-review` の正式判定を含む完了条件。
+- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、certificate provenance audit、proof-use audit、structure-field escape audit、PR review、report / tracking Issue 同期、final review packet、final `$math-lean-review` の正式判定を含む完了条件。
 - `target premise discharge policy`: target theorem の実質的前提を target boundary として残すのか、completion までに theorem / finite witness / concrete certificate で discharge するのか。
 - `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、必要 discharge artifact、certificate provenance requirement、proof-use requirement、結論相当 premise ではない理由。
 - `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque membership に移して成功扱いしない規則。
@@ -22,7 +22,7 @@
 
 ## 欠陥判定
 
-次のいずれかに当たる場合は T1 へ進まない。
+次のいずれかに当たる場合はproof obligationの選定へ進まない。
 
 - GOAL が active ではない。
 - `research mode: target-theorem` ではない。
