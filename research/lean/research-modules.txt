@@ -307,6 +307,7 @@ ResearchLean.AG.StructuralCover.RestrictionComparison	ResearchLean/AG/Structural
 ResearchLean.AG.StructuralCover.StructuralLocalization	ResearchLean/AG/StructuralCover/StructuralLocalization.lean
 ResearchLean.AG.TransportCoherence.CanonicalCoherence	ResearchLean/AG/TransportCoherence/CanonicalCoherence.lean
 ResearchLean.AG.TransportCoherence.FinitePresentation	ResearchLean/AG/TransportCoherence/FinitePresentation.lean
+ResearchLean.AG.TransportCoherence.VanishingCoherence	ResearchLean/AG/TransportCoherence/VanishingCoherence.lean
 ResearchLean.AG.TwoPhase.DependencyProfile	ResearchLean/AG/TwoPhase/DependencyProfile.lean
 ResearchLean.AG.TwoPhase.CoefficientComplex	ResearchLean/AG/TwoPhase/CoefficientComplex.lean
 ResearchLean.AG.TwoPhase.CohomologyComparison	ResearchLean/AG/TwoPhase/CohomologyComparison.lean
