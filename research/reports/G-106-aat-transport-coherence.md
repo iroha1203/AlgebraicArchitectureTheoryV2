@@ -475,3 +475,166 @@ audits:
 - fixed-head 4 lane review: 4/4 `No major findings`
 - required CI: 7/7 success
 - Research package 全体 build: hard rule に従い未実行
+
+## Cycle 3 — vanishing equivalence and single-disk absorption
+
+### Target cycle selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-106-aat-transport-coherence
+cycle: 3
+goal_blob_sha: 2ad51d10ece5d5f18a10c1d9e824296fb5c21a65
+base_oid: d75e8cc5944814f4346fbb6c5dad6b4957829def
+tracking_issue: 3998
+report_path: research/reports/G-106-aat-transport-coherence.md
+selection:
+  proof_state_ref: issue #3998 Cycle 2 merge comment; GOAL target (iii) and target (i) single-disk absorption clause; accepted Cycle 2 raw defect and action orbit
+  proof_dag_predecessors:
+    - Cycle 2 canonicalTwoCellComparator_fac and rawTwoCellDefect_eq_one surface
+    - Cycle 2 InReselectionOrbit and TransportObstructionVanishes
+    - G-101 strongly cocartesian codomain uniqueness
+  proof_obligation: define authored package-level coherence independently of the orbit predicate, prove orbit vanishing iff coherentizability on every finite presentation over an arbitrary carrier without definitional collapse, and construct an explicit boundary-edge gauge absorbing every defect on a nonempty single-2-cell disk
+  selection_reason: this discharges the global J2 equivalence and the remaining positive-example conjunct of target (i), while fixing the reason later nonvanishing witnesses must use closed multi-2-cell configurations
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/TransportCoherence/VanishingCoherence.lean
+    - CoherentAt
+    - Coherentizable
+    - transportObstructionVanishes_iff_coherentizable
+    - singleDiskAbsorbingReselection
+    - singleDisk_obstruction_vanishes
+    - singleDisk_coherentAt_absorbingReselection
+  risks:
+    - Coherentizable must not be defined as TransportObstructionVanishes or raw-cochain identity
+    - the equivalence must use both noncommutative cancellation and G-101 uniqueness rather than conclusion-equivalent input
+    - the disk must contain two actual boundary edges and one actual 2-cell; an empty family or identity-only diagram is not admissible evidence
+    - the absorbing gauge may change only one boundary edge and must leave the authored comparator fixed
+  unchecked:
+    - none after fixed-tree validation
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: package-level authored coherence is now defined independently, its coordinatewise equivalence with raw identity is proved, the general orbit-vanishing iff coherentizability theorem is derived, and an explicit right-boundary-edge gauge absorbs every authored defect on the finite single-cell disk
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/TransportCoherence/VanishingCoherence.lean
+    - CoherentAt
+    - Coherentizable
+    - rawTwoCellDefect_eq_one_iff
+    - coherentAt_iff_rawDefectCochain_eq_identity
+    - transportObstructionVanishes_iff_coherentizable
+    - SingleDiskVertex
+    - SingleDiskEdge
+    - SingleDiskTwoCell
+    - SingleDiskThreeCell
+    - singleDiskLeftPath
+    - singleDiskRightPath
+    - singleDiskPresentation
+    - pathLift_singleEdge
+    - reselectedPathLift_singleEdge
+    - pathReselectionTransition_singleEdge
+    - singleDiskAbsorbingReselection
+    - singleDisk_leftTransition
+    - singleDisk_rightTransition
+    - singleDisk_canonicalComparator_after_absorption
+    - singleDisk_obstruction_vanishes
+    - singleDisk_coherentAt_absorbingReselection
+    - singleDisk_coherentizable
+  evidence:
+    - CoherentAt is the full PackageTotalHom factorization equation using the authored comparator after one edge reselection and does not mention raw defects, identity cochains, orbit membership, or vanishing
+    - rawTwoCellDefect_eq_one_iff uses noncommutative group cancellation to identify raw identity with equality of authored and G-101-generated canonical comparators
+    - coherentAt_iff_rawDefectCochain_eq_identity uses strongly cocartesian extensionality in one direction and canonicalTwoCellComparator_fac in the other
+    - transportObstructionVanishes_iff_coherentizable quantifies the same edge reselection on both independently defined sides and invokes the coordinatewise theorem in both directions
+    - singleDiskPresentation has two vertices, two distinct directed boundary edges, exactly one declared 2-cell relating their one-edge paths, and no 3-cell claim
+    - singleDiskAbsorbingReselection leaves the left edge unchanged and assigns the baseline raw defect to the right edge while the authored comparator remains fixed
+    - pathReselectionTransition_singleEdge proves that the generated endpoint gauge on a one-edge path is exactly its assigned edge automorphism
+    - singleDisk_canonicalComparator_after_absorption proves the transformed canonical comparator equals the authored comparator; the vanishing and explicit CoherentAt theorems follow
+  claim_mapping:
+    theorem_names:
+      - transportObstructionVanishes_iff_coherentizable
+      - singleDisk_obstruction_vanishes
+      - singleDisk_coherentAt_absorbingReselection
+    source_labels:
+      - GOAL target theorem (iii) vanishing and coherence equivalence
+      - GOAL target theorem (i) disk single-2-cell absorption
+      - GOAL fixed fact (2) arbitrary carrier and finite presentation regime
+      - GOAL fixed fact (5) single-cell disk is positive evidence rather than a nonvanishing witness
+      - GOAL material premise ledger rows vanishing equivalence and canonical coherence
+    conjuncts:
+      - on every finite presentation over arbitrary U, action-orbit vanishing is equivalent to existence of an edge coordinate satisfying all authored path-comparison equations
+      - the equivalence is not a definitional unfolding because the coherence side contains full path-lift factorization equations
+      - the nonempty single-cell disk admits an explicit edge-only absorbing gauge for every admissible authored comparator
+    undischarged_assumptions: []
+    acceptance_point: the only theorem inputs are the finite presentation and admissible local comparison data fixed by the GOAL; coherence, raw identity, orbit vanishing, and the disk gauge are all generated or proved
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - orbit vanishing iff coherentizability on an arbitrary carrier and finite presentation
+      - non-definitional coordinatewise bridge from raw identity to full authored path coherence
+      - disk single-2-cell absorption by an explicit boundary-edge gauge
+    remaining:
+      - closed double-2-cell diamond and three-reading nonvanishing witnesses over FiniteModel.carrier
+      - specialized obstruction agreement theorems and unified schema
+  certificate_provenance:
+    discharged:
+      - equality of authored and canonical comparators is derived from a full factorization equation by strongly cocartesian uniqueness
+      - raw identity is converted by group cancellation, not accepted as an equivalence certificate
+      - the disk gauge is computed from the baseline raw defect and acts through the already-reviewed edge reselection mechanism
+    unresolved: []
+  proof_use:
+    used:
+      - authored comparator, canonical factorization, and left path strong cocartesianness prove the coordinatewise bridge
+      - both existential witnesses in the global equivalence are passed to the independent coordinatewise theorem
+      - the disk's two distinct edge constructors determine independent left and right reselection values
+      - the unique disk 2-cell is eliminated explicitly when proving raw-cochain identity and coherent factorization
+      - the single-edge transition theorem connects the edge assignment to the transformed canonical comparator
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused manifest check passed for VanishingCoherence.lean
+    - targeted module build passed with 1728 jobs
+    - namespace audit covered 74 declarations under AAT.AG.TransportCoherence with standard axioms only
+    - direct axiom audit covered all 26 explicit named declarations; only propext, Classical.choice, and Quot.sound occur
+    - source SHA-256 52e9462e67d6761135fff2e9fcbd4ae53a733782a2226ccb1508553a9e876723
+    - placeholder, hidden and bidirectional Unicode, privacy, import direction, package direction, manifest, and git diff checks passed
+  review_history:
+    - content head f68f97691fc8a96bee20b8dda53248f1aec2fad0 received No major findings from all four independent mathematics and Lean lanes
+    - the four lanes independently rejected definitional-collapse, conclusion-equivalent-input, noncommutative-order, empty-family, and direct-comparator-rewrite attacks
+    - all seven required PR checks succeeded on the reviewed content head
+  blocking_findings: []
+  next_obligation: construct the closed double-2-cell diamond and three-reading nonvanishing witnesses over FiniteModel.carrier
+```
+
+### Cycle candidate spine declarations
+
+- `CoherentAt`
+- `Coherentizable`
+- `rawTwoCellDefect_eq_one_iff`
+- `coherentAt_iff_rawDefectCochain_eq_identity`
+- `transportObstructionVanishes_iff_coherentizable`
+- `singleDiskPresentation`
+- `singleDiskAbsorbingReselection`
+- `singleDisk_canonicalComparator_after_absorption`
+- `singleDisk_obstruction_vanishes`
+- `singleDisk_coherentAt_absorbingReselection`
+
+### Verification
+
+- manifest 登録済み単一 file focused check: pass
+- targeted module build: `1728` jobs pass
+- namespace axiom audit: `74` declarations、standard axioms only
+- 明示 named `26` declarations の direct `#print axioms`:
+  `propext`、`Classical.choice`、`Quot.sound` のみ
+- source SHA-256:
+  `52e9462e67d6761135fff2e9fcbd4ae53a733782a2226ccb1508553a9e876723`
+- placeholder、hidden / bidirectional Unicode、privacy、Research import 方向、
+  package 依存方向、manifest、`git diff --check`: clean
+- fixed-head 4 lane review: 4/4 `No major findings`
+- required CI: 7/7 success
+- Research package 全体 build: hard rule に従い未実行

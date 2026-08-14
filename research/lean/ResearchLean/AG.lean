@@ -311,6 +311,7 @@ import ResearchLean.AG.StructuralCover.RestrictionComparison
 import ResearchLean.AG.StructuralCover.StructuralLocalization
 import ResearchLean.AG.TransportCoherence.CanonicalCoherence
 import ResearchLean.AG.TransportCoherence.FinitePresentation
+import ResearchLean.AG.TransportCoherence.VanishingCoherence
 import ResearchLean.AG.TwoPhase.DependencyProfile
 import ResearchLean.AG.TwoPhase.CoefficientComplex
 import ResearchLean.AG.TwoPhase.CohomologyComparison
