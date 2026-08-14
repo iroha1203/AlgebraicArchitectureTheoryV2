@@ -40,7 +40,7 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 5. rootがLean theorem/package、input-generated witness/certificate、またはblocker/refutationを固定する。Lean証拠は`research/lean/ResearchLean/AG/<goal-area>/`に置き、`Formal/AG`は参照/importだけに使う。受理spineとcycle scaffoldを命名またはfileで分け、spine declaration listをreportに固定する。
 6. rootが対象fileのfocused check、報告対象全宣言の`#print axioms`、placeholder、hidden/BiDi、privacy、import方向を検査する。中心項目の未確認はpacketへ残す。
 7. `git diff --check`、staged diff、未追跡file、保護領域の変更有無を確認し、実装、report、cycle ledgerを同じPRへ収録する。PR本文は原則`Refs #<tracking-issue>`とする。
-8. PR headを固定し、標準`$review-pr <PR番号> tracking Issue #<N>`でそのPRのexact diffと変更責務を監査する。`Refs`だけにIssue関連付けを委ねない。標準レビュー後、rootが[acceptance contract](references/acceptance-contract.md)をreview evidenceと差分実体へ適用し、結果をPRコメントへ置く。completion candidateでは両方の合格後に[completion ledger](references/completion-ledger.md)のfinal packetを同じ固定headから生成し、独立`$math-lean-review research/goals/<goal-id>.md <goal-id>`でGOALカードと累積証拠全体を照合する。必要な全判定とCIが通った場合だけmergeし、merge commit、CI、PR review、completion review、次obligationをtracking Issueへコメントする。
+8. PR headを固定し、標準`$review-pr <PR番号> tracking Issue #<N>`でそのPRのexact diffと変更責務を監査する。`Refs`だけにIssue関連付けを委ねない。監査コメントでAAT/Lean数学claimとして`$math-lean-review`へ委譲されたことを確認し、未委譲なら`Blocked / cannot determine`としてmergeしない。標準レビュー後、rootが[acceptance contract](references/acceptance-contract.md)をreview evidenceと差分実体へ適用し、結果をPRコメントへ置く。completion candidateでは両方の合格後に[completion ledger](references/completion-ledger.md)のfinal packetを同じ固定headから生成し、独立`$math-lean-review research/goals/<goal-id>.md <goal-id>`でGOALカードと累積証拠全体を照合する。必要な全判定とCIが通った場合だけmergeし、merge commit、CI、PR review、completion review、次obligationをtracking Issueへコメントする。
 
 PR作成まではroot一体で完結する。最初の独立subagent起動点はPRレビューである。
 
@@ -57,7 +57,7 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 ## PR gate
 
-すべてのPRを標準`$review-pr`へ渡す。target-theorem固有のroute、lane、修正後確認を`review-pr`へ追加しない。標準review-prは固定headのexact diff、変更責務、Issue受入条件だけをPR内容判定として監査する。
+すべてのPRを標準`$review-pr`へ渡す。target-theorem固有のroute、lane、修正後確認を`review-pr`へ追加しない。標準review-prは固定headのexact diff、変更責務、Issue受入条件を監査し、責務に対応する分野別敵対レビューへ委譲する。
 
 標準レビュー後、rootはその独立review evidenceと固定headの実体からstatement、premise discharge、provenance、proof-use、field escape、route、nonvacuity、dependency、回帰scenarioを再統合する。中心項目の未確認、不一致、証拠なしはmerge不可とする。
 
