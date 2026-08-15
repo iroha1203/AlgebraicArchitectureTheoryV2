@@ -5,18 +5,52 @@
 - `priority`: `medium`
 - `research mode`: `target-theorem`
 - `program context`: 登路上の位置は **Gr3 後半(Gr3 完成)**(n1005
-  §5-4-5)。G-106 は Gr3 の 2-障害核、G-108 は塔上層の建設であり、
-  **本カード完遂をもって初めて Gr3(擬関手的整合)達成と記録する**
-  (n1005 §4.6 の分割)。隊列裁定(2026-08-15、Gr3/Gr4 系列先行)の
-  第二手。G-108 の完遂に依存する。
+  §5「隊列」第5項の Gr3 分解)。G-106 は Gr3 の 2-障害核、G-108 は塔
+  上層の建設であり、**本カード完遂をもって初めて Gr3(擬関手的整合)
+  達成と記録する**(n1005 §4.6 の分割)。隊列裁定(2026-08-15、
+  Gr3/Gr4 系列先行)の第二手。G-108 の完遂に依存する。**G-108 の
+  statement が改訂された場合、本カードは draft へ差し戻して再固定
+  する**(依存カードの伝播規定)。本カードは n1005 §2 の測量台帳に
+  対応行を持たず、達成階梯(Gr3)の帳簿に専属する(帳簿の二重性の
+  明示)。
 - `predecessor`: G-101(core 段輸送と opcartesian 普遍性)、
-  G-108(geometry 段輸送。完遂待ち)、G-106(Transport Coherence
-  Two-Obstruction Theorem: canonical comparator・raw defect・
-  reselection orbit・消滅同値。
+  G-108(geometry 段輸送。**active 成立済み = PR #4012 マージ、
+  tracking Issue #4013、loop 完遂待ち**。geometry hom contract —
+  comparison family・cross-context read-preservation・partial
+  op-cleavage — を本カードの前提語彙として参照する)、G-106
+  (Transport Coherence Two-Obstruction Theorem: canonical
+  comparator・raw defect・reselection orbit・消滅同値。
   `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported)。
 - `tracking issue`: 未起票(active 昇格裁定後に起票)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 達成階梯)、
-  [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.6、§5-4-5)
+  [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.6、§5 隊列第5項)、
+  [G-106 report](../reports/G-106-aat-transport-coherence.md)(frontier
+  観察の消化記録: 段横断拡張は「cartesian 相互作用・段横断合成」を
+  frontier に留めたのみで、statement 設計を変える新観察はなかった —
+  2026-08-16 確認。witness 構成法(S3 非可換核・閉配置)は Cycle 4/5 の
+  FiniteWitnesses を本カードの素材として引き継ぐ)
+- `確定事項`: 次の5点を固定する(G-106 の確定事項様式に従う)。
+  (1) **上段障害語彙の建設義務**: 押し出しの始域となる geometry 段の
+  障害語彙は既存カードのどれも建設していないため、**本カードが建設
+  する** — G-108 の総圏 `GeomRead_U` の上に、G-106 と同じ次数契約
+  (有限 presentation、2-cell = 平行 path 対の宣言関係、3-cell = 宣言
+  syzygy の有限族、reselection = 辺ごとの fiber 自己同型割当)で
+  admissible 比較データ・raw defect・orbit 述語を定義する。G-106 の
+  core 段語彙は参照のみで改変しない。
+  (2) **押し出しの型**: 段射影に沿って上段の raw defect を下段の
+  fiber 自己同型へ写す写像として構成し、canonical comparator の保存と
+  edge reselection(coboundary)作用との両立を証明義務に含める。
+  (3) **合成公式は等式**: 全体障害 = 段間障害と押し出された段内障害の
+  合成(積の順序は温度順で固定し、カード内で一意に読めるよう statement
+  時に明記する)。**段横断消滅述語の唯一の provenance は「押し出し
+  cochain の全体 orbit 所属」**であり、これ以外の conjunct の混入を
+  audit 対象とする。
+  (4) **段の範囲**: 非自明 fiber を持つ段2段(geometry 段+core 段)を
+  対象の下限とする。`ExtInst_U -> Doct_U` の fiber は離散
+  (`ExtInstHom` は `doctrineHom` で完全決定)であり障害語彙が恒等的に
+  自明化するため、witness にも claim にも数えない。
+  (5) **witness shape**: G-106 確定事項 (5) の閉配置要求を継承する
+  (単一 2-cell のみの非消滅主張は認めない)。
 - `research aim`: 輸送が**塔の段をまたいで**合成することを定理にする。
   G-106 は単一射影(core 段)内の輸送合成 coherence と 2-障害を固定した。
   本カードはこれを塔 `GeomRead -> CoreRead -> ExtInst -> Doct` の複数段へ
@@ -32,7 +66,10 @@
   壊れ、両立するなら「どの段で障害が発生したかを常に特定できる」
   (n1001 §3.3 の設計目標)が障害語彙込みで成立する。段内消滅・段横断
   非消滅の witness は、pairwise 可能・joint 不可能(G-106 三角形)の
-  段方向版であり、その実在が塔設計の非自明性を担う。
+  段方向版であり、その実在が塔設計の非自明性を担う。なお witness に
+  非離散上段が**論理的に必要**である理由は確定事項 (4) の ExtInst 段
+  離散性にある — これが本カードが G-108(geometry 段)の完遂に依存する
+  実質的根拠である。
 - `rival`: pseudofunctor / lax functor の合成整合の一般論(mathlib の
   2-圏系)、G-106 単体(単一射影内)、fibration の合成に関する古典
   事実。差は「AAT の塔の具体的な段射影の族に対し、障害の押し出し・
@@ -57,7 +94,9 @@
 - `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
   proof obligation delta で評価する。
 - `dullness filter`: 次を弾く。単一段だけの図式での発火(G-106 の
-  再証明)、押し出しを identity 射影に取って合成公式が自明化する構成、
+  再証明)、**非自明 fiber を持つ段が2段未満の図式での発火**(離散段の
+  水増しによる「段横断」主張を含む)、押し出しを identity 射影に
+  取って合成公式が自明化する構成、
   障害の押し出しを structure field で受け取る構成、段横断 witness が
   実は単一段内で既に非消滅である構成(G-106 witness の再ラベル)、
   2-cell を持たない図式での vacuous な整合、syzygy 整合を暗黙に無条件
@@ -74,14 +113,18 @@
      `geomTransportAlong`)の段内合成と段間持ち上げの canonical 比較
      同型を構成し、三段までの隣接合成 coherence(擬関手的整合)を
      opcartesian 普遍性から証明する。
-  2. **(ii) 障害の押し出し**: G-106 の raw 2-cell defect・raw cochain に
-     対し、段射影に沿った押し出し写像を構成し、それが canonical
+  2. **(ii) 上段障害語彙の建設と押し出し**: 確定事項 (1) に従い、
+     geometry 段(G-108 の `GeomRead_U`)上の有限 presentation・
+     admissible 比較データ・raw 2-cell defect・reselection orbit を
+     **本カードで定義**した上で、段射影に沿った押し出し写像(上段
+     raw defect → 下段 fiber 自己同型)を構成し、それが canonical
      comparator を保ち、edge reselection(coboundary)作用と両立する
      ことを証明する。
-  3. **(iii) 合成公式**: 段内障害の押し出しと段間障害が全体の障害を
-     与える合成公式(押し出された orbit と全体 orbit の関係)を証明
-     する。消滅の段横断版述語は G-106 の orbit 述語から独立に定義し、
-     定義展開で放電しない。
+  3. **(iii) 合成公式(等式)**: 全体障害 = 段間障害と押し出された
+     段内障害の合成、を**等式**として証明する(積の温度順は statement
+     固定時に一意に明記する。片方向包含への弱化は改訂扱い)。段横断
+     消滅述語は**「押し出し cochain の全体 orbit 所属」のみから定義**
+     し(確定事項 (3) の唯一 provenance)、定義展開で放電しない。
   4. **(iv) 段横断 witness**: 各段内では reselection orbit で消滅する
      (段内 coherent 化可能)が、段横断合成では非消滅となる閉配置
      witness を `FiniteModel` の carrier 上で構成する。あわせて
@@ -93,9 +136,12 @@
   モジュールは参照のみ(改変しない)。完了面は (i)–(iv) まで。段数は
   有限(claim は三段までの隣接合成で固定し、一般有限段は frontier)。
   syzygy 整合の無条件化・`ObProblem` 段・fiber product は主張しない。
-- `target proof artifacts`: 段横断比較同型の構成と coherence theorem、
-  押し出し写像の定義と canonical comparator 保存 theorem、押し出しと
-  reselection の両立 theorem、合成公式 theorem、段横断消滅述語の定義、
+- `target proof artifacts`: geometry 段障害語彙の定義一式(有限
+  presentation・admissible 比較データ・raw defect・orbit。確定事項
+  (1))とその非自明性 witness、段横断比較同型の構成と coherence
+  theorem、押し出し写像の定義と canonical comparator 保存 theorem、
+  押し出しと reselection の両立 theorem、合成公式 theorem(等式)、
+  段横断消滅述語の定義(全体 orbit 所属のみから)、
   段内消滅・段横断非消滅 witness(FiniteModel 上、非恒等輸送・非空
   2-cell 幾何)、canonical 図式の段横断消滅(正例)theorem、report
   `research/reports/G-109-aat-cross-stage-coherence.md`。
@@ -114,9 +160,11 @@
   こと。下記 ledger の `discharge-required` を放電し、audit で
   provenance、proof-use、structure-field escape、route integrity を監査
   すること。Lean / report / tracking Issue を同期し、final review packet を
-  作り、`$math-lean-review` の4査読がすべて `No major findings` である
-  こと。**完遂時に Gr3 達成を report へ記録する**(G-106+G-108+本
-  カードの三点セット。n1005 §4.6 の誤記予防)。
+  作り、
+  `$math-lean-review research/goals/G-109-aat-cross-stage-coherence.md G-109-aat-cross-stage-coherence`
+  の4査読がすべて `No major findings` であること。**完遂時に Gr3
+  達成を report へ記録する**(G-106+G-108+本カードの三点セット。
+  n1005 §4.6 の誤記予防)。
 - `target premise discharge policy`: 入力(塔の段データ、doctrine 図式、
   admissible 比較データ)だけを残せる。比較同型、coherence、押し出しの
   well-definedness と両立、合成公式、witness はすべて completion までに
@@ -132,11 +180,17 @@
   - `syzygy 整合(SyzygyCompatible)`: `direction-hypothesis`。3-cell
     cocycle 語りにのみ使用し、(i)–(iv) の主定理はこれに依存させない
     (依存する系は仮定明示で分離する)。
+  - `geometry 段障害語彙の建設(確定事項 (1))`: `discharge-required`。
+    定義(有限 presentation・admissible 比較データ・raw defect・
+    orbit)と、その非自明性 witness(退化 presentation での vacuous
+    発火を認めない)を本カードで放電する。
   - `段横断比較同型と coherence`: `discharge-required`。opcartesian
     普遍性からの生成のみを認める。
-  - `押し出しの保存・両立 / 合成公式`: `discharge-required`。
-  - `段横断消滅述語の独立性`: `discharge-required`。orbit 述語の
-    言い換えでないことを審査対象にする。
+  - `押し出しの保存・両立 / 合成公式(等式)`: `discharge-required`。
+  - `段横断消滅述語の provenance`: `discharge-required`。定義は
+    「押し出し cochain の全体 orbit 所属」のみから立てる(確定事項
+    (3) の唯一 provenance)。これと独立な追加 conjunct の混入、および
+    orbit 述語の言い換えを審査対象にする。
   - `witness 対`: `discharge-required`。段内消滅の明示 gauge と段横断
     非消滅の証明を両方含める。
 - `target anti-weakening rule`: 結論相当の仮定(coherence、押し出しの
@@ -145,6 +199,12 @@
   消滅述語を「各段で消滅」の連言として定義することを禁じる(それは
   (iv) の witness が排除すべき混同そのもの)。(iii) の合成公式を
   片方向の包含へ弱めた場合は改訂として扱い、成功に数えない。
+- `target route integrity gate`: geometry 段障害語彙・押し出し写像・
+  合成公式・witness の provenance を G-106 / G-108 reviewed artifact、
+  canonical 構成、opcartesian 普遍性、concrete witness へ追跡する。
+  離散段の水増し・identity 射影だけの発火・退化 presentation だけの
+  発火、one-way-as-equivalence、proof 後の GOAL 読み替えを completion に
+  使わない。
 - `target failure policy`: (ii) の押し出しが reselection と両立しない
   ことが証明された場合は `target-refuted` ではなく、両立する部分語彙
   (共役類水準など)への statement 改訂を提案する(G-106 の class
