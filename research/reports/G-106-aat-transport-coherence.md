@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-106-aat-transport-coherence.md`](../goals/G-106-aat-transport-coherence.md)
 - tracking Issue: [#3998](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3998)
 - target theorem: Transport Coherence Two-Obstruction Theorem
-- proof state: `active / target-proof-checkpoint`
-- completion candidate: `yes`
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria の正本は GOAL カードであり、この
