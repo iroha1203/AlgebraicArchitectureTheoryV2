@@ -482,6 +482,142 @@ def transportContextEquivalence {U : AtomCarrier.{u}}
       (fun W => eqToIso (transportContextFunctorInverse_obj_eq e A C W))
       (by intros; apply Subsingleton.elim))
 
+/-- Selected readable morphisms respect equality of their dependent endpoints. -/
+private theorem readableMorphism_cast_heq {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (C : Site.ContextPreorderCategory A)
+    {W V W' V' : Site.ArchCtx A} (hW : W' = W) (hV : V' = V)
+    (p : C.le W' V') (q : C.le W V) :
+    HEq (C.readableMorphism p) (C.readableMorphism q) := by
+  cases hW
+  cases hV
+  rfl
+
+/-- The support-map projection respects equality of dependent endpoints. -/
+private theorem readableMorphism_supportMap_cast_heq {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (C : Site.ContextPreorderCategory A)
+    {W V W' V' : Site.ArchCtx A} (hW : W' = W) (hV : V' = V)
+    (p : C.le W' V') (q : C.le W V) :
+    HEq (C.readableMorphism p).supportMap (C.readableMorphism q).supportMap := by
+  cases hW
+  cases hV
+  rfl
+
+/-- The axis-map projection respects equality of dependent endpoints. -/
+private theorem readableMorphism_axisMap_cast_heq {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} (C : Site.ContextPreorderCategory A)
+    {W V W' V' : Site.ArchCtx A} (hW : W' = W) (hV : V' = V)
+    (p : C.le W' V') (q : C.le W V) :
+    HEq (C.readableMorphism p).axisMap (C.readableMorphism q).axisMap := by
+  cases hW
+  cases hV
+  rfl
+
+/-- The observable-restriction projection respects equality of dependent endpoints. -/
+private theorem readableMorphism_observableRestrict_cast_heq
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    (C : Site.ContextPreorderCategory A)
+    {W V W' V' : Site.ArchCtx A} (hW : W' = W) (hV : V' = V)
+    (p : C.le W' V') (q : C.le W V) :
+    HEq (C.readableMorphism p).observableRestrict
+      (C.readableMorphism q).observableRestrict := by
+  cases hW
+  cases hV
+  rfl
+
+/-- Transported readable morphisms retain the source support map. -/
+theorem transportContextFunctor_supportMap {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject C} (w : W ⟶ V)
+    (support : W.ctx.Support) :
+    ((transportContextPreorder e A C).morphism
+      (leOfHom ((transportContextFunctor e A C).map w))).supportMap support =
+      (C.morphism (leOfHom w)).supportMap support := by
+  let p := leOfHom ((transportContextFunctor e A C).map w)
+  let q := leOfHom w
+  change (C.readableMorphism p).supportMap support =
+    (C.readableMorphism q).supportMap support
+  have hm := readableMorphism_supportMap_cast_heq C
+    (transportArchitectureContext_backward_forward e A W.ctx)
+    (transportArchitectureContext_backward_forward e A V.ctx) p q
+  have hm' : (C.readableMorphism p).supportMap =
+      (C.readableMorphism q).supportMap := eq_of_heq hm
+  exact congrFun hm' support
+
+/-- Transported readable morphisms retain the source axis map. -/
+theorem transportContextFunctor_axisMap {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject C} (w : W ⟶ V)
+    (axis : W.ctx.Axis) :
+    ((transportContextPreorder e A C).morphism
+      (leOfHom ((transportContextFunctor e A C).map w))).axisMap axis =
+      (C.morphism (leOfHom w)).axisMap axis := by
+  let p := leOfHom ((transportContextFunctor e A C).map w)
+  let q := leOfHom w
+  change (C.readableMorphism p).axisMap axis =
+    (C.readableMorphism q).axisMap axis
+  have hm := readableMorphism_axisMap_cast_heq C
+    (transportArchitectureContext_backward_forward e A W.ctx)
+    (transportArchitectureContext_backward_forward e A V.ctx) p q
+  have hm' : (C.readableMorphism p).axisMap =
+      (C.readableMorphism q).axisMap := eq_of_heq hm
+  exact congrFun hm' axis
+
+/-- Transported readable morphisms retain the source observable restriction. -/
+theorem transportContextFunctor_observableRestrict {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject C} (w : W ⟶ V)
+    (observable : V.ctx.Observable) :
+    ((transportContextPreorder e A C).morphism
+      (leOfHom ((transportContextFunctor e A C).map w))).observableRestrict observable =
+      (C.morphism (leOfHom w)).observableRestrict observable := by
+  let p := leOfHom ((transportContextFunctor e A C).map w)
+  let q := leOfHom w
+  change (C.readableMorphism p).observableRestrict observable =
+    (C.readableMorphism q).observableRestrict observable
+  have hm := readableMorphism_observableRestrict_cast_heq C
+    (transportArchitectureContext_backward_forward e A W.ctx)
+    (transportArchitectureContext_backward_forward e A V.ctx) p q
+  have hm' : (C.readableMorphism p).observableRestrict =
+      (C.readableMorphism q).observableRestrict := eq_of_heq hm
+  exact congrFun hm' observable
+
+/-- The inverse context functor exposes the transported support map. -/
+theorem transportContextInverse_supportMap {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
+    (w : W ⟶ V) (support : W.ctx.Support) :
+    (C.morphism (leOfHom ((transportContextInverse e A C).map w))).supportMap support =
+      ((transportContextPreorder e A C).morphism
+        (leOfHom w)).supportMap support := by
+  rfl
+
+/-- The inverse context functor exposes the transported axis map. -/
+theorem transportContextInverse_axisMap {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
+    (w : W ⟶ V) (axis : W.ctx.Axis) :
+    (C.morphism (leOfHom ((transportContextInverse e A C).map w))).axisMap axis =
+      ((transportContextPreorder e A C).morphism
+        (leOfHom w)).axisMap axis := by
+  rfl
+
+/-- The inverse context functor exposes the transported observable restriction. -/
+theorem transportContextInverse_observableRestrict {U : AtomCarrier.{u}}
+    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
+    (C : Site.ContextPreorderCategory A)
+    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
+    (w : W ⟶ V) (observable : V.ctx.Observable) :
+    (C.morphism
+        (leOfHom ((transportContextInverse e A C).map w))).observableRestrict observable =
+      ((transportContextPreorder e A C).morphism
+        (leOfHom w)).observableRestrict observable := by
+  rfl
+
 /-- Transport an architectural equation system by context, object, and Atom conjugation. -/
 def transportEquationSystem {U : AtomCarrier.{u}}
     (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
@@ -783,6 +919,298 @@ private def castEquationSystemExactTransport {U : AtomCarrier.{u}}
   cases h
   exact T
 
+/-- Cast a support comparison together with the target equation reading. -/
+private def castEquationSystemExactTransportSupport {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Support →
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Support := by
+  cases h
+  exact _root_.id
+
+/-- Cast an axis comparison together with the target equation reading. -/
+private def castEquationSystemExactTransportAxis {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Axis →
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Axis := by
+  cases h
+  exact _root_.id
+
+/-- Cast an observable comparison together with the target equation reading. -/
+private def castEquationSystemExactTransportObservable {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Observable →
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Observable := by
+  cases h
+  exact _root_.id
+
+/-- Cast the support carrier equivalence together with the target equation reading. -/
+private def castEquationSystemExactTransportSupportEquiv {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Support ≃
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Support := by
+  cases h
+  exact Equiv.refl _
+
+/-- Cast the axis carrier equivalence together with the target equation reading. -/
+private def castEquationSystemExactTransportAxisEquiv {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Axis ≃
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Axis := by
+  cases h
+  exact Equiv.refl _
+
+/-- Cast the observable carrier equivalence together with the target equation reading. -/
+private def castEquationSystemExactTransportObservableEquiv {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    (T.contextEquivalence.functor.obj W).ctx.Observable ≃
+      ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.Observable := by
+  cases h
+  exact Equiv.refl _
+
+/-- Cast forward-inverse object cancellation together with the target reading. -/
+private theorem castEquationSystemExactTransport_functor_inverse_obj_eq
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (hcancel : ∀ W,
+      (T.contextEquivalence.inverse ⋙ T.contextEquivalence.functor).obj W = W)
+    (W : Site.ContextCategoryObject (castEquationReading h S).contextPreorder) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.inverse ⋙
+        (castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor).obj W =
+      W := by
+  cases h
+  exact hcancel W
+
+/-- Cast inverse-forward object cancellation together with the target reading. -/
+private theorem castEquationSystemExactTransport_inverse_functor_obj_eq
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (hcancel : ∀ W,
+      (T.contextEquivalence.functor ⋙ T.contextEquivalence.inverse).obj W = W)
+    (W : Site.ContextCategoryObject R.contextPreorder) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor ⋙
+        (castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.inverse).obj W =
+      W := by
+  cases h
+  exact hcancel W
+
+/-- Cast support-read preservation together with the target reading. -/
+private theorem castEquationSystemExactTransport_supportReads {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (support : (T.contextEquivalence.functor.obj W).ctx.Support)
+    (atom : U.Atom)
+    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.supportReads
+      support atom) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.supportReads
+      (castEquationSystemExactTransportSupport R S h e objectMap T W support) atom := by
+  cases h
+  exact hread
+
+/-- Cast axis-read preservation together with the target reading. -/
+private theorem castEquationSystemExactTransport_axisReads {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (axis : (T.contextEquivalence.functor.obj W).ctx.Axis)
+    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.axisReads axis) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.axisReads
+      (castEquationSystemExactTransportAxis R S h e objectMap T W axis) := by
+  cases h
+  exact hread
+
+/-- Cast observable-read preservation together with the target reading. -/
+private theorem castEquationSystemExactTransport_observableReads {U : AtomCarrier.{u}}
+    {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (observable : (T.contextEquivalence.functor.obj W).ctx.Observable)
+    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.observableReads observable) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.observableReads
+      (castEquationSystemExactTransportObservable R S h e objectMap T W observable) := by
+  cases h
+  exact hread
+
+/-- Casting the target reading does not change support readability. -/
+private theorem castEquationSystemExactTransport_supportReads_iff
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (support : (T.contextEquivalence.functor.obj W).ctx.Support)
+    (atom : U.Atom) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.supportReads
+      (castEquationSystemExactTransportSupportEquiv R S h e objectMap T W support) atom ↔
+      (T.contextEquivalence.functor.obj W).ctx.minimal.supportReads support atom := by
+  cases h
+  rfl
+
+/-- Casting the target reading does not change axis readability. -/
+private theorem castEquationSystemExactTransport_axisReads_iff
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (axis : (T.contextEquivalence.functor.obj W).ctx.Axis) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.axisReads
+      (castEquationSystemExactTransportAxisEquiv R S h e objectMap T W axis) ↔
+      (T.contextEquivalence.functor.obj W).ctx.minimal.axisReads axis := by
+  cases h
+  rfl
+
+/-- Casting the target reading does not change observable readability. -/
+private theorem castEquationSystemExactTransport_observableReads_iff
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    (W : Site.ContextCategoryObject R.contextPreorder)
+    (observable : (T.contextEquivalence.functor.obj W).ctx.Observable) :
+    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
+        W).ctx.minimal.observableReads
+      (castEquationSystemExactTransportObservableEquiv R S h e objectMap T W observable) ↔
+      (T.contextEquivalence.functor.obj W).ctx.minimal.observableReads observable := by
+  cases h
+  rfl
+
+/-- Support comparison commutes with target-readable morphisms after a reading cast. -/
+private theorem castEquationSystemExactTransport_support_naturality
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    {W V : Site.ContextCategoryObject R.contextPreorder} (w : W ⟶ V)
+    (support : (T.contextEquivalence.functor.obj W).ctx.Support) :
+    ((castEquationReading h S).contextPreorder.morphism
+        (leOfHom
+          ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.map
+            w))).supportMap
+        (castEquationSystemExactTransportSupportEquiv R S h e objectMap T W support) =
+      castEquationSystemExactTransportSupportEquiv R S h e objectMap T V
+        ((S.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map w))).supportMap support) := by
+  cases h
+  rfl
+
+/-- Axis comparison commutes with target-readable morphisms after a reading cast. -/
+private theorem castEquationSystemExactTransport_axis_naturality
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    {W V : Site.ContextCategoryObject R.contextPreorder} (w : W ⟶ V)
+    (axis : (T.contextEquivalence.functor.obj W).ctx.Axis) :
+    ((castEquationReading h S).contextPreorder.morphism
+        (leOfHom
+          ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.map
+            w))).axisMap
+        (castEquationSystemExactTransportAxisEquiv R S h e objectMap T W axis) =
+      castEquationSystemExactTransportAxisEquiv R S h e objectMap T V
+        ((S.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map w))).axisMap axis) := by
+  cases h
+  rfl
+
+/-- Observable comparison commutes with target-readable restrictions after a reading cast. -/
+private theorem castEquationSystemExactTransport_observable_naturality
+    {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
+    (R : EquationReading A₀) (S : EquationReading A)
+    (h : A = B) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
+      e objectMap)
+    {W V : Site.ContextCategoryObject R.contextPreorder} (w : W ⟶ V)
+    (observable : (T.contextEquivalence.functor.obj V).ctx.Observable) :
+    ((castEquationReading h S).contextPreorder.morphism
+        (leOfHom
+          ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.map
+            w))).observableRestrict
+        (castEquationSystemExactTransportObservableEquiv R S h e objectMap T V observable) =
+      castEquationSystemExactTransportObservableEquiv R S h e objectMap T W
+        ((S.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map w))).observableRestrict observable) := by
+  cases h
+  rfl
+
 /-- Casting the target reading preserves the exact transport equation map. -/
 private theorem castEquationSystemExactTransport_equationMap_heq
     {U : AtomCarrier.{u}} {A₀ A B : ArchitectureObject U}
@@ -835,6 +1263,906 @@ def transportCoreEquationSystemExact {U : AtomCarrier.{u}}
         (R.composition.compose (R.doctrine.atomize R.source)
           R.family_listFinite))
       R.equationReading.contextPreorder R.equationReading.equationSystem)
+
+/-- Canonical core transport identifies every local support carrier. -/
+def transportCoreSupportEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Support ≃
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Support := by
+  exact castEquationSystemExactTransportSupportEquiv R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
+
+/-- Canonical core transport identifies every local axis carrier. -/
+def transportCoreAxisEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Axis ≃
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Axis := by
+  exact castEquationSystemExactTransportAxisEquiv R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
+
+/-- Canonical core transport identifies every local observable carrier. -/
+def transportCoreObservableEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Observable ≃
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Observable := by
+  exact castEquationSystemExactTransportObservableEquiv R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
+
+/-- Every target context is the forward image of its canonical inverse context. -/
+theorem transportCoreContextFunctorInverse_obj_eq {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.inverse ⋙
+        (transportCoreEquationSystemExact R f).contextEquivalence.functor).obj W = W := by
+  unfold transportCoreEquationSystemExact
+  exact castEquationSystemExactTransport_functor_inverse_obj_eq
+    R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem)
+    (transportContextFunctorInverse_obj_eq f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder) W
+
+/-- Forward context transport followed by its inverse returns the source context. -/
+theorem transportCoreContextInverseFunctor_obj_eq {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.functor ⋙
+        (transportCoreEquationSystemExact R f).contextEquivalence.inverse).obj W = W := by
+  unfold transportCoreEquationSystemExact
+  exact castEquationSystemExactTransport_inverse_functor_obj_eq
+    R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem)
+    (transportContextInverseFunctor_obj_eq f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder) W
+
+/-- Context equality identifies its local support carriers. -/
+def contextEqSupportEquiv {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V) :
+    W.ctx.Support ≃ V.ctx.Support :=
+  Equiv.cast (congrArg (fun X => X.ctx.Support) h)
+
+/-- Context equality identifies its local axis carriers. -/
+def contextEqAxisEquiv {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V) :
+    W.ctx.Axis ≃ V.ctx.Axis :=
+  Equiv.cast (congrArg (fun X => X.ctx.Axis) h)
+
+/-- Context equality identifies its local observable carriers. -/
+def contextEqObservableEquiv {U : AtomCarrier.{u}} {A : ArchitectureObject U}
+    {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V) :
+    W.ctx.Observable ≃ V.ctx.Observable :=
+  Equiv.cast (congrArg (fun X => X.ctx.Observable) h)
+
+/-- Support readability is invariant under equality of contexts. -/
+theorem contextEqSupportEquiv_reads_iff {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V)
+    (support : W.ctx.Support) (atom : U.Atom) :
+    V.ctx.minimal.supportReads (contextEqSupportEquiv h support) atom ↔
+      W.ctx.minimal.supportReads support atom := by
+  cases h
+  rfl
+
+/-- Axis readability is invariant under equality of contexts. -/
+theorem contextEqAxisEquiv_reads_iff {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V)
+    (axis : W.ctx.Axis) :
+    V.ctx.minimal.axisReads (contextEqAxisEquiv h axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  cases h
+  rfl
+
+/-- Observable readability is invariant under equality of contexts. -/
+theorem contextEqObservableEquiv_reads_iff {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V : Site.ContextCategoryObject C} (h : W = V)
+    (observable : W.ctx.Observable) :
+    V.ctx.minimal.observableReads (contextEqObservableEquiv h observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  cases h
+  rfl
+
+/-- Support maps are conjugated by equality of their context endpoints. -/
+theorem contextEqSupportEquiv_naturality {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V W' V' : Site.ContextCategoryObject C}
+    (hW : W' = W) (hV : V' = V) (w' : W' ⟶ V') (w : W ⟶ V)
+    (support : W'.ctx.Support) :
+    (C.morphism (leOfHom w)).supportMap (contextEqSupportEquiv hW support) =
+      contextEqSupportEquiv hV
+        ((C.morphism (leOfHom w')).supportMap support) := by
+  cases hW
+  cases hV
+  have hw : w' = w := Subsingleton.elim _ _
+  cases hw
+  rfl
+
+/-- Axis maps are conjugated by equality of their context endpoints. -/
+theorem contextEqAxisEquiv_naturality {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V W' V' : Site.ContextCategoryObject C}
+    (hW : W' = W) (hV : V' = V) (w' : W' ⟶ V') (w : W ⟶ V)
+    (axis : W'.ctx.Axis) :
+    (C.morphism (leOfHom w)).axisMap (contextEqAxisEquiv hW axis) =
+      contextEqAxisEquiv hV
+        ((C.morphism (leOfHom w')).axisMap axis) := by
+  cases hW
+  cases hV
+  have hw : w' = w := Subsingleton.elim _ _
+  cases hw
+  rfl
+
+/-- Observable restrictions are conjugated by equality of their endpoints. -/
+theorem contextEqObservableEquiv_naturality {U : AtomCarrier.{u}}
+    {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
+    {W V W' V' : Site.ContextCategoryObject C}
+    (hW : W' = W) (hV : V' = V) (w' : W' ⟶ V') (w : W ⟶ V)
+    (observable : V'.ctx.Observable) :
+    (C.morphism (leOfHom w)).observableRestrict
+        (contextEqObservableEquiv hV observable) =
+      contextEqObservableEquiv hW
+        ((C.morphism (leOfHom w')).observableRestrict observable) := by
+  cases hW
+  cases hV
+  have hw : w' = w := Subsingleton.elim _ _
+  cases hw
+  rfl
+
+/-- Canonical support comparison preserves and reflects readability. -/
+theorem transportCoreSupportEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (support : W.ctx.Support) (atom : U.Atom) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.minimal.supportReads
+        (transportCoreSupportEquiv R f W support) (f.atomEquiv atom) ↔
+      W.ctx.minimal.supportReads support atom := by
+  unfold transportCoreEquationSystemExact transportCoreSupportEquiv
+  exact (castEquationSystemExactTransport_supportReads_iff
+    R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem)
+    W support (f.atomEquiv atom)).trans (by
+      change W.ctx.minimal.supportReads support
+          (f.atomEquiv.symm (f.atomEquiv atom)) ↔
+        W.ctx.minimal.supportReads support atom
+      simp)
+
+/-- Canonical axis comparison preserves and reflects readability. -/
+theorem transportCoreAxisEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (axis : W.ctx.Axis) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.minimal.axisReads
+        (transportCoreAxisEquiv R f W axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  unfold transportCoreEquationSystemExact transportCoreAxisEquiv
+  exact (castEquationSystemExactTransport_axisReads_iff
+    R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem)
+    W axis).trans (by rfl)
+
+/-- Canonical observable comparison preserves and reflects readability. -/
+theorem transportCoreObservableEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (observable : W.ctx.Observable) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.minimal.observableReads
+        (transportCoreObservableEquiv R f W observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  unfold transportCoreEquationSystemExact transportCoreObservableEquiv
+  exact (castEquationSystemExactTransport_observableReads_iff
+    R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem)
+    W observable).trans (by rfl)
+
+/-- The inverse-then-forward section identifies support carriers on every target context. -/
+noncomputable def transportCoreSectionSupportEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Support ≃
+      W.ctx.Support :=
+  (transportCoreSupportEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)).trans
+    (contextEqSupportEquiv
+      (transportCoreContextFunctorInverse_obj_eq R f W))
+
+/-- The inverse-then-forward section identifies axis carriers on every target context. -/
+noncomputable def transportCoreSectionAxisEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Axis ≃
+      W.ctx.Axis :=
+  (transportCoreAxisEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)).trans
+    (contextEqAxisEquiv
+      (transportCoreContextFunctorInverse_obj_eq R f W))
+
+/-- The inverse-then-forward section identifies observable carriers on target contexts. -/
+noncomputable def transportCoreSectionObservableEquiv {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder) :
+    ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Observable ≃
+      W.ctx.Observable :=
+  (transportCoreObservableEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)).trans
+    (contextEqObservableEquiv
+      (transportCoreContextFunctorInverse_obj_eq R f W))
+
+/-- The canonical target-context support section preserves and reflects reads. -/
+theorem transportCoreSectionSupportEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder)
+    (support :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Support)
+    (atom : U.Atom) :
+    W.ctx.minimal.supportReads
+        (transportCoreSectionSupportEquiv R f W support) (f.atomEquiv atom) ↔
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.minimal.supportReads
+        support atom := by
+  exact (contextEqSupportEquiv_reads_iff
+    (transportCoreContextFunctorInverse_obj_eq R f W)
+    (transportCoreSupportEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W) support)
+    (f.atomEquiv atom)).trans
+      (transportCoreSupportEquiv_reads_iff R f
+        ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)
+        support atom)
+
+/-- The canonical target-context axis section preserves and reflects reads. -/
+theorem transportCoreSectionAxisEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder)
+    (axis :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Axis) :
+    W.ctx.minimal.axisReads (transportCoreSectionAxisEquiv R f W axis) ↔
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.minimal.axisReads
+        axis := by
+  exact (contextEqAxisEquiv_reads_iff
+    (transportCoreContextFunctorInverse_obj_eq R f W)
+    (transportCoreAxisEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W) axis)).trans
+      (transportCoreAxisEquiv_reads_iff R f
+        ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W) axis)
+
+/-- The canonical target-context observable section preserves and reflects reads. -/
+theorem transportCoreSectionObservableEquiv_reads_iff {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder)
+    (observable :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Observable) :
+    W.ctx.minimal.observableReads
+        (transportCoreSectionObservableEquiv R f W observable) ↔
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.minimal.observableReads
+        observable := by
+  exact (contextEqObservableEquiv_reads_iff
+    (transportCoreContextFunctorInverse_obj_eq R f W)
+    (transportCoreObservableEquiv R f
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)
+      observable)).trans
+      (transportCoreObservableEquiv_reads_iff R f
+        ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W)
+        observable)
+
+/-- A dependent family of equivalences satisfies the section triangle induced
+by mutually inverse object maps.  The equality proofs need not be chosen
+coherently: proof irrelevance supplies the unique comparison between them. -/
+private theorem dependentEquiv_section_triangle
+    {α : Type v} {β : Type w}
+    (F : α → β) (I : β → α)
+    (S : α → Type x) (T : β → Type y)
+    (hFI : ∀ b, F (I b) = b)
+    (hIF : ∀ a, I (F a) = a)
+    (E : ∀ a, S a ≃ T (F a))
+    (a : α) (s : S a) :
+    Equiv.cast (congrArg S (hIF a))
+      (((E (I (F a))).trans
+        (Equiv.cast (congrArg T (hFI (F a))))).symm (E a s)) = s := by
+  let out := ((E (I (F a))).trans
+    (Equiv.cast (congrArg T (hFI (F a))))).symm (E a s)
+  have hnatural {a₀ a₁ : α} (h : a₀ = a₁) (value : S a₀) :
+      Equiv.cast (congrArg T (congrArg F h)) (E a₀ value) =
+        E a₁ (Equiv.cast (congrArg S h) value) := by
+    cases h
+    rfl
+  apply (E a).injective
+  rw [← hnatural (hIF a) out]
+  have hk : congrArg F (hIF a) = hFI (F a) := Subsingleton.elim _ _
+  rw [hk]
+  exact ((E (I (F a))).trans
+    (Equiv.cast (congrArg T (hFI (F a))))).apply_symm_apply (E a s)
+
+/-- The support section satisfies the inverse-forward triangle identity. -/
+theorem transportCoreSectionSupportEquiv_triangle {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (support : W.ctx.Support) :
+    contextEqSupportEquiv (transportCoreContextInverseFunctor_obj_eq R f W)
+        ((transportCoreSectionSupportEquiv R f
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W)).symm
+          (transportCoreSupportEquiv R f W support)) = support := by
+  let T := transportCoreEquationSystemExact R f
+  simpa [transportCoreSectionSupportEquiv, contextEqSupportEquiv, T] using
+    (dependentEquiv_section_triangle
+      (fun X => T.contextEquivalence.functor.obj X)
+      (fun X => T.contextEquivalence.inverse.obj X)
+      (fun X => X.ctx.Support) (fun X => X.ctx.Support)
+      (transportCoreContextFunctorInverse_obj_eq R f)
+      (transportCoreContextInverseFunctor_obj_eq R f)
+      (transportCoreSupportEquiv R f) W support)
+
+/-- The axis section satisfies the inverse-forward triangle identity. -/
+theorem transportCoreSectionAxisEquiv_triangle {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (axis : W.ctx.Axis) :
+    contextEqAxisEquiv (transportCoreContextInverseFunctor_obj_eq R f W)
+        ((transportCoreSectionAxisEquiv R f
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W)).symm
+          (transportCoreAxisEquiv R f W axis)) = axis := by
+  let T := transportCoreEquationSystemExact R f
+  simpa [transportCoreSectionAxisEquiv, contextEqAxisEquiv, T] using
+    (dependentEquiv_section_triangle
+      (fun X => T.contextEquivalence.functor.obj X)
+      (fun X => T.contextEquivalence.inverse.obj X)
+      (fun X => X.ctx.Axis) (fun X => X.ctx.Axis)
+      (transportCoreContextFunctorInverse_obj_eq R f)
+      (transportCoreContextInverseFunctor_obj_eq R f)
+      (transportCoreAxisEquiv R f) W axis)
+
+/-- The observable section satisfies the inverse-forward triangle identity. -/
+theorem transportCoreSectionObservableEquiv_triangle {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder)
+    (observable : W.ctx.Observable) :
+    contextEqObservableEquiv (transportCoreContextInverseFunctor_obj_eq R f W)
+        ((transportCoreSectionObservableEquiv R f
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W)).symm
+          (transportCoreObservableEquiv R f W observable)) = observable := by
+  let T := transportCoreEquationSystemExact R f
+  simpa [transportCoreSectionObservableEquiv, contextEqObservableEquiv, T] using
+    (dependentEquiv_section_triangle
+      (fun X => T.contextEquivalence.functor.obj X)
+      (fun X => T.contextEquivalence.inverse.obj X)
+      (fun X => X.ctx.Observable) (fun X => X.ctx.Observable)
+      (transportCoreContextFunctorInverse_obj_eq R f)
+      (transportCoreContextInverseFunctor_obj_eq R f)
+      (transportCoreObservableEquiv R f) W observable)
+
+/-- Canonical support comparison is natural in the selected context. -/
+theorem transportCoreSupportEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject R.equationReading.contextPreorder}
+    (w : W ⟶ V) (support : W.ctx.Support) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.map w))).supportMap
+        (transportCoreSupportEquiv R f W support) =
+      transportCoreSupportEquiv R f V
+        ((R.equationReading.contextPreorder.morphism (leOfHom w)).supportMap support) := by
+  unfold transportCoreEquationSystemExact transportCoreSupportEquiv
+  calc
+    _ = castEquationSystemExactTransportSupportEquiv R.equationReading
+        (transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading)
+        (transportedBaseObject_eq R f).symm f.atomEquiv
+        (transportArchitectureObject f.atomEquiv)
+        (transportEquationSystemExact f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder R.equationReading.equationSystem)
+        V
+        (((transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading).contextPreorder.morphism
+            (leOfHom
+              ((transportEquationSystemExact f.atomEquiv
+                (R.objectReading.object
+                  (R.composition.compose (R.doctrine.atomize R.source)
+                    R.family_listFinite))
+                R.equationReading.contextPreorder
+                R.equationReading.equationSystem).contextEquivalence.functor.map w))).supportMap
+          support) := castEquationSystemExactTransport_support_naturality
+            R.equationReading
+            (transportEquationReading f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading)
+            (transportedBaseObject_eq R f).symm f.atomEquiv
+            (transportArchitectureObject f.atomEquiv)
+            (transportEquationSystemExact f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading.contextPreorder R.equationReading.equationSystem)
+            w support
+    _ = _ := by
+      exact congrArg
+        (castEquationSystemExactTransportSupportEquiv R.equationReading
+          (transportEquationReading f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading)
+          (transportedBaseObject_eq R f).symm f.atomEquiv
+          (transportArchitectureObject f.atomEquiv)
+          (transportEquationSystemExact f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading.contextPreorder R.equationReading.equationSystem)
+          V)
+        (transportContextFunctor_supportMap f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder w support)
+
+/-- Canonical axis comparison is natural in the selected context. -/
+theorem transportCoreAxisEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject R.equationReading.contextPreorder}
+    (w : W ⟶ V) (axis : W.ctx.Axis) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.map w))).axisMap
+        (transportCoreAxisEquiv R f W axis) =
+      transportCoreAxisEquiv R f V
+        ((R.equationReading.contextPreorder.morphism (leOfHom w)).axisMap axis) := by
+  unfold transportCoreEquationSystemExact transportCoreAxisEquiv
+  calc
+    _ = castEquationSystemExactTransportAxisEquiv R.equationReading
+        (transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading)
+        (transportedBaseObject_eq R f).symm f.atomEquiv
+        (transportArchitectureObject f.atomEquiv)
+        (transportEquationSystemExact f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder R.equationReading.equationSystem)
+        V
+        (((transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading).contextPreorder.morphism
+            (leOfHom
+              ((transportEquationSystemExact f.atomEquiv
+                (R.objectReading.object
+                  (R.composition.compose (R.doctrine.atomize R.source)
+                    R.family_listFinite))
+                R.equationReading.contextPreorder
+                R.equationReading.equationSystem).contextEquivalence.functor.map w))).axisMap
+          axis) := castEquationSystemExactTransport_axis_naturality
+            R.equationReading
+            (transportEquationReading f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading)
+            (transportedBaseObject_eq R f).symm f.atomEquiv
+            (transportArchitectureObject f.atomEquiv)
+            (transportEquationSystemExact f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading.contextPreorder R.equationReading.equationSystem)
+            w axis
+    _ = _ := by
+      exact congrArg
+        (castEquationSystemExactTransportAxisEquiv R.equationReading
+          (transportEquationReading f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading)
+          (transportedBaseObject_eq R f).symm f.atomEquiv
+          (transportArchitectureObject f.atomEquiv)
+          (transportEquationSystemExact f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading.contextPreorder R.equationReading.equationSystem)
+          V)
+        (transportContextFunctor_axisMap f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder w axis)
+
+/-- Canonical observable comparison is natural in the selected context. -/
+theorem transportCoreObservableEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject R.equationReading.contextPreorder}
+    (w : W ⟶ V) (observable : V.ctx.Observable) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom
+          ((transportCoreEquationSystemExact R f).contextEquivalence.functor.map w))).observableRestrict
+        (transportCoreObservableEquiv R f V observable) =
+      transportCoreObservableEquiv R f W
+        ((R.equationReading.contextPreorder.morphism
+          (leOfHom w)).observableRestrict observable) := by
+  unfold transportCoreEquationSystemExact transportCoreObservableEquiv
+  calc
+    _ = castEquationSystemExactTransportObservableEquiv R.equationReading
+        (transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading)
+        (transportedBaseObject_eq R f).symm f.atomEquiv
+        (transportArchitectureObject f.atomEquiv)
+        (transportEquationSystemExact f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder R.equationReading.equationSystem)
+        W
+        (((transportEquationReading f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading).contextPreorder.morphism
+            (leOfHom
+              ((transportEquationSystemExact f.atomEquiv
+                (R.objectReading.object
+                  (R.composition.compose (R.doctrine.atomize R.source)
+                    R.family_listFinite))
+                R.equationReading.contextPreorder
+                R.equationReading.equationSystem).contextEquivalence.functor.map w))).observableRestrict
+          observable) := castEquationSystemExactTransport_observable_naturality
+            R.equationReading
+            (transportEquationReading f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading)
+            (transportedBaseObject_eq R f).symm f.atomEquiv
+            (transportArchitectureObject f.atomEquiv)
+            (transportEquationSystemExact f.atomEquiv
+              (R.objectReading.object
+                (R.composition.compose (R.doctrine.atomize R.source)
+                  R.family_listFinite))
+              R.equationReading.contextPreorder R.equationReading.equationSystem)
+            w observable
+    _ = _ := by
+      exact congrArg
+        (castEquationSystemExactTransportObservableEquiv R.equationReading
+          (transportEquationReading f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading)
+          (transportedBaseObject_eq R f).symm f.atomEquiv
+          (transportArchitectureObject f.atomEquiv)
+          (transportEquationSystemExact f.atomEquiv
+            (R.objectReading.object
+              (R.composition.compose (R.doctrine.atomize R.source)
+                R.family_listFinite))
+            R.equationReading.contextPreorder R.equationReading.equationSystem)
+          W)
+        (transportContextFunctor_observableRestrict f.atomEquiv
+          (R.objectReading.object
+            (R.composition.compose (R.doctrine.atomize R.source)
+              R.family_listFinite))
+          R.equationReading.contextPreorder w observable)
+
+/-- The canonical target-context support section is natural. -/
+theorem transportCoreSectionSupportEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder}
+    (w : W ⟶ V)
+    (support :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Support) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom w)).supportMap
+        (transportCoreSectionSupportEquiv R f W support) =
+      transportCoreSectionSupportEquiv R f V
+        ((R.equationReading.contextPreorder.morphism
+          (leOfHom
+            ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.map w))).supportMap
+          support) := by
+  let T := transportCoreEquationSystemExact R f
+  calc
+    _ = contextEqSupportEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f V)
+        (((transportCoreReading R f).equationReading.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map
+            (T.contextEquivalence.inverse.map w)))).supportMap
+          (transportCoreSupportEquiv R f (T.contextEquivalence.inverse.obj W) support)) :=
+      contextEqSupportEquiv_naturality
+        (transportCoreContextFunctorInverse_obj_eq R f W)
+        (transportCoreContextFunctorInverse_obj_eq R f V)
+        (T.contextEquivalence.functor.map (T.contextEquivalence.inverse.map w))
+        w (transportCoreSupportEquiv R f
+          (T.contextEquivalence.inverse.obj W) support)
+    _ = _ := congrArg
+      (contextEqSupportEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f V))
+      (transportCoreSupportEquiv_naturality R f
+        (T.contextEquivalence.inverse.map w) support)
+
+/-- The canonical target-context axis section is natural. -/
+theorem transportCoreSectionAxisEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder}
+    (w : W ⟶ V)
+    (axis :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj W).ctx.Axis) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom w)).axisMap
+        (transportCoreSectionAxisEquiv R f W axis) =
+      transportCoreSectionAxisEquiv R f V
+        ((R.equationReading.contextPreorder.morphism
+          (leOfHom
+            ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.map w))).axisMap
+          axis) := by
+  let T := transportCoreEquationSystemExact R f
+  calc
+    _ = contextEqAxisEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f V)
+        (((transportCoreReading R f).equationReading.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map
+            (T.contextEquivalence.inverse.map w)))).axisMap
+          (transportCoreAxisEquiv R f (T.contextEquivalence.inverse.obj W) axis)) :=
+      contextEqAxisEquiv_naturality
+        (transportCoreContextFunctorInverse_obj_eq R f W)
+        (transportCoreContextFunctorInverse_obj_eq R f V)
+        (T.contextEquivalence.functor.map (T.contextEquivalence.inverse.map w))
+        w (transportCoreAxisEquiv R f
+          (T.contextEquivalence.inverse.obj W) axis)
+    _ = _ := congrArg
+      (contextEqAxisEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f V))
+      (transportCoreAxisEquiv_naturality R f
+        (T.contextEquivalence.inverse.map w) axis)
+
+/-- The canonical target-context observable section is natural. -/
+theorem transportCoreSectionObservableEquiv_naturality {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    {W V : Site.ContextCategoryObject
+      (transportCoreReading R f).equationReading.contextPreorder}
+    (w : W ⟶ V)
+    (observable :
+      ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.obj V).ctx.Observable) :
+    ((transportCoreReading R f).equationReading.contextPreorder.morphism
+        (leOfHom w)).observableRestrict
+        (transportCoreSectionObservableEquiv R f V observable) =
+      transportCoreSectionObservableEquiv R f W
+        ((R.equationReading.contextPreorder.morphism
+          (leOfHom
+            ((transportCoreEquationSystemExact R f).contextEquivalence.inverse.map w))).observableRestrict
+          observable) := by
+  let T := transportCoreEquationSystemExact R f
+  calc
+    _ = contextEqObservableEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f W)
+        (((transportCoreReading R f).equationReading.contextPreorder.morphism
+          (leOfHom (T.contextEquivalence.functor.map
+            (T.contextEquivalence.inverse.map w)))).observableRestrict
+          (transportCoreObservableEquiv R f
+            (T.contextEquivalence.inverse.obj V) observable)) :=
+      contextEqObservableEquiv_naturality
+        (transportCoreContextFunctorInverse_obj_eq R f W)
+        (transportCoreContextFunctorInverse_obj_eq R f V)
+        (T.contextEquivalence.functor.map (T.contextEquivalence.inverse.map w))
+        w (transportCoreObservableEquiv R f
+          (T.contextEquivalence.inverse.obj V) observable)
+    _ = _ := congrArg
+      (contextEqObservableEquiv
+        (transportCoreContextFunctorInverse_obj_eq R f W))
+      (transportCoreObservableEquiv_naturality R f
+        (T.contextEquivalence.inverse.map w) observable)
+
+/--
+Canonical equation transport keeps the local support carrier of every context.
+
+This is the public carrier-level API used by the geometry stage; it exposes the
+data already present in `transportArchitectureContext` across the object cast
+performed by `transportCoreReading`.
+-/
+def transportCoreSupportComp {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Support →
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Support := by
+  exact castEquationSystemExactTransportSupport R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
+
+/-- Canonical equation transport keeps the local axis carrier of every context. -/
+def transportCoreAxisComp {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Axis →
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Axis := by
+  exact castEquationSystemExactTransportAxis R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
+
+/-- Canonical equation transport keeps the local observable carrier of every context. -/
+def transportCoreObservableComp {U : AtomCarrier.{u}}
+    {E : ExtractionDoctrine U} (R : CoreReading U)
+    (f : ExactDoctrineHom R.doctrine E)
+    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
+    W.ctx.Observable →
+      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Observable := by
+  exact castEquationSystemExactTransportObservable R.equationReading
+    (transportEquationReading f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading)
+    (transportedBaseObject_eq R f).symm f.atomEquiv
+    (transportArchitectureObject f.atomEquiv)
+    (transportEquationSystemExact f.atomEquiv
+      (R.objectReading.object
+        (R.composition.compose (R.doctrine.atomize R.source)
+          R.family_listFinite))
+      R.equationReading.contextPreorder R.equationReading.equationSystem) W
 
 /-- Canonical core transport retains the source equation index up to its cast. -/
 @[simp]

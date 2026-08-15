@@ -21,6 +21,17 @@ ResearchLean.AG.CanonicalResolution.JointKernel	ResearchLean/AG/CanonicalResolut
 ResearchLean.AG.CanonicalResolution.NegativeWitness	ResearchLean/AG/CanonicalResolution/NegativeWitness.lean
 ResearchLean.AG.CanonicalResolution.PositiveWitness	ResearchLean/AG/CanonicalResolution/PositiveWitness.lean
 ResearchLean.AG.CanonicalResolution.Reading	ResearchLean/AG/CanonicalResolution/Reading.lean
+ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
+ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
+ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean
+ResearchLean.AG.GeometryTransport.Components	ResearchLean/AG/GeometryTransport/Components.lean
+ResearchLean.AG.GeometryTransport.FactorLaws	ResearchLean/AG/GeometryTransport/FactorLaws.lean
+ResearchLean.AG.GeometryTransport.Factorization	ResearchLean/AG/GeometryTransport/Factorization.lean
+ResearchLean.AG.GeometryTransport.FiniteWitnesses	ResearchLean/AG/GeometryTransport/FiniteWitnesses.lean
+ResearchLean.AG.GeometryTransport.LiftUniqueness	ResearchLean/AG/GeometryTransport/LiftUniqueness.lean
+ResearchLean.AG.GeometryTransport.Opcartesian	ResearchLean/AG/GeometryTransport/Opcartesian.lean
+ResearchLean.AG.GeometryTransport.Supply	ResearchLean/AG/GeometryTransport/Supply.lean
+ResearchLean.AG.GeometryTransport.Transport	ResearchLean/AG/GeometryTransport/Transport.lean
 ResearchLean.AG.QualitySurface.AntichainOverlapBasisTransversal	ResearchLean/AG/QualitySurface/AntichainOverlapBasisTransversal.lean
 ResearchLean.AG.QualitySurface.ArbitraryBranchFamilyAdequacy	ResearchLean/AG/QualitySurface/ArbitraryBranchFamilyAdequacy.lean
 ResearchLean.AG.QualitySurface.BranchReflectionAdequacyKernel	ResearchLean/AG/QualitySurface/BranchReflectionAdequacyKernel.lean
