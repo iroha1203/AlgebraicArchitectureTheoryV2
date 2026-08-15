@@ -5,19 +5,23 @@
 - `priority`: `medium`
 - `research mode`: `target-theorem`(裁定事項: (B)(D) が「存在条件の
   同定」型で target statement を起票時に完全固定できないリスクがある。
-  n1005 §5-4-4 の mode 裁定に従い、active 昇格時に target-theorem の
-  まま行くか score-phase へ落とすかをユーザーが裁定する。本 draft は
-  target-theorem を既定とし、(B)(D) を「条件同定+反例」型 claim として
-  固定可能な形に書く)
+  n1005 §5「隊列」第4項の mode 裁定に従い、active 昇格時に
+  target-theorem のまま行くか score-phase へ落とすかをユーザーが裁定
+  する。本 draft は target-theorem を既定とし、(B)(D) を「条件同定+
+  反例」型 claim として固定可能な形に書く。**(D) の診断語彙は G-106 系
+  raw defect / reselection orbit に一本化済み**(2026-08-16 レビュー
+  是正。G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
+  係数 base change カードとの接続点)
 - `program context`: 登路上の位置は **Gr4(底の base change 完備)**
   (n1001 §3.5 達成階梯、n1005 §4.3)。「EGA 的な意味の相対性に届くのは
   Gr4」の当該カード。山頂前提の**係数** base change(ℚ→R)とは別軸で
   ある(n1005 §4.6)。隊列裁定(2026-08-15、Gr3/Gr4 系列先行)の
-  第三手。(E) のみ G-106 / G-109 の coherence に依存し、(A)–(D) は
-  Gr3 後半と並走可能。
+  第三手。**(E) のみ G-106 の合成 coherence に依存**(n1005 §4.3 の
+  記載どおり。G-109 依存は初稿の過剰記載でありレビューで棄却済み)し、
+  (A)–(D) は Gr3 後半と並走可能。
 - `predecessor`: G-101(`Doct_U` / `ExtInst_U` / opcartesian 普遍性)、
-  G-104 / G-107(「不変性+条件+反例」型の方法論資産)、G-106 /
-  G-109(閉性層 (E) の coherence 素材)。先行考察はスキーム射幾何
+  G-104 / G-107(「不変性+条件+反例」型の方法論資産)、G-106
+  (閉性層 (E) の合成 coherence 素材)。先行考察はスキーム射幾何
   ノート(fiber product・derived fiber product・functor of points の
   各節)。
 - `tracking issue`: 未起票(active 昇格裁定後に起票)
@@ -75,11 +79,17 @@
   存在条件を「lift が存在する」と同値な述語で立てる構成、(D) の成立
   条件を結論の言い換えで立てる構成、pullback square が退化(成分が
   恒等)して閉性が vacuous に立つ構成、診断が空(2-cell なし・障害
-  恒零)の図式での base change 可換性の発火。
+  恒零)の図式での base change 可換性の発火、**(C) の negative
+  witness を hom 空間が空・成分が恒等・診断が恒零の退化 square で
+  満たす構成**(安価な破れの排除)。
 - `frontier`: derived fiber product の観察、係数 base change(ℚ→R)
   カードとの接続点の記述、bifibration(cartesian 側の一般論)への
   拡張、`ObProblem` 段の class naturality と (D) の関係の観察、
-  jump-locus 相対幾何(n1005 §5-4-2)への含意。
+  jump-locus 相対幾何(n1005 §5「隊列」第4項の候補2)への含意、
+  **(D) の `J_A` defect profile 枝**(G-104 / G-107 語彙への拡張。
+  AtomFoundation doctrine 圏と K0 / K1 nerve 形式設定を結ぶ未建設の
+  橋を要するため本カードの claim から外す — 立てば G-107 → 山頂
+  直結路への supply となる)。
 
 - `target theorem`: **Doctrine Fiber Product and Base Change
   Theorem**。G-101 の設定の上で:
@@ -97,18 +107,17 @@
      での同型性を証明する。あわせて交換が破れる negative witness
      (非 pullback square または lax square 上での比較射の非同型)を
      構成する。
-  4. **(D) 診断の base change 可換性**: 障害・defect の構成(G-106
-     語彙の raw defect / orbit、または G-104 / G-107 語彙の
-     defect profile)が base change と可換になる成立条件 `H_bc` を
-     同定し、`H_bc` 下の可換性定理と、`H_bc` を満たさず可換性が
-     破れる反例を対で構成する。
+  4. **(D) 診断の base change 可換性**: 障害・defect の構成(**G-106
+     語彙の raw defect / reselection orbit に一本化**。`J_A` defect
+     profile への拡張は frontier)が base change と可換になる成立条件
+     `H_bc` を同定し、`H_bc` 下の可換性定理と、`H_bc` を満たさず
+     可換性が破れる反例を対で構成する。
   5. **(E) 閉性**: pullback square の貼り合わせ(水平・垂直合成)が
      再び pullback square であり、(C)(D) の比較射が貼り合わせと
-     整合する(G-106 / G-109 の合成 coherence を消費)ことを証明
-     する。
+     整合する(**G-106 の合成 coherence を消費**)ことを証明する。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下(新設)。
-  G-101 / G-106 / G-109 のモジュールは参照のみ。完了面は (A)–(E)
+  G-101 / G-106 のモジュールは参照のみ。完了面は (A)–(E)
   まで。(B)(D) の claim は「条件同定+十分性+反例」の三点セットで
   固定し、条件の必要十分化は frontier(G-107 の条件 C 必要十分化と
   同じ後続ハント様式)。derived 化・係数 base change・bifibration の
@@ -124,7 +133,7 @@
   比較射と正負の対 -> K3 診断 base change の条件同定と正負の対 ->
   K4 閉性と整合。既存成果の利用 map: G-101 opcartesian 普遍性
   (比較射の生成)、G-104 / G-107 の「不変性+条件+反例」構成法
-  (K3 の方法論)、G-106 / G-109 の合成 coherence(K4 の素材)、
+  (K3 の方法論)、G-106 の合成 coherence(K4 の素材)、
   `FiniteModel`(witness 計算)、スキーム射幾何ノートの fiber
   product 節(設計素材)。固定 statement と完了条件は本カードのみを
   正本とする。
@@ -143,7 +152,7 @@
   certificate や structure field で受け取るだけでは放電と数えない。
 - `target material premise ledger`:
   - `carrier U / FiniteModel`: `ambient-boundary`。witness 計算のみ。
-  - `G-101 / G-106 / G-109 の reviewed artifact`: `ambient-boundary`。
+  - `G-101 / G-106 の reviewed artifact`: `ambient-boundary`。
     参照のみ、改変しない。
   - `fiber product の普遍性と非退化性`: `discharge-required`。集合論的
     交わりへの退化を真部分 fiber witness で排除する。
@@ -151,7 +160,7 @@
     構成データ側の述語として立て、結論との同値を禁じる。
   - `Beck–Chevalley 比較射の同型と negative witness`:
     `discharge-required`。比較射は普遍性から生成する。
-  - `閉性と比較射整合`: `discharge-required`。G-106 / G-109 coherence の
+  - `閉性と比較射整合`: `discharge-required`。G-106 coherence の
     消費は proof term として明示する。
 - `target anti-weakening rule`: 結論相当の仮定(lift の存在、交換の
   同型性、診断可換性)を theorem argument、typeclass、structure
