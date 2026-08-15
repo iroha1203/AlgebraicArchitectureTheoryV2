@@ -1,7 +1,7 @@
 # G-108-aat-geometry-reading-transport — 塔上層(geometry 段)輸送の opcartesian lift 定理
 
 - `id`: `G-108-aat-geometry-reading-transport`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: 登路上の位置は **Gr3 前半**(n1005 §5-4-5 の (0)、
@@ -13,7 +13,9 @@
   `transportAlong` / opcartesian 普遍性。
   `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported)を
   土台として参照する。
-- `tracking issue`: 未起票(active 昇格裁定後に起票)
+- `tracking issue`: 未起票
+  (active 昇格はユーザー裁定済み 2026-08-15。成立は本カード同期 PR の
+  マージをもって。起票はマージ後、`$target-theorem-loop` 起動前に行う)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 仕様)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§5-4-5 Gr3 分解)
 - `research aim`: reading の塔
