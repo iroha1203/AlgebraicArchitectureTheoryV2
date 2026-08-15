@@ -28,36 +28,45 @@ open AtomFoundation
 structure CoverageTransport {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : PackageTotalHom G.core H.core) : Prop where
+  /-- G-108 contract (1): required support follows the Atom equivalence. -/
   requiredSupport : ∀ atom,
     G.geometry.requirements.requiredSupport atom →
       H.geometry.requirements.requiredSupport (f.upper.atomEquiv atom)
+  /-- G-108 contract (1): required equation coordinates follow the fixed subtype map. -/
   requiredEquationCoordinate : ∀ coordinate,
     G.geometry.requirements.requiredEquationCoordinate coordinate →
       H.geometry.requirements.requiredEquationCoordinate
         (requiredCoordinateMap f coordinate)
+  /-- G-108 contract (1): selected violations follow equation and Atom transport. -/
   selectedViolationWitness : ∀ coordinate,
     G.geometry.requirements.selectedViolationWitness coordinate →
       H.geometry.requirements.selectedViolationWitness
         (equationCoordinateMap f coordinate)
+  /-- G-108 contract (1): required signature axes follow the core axis map. -/
   requiredAxis : ∀ axis,
     G.geometry.requirements.requiredAxis axis →
       H.geometry.requirements.requiredAxis (f.upper.axisMap axis)
+  /-- G-108 contract (1): support visibility follows context and Atom transport. -/
   supportVisibleOn : ∀ W atom,
     G.geometry.requirements.supportVisibleOn W atom →
       H.geometry.requirements.supportVisibleOn
         (contextMap f W) (f.upper.atomEquiv atom)
+  /-- G-108 contract (1): required-coordinate visibility uses the fixed maps. -/
   equationCoordinateVisibleOn : ∀ W coordinate,
     G.geometry.requirements.equationCoordinateVisibleOn W coordinate →
       H.geometry.requirements.equationCoordinateVisibleOn
         (contextMap f W) (requiredCoordinateMap f coordinate)
+  /-- G-108 contract (1): violation visibility follows equation and context transport. -/
   violationWitnessVisibleOn : ∀ W coordinate,
     G.geometry.requirements.violationWitnessVisibleOn W coordinate →
       H.geometry.requirements.violationWitnessVisibleOn
         (contextMap f W) (equationCoordinateMap f coordinate)
+  /-- G-108 contract (1): axis readability follows context and signature-axis transport. -/
   axisReadableOn : ∀ W axis,
     G.geometry.requirements.axisReadableOn W axis →
       H.geometry.requirements.axisReadableOn
         (contextMap f W) (f.upper.axisMap axis)
+  /-- G-108 contract (1): selected boundaries follow both context endpoints. -/
   boundaryVisibleOn : ∀ W V,
     G.geometry.requirements.boundaryVisibleOn W V →
       H.geometry.requirements.boundaryVisibleOn
@@ -119,6 +128,7 @@ end CoverageTransport
 structure OverlapTransport {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : PackageTotalHom G.core H.core) where
+  /-- G-108 contract (2): the transported source overlap is isomorphic to the target overlap. -/
   overlapIso : ∀ base left right,
     contextForward f
         ⟨G.geometry.overlap.overlap
@@ -266,33 +276,55 @@ abbrev targetContextMorphism {U : AtomCarrier.{u}}
   H.core.contextPreorder.morphism
     (leOfHom ((contextFunctor f).map w))
 
+/-- G-108's non-generation clause is a derived target-core law, not supplied
+realization data: every mapped context arrow is a readable restriction. -/
+theorem coreContextFunctor_mappedNonGeneration {U : AtomCarrier.{u}}
+    {P Q : AATCorePackage U} (f : PackageTotalHom P Q)
+    {W V : Site.ContextCategoryObject P.contextPreorder} (w : W ⟶ V) :
+    Site.SupportMapNonGenerating
+      ((coreContextFunctor f).obj W).ctx ((coreContextFunctor f).obj V).ctx
+      (Q.contextPreorder.morphism
+        (leOfHom ((coreContextFunctor f).map w))).supportMap :=
+  Site.ContextMorphism.nonGenerating_of_restriction
+    (Q.contextPreorder.morphism_isRestriction
+      (leOfHom ((coreContextFunctor f).map w)))
+
 /--
 Low-level realization transport supply along a core-package morphism.
 
 This structure contains only the three local-carrier comparison families,
-their reading laws, their naturality, and the mapped non-generation law.  It
-does not mention a geometry lift, coverage transport, coefficients, or raw
-systems, so it is not a disguised `GeomReadHom` certificate.
+their reading laws, and their naturality.  The mapped non-generation law is
+the derived theorem `RealizationTransportSupply.mappedNonGeneration`; it is
+not caller-supplied data.  The structure does not mention a geometry lift,
+coverage transport, coefficients, or raw systems, so it is not a disguised
+`GeomReadHom` certificate.
 -/
 structure RealizationTransportSupply {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U) (f : PackageTotalHom P Q) where
+  /-- G-108 (v)(b) support-carrier comparison supplied along the core map. -/
   supportComp : ∀ W : Site.ContextCategoryObject P.contextPreorder,
     W.ctx.Support → ((coreContextFunctor f).obj W).ctx.Support
+  /-- G-108 (v)(b) axis-carrier comparison supplied along the core map. -/
   axisComp : ∀ W : Site.ContextCategoryObject P.contextPreorder,
     W.ctx.Axis → ((coreContextFunctor f).obj W).ctx.Axis
+  /-- G-108 (v)(b) observable-carrier comparison supplied along the core map. -/
   observableComp : ∀ W : Site.ContextCategoryObject P.contextPreorder,
     W.ctx.Observable → ((coreContextFunctor f).obj W).ctx.Observable
+  /-- Material support-reading preservation required by G-108 (v)(b). -/
   supportReads : ∀ (W : Site.ContextCategoryObject P.contextPreorder) support atom,
     W.ctx.minimal.supportReads support atom →
       ((coreContextFunctor f).obj W).ctx.minimal.supportReads
         (supportComp W support) (f.upper.atomEquiv atom)
+  /-- Material axis-reading preservation required by G-108 (v)(b). -/
   axisReads : ∀ (W : Site.ContextCategoryObject P.contextPreorder) axis,
     W.ctx.minimal.axisReads axis →
       ((coreContextFunctor f).obj W).ctx.minimal.axisReads (axisComp W axis)
+  /-- Material observable-reading preservation required by G-108 (v)(b). -/
   observableReads : ∀ (W : Site.ContextCategoryObject P.contextPreorder) observable,
     W.ctx.minimal.observableReads observable →
       ((coreContextFunctor f).obj W).ctx.minimal.observableReads
         (observableComp W observable)
+  /-- Support comparison commutes with readable context restriction. -/
   support_naturality : ∀ {W V : Site.ContextCategoryObject P.contextPreorder}
       (w : W ⟶ V) support,
     (Q.contextPreorder.morphism
@@ -300,12 +332,14 @@ structure RealizationTransportSupply {U : AtomCarrier.{u}}
         (supportComp W support) =
       supportComp V
         ((P.contextPreorder.morphism (leOfHom w)).supportMap support)
+  /-- Axis comparison commutes with readable context restriction. -/
   axis_naturality : ∀ {W V : Site.ContextCategoryObject P.contextPreorder}
       (w : W ⟶ V) axis,
     (Q.contextPreorder.morphism
       (leOfHom ((coreContextFunctor f).map w))).axisMap
-        (axisComp W axis) =
+      (axisComp W axis) =
       axisComp V ((P.contextPreorder.morphism (leOfHom w)).axisMap axis)
+  /-- Observable comparison commutes contravariantly with restriction. -/
   observable_naturality : ∀ {W V : Site.ContextCategoryObject P.contextPreorder}
       (w : W ⟶ V) observable,
     (Q.contextPreorder.morphism
@@ -313,12 +347,23 @@ structure RealizationTransportSupply {U : AtomCarrier.{u}}
         (observableComp V observable) =
       observableComp W
         ((P.contextPreorder.morphism (leOfHom w)).observableRestrict observable)
-  mappedNonGeneration : ∀ {W V : Site.ContextCategoryObject P.contextPreorder}
-      (w : W ⟶ V),
+
+namespace RealizationTransportSupply
+
+/-- Derived G-108 (v)(b) non-generation accessor.  Its provenance is the
+target core's restriction law, independently of every supplied comparison
+field and of geometry-lift existence. -/
+theorem mappedNonGeneration {U : AtomCarrier.{u}}
+    {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
+    (_H : RealizationTransportSupply P Q f)
+    {W V : Site.ContextCategoryObject P.contextPreorder} (w : W ⟶ V) :
     Site.SupportMapNonGenerating
       ((coreContextFunctor f).obj W).ctx ((coreContextFunctor f).obj V).ctx
       (Q.contextPreorder.morphism
-        (leOfHom ((coreContextFunctor f).map w))).supportMap
+        (leOfHom ((coreContextFunctor f).map w))).supportMap :=
+  coreContextFunctor_mappedNonGeneration f w
+
+end RealizationTransportSupply
 
 /-- G-108's named realization hypothesis for a geometry package over `P`. -/
 abbrev HGeom {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U)
@@ -335,33 +380,46 @@ the three context-indexed realization comparison families.
 structure GeomReadHom {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (baseHom : PackageTotalHom G.core H.core) where
+  /-- G-108 contract (1), supplied as forward coverage preservation. -/
   coverage : CoverageTransport G H baseHom
+  /-- G-108 contract (2), supplied as the selected overlap comparison. -/
   overlap : OverlapTransport G H baseHom
+  /-- G-108 contract (3), the forward coefficient-ring map. -/
   coefficientHom : G.Coefficient →+* H.Coefficient
+  /-- G-108 contract (4), identifying target raw data with base change and reindexing. -/
   raw_eq : H.raw = rawTransport baseHom coefficientHom
+  /-- G-108 contract (5), the context-indexed support comparison data. -/
   supportComp : ∀ W : G.site.category,
     W.ctx.Support → (contextForward baseHom W).ctx.Support
+  /-- G-108 contract (5), the context-indexed axis comparison data. -/
   axisComp : ∀ W : G.site.category,
     W.ctx.Axis → (contextForward baseHom W).ctx.Axis
+  /-- G-108 contract (5), the context-indexed observable comparison data. -/
   observableComp : ∀ W : G.site.category,
     W.ctx.Observable → (contextForward baseHom W).ctx.Observable
+  /-- Material support-reading preservation for contract (5). -/
   supportReads : ∀ (W : G.site.category) support atom,
     W.ctx.minimal.supportReads support atom →
       (contextForward baseHom W).ctx.minimal.supportReads
         (supportComp W support) (baseHom.upper.atomEquiv atom)
+  /-- Material axis-reading preservation for contract (5). -/
   axisReads : ∀ (W : G.site.category) axis,
     W.ctx.minimal.axisReads axis →
       (contextForward baseHom W).ctx.minimal.axisReads (axisComp W axis)
+  /-- Material observable-reading preservation for contract (5). -/
   observableReads : ∀ (W : G.site.category) observable,
     W.ctx.minimal.observableReads observable →
       (contextForward baseHom W).ctx.minimal.observableReads
         (observableComp W observable)
+  /-- Support comparison naturality along readable context arrows. -/
   support_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) support,
     (targetContextMorphism (f := baseHom) w).supportMap (supportComp W support) =
       supportComp V ((sourceContextMorphism w).supportMap support)
+  /-- Axis comparison naturality along readable context arrows. -/
   axis_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) axis,
     (targetContextMorphism (f := baseHom) w).axisMap (axisComp W axis) =
       axisComp V ((sourceContextMorphism w).axisMap axis)
+  /-- Observable comparison naturality, contravariant in context restriction. -/
   observable_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) observable,
     (targetContextMorphism (f := baseHom) w).observableRestrict
         (observableComp V observable) =
@@ -451,7 +509,9 @@ end GeomReadHom
 /-- A morphism in the geometry-stage total category. -/
 structure GeometryTotalHom {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
+  /-- The underlying G-101 core-package morphism, used by the projection functor. -/
   base : PackageTotalHom G.core H.core
+  /-- The full G-108 geometry hom lying over `base`. -/
   geometry : GeomReadHom G H base
 
 namespace GeometryTotalHom

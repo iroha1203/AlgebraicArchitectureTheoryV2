@@ -1,4 +1,5 @@
 import ResearchLean.AG.GeometryTransport.FactorLaws
+import Mathlib.CategoryTheory.FiberedCategory.Cocartesian
 
 /-!
 # Factorization and uniqueness
@@ -185,7 +186,10 @@ theorem geometryFactor_observable_fac {U : AtomCarrier.{u}}
     _ = H.observableComp W observable := congrArg (H.observableComp W)
       (canonicalSectionObservableEquiv_triangle G sigma W observable)
 
-/-- The componentwise factor reconstructs the supplied composite geometry hom. -/
+/-- G-108 (ii) factorization law: for an arbitrary G-101 core tail, the
+componentwise factor reconstructed from the supplied composite geometry hom
+composes with the canonical lift to that hom.  All component premises come
+from the input `H`; no factorization certificate is assumed. -/
 theorem geometryFactor_fac {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -202,8 +206,9 @@ theorem geometryFactor_fac {U : AtomCarrier.{u}}
   · exact geometryFactor_axis_fac G sigma tail H
   · exact geometryFactor_observable_fac G sigma tail H
 
-/-- Factoring the composite of the canonical hom with an arbitrary tail
-recovers the tail support comparison. -/
+/-- G-108 (ii) left-inverse law for the support component.  For an arbitrary
+tail geometry hom, the comparison is recovered from its own component and
+the canonical G-101 support equivalence. -/
 theorem geometryFactor_support_of_composite {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -242,7 +247,8 @@ theorem geometryFactor_support_of_composite {U : AtomCarrier.{u}}
           ((canonicalSectionSupportEquiv G sigma W).symm support) = support
       exact (canonicalSectionSupportEquiv G sigma W).apply_symm_apply support
 
-/-- Factoring a canonical composite recovers the tail axis comparison. -/
+/-- G-108 (ii) left-inverse law for the axis component, derived from an
+arbitrary tail hom and the canonical G-101 axis equivalence. -/
 theorem geometryFactor_axis_of_composite {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -280,7 +286,8 @@ theorem geometryFactor_axis_of_composite {U : AtomCarrier.{u}}
           ((canonicalSectionAxisEquiv G sigma W).symm axis) = axis
       exact (canonicalSectionAxisEquiv G sigma W).apply_symm_apply axis
 
-/-- Factoring a canonical composite recovers the tail observable comparison. -/
+/-- G-108 (ii) left-inverse law for the observable component, derived from an
+arbitrary tail hom and the canonical G-101 observable equivalence. -/
 theorem geometryFactor_observable_of_composite {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -320,7 +327,8 @@ theorem geometryFactor_observable_of_composite {U : AtomCarrier.{u}}
           ((canonicalSectionObservableEquiv G sigma W).symm observable) = observable
       exact (canonicalSectionObservableEquiv G sigma W).apply_symm_apply observable
 
-/-- Componentwise deconjugation is a left inverse to canonical composition. -/
+/-- G-108 (ii) componentwise deconjugation is a left inverse to canonical
+composition for every geometry hom over an arbitrary core tail. -/
 theorem geometryFactor_of_composite {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -336,8 +344,9 @@ theorem geometryFactor_of_composite {U : AtomCarrier.{u}}
   · exact geometryFactor_axis_of_composite G sigma tail T
   · exact geometryFactor_observable_of_composite G sigma tail T
 
-/-- The canonical total geometry hom followed by its constructed factor is
-the supplied total hom. -/
+/-- G-108 (ii) total factorization: the canonical geometry lift followed by
+the factor constructed from `h` is exactly `h`; `hbase` supplies only the
+required base-composite equality. -/
 theorem geometryTotalFactor_fac {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -355,8 +364,9 @@ theorem geometryTotalFactor_fac {U : AtomCarrier.{u}}
       (GeomReadHom.castBase hbase h.geometry))).trans
         (castBase_heq hbase h.geometry)
 
-/-- Every total factor over the supplied core-package tail is the constructed
-one. -/
+/-- G-108 (ii) uniqueness: every total factor over the supplied arbitrary
+core-package tail equals the componentwise factor.  The premise `hkfac` is
+the candidate factor equation, not a packaged uniqueness certificate. -/
 theorem geometryTotalFactor_unique {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -390,7 +400,9 @@ theorem geometryTotalFactor_unique {U : AtomCarrier.{u}}
   · exact hkbase
   · exact (castBase_heq hkbase k.geometry).symm.trans (heq_of_eq hkGeometry)
 
-/-- Explicit unique-factor form of canonical geometry transport. -/
+/-- G-108 (ii) explicit unique-factor theorem for canonical geometry
+transport, quantified over every G-101 core tail and every compatible total
+geometry hom. -/
 theorem geomTransportAlongHom_factor_existsUnique {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
@@ -408,9 +420,10 @@ theorem geomTransportAlongHom_factor_existsUnique {U : AtomCarrier.{u}}
   · intro k hk
     exact geometryTotalFactor_unique G sigma tail h hbase k hk.1 hk.2
 
-/-- Canonical geometry transport is strongly cocartesian over the projection
-to complete G-101 core packages.  The universal property ranges over every
-core-package tail. -/
+/-- G-108 (ii): canonical geometry transport is strongly cocartesian over the
+projection to complete G-101 core packages.  The certificate is constructed
+from the explicit existence-and-uniqueness theorem above and ranges over
+every core-package tail. -/
 theorem geomTransportAlongHom_isStronglyCocartesian {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}

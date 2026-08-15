@@ -26,9 +26,12 @@ open AtomFoundation
 /-- A geometry-category isomorphism whose two legs remain in one core fiber. -/
 structure GeometryFiberInnerIso {U : AtomCarrier.{u}}
     (C Q : GeometryPackage.{u, v} U) (hcore : C.core = Q.core) where
+  /-- The categorical geometry isomorphism supplied by cocartesian uniqueness. -/
   iso : C ≅ Q
+  /-- Its forward leg lies over the equality-induced map in the fixed core fiber. -/
   hom_base_eq : iso.hom.base =
     (eqToHom hcore : PackageTotalHom C.core Q.core)
+  /-- Its inverse leg lies over the reverse equality-induced core map. -/
   inv_base_eq : iso.inv.base =
     (eqToHom hcore.symm : PackageTotalHom Q.core C.core)
 
@@ -311,6 +314,7 @@ theorem invHomContext_eq {U : AtomCarrier.{u}}
       (show GeometryTotalHom Q Q from k).base W) e.iso.inv_hom_id
   exact h
 
+/-- Equality in the total support carrier reduces to the induced dependent cast. -/
 private theorem support_eq_of_sigma_eq {U : AtomCarrier.{u}}
     {P : AATCorePackage U}
     {W V : Site.ContextCategoryObject P.contextPreorder}
@@ -320,6 +324,7 @@ private theorem support_eq_of_sigma_eq {U : AtomCarrier.{u}}
   cases h
   rfl
 
+/-- Equality in the total axis carrier reduces to the induced dependent cast. -/
 private theorem axis_eq_of_sigma_eq {U : AtomCarrier.{u}}
     {P : AATCorePackage U}
     {W V : Site.ContextCategoryObject P.contextPreorder}
@@ -329,6 +334,7 @@ private theorem axis_eq_of_sigma_eq {U : AtomCarrier.{u}}
   cases h
   rfl
 
+/-- Equality in the total observable carrier reduces to the induced dependent cast. -/
 private theorem observable_eq_of_sigma_eq {U : AtomCarrier.{u}}
     {P : AATCorePackage U}
     {W V : Site.ContextCategoryObject P.contextPreorder}

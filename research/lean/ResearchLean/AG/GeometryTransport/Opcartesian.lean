@@ -1,5 +1,4 @@
 import ResearchLean.AG.GeometryTransport.Transport
-import Mathlib.CategoryTheory.FiberedCategory.Cocartesian
 
 /-!
 # Opcartesian geometry transport

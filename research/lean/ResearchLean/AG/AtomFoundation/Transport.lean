@@ -482,16 +482,6 @@ def transportContextEquivalence {U : AtomCarrier.{u}}
       (fun W => eqToIso (transportContextFunctorInverse_obj_eq e A C W))
       (by intros; apply Subsingleton.elim))
 
-/-- Selected readable morphisms respect equality of their dependent endpoints. -/
-private theorem readableMorphism_cast_heq {U : AtomCarrier.{u}}
-    {A : ArchitectureObject U} (C : Site.ContextPreorderCategory A)
-    {W V W' V' : Site.ArchCtx A} (hW : W' = W) (hV : V' = V)
-    (p : C.le W' V') (q : C.le W V) :
-    HEq (C.readableMorphism p) (C.readableMorphism q) := by
-  cases hW
-  cases hV
-  rfl
-
 /-- The support-map projection respects equality of dependent endpoints. -/
 private theorem readableMorphism_supportMap_cast_heq {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} (C : Site.ContextPreorderCategory A)
@@ -872,6 +862,17 @@ theorem transportAlong_source {U : AtomCarrier.{u}}
     (transportAlong P f).reading.source = f.sourceMap P.reading.source :=
   rfl
 
+/-- G-101 exact-transport provenance for source normalization.  This API
+lemma is derived from the direction hypothesis `f.normalize_eq`, rather than
+from the extraction-family comparison used by the upper reading lift. -/
+theorem transportAlong_normalize_source_eq {U : AtomCarrier.{u}}
+    (P : AATCorePackage U) {E : ExtractionDoctrine U}
+    (f : ExactDoctrineHom P.reading.doctrine E) :
+    (transportAlong P f).reading.doctrine.normalize
+        (transportAlong P f).reading.source =
+      f.sourceMap (P.reading.doctrine.normalize P.reading.source) := by
+  exact f.normalize_eq P.reading.source
+
 /-- Cast the target reading of an exact equation-system transport. -/
 private def castEquationSystemExactTransport {U : AtomCarrier.{u}}
     {A₀ A B : ArchitectureObject U}
@@ -1008,59 +1009,6 @@ private theorem castEquationSystemExactTransport_inverse_functor_obj_eq
       W := by
   cases h
   exact hcancel W
-
-/-- Cast support-read preservation together with the target reading. -/
-private theorem castEquationSystemExactTransport_supportReads {U : AtomCarrier.{u}}
-    {A₀ A B : ArchitectureObject U}
-    (R : EquationReading A₀) (S : EquationReading A)
-    (h : A = B) (e : U.Atom ≃ U.Atom)
-    (objectMap : ArchitectureObject U → ArchitectureObject U)
-    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
-      e objectMap)
-    (W : Site.ContextCategoryObject R.contextPreorder)
-    (support : (T.contextEquivalence.functor.obj W).ctx.Support)
-    (atom : U.Atom)
-    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.supportReads
-      support atom) :
-    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
-        W).ctx.minimal.supportReads
-      (castEquationSystemExactTransportSupport R S h e objectMap T W support) atom := by
-  cases h
-  exact hread
-
-/-- Cast axis-read preservation together with the target reading. -/
-private theorem castEquationSystemExactTransport_axisReads {U : AtomCarrier.{u}}
-    {A₀ A B : ArchitectureObject U}
-    (R : EquationReading A₀) (S : EquationReading A)
-    (h : A = B) (e : U.Atom ≃ U.Atom)
-    (objectMap : ArchitectureObject U → ArchitectureObject U)
-    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
-      e objectMap)
-    (W : Site.ContextCategoryObject R.contextPreorder)
-    (axis : (T.contextEquivalence.functor.obj W).ctx.Axis)
-    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.axisReads axis) :
-    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
-        W).ctx.minimal.axisReads
-      (castEquationSystemExactTransportAxis R S h e objectMap T W axis) := by
-  cases h
-  exact hread
-
-/-- Cast observable-read preservation together with the target reading. -/
-private theorem castEquationSystemExactTransport_observableReads {U : AtomCarrier.{u}}
-    {A₀ A B : ArchitectureObject U}
-    (R : EquationReading A₀) (S : EquationReading A)
-    (h : A = B) (e : U.Atom ≃ U.Atom)
-    (objectMap : ArchitectureObject U → ArchitectureObject U)
-    (T : EquationSystemExactTransport R.equationSystem S.equationSystem
-      e objectMap)
-    (W : Site.ContextCategoryObject R.contextPreorder)
-    (observable : (T.contextEquivalence.functor.obj W).ctx.Observable)
-    (hread : (T.contextEquivalence.functor.obj W).ctx.minimal.observableReads observable) :
-    ((castEquationSystemExactTransport R S h e objectMap T).contextEquivalence.functor.obj
-        W).ctx.minimal.observableReads
-      (castEquationSystemExactTransportObservable R S h e objectMap T W observable) := by
-  cases h
-  exact hread
 
 /-- Casting the target reading does not change support readability. -/
 private theorem castEquationSystemExactTransport_supportReads_iff

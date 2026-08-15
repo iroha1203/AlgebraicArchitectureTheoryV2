@@ -17,20 +17,6 @@ universe u v
 open CategoryTheory
 open AtomFoundation
 
-/-- The image of every selected context arrow is non-generating.  This is
-derived from the target core's readable-context structure, independently of
-any geometry lift. -/
-theorem coreContextFunctor_mappedNonGeneration {U : AtomCarrier.{u}}
-    {P Q : AATCorePackage U} (f : PackageTotalHom P Q)
-    {W V : Site.ContextCategoryObject P.contextPreorder} (w : W ⟶ V) :
-    Site.SupportMapNonGenerating
-      ((coreContextFunctor f).obj W).ctx ((coreContextFunctor f).obj V).ctx
-      (Q.contextPreorder.morphism
-        (leOfHom ((coreContextFunctor f).map w))).supportMap :=
-  Site.ContextMorphism.nonGenerating_of_restriction
-    (Q.contextPreorder.morphism_isRestriction
-      (leOfHom ((coreContextFunctor f).map w)))
-
 /-- Transport geometry components while allowing an arbitrary forward
 coefficient hom.  The target coverage and overlap are still generated freely
 from the core hom; the raw system is coefficient base change followed by
@@ -110,9 +96,13 @@ theorem geomReadHomComponentsWithCoefficient {U : AtomCarrier.{u}}
 structure NonRealizationComponentTransport {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {Q : AATCorePackage U}
     (f : PackageTotalHom G.core Q) where
+  /-- G-108 (v)(a): the freely pushed target preserves all coverage requirements. -/
   coverage : CoverageTransport G (pushGeometryPackage G f) f
+  /-- G-108 (v)(a): selected overlaps are carried to the freely pushed target. -/
   overlap : OverlapTransport G (pushGeometryPackage G f) f
+  /-- G-108 (v)(a): canonical non-realization transport keeps coefficients fixed. -/
   coefficientHom : G.Coefficient →+* (pushGeometryPackage G f).Coefficient
+  /-- G-108 (v)(a): the target raw system is the prescribed reindexing/base change. -/
   raw_eq : (pushGeometryPackage G f).raw =
     rawTransport f coefficientHom
 
@@ -185,7 +175,6 @@ def hGeomOfGeomReadHom {U : AtomCarrier.{u}}
   support_naturality := F.support_naturality
   axis_naturality := F.axis_naturality
   observable_naturality := F.observable_naturality
-  mappedNonGeneration := coreContextFunctor_mappedNonGeneration f
 
 /-- Necessity of `HGeom` for any geometry lift over `f`. -/
 theorem hGeom_necessary {U : AtomCarrier.{u}}
@@ -245,8 +234,6 @@ noncomputable def canonicalHGeom {U : AtomCarrier.{u}}
     simpa [geomTransportObservableComp, coreContextFunctor,
       transportAlongHom, transportAlongUpper] using
       transportCoreObservableEquiv_naturality G.core.reading sigma w observable
-  mappedNonGeneration :=
-    coreContextFunctor_mappedNonGeneration (transportAlongHom G.core sigma)
 
 /-- The canonical realization condition is inhabited for every source
 geometry package and exact doctrine hom. -/

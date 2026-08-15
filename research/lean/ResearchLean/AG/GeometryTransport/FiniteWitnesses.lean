@@ -407,8 +407,11 @@ theorem coreHom_profile_ne_tautological :
 target in the package makes selected and canonical lifts directly comparable
 in one type. -/
 structure CoreLiftRoute where
+  /-- The core package reached by this selected lift route. -/
   target : AATCorePackage FiniteModel.carrier
+  /-- The actual G-101 total morphism from the fixed negative source. -/
   hom : PackageTotalHom exactSourceCore target
+  /-- Proof that the route lies over the selected exact doctrine hom. -/
   lower_eq : HEq hom.base.doctrineHom doctrineHom
 
 namespace CoreLiftRoute
@@ -444,11 +447,13 @@ theorem coreHom_ne_tautological :
     CoreLiftRoute.supportProfile] using
     congrArg CoreLiftRoute.supportProfile h
 
-/-- The core-stage arrow itself is an inhabited lift over its exact lower
-doctrine map. -/
+/-- G-108 (v)(e): the selected core-stage lift exists and lies over exactly
+the fixed nonidentity exact doctrine hom.  This conclusion records the lower
+map rather than merely the inhabitation of an unrelated hom type. -/
 theorem core_stage_lift_exists :
-    Nonempty (PackageTotalHom exactSourceCore exactTargetCore) :=
-  ⟨coreHom⟩
+    ∃ f : PackageTotalHom exactSourceCore exactTargetCore,
+      f.base.doctrineHom = doctrineHom :=
+  ⟨coreHom, coreHom_base_doctrineHom⟩
 
 /-- No low-level realization supply exists for the negative core hom. -/
 theorem not_hGeom : ¬ Nonempty (HGeom package coreHom) := by

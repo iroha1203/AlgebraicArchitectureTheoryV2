@@ -27,6 +27,19 @@ open AtomFoundation
       pushSelectedGeometry G (transportAlongHom G.core sigma) :=
   rfl
 
+/-- G-108 (ii)/(iv) exactness provenance for the canonical geometry target:
+its transported source commutes with doctrine normalization.  Unlike the Atom
+family equations, this standalone component law uses `sigma.normalize_eq`
+through the reviewed G-101 transport API. -/
+theorem geomTransportAlong_normalize_source_eq {U : AtomCarrier.{u}}
+    (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
+    (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
+    (geomTransportAlong G sigma).core.reading.doctrine.normalize
+        (geomTransportAlong G sigma).core.reading.source =
+      sigma.sourceMap
+        (G.core.reading.doctrine.normalize G.core.reading.source) := by
+  exact transportAlong_normalize_source_eq G.core sigma
+
 /-- The transported requirements are exactly the free forward coverage predicates. -/
 @[simp] theorem geomTransportAlong_requirements_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
