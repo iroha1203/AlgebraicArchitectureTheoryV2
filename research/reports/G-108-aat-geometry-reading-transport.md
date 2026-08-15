@@ -17,13 +17,13 @@
   `67a94101084bebb87245f05c0a6c6b42f09ef84ca1d6c35c47d3956b82edad6a`
 - implementation base: `d9ad65625ec61569e3562bc0d775dbf2fce58c40`
 - fixed review head: `pending`
-- implementation PR: `pending`
-- standard PR review: `pending`
+- implementation PR: [#4015](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4015)
+- standard PR review: `d0ba900d...` で Major revisions、修正 head の再査読待ち
 - formal completion review: `pending (Math A / Math B / Lean A / Lean B)`
 - fixed GOAL claims (i)--(v): Lean artifact 接続済み
 - remaining known mathematical proof obligations: `[]`
 - unchecked completion gates:
-  - standard `$review-pr` の固定 head 監査
+  - 修正 head に対する standard `$review-pr` 4 lane 再監査
   - root acceptance recheck
   - final packet に対する独立 `$math-lean-review` 4 lane
   - GitHub CI
@@ -104,6 +104,12 @@ categorical `Iso` の両 leg は full `GeomReadHom` contract を持ち、その�
 - reading compatibility: `supportComparison_reads_iff` /
   `axisComparison_reads_iff` / `observableComparison_reads_iff`
 
+一般 API だけでなく、`pairConcreteFiberIso` は同一 core fiber 内の正逆
+geometry hom を具体的に構成する。その `coefficientEquiv` が
+`(1, 0)` を `(0, 1)` へ送ることを
+`pairConcreteFiberIso_coefficient_fires` が証明する。これは GOAL が (iii) に
+配置した非恒等 coefficient action の finite witness である。
+
 source: [`LiftUniqueness.lean`](../lean/ResearchLean/AG/GeometryTransport/LiftUniqueness.lean)
 
 ### (iv) standalone 成分等式、生成位相、Formal finite instantiation
@@ -173,10 +179,26 @@ negative witness は `NegativeGeometryWitness.coreHom` を使う。
 - `target_candidate_class_nonempty`: target package 候補 class 自体は非空
 
 負例 source についても `cover_mem_topology`、`coefficient_nontrivial`、
-`raw_relation_nonzero` が非退化性を構成から証明する。さらに
-`source_not_requires_componentB` / `target_requires_componentB` が site requirement
-の値変化を、`pairRaw_value_changes` が非恒等 coefficient base change 後の raw
-polynomial の実値変化を証明する。
+`raw_relation_nonzero` が非退化性を構成から証明する。
+`no_coverageTransport_to_emptyTarget` は新規 Prop certificate
+`CoverageTransport` 自体の concrete negative instance である。
+
+非自明性 witness は、係数を `RingHom.id Int` に固定した同一の
+canonical Atom-swap route 上で次の二点を同時に証明する。
+
+- `transportedFiringCover` は `pushAATCoverageFamily` が構成する actual
+  `AATCoverageFamily`。その patch は component B を読み、target の
+  A-readable reference patch と実際に不等であることを
+  `transportedFiringCover_patch_ne_targetComponentAReference` が証明する。
+  `firingCover_patch_readProfile_changes` は actual source / transported patch の
+  共通 Atom-indexed read profile が A-readable から non-A-readable へ変わることも
+  直接証明する。
+  requirement predicate の値差で代用していない。
+- `signedRaw_source_A_value` / `signedRaw_target_A_value` は、同じ
+  A-readable semantic slot で raw relation が `X` から `-X` へ
+  inverse-context reindex されることを計算する。
+  `signedRaw_value_changes` がその polynomial 実値の不等を証明する。
+  差の証明式に非恒等 coefficient map は現れない。
 
 source: [`Supply.lean`](../lean/ResearchLean/AG/GeometryTransport/Supply.lean)、
 [`FiniteWitnesses.lean`](../lean/ResearchLean/AG/GeometryTransport/FiniteWitnesses.lean)
@@ -216,8 +238,11 @@ source: [`Supply.lean`](../lean/ResearchLean/AG/GeometryTransport/Supply.lean)�
 - necessity:
   `hGeomOfGeomReadHom` が geometry hom の realization fields と、target core の
   derived non-generation theoremだけから抽出。
-- positive / negative / target-candidate / site+raw firing:
-  `FiniteWitnesses.lean` の closed fixturesから証明。
+- positive / negative / target-candidate / coverage-negative / cover+raw firing /
+  coefficient fiber iso:
+  `FiniteWitnesses.lean` の closed fixturesから証明。site/raw firing は
+  canonical identity-coefficient route、coefficient firing は別の同一-core fiber
+  isomorphism に分離している。
 - component / topology equations:
   `Components.lean` が canonical construction から導出。
 
@@ -227,6 +252,10 @@ source: [`Supply.lean`](../lean/ResearchLean/AG/GeometryTransport/Supply.lean)�
   fieldとして入力していない。
 - `HGeom` は coverage、overlap、coefficient、raw、lift existenceを持たない。
   十分性は `geometryLiftOfHGeom`、必要性は `hGeom_necessary` という別 theorem。
+- `HGeom.mappedNonGeneration` は固定 GOAL が求める field だが、
+  `coreContextFunctor_mappedNonGeneration` から任意の core hom に導出できる。
+  そのため `geomReadHomOfHGeom` の十分性 proof では未使用であり、
+  material direction hypothesis としては数えない。
 - canonical route、supplied-HGeom route、arbitrary-tail route は別 declaration で
   証拠 provenance を保つ。
 - positive route は非恒等 exact Atom action、実 cover、非零係数、非零 relation、
@@ -250,17 +279,19 @@ import 方向は `ResearchLean -> Formal` のみで、`Formal/AG` は変更し�
 ```text
 cd research/lean
 lake env lean ResearchLean/AG/GeometryTransport/FiniteWitnesses.lean
-  -> axiom audit: 85 declarations under AAT.AG.GeometryTransport,
+  -> axiom audit: 116 declarations under AAT.AG.GeometryTransport,
      standard axioms only
 
-lake build ResearchLean.AG.GeometryTransport.Components
-  -> Build completed successfully
-
-lake build ResearchLean.AG.GeometryTransport.FiniteWitnesses
-  -> Build completed successfully
+lake env lean ResearchLean/AG/AtomFoundation/Transport.lean
+  -> axiom audit: 97 declarations under AAT.AG.AtomFoundation,
+     standard axioms only
 
 lake build ResearchLean.AG.GeometryTransport
-  -> Build completed successfully
+  -> Build completed successfully (4003 jobs)
+
+research/lean/check_research_modules.sh --focused \
+  ResearchLean/AG/GeometryTransport.lean
+  -> Research single-file focused check passed
 ```
 
 各 module 末尾の `#assert_standard_axioms_only AAT.AG.GeometryTransport` と、
@@ -313,13 +344,26 @@ placeholder / hidden-BiDi / privacy / import-direction scans
 - result: `proof-obligation-discharged`
 - principal artifacts: `LiftUniqueness.lean`, `Components.lean`
 
-### Cycle 5 — closed positive/negative portfolio and completion candidate
+### Cycle 5 — initial witness candidate rejected by standard review
+
+- selected obligation: positive/negative/nonvacuity portfolio
+- initial delta: requirement predicate の差と coefficient swap による raw 値差
+- standard review result on `d0ba900d...`: `Major revisions`
+- refutation: actual site object / cover family の差ではなく、raw 値差も
+  nonidentity core transport ではなく coefficient swap だけに依存していた
+- additional findings: overlap UP theorem が transport datum を未使用、
+  `CoverageTransport` 負例欠落、未使用 API、docstring 欠落、
+  `mappedNonGeneration` proof-use 台帳の過大申告
+- result: `proof-obligation-returned`
+
+### Cycle 6 — literal cover/raw firing and review remediation
 
 ```yaml
 ledger_type: target_cycle_result
 goal: G-108-aat-geometry-reading-transport
-cycle: 5
-goal_blob_sha: 67a94101084bebb87245f05c0a6c6b42f09ef84ca1d6c35c47d3956b82edad6a
+cycle: 6
+goal_blob_sha: a689fbb20d403cffb9af95eb43bfac9a742acf03
+goal_sha256: 67a94101084bebb87245f05c0a6c6b42f09ef84ca1d6c35c47d3956b82edad6a
 base_oid: d9ad65625ec61569e3562bc0d775dbf2fce58c40
 tracking_issue: 4013
 report_path: research/reports/G-108-aat-geometry-reading-transport.md
@@ -338,18 +382,22 @@ selection:
     - negative route could be vacuous
     - non-tautological claim could rely only on target types
     - HGeom could be uninhabited
-    - site/raw firing could reduce to index relabeling
+    - site/raw firing could reduce to a requirement predicate or coefficient action
   unchecked:
     - fixed-head independent review
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: closed Formal instantiation, positive HGeom firing, no-lift witness, and site/raw value change
+  proof_obligation_delta: closed Formal instantiation, positive HGeom firing, no-lift witness, literal cover-patch change, identity-coefficient raw change, and coefficient fiber iso
   completion_candidate: yes
   lean_artifacts:
     - FiniteGeometryWitness package and positiveLift
     - NegativeGeometryWitness coreHom, not_hGeom, no_geometryLift_to_any_target
     - NegativeGeometryWitness coreHom_ne_tautological
-    - NegativeGeometryWitness pairRaw_value_changes
+    - NegativeGeometryWitness transportedFiringCover_patch_ne_targetComponentAReference
+    - NegativeGeometryWitness firingCover_patch_readProfile_changes
+    - NegativeGeometryWitness signedRaw_value_changes
+    - NegativeGeometryWitness pairConcreteFiberIso_coefficient_fires
+    - NegativeGeometryWitness no_coverageTransport_to_emptyTarget
   evidence:
     - concrete nondegeneracy theorems
     - target_candidate_class_nonempty
@@ -361,7 +409,10 @@ result:
       - coreHom_ne_tautological
       - not_hGeom
       - no_geometryLift_to_any_target
-      - pairRaw_value_changes
+      - transportedFiringCover_patch_ne_targetComponentAReference
+      - firingCover_patch_readProfile_changes
+      - signedRaw_value_changes
+      - pairConcreteFiberIso_coefficient_fires
     source_labels:
       - target theorem (iv)
       - target theorem (v)(a)-(e)
@@ -370,7 +421,8 @@ result:
       - HGeom positive inhabitation and lift firing
       - non-tautological exact core lift with no geometry lift
       - nonempty target candidate class
-      - site and raw actual value change
+      - actual cover-family patch and identity-coefficient raw value change
+      - nonidentity coefficient action in a concrete fiber isomorphism
     undischarged_assumptions: []
     acceptance_point: all fixed target artifacts are connected; formal completion review remains a gate
     port_status: unported
@@ -393,9 +445,12 @@ audits:
     used:
       - exact Atom equivalences
       - cross-context supportReads
-      - coefficient baseChange
+      - actual AATCoverageFamily patch transport
+      - identity-coefficient inverse-context raw reindex
       - actual raw polynomial evaluation
-    unused: []
+      - coefficient baseChange in the separate fiber-isomorphism example
+    unused:
+      - HGeom.mappedNonGeneration (derived for every core hom; retained by fixed GOAL, non-material to sufficiency)
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
@@ -403,10 +458,13 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused FiniteWitnesses check, 85 declarations, standard axioms only
+    - focused FiniteWitnesses check, 116 declarations, standard axioms only
     - targeted GeometryTransport build success
   blocking_findings: []
-  next_obligation: fixed-head standard PR review and final four-lane completion review
+  review_history:
+    - d0ba900d standard four-lane review: Major revisions on site/raw firing; overlap proof-use and quality findings also collected
+    - current remediation: literal cover patch, identity-coefficient raw firing, concrete coefficient fiber iso, overlap transport use, negative CoverageTransport, docstrings
+  next_obligation: commit and push remediation, then fixed-head standard four-lane review rerun
 ```
 
 ## Current completion ledger
@@ -417,6 +475,7 @@ goal: G-108-aat-geometry-reading-transport
 verdict: target-proof-checkpoint
 target_theorem: Geometry Reading Transport Opcartesian Lift Theorem
 completion_criteria_status: implementation-satisfied-review-pending
+standard_review_gate: d0ba900d-major-revisions-remediated-rerun-pending
 math_lean_review_gate: pending
 target_proved_gate: fail-closed-pending-review
 material_premise_ledger_audit: root-pass-review-pending

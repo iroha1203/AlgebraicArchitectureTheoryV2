@@ -47,6 +47,7 @@ noncomputable def pushGeometryPackageWithCoefficient {U : AtomCarrier.{u}}
   raw := rawReindexCore G.geometry (pushSelectedGeometry G f) f
     (G.raw.baseChange coeff)
 
+/-- Arbitrary-coefficient push retains exactly the supplied target core. -/
 @[simp] theorem pushGeometryPackageWithCoefficient_core {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {Q : AATCorePackage U}
     (f : PackageTotalHom G.core Q)
@@ -54,6 +55,7 @@ noncomputable def pushGeometryPackageWithCoefficient {U : AtomCarrier.{u}}
     (pushGeometryPackageWithCoefficient G f k coeff).core = Q :=
   rfl
 
+/-- The pushed raw system is coefficient base change followed by core reindexing. -/
 @[simp] theorem pushGeometryPackageWithCoefficient_raw {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {Q : AATCorePackage U}
     (f : PackageTotalHom G.core Q)
@@ -161,6 +163,7 @@ noncomputable def geometryLiftOfHGeom {U : AtomCarrier.{u}}
   base := f
   geometry := geomReadHomOfHGeom G f H
 
+/-- The lift constructed from `HGeom` lies over the original core hom. -/
 @[simp] theorem geometryLiftOfHGeom_base {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {Q : AATCorePackage U}
     (f : PackageTotalHom G.core Q) (H : HGeom G f) :

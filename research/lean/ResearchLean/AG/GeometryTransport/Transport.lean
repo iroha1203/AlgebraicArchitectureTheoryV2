@@ -173,13 +173,6 @@ noncomputable def geomTransportAlong {U : AtomCarrier.{u}}
     GeometryPackage.{u, v} U :=
   pushGeometryPackage G (transportAlongHom G.core sigma)
 
-/-- Reindex an architecture context along equality of its architecture object. -/
-def castArchitectureContext {U : AtomCarrier.{u}}
-    {A B : ArchitectureObject U} (h : A = B)
-    (W : Site.ArchitectureContext A) : Site.ArchitectureContext B := by
-  cases h
-  exact W
-
 /-- Canonical geometry transport projects to G-101's canonical core transport. -/
 @[simp] theorem geomTransportAlong_core {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)

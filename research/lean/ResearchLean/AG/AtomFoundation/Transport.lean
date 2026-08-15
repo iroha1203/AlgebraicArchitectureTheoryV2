@@ -584,40 +584,6 @@ theorem transportContextFunctor_observableRestrict {U : AtomCarrier.{u}}
       (C.readableMorphism q).observableRestrict := eq_of_heq hm
   exact congrFun hm' observable
 
-/-- The inverse context functor exposes the transported support map. -/
-theorem transportContextInverse_supportMap {U : AtomCarrier.{u}}
-    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
-    (C : Site.ContextPreorderCategory A)
-    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
-    (w : W ⟶ V) (support : W.ctx.Support) :
-    (C.morphism (leOfHom ((transportContextInverse e A C).map w))).supportMap support =
-      ((transportContextPreorder e A C).morphism
-        (leOfHom w)).supportMap support := by
-  rfl
-
-/-- The inverse context functor exposes the transported axis map. -/
-theorem transportContextInverse_axisMap {U : AtomCarrier.{u}}
-    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
-    (C : Site.ContextPreorderCategory A)
-    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
-    (w : W ⟶ V) (axis : W.ctx.Axis) :
-    (C.morphism (leOfHom ((transportContextInverse e A C).map w))).axisMap axis =
-      ((transportContextPreorder e A C).morphism
-        (leOfHom w)).axisMap axis := by
-  rfl
-
-/-- The inverse context functor exposes the transported observable restriction. -/
-theorem transportContextInverse_observableRestrict {U : AtomCarrier.{u}}
-    (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
-    (C : Site.ContextPreorderCategory A)
-    {W V : Site.ContextCategoryObject (transportContextPreorder e A C)}
-    (w : W ⟶ V) (observable : V.ctx.Observable) :
-    (C.morphism
-        (leOfHom ((transportContextInverse e A C).map w))).observableRestrict observable =
-      ((transportContextPreorder e A C).morphism
-        (leOfHom w)).observableRestrict observable := by
-  rfl
-
 /-- Transport an architectural equation system by context, object, and Atom conjugation. -/
 def transportEquationSystem {U : AtomCarrier.{u}}
     (e : U.Atom ≃ U.Atom) (A : ArchitectureObject U)
@@ -2094,75 +2060,6 @@ theorem transportCoreSectionObservableEquiv_naturality {U : AtomCarrier.{u}}
         (transportCoreContextFunctorInverse_obj_eq R f W))
       (transportCoreObservableEquiv_naturality R f
         (T.contextEquivalence.inverse.map w) observable)
-
-/--
-Canonical equation transport keeps the local support carrier of every context.
-
-This is the public carrier-level API used by the geometry stage; it exposes the
-data already present in `transportArchitectureContext` across the object cast
-performed by `transportCoreReading`.
--/
-def transportCoreSupportComp {U : AtomCarrier.{u}}
-    {E : ExtractionDoctrine U} (R : CoreReading U)
-    (f : ExactDoctrineHom R.doctrine E)
-    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
-    W.ctx.Support →
-      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Support := by
-  exact castEquationSystemExactTransportSupport R.equationReading
-    (transportEquationReading f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading)
-    (transportedBaseObject_eq R f).symm f.atomEquiv
-    (transportArchitectureObject f.atomEquiv)
-    (transportEquationSystemExact f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading.contextPreorder R.equationReading.equationSystem) W
-
-/-- Canonical equation transport keeps the local axis carrier of every context. -/
-def transportCoreAxisComp {U : AtomCarrier.{u}}
-    {E : ExtractionDoctrine U} (R : CoreReading U)
-    (f : ExactDoctrineHom R.doctrine E)
-    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
-    W.ctx.Axis →
-      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Axis := by
-  exact castEquationSystemExactTransportAxis R.equationReading
-    (transportEquationReading f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading)
-    (transportedBaseObject_eq R f).symm f.atomEquiv
-    (transportArchitectureObject f.atomEquiv)
-    (transportEquationSystemExact f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading.contextPreorder R.equationReading.equationSystem) W
-
-/-- Canonical equation transport keeps the local observable carrier of every context. -/
-def transportCoreObservableComp {U : AtomCarrier.{u}}
-    {E : ExtractionDoctrine U} (R : CoreReading U)
-    (f : ExactDoctrineHom R.doctrine E)
-    (W : Site.ContextCategoryObject R.equationReading.contextPreorder) :
-    W.ctx.Observable →
-      ((transportCoreEquationSystemExact R f).contextEquivalence.functor.obj W).ctx.Observable := by
-  exact castEquationSystemExactTransportObservable R.equationReading
-    (transportEquationReading f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading)
-    (transportedBaseObject_eq R f).symm f.atomEquiv
-    (transportArchitectureObject f.atomEquiv)
-    (transportEquationSystemExact f.atomEquiv
-      (R.objectReading.object
-        (R.composition.compose (R.doctrine.atomize R.source)
-          R.family_listFinite))
-      R.equationReading.contextPreorder R.equationReading.equationSystem) W
 
 /-- Canonical core transport retains the source equation index up to its cast. -/
 @[simp]

@@ -19,6 +19,7 @@ open AtomFoundation
 
 /-! ## Standalone component computations -/
 
+/-- Canonical geometry transport uses the freely pushed selected geometry. -/
 @[simp] theorem geomTransportAlong_geometry_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -26,6 +27,7 @@ open AtomFoundation
       pushSelectedGeometry G (transportAlongHom G.core sigma) :=
   rfl
 
+/-- The transported requirements are exactly the free forward coverage predicates. -/
 @[simp] theorem geomTransportAlong_requirements_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -33,6 +35,7 @@ open AtomFoundation
       pushCoverage G (transportAlongHom G.core sigma) :=
   rfl
 
+/-- The transported overlap package is exactly inverse-context reindexing. -/
 @[simp] theorem geomTransportAlong_overlap_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -40,12 +43,14 @@ open AtomFoundation
       pushOverlap G (transportAlongHom G.core sigma) :=
   rfl
 
+/-- Canonical geometry transport retains the coefficient type. -/
 @[simp] theorem geomTransportAlong_coefficient_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
     (geomTransportAlong G sigma).Coefficient = G.Coefficient :=
   rfl
 
+/-- The canonical raw system is identity base change followed by context reindexing. -/
 @[simp] theorem geomTransportAlong_raw_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -56,6 +61,7 @@ open AtomFoundation
         (G.raw.baseChange (RingHom.id G.Coefficient)) :=
   rfl
 
+/-- Objectwise canonical transport copies the inverse-indexed coordinate family. -/
 @[simp] theorem geomTransportAlong_coordinateFamily_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -66,6 +72,7 @@ open AtomFoundation
           ((contextInverse (transportAlongHom G.core sigma)).obj W)) :=
   rfl
 
+/-- Objectwise canonical transport copies the inverse-indexed relation family. -/
 @[simp] theorem geomTransportAlong_relationFamily_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -78,6 +85,7 @@ open AtomFoundation
 
 /-! ## Canonical context cancellation at raw-context level -/
 
+/-- Inverse-after-forward canonical transport fixes each raw source context. -/
 theorem canonicalContextBackwardMap_forward {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -89,6 +97,7 @@ theorem canonicalContextBackwardMap_forward {U : AtomCarrier.{u}}
   exact congrArg (fun X => X.ctx)
     (canonicalContextRetraction_eq G sigma ⟨W⟩)
 
+/-- Core-level inverse-after-forward transport fixes each raw source context. -/
 theorem canonicalCoreContextBackwardMap_forward {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -102,6 +111,7 @@ theorem canonicalCoreContextBackwardMap_forward {U : AtomCarrier.{u}}
   exact congrArg (fun X => X.ctx)
     (canonicalContextRetraction_eq G sigma ⟨W⟩)
 
+/-- Forward-after-inverse canonical transport fixes each raw target context. -/
 theorem canonicalContextForwardMap_backward {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -113,6 +123,7 @@ theorem canonicalContextForwardMap_backward {U : AtomCarrier.{u}}
   exact congrArg (fun X => X.ctx)
     (canonicalContextSection_eq G sigma ⟨W⟩)
 
+/-- Core-level forward-after-inverse transport fixes each raw target context. -/
 theorem canonicalCoreContextForwardMap_backward {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -126,6 +137,8 @@ theorem canonicalCoreContextForwardMap_backward {U : AtomCarrier.{u}}
   exact congrArg (fun X => X.ctx)
     (canonicalContextSection_eq G sigma ⟨W⟩)
 
+/-- Canonical overlap reindexing sends a source overlap to the overlap of the
+three corresponding target contexts. -/
 theorem canonical_pushOverlap_forward {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E)
@@ -270,6 +283,7 @@ theorem geomSourceTopology_le_inducedTarget {U : AtomCarrier.{u}}
 
 /-! ## Reverse transport of admissible cover generators -/
 
+/-- The exact required-coordinate map is injective. -/
 theorem requiredCoordinateMap_injective {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (f : PackageTotalHom G.core H.core) :
@@ -281,6 +295,7 @@ theorem requiredCoordinateMap_injective {U : AtomCarrier.{u}}
       (congrArg (fun z => z.1.1) hxy)
   · exact f.upper.atomEquiv.injective (congrArg Prod.snd hxy)
 
+/-- The exact violation-coordinate map is injective. -/
 theorem equationCoordinateMap_injective {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (f : PackageTotalHom G.core H.core) :
@@ -291,6 +306,7 @@ theorem equationCoordinateMap_injective {U : AtomCarrier.{u}}
       (congrArg Prod.fst hxy)
   · exact f.upper.atomEquiv.injective (congrArg Prod.snd hxy)
 
+/-- The canonical core context map is injective on actual context objects. -/
 theorem canonicalCoreContextMap_injective {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :

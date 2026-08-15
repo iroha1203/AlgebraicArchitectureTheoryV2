@@ -207,28 +207,37 @@ theorem base_comm {U : AtomCarrier.{u}}
           ⟨base⟩) := by
   apply Subsingleton.elim
 
-/-- The target selected overlap retains the universal lifting property. -/
+/-- The transported source overlap retains the universal lifting property:
+the target-selected lift factors through the inverse comparison isomorphism. -/
 theorem lift_preserved {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {f : PackageTotalHom G.core H.core}
-    (_T : OverlapTransport G H f)
+    (T : OverlapTransport G H f)
     {base left right X : Site.ArchCtx H.core.object}
     (hl : H.core.contextPreorder.le left base)
     (hr : H.core.contextPreorder.le right base)
     (hXl : H.core.contextPreorder.le X left)
     (hXr : H.core.contextPreorder.le X right) :
     H.core.contextPreorder.le X
-      (H.geometry.overlap.overlap base left right) :=
-  H.geometry.overlap.overlap_lift hl hr hXl hXr
+      (contextMap f
+        (G.geometry.overlap.overlap
+          (contextBackwardMap f base)
+          (contextBackwardMap f left)
+          (contextBackwardMap f right))) := by
+  exact H.core.contextPreorder.trans
+    (H.geometry.overlap.overlap_lift hl hr hXl hXr)
+    (T.overlapIso base left right).inv.le
 
 end OverlapTransport
 
+/-- Coverage-preservation proofs are propositionally unique. -/
 instance coverageTransportSubsingleton {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : PackageTotalHom G.core H.core) :
     Subsingleton (CoverageTransport G H f) :=
   ⟨fun _ _ => by rfl⟩
 
+/-- Overlap comparisons are unique in the selected thin context category. -/
 instance overlapTransportSubsingleton {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : PackageTotalHom G.core H.core) :

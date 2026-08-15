@@ -69,6 +69,7 @@ noncomputable def coefficientEquiv {U : AtomCarrier.{u}}
 
 /-! The nine selected coverage predicates are reflected as well as preserved. -/
 
+/-- A fiber isomorphism preserves and reflects required support. -/
 theorem requiredSupport_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore) (atom : U.Atom) :
@@ -84,6 +85,7 @@ theorem requiredSupport_iff {U : AtomCarrier.{u}}
   · intro h
     simpa using e.invGeometry.coverage.requiredSupport atom h
 
+/-- A fiber isomorphism preserves and reflects required equation coordinates. -/
 theorem requiredEquationCoordinate_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -101,6 +103,7 @@ theorem requiredEquationCoordinate_iff {U : AtomCarrier.{u}}
     simpa [requiredCoordinateMap] using
       e.invGeometry.coverage.requiredEquationCoordinate coordinate h
 
+/-- A fiber isomorphism preserves and reflects selected violation witnesses. -/
 theorem selectedViolationWitness_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -118,6 +121,7 @@ theorem selectedViolationWitness_iff {U : AtomCarrier.{u}}
     simpa [equationCoordinateMap] using
       e.invGeometry.coverage.selectedViolationWitness coordinate h
 
+/-- A fiber isomorphism preserves and reflects required signature axes. -/
 theorem requiredAxis_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -134,6 +138,7 @@ theorem requiredAxis_iff {U : AtomCarrier.{u}}
   · intro h
     simpa using e.invGeometry.coverage.requiredAxis axis h
 
+/-- A fiber isomorphism preserves and reflects support visibility. -/
 theorem supportVisibleOn_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -151,6 +156,7 @@ theorem supportVisibleOn_iff {U : AtomCarrier.{u}}
   · intro h
     simpa [contextMap] using e.invGeometry.coverage.supportVisibleOn W atom h
 
+/-- A fiber isomorphism preserves and reflects required-coordinate visibility. -/
 theorem equationCoordinateVisibleOn_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -170,6 +176,7 @@ theorem equationCoordinateVisibleOn_iff {U : AtomCarrier.{u}}
     simpa [contextMap, requiredCoordinateMap] using
       e.invGeometry.coverage.equationCoordinateVisibleOn W coordinate h
 
+/-- A fiber isomorphism preserves and reflects violation-witness visibility. -/
 theorem violationWitnessVisibleOn_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -189,6 +196,7 @@ theorem violationWitnessVisibleOn_iff {U : AtomCarrier.{u}}
     simpa [contextMap, equationCoordinateMap] using
       e.invGeometry.coverage.violationWitnessVisibleOn W coordinate h
 
+/-- A fiber isomorphism preserves and reflects readable signature axes. -/
 theorem axisReadableOn_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)
@@ -206,6 +214,7 @@ theorem axisReadableOn_iff {U : AtomCarrier.{u}}
   · intro h
     simpa [contextMap] using e.invGeometry.coverage.axisReadableOn W axis h
 
+/-- A fiber isomorphism preserves and reflects selected boundary visibility. -/
 theorem boundaryVisibleOn_iff {U : AtomCarrier.{u}}
     {C Q : GeometryPackage.{u, v} U} {hcore : C.core = Q.core}
     (e : GeometryFiberInnerIso C Q hcore)

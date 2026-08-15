@@ -148,6 +148,7 @@ noncomputable def geometryTotalFactor {U : AtomCarrier.{u}}
   geometry := geometryFactorGeometryHom G sigma tail
     (GeomReadHom.castBase hbase h.geometry)
 
+/-- The total geometry factor projects to the supplied arbitrary core tail. -/
 @[simp] theorem geometryTotalFactor_base {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
