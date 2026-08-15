@@ -78,15 +78,16 @@
   `GeomReadHom G H over f`(`f : P -> Q` は core 総圏射)のデータ仕様を
   次で**本カードが固定**し、loop 中に変更しない(変更が必要と判明した
   場合は failure policy の改訂経路のみ)。
-  (1) **site 成分(被覆要件)**: `CoverageRequirements` の各 predicate
-  family の index を、次の**固定された hom 成分**で送った上での前進含意
+  (1) **site 成分(被覆要件)**: `CoverageRequirements` の各 field の
+  index を、次の**固定された index map** で送った上での前進含意
   (transported implication)で保存する(反映は要求しない) —
-  atom 要件は `atomEquiv`、equation / violation 要件は
-  `equationEquiv × atomEquiv`、axis 要件は `axisMap`、visibility /
-  boundary 要件は `contextEquivalence` の underlying functor と (5) の
-  縦比較データ。両端の `Atom` 型が一致する場合でも index の送りは
-  identity ではなく `atomEquiv` を使うことを固定する(identity への
-  置換は target-fitting として禁止)。
+  required equation 座標は「`equationEquiv` を `required_iff` で
+  required subtype へ持ち上げた map」× `atomEquiv`、violation は
+  `equationEquiv × atomEquiv`、signature axis 要件は signature の
+  `axisMap`、visibility は context functor `E` × 当該 field の上記
+  index map、boundary は `E × E`。realization の縦比較 family((5))を
+  この index transport に混ぜない。両端の型が一致する場合でも index の
+  送りを identity に置換することを禁じる(target-fitting)。
   (2) **site 成分(overlap)**: `ContextOverlapPullback` の選択
   overlap object は、`contextEquivalence` の像の overlap object との
   **同型を除く対応**(等号は要求しない)で保存し、両射影との可換と
@@ -97,22 +98,31 @@
   reindex と係数 `RingHom` に沿った base change の両立等式(依存型を
   跨ぐため index 付き等式または cast 経由の形を許す)。restriction
   naturality との両立を含める。
-  (5) **realization 互換(縦比較データ+可換 Prop)**: `f` の
+  (5) **realization 互換(縦比較 family = data+可換 Prop)**: `f` の
   `contextEquivalence` の underlying functor `E` は context 圏の
-  object / hom しか写さないため、両端の `ArchitectureContext` の
-  `Support` / `Axis` / `Observable` を結ぶ**縦比較写像**を次で固定
-  する — `supportComp` は `f.atomEquiv` が誘導する対応、`axisComp` は
-  `f.axisMap` が誘導する対応(いずれも core hom 成分からの**誘導で
-  固定**し、選択自由を残さない)、`observableComp` のみ `GeomReadHom` の
-  **データ field**(Observable 間の写像。前進向き)。その上で
-  realization 互換は次の三点の **Prop 条件**とする: (a) `G` 側で可読
-  (readable)な context 射 `w` の像 `E(w)` が輸送先で可読であること、
-  (b) 可読化データ(`supportMap` / `axisMap` / `observableRestrict`)が
-  上記縦比較写像で型付けした成分別可換式を満たすこと、(c) 非生成条件
-  (nonGeneration)の certificate が `E` の像で保存されること。
-  **route 別 provenance**: canonical `geomTransportAlong` では
-  `observableComp` 込みで `σ` と `G` から生成する。`H_geom` の十分性
-  route では低レベル供給データから生成する。一般の tail hom では
+  object / hom しか写さず、context-local な carrier
+  (`ArchitectureContext.Support` / `.Axis` / `.Observable` — context
+  ごとに独立な型)は core hom のどの成分からも誘導できない。したがって
+  一般の `GeomReadHom` は、三つの **context-indexed comparison family を
+  データ field** として持つ:
+  `supportComp : ∀ W, W.ctx.Support -> (E.obj W).ctx.Support`、
+  `axisComp : ∀ W, W.ctx.Axis -> (E.obj W).ctx.Axis`、
+  `observableComp : ∀ W, W.ctx.Observable -> (E.obj W).ctx.Observable`
+  (いずれも前進向き。`atomEquiv` や signature `axisMap` からの
+  「誘導」は一般には型が付かないため要求しない — signature の Axis と
+  context の Axis は別 family である)。その上で realization 互換は次の
+  三点の **Prop 条件**とする: (a) `G` 側で可読(readable)な context 射
+  `w` の像 `E(w)` が輸送先で可読であること、(b) 各 context 射
+  `w : W ⟶ V` に対し、可読化データ(`supportMap` / `axisMap` /
+  `observableRestrict`)が三つの comparison family と成す
+  **support / axis / observable の三可換式**(naturality)を満たす
+  こと、(c) 非生成条件(nonGeneration)の certificate が `E` の像で
+  保存されること。identity hom では三 family は identity、composition
+  では合成で閉じる(圏則 (7) に含める)。**route 別 provenance**:
+  canonical `geomTransportAlong` では G-101 の
+  `transportArchitectureContext` が context carrier を source と同型に
+  保つため、**三 family とも identity として生成**する。`H_geom` の
+  十分性 route では低レベル供給データから生成する。一般の tail hom では
   supplied field であり、factorization proof での実使用を proof-use
   監査の対象とする。
   (6) **topology**: hom の条件に含めない。(iv) の比較定理の結論形を
@@ -177,8 +187,11 @@
      object の同型(両射影・普遍性と両立)、係数環の `RingEquiv`、raw
      restriction system の base-change 同型(restriction naturality と
      両立)、context-indexed な座標族・関係族の表示替え同型、
-     realization 対応の両立。fiber が rigid(同型 = 等号)と証明される
-     場合は、その rigidity theorem を成果と数える。
+     realization comparison family の **pointwise equivalence**(各
+     context `W` で `Equiv`。可逆性の審査基準は pointwise とし、逆
+     hom との左右合成則からの導出も同値として認める)。fiber が rigid
+     (同型 = 等号)と証明される場合は、その rigidity theorem を成果と
+     数える。
   4. **(iv) 成分供給**: site・係数・raw restriction system の各成分
      輸送等式が (ii) の一本の構成から導出されることを standalone
      等式群(依存型を跨ぐ成分は cast 演算子経由または index 付き等式の
@@ -195,11 +208,11 @@
      (site 要件・係数・raw system)は任意の core 総圏射に沿って常に
      輸送可能である(「係数は失敗を担えない」の定理化)。
      (b) **`H_geom` の定義**: `f` に対する realization transport の
-     供給 — hom 契約 (5) の縦比較データ(`observableComp` を含む)と、
-     `f` の `contextEquivalence` の下で `G` の realization を輸送先の
-     realization へ写すデータ、および非生成条件の保存 — を、lift の
-     存在を参照しない低レベル field-content の structure / Prop として
-     固定する。
+     供給 — hom 契約 (5) の三つの comparison family(`supportComp` /
+     `axisComp` / `observableComp`)と、`f` の `contextEquivalence` の
+     下で `G` の realization を輸送先の realization へ写すデータ、
+     および非生成条件の保存 — を、lift の存在を参照しない低レベル
+     field-content の structure / Prop として固定する。
      (c) **十分性 theorem**: `H_geom f G` ならば `f` の上の geometry
      lift が存在する。**positive witness**: 非退化・非恒等の入力
      (FiniteModel 上)で `H_geom` が成立し lift が発火する例を構成し、
