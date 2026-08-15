@@ -14,7 +14,8 @@
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
   proved-in-research artifact を土台として参照する。accepted snapshot =
   PR [#3889](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/3889)
-  マージ済み(final `$math-lean-review` 全4レーン `No major findings`)。
+  マージ済み(merge commit `dd5e02b577a058da93936a4c99a15b5eec046d31`、
+  final `$math-lean-review` 全4レーン `No major findings`)。
   再利用する宣言: `Doct_U` の exact 射(`ExactDoctrineHom`)、
   `ExtInst_U`、package 総圏(`packageTotalCategory` /
   `packageProjection` / `PackageTotalHom`)、`transportAlong` /
@@ -77,21 +78,32 @@
   `GeomReadHom G H over f`(`f : P -> Q` は core 総圏射)のデータ仕様を
   次で**本カードが固定**し、loop 中に変更しない(変更が必要と判明した
   場合は failure policy の改訂経路のみ)。
-  (1) **site 成分**: `G` の被覆要件・overlap を `f` の
-  `contextEquivalence` に沿って**前進保存**する(反映は要求しない)。
-  (2) **係数成分**: 係数環の `RingHom`(前進向き。可逆性は要求しない。
+  (1) **site 成分(被覆要件)**: `CoverageRequirements` の各 predicate
+  (atom / equation / violation / axis / visibility / boundary の各
+  要件)を **predicate ごとに** `f` の `contextEquivalence` に沿った
+  前進含意(transported implication)で保存する(反映は要求しない)。
+  (2) **site 成分(overlap)**: `ContextOverlapPullback` の選択
+  overlap object は、`contextEquivalence` の像の overlap object との
+  **同型を除く対応**(等号は要求しない)で保存し、両射影との可換と
+  普遍性の保存を要求する。
+  (3) **係数成分**: 係数環の `RingHom`(前進向き。可逆性は要求しない。
   fiber 内同型の記述でのみ `RingEquiv` を使う)。
-  (3) **raw 成分**: `contextEquivalence` の backward functor による
+  (4) **raw 成分**: `contextEquivalence` の backward functor による
   reindex と係数 `RingHom` に沿った base change の両立等式(依存型を
-  跨ぐため index 付き等式または cast 経由の形を許す)。
-  (4) **realization 互換**: `f` の `contextEquivalence` が `G` の site
-  realization(context 射の可読化と非生成条件)を `H` の realization へ
-  写すという **Prop 条件**。これは hom が持ち込む外部データではなく、
+  跨ぐため index 付き等式または cast 経由の形を許す)。restriction
+  naturality との両立を含める。
+  (5) **realization 互換**: `f` の `contextEquivalence` の underlying
+  functor を `E` とするとき、(a) `G` 側で可読(readable)な context 射
+  `w` の像 `E(w)` が輸送先で可読であること、(b) その可読化データ
+  (`supportMap` / `axisMap` / `observableRestrict`)が `E` と成分ごとに
+  可換であること(成分別の具体的可換式)、(c) 非生成条件
+  (nonGeneration)の certificate が `E` の像で保存されること、の
+  三点からなる **Prop 条件**。これは hom が持ち込む外部データではなく、
   `f` と両端 package の間の両立条件である。
-  (5) **topology**: hom の条件に含めない。(iv) の比較定理の結論形を
+  (6) **topology**: hom の条件に含めない。(iv) の比較定理の結論形を
   「輸送された被覆要件・overlap の生成位相の covering sieve が押し出し
   と一致する iff」で固定する。
-  (6) **identity / composition 則**を持ち、総圏の圏則はここから証明する。
+  (7) **identity / composition 則**を持ち、総圏の圏則はここから証明する。
   各項の強さ(等号か同型か片方向か)は上記の通り固定済みであり、
   強める・弱める変更はどちらも statement 改訂として扱う。
 - `capability categories`: transport、fibration、counterexample、
@@ -145,15 +157,18 @@
      成功と数える — 価値は構成の provenance にある。G-101 (iv) と同じ
      扱い)。
   3. **(iii) 一意性**: opcartesian lift の同型を除く一意性と fiber 内
-     同型の記述を証明する。fiber 内同型の記述は geometry 固有の自由度
-     (係数環の環同型・関係族の表示替え同型)を陽に扱う。fiber が
-     rigid(同型 = 等号)と証明される場合は、その rigidity theorem を
-     成果と数える。
+     同型の記述を証明する。fiber 内同型は次の**全成分の組**として定義し、
+     各成分の可逆性を要求する — 被覆要件 predicate 群の同値、overlap
+     object の同型(両射影・普遍性と両立)、係数環の `RingEquiv`、raw
+     restriction system の base-change 同型(restriction naturality と
+     両立)、context-indexed な座標族・関係族の表示替え同型、
+     realization 対応の両立。fiber が rigid(同型 = 等号)と証明される
+     場合は、その rigidity theorem を成果と数える。
   4. **(iv) 成分供給**: site・係数・raw restriction system の各成分
      輸送等式が (ii) の一本の構成から導出されることを standalone
      等式群(依存型を跨ぐ成分は cast 演算子経由または index 付き等式の
      形を許す)として証明する。topology については geometry hom
-     contract (5) の結論形(生成位相の covering sieve iff)で比較定理を
+     contract (6) の結論形(生成位相の covering sieve iff)で比較定理を
      立てる。あわせて **instantiation witness** — `FiniteModel` 上で、
      **非退化 raw restriction system の Formal 有限実例**
      (`RawPresheafFiniteExample` 系)を成分に持つ geometry package の
@@ -173,11 +188,12 @@
      lift が存在する。**positive witness**: 非退化・非恒等の入力
      (FiniteModel 上)で `H_geom` が成立し lift が発火する例を構成し、
      `H_geom` の可住性を証明する。
-     (d) **必要性の判定**: 非退化 geometry package と exact `σ` 上の
-     core 総圏射のクラス上で `lift 存在 -> H_geom` を証明するか、反例で
-     否定する。否定された場合、`H_geom` は「十分な供給条件の一つ」で
-     あることを statement の scope 限定として claim mapping に記録する
-     (これは審査上、弱化ではなく同定結果の報告として扱う)。
+     (d) **必要性 theorem(必須)**: 非退化 geometry package と exact
+     `σ` 上の core 総圏射のクラス上で `lift 存在 -> H_geom` を証明する。
+     想定経路は lift(`GeomReadHom`)の hom 契約 (5) realization 互換
+     field からの抽出である。反証された場合は `target-refuted` とし、
+     人間の GOAL 再固定へ戻す — 事後の scope 限定・読み替えを成功経路に
+     しない(failure policy (4))。
      (e) **負例 witness**: exact 射 `σ` の上の core 総圏射
      `f : P -> Q`(core 段の lift としては存在する非 tautological な
      射 — tautological hom と等しくないことを証明する)であって、`P`
@@ -210,7 +226,7 @@
   instantiation witness(非退化 raw 有限実例の所属証明)、成分輸送
   可能性 theorem、`H_geom` の定義(realization transport 供給
   structure)・十分性定理・positive witness(可住性+発火)・必要性
-  theorem または反例+scope 限定記録、負例 witness(core 総圏射 `f` の
+  theorem(必須)、負例 witness(core 総圏射 `f` の
   non-tautological 性と core 段 lift 存在の証明、任意の輸送先への
   非存在の Lean 証明、輸送先候補クラスの非空性証明、負例上の
   `¬H_geom`)、非自明性 witness(site / raw system の値変化の Lean
@@ -258,11 +274,20 @@
   - `geometry package の成分型(Formal の ReadingCore 系)`:
     `ambient-boundary`。Formal reviewed **型**の再利用のみ(再定義
     しない)。輸送の存在・等式・非退化性を型の資格に含めない。
-  - `入力資格(exact σ・source geometry package・負例射 f)`:
-    `discharge-required`。witness で使う非退化性(site 非空・実 cover・
-    係数が零環でない・raw system 非空)は concrete witness の構成から
-    証明する。`f` の non-tautological 性(tautological hom との不等)と
-    core 段 lift の存在も Lean 証明で固定する。
+  - `一般 theorem 入力(exact σ・source geometry package G)`:
+    `ambient-boundary`。(ii)–(iv) と (v)(a) は全ての `σ` / `G` を量化
+    して証明し、資格条件を課さない(premise discharge policy の「入力
+    として残せる」に対応する行はここだけである)。
+  - `負例射 f とその資格証明`: `discharge-required`。有限 witness
+    artifact として、`f` の non-tautological 性(tautological hom との
+    不等)と core 段 lift の存在を Lean 証明で固定する。
+  - `witness 入力の非退化性`: `discharge-required`。witness で使う
+    非退化性(site 非空・実 cover・係数が零環でない・raw system 非空)は
+    concrete witness の構成から証明する(supplied premise を認めない)。
+  - `realization 互換(GeomReadHom の Prop field)`:
+    `discharge-required`(独立監査行)。lift に直結する field-content と
+    して provenance / proof-use / structure-field escape audit の対象と
+    し、lift 結論の言い換えを field に隠していないかを毎 cycle 監査する。
   - `GeomReadHom 契約の実装と総圏・射影の圏則 / functor 則`:
     `discharge-required`。hom contract の各項(前進保存・RingHom・raw
     両立・realization 互換 Prop・id / comp)を実装し、圏則を証明する。
@@ -272,11 +297,14 @@
     から証明し、field に入れない。
   - `成分輸送可能性 theorem`: `discharge-required`。realization 互換
     以外の成分が任意の core 総圏射に沿って輸送可能であることの証明。
-  - `H_geom(定義・十分性・positive witness・必要性判定)`:
+  - `H_geom(十分性 theorem の仮定として)`: `direction-hypothesis`。
+    conclusion-equivalent-risk を明示する — 十分性 theorem の仮定として
+    のみ現れることを audit し、他の theorem の隠れ仮定に流用しない。
+  - `H_geom(定義・positive witness・必要性 theorem・負例上の否定)`:
     `discharge-required`。定義は lift 非参照の低レベル field-content。
     可住性(positive witness)を欠く十分性・否定の同時放電は認めない。
-    必要性が反例で否定された場合の scope 限定は claim mapping への
-    記録を義務とする。
+    必要性 theorem は必須であり、反証は failure policy (4) の
+    `target-refuted` 分岐で扱う(事後の scope 限定を認めない)。
   - `負例と非存在証明`: `discharge-required`。FiniteModel 上の非存在
     Lean 証明で、空 fiber・空 hom 空間・成分型の型不一致・退化
     geometry data による vacuity を放電と数えない。輸送先候補クラスの
@@ -333,3 +361,7 @@
   claim boundary 外の機構(段横断・2-cell)が必要と判明した場合は
   本 GOAL を改訂せず G-109 へ送り、本カードは `target-blocked` として
   完了に数えない。
+  (4) (v)(d) の必要性 theorem が `FiniteModel` 上の Lean 反例で反証
+  された場合は `target-refuted` とする。GOAL 再固定(例:「十分条件の
+  一つ」を aim とするカードへの書き換え)は人間裁定であり、loop 完了時の
+  事後読み替えを成功経路にしない。
