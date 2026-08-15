@@ -79,9 +79,14 @@
   次で**本カードが固定**し、loop 中に変更しない(変更が必要と判明した
   場合は failure policy の改訂経路のみ)。
   (1) **site 成分(被覆要件)**: `CoverageRequirements` の各 predicate
-  (atom / equation / violation / axis / visibility / boundary の各
-  要件)を **predicate ごとに** `f` の `contextEquivalence` に沿った
-  前進含意(transported implication)で保存する(反映は要求しない)。
+  family の index を、次の**固定された hom 成分**で送った上での前進含意
+  (transported implication)で保存する(反映は要求しない) —
+  atom 要件は `atomEquiv`、equation / violation 要件は
+  `equationEquiv × atomEquiv`、axis 要件は `axisMap`、visibility /
+  boundary 要件は `contextEquivalence` の underlying functor と (5) の
+  縦比較データ。両端の `Atom` 型が一致する場合でも index の送りは
+  identity ではなく `atomEquiv` を使うことを固定する(identity への
+  置換は target-fitting として禁止)。
   (2) **site 成分(overlap)**: `ContextOverlapPullback` の選択
   overlap object は、`contextEquivalence` の像の overlap object との
   **同型を除く対応**(等号は要求しない)で保存し、両射影との可換と
@@ -92,14 +97,24 @@
   reindex と係数 `RingHom` に沿った base change の両立等式(依存型を
   跨ぐため index 付き等式または cast 経由の形を許す)。restriction
   naturality との両立を含める。
-  (5) **realization 互換**: `f` の `contextEquivalence` の underlying
-  functor を `E` とするとき、(a) `G` 側で可読(readable)な context 射
-  `w` の像 `E(w)` が輸送先で可読であること、(b) その可読化データ
-  (`supportMap` / `axisMap` / `observableRestrict`)が `E` と成分ごとに
-  可換であること(成分別の具体的可換式)、(c) 非生成条件
-  (nonGeneration)の certificate が `E` の像で保存されること、の
-  三点からなる **Prop 条件**。これは hom が持ち込む外部データではなく、
-  `f` と両端 package の間の両立条件である。
+  (5) **realization 互換(縦比較データ+可換 Prop)**: `f` の
+  `contextEquivalence` の underlying functor `E` は context 圏の
+  object / hom しか写さないため、両端の `ArchitectureContext` の
+  `Support` / `Axis` / `Observable` を結ぶ**縦比較写像**を次で固定
+  する — `supportComp` は `f.atomEquiv` が誘導する対応、`axisComp` は
+  `f.axisMap` が誘導する対応(いずれも core hom 成分からの**誘導で
+  固定**し、選択自由を残さない)、`observableComp` のみ `GeomReadHom` の
+  **データ field**(Observable 間の写像。前進向き)。その上で
+  realization 互換は次の三点の **Prop 条件**とする: (a) `G` 側で可読
+  (readable)な context 射 `w` の像 `E(w)` が輸送先で可読であること、
+  (b) 可読化データ(`supportMap` / `axisMap` / `observableRestrict`)が
+  上記縦比較写像で型付けした成分別可換式を満たすこと、(c) 非生成条件
+  (nonGeneration)の certificate が `E` の像で保存されること。
+  **route 別 provenance**: canonical `geomTransportAlong` では
+  `observableComp` 込みで `σ` と `G` から生成する。`H_geom` の十分性
+  route では低レベル供給データから生成する。一般の tail hom では
+  supplied field であり、factorization proof での実使用を proof-use
+  監査の対象とする。
   (6) **topology**: hom の条件に含めない。(iv) の比較定理の結論形を
   「輸送された被覆要件・overlap の生成位相の covering sieve が押し出し
   と一致する iff」で固定する。
@@ -180,8 +195,9 @@
      (site 要件・係数・raw system)は任意の core 総圏射に沿って常に
      輸送可能である(「係数は失敗を担えない」の定理化)。
      (b) **`H_geom` の定義**: `f` に対する realization transport の
-     供給 — `f` の `contextEquivalence` の下で `G` の realization を
-     輸送先の realization へ写すデータと非生成条件の保存 — を、lift の
+     供給 — hom 契約 (5) の縦比較データ(`observableComp` を含む)と、
+     `f` の `contextEquivalence` の下で `G` の realization を輸送先の
+     realization へ写すデータ、および非生成条件の保存 — を、lift の
      存在を参照しない低レベル field-content の structure / Prop として
      固定する。
      (c) **十分性 theorem**: `H_geom f G` ならば `f` の上の geometry
@@ -274,20 +290,29 @@
   - `geometry package の成分型(Formal の ReadingCore 系)`:
     `ambient-boundary`。Formal reviewed **型**の再利用のみ(再定義
     しない)。輸送の存在・等式・非退化性を型の資格に含めない。
-  - `一般 theorem 入力(exact σ・source geometry package G)`:
-    `ambient-boundary`。(ii)–(iv) と (v)(a) は全ての `σ` / `G` を量化
-    して証明し、資格条件を課さない(premise discharge policy の「入力
-    として残せる」に対応する行はここだけである)。
+  - `source geometry package G(一般 theorem 入力)`:
+    `ambient-boundary`。(ii)–(iv) と (v)(a) は全ての `G` を量化して
+    証明し、資格条件を課さない(premise discharge policy の「入力と
+    して残せる」に対応する ambient 行はここと carrier・G-101・成分型
+    のみである)。
+  - `exact σ(輸送方向と exactness の供給)`: `direction-hypothesis`。
+    exactness field が構成・証明で実使用されることを proof-use 監査
+    する(未使用のまま結論が立つ場合は vacuity として弾く)。
   - `負例射 f とその資格証明`: `discharge-required`。有限 witness
     artifact として、`f` の non-tautological 性(tautological hom との
     不等)と core 段 lift の存在を Lean 証明で固定する。
   - `witness 入力の非退化性`: `discharge-required`。witness で使う
     非退化性(site 非空・実 cover・係数が零環でない・raw system 非空)は
     concrete witness の構成から証明する(supplied premise を認めない)。
-  - `realization 互換(GeomReadHom の Prop field)`:
-    `discharge-required`(独立監査行)。lift に直結する field-content と
-    して provenance / proof-use / structure-field escape audit の対象と
-    し、lift 結論の言い換えを field に隠していないかを毎 cycle 監査する。
+  - `realization 互換(route 別の三行)`: 次の三 route を別々に監査
+    する。(a) canonical `geomTransportAlong` route =
+    `discharge-required`(`σ` と `G` からの生成構成を証明する)。
+    (b) `H_geom` 十分性 route = `discharge-required`(低レベル供給
+    データからの生成を証明する)。(c) 一般 tail hom route =
+    `direction-hypothesis`(supplied field。factorization proof での
+    実使用を proof-use 監査する)。いずれの route でも lift 結論の
+    言い換えを field に隠していないかを毎 cycle 監査し、単一 witness
+    一件を全体の「compatibility 放電」と数えない。
   - `GeomReadHom 契約の実装と総圏・射影の圏則 / functor 則`:
     `discharge-required`。hom contract の各項(前進保存・RingHom・raw
     両立・realization 互換 Prop・id / comp)を実装し、圏則を証明する。
@@ -322,8 +347,9 @@
   可換、成分供給等式、成分輸送可能性、`H_geom` の十分性・可住性)を
   theorem argument、typeclass、structure field、certificate field へ
   移して成功扱いしない。`ambient-boundary` に残せるのは carrier、
-  G-101 accepted artifact、Formal 成分**型**だけである(入力の非退化性は
-  含めない — witness から証明する)。`H_geom` を「lift が存在する」と
+  G-101 accepted artifact、Formal 成分**型**、量化された一般入力 `G`
+  だけである(入力の非退化性は含めない — witness から証明する。
+  `σ` は `direction-hypothesis` であり ambient ではない)。`H_geom` を「lift が存在する」と
   同値**または片方向に近い**述語で立てることを禁じる(realization
   transport の供給データ条件として立て、十分性を定理で結ぶ。構造的
   条件として立てた結果、lift 存在との同値が**定理として**後から成立
@@ -342,9 +368,11 @@
   (site 空・cover なし・係数零環・raw system 空)だけの発火、
   one-way-as-equivalence、proof 後の GOAL 読み替えを completion に
   使わない。
-- `target failure policy`: 次の三分岐で扱う。
+- `target failure policy`: 次の四分岐で扱う。反例の探索では
+  `FiniteModel` を優先戦略とするが、status 判定条件は「対象 domain 内の
+  Lean 反例」であり FiniteModel 限定ではない。
   (1) 追加仮定なしの (ii)(canonical 輸送の無条件構成)の不成立が
-  `FiniteModel` 上の Lean 反例で証明された場合に限り、statement の
+  対象 domain 内の Lean 反例で証明された場合に限り、statement の
   「存在条件の同定+条件付き構成」形(G-110 (B) と同じ三点セット)への
   改訂を**ユーザー裁定へ**提案する。改訂はカード再固定と tracking
   Issue 記録を経るまで発効せず、この経路自体を改訂前後いずれの
@@ -361,7 +389,8 @@
   claim boundary 外の機構(段横断・2-cell)が必要と判明した場合は
   本 GOAL を改訂せず G-109 へ送り、本カードは `target-blocked` として
   完了に数えない。
-  (4) (v)(d) の必要性 theorem が `FiniteModel` 上の Lean 反例で反証
-  された場合は `target-refuted` とする。GOAL 再固定(例:「十分条件の
-  一つ」を aim とするカードへの書き換え)は人間裁定であり、loop 完了時の
-  事後読み替えを成功経路にしない。
+  (4) (v)(d) の必要性 theorem がその一般 domain 内の Lean 反例で反証
+  された場合は `target-refuted` とする(FiniteModel 限定ではない)。
+  GOAL 再固定(例:「十分条件の一つ」を aim とするカードへの
+  書き換え)は人間裁定であり、loop 完了時の事後読み替えを成功経路に
+  しない。
