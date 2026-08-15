@@ -18,11 +18,11 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+- [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
+  (Gr3 前半: 塔上層 geometry 段の輸送。隊列裁定 2026-08-15 の第一手)
 
 ## draft（人間の確認待ち）
 
-- [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
-  (Gr3 前半: 塔上層 geometry 段の輸送。隊列裁定 2026-08-15 の第一手)
 - [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
   (Gr3 完成: 段横断輸送整合と障害合成。G-108 完遂に依存)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
