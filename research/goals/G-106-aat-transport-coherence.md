@@ -1,7 +1,38 @@
 # G-106-aat-transport-coherence — 輸送整合の2-障害族
 
 - `id`: `G-106-aat-transport-coherence`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Transport Coherence
+  Two-Obstruction Theorem の target (i)–(v) を全放電
+  ($target-theorem-loop Cycle 1–5、2026-08-15)。主要宣言:
+  (i) `transportAlong_compFiberIso` / `transportAlong_comp_coherence`
+  (canonical 合成比較射と隣接合成 coherence)+単一円板吸収
+  `singleDisk_coherentAt_absorbingReselection`、
+  (ii) `rawTwoCellDefect` / `InReselectionOrbit` /
+  `TransportObstructionVanishes`(型付き有限 presentation 上の無条件
+  raw 2-obstruction と edge-only reselection orbit)+syzygy 条件付き
+  `rawDefect_cocycle_of_syzygy`(`SyzygyCompatible` は GOAL 認可の
+  direction hypothesis のまま保持)、
+  (iii) `transportObstructionVanishes_iff_coherentizable`(任意 carrier・
+  有限 presentation での orbit 消滅 ⟺ 同時 coherent 化可能、両方向)、
+  (iv) `finiteDoubleDiamond_class_nonvanishing` /
+  `finiteTransportTriangle_class_nonvanishing`(`FiniteModel.carrier` 上の
+  閉二重菱形+三読解三角形。pairwise translation 実現可能・joint 不可能、
+  S3 隣接互換の非可換性が核)、
+  (v) specialized / unified 一致定理6本(diamond / triangle 各々の
+  raw obstruction・共役類・全 reselection nonvanishing の equality / iff)。
+  formal four-lane `$math-lean-review`(数学 A / B・Lean A / B)は全 lane
+  `No major findings`、root recheck pass、正式判定は tracking Issue
+  [#3998 最終同期コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3998#issuecomment-5298897416)
+  で固定。fixed GOAL blob SHA `2ad51d10`、final reviewed head
+  `d7b1d488`、実装 PR #4004〜#4008+完了同期 PR
+  [#4009](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4009)
+  (merge `ae1ba0ea`)。report 記載宣言の直接公理監査は `propext` /
+  `Classical.choice` / `Quot.sound` のみ、GitHub checks 7/7(Research
+  full build は hard rule に従い未実行。focused / targeted / axiom
+  coverage と区別して記録)。`Formal/AG` への移植は未実施
+  (porting status: `unported`)。
+- `completed at`: `2026-08-15 JST`
 - `priority`: `medium`
 - `research mode`: `target-theorem`
 - `predecessor`: G-101(Atom 輸送の opcartesian lift 定理)の
