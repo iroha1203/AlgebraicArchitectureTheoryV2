@@ -74,28 +74,45 @@
   化可能)を建設義務に含める** — これを欠くと orbit 述語が 2-障害を
   名乗る意味論的な錨を持たない。G-106 の core 段語彙は参照のみで
   改変しない。
-  (2) **押し出しの型**: 押し出しは `geometryProjection` の作用が誘導
-  する**群準同型**(合成ファイバー自己同型群 → core 段
-  `packageFiberAutSubgroup`)として構成し、raw defect cochain を成分
-  ごとに写す。canonical comparator の保存と edge reselection
-  (coboundary)作用との両立を証明義務に含め、**押し出しが恒等定数
-  写像でないことの witness**(非恒等な像を持つ具体元)を非自明性義務に
-  含める。
-  (3) **合成公式は等式・三項の定義固定**: **段内障害** := (1) の
-  geometry 段 raw defect(geometry 段 canonical 選択との差)。
-  **全体障害** := 合成射影 `GeomRead_U -> ExtInst_U` 上の同型式の raw
-  defect(合成 canonical comparator との差、G-106 と同じ `u ∘ φ⁻¹`
-  型)。**段間障害** := 射影されたデータに対する core 段(G-106 語彙
-  そのまま)の raw defect。この三項で「全体障害 = 段間障害と押し出
-  された段内障害の合成」を**等式**として証明する。積の順序は時間順
-  (G-106 `pastingComparator` の tail × head 規約)で固定する。
+  (2) **押し出しと群拡大の型**: 群の記号を固定する — `C_G` :=
+  合成ファイバー自己同型群((1))、`H_G` := 段内群(core 恒等条件
+  `α.hom.base = 𝟙`)、`B_G` := core 段 `packageFiberAutSubgroup`、
+  `p : C_G →* B_G` := `geometryProjection` が誘導する群準同型
+  (押し出し)。定義より `H_G = ker p` であり、群拡大
+  `1 -> H_G -> C_G -> p(C_G) -> 1` が成立する。したがって
+  「`H_G` 値の障害の押し出しは恒等」は欠陥ではなく構造であり、押し
+  出しが運ぶのは `C_G` 値の全体障害、合成公式は (3) の二部構成で
+  立てる(採る型 = kernel-coset with supplied section。crossed-module
+  一般論は建てない)。`p` の構成、canonical comparator の保存、edge
+  reselection(coboundary)作用との両立、`p` の非恒等性 witness
+  (非恒等な像を持つ具体元、(5) の同一 fixture 上)を証明義務に
+  含める。core gauge の geometry への持ち上げ(`p` の section)は
+  一般には仮定せず、(3-b) の supplied input としてのみ扱う。
+  (3) **合成公式は二部構成・三項の定義固定**: **全体障害** := 合成
+  射影上の raw defect(authored 比較データと合成 canonical comparator
+  の差、G-106 と同じ `u ∘ φ⁻¹` 型、`C_G` 値)。**段間障害** :=
+  射影されたデータに対する core 段(G-106 語彙そのまま)の raw
+  defect(`B_G` 値)。
+  **(3-a) 射影公式(無条件)**: `p(全体障害) = 段間障害` を `B_G`
+  上の等式として証明する(defect の射影 functoriality)。
+  **(3-b) kernel 分解(供給条件付き)**: 段間 canonical route の
+  geometry 持ち上げ `m`(供給の正本 = G-108 (v) の `H_geom` 規準。
+  supplied input、direction-hypothesis)を材料とし、**段内障害** :=
+  authored 比較データと `m` の差(`H_G` 値に落ちることは (3-a) から
+  theorem)、`s(段間障害)` := `m` と合成 canonical の差、をそれぞれ
+  独立の comparator 差として定義した上で、`全体障害 = s(段間障害) ∘
+  段内障害` を `C_G` 上の**等式**として証明する(積の順序は時間順 —
+  G-106 `pastingComparator` の tail × head 規約)。supplied lift `m`
+  の取り替えは段内障害を `H_G`-coboundary でしか動かさず、段横断
+  gauge orbit 所属を変えないこと(well-definedness theorem)を証明
+  義務に含める。(3-b) の pasting 等式単独は成果に数えない — 内容は
+  (3-a)・kernel 所属・well-definedness・(iv) witness が担う。
   **段横断消滅述語の唯一の provenance は「全体障害 cochain の段横断
-  gauge orbit 所属」**とする。段横断 gauge は辺ごとの合成群割当
-  (その押し出しが core 辺 gauge を与える)と定め、core gauge の
-  geometry への持ち上げは要求しない(持ち上げ非存在は G-108 の負例
-  定理 `not_hGeom` で実在するため)。これ以外の conjunct の混入、
-  および三項いずれかの定義の言い換え(段間障害を全体障害から逆算
-  定義する等)を audit 対象とする。
+  gauge orbit 所属」**(`C_G` 水準)とする。段横断 gauge = 辺ごとの
+  `C_G` 割当(その押し出しが core 辺 gauge を与える)。これ以外の
+  conjunct の混入、および三項の逆算定義(各項の独立 provenance —
+  authored data / supplied lift / canonical — を欠く導入)を audit
+  対象とする。
   (4) **段の範囲と量化域**: 非自明 fiber を持つ段2段(geometry 段+
   core 段)を対象の下限とする。`ExtInst_U -> Doct_U` の fiber は離散
   (`ExtInstHom` は `doctrineHom` で完全決定)であり障害語彙が恒等的に
@@ -108,10 +125,15 @@
   geometry 段 fiber 自己同型群の非自明元を要する(既存 fixture には
   存在しないため、対称 carrier を持つ geometry package の新 fixture
   建設を含む。非恒等 base による水増しは (1) の base 条件が排除)。
-  「各段内で消滅」は各段の gauge(geometry 段内 = 段内群割当、core
-  段 = `packageFiberAutSubgroup` 割当)で、「段横断で非消滅」は (3)
-  の段横断 gauge で判定する — 両者の関係は (1) の部分群系列と (2) の
-  押し出しで一意に読める。
+  「各段内で消滅」は各段の gauge(geometry 段内 = `H_G` 割当、core
+  段 = `B_G` 割当)で、「段横断で非消滅」は (3) の段横断 gauge で
+  判定する — 両者の関係は (2) の群拡大で一意に読める。**witness
+  義務は同一 fixture に結合する**: (2) の押し出し非恒等性・(iv) の
+  段内消滅と段横断非消滅・(非全射性を論法に使う場合の)具体 `β` は、
+  同一の閉 finite presentation・同一 authored comparator・同一 raw
+  defect 上で同時に成立させる。fixture は実 cover・非零係数・非退化
+  raw system を持つ(site・係数を含む Gr3 記録の資格。係数を identity
+  scalar map で保つ場合はその scope を fixture 資格に明記する)。
 - `research aim`: 輸送が**塔の段をまたいで**合成することを定理にする。
   G-106 は単一射影(core 段)内の輸送合成 coherence と 2-障害を固定した。
   本カードはこれを塔 `GeomRead -> CoreRead -> ExtInst -> Doct` の複数段へ
@@ -137,8 +159,9 @@
   合成公式・段横断 witness まで Lean で固定する」点に置く。
 - `claim boundary`: G-101 / G-108 で建設済みの塔の段(geometry 段・
   core 段・`ExtInst` / `Doct`)と、段射影(`geometryProjection` /
-  `packageProjection`。`ExtInst -> Doct` の射影 functor は Lean に
-  不在であり、(i) は底射合成読みのためこれに依存しない)、G-106 の有限
+  `packageProjection`)および `ExtInst -> Doct` の忘却 functor
+  (Lean に不在のため本カードの新設建設義務、離散 fiber theorem
+  込み — (i))、G-106 の有限
   presentation・admissible 比較データ・raw defect・reselection orbit を
   対象とする。`ObProblem` 段(class の naturality)、carrier を動かす
   主張、doctrine 圏の fiber product(G-110)、nerve / cover 接続、
@@ -164,43 +187,56 @@
   実は単一段内で既に非消滅である構成(G-106 witness の再ラベル)、
   2-cell を持たない図式での vacuous な整合、syzygy 整合を暗黙に無条件
   使用する構成、押し出しと reselection の両立を主張せず合成公式だけ
-  立てる成果、一般 pseudofunctor 合成の再証明だけで塔接続を欠く成果。
+  立てる成果、(3-b) の pasting 等式単独を合成公式の成果として数える
+  構成、一般 pseudofunctor 合成の再証明だけで塔接続を欠く成果。
 - `frontier`: 段横断の H² 語彙の観察、`ObProblem` 段への拡張
   (class naturality と G-110 (D) への接続)、統合正方形の族の合成整合
   (n1005 §3)への供給、cartesian 側 lift との相互作用。
 
 - `target theorem`: **Cross-Stage Transport Coherence and Obstruction
   Composition Theorem**。G-101 / G-106 / G-108 の設定の上で:
-  1. **(i) 段横断 canonical coherence(正例)**: exact 底射
-     (`ExactDoctrineHom`)3本までの合成に対し、canonical 輸送
-     (G-101 `transportAlong`・G-108 `geomTransportAlong`)の合成
-     比較同型と隣接合成 coherence(G-106 J0 の geometry 段版)を
-     opcartesian 普遍性から証明し、恒等底射の unit coherence を
-     (自明であっても)明示 lemma で固定する。あわせて段間整合 —
-     比較同型の `geometryProjection` 像が core 段の比較同型(G-106
-     J0)と一致すること — を証明する。「三段まで」は底射の合成本数を
-     指し、段射影の本数ではない。離散段(`ExtInst -> Doct`)を含む
-     合成は claim の非自明性計数に含めない(確定事項 (4))。
+  1. **(i) 段横断擬関手的整合(正例)**: 各 exact 底射
+     (`ExactDoctrineHom`)に対する fiber 間 transport functor
+     (canonical lift の vertical morphism への作用を含む)を構成し、
+     compositor / unitor を **natural isomorphism** として与え、その
+     自然性・associativity coherence(底射3本の pentagon 相当)・
+     左右 unit triangle を opcartesian 普遍性から証明する(cleavage
+     から誘導される pseudofunctor 構造の geometry 段版)。あわせて
+     これら全 law の `geometryProjection` compatibility(compositor /
+     unitor の射影像が core 段の対応 data と一致)を証明する。
+     `ExtInst -> Doct` の忘却 functor(`obj := doctrine`、
+     `map := doctrineHom`)と離散 fiber theorem を新設宣言として建設
+     し、塔 `GeomRead -> Doct` の射影列を Lean 上で閉じる(離散段は
+     非自明性計数に含めない — 確定事項 (4))。「三段まで」は底射の
+     合成本数を指し、段射影の本数ではない。
   2. **(ii) 上段障害語彙の建設と押し出し**: 確定事項 (1) に従い、
      合成ファイバー上の有限 presentation・二層 admissible 比較
      データ・raw 2-cell defect・reselection orbit・**消滅同値
      theorem**を**本カードで定義・証明**した上で、確定事項 (2) の
-     押し出し群準同型を構成し、それが canonical comparator を保ち、
-     edge reselection(coboundary)作用と両立し、**恒等定数写像で
-     ない**ことを証明する。
-  3. **(iii) 合成公式(等式)**: 確定事項 (3) の三項定義(段内障害・
-     段間障害・全体障害)の下で、全体障害 = 段間障害と押し出された
-     段内障害の合成、を**等式**として証明する(積の順序は時間順 —
-     G-106 `pastingComparator` の tail × head 規約。片方向包含への
-     弱化は改訂扱い)。段横断消滅述語は**「全体障害 cochain の段横断
-     gauge orbit 所属」のみから定義**し(確定事項 (3) の唯一
-     provenance)、定義展開で放電しない。
-  4. **(iv) 段横断 witness**: 各段内 gauge では消滅する(geometry 段
-     は (ii) の消滅同値により段内 coherent 化可能と同値)が、段横断
-     gauge では全体障害が非消滅となる閉配置 witness を `FiniteModel`
-     の carrier 上で構成する(確定事項 (5) の新 fixture)。あわせて
+     群拡大 `1 -> H_G -> C_G -> p(C_G) -> 1` を Lean 上で固定し、
+     押し出し `p` が canonical comparator を保ち、edge reselection
+     (coboundary)作用と両立し、**恒等定数写像でない**ことを証明
+     する。
+  3. **(iii) 合成公式(二部構成)**: 確定事項 (3) の三項定義の下で、
+     **(3-a) 射影公式** `p(全体障害) = 段間障害` を `B_G` 上の無条件
+     等式として、**(3-b) kernel 分解** `全体障害 = s(段間障害) ∘
+     段内障害` を supplied lift `m` の下での `C_G` 上の等式として
+     証明する(積の順序は時間順。片方向包含への弱化は改訂扱い)。
+     段内障害の `H_G` 所属 theorem と、`m` 取り替えに対する
+     well-definedness theorem(段横断 gauge orbit 所属の不変性)を
+     含める。段横断消滅述語は**「全体障害 cochain の段横断 gauge
+     orbit 所属」のみから定義**し(確定事項 (3) の唯一 provenance)、
+     定義展開で放電しない。
+  4. **(iv) 段横断 witness(同一 fixture)**: 確定事項 (5) の単一の
+     閉 fixture 上で、(a) 各段内 gauge では消滅する(geometry 段は
+     (ii) の消滅同値により段内 coherent 化可能と同値)、(b) 段横断
+     gauge では全体障害が非消滅、(c) 押し出し `p` が非恒等、を
+     **同時に**固定する。非全射性(ある `β ∈ B_G` が `p` の像に
+     ない)を論法に使う場合は、同一 fixture の固定 fiber 上の具体
+     `β`・`¬ ∃ α, p α = β`・それが orbit 非消滅へ接続する theorem を
+     要求する(`p` の非恒等性は非全射性を含意しない)。あわせて
      canonical 選択のみの図式では段横断でも消滅すること(正例側)を
-     対で固定する。
+     同一設定で対にする。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下(新設)。
   G-106 の TransportCoherence モジュール・G-108 の GeometryTransport
@@ -209,21 +245,27 @@
   syzygy 整合の無条件化・`ObProblem` 段・fiber product は主張しない。
 - `target proof artifacts`: geometry 段障害語彙の定義一式(合成
   ファイバー上の有限 presentation・二層 admissible 比較データ・
-  fiber 自己同型群と部分群系列・raw defect・orbit。確定事項 (1))と
-  その非自明性 witness、geometry 段消滅同値 theorem、段横断比較同型の
-  構成と coherence theorem(unit lemma・段間整合含む)、押し出し
-  群準同型の定義と canonical comparator 保存 theorem、押し出しと
-  reselection の両立 theorem、押し出し非恒等性 witness、三項定義
-  (段内・段間・全体障害)と合成公式 theorem(等式)、段横断消滅
-  述語の定義(段横断 gauge orbit 所属のみから)、段内消滅・段横断
-  非消滅 witness(FiniteModel 上、geometry 段 fiber 自己同型群の
-  非自明元を持つ新 fixture、非空 2-cell 幾何)、canonical 図式の
-  段横断消滅(正例)theorem、report
+  群 `C_G` / `H_G` / `B_G` と群拡大・raw defect・orbit。確定事項
+  (1)(2))とその非自明性 witness、geometry 段消滅同値 theorem、
+  fiber 間 transport functor と compositor / unitor(natural iso)・
+  pentagon 相当・unit triangle・`geometryProjection` compatibility の
+  各 theorem、`ExtInst -> Doct` 忘却 functor と離散 fiber theorem、
+  押し出し群準同型 `p` の定義と canonical comparator 保存 theorem、
+  押し出しと reselection の両立 theorem、押し出し非恒等性 witness、
+  三項定義と射影公式 theorem(3-a)・kernel 分解 theorem(3-b)・
+  `H_G` 所属 theorem・well-definedness theorem、段横断消滅述語の定義
+  (段横断 gauge orbit 所属のみから)、同一 fixture 上の段内消滅・
+  段横断非消滅 witness(FiniteModel 上、geometry 段 fiber 自己同型群
+  の非自明元・実 cover・非零係数・非退化 raw を持つ新 fixture、非空
+  2-cell 幾何)、canonical 図式の段横断消滅(正例)theorem、report
   `research/reports/G-109-aat-cross-stage-coherence.md`。
-- `target proof strategy`: F0 段射影対の固定と段間持ち上げの型付け ->
-  F1 段横断 canonical 比較同型と coherence(G-106 J0 の方法の段横断化)
-  -> F2 押し出し写像と保存・両立 -> F3 合成公式と段横断消滅述語 ->
-  F4 witness 対(非消滅+正例)。既存成果の利用 map: G-101 opcartesian
+- `target proof strategy`: F0 段射影対の固定と段間持ち上げの型付け
+  (忘却 functor・離散 fiber theorem 含む) ->
+  F1 fiber 間 transport functor と compositor / unitor・coherence law
+  (G-106 J0 の方法の段横断化+pseudofunctor 構造化)
+  -> F2 群拡大・押し出し `p` と保存・両立 -> F3 射影公式(3-a)・
+  kernel 分解(3-b)・well-definedness と段横断消滅述語 ->
+  F4 同一 fixture の witness 対(非消滅+正例)。既存成果の利用 map: G-101 opcartesian
   一意性(比較同型の生成)、G-106 `canonicalTwoCellComparator` /
   `rawTwoCellDefect` / `InReselectionOrbit` /
   `transportObstructionVanishes_iff_coherentizable`(障害語彙と同値の
@@ -266,10 +308,21 @@
     presentation での vacuous 発火を認めない)を本カードで放電する。
   - `段横断比較同型と coherence`: `discharge-required`。opcartesian
     普遍性からの生成のみを認める。
-  - `押し出しの保存・両立・非恒等性 / 三項定義と合成公式(等式)`:
-    `discharge-required`。段間障害・全体障害の定義は確定事項 (3) で
-    固定した形のみを認め、逆算定義(合成公式を定義的に真にする構成)
-    を審査対象にする。
+  - `二層 admissible 入力(edge ごとの geometry / core 強 opcartesian
+    証書・ExtInst 水準 base 等式・authored comparator)`:
+    `direction-hypothesis`。入力データの資格条件として残す。合成強
+    opcartesian 証書・canonical comparator 保存・reselection 両立・
+    射影公式・kernel 分解を structure field で受けることは
+    conclusion-equivalent escape として禁じる。
+  - `H_geom 供給 lift(kernel 分解 (3-b) の section)`:
+    `direction-hypothesis`。供給の正本は G-108 (v) の `H_geom` 規準。
+    (3-a) 射影公式・(i)・(iv) の非消滅側はこれに依存させない
+    (依存する系は仮定明示で分離する)。
+  - `押し出しの保存・両立・非恒等性 / 三項定義と二部合成公式`:
+    `discharge-required`。三項の定義は確定事項 (3) で固定した独立
+    provenance(authored data / supplied lift / canonical)のみを
+    認め、逆算定義(合成公式を定義的に真にする構成)を審査対象に
+    する。
   - `段横断消滅述語の provenance`: `discharge-required`。定義は
     「全体障害 cochain の段横断 gauge orbit 所属」のみから立てる
     (確定事項 (3) の唯一 provenance)。これと独立な追加 conjunct の
@@ -291,13 +344,13 @@
   離散段の水増し・identity 射影だけの発火・退化 presentation だけの
   発火、one-way-as-equivalence、proof 後の GOAL 読み替えを completion に
   使わない。
-- `target failure policy`: (ii) の押し出しが reselection と両立しない
-  ことが証明された場合は `target-refuted` ではなく、両立する部分語彙
-  (共役類水準など)への statement 改訂を提案する(G-106 の class
-  語彙が下位互換の受け皿)。(iv) の witness が構成できず、段横断合成が
-  常に段内消滅へ還元されると証明された場合は、その還元定理を成果として
-  `target-refuted` を宣言する(塔設計の簡約という負の大発見として
-  記録)。ただしこの還元ルートは、押し出し非恒等性 witness((ii))を
-  先行構成した上での還元に限る — 型選択の artifact(押し出しの恒等
-  退化)による還元は発見ではなく statement 改訂として扱う。停滞は
-  `target-blocked`。
+- `target failure policy`: 固定 target の中心 conjunct(押し出しの
+  保存・reselection 両立、射影公式、kernel 分解、witness の非消滅)の
+  反証は `target-refuted` とする。段横断合成が常に段内消滅へ還元される
+  universal reduction theorem の成立も `target-refuted` とする(塔
+  設計の簡約という負の大発見として記録。ただし押し出し非恒等性
+  witness の先行構成を要し、型選択の artifact による恒等退化還元は
+  refute に数えない — それは goal defect であり loop 前に是正する)。
+  両立する部分語彙(共役類水準など、G-106 の class 語彙が下位互換の
+  受け皿)への改訂は、refute 判定の後に人間が再固定する別判断として
+  分離する。停滞のみ `target-blocked`。
