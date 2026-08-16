@@ -73,15 +73,24 @@
   **同一 data 解釈は採らない** — total と同じ comparator / raw
   cochain に strict 消滅を適用すると `H_G ↪ C_G` の包含で joint 消滅
   が従い、負例が不可能になる。proper sub-presentation 解釈の空虚化を
-  防ぐため、**bridge package を建設義務に含める**: 埋め込み
-  `StrictTwoCell ↪ TotalTwoCell`、path / comparator / raw の
-  restriction theorem、両 gauge 作用の equivariance、strict 部分の
-  非空・閉・非退化性 witness(strict 側に非恒等 defect が実在し、
-  その消滅が実仕事であること)、coverage 条件(total の 2-cell が
-  strict 部分と core-active 部分で覆われ、joint failure が両部分の
-  相互作用に局在すること)。strict 語彙は (iv) の pairwise 判定の
-  geometry 成分に使い、`C_G` 語彙は合成公式と joint 判定に使う
-  (役割分離)。admissible 比較データは**二層**とする — edge ごとに
+  防ぐため、strict cell の**資格を完全に固定する** — core path
+  equality(`PackageTotalHom` 水準)**かつ `p(authored comparator) =
+  1`**(またはそれを導く低水準条件。path equality 単独では `p(u) ≠
+  1` の authored 入力で restricted raw defect が `H_G = ker p` に
+  入らない)。restricted raw の `H_G` membership は資格からの
+  **theorem** として導く。strict sector は「資格を満たす**すべての**
+  cell」の subtype として定義する(構成による maximality —
+  消しやすい cell だけを選ぶ cherry-pick の排除)。**bridge package
+  を建設義務に含める**: 埋め込み `StrictTwoCell ↪ TotalTwoCell`、
+  path / comparator / raw の restriction theorem、両 gauge 作用の
+  equivariance(一般 presentation ではここまで)。proper 性
+  (inclusion の非全射性)・strict 部分の非空・非退化性 witness
+  (strict 側に非恒等 defect が実在し、その消滅が実仕事である
+  こと)・core-active cell の実在・共有 edge / boundary 上の実際の
+  incompatibility は**具体 fixture に局所化**して証明する(これらを
+  一般量化の supplied field にすると conclusion-equivalent escape に
+  なるため禁じる)。strict 語彙は (iv) の pairwise 判定の geometry
+  成分に使い、`C_G` 語彙は合成公式と joint 判定に使う(役割分離)。admissible 比較データは**二層**とする — edge ごとに
   geometry 段(`geometryProjection`)と core 段(`packageProjection`)
   の両方の強 opcartesian 証書を入力として持つ(入力データの資格条件で
   あり、結論の仮定化ではない)。**geometry 段の消滅同値 theorem は
@@ -89,8 +98,13 @@
   ではなく (3-b) の section 相対 inner cochain(段内障害、`H_G` 値)
   であり、orbit 述語と独立な **`SectionRelativeCoherentAt`**
   (section 座標で authored comparator が左右 path lift を実際に
-  factor する path equation。量化順は statement で固定)を定義した
-  上で、その成立 ⟺ `H_G` gauge orbit 消滅を cancellation /
+  factor する path equation)を定義した上で、**量化順を signature で
+  固定する** — `SectionRelativeCoherentAt data m h := ∀ cell,
+  SectionFactorEquation h cell`(単一の大域 edge gauge `h` が全
+  2-cell を同時に factor する)とし、coherentizable はその外側の
+  `∃ h` とする(`∀ cell, ∃ h_cell` の cellwise 弱化は閉 cochain の
+  大域整合を測らないため禁じる)。その成立 ⟺ `H_G` gauge orbit
+  消滅を cancellation /
   opcartesian uniqueness による**非定義的 theorem** として証明する
   (`Iff.rfl` 級の定義的同値は放電と認めない。G-106 (iii)
   `transportObstructionVanishes_iff_coherentizable` の相対版)。total
@@ -195,38 +209,47 @@
   `H_G` gauge orbit で消滅。
   `JointVanishes` := total cochain が段横断 `C_G` gauge orbit で
   消滅。
-  `CompatiblePairwiseVanishes` := ある core trivializer `b`・それを
-  持ち上げる aligned section `m`・`InnerVanishesAt m` が**同時に**
-  存在。
+  `CompatiblePairs` := **唯一の定義**として Sigma / pullback 型で
+  固定する — 低水準 field は core trivializer `b`・fixed-endpoint
+  lift family `m`・射影等式 `p ∘ m = b`・`CoreAlignmentAt`・strict
+  trivializer `h`・共有境界上の restriction equation(`m` と `h` の
+  両立)。**compatibility field に `JointVanishes` や
+  `InnerVanishesAt` を入れることは禁じる**(結論の埋め込み)。
+  `CompatiblePairwiseVanishes` := `Nonempty CompatiblePairs`。
+  `LocalPairwiseVanishes` := `Nonempty CoreTrivializers ∧
+  Nonempty StrictTrivializers`(個別消滅。`CompatiblePairwiseVanishes`
+  とは別名で分離する)。
   正例 theorem は **`JointVanishes ⟺ CompatiblePairwiseVanishes`**
-  (joint gauge の分解と合成、両方向とも非自明)。**注意**:
+  (joint gauge の分解と合成、両方向とも非自明)。あわせて
+  aligned-section 表現(ある `b`・それを持ち上げる aligned section
+  `m`・`InnerVanishesAt m` の同時存在)との**非定義的な双方向
+  theorem**、および `CompatiblePairs` の元から `C_G` joint gauge を
+  構成する(逆に joint gauge から元を得る)両方向構成を completion
+  artifact とする。**注意**:
   `InnerVanishesAt m` は section gauge との逐次合成(G-106 の
   reselection は厳密に合成する)により `JointVanishes` を含意する
   ため、**負例の pairwise 成分に使うことは禁じる**。同じ理由で
   total cochain 自体の `H_G` orbit 消滅を「段内消滅」と定義する
   ことも禁じる(`H_G ⊂ C_G` の orbit 包含)。負例の pairwise の
   geometry 成分は **section 非依存の strict 段内語彙**((1) の
-  proper sub-presentation、bridge package で total と接続)で測る。
-  joint compatibility failure は **trivializer の fiber product** で
-  直接測る — `CoreTrivializers`(段間障害を消す `B_G` gauge の集合)
-  と `StrictTrivializers`(strict restriction 上の `H_G` gauge の
-  集合)が**個別には inhabited** でありながら、compatible lift の
-  fiber product(`CompatiblePairs`)が**空**であること。
-  `CompatiblePairwiseVanishes` はこの fiber product の非空性として
-  定義し、正例 theorem `JointVanishes ⟺ CompatiblePairwiseVanishes`
-  と整合させる。負例 witness の形は
-  **`CoreVanishes ∧ strict 段内消滅(strict restriction 上、非空虚)
-  ∧ ¬JointVanishes`** とし、機構は**非 liftable core trivializer** —
-  同一 fixture 上で、すべての core trivializer に aligned section が
-  存在しないことの有限検査と、それが `¬JointVanishes` へ接続する
-  theorem を**必須**とする(optional にしない)。fixture は
+  資格付き subtype、bridge package で total と接続)で測る。
+  負例 witness の形は
+  **`LocalPairwiseVanishes(CoreVanishes+strict 段内消滅、strict
+  restriction 上、非空虚)∧ ¬JointVanishes(⟺ CompatiblePairs =
+  ∅)`** とし、機構は**非 liftable core trivializer** — 同一 fixture
+  上で、**全称 theorem `∀ b : CoreTrivializers, aligned section なし`**
+  と、それが `¬JointVanishes` へ接続する theorem を**必須**とする
+  (optional にしない。有限全数検査を証明手段に使う場合は
+  `Fintype CoreTrivializers` と enumeration completeness を fixture
+  artifact として先に証明する — 有限性は finite presentation からは
+  従わないため無償では主張できない)。fixture は
   **`段間障害 ≠ 1`** を満たす(恒等 gauge を trivializer から排除
   し、恒等 core trivializer の恒等 lift による機構崩壊を防ぐ)。この
   負例 fixture に core killer の aligned `C_G` section を同時要求
   してはならない。**witness
   義務は同一 fixture に結合する**: 押し出し非恒等性・pairwise 消滅
   (`CoreVanishes`+strict 段内消滅)・`¬JointVanishes`(全 core
-  trivializer の aligned section 非存在の有限検査込み)は、同一の閉
+  trivializer の aligned section 非存在の全称 theorem 込み)は、同一の閉
   fixture 上で同時に成立させる(strict 段内消滅はその strict
   restriction 上で判定し、(1) の bridge package で total と接続
   する)。fixture は実 cover・非零係数・非退化
@@ -345,20 +368,27 @@
      条件付き total cocycle theorem・`p` の pasting / cocycle 保存
      theorem を証明する。段横断消滅述語は**「全体障害 cochain の
      段横断 gauge orbit 所属」のみから定義**し(確定事項 (3) の唯一
-     provenance)、定義展開で放電しない。
+     provenance)、定義展開で放電しない。total の意味論的な錨として
+     **`JointVanishes ⟺ CrossStageCoherentizable`**(非定義的、一般
+     data 上。ledger の categorical 錨行)を証明する。
   4. **(iv) 段横断 witness(同一 fixture)**: 確定事項 (5) の完全型
      に従う。負例 fixture(単一の閉 fixture)上で、(a) **pairwise
      消滅** — `CoreVanishes` かつ strict 段内消滅((1) の strict
      語彙、section 非依存)、(b) **joint 不可能** —
      `¬JointVanishes` を、**すべての core trivializer に aligned
-     section が存在しないことの有限検査**とその orbit 接続 theorem で
+     section が存在しないことの全称 theorem**とその orbit 接続
+     theorem で
      証明する(必須。この fixture に core killer の aligned section
      を同時要求しない)、(c) 押し出し `p` の非恒等性(fixture 存在
      witness)、(d) `NontrivialSyzygyAt`(左右が異なる非空 pasting・
      実 2-cell face 使用・反射的 3-cell の排除を固定する Lean 述語)
-     を満たす syzygy を含み、(3-c) の cocycle theorem が
-     `SyzygyCompatible` を実使用して非空に発火する、を**同時に**固定
-     する。正例側では、canonical 図式で `JointVanishes ⟺
+     を満たす syzygy を含み、**その syzygy support 内に
+     `rawTwoCellDefect ≠ 1` の face が実在する(または左右
+     `defectPastingProduct` の共通値が非恒等)**こと — 非退化 raw を
+     別 cell に置いた decorative firing を排除し、負例と同じ
+     comparator / raw system の proof-use を固定する — の下で、
+     (3-c) の cocycle theorem が `SyzygyCompatible` を実使用して
+     非空に発火する、を**同時に**固定する。正例側では、canonical 図式で `JointVanishes ⟺
      CompatiblePairwiseVanishes` を非空に発火させ((5) の正例
      theorem の非空検査)、(3-b) の section family と alignment を
      具体構成する(負例 fixture には要求しない)。canonical 選択のみ
@@ -369,7 +399,9 @@
   G-106 の TransportCoherence モジュール・G-108 の GeometryTransport
   モジュールは参照のみ(改変しない)。完了面は (i)–(iv) まで。段数は
   有限(claim は三段までの隣接合成で固定し、一般有限段は frontier)。
-  syzygy 整合の無条件化・`ObProblem` 段・fiber product は主張しない。
+  syzygy 整合の無条件化・`ObProblem` 段・doctrine 圏の fiber product
+  (G-110 の対象。確定事項 (5) の trivializer compatible-pair fiber
+  product は本カードの語彙であり別物)は主張しない。
 - `target proof artifacts`: geometry 段障害語彙の定義一式(合成
   ファイバー上の有限 presentation・二層 admissible 比較データ・
   群 `C_G` / `H_G` / `B_G` と群拡大・raw defect・orbit。確定事項
@@ -378,14 +410,18 @@
   theorem(相対 obstruction theorem)、`CoreAlignmentAt` 述語と
   alignment 由来 `p(m) = p(u)` theorem(opcartesian uniqueness
   経由)、消滅述語の完全型4本(`CoreVanishes` / `InnerVanishesAt` /
-  `JointVanishes` / `CompatiblePairwiseVanishes`)と正例 theorem
-  `JointVanishes ⟺ CompatiblePairwiseVanishes`(fiber product 読み
-  込み)、合成射影の宣言・二層証書からの合成強 opcartesian theorem・
+  `JointVanishes` / `CompatiblePairwiseVanishes`)と `CompatiblePairs`
+  の Sigma / pullback 型・`LocalPairwiseVanishes`、正例 theorem
+  `JointVanishes ⟺ CompatiblePairwiseVanishes`、aligned-section 表現
+  との非定義的双方向 theorem と `C_G` joint gauge の両方向構成、
+  `CrossStageCoherentAt` / `CrossStageCoherentizable` と非定義的
+  theorem `JointVanishes ⟺ CrossStageCoherentizable`(total の
+  categorical 錨)、合成射影の宣言・二層証書からの合成強 opcartesian theorem・
   composite closure、strict 段内語彙の bridge package(埋め込み・
   restriction・equivariance・非空/閉/非退化性・coverage)、
-  pseudofunctor–障害語彙一致 theorem 群(compositor 対象成分 =
-  `C_G` canonical comparator・`p` 像 = core compositor・specialized
-  = 一般 instance)、`ExtInstHom` 底射と canonical-target transport の
+  pseudofunctor–障害語彙一致 theorem 群(normalization / whiskering
+  の `C_G` 像経由 — compositor 対象成分は異対象間 iso のため直接
+  等置しない・`p` 像 = core 対応・specialized = 一般 instance)、`ExtInstHom` 底射と canonical-target transport の
   比較 theorem、`NontrivialSyzygyAt` 述語、
   fiber 間 transport functor と compositor / unitor(natural iso)・
   pentagon 相当・unit triangle の各 theorem、段射影との pseudonatural
@@ -405,7 +441,7 @@
   cover・非零係数・非退化 raw・`NontrivialSyzygyAt` syzygy・
   `段間障害 ≠ 1` を持つ新 fixture、非空
   2-cell 幾何。`¬JointVanishes` は全 core trivializer の aligned
-  section 非存在の有限検査+orbit 接続 theorem)、canonical 図式の
+  section 非存在の全称 theorem+orbit 接続 theorem)、canonical 図式の
   段横断消滅と `JointVanishes ⟺ CompatiblePairwiseVanishes` の非空
   発火(正例)、report
   `research/reports/G-109-aat-cross-stage-coherence.md`。
@@ -445,8 +481,12 @@
   (direction-hypothesis、**conclusion-equivalent risk あり** —
   canonical route と witness では具体構成して放電し、仮定付き一般形
   だけを完成根拠にしない)、syzygy 整合 `SyzygyCompatible`
-  (direction-hypothesis、(3-c) と (iv)(d) にのみ使用)。比較同型、
-  coherence、
+  (direction-hypothesis、(3-c) と (iv)(d) にのみ使用)、`ExtInstHom`
+  底射 data(ambient-boundary。`doctrineHom`+`source_eq` の
+  proof-use は (i) statement に明示)。`CompatiblePairs` の
+  compatibility は低水準 field のみ(結論の埋め込み禁止)、strict
+  bridge は一般部 = theorem・fixture 局所化(supplied field 禁止)と
+  する。比較同型、coherence、
   pseudonatural compatibility、押し出しの well-definedness と両立、
   射影公式、kernel 分解、cocycle theorem、witness はすべて completion
   までに生成・証明する。
@@ -497,16 +537,31 @@
     自体は direction-hypothesis のまま)。witness の syzygy は
     `NontrivialSyzygyAt`(左右が異なる非空 pasting・実際の 2-cell
     face 使用・`threeLeft = threeRight` 型の反射的 3-cell の排除を
-    固定する Lean 述語)を満たし、cocycle theorem の証明が
-    `SyzygyCompatible` を実使用すること(proof-use 監査)を要求
-    する。
+    固定する Lean 述語)を満たし、syzygy support 内に非零 raw defect
+    face が実在し(decorative firing の排除、(iv)(d))、cocycle
+    theorem の証明が `SyzygyCompatible` を実使用すること(proof-use
+    監査)を要求する。
   - `pseudofunctor と障害語彙の一致(unification)`:
-    `discharge-required`。canonical cleavage を presentation へ
-    instantiate したとき、`C_G` canonical comparator = compositor の
-    対象成分、その `p` 像 = core compositor の対象成分、specialized
-    raw cochain / orbit = 一般障害語彙の instance、となる一致
-    theorem 群を放電する(G-106 (v) の specialized / unified 一致
-    定理と同型の要求。両者を別々に証明するだけでは接続に数えない)。
+    `discharge-required`。compositor の対象成分は直接輸送先と反復
+    輸送先という**異なる二対象間の iso**であり `C_G`(単一対象の
+    `Aut`)と直接等置できないため、両輸送先を presentation の選択
+    終点へ送る normalization / whiskering を opcartesian 普遍性から
+    構成し(normalization iso の input field 化は禁止)、その
+    **`C_G` 像**と canonical comparator の等式・`p` 像と core 側の
+    対応等式・specialized raw cochain / orbit = 一般障害語彙の
+    instance、となる一致 theorem 群を放電する(G-106 (v) と同型の
+    要求。両者を別々に証明するだけでは接続に数えない)。canonical
+    zero specialization だけでの充足は認めず、正例・負例 fixture の
+    双方をこの一致に通す。
+  - `total 障害の categorical 錨(CrossStageCoherentizable)`:
+    `discharge-required`。total presentation に対し、orbit 述語と
+    独立な `CrossStageCoherentAt` / `CrossStageCoherentizable`
+    (段横断 path-coherence equation。量化順は確定事項 (1) と同じく
+    `∃ 大域 gauge, ∀ cell` で固定)を定義し、一般 data 上の
+    **非定義的 theorem `JointVanishes ⟺ CrossStageCoherentizable`**
+    を放電する(G-106 (iii) の total 版。section-相対 theorem は
+    inner 成分の錨であり total の錨を代替しない)。正例・負例
+    fixture の双方をこの theorem に通す。
   - `strict 段内語彙の bridge package(確定事項 (1))`:
     `discharge-required`。埋め込み・restriction theorem・gauge
     equivariance・非空/閉/非退化性 witness・coverage 条件を放電
@@ -543,9 +598,11 @@
   使わない。
 - `target failure policy`: 固定 target の中心 conjunct((i) の
   compositor / unitor 自然性・pentagon / triangle・tower
-  compatibility、押し出しの保存・reselection 両立、射影公式、kernel
-  分解、条件付き cocycle、witness の非消滅)の反証は
-  `target-refuted` とする。段横断合成が常に段内消滅へ還元される
+  compatibility、pseudofunctor–障害語彙 unification、押し出しの
+  保存・reselection 両立、射影公式、kernel 分解、total coherence
+  同値(`JointVanishes ⟺ CrossStageCoherentizable`)、
+  compatible-pair gluing、strict bridge、条件付き cocycle、witness の
+  非消滅)の反証は `target-refuted` とする。段横断合成が常に段内消滅へ還元される
   universal reduction theorem の成立も `target-refuted` とする(塔
   設計の簡約という負の大発見として記録。ただし押し出し非恒等性
   witness の先行構成を要し、型選択の artifact による恒等退化還元は
