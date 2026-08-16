@@ -3,9 +3,9 @@
 - 一次仕様: [`research/goals/G-109-aat-cross-stage-coherence.md`](../goals/G-109-aat-cross-stage-coherence.md)
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
-- proof state: `target-refuted(第1版 target、2026-08-17 確定 — PR #4019
-  マージ+Issue #4018 停止 ledger 同期済み)/ 第2版 target 再固定済み、
-  loop 再起動待ち(Cycle 15 から継続)`
+- proof state: `target-refuted(2026-08-17 確定 — PR #4019 マージ+
+  Issue #4018 停止 ledger 同期済み)/ 改訂 target 再固定済み
+  (PR #4021)、loop 再起動待ち(Cycle 15 から継続)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
