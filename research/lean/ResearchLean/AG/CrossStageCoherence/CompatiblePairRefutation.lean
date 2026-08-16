@@ -307,6 +307,52 @@ theorem shared_restriction :
       (self := geometryTotalCategory FiniteModel.carrier)
       (CompositeFiberAut.hom (innerFiberInclusion package innerSwap))
 
+/-- A second lift of the same core coordinate cancels the strict gauge on its edge. -/
+noncomputable def incompatibleEdgeSection : EdgeSectionFamily data where
+  core := coreReselection
+  lift := fun _ _ edge =>
+    match edge with
+    | .active => visibleComposite
+    | .strict => innerFiberInclusion package (innerSwap⁻¹)
+  projects := by
+    intro i j edge
+    cases edge
+    · exact visibleComposite_pushforward
+    · exact (compositeFiberPushforward_eq_one_iff (innerSwap⁻¹).1).2
+        (innerSwap⁻¹).2
+
+/-- Shared strict-face compatibility is a genuine condition, not a tautology. -/
+theorem incompatibleEdgeSection_not_shared :
+    ¬ SharedBoundaryCompatible incompatibleEdgeSection strictTrivializer := by
+  intro compatible
+  have equation := compatible
+    (⟨.strict, strict_qualified⟩ : StrictTwoCell data)
+  change (upperReselectedPathLift liftData
+        (relativeUpperReselection incompatibleEdgeSection strictReselection)
+        witnessNilPath).comp
+        (CompositeFiberAut.hom (innerFiberInclusion package innerSwap)) =
+      upperReselectedPathLift liftData
+        (relativeUpperReselection incompatibleEdgeSection strictReselection)
+        witnessStrictPath at equation
+  simp only [upperReselectedPathLift, upperReselectLiftData,
+    TwoLayerLiftData.pathLift, upperReselectedEdgeLift,
+    relativeUpperReselection, incompatibleEdgeSection, witnessNilPath,
+    witnessStrictPath, liftData, map_inv] at equation
+  have inclusionIdentity : innerFiberInclusion package innerSwap = 1 := by
+    letI : (crossStageProjection.{0, 0} FiniteModel.carrier).IsStronglyCocartesian
+        (GeometryTotalHom.id package).base.base (GeometryTotalHom.id package) :=
+      by
+        simpa only [upperReselectedPathLift, upperReselectLiftData,
+          TwoLayerLiftData.pathLift, witnessNilPath] using
+          (upperReselectLiftData liftData
+            (relativeUpperReselection incompatibleEdgeSection
+              strictReselection)).pathLift_compositeStrong witnessNilPath
+    apply CompositeFiberAut.ext_of_strong_fac (GeometryTotalHom.id package)
+    simpa using equation
+  apply innerSwap_ne_one
+  apply innerFiberInclusion_injective package
+  simpa using inclusionIdentity
+
 /-- All fixed low-level Sigma/pullback fields, including strict restriction, exist. -/
 noncomputable def compatiblePair : CompatiblePairs data where
   coreTrivializer := coreTrivializer

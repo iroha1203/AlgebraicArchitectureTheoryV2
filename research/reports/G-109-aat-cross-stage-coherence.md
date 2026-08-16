@@ -1256,6 +1256,8 @@ result:
     - CompatiblePairRefutation.edgeSection
     - CompatiblePairRefutation.strictTrivializer
     - CompatiblePairRefutation.shared_restriction
+    - CompatiblePairRefutation.incompatibleEdgeSection
+    - CompatiblePairRefutation.incompatibleEdgeSection_not_shared
     - CompatiblePairRefutation.compatiblePair
     - CompatiblePairRefutation.compatiblePairwiseVanishes
     - CompatiblePairRefutation.not_joint
@@ -1265,13 +1267,14 @@ result:
     - ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean focused elaboration
     - targeted build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation
     - registered focused umbrella ResearchLean/AG/CrossStageCoherence.lean
-    - namespace axiom audit with 30 declarations and standard axioms only
+    - namespace axiom audit with 32 declarations and standard axioms only
   claim_mapping:
     theorem_names:
       - CompatiblePairRefutation.shiftedVisibleComposite_ne_visible
       - CompatiblePairRefutation.strict_sector_nonempty
       - CompatiblePairRefutation.strict_sector_proper
       - CompatiblePairRefutation.strict_reselection_nonidentity
+      - CompatiblePairRefutation.incompatibleEdgeSection_not_shared
       - CompatiblePairRefutation.compatiblePairwise_not_implies_joint
     source_labels:
       - fixed item (5), JointVanishes iff CompatiblePairwiseVanishes
@@ -1282,6 +1285,7 @@ result:
       - explicit nonidentity absolute strict trivializer
       - inhabited proper strict sector
       - low-level CompatiblePairs inhabitant satisfying all qualified strict faces without any all-cell coherence field
+      - a second lift of the same core coordinate that fails SharedBoundaryCompatible, proving that the restriction predicate is nontrivial
       - distinct authored comparators over the identical active boundary
       - CompatiblePairwiseVanishes and not JointVanishes on the same data
     undischarged_assumptions: []
@@ -1293,6 +1297,7 @@ audits:
       - fixed low-level compatible-pair fields
       - nonvacuous strict work
       - same-data pairwise inhabitance and joint nonvanishing
+      - positive and negative instances of SharedBoundaryCompatible on the same finite geometry
       - direct negation of the universal gluing implication
     remaining: []
   certificate_provenance:
@@ -1307,6 +1312,7 @@ audits:
       - both same-boundary active coherence equations in CompatiblePairRefutation.not_joint
       - strict qualification and innerSwap_ne_one in strict nondegeneracy
       - the qualified strict cell equation in CompatiblePairRefutation.shared_restriction
+      - cancellation of the strict gauge against incompatibleEdgeSection in the negative restriction instance
       - only the fixed low-level CompatiblePairs fields in compatiblePair
     unused: []
   structure_field_escape: none-found
@@ -1319,7 +1325,7 @@ audits:
     - lake env lean ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean: pass
     - lake build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation: pass
     - ./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence.lean: pass
-    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 30 declarations, pass'
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 32 declarations, pass'
   blocking_findings:
     - the fixed compatible-pair gluing conjunct is false
   next_obligation: fixed-head standard PR review, CI, root acceptance audit, merge, and target-refuted ledger synchronization
