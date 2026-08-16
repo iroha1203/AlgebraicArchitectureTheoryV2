@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-- I want to hand an AI agent a multi-day job and have it run to completion. This article collects the rules for that into **thirteen articles**. Never let the loop rewrite its own spec. Enumerate up front what counts as evidence of "done." Review in independent parallel, never by majority vote. If verification didn't run, the answer is unknown, not pass. Nine more inside
+- I want to hand an AI agent a multi-day job and have it run to completion. This post collects the rules for that — **thirteen of them**. Never let the loop rewrite its own spec. Enumerate up front what counts as evidence of "done." Review in independent parallel, never by majority vote. If verification didn't run, the answer is unknown, not pass. Nine more inside
 - The rules run in my repository. In fifteen days of August 2026, this loop proved seven theorems and refuted one. About 104 cycles, roughly 67,000 lines of Lean 4. All seven proofs cleared four independently running adversarial review lanes
 - The theorems are the main results my research program (AAT) set as its goals — nothing like famous open problems. But each was a multi-day proof target where refutation and revision were live possibilities. The outcomes were genuinely unknown
 - A three-way division of labor: Claude (Fable) drafts the goal cards and runs adversarial reviews, Codex (GPT-5.6 Sol) drives the proof loop, and a human makes the rulings
