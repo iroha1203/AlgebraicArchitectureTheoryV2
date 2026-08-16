@@ -1,7 +1,50 @@
 # G-108-aat-geometry-reading-transport — 塔上層(geometry 段)輸送の opcartesian lift 定理
 
 - `id`: `G-108-aat-geometry-reading-transport`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Geometry Reading Transport
+  Opcartesian Lift Theorem の target (i)–(v) を全放電
+  ($target-theorem-loop Cycle 1–7、2026-08-16)。主要宣言:
+  (i) 固定7項 geometry hom contract の `GeomReadHom` と
+  `geometryTotalCategory` / `geometryProjection`(geometry 段総圏と
+  G-101 package 総圏への忘却射影)、
+  (ii) `geomTransportAlong` / `geomTransportAlongHom`(exact `sigma` 上の
+  canonical 輸送。`sigma.normalize_eq` は
+  `geomTransportAlong_normalize_source_eq` で実使用)+
+  `geometryTotalFactor` の factorization / 一意性による
+  `geomTransportAlongHom_isStronglyCocartesian`(opcartesian 性は
+  structure field として受け取らない)、
+  (iii) `geomTransportAlong_liftUniqueUpToFiberIso`(fiber 内同型を除く
+  一意性。coverage 固定9 predicate・overlap iso・係数・raw・display・
+  realization の全成分可逆化)+非恒等 coefficient action の finite
+  witness `pairConcreteFiberIso_coefficient_fires`、
+  (iv) standalone 成分等式7本+生成位相の
+  `geomTransportAlong_coveringSieve_iff`+Formal finite instantiation
+  `FiniteGeometryWitness.package`(非退化 concrete theorem 5本)、
+  (v) 成分輸送可能性 `nonRealizationComponents_transportable`+障害同定
+  `hGeom_iff_nonempty_geomReadHom`(lift 非参照 `H_geom` の必要十分、
+  必要性は `hGeom_necessary`)+正例 `positiveLift`(非恒等 exact
+  Atom-swap 発火)・負例 `not_hGeom` /
+  `no_geometryLift_to_any_target` / `coreHom_ne_tautological`・非自明性
+  `firingCover_patch_readProfile_changes` / `signedRaw_value_changes`
+  (identity 係数 route での実 cover patch の read profile 変化と raw
+  polynomial 実値変化)。
+  standard 4-lane review は Major revisions 2巡(Cycle 5 = witness の
+  requirement predicate / coefficient swap 依存の差し戻し、Cycle 7 =
+  exactness field proof-use)を是正の上、最終 head で全 lane
+  `No major findings`。独立 formal 4-lane `$math-lean-review`(数学 A /
+  B・Lean A / B)も全 lane `No major findings`、root completion recheck
+  pass。正式判定は tracking Issue
+  [#4013 最終同期コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4013#issuecomment-5305133918)
+  で固定。fixed GOAL blob SHA `a689fbb2`、final reviewed head
+  `a1d70d01`、実装 PR
+  [#4015](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4015)
+  (merge `12c3e6c2`)。公理監査は各 module 末尾の
+  `#assert_standard_axioms_only`(standard axioms のみ)で pass、GitHub
+  checks は fixed head で 7/7(Research full build は hard rule に従い
+  未実行。focused / targeted / axiom coverage と区別して記録)。
+  `Formal/AG` への移植は未実施(porting status: `unported`)。
+- `completed at`: `2026-08-16 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: 登路上の位置は **Gr3 前半**(n1005 §5「隊列」
@@ -22,9 +65,9 @@
   `transportAlongHom`、`transportAlongHom_isStronglyCocartesian`、
   `transportAlong_liftUniqueUpToFiberIso`
   (`research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported)。
-- `tracking issue`: 未起票
-  (active 昇格はユーザー裁定済み 2026-08-15。成立は本カード同期 PR の
-  マージをもって。起票はマージ後、`$target-theorem-loop` 起動前に行う)
+- `tracking issue`:
+  [#4013](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4013)
+  (runtime state の正本として open 維持、close は人間裁定)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 仕様)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§5 隊列第5項の Gr3 分解)
 - `research aim`: reading の塔
