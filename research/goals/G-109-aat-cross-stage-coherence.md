@@ -1,27 +1,44 @@
 # G-109-aat-cross-stage-coherence — 段横断輸送整合と障害合成
 
 - `id`: `G-109-aat-cross-stage-coherence`
-- `status`: `draft`
-- `priority`: `medium`
+- `status`: `active`
+- `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: 登路上の位置は **Gr3 後半(Gr3 完成)**(n1005
   §5「隊列」第5項の Gr3 分解)。G-106 は Gr3 の 2-障害核、G-108 は塔
   上層の建設であり、**本カード完遂をもって初めて Gr3(擬関手的整合)
   達成と記録する**(n1005 §4.6 の分割)。隊列裁定(2026-08-15、
-  Gr3/Gr4 系列先行)の第二手。G-108 の完遂に依存する。**G-108 の
+  Gr3/Gr4 系列先行)の第二手。依存先 G-108 は完遂済み
+  (`target-theorem-proved`、2026-08-16。fixed GOAL 無改訂のまま完走
+  したため下記の伝播規定は発動していない)であり、着手条件は満たされて
+  いる。**G-108 の
   statement が改訂された場合、本カードは draft へ差し戻して再固定
   する**(依存カードの伝播規定)。本カードは n1005 §2 の測量台帳に
   対応行を持たず、達成階梯(Gr3)の帳簿に専属する(帳簿の二重性の
   明示)。
-- `predecessor`: G-101(core 段輸送と opcartesian 普遍性)、
-  G-108(geometry 段輸送。**active 成立済み = PR #4012 マージ、
-  tracking Issue #4013、loop 完遂待ち**。geometry hom contract —
-  comparison family・cross-context read-preservation・partial
-  op-cleavage — を本カードの前提語彙として参照する)、G-106
+- `predecessor`: G-101(core 段輸送と opcartesian 普遍性。
+  `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported)、
+  G-108(geometry 段輸送。**完遂済み = `target-theorem-proved`、
+  2026-08-16**。実装 PR
+  [#4015](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4015)
+  マージ済み(merge commit
+  `12c3e6c2df266a108a43b66da785a1a369dcb896`、final reviewed head
+  `a1d70d01`、standard+独立 formal の各4レーン全
+  `No major findings`)、完了同期 PR #4016。再利用する宣言:
+  `GeomRead_U` 総圏と `GeomReadHom`(固定7項 geometry hom contract —
+  comparison family・cross-context read-preservation)、
+  `geometryProjection`、`geomTransportAlong` / `geomTransportAlongHom`
+  (canonical 輸送)、`geomTransportAlongHom_base`(射影可換)、
+  `geomTransportAlongHom_isStronglyCocartesian`(partial op-cleavage)、
+  `geomTransportAlong_liftUniqueUpToFiberIso`
+  (`research/lean/ResearchLean/AG/GeometryTransport/` 配下、
+  unported))、G-106
   (Transport Coherence Two-Obstruction Theorem: canonical
   comparator・raw defect・reselection orbit・消滅同値。
   `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported)。
-- `tracking issue`: 未起票(active 昇格裁定後に起票)
+- `tracking issue`: 未起票
+  (active 昇格はユーザー裁定済み 2026-08-16。成立は本カード同期 PR の
+  マージをもって。起票はマージ後、`$target-theorem-loop` 起動前に行う)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 達成階梯)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.6、§5 隊列第5項)、
   [G-106 report](../reports/G-106-aat-transport-coherence.md)(frontier
@@ -152,7 +169,8 @@
   一意性(比較同型の生成)、G-106 `canonicalTwoCellComparator` /
   `rawTwoCellDefect` / `InReselectionOrbit` /
   `transportObstructionVanishes_iff_coherentizable`(障害語彙と同値の
-  素材)、G-108 射影可換 theorem(段間持ち上げの整合)、G-106
+  素材)、G-108 `geomTransportAlongHom_base`(射影可換、段間持ち上げの
+  整合)、G-106
   `FiniteWitnesses` の S3 witness 構成法(witness 素材)。固定
   statement と完了条件は本カードのみを正本とする。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
