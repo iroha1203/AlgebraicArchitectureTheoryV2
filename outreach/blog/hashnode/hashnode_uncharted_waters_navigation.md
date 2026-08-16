@@ -73,13 +73,13 @@ Here, the cycle ledger opens with the chosen obligation. All 104 cycles carry th
 
 ### Caveats
 
-This group assumes the work can be cut down to a granularity where the spec fits in a static document. Exploratory work needs a separate stage that produces the spec itself. Here, a human and Claude did that, putting each draft through several rounds of adversarial review before handing it to the loop. Run the loop on a weak spec, and refutations and revisions will cost you severalfold. And Rule 3's "format of failure" has to be designed per domain. Mathematics has the counterexample, a beautifully reusable form. What plays that role in your domain is not obvious.
+This group assumes the work can be cut down to a granularity where the spec fits in a static document. Exploratory work needs a separate stage that produces the spec itself. Here, a human and Claude did that, putting each draft through several rounds of adversarial review before handing it to the loop. Run the loop on a weak spec, and refutations and revisions will cost you several times over. And Rule 3's "format of failure" has to be designed per domain. Mathematics has the counterexample, a beautifully reusable form. What plays that role in your domain is not obvious.
 
 ## Rules of verification
 
-### Rule 5 — Enumerate what counts as evidence of done
+### Rule 5 — Enumerate what counts as evidence of "done"
 
-Enumerate, up front, the forms of evidence you will accept as completion, and accept nothing else, whatever the reason. The AI's "it's done" is judged one way only: does the evidence match one of the forms.
+Enumerate, up front, the forms of evidence you will accept as completion, and accept nothing else, whatever the reason. The AI's "it's done" is judged one way only: does the evidence match one of the forms?
 
 In this repository there are exactly three ways to close a proof obligation: a machine-checked theorem; a concrete example or counterexample pinned as finite data; a derivation from a previously proved result pinned by hash. And the inverse rule: moving the thing-to-be-proved into a typeclass or a structure field, so that it arrives as an assumption — however elegant — closes nothing.
 
@@ -180,7 +180,7 @@ It looks smooth. The review record says otherwise. G-102's pinned-commit review 
 
 G-104. The claim: the conditions under which an architecture diagnosis does not depend on reading resolution. Put differently, the guarantee that the same defects appear in the same places whether you look at service granularity or module granularity — a guarantee about review granularity, in an era where AI writes the code and humans read it coarsely. This would later be named the Atlas theorem, one of the theory's main results.
 
-In these five days, the target was refuted four times. The calibration grew to seven clauses. Three of them were beaten into existence by counterexamples; the rest were rebuilt through refutation and search. After the third refutation, the human called it: stop adding clauses, stop the loop, switch to a search campaign (Rule 12). A brute-force enumeration of 6,086 candidate conditions, plus a structural argument on top of it, delivered the verdict: no amount of clauses in this vocabulary can ever reach the target. That negative survey forced a rebuild of the coefficients themselves — the vocabulary of observations the diagnosis computes over (Rule 2). The loop set sail again, and summited on cycle 31.
+In these five days, the target was refuted four times. The calibration condition grew to seven clauses. Three of them were beaten into existence by counterexamples; the rest were rebuilt through refutation and search. After the third refutation, the human called it: stop adding clauses, stop the loop, switch to a search campaign (Rule 12). A brute-force enumeration of 6,086 candidate conditions, plus a structural argument on top of it, delivered the verdict: no amount of clauses in this vocabulary can ever reach the target. That negative survey forced a rebuild of the coefficients themselves — the vocabulary of observations the diagnosis computes over (Rule 2). The loop set sail again, and summited on cycle 31.
 
 Along the way, one cycle smuggled in a hidden premise. The audit caught it, and the artifacts were removed wholesale (Rule 10). The full story of these five days is in the [Atlas theorem article](https://blog.iroha1203.dev/atlas-theorem-how-far-can-you-zoom-out).
 
@@ -192,7 +192,7 @@ Read the record, though, and this is no sinking. The content of the impossibilit
 
 ## Days 8–12 — The ship that lost its mast twice
 
-G-107. The longest five days of the voyage.
+G-107. The roughest five days of the voyage.
 
 The target statement died twice. Version 1 — "agreement of diagnoses is characterized by condition C\*" — met an exact counterexample. Version 2's sufficiency direction met another. Both were found by the out-of-loop search campaign and the reviews. Within that campaign, the decision to stop searching was itself overruled twice, by independent review, as premature. The judges were being audited (Rule 11). Version 3 rebuilt the claim on new pillars. Agreement of diagnoses is decidable by a finite computation — and yet that decision cannot be recovered from radius-1 local observation. Decidable in CI, unreachable by any pile of local lint rules. Codex proved the pair in a 27-cycle, 49-hour solo run.
 
