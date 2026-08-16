@@ -17,6 +17,26 @@
   する**(依存カードの伝播規定)。本カードは n1005 §2 の測量台帳に
   対応行を持たず、達成階梯(Gr3)の帳簿に専属する(帳簿の二重性の
   明示)。
+- `revision`: **第2版(2026-08-17 起草。再固定は本改訂 PR のマージを
+  もって成立)**。第1版 target(goal blob `8b2219081f55a44bb74b562d468588608d6d0623`、
+  SHA-256 `27061a2e128ef56575c1661ea4e5a5723c69dedec7d1cc8eb3f21081862a2b7b`)
+  は 2026-08-17 に `target-refuted` — 中心 conjunct
+  `JointVanishes ⟺ CompatiblePairwiseVanishes` の gluing 方向が有限反例
+  `CompatiblePairRefutation.compatiblePairwise_not_implies_joint`
+  (実装 PR #4019、merge `c4b184d3`、standard review 4レーン全
+  `No major findings`)で反証された。停止 ledger は Issue #4018
+  コメントに同期済み。反例の機構 = 同一の左右 path を持つ2つの active 2-cell
+  の comparator 比という **reselection 不変量**を、辺・trivializer
+  水準の `CompatiblePairs` データが原理的に捕捉できない。第2版は
+  この不変量を**平行干渉障害**(確定事項 (6)、新設)として建設し、
+  gluing conjunct を二障害同値
+  `JointVanishes ⟺ CompatiblePairwiseVanishes ∧
+  ParallelInterferenceVanishes` に改訂する(G-104 の条件C様式 —
+  反例が新条件の必要性 witness にそのまま換金される)。第1版で
+  完遂済みの (i)–(iii)・total categorical 錨・strict bridge・(iv)
+  負例 witness・反例 module は reviewed artifact として引き継ぎ、
+  再証明しない。Cycle 番号は第1版から通し(第2版 loop は Cycle 15
+  から)で継続する。
 - `predecessor`: G-101(core 段輸送と opcartesian 普遍性。
   `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported)、
   G-108(geometry 段輸送。**完遂済み = `target-theorem-proved`、
@@ -36,10 +56,23 @@
   unported))、G-106
   (Transport Coherence Two-Obstruction Theorem: canonical
   comparator・raw defect・reselection orbit・消滅同値。
-  `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported)。
-- `tracking issue`: 未起票
-  (active 昇格はユーザー裁定済み 2026-08-16。成立は本カード同期 PR の
-  マージをもって。起票はマージ後、`$target-theorem-loop` 起動前に行う)
+  `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported)、
+  **G-109 第1版**(`target-refuted` だが (i)–(iii)・witness 群は完遂・
+  reviewed 済み。実装 PR #4015 と同水準の受理監査を通過した PR #4019。
+  再利用する宣言: `CrossStageCoherence` 全16 module — 特に
+  `upperRawTwoCellDefect` / `upperCanonicalTwoCellComparator` /
+  `InUpperReselectionOrbit`(上段障害語彙)、`JointVanishes` /
+  `CompatiblePairs` / `CompatiblePairwiseVanishes`(消滅述語)、
+  `jointVanishes_iff_crossStageCoherentizable` /
+  `jointVanishes_iff_alignedSectionVanishes`(total 錨)、
+  `compatiblePairsToJointGauge` と `compatiblePairsToJointGauge_coherent_iff`
+  (合成側主補題)、`FiniteCrossStageWitness` /
+  `CompatiblePairRefutation`(fixture と第1版反例)。
+  `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下、unported)。
+- `tracking issue`:
+  [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
+  (open。runtime state 正本。第1版の `target-refuted` 正式停止 ledger を
+  含む。第2版 loop も同 Issue で継続する)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 達成階梯)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.6、§5 隊列第5項)、
   [G-106 report](../reports/G-106-aat-transport-coherence.md)
@@ -219,8 +252,28 @@
   `LocalPairwiseVanishes` := `Nonempty CoreTrivializers ∧
   Nonempty StrictTrivializers`(個別消滅。`CompatiblePairwiseVanishes`
   とは別名で分離する)。
-  正例 theorem は **`JointVanishes ⟺ CompatiblePairwiseVanishes`**
-  (joint gauge の分解と合成、両方向とも非自明)。あわせて
+  正例 theorem は**二障害 gluing 同値(第2版改訂の核。呼称 =
+  Cross-Stage Gluing Two-Obstruction Theorem)**:
+  **`JointVanishes ⟺ CompatiblePairwiseVanishes ∧
+  ParallelInterferenceVanishes`**(`ParallelInterferenceVanishes` は
+  確定事項 (6) で建設)。**(5-a) 必要方向**(joint gauge の分解:
+  `JointVanishes → 両 conjunct`)と **(5-b) 十分方向**(合成:
+  `両 conjunct → JointVanishes`)を別 theorem として放電する。
+  (5-a) はさらに二分する — **(5-a-i) 干渉側**
+  (`JointVanishes → ParallelInterferenceVanishes`。(6) の
+  reselection 不変性 theorem の系、低リスク)と **(5-a-ii) pair 側**
+  (`JointVanishes → CompatiblePairwiseVanishes`。joint gauge から
+  core trivializer は押し出しで得られるが、`H_G` 値の strict
+  trivializer と共有 restriction の構成は `C_G` gauge の核成分への
+  補正を要し、一般 section が無いため**第1版でも未証明のまま残った
+  genuinely open な方向** — リスクを明示して固定する)。(5-b) が
+  研究の核心であり、(5-a-ii)(5-b) それぞれの反証は failure policy の
+  対応分岐に接続する。第1版反例
+  (`CompatiblePairRefutation`)は
+  `CompatiblePairwiseVanishes ∧ ¬ParallelInterferenceVanishes ∧
+  ¬JointVanishes` の**必要性 witness**として引き継ぐ(確定事項 (6)
+  の独立性行列 (w1)。既存 module は改変せず接続 theorem を新設
+  する)。あわせて
   aligned-section 表現(ある `b`・それを持ち上げる aligned section
   `m`・`InnerVanishesAt m` の同時存在)との**非定義的な双方向
   theorem**、および `CompatiblePairs` の元から `C_G` joint gauge を
@@ -255,6 +308,50 @@
   する)。fixture は実 cover・非零係数・非退化
   raw system を持つ(site・係数を含む Gr3 記録の資格。係数を identity
   scalar map で保つ場合はその scope を fixture 資格に明記する)。
+  (6) **平行干渉障害(第2版新設)**: **平行対** := 同じ source /
+  target 頂点と同じ typed 左右 path 対(`twoLeft` / `twoRight` が
+  等しい)を持つ 2-cell の対(順序対。`c₁ = c₂` も量化域に含めるが、
+  非空検査は相異なる対を要求する)。**干渉比** := 平行対の raw
+  defect 比 `d₁ * d₂⁻¹`(両 defect は同一 `twoTarget` の
+  `CompositeFiberAut` に住む)。乗法規約(確定事項 (3))の
+  `d_i = u_i * φ⁻¹` で canonical comparator `φ` =
+  `upperCanonicalTwoCellComparator` が左右 path と reselection のみに
+  依存し cell の authored data に依存しないため、**干渉比 = authored
+  comparator 比 `u₁ * u₂⁻¹`** が成立し、これは**任意の edge
+  reselection の下で厳密に不変**である(`d₁' * d₂'⁻¹ = u₁ * φ'⁻¹ *
+  φ' * u₂⁻¹ = u₁ * u₂⁻¹`。共役ではなく等式)。この**不変性 theorem
+  を干渉障害の provenance 錨として必ず theorem 化する** — gauge で
+  消せない量であることが「障害」を名乗る資格であり、(5-a) の干渉側
+  必要性はこの theorem の系である。
+  `ParallelInterferenceVanishes` := 全平行対で干渉比 = 1(同値に、
+  平行 2-cell の raw defect が一致)。provenance は **authored
+  comparator data のみ**(supplied section・trivializer・gauge に
+  依存させない。`∃ gauge` 型・orbit 所属型への言い換えは結論の
+  paraphrase として禁じる)。あわせて **core 整合下の `H_G` 所属
+  theorem** — 平行対の双方が同一 core 辺 data への `CoreAlignmentAt`
+  を持つとき(または `CompatiblePairs` の元の存在下で)、opcartesian
+  uniqueness により `p(u₁) = p(u₂)`、したがって干渉比 ∈ `H_G = ker p`
+  — を theorem 化する(干渉が段内(inner)障害であることの型付け。
+  第1版反例の `innerSwap` 機構と整合する)。**`CompatiblePairs` の
+  field へ干渉条件を追加することは禁じる**(第1版の低水準 field
+  固定を維持する。二障害の独立性こそが主定理の内容であり、構造への
+  吸収は結論の埋め込み)。
+  **独立性行列(3 fixture、すべて非空検査付き)**:
+  (w1) **干渉必要性** = 第1版反例の再利用 —
+  `CompatiblePairwiseVanishes ∧ ¬ParallelInterferenceVanishes ∧
+  ¬JointVanishes`(`CompatiblePairRefutation` は改変せず、新 module の
+  接続 theorem で放電する)。
+  (w2) **正例非空発火** = 相異なる平行対を少なくとも1組含み
+  (comparator 一致)、`CompatiblePairs` が可住で `JointVanishes` が
+  成立する fixture((5) の正例 theorem を両 conjunct 非空で発火
+  させる。canonical 図式の平行対拡張を認める)。
+  (w3) **干渉単独不十分** = `ParallelInterferenceVanishes` が相異なる
+  平行対を伴って**非空に**成立し、かつ `¬CompatiblePairwiseVanishes ∧
+  ¬JointVanishes` の fixture(第1版の非 liftable core trivializer
+  fixture の平行対拡張を認める)。
+  平行対を持たない presentation での vacuous な干渉消滅は (w2)(w3)
+  の充足に数えない。新設する全 Prop 述語は品質基準の instance matrix
+  (正負両 instance)を第1版と同じ水準で伴う。
 - `research aim`: 輸送が**塔の段をまたいで**合成することを定理にする。
   G-106 は単一射影(core 段)内の輸送合成 coherence と 2-障害を固定した。
   本カードはこれを塔 `GeomRead -> CoreRead -> ExtInst -> Doct` の複数段へ
@@ -309,7 +406,9 @@
   2-cell を持たない図式での vacuous な整合、syzygy 整合を暗黙に無条件
   使用する構成、押し出しと reselection の両立を主張せず合成公式だけ
   立てる成果、(3-b) の pasting 等式単独を合成公式の成果として数える
-  構成、一般 pseudofunctor 合成の再証明だけで塔接続を欠く成果。
+  構成、一般 pseudofunctor 合成の再証明だけで塔接続を欠く成果、
+  平行対を持たない fixture での vacuous な干渉消滅発火、第1版で
+  完遂済み artifact の再証明を第2版 cycle の成果として数える構成。
 - `frontier`: 段横断の H² 語彙の観察、`ObProblem` 段への拡張
   (class naturality と G-110 (D) への接続)、統合正方形の族の合成整合
   (n1005 §3)への供給、cartesian 側 lift との相互作用。
@@ -388,16 +487,24 @@
      別 cell に置いた decorative firing を排除し、負例と同じ
      comparator / raw system の proof-use を固定する — の下で、
      (3-c) の cocycle theorem が `SyzygyCompatible` を実使用して
-     非空に発火する、を**同時に**固定する。正例側では、canonical 図式で `JointVanishes ⟺
-     CompatiblePairwiseVanishes` を非空に発火させ((5) の正例
-     theorem の非空検査)、(3-b) の section family と alignment を
-     具体構成する(負例 fixture には要求しない)。canonical 選択のみ
-     の図式では段横断でも消滅すること(正例側)を同一設定で対に
-     する。
+     非空に発火する、を**同時に**固定する。正例側では、canonical
+     図式(相異なる平行対を含む拡張 — 確定事項 (6) (w2))で二障害
+     gluing 同値 `JointVanishes ⟺ CompatiblePairwiseVanishes ∧
+     ParallelInterferenceVanishes` を両 conjunct 非空で発火させ
+     ((5) の正例 theorem の非空検査)、(3-b) の section family と
+     alignment を具体構成する(負例 fixture には要求しない)。
+     canonical 選択のみの図式では段横断でも消滅すること(正例側)を
+     同一設定で対にする。あわせて確定事項 (6) の独立性行列 (w1)(w3)
+     を固定する(第1版反例 module は改変せず接続 theorem で (w1) を
+     放電する)。第1版で完遂済みの負例 witness((a)–(d))は
+     reviewed artifact として引き継ぎ、再証明しない。
 - `target theorem boundary`: Lean 置き場所は
-  `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下(新設)。
+  `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下。
   G-106 の TransportCoherence モジュール・G-108 の GeometryTransport
-  モジュールは参照のみ(改変しない)。完了面は (i)–(iv) まで。段数は
+  モジュール、および**第1版でマージ済みの CrossStageCoherence 16
+  module は参照のみ(改変しない)**。第2版の新設は新 module(例:
+  `ParallelInterference.lean`・`GluingTwoObstruction.lean`・witness
+  拡張 fixture)に置く。完了面は (i)–(iv) まで。段数は
   有限(claim は三段までの隣接合成で固定し、一般有限段は frontier)。
   syzygy 整合の無条件化・`ObProblem` 段・doctrine 圏の fiber product
   (G-110 の対象。確定事項 (5) の trivializer compatible-pair fiber
@@ -411,8 +518,13 @@
   alignment 由来 `p(m) = p(u)` theorem(opcartesian uniqueness
   経由)、消滅述語の完全型4本(`CoreVanishes` / `InnerVanishesAt` /
   `JointVanishes` / `CompatiblePairwiseVanishes`)と `CompatiblePairs`
-  の Sigma / pullback 型・`LocalPairwiseVanishes`、正例 theorem
-  `JointVanishes ⟺ CompatiblePairwiseVanishes`、aligned-section 表現
+  の Sigma / pullback 型・`LocalPairwiseVanishes`、**平行対述語・
+  干渉比・reselection 厳密不変性 theorem・core 整合下の `H_G` 所属
+  theorem・`ParallelInterferenceVanishes` と正負 instance matrix
+  (確定事項 (6))**、正例 theorem = 二障害 gluing 同値
+  `JointVanishes ⟺ CompatiblePairwiseVanishes ∧
+  ParallelInterferenceVanishes`(5-a / 5-b 別 theorem)、独立性行列
+  (w1)–(w3) の fixture と接続 theorem、aligned-section 表現
   との非定義的双方向 theorem と `C_G` joint gauge の両方向構成、
   `CrossStageCoherentAt` / `CrossStageCoherentizable` と非定義的
   theorem `JointVanishes ⟺ CrossStageCoherentizable`(total の
@@ -442,9 +554,13 @@
   `段間障害 ≠ 1` を持つ新 fixture、非空
   2-cell 幾何。`¬JointVanishes` は全 core trivializer の aligned
   section 非存在の全称 theorem+orbit 接続 theorem)、canonical 図式の
-  段横断消滅と `JointVanishes ⟺ CompatiblePairwiseVanishes` の非空
-  発火(正例)、report
+  段横断消滅と二障害 gluing 同値の両 conjunct 非空発火(正例、平行対
+  拡張込み)、report
   `research/reports/G-109-aat-cross-stage-coherence.md`。
+  **第1版で完遂・reviewed 済みの artifact(PR #4019 マージ分)は
+  引き継ぎとし、第2版 loop の残 obligation は確定事項 (6) の語彙
+  建設・二障害 gluing 同値(5-a / 5-b)・独立性行列 (w1)–(w3) に
+  限る。**
 - `target proof strategy`: F0 段射影対の固定と段間持ち上げの型付け
   (忘却 functor・離散 fiber theorem 含む) ->
   F1 fiber 間 transport functor と compositor / unitor・coherence law
@@ -459,7 +575,14 @@
   `transportObstructionVanishes_iff_coherentizable`(障害語彙と同値の
   素材)、G-108 `geomTransportAlongHom_base`(射影可換、段間持ち上げの
   整合)、G-106
-  `FiniteWitnesses` の S3 witness 構成法(witness 素材)。固定
+  `FiniteWitnesses` の S3 witness 構成法(witness 素材)。
+  **第2版の残路(F0–F4 は第1版で完遂済み)**: F5 平行干渉語彙
+  (平行対述語・干渉比・reselection 厳密不変性・`H_G` 所属・
+  instance matrix)-> F6 二障害 gluing 同値(5-a 必要方向 -> 5-b
+  十分方向。`compatiblePairsToJointGauge_coherent_iff` を合成側の
+  主補題として再利用し、干渉消滅が欠けていた all-cell relative
+  equation を供給するかを裁く)-> F7 独立性行列 witness(w1 接続
+  theorem・w2 正例平行対拡張・w3 負例平行対拡張)。固定
   statement と完了条件は本カードのみを正本とする。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean である
@@ -474,6 +597,9 @@
   範囲根拠を併記する — Gr3 は輸送部分塔 `GeomRead -> Doct`(site・
   係数を含む段横断整合、n1001 の Gr3 註釈)についての達成であり、
   `ObProblem` 段(class naturality)と一般有限段は frontier に残る。
+  あわせて**改訂史を併記する** — 第1版の gluing conjunct は反証され
+  (PR #4019)、達成された statement は反例を必要性 witness に含む
+  二障害同値である(反駁された同値を proved と記録しない)。
 - `target premise discharge policy`: 入力として残せるのは次の一覧のみ
   (ledger と一対一対応): 塔の段データ・doctrine 図式・exact 底射
   (ambient-boundary)、二層 admissible 比較データ
@@ -490,7 +616,10 @@
   pseudonatural compatibility、押し出しの well-definedness と両立、
   射影公式、kernel 分解、cocycle theorem、witness はすべて completion
   までに生成・証明する。
-- `target material premise ledger`:
+- `target material premise ledger`(第1版で放電済みの
+  `discharge-required` 行は reviewed artifact の引き継ぎで充足済み —
+  第2版 loop の残放電は末尾の平行干渉・二障害 gluing の2行と、それらが
+  触る範囲の再監査のみ):
   - `carrier U / FiniteModel`: `ambient-boundary`。witness 計算のみ。
   - `G-101 / G-108 の輸送と普遍性`: `ambient-boundary`。reviewed 済み
     定理の参照のみ。段横断の coherence を各段の statement に含めない。
@@ -578,6 +707,19 @@
     混入、および orbit 述語の言い換えを審査対象にする。
   - `witness 対`: `discharge-required`。段内消滅の明示 gauge と段横断
     非消滅の証明を両方含める。
+  - `G-109 第1版 reviewed artifact(CrossStageCoherence 16 module)`:
+    `ambient-boundary`。参照のみ、改変しない。(i)–(iii)・total 錨・
+    strict bridge・(iv) 負例 witness・第1版反例は再証明せず引き継ぐ。
+    第1版反例への接続は新 module の theorem で行う。
+  - `平行干渉障害の建設(確定事項 (6))`: `discharge-required`。
+    平行対述語・干渉比・reselection 厳密不変性 theorem・core 整合下の
+    `H_G` 所属 theorem・`ParallelInterferenceVanishes` と正負
+    instance matrix を放電する。`∃ gauge` 型への言い換え・
+    `CompatiblePairs` field への吸収を審査対象とする。
+  - `二障害 gluing 同値(5-a / 5-b)`: `discharge-required`。必要方向
+    (5-a)・十分方向(5-b)の両 theorem と、独立性行列 (w1)–(w3) の
+    非空検査を放電する。(5-b) の反証は failure policy の干渉条件
+    ハント分岐へ接続する。
 - `target anti-weakening rule`: 結論相当の仮定(coherence、押し出しの
   両立、合成公式、witness の非消滅)を theorem argument、typeclass、
   structure field、certificate field へ移して成功扱いしない。段横断
@@ -590,6 +732,12 @@
   total cochain の `H_G` orbit として定義すること(確定事項 (5) の
   禁止事項)、`p(m) = p(u)` を field として受け取ること、`m := u` に
   よる段内障害の自明化も成功に数えない。
+  `ParallelInterferenceVanishes` を `∃ gauge` 型・orbit 所属型で
+  言い換えること(結論の paraphrase)、干渉条件を `CompatiblePairs`
+  の field へ吸収すること(二障害の独立性の破壊)、量化域を平行対を
+  持たない presentation へ制限して (5-b) を vacuous に通すこと、
+  (5-b) の十分方向を片方向包含・条件付き含意へ弱めて成功に数える
+  ことも同様に禁じる。
 - `target route integrity gate`: geometry 段障害語彙・押し出し写像・
   合成公式・witness の provenance を G-106 / G-108 reviewed artifact、
   canonical 構成、opcartesian 普遍性、concrete witness へ追跡する。
@@ -601,8 +749,20 @@
   compatibility、pseudofunctor–障害語彙 unification、押し出しの
   保存・reselection 両立、射影公式、kernel 分解、total coherence
   同値(`JointVanishes ⟺ CrossStageCoherentizable`)、
-  compatible-pair gluing、strict bridge、条件付き cocycle、witness の
-  非消滅)の反証は `target-refuted` とする。段横断合成が常に段内消滅へ還元される
+  二障害 gluing 同値(5-a / 5-b)、干渉比の reselection 不変性、
+  strict bridge、条件付き cocycle、witness の
+  非消滅)の反証は `target-refuted` とする。**(5-b) 十分方向の反証**
+  (compatible-pair と平行干渉の双方が消滅してなお joint が成立しない
+  有限反例)も `target-refuted` とするが、その場合の後継は**干渉条件
+  ハント**(平行対を超える cycle 水準・共有辺水準の干渉不変量の探索。
+  G-104 条件C ハント様式)として記録し、第3版の再固定は人間の別判断と
+  する。**(5-a-ii) pair 側の反証**(joint 消滅するが `CompatiblePairs`
+  が空の有限反例 — `H_G` 値 strict trivializer の非導出性が予想される
+  機構)も `target-refuted` とし、その場合の後継は **trivializer 型の
+  再設計裁定**(strict 成分の値域・共有 restriction の再定義)として
+  記録する。第1版で反証済みの
+  conjunct(`CompatiblePairwiseVanishes → JointVanishes` 単独)を
+  再び固定することは goal defect であり loop 前に是正する。段横断合成が常に段内消滅へ還元される
   universal reduction theorem の成立も `target-refuted` とする(塔
   設計の簡約という負の大発見として記録。ただし押し出し非恒等性
   witness の先行構成を要し、型選択の artifact による恒等退化還元は

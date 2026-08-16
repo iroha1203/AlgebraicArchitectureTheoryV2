@@ -19,8 +19,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
-  (Gr3 完成: 段横断輸送整合と障害合成。隊列裁定 2026-08-15 の第二手、
-  依存先 G-108 は完遂済み)
+  (Gr3 完成: 段横断輸送整合と障害合成。第1版 target は 2026-08-17 に
+  `target-refuted`(PR #4019、平行干渉反例)。第2版 = 二障害 gluing
+  同値で再固定。依存先 G-108 は完遂済み)
 
 ## draft（人間の確認待ち）
 
