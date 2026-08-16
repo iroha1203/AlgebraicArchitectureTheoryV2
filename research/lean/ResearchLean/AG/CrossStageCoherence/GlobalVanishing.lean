@@ -9,10 +9,12 @@ anchor is a separate family of path equations at one shared global edge
 coordinate.
 
 An aligned section records the core coordinate and its fixed-endpoint lift.
-The remaining strict coordinate is an `H_G` edge gauge.  `CompatiblePairs`
-stores only these low-level coordinates, alignment, and their actual
-path-factorization equation; it contains neither total nor inner vanishing as
-a field.  The two directions to and from a joint gauge are constructed below.
+`CompatiblePairs` stores a core trivializer, such a lift and alignment, an
+independent absolute strict trivializer, and their shared path equations on
+the qualified strict faces.  It contains neither total nor inner
+vanishing as a field.  The resulting joint gauge has the required core
+projection and strict-face equations, while its missing all-cell equation is
+exposed separately and refuted by a finite instance.
 -/
 
 namespace AAT.AG.CrossStageCoherence
@@ -137,6 +139,7 @@ def LocalPairwiseVanishes
     (data : TwoLayerTransportData.{u, v} P U) : Prop :=
   Nonempty (CoreTrivializer data) ∧ Nonempty (StrictTrivializer data)
 
+/-- API bridge: core-orbit vanishing is exactly existence of a core trivializer. -/
 theorem coreVanishes_iff_nonempty_trivializer
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     (data : TwoLayerTransportData.{u, v} P U) :
@@ -148,6 +151,7 @@ theorem coreVanishes_iff_nonempty_trivializer
   · rintro ⟨trivializer⟩
     exact ⟨trivializer.reselection, trivializer.coherent⟩
 
+/-- API bridge: strict-orbit vanishing is exactly existence of a strict trivializer. -/
 theorem strictVanishes_iff_nonempty_trivializer
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     (data : TwoLayerTransportData.{u, v} P U) :
@@ -269,26 +273,45 @@ theorem jointVanishes_iff_alignedSectionVanishes
 /-! ## Compatible-pair pullback -/
 
 /--
-Low-level compatible gluing data.  The core coordinate and its lift are stored
-by `section`; `alignment` makes that core coordinate a trivializer.  The single
-strict gauge is required to satisfy the section-relative path equation.  No
-orbit-vanishing proposition is a field.
+The shared restriction equation between a lifted core coordinate and an
+absolute strict trivializer.  It asks their composite edge coordinate to solve
+only the qualified strict faces, never all two-cells of the presentation.
+-/
+def SharedBoundaryCompatible
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    {data : TwoLayerTransportData.{u, v} P U}
+    (edgeSection : EdgeSectionFamily data)
+    (strictTrivializer : StrictTrivializer data) : Prop :=
+  ∀ cell : StrictTwoCell data,
+    (upperReselectedPathLift data.lift
+      (relativeUpperReselection edgeSection strictTrivializer.reselection)
+      (P.twoLeft cell.1)).comp
+      (CompositeFiberAut.hom (data.comparator cell.1)) =
+    upperReselectedPathLift data.lift
+      (relativeUpperReselection edgeSection strictTrivializer.reselection)
+      (P.twoRight cell.1)
+
+/--
+The fixed low-level Sigma/pullback data: a core trivializer, a fixed-endpoint
+lift of it, core alignment, an absolute strict trivializer, and their shared
+restriction equations on qualified strict faces.  Total or all-cell
+section-relative coherence is deliberately absent.
 -/
 structure CompatiblePairs
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     (data : TwoLayerTransportData.{u, v} P U) where
+  /-- The independently coherent core edge coordinate. -/
+  coreTrivializer : CoreTrivializer data
+  /-- A fixed-endpoint upper lift family. -/
   edgeSection : EdgeSectionFamily data
+  /-- The lift family lies over the selected core trivializer. -/
+  core_restriction : edgeSection.core = coreTrivializer.reselection
+  /-- The lifted core coordinate satisfies every projected 2-cell equation. -/
   alignment : CoreAlignmentAt data edgeSection
-  strictGauge : StrictEdgeReselection data.lift
-  restriction : SectionRelativeCoherentAt data edgeSection strictGauge
-
-/-- The core coordinate of a compatible pair is an actual core trivializer. -/
-noncomputable def CompatiblePairs.coreTrivializer
-    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    {data : TwoLayerTransportData.{u, v} P U}
-    (pair : CompatiblePairs data) : CoreTrivializer data where
-  reselection := pair.edgeSection.core
-  coherent := pair.alignment
+  /-- An independently coherent absolute strict coordinate. -/
+  strictTrivializer : StrictTrivializer data
+  /-- Their composite coordinate solves every qualified strict face. -/
+  restriction : SharedBoundaryCompatible edgeSection strictTrivializer
 
 /-- Pairwise vanishing with the required shared lift and strict coordinate. -/
 def CompatiblePairwiseVanishes
@@ -301,44 +324,46 @@ noncomputable def compatiblePairsToJointGauge
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     {data : TwoLayerTransportData.{u, v} P U}
     (pair : CompatiblePairs data) : UpperEdgeReselection data.lift :=
-  relativeUpperReselection pair.edgeSection pair.strictGauge
+  relativeUpperReselection pair.edgeSection pair.strictTrivializer.reselection
 
-/-- The constructed joint gauge satisfies every total path equation. -/
-theorem compatiblePairsToJointGauge_coherent
+/-- The constructed upper coordinate projects to the pair's core trivializer. -/
+theorem compatiblePairsToJointGauge_projects
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     {data : TwoLayerTransportData.{u, v} P U}
     (pair : CompatiblePairs data) :
-    CrossStageCoherentAt data (compatiblePairsToJointGauge pair) :=
+    pushforwardEdgeReselection data.lift
+        (compatiblePairsToJointGauge pair) =
+      pair.coreTrivializer.reselection := by
+  rw [← pair.core_restriction]
+  funext i j edge
+  exact relativeUpperReselection_projects
+    pair.edgeSection pair.strictTrivializer.reselection i j edge
+
+/-- The synthesized upper coordinate satisfies every qualified strict face. -/
+theorem compatiblePairsToJointGauge_strict
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    {data : TwoLayerTransportData.{u, v} P U}
+    (pair : CompatiblePairs data) :
+    ∀ cell : StrictTwoCell data,
+      (upperReselectedPathLift data.lift
+        (compatiblePairsToJointGauge pair) (P.twoLeft cell.1)).comp
+          (CompositeFiberAut.hom (data.comparator cell.1)) =
+        upperReselectedPathLift data.lift
+          (compatiblePairsToJointGauge pair) (P.twoRight cell.1) :=
   pair.restriction
 
-/-- Construct compatible low-level data from one joint coherent gauge. -/
-noncomputable def jointGaugeToCompatiblePairs
+/--
+The missing total condition for the synthesized gauge is exactly the forbidden
+all-cell section-relative equation; the low-level pair does not supply it.
+-/
+theorem compatiblePairsToJointGauge_coherent_iff
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : TwoLayerTransportData.{u, v} P U)
-    (reselection : UpperEdgeReselection data.lift)
-    (coherent : CrossStageCoherentAt data reselection) : CompatiblePairs data where
-  edgeSection := edgeSectionOfUpperReselection data reselection
-  alignment := edgeSectionOfUpperReselection_alignment data reselection coherent
-  strictGauge := 1
-  restriction := by
-    intro cell
-    rw [relativeUpperReselection_edgeSection_identity data reselection]
-    exact coherent cell
-
-/-- Positive gluing theorem, with explicit constructions in both directions. -/
-theorem jointVanishes_iff_compatiblePairwiseVanishes
-    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
-    (data : TwoLayerTransportData.{u, v} P U) :
-    JointVanishes data ↔ CompatiblePairwiseVanishes data := by
-  constructor
-  · intro joint
-    obtain ⟨reselection, coherent⟩ :=
-      (jointVanishes_iff_crossStageCoherentizable data).1 joint
-    exact ⟨jointGaugeToCompatiblePairs data reselection coherent⟩
-  · rintro ⟨pair⟩
-    apply (jointVanishes_iff_crossStageCoherentizable data).2
-    exact ⟨compatiblePairsToJointGauge pair,
-      compatiblePairsToJointGauge_coherent pair⟩
+    {data : TwoLayerTransportData.{u, v} P U}
+    (pair : CompatiblePairs data) :
+    CrossStageCoherentAt data (compatiblePairsToJointGauge pair) ↔
+      SectionRelativeCoherentAt data pair.edgeSection
+        pair.strictTrivializer.reselection :=
+  Iff.rfl
 
 end AAT.AG.CrossStageCoherence
 

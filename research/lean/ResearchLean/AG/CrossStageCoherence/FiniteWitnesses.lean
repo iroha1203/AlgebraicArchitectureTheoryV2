@@ -103,6 +103,7 @@ noncomputable def coordinateRestriction
       (selectedGeometry.toAATSite.contextPreorder.morphism (leOfHom w)) where
   variableImage := fun _ => MvPolynomial.X ()
 
+/-- Fixture API: coordinate restriction commutes with the polynomial structure map. -/
 theorem coordinateRestriction_polynomialMap
     {X Y : selectedGeometry.toAATSite.category} (w : X ⟶ Y) :
     (coordinateRestriction w).polynomialMap =
@@ -282,6 +283,7 @@ noncomputable def coreFiberPermutation (permutation : Equiv.Perm (Fin 4)) :
         exact corePermutationTotal_refl }
   exact ⟨iso, rfl⟩
 
+/-- Core-fiber reindexing sends permutation composition to group multiplication. -/
 theorem coreFiberPermutation_mul (first second : Equiv.Perm (Fin 4)) :
     coreFiberPermutation first * coreFiberPermutation second =
       coreFiberPermutation (second.trans first) := by
@@ -300,6 +302,7 @@ def squareRootPermutation : Equiv.Perm (Fin 4) :=
   ((Equiv.swap (0 : Fin 4) 2).trans (Equiv.swap (0 : Fin 4) 1)).trans
     (Equiv.swap (0 : Fin 4) 3)
 
+/-- The chosen four-cycle squares to the visible block permutation. -/
 theorem squareRootPermutation_square :
     squareRootPermutation.trans squareRootPermutation = blockPermutation := by
   apply Equiv.ext
@@ -314,6 +317,7 @@ noncomputable def blockedCore : PackageFiberAut core :=
 noncomputable def visibleCore : PackageFiberAut core :=
   coreFiberPermutation blockPermutation
 
+/-- The blocked core gauge is an explicit square root of the visible core gauge. -/
 theorem blockedCore_mul_self : blockedCore * blockedCore = visibleCore := by
   rw [blockedCore, visibleCore, coreFiberPermutation_mul,
     squareRootPermutation_square]
@@ -402,6 +406,7 @@ theorem blockPermutation_preserves_selected :
   intro axis selected
   fin_cases axis <;> simp_all [SelectedAxis] <;> decide
 
+/-- The visible block permutation is involutive. -/
 theorem blockPermutation_square :
     blockPermutation.trans blockPermutation = Equiv.refl (Fin 4) := by
   apply Equiv.ext
@@ -445,12 +450,14 @@ noncomputable def visibleGeometryIso : Aut package where
 noncomputable def visibleComposite : CompositeFiberAut package :=
   ⟨visibleGeometryIso, rfl⟩
 
+/-- The visible geometry automorphism projects to the visible core automorphism. -/
 theorem visibleComposite_pushforward :
     compositeFiberPushforward package visibleComposite = visibleCore := by
   apply Subtype.ext
   apply Iso.ext
   rfl
 
+/-- The projected visible automorphism performs nondegenerate work. -/
 theorem visibleCore_ne_one : visibleCore ≠ 1 := by
   intro equality
   have axisEquality := congrArg
@@ -519,10 +526,12 @@ noncomputable def coefficientSwapGeometryHom :
   axis_naturality _ _ := rfl
   observable_naturality _ _ := rfl
 
+/-- Lift the coefficient swap to a total geometry endomorphism over the identity core map. -/
 noncomputable def coefficientSwapTotal : GeometryTotalHom package package where
   base := PackageTotalHom.id core
   geometry := coefficientSwapGeometryHom
 
+/-- The total coefficient swap is involutive. -/
 theorem coefficientSwapTotal_square :
     coefficientSwapTotal.comp coefficientSwapTotal = GeometryTotalHom.id package := by
   have baseSquare :
@@ -542,6 +551,7 @@ theorem coefficientSwapTotal_square :
     · rfl
     · rfl
 
+/-- Package the involutive coefficient swap as a geometry automorphism. -/
 noncomputable def coefficientSwapIso : Aut package where
   hom := coefficientSwapTotal
   inv := coefficientSwapTotal
@@ -552,6 +562,7 @@ noncomputable def coefficientSwapIso : Aut package where
 noncomputable def innerSwap : InnerFiberAut package :=
   ⟨⟨coefficientSwapIso, rfl⟩, rfl⟩
 
+/-- The coefficient swap supplies a nonidentity element of the inner kernel. -/
 theorem innerSwap_ne_one : innerSwap ≠ 1 := by
   intro equality
   have coefficientEquality := congrArg
@@ -571,6 +582,7 @@ inductive WitnessEdge : Type
   | strict
   deriving DecidableEq
 
+/-- The two witness loops form an explicitly enumerable edge family. -/
 instance witnessEdgeFintype : Fintype WitnessEdge where
   elems := {.active, .strict}
   complete edge := by cases edge <;> simp
@@ -582,6 +594,7 @@ inductive WitnessTwoCell : Type
   | strict
   deriving DecidableEq
 
+/-- The three witness faces form an explicitly enumerable two-cell family. -/
 instance witnessTwoCellFintype : Fintype WitnessTwoCell where
   elems := {.activeFirst, .activeSecond, .strict}
   complete cell := by cases cell <;> simp
@@ -591,14 +604,18 @@ inductive WitnessThreeCell : Type
   | comparison
   deriving DecidableEq
 
+/-- The single witness syzygy forms an explicitly enumerable three-cell family. -/
 instance witnessThreeCellFintype : Fintype WitnessThreeCell where
   elems := {.comparison}
   complete cell := by cases cell; simp
 
+/-- The closed witness presentation has one vertex. -/
 abbrev WitnessVertex := PUnit
 
+/-- Every witness edge is a loop at the unique vertex. -/
 abbrev WitnessEdgeFamily (_ _ : WitnessVertex) := WitnessEdge
 
+/-- The empty path at the witness vertex. -/
 def witnessNilPath : PresentedPath WitnessEdgeFamily PUnit.unit PUnit.unit :=
   .nil PUnit.unit
 
@@ -610,6 +627,7 @@ def witnessActiveDoublePath :
     (@PresentedPath.cons WitnessVertex WitnessEdgeFamily PUnit.unit PUnit.unit
       PUnit.unit .active witnessNilPath)
 
+/-- The one-edge path through the strict loop. -/
 def witnessStrictPath :
     PresentedPath WitnessEdgeFamily PUnit.unit PUnit.unit :=
   .cons .strict witnessNilPath
@@ -630,6 +648,7 @@ noncomputable def witnessTwoPresentation : FiniteTransportTwoPresentation where
     | .activeSecond => witnessActiveDoublePath
     | .strict => witnessStrictPath
 
+/-- Regard a witness two-cell as an oriented pasting face. -/
 def witnessFace (cell : WitnessTwoCell) :
     WhiskeredFace witnessTwoPresentation PUnit.unit PUnit.unit where
   cell := cell
@@ -637,6 +656,7 @@ def witnessFace (cell : WitnessTwoCell) :
   outgoing := witnessNilPath
   orientation := .forward
 
+/-- The singleton pasting step supported on a chosen witness face. -/
 def witnessStep (cell : WitnessTwoCell) :
     RewriteStep witnessTwoPresentation witnessNilPath
       (witnessTwoPresentation.twoRight cell) where
@@ -648,6 +668,7 @@ def witnessStep (cell : WitnessTwoCell) :
     simp [witnessFace, WhiskeredFace.after, WhiskeredFace.localAfter,
       witnessTwoPresentation, PresentedPath.append, witnessNilPath]
 
+/-- The singleton pasting diagram used to build the nontrivial syzygy. -/
 noncomputable def witnessPasting (cell : WitnessTwoCell) :
     RewritePasting witnessTwoPresentation witnessNilPath
       (witnessTwoPresentation.twoRight cell) :=
@@ -699,6 +720,7 @@ noncomputable def witnessLiftData :
   edgeGeometryStrong _ := geometryIdentityStrong
   edgeCoreStrong _ := coreIdentityStrong
 
+/-- Every selected witness path lifts to the identity before reselection. -/
 theorem witnessPathLift_eq_id
     {i j : witnessPresentation.Vertex}
     (path : witnessPresentation.Path i j) :
@@ -736,6 +758,7 @@ noncomputable def witnessCoreReselection :
     | .active => blockedCore
     | .strict => 1
 
+/-- The explicit square-root core reselection solves every projected face equation. -/
 theorem witnessCoreReselection_coherent :
     CoherentAt witnessData.coreData witnessCoreReselection := by
   intro cell
@@ -754,6 +777,7 @@ theorem witnessCoreReselection_coherent :
       (self := PackageTotalHom.packageTotalCategory FiniteModel.carrier)
       (PackageTotalHom.id core)
 
+/-- Package the explicit square-root reselection as the negative fixture's core trivializer. -/
 noncomputable def witnessCoreTrivializer : CoreTrivializer witnessData where
   reselection := witnessCoreReselection
   coherent := witnessCoreReselection_coherent
@@ -766,6 +790,7 @@ noncomputable def witnessStrictReselection :
     | .active => 1
     | .strict => innerSwap
 
+/-- The coefficient-only face lies in the maximal strict sub-presentation. -/
 theorem witnessStrict_qualified : StrictCellQualified witnessData .strict := by
   constructor
   · have pathEquality := (witnessPathLift_eq_id
@@ -777,6 +802,7 @@ theorem witnessStrict_qualified : StrictCellQualified witnessData .strict := by
       (innerFiberInclusion package innerSwap) = 1
     exact (compositeFiberPushforward_eq_one_iff innerSwap.1).2 innerSwap.2
 
+/-- The first active face is excluded from the strict sector by its core image. -/
 theorem witnessActiveFirst_not_qualified :
     ¬ StrictCellQualified witnessData .activeFirst := by
   intro qualified
@@ -786,6 +812,7 @@ theorem witnessActiveFirst_not_qualified :
   apply visibleCore_ne_one
   exact pushed
 
+/-- The second active face is excluded from the strict sector by its core image. -/
 theorem witnessActiveSecond_not_qualified :
     ¬ StrictCellQualified witnessData .activeSecond := by
   intro qualified
@@ -804,12 +831,14 @@ theorem witnessStrictTwoCell_eq_strict (cell : StrictTwoCell witnessData) :
   · exact False.elim (witnessActiveSecond_not_qualified qualified)
   · rfl
 
+/-- The authored comparator on the strict face is the embedded inner swap. -/
 theorem witnessStrictAuthored_eq_innerSwap
     (qualified : StrictCellQualified witnessData .strict) :
     strictAuthoredComparator witnessData ⟨.strict, qualified⟩ = innerSwap := by
   apply Subtype.ext
   rfl
 
+/-- The explicit inner reselection solves every qualified strict face equation. -/
 theorem witnessStrictReselection_coherent :
     StrictCoherentAt witnessData witnessStrictReselection := by
   intro cell
@@ -827,17 +856,21 @@ theorem witnessStrictReselection_coherent :
       (self := geometryTotalCategory FiniteModel.carrier)
       (CompositeFiberAut.hom (innerFiberInclusion package innerSwap))
 
+/-- Package the inner reselection as the negative fixture's strict trivializer. -/
 noncomputable def witnessStrictTrivializer : StrictTrivializer witnessData where
   reselection := witnessStrictReselection
   coherent := witnessStrictReselection_coherent
 
+/-- The core and strict obstruction problems each vanish on the negative fixture. -/
 theorem witness_local_pairwise_vanishes : LocalPairwiseVanishes witnessData :=
   ⟨⟨witnessCoreTrivializer⟩, ⟨witnessStrictTrivializer⟩⟩
 
+/-- The negative fixture's projected core obstruction vanishes. -/
 theorem witness_core_vanishes : CoreVanishes witnessData :=
   (coreVanishes_iff_nonempty_trivializer witnessData).2
     ⟨witnessCoreTrivializer⟩
 
+/-- The negative fixture's maximal strict obstruction vanishes nonvacuously. -/
 theorem witness_strict_vanishes :
     StrictTransportObstructionVanishes witnessData :=
   (strictVanishes_iff_nonempty_trivializer witnessData).2
@@ -845,6 +878,7 @@ theorem witness_strict_vanishes :
 
 /-! ## Every core trivializer requires a nonliftable active coordinate -/
 
+/-- Every core trivializer would square its active edge value to `visibleCore`. -/
 theorem witnessCoreTrivializer_active_square (trivializer :
     CoreTrivializer witnessData) :
     PackageFiberAut.hom visibleCore =
@@ -860,6 +894,7 @@ theorem witnessCoreTrivializer_active_square (trivializer :
     visibleComposite_pushforward, Category.id_comp, Category.comp_id] using
     trivializer.coherent WitnessTwoCell.activeFirst
 
+/-- A core-fiber automorphism acts injectively on the four fixture axes. -/
 theorem packageFiberAxisMap_injective (automorphism : PackageFiberAut core) :
     Function.Injective (PackageFiberAut.hom automorphism).upper.axisMap := by
   intro first second equality
@@ -877,6 +912,7 @@ theorem packageFiberAxisMap_injective (automorphism : PackageFiberAut core) :
         (automorphism.1.hom.upper.axisMap second) := congrArg _ equality
     _ = second := leftInverse second
 
+/-- Any selected-pair-preserving permutation has square zero on the distinguished axis. -/
 theorem selectedPair_square_zero
     (map : Fin 4 → Fin 4) (injective : Function.Injective map)
     (selectedZero : SelectedAxis (map 0))
@@ -952,17 +988,26 @@ theorem witness_all_coreTrivializers_have_no_alignedSection :
   exact witnessCoreTrivializer_has_no_edgeSection trivializer
     ⟨edgeSection, coreEquality⟩
 
+/-- No low-level compatible pair exists for the original nonliftable-core fixture. -/
 theorem witness_compatiblePairs_empty : IsEmpty (CompatiblePairs witnessData) :=
   ⟨fun pair => witnessCoreTrivializer_has_no_edgeSection pair.coreTrivializer
-    ⟨pair.edgeSection, rfl⟩⟩
+    ⟨pair.edgeSection, pair.core_restriction⟩⟩
 
-/-- The orbit-to-compatible-pair theorem turns nonliftability into joint failure. -/
+/-- Any joint gauge would lift the core coordinate of a genuine core trivializer. -/
 theorem witness_not_joint : ¬ JointVanishes witnessData := by
   intro joint
-  obtain ⟨pair⟩ :=
-    (jointVanishes_iff_compatiblePairwiseVanishes witnessData).1 joint
-  exact witness_compatiblePairs_empty.false pair
+  obtain ⟨reselection, coherent⟩ :=
+    (jointVanishes_iff_crossStageCoherentizable witnessData).1 joint
+  let edgeSection := edgeSectionOfUpperReselection witnessData reselection
+  let alignment := edgeSectionOfUpperReselection_alignment
+    witnessData reselection coherent
+  let coreTrivializer : CoreTrivializer witnessData :=
+    { reselection := edgeSection.core
+      coherent := alignment }
+  exact witnessCoreTrivializer_has_no_edgeSection coreTrivializer
+    ⟨edgeSection, rfl⟩
 
+/-- Every core path lift in the witness presentation is the identity. -/
 theorem witnessCorePathLift_eq_id
     {i j : witnessPresentation.Vertex}
     (path : witnessPresentation.Path i j) :
@@ -972,6 +1017,7 @@ theorem witnessCorePathLift_eq_id
   rw [← witnessLiftData.pathLift_base path]
   exact congrArg GeometryTotalHom.base upperIdentity
 
+/-- The identity core reselection cannot solve the active authored face. -/
 theorem witness_identity_core_active_not_coherent :
     ¬ ((reselectedPathLift witnessData.coreData.lift 1
           (witnessPresentation.twoLeft WitnessTwoCell.activeFirst)).comp
@@ -1023,15 +1069,18 @@ theorem witness_upper_raw_active_ne_one :
   rw [totalObstruction_eq_upperRaw, identity, map_one] at projection
   exact witness_interstage_obstruction_ne_one projection.symm
 
+/-- The distinguished qualified strict face as a subtype element. -/
 noncomputable def witnessStrictCell : StrictTwoCell witnessData :=
   ⟨.strict, witnessStrict_qualified⟩
 
+/-- The identity strict reselection embeds as the identity upper reselection. -/
 theorem strictToUpperReselection_one :
     strictToUpperReselection witnessData.lift
       (1 : StrictEdgeReselection witnessData.lift) = 1 := by
   funext i j edge
   exact map_one _
 
+/-- Identity upper reselection leaves every witness path lift unchanged. -/
 theorem witnessUpperPathLift_one
     {i j : witnessPresentation.Vertex}
     (path : witnessPresentation.Path i j) :
@@ -1100,6 +1149,7 @@ theorem witness_strict_raw_ne_one :
 
 /-! ## Nondegenerate closed syzygy -/
 
+/-- The closed witness uses two distinct nonempty pastings and genuine faces. -/
 theorem witness_nontrivial_syzygy :
     NontrivialSyzygyAt (P := witnessPresentation)
       WitnessThreeCell.comparison := by
@@ -1107,6 +1157,7 @@ theorem witness_nontrivial_syzygy :
     witnessStep, witnessFace, RewritePastingHasFace,
     RewritePastingUsesCell]
 
+/-- The witness syzygy support contains an actually nonidentity raw face. -/
 theorem witness_syzygy_support_has_nonidentity_raw :
     SyzygySupportHasNonidentityRaw witnessData 1
       WitnessThreeCell.comparison := by
@@ -1115,6 +1166,7 @@ theorem witness_syzygy_support_has_nonidentity_raw :
   simp [witnessPresentation, witnessPasting, witnessStep, witnessFace,
     RewritePastingUsesCell]
 
+/-- The two singleton pastings evaluate compatibly in the upper obstruction group. -/
 theorem witness_upper_syzygyCompatible :
     UpperSyzygyCompatible witnessData 1 := by
   intro cell
@@ -1153,6 +1205,7 @@ noncomputable def canonicalWitnessData :
     rw [witnessPathLift_eq_id, witnessPathLift_eq_id]
   comparator _ := 1
 
+/-- Identity reselection is totally coherent for the canonical positive data. -/
 theorem canonicalWitness_coherentAt_identity :
     CrossStageCoherentAt canonicalWitnessData 1 := by
   intro cell
@@ -1166,20 +1219,31 @@ theorem canonicalWitness_coherentAt_identity :
     (self := geometryTotalCategory FiniteModel.carrier)
     (GeometryTotalHom.id package)
 
+/-- The canonical positive fixture has an explicit joint gauge. -/
 theorem canonicalWitness_joint_vanishes :
     JointVanishes canonicalWitnessData :=
   (jointVanishes_iff_crossStageCoherentizable canonicalWitnessData).2
     ⟨1, canonicalWitness_coherentAt_identity⟩
 
-/-- Concrete fixed-endpoint section supplied by the canonical joint gauge. -/
+/-- Concrete fixed-endpoint section constructed before any total coherence proof. -/
 noncomputable def canonicalWitnessEdgeSection :
     EdgeSectionFamily canonicalWitnessData :=
-  edgeSectionOfUpperReselection canonicalWitnessData 1
+  identityEdgeSection canonicalWitnessData
 
+/-- The identity core coordinate aligns by direct evaluation of the fixture. -/
 theorem canonicalWitness_alignment :
-    CoreAlignmentAt canonicalWitnessData canonicalWitnessEdgeSection :=
-  edgeSectionOfUpperReselection_alignment canonicalWitnessData 1
-    canonicalWitness_coherentAt_identity
+    CoreAlignmentAt canonicalWitnessData canonicalWitnessEdgeSection := by
+  intro cell
+  change (reselectedPathLift witnessData.coreData.lift 1
+      (witnessPresentation.twoLeft cell)).comp
+      (PackageFiberAut.hom (1 : PackageFiberAut core)) =
+    reselectedPathLift witnessData.coreData.lift 1
+      (witnessPresentation.twoRight cell)
+  rw [reselectedPathLift_one, reselectedPathLift_one,
+    witnessCorePathLift_eq_id, witnessCorePathLift_eq_id]
+  exact Category.comp_id
+    (self := PackageTotalHom.packageTotalCategory FiniteModel.carrier)
+    (PackageTotalHom.id core)
 
 /-- The supplied section makes the three-term kernel decomposition fire. -/
 theorem canonicalWitness_kernel_decomposition_fires (cell : WitnessTwoCell) :
@@ -1193,26 +1257,64 @@ theorem canonicalWitness_kernel_decomposition_fires (cell : WitnessTwoCell) :
   totalObstruction_kernel_decomposition canonicalWitnessData
     canonicalWitnessEdgeSection canonicalWitness_alignment cell
 
+/-- Build the canonical low-level compatible pair directly from identity gauges. -/
 noncomputable def canonicalWitnessCompatiblePair :
-    CompatiblePairs canonicalWitnessData :=
-  jointGaugeToCompatiblePairs canonicalWitnessData 1
-    canonicalWitness_coherentAt_identity
+    CompatiblePairs canonicalWitnessData where
+  coreTrivializer :=
+    { reselection := 1
+      coherent := canonicalWitness_alignment }
+  edgeSection := canonicalWitnessEdgeSection
+  core_restriction := rfl
+  alignment := canonicalWitness_alignment
+  strictTrivializer :=
+    { reselection := 1
+      coherent := by
+        intro cell
+        change (upperReselectedPathLift witnessData.lift 1
+            (witnessPresentation.twoLeft cell.1)).comp
+            (CompositeFiberAut.hom
+              (innerFiberInclusion package
+                (strictAuthoredComparator canonicalWitnessData cell))) =
+          upperReselectedPathLift witnessData.lift 1
+            (witnessPresentation.twoRight cell.1)
+        have authoredIdentity :
+            innerFiberInclusion package
+                (strictAuthoredComparator canonicalWitnessData cell) = 1 := by
+          apply Subtype.ext
+          apply Iso.ext
+          rfl
+        rw [authoredIdentity]
+        change (upperReselectedPathLift witnessData.lift 1
+            (witnessPresentation.twoLeft cell.1)).comp
+            (GeometryTotalHom.id package) =
+          upperReselectedPathLift witnessData.lift 1
+            (witnessPresentation.twoRight cell.1)
+        rw [witnessUpperPathLift_one, witnessUpperPathLift_one]
+        exact Category.comp_id
+          (self := geometryTotalCategory FiniteModel.carrier)
+          (GeometryTotalHom.id package) }
+  restriction := by
+    intro cell
+    have gaugeIdentity :
+        relativeUpperReselection canonicalWitnessEdgeSection
+            (1 : StrictEdgeReselection canonicalWitnessData.lift) = 1 := by
+      funext i j edge
+      change innerFiberInclusion (canonicalWitnessData.lift.geometry j) 1 * 1 = 1
+      rw [map_one, one_mul]
+    rw [gaugeIdentity]
+    exact canonicalWitness_coherentAt_identity cell.1
 
+/-- The directly constructed canonical compatible pair inhabits pairwise vanishing. -/
 theorem canonicalWitness_compatible_pairwise_vanishes :
     CompatiblePairwiseVanishes canonicalWitnessData :=
   ⟨canonicalWitnessCompatiblePair⟩
 
-/-- Both nonempty sides of the positive gluing theorem fire on this diagram. -/
+/-- Joint vanishing and the independent low-level pair both hold positively. -/
 theorem canonicalWitness_positive_gluing_fires :
     JointVanishes canonicalWitnessData ∧
       CompatiblePairwiseVanishes canonicalWitnessData :=
   ⟨canonicalWitness_joint_vanishes,
     canonicalWitness_compatible_pairwise_vanishes⟩
-
-theorem canonicalWitness_joint_iff_compatible :
-    JointVanishes canonicalWitnessData ↔
-      CompatiblePairwiseVanishes canonicalWitnessData :=
-  jointVanishes_iff_compatiblePairwiseVanishes canonicalWitnessData
 
 /-- The positive fixture passes through the independently reconstructed
 pseudofunctor obstruction orbit. -/
@@ -1221,11 +1323,13 @@ theorem canonicalWitness_pseudofunctor_obstruction_vanishes :
   (pseudofunctorObstructionVanishes_iff_joint canonicalWitnessData).2
     canonicalWitness_joint_vanishes
 
+/-- The positive fixture's specialized raw cochain agrees with the general one. -/
 theorem canonicalWitness_pseudofunctor_raw_is_general :
     pseudofunctorRawDefectCochain canonicalWitnessData 1 =
       upperRawDefectCochain canonicalWitnessData 1 :=
   pseudofunctorRawDefectCochain_eq_upper canonicalWitnessData 1
 
+/-- The positive fixture fires the total categorical coherence anchor. -/
 theorem canonicalWitness_categorical_anchor_fires :
     CrossStageCoherentizable canonicalWitnessData :=
   (jointVanishes_iff_crossStageCoherentizable canonicalWitnessData).1
@@ -1239,11 +1343,13 @@ theorem witness_pseudofunctor_obstruction_does_not_vanish :
   exact witness_not_joint
     ((pseudofunctorObstructionVanishes_iff_joint witnessData).1 vanishes)
 
+/-- The negative fixture's specialized raw cochain agrees with the general one. -/
 theorem witness_pseudofunctor_raw_is_general :
     pseudofunctorRawDefectCochain witnessData 1 =
       upperRawDefectCochain witnessData 1 :=
   pseudofunctorRawDefectCochain_eq_upper witnessData 1
 
+/-- The negative fixture has no total categorical coherence gauge. -/
 theorem witness_categorical_anchor_does_not_fire :
     ¬ CrossStageCoherentizable witnessData := by
   intro coherentizable
@@ -1252,9 +1358,11 @@ theorem witness_categorical_anchor_does_not_fire :
 
 /-! ## Combined fixture qualifications -/
 
+/-- The maximal strict sub-presentation contains the coefficient-swap face. -/
 theorem witness_strict_sector_nonempty :
     Nonempty (StrictTwoCell witnessData) := ⟨witnessStrictCell⟩
 
+/-- The maximal strict sub-presentation is proper inside the total presentation. -/
 theorem witness_strict_inclusion_not_surjective :
     ¬ Function.Surjective (strictTwoCellEmbedding witnessData) := by
   intro surjective
@@ -1264,6 +1372,7 @@ theorem witness_strict_inclusion_not_surjective :
   rw [equality] at qualified
   exact witnessActiveFirst_not_qualified qualified
 
+/-- The negative fixture contains an active face with nonidentity projected comparator. -/
 theorem witness_core_active_cell_exists :
     ∃ cell : WitnessTwoCell,
       ¬ StrictCellQualified witnessData cell ∧

@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-109-aat-cross-stage-coherence.md`](../goals/G-109-aat-cross-stage-coherence.md)
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
-- proof state: `completion candidate / fixed-head review pending`
-- completion candidate: `yes`
+- proof state: `target-refuted / fixed-head standard review pending`
+- completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで
@@ -896,47 +896,53 @@ selection:
   lean_targets:
     - ResearchLean/AG/CrossStageCoherence/GlobalVanishing.lean
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: JointVanishes is sourced only from the C_G orbit; independent path equations yield the total categorical anchor, and explicit low-level constructions prove both aligned-section and CompatiblePairs equivalences
+  proposed_result_type: target-refutation-enabler
+  proof_obligation_delta: JointVanishes is sourced only from the C_G orbit and the total categorical anchor is proved. Fixed-head review found that the first CompatiblePairs encoded SectionRelativeCoherentAt, so that field and the resulting false equivalence were removed. The repaired low-level pair contains only the core trivializer, its fixed-endpoint lift and alignment, an absolute strict trivializer, and their shared equations on the qualified strict faces. Its synthesized gauge is coherent on the strict sub-presentation and is globally coherent exactly when the separately missing SectionRelativeCoherentAt equation holds.
   completion_candidate: no
   lean_artifacts:
     - CrossStageCoherentAt
     - CrossStageCoherentizable
     - CoreTrivializer
     - StrictTrivializer
+    - SharedBoundaryCompatible
     - CompatiblePairs
     - LocalPairwiseVanishes
     - CompatiblePairwiseVanishes
   evidence:
     - ResearchLean/AG/CrossStageCoherence/GlobalVanishing.lean focused elaboration
-    - namespace axiom audit with 68 declarations and standard axioms only
+    - namespace axiom audit with 70 declarations and standard axioms only
   claim_mapping:
     theorem_names:
       - jointVanishes_iff_crossStageCoherentizable
       - jointVanishes_iff_alignedSectionVanishes
-      - compatiblePairsToJointGauge_coherent
-      - jointGaugeToCompatiblePairs
-      - jointVanishes_iff_compatiblePairwiseVanishes
+      - compatiblePairsToJointGauge_projects
+      - compatiblePairsToJointGauge_strict
+      - compatiblePairsToJointGauge_coherent_iff
     source_labels:
       - target theorem (iii), total categorical anchor
       - fixed item (5), compatible-pair gluing theorem
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - the low-level pair has no all-cell SectionRelativeCoherentAt field, as required by the fixed GOAL
 audits:
   premise_delta:
     discharged:
       - unique provenance of JointVanishes
       - non-definitional total categorical anchor
-      - compatible-pair constructions in both directions
     remaining:
+      - CompatiblePairwiseVanishes implies JointVanishes
+      - joint gauge to low-level compatible-pair construction
       - typed cocycle and p preservation
       - pseudofunctor unification and finite witnesses
   certificate_provenance:
     discharged:
-      - CompatiblePairs contains only edgeSection, alignment, strictGauge, and restriction equation
-    unresolved: []
+      - CompatiblePairs contains only the fixed low-level fields and the qualified strict-face restriction equations
+    unresolved:
+      - no low-level field supplies the missing all-cell relative equation
   proof_use:
     used:
-      - categorical factorization equations in both directions
+      - categorical factorization equations in the total anchor
+      - pair restriction in the synthesized gauge's strict-face equations
+      - kernel projection theorem in the synthesized gauge's core projection
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -946,9 +952,10 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - lake env lean ResearchLean/AG/CrossStageCoherence/GlobalVanishing.lean: pass
-    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 68 declarations, pass'
-  blocking_findings: []
-  next_obligation: construct typed upper pasting, conditional cocycle, and p preservation
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 70 declarations, pass'
+  blocking_findings:
+    - compatible-pair gluing requires an all-cell relative equation that the fixed low-level Sigma/pullback data does not provide
+  next_obligation: test the universally quantified compatible-pair gluing implication on a finite same-boundary counterexample
 ```
 
 ### Cycle 11 — typed pasting and conditional cocycle
@@ -1039,10 +1046,14 @@ selection:
     - ResearchLean/AG/CrossStageCoherence/Unification.lean
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: compositor normalization remains heterogeneous; path whiskering generates the endpoint C_G image, p commutes with it, and an independently reconstructed comparator/raw cochain is proved equal to the general upper obstruction instance by opcartesian uniqueness
+  proof_obligation_delta: the actual geometry compositor between direct and iterated transport is normalized through selected endpoint lifts to a C_G element; the analogous core normalization is constructed and p carries the former to the latter. The specialized two-cell comparator now invokes that actual normalization, while path whiskering and the specialized raw cochain agree with the general upper obstruction API by opcartesian uniqueness.
   completion_candidate: no
   lean_artifacts:
     - pseudofunctorCompositor_normalization
+    - normalizedGeomCompositor
+    - normalizedGeomCompositor_eq_canonical
+    - normalizedCoreCompositor
+    - normalizedGeomCompositor_pushforward
     - pseudofunctorWhiskering_compositeFiber_fac
     - pseudofunctorWhiskering_pushforward
     - pseudofunctorCanonicalComparator
@@ -1050,7 +1061,7 @@ result:
     - PseudofunctorObstructionVanishes
   evidence:
     - ResearchLean/AG/CrossStageCoherence/Unification.lean focused elaboration
-    - namespace axiom audit with 11 declarations and standard axioms only
+    - namespace axiom audit with 35 declarations and standard axioms only
   claim_mapping:
     theorem_names:
       - pseudofunctorCanonicalComparator_eq_upper
@@ -1070,8 +1081,8 @@ audits:
       - positive and negative fixture specialization
   certificate_provenance:
     discharged:
-      - specialized comparator is rebuilt from canonicalCompositeFiberComparator
-      - equality uses strong-cocartesian factorization uniqueness
+      - geometry/core normalizations are built from the actual compositor components and strong-lift comparison isomorphisms
+      - the specialized comparator invokes normalizedGeomCompositor before comparison with the canonical obstruction API
     unresolved: []
   proof_use:
     used:
@@ -1086,7 +1097,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - lake env lean ResearchLean/AG/CrossStageCoherence/Unification.lean: pass
-    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 11 declarations, pass'
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 35 declarations, pass'
   blocking_findings: []
   next_obligation: construct one closed finite fixture carrying all negative obligations and the paired canonical positive fixture
 ```
@@ -1104,13 +1115,13 @@ tracking_issue: 4018
 report_path: research/reports/G-109-aat-cross-stage-coherence.md
 selection:
   proof_obligation: build one nondegenerate finite geometry and closed presentation with local pairwise killers but no joint killer, prove every core trivializer lacks an aligned section, fire a supported syzygy, and pair it with a canonical positive diagram on the same setting
-  expected_result_type: completion-candidate
+  expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/CrossStageCoherence/FiniteWitnesses.lean
 result:
-  proposed_result_type: completion-candidate
-  proof_obligation_delta: a four-axis selected-pair geometry forces the active core gauge to square to the liftable block involution; every square root leaves the selected pair and hence has no geometry lift. A separate coefficient-swap strict loop vanishes locally. Two distinct active faces provide a nonempty compatible syzygy whose support contains a nonidentity raw defect. The same geometry and presentation also carry a canonical positive diagram with an explicit aligned section and compatible pair
-  completion_candidate: yes
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: a four-axis selected-pair geometry forces the active core gauge to square to the liftable block involution; every square root leaves the selected pair and hence has no geometry lift. A separate coefficient-swap strict loop vanishes locally. Two distinct active faces provide a nonempty compatible syzygy whose support contains a nonidentity raw defect. The same geometry and presentation carry both an independently constructed joint gauge and an independently constructed low-level compatible pair, but this positive conjunction does not prove the universal gluing implication.
+  completion_candidate: no
   lean_artifacts:
     - finite_cross_stage_negative_witness
     - witnessCoreTrivializer_has_no_edgeSection
@@ -1128,7 +1139,7 @@ result:
     - witness_pseudofunctor_obstruction_does_not_vanish
   evidence:
     - ResearchLean/AG/CrossStageCoherence/FiniteWitnesses.lean focused elaboration
-    - namespace axiom audit with 181 declarations and standard axioms only
+    - namespace axiom audit with 180 declarations and standard axioms only
     - ResearchLean/AG/CrossStageCoherence.lean registered focused umbrella check
   claim_mapping:
     theorem_names:
@@ -1138,7 +1149,7 @@ result:
       - witness_shared_boundary_incompatible
       - witness_upper_syzygyCompatible
       - witness_core_cocycle_fires
-      - canonicalWitness_joint_iff_compatible
+      - canonicalWitness_positive_gluing_fires
       - canonicalWitness_categorical_anchor_fires
       - witness_categorical_anchor_does_not_fire
     source_labels:
@@ -1156,7 +1167,8 @@ result:
       - nontrivial syzygy uses two distinct nonempty faces and a nonidentity raw face in support
       - SyzygyCompatible is constructed and used by the cocycle theorem
       - canonical positive data has explicit edge section, alignment, decomposition, joint gauge, and compatible pair
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - the universal CompatiblePairwiseVanishes-to-JointVanishes direction remains unproved
     acceptance_point: all witness obligations are conjoined on witnessData; no finite enumeration of CoreTrivializer is assumed
     port_status: unported
 audits:
@@ -1167,9 +1179,10 @@ audits:
       - universal nonliftability of all core trivializers
       - strict properness, nonemptiness, and nondegenerate work
       - supported conditional cocycle firing
-      - concrete positive section and compatible gluing
+      - concrete positive section, joint gauge, and compatible pair
       - positive and negative unification specialization
-    remaining: []
+    remaining:
+      - universal compatible-pair gluing
   certificate_provenance:
     discharged:
       - core killer is an explicit four-cycle square root
@@ -1183,7 +1196,7 @@ audits:
       - CoreTrivializer.coherent at the repeated active loop
       - strict qualification and coefficient action
       - UpperSyzygyCompatible in witness_upper_cocycle_fires
-      - jointVanishes_iff_compatiblePairwiseVanishes in witness_not_joint
+      - direct same-fixture nonliftability in witness_not_joint
       - jointVanishes_iff_crossStageCoherentizable in both fixtures
       - pseudofunctorObstructionVanishes_iff_joint in both fixtures
     unused: []
@@ -1195,17 +1208,132 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - lake env lean ResearchLean/AG/CrossStageCoherence/FiniteWitnesses.lean: pass
-    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 181 declarations, pass'
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 180 declarations, pass'
     - ./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence.lean: pass
-  blocking_findings: []
-  next_obligation: fixed-head standard PR review, root acceptance audit, completion packet, and four-lane math-lean-review
+  blocking_findings:
+    - one positive instance cannot discharge the universally quantified compatible-pair gluing theorem
+  next_obligation: construct a compatible pair whose synthesized gauge fails on two same-boundary non-strict cells
 ```
 
-## Completion candidate summary
+### Cycle 14 — compatible-pair gluing refutation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 14
+goal_blob_sha: 8b2219081f55a44bb74b562d468588608d6d0623
+goal_sha256: 27061a2e128ef56575c1661ea4e5a5723c69dedec7d1cc8eb3f21081862a2b7b
+base_oid: d7fc2415fba3a07fdf465bec9c3cf311e6423dcd
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: Cycle 10 repaired low-level CompatiblePairs and its exact missing SectionRelativeCoherentAt condition
+  proof_dag_predecessors:
+    - compatiblePairsToJointGauge_projects
+    - compatiblePairsToJointGauge_coherent_iff
+    - FiniteCrossStageWitness nontrivial visible and inner automorphisms
+  proof_obligation: decide the fixed universal implication CompatiblePairwiseVanishes implies JointVanishes without adding the forbidden all-cell relative-coherence field
+  selection_reason: this is a central conjunct named by the fixed failure policy, and the repaired field list leaves a concrete same-boundary compatibility test
+  expected_result_type: target-refuted
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean
+  risks:
+    - hiding total coherence in a structure field
+    - using an empty or improper strict sector
+    - choosing equal authored comparators on the two active faces
+    - relying on a supplied conclusion-equivalent certificate
+  unchecked:
+    - fixed-head standard PR review
+    - fixed-head CI
+    - root acceptance audit
+result:
+  proposed_result_type: target-refuted
+  proof_obligation_delta: one finite presentation carries a coherent core trivializer, its aligned fixed-endpoint lift, a nonidentity absolute strict trivializer on an inhabited proper strict sector, and their shared path equations on every qualified strict face. Thus CompatiblePairwiseVanishes is inhabited. Two non-strict cells have the same boundary but distinct authored comparators differing by the nonidentity inner swap, so every single total gauge would have to identify those comparators and JointVanishes is impossible.
+  completion_candidate: no
+  lean_artifacts:
+    - CompatiblePairRefutation.data
+    - CompatiblePairRefutation.coreTrivializer
+    - CompatiblePairRefutation.edgeSection
+    - CompatiblePairRefutation.strictTrivializer
+    - CompatiblePairRefutation.shared_restriction
+    - CompatiblePairRefutation.compatiblePair
+    - CompatiblePairRefutation.compatiblePairwiseVanishes
+    - CompatiblePairRefutation.not_joint
+    - CompatiblePairRefutation.compatiblePairwise_not_implies_joint
+    - CompatiblePairRefutation.compatiblePairGauge_not_coherent
+  evidence:
+    - ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean focused elaboration
+    - targeted build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation
+    - registered focused umbrella ResearchLean/AG/CrossStageCoherence.lean
+    - namespace axiom audit with 30 declarations and standard axioms only
+  claim_mapping:
+    theorem_names:
+      - CompatiblePairRefutation.shiftedVisibleComposite_ne_visible
+      - CompatiblePairRefutation.strict_sector_nonempty
+      - CompatiblePairRefutation.strict_sector_proper
+      - CompatiblePairRefutation.strict_reselection_nonidentity
+      - CompatiblePairRefutation.compatiblePairwise_not_implies_joint
+    source_labels:
+      - fixed item (5), JointVanishes iff CompatiblePairwiseVanishes
+      - target failure policy, compatible-pair gluing refutation
+    conjuncts:
+      - finite one-vertex presentation with two active same-boundary faces and one qualified strict face
+      - explicit core trivializer and aligned fixed-endpoint lift
+      - explicit nonidentity absolute strict trivializer
+      - inhabited proper strict sector
+      - low-level CompatiblePairs inhabitant satisfying all qualified strict faces without any all-cell coherence field
+      - distinct authored comparators over the identical active boundary
+      - CompatiblePairwiseVanishes and not JointVanishes on the same data
+    undischarged_assumptions: []
+    acceptance_point: the gluing implication quantifies over all finite presentations; this data lies in that domain and the contradiction uses only the two demanded coherence equations
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - fixed low-level compatible-pair fields
+      - nonvacuous strict work
+      - same-data pairwise inhabitance and joint nonvanishing
+      - direct negation of the universal gluing implication
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - visibleComposite and innerSwap come from the reviewed finite geometry fixture
+      - the core and strict trivializers are constructed explicitly in the counterexample module
+      - shared_restriction is proved directly on the complete strict subtype
+      - comparator inequality follows from innerFiberInclusion injectivity and innerSwap_ne_one
+    unresolved: []
+  proof_use:
+    used:
+      - both same-boundary active coherence equations in CompatiblePairRefutation.not_joint
+      - strict qualification and innerSwap_ne_one in strict nondegeneracy
+      - the qualified strict cell equation in CompatiblePairRefutation.shared_restriction
+      - only the fixed low-level CompatiblePairs fields in compatiblePair
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - lake env lean ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean: pass
+    - lake build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation: pass
+    - ./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence.lean: pass
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 30 declarations, pass'
+  blocking_findings:
+    - the fixed compatible-pair gluing conjunct is false
+  next_obligation: fixed-head standard PR review, CI, root acceptance audit, merge, and target-refuted ledger synchronization
+```
+
+## Target-refuted stopping summary
 
 - fixed GOAL blob: `8b2219081f55a44bb74b562d468588608d6d0623`
 - fixed GOAL sha256: `27061a2e128ef56575c1661ea4e5a5723c69dedec7d1cc8eb3f21081862a2b7b`
-- implementation spine: `Basic -> FiberTransport -> Pseudofunctor -> CorePseudofunctor -> TowerCompatibility -> ObstructionGroups -> UpperObstruction -> StrictObstruction -> SectionDecomposition -> RelativeObstruction -> GlobalVanishing -> PastingObstruction -> Unification -> FiniteWitnesses`
-- completion status: Lean artifact and local static gates are complete; fixed-head PR review, CI, root acceptance audit, and independent four-lane completion review remain unchecked.
-- Gr3 status: **未記録**。固定 completion criteria に従い、review/CI/merge 前には達成を記録しない。
+- implementation spine: `Basic -> FiberTransport -> Pseudofunctor -> CorePseudofunctor -> TowerCompatibility -> ObstructionGroups -> UpperObstruction -> StrictObstruction -> SectionDecomposition -> RelativeObstruction -> GlobalVanishing -> PastingObstruction -> Unification -> FiniteWitnesses -> CompatiblePairRefutation`
+- stopping reason: `CompatiblePairRefutation.compatiblePairwise_not_implies_joint` contradicts the fixed compatible-pair gluing conjunct, which the fixed failure policy explicitly classifies as `target-refuted`.
+- completion status: the fixed target theorem is not proved and must not be weakened. The reusable Lean refutation and local static gates are complete; fixed-head standard review, CI, root acceptance audit, merge, and Issue synchronization remain unchecked.
+- completed obligations: projection tower, pseudofunctor coherence, tower compatibility, obstruction groups, total categorical anchor, strict bridge, kernel decomposition, conditional cocycle, actual-compositor normalization, finite positive/negative fixtures, and the compatible-pair counterexample.
+- remaining obligations under the original theorem: the false compatible-pair equivalence and any downstream completion claim that depends on it. These are terminated by refutation rather than carried as a checkpoint.
+- premise status: the counterexample supplies every fixed low-level CompatiblePairs field explicitly, including all qualified strict-face equations, and uses no total or all-cell section-relative coherence premise.
+- Gr3 status: **未記録**。固定 target は反証されたため、proved として記録しない。
 - frontier retained: `ObProblem` class naturality, general finite towers, and unconditional syzygy compatibility.
