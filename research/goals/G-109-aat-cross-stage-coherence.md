@@ -65,12 +65,23 @@
   載せる場合の次数契約の観察」の消化 — 2026-08-16 裁定)。有限
   presentation・2-cell = 平行 path 対の宣言関係・3-cell = 宣言 syzygy
   の有限族・reselection = 辺ごとの fiber 自己同型割当という次数骨格は
-  G-106 に従う。あわせて **strict 段内語彙**も建設する — 2-cell base
-  等式を `PackageTotalHom` 水準に強めた strict sub-presentation 上の
-  `H_G` 値 defect と `H_G` gauge orbit(G-106 の字義的な geometry 段
-  版。押し出しが恒等になるのはこの語彙の構造であり欠陥ではない)。
-  strict 語彙は (iv) の pairwise 判定の geometry 成分に使い、`C_G`
-  語彙は合成公式と joint 判定に使う(役割分離)。admissible 比較データは**二層**とする — edge ごとに
+  G-106 に従う。あわせて **strict 段内語彙**を **proper
+  sub-presentation** として建設する — 2-cell base 等式を
+  `PackageTotalHom` 水準に強めた strict sub-presentation 上の `H_G`
+  値 defect と `H_G` gauge orbit(G-106 の字義的な geometry 段版。
+  押し出しが恒等になるのはこの語彙の構造であり欠陥ではない)。
+  **同一 data 解釈は採らない** — total と同じ comparator / raw
+  cochain に strict 消滅を適用すると `H_G ↪ C_G` の包含で joint 消滅
+  が従い、負例が不可能になる。proper sub-presentation 解釈の空虚化を
+  防ぐため、**bridge package を建設義務に含める**: 埋め込み
+  `StrictTwoCell ↪ TotalTwoCell`、path / comparator / raw の
+  restriction theorem、両 gauge 作用の equivariance、strict 部分の
+  非空・閉・非退化性 witness(strict 側に非恒等 defect が実在し、
+  その消滅が実仕事であること)、coverage 条件(total の 2-cell が
+  strict 部分と core-active 部分で覆われ、joint failure が両部分の
+  相互作用に局在すること)。strict 語彙は (iv) の pairwise 判定の
+  geometry 成分に使い、`C_G` 語彙は合成公式と joint 判定に使う
+  (役割分離)。admissible 比較データは**二層**とする — edge ごとに
   geometry 段(`geometryProjection`)と core 段(`packageProjection`)
   の両方の強 opcartesian 証書を入力として持つ(入力データの資格条件で
   あり、結論の仮定化ではない)。**geometry 段の消滅同値 theorem は
@@ -194,19 +205,31 @@
   ため、**負例の pairwise 成分に使うことは禁じる**。同じ理由で
   total cochain 自体の `H_G` orbit 消滅を「段内消滅」と定義する
   ことも禁じる(`H_G ⊂ C_G` の orbit 包含)。負例の pairwise の
-  geometry 成分は **section 非依存の strict 段内語彙**((1))で
-  測る。負例 witness の形は
-  **`CoreVanishes ∧ strict 段内消滅 ∧ ¬JointVanishes`** とし、機構は
-  **非 liftable core trivializer** — 同一 fixture 上で、すべての
-  core trivializer に aligned section が存在しないことの有限検査と、
-  それが `¬JointVanishes` へ接続する theorem を**必須**とする
-  (optional にしない)。この負例 fixture に core killer の aligned
-  `C_G` section を同時要求してはならない。**witness
+  geometry 成分は **section 非依存の strict 段内語彙**((1) の
+  proper sub-presentation、bridge package で total と接続)で測る。
+  joint compatibility failure は **trivializer の fiber product** で
+  直接測る — `CoreTrivializers`(段間障害を消す `B_G` gauge の集合)
+  と `StrictTrivializers`(strict restriction 上の `H_G` gauge の
+  集合)が**個別には inhabited** でありながら、compatible lift の
+  fiber product(`CompatiblePairs`)が**空**であること。
+  `CompatiblePairwiseVanishes` はこの fiber product の非空性として
+  定義し、正例 theorem `JointVanishes ⟺ CompatiblePairwiseVanishes`
+  と整合させる。負例 witness の形は
+  **`CoreVanishes ∧ strict 段内消滅(strict restriction 上、非空虚)
+  ∧ ¬JointVanishes`** とし、機構は**非 liftable core trivializer** —
+  同一 fixture 上で、すべての core trivializer に aligned section が
+  存在しないことの有限検査と、それが `¬JointVanishes` へ接続する
+  theorem を**必須**とする(optional にしない)。fixture は
+  **`段間障害 ≠ 1`** を満たす(恒等 gauge を trivializer から排除
+  し、恒等 core trivializer の恒等 lift による機構崩壊を防ぐ)。この
+  負例 fixture に core killer の aligned `C_G` section を同時要求
+  してはならない。**witness
   義務は同一 fixture に結合する**: 押し出し非恒等性・pairwise 消滅
   (`CoreVanishes`+strict 段内消滅)・`¬JointVanishes`(全 core
   trivializer の aligned section 非存在の有限検査込み)は、同一の閉
-  finite presentation・同一 authored comparator・同一 raw defect 上で
-  同時に成立させる。fixture は実 cover・非零係数・非退化
+  fixture 上で同時に成立させる(strict 段内消滅はその strict
+  restriction 上で判定し、(1) の bridge package で total と接続
+  する)。fixture は実 cover・非零係数・非退化
   raw system を持つ(site・係数を含む Gr3 記録の資格。係数を identity
   scalar map で保つ場合はその scope を fixture 資格に明記する)。
 - `research aim`: 輸送が**塔の段をまたいで**合成することを定理にする。
@@ -270,17 +293,21 @@
 
 - `target theorem`: **Cross-Stage Transport Coherence and Obstruction
   Composition Theorem**。G-101 / G-106 / G-108 の設定の上で:
-  1. **(i) 段横断擬関手的整合(正例)**: 各 exact 底射
-     (`ExactDoctrineHom`)に対する fiber 間 transport functor
+  1. **(i) 段横断擬関手的整合(正例)**: 底射は
+     `∀ {X Y : ExtInst_U} (σ : X ⟶ Y)`(= `ExtInstHom`)で量化する
+     — `σ.doctrineHom` と `σ.source_eq` の proof-use を statement で
+     明示し、裸の `ExactDoctrineHom`+source object から canonical
+     target を生成する既存 transport との比較は**別 theorem** として
+     固定する。各底射に対する fiber 間 transport functor
      (canonical lift の vertical morphism への作用を含む)を構成し、
      compositor / unitor を **natural isomorphism** として与え、その
      自然性・associativity coherence(底射3本の pentagon 相当)・
      左右 unit triangle を opcartesian 普遍性から証明する(cleavage
      から誘導される pseudofunctor 構造の geometry 段版)。**底と
-     fiber の型を固定する** — pseudofunctor の底は pointed
-     `ExtInst_U`(source object 込み。`ExactDoctrineHom` 単独では
-     pointed target が決まらない)、fiber は合成射影
-     `GeomRead -> ExtInst` の fiber とし、transport functor・
+     fiber の型を固定する** — pseudofunctor の底は `ExtInst_U`
+     (射 = `ExtInstHom`。`ExactDoctrineHom` 単独では pointed target
+     が決まらないため)、fiber は合成射影 `GeomRead -> ExtInst` の
+     fiber とし、transport functor の source / target fiber・
      compositor / unitor・projection comparison の domain / codomain
      をこの型で固定する(core 側 pseudofunctor も同じ底で取る)。あわせて
      **塔としての pseudonatural compatibility** を証明する — 各段
@@ -327,8 +354,10 @@
      section が存在しないことの有限検査**とその orbit 接続 theorem で
      証明する(必須。この fixture に core killer の aligned section
      を同時要求しない)、(c) 押し出し `p` の非恒等性(fixture 存在
-     witness)、(d) `SyzygyCompatible` を満たす非自明 syzygy を含み
-     (3-c) の cocycle theorem が非空に発火する、を**同時に**固定
+     witness)、(d) `NontrivialSyzygyAt`(左右が異なる非空 pasting・
+     実 2-cell face 使用・反射的 3-cell の排除を固定する Lean 述語)
+     を満たす syzygy を含み、(3-c) の cocycle theorem が
+     `SyzygyCompatible` を実使用して非空に発火する、を**同時に**固定
      する。正例側では、canonical 図式で `JointVanishes ⟺
      CompatiblePairwiseVanishes` を非空に発火させ((5) の正例
      theorem の非空検査)、(3-b) の section family と alignment を
@@ -350,8 +379,14 @@
   alignment 由来 `p(m) = p(u)` theorem(opcartesian uniqueness
   経由)、消滅述語の完全型4本(`CoreVanishes` / `InnerVanishesAt` /
   `JointVanishes` / `CompatiblePairwiseVanishes`)と正例 theorem
-  `JointVanishes ⟺ CompatiblePairwiseVanishes`、合成射影の宣言・
-  二層証書からの合成強 opcartesian theorem・composite closure、
+  `JointVanishes ⟺ CompatiblePairwiseVanishes`(fiber product 読み
+  込み)、合成射影の宣言・二層証書からの合成強 opcartesian theorem・
+  composite closure、strict 段内語彙の bridge package(埋め込み・
+  restriction・equivariance・非空/閉/非退化性・coverage)、
+  pseudofunctor–障害語彙一致 theorem 群(compositor 対象成分 =
+  `C_G` canonical comparator・`p` 像 = core compositor・specialized
+  = 一般 instance)、`ExtInstHom` 底射と canonical-target transport の
+  比較 theorem、`NontrivialSyzygyAt` 述語、
   fiber 間 transport functor と compositor / unitor(natural iso)・
   pentagon 相当・unit triangle の各 theorem、段射影との pseudonatural
   compatibility theorem(fiber 射影 functor との比較 natural iso・
@@ -367,7 +402,8 @@
   (段横断 gauge orbit 所属のみから)、負例 fixture 上の
   `CoreVanishes ∧ strict 段内消滅 ∧ ¬JointVanishes` witness
   (FiniteModel 上、geometry 段 fiber 自己同型群の非自明元・実
-  cover・非零係数・非退化 raw・非自明 syzygy を持つ新 fixture、非空
+  cover・非零係数・非退化 raw・`NontrivialSyzygyAt` syzygy・
+  `段間障害 ≠ 1` を持つ新 fixture、非空
   2-cell 幾何。`¬JointVanishes` は全 core trivializer の aligned
   section 非存在の有限検査+orbit 接続 theorem)、canonical 図式の
   段横断消滅と `JointVanishes ⟺ CompatiblePairwiseVanishes` の非空
@@ -458,7 +494,23 @@
   - `条件付き cocycle(3-c)`: `discharge-required`。typed pasting
     evaluator・`SyzygyCompatible` 条件付き total cocycle theorem・
     `p` の pasting / cocycle 保存 theorem を放電する(syzygy 整合
-    自体は direction-hypothesis のまま)。
+    自体は direction-hypothesis のまま)。witness の syzygy は
+    `NontrivialSyzygyAt`(左右が異なる非空 pasting・実際の 2-cell
+    face 使用・`threeLeft = threeRight` 型の反射的 3-cell の排除を
+    固定する Lean 述語)を満たし、cocycle theorem の証明が
+    `SyzygyCompatible` を実使用すること(proof-use 監査)を要求
+    する。
+  - `pseudofunctor と障害語彙の一致(unification)`:
+    `discharge-required`。canonical cleavage を presentation へ
+    instantiate したとき、`C_G` canonical comparator = compositor の
+    対象成分、その `p` 像 = core compositor の対象成分、specialized
+    raw cochain / orbit = 一般障害語彙の instance、となる一致
+    theorem 群を放電する(G-106 (v) の specialized / unified 一致
+    定理と同型の要求。両者を別々に証明するだけでは接続に数えない)。
+  - `strict 段内語彙の bridge package(確定事項 (1))`:
+    `discharge-required`。埋め込み・restriction theorem・gauge
+    equivariance・非空/閉/非退化性 witness・coverage 条件を放電
+    する。
   - `押し出しの保存・両立・非恒等性 / 三項定義と二部合成公式`:
     `discharge-required`。三項の定義は確定事項 (3) で固定した独立
     provenance(authored data / supplied section family / canonical)
@@ -489,9 +541,11 @@
   離散段の水増し・identity 射影だけの発火・退化 presentation だけの
   発火、one-way-as-equivalence、proof 後の GOAL 読み替えを completion に
   使わない。
-- `target failure policy`: 固定 target の中心 conjunct(押し出しの
-  保存・reselection 両立、射影公式、kernel 分解、条件付き cocycle、
-  witness の非消滅)の反証は `target-refuted` とする。段横断合成が常に段内消滅へ還元される
+- `target failure policy`: 固定 target の中心 conjunct((i) の
+  compositor / unitor 自然性・pentagon / triangle・tower
+  compatibility、押し出しの保存・reselection 両立、射影公式、kernel
+  分解、条件付き cocycle、witness の非消滅)の反証は
+  `target-refuted` とする。段横断合成が常に段内消滅へ還元される
   universal reduction theorem の成立も `target-refuted` とする(塔
   設計の簡約という負の大発見として記録。ただし押し出し非恒等性
   witness の先行構成を要し、型選択の artifact による恒等退化還元は
