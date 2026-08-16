@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-109-aat-cross-stage-coherence.md`](../goals/G-109-aat-cross-stage-coherence.md)
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
-- proof state: `target-refuted / fixed-head standard review pending`
+- proof state: `target-refuted / repaired fixed-head standard review pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -1248,7 +1248,7 @@ selection:
     - root acceptance audit
 result:
   proposed_result_type: target-refuted
-  proof_obligation_delta: one finite presentation carries a coherent core trivializer, its aligned fixed-endpoint lift, a nonidentity absolute strict trivializer on an inhabited proper strict sector, and their shared path equations on every qualified strict face. Thus CompatiblePairwiseVanishes is inhabited. Two non-strict cells have the same boundary but distinct authored comparators differing by the nonidentity inner swap, so every single total gauge would have to identify those comparators and JointVanishes is impossible.
+  proof_obligation_delta: one finite presentation carries a coherent core trivializer, its aligned fixed-endpoint lift, a nonidentity absolute strict trivializer on an inhabited proper strict sector, and their shared path equations on every qualified strict face. Thus CompatiblePairwiseVanishes is inhabited. Two non-strict cells have the same path endpoints and distinct authored comparators differing by the nonidentity inner swap, so every single total gauge would have to identify those comparators and JointVanishes is impossible. The repaired fixed head also supplies a typed positive/negative instance matrix for every new cross-stage Prop predicate and for CoreTrivializer, StrictTrivializer, and CompatiblePairs; canonical constructors explain why EdgeSectionFamily and PathBaseSplit have no negative inhabitance instance.
   completion_candidate: no
   lean_artifacts:
     - CompatiblePairRefutation.data
@@ -1263,11 +1263,41 @@ result:
     - CompatiblePairRefutation.not_joint
     - CompatiblePairRefutation.compatiblePairwise_not_implies_joint
     - CompatiblePairRefutation.compatiblePairGauge_not_coherent
+    - QualityInstances.coreVanishes_instances
+    - QualityInstances.localPairwiseVanishes_instances
+    - QualityInstances.coreTrivializer_instances
+    - QualityInstances.strictCoherentizable_instances
+    - QualityInstances.strictCoherentAt_instances
+    - QualityInstances.strictTransportObstructionVanishes_instances
+    - QualityInstances.strictTrivializer_instances
+    - QualityInstances.crossStageCoherentAt_instances
+    - QualityInstances.crossStageCoherentizable_instances
+    - QualityInstances.jointVanishes_instances
+    - QualityInstances.inUpperReselectionOrbit_instances
+    - QualityInstances.upperTransportObstructionVanishes_instances
+    - QualityInstances.coreAlignmentAt_instances
+    - QualityInstances.sectionRelativeCoherentAt_instances
+    - QualityInstances.sectionRelativeCoherentizable_instances
+    - QualityInstances.innerVanishesAt_instances
+    - QualityInstances.alignedSectionVanishes_instances
+    - QualityInstances.strictCellQualified_instances
+    - QualityInstances.sharedBoundaryCompatible_instances
+    - QualityInstances.compatiblePairwiseVanishes_instances
+    - QualityInstances.compatiblePairs_instances
+    - QualityInstances.pseudofunctorObstructionVanishes_instances
+    - QualityInstances.selectedAxis_instances
+    - QualityInstances.rewritePastingHasFace_instances
+    - QualityInstances.rewritePastingUsesCell_instances
+    - QualityInstances.nontrivialSyzygyAt_instances
+    - QualityInstances.upperSyzygyCompatible_instances
+    - QualityInstances.syzygySupportHasNonidentityRaw_instances
+    - QualityInstances.edgeSectionFamily_always_inhabited
+    - QualityInstances.pathBaseSplit_always_inhabited
   evidence:
     - ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean focused elaboration
     - targeted build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation
     - registered focused umbrella ResearchLean/AG/CrossStageCoherence.lean
-    - namespace axiom audit with 32 declarations and standard axioms only
+    - namespace axiom audit with 78 declarations and standard axioms only
   claim_mapping:
     theorem_names:
       - CompatiblePairRefutation.shiftedVisibleComposite_ne_visible
@@ -1276,6 +1306,11 @@ result:
       - CompatiblePairRefutation.strict_reselection_nonidentity
       - CompatiblePairRefutation.incompatibleEdgeSection_not_shared
       - CompatiblePairRefutation.compatiblePairwise_not_implies_joint
+      - QualityInstances.coreVanishes_instances
+      - QualityInstances.strictTransportObstructionVanishes_instances
+      - QualityInstances.sectionRelativeCoherentizable_instances
+      - QualityInstances.upperSyzygyCompatible_instances
+      - QualityInstances.syzygySupportHasNonidentityRaw_instances
     source_labels:
       - fixed item (5), JointVanishes iff CompatiblePairwiseVanishes
       - target failure policy, compatible-pair gluing refutation
@@ -1288,6 +1323,9 @@ result:
       - a second lift of the same core coordinate that fails SharedBoundaryCompatible, proving that the restriction predicate is nontrivial
       - distinct authored comparators over the identical active boundary
       - CompatiblePairwiseVanishes and not JointVanishes on the same data
+      - direct satisfying and non-satisfying finite instances for every new cross-stage Prop predicate
+      - inhabited and empty instances for CoreTrivializer, StrictTrivializer, and CompatiblePairs
+      - universal inhabitance explanations for the pure construction structures EdgeSectionFamily and PathBaseSplit
     undischarged_assumptions: []
     acceptance_point: the gluing implication quantifies over all finite presentations; this data lies in that domain and the contradiction uses only the two demanded coherence equations
     port_status: unported
@@ -1298,6 +1336,7 @@ audits:
       - nonvacuous strict work
       - same-data pairwise inhabitance and joint nonvanishing
       - positive and negative instances of SharedBoundaryCompatible on the same finite geometry
+      - positive and negative instances for every new cross-stage Prop predicate and certificate structure covered by the quality standard
       - direct negation of the universal gluing implication
     remaining: []
   certificate_provenance:
@@ -1318,14 +1357,14 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  vacuity: none-found
+  vacuity: pass; QualityInstances fixes direct positive and negative instances, with universal-constructor explanations where a negative inhabitance instance is impossible
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - lake env lean ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean: pass
     - lake build ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation: pass
     - ./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence.lean: pass
-    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 32 declarations, pass'
+    - '#assert_standard_axioms_only AAT.AG.CrossStageCoherence: 78 declarations, pass'
   blocking_findings:
     - the fixed compatible-pair gluing conjunct is false
   next_obligation: fixed-head standard PR review, CI, root acceptance audit, merge, and target-refuted ledger synchronization
