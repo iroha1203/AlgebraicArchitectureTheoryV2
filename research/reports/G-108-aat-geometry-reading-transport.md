@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-108-aat-geometry-reading-transport.md`](../goals/G-108-aat-geometry-reading-transport.md)
 - tracking Issue: [#4013](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4013)
 - target theorem: Geometry Reading Transport Opcartesian Lift Theorem
-- proof state: `target-proof-checkpoint`
-- completion candidate: `yes (standard PR review / final math-lean-review pending)`
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで

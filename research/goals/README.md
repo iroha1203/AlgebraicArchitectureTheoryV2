@@ -18,8 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
-  (Gr3 前半: 塔上層 geometry 段の輸送。隊列裁定 2026-08-15 の第一手)
 
 ## draft（人間の確認待ち）
 
@@ -40,6 +38,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-104-aat-resolution-invariance](G-104-aat-resolution-invariance.md)
 - [G-106-aat-transport-coherence](G-106-aat-transport-coherence.md)
 - [G-107-aat-uniform-invariance-characterization](G-107-aat-uniform-invariance-characterization.md)
+- [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
