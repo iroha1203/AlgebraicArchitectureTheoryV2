@@ -9,6 +9,13 @@ groups `C_G`.  Local authored and canonical comparisons are oriented and
 whiskered separately; their quotient is formed only after the complete route
 has been composed.  Projection to the core stage commutes with every layer of
 the evaluator.
+
+## Implementation notes
+
+Authored and canonical routes are accumulated separately in temporal order,
+then compared once at the completed route.  Multiplying facewise defects
+directly was rejected because noncommutative whiskering would lose the typed
+pasting order.
 -/
 
 namespace AAT.AG.CrossStageCoherence

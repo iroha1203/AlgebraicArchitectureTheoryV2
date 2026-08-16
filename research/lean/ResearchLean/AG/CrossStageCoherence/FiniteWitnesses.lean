@@ -11,6 +11,13 @@ block swap `(0 1)(2 3)` lifts, while either of its four-cycle square roots must
 leave that selected pair and therefore cannot lift.  Independently, a diagonal
 `Int × Int` coefficient system is invariant under coefficient swap and supplies
 a nonidentity element of the strict inner group.
+
+## Implementation notes
+
+One explicit finite algebra supplies the positive and negative phenomena used
+throughout the module.  Separate ad hoc fixtures were rejected because they
+would not certify that projection, non-liftability, inner work, and pasting
+nondegeneracy coexist in the same model.
 -/
 
 namespace AAT.AG.CrossStageCoherence

@@ -15,6 +15,13 @@ using cancellation and composite strong-cocartesian uniqueness.  The final
 section proves invariance under replacement by another edge section lifting
 the same core coordinate; the replacement gauge is derived edgewise in
 `H_G`.
+
+## Implementation notes
+
+The relative orbit predicate and the shared-coordinate path equations are
+defined separately and connected by cancellation and strong-lift uniqueness.
+Making coherence a field of the section was rejected because replacement
+invariance must be derived for any other lift of the same core coordinate.
 -/
 
 namespace AAT.AG.CrossStageCoherence

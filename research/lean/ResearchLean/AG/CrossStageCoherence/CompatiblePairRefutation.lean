@@ -9,6 +9,13 @@ same boundary and different authored comparators.  A coherent core
 trivializer, its fixed-endpoint lift, and a nondegenerate absolute strict
 trivializer all exist and satisfy the shared edge restriction, but no one
 total edge gauge can satisfy both non-strict cells.
+
+## Implementation notes
+
+The two active cells deliberately share one typed path boundary, so a single
+edge gauge must solve both equations.  The fixture has no 3-cells because the
+gluing implication has no syzygy premise; adding an all-cell coherence field
+to `CompatiblePairs` was rejected because it would encode the conclusion.
 -/
 
 namespace AAT.AG.CrossStageCoherence

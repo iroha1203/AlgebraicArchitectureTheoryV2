@@ -14,6 +14,13 @@ homomorphism to the G-106 core-fiber group, with the inner group as its kernel.
 The final section constructs the composite canonical comparator directly from
 the two local strong-cocartesian certificates and proves that projection sends
 it to the G-106 canonical core comparator.
+
+## Implementation notes
+
+`C_G` is realized as the automorphisms vertical only after the composite
+projection and `H_G` as the kernel of the actual pushforward.  An abstract
+pre-supplied extension was rejected because it would sever the groups and the
+canonical comparator from the geometry-to-core tower.
 -/
 
 namespace AAT.AG.CrossStageCoherence

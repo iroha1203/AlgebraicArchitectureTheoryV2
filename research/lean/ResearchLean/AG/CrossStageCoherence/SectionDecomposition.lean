@@ -14,6 +14,13 @@ projected authored comparator.  Strong-cocartesian uniqueness derives
 `p(m) = p(u)`.  That theorem supplies both membership of `u m⁻¹` in `H_G` and
 the fixed-order factorization
 `u phi⁻¹ = (u m⁻¹) (m phi⁻¹)`.
+
+## Implementation notes
+
+`EdgeSectionFamily` contains only edge gauges, fixed-endpoint lifts, and their
+projection equations; cell comparison equations are deliberately derived.
+Storing `p(m) = p(u)` or reversing the displayed factor order was rejected,
+because both would hide the provenance of the kernel term.
 -/
 
 namespace AAT.AG.CrossStageCoherence

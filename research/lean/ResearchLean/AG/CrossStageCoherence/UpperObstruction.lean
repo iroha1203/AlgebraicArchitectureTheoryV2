@@ -11,6 +11,13 @@ stored.  Parallel-path equality is required only after both projections.
 The resulting canonical comparator and raw defect take values in `C_G`.
 Projection constructs an ordinary G-106 data set and is proved to preserve
 edge reselection, path evaluation, canonical comparison, and the raw defect.
+
+## Implementation notes
+
+Each edge carries the two local strength certificates because they belong to
+different projections; composite strength is always derived.  A stored
+composite certificate or a supplied canonical comparator was rejected because
+either would bypass the cross-stage universal-property argument.
 -/
 
 namespace AAT.AG.CrossStageCoherence

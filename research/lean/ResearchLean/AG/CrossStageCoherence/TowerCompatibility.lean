@@ -8,6 +8,13 @@ extraction instance.  This module compares projection-after-geometry-transport
 with core-transport-after-projection by a natural isomorphism generated from
 the two canonical lifts.  It also proves compatibility with both compositor
 and unitor cells by comparing the actual composite routes.
+
+## Implementation notes
+
+The comparison is derived from projection of the canonical geometry lift and
+the lower-stage universal property.  Taking a pseudonatural comparison as
+additional input was rejected because its naturality and compositor/unitor
+laws are consequences that must be proved for the actual transport functors.
 -/
 
 namespace AAT.AG.CrossStageCoherence

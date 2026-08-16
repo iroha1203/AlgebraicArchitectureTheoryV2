@@ -11,6 +11,14 @@ canonical endpoint comparator, and core pushforward gives the analogous
 normalized core compositor.  The specialized two-cell comparator invokes this
 normalization; path whiskering and the resulting raw cochain then connect to
 the general obstruction API.
+
+## Implementation notes
+
+The actual compositor component has distinct endpoints, so it is normalized
+through the selected endpoint lifts before being read as a `C_G` element.
+Merely aliasing the canonical comparator was rejected; the subsequent
+equalities explicitly connect the genuine component, its pushforward, and the
+specialized obstruction cochain.
 -/
 
 namespace AAT.AG.CrossStageCoherence

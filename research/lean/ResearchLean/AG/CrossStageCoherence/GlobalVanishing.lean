@@ -15,6 +15,13 @@ the qualified strict faces.  It contains neither total nor inner
 vanishing as a field.  The resulting joint gauge has the required core
 projection and strict-face equations, while its missing all-cell equation is
 exposed separately and refuted by a finite instance.
+
+## Implementation notes
+
+Orbit vanishing and categorical coherence remain independent definitions so
+their equivalence has proof content.  `CompatiblePairs` intentionally stores
+only the two stagewise trivializers and their strict-face restriction; storing
+inner or all-cell coherence was rejected as conclusion-equivalent data.
 -/
 
 namespace AAT.AG.CrossStageCoherence

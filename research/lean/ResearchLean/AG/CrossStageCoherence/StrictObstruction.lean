@@ -14,6 +14,13 @@ total cochain.  A bridge theorem identifies its inclusion with restriction of
 the total raw cochain, and a non-definitional theorem identifies strict orbit
 vanishing with existence of one global edge coordinate satisfying all strict
 path equations.
+
+## Implementation notes
+
+The strict sector is the subtype cut out by the full qualification predicate,
+not an authored list of convenient faces.  Raw orbit vanishing and strict
+coherentizability are kept separate so their equivalence is established by
+the same cancellation and uniqueness mechanism as the total obstruction.
 -/
 
 namespace AAT.AG.CrossStageCoherence
