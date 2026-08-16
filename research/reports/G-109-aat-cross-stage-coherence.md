@@ -4,8 +4,9 @@
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
 - proof state: `target-refuted(2026-08-17 確定 — PR #4019 マージ+
-  Issue #4018 停止 ledger 同期済み)/ 改訂 target 再固定済み
-  (PR #4021)、loop 再起動待ち(Cycle 15 から継続)`
+  Issue #4018 停止 ledger 同期済み)/ 改訂 target 候補は PR #4021 で
+  審査中(再固定は同 PR のマージをもって成立。成立後 Cycle 15 から
+  継続)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
