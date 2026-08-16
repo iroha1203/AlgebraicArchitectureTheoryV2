@@ -10,8 +10,6 @@
 - A three-way division of labor: Claude (Fable) drafts the goal cards and runs adversarial reviews, Codex (GPT-5.6 Sol) drives the proof loop, and a human makes the rulings
 - I make no claim that these thirteen rules are optimal. This is an N=1 record, with no controlled comparison
 
-![Cover: a ship on a night sea. In the sky, proof code and a verification loop whose arrows send refuted work back](../assets/UnchartedWatersCover.png)
-
 ## Introduction
 
 When you hand an AI agent a multi-day job, the hard part is not getting it to work. It is **deciding whether to believe the output**.
