@@ -18,13 +18,14 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+- [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
+  (Gr3 完成: 段横断輸送整合と障害合成。隊列裁定 2026-08-15 の第二手、
+  依存先 G-108 は完遂済み)
 
 ## draft（人間の確認待ち）
 
-- [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
-  (Gr3 完成: 段横断輸送整合と障害合成。G-108 完遂に依存)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
-  (Gr4: doctrine fiber product と base change。(E) のみ G-106 / G-109 依存)
+  (Gr4: doctrine fiber product と base change。(E) のみ G-106 依存)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
