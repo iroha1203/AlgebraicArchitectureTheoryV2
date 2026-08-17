@@ -3,7 +3,10 @@
 - 一次仕様: [`research/goals/G-109-aat-cross-stage-coherence.md`](../goals/G-109-aat-cross-stage-coherence.md)
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
-- proof state: `target-refuted / repaired fixed-head standard review pending`
+- proof state: `target-refuted(2026-08-17 確定 — PR #4019 マージ+
+  Issue #4018 停止 ledger 同期済み)/ 改訂 target 候補は PR #4021 で
+  審査中(再固定は同 PR のマージをもって成立。成立後 Cycle 15 から
+  継続)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -1382,3 +1385,14 @@ audits:
 - premise status: the counterexample supplies every fixed low-level CompatiblePairs field explicitly, including all qualified strict-face equations, and uses no total or all-cell section-relative coherence premise.
 - Gr3 status: **未記録**。固定 target は反証されたため、proved として記録しない。
 - frontier retained: `ObProblem` class naturality, general finite towers, and unconditional syzygy compatibility.
+
+### 補記(2026-08-17、上記 stopping summary を supersede する状態更新)
+
+- 上記「remain unchecked」とした項目(fixed-head standard review・CI・
+  root acceptance audit・merge・Issue 同期)は**全て完了済み** — merge
+  `c4b184d3`、正式停止 ledger = Issue #4018 コメント。
+- 改訂 target 候補(comparison descent / effectivity の二層設計 —
+  呼称 = Cross-Stage Comparison Descent and Effectivity Theorem)は
+  PR #4021 で
+  審査中。再固定は同 PR のマージをもって成立し、成立後 Cycle 15 から
+  継続する。
