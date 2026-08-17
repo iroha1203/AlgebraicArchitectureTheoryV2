@@ -3,10 +3,11 @@
 - 一次仕様: [`research/goals/G-109-aat-cross-stage-coherence.md`](../goals/G-109-aat-cross-stage-coherence.md)
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
-- proof state: `active (改訂 target は PR #4021 / merge c8e440c7 で
-  再固定済み。Cycle 21 で witness matrix w2 simple triangle と w3
-  shared-edge triangle を実装。次 obligation は w4 root-effectivity obstruction)`
-- completion candidate: `no`
+- proof state: `completion candidate (改訂 target は PR #4021 / merge
+  c8e440c7 で再固定済み。Cycle 22 で最後の witness matrix entry w4
+  root-effectivity obstruction を実装。fixed-head標準レビュー・CI・累積
+  completion reviewは未実施)`
+- completion candidate: `yes (pending fixed-head review and completion review)`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで
@@ -2225,8 +2226,119 @@ audits:
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SharedEdgeTriangleWitness.lean`: pass; 42 namespace declarations, standard axioms only
     - targeted `lake build ResearchLean.AG.CrossStageCoherence.SimpleTriangleWitness ResearchLean.AG.CrossStageCoherence.SharedEdgeTriangleWitness`: pass; dependency closure only, no Research aggregate/full build
   review_history:
-    - head: pending
-      verdict: fixed-head four-lane math-lean-review required
+    - head: ede315a8705c00fd820952e6cc750a868c542360
+      verdict: four-lane math-lean-review all No major/minor findings
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4028#issuecomment-5319303475
+      merge_commit: 61bb4859a7466e589d18810be9cdf1b553233d34
   blocking_findings: []
-  next_obligation: fixed-head standard PR review for Cycle 21, then witness w4 root-effectivity obstruction
+  next_obligation: witness w4 root-effectivity obstruction
+```
+
+### Cycle 22 — witness matrix w4 root-effectivity obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 22
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: 61bb4859a7466e589d18810be9cdf1b553233d34
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL item (6), witness matrix entry w4
+  proof_dag_predecessors:
+    - Cycle 16 comparison descent theorem (C)
+    - Cycle 18 path-gauge coordinate and effectivity theorem (D)
+    - Cycle 19 edge-level class fence and theorem (E)
+    - Cycle 20 identity-edge-lift specialization
+    - reviewed selected-triple geometry, finite permutation lifts, and pair-coefficient action
+  proof_obligation: construct a finite presentation outside the edge-level class with a repeated edge, compatible pairwise local data, an explicit formal comparison section, no realizable edge gauge, failed path-gauge effectivity, and failed joint vanishing; prove the failure by the induced square-coordinate root equation
+  selection_reason: w4 is the sole remaining fixed proof obligation and supplies the negative acceptance instance showing that theorem (E)'s edge-level class fence is material
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/RootEffectivityWitness.lean
+  risks:
+    - reusing the older repeated-edge fixture whose CompatiblePairs type is empty
+    - putting the active comparator wholly in the inner fiber and thereby making the impossible root part of the strict trivializer
+    - proving no-realizability only through an equivalence without exposing the repeated-path coordinate equation
+    - choosing a zero coefficient ring, zero raw relation, empty site, empty strict sector, or empty comparison-section type
+    - making the formal section or compatible pair carry a conclusion-equivalent effectivity certificate
+  unchecked:
+    - fixed-head standard PR review and CI
+    - independent cumulative completion review against the full fixed GOAL
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: yes
+  proof_obligation_delta:
+    discharged:
+      - finite presentation over an inhabited selected-triple geometry package after diagonal base change to `Int × Int`
+      - nonzero coefficient detector and nonzero base-changed `X²-X` raw relation
+      - one-vertex presentation with distinct active/strict edges and cells, including the repeated active path `a · a`
+      - explicit proof that the presentation is outside `EdgeLevelPresentation`
+      - liftable three-cycle root whose core square is nonidentity
+      - active cell excluded from the strict sector and an independent strict cell explicitly inhabiting that sector
+      - explicit coherent core gauge, edge section, nonidentity strict gauge, and shared restriction giving `CompatiblePairwiseVanishes`
+      - explicit `CellComparisonSection` and theorem-(C) `CellChainCoherent`
+      - direct theorem that the induced coordinate on `a · a` is `g(a) * g(a)`
+      - coefficient-idempotent proof that the authored comparator has no square root in `CompositeFiberAut`
+      - direct refutation of `Nonempty EdgeRealizableCellComparisonSection`, `PathGaugeEffective`, and `JointVanishes`
+    remaining: []
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.core_root_square_ne_one
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.authored_has_no_square_root
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.strict_sector_nonempty
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.strict_reselection_nonidentity
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.compatible_pair
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.compatible_pairwise_vanishes
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.comparisonSection
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.path_gauge_coordinate_active_double
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.realizable_forces_active_square
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.no_edge_realizable_section
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.not_path_gauge_effective
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.not_joint
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.w4_root_effectivity_obstruction
+  acceptance_point: a formal descent section and compatible local datum both exist on the same non-edge-level fixture, but every realizing edge gauge would square its active-edge value to a comparator whose coefficient action has no square root
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - selected-triple site, raw system, adjacent permutation lifts, and pair coefficient swap are reviewed predecessor constructions
+      - geometry/core strong edge certificates come from the Cycle 20 identity-edge-lift constructor
+      - root lift, core/edge/strict compatible datum, formal comparison section, and all nonemptiness witnesses are constructed in the fixture
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - core root is the product of two actual selected-axis-preserving geometry automorphisms
+      - active non-strictness follows from the concrete axis action of the projected root square
+      - strict qualification follows from identity path lifts and the proved inner-kernel pushforward
+      - comparison naturality uses the actual authored comparators and proved baseline canonical identity
+      - non-realizability uses the section naturality equation, the canonical path-coordinate uniqueness theorem, and the concrete coefficient no-root theorem
+    unresolved: []
+  proof_use:
+    used:
+      - both occurrences of the active edge in `activeDoublePath`
+      - path concatenation and `pathGaugeCoordinate_unique` in the square-coordinate theorem
+      - adjacent selected-axis transposition lifts in the three-cycle root
+      - nonidentity core axis action to keep the active cell outside the strict sector
+      - pair-ring primitive idempotents and automorphism injectivity in the no-square-root theorem
+      - the explicit comparison section in the failure of `PathGaugeEffective`
+      - the explicit qualified strict cell and nonidentity strict gauge in the compatible-pair acceptance
+    unused: []
+  structure_field_escape: none-found; the formal section stores no gauge, CompatiblePairs stores no chain or effectivity condition, and the no-root theorem is derived from the concrete authored action
+  route_integrity: pass; the repeated-path coordinate is derived from the existing canonical PathGaugeCoordinate API and concatenation order, not defined to be a square
+  target_fitting: none-found
+  vacuity: pass; site, coefficient, raw relation, presentation layers, strict sector, comparison section, and compatible pair are all explicitly inhabited or nonzero; the strict gauge is nonidentity
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found; the fixed w4 conjunction is stated on one data value and no stronger class-external no-go is claimed
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/RootEffectivityWitness.lean`: pass; 126 namespace declarations, standard axioms only
+    - targeted `lake build ResearchLean.AG.CrossStageCoherence.RootEffectivityWitness`: pass; dependency closure only, no Research aggregate/full build
+    - Research import direction gate: pass; 228 modules scanned
+    - placeholder, hidden/bidirectional Unicode, privacy/local-path, manifest uniqueness, and `git diff --check`: pass
+  review_history:
+    - head: pending
+      verdict: fixed-head standard review and cumulative completion review required
+  blocking_findings: []
+  next_obligation: fixed-head standard PR review, CI, cumulative completion review, merge, and tracking-Issue closeout
 ```
