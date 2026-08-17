@@ -19,8 +19,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
-  (Gr3 完成: 段横断輸送整合と障害合成 — chain holonomy gluing。
-  依存先 G-108 は完遂済み)
+  (Gr3 完成: 段横断輸送整合と障害合成 — comparison descent /
+  effectivity の二層 gluing。依存先 G-108 は完遂済み)
 
 ## draft（人間の確認待ち）
 

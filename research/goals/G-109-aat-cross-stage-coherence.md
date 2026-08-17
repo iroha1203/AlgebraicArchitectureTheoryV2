@@ -220,29 +220,36 @@
   `LocalPairwiseVanishes` := `Nonempty CoreTrivializers ∧
   Nonempty StrictTrivializers`(個別消滅。`CompatiblePairwiseVanishes`
   とは別名で分離する)。
-  正例 theorem は **class 相対 gluing 同値(呼称 = Cross-Stage
-  Chain-Holonomy Gluing Theorem)**:
-  **辺水準 presentation**(全 2-cell の左右 path の長さ ≤ 1)の class
-  上で **`JointVanishes ⟺ CellChainCoherent`**
-  (`CellChainCoherent` は確定事項 (6) で建設)。
+  正例 theorem は **二層構成(呼称 = Cross-Stage Comparison Descent
+  and Effectivity Theorem)**とする(語彙と各層の定義は確定事項
+  (6) で建設):
+  **descent 層(一般 presentation)** =
+  `CellChainCoherent ⟺ Nonempty CellComparisonSection`((6)(C)。
+  chain 整合は formal な comparison descent datum の存在と同値)。
+  **effectivity 層** = 一般 presentation 上の
+  `JointVanishes ⟺ Nonempty EdgeRealizableCellComparisonSection`
+  ((6)(D)。joint 消滅は descent datum が実 edge gauge として
+  effective であることと同値)+ 辺水準 effectivity theorem
+  `EdgeLevelPresentation → PathGaugeEffective`((6)(E))。
   **(5-a) 必要方向**(`JointVanishes → CellChainCoherent`)は
-  **class 制限なしの一般 presentation 上**で証明する((6) の
-  telescoping theorem の系)。**(5-b) 十分方向**
-  (`CellChainCoherent → JointVanishes`)は辺水準 class 上で証明する
-  — chain 整合から **twisted node potential**((6) の affine step
-  規約)を **base node からの chain transport** で構成し(ε-node を
-  含む component は `Φ(ε) = 1` 基点で構成する。この構成の
-  well-definedness が基点 holonomy 恒等と同値。**共通右移動による
-  正規化は affine step と可換でないため用いない**)、辺水準では
-  長さ1 node の potential 値が `UpperEdgeReselection` の当該辺成分を
-  直接与える(node に現れない辺は任意値)。
+  **class 制限なしの一般 presentation 上**の系((C)(D) から。
+  gauge で消せない量であることの根拠は (T1) canonical thinness /
+  telescoping theorem)。**(5-b) 十分方向**
+  (`CellChainCoherent → JointVanishes`)は辺水準 class 上の系
+  **(F) `EdgeLevelPresentation → (JointVanishes ⟺
+  CellChainCoherent)`** として回収する — 証明経路は chain 整合
+  →(C) comparison section の存在 →(E) 辺水準では node が空 path か
+  単一辺なので section 値をそのまま辺 gauge に実現
+  →(D) joint 消滅(node に現れない辺は任意値)。
   **辺水準 class は本 invariant に対する明示的な safe sufficient
   class** であり、class 制限が防衛的過剰設計でないことを witness で
-  固定する(確定事項 (6) の (w4) class fence)— 左右 path に同一辺
-  の反復を含む cell では、gluing が「comparator の `C_G` 内での根の
-  存在」に依存し、**本カードの `CellChainCoherent` は class 外の
-  gluing を特徴付けない**(root 可解性は authored data から定まる
-  別の障害候補として frontier に残す)。class の最大性・一意性は
+  固定する(確定事項 (6) の (w4) effectivity 障害)— 左右 path に
+  同一辺の反復を含む cell では、formal な descent datum
+  (comparison section)が存在しても、その edge gauge への実現が
+  「comparator の `C_G` 内での根の存在」に依存して失敗しうる。
+  **本カードの `CellChainCoherent` は class 外の gluing を特徴付け
+  ない**(root 可解性は authored data から定まる別の障害候補として
+  frontier に残す)。class の最大性・一意性は
   主張しない(主張する場合は別 theorem を要する — frontier)。
   **`CompatiblePairwiseVanishes` は同値の conjunct に含めない** —
   `CompatiblePairRefutation.compatiblePairwise_not_implies_joint` が
@@ -283,62 +290,101 @@
   する)。fixture は実 cover・非零係数・非退化
   raw system を持つ(site・係数を含む Gr3 記録の資格。係数を identity
   scalar map で保つ場合はその scope を fixture 資格に明記する)。
-  (6) **cell-chain holonomy 障害**: **cell graph** := 固定した
+  (6) **cell-chain comparison descent / effectivity 語彙**:
+  **cell graph** := 固定した
   endpoint 対 `(i, j)` ごとに、node = `i` から `j` への typed path
   (2-cell の左右 path として現れるもの。`i = j` のときは空 path を
   含む)、arrow = 2-cell(`twoLeft c` から `twoRight c` へ)とする
   有限グラフ。**cell chain** := 向き付き arrow の交互列(zigzag。
   各 arrow を順向き・逆向きのいずれかで通り、連続する node が一致
-  する)。**closed chain** := 始 node に戻る chain。**holonomy** :=
-  chain に沿う **canonical lift の fiber groupoid における合成** —
-  各 node に canonical path lift を参照対象として割り当て、順向き
-  arrow は authored comparator `u_c` と canonical comparator
-  `φ₀(c)`(trivial reselection)の合成 `u_c` 側読み(raw defect
-  `u_c * φ₀(c)⁻¹` の groupoid 版)、逆向きは逆射として合成した、
-  始 node の lift 上の自己同型。**素朴な defect の群積では非恒等
-  edge lift の下で canonical comparator の共役が挟まり telescoping
-  が壊れるため、groupoid 合成を定義とする**(identity edge lift の
-  特殊化では defect の向き付き順序積と一致すること、および平行対
-  2-chain では comparator 比と一致することを theorem で固定する)。
-  同一 endpoint 対の全成分は同一 `twoTarget` fiber 上の圏に住む。
-  node・chain の型付けは Sigma 型(`CellChainNode` /
+  する)。**closed chain** := 始 node に戻る chain。
+  **carrier は gauge 座標とする** — 各 node に「canonical path
+  lift をその node の reselected lift へ移す `C_G` 座標」の torsor
+  (`CellGaugeTorsor` 級。Lean carrier は `C_G`、torsor は構造的
+  読み)を割り当て、順向き arrow の transport は **affine
+  equivalence** `CellAffineStep c : x ↦ u_c * x * φ₀(c)⁻¹`
+  (`u_c` = authored comparator、`φ₀(c)` = trivial reselection の
+  canonical comparator)、逆向きはその affine 逆
+  `y ↦ u_c⁻¹ * y * φ₀(c)`、chain `γ` の transport は oriented
+  step の合成 **`CellRouteTransport γ`** とする。**canonical lift
+  の strong-lift fiber groupoid を字義的 carrier に採ることは
+  禁じる** — 同 groupoid の comparator は `ext_of_strong_fac` に
+  より一意で self-comparator は自明であり、かつ authored `u_c` は
+  lift-factorization 証書を持たない(証書 field を要求することは
+  cell equation の premise 化 = conclusion-equivalent escape として
+  禁じる)ため、coherence を仮定する前の `u_c` は同 groupoid の
+  arrow にならない。単一対象 `B C_G` 読みの素朴な `C_G` 群積は
+  canonical comparator の共役を落とすため同じく禁じる(identity
+  edge lift の特殊化では affine step が defect `u_c * φ₀(c)⁻¹` の
+  左移動と一致すること、および平行対 2-chain では comparator 比と
+  一致することを theorem で固定する)。
+  同一 endpoint 対の全成分は同一 `twoTarget` fiber 上の座標系に
+  住む。node・chain の型付けは Sigma 型(`CellChainNode` /
   `CellChainStep` 級)で固定し、propositional な path 等式に対する
   dependent transport の向きを signature で宣言する — 平行対
   (同一 node 対の 2-cell 対)の比較はこの型付けの 2-chain 特殊例。
-  あわせて **reduced closed chain** := 隣接 step が同一 arrow の
-  順逆連続(即時 backtracking)を含まない closed chain(cycle rank
-  > 0 の非退化 cycle。`c ; c⁻¹` 型の chain は holonomy が定義的に
-  消えるため、非空検査には使えない)。
-  `CellChainCoherent` := **全 closed chain の holonomy = 1**。
-  **∀-chain 形で定義する** — provenance は authored comparator
-  data と presentation の組合せ構造のみ(supplied section・
-  trivializer・gauge に依存させない)。**node potential の遷移は
-  affine / twisted step で固定する** — 順向き step は
-  `Φ(twoRight c) = u_c * Φ(twoLeft c) * φ₀(c)⁻¹`(同値に
-  `defect(c) * Ad_{φ₀(c)}(Φ(twoLeft c))`。既存の reselection 規約
-  (edge lift の target 側 postcomposition)から strong cancellation
-  で導かれる形であり、**untwisted な `defect(c) * Φ(twoLeft c)` は
-  `φ₀ = 1`・中心性等を仮定しない限り誤り**)、逆向き step はその
-  affine 逆 `Φ(twoLeft c) = u_c⁻¹ * Φ(twoRight c) * φ₀(c)`。この
-  twisted potential の存在との同値は**別 theorem** として証明し、
-  定義には使わない(`∃ gauge` 型・orbit 所属型・`∃ potential` 型を
-  定義に置くことは結論の paraphrase として禁じる)。theorem
-  contract には nil-node normalization(`Φ(ε) = 1`)・逆向き step・
-  dependent transport・**長さ1 node の potential 値と
-  `UpperEdgeReselection` の対応(potential → 実 gauge 抽出)**を
-  含める。
-  **provenance 錨(必ず theorem 化する)**: (T1) **telescoping
-  theorem** — 任意の edge reselection に対し、reselected canonical
-  comparator を同じ groupoid 規約で chain 合成すると closed chain 上
-  で恒等になる(holonomy が gauge で消せない量であることの根拠)。
-  (T2) **一般必要性 theorem** — `JointVanishes → CellChainCoherent`
-  ((T1) の系。class 制限なし、edge lift の恒等性も仮定しない)。あわせて基点取替えで holonomy は共役に移り、
-  消滅(= 1)は基点不変であることを theorem 化する。**平行対の
-  2-chain 特殊例**では holonomy = defect 比 = authored comparator 比
-  `u₁ * u₂⁻¹`(canonical comparator が両 cell で共通のため)であり、
-  この等式も theorem 化する。core 押し出しが holonomy を core 側
-  chain holonomy へ送ること(`p` 保存)、および同一 core 射影を持つ
-  平行対の holonomy が `H_G = ker p` に入ることを theorem 化する。
+  `CellChainCoherent` := **全 closed chain `γ` で
+  `CellRouteTransport γ` が恒等 equivalence**。**∀-chain 形で定義
+  する** — provenance は authored comparator data、presentation の
+  組合せ構造、および**入力 edge-lift data と強 opcartesian 証書
+  から canonical に生成される `φ₀`** のみ(supplied section・
+  trivializer・gauge に依存させない)。affine step の遷移式は既存の
+  reselection 規約(edge lift の target 側 postcomposition)から
+  strong cancellation で導かれる形であり、**untwisted な
+  `defect(c) * x` は `φ₀ = 1`・中心性等を仮定しない限り誤り**。
+  **theorem package(必ず theorem 化する)**:
+  (T1) **canonical thinness / telescoping theorem** — closed chain
+  上で canonical 因子の word は opcartesian 一意性により恒等へ
+  telescoping し、closed transport は左移動 `x ↦ hol(γ) * x`
+  (`hol(γ) := CellRouteTransport γ 1`。holonomy はこの検査量)に
+  なる。よって `CellChainCoherent ⟺ ∀ closed γ, hol(γ) = 1`。
+  任意の edge reselection に対する reselected canonical comparator
+  の closed chain 恒等(holonomy が gauge で消せない量であることの
+  根拠)、および基点取替えで holonomy は共役に移り消滅(= 1)は
+  基点不変であることも theorem 化する。
+  (C) **descent 層** — `CellComparisonSection` 構造(field は
+  `value : node → C_G`・nil normalization(各空 path node で
+  `value = 1`)・naturality
+  `value(twoRight c) = u_c * value(twoLeft c) * φ₀(c)⁻¹`)を定義
+  し、**一般 presentation 上の非定義的 theorem
+  `cellChainCoherent_iff_nonempty_comparisonSection`** を証明する
+  (`∃ section` 型・`∃ potential` 型・orbit 所属型を
+  `CellChainCoherent` の定義に置くことは結論の paraphrase として
+  禁じ、同値は theorem に保つ)。逆向き step・dependent transport
+  を theorem contract に含める。
+  (D) **effectivity 層(一般 presentation)** —
+  `PathGaugeCoordinate g p` := 等式 `pathLift(p) · 座標 =
+  reselectedPathLift(g, p)` を満たす canonical 座標(gauge
+  `g : UpperEdgeReselection`・presented path `p`。存在・一意性は
+  strong cancellation / opcartesian 一意性の theorem として固定
+  し、値等式「空 path ↦ 1」「単一辺 `e` ↦ `g(e)`」を含める)。
+  `EdgeRealizableCellComparisonSection` := `section`+`gauge`+
+  realizes(`∀ node, PathGaugeCoordinate gauge node.path =
+  section.value node`)の構造。**一般 presentation 上の非定義的
+  theorem `jointVanishes_iff_nonempty_edgeRealizableSection`** を
+  証明する(`JointVanishes` の唯一 provenance = 段横断 gauge orbit
+  所属は不変のまま、橋は categorical 錨
+  `jointVanishes_iff_crossStageCoherentizable` 経由の theorem と
+  する)。
+  (E) **辺水準 effectivity theorem** — `PathGaugeEffective` :=
+  全 comparison section が edge-realizable(`∀ section, ∃ gauge,
+  realizes`)。`EdgeLevelPresentation → PathGaugeEffective` を証明
+  する(辺水準では node が空 path か単一辺なので section 値を
+  そのまま辺 gauge に取れる)。
+  (F) **gluing 系** — (C)(D)(E) の系として
+  `EdgeLevelPresentation → (JointVanishes ⟺ CellChainCoherent)`
+  (= (5-b))と、(T2) **一般必要性**
+  `JointVanishes → CellChainCoherent`((C)(D) の系。class 制限
+  なし、edge lift の恒等性も仮定しない)を回収する。
+  (G) **core 押し出し** — `p` は affine step を core 側 affine
+  step(`p(u_c)`・`p(φ₀(c))`)へ送り、route transport・comparison
+  section・realizable section を pointwise に押し出す。coherence
+  保存 theorem、および同一 core 射影を持つ平行対の holonomy が
+  `H_G = ker p` に入る theorem を固定する(effectivity の保存・
+  反射は frontier — G-110 (D) の素材)。
+  **平行対の 2-chain 特殊例**では holonomy = defect 比 = authored
+  comparator 比 `u₁ * u₂⁻¹`(canonical comparator が両 cell で
+  共通のため)であり、この等式も theorem 化する。
   **`CompatiblePairs` の field へ chain 条件を追加することは禁じる**
   ((5) の低水準 field 固定を維持する。両障害の独立性が主定理の
   内容であり、構造への吸収は結論の埋め込み)。
@@ -347,14 +393,17 @@
   `CompatiblePairwiseVanishes ∧ ¬CellChainCoherent ∧ ¬JointVanishes`
   (非自明 holonomy は平行対 2-chain。同 module は改変せず、新
   module の接続 theorem で放電する)。
-  (w2) **正例非空発火** = 辺水準 class 内で、**reduced closed
-  chain**(相異なる cell arrow を2本以上使う cycle rank > 0 の
-  chain)を少なくとも1本持ち、非自明因子(非恒等 comparator /
-  defect)が reduced cycle 全体の合成で恒等へ消えることを実検査した
-  上で、`CellChainCoherent ∧ JointVanishes` が成立する fixture
-  ((5) の class 相対同値を両向き非空で発火させる。即時
-  backtracking `c ; c⁻¹` による holonomy の定義的消去は非空検査に
-  数えない)。
+  (w2) **正例非空発火(simple triangle)** = 辺水準 class 内で、
+  **相異なる node `p0, p1, p2` と cell `c01 : p0 → p1`・
+  `c12 : p1 → p2`・`c20 : p2 → p0` による simple cycle** を
+  少なくとも1本持ち(即時 backtracking は巡回の末尾–先頭接続込みで
+  実装述語により排除する。**同一 semantic cell datum(左右 path・
+  `u`・`φ₀` が全て一致)の label 複製対を順逆に通す chain は非空
+  検査に数えない** — simple triangle の相異なる boundary 対がこれを
+  構造的に排除する)、非自明因子(非恒等 affine step)が cycle
+  全体の合成で恒等へ消えることを実検査した上で、
+  `CellChainCoherent ∧ JointVanishes` が成立する fixture((5) の
+  系 (F) を両向き非空で発火させる)。
   (w3) **3-chain 非自明(共有辺三角形)** = 1頂点・loop 辺 `a, s`・
   identity lift 上で、cell `A`(空 path → `a`、comparator `u` =
   `visibleComposite`)・cell `B`(空 path → `s`、comparator `v` =
@@ -364,15 +413,22 @@
   trivializer)が可住、平行対 2-chain は全て自明、3-chain holonomy
   `v⁻¹ * u ≠ 1`、`¬JointVanishes`。2-chain だけでは gluing を特徴
   付けられないことの witness。
-  (w4) **class fence(root 障害)** = 辺水準 class の**外**の
+  (w4) **effectivity 障害(root 障害)** = 辺水準 class の**外**の
   fixture — 左右 path に同一辺の反復を含む cell(例: 右 path
   `a · a`)と、`C_G` 内に平方根を持たない comparator を置き、
-  `CompatiblePairwiseVanishes ∧ CellChainCoherent ∧ ¬JointVanishes`
-  を固定する。**本 invariant(`CellChainCoherent`)が class 外の
-  gluing を特徴付けないこと**の witness であり(それ以上の一般
-  no-go は主張しない)、optional にしない。
-  closed chain を持たない presentation・即時 backtracking のみの
-  chain での vacuous な chain 整合発火は (w2) の充足に数えない。
+  `CompatiblePairwiseVanishes ∧ Nonempty CellComparisonSection
+  (⟺ CellChainCoherent — (C))∧ ¬Nonempty
+  EdgeRealizableCellComparisonSection ∧ ¬PathGaugeEffective ∧
+  ¬JointVanishes` を固定する(機構: node `a · a` の induced 座標は
+  `g(a)²` であり、section が要求する comparator 値に平方根が
+  なければ実現不能)。**formal な comparison descent datum は存在
+  するが実 edge gauge へ effectivize できない**という独立障害の
+  witness であり(class fence の内容 — 本 invariant が class 外の
+  gluing を特徴付けないこと — はこの conjunct 対から従う。それ
+  以上の一般 no-go は主張しない)、optional にしない。
+  closed chain を持たない presentation・label 複製 cycle・即時
+  backtracking のみの chain での vacuous な chain 整合発火は (w2)
+  の充足に数えない。
   新設する全 Prop 述語は品質基準の instance matrix(正負両
   instance)を既存 `QualityInstances` と同じ水準で伴い、**`φ₀ ≠ 1`
   かつ非中心な canonical comparator を持つ有限 fixture を必ず
@@ -435,11 +491,15 @@
   立てる成果、(3-b) の pasting 等式単独を合成公式の成果として数える
   構成、一般 pseudofunctor 合成の再証明だけで塔接続を欠く成果、
   closed chain を持たない fixture での vacuous な chain 整合発火、
+  同一 semantic cell datum の label 複製 cycle での (w2) 発火、
   holonomy 消滅を共役類水準へ弱めて自明化する定義、既存
   reviewed artifact の再証明を cycle の成果として数える構成。
 - `frontier`: 段横断の H² 語彙の観察、`ObProblem` 段への拡張
   (class naturality と G-110 (D) への接続)、統合正方形の族の合成整合
-  (n1005 §3)への供給、cartesian 側 lift との相互作用。
+  (n1005 §3)への供給、cartesian 側 lift との相互作用、comparison
+  section の root 可解性障害(authored data から定まる (w4) 機構の
+  一般化)、`p` に沿う effectivity の保存・反射(G-110 (D) の
+  base-change 素材)、辺水準 class の最大性 theorem。
 
 - `target theorem`: **Cross-Stage Transport Coherence and Obstruction
   Composition Theorem**。G-101 / G-106 / G-108 の設定の上で:
@@ -516,8 +576,9 @@
      comparator / raw system の proof-use を固定する — の下で、
      (3-c) の cocycle theorem が `SyzygyCompatible` を実使用して
      非空に発火する、を**同時に**固定する。正例側では、辺水準 class
-     内の canonical 図式(closed chain を含む — 確定事項 (6) (w2))
-     で class 相対 gluing 同値 `JointVanishes ⟺ CellChainCoherent`
+     内の canonical 図式(simple triangle closed chain を含む —
+     確定事項 (6) (w2))で二層 theorem(C)(D)と gluing 系 (F)
+     `JointVanishes ⟺ CellChainCoherent`
      を両向き非空で発火させ((5) の正例 theorem の非空検査)、
      (3-b) の section family と alignment を具体構成する(負例
      fixture には要求しない)。canonical 選択のみの図式では段横断
@@ -531,11 +592,13 @@
   G-106 の TransportCoherence モジュール・G-108 の GeometryTransport
   モジュール、および**既存の CrossStageCoherence module 群
   (reviewed 済み)は参照のみ(改変しない)**。新設は新 module(例:
-  `CellChain.lean`・`ChainHolonomyGluing.lean`・witness
-  拡張 fixture)に置く。完了面は (i)–(iv) まで。**十分方向 (5-b) の
+  `CellChain.lean`・`ComparisonDescent.lean`・`EdgeEffectivity.lean`・
+  witness 拡張 fixture)に置く。完了面は (i)–(iv) まで。**十分方向
+  (5-b) の
   量化 class は名前付き Lean 述語 `EdgeLevelPresentation`(全 2-cell
   の `twoLeft` / `twoRight` の path 長 ≤ 1)として固定し、proof-use
-  は (5-b) に限る**((5-a)・(T1)・(T2)・(i)–(iii) はこれに依存
+  は (E) とその系 (F)(= 5-b)に限る**((C)(D)・(5-a)・(T1)・
+  (T2)・(i)–(iii) はこれに依存
   させない)。段数は
   有限(claim は三段までの隣接合成で固定し、一般有限段は frontier)。
   syzygy 整合の無条件化・`ObProblem` 段・doctrine 圏の fiber product
@@ -552,13 +615,20 @@
   `JointVanishes` / `CompatiblePairwiseVanishes`)と `CompatiblePairs`
   の Sigma / pullback 型・`LocalPairwiseVanishes`、**cell graph /
   cell chain の型付け(Sigma 型、dependent transport の向き宣言)・
-  holonomy と `CellChainCoherent`・telescoping theorem (T1)・一般
-  必要性 theorem (T2)・基点不変性 theorem・平行対 2-chain の
-  comparator 比等式 theorem・node potential 同値 theorem・core
-  押し出し保存と `H_G` 所属 theorem・正負 instance matrix(確定事項
-  (6))**、正例 theorem = class 相対 gluing 同値
-  `JointVanishes ⟺ CellChainCoherent`(辺水準 class 上、5-a は一般 /
-  5-b は class 相対の別 theorem)、witness 行列
+  affine carrier(`CellGaugeTorsor` / `CellAffineStep` /
+  `CellRouteTransport`)と `CellChainCoherent`・canonical thinness /
+  telescoping theorem (T1)・descent 層の `CellComparisonSection` と
+  同値 theorem (C)・`PathGaugeCoordinate`(存在・一意性・値等式)と
+  `EdgeRealizableCellComparisonSection`・effectivity 層の一般同値
+  theorem (D)・`PathGaugeEffective` と辺水準 effectivity theorem
+  (E)・一般必要性 theorem (T2)・基点不変性 theorem・平行対 2-chain
+  の comparator 比等式 theorem・core
+  押し出し保存 (G) と `H_G` 所属 theorem・正負 instance matrix
+  (確定事項
+  (6))**、正例 theorem = 二層構成(descent 層 (C)+effectivity 層
+  (D)(E))と gluing 系 (F)
+  `EdgeLevelPresentation → (JointVanishes ⟺ CellChainCoherent)`
+  (5-a = 一般必要性 (T2)、5-b = 系 (F))、witness 行列
   (w1)–(w4) の fixture と接続 theorem、aligned-section 表現
   との非定義的双方向 theorem と `C_G` joint gauge の両方向構成、
   `CrossStageCoherentAt` / `CrossStageCoherentizable` と非定義的
@@ -589,12 +659,14 @@
   `段間障害 ≠ 1` を持つ新 fixture、非空
   2-cell 幾何。`¬JointVanishes` は全 core trivializer の aligned
   section 非存在の全称 theorem+orbit 接続 theorem)、canonical 図式の
-  段横断消滅と class 相対 gluing 同値の両向き非空発火(正例、closed
+  段横断消滅と二層 theorem(C)(D)+gluing 系 (F) の両向き非空発火
+  (正例、simple triangle closed
   chain 込み)、report
   `research/reports/G-109-aat-cross-stage-coherence.md`。
   **既に `ResearchLean` に受理済みの reviewed artifact は参照で充足
-  し、残 obligation は確定事項 (6) の語彙建設・class 相対 gluing
-  同値(5-a / 5-b)・witness 行列 (w1)–(w4) に限る。**
+  し、残 obligation は確定事項 (6) の語彙建設(descent 層 (T1)(C)・
+  effectivity 層 (D)(E)・gluing 系 (F)(5-a / 5-b)・core 押し出し
+  (G))・witness 行列 (w1)–(w4) に限る。**
 - `target proof strategy`: F0 段射影対の固定と段間持ち上げの型付け
   (忘却 functor・離散 fiber theorem 含む) ->
   F1 fiber 間 transport functor と compositor / unitor・coherence law
@@ -616,15 +688,22 @@
   total 錨2本、`compatiblePairsToJointGauge` と
   `compatiblePairsToJointGauge_coherent_iff`、
   `FiniteCrossStageWitness` / `CompatiblePairRefutation`)。
-  **F0–F4 は既存 reviewed artifact が放電済み**。残路: F5 cell
-  chain 語彙(cell graph / chain の Sigma 型付け・holonomy・
-  `CellChainCoherent`・T1 telescoping・T2 一般必要性・基点不変性・
-  2-chain 等式・potential 同値・core 押し出し・instance matrix)->
-  F6 class 相対 gluing 同値(5-a 一般必要方向 -> 5-b 辺水準 class
-  十分方向 = chain 整合 -> twisted node potential の chain
-  transport 構成 -> 長さ1 node からの辺 gauge 抽出)->
-  F7 witness 行列(w1 接続 theorem・w2 class 内正例・w3 共有辺
-  三角形 fixture・w4 class fence root 障害 fixture)。
+  **F0–F4 は既存 reviewed artifact が放電済み**。残路: F5 descent
+  層(cell graph / chain の Sigma 型付け・affine carrier
+  (`CellAffineStep` / `CellRouteTransport`)・`CellChainCoherent`・
+  T1 canonical thinness / telescoping・基点不変性・2-chain 等式・
+  `CellComparisonSection` と同値 theorem (C)・instance matrix)->
+  F6 effectivity 層(`PathGaugeCoordinate` の存在・一意性 ->
+  一般同値 theorem (D) -> `PathGaugeEffective` と辺水準 theorem
+  (E) -> gluing 系 (F) と T2 一般必要性 -> core 押し出し (G))->
+  F7 witness 行列(w1 接続 theorem・w2 simple triangle 正例・w3
+  共有辺三角形 fixture・w4 effectivity 障害 fixture)。実装の
+  積順・orientation・whiskering 規約は reviewed 済みの upper
+  pasting evaluator(`upperOrientedFaceComparator` /
+  `upperAuthoredPastingComparator` /
+  `upperCanonicalPastingComparator` — G-106 `RewriteStep` /
+  `RewritePasting` 様式の geometry 段版)に整合させ、規約を新規
+  複製しない。
   `compatiblePairsToJointGauge_coherent_iff` は定義的同値
   (`Iff.rfl`)であり、(5-b) の証明根拠に数えない。固定
   statement と完了条件は本カードのみを正本とする。
@@ -657,7 +736,8 @@
   proof-use は (i) statement に明示)、`EdgeLevelPresentation`
   (ambient-boundary、(5-b) の量化 class。組合せ的条件であり結論の
   言い換えではない — 妥当性は (w2) class 内正例と (w4) class 外
-  fence で監査する。proof-use は (5-b) のみ)。`CompatiblePairs` の
+  effectivity 障害で監査する。proof-use は (E) と系 (F)(= 5-b)
+  のみ)。`CompatiblePairs` の
   compatibility は低水準 field のみ(結論の埋め込み禁止)、strict
   bridge は一般部 = theorem・fixture 局所化(supplied field 禁止)と
   する。比較同型、coherence、
@@ -667,14 +747,19 @@
 - `target material premise ledger`(reviewed predecessor により放電
   済みの行は `discharged by reviewed predecessor` と明記し、対応
   declaration・固定 head・review ref・本カードでの proof-use を残す —
-  残放電は末尾の cell chain・class 相対 gluing の2行と、それらが
+  残放電は末尾の descent 層・effectivity 層の2行と、それらが
   触る範囲の再監査のみ):
   - `predecessor 引用錨(以下の「discharged by reviewed
     predecessor」注記の共通参照先)`: CrossStageCoherence 16 module =
     fixed head `c1b424c8` / merge `c4b184d3` / standard review 監査 =
     PR #4019 comment 5308228153。GeometryTransport(G-108)= PR
     #4015(merge `12c3e6c2`)。TransportCoherence(G-106)= PR
-    #4004–#4009(merge `ae1ba0ea`)。いずれも参照のみ・改変しない。
+    #4004–#4009(merge `ae1ba0ea`)。AtomFoundation(G-101)= PR
+    #3889(fixed head `db47ee9e`、merge `dd5e02b5`、最終固定 head
+    監査 = PR #3889 comment 5155944000)。いずれも参照のみ・改変
+    しない。以下の各行の対応宣言は中心宣言の manifest であり、
+    補助宣言は本錨行の fixed head の module 本文を declaration
+    manifest として参照する。
     `compatiblePairsToJointGauge_coherent_iff` は `Iff.rfl` の定義的
     同値であり、放電済み結論に数えない。
   - `carrier U / FiniteModel`: `ambient-boundary`。witness 計算のみ。
@@ -682,8 +767,10 @@
     `ambient-boundary`。入力 data としての参照のみ。
   - `G-101 / G-108 の輸送 theorem 結論(強 opcartesian・射影可換・
     lift 一意性)`: `discharge-required (discharged by reviewed
-    predecessor — 引用錨行)`。対応宣言:
-    `geomTransportAlongHom_isStronglyCocartesian` /
+    predecessor — 引用錨行)`。対応宣言: G-101 =
+    `transportAlongHom_isStronglyCocartesian` /
+    `transportAlong_liftUniqueUpToFiberIso`(AtomFoundation)、
+    G-108 = `geomTransportAlongHom_isStronglyCocartesian` /
     `geomTransportAlongHom_base` /
     `geomTransportAlong_liftUniqueUpToFiberIso`。本カード proof-use:
     塔 typing と (6) の canonical lift 参照。段横断の coherence を
@@ -704,18 +791,34 @@
     仮定明示で分離する)。
   - `geometry 段障害語彙の建設(確定事項 (1))`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行)`。対応宣言: `CompositeFiberAut` 系群・
+    引用錨行)`。対応宣言: `CompositeFiberAut`(`ext_of_strong_fac`
+    含む)・`compositeFiberAutSubgroup` / `innerFiberAutSubgroup`・
     `upperRawTwoCellDefect`・`InUpperReselectionOrbit`・消滅述語
-    完全型(GlobalVanishing)・`SectionRelativeCoherentAt` 相対
-    obstruction theorem(RelativeObstruction)・strict 段内語彙
-    (StrictObstruction)。本カード proof-use: (6) の holonomy が
+    完全型(`CoreVanishes` / `JointVanishes` / `CompatiblePairs` /
+    `CompatiblePairwiseVanishes` / `LocalPairwiseVanishes`)・
+    `SectionRelativeCoherentAt` と
+    `innerVanishesAt_iff_sectionRelativeCoherentizable`(相対
+    obstruction theorem)・strict 段内語彙(bridge package 行の
+    manifest を参照)。本カード proof-use: (6) の holonomy が
     defect / orbit / 消滅語彙を直接消費する。旧 (5) 正例 theorem の
     gluing conjunct のみ反証により除外((5) 参照)。
   - `段横断比較同型と coherence`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行)`。対応宣言: Basic / FiberTransport / Pseudofunctor /
-    CorePseudofunctor / TowerCompatibility の (i) theorem 群
-    (`stronglyCocartesian_comp_projection` ほか)。本カード
+    引用錨行)`。対応宣言(module 別): Basic =
+    `stronglyCocartesian_comp_projection`・
+    `geomTransportAlongHom_isCrossStageStronglyCocartesian`・
+    `extInstToDoctrine`(離散 fiber =
+    `extInstToDoctrine_fiber_obj_eq_of_hom`)、FiberTransport =
+    `geomFiberTransportObj`・`geomFiberLift_isStronglyCocartesian`・
+    `geomFiberTransportMap_fac`、Pseudofunctor =
+    `geomFiberCompositor`(`_naturality` / `_assoc`)・
+    `geomFiberUnitor`(`_naturality`)、CorePseudofunctor =
+    `coreFiberLift_isStronglyCocartesian`・
+    `coreFiberCompositor_assoc` と core 側対応宣言、
+    TowerCompatibility = `towerTransportComparison`(`_naturality` /
+    `_unitor`)・`projectedGeomFiberCompositor_fac`・
+    `towerCompositorDirectRoute` / `towerCompositorStagedRoute`。
+    本カード
     proof-use: 塔 typing と canonical comparator の前提。opcartesian
     普遍性からの生成のみを認める。
   - `二層 admissible 入力(edge ごとの geometry / core 強 opcartesian
@@ -739,8 +842,15 @@
     theorem)。
   - `条件付き cocycle(3-c)`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行。対応宣言: PastingObstruction の evaluator と cocycle
-    theorem 群。本カード proof-use: (iv)(d) の既放電 witness)`。
+    引用錨行。対応宣言: `upperOrientedFaceComparator`・
+    `upperPastingComparator`・`upperAuthoredPastingComparator`・
+    `upperCanonicalPastingComparator`・`upperPastingRawDefect`・
+    `upperRawDefect_cocycle_of_syzygy`・
+    `pushforward_upperCocycleEquation`・
+    `pushforward_upperRawDefect_cocycle_of_syzygy`・
+    `UpperSyzygyCompatible`・`NontrivialSyzygyAt`・
+    `SyzygySupportHasNonidentityRaw`。本カード proof-use: (iv)(d) の
+    既放電 witness)`。
     typed pasting
     evaluator・`SyzygyCompatible` 条件付き total cocycle theorem・
     `p` の pasting / cocycle 保存 theorem を放電する(syzygy 整合
@@ -753,7 +863,12 @@
     監査)を要求する。
   - `pseudofunctor と障害語彙の一致(unification)`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行。対応宣言: Unification の一致 theorem 群。本カード
+    引用錨行。対応宣言: `normalizedGeomCompositor`(`_fac` /
+    `_eq_canonical` / `_pushforward`)・`normalizedCoreCompositor`
+    (`_fac` / `_eq_canonical`)・
+    `pseudofunctorWhiskering_compositeFiber_fac`・
+    `pseudofunctorWhiskering_pushforward`・
+    `pseudofunctorCanonicalComparator`(`_eq_upper`)。本カード
     proof-use: (i)–(ii) の接続維持)`。compositor の対象成分は直接輸送先と反復
     輸送先という**異なる二対象間の iso**であり `C_G`(単一対象の
     `Aut`)と直接等置できないため、両輸送先を presentation の選択
@@ -780,16 +895,27 @@
     fixture の双方をこの theorem に通す。
   - `strict 段内語彙の bridge package(確定事項 (1))`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行。対応宣言: StrictObstruction の bridge package。本
+    引用錨行。対応宣言: `StrictCellQualified`・
+    `strictTwoCellEmbedding`・`strictTwoCell_mem_iff`・
+    `strictAuthoredComparator`・`strictCanonicalTwoCellComparator`
+    (`_fac` / `_inclusion`)・`strictRawTwoCellDefect`
+    (`_inclusion` / `_eq_one_iff`)・
+    `strictTransportObstructionVanishes_iff_coherentizable`。本
     カード proof-use: (w1) の pairwise 成分)`。埋め込み・
     restriction theorem・gauge
     equivariance・非空/閉/非退化性 witness・coverage 条件を放電
     する。
   - `押し出しの保存・両立・非恒等性 / 三項定義と二部合成公式`:
     `discharge-required (discharged by reviewed predecessor —
-    引用錨行。対応宣言: ObstructionGroups / SectionDecomposition の
-    `p`・(3-a)(3-b) theorem 群。本カード proof-use: (6) の core
-    押し出し保存と `H_G` 所属)`。三項の定義は確定事項 (3) で固定した独立
+    引用錨行。対応宣言: `compositeFiberPushforward`
+    (`_eq_one_iff`)・`innerFiberAutSubgroup_eq_ker`・
+    `EdgeSectionFamily`・`CoreAlignmentAt`・
+    `sectionCellComparator_pushforward_eq_authored`・
+    `totalObstruction` / `interstageObstruction`・
+    `totalObstruction_projection`(3-a)・
+    `totalObstruction_kernel_decomposition`(3-b)。本カード
+    proof-use: (6) の core
+    押し出し保存 (G) と `H_G` 所属)`。三項の定義は確定事項 (3) で固定した独立
     provenance(authored data / supplied section family / canonical)
     のみを
     認め、逆算定義(合成公式を定義的に真にする構成)を審査対象に
@@ -811,28 +937,32 @@
     非消滅の証明を両方含める。
   - `EdgeLevelPresentation(辺水準 class)`: `ambient-boundary`。
     (5-b) の量化 class(全 2-cell の左右 path 長 ≤ 1)。名前付き
-    Lean 述語として固定し、proof-use は (5-b) のみ((5-a)・(T1)・
+    Lean 述語として固定し、proof-use は (E) と系 (F)(= 5-b)のみ
+    ((C)(D)・(5-a)・(T1)・
     (T2)・(i)–(iii) は依存しない)。組合せ的条件であり結論の
     言い換えではない。妥当性は (w2)(class 内正例)と (w4)
-    (class 外 fence)で監査する。
-  - `cell-chain holonomy 障害の建設(確定事項 (6))`:
+    (class 外 effectivity 障害)で監査する。
+  - `cell-chain descent 層の建設(確定事項 (6) (T1)(C))`:
     `discharge-required`。cell graph / chain の Sigma 型付け
-    (dependent transport の向き宣言込み)・holonomy(fiber
-    groupoid 合成)・reduced closed chain 述語・
-    `CellChainCoherent`(∀-chain 形)・telescoping theorem (T1)・
-    一般必要性 theorem (T2)・基点不変性・2-chain comparator 比
-    等式・**twisted node potential 同値 theorem(affine step
-    `Φ(R) = u * Φ(L) * φ₀⁻¹`、nil normalization・逆向き step・
-    長さ1 node と `UpperEdgeReselection` の対応込み)**・core
-    押し出し保存・`H_G` 所属 theorem・正負 instance matrix
-    (**`φ₀ ≠ 1` かつ非中心の有限 fixture 必須**)を放電する。
-    `∃ gauge` / `∃ potential` 型の定義化・`CompatiblePairs` field
-    への吸収・untwisted potential 式の使用を審査対象とする。
-  - `class 相対 gluing 同値(5-a / 5-b)`: `discharge-required`。
-    一般必要方向(5-a)・辺水準 class 上の十分方向(5-b)の両
-    theorem と、witness 行列 (w1)–(w4) の非空検査を放電する。
-    (5-b) の反証・(w4) の帰結は failure policy の対応分岐へ接続
-    する。
+    (dependent transport の向き宣言込み)・affine carrier
+    (`CellGaugeTorsor` / `CellAffineStep` /
+    `CellRouteTransport`)・
+    `CellChainCoherent`(∀-chain 形)・canonical thinness /
+    telescoping theorem (T1)・基点不変性・2-chain comparator 比
+    等式・`CellComparisonSection`(nil normalization・naturality)
+    と非定義的同値 theorem (C)・core 押し出し保存 (G)・`H_G` 所属
+    theorem・正負 instance matrix(**`φ₀ ≠ 1` かつ非中心の有限
+    fixture 必須**)を放電する。`∃ section` / `∃ potential` 型の
+    定義化・`CompatiblePairs` field への吸収・untwisted 遷移式の
+    使用・authored comparator への lift-factorization 証書の要求を
+    審査対象とする。
+  - `effectivity 層と gluing 系(確定事項 (6) (D)(E)(F)、5-a /
+    5-b)`: `discharge-required`。`PathGaugeCoordinate`(存在・
+    一意性・値等式)・`EdgeRealizableCellComparisonSection`・一般
+    同値 theorem (D)・`PathGaugeEffective` と辺水準 effectivity
+    theorem (E)・gluing 系 (F)(= 5-b)・一般必要性 (T2)(= 5-a)
+    と、witness 行列 (w1)–(w4) の非空検査を放電する。(D)(E)(F) の
+    反証・(w4) の帰結は failure policy の対応分岐へ接続する。
 - `target anti-weakening rule`: 結論相当の仮定(coherence、押し出しの
   両立、合成公式、witness の非消滅)を theorem argument、typeclass、
   structure field、certificate field へ移して成功扱いしない。段横断
@@ -845,16 +975,21 @@
   total cochain の `H_G` orbit として定義すること(確定事項 (5) の
   禁止事項)、`p(m) = p(u)` を field として受け取ること、`m := u` に
   よる段内障害の自明化も成功に数えない。
-  `CellChainCoherent` を `∃ gauge` 型・orbit 所属型・`∃ potential`
-  型で定義すること(結論の paraphrase。∀-chain 形のみを定義と
-  する)、chain 条件を `CompatiblePairs` の field へ吸収すること、
+  `CellChainCoherent` を `∃ section` 型・`∃ gauge` 型・orbit 所属
+  型・`∃ potential` 型で定義すること(結論の paraphrase。∀-chain
+  形のみを定義とする)、(C)(D) の同値を定義的同値(`Iff.rfl` 級)で
+  放電すること、chain 条件・realizes 証書・effectivity を
+  `CompatiblePairs` の field や admissible 入力へ吸収すること、
+  authored comparator に lift-factorization 証書 field を要求する
+  こと(cell equation の premise 化)、
   holonomy の消滅を基点付き恒等でなく共役類水準へ弱めること、
   closed chain を持たない presentation へ量化域を制限して (5-b) を
-  vacuous に通すこと、辺水準 class の定義を fixture に合わせて
+  vacuous に通すこと、(w2) を同一 semantic cell datum の label 複製
+  cycle で充足すること、辺水準 class の定義を fixture に合わせて
   後付けで広げ・狭めること(class 変更は改訂扱い)、(5-b) の class
   相対十分方向を片方向包含・追加条件付き含意へ弱めて成功に数える
-  こと、(w4) class fence witness を optional 化することも同様に
-  禁じる。
+  こと、(w4) effectivity 障害 witness を optional 化することも
+  同様に禁じる。
 - `target route integrity gate`: geometry 段障害語彙・押し出し写像・
   合成公式・witness の provenance を G-106 / G-108 reviewed artifact、
   canonical 構成、opcartesian 普遍性、concrete witness へ追跡する。
@@ -866,19 +1001,28 @@
   compatibility、pseudofunctor–障害語彙 unification、押し出しの
   保存・reselection 両立、射影公式、kernel 分解、total coherence
   同値(`JointVanishes ⟺ CrossStageCoherentizable`)、
-  class 相対 gluing 同値(5-a / 5-b)、telescoping theorem (T1)、
+  二層 theorem(C)(D)(E) と gluing 系 (F)(5-a / 5-b)、canonical
+  thinness / telescoping theorem (T1)、
   strict bridge、条件付き cocycle、witness の
-  非消滅)の反証は `target-refuted` とする。**(5-b) class 相対十分
-  方向の反証**(辺水準 class 内で `CellChainCoherent` が成立して
+  非消滅)の反証は `target-refuted` とする。**(E)/(F) 辺水準
+  effectivity・十分方向の反証**(辺水準 class 内で
+  `CellChainCoherent`(⟺ comparison section の存在)が成立して
   なお joint が成立しない有限反例)も `target-refuted` とするが、
-  その場合の後継は**gluing 条件ハント**(chain holonomy を超える
-  不変量、または class の細分の探索。G-104 条件C ハント様式)として
-  記録し、再固定は人間の別判断とする。**(5-a) 一般必要方向の反証**
-  は telescoping 構造の欠陥を意味するため `target-refuted` とし、
-  holonomy の定義(順序・向き・dependent transport)の再設計裁定を
-  後継として記録する。**(w4) class fence の扱いは二分する** —
-  (a) fence fixture の**非存在が証明**された場合(class 外でも常に
-  gluing が成立することが theorem になった場合)は、class 制限の
+  その場合の後継は**gluing 条件ハント**(comparison descent を
+  超える不変量、または class の細分の探索。G-104 条件C ハント
+  様式)として
+  記録し、再固定は人間の別判断とする。**(D) 一般 effectivity 同値
+  の反証**は orbit 語彙と section 語彙の橋の欠陥を意味するため
+  `target-refuted` とし、`JointVanishes` の categorical 錨と
+  `PathGaugeCoordinate` の再設計裁定を後継として記録する。
+  **(C)/(5-a) descent 層・一般必要方向の反証**
+  は affine transport 構造の欠陥を意味するため `target-refuted` と
+  し、carrier の定義(積順・向き・dependent transport)の再設計
+  裁定を後継として記録する。**(w4) effectivity 障害の扱いは二分
+  する** —
+  (a) 障害 fixture の**非存在が証明**された場合(class 外でも常に
+  `PathGaugeEffective` / gluing が成立することが theorem になった
+  場合)は、class 制限の
   正当化欠如かつ statement の拡張可能性の発見として
   `goal defect / revision-required` とし、class 拡張の再固定を人間の
   裁定に返す(単なる停滞ではない)。(b) fixture の構成探索が

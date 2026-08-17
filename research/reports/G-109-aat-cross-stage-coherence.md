@@ -1391,6 +1391,8 @@ audits:
 - 上記「remain unchecked」とした項目(fixed-head standard review・CI・
   root acceptance audit・merge・Issue 同期)は**全て完了済み** — merge
   `c4b184d3`、正式停止 ledger = Issue #4018 コメント。
-- 改訂 target 候補(cell-chain holonomy gluing 設計)は PR #4021 で
+- 改訂 target 候補(comparison descent / effectivity の二層設計 —
+  呼称 = Cross-Stage Comparison Descent and Effectivity Theorem)は
+  PR #4021 で
   審査中。再固定は同 PR のマージをもって成立し、成立後 Cycle 15 から
   継続する。
