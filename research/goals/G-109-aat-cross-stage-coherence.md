@@ -753,8 +753,12 @@
     predecessor」注記の共通参照先)`: CrossStageCoherence 16 module =
     fixed head `c1b424c8` / merge `c4b184d3` / standard review 監査 =
     PR #4019 comment 5308228153。GeometryTransport(G-108)= PR
-    #4015(merge `12c3e6c2`)。TransportCoherence(G-106)= PR
-    #4004–#4009(merge `ae1ba0ea`)。AtomFoundation(G-101)= PR
+    #4015(fixed head `a1d70d01`、merge `12c3e6c2`、最終同期 /
+    formal review = Issue #4013 comment 5305133918)。
+    TransportCoherence(G-106)= PR
+    #4004–#4009(fixed head `d7b1d488`、merge `ae1ba0ea`、最終
+    同期 / formal review = Issue #3998 comment 5298897416)。
+    AtomFoundation(G-101)= PR
     #3889(fixed head `db47ee9e`、merge `dd5e02b5`、最終固定 head
     監査 = PR #3889 comment 5155944000)。いずれも参照のみ・改変
     しない。以下の各行の対応宣言は中心宣言の manifest であり、
