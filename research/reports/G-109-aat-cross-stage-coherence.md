@@ -1556,7 +1556,7 @@ selection:
     - T1 canonical thinness, route normal form, and universal holonomy criterion
     - reviewed upper canonical-comparator factorization and finite noncommutative permutation witnesses
   proof_obligation: construct `CellComparisonSection` with node values, nil normalization, and affine naturality; prove the general-presentation nondefinitional equivalence `CellChainCoherent ↔ Nonempty CellComparisonSection`, including reverse-route transport and path independence; and fire the descent surface on finite positive/negative instances together with a finite canonical comparator `φ₀ ≠ 1` that fails to commute with an explicit fiber automorphism
-  selection_reason: theorem (C) is the next F5 node and the direct predecessor of effectivity (D), gluing (F), and w4; the noncentral twist fixture is the remaining acceptance condition for the same descent-layer ledger row and prevents an identity/central specialization from validating the affine construction
+  selection_reason: theorem (C) is the next F5 node and the direct predecessor of effectivity (D), gluing (F), and w4; the noncentral twist fixture is the remaining Cycle 16 acceptance condition for the theorem-(C) descent layer and prevents an identity/central specialization from validating the affine construction
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/CrossStageCoherence/ComparisonDescent.lean
@@ -1589,6 +1589,8 @@ result:
       - witness matrix entries w2, w3, and w4
   lean_artifacts:
     - AAT.AG.CrossStageCoherence.CellComparisonSection
+    - AAT.AG.CrossStageCoherence.CellComparisonSection.naturality_affine
+    - AAT.AG.CrossStageCoherence.CellComparisonSection.naturality_backward
     - AAT.AG.CrossStageCoherence.cellAffineStep_reverse
     - AAT.AG.CrossStageCoherence.cellRouteTransport_reverse
     - AAT.AG.CrossStageCoherence.cellRouteTransport_eq_of_cellChainCoherent
@@ -1606,7 +1608,7 @@ audits:
   premise_delta:
     discharged:
       - comparison-section values are generated from coherence and component routes
-      - nil normalization and oriented affine naturality are proved rather than accepted fields of the coherence predicate
+      - nil normalization and the forward cell equation are fields only of the fixed comparison-section datum, while dependent/oriented and backward affine naturality are derived theorems; none is accepted by the coherence predicate
       - the finite canonical twist is generated from a nonidentity strong edge lift
     remaining:
       - path-gauge coordinates and edge realizability for theorem (D)
@@ -1625,8 +1627,8 @@ audits:
       - geometry and core strong certificates in the canonical-comparator factorization
       - the second adjacent transposition to witness noncentrality and nontrivial affine conjugation
     unused: []
-  structure_field_escape: none-found; `CellComparisonSection` stores only the fixed value/normalization/naturality data, and `CellChainCoherent` is unchanged
-  route_integrity: pass; reverse and append preserve the reviewed affine route order, and naturality is stated through the existing `CellAffineStep`
+  structure_field_escape: none-found; `CellComparisonSection` stores exactly value, nil normalization, and the fixed forward cell equation, while dependent/oriented and backward naturality are derived from that equation; `CellChainCoherent` is unchanged
+  route_integrity: pass; reverse and append preserve the reviewed affine route order, and `CellComparisonSection.naturality_affine` derives the existing `CellAffineStep` equation for every typed orientation from the forward field
   target_fitting: none-found
   vacuity: pass; the positive fixture has an actual cover, nonzero coefficient and raw relation, a nonidentity edge lift, a noncentral canonical comparator, and a visibly moved affine coordinate; the negative section instance uses the existing nonidentity closed holonomy
   one_way_as_equivalence: none-found; both directions of theorem (C) are proved, while (D)(E)(F)(G) remain explicit obligations
@@ -1643,8 +1645,12 @@ audits:
     - private-path scan on all changed files: pass
     - `git diff --check`: pass
   review_history:
+    - head: 9906fb772f51c833cf08e3ca9960576f2aa8e810
+      verdict: Major revisions (1/4 lanes; 3/4 lanes No major findings)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4023#issuecomment-5317529191
+      resolution: restricted the structure field to the fixed forward cell equation and derived dependent/oriented and backward affine naturality by endpoint transport and group algebra
     - head: pending
-      verdict: fixed-head standard PR review required
+      verdict: full four-lane rereview required because the structure signature changed
   blocking_findings: []
   next_obligation: fixed-head standard PR review for Cycle 16, then core pushforward package (G)
 ```

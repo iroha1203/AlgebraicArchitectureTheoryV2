@@ -119,16 +119,18 @@ structure CellComparisonSection
   /-- Empty paths carry the normalized identity coordinate. -/
   nil_normalization : ∀ vertex : P.Vertex,
     value (CellChainNode.nil P vertex) = 1
-  /-- Every oriented cell transports the incoming coordinate to the outgoing one. -/
-  naturality : ∀ {source target : P.Vertex}
-    {before after : CellChainNode P source target}
-    (step : CellChainStep P before after),
-    value after = cellAuthoredFactor data step * value before *
-      (cellCanonicalFactor data 1 step)⁻¹
+  /-- Every declared cell satisfies the forward authored/canonical equation. -/
+  naturality : ∀ cell : P.TwoCell,
+    value (CellChainNode.right P cell) =
+      data.comparator cell * value (CellChainNode.left P cell) *
+        (upperCanonicalTwoCellComparator data 1 cell)⁻¹
 
 namespace CellComparisonSection
 
-/-- The naturality field is exactly naturality for `CellAffineStep`. -/
+/--
+Forward naturality generates affine naturality for every typed oriented step,
+including all dependent endpoint and path transports.
+-/
 theorem naturality_affine
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     {data : TwoLayerTransportData.{u, v} P U}
@@ -138,8 +140,36 @@ theorem naturality_affine
     (step : CellChainStep P before after) :
     comparison.value after =
       CellAffineStep data step (comparison.value before) := by
-  rw [cellAffineStep_apply]
-  exact comparison.naturality step
+  rcases step with
+    ⟨cell, source_eq, target_eq, orientation, before_eq, after_eq⟩
+  subst source
+  subst target
+  cases orientation
+  · have before_node : before = CellChainNode.left P cell :=
+      CellChainNode.ext (by
+        simpa [orientedCellBeforePath, castPresentedPath] using before_eq)
+    have after_node : after = CellChainNode.right P cell :=
+      CellChainNode.ext (by
+        simpa [orientedCellAfterPath, castPresentedPath] using after_eq)
+    subst before
+    subst after
+    rw [cellAffineStep_apply]
+    simpa [cellAuthoredFactor, cellCanonicalFactor] using
+      comparison.naturality cell
+  · have before_node : before = CellChainNode.right P cell :=
+      CellChainNode.ext (by
+        simpa [orientedCellBeforePath, castPresentedPath] using before_eq)
+    have after_node : after = CellChainNode.left P cell :=
+      CellChainNode.ext (by
+        simpa [orientedCellAfterPath, castPresentedPath] using after_eq)
+    subst before
+    subst after
+    rw [cellAffineStep_apply]
+    have forward := comparison.naturality cell
+    simp only [cellAuthoredFactor, cellCanonicalFactor,
+      castCompositeFiberAut]
+    rw [forward]
+    group
 
 /-- Reverse-step naturality gives the explicit inverse affine equation. -/
 theorem naturality_backward
@@ -152,9 +182,8 @@ theorem naturality_backward
     comparison.value before =
       (cellAuthoredFactor data step)⁻¹ * comparison.value after *
         cellCanonicalFactor data 1 step := by
-  have reverseNaturality := comparison.naturality step.reverse
-  rw [cellAuthoredFactor_reverse, cellCanonicalFactor_reverse] at reverseNaturality
-  simpa only [inv_inv] using reverseNaturality
+  rw [comparison.naturality_affine step, cellAffineStep_apply]
+  group
 
 end CellComparisonSection
 
@@ -409,9 +438,11 @@ noncomputable def comparisonSectionOfCellChainCoherent
   value := cellComparisonValue data
   nil_normalization := cellComparisonValue_nil data coherent
   naturality := by
-    intro source target before after step
-    rw [cellComparisonValue_naturality data coherent step]
-    exact cellAffineStep_apply data step _
+    intro cell
+    have forward := cellComparisonValue_naturality data coherent
+      (CellChainStep.forward cell)
+    rw [cellAffineStep_apply] at forward
+    simpa [cellAuthoredFactor, cellCanonicalFactor] using forward
 
 /--
 Theorem (C): universal cell-chain coherence is equivalent, nondefinitionally,
