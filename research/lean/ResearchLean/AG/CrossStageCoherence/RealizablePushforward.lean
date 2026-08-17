@@ -13,6 +13,20 @@ section realized by the projected edge gauge.
 The core coordinate is the existing `pathReselectionTransition`; no
 effectivity-preservation or reflection statement is asserted.  Those
 base-change questions remain the fixed G-110 frontier.
+
+## Implementation notes
+
+`CoreEdgeRealizableCellComparisonSection` mirrors the upper realizability
+certificate: it keeps one actual core edge gauge together with the pointwise
+equation saying that this gauge realizes every typed path node.  Keeping the
+gauge is essential because a bare `CoreCellComparisonSection` records formal
+descent but forgets the realization datum used by theorem (G).
+
+We deliberately reject storing effectivity preservation, reflection, or a
+prepackaged projected conclusion as fields.  Those choices would either cross
+the fixed G-110 frontier or hide theorem (G)'s pointwise pushforward claim in
+the certificate.  Reusing the G-106 `pathReselectionTransition` also avoids a
+second core path-coordinate evaluator.
 -/
 
 namespace AAT.AG.CrossStageCoherence

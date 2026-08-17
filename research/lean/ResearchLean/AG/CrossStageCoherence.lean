@@ -14,6 +14,7 @@ import ResearchLean.AG.CrossStageCoherence.SharedEdgeTriangleWitness
 import ResearchLean.AG.CrossStageCoherence.SimpleTriangleWitness
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforward
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
+import ResearchLean.AG.CrossStageCoherence.RootEffectivityWitness
 
 /-!
 # Cross-stage transport coherence
@@ -21,5 +22,5 @@ import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
 Umbrella import for the G-109 pseudofunctor, obstruction-composition, vanishing,
 finite-witness, compatible-pair refutation, comparison-descent, path-gauge
 effectivity, identity-edge-lift specialization, simple/shared-edge triangle
-witnesses, and core-pushforward development.
+witnesses, root-effectivity obstruction, and core-pushforward development.
 -/
