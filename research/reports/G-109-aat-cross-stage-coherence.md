@@ -4,8 +4,8 @@
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
 - proof state: `active (改訂 target は PR #4021 / merge c8e440c7 で
-  再固定済み。Cycle 20 で identity-edge-lift affine-step specialization
-  を実装。次 obligation は witness matrix w2–w4)`
+  再固定済み。Cycle 21 で witness matrix w2 simple triangle と w3
+  shared-edge triangle を実装。次 obligation は w4 root-effectivity obstruction)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -2111,8 +2111,120 @@ audits:
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/IdentityEdgeLiftSpecialization.lean`: pass; 11 declarations, standard axioms only
     - targeted `lake build ResearchLean.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization`: pass; dependency closure only, no Research aggregate/full build
   review_history:
+    - head: 5da3280190a337e2a4fe16ef13fa45a211fc51b6
+      pr: 4027
+      verdict: No major or minor findings (4/4 lanes)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4027#issuecomment-5318884497
+      resolution: exact head and CI 7/7 accepted; merged as 9956aa2c3ef141a68e99eb403eba3d9061464d74
+  blocking_findings: []
+  next_obligation: witness matrix w2–w4
+```
+
+### Cycle 21 — witness matrix w2 simple triangle and w3 shared-edge triangle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 21
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: 9956aa2c3ef141a68e99eb403eba3d9061464d74
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL item (6), witness matrix entries w2 and w3
+  proof_dag_predecessors:
+    - Cycle 15 typed CellChain, affine step, authored-word holonomy, and chain coherence
+    - Cycle 16 comparison descent theorem (C)
+    - Cycle 17 witness w1 and general necessity theorem T2
+    - Cycle 19 edge-level gluing theorem (F)
+    - Cycle 20 identity-edge-lift specialization
+    - reviewed finite noncentral comparators and CompatiblePairRefutation fixture
+  proof_obligation: construct the nonbacktracking simple-triangle positive witness w2 and the shared-edge three-chain separation witness w3, including explicit nonemptiness, typed chains, holonomy calculations, compatible local data, and all-parallel-two-chain triviality
+  selection_reason: both witnesses share the reviewed identity-lift API but test opposite sides of gluing; implementing them together exposes any accidental conflation of pairwise two-cell checks with three-chain coherence
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/SimpleTriangleWitness.lean
+    - ResearchLean/AG/CrossStageCoherence/SharedEdgeTriangleWitness.lean
+  risks:
+    - satisfying w2 with duplicate labels for one semantic cell datum
+    - omitting the cyclic last-to-first immediate-backtracking check
+    - making every w2 affine factor identity
+    - checking only selected parallel pairs in w3 instead of every typed parallel two-chain
+    - adding a chain-coherence field to CompatiblePairs
+    - deriving not-JointVanishes from a circular restatement rather than the actual three-chain holonomy
+  unchecked:
+    - fixed-head independent review
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta:
+    discharged:
+      - w2 finite edge-level presentation with three pairwise-distinct one-edge nodes and three pairwise-distinct boundary cells
+      - w2 typed simple closed triangle with cyclic immediate-backtracking exclusion and a positive/negative predicate matrix
+      - w2 nonidentity first affine step and identity total holonomy
+      - w2 explicit comparison section, CellChainCoherent, and JointVanishes
+      - w3 one-vertex active/strict shared-edge triangle on identity lifts with the prescribed two active comparators and identity strict comparator
+      - w3 explicit compatible core/edge/strict local datum with no chain field
+      - theorem that every typed parallel pair in w3 determines the same step and hence has trivial two-chain holonomy
+      - w3 explicit three-chain holonomy `shiftedVisibleComposite⁻¹ * visibleComposite ≠ 1` and `¬JointVanishes`
+      - explicit nonemptiness checks for the vertex, edge, cell, and closed-chain layers of both fixtures
+    remaining:
+      - witness matrix entry w4 root-effectivity obstruction
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.immediate_backtracks_instances
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.nodes_pairwise_distinct
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.no_immediate_backtracking
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.first_affine_step_ne_one
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.triangle_holonomy_eq_one
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.comparison_section
+    - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.w2_simple_triangle
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.compatible_pair
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.compatible_pairwise_vanishes
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.parallel_step_unique
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.every_parallel_two_chain_trivial
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.triangle_holonomy_ne_one
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.not_joint
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.w3_shared_edge_triangle
+  acceptance_point: w2 fires theorem (F) on a genuine three-node nonbacktracking cycle with a nonidentity affine factor, while w3 proves that compatible pairwise local data and all parallel-pair two-chain tests do not control a nontrivial typed three-chain
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - both fixtures derive all edge lifts and strong certificates from the Cycle 20 identity-lift constructor
+      - w2 comparison descent is constructed from explicit node potentials and existing canonical-factor uniqueness
+      - w3 CompatiblePairs contains only the fixed core/edge/strict local data and shared restriction
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - w2 CellChainCoherent comes from an explicit CellComparisonSection, and JointVanishes then uses reviewed edge-level gluing
+      - w3 core alignment follows from both active comparators having the reviewed common visible core projection
+      - w3 strict qualification excludes both active cells using `visibleCore_ne_one`
+      - w3 non-joint conclusion follows from the concrete route on `A ; S ; B⁻¹`
+    unresolved: []
+  proof_use:
+    used:
+      - pairwise-distinct presented paths and cells in the w2 cycle
+      - all three w2 cyclic adjacency checks, including `step20` followed by `step01`
+      - the nonidentity theorem for `compositeSwap01` and the exact authored-word product
+      - comparison-descent theorem (C) and edge-level gluing theorem (F)
+      - shared core projection of `visibleComposite` and `shiftedVisibleComposite`
+      - dependent endpoint equalities in the exhaustive w3 parallel-step uniqueness proof
+      - `shiftedVisibleComposite_ne_visible` in the three-chain holonomy refutation
+    unused: []
+  structure_field_escape: none-found; w2 chain coherence and w3 three-chain failure remain theorems outside the transport and CompatiblePairs structures
+  route_integrity: pass; w2 and w3 use typed CellChain values and the reviewed authored-word holonomy theorem
+  target_fitting: none-found
+  vacuity: pass; both fixtures explicitly inhabit their vertex, edge, cell, and closed-chain layers; w2 has a nonidentity affine step and w3 has a nonidentity three-chain holonomy
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found; w4 remains mandatory and completion_candidate stays no
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SimpleTriangleWitness.lean`: pass; 85 namespace declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SharedEdgeTriangleWitness.lean`: pass; 41 namespace declarations, standard axioms only
+    - targeted `lake build ResearchLean.AG.CrossStageCoherence.SimpleTriangleWitness ResearchLean.AG.CrossStageCoherence.SharedEdgeTriangleWitness`: pass; dependency closure only, no Research aggregate/full build
+  review_history:
     - head: pending
       verdict: fixed-head four-lane math-lean-review required
   blocking_findings: []
-  next_obligation: fixed-head standard PR review for Cycle 20, then witness matrix w2–w4
+  next_obligation: fixed-head standard PR review for Cycle 21, then witness w4 root-effectivity obstruction
 ```
