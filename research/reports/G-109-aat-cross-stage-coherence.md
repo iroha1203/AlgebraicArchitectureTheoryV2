@@ -4,7 +4,7 @@
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
 - proof state: `active (改訂 target は PR #4021 / merge c8e440c7 で
-  再固定済み。Cycle 15 は F5 cell-chain descent 基礎を選定)`
+  再固定済み。Cycle 17 は (G) core 押し出しの (D) 非依存部分を選定)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -1649,8 +1649,137 @@ audits:
       verdict: Major revisions (1/4 lanes; 3/4 lanes No major findings)
       audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4023#issuecomment-5317529191
       resolution: restricted the structure field to the fixed forward cell equation and derived dependent/oriented and backward affine naturality by endpoint transport and group algebra
-    - head: pending
-      verdict: full four-lane rereview required because the structure signature changed
+    - head: 39dd780b4aaf76cf5c375af72daa363ec2bdd678
+      verdict: No major findings (4/4 lanes)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4023#issuecomment-5317726782
+      resolution: exact-head review and CI accepted; merged as be377bafe4370f2ee1b4f98590a47164d60a8807
   blocking_findings: []
-  next_obligation: fixed-head standard PR review for Cycle 16, then core pushforward package (G)
+  next_obligation: core pushforward package (G), followed by the effectivity layer (D)(E)(F)
+```
+
+### Cycle 17 — core affine pushforward, descent, and kernel holonomy
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 17
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: be377bafe4370f2ee1b4f98590a47164d60a8807
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL theorem (G), restricted to the sub-obligations independent of the not-yet-defined theorem-(D) realizability types
+  proof_dag_predecessors:
+    - reviewed obstruction-group projection `compositeFiberPushforward` and `innerFiberAutSubgroup_eq_ker`
+    - reviewed core and upper oriented-face/pasting evaluators and their pushforward theorems
+    - Cycle 15 typed cell chains, affine routes, holonomy, and canonical thinness
+    - Cycle 16 comparison-section descent
+  proof_obligation: reuse the existing core oriented-face and pasting evaluators, prove that `p` intertwines authored/canonical factors, affine steps, routes, words, and holonomy, push comparison sections pointwise, preserve coherence, and place same-core parallel holonomy in `H_G = ker p`; fire the new section and kernel surfaces on nondegenerate finite instances
+  selection_reason: every listed surface is definable from the reviewed F2/F5 APIs now, whereas theorem (G)'s realizable-section pushforward literally depends on `PathGaugeCoordinate` and `EdgeRealizableCellComparisonSection` from theorem (D); this cycle closes only the maximal D-independent sub-obligation and does not claim all of (G)
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/CorePushforward.lean
+    - ResearchLean/AG/CrossStageCoherence/CorePushforwardInstances.lean
+  risks:
+    - defining core factors merely as `p` images would evade connection to the existing core evaluator
+    - duplicating orientation or pasting order could make route preservation a convention artifact
+    - a core comparison section could store oriented or backward equations as extra certificates
+    - coherence preservation could be weakened to holonomy membership instead of identity of every closed core route
+    - the kernel theorem could fire only with identity holonomy or an identity pushforward
+    - partial implementation could be overreported as completion of theorem (G)
+  unchecked:
+    - fixed-head independent review
+    - theorem (G)'s realizable-section clause, pending theorem-(D) types
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta:
+    discharged:
+      - core authored and canonical cell factors through the reviewed `orientedFaceAuthoredComparator` / `orientedFaceCanonicalComparator`
+      - exact pushforward bridges for both factors and the twisted affine step `x ↦ p(u_c) * x * p(φ₀(c))⁻¹`
+      - complete route, authored/canonical word, and closed holonomy preservation under `p`
+      - exact identification of the core words with the reviewed authored/canonical pasting evaluators
+      - core route normal form, projected canonical thinness, and closed-route left-translation formula
+      - coherence preservation as identity of every closed `CoreCellRouteTransport`
+      - `CoreCellComparisonSection` with only value, nil normalization, and the forward core equation as fields; all typed orientations and the inverse equation are derived
+      - pointwise pushforward from every upper `CellComparisonSection`
+      - same-core parallel authored factors imply upper holonomy membership in `H_G = ker p`
+      - positive and negative finite instances for `CoreCellComparisonSection`
+      - the reviewed compatible-pair fixture gives a holonomy that is simultaneously nonidentity and a member of `H_G`
+    remaining:
+      - theorem (G)'s pointwise pushforward of `EdgeRealizableCellComparisonSection`, after theorem (D) defines its path-coordinate and realizability fields
+      - effectivity theorems (D)(E), gluing corollaries (F), and the identity-edge-lift specialization
+      - witness matrix entries w2, w3, and w4
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.coreCellAuthoredFactor
+    - AAT.AG.CrossStageCoherence.coreCellCanonicalFactor
+    - AAT.AG.CrossStageCoherence.pushforward_cellAuthoredFactor
+    - AAT.AG.CrossStageCoherence.pushforward_cellCanonicalFactor
+    - AAT.AG.CrossStageCoherence.CoreCellAffineStep
+    - AAT.AG.CrossStageCoherence.pushforward_cellAffineStep
+    - AAT.AG.CrossStageCoherence.CoreCellRouteTransport
+    - AAT.AG.CrossStageCoherence.pushforward_cellRouteTransport
+    - AAT.AG.CrossStageCoherence.coreCellAuthoredWord_eq_authoredPastingComparator
+    - AAT.AG.CrossStageCoherence.coreCellCanonicalWord_eq_canonicalPastingComparator
+    - AAT.AG.CrossStageCoherence.pushforward_cellAuthoredWord
+    - AAT.AG.CrossStageCoherence.pushforward_cellCanonicalWord
+    - AAT.AG.CrossStageCoherence.CoreCellChainHolonomy
+    - AAT.AG.CrossStageCoherence.pushforward_cellChainHolonomy
+    - AAT.AG.CrossStageCoherence.cellChainCoherent_core
+    - AAT.AG.CrossStageCoherence.CoreCellComparisonSection
+    - AAT.AG.CrossStageCoherence.CoreCellComparisonSection.naturality_affine
+    - AAT.AG.CrossStageCoherence.CoreCellComparisonSection.naturality_backward
+    - AAT.AG.CrossStageCoherence.CellComparisonSection.pushforwardCore
+    - AAT.AG.CrossStageCoherence.parallelCellTwoChain_holonomy_mem_innerFiberAutSubgroup_of_pushforward_eq
+    - AAT.AG.CrossStageCoherence.CorePushforwardRefutation.no_coreCellComparisonSection
+    - AAT.AG.CrossStageCoherence.CorePushforwardInstances.coreCellComparisonSection_instances
+    - AAT.AG.CrossStageCoherence.CorePushforwardInstances.compatiblePair_holonomy_nontrivial_inner
+  acceptance_point: the actual core evaluator, rather than a renamed image, receives the projected affine transport; the section negative instance has distinct nonidentity core factors, and the kernel theorem fires on a nonidentity upper holonomy
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - core factor, route, section, coherence, and kernel conclusions are derived from the fixed two-layer data and reviewed projection
+      - no core coherence, section, factorization, or kernel-membership certificate is added to `TwoLayerTransportData`
+    remaining:
+      - realizability data and its pushforward depend on theorem (D)
+  certificate_provenance:
+    discharged:
+      - core factors are computed by the existing `orientedFaceComparator` family on `data.coreData`
+      - factor pushforward follows from the reviewed upper oriented-face pushforward and edge-reselection projection
+      - word bridges identify recursive cell-chain accumulation with the existing core pasting evaluator
+      - the kernel subgroup is the reviewed `innerFiberAutSubgroup`, rewritten by its proved equality with `ker p`
+      - the nonidentity kernel fixture reuses the reviewed compatible-pair holonomy and the proved equality of its two core projections
+    unresolved: []
+  proof_use:
+    used:
+      - both authored and canonical factor projection equations in affine-step preservation
+      - every chain constructor in route and word preservation
+      - upper closed holonomy identity plus `p(1) = 1` in coherence preservation
+      - the fixed forward core equation to derive both typed orientations and backward naturality
+      - same-core equality in the authored-comparator ratio calculation for kernel membership
+    unused: []
+  structure_field_escape: none-found; `CoreCellComparisonSection` stores only the fixed forward equation, with oriented and backward equations derived as theorems
+  route_integrity: pass; no orientation type is introduced, and the core factor/word bridges connect every step and chain to the reviewed oriented-face and pasting evaluators in the existing product order
+  target_fitting: none-found
+  vacuity: pass; the positive and negative core-section fixtures share reviewed finite nondegenerate geometry, and the kernel conclusion fires on an explicitly nonidentity holonomy with a nonidentity pushforward elsewhere in the same witness family
+  one_way_as_equivalence: none-found; only preservation maps and the required kernel implication are claimed
+  goal_or_report_reinterpretation: none-found; the fixed GOAL blob and SHA-256 are unchanged, and the D-dependent realizable-section clause remains explicitly open
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/CorePushforward.lean`: pass; 48 declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/CorePushforwardInstances.lean`: pass; 6 declarations, standard axioms only
+    - `lake build ResearchLean.AG.CrossStageCoherence.CorePushforward`: pass; targeted dependency closure only, no Research aggregate/full build
+    - `lake build ResearchLean.AG.CrossStageCoherence.CorePushforwardInstances`: pass; targeted dependency closure only, no Research aggregate/full build
+    - focused `#print axioms` audit of the 37 public spine declarations: only `propext`, `Classical.choice`, and `Quot.sound`
+    - `.github/lean_quality/check_research_import_direction.sh`: pass; 228 modules scanned
+    - placeholder scan on the two new Lean modules: pass
+    - hidden/bidirectional Unicode scan on all changed files: pass
+    - private-path scan on all changed files: pass
+    - `git diff --check`: pass
+  review_history:
+    - head: pending
+      verdict: fixed-head four-lane math-lean-review required
+  blocking_findings: []
+  next_obligation: fixed-head standard PR review for Cycle 17, then construct theorem (D)'s `PathGaugeCoordinate` and realizable-section layer and return to theorem (G)'s remaining realizable-section pushforward
 ```
