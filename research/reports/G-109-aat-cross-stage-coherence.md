@@ -4,9 +4,8 @@
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
 - proof state: `active (改訂 target は PR #4021 / merge c8e440c7 で
-  再固定済み。Cycle 19 で theorem (E) の edge-level effectivity と
-  theorem (F) の gluing を実装。次 obligation は identity-edge-lift
-  specialization と witness matrix w2–w4)`
+  再固定済み。Cycle 20 で identity-edge-lift affine-step specialization
+  を実装。次 obligation は witness matrix w2–w4)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -2017,8 +2016,103 @@ audits:
     - `.github/lean_quality/check_research_import_direction.sh`: pass; 228 modules scanned
     - placeholder, hidden/bidirectional Unicode, private-path, protected-source, and `git diff --check` scans: pass
   review_history:
+    - head: c9f29b70c89cd3d30dfda6ca784e8904ed69a8da
+      verdict: No major or minor findings (4/4 lanes)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4026#issuecomment-5318593492
+      resolution: exact head and CI 7/7 accepted; merged as cb3cbd9207a9b483c024b4762e55185315bff60c
+  blocking_findings: []
+  next_obligation: the identity-edge-lift specialization, then witness matrix w2–w4
+```
+
+### Cycle 20 — identity-edge-lift affine specialization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 20
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: cb3cbd9207a9b483c024b4762e55185315bff60c
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL item (6), affine carrier specialization immediately after the CellGaugeTorsor definition
+  proof_dag_predecessors:
+    - Cycle 15 `CellAffineStep` and its general twisted forward-step formula
+    - Cycle 18/19 reviewed noncentral finite package and comparator
+    - existing two-layer identity-lift and strong-cancellation APIs
+  proof_obligation: construct identity edge lifts without assuming strong certificates, prove every path lift is identity, derive the baseline canonical comparator as identity from its actual factorization, and prove that the general affine step specializes to left translation by the raw defect with a nonidentity finite firing
+  selection_reason: this is the last theorem-level clause before the fixed witness matrix; discharging it prevents the identity-lift fixtures used by w2–w4 from silently replacing the general twisted affine convention
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/IdentityEdgeLiftSpecialization.lean
+  risks:
+    - accepting identity strong certificates as fixture fields instead of deriving them
+    - reducing the canonical comparator to `1` by definition rather than opcartesian uniqueness
+    - rewriting the general affine step as untwisted outside the identity-lift specialization
+    - firing only at the identity raw defect
+    - misreporting an identity-lift fixture as evidence for the general nontrivial canonical right twist
+  unchecked:
+    - fixed-head independent review
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta:
+    discharged:
+      - strongly cocartesian geometry/core identity lifts derived from `IsStronglyCocartesian.of_iso`
+      - constant two-layer lift data for every finite presentation and geometry package
+      - theorem that every presented path evaluates to the identity geometry lift
+      - theorem that the baseline upper canonical comparator is `1`, proved from its real factorization and `CompositeFiberAut.ext_of_strong_fac`
+      - the fixed identity-edge-lift formula `CellAffineStep ... (forward cell) x = upperRawTwoCellDefect ... 1 cell * x`
+      - a finite firing whose raw defect is the reviewed nonidentity, noncentral transposition
+    remaining:
+      - witness matrix entries w2, w3, and w4
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.geometry_identity_strong
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.core_identity_strong
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.liftData
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.path_lift_eq_id
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.data
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.upper_canonical_eq_one
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.cell_affine_step_forward_apply
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_raw_defect_eq
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_raw_defect_ne_one
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_cell_affine_step_forward_apply
+  acceptance_point: the specialization is a theorem about the existing twisted affine step after a generated canonical factor is proved trivial; it is not a redefinition of the general transport, and it fires at a genuine nonidentity raw defect
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - identity geometry/core strong certificates are derived once from the categorical identity iso
+      - arbitrary authored comparators are added only after the identity two-layer lift datum is constructed
+      - no coherence, section, gauge, or effectivity premise is added to the specialization theorem
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - the identity baseline comparator remains the existing `upperCanonicalTwoCellComparator`
+      - its equality to `1` follows from the generated path-lift factorization and strong uniqueness
+      - the raw defect remains the existing authored-times-canonical-inverse definition
+    unresolved: []
+  proof_use:
+    used:
+      - both independently derived identity strong certificates in `TwoLayerLiftData`
+      - the recursive path-lift composition law
+      - `upperCanonicalTwoCellComparator_fac` and composite strong cancellation
+      - the reviewed `cellAffineStep_apply` product order
+      - the reviewed nonidentity theorem for `compositeSwap01`
+    unused: []
+  structure_field_escape: none-found; strongness, path identity, canonical triviality, and affine specialization are theorems rather than supplied comparison fields
+  route_integrity: pass; only after proving `φ₀ = 1` does the fixed formula reduce `u * x * φ₀⁻¹` to `(u * φ₀⁻¹) * x`
+  target_fitting: none-found
+  vacuity: pass; the finite specialization has one real cell and a raw defect proved unequal to `1`
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found; the module explicitly does not claim to test the nonidentity canonical right twist, which remains covered by the prior noncentral fixture
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/IdentityEdgeLiftSpecialization.lean`: pass; 11 declarations, standard axioms only
+    - targeted `lake build ResearchLean.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization`: pass; dependency closure only, no Research aggregate/full build
+  review_history:
     - head: pending
       verdict: fixed-head four-lane math-lean-review required
   blocking_findings: []
-  next_obligation: fixed-head standard PR review for Cycle 19, then the identity-edge-lift specialization and witness matrix w2–w4
+  next_obligation: fixed-head standard PR review for Cycle 20, then witness matrix w2–w4
 ```
