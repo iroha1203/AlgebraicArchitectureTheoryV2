@@ -9,6 +9,7 @@ import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivity
 import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivityInstances
 import ResearchLean.AG.CrossStageCoherence.EdgeEffectivity
 import ResearchLean.AG.CrossStageCoherence.EdgeEffectivityInstances
+import ResearchLean.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforward
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
 
@@ -17,5 +18,5 @@ import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
 
 Umbrella import for the G-109 pseudofunctor, obstruction-composition, vanishing,
 finite-witness, compatible-pair refutation, comparison-descent, path-gauge
-effectivity, and core-pushforward development.
+effectivity, identity-edge-lift specialization, and core-pushforward development.
 -/
