@@ -137,6 +137,11 @@ theorem strict_qualified : StrictCellQualified data .strict := by
       (1 : CompositeFiberAut package) = 1
     exact map_one _
 
+/-- The prescribed strict cell genuinely inhabits the maximal strict sector;
+the strict-trivializer part of w3 is therefore not vacuous. -/
+theorem strict_sector_nonempty : Nonempty (StrictTwoCell data) :=
+  ⟨⟨.strict, strict_qualified⟩⟩
+
 /-- The first active cell is excluded from the strict sector by its nontrivial
 visible core projection. -/
 theorem active_first_not_qualified :
@@ -403,6 +408,7 @@ theorem w3_shared_edge_triangle :
       (WitnessTwoCell.activeFirst ≠ WitnessTwoCell.activeSecond ∧
         WitnessTwoCell.activeSecond ≠ WitnessTwoCell.strict ∧
         WitnessTwoCell.strict ≠ WitnessTwoCell.activeFirst) ∧
+      Nonempty (StrictTwoCell data) ∧
       CompatiblePairwiseVanishes data ∧
       (∀ {left right : CellChainNode presentation PUnit.unit PUnit.unit}
         (first second : CellChainStep presentation left right),
@@ -410,8 +416,8 @@ theorem w3_shared_edge_triangle :
       CellChainHolonomy data triangle_chain ≠ 1 ∧
       ¬ JointVanishes data :=
   ⟨fixture_nonempty, edges_distinct, cells_pairwise_distinct,
-    compatible_pairwise_vanishes, every_parallel_two_chain_trivial,
-    triangle_holonomy_ne_one, not_joint⟩
+    strict_sector_nonempty, compatible_pairwise_vanishes,
+    every_parallel_two_chain_trivial, triangle_holonomy_ne_one, not_joint⟩
 
 end SharedEdgeTriangleWitness
 

@@ -2165,6 +2165,7 @@ result:
       - w2 nonidentity first affine step and identity total holonomy
       - w2 explicit comparison section, CellChainCoherent, and JointVanishes
       - w3 one-vertex active/strict shared-edge triangle on identity lifts with the prescribed two active comparators and identity strict comparator
+      - w3 strict cell explicitly inhabiting the maximal strict sector
       - w3 explicit compatible core/edge/strict local datum with no chain field
       - theorem that every typed parallel pair in w3 determines the same step and hence has trivial two-chain holonomy
       - w3 explicit three-chain holonomy `shiftedVisibleComposite⁻¹ * visibleComposite ≠ 1` and `¬JointVanishes`
@@ -2180,6 +2181,7 @@ result:
     - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.comparison_section
     - AAT.AG.CrossStageCoherence.SimpleTriangleWitness.w2_simple_triangle
     - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.compatible_pair
+    - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.strict_sector_nonempty
     - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.compatible_pairwise_vanishes
     - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.parallel_step_unique
     - AAT.AG.CrossStageCoherence.SharedEdgeTriangleWitness.every_parallel_two_chain_trivial
@@ -2215,12 +2217,12 @@ audits:
   structure_field_escape: none-found; w2 chain coherence and w3 three-chain failure remain theorems outside the transport and CompatiblePairs structures
   route_integrity: pass; w2 and w3 use typed CellChain values and the reviewed authored-word holonomy theorem
   target_fitting: none-found
-  vacuity: pass; both fixtures explicitly inhabit their vertex, edge, cell, and closed-chain layers; w2 has a nonidentity affine step and w3 has a nonidentity three-chain holonomy
+  vacuity: pass; both fixtures explicitly inhabit their vertex, edge, cell, and closed-chain layers; w3 also explicitly inhabits its qualified strict sector; w2 has a nonidentity affine step and w3 has a nonidentity three-chain holonomy
   one_way_as_equivalence: not-applicable
   goal_or_report_reinterpretation: none-found; w4 remains mandatory and completion_candidate stays no
   validation_refs:
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SimpleTriangleWitness.lean`: pass; 85 namespace declarations, standard axioms only
-    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SharedEdgeTriangleWitness.lean`: pass; 41 namespace declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/SharedEdgeTriangleWitness.lean`: pass; 42 namespace declarations, standard axioms only
     - targeted `lake build ResearchLean.AG.CrossStageCoherence.SimpleTriangleWitness ResearchLean.AG.CrossStageCoherence.SharedEdgeTriangleWitness`: pass; dependency closure only, no Research aggregate/full build
   review_history:
     - head: pending
