@@ -1530,8 +1530,121 @@ audits:
       verdict: Major revisions (4/4 lanes)
       audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4022#issuecomment-5317180845
       resolution: replaced the duplicate orientation with `FaceOrientation`; added exact upper-pasting bridges, node/arrow finiteness, the support predicate matrix, the raw-defect ratio theorem, and corrected provenance
-    - head: pending
-      verdict: fixed-head formal re-review required because definitions and declarations changed
+    - head: febce1e0f1b025f3d434a42938aa504654f4fae2
+      verdict: No major findings (4/4 lanes)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4022#issuecomment-5317331254
+      resolution: exact-head review and CI accepted; merged as a64d362b9958b3c055a3d2933bce51c524948faf
   blocking_findings: []
   next_obligation: fixed-head standard PR review for Cycle 15, then theorem (C) together with the required noncentral canonical-comparator fixture
+```
+
+### Cycle 16 — comparison-section descent and noncentral canonical twist
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 16
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: a64d362b9958b3c055a3d2933bce51c524948faf
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL theorem (C), F5 comparison descent, and the descent-layer material-premise ledger row
+  proof_dag_predecessors:
+    - Cycle 15 finite typed cell graph and affine route transport
+    - T1 canonical thinness, route normal form, and universal holonomy criterion
+    - reviewed upper canonical-comparator factorization and finite noncommutative permutation witnesses
+  proof_obligation: construct `CellComparisonSection` with node values, nil normalization, and affine naturality; prove the general-presentation nondefinitional equivalence `CellChainCoherent ↔ Nonempty CellComparisonSection`, including reverse-route transport and path independence; and fire the descent surface on finite positive/negative instances together with a finite canonical comparator `φ₀ ≠ 1` that fails to commute with an explicit fiber automorphism
+  selection_reason: theorem (C) is the next F5 node and the direct predecessor of effectivity (D), gluing (F), and w4; the noncentral twist fixture is the remaining acceptance condition for the same descent-layer ledger row and prevents an identity/central specialization from validating the affine construction
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/ComparisonDescent.lean
+    - ResearchLean/AG/CrossStageCoherence/ComparisonDescentInstances.lean
+  risks:
+    - choosing one route per connected component could hide path independence in a supplied certificate rather than derive it from `CellChainCoherent`
+    - nil normalization could be inconsistent if a component admitted multiple semantic empty-path nodes
+    - reverse steps or dependent endpoint casts could invert the affine multiplication order
+    - defining `CellChainCoherent` through section existence would be a forbidden definitional escape
+    - the finite twist could be nonidentity but central, or could make the canonical comparator authored rather than input-generated
+    - a positive/negative section matrix could fire only by an empty graph or an already supplied coherent gauge
+  unchecked:
+    - exact quotient-component and route-choice proof terms before focused elaboration
+    - construction of a strongly cocartesian nonidentity edge lift whose generated canonical comparator is visibly noncentral
+    - fixed-head independent review
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta:
+    discharged:
+      - theorem (C): the general nondefinitional equivalence `CellChainCoherent ↔ Nonempty CellComparisonSection`
+      - explicit chain reversal, inverse affine transport, route concatenation, and coherence-derived route independence
+      - normalized section construction by component roots and routes, with naturality in the exact authored/canonical affine formula
+      - finite positive and negative `CellComparisonSection` acceptance instances
+      - a finite nonidentity strongly cocartesian edge lift whose generated canonical comparator is nonidentity and noncentral
+      - direct firing of the noncentral right twist in `CellAffineStep`
+    remaining:
+      - core pushforward package (G)
+      - effectivity theorems (D)(E), gluing corollaries (F), and the identity-edge-lift specialization
+      - witness matrix entries w2, w3, and w4
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.CellComparisonSection
+    - AAT.AG.CrossStageCoherence.cellAffineStep_reverse
+    - AAT.AG.CrossStageCoherence.cellRouteTransport_reverse
+    - AAT.AG.CrossStageCoherence.cellRouteTransport_eq_of_cellChainCoherent
+    - AAT.AG.CrossStageCoherence.cellComparisonSection_cellChainCoherent
+    - AAT.AG.CrossStageCoherence.comparisonSectionOfCellChainCoherent
+    - AAT.AG.CrossStageCoherence.cellChainCoherent_iff_nonempty_comparisonSection
+    - AAT.AG.CrossStageCoherence.NoncentralTwistWitness.edgeLift_twist_ne_id
+    - AAT.AG.CrossStageCoherence.NoncentralTwistWitness.canonicalComparator_ne_one
+    - AAT.AG.CrossStageCoherence.NoncentralTwistWitness.canonicalComparator_noncentral
+    - AAT.AG.CrossStageCoherence.NoncentralTwistWitness.affine_twist_fires
+    - AAT.AG.CrossStageCoherence.QualityInstances.cellComparisonSection_instances
+  acceptance_point: theorem (C) is an actual theorem over arbitrary finite presentations; `CellChainCoherent` remains the independent universal closed-route predicate, while the positive fixture has an input-generated noncentral canonical twist and the negative fixture admits no section
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - comparison-section values are generated from coherence and component routes
+      - nil normalization and oriented affine naturality are proved rather than accepted fields of the coherence predicate
+      - the finite canonical twist is generated from a nonidentity strong edge lift
+    remaining:
+      - path-gauge coordinates and edge realizability for theorem (D)
+      - edge-level effectivity and the remaining witness matrix
+  certificate_provenance:
+    discharged:
+      - component representatives and routes are classical choices from chain connectivity; their path independence is derived from `CellChainCoherent`
+      - `upperCanonicalTwoCellComparator_fac` plus strong opcartesian uniqueness identifies the finite canonical comparator with the nonidentity edge lift
+      - the section negative instance is transported back through theorem (C) to the existing explicit noncoherent closed two-chain
+    unresolved: []
+  proof_use:
+    used:
+      - closed-route coherence to compare arbitrary routes by closing one route with the reverse of the other
+      - reverse-step authored and canonical factors to prove affine inverse transport
+      - nil-component reachability to normalize the chosen base coordinate
+      - geometry and core strong certificates in the canonical-comparator factorization
+      - the second adjacent transposition to witness noncentrality and nontrivial affine conjugation
+    unused: []
+  structure_field_escape: none-found; `CellComparisonSection` stores only the fixed value/normalization/naturality data, and `CellChainCoherent` is unchanged
+  route_integrity: pass; reverse and append preserve the reviewed affine route order, and naturality is stated through the existing `CellAffineStep`
+  target_fitting: none-found
+  vacuity: pass; the positive fixture has an actual cover, nonzero coefficient and raw relation, a nonidentity edge lift, a noncentral canonical comparator, and a visibly moved affine coordinate; the negative section instance uses the existing nonidentity closed holonomy
+  one_way_as_equivalence: none-found; both directions of theorem (C) are proved, while (D)(E)(F)(G) remain explicit obligations
+  goal_or_report_reinterpretation: none-found; the fixed GOAL blob and SHA-256 are unchanged
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/ComparisonDescent.lean`: pass; 40 declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/ComparisonDescentInstances.lean`: pass; 88 declarations, standard axioms only
+    - `lake build ResearchLean.AG.CrossStageCoherence.ComparisonDescent`: pass; targeted dependency closure only, no Research aggregate/full build
+    - `lake build ResearchLean.AG.CrossStageCoherence.ComparisonDescentInstances`: pass; targeted dependency closure only, no Research aggregate/full build
+    - focused `#print axioms` audit of the 38 public spine declarations: only `propext`, `Classical.choice`, and `Quot.sound`
+    - `.github/lean_quality/check_research_import_direction.sh`: pass; 228 modules scanned
+    - placeholder scan on the two new Lean modules: pass
+    - hidden/bidirectional Unicode scan on all changed files: pass
+    - private-path scan on all changed files: pass
+    - `git diff --check`: pass
+  review_history:
+    - head: pending
+      verdict: fixed-head standard PR review required
+  blocking_findings: []
+  next_obligation: fixed-head standard PR review for Cycle 16, then core pushforward package (G)
 ```
