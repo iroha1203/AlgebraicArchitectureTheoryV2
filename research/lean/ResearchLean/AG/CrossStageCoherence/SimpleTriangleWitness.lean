@@ -201,7 +201,8 @@ noncomputable def triangle_chain : CellChain presentation node0 node0 :=
   .cons step01 (.cons step12 (.cons step20 (.nil node0)))
 
 /-- Two adjacent oriented steps immediately backtrack when they traverse the
-same semantic cell in opposite directions. -/
+same declared two-cell label in opposite directions.  The separate
+pairwise-distinct boundary conjunct excludes duplicated semantic labels in w2. -/
 def ImmediateBacktracks
     {first middle last : CellChainNode presentation PUnit.unit PUnit.unit}
     (firstStep : CellChainStep presentation first middle)
