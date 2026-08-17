@@ -7,6 +7,8 @@ import ResearchLean.AG.CrossStageCoherence.CorePushforward
 import ResearchLean.AG.CrossStageCoherence.CorePushforwardInstances
 import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivity
 import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivityInstances
+import ResearchLean.AG.CrossStageCoherence.EdgeEffectivity
+import ResearchLean.AG.CrossStageCoherence.EdgeEffectivityInstances
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforward
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
 
