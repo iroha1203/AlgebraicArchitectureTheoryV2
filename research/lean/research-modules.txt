@@ -23,6 +23,8 @@ ResearchLean.AG.CanonicalResolution.PositiveWitness	ResearchLean/AG/CanonicalRes
 ResearchLean.AG.CanonicalResolution.Reading	ResearchLean/AG/CanonicalResolution/Reading.lean
 ResearchLean.AG.CrossStageCoherence	ResearchLean/AG/CrossStageCoherence.lean
 ResearchLean.AG.CrossStageCoherence.Basic	ResearchLean/AG/CrossStageCoherence/Basic.lean
+ResearchLean.AG.CrossStageCoherence.CellChain	ResearchLean/AG/CrossStageCoherence/CellChain.lean
+ResearchLean.AG.CrossStageCoherence.CellChainInstances	ResearchLean/AG/CrossStageCoherence/CellChainInstances.lean
 ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation	ResearchLean/AG/CrossStageCoherence/CompatiblePairRefutation.lean
 ResearchLean.AG.CrossStageCoherence.CorePseudofunctor	ResearchLean/AG/CrossStageCoherence/CorePseudofunctor.lean
 ResearchLean.AG.CrossStageCoherence.FiberTransport	ResearchLean/AG/CrossStageCoherence/FiberTransport.lean
