@@ -12,6 +12,17 @@ canonical path-gauge coordinates realize the section pointwise.
 `EdgeLevelPresentation` is used only in the effectivity theorem and the gluing
 corollary.  The general comparison-descent theorem, path-gauge theorem, and
 general necessity theorem remain free of this restriction.
+
+## Implementation notes
+
+`CellComparisonSection.edgeGauge` uses `Classical.choose` once per edge to read
+one supported single-edge occurrence.  Choosing a separate gauge for every
+node was rejected because effectivity requires one edge-indexed reselection.
+Unsupported edges are assigned `1`: no supported-node realization equation can
+observe them, so adding arbitrary values would introduce irrelevant input.
+When an edge occurs on several cell sides, `edgeGauge_eq` uses semantic
+`CellChainNode.ext` rather than support-proof identity to show that every
+occurrence has the same section value.
 -/
 
 namespace AAT.AG.CrossStageCoherence

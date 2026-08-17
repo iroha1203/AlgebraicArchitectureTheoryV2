@@ -15,6 +15,16 @@ edge gauge can realize that section because realizability would imply the
 already refuted joint-vanishing statement.  This is an acceptance instance for
 `PathGaugeEffective`; the stronger fixed witness (w4), which additionally
 requires compatible-pairwise vanishing on the same fixture, remains separate.
+
+## Implementation notes
+
+A negative fixture without any formal comparison section was rejected: it
+would not witness failure of a universal effectivity statement.  The chosen
+root-obstruction fixture first constructs `witnessComparisonSection` and only
+then proves that no edge gauge realizes it.  Its repeated edge also gives the
+required negative `EdgeLevelPresentation` instance.  This fixture has empty
+`CompatiblePairs`, so it is deliberately not presented as the stronger w4
+witness.
 -/
 
 namespace AAT.AG.CrossStageCoherence
