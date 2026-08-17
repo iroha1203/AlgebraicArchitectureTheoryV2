@@ -67,6 +67,22 @@ theorem twoChain_holonomy :
   simp only [firstStep, secondStep, cellAuthoredFactor,
     castCompositeFiberAut, data]
 
+/-- The first oriented defect specializes to the reviewed upper raw defect. -/
+theorem firstStep_raw_eq_upperRaw :
+    cellRawDefectFactor data firstStep =
+      upperRawTwoCellDefect data 1 WitnessTwoCell.activeFirst := by
+  rw [show firstStep =
+    @CellChainStep.forward presentation WitnessTwoCell.activeFirst from rfl]
+  exact cellRawDefectFactor_forward_eq_upperRaw data WitnessTwoCell.activeFirst
+
+/-- The second oriented defect specializes to the reviewed upper raw defect. -/
+theorem secondStep_raw_eq_upperRaw :
+    cellRawDefectFactor data secondStep =
+      upperRawTwoCellDefect data 1 WitnessTwoCell.activeSecond := by
+  rw [show secondStep =
+    @CellChainStep.forward presentation WitnessTwoCell.activeSecond from rfl]
+  exact cellRawDefectFactor_forward_eq_upperRaw data WitnessTwoCell.activeSecond
+
 /-- The parallel two-chain has genuinely nonidentity holonomy. -/
 theorem twoChain_holonomy_ne_one :
     CellChainHolonomy data twoChain ≠ 1 := by
@@ -88,11 +104,48 @@ theorem not_cellChainCoherent : ¬ CellChainCoherent data := by
       PUnit.unit PUnit.unit rightNode twoChain
   exact twoChain_holonomy_ne_one holonomyIdentity
 
+/-- w1 fires all three required conjuncts on the same reviewed finite datum. -/
+theorem compatiblePairwise_not_chainCoherent_not_joint :
+    CompatiblePairwiseVanishes data ∧
+      ¬ CellChainCoherent data ∧ ¬ JointVanishes data :=
+  ⟨CompatiblePairRefutation.compatiblePairwiseVanishes,
+    not_cellChainCoherent, CompatiblePairRefutation.not_joint⟩
+
 end CellChainRefutation
 
 namespace QualityInstances
 
 open FiniteCrossStageWitness
+
+/-- A one-edge active path occurs on no declared side of the reviewed fixture. -/
+def unsupportedActivePath :
+    witnessPresentation.Path PUnit.unit PUnit.unit :=
+  .cons WitnessEdge.active witnessNilPath
+
+/-- The empty path gives a direct positive support instance. -/
+theorem witnessNilPath_supported :
+    CellChainNodeSupported witnessPresentation witnessNilPath := by
+  change CellChainNodeSupported witnessPresentation (.nil PUnit.unit)
+  exact @CellChainNodeSupported.nil witnessPresentation PUnit.unit
+
+/-- The one-edge active path is neither empty nor a side of any witness cell. -/
+theorem unsupportedActivePath_not_supported :
+    ¬ CellChainNodeSupported witnessPresentation unsupportedActivePath := by
+  intro supported
+  obtain ⟨generator, equality⟩ :=
+    cellChainNodeOfGenerator_surjective witnessPresentation
+      ⟨PUnit.unit, PUnit.unit, ⟨unsupportedActivePath, supported⟩⟩
+  rcases generator with vertex | cell | cell
+  · cases vertex
+    cases equality
+  · cases cell <;> cases equality
+  · cases cell <;> cases equality
+
+/-- Node support has direct satisfying and non-satisfying finite paths. -/
+theorem cellChainNodeSupported_instances :
+    CellChainNodeSupported witnessPresentation witnessNilPath ∧
+      ¬ CellChainNodeSupported witnessPresentation unsupportedActivePath :=
+  ⟨witnessNilPath_supported, unsupportedActivePath_not_supported⟩
 
 /-- Cell-chain coherence has direct satisfying and non-satisfying finite data. -/
 theorem cellChainCoherent_instances :

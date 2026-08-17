@@ -102,18 +102,67 @@ end CellChainNode
 abbrev CellChainSigmaNode (P : FiniteTransportPresentation.{u}) :=
   Σ source : P.Vertex, Σ target : P.Vertex, CellChainNode P source target
 
-/-- Orientation of a cell-graph arrow. -/
-inductive CellChainOrientation
-  | forward
-  | backward
-  deriving DecidableEq
+/-- Finite labels that generate every semantic cell-graph node. -/
+abbrev CellChainNodeGenerator (P : FiniteTransportPresentation.{u}) :=
+  P.Vertex ⊕ (P.TwoCell ⊕ P.TwoCell)
+
+/-- Send a vertex/left-face/right-face label to its semantic graph node. -/
+def cellChainNodeOfGenerator (P : FiniteTransportPresentation.{u}) :
+    CellChainNodeGenerator P → CellChainSigmaNode P
+  | .inl vertex => ⟨vertex, vertex, CellChainNode.nil P vertex⟩
+  | .inr (.inl cell) =>
+      ⟨P.twoSource cell, P.twoTarget cell, CellChainNode.left P cell⟩
+  | .inr (.inr cell) =>
+      ⟨P.twoSource cell, P.twoTarget cell, CellChainNode.right P cell⟩
+
+/-- The finite generator family covers every supported semantic node. -/
+theorem cellChainNodeOfGenerator_surjective
+    (P : FiniteTransportPresentation.{u}) :
+    Function.Surjective (cellChainNodeOfGenerator P) := by
+  rintro ⟨source, target, ⟨path, supported⟩⟩
+  cases supported with
+  | nil => exact ⟨.inl source, rfl⟩
+  | left cell => exact ⟨.inr (.inl cell), rfl⟩
+  | right cell => exact ⟨.inr (.inr cell), rfl⟩
+
+/-- The global Sigma carrier of cell-graph nodes is finite. -/
+noncomputable instance cellChainSigmaNodeFintype
+    (P : FiniteTransportPresentation.{u}) : Fintype (CellChainSigmaNode P) := by
+  classical
+  exact Fintype.ofSurjective (cellChainNodeOfGenerator P)
+    (cellChainNodeOfGenerator_surjective P)
+
+namespace CellChainNode
+
+/-- Include one fixed-endpoint node into the global finite Sigma carrier. -/
+def toSigma {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex} (node : CellChainNode P source target) :
+    CellChainSigmaNode P :=
+  ⟨source, target, node⟩
+
+/-- The fixed-endpoint inclusion loses no semantic node data. -/
+theorem toSigma_injective {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex} :
+    Function.Injective
+      (@toSigma P source target) := by
+  intro first second equality
+  cases equality
+  rfl
+
+/-- Every fixed-endpoint node carrier is finite. -/
+noncomputable instance fintype {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex} : Fintype (CellChainNode P source target) := by
+  classical
+  exact Fintype.ofInjective toSigma toSigma_injective
+
+end CellChainNode
 
 /-- The path before traversing a cell in the selected orientation and endpoint cast. -/
 def orientedCellBeforePath {P : FiniteTransportPresentation.{u}}
     {source target : P.Vertex} (cell : P.TwoCell)
     (source_eq : P.twoSource cell = source)
     (target_eq : P.twoTarget cell = target)
-    (orientation : CellChainOrientation) : P.Path source target :=
+    (orientation : FaceOrientation) : P.Path source target :=
   castPresentedPath source_eq target_eq <|
     match orientation with
     | .forward => P.twoLeft cell
@@ -124,7 +173,7 @@ def orientedCellAfterPath {P : FiniteTransportPresentation.{u}}
     {source target : P.Vertex} (cell : P.TwoCell)
     (source_eq : P.twoSource cell = source)
     (target_eq : P.twoTarget cell = target)
-    (orientation : CellChainOrientation) : P.Path source target :=
+    (orientation : FaceOrientation) : P.Path source target :=
   castPresentedPath source_eq target_eq <|
     match orientation with
     | .forward => P.twoRight cell
@@ -144,7 +193,7 @@ structure CellChainStep (P : FiniteTransportPresentation.{u})
   /-- Identification of the cell target with the graph target index. -/
   target_eq : P.twoTarget cell = target
   /-- Whether the cell is traversed left-to-right or right-to-left. -/
-  orientation : CellChainOrientation
+  orientation : FaceOrientation
   /-- The incoming node is the oriented cell's semantic input path. -/
   before_eq : before.path =
     orientedCellBeforePath cell source_eq target_eq orientation
@@ -153,6 +202,57 @@ structure CellChainStep (P : FiniteTransportPresentation.{u})
     orientedCellAfterPath cell source_eq target_eq orientation
 
 namespace CellChainStep
+
+/-- A typed step is determined by its declared cell and reviewed orientation. -/
+@[ext]
+theorem ext {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    {first second : CellChainStep P before after}
+    (cell_eq : first.cell = second.cell)
+    (orientation_eq : first.orientation = second.orientation) :
+    first = second := by
+  cases first
+  cases second
+  cases cell_eq
+  cases orientation_eq
+  rfl
+
+/-- Encode the two reviewed face orientations by a finite Boolean label. -/
+def orientationCode : FaceOrientation → Bool
+  | .forward => false
+  | .backward => true
+
+/-- The Boolean orientation code is injective. -/
+theorem orientationCode_injective : Function.Injective orientationCode := by
+  intro first second equality
+  cases first <;> cases second <;> simp_all [orientationCode]
+
+/-- Finite code of one step; all remaining fields are propositions. -/
+def code {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    (step : CellChainStep P before after) : P.TwoCell × Bool :=
+  (step.cell, orientationCode step.orientation)
+
+/-- The finite code retains the whole typed step. -/
+theorem code_injective {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target} :
+    Function.Injective (@code P source target before after) := by
+  intro first second equality
+  apply ext
+  · exact congrArg Prod.fst equality
+  · apply orientationCode_injective
+    exact congrArg Prod.snd equality
+
+/-- Every arrow family between two fixed semantic nodes is finite. -/
+noncomputable instance fintype {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target} :
+    Fintype (CellChainStep P before after) := by
+  classical
+  exact Fintype.ofInjective code code_injective
 
 /-- The canonical forward arrow of a declared two-cell. -/
 def forward {P : FiniteTransportPresentation.{u}} (cell : P.TwoCell) :
@@ -199,7 +299,52 @@ def reverse {P : FiniteTransportPresentation.{u}}
           before_eq := after_eq
           after_eq := before_eq }
 
+/--
+Regard one unwhiskered cell-graph arrow as the existing typed upper rewrite
+step with empty incoming and outgoing paths.  This is the route-integrity bridge
+to the reviewed pasting evaluator; no second orientation convention is used.
+-/
+def toRewriteStep {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    (step : CellChainStep P before after) :
+    RewriteStep P.toFiniteTransportTwoPresentation before.path after.path := by
+  rcases step with
+    ⟨cell, source_eq, target_eq, orientation, before_eq, after_eq⟩
+  subst source
+  subst target
+  let face : WhiskeredFace P.toFiniteTransportTwoPresentation
+      (P.twoSource cell) (P.twoTarget cell) :=
+    { cell := cell
+      incoming := .nil (P.twoSource cell)
+      outgoing := .nil (P.twoTarget cell)
+      orientation := orientation }
+  refine
+    { face := face
+      before_eq := ?_
+      after_eq := ?_ }
+  · simpa only [face, WhiskeredFace.before, WhiskeredFace.localBefore,
+      PresentedPath.append, PresentedPath.append_nil,
+      orientedCellBeforePath, castPresentedPath] using before_eq
+  · simpa only [face, WhiskeredFace.after, WhiskeredFace.localAfter,
+      PresentedPath.append, PresentedPath.append_nil,
+      orientedCellAfterPath, castPresentedPath] using after_eq
+
 end CellChainStep
+
+/-- The global Sigma carrier of all cell-graph arrows. -/
+abbrev CellChainSigmaStep (P : FiniteTransportPresentation.{u}) :=
+  Σ source : P.Vertex,
+    Σ target : P.Vertex,
+      Σ before : CellChainNode P source target,
+        Σ after : CellChainNode P source target,
+          CellChainStep P before after
+
+/-- The global arrow carrier of the cell graph is finite. -/
+noncomputable instance cellChainSigmaStepFintype
+    (P : FiniteTransportPresentation.{u}) : Fintype (CellChainSigmaStep P) := by
+  classical
+  exact inferInstance
 
 /-- A typed zigzag of oriented two-cell arrows between path nodes. -/
 inductive CellChain (P : FiniteTransportPresentation.{u})
@@ -221,6 +366,16 @@ def append {P : FiniteTransportPresentation.{u}}
   match head with
   | .nil _ => tail
   | .cons step rest => .cons step (append rest tail)
+
+/-- Reuse the reviewed upper pasting carrier for every typed cell chain. -/
+def toRewritePasting {P : FiniteTransportPresentation.{u}}
+    {source target : P.Vertex}
+    {first last : CellChainNode P source target}
+    (chain : CellChain P first last) :
+    RewritePasting P.toFiniteTransportTwoPresentation first.path last.path :=
+  match chain with
+  | .nil node => .nil node.path
+  | .cons step tail => .cons step.toRewriteStep (toRewritePasting tail)
 
 end CellChain
 
@@ -270,6 +425,39 @@ theorem castCompositeFiberAut_inv
       (castCompositeFiberAut lift target_eq coordinate)⁻¹ := by
   subst second
   rfl
+
+/-- Upper whiskering along an empty suffix leaves the coordinate unchanged. -/
+@[simp]
+theorem upperWhiskerCompositeFiberAut_nil
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerLiftData.{u, v} P U)
+    (reselection : UpperEdgeReselection data) {vertex : P.Vertex}
+    (automorphism : CompositeFiberAut (data.geometry vertex)) :
+    upperWhiskerCompositeFiberAut data reselection automorphism (.nil vertex) =
+      automorphism := by
+  letI : (crossStageProjection.{u, v} U).IsStronglyCocartesian
+      (upperReselectedPathLift data reselection (.nil vertex)).base.base
+      (upperReselectedPathLift data reselection (.nil vertex)) :=
+    (upperReselectLiftData data reselection).pathLift_compositeStrong
+      (.nil vertex)
+  apply CompositeFiberAut.ext_of_strong_fac
+    (upperReselectedPathLift data reselection (.nil vertex))
+  calc
+    _ = upperFiberAutThenPath data reselection automorphism (.nil vertex) :=
+      upperWhiskerCompositeFiberAut_fac data reselection automorphism
+        (.nil vertex)
+    _ = CompositeFiberAut.hom automorphism := by
+      change (CompositeFiberAut.hom automorphism).comp
+          (GeometryTotalHom.id (data.geometry vertex)) = _
+      exact (@Category.comp_id
+        (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
+        _ _ (CompositeFiberAut.hom automorphism))
+    _ = _ := by
+      change _ = (GeometryTotalHom.id (data.geometry vertex)).comp
+        (CompositeFiberAut.hom automorphism)
+      exact (@Category.id_comp
+        (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
+        _ _ (CompositeFiberAut.hom automorphism)).symm
 
 /-- The invertible two-sided affine action `x ↦ left * x * right⁻¹`. -/
 def cellGaugeAffineEquiv {G : Type*} [Group G] (left right : G) : G ≃ G where
@@ -386,6 +574,83 @@ noncomputable def cellCanonicalWord
   | .cons step tail =>
       cellCanonicalWord data reselection tail *
         cellCanonicalFactor data reselection step
+
+/-- One authored cell factor is exactly the existing upper oriented-face evaluator. -/
+theorem cellAuthoredFactor_eq_upperOrientedFaceAuthoredComparator
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    (step : CellChainStep P before after) :
+    cellAuthoredFactor data step =
+      upperOrientedFaceAuthoredComparator data 1
+        step.toRewriteStep.face := by
+  rcases step with
+    ⟨cell, source_eq, target_eq, orientation, before_eq, after_eq⟩
+  subst source
+  subst target
+  cases orientation <;>
+    simp [cellAuthoredFactor, CellChainStep.toRewriteStep,
+      upperOrientedFaceAuthoredComparator, upperOrientedFaceComparator,
+      upperAuthoredComparatorFamily, castCompositeFiberAut]
+
+/-- One canonical cell factor is exactly the existing upper oriented-face evaluator. -/
+theorem cellCanonicalFactor_eq_upperOrientedFaceCanonicalComparator
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    (reselection : UpperEdgeReselection data.lift)
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    (step : CellChainStep P before after) :
+    cellCanonicalFactor data reselection step =
+      upperOrientedFaceCanonicalComparator data reselection
+        step.toRewriteStep.face := by
+  rcases step with
+    ⟨cell, source_eq, target_eq, orientation, before_eq, after_eq⟩
+  subst source
+  subst target
+  cases orientation <;>
+    simp [cellCanonicalFactor, CellChainStep.toRewriteStep,
+      upperOrientedFaceCanonicalComparator, upperOrientedFaceComparator,
+      upperCanonicalComparatorFamily, castCompositeFiberAut]
+
+/-- The authored cell-chain word uses the reviewed upper pasting convention. -/
+theorem cellAuthoredWord_eq_upperAuthoredPastingComparator
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    {source target : P.Vertex}
+    {first last : CellChainNode P source target}
+    (chain : CellChain P first last) :
+    cellAuthoredWord data chain =
+      upperAuthoredPastingComparator data 1 chain.toRewritePasting := by
+  induction chain with
+  | nil node => rfl
+  | cons step tail inductionHypothesis =>
+      simp only [cellAuthoredWord, CellChain.toRewritePasting,
+        upperAuthoredPastingComparator, upperPastingComparator]
+      rw [inductionHypothesis,
+        cellAuthoredFactor_eq_upperOrientedFaceAuthoredComparator]
+      rfl
+
+/-- The canonical cell-chain word uses the reviewed upper pasting convention. -/
+theorem cellCanonicalWord_eq_upperCanonicalPastingComparator
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    (reselection : UpperEdgeReselection data.lift)
+    {source target : P.Vertex}
+    {first last : CellChainNode P source target}
+    (chain : CellChain P first last) :
+    cellCanonicalWord data reselection chain =
+      upperCanonicalPastingComparator data reselection
+        chain.toRewritePasting := by
+  induction chain with
+  | nil node => rfl
+  | cons step tail inductionHypothesis =>
+      simp only [cellCanonicalWord, CellChain.toRewritePasting,
+        upperCanonicalPastingComparator, upperPastingComparator]
+      rw [inductionHypothesis,
+        cellCanonicalFactor_eq_upperOrientedFaceCanonicalComparator]
+      rfl
 
 /-- Reversing a step inverts its authored affine factor. -/
 theorem cellAuthoredFactor_reverse
@@ -700,6 +965,45 @@ theorem cellChainHolonomy_rotate_eq_one_iff
     rw [cellChainHolonomy_rotate data outbound inbound, baseIdentity]
     simp
 
+/-- Raw defect carried by one oriented cell-graph arrow. -/
+noncomputable def cellRawDefectFactor
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    {source target : P.Vertex}
+    {before after : CellChainNode P source target}
+    (step : CellChainStep P before after) :
+    CompositeFiberAut (data.lift.geometry target) :=
+  cellAuthoredFactor data step * (cellCanonicalFactor data 1 step)⁻¹
+
+/-- On a declared forward cell, the oriented defect is the reviewed upper raw defect. -/
+theorem cellRawDefectFactor_forward_eq_upperRaw
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U) (cell : P.TwoCell) :
+    cellRawDefectFactor data (CellChainStep.forward cell) =
+      upperRawTwoCellDefect data 1 cell := by
+  simp only [cellRawDefectFactor, cellAuthoredFactor,
+    cellCanonicalFactor, CellChainStep.forward, castCompositeFiberAut,
+    upperRawTwoCellDefect]
+
+/-- Parallel arrows have the same canonical factor by strong cancellation. -/
+theorem cellCanonicalFactor_eq_of_parallel
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    (reselection : UpperEdgeReselection data.lift)
+    {source target : P.Vertex}
+    {left right : CellChainNode P source target}
+    (first second : CellChainStep P left right) :
+    cellCanonicalFactor data reselection first =
+      cellCanonicalFactor data reselection second := by
+  let lift := upperReselectedPathLift data.lift reselection left.path
+  letI : (crossStageProjection.{u, v} U).IsStronglyCocartesian
+      lift.base.base lift :=
+    (upperReselectLiftData data.lift reselection).pathLift_compositeStrong
+      left.path
+  apply CompositeFiberAut.ext_of_strong_fac lift
+  exact (cellCanonicalFactor_fac data reselection first).trans
+    (cellCanonicalFactor_fac data reselection second).symm
+
 /-- The two-step loop comparing parallel arrows starts at their common right node. -/
 def parallelCellTwoChain
     {P : FiniteTransportPresentation.{u}}
@@ -720,6 +1024,21 @@ theorem parallelCellTwoChain_holonomy
   rw [cellChainHolonomy_eq_authoredWord]
   simp only [parallelCellTwoChain, cellAuthoredWord,
     cellAuthoredFactor_reverse, one_mul]
+
+/-- Parallel two-chain holonomy is also the ratio of its oriented raw defects. -/
+theorem parallelCellTwoChain_holonomy_eq_rawDefectRatio
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerTransportData.{u, v} P U)
+    {source target : P.Vertex}
+    {left right : CellChainNode P source target}
+    (first second : CellChainStep P left right) :
+    CellChainHolonomy data (parallelCellTwoChain first second) =
+      cellRawDefectFactor data first *
+        (cellRawDefectFactor data second)⁻¹ := by
+  rw [parallelCellTwoChain_holonomy]
+  unfold cellRawDefectFactor
+  rw [cellCanonicalFactor_eq_of_parallel data 1 first second]
+  group
 
 /-- Universal route identity is equivalent to identity of every holonomy. -/
 theorem cellChainCoherent_iff_holonomy_eq_one
