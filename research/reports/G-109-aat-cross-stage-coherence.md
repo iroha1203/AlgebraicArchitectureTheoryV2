@@ -1812,6 +1812,7 @@ selection:
     - ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivity.lean
     - ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivityInstances.lean
     - ResearchLean/AG/CrossStageCoherence/RealizablePushforward.lean
+    - ResearchLean/AG/CrossStageCoherence/RealizablePushforwardInstances.lean
   risks:
     - defining path coordinates from a supplied comparison section or storing their factorization as input would evade effectivity
     - confusing the baseline path with the reselected path could reverse the noncommutative transition formula
@@ -1834,6 +1835,7 @@ result:
       - finite positive and negative acceptance instances, with the positive instance carrying the reviewed nonidentity noncentral canonical comparator
       - exact projection of `PathGaugeCoordinate` to the existing G-106 `pathReselectionTransition`
       - pointwise pushforward of every upper realizable section to a core comparison section realized by the projected edge gauge
+      - positive and negative finite acceptance instances for the new core edge-realizability certificate
       - theorem (G) in full when combined with Cycle 17; effectivity preservation/reflection remains the explicitly excluded G-110 frontier
     remaining:
       - theorem (E) edge-level `PathGaugeEffective`
@@ -1856,6 +1858,7 @@ result:
     - AAT.AG.CrossStageCoherence.pushforward_pathGaugeCoordinate
     - AAT.AG.CrossStageCoherence.CoreEdgeRealizableCellComparisonSection
     - AAT.AG.CrossStageCoherence.EdgeRealizableCellComparisonSection.pushforwardCore
+    - AAT.AG.CrossStageCoherence.RealizablePushforwardInstances.coreEdgeRealizableCellComparisonSection_instances
   acceptance_point: path coordinates are generated from edge reselection rather than supplied by descent; theorem (D) runs through the categorical coherence anchor in both directions, its positive finite fixture has a nonidentity noncentral canonical comparator, and core projection lands in the pre-existing G-106 transition rather than a renamed image
   port_status: ResearchLean only; no Formal port is claimed
 audits:
@@ -1884,17 +1887,18 @@ audits:
   structure_field_escape: none-found; the realizable structure stores only the fixed comparison datum, one edge gauge, and the required pointwise equality, while coordinate existence, uniqueness, transition, and categorical coherence are theorems
   route_integrity: pass; the transition order is `coordinate(right) * canonical(1) * coordinate(left)⁻¹`, derived by strong cancellation from the target-side postcomposition convention
   target_fitting: none-found
-  vacuity: pass; the positive matrix uses the reviewed noncentral-twist finite presentation and the negative matrix reuses the explicit nontrivial compatible-pair refutation
+  vacuity: pass; both upper and core realizability certificates have positive/negative finite matrices; the positive instances use the reviewed noncentral-twist presentation, while the upper negative reuses the explicit compatible-pair refutation and the core negative has no underlying core comparison section
   one_way_as_equivalence: none-found; theorem (D) proves both directions through independently defined structures and the categorical anchor
   goal_or_report_reinterpretation: none-found; the fixed GOAL blob and SHA-256 are unchanged, and core effectivity preservation/reflection is not claimed
   validation_refs:
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivity.lean`: pass; 30 declarations, standard axioms only
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivityInstances.lean`: pass; 3 declarations, standard axioms only
     - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/RealizablePushforward.lean`: pass; 18 declarations, standard axioms only
-    - targeted `lake build` of the three Cycle 18 modules: pass; dependency closure only, no Research aggregate/full build
-    - focused `#print axioms` audit of the 18 Cycle 18 public-spine declarations: only `propext`, `Classical.choice`, and `Quot.sound`
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/RealizablePushforwardInstances.lean`: pass; 3 declarations, standard axioms only
+    - targeted `lake build` of the four Cycle 18 modules: pass; dependency closure only, no Research aggregate/full build
+    - focused `#print axioms` audit of the 21 Cycle 18 public-spine declarations: only `propext`, `Classical.choice`, and `Quot.sound`
     - `.github/lean_quality/check_research_import_direction.sh`: pass; 228 modules scanned
-    - placeholder scan on the three new Lean modules: pass
+    - placeholder scan on the four new Lean modules: pass
     - hidden/bidirectional Unicode scan on all changed files: pass
     - private-path scan on all changed files: pass
     - `git diff --check`: pass

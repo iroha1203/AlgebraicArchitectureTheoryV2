@@ -8,6 +8,7 @@ import ResearchLean.AG.CrossStageCoherence.CorePushforwardInstances
 import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivity
 import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivityInstances
 import ResearchLean.AG.CrossStageCoherence.RealizablePushforward
+import ResearchLean.AG.CrossStageCoherence.RealizablePushforwardInstances
 
 /-!
 # Cross-stage transport coherence
