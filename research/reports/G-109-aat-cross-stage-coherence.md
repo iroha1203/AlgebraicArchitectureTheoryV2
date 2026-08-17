@@ -1837,7 +1837,7 @@ result:
       - theorem (G) in full when combined with Cycle 17; effectivity preservation/reflection remains the explicitly excluded G-110 frontier
     remaining:
       - theorem (E) edge-level `PathGaugeEffective`
-      - theorem (F) general necessity and edge-level gluing equivalence
+      - theorem (F)'s edge-level gluing equivalence; general necessity (T2) was discharged in Cycle 15
       - the identity-edge-lift specialization
       - witness matrix entries w2, w3, and w4
   lean_artifacts:
