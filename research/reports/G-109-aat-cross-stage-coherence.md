@@ -2038,7 +2038,7 @@ base_oid: cb3cbd9207a9b483c024b4762e55185315bff60c
 tracking_issue: 4018
 report_path: research/reports/G-109-aat-cross-stage-coherence.md
 selection:
-  proof_state_ref: fixed GOAL item (6), affine carrier specialization immediately after the CellGaugeTorsor definition
+  proof_state_ref: fixed GOAL item (6), affine carrier specialization after the `CellGaugeTorsor`-grade structural requirement, realized by the `CompositeFiberAut` carrier, `cellGaugeAffineEquiv`, and `CellAffineStep`
   proof_dag_predecessors:
     - Cycle 15 `CellAffineStep` and its general twisted forward-step formula
     - Cycle 18/19 reviewed noncentral finite package and comparator
