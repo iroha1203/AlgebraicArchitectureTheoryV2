@@ -1735,7 +1735,7 @@ result:
     - AAT.AG.CrossStageCoherence.CorePushforwardRefutation.no_coreCellComparisonSection
     - AAT.AG.CrossStageCoherence.CorePushforwardInstances.coreCellComparisonSection_instances
     - AAT.AG.CrossStageCoherence.CorePushforwardInstances.compatiblePair_holonomy_nontrivial_inner
-  acceptance_point: the actual core evaluator, rather than a renamed image, receives the projected affine transport; the section negative instance has distinct nonidentity core factors, and the kernel theorem fires on a nonidentity upper holonomy
+  acceptance_point: the actual core evaluator, rather than a renamed image, receives the projected affine transport; the section negative instance has distinct core factors, one of them the nonidentity `visibleCore`, and the kernel theorem fires on a nonidentity upper holonomy
   port_status: ResearchLean only; no Formal port is claimed
 audits:
   premise_delta:
