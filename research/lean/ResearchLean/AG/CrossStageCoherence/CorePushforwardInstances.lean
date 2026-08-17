@@ -147,4 +147,3 @@ end CorePushforwardInstances
 end AAT.AG.CrossStageCoherence
 
 #assert_standard_axioms_only AAT.AG.CrossStageCoherence
-
