@@ -2068,16 +2068,16 @@ result:
     remaining:
       - witness matrix entries w2, w3, and w4
   lean_artifacts:
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.geometryIdentityStrong
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.coreIdentityStrong
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.geometry_identity_strong
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.core_identity_strong
     - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.liftData
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.pathLift_eq_id
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.path_lift_eq_id
     - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.data
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.upperCanonical_eq_one
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.cellAffineStep_forward_apply
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentralRawDefect_eq
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentralRawDefect_ne_one
-    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_cellAffineStep_forward_apply
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.upper_canonical_eq_one
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.cell_affine_step_forward_apply
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_raw_defect_eq
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_raw_defect_ne_one
+    - AAT.AG.CrossStageCoherence.IdentityEdgeLiftSpecialization.noncentral_cell_affine_step_forward_apply
   acceptance_point: the specialization is a theorem about the existing twisted affine step after a generated canonical factor is proved trivial; it is not a redefinition of the general transport, and it fires at a genuine nonidentity raw defect
   port_status: ResearchLean only; no Formal port is claimed
 audits:
