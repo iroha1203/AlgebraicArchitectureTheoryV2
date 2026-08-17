@@ -4,7 +4,8 @@
 - tracking Issue: [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
 - target theorem: Cross-Stage Transport Coherence and Obstruction Composition Theorem
 - proof state: `active (改訂 target は PR #4021 / merge c8e440c7 で
-  再固定済み。Cycle 17 は (G) core 押し出しの (D) 非依存部分を選定)`
+  再固定済み。Cycle 18 は theorem (D) と (G) の realizable-section
+  押し出しを選定)`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -1778,8 +1779,128 @@ audits:
     - private-path scan on all changed files: pass
     - `git diff --check`: pass
   review_history:
+    - head: acfa13559c8a51d3cbfd7024c805543fb02f6057
+      verdict: No major findings (4/4 lanes)
+      audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4024#issuecomment-5318040748
+      resolution: exact-head review and CI accepted; merged as ffaa69619a064189ec8bdaf6fb585165aecff692
+  blocking_findings: []
+  next_obligation: construct theorem (D)'s `PathGaugeCoordinate` and realizable-section layer and return to theorem (G)'s remaining realizable-section pushforward
+```
+
+### Cycle 18 — path-gauge effectivity and realizable-section pushforward
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-109-aat-cross-stage-coherence
+cycle: 18
+goal_blob_sha: 9688b53ac6299d8004abbe9fc30718db3aed972a
+goal_sha256: 6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a
+base_oid: ffaa69619a064189ec8bdaf6fb585165aecff692
+tracking_issue: 4018
+report_path: research/reports/G-109-aat-cross-stage-coherence.md
+selection:
+  proof_state_ref: fixed GOAL theorem (D), F6 effectivity layer, and theorem (G)'s sole D-dependent realizable-section clause
+  proof_dag_predecessors:
+    - Cycle 16 comparison-section descent theorem (C)
+    - reviewed categorical anchor `jointVanishes_iff_crossStageCoherentizable`
+    - reviewed upper reselection path lifts and canonical composite-fiber comparator
+    - G-106 `pathReselectionTransition` and Cycle 17 core comparison-section pushforward
+  proof_obligation: construct the canonical path-gauge coordinate from strong opcartesian uniqueness, prove its factorization, uniqueness, empty-path and single-edge values, derive the noncommutative canonical-comparator transition, define edge-realizable comparison sections, prove the general nondefinitional theorem (D), fire finite positive/negative instances, and push realizability pointwise to the existing core path transition
+  selection_reason: theorem (D) is the direct predecessor of edge-level effectivity and both gluing corollaries; its new types also unblock the only remaining clause of theorem (G)
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivity.lean
+    - ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivityInstances.lean
+    - ResearchLean/AG/CrossStageCoherence/RealizablePushforward.lean
+  risks:
+    - defining path coordinates from a supplied comparison section or storing their factorization as input would evade effectivity
+    - confusing the baseline path with the reselected path could reverse the noncommutative transition formula
+    - defining theorem (D) through `JointVanishes` would make the equivalence definitional
+    - a positive fixture with only identity/central canonical comparator would not test the affine right twist
+    - a negative instance could be vacuous through an empty graph or uninhabited ambient type
+    - the core clause could rename the projected coordinate instead of connecting it to G-106, or overclaim preservation/reflection of effectivity
+  unchecked:
+    - fixed-head independent review
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta:
+    discharged:
+      - canonical `PathGaugeCoordinate` generated from the original and reselected path lifts by the reviewed composite strong uniqueness construction
+      - its exact path-lift factorization, strong uniqueness, existence-uniqueness package, empty-path identity, and single-edge gauge value
+      - the authored-independent noncommutative transition formula relating path coordinates to the upper canonical comparator
+      - `EdgeRealizableCellComparisonSection` with an ordinary comparison section, one actual upper edge gauge, and pointwise realization only
+      - theorem (D): the general-presentation nondefinitional equivalence `JointVanishes ↔ Nonempty EdgeRealizableCellComparisonSection`
+      - finite positive and negative acceptance instances, with the positive instance carrying the reviewed nonidentity noncentral canonical comparator
+      - exact projection of `PathGaugeCoordinate` to the existing G-106 `pathReselectionTransition`
+      - pointwise pushforward of every upper realizable section to a core comparison section realized by the projected edge gauge
+      - theorem (G) in full when combined with Cycle 17; effectivity preservation/reflection remains the explicitly excluded G-110 frontier
+    remaining:
+      - theorem (E) edge-level `PathGaugeEffective`
+      - theorem (F) general necessity and edge-level gluing equivalence
+      - the identity-edge-lift specialization
+      - witness matrix entries w2, w3, and w4
+  lean_artifacts:
+    - AAT.AG.CrossStageCoherence.PathGaugeCoordinate
+    - AAT.AG.CrossStageCoherence.pathGaugeCoordinate_fac_pathLift
+    - AAT.AG.CrossStageCoherence.pathGaugeCoordinate_unique
+    - AAT.AG.CrossStageCoherence.existsUnique_pathGaugeCoordinate
+    - AAT.AG.CrossStageCoherence.pathGaugeCoordinate_nil
+    - AAT.AG.CrossStageCoherence.pathGaugeCoordinate_singleEdge
+    - AAT.AG.CrossStageCoherence.pathGaugeCoordinate_upperCanonical_transition
+    - AAT.AG.CrossStageCoherence.EdgeRealizableCellComparisonSection
+    - AAT.AG.CrossStageCoherence.edgeRealizableSectionOfCoherentAt
+    - AAT.AG.CrossStageCoherence.EdgeRealizableCellComparisonSection.crossStageCoherentAt
+    - AAT.AG.CrossStageCoherence.jointVanishes_iff_nonempty_edgeRealizableSection
+    - AAT.AG.CrossStageCoherence.PathGaugeEffectivityInstances.edgeRealizableCellComparisonSection_instances
+    - AAT.AG.CrossStageCoherence.pushforward_pathGaugeCoordinate
+    - AAT.AG.CrossStageCoherence.CoreEdgeRealizableCellComparisonSection
+    - AAT.AG.CrossStageCoherence.EdgeRealizableCellComparisonSection.pushforwardCore
+  acceptance_point: path coordinates are generated from edge reselection rather than supplied by descent; theorem (D) runs through the categorical coherence anchor in both directions, its positive finite fixture has a nonidentity noncentral canonical comparator, and core projection lands in the pre-existing G-106 transition rather than a renamed image
+  port_status: ResearchLean only; no Formal port is claimed
+audits:
+  premise_delta:
+    discharged:
+      - all path coordinates and their realization equations are generated from one upper edge gauge and strong uniqueness
+      - theorem (D) adds no presentation class, identity-lift hypothesis, section premise, or conclusion-equivalent field
+      - core realizability uses only the projected upper gauge and the Cycle 17 pointwise section pushforward
+    remaining:
+      - `EdgeLevelPresentation` is reserved for theorem (E) and is not used to weaken theorem (D)
+  certificate_provenance:
+    discharged:
+      - `PathGaugeCoordinate` is `canonicalCompositeFiberComparator` between baseline and gauge-reselected path lifts
+      - factorization and uniqueness come from the reviewed composite strongly cocartesian lift API
+      - realizable sections are constructed from actual coherent gauges and recover that categorical coherence from comparison naturality plus the generated transition formula
+      - core projection is the theorem `compositeFiberPushforward_canonicalComparator`, simplified through the reviewed upper/core path-lift bridge
+    unresolved: []
+  proof_use:
+    used:
+      - both geometry-stage and core-stage strong certificates for the two compared path lifts
+      - exact base equality for canonical comparator construction
+      - comparison-section naturality and both path-coordinate values in the reverse categorical-coherence proof
+      - both directions of `jointVanishes_iff_crossStageCoherentizable`
+      - Cycle 17 `CellComparisonSection.pushforwardCore` in realizability pushforward
+    unused: []
+  structure_field_escape: none-found; the realizable structure stores only the fixed comparison datum, one edge gauge, and the required pointwise equality, while coordinate existence, uniqueness, transition, and categorical coherence are theorems
+  route_integrity: pass; the transition order is `coordinate(right) * canonical(1) * coordinate(left)⁻¹`, derived by strong cancellation from the target-side postcomposition convention
+  target_fitting: none-found
+  vacuity: pass; the positive matrix uses the reviewed noncentral-twist finite presentation and the negative matrix reuses the explicit nontrivial compatible-pair refutation
+  one_way_as_equivalence: none-found; theorem (D) proves both directions through independently defined structures and the categorical anchor
+  goal_or_report_reinterpretation: none-found; the fixed GOAL blob and SHA-256 are unchanged, and core effectivity preservation/reflection is not claimed
+  validation_refs:
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivity.lean`: pass; 30 declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/PathGaugeEffectivityInstances.lean`: pass; 3 declarations, standard axioms only
+    - `./check_research_modules.sh --focused ResearchLean/AG/CrossStageCoherence/RealizablePushforward.lean`: pass; 18 declarations, standard axioms only
+    - targeted `lake build` of the three Cycle 18 modules: pass; dependency closure only, no Research aggregate/full build
+    - focused `#print axioms` audit of the 18 Cycle 18 public-spine declarations: only `propext`, `Classical.choice`, and `Quot.sound`
+    - `.github/lean_quality/check_research_import_direction.sh`: pass; 228 modules scanned
+    - placeholder scan on the three new Lean modules: pass
+    - hidden/bidirectional Unicode scan on all changed files: pass
+    - private-path scan on all changed files: pass
+    - `git diff --check`: pass
+  review_history:
     - head: pending
       verdict: fixed-head four-lane math-lean-review required
   blocking_findings: []
-  next_obligation: fixed-head standard PR review for Cycle 17, then construct theorem (D)'s `PathGaugeCoordinate` and realizable-section layer and return to theorem (G)'s remaining realizable-section pushforward
+  next_obligation: fixed-head standard PR review for Cycle 18, then theorem (E) edge-level effectivity
 ```

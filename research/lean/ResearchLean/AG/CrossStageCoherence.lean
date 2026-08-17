@@ -5,11 +5,14 @@ import ResearchLean.AG.CrossStageCoherence.ComparisonDescent
 import ResearchLean.AG.CrossStageCoherence.ComparisonDescentInstances
 import ResearchLean.AG.CrossStageCoherence.CorePushforward
 import ResearchLean.AG.CrossStageCoherence.CorePushforwardInstances
+import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivity
+import ResearchLean.AG.CrossStageCoherence.PathGaugeEffectivityInstances
+import ResearchLean.AG.CrossStageCoherence.RealizablePushforward
 
 /-!
 # Cross-stage transport coherence
 
 Umbrella import for the G-109 pseudofunctor, obstruction-composition, vanishing,
-finite-witness, compatible-pair refutation, comparison-descent, and core
-pushforward development.
+finite-witness, compatible-pair refutation, comparison-descent, path-gauge
+effectivity, and core-pushforward development.
 -/
