@@ -767,15 +767,8 @@ theorem coherent_active_square
     (coherent : CrossStageCoherentAt data gauge) :
     gauge PUnit.unit PUnit.unit Edge.active *
         gauge PUnit.unit PUnit.unit Edge.active = authored := by
-  apply Subtype.ext
-  apply Iso.ext
-  have equation := coherent Cell.active
-  simpa only [presentation, nilPath, activeDoublePath,
-    upperReselectedPathLift, upperReselectLiftData,
-    TwoLayerLiftData.pathLift, upperReselectedEdgeLift,
-    IdentityEdgeLiftSpecialization.data,
-    IdentityEdgeLiftSpecialization.liftData, comparator,
-    Category.id_comp, Category.comp_id] using equation.symm
+  exact realizable_forces_active_square
+    (edgeRealizableSectionOfCoherentAt data gauge coherent)
 
 /-- The active square-root obstruction refutes joint vanishing. -/
 theorem not_joint : ¬ JointVanishes data := by

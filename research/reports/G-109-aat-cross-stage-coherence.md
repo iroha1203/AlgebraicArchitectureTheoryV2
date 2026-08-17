@@ -2289,7 +2289,7 @@ result:
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.authored_has_no_square_root
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.strict_sector_nonempty
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.strict_reselection_nonidentity
-    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.compatible_pair
+    - AAT.AG.CrossStageCoherence.RootEffectivityWitness.compatiblePair
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.compatible_pairwise_vanishes
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.comparisonSection
     - AAT.AG.CrossStageCoherence.RootEffectivityWitness.path_gauge_coordinate_active_double
