@@ -1,30 +1,36 @@
 # G-110-aat-doctrine-fiber-product — doctrine 圏の fiber product と base change
 
 - `id`: `G-110-aat-doctrine-fiber-product`
-- `status`: `draft`
-- `priority`: `medium`
-- `research mode`: `target-theorem`(裁定事項: (B)(D) が「存在条件の
-  同定」型で target statement を起票時に完全固定できないリスクがある。
-  n1005 §5「隊列」第4項の mode 裁定に従い、active 昇格時に
-  target-theorem のまま行くか score-phase へ落とすかをユーザーが裁定
-  する。本 draft は target-theorem を既定とし、(B)(D) を「条件同定+
-  反例」型 claim として固定可能な形に書く。**(D) の診断語彙は G-106 系
-  raw defect / reselection orbit に一本化済み**(2026-08-16 レビュー
-  是正。G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
+- `status`: `active`
+- `priority`: `high`
+- `research mode`: `target-theorem`(mode 裁定済み 2026-08-18:
+  (B)(D) は「条件同定+十分性+反例」の三点セット型 claim として
+  target statement に固定する。score-phase への切替は採らない —
+  n1005 §5「隊列」第4項の mode 裁定事項はこれで消化済み。**(D) の
+  診断語彙は G-106 系 raw defect / reselection orbit に一本化**
+  (G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
   係数 base change カードとの接続点)
 - `program context`: 登路上の位置は **Gr4(底の base change 完備)**
   (n1001 §3.5 達成階梯、n1005 §4.3)。「EGA 的な意味の相対性に届くのは
   Gr4」の当該カード。山頂前提の**係数** base change(ℚ→R)とは別軸で
   ある(n1005 §4.6)。隊列裁定(2026-08-15、Gr3/Gr4 系列先行)の
-  第三手。**(E) のみ G-106 の合成 coherence に依存**(n1005 §4.3 の
-  記載どおり。G-109 依存は初稿の過剰記載でありレビューで棄却済み)し、
-  (A)–(D) は Gr3 後半と並走可能。
-- `predecessor`: G-101(`Doct_U` / `ExtInst_U` / opcartesian 普遍性)、
-  G-104 / G-107(「不変性+条件+反例」型の方法論資産)、G-106
-  (閉性層 (E) の合成 coherence 素材)。先行考察はスキーム射幾何
+  第三手。Gr3(G-106+G-108+G-109 の三点セット)は完遂済み
+  (G-109 = `target-theorem-proved`、2026-08-18。Gr3 達成の範囲記録は
+  G-109 カード)。依存先は G-101 と G-106 のみ — **(E) のみ G-106 の
+  合成 coherence に依存**(n1005 §4.3 の記載どおり)し、G-109 の
+  成果には依存しない。着手条件は満たされている。
+- `predecessor`: G-101(`Doct_U` / `ExtInst_U` / opcartesian 普遍性。
+  完遂済み。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
+  unported)、G-104 / G-107(「不変性+条件+反例」型の方法論資産。
+  いずれも完遂済み)、G-106(閉性層 (E) の合成 coherence 素材。
+  完遂済み = `target-theorem-proved`、2026-08-15。
+  `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported。
+  固定錨は下記 ledger 行)。先行考察はスキーム射幾何
   ノート(fiber product・derived fiber product・functor of points の
   各節)。
-- `tracking issue`: 未起票(active 昇格裁定後に起票)
+- `tracking issue`: 未起票(active 昇格はユーザー裁定済み
+  2026-08-18。成立は本カード昇格 PR のマージをもって。起票はマージ後、
+  `$target-theorem-loop` 起動前に行う)
 - `source note`: [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 五層分解)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§10 ギャップ2)、
   [docs/note/aat_scheme_morphism_geometry_after_foundation.md](../../docs/note/aat_scheme_morphism_geometry_after_foundation.md)
@@ -56,8 +62,9 @@
   change(ℚ→R。別カード)、nerve / cover 接続、`ObProblem` 段の
   class 構成の変更、derived fiber product(観察は frontier)は
   含めない。「flat」の語は lawful locus の既存命名 `Flat_U(X)` と
-  衝突するため本カードでは使わない(語彙裁定は起票時。n1005 §4.3 (D)
-  の注意)。
+  衝突するため本カードでは使わない(語彙裁定済み 2026-08-18: 条件名は
+  `H_cart` / `H_bc` の中立語彙のみで固定する。n1005 §4.3 (D) の
+  注意)。
 - `capability categories`: limit-structure、base-change、
   exchange-law、counterexample、closure。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
@@ -85,6 +92,9 @@
 - `frontier`: derived fiber product の観察、係数 base change(ℚ→R)
   カードとの接続点の記述、bifibration(cartesian 側の一般論)への
   拡張、`ObProblem` 段の class naturality と (D) の関係の観察、
+  G-109 (G) の core 押し出しが effectivity を保存する方向の**反射**
+  (base-change / effectivity 保存反射 — G-109 report の frontier)と
+  (D) の接続点の観察、
   jump-locus 相対幾何(n1005 §5「隊列」第4項の候補2)への含意、
   **(D) の `J_A` defect profile 枝**(G-104 / G-107 語彙への拡張。
   AtomFoundation doctrine 圏と K0 / K1 nerve 形式設定を結ぶ未建設の
@@ -153,7 +163,11 @@
 - `target material premise ledger`:
   - `carrier U / FiniteModel`: `ambient-boundary`。witness 計算のみ。
   - `G-101 / G-106 の reviewed artifact`: `ambient-boundary`。
-    参照のみ、改変しない。
+    参照のみ、改変しない。固定錨: TransportCoherence(G-106)= PR
+    #4004–#4009(fixed head `d7b1d488`、merge `ae1ba0ea`、最終同期 /
+    formal review = Issue #3998 comment 5298897416)。
+    AtomFoundation(G-101)= PR #3889(fixed head `db47ee9e`、merge
+    `dd5e02b5`、最終固定 head 監査 = PR #3889 comment 5155944000)。
   - `fiber product の普遍性と非退化性`: `discharge-required`。集合論的
     交わりへの退化を真部分 fiber witness で排除する。
   - `H_cart / H_bc の十分性と反例対`: `discharge-required`。条件は

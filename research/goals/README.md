@@ -18,11 +18,12 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+- [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
+  (Gr4 を目指す active target: doctrine 圏の fiber product と base
+  change — 5層 (A)–(E)。依存先 G-101 / G-106 は完遂済み)
 
 ## draft（人間の確認待ち）
 
-- [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
-  (Gr4: doctrine fiber product と base change。(E) のみ G-106 依存)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
