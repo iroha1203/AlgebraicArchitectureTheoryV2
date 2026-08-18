@@ -1,7 +1,73 @@
 # G-109-aat-cross-stage-coherence — 段横断輸送整合と障害合成
 
 - `id`: `G-109-aat-cross-stage-coherence`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Cross-Stage Transport
+  Coherence and Obstruction Composition Theorem の固定 directions
+  (i)–(iv)(theorem package T1 / (C) / (D) / (E) / (F) / (G) / T2 と
+  witness 行列 w1–w4 を含む)を全放電($target-theorem-loop
+  Cycle 1–22、2026-08-18)。主要宣言:
+  (i) 塔射影列 `crossStageProjection` / `extInstToDoctrine`(離散
+  fiber theorem `extInstToDoctrine_fiber_isDiscrete` 付き)+合成強
+  opcartesian `geomTransportAlongHom_isCrossStageStronglyCocartesian`
+  (`stronglyCocartesian_comp_projection` 経由、二層局所証書から導出)、
+  `ExtInst_U` 底(射 = `ExtInstHom`、`source_eq` proof-use 明示)の
+  geometry / core 段 pseudofunctor package(compositor / unitor
+  natural isomorphism・pentagon / triangle coherence)と塔
+  pseudonatural compatibility `P ∘ T^Geom ≅ T^Core ∘ P`、
+  (ii) 合成ファイバー障害語彙(有限 presentation・二層 admissible
+  比較データ・raw 2-cell defect・reselection orbit・section-相対消滅
+  同値)+群拡大 `1 -> H_G -> C_G -> p(C_G) -> 1` と押し出し `p` の
+  canonical comparator 保存 / coboundary 両立、strict 段内語彙
+  (proper sub-presentation+資格固定+bridge package)、
+  (iii) 射影公式(`B_G` 上無条件)+kernel 分解(辺水準 section
+  family 下の `C_G` 上等式)+section 取替え well-definedness、typed
+  pasting evaluator と `SyzygyCompatible` 条件付き total cocycle、
+  categorical 錨 `jointVanishes_iff_crossStageCoherentizable`、
+  (iv)+gluing 系: (T1) canonical thinness / telescoping
+  (`cellCanonicalWord_closed_eq_one`・
+  `cellChainCoherent_iff_holonomy_eq_one`)、(C) descent 層
+  `cellChainCoherent_iff_nonempty_comparisonSection`、(D) effectivity
+  層 `jointVanishes_iff_nonempty_edgeRealizableSection`(一般
+  presentation、非定義的)、(E)
+  `edgeLevelPresentation_pathGaugeEffective`、(F) 辺水準 gluing
+  `edgeLevelPresentation_jointVanishes_iff_cellChainCoherent`、
+  (T2) 一般必要性 `jointVanishes_cellChainCoherent`、(G) core
+  押し出し(`pushforward_cellRouteTransport`・
+  `EdgeRealizableCellComparisonSection.pushforwardCore`)、witness
+  行列 w1
+  `CellChainRefutation.compatiblePairwise_not_chainCoherent_not_joint`
+  / w2 `SimpleTriangleWitness`(相異 3 node の class 内正例)/ w3
+  `SharedEdgeTriangleWitness`(共有辺 3-chain)/ w4
+  `RootEffectivityWitness.w4_root_effectivity_obstruction`
+  (comparison section 存在∧`¬EdgeRealizable`∧`¬PathGaugeEffective`
+  ∧`¬JointVanishes` の effectivity 障害。root 可解性の一般分類は
+  frontier)。w1 は単独 gluing 含意を復活させないための必要性
+  witness であり、正方向 gluing claim ではない。
+  standard PR review は content head の 4 lane finding を是正の上
+  `Mergeable`、独立 formal 4-lane `$math-lean-review`(数学 A / B・
+  Lean A / B)は是正後の修正 head で fresh 全 lane
+  `No major findings`(Major 0 / Minor 0)、root completion recheck
+  pass。正式判定は formal completion ledger
+  ([PR #4029 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4029#issuecomment-5320610341))
+  と tracking Issue
+  [#4018 完了記録コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018#issuecomment-5320617466)
+  で固定。fixed GOAL blob SHA `9688b53a`(SHA-256
+  `6d97c045682fbc45c703cd3875c663ed4958216fcec91356e696e6412bfb250a`)、
+  implementation base `61bb4859`、final reviewed head `b5ca4630`、
+  実装 PR #4022–#4029(完了 PR
+  [#4029](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4029)、
+  merge `faaf7160`)、report 完了同期 PR #4030。公理監査は focused
+  `#print axioms` / `check_research_modules.sh` で standard axioms
+  のみ pass、GitHub checks は fixed head で 7/7(Research full build
+  は hard rule に従い未実行)。**Gr3(擬関手的整合)達成をここに
+  記録する** — 範囲は `GeomRead -> CoreRead -> ExtInst -> Doct` の
+  site・係数付き有限輸送部分塔に限定(G-106+G-108+本カードの
+  三点セット、分割の正本 = n1005 §5 隊列第5項。`ObProblem` 段・
+  carrier change・一般有限塔・無条件 syzygy・base-change /
+  effectivity 保存反射・root 障害の一般分類は frontier)。
+  `Formal/AG` への移植は未実施(porting status: `unported`)。
+- `completed at`: `2026-08-18 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: 登路上の位置は **Gr3 後半(Gr3 完成)**(n1005
@@ -39,8 +105,8 @@
   `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported)。
 - `tracking issue`:
   [#4018](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4018)
-  (open。runtime state 正本。反証・改訂の経緯と停止 ledger は Issue
-  側にのみ記録する)
+  (runtime state の正本として open 維持、close は人間裁定。経緯と
+  停止 ledger は Issue 側にのみ記録する)
 - `source note`: [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔、§3.5 達成階梯)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.6、§5 隊列第5項)、
   [G-106 report](../reports/G-106-aat-transport-coherence.md)
