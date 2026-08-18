@@ -5,21 +5,32 @@
 - `priority`: `high`
 - `research mode`: `target-theorem`(mode 裁定済み 2026-08-18:
   (B)(D) は「条件同定+十分性+反例」の三点セットを基本形として
-  target statement に固定する。(B) は無条件存在への成功側分岐を
-  statement 内に持つ(下記 (B))。score-phase への切替は採らない —
+  target statement に固定する。(B) は型の決まった網羅的 disjunction
+  として単一命題で固定する(下記 (B))。`H_cart` / `H_bc` には資格
+  条項(結論非参照・同型不変性・閉性・パラメトリック正例族・
+  checker+bridge)を課す(下記 (B)(D))。score-phase への切替は
+  採らない —
   n1005 §5「隊列」第4項の mode 裁定事項はこれで消化済み。**(D) の
   診断語彙は G-106 系 raw defect / reselection orbit に一本化**
   (G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
   係数 base change カードとの接続点)
-- `program context`: 登路上の位置は **Gr4(底の base change 完備)**
-  (n1001 §3.5 達成階梯、n1005 §4.3)。「EGA 的な意味の相対性に届くのは
+- `program context`: 登路上の位置は **Gr4(底の base change 完備)の
+  exact-bottom sector**(n1001 §3.5 達成階梯、n1005 §4.3)。「EGA 的な意味の相対性に届くのは
   Gr4」の当該カード。山頂前提の**係数** base change(ℚ→R)とは別軸で
   ある(n1005 §4.6)。隊列裁定(2026-08-15、Gr3/Gr4 系列先行)の
   第三手。Gr3(G-106+G-108+G-109 の三点セット)は完遂済み
   (G-109 = `target-theorem-proved`、2026-08-18。Gr3 達成の範囲記録は
-  G-109 カード)。依存先は G-101 と G-106 のみ — **(E) のみ G-106 の
-  合成 coherence に依存**(n1005 §4.3 の記載どおり)し、G-109 の
-  成果には依存しない。着手条件は満たされている。
+  G-109 カード)。依存先は G-101 と G-106 のみで、G-109 の成果には
+  依存しない — **G-106 への定理依存は (E) のみ**(合成 coherence、
+  n1005 §4.3 の記載どおり)であり、(C)(D) は G-106 の語彙 / API
+  (comparator・raw defect・reselection orbit)を参照する語彙依存で
+  定理は消費しない。着手条件は満たされている。本カードの達成範囲は
+  **Gr4 の exact-bottom sector**(exact `Doct_U` / `ExtInst_U` /
+  package 下層)であり、無修飾の Gr4 完遂ではない — Gr4 完遂 gate
+  として refinement 系統(`RefinementDoctrineHom` の圏化と
+  refinement base change)と上段(`GeomRead` / `ObProblem`)への
+  base-change lift(Gr3 段横断輸送への接続 bridge)が後続カードに
+  残る(n1001 §3.3 / §3.5 の relative stability 三系統)。
 - `predecessor`: G-101(`Doct_U` / `ExtInst_U` / opcartesian 普遍性。
   完遂済み。`research/lean/ResearchLean/AG/AtomFoundation/` 配下、
   unported)、G-104 / G-107(「不変性+条件+反例」型の方法論資産。
@@ -40,7 +51,9 @@
   振る舞うかを確定する。成果は5層 — (A) fiber product の構成と普遍性、
   (B) cartesian lift の存在条件、(C) Beck–Chevalley 型交換、(D) 診断の
   base change 可換性の成立条件、(E) pullback square の貼り合わせ閉性。
-  これで相対的視点の全操作が doctrine 圏の中で閉じる(Gr4)。
+  これで exact 底層(`Doct_U` / `ExtInst_U` / package 下層)の相対
+  操作が閉じる — Gr4 の exact-bottom sector。refinement 系統と上段
+  への base-change lift は後続カードの範囲である(program context)。
 - `core tension`: 最大リスクは自明化である — Boolean regime の零次元性に
   より fiber product が集合論的交わりへ退化し、(C) が「集合論的
   Beck–Chevalley の再証明」に堕ちる可能性が明記されている(n1005
@@ -50,8 +63,8 @@
   共役(`transportCompositionReading` 系の逆向き輸送)による無条件
   構成が成立する経路と、上位輸送の前進成分(`objectMap` /
   `operationMap` 等。可逆性を持たない)が障害になる経路の両方が
-  生きており、どちらに転んでも定理として固定できる二分岐 statement
-  を採る(下記 (B))。
+  生きており、どちらに転んでも定理として固定できる網羅的
+  disjunction を採る(下記 (B))。
   (D) は無条件では成立しない見立てで、成立条件の同定自体が定理 —
   G-104 / G-107 で確立した「不変性+条件+反例」型の方法論が効く、
   本カードの数学的重心である。
@@ -83,9 +96,10 @@
 - `portfolio constraint`: (A) の構成だけ、または (C)(D) の正例だけで
   完了扱いしない。構成・存在条件・交換・診断・閉性の五層すべてに
   Lean artifact を要求し、(C)(D) は正例(成立)と負例(破れ)の対を
-  要求する。(B) は分岐によらず正例(lift が実構成され、分岐 2 の
-  場合は `H_cart` が非空に成立する FiniteModel instance)を要求する
-  (vacuous な `H_cart` の排除)。
+  要求する。(B) は枝によらず lift 実構成のパラメトリック正例族
+  (右枝の場合は `H_cart` が相異なる非同型 instance で非空に成立
+  する族)を要求する(vacuous / 単一 fixture 密着の `H_cart` の
+  排除)。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
   なら `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved` とする。
@@ -97,8 +111,9 @@
   opcartesian の base tail 非制限の類例)を欠くもの。n1005 §4.3 (A)
   の dullness リスク)、(C) を fiber 側が Set 的 family fibration に
   還元される場合の古典事実の再証明で済ませ negative witness を欠く
-  成果、(B) の存在条件を「lift が存在する」と同値な述語で立てる
-  構成、(D) の成立条件を結論の言い換えで立てる構成、pullback square
+  成果、(B) の存在条件を「lift が存在する」と同値な述語または単一
+  fixture との等式型述語で立てる構成、(D) の成立条件を結論の言い
+  換えで立てる構成、pullback square
   が退化(成分が恒等)して閉性が vacuous に立つ構成、診断が空
   (2-cell なし・障害恒零)の図式での base change 可換性の発火、
   **(C) の negative witness を hom 空間が空・成分が恒等・診断が
@@ -113,7 +128,10 @@
   G-109 (G) の core 押し出しが effectivity を保存する方向の**反射**
   (base-change / effectivity 保存反射 — G-109 report の frontier)と
   (D) の接続点の観察、
-  refinement 射(`RefinementDoctrineHom`)の圏化、
+  refinement 射(`RefinementDoctrineHom`)の圏化と refinement base
+  change(Gr4 完遂 gate の一)、上段(`GeomRead` / `ObProblem`)への
+  base-change lift = Gr3 段横断輸送への接続 bridge(Gr4 完遂 gate の
+  二)、
   jump-locus 相対幾何(n1005 §5「隊列」後続 draft 候補2 = 係数
   base change カードの jump-locus 案)への含意、
   **(D) の `J_A` defect profile 枝**(G-104 / G-107 語彙への拡張。
@@ -127,41 +145,76 @@
      `σ₁ : D₁ -> B`、`σ₂ : D₂ -> B` に対し fiber product
      `D₁ ×_B D₂` を構成し、cone の `atomEquiv` 成分を恒等に制限
      しない全 cone 上の普遍性を証明する。あわせて真部分 fiber 条件の
-     witness(fiber product が成分の直積にも交わりにも退化しない例)
-     を構成する。
+     witness を**同型不変な形**で構成する — 有限 fixture 上で
+     (i) source pullback から成分直積への canonical 射が全射でない
+     こと、(ii) 両射影のいずれも同型でないこと、を証明する。選んだ
+     carrier 表現の raw equality / inequality には依存させない
+     (異なる `Source` 型の間には共通 ambient なしの「交わり」を
+     定義しないため、その語は使わない)。
   2. **(B) cartesian lift の存在**: package 総圏の射影に対する強
      cartesian lift(G-101 の strong opcartesian の双対、mathlib
-     `Functor.IsStronglyCartesian` 相当)について、次のいずれかを
-     Lean 証明で確定する二分岐 statement として固定する。**分岐 1
-     (無条件存在)**: 全ての底射 `f : X -> Y` と `Y` 上の全ての
-     package に対する存在定理を証明する。**分岐 2(条件付き存在)**:
-     存在条件 `H_cart` を同定し、十分性定理と、`H_cart` を満たさず
-     lift が存在しない反例(FiniteModel 上の非存在 Lean 証明)を対で
-     構成する。分岐は選好ではなく数学的事実で確定し、いずれの分岐
-     でも lift の実構成正例を要求する(portfolio constraint)。
-  3. **(C) Beck–Chevalley 型交換**: (A) の `Doct_U` fiber product
-     square を pointed 化した `ExtInst_U` square(各頂点の instance
-     選択と `ExtInstHom` 整合 — `source_eq` の proof-use を明示した
-     持ち上げ手続き自体を構成義務とする)の上で、押し出し・引き戻し
-     の canonical 比較射を構成し、pullback square での同型性を証明
-     する。引き戻し側は (B) の存在条件を継承する((B) が分岐 2 の
-     場合、(C)(D) は `H_cart` 充足データ上で定式化する)。あわせて
-     交換が破れる negative witness を構成する — lax square(G-106
-     comparator 語彙で定式化した、指定 holonomy 付き square。
-     `Doct_U` は 2-cell を持たないため型はこの語彙で固定する)上で
-     の二経路比較射の不一致(非 canonicity)を具体 fixture 上で発火
-     させ、不一致が holonomy の非自明性から生じることを固定する。
+     `Functor.IsStronglyCartesian` 相当)について、**次の網羅的
+     disjunction を単一の固定命題として証明する**: 「(左枝)全ての
+     底射 `f : X -> Y` と `Y` 上の全ての package に対し強 cartesian
+     lift が存在する」または「(右枝)資格条項を満たす `H_cart` の
+     同定+十分性定理+`H_cart` を満たさず lift が存在しない有限
+     反例(FiniteModel 上の非存在 Lean 証明)」。右枝を閉じる場合は
+     反例が左枝を反証することも同時に証明する(排他性は反例が供給
+     する)。**`H_cart` の資格条項**: (i) 入力型は底射と終点 package
+     の構成データ(有限 presentation 水準)上の述語で、lift の存在と
+     いう結論を参照しない、(ii) 入力データの同型で不変(同型不変性
+     theorem を討ち取る)、(iii) 底射合成で閉じる(閉性 theorem)、
+     (iv) fixture の tag・命名・特定 carrier 表現に依存しない(単一
+     fixture との等式 `H t := t = good` 型は資格違反)、(v) 相異なる
+     非同型 instance を含むパラメトリック正例族で非空発火する。
+     いずれの枝でも lift の実構成正例を要求する(portfolio
+     constraint)。
+  3. **(C) Beck–Chevalley 型交換**: square は (A) の cospan
+     `σ₁ : D₁ -> B <- D₂ : σ₂` の pullback `P = D₁ ×_B D₂`(射影
+     `π₁ / π₂`)で向きを固定し、**compatible point cone**(各頂点の
+     instance 選択と `ExtInstHom` 整合 — `source_eq` の proof-use を
+     明示)による `ExtInst_U` square への pointed 化の上で立てる。
+     compatible point cone は direction-hypothesis 入力である —
+     Doct square だけからの全域持ち上げは主張しない(ledger 行)。
+     押し出し(G-101 opcartesian 輸送)と引き戻し((B) の cartesian
+     lift。(B) が右枝の場合、(C)(D) は `H_cart` 充足データ上で定式化
+     し存在条件を継承する)に対し、canonical mate
+     `(π₂)_! ∘ (π₁)^* -> (σ₂)^* ∘ (σ₁)_!`(向きはこの形で固定)を
+     lift の普遍性(unit / counit)から **natural transformation
+     として**構成し、自然性 theorem・cleavage(lift 選択)非依存性
+     theorem・pullback square での同型性を証明する。あわせて交換が
+     破れる negative witness を構成する — authored な lax 化データ
+     (base change **前**の入力 presentation に属する G-106
+     comparator 語彙の 2-cell datum。`Doct_U` は 2-cell を持たない
+     ため型はこの語彙で固定する)を持つ具体 fixture 上で、**普遍性
+     から生成された二経路の canonical 比較(natural transformation
+     水準)が固定比較等式を満たさない**ことを theorem として証明
+     する。comparator / holonomy を可換性破れの証拠として直接供給
+     する構成、および供給 datum から定義展開で従う不一致は放電と
+     数えない。正例(strict pullback square で mate が同型)と同一
+     設定で対にする。
   4. **(D) 診断の base change 可換性**: まず**診断 base change 作用
      そのものを本カードで構成する** — 障害・defect の構成(**G-106
      語彙の raw defect / reselection orbit に一本化**。`J_A` defect
-     profile への拡張は frontier)に対し、package の引き戻し((B)
-     経由)、admissible data の edgeStrong 保存、`PackageFiberAut`
-     間の比較準同型、twoCellBase 等式の保存を含む引き戻し輸送を
-     定義する。可換性等式の両辺を同一群に載せる診断比較写像は
-     G-101 普遍性と (A)–(C) の構成から生成し、theorem argument・
-     structure field・certificate として受け取らない。その上で、
-     可換性が成立する条件 `H_bc` を同定し、`H_bc` 下の可換性定理と、
-     `H_bc` を満たさず可換性が破れる反例を対で構成する。
+     profile への拡張は frontier)に対し、次を層別の Lean artifact
+     として固定する: (d1) presentation の vertex / edge / cell map
+     (base change に沿う presentation 引き戻し)、(d2) 各終点の
+     `PackageFiberAut` 群準同型、(d3) transported admissible data の
+     constructor(`edgeStrong`・`twoCellBase` は theorem として
+     **導出**する — base change 後の同種 field の再供給は放電と
+     数えない)、(d4) pointwise raw defect 保存 theorem、(d5)
+     cochain map と reselection 作用の equivariance theorem、(d6)
+     orbit map theorem。可換性等式の両辺を同一群に載せる診断比較
+     写像は G-101 普遍性と (A)–(C) の構成から生成し、theorem
+     argument・structure field・certificate として受け取らない。
+     その上で、可換性が成立する条件 `H_bc` を同定し、**結論を
+     vanishing 水準で固定した可換性定理**(`H_bc` 下で消滅
+     (`TransportObstructionVanishes` 水準)が保存される。反射は
+     frontier — G-109 effectivity 反射と同じ側)と、`H_bc` を満たさず
+     保存が破れる反例を対で構成する。raw 等式だけの最弱可換性では
+     完了と数えず、(d1)–(d6) 全層の artifact を要求する。`H_bc` の
+     資格条項は (B) の (i)–(v) と同一(閉性は square の水平・垂直
+     貼り合わせについて)。
   5. **(E) 閉性**: pullback square の貼り合わせ(水平・垂直合成)が
      再び pullback square であり、(C) の比較射および (D) の診断比較
      写像が貼り合わせと整合することを証明する。押し出し側の水平
@@ -172,23 +225,27 @@
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下(新設)。
   G-101 / G-106 のモジュールは参照のみ。完了面は (A)–(E)
   まで。(D) の claim は「条件同定+十分性+反例」の三点セットで
-  固定し、(B) は上記二分岐 statement で固定する(分岐 2 の場合も
+  固定し、(B) は上記の網羅的 disjunction 単一命題で固定する(右枝は
   同じ三点セット)。条件の必要十分化は frontier(G-107 の条件 C
   必要十分化と同じ後続ハント様式)。derived 化・係数 base change・
   bifibration の一般論は主張しない。
-- `target proof artifacts`: fiber product の構成と普遍性 theorem、真
-  部分 fiber witness、(B) の分岐確定 artifact(分岐 1: 無条件存在
-  定理/分岐 2: `H_cart` の定義・十分性定理・非存在反例)と lift
-  実構成の正例 witness、pointed 化手続きと Beck–Chevalley canonical
-  比較射・pullback での同型 theorem・lax square 不一致 witness、
-  診断 base change 作用の構成一式(引き戻し輸送・診断比較写像)、
-  `H_bc` の定義・可換性定理・破れ反例、貼り合わせ閉性 theorem・
-  比較射整合 theorem・引き戻し側合成 coherence、report
+- `target proof artifacts`: fiber product の構成と普遍性 theorem、
+  同型不変な真部分 fiber witness、(B) の disjunction 確定 artifact
+  (左枝: 無条件存在定理/右枝: `H_cart` の定義・資格条項 theorem 群
+  (同型不変性・閉性)・十分性定理・非存在反例)と lift 実構成の
+  パラメトリック正例族、`H_cart` / `H_bc` の checker+soundness /
+  completeness bridge、compatible point cone による pointed 化手続き
+  と canonical mate(natural transformation)・自然性・cleavage
+  非依存性・pullback での同型 theorem・破れ witness(生成比較の固定
+  等式失敗)、診断 base change 作用の構成一式((D) (d1)–(d6) と
+  診断比較写像)、`H_bc` の定義・資格条項 theorem 群・vanishing
+  保存定理・保存破れ反例、貼り合わせ閉性 theorem・比較射整合
+  theorem・引き戻し側合成 coherence、report
   `research/reports/G-110-aat-doctrine-fiber-product.md`。
 - `target proof strategy`: K0 fiber product 構成と普遍性・退化しない
-  witness -> K1 cartesian lift の分岐確定(存在定理または条件同定+
-  反例) -> K2 pointed 化と Beck–Chevalley 比較射・正負の対 ->
-  K3 診断 base change 作用の構成と条件同定・正負の対 ->
+  witness -> K1 cartesian lift の disjunction 確定(存在定理または
+  条件同定+反例) -> K2 pointed 化と Beck–Chevalley 比較射・正負の
+  対 -> K3 診断 base change 作用の構成と条件同定・正負の対 ->
   K4 閉性と整合。既存成果の利用 map: G-101 opcartesian 普遍性
   (比較射の生成)、G-104 / G-107 の「不変性+条件+反例」構成法
   (K3 の方法論)、G-106 の合成 coherence(K4 の素材)、
@@ -201,10 +258,16 @@
   provenance、proof-use、structure-field escape、route integrity を
   監査すること。Lean / report / tracking Issue を同期し、final review
   packet を作り、`$math-lean-review` の4査読がすべて
-  `No major findings` であること。完遂時に Gr4 達成を report へ記録
-  する — 記録には範囲根拠を併記する(Gr4 は底の極限構造・base
-  change 交換・診断可換性・閉性についての達成であり、refinement 射
-  の圏化は frontier に残る。G-109 の Gr3 記録の範囲併記と同じ様式)。
+  `No major findings` であること。`H_cart` / `H_bc` それぞれに有限
+  presentation 入力の checker 関数と soundness / completeness bridge
+  theorem を artifact として含める(`FiniteModel` の有限性から一般
+  decidability は従わないため、決定可能性は checker+bridge で操作化
+  する)。完遂時の記録は **Gr4 exact-bottom sector 達成**に限定する
+  — 無修飾の Gr4 / Gr 系列完遂を宣言せず、範囲根拠を併記する(達成
+  は exact 底層の極限構造・base change 交換・診断可換性・閉性。
+  refinement 系統の圏化・base change と上段への base-change lift は
+  Gr4 完遂 gate として後続カードに残る。G-109 の Gr3 記録の範囲併記
+  と同じ様式)。
 - `target premise discharge policy`: 入力(doctrine の射の対、package、
   base change **前**の診断の図式データ)だけを残せる。引き戻し済み
   (transported)図式・診断比較写像の供給は放電と数えない。普遍性、
@@ -220,17 +283,30 @@
     formal review = Issue #3998 comment 5298897416)。
     AtomFoundation(G-101)= PR #3889(fixed head `db47ee9e`、merge
     `dd5e02b5`、最終固定 head 監査 = PR #3889 comment 5155944000)。
-  - `fiber product の普遍性と非退化性`: `discharge-required`。集合論的
-    交わりへの退化を真部分 fiber witness で排除する。
-  - `(B) の分岐確定と H_cart / H_bc の十分性・反例対`:
-    `discharge-required`。条件は FiniteModel 上 decidable な構成
-    データ側の述語として立て、結論との同値を禁じる。
+  - `fiber product の普遍性と非退化性`: `discharge-required`。同型
+    不変な真部分 fiber witness(canonical 射の非全射性・両射影の非
+    同型性)で退化を排除する。
+  - `compatible point cone(pointed 化の各頂点 instance 選択と
+    ExtInstHom 整合)`: `direction-hypothesis`。入力資格。Doct
+    square からの全域持ち上げは主張しない。
+  - `H_cart / H_bc(条件そのもの)`: `direction-hypothesis`。十分性
+    theorem の仮定として理論に残る(必要十分化は frontier)。資格
+    条項 (i)–(v) と checker+bridge を伴う。
+  - `(B) の disjunction 確定と H_cart / H_bc の十分性・反例対`:
+    `discharge-required`。条件は構成データ側の述語として立て、結論
+    との同値・単一 fixture 等式型を禁じる。
   - `Beck–Chevalley 比較射の同型と negative witness`:
-    `discharge-required`。比較射は普遍性から生成する。
-  - `診断 base change 作用の構成`: `discharge-required`。引き戻し
-    輸送(edgeStrong 保存・`PackageFiberAut` 比較準同型・twoCellBase
-    保存)と診断比較写像は G-101 普遍性と (A)–(C) から生成する。
-    引き戻し済み図式の入力供給は放電と数えない。
+    `discharge-required`。比較射(canonical mate)は普遍性から
+    natural transformation として生成し、cleavage 非依存性 theorem
+    を伴う。comparator / holonomy の自由供給による破れは放電と
+    数えない。
+  - `診断 base change 作用の構成`: `discharge-required`。(D)
+    (d1)–(d6) の引き戻し輸送と診断比較写像は G-101 普遍性と
+    (A)–(C) から生成する。引き戻し済み図式の入力供給、および base
+    change 後の `edgeStrong` / `twoCellBase` / authored comparator の
+    再供給は放電と数えない(authored field の資格は base change 前の
+    入力 presentation に限る — G-106 の authored field と生成
+    comparator の区別を維持する)。
   - `閉性と比較射整合`: `discharge-required`。G-106 coherence
     (`transportAlong_comp_coherence` 系)の消費は proof term として
     明示する。引き戻し側の合成 coherence は本カードで建設する
@@ -238,22 +314,31 @@
 - `target anti-weakening rule`: 結論相当の仮定(lift の存在、交換の
   同型性、診断可換性、診断比較写像そのもの)を theorem argument、
   typeclass、structure field、certificate field へ移して成功扱い
-  しない。`H_cart` / `H_bc` は FiniteModel 上 decidable な構成データ
-  側の述語として立て(G-107 の decider 前例)、結論(lift の存在・
-  可換性)との論理同値を禁じる — 十分性は述語から結論への含意
-  theorem として別立てする。(C)(D) の negative witness を省いた
+  しない。`H_cart` / `H_bc` は構成データ側の述語として立て、資格
+  条項((B)(D) の (i)–(v))と checker+bridge(completion
+  criteria)で操作化する(G-107 の decider 前例)。結論(lift の
+  存在・可換性)との論理同値、および単一 fixture との等式型述語を
+  禁じる — 十分性は述語から結論への含意 theorem として別立てする。
+  (C) の negative witness を comparator / holonomy の自由供給で作る
+  構成、(C)(D) の negative witness を省いた
   「正例のみの交換定理」、(B) 分岐 1 を強 cartesian より弱い lift
   概念で立てる構成は完了と数えない。`ambient-boundary` に残せるのは
   入力幾何だけである。
-- `target failure policy`: (B) は二分岐 statement のためどちらの
-  数学的帰結でも refuted にならない(分岐確定が成果)。(A) の真部分
-  fiber 条件の witness が存在し得ない(fiber product が常に成分の
-  交わりへ退化する)ことが定理として示された場合、その退化定理を
-  成果として `target-refuted` を宣言する(Boolean regime の零次元性
-  の定理化として記録)。(C) の不一致 witness が原理的に構成不能
-  (lax square を含む全ての square で比較射の一致が証明される)と
-  示された場合、および (D) の `H_bc` が無条件成立へ縮退した場合は、
-  その全可換性定理を成果として当該節を無条件定理へ置換する改訂を
-  提案する(成功側の縮退であり refuted ではない)。(D) の成立条件が
-  同定に至らず停滞する場合は `target-blocked` とし、(D) を切り出した
-  後続カードへの分割を改訂提案する。
+- `target failure policy`: fail-closed を原則とする — 中心 conjunct
+  の反証は `target-refuted`、statement の不足の発見は `goal-defect`
+  で停止し、fixed target の変更はいずれも人間の別判断とする(自動
+  weakening をしない)。個別分岐: (B) は網羅的 disjunction の単一
+  命題であり、どちらの枝の確定も成功である。左枝が反証され(非存在
+  例が出る)かつ資格条項を満たす `H_cart` の同定に至らない場合は
+  `target-blocked` で停止する。(A) の同型不変な真部分 fiber witness
+  が存在し得ない(両射影が常に同型になる)ことが定理として示された
+  場合、その退化定理を成果として `target-refuted` を宣言する
+  (Boolean regime の零次元性の定理化として記録)。(C) の破れ
+  witness が原理的に構成不能(固定比較等式が全ての資格入力で成立)
+  と示された場合、および (D) の保存破れ反例が構成不能(`H_bc` 無
+  条件縮退)と示された場合は、負例 conjunct の反証として
+  `target-refuted` を宣言し、全可換性定理を反証成果として記録する
+  (無条件定理への statement 置換は人間の改訂裁定に委ねる)。(D) の
+  成立条件が同定に至らず停滞する場合は `target-blocked` とし停止
+  する(後続カード分割の要否は人間裁定 — 停止記録に観察として添える
+  に留める)。
