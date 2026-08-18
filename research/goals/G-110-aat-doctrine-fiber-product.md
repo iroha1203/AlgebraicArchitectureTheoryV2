@@ -7,9 +7,9 @@
   (B)(D) は「条件同定+十分性+反例」の三点セットを基本形として
   target statement に固定する。(B) は型の決まった網羅的 disjunction
   として単一命題で固定する(下記 (B))。`H_cart` / `H_bc` には資格
-  条項(結論非参照・同型不変性・閉性・パラメトリック正例族・
-  checker+bridge)を課す(下記 (B)(D))。score-phase への切替は
-  採らない —
+  条項(固定条件言語・結論非参照・同型不変性・閉性・非可逆入力を
+  含むパラメトリック正例族・checker+非定義的 bridge)を課す
+  (下記 (B)(D))。score-phase への切替は採らない —
   n1005 §5「隊列」第4項の mode 裁定事項はこれで消化済み。**(D) の
   診断語彙は G-106 系 raw defect / reselection orbit に一本化**
   (G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
@@ -121,7 +121,10 @@
   定義展開で従う構成**(安価な破れの排除)、**(D) の負例を、共役
   不変な orbit / 共役類水準では自動保存される診断に対する raw 水準
   の同一視アーティファクト(同一視の取り方だけで作る破れ)で満たす
-  構成**。
+  構成**、(A) の非退化 witness を空 pullback で満たす構成、
+  `H_cart` / `H_bc` を同型安全域(同型な底射・全脚同型の square で
+  のみ発火する)述語で立てる構成、checker bridge を定義的
+  (`Iff.rfl`)に立てる構成。
 - `frontier`: derived fiber product の観察、係数 base change(ℚ→R)
   カードとの接続点の記述、bifibration(cartesian 側の一般論)への
   拡張、`ObProblem` 段の class naturality と (D) の関係の観察、
@@ -146,11 +149,14 @@
      `D₁ ×_B D₂` を構成し、cone の `atomEquiv` 成分を恒等に制限
      しない全 cone 上の普遍性を証明する。あわせて真部分 fiber 条件の
      witness を**同型不変な形**で構成する — 有限 fixture 上で
-     (i) source pullback から成分直積への canonical 射が全射でない
-     こと、(ii) 両射影のいずれも同型でないこと、を証明する。選んだ
-     carrier 表現の raw equality / inequality には依存させない
-     (異なる `Source` 型の間には共通 ambient なしの「交わり」を
-     定義しないため、その語は使わない)。
+     (i) pullback の `Source` が `Nonempty` であること、(ii) source
+     pullback から成分直積への canonical 射が全射でないこと、(iii)
+     両射影のいずれも同型でないこと、を証明し、具体的な compatible
+     pair(pullback に属する)と、成分直積には属するが pullback には
+     属さない incompatible pair の両方を構成する(空 pullback による
+     空虚充足の排除)。選んだ carrier 表現の raw equality /
+     inequality には依存させない(異なる `Source` 型の間には共通
+     ambient なしの「交わり」を定義しないため、その語は使わない)。
   2. **(B) cartesian lift の存在**: package 総圏の射影に対する強
      cartesian lift(G-101 の strong opcartesian の双対、mathlib
      `Functor.IsStronglyCartesian` 相当)について、**次の網羅的
@@ -160,15 +166,28 @@
      同定+十分性定理+`H_cart` を満たさず lift が存在しない有限
      反例(FiniteModel 上の非存在 Lean 証明)」。右枝を閉じる場合は
      反例が左枝を反証することも同時に証明する(排他性は反例が供給
-     する)。**`H_cart` の資格条項**: (i) 入力型は底射と終点 package
-     の構成データ(有限 presentation 水準)上の述語で、lift の存在と
-     いう結論を参照しない、(ii) 入力データの同型で不変(同型不変性
-     theorem を討ち取る)、(iii) 底射合成で閉じる(閉性 theorem)、
-     (iv) fixture の tag・命名・特定 carrier 表現に依存しない(単一
-     fixture との等式 `H t := t = good` 型は資格違反)、(v) 相異なる
-     非同型 instance を含むパラメトリック正例族で非空発火する。
-     いずれの枝でも lift の実構成正例を要求する(portfolio
-     constraint)。
+     する)。**入力型と量化の固定**: 条件の入力型は名前付き型
+     `CartInput U`(底射の有限 presentation データ。endpoint
+     package は含めない)として本カードで定義し、`toSemantic`
+     realization(有限 presentation から実際の底射への実現写像)を
+     伴う。`H_cart` は `CartInput U` 上の述語で、十分性定理は
+     `H_cart f -> (∀ Y 上の package Q、強 cartesian lift が存在)`
+     (endpoint package は全量化)の形で固定する。**`H_cart` の資格
+     条項**: (i) **固定条件言語** — 有限 presentation の構成 field
+     上の等式・所属・有限全称条件の有限連言として立てる(任意述語は
+     不可。condition bit・lift / 比較 certificate の presentation
+     への埋め込みは禁止)、結論(lift の存在)を参照しない、(ii)
+     入力データの同型で不変(同型不変性 theorem)、(iii) 底射合成で
+     閉じる(閉性 theorem)、(iv) fixture の tag・命名・特定 carrier
+     表現に依存しない(単一 fixture との等式 `H t := t = good` 型は
+     資格違反)、(v) **非恒等かつ非可逆な底射を含む**相異なる非同型
+     instance のパラメトリック正例族で非空発火する(`H_cart := 底射
+     が同型` 型の同型安全域述語はこの項で資格違反)。checker は右枝
+     のみの completion obligation とし、bridge は
+     `check P = true ↔ H_cart (toSemantic P)` の非定義的 theorem と
+     して立てる(`H P := check P = true` と定義して bridge を
+     `Iff.rfl` で放電する構成は放電と数えない)。いずれの枝でも
+     lift の実構成正例を要求する(portfolio constraint)。
   3. **(C) Beck–Chevalley 型交換**: square は (A) の cospan
      `σ₁ : D₁ -> B <- D₂ : σ₂` の pullback `P = D₁ ×_B D₂`(射影
      `π₁ / π₂`)で向きを固定し、**compatible point cone**(各頂点の
@@ -182,17 +201,26 @@
      `(π₂)_! ∘ (π₁)^* -> (σ₂)^* ∘ (σ₁)_!`(向きはこの形で固定)を
      lift の普遍性(unit / counit)から **natural transformation
      として**構成し、自然性 theorem・cleavage(lift 選択)非依存性
-     theorem・pullback square での同型性を証明する。あわせて交換が
-     破れる negative witness を構成する — authored な lax 化データ
-     (base change **前**の入力 presentation に属する G-106
-     comparator 語彙の 2-cell datum。`Doct_U` は 2-cell を持たない
-     ため型はこの語彙で固定する)を持つ具体 fixture 上で、**普遍性
-     から生成された二経路の canonical 比較(natural transformation
-     水準)が固定比較等式を満たさない**ことを theorem として証明
-     する。comparator / holonomy を可換性破れの証拠として直接供給
-     する構成、および供給 datum から定義展開で従う不一致は放電と
-     数えない。正例(strict pullback square で mate が同型)と同一
-     設定で対にする。
+     theorem・pullback square での同型性を証明する。あわせて交換の
+     canonicity が破れる negative witness を構成する。このために
+     **`AuthoredBC2Cell` / `LaxBaseChangeSquare` を本カードで定義
+     する** — 2-cell の成分は fiber 対象上に量化した family で、
+     自然性 field と、base change **前**の authored presentation
+     datum からの realization を持つ(自由供給の 2-cell は資格違反。
+     G-106 の `AdmissibleTransportData.comparator` は単一 endpoint
+     package 上の値で成分量化を持たないため、字義流用ではなく本
+     カードで component 化する。`Doct_U` は 2-cell を持たない)。
+     strict square は恒等 2-cell の特殊化とする。mate は lax square
+     上でも同一の生成手続きで定義し、**正例と負例を同一の固定述語
+     `MateCoherent`**(生成 mate と、square datum の合成輸送経由で
+     生成される直接比較との一致 — 成分量化+自然性込み)**で対に
+     する**: 正例 = strict pullback square での `MateCoherent`
+     (および mate の同型性)、負例 = 資格を満たす具体 lax fixture
+     上での `¬ MateCoherent`。`IsIso` は正例側の追加 theorem であり
+     負例の否定軸ではない(異なる二つの同型は両方 `IsIso` であり
+     得るため、対の述語は一致述語で固定する)。comparator /
+     holonomy を可換性破れの証拠として直接供給する構成、および供給
+     datum から定義展開で従う不一致は放電と数えない。
   4. **(D) 診断の base change 可換性**: まず**診断 base change 作用
      そのものを本カードで構成する** — 障害・defect の構成(**G-106
      語彙の raw defect / reselection orbit に一本化**。`J_A` defect
@@ -204,17 +232,31 @@
      **導出**する — base change 後の同種 field の再供給は放電と
      数えない)、(d4) pointwise raw defect 保存 theorem、(d5)
      cochain map と reselection 作用の equivariance theorem、(d6)
-     orbit map theorem。可換性等式の両辺を同一群に載せる診断比較
+     orbit map theorem。**条件の消費箇所を固定する**: (d1)–(d3) と
+     診断比較写像は無条件の構成、**(d4)–(d6) は `H_bc` を消費する
+     条件付き theorem** とする(d4–d6 を無条件で採ると、単位元を
+     保存する (d2) 準同型により source の vanishing witness がその
+     まま target へ写り、vanishing 保存が無条件に従って負例
+     conjunct と両立しない — 条件の消費箇所を theorem signature と
+     ledger で固定する)。可換性等式の両辺を同一群に載せる診断比較
      写像は G-101 普遍性と (A)–(C) の構成から生成し、theorem
      argument・structure field・certificate として受け取らない。
      その上で、可換性が成立する条件 `H_bc` を同定し、**結論を
      vanishing 水準で固定した可換性定理**(`H_bc` 下で消滅
-     (`TransportObstructionVanishes` 水準)が保存される。反射は
-     frontier — G-109 effectivity 反射と同じ側)と、`H_bc` を満たさず
-     保存が破れる反例を対で構成する。raw 等式だけの最弱可換性では
-     完了と数えず、(d1)–(d6) 全層の artifact を要求する。`H_bc` の
-     資格条項は (B) の (i)–(v) と同一(閉性は square の水平・垂直
-     貼り合わせについて)。
+     (`TransportObstructionVanishes` 水準)が保存される — (d4)–
+     (d6) から導出する。反射は frontier — G-109 effectivity 反射と
+     同じ側)と、`H_bc` を満たさず保存が破れる反例(source 側
+     vanishing が実発火し、target 側で消滅しない)を対で構成する。
+     正例・負例とも source 側 vanishing の実発火(非空 TwoCell・
+     非自明な raw / reselection data)を要求する。raw 等式だけの
+     最弱可換性では完了と数えず、(d1)–(d6) 全層の artifact を要求
+     する。`H_bc` の入力型は名前付き型 `BCInput U`(square と base
+     change 前診断図式の有限 presentation データ)+`toSemantic`
+     realization として固定し、資格条項は (B) の (i)–(v) と同一
+     (閉性は square の水平・垂直貼り合わせについて。(v) は非恒等
+     かつ非可逆な脚を含む square 族 — 全脚同型でのみ発火する同型
+     安全域述語は資格違反)。checker+bridge の規律も (B) と同一と
+     する。
   5. **(E) 閉性**: pullback square の貼り合わせ(水平・垂直合成)が
      再び pullback square であり、(C) の比較射および (D) の診断比較
      写像が貼り合わせと整合することを証明する。押し出し側の水平
@@ -230,17 +272,21 @@
   必要十分化と同じ後続ハント様式)。derived 化・係数 base change・
   bifibration の一般論は主張しない。
 - `target proof artifacts`: fiber product の構成と普遍性 theorem、
-  同型不変な真部分 fiber witness、(B) の disjunction 確定 artifact
-  (左枝: 無条件存在定理/右枝: `H_cart` の定義・資格条項 theorem 群
-  (同型不変性・閉性)・十分性定理・非存在反例)と lift 実構成の
-  パラメトリック正例族、`H_cart` / `H_bc` の checker+soundness /
-  completeness bridge、compatible point cone による pointed 化手続き
-  と canonical mate(natural transformation)・自然性・cleavage
-  非依存性・pullback での同型 theorem・破れ witness(生成比較の固定
-  等式失敗)、診断 base change 作用の構成一式((D) (d1)–(d6) と
-  診断比較写像)、`H_bc` の定義・資格条項 theorem 群・vanishing
-  保存定理・保存破れ反例、貼り合わせ閉性 theorem・比較射整合
-  theorem・引き戻し側合成 coherence、report
+  同型不変な真部分 fiber witness(`Nonempty` pullback+compatible /
+  incompatible pair)、`CartInput U` / `BCInput U` と `toSemantic`
+  realization、(B) の disjunction 確定 artifact(左枝: 無条件存在
+  定理/右枝: `H_cart` の定義・資格条項 theorem 群(同型不変性・
+  閉性)・十分性定理・非存在反例・checker+非定義的 bridge)と
+  lift 実構成のパラメトリック正例族(非可逆底射を含む)、
+  compatible point cone による pointed 化手続きと canonical mate
+  (natural transformation)・自然性・cleavage 非依存性・pullback
+  での同型 theorem、`AuthoredBC2Cell` / `LaxBaseChangeSquare` /
+  `MateCoherent` の定義と正負対(strict 正例+lax 負例)、診断
+  base change 作用の構成一式((d1)–(d3) 無条件+(d4)–(d6) 条件付き
+  と診断比較写像)、`H_bc` の定義・資格条項 theorem 群・checker+
+  非定義的 bridge・vanishing 保存定理・保存破れ反例(source 実
+  発火)、貼り合わせ閉性 theorem・比較射整合 theorem・引き戻し側
+  合成 coherence、report
   `research/reports/G-110-aat-doctrine-fiber-product.md`。
 - `target proof strategy`: K0 fiber product 構成と普遍性・退化しない
   witness -> K1 cartesian lift の disjunction 確定(存在定理または
@@ -258,11 +304,13 @@
   provenance、proof-use、structure-field escape、route integrity を
   監査すること。Lean / report / tracking Issue を同期し、final review
   packet を作り、`$math-lean-review` の4査読がすべて
-  `No major findings` であること。`H_cart` / `H_bc` それぞれに有限
-  presentation 入力の checker 関数と soundness / completeness bridge
-  theorem を artifact として含める(`FiniteModel` の有限性から一般
+  `No major findings` であること。有限 presentation 入力の checker
+  関数と非定義的 soundness / completeness bridge theorem
+  (`check P = true ↔ H (toSemantic P)`、`Iff.rfl` 放電禁止)を、
+  `H_cart` は右枝を閉じた場合のみ、`H_bc` は (D) の条件同定に伴い、
+  artifact として含める(`FiniteModel` の有限性から一般
   decidability は従わないため、決定可能性は checker+bridge で操作化
-  する)。完遂時の記録は **Gr4 exact-bottom sector 達成**に限定する
+  する。左枝確定時に `H_cart` checker は要求しない)。完遂時の記録は **Gr4 exact-bottom sector 達成**に限定する
   — 無修飾の Gr4 / Gr 系列完遂を宣言せず、範囲根拠を併記する(達成
   は exact 底層の極限構造・base change 交換・診断可換性・閉性。
   refinement 系統の圏化・base change と上段への base-change lift は
@@ -290,23 +338,36 @@
     ExtInstHom 整合)`: `direction-hypothesis`。入力資格。Doct
     square からの全域持ち上げは主張しない。
   - `H_cart / H_bc(条件そのもの)`: `direction-hypothesis`。十分性
-    theorem の仮定として理論に残る(必要十分化は frontier)。資格
-    条項 (i)–(v) と checker+bridge を伴う。
+    theorem の仮定として理論に残る(必要十分化は frontier)。入力型
+    は `CartInput U` / `BCInput U`、固定条件言語で立て、資格条項
+    (i)–(v) と checker+非定義的 bridge を伴う。
+  - `有限 presentation と toSemantic bridge(CartInput / BCInput)`:
+    `discharge-required`。condition bit・結論 certificate の埋め込み
+    を禁じ、checker bridge は非定義的 theorem として放電する。
+  - `base change 前の AdmissibleTransportData(edgeStrong・
+    twoCellBase・authored comparator)`: `ambient-boundary`。入力
+    幾何としての参照のみ(役割 = (C) の lax datum realization と
+    (D) の入力資格、provenance = G-106 reviewed artifact。結論相当
+    データではない — lift・可換性・破れはここから供給しない)。
+  - `selected lax datum(AuthoredBC2Cell の realization)`:
+    `direction-hypothesis`。入力資格 — base change 前の authored
+    presentation datum からの実現に限る(自由供給禁止)。
   - `(B) の disjunction 確定と H_cart / H_bc の十分性・反例対`:
     `discharge-required`。条件は構成データ側の述語として立て、結論
     との同値・単一 fixture 等式型を禁じる。
-  - `Beck–Chevalley 比較射の同型と negative witness`:
+  - `Beck–Chevalley 比較射と MateCoherent の正負対`:
     `discharge-required`。比較射(canonical mate)は普遍性から
-    natural transformation として生成し、cleavage 非依存性 theorem
-    を伴う。comparator / holonomy の自由供給による破れは放電と
-    数えない。
-  - `診断 base change 作用の構成`: `discharge-required`。(D)
-    (d1)–(d6) の引き戻し輸送と診断比較写像は G-101 普遍性と
-    (A)–(C) から生成する。引き戻し済み図式の入力供給、および base
-    change 後の `edgeStrong` / `twoCellBase` / authored comparator の
-    再供給は放電と数えない(authored field の資格は base change 前の
-    入力 presentation に限る — G-106 の authored field と生成
-    comparator の区別を維持する)。
+    natural transformation として生成し、cleavage 非依存性 theorem を
+    伴う。正負は同一述語 `MateCoherent` で対にする。comparator /
+    holonomy の自由供給による破れは放電と数えない。
+  - `診断 base change 作用の構成`: `discharge-required`。(d1)–(d3)
+    と診断比較写像は無条件に、**(d4)–(d6) は `H_bc` 消費の条件付き
+    theorem として**、G-101 普遍性と (A)–(C) から生成する(条件の
+    消費箇所は theorem signature に固定する)。引き戻し済み図式の
+    入力供給、および base change 後の `edgeStrong` / `twoCellBase` /
+    authored comparator の再供給は放電と数えない(authored field の
+    資格は base change 前の入力 presentation に限る — G-106 の
+    authored field と生成 comparator の区別を維持する)。
   - `閉性と比較射整合`: `discharge-required`。G-106 coherence
     (`transportAlong_comp_coherence` 系)の消費は proof term として
     明示する。引き戻し側の合成 coherence は本カードで建設する
@@ -324,6 +385,18 @@
   「正例のみの交換定理」、(B) 分岐 1 を強 cartesian より弱い lift
   概念で立てる構成は完了と数えない。`ambient-boundary` に残せるのは
   入力幾何だけである。
+- `target route integrity gate`: 許容経路 — pullback・canonical
+  mate・診断比較写像は入力と普遍性からのみ生成する。selected point
+  cone・cleavage・有限 witness を証明後に target-fitting 選択しない
+  (選択は proof obligation 選定時に fixture として固定する)。
+  authored comparator / lax datum は base change 前の入力に限り、
+  base change 後の comparator は生成する。有限 presentation は
+  `toSemantic` realization を持ち、condition bit・結論 certificate
+  を含まない。(E) は `transportAlong_comp_coherence` を実際の proof
+  term で消費する。禁止経路 — 結論相当データの供給
+  (anti-weakening rule)、checker の定義的 bridge(`Iff.rfl`)、
+  base change 後の `edgeStrong` / `twoCellBase` / comparator の
+  再供給、自由供給 2-cell による破れの作成。
 - `target failure policy`: fail-closed を原則とする — 中心 conjunct
   の反証は `target-refuted`、statement の不足の発見は `goal-defect`
   で停止し、fixed target の変更はいずれも人間の別判断とする(自動
