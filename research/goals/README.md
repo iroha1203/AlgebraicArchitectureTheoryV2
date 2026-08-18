@@ -18,10 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
-  (Gr3 完成を目指す active target: 段横断輸送整合と障害合成 —
-  comparison descent / effectivity の二層 gluing。依存先 G-108 は
-  完遂済み)
 
 ## draft（人間の確認待ち）
 
@@ -41,6 +37,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-106-aat-transport-coherence](G-106-aat-transport-coherence.md)
 - [G-107-aat-uniform-invariance-characterization](G-107-aat-uniform-invariance-characterization.md)
 - [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
+- [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
