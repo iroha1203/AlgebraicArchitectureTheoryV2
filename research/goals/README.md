@@ -19,10 +19,11 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
-  (Gr4 exact-bottom sector を目指す active target: doctrine 圏の
-  fiber product と base change — 5層 (A)–(E)。依存先 G-101 / G-106 /
-  G-109(core pseudofunctor API)は完遂済み。refinement 系統と上段
-  lift は Gr4 完遂 gate として後続カード)
+  (Gr4 exact-bottom sector の finite-presentable subcalculus を
+  目指す active target: doctrine 圏の fiber product と base change —
+  5層 (A)–(E)。依存先 G-101 / G-106 / G-109(core pseudofunctor
+  API)は完遂済み。refinement 系統・上段 lift・coverage 拡張は
+  Gr4 完遂 gate として後続カード)
 
 ## draft（人間の確認待ち）
 
