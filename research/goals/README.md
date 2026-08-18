@@ -20,9 +20,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
   (Gr4 exact-bottom sector を目指す active target: doctrine 圏の
-  fiber product と base change — 5層 (A)–(E)。依存先 G-101 / G-106
-  は完遂済み。refinement 系統と上段 lift は Gr4 完遂 gate として
-  後続カード)
+  fiber product と base change — 5層 (A)–(E)。依存先 G-101 / G-106 /
+  G-109(core pseudofunctor API)は完遂済み。refinement 系統と上段
+  lift は Gr4 完遂 gate として後続カード)
 
 ## draft（人間の確認待ち）
 
@@ -78,6 +78,7 @@ active な GOAL は、次の項目をすべて備えていなければならな�
 - `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
 - `target theorem completion criteria`: 証明完了の条件。原則として sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis の discharge audit、report と tracking Issue の target_cycle_result 同期、final_review_packet、4 並列 `$math-lean-review` の veto なし完了判定を含む。
 - `target premise discharge policy`: target theorem が faithfulness、exactness、nondegeneracy、coverage、transport、representation adequacy などの実質的前提を含む場合、その前提を target boundary として残すのか、Lean theorem / finite witness / concrete certificate で discharge して completion 条件に含めるのかを書く。
-- `target material premise ledger`: target theorem の結論を支える実質的前提を列挙する。各 premise について、名前、何を支えるか、許される role (`direction-hypothesis` / `ambient-boundary` / `discharge-required`)、completion までに必要な discharge artifact、結論相当 premise ではない理由を書く。
+- `target material premise ledger`: target theorem の結論を支える実質的前提を列挙する。各 premise について、名前、何を支えるか、許される role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、completion までに必要な discharge artifact、provenance と proof-use、結論相当 premise ではない理由を書く。
+- 任意の `target route integrity gate`: 生成物(比較射・診断写像・witness)の許容経路と禁止経路(結論相当データの供給、証明後の target-fitting 選択、定義的 bridge 等)を独立の節として書く。selected fixture・checker・authored 入力を使うカードでは省略しない。この一覧の正本は `.codex/skills/target-theorem-loop/references/target-goal-contract.md` であり、drift した場合は契約側を正とする。
 - `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque class membership に移して成功扱いしないための規則を書く。`ambient-boundary` に残せるのは入力幾何だけであり、target conclusion、faithfulness、effectivity、triviality、global coherence、obstruction vanishing と同値または片方向に近い条件を隠してはならない。
 - `target failure policy`: 反例、仮説不足、証明停滞を `target-refuted`、`target-blocked`、GOAL 改訂提案のどれとして扱うか。

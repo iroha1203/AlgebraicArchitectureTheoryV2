@@ -22,12 +22,13 @@
   (G-109 = `target-theorem-proved`、2026-08-18。Gr3 達成の範囲記録は
   G-109 カード)。定理依存は G-101 と G-106 のみ — **G-106 への定理
   依存は (E) のみ**(合成 coherence、n1005 §4.3 の記載どおり)。
-  G-109 の中心 theorem には依存しないが、**core pseudofunctor API
-  (`CoreFiber`・`coreFiberTransportFunctor`・compositor / unitor —
-  G-109 の reviewed 語彙)を (C) の fiber functor 経路と (E) の
-  貼り合わせで語彙 / API として消費する**(固定錨は下記 ledger 行。
-  Gr3 成果の消費箇所の明示。G-101 からの再建はしない — 経路の
-  一意化)。(C)(D) は G-106 の語彙 / API(comparator・raw defect・
+  G-109 の中心 obstruction theorem には依存しないが、**core
+  pseudofunctor theorem package(`CoreFiber`・
+  `coreFiberTransportFunctor`・compositor / unitor とその coherence
+  theorem — G-109 の reviewed artifact)へ declaration / proof
+  依存する** — 消費箇所は (C) の fiber functor 経路と (E) の貼り
+  合わせ(固定錨は下記 ledger 行。Gr3 成果の消費箇所の明示。
+  G-101 からの再建はしない — 経路の一意化)。(C)(D) は G-106 の語彙 / API(comparator・raw defect・
   reselection orbit)も参照する。着手条件は満たされている。本カードの達成範囲は
   **Gr4 の exact-bottom sector**(exact `Doct_U` / `ExtInst_U` /
   package 下層)であり、無修飾の Gr4 完遂ではない — Gr4 完遂 gate
@@ -41,7 +42,11 @@
   いずれも完遂済み)、G-106(閉性層 (E) の合成 coherence 素材。
   完遂済み = `target-theorem-proved`、2026-08-15。
   `research/lean/ResearchLean/AG/TransportCoherence/` 配下、unported。
-  固定錨は下記 ledger 行)。先行考察はスキーム射幾何
+  固定錨は下記 ledger 行)、G-109(core pseudofunctor API /
+  coherence。完遂済み = `target-theorem-proved`、2026-08-18。
+  `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下、
+  unported。中心 obstruction theorem へは非依存 — 固定錨は下記
+  ledger 行)。先行考察はスキーム射幾何
   ノート(fiber product・derived fiber product・functor of points の
   各節)。
 - `tracking issue`: 未起票(active 昇格はユーザー裁定済み
@@ -175,17 +180,44 @@
      semantic 層 `CartSemanticInput U := Σ X Y : ExtInst_U, X ⟶ Y`
      (実際の底射)を分離して本カードで定義し、realization
      `toSemanticCart : CartPresentation U -> CartSemanticInput U` で
-     結ぶ。**`H_cart` は semantic 層上の述語**、checker は
+     結ぶ。**`H_cart` は semantic 層上の述語**(型は mathlib
+     `MorphismProperty (ExtInst_U)` 相当で固定)、checker は
      presentation 層 `checkCart : CartPresentation U -> Bool` で、
      bridge は `checkCart P = true ↔ H_cart (toSemanticCart P)` と
-     型を固定する。十分性定理は semantic 底射 `f` について
+     型を固定する。**量化域の固定(realization 付き入力)**: 右枝の
+     十分性・安定性・反例と (C)–(E) の regime 消費は、いずれも
+     realization 付き入力(`P : CartPresentation U` とその
+     `toSemanticCart P`)上で量化する — `toSemanticCart` の像の外の
+     semantic 射は本カードの主張域外である(scope の明示。像外まで
+     拘束する評価器は要求しない代わりに、主張域を realization 付き
+     入力へ正確に限定する)。**presentation 取替え不変性 theorem**
+     `toSemanticCart P = toSemanticCart P' -> checkCart P =
+     checkCart P'` を discharge-required とする(同一 semantic 入力
+     を表す presentation 間で評価が一致する — 像外差し替えによる
+     結論符号化の排除)。**schema は本カードで閉じる**:
+     `CartPresentation U` の field は(source / target の有限
+     presentation 対・成分写像の有限表・`atomEquiv` の有限置換表・
+     係数表)の4種で全列挙し、`BCSemanticInput U` の field は
+     (base change 前の square・compatible point data・regime 参照・
+     base change 前の診断図式)のみとする(condition bit・結論
+     certificate の field は存在しない)。条件 syntax の
+     constructor は(field 値の等式原子・field 値の有限列挙集合への
+     所属原子・presentation cell 上の有限全称原子・連言)の4種で
+     全列挙する — 実装時の field / constructor 追加は改訂扱い。
+     十分性定理は realization 付き semantic 底射 `f` について
      `H_cart f -> (∀ 終点上の package Q、強 cartesian lift が存在)`
-     (endpoint package は全量化)の形で固定する。**分岐結果の持ち
-     出し**: (B) の帰結は dependent structure `CartesianRegime U`
-     (左枝: 全域 lift 供給/右枝: `H_cart`+資格 theorem 群+十分
-     性)として package 化し、(C)–(E) は固定した regime
-     `R : CartesianRegime U` の上で立てる(disjunction の witness を
-     分岐の外で参照可能にする)。**`H_cart` の資格条項**: (i) **固定
+     (endpoint package は全量化)の形で固定する。disjunction の
+     量化は「左枝 = 全 carrier `U`・全 realization 付き底射」/
+     「右枝の反例 = 具体 FiniteModel carrier 上で左枝の全称を反証」
+     とする。**分岐結果の持ち出し**: (B) の帰結は dependent
+     structure `CartesianRegime U`(左枝: 全域 lift 供給/右枝:
+     `H_cart`+資格 theorem 群+十分性)として package 化し、
+     **producer theorem `cartesianRegimeOfDisjunction`((B) の確定
+     artifact から regime を構成する閉じた生成則)を
+     discharge-required とする** — 任意引数として供給される
+     `CartesianRegime` は conclusion-equivalent であり放電と数え
+     ない。(C)–(E) は producer から得た固定 regime
+     `R : CartesianRegime U` の上で立てる。**`H_cart` の資格条項**: (i) **固定
      条件言語** — 許容原子式を列挙した named syntax 型
      `CartConditionSyntax`(presentation の構成 field 上の等式・
      所属・有限全称の原子式。原子式は lift 存在・消滅・mate 等の
@@ -216,10 +248,19 @@
      明示)による `ExtInst_U` square への pointed 化の上で立てる。
      compatible point cone は direction-hypothesis 入力である —
      Doct square だけからの全域持ち上げは主張しない(ledger 行)。
-     押し出し(G-101 opcartesian 輸送)と引き戻し((B) の
-     `CartesianRegime U` を消費する。右枝 regime では脚 `π₁ / π₂` の
-     admissibility を `H_cart` の pullback 安定性 theorem から導く)
-     に対し、canonical mate
+     **pointed square が `ExtInst_U` の categorical pullback である
+     こと自体を theorem として討ち取る** —
+     `pointedPullback_isPullback : IsPullback π₁ π₂ σ₁ σ₂`
+     (`ExtInst_U` 水準)を compatible point cone と (A) の具体
+     Source pullback・`source_eq` から生成する(discharge-required。
+     `IsPullback` を入力 field で供給する形は不可)。押し出し
+     (G-101 opcartesian 輸送)と引き戻し((B) の producer から得た
+     `CartesianRegime U` を消費する。右枝 regime では **membership
+     の要求脚を固定する**: pointed cospan の脚 `σ₂` に `H_cart`
+     membership を要求し、`pointedPullback_isPullback` と pullback
+     安定性 theorem で `π₁` の membership を導出する — mate が消費
+     する引き戻しは `(π₁)^*` と `(σ₂)^*` のこの2本であり、脚ごとの
+     証拠供給はしない)に対し、canonical mate
      `(π₂)_! ∘ (π₁)^* -> (σ₂)^* ∘ (σ₁)_!`(向きはこの形で固定)を
      lift の普遍性(unit / counit)から **natural transformation
      として**構成し、自然性 theorem・cleavage(lift 選択)非依存性
@@ -233,15 +274,26 @@
      構成する(G-106 の `AdmissibleTransportData.comparator` は単一
      endpoint package 上の値で成分量化を持たないため、字義流用では
      なく本カードで component 化する。`Doct_U` は 2-cell を持た
-     ない)。strict square は恒等 datum の特殊化とする。**正例と
+     ない)。**raw schema は本カードで固定する**:
+     `AuthoredBC2CellPresentation` の field は G-106 の authored
+     comparator 表と同形(指定有限 cell 集合上の `PackageFiberAut`
+     元の有限割当表 — 既存 reviewed schema `AdmissibleTransportData`
+     の authored field 部分への参照で固定)のみとし、realization は
+     その割当の canonical 拡張(生成手続き)とする — 比較射・
+     natural family・期待等式の field は存在せず、target 固定後に
+     schema を設計する余地を残さない。strict square は恒等 datum の
+     特殊化とする。**正例と
      負例を同一の固定述語 `MateCoherent`**(unit / counit 経由の
      canonical mate と、(A) 普遍性・合成輸送経由の直接比較 —
      **双方とも固定済みの独立な canonical construction から生成**
      — の一致)**で対にする**: 正例 = strict pullback square での
      `MateCoherent`(および mate の同型性)、負例 = 具体 lax
-     fixture 上での `¬ MateCoherent`。負例 fixture の全 raw field と
-     realization は proof obligation 選定時に固定し、以後の
-     target-fitting 選択を route integrity gate で禁止する。
+     fixture 上での `¬ MateCoherent`。負例 fixture の値の選択は
+     proof obligation 選定時に固定し(schema は上記のとおりカードで
+     固定済み)、以後の target-fitting 選択を route integrity gate で
+     禁止する。生成 2-cell family と `MateCoherent` の両 canonical
+     construction が raw field を直接返さないことは proof-use /
+     structure-field escape audit で監査する。
      `IsIso` は正例側の追加 theorem であり負例の否定軸ではない
      (左枝 regime では押し出し・引き戻しが随伴同値になり mate が
      全ての可換 square で同型になり得るため、`¬ IsIso` を負例形に
@@ -261,11 +313,16 @@
      frontier)。その上で: (d1) 同一組合せ層上の interpretation
      引き戻しの構成、(d2) 各終点の `PackageFiberAut` 群準同型
      (endpoint ごと、identity cochain 保存)、(d3) transported
-     admissible data の constructor(`edgeStrong`・`twoCellBase` は
-     theorem として**導出**する — base change 後の同種 field の
-     再供給は放電と数えない)、(d4) pointwise raw defect 保存
-     theorem、(d5) cochain map と reselection 作用の equivariance
-     theorem、(d6) (d2)(d5) から導出する orbit map theorem。**条件の消費箇所を固定する**: (d1)–(d3) と
+     admissible data の constructor — **target comparator の生成式を
+     等式で固定する**:
+     `transported.comparator c = φ_(target c) (source.comparator c)`
+     (dependent cast 込み。`edgeStrong`・`twoCellBase` は theorem
+     として**導出**する — base change 後の同種 field の再供給、
+     および生成式に従わない「任意生成物」comparator は放電と数え
+     ない)、(d4) pointwise raw defect 保存 theorem(**(d3) の生成式
+     を proof term として実消費する**)、(d5) cochain map と
+     reselection 作用の equivariance theorem、(d6) (d2)(d5) から
+     導出する orbit map theorem。**条件の消費箇所を固定する**: (d1)–(d3) と
      診断比較写像は無条件の構成、**(d4)–(d6) は `H_bc` を消費する
      条件付き theorem** とする(d4–d6 を無条件で採ると、単位元を
      保存する (d2) 準同型により source の vanishing witness がその
@@ -276,9 +333,11 @@
      argument・structure field・certificate として受け取らない。
      その上で、可換性が成立する条件 `H_bc` を同定し、**結論を
      vanishing 水準で固定した可換性定理**(`H_bc` 下で消滅
-     (`TransportObstructionVanishes` 水準)が保存される — (d4)–
-     (d6) から導出する。反射は frontier — G-109 effectivity 反射と
-     同じ側)と、`H_bc` を満たさず保存が破れる反例(source 側
+     (`TransportObstructionVanishes` 水準)が保存される — **proof
+     DAG を固定する**: (d2) の identity cochain 保存・(d4)・(d5)・
+     (d6) を全て proof term として消費して導出する。いずれかを迂回
+     した導出は放電と数えない(proof-use audit の対象)。反射は
+     frontier — G-109 effectivity 反射と同じ側)と、`H_bc` を満たさず保存が破れる反例(source 側
      vanishing が実発火し、target 側で消滅しない)を対で構成する。
      正例・負例とも source 側 vanishing の実発火を **named
      predicate** で要求する — 同一 fixture 上で
@@ -301,9 +360,14 @@
      貼り合わせでは **G-106 の合成 coherence
      (`transportAlong_comp_coherence` 系)を消費**し、引き戻し側の
      合成 coherence は G-106 に存在しないため本カードで建設する。
+     G-106 coherence は package 水準の射等式、G-109 compositor
+     coherence は fiber functor 水準であるため、**両者を結ぶ bridge
+     declaration(package 水準等式と fiber functor compositor の
+     整合 theorem)を建設し、`transportAlong_comp_coherence` はその
+     proof term で実消費する**(装飾的引用の排除)。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下(新設)。
-  G-101 / G-106 のモジュールは参照のみ。完了面は (A)–(E)
+  G-101 / G-106 / G-109 のモジュールは参照のみ。完了面は (A)–(E)
   まで。(D) の claim は「条件同定+十分性+反例」の三点セットで
   固定し、(B) は上記の網羅的 disjunction 単一命題で固定する(右枝は
   同じ三点セット)。条件の必要十分化は frontier(G-107 の条件 C
@@ -314,21 +378,24 @@
   incompatible pair)、`CartPresentation U` / `CartSemanticInput U` /
   `BCPresentation U` / `BCSemanticInput U` と `toSemantic`
   realization、条件言語 `CartConditionSyntax` / `BCConditionSyntax`
-  と評価器、`CartesianRegime U`(分岐結果の dependent package)、
+  と評価器、presentation 取替え不変性 theorem、`CartesianRegime U`
+  (分岐結果の dependent package)と producer
+  `cartesianRegimeOfDisjunction`、
   (B) の disjunction 確定 artifact(左枝: 無条件存在定理/右枝:
   `H_cart` の定義・資格条項 theorem 群(同型不変性・pullback-stable
   wide class)・十分性定理・非存在反例・checker+非定義的 bridge)
   と lift 実構成のパラメトリック正例族(非可逆底射を含む)、
-  compatible point cone による pointed 化手続きと canonical mate
-  (natural transformation)・自然性・cleavage 非依存性・pullback
-  での同型 theorem、`AuthoredBC2CellPresentation` / 生成 2-cell
+  compatible point cone による pointed 化手続きと
+  `pointedPullback_isPullback`・canonical mate(natural
+  transformation)・自然性・cleavage 非依存性・pullback での同型
+  theorem、`AuthoredBC2CellPresentation` / 生成 2-cell
   family / `MateCoherent` の定義と正負対(strict 正例+lax 負例)、
   診断 base change 作用の構成一式((d1)–(d3) 無条件+(d4)–(d6)
   条件付きと診断比較写像・named 実発火 predicate)、`H_bc` の定義・
   資格条項 theorem 群(admissible-square calculus)・checker+非
   定義的 bridge・vanishing 保存定理・保存破れ反例(source 実発火)、
   貼り合わせ閉性 theorem・比較射整合 theorem・引き戻し側合成
-  coherence、report
+  coherence・G-106 / G-109 coherence bridge、report
   `research/reports/G-110-aat-doctrine-fiber-product.md`。
 - `target proof strategy`: K0 fiber product 構成と普遍性・退化しない
   witness -> K1 cartesian lift の disjunction 確定(存在定理または
@@ -336,7 +403,8 @@
   対 -> K3 診断 base change 作用の構成と条件同定・正負の対 ->
   K4 閉性と整合。既存成果の利用 map: G-101 opcartesian 普遍性
   (比較射の生成)、G-104 / G-107 の「不変性+条件+反例」構成法
-  (K3 の方法論)、G-106 の合成 coherence(K4 の素材)、
+  (K3 の方法論)、G-106 の合成 coherence(K4 の素材)、G-109
+  core pseudofunctor API(K2 の fiber functor / compositor)、
   `FiniteModel`(witness 計算)、スキーム射幾何ノートの fiber
   product 節(設計素材)。固定 statement と完了条件は本カードのみを
   正本とする。
@@ -352,12 +420,17 @@
   `H_cart` は右枝を閉じた場合のみ、`H_bc` は (D) の条件同定に伴い、
   artifact として含める(`FiniteModel` の有限性から一般
   decidability は従わないため、決定可能性は checker+bridge で操作化
-  する。左枝確定時に `H_cart` checker は要求しない)。完遂時の記録は **Gr4 exact-bottom sector 達成**に限定する
-  — 無修飾の Gr4 / Gr 系列完遂を宣言せず、範囲根拠を併記する(達成
-  は exact 底層の極限構造・base change 交換・診断可換性・閉性。
-  refinement 系統の圏化・base change と上段への base-change lift は
-  Gr4 完遂 gate として後続カードに残る。G-109 の Gr3 記録の範囲併記
-  と同じ様式)。
+  する。左枝確定時に `H_cart` checker は要求しない)。完遂時の
+  記録は **Gr4 exact-bottom sector 達成**に限定する — 右枝で閉じた
+  場合は「`H_cart` / `H_bc`-admissible exact-bottom base-change
+  calculus としての達成」と表示し、条件外を含む exact-bottom 全域の
+  分類と読める表現を避ける。無修飾の Gr4 / Gr 系列完遂を宣言せず、
+  範囲根拠を併記する(達成は exact 底層の極限構造・base change
+  交換・診断可換性・閉性。量化域 = realization 付き入力(有限
+  presentable な底射・square)であることも併記する。refinement
+  系統の圏化・base change と上段への base-change lift は Gr4 完遂
+  gate として後続カードに残る。G-109 の Gr3 記録の範囲併記と同じ
+  様式)。
 - `target premise discharge policy`: 入力(doctrine の射の対、package、
   base change **前**の診断の図式データ)だけを残せる。引き戻し済み
   (transported)図式・診断比較写像の供給は放電と数えない。普遍性、
@@ -393,7 +466,9 @@
   - `有限 presentation と toSemantic bridge(CartPresentation /
     BCPresentation と semantic 層の分離)`: `discharge-required`。
     condition bit・結論 certificate の埋め込みを禁じ、checker
-    bridge は非定義的 theorem として放電する。
+    bridge と presentation 取替え不変性 theorem を非定義的 theorem
+    として放電する。schema と条件 syntax constructor はカード本文で
+    全列挙済み — 実装時の field / constructor 追加は改訂扱い。
   - `G-106 の AdmissibleTransportData 型 / API`: `ambient-boundary`。
     型と reviewed theorem の参照のみ(provenance = 上記 G-106 錨)。
   - `instance 水準の admissible data field(各 fixture の
@@ -404,12 +479,26 @@
     理由 = base change 後の同種 field はここから供給せず (d3) で
     導出する)。
   - `AuthoredBC2CellPresentation(負例 lax fixture の raw field)`:
-    `direction-hypothesis`(**conclusion-equivalent risk あり** —
-    明示)。比較射・期待等式を field に持たず、全 raw field と
-    realization を proof obligation 選定時に固定する(役割 = (C)
-    負例の入力幾何。proof-use = 2-cell family の生成入力。結論相当
-    でない理由 = 比較の両辺は独立な canonical construction から生成
-    し、この datum の原子データからは符号化できない)。
+    `conclusion-equivalent-risk`(入力資格として残すが risk 種別で
+    監査する)。schema はカード本文で固定済み(G-106 authored
+    comparator 表と同形)、値の選択は proof obligation 選定時に固定
+    (役割 = (C) 負例の入力幾何。proof-use = 2-cell family の生成
+    入力。監査 artifact = 生成 family と両 canonical construction が
+    raw field を直接返さないことの proof-use / structure-field
+    escape audit)。
+  - `pointed ExtInst pullback bridge(pointedPullback_isPullback)`:
+    `discharge-required`。compatible point cone と (A) の Source
+    pullback・`source_eq` から生成する(`IsPullback` の入力供給は
+    放電と数えない。支える結論 = (C) の mate 前提と `π₁`
+    membership 導出)。
+  - `CartesianRegime producer(cartesianRegimeOfDisjunction)`:
+    `discharge-required`。(B) の確定 artifact から regime を構成する
+    閉じた生成則。任意引数として供給される `CartesianRegime` は
+    `conclusion-equivalent-risk` であり放電と数えない。
+  - `G-106 / G-109 coherence bridge((E) の package 水準–fiber
+    functor 水準整合)`: `discharge-required`。
+    `transportAlong_comp_coherence` の実 proof-use をこの bridge
+    経由で固定する。
   - `G-109 core pseudofunctor API(CoreFiber・
     coreFiberTransportFunctor・compositor / unitor)`:
     `ambient-boundary`。語彙 / API の参照のみ、改変しない。固定錨:
@@ -460,8 +549,11 @@
   authored comparator / lax datum は base change 前の入力に限り、
   base change 後の comparator は生成する。有限 presentation は
   `toSemantic` realization を持ち、condition bit・結論 certificate
-  を含まない。(E) は `transportAlong_comp_coherence` を実際の proof
-  term で消費する。禁止経路 — 結論相当データの供給
+  を含まない。主張の量化域は realization 付き入力に限る(像外の
+  semantic 入力への拡張主張をしない)。base change 後 comparator は
+  (d3) の生成式に従う。(E) は `transportAlong_comp_coherence` を
+  G-106 / G-109 coherence bridge 経由の実 proof term で消費する。
+  禁止経路 — 結論相当データの供給
   (anti-weakening rule)、checker の定義的 bridge(`Iff.rfl`)、
   base change 後の `edgeStrong` / `twoCellBase` / comparator の
   再供給、自由供給 2-cell による破れの作成。
