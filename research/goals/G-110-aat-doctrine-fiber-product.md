@@ -5,7 +5,7 @@
 - `priority`: `high`
 - `research mode`: `target-theorem`(mode 裁定済み 2026-08-18:
   (B)(D) は「条件同定+十分性+反例」の三点セットを基本形として
-  target statement に固定する。(B) は型の決まった網羅的 disjunction
+  target statement に固定する。(B) は型の決まった二枝 disjunction
   として単一命題で固定する(下記 (B))。`H_cart` / `H_bc` には資格
   条項(固定条件言語・結論非参照・同型不変性・閉性・非可逆入力を
   含むパラメトリック正例族・checker+非定義的 bridge)を課す
@@ -15,7 +15,8 @@
   (G-104 / G-107 系 `J_A` defect profile への拡張は frontier —
   係数 base change カードとの接続点)
 - `program context`: 登路上の位置は **Gr4(底の base change 完備)の
-  exact-bottom sector**(n1001 §3.5 達成階梯、n1005 §4.3)。「EGA 的な意味の相対性に届くのは
+  中間カード(第一手、exact-bottom sector)**(n1001 §3.5 達成階梯、
+  n1005 §4.3)。「EGA 的な意味の相対性に届くのは
   Gr4」の当該カード。山頂前提の**係数** base change(ℚ→R)とは別軸で
   ある(n1005 §4.6)。隊列裁定(2026-08-15、Gr3/Gr4 系列先行)の
   第三手。Gr3(G-106+G-108+G-109 の三点セット)は完遂済み
@@ -38,9 +39,13 @@
   semantic exact-bottom への coverage 拡張、(ii) refinement 系統
   (`RefinementDoctrineHom` の圏化と refinement base change)、
   (iii) 上段(`GeomRead` / `ObProblem`)への base-change lift(Gr3
-  段横断輸送への接続 bridge)が残り、これらを束ねる **Gr4
-  capstone カード(後続、番号は起草時に割当)が Gr4 達成を記録
-  する**(依存順: 本カード -> gate カード群 -> capstone。Gr3 を
+  段横断輸送への接続 bridge)、(iv) **IsIso 水準の Beck–Chevalley
+  exchange-failure の存否決定**(全同型定理または反例 — 本 sector
+  では随伴同値構造により破れ構成不能の公算が高く、refinement /
+  上段 regime を含む広い設定で決定する。n1005 §4.3 の
+  exchange-failure 義務の移管先であり削除ではない)が残り、
+  これらを束ねる **Gr4 capstone カード(後続、番号は起草時に
+  割当)が Gr4 達成を記録する**(依存順: 本カード -> gate カード群 -> capstone。Gr3 を
   G-106+G-108+G-109 の三点セットで閉じた前例と同じ複数カード
   分割。n1001 §3.3 / §3.5 の relative stability 三系統)。
 - `predecessor`: G-101(`Doct_U` / `ExtInst_U` / opcartesian 普遍性。
@@ -65,8 +70,9 @@
 - `research aim`: doctrine 圏 `Doct_U` に**相対的な**極限構造(fiber
   product)を立て、その上で輸送・診断が base change に対してどう
   振る舞うかを確定する。成果は5層 — (A) fiber product の構成と普遍性、
-  (B) cartesian lift の存在条件、(C) Beck–Chevalley 型交換、(D) 診断の
-  base change 可換性の成立条件、(E) pullback square の貼り合わせ閉性。
+  (B) cartesian lift の存在条件、(C) Beck–Chevalley exactness と
+  canonicity obstruction、(D) 診断の base change 可換性の成立条件、
+  (E) pullback square の貼り合わせ閉性。
   これで exact 底層(`Doct_U` / `ExtInst_U` / package 下層)の
   finite-presentable subcalculus が立つ — 本カードは **Gr4 の中間
   カード(第一手)**であり、Gr4 の達成記録は行わない(capstone は
@@ -74,13 +80,14 @@
 - `core tension`: 最大リスクは自明化である — Boolean regime の零次元性に
   より fiber product が集合論的交わりへ退化し、(C) が「集合論的
   Beck–Chevalley の再証明」に堕ちる可能性が明記されている(n1005
-  §4.3)。したがって非自明性は (C) の negative witness(lax square
-  上の二経路比較射の不一致)と (D)(診断 base change の成立条件同定)に
-  置く。(B) の cartesian 方向の存在は開いた問いである — `atomEquiv`
+  §4.3)。したがって非自明性は (C) の canonicity obstruction
+  (lax square 上の二経路比較射の不一致。IsIso 水準の
+  exchange-failure の存否は Gr4 gate 第四項へ移管)と (D)(診断
+  base change の成立条件同定)に置く。(B) の cartesian 方向の存在は開いた問いである — `atomEquiv`
   共役(`transportCompositionReading` 系の逆向き輸送)による無条件
   構成が成立する経路と、上位輸送の前進成分(`objectMap` /
   `operationMap` 等。可逆性を持たない)が障害になる経路の両方が
-  生きており、どちらに転んでも定理として固定できる網羅的
+  生きており、どちらに転んでも定理として固定できる二枝
   disjunction を採る(下記 (B))。
   (D) は無条件では成立しない見立てで、成立条件の同定自体が定理 —
   G-104 / G-107 で確立した「不変性+条件+反例」型の方法論が効く、
@@ -153,7 +160,9 @@
   base-change lift = Gr3 段横断輸送への接続 bridge(Gr4 完遂 gate の
   二)、realization 像の coverage theorem = 全 semantic exact-bottom
   への拡張(Gr4 完遂 gate の三 — subcalculus から sector 全域への
-  昇格)、
+  昇格)、IsIso 水準の Beck–Chevalley exchange-failure の存否決定
+  (Gr4 完遂 gate の四 — n1005 §4.3 の exchange-failure 義務の
+  移管先)、
   jump-locus 相対幾何(n1005 §5「隊列」後続 draft 候補2 = 係数
   base change カードの jump-locus 案)への含意、
   **(D) の `J_A` defect profile 枝**(G-104 / G-107 語彙への拡張。
@@ -178,7 +187,7 @@
      ambient なしの「交わり」を定義しないため、その語は使わない)。
   2. **(B) cartesian lift の存在**: package 総圏の射影に対する強
      cartesian lift(G-101 の strong opcartesian の双対、mathlib
-     `Functor.IsStronglyCartesian` 相当)について、**次の網羅的
+     `Functor.IsStronglyCartesian` 相当)について、**次の二枝
      disjunction を単一の固定命題として証明する**: 「(左枝)全ての
      carrier `U`・全ての realization 付き底射 `f : X -> Y`・`Y` 上の
      全ての package に対し強 cartesian lift が存在する」または
@@ -189,7 +198,18 @@
      `∀ U, (左 U ∨ 右 U)` の per-carrier 分岐は採らない(右枝の
      `H_cart`・十分性は `U` に一様であり、反例は大域左枝を反証
      する)。右枝を閉じる場合は反例が左枝を反証することも同時に
-     証明する(排他性は反例が供給する)。**二層の入力型と量化の
+     証明する(排他性は反例が供給する。網羅性(`¬左 -> 右`)は
+     主張しない — 左枝が反証され資格付き `H_cart` の同定に至らない
+     場合は `target-blocked`、failure policy 記載どおり)。
+     **universe の固定**: 分岐・producer・regime は
+     universe-polymorphic な完全 signature
+     (`GlobalCartesianLift.{u}` / `RightBranch.{u}` /
+     `DisjunctionArtifact.{u}` / `cartesianRegimeOfDisjunction.{u}`)
+     で立てる。右枝の有限反例は universe 0 の `FiniteModel.carrier`
+     上で構成し、任意 universe `u` への移送は
+     **`FiniteModelLift.{u}`**(`ULift` 経由の carrier 持ち上げと
+     非存在証明の移送 theorem)を discharge-required として供給する
+     (暗黙の `u = 0` 限定はしない)。**二層の入力型と量化の
      固定**: presentation 層 `CartPresentation U`(底射の有限
      presentation データ)と semantic 層 `CartSemanticInput U`
      (**named structure** — field は `source : ExtInst_U`・
@@ -271,12 +291,17 @@
      `CartConditionSyntax`(presentation の構成 field 上の等式・
      所属・有限全称の原子式。原子式は lift 存在・消滅・mate 等の
      結論語彙を参照できない)と評価器を本カードの artifact として
-     固定する。**原子式が参照できる定数・有限列挙集合・関係は
-     named structural vocabulary**(既存 reviewed 構造の named
-     field・単位元・恒等など)として **witness / 条件探索の前に
-     固定**し、fixture 値・checker 出力・target 結果に由来する定数は
-     禁止する(checker 由来 predicate を補助 lemma で包んで `H` と
-     する構成も禁止 — route gate と ledger の依存規則)。その上で、`H_cart` はある syntax 項の評価と bridge で結ばれる形で
+     固定する。**vocabulary は本カードで完全列挙する**(後決めの
+     named structural vocabulary に委ねない): 許容 projection =
+     presentation field 4種の各成分値の読み出しのみ、operand 型 =
+     各 field の有限 code 値型、許容定数 = 単位元・恒等置換・零 /
+     単位係数の named constants のみ、許容関係 = 値の等式と、
+     presentation 自身の field から導出される有限集合への所属のみ。
+     外部有限集合・fixture 値・checker 出力・target 結果に由来する
+     定数の持ち込みは禁止し、checker 由来 predicate を補助 lemma で
+     包んで `H` とする構成も禁止する(route gate と ledger の依存
+     規則)。**以後の projection / constant / relation / 有限集合の
+     追加は target 改訂扱いとする**。その上で、`H_cart` はある syntax 項の評価と bridge で結ばれる形で
      のみ立てる(任意述語は不可。condition bit・lift / 比較
      certificate の presentation への埋め込み、(d4)–(d6) の保存等式
      そのものの符号化、`check := if H then true else false` 型の
@@ -298,7 +323,8 @@
      (`H P := check P = true` と定義して bridge を `Iff.rfl` で放電
      する構成は放電と数えない)。いずれの枝でも lift の実構成正例を
      要求する(portfolio constraint)。
-  3. **(C) Beck–Chevalley 型交換**: square は (A) の cospan
+  3. **(C) Beck–Chevalley exactness と canonicity obstruction**:
+     square は (A) の cospan
      `σ₁ : D₁ -> B <- D₂ : σ₂` の pullback `P = D₁ ×_B D₂`(射影
      `π₁ / π₂`)で向きを固定し、**compatible point cone**(各頂点の
      instance 選択と `ExtInstHom` 整合 — `source_eq` の proof-use を
@@ -352,12 +378,20 @@
      だけでは hom-set の有限性は従わない)に制限して立て、点ごとの
      割当表からこの部分圏上の component family を生成する theorem を
      discharge-required とし、全成分と全射の naturality を有限 code
-     上の検査で固定する。さらに**失敗の
-     不変性を要求する**: `¬ MateCoherent` は presentation 取替えと
-     **許容 gauge 作用の全軌道**(割当表への admissible gauge twist
-     を全称量化)で不変に成立しなければならない — 選択した割当値
-     だけで作る破れ(target-fitting twist)はこの全称で排除され、
-     放電と数えない。比較射・natural family・期待等式の field は
+     上の検査で固定する。さらに**失敗の不変性を要求し、gauge の型を
+     固定する**: gauge 群 = 指定 cell の各 endpoint
+     `PackageFiberAut` の直積、割当表への作用 = G-106 の
+     `EdgeReselection` 由来の共役・辺再選択作用(本カードはこの
+     既存作用を参照し、実装側で作用を選ばない)。`¬ MateCoherent`
+     は presentation 取替えとこの gauge 作用の**全軌道**で不変に
+     成立しなければならず、**軌道の非自明性 witness**(軌道が一点で
+     ないことの concrete witness — 自明作用・一点軌道による空虚
+     成立の排除)を負例 fixture に義務化する。選択した割当値だけで
+     作る破れ(target-fitting twist)はこの全称で排除され、放電と
+     数えない。canonical / direct comparison の依存元は
+     replacement-invariance theorem と proof-use audit で拘束する
+     (identity wrapper・合成を介した authored comparator の再包装も
+     同 audit の対象)。比較射・natural family・期待等式の field は
      存在せず、target 固定後に schema を設計する余地を残さない。
      strict square は恒等 datum の特殊化とする。**正例と
      負例を同一の固定述語 `MateCoherent`**(unit / counit 経由の
@@ -372,7 +406,10 @@
      §4.3 の「交換が破れる witness」は本カードでは canonicity 破れ
      として実現し、`IsIso` 水準の破れは左枝 regime の随伴同値構造で
      構成不能リスクがあるため主張しない(この n1005 からの差異を
-     明記して固定する)。負例 fixture の値の選択は
+     明記して固定する)。**IsIso 水準の exchange-failure の存否決定
+     (全同型定理または反例)は Gr4 完遂 gate 第四項へ移管する**
+     (program context。義務の削除ではない — ユーザー裁定
+     2026-08-19)。負例 fixture の値の選択は
      proof obligation 選定時に固定し(schema は上記のとおりカードで
      固定済み)、以後の target-fitting 選択を route integrity gate で
      禁止する。生成 2-cell family と `MateCoherent` の両 canonical
@@ -453,7 +490,7 @@
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下(新設)。
   G-101 / G-106 / G-109 のモジュールは参照のみ。完了面は (A)–(E)
   まで。(D) の claim は「条件同定+十分性+反例」の三点セットで
-  固定し、(B) は上記の網羅的 disjunction 単一命題で固定する(右枝は
+  固定し、(B) は上記の二枝 disjunction 単一命題で固定する(右枝は
   同じ三点セット)。条件の必要十分化は frontier(G-107 の条件 C
   必要十分化と同じ後続ハント様式)。derived 化・係数 base change・
   bifibration の一般論は主張しない。
@@ -471,7 +508,9 @@
   (B) の disjunction 確定 artifact(左枝: 無条件存在定理/右枝:
   `H_cart` の定義・資格条項 theorem 群(同型不変性・pullback-stable
   wide class)・十分性定理・非存在反例・checker+非定義的 bridge)
-  と lift 実構成のパラメトリック正例族(非可逆底射を含む)、
+  と universe-polymorphic signature 一式+`FiniteModelLift.{u}`
+  (反例の universe 移送)、lift 実構成のパラメトリック正例族
+  (非可逆底射を含む)、
   compatible point cone による pointed 化手続きと
   `pointedPullback_isPullback`・pullback reindexing functor と
   functor law・随伴 `f_! ⊣ f^*`・canonical mate(natural
@@ -503,9 +542,12 @@
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
   provenance、proof-use、structure-field escape、route integrity を
-  監査すること。Lean / report / tracking Issue を同期し、final review
-  packet を作り、`$math-lean-review` の4査読がすべて
-  `No major findings` であること。有限 presentation 入力の checker
+  監査すること。**二段 review gate を分離して実行する**(正本 =
+  target-goal-contract.md と `$target-theorem-loop` SKILL): 各実装
+  PR は標準 fixed-head `$review-pr` gate を通過すること、および
+  completion candidate では別工程として Lean / report / tracking
+  Issue を同期し、final review packet を作り、`$math-lean-review` の
+  4査読がすべて `No major findings` であること。有限 presentation 入力の checker
   関数と非定義的 soundness / completeness bridge theorem
   (`check P = true ↔ H (toSemantic P)`、`Iff.rfl` 放電禁止)を、
   `H_cart` は右枝を閉じた場合のみ、`H_bc` は (D) の条件同定に伴い、
@@ -580,12 +622,16 @@
     入力。監査 artifact = 生成 family と両 canonical construction が
     raw field を直接返さないことの proof-use / structure-field
     escape audit、および `¬ MateCoherent` の presentation 取替え+
-    許容 gauge 全軌道不変性 theorem)。
+    G-106 `EdgeReselection` 由来 gauge 作用の全軌道不変性 theorem+
+    軌道非自明性 witness)。
   - `pointed ExtInst pullback bridge(pointedPullback_isPullback)`:
     `discharge-required`。compatible point cone と (A) の Source
     pullback・`source_eq` から生成する(`IsPullback` の入力供給は
     放電と数えない。支える結論 = (C) の mate 前提と `π₁`
     membership 導出)。
+  - `FiniteModelLift(反例の universe 移送)`: `discharge-required`。
+    universe 0 の FiniteModel 反例を `ULift` 経由で任意 `u` へ移送し
+    非存在証明を保つ(大域左枝の反証資格)。
   - `CartesianRegime producer(cartesianRegimeOfDisjunction :
     DisjunctionArtifact -> ∀ U, CartesianRegime U)`:
     `discharge-required`。左枝 = 大域存在定理、右枝 = 一様 `H_cart`・
@@ -677,7 +723,7 @@
 - `target failure policy`: fail-closed を原則とする — 中心 conjunct
   の反証は `target-refuted`、statement の不足の発見は `goal-defect`
   で停止し、fixed target の変更はいずれも人間の別判断とする(自動
-  weakening をしない)。個別分岐: (B) は網羅的 disjunction の単一
+  weakening をしない)。個別分岐: (B) は二枝 disjunction の単一
   命題であり、どちらの枝の確定も成功である。左枝が反証され(非存在
   例が出る)かつ資格条項を満たす `H_cart` の同定に至らない場合は
   `target-blocked` で停止する。(A) の同型不変な真部分 fiber witness
