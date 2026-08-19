@@ -561,10 +561,16 @@
   貼り合わせ閉性 theorem・比較射整合 theorem・引き戻し側合成
   coherence・G-106 / G-109 coherence bridge、report
   `research/reports/G-110-aat-doctrine-fiber-product.md`。
-- `target proof strategy`: K0 fiber product 構成と普遍性・退化しない
-  witness -> K1 cartesian lift の disjunction 確定(存在定理または
-  条件同定+反例) -> K2 pointed 化と Beck–Chevalley 比較射・正負の
-  対 -> K3 診断 base change 作用の構成と条件同定・正負の対 ->
+- `target proof strategy`: F0 schema typing(presentation・条件
+  述語・相対述語・regime の正確な Lean signature を elaboration の
+  実フィードバック付きで固定する typing cycle — G-109 Cycle 1 の
+  F0 tower typing と同型。本カードの schema 記述は設計意図の正本で
+  あり、signature 水準の最終確定は F0 の proof obligation として
+  per-cycle review が監査する) -> K0 fiber product 構成と普遍性・
+  退化しない witness -> K1 cartesian lift の disjunction 確定
+  (存在定理または条件同定+反例) -> K2 pointed 化と
+  Beck–Chevalley 比較射・正負の対 -> K3 診断 base change 作用の
+  構成と条件同定・正負の対 ->
   K4 閉性と整合。既存成果の利用 map: G-101 opcartesian 普遍性
   (比較射の生成)、G-104 / G-107 の「不変性+条件+反例」構成法
   (K3 の方法論)、G-106 の合成 coherence(K4 の素材)、G-109
