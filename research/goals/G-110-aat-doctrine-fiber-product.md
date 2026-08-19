@@ -35,8 +35,12 @@
   **本カードは Gr4 を閉じるカードではなく、Gr4 の中間カード
   (第一手)である**(再分類裁定 2026-08-19) — 達成範囲は exact
   `Doct_U` / `ExtInst_U` / package 下層の realization 像上の
-  finite-presentable subcalculus。Gr4 完遂 gate として (i) 全
-  semantic exact-bottom への coverage 拡張、(ii) refinement 系統
+  FiniteModel-backed の finite subcalculus。Gr4 完遂 gate として
+  (i) 全 semantic exact-bottom への coverage 拡張と**全域分類**
+  (左枝なら全域 lift、右枝なら `H_cart ↔ lift 存在`・`H_bc ↔ 保存`
+  の必要十分化または最大 admissible class theorem — n1001 §3.5 の
+  「相対的視点の全操作が閉じる」の忠実な転写。条件外入力の帰趨を
+  未決定のまま Gr4 を記録しない)、(ii) refinement 系統
   (`RefinementDoctrineHom` の圏化と refinement base change)、
   (iii) 上段(`GeomRead` / `ObProblem`)への base-change lift(Gr3
   段横断輸送への接続 bridge)、(iv) **IsIso 水準の Beck–Chevalley
@@ -74,7 +78,7 @@
   canonicity obstruction、(D) 診断の base change 可換性の成立条件、
   (E) pullback square の貼り合わせ閉性。
   これで exact 底層(`Doct_U` / `ExtInst_U` / package 下層)の
-  finite-presentable subcalculus が立つ — 本カードは **Gr4 の中間
+  FiniteModel-backed の有限 subcalculus が立つ — 本カードは **Gr4 の中間
   カード(第一手)**であり、Gr4 の達成記録は行わない(capstone は
   後続カード。program context)。
 - `core tension`: 最大リスクは自明化である — Boolean regime の零次元性に
@@ -244,29 +248,30 @@
      `toSemanticCart P = toSemanticCart P' -> checkCart P =
      checkCart P'` を discharge-required とする(同一 semantic 入力
      を表す presentation 間で評価が一致する — 像外差し替えによる
-     結論符号化の排除)。**schema は本カードで閉じる — code 族を
-     Lean signature 水準で固定する**: `CartPresentation U` の field
-     は名前付き code 型 `DoctrineCode U`(source / target の有限
-     presentation 対)・`SourceMapCode`(成分写像の有限表 —
-     index / value 型は有限 code 型、宣言 support 外は default
-     値)・`AtomPermCode`(有限 support の置換表、support 外は恒等
-     — `AtomCarrier.Atom` が任意型でも有限 support 置換として
-     decode できる)・`FiberAutCode`・`CoeffCode`(係数表)で全列挙
-     する。各 code に decoder・code 水準の合成 / 逆元 /
-     `DecidableEq` 等式判定・coverage(decode 像の宣言)・
-     **soundness theorem**(decode 出力が `normalize_eq`・
-     `extraction_iff`・`source_eq` を実際に満たす)を完全 signature
-     で固定し、validated subtype の well-formedness 述語の内容
-     (decoder の全域性条件)もカードで固定する。semantic payload・
-     結論寄り certificate を leaf code に隠す構成は禁止(code の
-     value 型は上記有限型のみ)。`PackageFiberAut` は semantic な
-     `Aut` の subgroup であり有限 code ではないため、**割当表の値は
-     `FiberAutCode`(有限 support 置換由来の生成元 code)に限る** —
-     完全な semantic automorphism の任意入力は型で排除する。
-     `BCConditionSyntax` の typed constructor も BC 固有 field
-     (square 成分・compatible point data 成分・pre-BC 診断図式
-     成分)の projection と operand 型を同様に列挙する(「(B) と
-     同一」という参照だけでは閉じない)。`BCPresentation U` の **authored
+     結論符号化の排除)。**schema は既存 reviewed schema への錨止め
+     で閉じる — 新規 code 族は発明しない**(汎用 code 族を Lean
+     signature 水準まで prose で固定する路線は、実 API(任意型
+     `Atom`・非可逆 `sourceMap`・package 依存 `PackageFiberAut`・
+     多 field の上位 hom)に対して閉じ切れないため撤回する):
+     `CartPresentation U` は **既存 reviewed `FiniteModel` schema
+     (`formal/AG/Examples/FiniteModel.lean` — 有限 carrier・
+     `DecidableEq` 既備)に錨止めした有限 instance データ**として
+     固定する — field は FiniteModel-backed な source / target
+     instance 対と、その間の hom の有限記述(FiniteModel の既存
+     field 語彙のみ。新規 field の発明・semantic payload・結論寄り
+     certificate の埋め込みは禁止)。decoder と soundness
+     (`normalize_eq`・`extraction_iff`・`source_eq` の実充足)は
+     FiniteModel の既存 reviewed 構成を参照して立て、validated
+     subtype の well-formedness 述語は decoder 全域性条件として固定
+     する(code 水準の逆元演算は要求しない — hom は非可逆でよい)。
+     **realization 像 = FiniteModel-backed 射**であり、subcalculus の
+     達成表示もこの語で限定する(下記 completion criteria)。
+     `PackageFiberAut` の値は FiniteModel-backed fixture 上では有限
+     に列挙・判定可能である(G-106 `FiniteWitnesses` の既存 reviewed
+     取り扱いと同じ)。`BCConditionSyntax` の typed constructor は
+     BC 固有 field(square 成分・compatible point data 成分・
+     pre-BC 診断図式成分)の projection と operand 型を列挙する
+     (「(B) と同一」という参照だけでは閉じない)。`BCPresentation U` の **authored
      field は(cospan の `CartPresentation` 対・compatible point
      data の有限表・base change 前診断図式の有限 presentation
      (G-106 schema 参照))のみ**+well-formedness 述語で全列挙
@@ -392,47 +397,41 @@
      の authored field 部分への参照で固定)のみとする。**2-cell
      family は fiber 全対象へは拡張しない** — 点ごとの表から
      full-fiber natural family への canonical 拡張は存在しないため、
-     負例は **有限表示部分圏**(対象有限に加え、hom の有限 code と
-     全射 coverage を持つ finitely presented subcategory — 対象有限
-     だけでは hom-set の有限性は従わない)に制限して立て、点ごとの
-     割当表からこの部分圏上の component family を生成する theorem を
-     discharge-required とし、全成分と全射の naturality を有限 code
-     上の検査で固定する(有限表示部分圏上の**全 morphism
-     naturality の typed validation interface** をあわせて固定
-     する)。さらに**失敗の不変性を要求し、gauge を本カードの建設
-     義務として固定する**: G-106 の `EdgeReselection` は
-     edge-indexed で `DefectCochain` に作用し authored comparator を
-     固定したままにする既存作用であり、**割当表への既存作用は存在
-     しない**(既存作用への誤帰属をしない)。そこで **`CellGauge`
-     を本カードで新設定義する** — gauge 群の定義・割当表への作用
-     則・edge gauge(`EdgeReselection`)からの写像・component
-     family への作用・**G-106 reselection orbit との比較 theorem**
-     を全て discharge-required の target artifact とする(実装側で
-     作用を選ばせない)。`¬ MateCoherent` は presentation 取替えと
-     `CellGauge` 作用の**全軌道**で不変に成立しなければならず、
-     **軌道の非自明性 witness**(軌道が一点でないことの concrete
-     witness — 自明作用・一点軌道による空虚成立の排除)を負例
-     fixture に義務化する。割当表の値は `FiberAutCode` に限る
-     (schema 節 — semantic automorphism の任意入力の型排除)ため、
-     central twist 等による `¬ MateCoherent` の入力符号化は code
-     制限+全軌道全称+validation interface で三重に排除する。
-     comparator の provenance は primitive lax-square geometry
-     (base change 前 presentation の原子データ)からの生成に限る。
-     canonical / direct comparison の依存元は
-     replacement-invariance theorem と proof-use audit で拘束する
-     (identity wrapper・合成を介した authored comparator の再包装も
-     同 audit の対象)。比較射・natural family・期待等式の field は
-     存在せず、target 固定後に schema を設計する余地を残さない。
-     strict square は恒等 datum の特殊化とする。**正例と
-     負例を同一の固定述語 `MateCoherent`**(unit / counit 経由の
-     canonical mate と、(A) 普遍性・合成輸送経由の直接比較 —
-     **双方とも固定済みの独立な canonical construction から生成**
-     — の一致)**で対にする**: 正例 = strict pullback square での
-     `MateCoherent`(および mate の同型性)、負例 = 具体 lax
-     fixture 上での `¬ MateCoherent`。**負例は Beck–Chevalley 交換の
-     `IsIso` 水準の破れではなく、comparison canonicity failure の
-     独立 theorem として固定する** — `¬ MateCoherent` は正例側の
-     `IsIso mate` と両立し得る別軸であり、その否定ではない。n1005
+     負例の比較は **authored support(datum の載る pointed
+     endpoint)上に制限**し、点ごとの割当表からの誘導比較の構成を
+     discharge-required とする(相対述語の domain 制限 — 下記)。
+     **負例の主張を「authored 比較に相対的な不一致」として正直に
+     限定する**(相対障害への reframing — 割当表への新設 gauge の
+     発明は撤回する。割当表への既存作用は存在せず、後決めの新設
+     作用は target-fitting を型で防げないため): 対の述語は
+     **相対述語 `MateCoherentRel`** — authored datum(G-106
+     comparator 表と同型の割当表。FiniteModel-backed fixture 上で
+     値は有限に列挙・判定可能)が誘導する比較と、普遍性から生成
+     された canonical mate との、**authored support 上での一致** —
+     とし、domain は authored datum 付き square(strict square =
+     恒等 datum)で正負共通に型付けする(full fiber と有限部分圏の
+     domain 不一致問題はこの相対化で消える)。この相対性は G-106 の
+     raw defect(authored comparator と canonical comparator の相対
+     不一致)と同じ型の障害であり、絶対的な BC 交換破れを僭称し
+     ない。**不変性は実在する G-106 作用に錨止めする**: 負例の相対
+     不一致は、`InReselectionOrbit`(raw cochain への実在
+     reselection 作用)の**全軌道**で不変に非消滅であることを要求し
+     (軌道の非自明性 witness — 軌道が一点でないことの concrete
+     witness — を同一 fixture に義務化)、authored twist だけで作る
+     見かけの不一致(orbit 一点で消えるもの)は放電と数えない。
+     canonical / direct comparison の依存元は replacement-invariance
+     theorem と proof-use audit で拘束する(identity wrapper・合成を
+     介した authored comparator の再包装も同 audit の対象)。比較
+     射・natural family・期待等式の field は存在せず、target 固定後
+     に schema を設計する余地を残さない。strict square は恒等
+     datum の特殊化とする。正負の対: 正例 = strict pullback square
+     での `MateCoherentRel`(および canonical mate の同型性 —
+     絶対述語 `IsIso` は正例側の別 theorem)、負例 = 具体 lax
+     fixture 上での `¬ MateCoherentRel`(orbit 不変)。**負例は
+     Beck–Chevalley 交換の `IsIso` 水準の破れではなく、authored
+     比較に相対的な canonicity obstruction の独立 theorem として
+     固定する** — `¬ MateCoherentRel` は正例側の `IsIso mate` と
+     両立し得る別軸であり、その否定ではない。n1005
      §4.3 の「交換が破れる witness」は本カードでは canonicity 破れ
      として実現し、`IsIso` 水準の破れは構成可能性が未決定のため
      本カードでは主張しない(この n1005 からの差異を明記して固定
@@ -442,9 +441,9 @@
      2026-08-19)。負例 fixture の値の選択は
      proof obligation 選定時に固定し(schema は上記のとおりカードで
      固定済み)、以後の target-fitting 選択を route integrity gate で
-     禁止する。生成 2-cell family と `MateCoherent` の両 canonical
-     construction が raw field を直接返さないことは proof-use /
-     structure-field escape audit で監査する。
+     禁止する。誘導比較と canonical mate の生成が raw field を直接
+     返さないことは proof-use / structure-field escape audit で監査
+     する。
      `IsIso` は正例側の追加 theorem であり負例の否定軸ではない
      (`¬ IsIso` の構成可能性は**未決定の問い**であり — 存否は Gr4
      完遂 gate 第四項で決定する — 負例形として義務化すると構成不能
@@ -529,9 +528,8 @@
 - `target proof artifacts`: fiber product の構成と普遍性 theorem、
   同型不変な真部分 fiber witness(`Nonempty` pullback・canonical 射
   の非全射性・両射影の非同型性・compatible / incompatible pair)、
-  code 族(`DoctrineCode` / `SourceMapCode` / `AtomPermCode` /
-  `FiberAutCode` / `CoeffCode`)と decoder・code 演算・coverage・
-  soundness theorem、`CartPresentation U`(raw code / validated
+  FiniteModel-backed presentation schema(既存 reviewed schema への
+  錨止め)と decoder・soundness theorem、`CartPresentation U`(raw code / validated
   二段+`DecidableEq`)/ `CartSemanticInput U`(named structure)/
   `RealizableHom U` と `realizableHomOf` / `BCPresentation U` /
   `BCSemanticInput U` と `toSemantic` realization・realization
@@ -551,12 +549,11 @@
   functor law・随伴 `f_! ⊣ f^*`・canonical mate(natural
   transformation)・自然性・cleavage 非依存性・pullback での同型
   theorem・`packageProjection` の Beck–Chevalley exactness support
-  theorem、`AuthoredBC2CellPresentation` / 有限表示部分圏上の
-  component family 生成 theorem と生成 2-cell family /
-  `MateCoherent` の定義と正負対(strict 正例+lax 負例 = canonicity
-  failure 独立 theorem)と `CellGauge` の定義・作用則・edge gauge 写像・G-106 orbit 比較
-  theorem・gauge 全軌道不変性 theorem と軌道非自明性 witness、
-  naturality の typed validation interface、
+  theorem、`AuthoredBC2CellPresentation` / authored support 上の
+  誘導比較の構成 / `MateCoherentRel` の定義と正負対(strict 正例+
+  lax 負例 = authored 相対の canonicity obstruction 独立 theorem)
+  と実在 `InReselectionOrbit` 全軌道の非消滅 theorem・軌道非自明性
+  witness、
   診断 base change 作用の構成一式((d1)–(d3) 無条件+(d4)–(d6)
   条件付きと診断比較写像・named 実発火 predicate)、`H_bc` の定義・
   資格条項 theorem 群(admissible-square calculus)・checker+非
@@ -591,7 +588,7 @@
   artifact として含める(`FiniteModel` の有限性から一般
   decidability は従わないため、決定可能性は checker+bridge で操作化
   する。左枝確定時に `H_cart` checker は要求しない)。完遂時の
-  記録は **「finite-presentable(realization 像)上の `H_cart` /
+  記録は **「FiniteModel-backed(realization 像)上の `H_cart` /
   `H_bc`-admissible exact-bottom subcalculus 達成」**に限定する
   (左枝で閉じた場合は `H_cart` 部を全域 lift と読み替える)。
   条件外・realization 像外を含む exact-bottom 全域の分類と読める
@@ -659,14 +656,14 @@
     (役割 = (C) 負例の入力幾何。proof-use = 2-cell family の生成
     入力。監査 artifact = 生成 family と両 canonical construction が
     raw field を直接返さないことの proof-use / structure-field
-    escape audit、および `¬ MateCoherent` の presentation 取替え+
-    `CellGauge`(本カード新設)作用の全軌道不変性 theorem+軌道非
+    escape audit、および `¬ MateCoherentRel` の presentation 取替え
+    +実在 `InReselectionOrbit` 作用の全軌道非消滅 theorem+軌道非
     自明性 witness)。
-  - `CellGauge(割当表への gauge 作用)`: `discharge-required`。
-    gauge 群の定義・作用則・edge gauge(`EdgeReselection`)からの
-    写像・component family への作用・G-106 reselection orbit との
-    比較 theorem(既存作用への誤帰属をしない — G-106 の
-    `EdgeReselection` は割当表に作用しない)。
+  - `相対障害の orbit 不変性(実在 InReselectionOrbit への錨止め)`:
+    `discharge-required`。負例の相対不一致が raw cochain への実在
+    reselection 作用の全軌道で非消滅であること+軌道非自明性
+    witness(新設 gauge の発明はしない — `EdgeReselection` は割当表
+    に作用しないため、割当表側の不変性は僭称しない)。
   - `pointed ExtInst pullback bridge(pointedPullback_isPullback)`:
     `discharge-required`。compatible point cone と (A) の Source
     pullback・`source_eq` から生成する(`IsPullback` の入力供給は
@@ -699,11 +696,12 @@
   - `(B) の disjunction 確定と H_cart / H_bc の十分性・反例対`:
     `discharge-required`。条件は構成データ側の述語として立て、結論
     との同値・単一 fixture 等式型を禁じる。
-  - `Beck–Chevalley 比較射と MateCoherent の正負対`:
+  - `Beck–Chevalley 比較射と MateCoherentRel の正負対`:
     `discharge-required`。比較射(canonical mate)は普遍性から
     natural transformation として生成し、cleavage 非依存性 theorem を
-    伴う。正負は同一述語 `MateCoherent` で対にする(負例 =
-    canonicity failure の独立 theorem、`IsIso` の否定ではない)。
+    伴う。正負は同一相対述語 `MateCoherentRel` で対にする(負例 =
+    authored 相対の canonicity obstruction 独立 theorem、`IsIso` の
+    否定ではない)。
     comparator / holonomy の自由供給による破れは放電と数えない。
   - `pullback reindexing functor・随伴・functor law`:
     `discharge-required`。producer 由来の `f^*` 構成・id / comp
@@ -712,10 +710,10 @@
   - `packageProjection の Beck–Chevalley exactness support theorem`:
     `discharge-required`。pullback square 上の mate 同型は
     bifibration 一般論から従わないため固有 support を建設する。
-  - `点ごとの割当表からの component family 生成 theorem(有限表示
-    部分圏上)`: `discharge-required`。hom の有限 code と coverage を
-    型で固定した部分圏上でのみ生成する(full-fiber への canonical
-    拡張は主張しない)。
+  - `点ごとの割当表からの誘導比較の構成(authored support 上)`:
+    `discharge-required`。authored support(datum の載る pointed
+    endpoint)上でのみ生成する(full-fiber natural family への
+    canonical 拡張は主張しない)。
   - `診断 base change 作用の構成`: `discharge-required`。(d1)–(d3)
     と診断比較写像は無条件に、**(d4)–(d6) は `H_bc` 消費の条件付き
     theorem として**、G-101 普遍性と (A)–(C) から生成する(条件の

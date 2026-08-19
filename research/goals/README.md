@@ -20,7 +20,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
   (Gr4 の中間カード(第一手): doctrine 圏の fiber product と
-  base change — exact 底層の finite-presentable subcalculus、5層
+  base change — exact 底層の FiniteModel-backed subcalculus、5層
   (A)–(E)。依存先 G-101 / G-106 / G-109(core pseudofunctor API)は
   完遂済み。Gr4 達成の記録は本カードでは行わず、coverage 拡張・
   refinement 系統・上段 lift・IsIso 水準 BC exchange-failure 存否
