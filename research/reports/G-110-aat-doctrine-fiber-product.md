@@ -13,7 +13,7 @@
 
 ## Cycle ledger
 
-### Cycle 1 — F0a FiniteModel-backed cartesian presentation typing
+### Cycle 1 — F0a reviewed FiniteModel-backed cartesian schema typing
 
 ```yaml
 ledger_type: target_cycle_result
@@ -27,87 +27,104 @@ report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
   proof_state_ref: Issue 4034 active/not-started and fixed GOAL strategy F0
   proof_dag_predecessors:
-    - G-101 ExactDoctrineHom / ExtInstHom / packageProjection
-    - G-101 FiniteModel finiteTransportExactDoctrineHom
-  proof_obligation: construct the FiniteModel-backed raw/validated CartPresentation layer, its CartSemanticInput realization and law-level soundness theorem, RealizableHom witness type and canonical constructor, and the fully enumerated conclusion-free CartConditionSyntax with a computable evaluator
-  selection_reason: the base-change presentation and every K0-K4 node consume the same realizable pointed-arrow type; fixing this first dependent layer closes the nearest common dependency without bundling the independent G-106 diagnostic schema into the same cycle
+    - G-101 FiniteModel extractionDoctrine
+    - G-101 finiteTransportTargetDoctrine / finiteTransportExactDoctrineHom
+  proof_obligation: type the reviewed FiniteModel-backed four-field raw/validated CartPresentation layer, its named CartSemanticInput realization and actual morphism-law soundness, RealizableHom provenance, and the fixed equality/membership/finite-universal CartConditionSyntax
+  selection_reason: every later finite base-change obligation consumes the same realizable pointed-arrow type; F0a fixes that shared cartesian input without bundling the independent G-106 diagnostic schema of F0b
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/Schema.lean
   risks:
-    - a decoder interface could accept arbitrary semantic payload instead of the reviewed FiniteModel data
-    - a condition syntax could mention lift existence, mate coherence, or checker output
-    - universe zero finite data could silently weaken the required universe-polymorphic interfaces
+    - a new semantic tag family could replace the reviewed FiniteModel schema
+    - a manufactured doctrine could make a desired noninvertible hom exact by construction
+    - allCells could be a hom-tag truth table instead of a finite universal equality
+    - a fixed two-source schema could fail to represent its own source pullbacks
   unchecked:
-    - fixed-head independent review
+    - revised fixed-head independent review
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: fixed a universe-polymorphic FiniteModel-backed pointed-arrow presentation with 108 raw codes and 10 validated codes, generated all semantic morphism laws in the decoder, exposed a noninjective exact source map, and fixed the four-constructor conclusion-free cartesian condition language with nonconstant evaluation
+  proof_obligation_delta: fixed a universe-polymorphic presentation whose authored raw payload is exactly four fields over existing FiniteModel value types; restricted the validated image to the reviewed extraction/transport frames and identity source table; constructed actual ExactDoctrineHom/ExtInstHom laws; fixed a presentation-level equality/membership/finite-universal condition grammar; and proved the source-table pullback is the two-element diagonal
   completion_candidate: no
   lean_artifacts:
-    - FiniteModelBacking / FiniteModelBacking.transportAtomEquiv
-    - FiniteDoctrineCode / FiniteSourceCode / FiniteInstanceCode / FiniteHomCode
+    - FiniteModelBacking / FiniteModelBacking.liftAtomEquiv
+    - FiniteInstanceDescription (standard product abbreviation)
     - CartRawCode / CartRawCode.WellFormed / ValidatedCartCode
-    - CartSemanticInput / CartPresentation / toSemanticCart
-    - finiteAtomTransportHom / finiteConstantToAllHom
+    - CartSemanticInput / CartPresentation / decodeCartHom / toSemanticCart
     - toSemanticCart_sound
     - RealizableHom / realizableHomOf
-    - CartFieldKind / CartProjection / CartDerivedSet / CartCellTest
-    - CartConditionSyntax / evalCartCondition
+    - CartFieldKind / CartProjection / CartNamedConstant / CartFieldTerm
+    - CartDerivedSet / CartUniversalEquality / CartConditionSyntax
+    - evalCartCondition
+    - finiteSourceDiagonalPullbackEquiv
   evidence:
-    - Schema.lean single-file focused elaboration
-    - namespace axiom audit with 334 declarations and standard axioms only
-    - direct axiom audit of 13 public-spine declarations
-    - finite code evaluation: doctrine=3, source=2, instance=6, hom=3, raw=108, validated=10
-    - positive identity/transport/constant raw codes and a rejected malformed identity code
-    - finiteConstantPresentation_not_injective
-    - condition evaluator true/false firing theorems
+    - finiteReviewedAtomSwapEquiv_eq_reviewed
+    - finiteFramedDoctrine_componentC_extracts_iff_reviewed
+    - finiteFramedDoctrine_dependsAB_extracts_iff_reviewed
+    - validatedCartCode_sourceMap_eq_id
+    - finitePointMismatchRawCode_not_wellFormed
+    - finiteAtomTransportPresentation_atomEquiv_eq_reviewed
+    - finiteAtomTransportPresentation_nonidentity
+    - finiteSourceDiagonalPullback_card
+    - validatedSourcePullbackEquiv
+    - validatedSourcePullback_card
+    - evalCartCondition_identity_sourceMap
+    - evalCartCondition_transport_atomMap_nonidentity
+    - evalCartCondition_transport_targetExcluded_not_sourceExcluded
+    - evalCartCondition_identity_sourcePoint_not_unit
   claim_mapping:
     theorem_names:
-      - FiniteModelBacking.transportAtomEquiv_ne_refl
-      - finiteMalformedIdentityRawCode_not_wellFormed
-      - finiteConstantToAllHom_not_injective
+      - finiteReviewedAtomSwapEquiv_eq_reviewed
+      - finiteFramedDoctrine_componentC_extracts_iff_reviewed
+      - finiteFramedDoctrine_dependsAB_extracts_iff_reviewed
       - toSemanticCart_sound
-      - finiteConstantPresentation_not_injective
-      - evalCartCondition_atomTransport_injective
-      - evalCartCondition_constant_not_injective
-      - evalCartCondition_atomTransport_nonidentity
+      - finiteSourceDiagonalPullback_card
+      - validatedSourcePullback_card
+      - evalCartCondition_transport_atomMap_nonidentity
     source_labels:
-      - target theorem (B), two-layer input typing and FiniteModel-backed schema
-      - target proof artifacts, raw/validated CartPresentation and CartSemanticInput
-      - H_cart qualification clause (i), fully enumerated fixed condition language
+      - target theorem (B), two-layer input typing and reviewed FiniteModel-backed schema
+      - target proof artifacts, raw/validated CartPresentation and named CartSemanticInput
+      - H_cart qualification clause (i), fixed equality/membership/finite-universal language
+      - realization-image closure precondition for later pullbackPresentation
     conjuncts:
-      - raw code and decidable well-formedness are separated from semantic decoding
-      - semantic decoding produces actual ExactDoctrineHom and ExtInstHom laws
-      - RealizableHom carries a presentation provenance equality rather than a lift certificate
-      - condition syntax has exactly equality, derived membership, finite-cell universal test, and conjunction constructors
-      - a decoded nonidentity/noninjective bottom morphism exists in the finite schema
+      - raw code has four authored fields: source instance, target instance, finite source-map table, finite Atom-map table
+      - source/target fields use only FiniteModel.FiniteAtom and FiniteModel.ExtractionSource values
+      - validated decoder admits only componentC/dependsAB reviewed frames, identity source maps, source_eq-compatible points, and the endpoint-generated Atom table
+      - semantic decoding builds actual normalize_eq / extraction_iff / source_eq proofs
+      - RealizableHom carries presentation provenance equality and no lift certificate
+      - condition relations are field equality, presentation-derived singleton membership, finite universal equality, and conjunction
+      - every allCells branch iterates an explicit exhaustive FiniteModel cell list
+      - every validated source map is identity and its binary source pullback is the two-element diagonal
     undischarged_assumptions:
       - F0b base-change diagnostic presentation and cartesian regime typing
-      - presentation constructors and replacement invariance
+      - presentation constructors and realization/replacement invariance
+      - K1 disjunction; in particular the right-branch noninvertible positive-family qualification is not supplied by this reviewed groupoid schema
       - all K0-K4 theorem obligations
-    acceptance_point: all semantic arrows are generated from the fixed finite codes and a representation backing; no authored field contains a package lift, strong-cartesian certificate, mate, checker result, or target conclusion
+    acceptance_point: the decoder uses only the existing reviewed FiniteModel extraction and G-101 transport frames; no new doctrine tag, all-True doctrine, constant hom, lift, strong-cartesian certificate, mate, checker result, or target conclusion is authored
     port_status: unported
 audits:
   premise_delta:
     discharged:
-      - F0a CartPresentation / CartSemanticInput / RealizableHom typing
-      - FiniteModel-backed raw/validated decoder and actual normalize_eq / extraction_iff / source_eq laws
-      - fixed conclusion-free CartConditionSyntax and evaluator
+      - F0a named CartPresentation / CartSemanticInput / RealizableHom typing
+      - four-field finite raw code and decidable validated decoder domain
+      - reviewed FiniteModel extraction/transport comparison and actual morphism laws
+      - fixed equality/membership/finite-universal CartConditionSyntax and presentation evaluator
+      - source-level diagonal pullback does not escape the reviewed finite source type
     remaining:
       - F0b and K0-K4 fixed GOAL obligations
+      - K1 left/right branch determination and any right-branch noninvertible family
   certificate_provenance:
     discharged:
-      - atom transport is conjugated from G-101 finiteTransportAtomEquiv
-      - exact-morphism law proofs are constructed inside finiteAtomTransportHom / finiteConstantToAllHom
-      - toSemanticCart reads only validated finite code and FiniteModelBacking
+      - executable Atom swap is proved equal to G-101 finiteTransportAtomEquiv
+      - endpoint doctrine frames are proved extraction-equivalent to FiniteModel.extractionDoctrine and finiteTransportTargetDoctrine
+      - exact-morphism law proofs are constructed inside decodeCartHom from validated endpoint data
     unresolved:
-      - later checker bridge, regime producer, pullback and BC constructions
+      - later checker bridge, regime producer, pullback/pasting constructors and BC constructions
   proof_use:
     used:
-      - FiniteModelBacking.atomEquiv in both doctrine decoding and conjugated nonidentity transport
-      - CartRawCode.WellFormed in endpoint-dependent ExtInstHom decoding
-      - decoded ExactDoctrineHom laws in toSemanticCart_sound
+      - FiniteModelBacking.atomEquiv in both endpoint doctrines and Atom-equivalence lifting
+      - all five CartRawCode.WellFormed conjuncts in decodeCartHom and endpoint realization
+      - reviewed finite source/Atom enumerations in condition evaluation
+      - validated identity source-map theorem in source-pullback readiness
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -118,13 +135,40 @@ audits:
   validation_refs:
     - ./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/Schema.lean: pass
     - ./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct.lean: pass
-    - lake build ResearchLean.AG.DoctrineFiberProduct.Schema: targeted dependency closure pass; no aggregate/full Research build
-    - '#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct: 334 declarations, pass'
-    - direct '#print axioms': only propext, Classical.choice, Quot.sound where present
+    - lake build ResearchLean.AG.DoctrineFiberProduct.Schema: exact target pass; no aggregate/full Research build
+    - '#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct: 299 declarations, pass'
+    - direct '#print axioms' of 18 public-spine declarations: standard axioms only
     - placeholder / hidden-BiDi / privacy / reverse-import / git diff scan: pass
   blocking_findings: []
   next_obligation: F0b BCPresentation / BCSemanticInput / pre-BC diagnostic schema / CartesianRegime / authored-relative BC domain typing
 ```
 
-次 obligation は F0b(`BCPresentation` / `BCSemanticInput` / diagnostic schema /
+## Review history
+
+### Initial head `da1b6266` — rejected
+
+独立4査読は数学A/B、Lean A/Bの全 lane で Major 判定となり、PR #4035
+[監査コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4035#issuecomment-5351555665)
+に統合した。主 finding は次の三点だった。
+
+1. 昇格レビューで撤回した新 code 族と全 `True` の
+   `finiteSourceIndependentDoctrine` / constant hom を再導入していた。
+2. `allCells` が有限全称ではなく hom tag の truth tableで、固定 relation
+   vocabulary 外の injectivity / surjectivity predicateを追加していた。
+3. constant cospan の source pullback は4要素だが、2要素 Source だけの
+   schemaでは表現できず、後続の必須 pullback closure が不可能だった。
+
+全 finding を受理した。revised implementation は bespoke code enum、全 `True`
+doctrine、constant hom、property tag tableを削除した。raw payloadを既存
+`FiniteModel` 値だけの4 fieldへ置換し、reviewed extraction/transportとの比較
+theorem、実有限全称 evaluator、対角 pullback同値を追加した。declarationと
+statementを変更したため、新fixed headに4 laneを全再実行する。
+
+## Remaining scope
+
+次 obligation は F0b (`BCPresentation` / `BCSemanticInput` / diagnostic schema /
 `CartesianRegime` / authored-relative BC domain)であり、F0 全体の省略ではない。
+revised F0a は reviewed finite groupoidを正直に表現し、非可逆射を発明しない。
+したがって K1 で左枝を証明できず右枝が必要になった場合、右枝の
+「非恒等かつ非可逆な底射を含む正例族」は未放電の中心 gateである。固定された
+reviewed schema内で構成不能なら、GOALを弱めず `goal defect` で停止する。
