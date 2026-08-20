@@ -91,7 +91,7 @@ contexts.
 
 \begin{definition}[context category]\label{def:contextcategory}
 Write $\ArchCtx(X)$ for the category whose objects are contexts and whose
-morphisms are reinterpretations $i:W'\to W$ (restriction, projection,
+morphisms are reinterpretations $g:W'\to W$ (restriction, projection,
 refinement, embedding, base change). Morphisms point from local contexts
 to global contexts. The overlap of a cover is constructed as the pullback
 \[
@@ -171,7 +171,7 @@ admissibility is used in no proof. The regime of finite execution is the
 finite-meet poset model of \S\ref{sec:33}.
 \end{definition}
 
-\begin{definition}[presheaf and sheaf condition]\label{def:presheaf}
+\begin{definition}[presheaf and sheaf condition]\label{def:presheaf}\sloppy
 A presheaf on $S_X$ is a functor $F:\ArchCtx(X)^{\mathrm{op}}\to
 \mathbf{Set}$. $F$ is a \emph{sheaf} when, for every cover
 $\{W_i\to W\}$, compatible local sections agreeing on overlaps glue to a
@@ -235,7 +235,7 @@ By the general theory of quotients and ideals. (1) is the ideal
 subpresheaf property of Definition~\ref{def:witnessideal} and the
 universal property of quotients; (2) is a construction; (3) follows from
 the restriction compatibility of $\epsilon$
-(Definition~\ref{def:equationsystem}) and computation with
+(\S\ref{sec:34}) and computation with
 representatives in the quotient; (4) is the definition of equation
 fulfillment ($\epsilon=0$); (5) is the very definition of zero in a
 quotient.
@@ -302,7 +302,8 @@ atlas); the primary data of the equation side (the equation system $E$,
 the local equation-lift atlas); the correspondence between the two
 (Atom/equation interpretation, the local-state interpretation $\beta$);
 the two completeness conditions; the true sheaf condition used for
-global gluing. Fixed as inputs 1--8 of Theorem~\ref{thm:central} \\
+global gluing. Fixed as the cover, inputs 1--8, and the sheaf
+hypothesis of stage (iii) of Theorem~\ref{thm:central} \\
 \addlinespace
 generated &
 $\Msem$, $\QE$, the two \v{C}ech complexes, $\rsem$, $\rE$, the

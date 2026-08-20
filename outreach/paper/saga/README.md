@@ -20,8 +20,9 @@ Related Work の原典調査、必須文献、比較軸、本文候補は
 [zenodo_saga_related_work.md](zenodo_saga_related_work.md) に整理する。
 
 論文の日本語正本は [zenodo_saga_draft.md](zenodo_saga_draft.md) に置く。
-release identity は確定済み: release tag `saga-paper-v1.0.0`、version DOI
-`10.5281/zenodo.21603762`、license CC BY 4.0。
+release identity は確定済み: release tag `saga-paper-v1.0.0`、v1.0.0 deposit の version DOI
+`10.5281/zenodo.21605207`(concept DOI `10.5281/zenodo.21603761`)、license CC BY 4.0。
+本文は v1.0.1(2026-08-21、arXiv 投稿時の文言修正。release identity は不変)。
 
 投稿言語は英語であり、英語正本(LaTeX)は [en/](en/) に置く。
 本文内容の変更は両正本セットで行う。ビルド手順と規約は

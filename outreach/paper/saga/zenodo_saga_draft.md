@@ -5,8 +5,8 @@
 **Hiroyuki Nakahata** — Independent Researcher
 ORCID: [0009-0008-5928-0234](https://orcid.org/0009-0008-5928-0234)
 
-Version 1.0.0 — July 2026
-DOI: [10.5281/zenodo.21603762](https://doi.org/10.5281/zenodo.21603762) — Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+Version 1.0.1 — August 2026
+DOI: [10.5281/zenodo.21603761](https://doi.org/10.5281/zenodo.21603761) — Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 > 本ファイルは英語正本([`en/main.tex`](en/) 一式)の日本語正本である。
 > 本文変更は両正本セットで行う(`en/README.md` の規律)。
@@ -227,7 +227,7 @@ semantic data の族である。component-local view、feature view、
 semantic contract slice、runtime trace slice などが代表的な context である。
 
 **定義 3.5(context category)。** context を対象とし、context 間の読み替え
-`i:W'→W`(restriction、projection、refinement、embedding、base change)を
+`g:W'→W`(restriction、projection、refinement、embedding、base change)を
 射とする圏を `ArchCtx(X)` と書く。射は局所 context から大域 context へ向かう。
 cover の overlap は pullback
 
@@ -359,7 +359,7 @@ support Atom `a_q` の選択。cover-indexed の場合は local context を各 c
    したがって `d_q∉I_Ob^E(W_q)` ならば `[d_q]≠0`。
 
 証明は商と ideal の一般論による。(1) は定義 3.9 の ideal subpresheaf 性と商の
-普遍性、(2) は構成、(3) は `ε` の restriction 可換性(定義 3.6)と商の
+普遍性、(2) は構成、(3) は `ε` の restriction 可換性(§3.4)と商の
 代表元計算、(4) は equation fulfillment の定義(`ε=0`)、(5) は商に
 おける零の定義そのものである。
 
@@ -408,7 +408,7 @@ SAGA では、入力、構成、帰結を厳密に区別する。
 
 | 種類 | 内容 |
 | --- | --- |
-| selected | 比較の舞台(monomorphic AAT cover、empty-overlap normalization)、semantic 側の一次データ(semantic atom system、local repair relation、local repair atlas)、equation 側の一次データ(equation system `E`、local equation-lift atlas)、両者の対応(Atom/equation interpretation、local-state interpretation `β`)、completeness 二条件、global gluing に用いる true sheaf 条件。定理 5.1 の入力 1–8 として固定される |
+| selected | 比較の舞台(monomorphic AAT cover、empty-overlap normalization)、semantic 側の一次データ(semantic atom system、local repair relation、local repair atlas)、equation 側の一次データ(equation system `E`、local equation-lift atlas)、両者の対応(Atom/equation interpretation、local-state interpretation `β`)、completeness 二条件、global gluing に用いる true sheaf 条件。定理 5.1 の cover・入力 1–8・段階 (iii) の sheaf 仮定として固定される |
 | generated | `M_sem`、`Q_E`、二つの Čech complex、`r_sem`、`r_E`、係数写像 `Φ`、cochain map `κ` |
 | proved | repair-relation soundness、SAGA presentation exactness、`Φ` の同型性、微分可換性、cocycle / coboundary 保存、`H^1` 同型、residual class 対応、零類と actual global repair の同値 |
 
@@ -694,7 +694,7 @@ architecture data に相対化した条件として置いたこと、そして r
 
 ### 5.2 証明の構造
 
-証明は四つの段で構成され、§5.3〜§5.6 がこの順に論証を与える。
+証明は四つのステップで構成され、§5.3〜§5.6 がこの順に論証を与える。
 
 ```text
 generator map χ
@@ -850,8 +850,8 @@ C^2_E(\mathcal U)
 ```math
 \begin{aligned}
 (\kappa^1\delta^0_{\mathrm{sem}}a)_{ij}
-&=\Phi_{U_{ij}}(a_j|-a_i|)\\
-&=\Phi_{U_j}(a_j)|-\Phi_{U_i}(a_i)|\\
+&=\Phi_{U_{ij}}(a_j|_{U_{ij}}-a_i|_{U_{ij}})\\
+&=\Phi_{U_j}(a_j)|_{U_{ij}}-\Phi_{U_i}(a_i)|_{U_{ij}}\\
 &=(\delta_E^0\kappa^0a)_{ij}
 \end{aligned}
 ```
@@ -859,7 +859,7 @@ C^2_E(\mathcal U)
 であり、二行目は `Φ` の加法性と restriction naturality である。同じ計算を
 `c∈C¹_sem(𝒰)` の `(i,j,k)` 成分(三項の交代和)に適用すると
 `κ²δ¹_sem=δ¹_E κ¹` を得る。使うのは §5.3 で証明した `Φ` の
-準同型性と自然性だけであり、ここで新しい仮定は入らない。
+加法性と自然性だけであり、ここで新しい仮定は入らない。
 
 **`H¹` 同型。** `κ` は微分と可換な degreewise 同型なので、cocycle と coboundary を
 保存し反映する。よって
@@ -1052,7 +1052,7 @@ generation:   [1] は ℤ/(2) を生成する
 ```
 
 よって §5.3 の構成が `M_sem≃Q_E` を与える。これは一方の complex の transport
-ではなく、semantic presentation `ℤ[σ]/(2σ)` と equation quotient `ℤ/(2)` の
+ではなく、semantic presentation `ℤ[σ_V]/(2σ_V)` と equation quotient `ℤ/(2)` の
 presentation comparison である。
 
 **Local state system と affine transition。** 各 chart と各 nonempty overlap 上で
@@ -1113,7 +1113,7 @@ r_E=\kappa^1(r_{\mathrm{sem}})=(1,0,0,0)
 
 **Cocycle 性と非-coboundary 性。** nondegenerate triple overlap がないため
 `C²(𝒰)=0` であり、`δ¹r_sem=0` は自動的に成立する。一方、任意の
-`a∈C⁰(𝒰)` に対し `(δ⁰a)` の成分は overlap 上の `a_j|-a_i|` であり、4-cycle を
+`a∈C⁰(𝒰)` に対し `(δ⁰a)` の成分は overlap 上の `a_j|_{U_{ij}}-a_i|_{U_{ij}}` であり、4-cycle を
 一周する edge sum を取ると各 chart の成分がちょうど 2 回ずつ現れるので、`𝔽₂` では
 和が零になる。`r_sem` の edge sum は `1+0+0+0=1` なので、`r_sem` は `δ⁰`-像では
 ない。したがって
@@ -1137,7 +1137,7 @@ r_E=\kappa^1(r_{\mathrm{sem}})=(1,0,0,0)
 Lean 形式化は、SAGA 数学の machine-checked definitions、theorems、witnesses、
 proof chain を記録する。本章は release 時点の形式化 status を declaration 単位で
 報告する。status の一次証拠は、release tag で固定される Lean source と、
-登録 declaration 全件を standard mathlib axioms — `propext`、`Classical.choice`、
+登録 declaration 全件を standard Mathlib axioms — `propext`、`Classical.choice`、
 `Quot.sound` — の allowlist で検査する kernel axiom 監査、および release CI の
 focused check である(source の構成と監査の実体は Appendix B)。本章の表に
 載せる declaration はすべてこの監査に登録されている。
@@ -1155,7 +1155,7 @@ Lean structure として固定する形で形式化されている。したが�
   cover-relative `H^1`
 - semantic repair presentation と `M_sem` の presheaf 構成
 - affine semantic repair system、両側の selected atlas と residual
-- soundness の導出、presentation exactness、係数同型 `Φ`、三条件の独立性を示す
+- soundness の導出、presentation exactness、係数同型 `Φ`、三条件それぞれの failure を示す
   有限反例
 - equation 側の realization / production(equation system が生成する `Q_E` への
   接続)
@@ -1186,7 +1186,7 @@ Lean source の docstring は、本論文の定理番号とは別系列の番号
 | 例 5.3(4-cycle circle witness、非零類の transfer) | `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | proved | なし(具体 4-cycle model 上の閉じた検証) |
 | 零類側の witness(定理 5.2 の非空発火) | `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | proved | なし(具体 model 上の閉じた検証) |
 
-表の全行は kernel axiom 監査に登録済みであり、kernel axiom は standard mathlib
+表の全行は kernel axiom 監査に登録済みであり、kernel axiom は standard Mathlib
 axioms に限られる。`sorry` や追加公理を含む行はない。
 
 本論文の数学(第3〜5章)に対して残るものは次のとおりである
@@ -1213,7 +1213,8 @@ deposit bundle の `MANIFEST.json` に記録される(付録C.4)。
 ## 7. ArchSig: Executable SAGA Diagnosis
 
 ArchSig は、観測(ArchMap)と法・方程式(LawPolicy、law surface、
-MeasurementProfile)の二系統の入力から、grounding、導出 residual、
+MeasurementProfile)の二系統の入力と、selected complex のみを宣言する
+repair plan(§7.4)から、grounding、導出 residual、
 boundary membership、run 対の比較、gate 判定を計算する measurement system
 (Rust 製 CLI)である。本章はまず実在 microservice architecture に対する
 SAGA フル診断を一つの計算として示し(§7.1〜§7.3)、その診断が立つ入力契約の
@@ -1236,8 +1237,8 @@ ArchMap の section value として観測された。
 - **inside-payment**: `new BigDecimal(order.getPrice())` の正確算術
 - **order**: `private String price` の素通し保管
 
-三つの service の金額表現は、実装上はいずれも `string` を介して受け渡される。
-型の一致は成立している。異なるのは、その `string` が表す金額の丸め、scale、
+三つの service の金額表現は、実装上はいずれも `String` を介して受け渡される。
+型の一致は成立している。異なるのは、その `String` が表す金額の丸め、scale、
 計算、保存の**意味規約**である。さらに、実施者(measurement 工程の実行者。
 本論文では著者)の source 調査では、3サービスの
 金額を同時に照合する箇所は見つからなかった。この調査所見は、選択複体に
@@ -1350,7 +1351,7 @@ mismatch の奇パリティが閉ループ上で `δ⁰` により解けない�
 (law surface、MeasurementProfile)から導出した residual による非境界の計測、
 gate による blocking、修理計画の事前検証、compare による障害消滅と run 対の
 residual 差の記録、gate PASS まで、authored な residual・証書・比較データを
-一切供給せずに一周した。実施者の宣言として残るのは選択複体(§7.4)と
+一切供給せずに一周した。実施者の宣言として残るのは選択複体(§7.4)、witness binding(law surface)と
 repaired 変種だけである。
 
 **数学的規律の実効。** ドリフトの立つ三角形自体を triple として申告すると
@@ -1655,7 +1656,7 @@ architectural fact を言葉にする
   -> trajectory、reachable future、feedback、governance を計算する
 ```
 
-SAGA は、この連鎖の最初の三段 — 数学、形式化、計測 — を一つの定理で縦断した
+SAGA は、この連鎖の数学・形式化・計測の三段を一つの定理で縦断した
 最初の実例である。本論文が固定した provenance の規律(claim の種類を分け、
 各 claim を一次証拠へ接続する)は、後続のすべての峰で同じ形で使われる。
 理論の水位が十分に上がったとき、使う側からは水面しか見えなくなる。
@@ -1702,7 +1703,7 @@ Rising Sea — への航路が、この比較定理によって開かれてい�
 ## Acknowledgments
 
 本研究の理論構築、Lean 形式化、tooling 実装、および本論文の執筆は、著者の指揮の
-下で LLM agent(Claude、Codex)との協働により行われた。数学的主張の正しさは
+下で LLM agent(Claude、Codex)との協働により行われた。形式化された数学的主張の正しさは
 Lean による機械検証が、観測供給の確率的工程は付録C.2 の規律が、それぞれ artifact
 として固定する。AI agent は本論文の著者ではなく、すべての結論に対する責任は
 著者が負う。
@@ -1836,22 +1837,22 @@ release CI が `lake env lean Formal/AG/AxiomAudit.lean` として実行する�
 Lean source の docstring は、開発時の内部整理に由来する、本論文とは別系列の
 番号(`X.定理1.1` など)を label に用いる。本論文との定理対応は第6章 status
 table が完結して与え、label は Lean source を閲覧する際の照合用である。
-第6章の declaration との対応は次のとおりである(label のない declaration は
-「—」、source file は `Saga/` からの相対)。
+第6章の declaration との対応は次のとおりである(source file は `Saga/` からの
+相対)。
 
 | Lean declaration | Lean 側 label | Source file |
 | --- | --- | --- |
 | `SagaEquationPacket.sagaCentralTheorem` | X.定理1.1 | `TrueSheafDescent.lean` |
-| `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | — | `Exactness.lean` |
+| `PrimaryStateCorrespondence.relationSound_of_stateCorrespondence` | X.補題6.2A | `Exactness.lean` |
 | `SagaEquationPacket.phiEquiv`(generic 版: `PrimaryCoefficientCorrespondence.phiEquiv`、X.定理6.3/系6.7) | 左記 | `EquationRealization.lean`、`Exactness.lean` |
 | `ExactnessFixtures.soundness_failure` / `completeness_failure` / `generation_failure` | X.例6.6 | `Exactness.lean` |
 | `kappa1_delta0`、`kappa2_delta1` | X.定理7.2 | `KappaComparison.lean` |
 | `SagaEquationPacket.kappaStarAddEquiv`(generic 版: `kappaH1AddEquiv`、X.定理7.4) | 左記 | `KappaComparison.lean` |
 | `SagaEquationPacket.residual_correspondence_class`、`betaAligned_residual` | X.定理7.5 | `KappaComparison.lean` |
 | `SagaEquationPacket.globalRepair_nonempty_iff`、`sagaGroundedGluing` | X.定理8.2 | `TrueSheafDescent.lean` |
-| `SiteStateData.matchingFamily_iff` | — | `OrderedComparison.lean` |
-| `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | X.例10.2/付録B.9 | `CircleWitness.lean` |
-| `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | — | `DescentWitness.lean` |
+| `SiteStateData.matchingFamily_iff` | X.補題2.1A | `OrderedComparison.lean` |
+| `CircleWitness.semanticResidualClass_ne_zero`、`circle_nonzero_class_transfer` | X.例10.2/付録B.9/X.定理7.6 | `CircleWitness.lean` |
+| `DescentWitness.descentTrueSheaf`、`descent_sagaGroundedGluing` | X.定義8.1/X.定理8.2 | `DescentWitness.lean` |
 
 §6.1 の構成部品と source file の対応:
 
@@ -2001,11 +2002,13 @@ assumption への依存を宣言している。
 再現は、固定した ArchSig version と入力から `analyze`(head / repaired)、
 `compare`、`gate` ×2 を実行し、runId と gate 判定の一致で確認する。
 
-**Release identity。** release tag `saga-paper-v1.0.0`、version DOI
-[10.5281/zenodo.21603762](https://doi.org/10.5281/zenodo.21603762)、
+**Release identity。** release tag `saga-paper-v1.0.0`、v1.0.0 deposit の version DOI
+[10.5281/zenodo.21605207](https://doi.org/10.5281/zenodo.21605207)(concept DOI
+[10.5281/zenodo.21603761](https://doi.org/10.5281/zenodo.21603761) は常に最新版へ解決する)、
 ArchSig tool version `0.5.4`、artifact schema は `archsig-repair-plan/v0.5.7`
 と `archsig-run-manifest/v0.5.4`。tagged commit hash と release CI run への
-参照は `MANIFEST.json` に記録される。
+参照は `MANIFEST.json` に記録される。本文は version 1.0.1(version 1.0.0 への
+文言修正であり、release identity は不変)。
 
 **Deposit 構成。** deposit bundle `saga-zenodo-bundle/` は次を含む:
 `paper/`(本 PDF、LaTeX / BibTeX source、図2点)、`evidence/`(case study の

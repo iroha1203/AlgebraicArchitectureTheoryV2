@@ -39,7 +39,7 @@ architectural equation system $E$;
 \item a restriction-natural map sending supported semantic atoms to
 displayed Atom/equation residual classes;
 \item completeness of the local repair relation with respect to that
-map, and equation generator completeness (checked on each cover
+map, and equation-generator completeness (checked on each cover
 intersection);
 \item an affine semantic repair system $\Psem$ deriving an additive
 torsor structure from the action of repair words, together with its
@@ -93,7 +93,7 @@ H^1_{\mathrm{sem}}(\mathcal U)
 \]
 is induced. For the residual $\rsem$ generated from the semantic local
 repair atlas and the residual $\rE$ generated from the equation
-local-lift atlas,
+local lift atlas,
 \[
 \kappa_*([\rsem])=[\rE].
 \]
@@ -134,7 +134,7 @@ architecture data; and the semantic correspondence of residual classes
 
 \subsection{The structure of the proof}\label{sec:52}
 
-The proof is organized in four stages, and
+The proof is organized in four steps, and
 \S\ref{sec:53}--\S\ref{sec:56} give the arguments in this order:
 \begin{center}
 \small
@@ -307,8 +307,8 @@ For $a\in C^0_{\mathrm{sem}}(\cU)$ and $i<j$,
 \[
 \begin{aligned}
 (\kappa^1\delta^0_{\mathrm{sem}}a)_{ij}
-&=\Phi_{U_{ij}}(a_j|-a_i|)\\
-&=\Phi_{U_j}(a_j)|-\Phi_{U_i}(a_i)|\\
+&=\Phi_{U_{ij}}(a_j|_{U_{ij}}-a_i|_{U_{ij}})\\
+&=\Phi_{U_j}(a_j)|_{U_{ij}}-\Phi_{U_i}(a_i)|_{U_{ij}}\\
 &=(\delta_E^0\kappa^0a)_{ij},
 \end{aligned}
 \]
@@ -316,7 +316,7 @@ where the second line is the additivity and restriction naturality of
 $\Phi$. Applying the same computation to the $(i,j,k)$ component of
 $c\in C^1_{\mathrm{sem}}(\cU)$ (the alternating three-term sum) yields
 $\kappa^2\delta^1_{\mathrm{sem}}=\delta^1_E\kappa^1$. Only the
-homomorphy and naturality of $\Phi$ proved in \S\ref{sec:53} are used;
+additivity and naturality of $\Phi$ proved in \S\ref{sec:53} are used;
 no new assumption enters here.
 
 \paragraph{$H^1$ isomorphism.}
@@ -333,7 +333,7 @@ H^1_{\mathrm{sem}}(\mathcal U)
 \]
 is well defined: replacing a representative by
 $c+\delta^0_{\mathrm{sem}}a$ gives
-$\kappa^1(c+\delta^0a)=\kappa^1c+\delta^0_E(\kappa^0a)$, and the class
+$\kappa^1(c+\delta^0_{\mathrm{sem}}a)=\kappa^1c+\delta^0_E(\kappa^0a)$, and the class
 does not change. The inverse map is induced in the same form by the
 degreewise inverse $(\kappa^1)^{-1}$, and $\kappa_*$ is an isomorphism
 of abelian groups.
@@ -433,7 +433,7 @@ Suppose $[\rsem]=0$. Since the zero class is equivalent to the
 existence of a matching correction (\S\ref{sec:42}), there is
 $a\in C^0_{\mathrm{sem}}(\cU)$ with $\rsem=\delta^0_{\mathrm{sem}}a$.
 The residual of the corrected family $p_i^{\mathrm{corr}}=(-a_i)+p_i$
-is $\rsem-\delta^0a=0$ by choice independence (\S\ref{sec:42}), so the
+is $\rsem-\delta^0_{\mathrm{sem}}a=0$ by choice independence (\S\ref{sec:42}), so the
 corrected family agrees on all nonempty $i<j$ overlaps. By
 Lemma~5.2A, the corrected family is a matching family on all ordered
 overlaps. Since $\cU$ is a cover of the topology and $\Psem$ is a sheaf
@@ -498,7 +498,7 @@ stack descent each require independent statements. None of these
 conclusions is derived from the additive $H^1$ comparison.
 
 Moreover, the $H^1$ treated by this theorem is the \v{C}ech
-$H^1(\cU,-)$ relative to the selected monomorphic AAT cover $\cU$.
+$\check H^1(\cU,-)$ relative to the selected monomorphic AAT cover $\cU$.
 Identification with cover-independent sheaf cohomology requires the
 additional conditions of refinement invariance or Leray-type
 acyclicity, and this paper does not claim it.
@@ -540,7 +540,7 @@ generation: & $[1]$ generates $\Zint/(2)$\\
 \end{center}
 Hence the construction of \S\ref{sec:53} gives $\Msem\simeq \QE$.
 This is not a transport of one complex but a presentation comparison
-between the semantic presentation $\Zint[\sigma]/(2\sigma)$ and the
+between the semantic presentation $\Zint[\sigma_V]/(2\sigma_V)$ and the
 equation quotient $\Zint/(2)$.
 
 \paragraph{Local state system and affine transitions.}
@@ -603,9 +603,9 @@ $e_i=\beta(p_i)$ of \S\ref{sec:55} --- gives, at the cochain level,
 
 \paragraph{Cocycle property and non-coboundary property.}
 Since there is no nondegenerate triple overlap, $C^2(\cU)=0$ and
-$\delta^1\rsem=0$ holds automatically. On the other hand, for any
+$\delta^1\rsem=0$ hold automatically. On the other hand, for any
 $a\in C^0(\cU)$ the components of $\delta^0a$ are the
-$a_j|-a_i|$ on the overlaps, and taking the edge sum around the
+$a_j|_{U_{ij}}-a_i|_{U_{ij}}$ on the overlaps, and taking the edge sum around the
 4-cycle, each chart's component appears exactly twice, so in $\Ftwo$
 the sum is zero. The edge sum of $\rsem$ is $1+0+0+0=1$, so $\rsem$
 is not a $\delta^0$-image. Therefore
