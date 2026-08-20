@@ -35,7 +35,8 @@
   **本カードは Gr4 を閉じるカードではなく、Gr4 の中間カード
   (第一手)である**(再分類裁定 2026-08-19) — 達成範囲は exact
   `Doct_U` / `ExtInst_U` / package 下層の realization 像上の
-  FiniteModel-backed の finite subcalculus。Gr4 完遂 gate として
+  有限 presentation 付き(finite-code)底層射の finite
+  subcalculus。Gr4 完遂 gate として
   (i) 全 semantic exact-bottom への coverage 拡張と**全域分類**
   (左枝なら全域 lift、右枝なら `H_cart ↔ lift 存在`・`H_bc ↔ 保存`
   の必要十分化または最大 admissible class theorem — n1001 §3.5 の
@@ -65,9 +66,8 @@
   ledger 行)。先行考察はスキーム射幾何
   ノート(fiber product・derived fiber product・functor of points の
   各節)。
-- `tracking issue`: 未起票(active 昇格はユーザー裁定済み
-  2026-08-18。成立は本カード昇格 PR のマージをもって。起票はマージ後、
-  `$target-theorem-loop` 起動前に行う)
+- `tracking issue`: #4034(runtime state 正本。proof state・cycle
+  履歴・F0 で確定した schema signature の fixed head はここに同期する)
 - `source note`: [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 五層分解)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§10 ギャップ2)、
   [docs/note/aat_scheme_morphism_geometry_after_foundation.md](../../docs/note/aat_scheme_morphism_geometry_after_foundation.md)
@@ -78,7 +78,7 @@
   canonicity obstruction、(D) 診断の base change 可換性の成立条件、
   (E) pullback square の貼り合わせ閉性。
   これで exact 底層(`Doct_U` / `ExtInst_U` / package 下層)の
-  FiniteModel-backed の有限 subcalculus が立つ — 本カードは **Gr4 の中間
+  有限 presentation 付き底層射の有限 subcalculus が立つ — 本カードは **Gr4 の中間
   カード(第一手)**であり、Gr4 の達成記録は行わない(capstone は
   後続カード。program context)。
 - `core tension`: 最大リスクは自明化である — Boolean regime の零次元性に
@@ -164,7 +164,9 @@
   base-change lift = Gr3 段横断輸送への接続 bridge(Gr4 完遂 gate の
   三)、realization 像の coverage theorem = 全 semantic exact-bottom
   への拡張(Gr4 完遂 gate の一 — subcalculus から sector 全域への
-  昇格)、IsIso 水準の Beck–Chevalley exchange-failure の存否決定
+  昇格。第一段 = 有限 carrier・有限 Source 上の同型までの coverage
+  (有限 carrier では全抽出述語が有限集合で、全置換が有限 support を
+  持つ)、第二段 = sector 全域)、IsIso 水準の Beck–Chevalley exchange-failure の存否決定
   (Gr4 完遂 gate の四 — n1005 §4.3 の exchange-failure 義務の
   移管先)、
   jump-locus 相対幾何(n1005 §5「隊列」後続 draft 候補2 = 係数
@@ -180,7 +182,9 @@
      `σ₁ : D₁ -> B`、`σ₂ : D₂ -> B` に対し fiber product
      `D₁ ×_B D₂` を構成し、cone の `atomEquiv` 成分を恒等に制限
      しない全 cone 上の普遍性を証明する。あわせて真部分 fiber 条件の
-     witness を**同型不変な形**で構成する — 有限 fixture 上で
+     witness を**同型不変な形**で構成する — realization 像内の有限
+     fixture 上で(fixture の Source 型は (i)–(iii) が同時に立つ大きさ
+     に選ぶ — 三つ組の Source が全て 2 元では両立しない)
      (i) pullback の `Source` が `Nonempty` であること、(ii) source
      pullback から成分直積への canonical 射が全射でないこと、(iii)
      両射影のいずれも同型でないこと、を証明し、具体的な compatible
@@ -248,30 +252,76 @@
      `toSemanticCart P = toSemanticCart P' -> checkCart P =
      checkCart P'` を discharge-required とする(同一 semantic 入力
      を表す presentation 間で評価が一致する — 像外差し替えによる
-     結論符号化の排除)。**schema は既存 reviewed schema への錨止め
-     で閉じる — 新規 code 族は発明しない**(汎用 code 族を Lean
-     signature 水準まで prose で固定する路線は、実 API(任意型
-     `Atom`・非可逆 `sourceMap`・package 依存 `PackageFiberAut`・
-     多 field の上位 hom)に対して閉じ切れないため撤回する):
-     `CartPresentation U` は **既存 reviewed `FiniteModel` schema
-     (`formal/AG/Examples/FiniteModel.lean` — 有限 carrier・
-     `DecidableEq` 既備)に錨止めした有限 instance データ**として
-     固定する — field は FiniteModel-backed な source / target
-     instance 対と、その間の hom の有限記述(FiniteModel の既存
-     field 語彙のみ。新規 field の発明・semantic payload・結論寄り
-     certificate の埋め込みは禁止)。decoder と soundness
-     (`normalize_eq`・`extraction_iff`・`source_eq` の実充足)は
-     FiniteModel の既存 reviewed 構成を参照して立て、validated
-     subtype の well-formedness 述語は decoder 全域性条件として固定
-     する(code 水準の逆元演算は要求しない — hom は非可逆でよい)。
-     **realization 像 = FiniteModel-backed 射**であり、subcalculus の
+     結論符号化の排除)。**schema は有限 code 族として本カードで設計を
+     固定し、signature は F0 で確定する** — カードが固定するのは
+     field の役割と不変条件 (s1)–(s6) であり、Lean signature 水準の
+     最終確定は F0 schema typing の proof obligation(elaboration の
+     実フィードバック付き — `target proof strategy`)で行い、確定した
+     signature は tracking Issue に fixed head として記録する(F0
+     固定後の field / constructor 追加は改訂扱い)。**二層原理**: 底層
+     (`Doct_U` / `ExtInst_U`)の対象と射は有限 code で presentation
+     し、package 層(終点 package・lift・admissible data・comparator
+     値)は G-106 `AdmissibleLiftData` / `AdmissibleTransportData` と
+     同じく semantic interpretation として入力する(有限 code 化し
+     ない — package 依存の `PackageFiberAut` と多 field の上位 hom は
+     presentation の対象外)。**底層 code 族の不変条件**:
+     (s1) **Source は presentation ごとに持つ有限型**(`Fintype`+
+     `DecidableEq`)— pullback の Source は成分 Source の直積の
+     decidable 部分型として成長するため、単一 fixture の固定 Source 型
+     (`FiniteModel.ExtractionSource` 等)への錨止めはしない(code
+     族は Source 型を閉性演算の下で持ち回る);
+     (s2) doctrine code = Source 有限型・`normalize` の有限表・各
+     source の抽出述語の有限 presentation(`U.Atom` の有限集合による
+     inclusion / exclusion 表 — 有限 carrier 上では全述語を、無限
+     carrier 上では finite / cofinite 述語を表す)。decode は
+     `Vocabulary` / `SemanticReading` / `Resolution` を unit に固定し
+     抽出を `semanticAllows` に載せる(`FiniteModel.extractionDoctrine`
+     と同じ reviewed 構成法 — FiniteModel の fixture doctrine は
+     realization 像の元(同型まで)であり、schema の錨ではない)。
+     instance code = doctrine code+pointed source index(点は対象側
+     `X.source` に属する);
+     (s3) hom code = `sourceMap` の有限表(任意写像 — **非可逆を
+     許す**。exact hom の `atomEquiv` は常に同型なので、底層の非可逆
+     性の唯一の源泉は `sourceMap` である)+`atomEquiv` の
+     finite-support 置換表(support 外恒等。decode と checker は
+     `[DecidableEq U.Atom]` を presentation 層の instance 仮定とする
+     — semantic 層の theorem には課さず、(B) 左枝の「全ての carrier」
+     は realization 付き入力の量化域としてこの仮定込みで読む。
+     witness fixture の carrier では既備)。hom code は `source_eq`
+     (両端の pointed index の整合)を有限検査する;
+     (s4) raw code は有限 field 4種(source instance code・target
+     instance code・`sourceMap` 表・`atomEquiv` 表)。`DecidableEq` は
+     等式原子の値型(Source code の値・`U.Atom`・表の成分)に課す —
+     Source code を first-order(`n : ℕ` と `Fin n` 等)に取るか、
+     pullback の Source を再列挙するかは F0 の選択に委ねる。validated
+     部分型の well-formedness 述語 = decoder 全域性条件
+     (`normalize_eq`・`extraction_iff`・`source_eq` の有限検査 —
+     決定可能な十分条件でよく、像はその条件で正確に限定する。hom の
+     逆は要求しない);
+     (s5) **code 族は閉性 constructor(id / comp / pullback /
+     pasting)の下で閉じる** — `pullbackPresentation` は Source の
+     部分型(またはその再列挙)・抽出表の行の複写・置換表の合成と逆
+     (`π₂` の `atomEquiv` は `σ₁.atomEquiv.trans σ₂.atomEquiv.symm`
+     — finite-support 置換の逆は有限表で計算可能)で code 族の中に像
+     を持ち、閉性は下記の閉性 constructor 節の discharge-required
+     theorem として立てる(閉性が立たない code 族は schema として
+     不可)。pullback の realization 整合 theorem は `IsPullback`
+     水準(同型まで)でよく、id / comp / pasting は等式で立てる;
+     (s6) semantic payload・結論寄り certificate・条件 bit の field は
+     持たない。**realization 像 = 有限 presentation を持つ底層射
+     (finite-code exact-bottom 射 — EGA の有限表示射とは無関係の
+     語であり、英語注記は finite-code に限る)**であり、subcalculus の
      達成表示もこの語で限定する(下記 completion criteria)。
-     `PackageFiberAut` の値は FiniteModel-backed fixture 上では有限
-     に列挙・判定可能である(G-106 `FiniteWitnesses` の既存 reviewed
-     取り扱いと同じ)。`BCConditionSyntax` の typed constructor は
-     BC 固有 field(square 成分・compatible point data 成分・
-     pre-BC 診断図式成分)の projection と operand 型を列挙する
-     (「(B) と同一」という参照だけでは閉じない)。`BCPresentation U` の **authored
+     `PackageFiberAut` の値(authored 割当表)は semantic
+     interpretation であり、witness fixture(`FiniteModel.carrier`
+     上)では G-106 `FiniteWitnesses` の既存 reviewed 取り扱いと同じく
+     有限に列挙・判定可能である。`BCConditionSyntax` の typed
+     constructor は BC 固有 field(square 成分・compatible point data
+     成分・pre-BC 診断図式成分)の projection と operand 型を列挙する
+     (「(B) と同一」という参照だけでは閉じない。projection 対象は
+     有限 field — 底層 code・compatible point data の有限表・診断図式
+     の組合せ層 — に限り、semantic interpretation の値は projection
+     対象外とする)。`BCPresentation U` の **authored
      field は(cospan の `CartPresentation` 対・compatible point
      data の有限表・base change 前診断図式の有限 presentation
      (G-106 schema 参照))のみ**+well-formedness 述語で全列挙
@@ -318,8 +368,9 @@
      固定する。**vocabulary は本カードで完全列挙する**(後決めの
      named structural vocabulary に委ねない): 許容 projection =
      presentation field 4種の各成分値の読み出しのみ、operand 型 =
-     各 field の有限 code 値型、許容定数 = 単位元・恒等置換・零 /
-     単位係数の named constants のみ、許容関係 = 値の等式と、
+     各 field の有限 code 値型、許容定数 = 恒等 source 表・恒等(空
+     support)置換・空 support 集合の named constants のみ(fixture の
+     特定 source 値や係数定数は持たない)、許容関係 = 値の等式と、
      presentation 自身の field から導出される有限集合への所属のみ。
      外部有限集合・fixture 値・checker 出力・target 結果に由来する
      定数の持ち込みは禁止し、checker 由来 predicate を補助 lemma で
@@ -405,8 +456,8 @@
      発明は撤回する。割当表への既存作用は存在せず、後決めの新設
      作用は target-fitting を型で防げないため): 対の述語は
      **相対述語 `MateCoherentRel`** — authored datum(G-106
-     comparator 表と同型の割当表。FiniteModel-backed fixture 上で
-     値は有限に列挙・判定可能)が誘導する比較と、普遍性から生成
+     comparator 表と同型の割当表 — semantic interpretation。witness
+     fixture 上で値は有限に列挙・判定可能)が誘導する比較と、普遍性から生成
      された canonical mate との、**authored support 上での一致** —
      とし、domain は authored datum 付き square(strict square =
      恒等 datum)で正負共通に型付けする(full fiber と有限部分圏の
@@ -499,8 +550,11 @@
      reselection が消滅を証明する安価な正例の排除)。raw 等式だけの
      最弱可換性では完了と数えず、(d1)–(d6) 全層の artifact を要求
      する。`H_bc` の入力は (B) と同じ二層分離(`BCPresentation U` /
-     `BCSemanticInput U` / `toSemanticBC` — 述語は semantic 層、
-     checker は presentation 層)で固定し、資格条項は (B) の
+     `BCSemanticInput U` / `toSemanticBC` — 述語は realization witness
+     付き square の型 `RealizableSquare U`(semantic square+その
+     presentation witness。(B) の `RealizableHom U` と同型の構成)
+     上、checker は presentation 層、bridge は `checkBC P = true ↔
+     H_bc (realizableSquareOf P)`)で固定し、資格条項は (B) の
      (i)–(v) と同一(条件言語は `BCConditionSyntax`。閉性は
      **admissible-square calculus** — 恒等 square の包含と square の
      水平・垂直貼り合わせ閉性。(v) は非恒等かつ非可逆な脚を含む
@@ -528,10 +582,11 @@
 - `target proof artifacts`: fiber product の構成と普遍性 theorem、
   同型不変な真部分 fiber witness(`Nonempty` pullback・canonical 射
   の非全射性・両射影の非同型性・compatible / incompatible pair)、
-  FiniteModel-backed presentation schema(既存 reviewed schema への
-  錨止め)と decoder・soundness theorem、`CartPresentation U`(raw code / validated
+  有限 code 族 presentation schema(不変条件 (s1)–(s6)。signature は
+  F0 で確定)と decoder・soundness theorem・code 族の閉性 theorem、`CartPresentation U`(raw code / validated
   二段+`DecidableEq`)/ `CartSemanticInput U`(named structure)/
-  `RealizableHom U` と `realizableHomOf` / `BCPresentation U` /
+  `RealizableHom U` と `realizableHomOf` / `RealizableSquare U` と
+  `realizableSquareOf` / `BCPresentation U` /
   `BCSemanticInput U` と `toSemantic` realization・realization
   soundness theorem、条件言語 `CartConditionSyntax` / `BCConditionSyntax`
   と評価器、presentation 取替え不変性 theorem、presentation 閉性
@@ -566,7 +621,9 @@
   実フィードバック付きで固定する typing cycle — G-109 Cycle 1 の
   F0 tower typing と同型。本カードの schema 記述は設計意図の正本で
   あり、signature 水準の最終確定は F0 の proof obligation として
-  per-cycle review が監査する) -> K0 fiber product 構成と普遍性・
+  per-cycle review が監査する。F0 は複数 obligation に分割してよく、
+  確定 signature は tracking Issue に fixed head として記録する)
+  -> K0 fiber product 構成と普遍性・
   退化しない witness -> K1 cartesian lift の disjunction 確定
   (存在定理または条件同定+反例) -> K2 pointed 化と
   Beck–Chevalley 比較射・正負の対 -> K3 診断 base change 作用の
@@ -589,13 +646,14 @@
   Issue を同期し、final review packet を作り、`$math-lean-review` の
   4査読がすべて `No major findings` であること。有限 presentation 入力の checker
   関数と非定義的 soundness / completeness bridge theorem
-  (`check P = true ↔ H (toSemantic P)`、`Iff.rfl` 放電禁止)を、
+  (`check P = true ↔ H (realizableOf P)`、`Iff.rfl` 放電禁止)を、
   `H_cart` は右枝を閉じた場合のみ、`H_bc` は (D) の条件同定に伴い、
-  artifact として含める(`FiniteModel` の有限性から一般
+  artifact として含める(code の有限性から semantic 層の一般
   decidability は従わないため、決定可能性は checker+bridge で操作化
   する。左枝確定時に `H_cart` checker は要求しない)。完遂時の
-  記録は **「FiniteModel-backed(realization 像)上の `H_cart` /
-  `H_bc`-admissible exact-bottom subcalculus 達成」**に限定する
+  記録は **「有限 presentation 付き(realization 像)底層射上の
+  `H_cart` / `H_bc`-admissible exact-bottom subcalculus 達成」**に
+  限定する
   (左枝で閉じた場合は `H_cart` 部を全域 lift と読み替える)。
   条件外・realization 像外を含む exact-bottom 全域の分類と読める
   表現を避ける。**Gr4 達成の記録は本カードでは行わない** — Gr4
@@ -643,9 +701,11 @@
     BCPresentation と semantic 層の分離)`: `discharge-required`。
     condition bit・結論 certificate の埋め込みを禁じ、checker
     bridge と presentation 取替え不変性 theorem を非定義的 theorem
-    として放電する。schema(code 族の decoder・演算・coverage・soundness を含む)と
-    条件 syntax constructor はカード本文で全列挙済み — 実装時の
-    field / constructor 追加は改訂扱い。
+    として放電する。schema は field の役割・不変条件 (s1)–(s6)・
+    閉性をカード本文で固定し、signature は F0 で確定して tracking
+    Issue に fixed head として記録する。条件 syntax constructor は
+    カード本文で全列挙済み — F0 固定後の field / constructor 追加は
+    改訂扱い。
   - `G-106 の AdmissibleTransportData 型 / API`: `ambient-boundary`。
     型と reviewed theorem の参照のみ(provenance = 上記 G-106 錨)。
   - `instance 水準の admissible data field(各 fixture の
