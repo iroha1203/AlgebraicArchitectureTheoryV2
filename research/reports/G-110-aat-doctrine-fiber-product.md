@@ -5,6 +5,7 @@
 - target theorem: Doctrine Fiber Product and Base Change Theorem
 - proof state: `target-proof-checkpoint`
 - completion candidate: `no`
+- loop stop: `goal defect` (Cycle 1 revised head review)
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで
@@ -39,11 +40,10 @@ selection:
     - a manufactured doctrine could make a desired noninvertible hom exact by construction
     - allCells could be a hom-tag truth table instead of a finite universal equality
     - a fixed two-source schema could fail to represent its own source pullbacks
-  unchecked:
-    - revised fixed-head independent review
+  unchecked: []
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: fixed a universe-polymorphic presentation whose authored raw payload is exactly four fields over existing FiniteModel value types; restricted the validated image to the reviewed extraction/transport frames and identity source table; constructed actual ExactDoctrineHom/ExtInstHom laws; fixed a presentation-level equality/membership/finite-universal condition grammar; and proved the source-table pullback is the two-element diagonal
+  proposed_result_type: rejected
+  proof_obligation_delta: the revised candidate removed the initial target-fitting doctrine and truth-table language, then exposed a fixed-contract incompatibility; the resulting reviewed extraction/transport realization image is a groupoid, while the fixed GOAL requires BCPresentation cospans from CartPresentation and an H_bc positive family with a nonidentity noninvertible leg
   completion_candidate: no
   lean_artifacts:
     - FiniteModelBacking / FiniteModelBacking.liftAtomEquiv
@@ -99,7 +99,7 @@ result:
       - presentation constructors and realization/replacement invariance
       - K1 disjunction; in particular the right-branch noninvertible positive-family qualification is not supplied by this reviewed groupoid schema
       - all K0-K4 theorem obligations
-    acceptance_point: the decoder uses only the existing reviewed FiniteModel extraction and G-101 transport frames; no new doctrine tag, all-True doctrine, constant hom, lift, strong-cartesian certificate, mate, checker result, or target conclusion is authored
+    rejection_point: satisfying the mandatory noninvertible-leg family requires either a new finite doctrine/source code family or an existing all-admitting doctrine with a noninjective source map; the latter's self-pullback has four sources and escapes the reviewed two-source schema, so either repair changes the fixed presentation contract
     port_status: unported
 audits:
   premise_delta:
@@ -126,9 +126,9 @@ audits:
       - reviewed finite source/Atom enumerations in condition evaluation
       - validated identity source-map theorem in source-pullback readiness
     unused: []
-  structure_field_escape: none-found
-  route_integrity: pass
-  target_fitting: none-found
+  structure_field_escape: found
+  route_integrity: fail
+  target_fitting: found
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
@@ -139,8 +139,13 @@ audits:
     - '#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct: 299 declarations, pass'
     - direct '#print axioms' of 18 public-spine declarations: standard axioms only
     - placeholder / hidden-BiDi / privacy / reverse-import / git diff scan: pass
-  blocking_findings: []
-  next_obligation: F0b BCPresentation / BCSemanticInput / pre-BC diagnostic schema / CartesianRegime / authored-relative BC domain typing
+  blocking_findings:
+    - every revised validated CartPresentation decodes to an isomorphism, so BCPresentation cannot express the fixed H_bc qualification's nonidentity noninvertible leg
+    - using the existing all-admitting refinement doctrine admits a noninjective constant source map, but its self-pullback has four sources and cannot be represented by the fixed reviewed two-source schema
+    - FiniteModelBacking is semantic data beyond the claimed four authored fields unless fixed as a new ambient premise
+    - unitSource renames the fixture value ExtractionSource.all despite no source-unit operation or law
+    - the reviewed doctrine and exact-hom comparison theorems are not consumed by the decoder proof DAG
+  next_obligation: none inside the fixed GOAL; human decision must re-fix the presentation contract or predecessor schema before F0b
 ```
 
 ## Review history
@@ -164,11 +169,33 @@ doctrine、constant hom、property tag tableを削除した。raw payloadを既�
 theorem、実有限全称 evaluator、対角 pullback同値を追加した。declarationと
 statementを変更したため、新fixed headに4 laneを全再実行する。
 
+### Revised head `9641f8bb8f00cbaccdfb4a8d38a974e0b85a5f7a` — rejected / goal defect
+
+独立4査読の結果は数学A `Major`、数学B `Major`、Lean A
+`No major findings`、Lean B `Major` だった。統合判定は `Needs changes`。
+三 lane が独立に確認した中心 finding は、revised validated image が
+identity source map と Atom equivalence だけの groupoid であるため、固定 GOAL
+(D) の `H_bc` 資格に必須の「非恒等かつ非可逆な脚を含む square 族」を
+`BCPresentation` の authored `CartPresentation` cospan として型付けできない点で
+ある。この義務は K1 右枝だけではなく (D) に無条件に存在する。
+
+既存 reviewed source を再探索すると、具体 `ExactDoctrineHom` の source map は
+すべて identity だった。G-101 の既存 all-admitting
+`refinementTargetDoctrine` 上なら constant exact endomorphismは作れるが、その
+自己 pullback source は2元集合の直積4要素となり、2要素
+`FiniteModel.ExtractionSource` に同値ではない。したがって realization 像内の
+`pullbackPresentation` を閉じるには、新しい source/doctrine code familyまたは
+pullback-closed predecessor schemaが必要になる。前者は固定カードが明示的に禁止
+している。
+
+これは定理 statement 自体の反例ではなく、F0 へ移管された presentation contract
+の不足・相互不整合である。固定 GOAL を自動で弱めず `goal defect` で停止し、PRは
+mergeしない。人間が選べる改訂方向は、(a) pullback-closed finite source codeを
+明示的に許す、(b) 先行カードで reviewed schemaを拡張してから G-110を再固定する、
+(c) 非可逆族またはclosure claimを変更する、のいずれかであり、本loopでは選ばない。
+
 ## Remaining scope
 
-次 obligation は F0b (`BCPresentation` / `BCSemanticInput` / diagnostic schema /
-`CartesianRegime` / authored-relative BC domain)であり、F0 全体の省略ではない。
-revised F0a は reviewed finite groupoidを正直に表現し、非可逆射を発明しない。
-したがって K1 で左枝を証明できず右枝が必要になった場合、右枝の
-「非恒等かつ非可逆な底射を含む正例族」は未放電の中心 gateである。固定された
-reviewed schema内で構成不能なら、GOALを弱めず `goal defect` で停止する。
+F0b、K0–K4 はすべて未着手のまま残る。次 obligation は自動選定しない。
+presentation contract または reviewed predecessor schemaを人間が再固定した後だけ、
+新しい fixed GOAL head から loop を再開する。
