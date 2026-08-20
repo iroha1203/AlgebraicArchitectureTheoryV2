@@ -72,13 +72,12 @@ check of all registered declarations), which the release CI executes as
 
 The docstrings of the Lean sources use labels from a numbering series
 distinct from this paper, originating in internal organization during
-development (\code{X.Theorem 1.1} and so on). The theorem
+development (normalized here as \code{X.Theorem 1.1} and so on). The theorem
 correspondence with this paper is given completely by the status table
 of Section~\ref{sec:6}; the labels serve for cross-checking when
 browsing the Lean sources. The correspondence with the declarations of
-Section~\ref{sec:6} is given in Table~\ref{tab:leandecl} (declarations
-without labels are marked ``---''; source files are relative to
-\code{Saga/}).
+Section~\ref{sec:6} is given in Table~\ref{tab:leandecl} (source files
+are relative to \code{Saga/}).
 
 \begin{table}[htbp]
 \centering
@@ -91,7 +90,7 @@ Lean declaration & Lean-side label & Source file \\
 \code{TrueSheafDescent.lean} \\
 \addlinespace
 \code{PrimaryStateCorrespondence.}\allowbreak\code{relationSound\_of\_stateCorrespondence} &
---- & \code{Exactness.lean} \\
+X.Lemma 6.2A & \code{Exactness.lean} \\
 \addlinespace
 \code{SagaEquationPacket.phiEquiv} (generic version:
 \code{PrimaryCoefficientCorrespondence.phiEquiv}, X.Theorem 6.3 /
@@ -117,15 +116,15 @@ X.Example 6.6 & \code{Exactness.lean} \\
 \code{sagaGroundedGluing} & X.Theorem 8.2 &
 \code{TrueSheafDescent.lean} \\
 \addlinespace
-\code{SiteStateData.matchingFamily\_iff} & --- &
+\code{SiteStateData.matchingFamily\_iff} & X.Lemma 2.1A &
 \code{OrderedComparison.lean} \\
 \addlinespace
 \code{CircleWitness.semanticResidualClass\_ne\_zero},
 \code{circle\_nonzero\_class\_transfer} & X.Example 10.2 / Appendix
-B.9 & \code{CircleWitness.lean} \\
+B.9 / X.Theorem 7.6 & \code{CircleWitness.lean} \\
 \addlinespace
 \code{DescentWitness.descentTrueSheaf},
-\code{descent\_sagaGroundedGluing} & --- &
+\code{descent\_sagaGroundedGluing} & X.Definition 8.1 / X.Theorem 8.2 &
 \code{DescentWitness.lean} \\
 \bottomrule
 \end{tabular}
@@ -421,12 +420,15 @@ $\times2$ from the fixed ArchSig version and inputs, and confirming
 agreement of the runIds and the gate verdicts.
 
 \paragraph{Release identity.}
-Release tag \code{saga-paper-v1.0.0}; version DOI
-\href{https://doi.org/10.5281/zenodo.21603762}{10.5281/zenodo.21603762};
-ArchSig tool version \code{0.5.4}; artifact schema versions
+Release tag \code{saga-paper-v1.0.0}; version DOI of the v1.0.0 deposit
+\href{https://doi.org/10.5281/zenodo.21605207}{10.5281/zenodo.21605207}
+(concept DOI \href{https://doi.org/10.5281/zenodo.21603761}{10.5281/zenodo.21603761},
+which resolves to the latest version); ArchSig tool version \code{0.5.4}; artifact schema versions
 \code{archsig-repair-plan/v0.5.7} and
 \code{archsig-run-manifest/v0.5.4}. The tagged commit hash and the
 reference to the release CI run are recorded in \code{MANIFEST.json}.
+This text is version 1.0.1 (textual corrections to version 1.0.0; the
+release identity is unchanged).
 
 \paragraph{Deposit layout.}
 The deposit bundle \code{saga-zenodo-bundle/} contains:
@@ -444,7 +446,7 @@ together with the release identity); and \code{CITATION.md}.
 
 \paragraph{Reproduction.}
 Obtain the repository at the release tag
-(\code{git clone --branch saga-paper-v1.0.0}) and run, from the
+(\code{git clone --branch saga-}\allowbreak\code{paper-v1.0.0}) and run, from the
 repository root with \code{\$EV} pointing at the bundle's
 \code{evidence/} directory (byte-identical to the repository's own
 copy, as certified by the checksums):

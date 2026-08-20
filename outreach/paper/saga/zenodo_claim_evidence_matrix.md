@@ -2,7 +2,7 @@
 
 > 論文(正本=`en/main.tex` 一式、日本語草稿=`zenodo_saga_draft.md`)の各 claim を
 > 一次証拠へ対応させる監査表。P0-6 final review はこの表を照合基準として実行する。
-> release identity(tag `saga-paper-v1.0.0`・DOI `10.5281/zenodo.21603762`)は
+> release identity(tag `saga-paper-v1.0.0`・v1.0.0 deposit の version DOI `10.5281/zenodo.21605207`、concept DOI `10.5281/zenodo.21603761`。本文 v1.0.1 は文言修正のみ)は
 > 本文へ固定済み。tag 押下後の残検証は「状態集計」参照。
 > deposit bundle には `audit/claim_evidence_matrix.md` として同梱される。
 
@@ -69,7 +69,7 @@ RepairPlan schema v0.5.7)。
 | ID | 論文の箇所 | Claim | 一次証拠 | 状態 |
 | --- | --- | --- | --- | --- |
 | S1 | 要旨・§1・§10 | 中心2式(`H¹_sem(𝒰) ≅ Ȟ¹(𝒰,Q_E)`、三項同値)と「証明・機械検証 status・再現計測の三層」 | M5/M6(数学)、L1〜L4(Lean)、E4〜E6(計測) | 照合済み |
-| S2 | 要旨・§1.3 | 三層が同一 release identity を参照する | tag `saga-paper-v1.0.0`+version DOI `10.5281/zenodo.21603762`(title page・§6・付録C.4 に印字)+bundle `MANIFEST.json` | 本文固定済み。**tag 押下後**: MANIFEST 生成で相互参照が閉じる |
+| S2 | 要旨・§1.3 | 三層が同一 release identity を参照する | tag `saga-paper-v1.0.0`+v1.0.0 deposit の version DOI `10.5281/zenodo.21605207`(付録C.4 に印字。title page は concept DOI `10.5281/zenodo.21603761`、v1.0.1)+bundle `MANIFEST.json` | 本文固定済み。**tag 押下後**: MANIFEST 生成で相互参照が閉じる |
 | S3 | 第9章 | 展望(Rising Sea、SFT、反実仮想等)は vision であり evidence を要する claim ではない(本文中で明示) | — (非対象) | 非対象 |
 
 ## 状態集計

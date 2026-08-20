@@ -33,8 +33,9 @@ tectonic は単体バイナリの TeX エンジン(`brew install tectonic`)。
 ## 規約
 
 - 定理番号は日本語原稿と同一(節内共有カウンタ。補題 5.2A は手動番号環境 `lemmafiveA`)。
-- release identity は確定・印字済み(tag `saga-paper-v1.0.0`、version DOI
-  `10.5281/zenodo.21603762`、CC BY 4.0。Draft note は除去済み、2026-07-26)。
+- release identity は確定・印字済み(tag `saga-paper-v1.0.0`、v1.0.0 deposit の version DOI
+  `10.5281/zenodo.21605207`、CC BY 4.0)。本文は v1.0.1(2026-08-21、arXiv 投稿時の文言修正。
+  title page の DOI は concept DOI `10.5281/zenodo.21603761`、付録 C.4 に version DOI を印字)。
 - 本文にはリポジトリ内部参照(repo パス、canonical 番号、schema id)を書かない。
   例外は Appendix B の Lean source 構成と Appendix C の deposit / 再現面
   (いずれも status・再現の一次証拠)である。

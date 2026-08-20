@@ -4,7 +4,8 @@ ArchSig is a measurement system (a Rust command-line tool) that
 computes grounding, derived residuals, boundary membership, comparison
 of run pairs, and gate verdicts from two families of inputs:
 observation (ArchMap) and law / equations (LawPolicy, law surfaces,
-MeasurementProfile). This section first presents a full SAGA diagnosis
+MeasurementProfile), together with a repair plan that declares only
+the selected complex (\S\ref{sec:74}). This section first presents a full SAGA diagnosis
 of a real microservice architecture as a single computation
 (\S\ref{sec:71}--\S\ref{sec:73}), then fixes the essentials of the
 input contract on which the diagnosis stands (\S\ref{sec:74}) and the
@@ -39,9 +40,9 @@ rounded by \code{DecimalFormat("0.00")} and rendered as a string
 }
 
 The monetary representations of the three services are all passed as
-\code{string} at the implementation level: the types agree. What
+\code{String} at the implementation level: the types agree. What
 differs is the \emph{semantic convention} --- the rounding, scale,
-computation, and storage of the amount that the \code{string}
+computation, and storage of the amount that the \code{String}
 represents. Furthermore, in the source investigation by the operator
 (the person executing the measurement process; in this paper, the
 author), no site was found that simultaneously reconciles the amounts
@@ -56,7 +57,7 @@ This configuration can be read as a 3-cycle instance of the same
 The complexes are not identical --- Example~\ref{ex:circle} is a
 4-cycle, this case a 3-cycle --- but the mechanism erecting the
 nonzero class is the same: odd parity on a closed loop (the collision
-of three styles) and the absence of a face (triple overlap) filling
+of three conventions) and the absence of a face (triple overlap) filling
 the loop. The rounding remainder of the refund computation
 $0.8\times\text{price}$ --- a \textbf{drift below one cent} --- is
 booked in no chart. We call this case study the \textbf{one-cent
@@ -244,8 +245,8 @@ of the repair plan, the recording by compare of the disappearance of
 the obstruction and of the residual difference of the run pair, to
 gate PASS --- the full circle was walked without supplying any
 authored residuals, certificates, or comparison data. The only operator
-declarations that remain are the selected complex (\S\ref{sec:74})
-and the repaired variant.
+declarations that remain are the selected complex (\S\ref{sec:74}),
+the witness bindings (law surface), and the repaired variant.
 
 \paragraph{Effectiveness of the mathematical discipline.}
 Declaring the drift-bearing triangle itself as a triple is rejected by
