@@ -13,6 +13,208 @@
 
 ## Cycle ledger
 
+### Cycle 6 — F0c1 strong-lift, qualification, and per-carrier regime signatures
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 6
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: b67c112b7dfc4aba260901c16568d94bf4f7c08d
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 6 selection comment 5365512778, final fixed-head ledger comment 5366159629, integrated review comment 5366158627, and revised GOAL strategy F0
+  proof_dag_predecessors:
+    - Cycle 2 F0a finite-code cartesian schema, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
+    - Cycle 3 F0b1 basic BC presentation and condition schema, PR 4039 merge 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
+    - Cycle 4 F0b2a finite-code pasting and authored raw schema, PR 4040 merge 76ffc581f7075163579ad4d1a246f295c0903f07
+    - Cycle 5 F0b2b authored-support and relative-predicate signatures, PR 4041 merge b67c112b7dfc4aba260901c16568d94bf4f7c08d
+    - G-101 packageProjection and G-109 CoreFiber API
+  proof_obligation: fix the exact strong-cartesian-lift, carrier-global left proposition, qualified per-carrier right-regime, pairwise arrow-nonisomorphic positive-family, branch-independent lift-family, finite counterexample endpoint, and per-carrier CartesianRegime signatures on RealizableHom
+  selection_reason: the initial full-F0c head was rejected because its positive-family type admitted isomorphic duplicates and its counterexample-specific StrongCartesianLift equivalence did not encode canonical ULift provenance; F0 may be split, so this repaired checkpoint retains only the exact surfaces independent of cross-carrier package-projection reindexing
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - quantifying over arbitrary semantic arrows instead of the RealizableHom image
+    - weakening one carrier-global branch to a per-carrier disjunction
+    - letting the selected syntax or semantic condition vary with a fixture or carrier
+    - defining H_cart from lift existence, a checker bit, or one fixture equality
+    - omitting presentation replacement, semantic isomorphism, identity, composition, or either pullback-stability direction
+    - treating unequal but isomorphic semantic arrows as a nondegenerate family
+    - using a counterexample-specific equivalence of empty lift types as universe transport
+    - carrying an unrelated caller-supplied CartesianRegime into K1-K4 before the F0c2 producer exists
+    - counting an identity lift or tautological schema witness as selection of the global theorem branch
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: defined the actual mathlib strong-cartesian lift bundle over a named CartSemanticInput and endpoint CoreFiber package; restricted carrier lift existence to RealizableHom; placed the carrier quantifier inside GlobalCartesianLift; fixed semantic arrow isomorphisms and a QualifiedCartCondition whose checker is derived from frozen syntax and whose bridge type, presentation replacement invariance, semantic isomorphism invariance, and constructor-relative wide pullback-stable closure are explicit; rebased the structural syntax uniformly across carriers; fixed a right-positive-family interface whose distinct parameters are pairwise nonisomorphic semantic arrows and whose same H_cart-positive members carry endpoint packages and actual strong lifts; fixed a branch-independent family of actual strong lifts over pairwise nonisomorphic noninvertible arrows; fixed finite no-lift/counterexample endpoint types; and fixed CartesianRegime with branch-independent lift and closure eliminators
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - StrongCartesianLift
+    - StrongCartesianLift.domainObject
+    - HasStrongCartesianLift
+    - CarrierCartesianLift
+    - GlobalCartesianLift
+    - CartSemanticInputIso
+    - rebaseCartCondition
+    - QualifiedCartCondition
+    - QualifiedCartCondition.checkCart_input_eq_true_iff
+    - ParametricCartPositiveFamily
+    - ParametricCartLiftFamily
+    - RightCartesianRegime
+    - finiteModelLiftCarrier
+    - CartesianLiftNonexistence
+    - CartesianLiftCounterexample
+    - CartesianRegime
+    - CartesianRegime.hasStrongCartesianLift
+    - CartesianRegime.identity_mem
+    - CartesianRegime.comp_mem
+    - CartesianRegime.pullback_fst_mem
+    - CartesianRegime.pullback_snd_mem
+    - packageIdentityStrongCartesianLift
+    - tautologicalQualifiedCartCondition
+    - finiteModelLiftAtoms_ne
+  claim_mapping:
+    theorem_names:
+      - GlobalCartesianLift
+      - QualifiedCartCondition
+      - ParametricCartPositiveFamily
+      - ParametricCartLiftFamily
+      - CartesianRegime
+    source_labels:
+      - target theorem (B) lift and qualified-right-branch domains
+      - target proof artifact CartesianRegime
+      - target proof strategy F0 split signature typing
+    conjuncts:
+      - StrongCartesianLift stores a generated domain package and total morphism together with mathlib IsStronglyCartesian over the actual semantic bottom arrow
+      - CarrierCartesianLift quantifies all RealizableHom values and all packages in the semantic target CoreFiber
+      - GlobalCartesianLift quantifies all carriers before any branch constructor is selected
+      - QualifiedCartCondition selects one frozen CartConditionSyntax term and derives checkCart directly from evalCartCondition
+      - checkCart_input_eq_true_iff extends the canonical-presentation bridge to every RealizableHom by consuming realization_eq
+      - the same qualified condition requires presentation replacement invariance, arrow-isomorphism invariance, identity and composition closure, and both generated pullback projection directions
+      - rebaseCartCondition is structural because the frozen language contains no authored Atom, external set, fixture literal, result bit, or lift vocabulary
+      - distinct parameters in ParametricCartPositiveFamily admit no CartSemanticInputIso, and every same member has nonisomorphic endpoints, a noninvertible arrow, H_cart membership, an endpoint package, and an actual StrongCartesianLift
+      - ParametricCartLiftFamily requires actual StrongCartesianLift values over a pairwise arrow-nonisomorphic noninvertible family independently of the eventual branch
+      - finiteModelLiftCarrier is only the explicit ULift carrier; no package/input transport or no-lift preservation is claimed in F0c1
+      - CartesianLiftNonexistence and CartesianLiftCounterexample fix the exact per-carrier negative endpoint types without transporting them
+      - CartesianRegime exports HCart, lift sufficiency, identity, composition, and both pullback-stability directions uniformly across branches
+      - the concrete identity lift and tautological qualified condition exercise only the F0 type surface and are explicitly not a K1 branch artifact
+    undischarged_assumptions:
+      - F0c2 must construct a canonical AtomCarrier equivalence, base/total category equivalences, and a commuting packageProjection square before defining FiniteModelLift, RightBranch, DisjunctionArtifact, and cartesianRegimeOfDisjunction
+      - F0c2 must derive lifted input/package and strong-cartesian reflection from that reindexing; a package-valued field or counterexample-specific lift-type equivalence is not accepted
+      - K1 must construct a named GlobalCartesianLift or the final named RightBranch and thereby the actual DisjunctionArtifact
+      - in the right branch K1 must define semantic H_cart without referring to lift existence or checker output, prove all qualification fields, construct endpoint packages and actual lifts for the same pairwise arrow-nonisomorphic noninvertible H_cart-positive family, and prove uniform sufficiency
+      - if K1 selects the global branch it must separately construct a pairwise arrow-nonisomorphic parametric family of noninvertible RealizableHom inputs and instantiate GlobalCartesianLift on every member and endpoint package
+      - K1 must construct the exact FiniteModel no-lift counterexample and the F0c2 canonical transport value
+      - K1-K4 must use the future cartesianRegimeOfDisjunction applied to the named artifact; an arbitrary CartesianRegime argument is conclusion-equivalent and does not discharge provenance
+    acceptance_point: F0c1 fixes the local lift, qualification, nondegenerate family, negative endpoint, and per-carrier regime types while refusing to fake the unresolved cross-universe package transport
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - exact strong-cartesian-lift and endpoint-package dependent indices
+      - carrier-global left-branch rather than per-carrier left-branch quantifier order
+      - exact fixed-syntax/semantic-predicate/checker bridge and invariance signature
+      - constructor-relative identity, composition, and two-direction pullback-stability signature
+      - carrier-independent syntax rebasing and explicit finite-model lifted carrier
+      - pairwise arrow-nonisomorphic positive and actual-lift family interfaces
+      - exact per-carrier regime and eliminator types
+    remaining:
+      - F0c2 canonical packageProjection ULift reindexing and carrier-global producer signatures
+      - K0 nondegenerate proper-fiber witness
+      - K1 mathematical branch determination and all branch values
+      - K2 route functors, adjunctions, canonical mate, authored comparison, strict/lax pair, and orbit theorems
+      - K3-K4 diagnostic base change, conditions, closure, and coherence
+  certificate_provenance:
+    discharged:
+      - strong lift endpoints are indexed by CartSemanticInput and CoreFiber rather than equality fields in finite code
+      - the checker is computed only by evalCartCondition on the selected frozen term
+      - every RealizableHom bridge consumes its own presentation and realization_eq
+      - uniform syntax is generated by structural constructor rebasing
+    unresolved:
+      - F0c2 packageProjection-level canonical ULift reindexing and its realization naturality
+      - F0c2 RightBranch, DisjunctionArtifact, and named regime producer
+      - named K1 source of the selected branch and every theorem field in it
+  proof_use:
+    used:
+      - IsStronglyCartesian in StrongCartesianLift.domainObject through IsHomLift.domain_eq
+      - RealizableHom.realization_eq in checkCart_input_eq_true_iff
+      - right condition sufficiency in CartesianRegime.hasStrongCartesianLift
+      - right qualification fields in all four closure eliminators
+    unused: []
+    deferred_field_proof_use:
+      - replacement_invariant, isomorphic_invariant, both family values including the right-positive family's same-member lifts, and counterexample values are target outputs; F0c1 fixes their types while K1 must construct and audit their proof terms
+  structure_field_escape: none-found in the retained F0c1 surface; the rejected counterexample-specific strongLiftEquiv, liftedInput, liftedTargetPackage, and condition_preserved fields were removed
+  route_integrity: pass for F0c1 typing; global producer provenance remains explicitly unresolved until F0c2
+  target_fitting: pairwise_nonisomorphic prevents duplicated representatives of one semantic-arrow isomorphism class, while targetPackage and lift on ParametricCartPositiveFamily prevent an H-positive empty-fiber or unrelated-family witness; no fixture-specific condition or counterexample transport remains
+  vacuity: an actual identity strong lift, qualified fixed-syntax condition, both per-carrier regime eliminator paths under honest premises, and two distinct lifted Atoms elaborate; actual nondegenerate family and counterexample values remain unresolved and are not claimed
+  one_way_as_equivalence: none-found in the retained surface; sufficiency remains one-way H_cart to lift existence, and the rejected counterexample-specific equivalence was deleted
+  goal_or_report_reinterpretation: initial full-F0c claim was narrowed after review under the GOAL's explicit permission to split F0; F0c2 remains discharge-required before K0
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchema.lean: pass, namespace audit 180 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeSchemaWitnesses.lean: pass, namespace audit 15 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema: pass targeted module check
+    - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses: pass targeted module check
+    - repaired-head direct acceptance-spine #print axioms audit: 42 declarations, each uses only propext/Classical.choice/Quot.sound or no axioms
+    - fixed-head PR CI: 7 of 7 checks green
+  review_refs:
+    fixed_head: d6d178452759a22bf6cbfc67680e09da474f048f
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4042#issuecomment-5366158627
+    verdicts:
+      - Math A: no major findings for F0c1 only
+      - Math B: no major findings for F0c1 only
+      - Lean A: no major findings for F0c1 only
+      - Lean B: no content findings for F0c1; tracker fixed-head synchronization closed by Issue comment 5366159629
+  initial_review_findings:
+    - initial head fd9ff6c6 admitted isomorphic duplicates in ParametricCartPositiveFamily; repaired by pairwise_nonisomorphic
+    - initial head fd9ff6c6 used a counterexample-specific StrongCartesianLift equivalence without canonical ULift provenance; repaired by deleting that surface and splitting canonical packageProjection reindexing into F0c2
+    - repaired head 11d297d6 left the H_cart-positive and actual-lift families unrelated; repaired by requiring an endpoint package and actual lift on every same ParametricCartPositiveFamily member
+  blocking_findings: []
+  next_obligation: F0c2 canonical packageProjection ULift reindexing, global RightBranch/DisjunctionArtifact, and cartesianRegimeOfDisjunction exact signatures before K0
+```
+
+### Cycle 6 / F0c1 acceptance spine
+
+Cycle 6 / F0c1 の直接 axiom audit は次の42 declaration に固定する。
+`RightBranch` / `DisjunctionArtifact` / global producer はまだ定義せず、
+tautological witness はK1右枝候補として数えない。
+
+- lift domain: `StrongCartesianLift`, `StrongCartesianLift.domainObject`,
+  `HasStrongCartesianLift`, `CarrierCartesianLift`, `GlobalCartesianLift`
+- semantic invariance and syntax uniformity: `CartSemanticInputIso`,
+  `CartSemanticInputIso.refl`, `rebaseCartProjection`,
+  `rebaseCartNamedConstant`, `rebaseCartFieldTerm`, `rebaseCartCondition`
+- qualified condition: `QualifiedCartCondition`,
+  `QualifiedCartCondition.checkCart`,
+  `QualifiedCartCondition.checkCart_eq_true_iff`,
+  `QualifiedCartCondition.checkCart_input_eq_true_iff`,
+  `ParametricCartPositiveFamily`, `ParametricCartLiftFamily`,
+  `RightCartesianRegime`
+- finite-universe endpoint types: `finiteModelLiftCarrier`,
+  `CartesianLiftNonexistence`, `CartesianLiftCounterexample`
+- per-carrier regime: `CartesianRegime`,
+  `CartesianRegime.HCart`, `CartesianRegime.hasStrongCartesianLift`,
+  `CartesianRegime.identity_mem`, `CartesianRegime.comp_mem`,
+  `CartesianRegime.pullback_fst_mem`, `CartesianRegime.pullback_snd_mem`
+- F0 witnesses: `packageIdentitySemanticInput`, `packageIdentityTarget`,
+  `packageIdentityStrongCartesianLift`, `packageIdentity_hasStrongCartesianLift`,
+  `packageIdentity_domainObject_val`, `tautologicalCartConditionTerm`,
+  `tautologicalQualifiedCartCondition`,
+  `tautologicalQualifiedCartCondition_check_true`,
+  `tautologicalRightCartesianRegime`, `globalRegime_hasStrongCartesianLift`,
+  `conditionalRegime_hasStrongCartesianLift`, `finiteModelLiftAtomA`,
+  `finiteModelLiftAtomB`, `finiteModelLiftAtoms_ne`
+
 ### Cycle 5 — F0b2b authored-support and relative-predicate signatures
 
 ```yaml
