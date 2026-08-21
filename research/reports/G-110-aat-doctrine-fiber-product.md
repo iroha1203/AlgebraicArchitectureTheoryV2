@@ -42,7 +42,7 @@ selection:
   unchecked: []
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: constructed canonical family and configuration lift/reflect operations with two-sided round trips, list-finiteness and family-support preservation; constructed configuration-hom lift/reflect by Atom-map conjugation with endpoint-normalized two-sided round trips and identity/composition laws; lifted arbitrary universe-zero architecture objects in one direction; rebased extraction doctrines and Atom axioms with extraction/atomization graphs; generated lifted composition and object readings with graph laws; directly reconstructed the FiniteModel-specific invariant, signature, and all-configuration-hom operation readings; added configuration-based semantic descent for every lifted architecture object; and exhibited positive, negative, nontrivial-relation, and nonidentity-hom finite witnesses. The construction intentionally stops before EquationReading, CoreReading, AATCorePackage, package homs, ambient cartesianness reflection, and FiniteModelLift.
+  proof_obligation_delta: constructed canonical family and configuration lift/reflect operations with two-sided round trips, list-finiteness and family-support preservation; constructed configuration-hom lift/reflect by Atom-map conjugation with endpoint-normalized two-sided round trips and identity/composition laws; lifted arbitrary universe-zero architecture objects in one direction; rebased extraction doctrines and Atom axioms with extraction/atomization graphs; generated lifted composition and object readings with graph laws; directly reconstructed the FiniteModel-specific invariant, signature, and all-configuration-hom operation readings; added configuration-based semantic descent for every lifted architecture object; and exhibited positive, negative, nontrivial-identification, and nonidentity-hom finite witnesses. The construction intentionally stops before EquationReading, CoreReading, AATCorePackage, package homs, ambient cartesianness reflection, and FiniteModelLift.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/FinitePackageULift.lean
@@ -65,6 +65,7 @@ result:
     - finiteModelSemanticDescent
     - finiteModelLiftCorePackage_componentA_mem
     - finiteModelLiftCorePackage_componentC_not_mem
+    - finiteModelLiftCorePackage_componentA_identified_componentB
     - finiteModelLiftCollapseConfigurationHom_roundtrip
   claim_mapping:
     fixed_goal_clauses:

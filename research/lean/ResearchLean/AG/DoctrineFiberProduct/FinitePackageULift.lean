@@ -331,8 +331,8 @@ theorem finiteModelReflectConfigurationHom_comp
 /--
 Rebase an architecture object by rebasing its Atom configuration and lifting
 its two opaque carrier types and selected values.  This is intentionally a
-one-way construction: no lowering operation for an arbitrary lifted object is
-claimed.
+one-way construction: no full-field inverse or equivalence for an arbitrary
+lifted object is claimed.
 -/
 def finiteModelLiftArchitectureObject
     (object : ArchitectureObject FiniteModel.carrier) :
