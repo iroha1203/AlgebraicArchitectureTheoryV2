@@ -21,6 +21,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedLiftNaturality
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorComparison
 
 /-!
 # Doctrine fiber-product schema
@@ -61,5 +62,10 @@ fires both layers on a noninvertible concrete chain, and fixes the exact
 component plus ambient-factorization output types for the next reflection
 step.  These are observational and coherence theorem-outputs, not a
 cross-carrier package functor or the still unproved ambient strong-lift
-reflection.
+reflection.  The generated-factor comparison layer now applies the supplied
+high universal property to every generated prefix, canonically normalizes its
+factor, and identifies it with the named high inverse-package factor.  It also
+constructs the corresponding low inverse-upper factor and records explicitly
+that this low projection is independent of the supplied high lift.  Thus it is
+a fail-closed proof-use checkpoint, not an ambient cartesianness reflection.
 -/

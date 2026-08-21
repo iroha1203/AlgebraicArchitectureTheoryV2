@@ -13,6 +13,127 @@
 
 ## Cycle ledger
 
+### Cycle 17 — supplied-high generated-factor comparison and proof-use checkpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 17
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 6477eff07bf25c536f988135c4076bdcee9e7f3a
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 16 merge synchronization / Cycle 16 exact downstream reflection signature
+  proof_dag_predecessors:
+    - Cycle 8 inverse-package forward/backward upper round trips, PR 4044 merge 9f144dfd
+    - Cycle 15 same-carrier canonical-domain inverse triangle, PR 4051 merge ab63c6f3
+    - Cycle 16 generated package-hom ULift naturality and selected two-arrow coherence, PR 4052 merge 6477eff0
+  proof_obligation: apply the supplied high strong-cartesian universal property to every generated prefix, normalize the resulting high factor, and determine whether the resulting comparison materially constructs the ambient low factors required by the fixed reflection signature
+  selection_reason: Cycle 16 supplied complete endpoint and upper-component observations but had not yet connected the supplied high universal property to the arbitrary low factor problems quantified by ReflectedGeneratedUniversalProperty
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorComparison.lean
+    - finiteGeneratedNormalizedHighFactor_eq_canonical
+    - GeneratedPrefixFactorComparison
+    - generatedPrefixFactorComparison_lowFactor_independent
+  risks:
+    - pairing an independently generated low inverse-upper factor with a high equality and calling the pair reflection
+    - reusing the generated low strong-cartesian proof or its local upper-inverse proof while the supplied high premise is decorative
+    - treating an Atom-only graph as a whole SignedExactCoreReadingHom reflection
+    - using a caller-supplied image, factor, component graph, or descent certificate
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: constructed the explicit inverse-package factor, its IsHomLift/factorization/uniqueness laws, and the generated outer-input decomposition; applied Mathlib IsStronglyCartesian.map to the actual supplied high lift for every finite-model prefix, normalized the resulting factor by canonicalDomainIso.hom, and proved whole-PackageTotalHom equality with the named high inverse-package factor; independently constructed the corresponding low whole-upper factor and full total hom; generated the complete Cycle 16 component comparison for the canonical low hom and instantiated the packet on the noninvertible two-source chain. An initial ambient-reflection prototype was rejected by four independent pre-PR lanes because its low factor, factorization, uniqueness, and final strong-cartesian proof were definitionally independent of the supplied high lift. Those declarations were removed. The surviving theorem generatedPrefixFactorComparison_lowFactor_independent records that exact proof-use limitation in Lean. FiniteModelLift, the Cycle 16 reflected hom/universal-property signature, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorComparison.lean
+  evidence:
+    - inverseCorePackageFactor
+    - inverseCorePackageFactor_isHomLift
+    - inverseCorePackageFactor_fac
+    - inverseCorePackageFactor_unique
+    - finiteGeneratedHighFactor
+    - finiteGeneratedHighFactor_fac
+    - finiteGeneratedNormalizedHighFactor
+    - finiteGeneratedNormalizedHighFactor_fac
+    - finiteGeneratedCanonicalHighFactor
+    - finiteGeneratedNormalizedHighFactor_eq_canonical
+    - finiteGeneratedLowFactorUpper
+    - finiteGeneratedLowFactor
+    - GeneratedPrefixFactorComparison
+    - generatedPrefixFactorComparison
+    - generatedPrefixFactorComparison_lowFactor_independent
+    - finiteGeneratedAmbientToOuter
+    - finiteGeneratedAmbientToOuter_fac
+    - canonicalLowGeneratedComponentComparison
+    - finiteSelectiveTwoGeneratedPrefixFactorComparison
+  claim_mapping:
+    theorem_names:
+      - finiteGeneratedNormalizedHighFactor_eq_canonical
+      - generatedPrefixFactorComparison_lowFactor_independent
+      - canonicalLowGeneratedComponentComparison
+    source_labels:
+      - target theorem B FiniteModelLift universe transport clause
+      - material-premise ledger FiniteModelLift discharge-required line
+      - Cycle 16 exact downstream reflection signature and material proof-use gate
+    conjuncts:
+      - supplied high universal property generates and normalizes the complete high prefix factor
+      - canonical low/high factors and full selected component comparison are available without caller certificates
+      - the naive paired low factor is formally independent of the supplied high lift and therefore cannot discharge reflection
+    undischarged_assumptions:
+      - structural whole-factor descent from the actual normalized high factor
+      - ambient low factorization and uniqueness driven by supplied high cartesianness
+      - graph-bearing FiniteModelLift and no-lift corollary without empty elimination
+    acceptance_point: useful proof-use checkpoint and rejected-route witness only; not reflection discharge
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - actual supplied-high generated prefix factor and canonical normalization
+      - explicit inverse-package factor laws in either carrier
+      - arbitrary ambient low competitor decomposition into an outer generated inverse package
+      - complete selected component comparison for the already generated canonical low hom
+      - formal identification of the low-first pairing route as supplied-lift independent
+    remaining:
+      - generated low hom whose computational data are structurally descended from the actual normalized high factor
+      - high-driven ambient factorization, factorization law, and uniqueness
+      - exact Cycle 16 reflectNormalizedHighHom and ReflectedGeneratedUniversalProperty producers
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - high factor is generated by Mathlib IsStronglyCartesian.map from input, prefix, and the supplied high lift
+      - canonical comparison, low inverse factor, component packet, and finite witness are named internal constructions
+    unresolved:
+      - a caller-free whole SignedExactCoreReadingHom descent operation on the actual normalized high factor
+  proof_use:
+    used:
+      - lift.hom and lift.isStronglyCartesian in finiteGeneratedHighFactor and its factorization law
+      - canonicalDomainIso_hom_fac in high-factor normalization
+      - inverseCorePackageFactor_unique in normalized-high whole-hom equality
+      - inverseCorePackage backward/forward round trips in the independent low factor scaffold
+      - generatedPackageHomULiftNaturality and every selected component graph in canonicalLowGeneratedComponentComparison
+    unused:
+      - supplied high lift in the low factor value and low factor laws, now exposed by generatedPrefixFactorComparison_lowFactor_independent
+  structure_field_escape: concern found and removed from the proposed ambient reflection; the surviving comparison structure makes no reflection or cartesianness claim
+  route_integrity: pass for the narrowed comparison checkpoint; fail for the removed low-first ambient reflection prototype
+  target_fitting: none found in the surviving universal high-factor construction; the concrete fixture is only a noninvertible firing witness
+  vacuity: none found; the supplied high type is inhabited, Mathlib map is invoked, and the concrete prefix is noninvertible
+  one_way_as_equivalence: none found; no full package functor or arbitrary high descent is claimed
+  goal_or_report_reinterpretation: none; the fixed Cycle 16 reflection signature and FiniteModelLift remain open
+  validation_refs:
+    - official focused wrapper ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorComparison.lean: pass, 52 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass
+    - no Research aggregate or full build
+    - fixed-head review, CI, and Issue synchronization pending
+  blocking_findings:
+    - the low-first paired route cannot satisfy the Cycle 16 material proof-use gate because its low projection is independent of the supplied high lift
+  next_obligation: define a specialized generated-prefix whole-factor descent whose base and SignedExactCoreReadingHom computational fields are constructed from finiteGeneratedNormalizedHighFactor itself, prove its composition and equality-reflection laws without first selecting finiteGeneratedLowFactor, use that output in every ambient factor/fac/unique field, and only then retry the exact Cycle 16 reflection signature
+```
+
 ### Cycle 16 — generated finite package-hom ULift naturality and coherence
 
 ```yaml
