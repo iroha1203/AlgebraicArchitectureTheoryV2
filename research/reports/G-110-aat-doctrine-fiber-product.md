@@ -13,6 +13,228 @@
 
 ## Cycle ledger
 
+### Cycle 5 — F0b2b authored-support and relative-predicate signatures
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 5
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 76ffc581f7075163579ad4d1a246f295c0903f07
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 4 merge update comment 5365010745 and revised GOAL strategy F0
+  proof_dag_predecessors:
+    - Cycle 2 F0a finite-code cartesian schema, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
+    - Cycle 3 F0b1 basic BC presentation and condition schema, PR 4039 merge 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
+    - Cycle 4 F0b2a finite-code pasting and one-field authored raw table, PR 4040 merge 76ffc581f7075163579ad4d1a246f295c0903f07
+    - G-106 AdmissibleLiftData and AdmissibleTransportData
+    - G-109 CoreFiber API
+  proof_obligation: fix the exact authored-datum-square domain, tagged finite authored support, pointwise-component-to-NatTrans interface, K2 authored-comparison and canonical-mate producer types, and the MateCoherentRel equality/signature shape without supplying comparison values, naturality certificates, a canonical mate, or expected equality in an input field
+  selection_reason: the fixed strategy requires presentation, condition, relative-predicate, and regime signatures to elaborate before K0; Cycle 4 fixed the raw table but deliberately left its support domain and dependent comparison types to this immediately following F0b2b obligation
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - an endpoint-deduplicated full support could falsely force unrelated authored comparator values to agree
+    - a comparator-dependent commutant category could make naturality true by target fitting
+    - discrete support could be selected only after seeing a fixture instead of uniformly from the finite authored index
+    - southwest endpoint incidence could hide a comparison or coherence conclusion
+    - the canonical mate signature could inspect the raw authored comparator
+    - arbitrary NatTrans values or expected equality could be accepted as public relation inputs
+    - generic F0 equation scaffolding could be overclaimed as the actual K2 comparison construction
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: separated a comparator-free support context from the authored datum; fixed the support uniformly as Discrete G.TwoCell with a realization functor into the southwest CoreFiber; reconstructed reviewed G-106 semantic data from the separated lift, twoCellBase, and one-field raw table; converted every PackageFiberAut value to a southwest-fiber component and a discrete natural endotransformation; fixed the dependent northeast route-family, component-family, authored-comparison producer, comparator-independent canonical-mate restriction, and final relation signatures; and elaborated the equality equation that K2 must specialize to named producers
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - AuthoredSupportContext
+    - AuthoredSupportContext.Category
+    - AuthoredSupportContext.supportFunctor
+    - AuthoredBCDatumSquare
+    - AuthoredBCDatumSquare.toTransportData
+    - AuthoredBCDatumSquare.ofInterpretation
+    - AuthoredBCDatumSquare.endpointComponentTotal_isHomLift
+    - AuthoredBCDatumSquare.endpointAutomorphism
+    - AuthoredBCDatumSquare.endpointAutomorphism_app_val
+    - AuthoredSupportRouteFamily
+    - AuthoredComparisonComponents
+    - authoredComparisonOfComponents
+    - AuthoredComparisonProducerSignature
+    - CanonicalMateRestrictionSignature
+    - AuthoredSupportComparison.Agrees
+    - MateCoherentRelSignature
+    - mateCoherentRelEquation
+    - finiteAuthoredBCDatumSquare
+    - finiteAuthoredSupport_nonempty
+    - finiteAuthoredEndpointAutomorphism_component
+    - finiteAuthoredEndpointAutomorphism_eq_identity
+    - finiteAgreement_positive
+    - finiteAgreement_negative
+  claim_mapping:
+    theorem_names:
+      - AuthoredSupportContext
+      - AuthoredBCDatumSquare
+      - AuthoredBCDatumSquare.endpointAutomorphism
+      - authoredComparisonOfComponents
+      - AuthoredComparisonProducerSignature
+      - CanonicalMateRestrictionSignature
+      - MateCoherentRelSignature
+      - mateCoherentRelEquation
+    source_labels:
+      - target theorem (C) authored support and generated 2-cell family
+      - target proof artifacts AuthoredBC2CellPresentation / authored support / MateCoherentRel
+      - target proof strategy F0 relative-predicate exact signature
+    conjuncts:
+      - every authored occurrence is indexed by the complete finite G-106 TwoCell type
+      - the support category is the same Discrete TwoCell construction for every input and does not inspect comparator values or fixture values
+      - distinct authored cell tags remain distinct even when their endpoint packages coincide
+      - the support functor lands in the square southwest CoreFiber through an explicit endpoint-incidence direction hypothesis
+      - AuthoredBCDatumSquare contains only a realizable square, G-106 lift/base data, endpoint incidence, and the one-field AuthoredBC2CellPresentation
+      - toTransportData reconstructs exactly the reviewed G-106 semantic shape and copies the authored comparator definitionally
+      - every raw PackageFiberAut is used as the underlying total morphism of its support component
+      - Discrete.natTrans generates naturality from the complete component family without a naturality input field
+      - authored comparison producers see the authored datum while canonical mate restrictions see only the comparator-free support context
+      - both producer signatures land in the same dependent NatTrans type on authored support
+      - mateCoherentRelEquation is equality of those two results and the public relation domain is exactly AuthoredBCDatumSquare U
+      - the generic equation scaffold is not the K2 public relation and does not count as construction of either producer
+      - a concrete finite-code square has nonempty authored support and a package genuinely placed over its southwest vertex
+      - positive and negative agreement instances prevent the equality predicate from being definitionally constant
+    undischarged_assumptions:
+      - K2 must generate AuthoredSupportContext.endpoint_eq from its actual pointed input or discharge it on each quantified input; an arbitrary context argument does not prove the final theorem
+      - F0c/K1 must generate the route families and cartesian regime used by K2
+      - K2 must construct the authored comparison from raw data, construct the canonical mate from units/counits, prove comparator proof-use and cleavage independence, and expose a closed MateCoherentRel with strict/lax instances
+    acceptance_point: F0b2b fixes an elaborated and nonempty type surface while preserving the F0/K2 boundary; discrete tagged support is selected uniformly because the fixed GOAL explicitly disclaims canonical full-fiber extension, and no comparison value or equality certificate is smuggled into input data
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - exact authored-support domain and southwest realization-functor signature
+      - separation of comparator-free canonical context from the one-field authored raw table
+      - pointwise component quantification and authored-support naturality constructor
+      - exact dependent types of K2 route, authored comparison, canonical restriction, and relative predicate
+      - finite nonempty endpoint-incidence witness and agreement predicate instance pair
+    remaining:
+      - F0c CartesianRegime and DisjunctionArtifact producer signature
+      - K0 nondegenerate proper-fiber witness
+      - K1 cartesian disjunction and generated regime
+      - K2 route functors, pullback adjunctions, canonical mate, authored induced comparison, strict/lax MateCoherentRel pair, and orbit theorems
+      - K3-K4 diagnostic base change, conditions, closure, and coherence
+  certificate_provenance:
+    discharged:
+      - support tags come only from the input diagnostic TwoCell type
+      - support packages come only from the input G-106 lift and twoTarget
+      - endpoint fiber objects consume the explicit incidence equality
+      - raw endpoint components consume AuthoredBC2CellPresentation.comparator directly
+      - naturality is generated by the fixed discrete-category API rather than supplied as a field
+      - the concrete support package is generated by G-101 transportAlong from the reviewed FiniteModel core package
+      - the concrete square is generated by bcPresentationOfCospan and realizableSquareOf
+    unresolved:
+      - final K2 endpoint-incidence producer and both comparison producers
+  proof_use:
+    used:
+      - square realization in all support source/target fiber indices
+      - G-106 package and twoTarget in supportPackage
+      - endpoint_eq in supportObject and endpoint-component IsHomLift
+      - twoCellBase and authored comparator in toTransportData
+      - every authored comparator in endpointComponentTotal and endpointAutomorphism
+      - all pointwise components in authoredComparisonOfComponents
+      - raw authored input only on AuthoredComparisonProducerSignature, not CanonicalMateRestrictionSignature
+      - both producer results in mateCoherentRelEquation
+    unused: []
+  structure_field_escape: none-found for the F0 signature claim; no comparison, natural family, canonical mate, expected equality, or result bit is a field
+  route_integrity: pass for F0 typing; K2 provenance remains explicitly unresolved
+  target_fitting: none-found; support is a uniform type-level construction independent of comparator and fixture values
+  vacuity: none-found; the concrete support has one authored 2-cell and the agreement predicate has true and false instances
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; F0 claims signature typing only and leaves all K2 values and the public relation definition unproved
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchema.lean: pass, namespace audit 59 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchemaWitnesses.lean: pass, namespace audit 21 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - lake build ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema: pass targeted module check
+    - lake build ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses: pass targeted module check
+    - direct acceptance-spine #print axioms audit: 30 declarations, each uses only propext/Classical.choice/Quot.sound
+    - fixed repaired head 361bcb7d65688282177db48cef9305b3897418be: CI 7/7 pass
+  review_refs:
+    initial_fixed_head: 895f5c265954e1db7136c4cdf93d580dc104bfc8
+    fixed_head: 361bcb7d65688282177db48cef9305b3897418be
+    initial_integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365378113
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365424673
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: two minor documentation/reproducibility findings, both repaired and direct-response PASS
+  blocking_findings: []
+  next_obligation: F0c CartesianRegime and DisjunctionArtifact producer signature before K0-K4
+```
+
+### Cycle 5 acceptance spine
+
+Cycle 5 の直接 axiom audit 対象は次の30 declaration に固定する。generic
+equation scaffold は actual K2 producer または public `MateCoherentRel` として
+数えず、endpoint incidence の一般放電も K2 residual に保つ。
+
+- support context: `AuthoredSupportContext`,
+  `AuthoredSupportContext.supportPackage`,
+  `AuthoredSupportContext.supportObject`,
+  `AuthoredSupportContext.Category`,
+  `AuthoredSupportContext.supportFunctor`
+- authored datum and G-106 bridge: `AuthoredBCDatumSquare`,
+  `AuthoredBCDatumSquare.toTransportData`,
+  `AuthoredBCDatumSquare.toDiagnosticInterpretation`,
+  `AuthoredBCDatumSquare.ofInterpretation`
+- raw endpoint family: `AuthoredBCDatumSquare.endpointComponentTotal`,
+  `AuthoredBCDatumSquare.endpointComponentTotal_isHomLift`,
+  `AuthoredBCDatumSquare.endpointComponent`,
+  `AuthoredBCDatumSquare.endpointAutomorphism`,
+  `AuthoredBCDatumSquare.endpointAutomorphism_app_val`
+- K2 type surface: `AuthoredSupportRoute`, `AuthoredSupportRouteFamily`,
+  `AuthoredComparisonComponents`, `authoredComparisonOfComponents`,
+  `AuthoredComparisonProducerSignature`,
+  `CanonicalMateRestrictionSignature`,
+  `AuthoredSupportComparison.Agrees`,
+  `AuthoredSupportComparison.not_agrees_of_app_ne`,
+  `MateCoherentRelSignature`, `mateCoherentRelEquation`
+- finite and predicate witnesses: `finiteAuthoredBCDatumSquare`,
+  `finiteAuthoredSupport_nonempty`,
+  `finiteAuthoredEndpointAutomorphism_component`,
+  `finiteAuthoredEndpointAutomorphism_eq_identity`,
+  `finiteAgreement_positive`, `finiteAgreement_negative`
+
+### Cycle 5 fixed-head acceptance
+
+初回 implementation head `895f5c265954e1db7136c4cdf93d580dc104bfc8` の4 lane
+査読は、数学A/B・Lean Aが `No major findings`、Lean Bが新規API補題9件の
+docstring欠落と、直接axiom audit 30宣言の完全な対象manifest欠落を Minor と判定した。
+初回統合結果は
+[#4041 review comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365378113)
+に固定した。
+
+修復 head `361bcb7d65688282177db48cef9305b3897418be` は、対象9宣言へ
+docstringを追加し、上記acceptance spine 30宣言をreportへ明記した。差分はこの二つの
+findingへの直接対応だけで、宣言の追加削除、statement、proof/definition body、値、
+import、statusを変更していない。有資格なMath/Lean直接対応確認で両findingの解消と
+対象外変更なしを確認し、修復headのCIは7/7 passとなった。最終統合判定は
+[#4041 acceptance comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365424673)
+に固定した。
+
+この受理はF0b2bのsignature typingだけを `proof-obligation-discharged` とする。
+`endpoint_eq` の一般生成、named route、pullback reindexing、adjunction、raw comparatorを
+実消費するauthored comparison、canonical mate、cleavage independence、closed
+`MateCoherentRel`、strict/lax正負対、orbit theoremはK1/K2に未放電である。F0c、
+K0--K4、Formal port、G-110全体も未完了であり、次cycleはF0cとする。
+
 ### Cycle 4 — F0b2a finite-code square pasting and authored 2-cell raw schema
 
 ```yaml
