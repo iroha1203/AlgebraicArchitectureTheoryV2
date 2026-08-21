@@ -9,6 +9,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTransport
+import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 
@@ -25,8 +26,10 @@ qualified per-carrier right-regime and nondegenerate family interfaces, finite
 counterexample endpoint types, and the branch-independent per-carrier regime
 surface.  The F0c2a1 layer adds canonical cross-universe reindexing of the
 complete finite cartesian code, decoder components, and Boolean evaluator.
-The next layer proves that canonical package transport itself is strongly
-cartesian by a generated suffix factorization.  Arbitrary-target package
-reindexing, the carrier-global disjunction artifact, and its generated regime
-remain deferred to F0c2a2/b.
+The next two layers prove that canonical package transport is strongly
+cartesian by a generated suffix factorization, inverse-reindex an arbitrary
+target package without inverting the lower source map, and construct the
+carrier-global left branch.  The nondegenerate parametric lift portfolio, the
+single carrier-global disjunction artifact, and its generated regime remain
+the next F0c2b/K1 obligations.
 -/
