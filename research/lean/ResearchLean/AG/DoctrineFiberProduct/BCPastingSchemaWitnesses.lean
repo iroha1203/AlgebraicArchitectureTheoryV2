@@ -61,6 +61,21 @@ theorem finiteHorizontalBCPasting_isPullback :
       finiteHorizontalBCPastingData.nestedSquare.right :=
   finiteHorizontalBCPastingData.nestedSquare_isPullback
 
+/-- The concrete horizontal components inhabit the pair-level strict domain. -/
+theorem finiteHorizontalBCPasting_strictComposable :
+    StrictHorizontalComposable
+      finiteHorizontalBCPastingData.leftPresentation
+      finiteHorizontalBCPastingData.rightPresentation :=
+  finiteHorizontalBCPastingData.strictComposable
+
+/-- The horizontal outer decoder equals the canonically transported literal paste. -/
+theorem finiteHorizontalBCPasting_realization_eq :
+    toSemanticBC finiteHorizontalBCPastingData.pastePresentation =
+      normalizedNestedPasteSemanticInput
+        (.horizontal finiteHorizontalBCPastingData) :=
+  toSemanticBC_pastePresentation_eq
+    (.horizontal finiteHorizontalBCPastingData)
+
 /--
 Vertical seed: constant `2 → 1` on the upper right and lower bottom,
 with identity `1 → 1` on the lower right.
@@ -94,6 +109,64 @@ theorem finiteVerticalBCPasting_isPullback :
       finiteVerticalBCPastingData.nestedSquare.bottom
       finiteVerticalBCPastingData.nestedSquare.right :=
   finiteVerticalBCPastingData.nestedSquare_isPullback
+
+/-- The concrete vertical components inhabit the pair-level strict domain. -/
+theorem finiteVerticalBCPasting_strictComposable :
+    StrictVerticalComposable
+      finiteVerticalBCPastingData.upperPresentation
+      finiteVerticalBCPastingData.lowerPresentation :=
+  finiteVerticalBCPastingData.strictComposable
+
+/-- The vertical outer decoder equals the canonically transported literal paste. -/
+theorem finiteVerticalBCPasting_realization_eq :
+    toSemanticBC finiteVerticalBCPastingData.pastePresentation =
+      normalizedNestedPasteSemanticInput
+        (.vertical finiteVerticalBCPastingData) :=
+  toSemanticBC_pastePresentation_eq
+    (.vertical finiteVerticalBCPastingData)
+
+/-! ## Strict-composability boundary instances -/
+
+/-- The constant BC presentation is not horizontally composable with itself. -/
+theorem finiteConstantBC_not_strictHorizontal_self :
+    ¬ StrictHorizontalComposable finiteConstantBCPresentation
+      finiteConstantBCPresentation := by
+  intro composable
+  have hnorth := composable.north_eq
+  have hcard := congrArg
+    (fun code : FiniteInstanceCode FiniteModel.carrier =>
+      code.doctrine.sourceCard) hnorth
+  have hpullbackCard :
+      (pullbackInstanceCode
+          (finiteConstantBCPresentation.1.cospan.first)
+          (finiteConstantBCPresentation.1.cospan.second)).doctrine.sourceCard =
+        4 := by
+    simpa [finiteConstantBCPresentation, finiteConstantBCRawCode,
+      finiteConstantBCCospan, pullbackInstanceCode] using
+        finiteConstantPullback_sourceCard
+  change
+    finiteConstantBCPresentation.1.cospan.secondSource.doctrine.sourceCard =
+      (pullbackInstanceCode
+        finiteConstantBCPresentation.1.cospan.first
+        finiteConstantBCPresentation.1.cospan.second).doctrine.sourceCard
+    at hcard
+  rw [hpullbackCard] at hcard
+  norm_num [finiteConstantBCPresentation, finiteConstantBCRawCode,
+    finiteConstantBCCospan, finiteTwoSourceInstance,
+    finiteAllDoctrineCode] at hcard
+
+/-- The constant BC presentation is not vertically composable with itself. -/
+theorem finiteConstantBC_not_strictVertical_self :
+    ¬ StrictVerticalComposable finiteConstantBCPresentation
+      finiteConstantBCPresentation := by
+  intro composable
+  have heast := composable.east_eq
+  have hcard := congrArg
+    (fun code : FiniteInstanceCode FiniteModel.carrier =>
+      code.doctrine.sourceCard) heast
+  norm_num [finiteConstantBCPresentation, finiteConstantBCRawCode,
+    finiteConstantBCCospan, finiteOneSourceInstance, finiteTwoSourceInstance,
+    finiteAllDoctrineCode] at hcard
 
 /-! ## One-field authored 2-cell table -/
 
