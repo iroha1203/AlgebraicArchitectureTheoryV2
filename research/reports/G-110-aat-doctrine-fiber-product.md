@@ -132,7 +132,7 @@ audits:
   one_way_as_equivalence: none-found; no lower source-map inverse is constructed, and the only equivalences used are consequences of hypothetical categorical isomorphisms inside contradiction proofs
   goal_or_report_reinterpretation: none; this cycle discharges only the branch-independent portfolio and explicitly retains the artifact, regime producer, K0, and K2-K4
   validation_refs:
-    - lake env lean ResearchLean/AG/DoctrineFiberProduct/CartesianTargetWitnesses.lean: pass, namespace audit 34 declarations and standard axioms only
+    - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/CartesianTargetWitnesses.lean: pass, namespace audit 34 declarations and standard axioms only
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses: pass targeted module check
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - git diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pass
@@ -141,7 +141,8 @@ audits:
     fixed_head: pending
     integrated_comment: pending
     verdicts: pending
-  initial_review_findings: []
+  initial_review_findings:
+    - all four initial lanes found the center portfolio claim intact but identified that CartesianTargetWitnesses was absent from research-modules.txt, so the official focused wrapper rejected the file and the initial wiring-pass claim was false; the module is now registered and the official single-file focused check passes
   blocking_findings: []
   next_obligation: fix the single carrier-global DisjunctionArtifact and cartesianRegimeOfDisjunction from globalCartesianLift before selecting K0
 ```
