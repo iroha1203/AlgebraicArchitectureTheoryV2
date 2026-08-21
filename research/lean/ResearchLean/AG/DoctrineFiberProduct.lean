@@ -24,6 +24,9 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedLiftNaturality
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorComparison
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescentWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObjectImageDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedContextImageDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObjectContextImageWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -73,6 +76,11 @@ a fail-closed proof-use checkpoint, not an ambient cartesianness reflection.
 The field-descent layer then reads the actual normalized high factor directly
 to reflect its exact-doctrine base, upper Atom map, object configuration, and
 configuration map, and fires those fields on the concrete noninvertible
-two-source chain.  Full object data, context/equation transport, whole-factor
-descent, ambient reflection, and `FiniteModelLift` remain unproved before K0.
+two-source chain.  The generated-image layer now also reflects both opaque
+architecture-object values from that actual high image, lifts and reflects all
+four context carriers and all three raw context-morphism maps on canonical
+images, and proves restriction plus context-category full/faithful laws with
+nontrivial finite witnesses.  The actual generated context equivalence,
+complete equation transport, whole-factor descent, ambient reflection, and
+`FiniteModelLift` remain unproved before K0.
 -/

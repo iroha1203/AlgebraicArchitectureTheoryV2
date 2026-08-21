@@ -13,6 +13,158 @@
 
 ## Cycle ledger
 
+### Cycle 19 — generated-image object and context primitive retraction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 19
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 12b89bd60b5de8f595b7009d541e6d55f9edee7d
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 18 merge synchronization / Cycle 19 selection comment 5373494897
+  proof_dag_predecessors:
+    - Cycle 13-14 canonical finite package, configuration-hom, and equation ULift data, PR 4049/4050
+    - Cycle 17 actual supplied-high generated factor and normalization equality, PR 4053
+    - Cycle 18 actual-high base, Atom, object-configuration, and configuration-map descent, PR 4054 merge 12b89bd6
+  proof_obligation: descend the two opaque fields of the actual normalized high object image without copying the source values, and construct the all-context/all-raw-morphism canonical image primitives needed before reflecting the actual equation-context equivalence
+  selection_reason: Cycle 18 stopped at configuration-only object descent, while arbitrary high Type-u data cannot be lowered; the next legal route is a shape-indexed canonical-image retraction whose generated object producer derives shape internally and reads actual high values
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObjectImageDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextImageDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObjectContextImageWitnesses.lean
+    - finiteGeneratedReflectedArchitectureObject
+    - finiteModelLiftArchitectureContext
+    - finiteModelReflectArchitectureContextAt
+    - finiteModelLiftContextMorphism
+    - finiteModelReflectContextMorphismAt
+    - FiniteGeneratedReflectedContextEquivalenceOutput
+  risks:
+    - returning source structureMaps or selectedQuantities while using the high graph only as a sibling proof
+    - treating a caller-supplied context carrier shape as the generated context-equivalence producer
+    - claiming arbitrary high-context lowering or an equivalence with the full high context category
+    - replacing actual context-equivalence descent by a singleton probe or by thin-hom proof irrelevance
+    - presenting primitive lift-reflect APIs as complete EquationSystemExactTransport or whole-factor descent
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: pending-final-review
+  proof_obligation_delta: constructed an all-value ULift shape retraction; proved that the actual normalized supplied-high objectMap on every lifted finite-model object is a canonical lifted image; derived both opaque carrier shapes internally; defined the reflected complete object by reading its actual high configuration, structureMaps, and selectedQuantities fields; and proved its full high-image equality. Separately constructed generic four-carrier ArchitectureContext lift and carrier-shape reflection, raw ContextMorphism lift/reflection for all three maps, two-sided canonical-endpoint round trips, IsRestriction preservation/reflection, and a Full/Faithful canonical context-category lift. A single internally generated noninvertible fixture fires the full object descent with Bool and Fin 2 values, all four nontrivial context carriers with positive and negative readings, and a nonidentity restriction plus both raw-map round trips. The actual normalized high equation context equivalence is not yet descended; its exact low output type is fixed by FiniteGeneratedReflectedContextEquivalenceOutput. Complete EquationSystemExactTransport, whole hom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObjectImageDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextImageDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObjectContextImageWitnesses.lean
+  evidence:
+    - finiteGeneratedULiftValueDown
+    - finiteGeneratedULiftValueDown_up
+    - finiteGeneratedULiftValueUp_down
+    - finiteGeneratedNormalizedHighFactor_objectMap_lift_graph
+    - finiteGeneratedReflectedArchitectureObject
+    - finiteGeneratedReflectedArchitectureObject_structureMaps_high_graph
+    - finiteGeneratedReflectedArchitectureObject_selectedQuantities_high_graph
+    - finiteGeneratedReflectedArchitectureObject_high_image
+    - finiteModelLiftArchitectureContext
+    - FiniteModelContextCarrierShape
+    - finiteModelReflectArchitectureContextAt
+    - finiteModelReflectArchitectureContextAt_lift
+    - finiteModelLiftArchitectureContext_reflectAt
+    - finiteModelLiftContextMorphism
+    - finiteModelReflectContextMorphismAt
+    - finiteModelReflectLiftedContextMorphism_lift
+    - finiteModelLiftContextMorphism_reflectLifted
+    - finiteModelLiftContextFunctor
+    - finiteModelLiftContextFunctor_full
+    - finiteModelLiftContextFunctor_faithful
+    - FiniteGeneratedReflectedContextEquivalenceOutput
+    - finiteSelectiveTwoActualReflectedNontrivialObject_high_image
+    - finiteSelectiveTwoActualHighObject_structureMaps_heq
+    - finiteSelectiveTwoActualHighObject_selectedQuantities_heq
+    - finiteSelectiveTwoObjectContextWitnessBase_not_isIso
+    - finiteSelectiveTwoReflectedLiftedNontrivialContext_eq
+    - finiteSelectiveTwoLiftedReflectedNontrivialContext_eq
+    - finiteSelectiveTwoNonidentityRestriction_ne_identity
+    - finiteSelectiveTwoReflectedLiftedNonidentityRestriction_eq
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0 in the current runtime route
+      - premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+    runtime_route_constraints:
+      - Issue 4034 requires generated-image object data before context/equation transport and whole-factor reflection
+      - Cycle 19 selection permits carrier-shape equalities only in low-level generic helpers; the actual object producer must derive them internally and read the actual high values
+    source_facts:
+      - finiteGeneratedReflectedArchitectureObject uses finiteGeneratedULiftValueDown on the actual normalized high object projections and never reads the source object's two opaque inhabitants
+      - finiteGeneratedNormalizedHighFactor_eq_canonical occurs only in the object image-alignment theorem, not in the reflected object's computational body
+      - finiteModelReflectArchitectureContextAt takes only four carrier equalities and reads all predicates plus the extension value from the actual high context
+      - finiteModelReflectContextMorphismAt reads all three actual high maps through carrier casts
+      - the context-category lift is Full and Faithful only on canonical lifted endpoints; no essential-surjectivity or full-high equivalence is claimed
+      - the witness context has nontrivial Support, Axis, Observable, and Extension carriers, both accepted and rejected readings, and a nonidentity restriction
+    consequence:
+      - complete ArchitectureObject generated-image descent is now typed and fired on an actual supplied-high factor
+      - canonical context object/map image retraction is available for every low context and raw restriction
+      - the exact eventual low context-equivalence output type is fixed, but the actual high equation-context functor/inverse and unit/counit have not yet been reflected
+audits:
+  premise_delta:
+    discharged:
+      - actual normalized high object generated-image alignment for every low object
+      - both opaque carrier shapes generated internally from the actual factor
+      - actual high structureMaps and selectedQuantities value descent with all-value round-trip laws
+      - full object high-image equality including opaque fields
+      - canonical four-carrier context lift and shape reflection with both complete context round trips
+      - raw context-morphism lift/reflection, all three map graphs, and restriction preservation/reflection
+      - Full/Faithful canonical context-category lift on image endpoints
+      - nontrivial object, context, and nonidentity restriction witnesses
+    remaining:
+      - internally generated forward/inverse carrier shapes for the actual high equation context equivalence
+      - actual high context functor/inverse object and map descent, comparison graphs, unit, and counit
+      - equation-index and observable-ring equivalences, observable naturality, violation and residual generators
+      - remaining operation, invariant, signature, and proof fields needed for SignedExactCoreReadingHom
+      - whole PackageTotalHom descent, composition/equality reflection, and high-driven ambient factorization/uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - the top-level actual object producer accepts no shape, preimage, image, graph, or low-value certificate
+      - both opaque values are transparent functions of actual high projections and internally generated carrier equalities
+      - the finite witness generates its input, supplied high lift, package, base, object, context, and restriction internally
+    qualified_primitive:
+      - FiniteModelContextCarrierShape is a low-level four-type alignment used to define a generic on-image context reflector; it stores no predicate, map, preimage, functor, or equivalence
+      - it is not counted as the missing generated actual-context-equivalence producer, whose shapes remain internally discharge-required
+    prohibited_and_absent:
+      - finiteGeneratedLowFactor, inverseCorePackageFactor, low cartesianness, globalCartesianLift, Classical.choose of a low preimage, and source opaque inhabitants in the reflected object body
+  proof_use:
+    used:
+      - actual normalized high objectMap configuration and both opaque values in finiteGeneratedReflectedArchitectureObject
+      - actual high predicates and extension in finiteModelReflectArchitectureContextAt
+      - actual high supportMap, axisMap, and observableRestrict in finiteModelReflectContextMorphismAt
+      - canonical equality only to derive generated-image object shapes and full image alignment
+    not_yet_available:
+      - actual normalized high equation context-equivalence descent and complete equation transport
+  structure_field_escape: none in the generated object producer; the generic carrier-shape helper is explicitly outside the missing generated equivalence claim
+  route_integrity: pass for complete object image descent and canonical context primitives; actual equation-context equivalence and whole factor remain open
+  target_fitting: none found in implementation; object/context primitives quantify all low objects, contexts, and raw morphisms, while the concrete fixture only fires them
+  vacuity: none found; opaque carriers and values are nontrivial, each context predicate has positive and negative cases, and the restriction is not identity
+  one_way_as_equivalence: none; the low-to-high context functor is only Full/Faithful, not an equivalence with all high contexts
+  goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
+  validation_refs:
+    - targeted FiniteGeneratedObjectImageDescent check: pass, 16 namespace declarations and standard axioms only
+    - targeted FiniteGeneratedContextImageDescent check: pass, 49 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedObjectContextImageWitnesses.lean: pass, 67 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+    - no Research aggregate or full build
+  review_refs:
+    independent_final_reviews: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: derive the forward and inverse canonical-image carrier shapes of the actual normalized high equation context equivalence internally; reflect its actual functor and inverse on every object and map; construct the exact FiniteGeneratedReflectedContextEquivalenceOutput with comparison graphs, unit, and counit; then descend the remaining EquationSystemExactTransport fields before assembling the whole actual-high-derived upper and total hom
+```
+
 ### Cycle 18 — actual normalized high-factor computational field descent
 
 ```yaml
