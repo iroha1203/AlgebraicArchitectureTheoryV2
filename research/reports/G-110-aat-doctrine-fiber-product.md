@@ -58,6 +58,8 @@ result:
     - BCRawCode.checkWellFormed_eq_true_iff
     - toSemanticBC_authored_point_table_sound
     - toSemanticBC_sound
+    - finiteConstantBCDiagnosticInterpretation
+    - finiteConstantBC_generated_leg_source_cards
     - evalBCCondition_firstAtomMapIdentity_bridge
     - evalBCCondition_firstAtomMapIdentity_replacement_invariant
     - finiteBCDiagnostic_vertices_nonempty
@@ -69,10 +71,10 @@ result:
   claim_mapping:
     theorem_names:
       - FiniteDiagnosticPresentation
-      - PreBCDiagnosticInput
       - CartCospanPresentation
       - BCPresentation
       - BCSemanticInput
+      - BCDiagnosticInterpretation
       - decodeBCSquare
       - toSemanticBC
       - toSemanticBC_sound
@@ -85,27 +87,31 @@ result:
       - target proof strategy F0 schema typing
       - G-106 pre-base-change diagnostic presentation
     conjuncts:
-      - BCRawCode has exactly the typed cospan, compatible-point table, and pre-BC diagnostic groups
+      - BCRawCode has exactly the typed cospan, compatible-point table, and finite pre-BC diagnostic-presentation groups
       - BCPresentation is the validated layer and its Boolean checker is exact
       - the pullback object, projections, square commutativity, and IsPullback proof are generated from the cospan
       - the authored compatible-point table is consumed by validation and agrees componentwise with decoded selected sources and images
-      - BCSemanticInput has only the square, compatible points, and pre-BC diagnostic input, with no regime, condition result, mate, or transported diagnostic
-      - every finite cartesian, compatible-point, and G-106 combinatorial component is represented in BCProjection
-      - semantic G-106 interpretation data is excluded from projection evaluation
+      - BCSemanticInput has only the square, compatible points, and underlying pre-BC diagnostic geometry, with no authored enumeration, package interpretation, regime, condition result, mate, or transported diagnostic
+      - BCDiagnosticInterpretation places G-106 AdmissibleTransportData in a separate dependent semantic-input layer
+      - every finite cartesian field of all four square legs and every compatible-point and G-106 combinatorial component is represented in BCProjection
+      - all cartesian derived sets and finite universals are available for all four generated legs
+      - semantic G-106 interpretation data is absent from presentation fields and projection evaluation
+      - BCNamedConstant contains no natural/source-index value constant
       - BCConditionSyntax has exactly field equality, membership, finite universal equality, and conjunction constructors
       - the selected finite universal has a semantic bridge and semantic-replacement invariance theorem
       - nonempty 0/1/2/3-cell diagnostic data and oriented pasting faces exercise the structural serialization
       - malformed point tables are rejected and identity/nonidentity Atom conditions both fire
       - a concrete commutative non-pullback semantic input has neither presentation provenance nor a RealizableSquare certificate
     undischarged_assumptions: []
-    acceptance_point: the basic BC presentation generates rather than stores its pullback conclusion; the compatible table is tied to decoded semantics; the condition evaluator sees the complete authored finite combinatorics but cannot inspect semantic package values; positive and negative validators and realization boundaries close the nonvacuity audit; and no F0b2 pasting, authored-2-cell, or regime claim is included
+    acceptance_point: the finite-only basic BC presentation generates rather than stores its pullback conclusion; package interpretation is a separate dependent semantic input; the compatible table is tied to decoded semantics; the condition evaluator sees all four finite-code square legs and the complete authored finite combinatorics but has neither semantic package values nor a fixture source-value constant; positive and negative validators and realization boundaries close the nonvacuity audit; and no F0b2 pasting, authored-2-cell, or regime claim is included
     port_status: unported
 audits:
   premise_delta:
     discharged:
       - basic finite-code BCPresentation and named BCSemanticInput boundary
+      - separate dependent BCDiagnosticInterpretation package layer
       - generated categorical pullback square and selected-point soundness
-      - complete basic BC condition field vocabulary and evaluator
+      - complete four-leg basic BC condition field vocabulary and evaluator
       - finite diagnostic presentation capabilities and nonempty structural witness
       - basic realization provenance and a semantic non-realizability boundary witness
     remaining:
@@ -117,6 +123,7 @@ audits:
   certificate_provenance:
     discharged:
       - BCRawCode validation consumes the authored compatible-point table against the cospan
+      - BCRawCode and BCSemanticInput contain no AdmissibleTransportData field; finiteConstantBCDiagnosticInterpretation inhabits the separate dependent package layer
       - decodeBCSquare invokes the F0a pullback producer; BCRawCode stores no pullback object or proof
       - toSemanticBC_sound obtains IsPullback from pullbackPresentation_isPullback
       - realizableSquareOf is generated from a validated presentation
@@ -126,6 +133,7 @@ audits:
     used:
       - all seven compatible-point equalities in validation and the authored-table soundness theorem
       - both typed cospan legs in generated pullback object, projections, and IsPullback proof
+      - all four square legs in BCProjection, BCDerivedSet, and BCUniversalEquality; the generated top/left source-card projections fire on the finite witness
       - every finite diagnostic field family in a listed projection or structural universal
       - finite support/table data in the Atom-identity semantic bridge
       - collapse and constant source maps in the non-pullback contradiction
@@ -137,17 +145,40 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean: pass, namespace audit 513 declarations and standard axioms only
-    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchemaWitnesses.lean: pass, namespace audit 58 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean: pass, namespace audit 504 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchemaWitnesses.lean: pass, namespace audit 59 declarations and standard axioms only
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCSchema: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCSchemaWitnesses: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct: pass targeted umbrella module check
-    - direct #print axioms on all 86 F0b1 acceptance-spine declarations: only propext, Classical.choice, and Quot.sound
+    - direct #print axioms on all 88 F0b1 acceptance-spine declarations: only propext, Classical.choice, and Quot.sound
     - placeholder, hidden/BiDi Unicode, privacy, import-direction, wiring, and git diff checks: pass
   blocking_findings: []
   next_obligation: F0b2 pasting, authored 2-cell, mate-relation, and regime-producer signature typing
 ```
+
+### Cycle 3 initial fixed-head review and response
+
+初回 fixed head `4c942ab188072de3e227568bf559df9e1b33e178` の標準
+review-pr / math-lean-review 監査は
+[#4039 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4039#issuecomment-5364183765)
+に固定した。4 lane の統合判定は `Needs changes` で、次の3点を検出した。
+
+1. `AdmissibleTransportData` を `BCRawCode` / `BCPresentation` に格納し、
+   finite presentation と package semantic interpretation の二層を混同した。
+2. `BCNamedConstant.zero` が authored source index との fixture-dependent
+   等式原子を許した。
+3. `BCSquareLeg` が authored cospan の2脚しか列挙せず、生成された pullback
+   脚 `top / left` を condition projection から落とした。
+
+修正では `BCRawCode.diagnostic` を `FiniteDiagnosticPresentation` のみにし、
+`BCSemanticInput.diagnostic` は underlying `FiniteTransportPresentation`、
+G-106 package 値は別 dependent structure `BCDiagnosticInterpretation` に分離した。
+natural/source-index 定数は全廃し、`BCSquareLeg` は `top / left / right /
+bottom` の4脚を列挙する。さらに全 `CartDerivedSet` /
+`CartUniversalEquality` を各脚へ埋め込み、生成 `top / left` の source-card
+projection が具体的4元 pullback codeを読む witness を追加した。signature と
+declaration を変更したため、修正 head は直接対応ではなく4 lane 正式再査読を要する。
 
 ### Cycle 2 — F0a finite-code cartesian schema typing
 
@@ -308,12 +339,12 @@ code calculus と semantic interpretation を型で分離した。pullback の�
 
 ## F0b1 acceptance spine
 
-F0b1 の直接 axiom audit 対象は次の86 declaration に固定する。semantic package
-layerの `PreBCDiagnosticInput.interpretation` は GOAL が許可する入力であるが、
-condition projection/evaluator の対象には含めない。
+F0b1 の直接 axiom audit 対象は次の88 declaration に固定する。semantic package
+layerの `BCDiagnosticInterpretation.data` は presentation / decoded square と
+別の dependent input であり、condition projection/evaluator の対象には含めない。
 
 - raw/validated and semantic boundary: `FiniteDiagnosticPresentation`,
-  `PreBCDiagnosticInput`, `CartCospanPresentation`, `CompatiblePointCode`,
+  `BCDiagnosticInterpretation`, `CartCospanPresentation`, `CompatiblePointCode`,
   `CompatiblePointCode.WellFormed`, `CompatiblePointCode.checkWellFormed`,
   `CompatiblePointCode.checkWellFormed_eq_true_iff`, `BCRawCode`,
   `BCRawCode.WellFormed`, `BCRawCode.checkWellFormed`,
@@ -342,12 +373,14 @@ condition projection/evaluator の対象には含めない。
 - finite checks: `FiniteBCDiagnosticCell`,
   `finiteBCDiagnosticTwoPresentation`, `finiteBCDiagnosticGeometry`,
   `finiteBCDiagnosticPresentation`, `finiteBCDiagnosticTransportData`,
+  `finiteConstantBCDiagnosticInterpretation`,
   `finiteBCDiagnostic_vertices_nonempty`,
   `finiteBCDiagnostic_twoCells_nonempty`,
   `finiteBCDiagnostic_threeFaces_nonempty`, `finiteConstantBCCospan`,
   `finiteConstantCompatiblePointCode_wellFormed`,
   `finiteConstantBCRawCode_wellFormed`,
   `finiteConstantBCRawCode_check_true`,
+  `finiteConstantBC_generated_leg_source_cards`,
   `finiteBadBCRawCode_not_wellFormed`, `finiteBadBCRawCode_check_false`,
   `finiteConstantBC_firstAtom_check`,
   `finiteConstantBC_diagnostic_structure_check`,

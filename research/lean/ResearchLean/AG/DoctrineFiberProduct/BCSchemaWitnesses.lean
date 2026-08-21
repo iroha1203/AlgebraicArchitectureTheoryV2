@@ -154,13 +154,6 @@ noncomputable def finiteBCDiagnosticTransportData :
           (PackageTotalHom.id FiniteModel.corePackage))]
   comparator := fun _ => 1
 
-/-- Concrete nonempty pre-base-change diagnostic input. -/
-noncomputable def finiteBCDiagnosticInput :
-    PreBCDiagnosticInput FiniteModel.carrier where
-  presentation := finiteBCDiagnosticPresentation
-  interpretation := by
-    simpa [finiteBCDiagnosticPresentation] using finiteBCDiagnosticTransportData
-
 /-- The diagnostic vertex projection sees the concrete vertex. -/
 theorem finiteBCDiagnostic_vertices_nonempty :
     finiteBCDiagnosticPresentation.vertices.length = 1 := by
@@ -206,7 +199,7 @@ theorem finiteConstantCompatiblePointCode_wellFormed :
 noncomputable def finiteConstantBCRawCode : BCRawCode FiniteModel.carrier where
   cospan := finiteConstantBCCospan
   compatiblePoints := finiteConstantCompatiblePointCode
-  diagnostic := finiteBCDiagnosticInput
+  diagnostic := finiteBCDiagnosticPresentation
 
 /-- The concrete constant BC raw code is well formed. -/
 theorem finiteConstantBCRawCode_wellFormed : finiteConstantBCRawCode.WellFormed :=
@@ -216,11 +209,35 @@ theorem finiteConstantBCRawCode_wellFormed : finiteConstantBCRawCode.WellFormed 
 noncomputable def finiteConstantBCPresentation : BCPresentation FiniteModel.carrier :=
   ⟨finiteConstantBCRawCode, finiteConstantBCRawCode_wellFormed⟩
 
+/--
+The concrete G-106 package interpretation inhabits the separate dependent
+semantic layer; it is not an authored BC-presentation field.
+-/
+noncomputable def finiteConstantBCDiagnosticInterpretation :
+    BCDiagnosticInterpretation FiniteModel.carrier
+      (toSemanticBC finiteConstantBCPresentation) where
+  data := by
+    simpa [toSemanticBC, finiteConstantBCPresentation, finiteConstantBCRawCode,
+      finiteBCDiagnosticPresentation] using finiteBCDiagnosticTransportData
+
 /-- The BC validator accepts the concrete valid raw code. -/
 theorem finiteConstantBCRawCode_check_true :
     finiteConstantBCRawCode.checkWellFormed = true :=
   (BCRawCode.checkWellFormed_eq_true_iff finiteConstantBCRawCode).mpr
     finiteConstantBCRawCode_wellFormed
+
+/-- Both generated pullback legs expose the four-source pullback code. -/
+theorem finiteConstantBC_generated_leg_source_cards :
+    readBCProjection (.cart .top .sourceCard) finiteConstantBCPresentation =
+        ULift.up 4 ∧
+      readBCProjection (.cart .left .sourceCard) finiteConstantBCPresentation =
+        ULift.up 4 := by
+  constructor <;>
+    simpa [readBCProjection, bcCartPresentation, finiteConstantBCPresentation,
+      finiteConstantBCRawCode, finiteConstantBCCospan,
+      pullbackFstPresentation, pullbackSndPresentation,
+      pullbackInstanceCode] using congrArg ULift.up
+        finiteConstantPullback_sourceCard
 
 /-- Malformed compatible-point table whose authored base index is out of range. -/
 def finiteBadBCCompatiblePointCode : CompatiblePointCode where
@@ -232,7 +249,7 @@ def finiteBadBCCompatiblePointCode : CompatiblePointCode where
 noncomputable def finiteBadBCRawCode : BCRawCode FiniteModel.carrier where
   cospan := finiteConstantBCCospan
   compatiblePoints := finiteBadBCCompatiblePointCode
-  diagnostic := finiteBCDiagnosticInput
+  diagnostic := finiteBCDiagnosticPresentation
 
 /-- The malformed point table fails BC validation. -/
 theorem finiteBadBCRawCode_not_wellFormed : ¬ finiteBadBCRawCode.WellFormed := by
@@ -253,7 +270,7 @@ theorem finiteBadBCRawCode_check_false :
 
 /-- The first-leg Atom condition accepts a noninvertible constant cospan leg. -/
 theorem finiteConstantBC_firstAtom_check :
-    evalBCCondition (.allCells .firstAtomMapIdentity)
+    evalBCCondition (.allCells (.cart .bottom .atomMapIdentity))
       finiteConstantBCPresentation = true := by
   rw [evalBCCondition_firstAtomMapIdentity_eq_true_iff]
   exact AtomPermutationCode.toEquiv_refl
@@ -286,12 +303,12 @@ theorem finiteConstantCompatiblePointCode_swap_wellFormed :
 noncomputable def finiteSwapBCPresentation : BCPresentation FiniteModel.carrier :=
   ⟨{ cospan := finiteSwapBCCospan
      compatiblePoints := finiteConstantCompatiblePointCode
-     diagnostic := finiteBCDiagnosticInput },
+     diagnostic := finiteBCDiagnosticPresentation },
     finiteConstantCompatiblePointCode_swap_wellFormed⟩
 
 /-- The first-leg Atom condition rejects the concrete swap table. -/
 theorem finiteSwapBC_firstAtom_check_false :
-    evalBCCondition (.allCells .firstAtomMapIdentity)
+    evalBCCondition (.allCells (.cart .bottom .atomMapIdentity))
       finiteSwapBCPresentation = false := by
   apply Bool.eq_false_iff.mpr
   intro htrue
@@ -407,7 +424,7 @@ theorem finiteNonPullbackSquare_not_isPullback :
 noncomputable def finiteNonPullbackBCInput : BCSemanticInput FiniteModel.carrier where
   square := finiteNonPullbackSquare
   compatiblePoints := compatiblePointSemanticInputOfSquare finiteNonPullbackSquare
-  diagnostic := finiteBCDiagnosticInput
+  diagnostic := finiteBCDiagnosticGeometry
 
 /-- No validated finite BC presentation realizes the concrete non-pullback input. -/
 theorem finiteNonPullbackBCInput_not_presented :
