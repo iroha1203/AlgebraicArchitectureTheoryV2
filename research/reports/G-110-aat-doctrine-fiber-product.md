@@ -43,9 +43,7 @@ selection:
     - storing a counterexample-specific package rebase, lift reflection, or FiniteModelLift certificate in RightBranch
     - using the contradiction from globalCartesianLift to claim the required canonical ULift transport
     - counting the artifact/producer as K0 or G-110 completion
-  unchecked:
-    - fixed-head four-lane review
-    - fixed-head CI and final report synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: fixed RightBranch with one universe-zero structural syntax template, exact equality to the base qualified condition term, canonical rebase equality for every carrier-level qualified condition, a nondegenerate same-condition positive family, and a finite condition-failing no-lift witness; proved the selected global theorem makes that conditional theorem-output type empty; defined the Type-valued carrier-global DisjunctionArtifact; defined cartesianRegimeOfDisjunction with artifact selection preceding the carrier quantifier; constructed globalDisjunctionArtifact from globalCartesianLift; generated selectedCartesianRegime only through that producer; and connected its membership and lift supply to the existing CartesianRegime eliminator
@@ -125,11 +123,15 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianBranch: pass targeted module check
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - git diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and wiring scans: pass
-    - fixed-head PR CI: pending
+    - fixed-head PR CI: 7/7 success
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: pending
+    fixed_head: f64cc3630107891ae79804ca8813eeec912f9abd
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4047#issuecomment-5368786784
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: No major findings
   initial_review_findings: []
   blocking_findings: []
   next_obligation: construct and review canonical finite-package ULift reindexing and strong-lift reflection sufficient for the fixed FiniteModelLift obligation before selecting K0
