@@ -16,6 +16,9 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULift
 import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULiftWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULiftWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -40,7 +43,10 @@ uniform conditional theorem-output surface, selects the single carrier-global
 left artifact, and exports its sole per-carrier regime producer.  The current
 finite-package foundation now rebases families, configurations, configuration
 homs, finite-model reading components, and semantic configurations with exact
-round-trip and graph laws.  Equation/CoreReading/package assembly and ambient
-strong-lift reflection for the separate `FiniteModelLift` obligation remain
-before K0.
+round-trip and graph laws.  The equation layer additionally rebases finite
+circuit syntax, reconstructs the NoCycle equation and sound detector on every
+lifted object, and assembles the complete lifted `CoreReading` and generated
+`AATCorePackage`, with concrete cyclic and acyclic witnesses.  Package-total
+hom rebasing and ambient strong-lift reflection for the separate
+`FiniteModelLift` obligation remain before K0.
 -/
