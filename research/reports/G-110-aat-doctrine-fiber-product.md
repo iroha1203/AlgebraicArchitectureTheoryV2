@@ -13,6 +13,123 @@
 
 ## Cycle ledger
 
+### Cycle 8 — canonical package transport is strongly cartesian
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 8
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 8 selection comment 5367241492
+  proof_dag_predecessors:
+    - G-101 canonical package transport and strong cocartesian theorem, merge dd5e02b5 and reviewed head db47ee9e
+    - Cycle 6 F0c1 strong-lift and regime signatures, PR 4042 merge 487bee332fbd426cb70ffe926b4c0201ab569a60
+    - Cycle 7 canonical finite-code universe reindexing, PR 4043 merge 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
+  proof_obligation: construct the unique suffix factor of every total hom whose base factors through canonical package transport, and derive Mathlib Functor.IsStronglyCartesian for the canonical transport arrow without inverting the lower source map
+  selection_reason: independent orientation audits showed that the existing upper deconjugation already generates a two-sided inverse to canonical upper transport, so the universal-property half of the global-left branch can be discharged before the separate arbitrary-target package preimage construction
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - renaming the existing strongly cocartesian prefix factorization as cartesian without reversing the factorization direction
+    - assuming an inverse ExactDoctrineHom or invertible sourceMap
+    - accepting the upper inverse, total factor, or strong-cartesian certificate as an input
+    - restricting the competitor base prefix or total hom instead of proving the strong universal property
+    - counting a canonical codomain transport theorem as a lift ending at every arbitrary target-fiber package
+  unchecked:
+    - fixed-head standard four-lane review and PR CI are pending
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: specialized canonical upper deconjugation to the identity upper hom; proved both upper inverse laws; constructed the total suffix factor from an arbitrary competitor and its derived base factorization; proved base, factorization, and uniqueness laws; packaged the explicit exists-unique property; and instantiated Mathlib Functor.IsStronglyCartesian for transportAlongHom over packageProjection
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - transportAlongUpperInverse
+    - transportAlongUpperInverse_atomEquiv
+    - transportAlongUpper_comp_inverse
+    - transportAlongUpperInverse_comp
+    - packageCartesianFactor
+    - packageCartesianFactor_base
+    - packageCartesianFactor_fac
+    - packageCartesianFactor_unique
+    - transportAlongHom_cartesianFactor_existsUnique
+    - transportAlongHom_isStronglyCartesian
+  claim_mapping:
+    theorem_names:
+      - transportAlongUpper_comp_inverse
+      - transportAlongUpperInverse_comp
+      - transportAlongHom_cartesianFactor_existsUnique
+      - transportAlongHom_isStronglyCartesian
+    source_labels:
+      - target theorem (B) strong cartesian lift universal-property layer
+      - target proof strategy F0c2 branch-exact package construction precursor
+    conjuncts:
+      - the upper inverse is generated from the reviewed G-101 deconjugation theorem and the identity upper hom
+      - the total factor lies over an arbitrary prefix base map and composes on the left of canonical transport to recover the arbitrary competitor
+      - uniqueness uses both the competitor factorization and the canonical upper inverse law
+      - strong cartesianness quantifies every prefix base morphism and every total hom over its composite with the canonical base arrow
+    undischarged_assumptions:
+      - an arbitrary targetPackage in CoreFiber input.target has not yet been inverse-reindexed to a source package whose canonical transport reaches that target
+      - GlobalCartesianLift, the exact RightBranch and FiniteModelLift type surfaces, DisjunctionArtifact, and cartesianRegimeOfDisjunction remain unresolved
+      - the branch-independent nonisomorphic noninvertible parametric lift family remains unresolved
+      - K0 and K2-K4 remain unresolved
+    acceptance_point: the universal-property half of arbitrary-target cartesian lifting is closed for canonical transport codomains; no arbitrary-target or carrier-global conclusion is counted
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - generated two-sided inverse of canonical upper transport
+      - arbitrary total suffix factor and uniqueness
+      - canonical transport Functor.IsStronglyCartesian
+    remaining:
+      - inverse-Atom reindexing of an arbitrary target package and endpoint casts
+      - global branch artifact and generated regime
+      - branch-independent nondegenerate lift family
+      - K0 and K2-K4
+  certificate_provenance:
+    discharged:
+      - transportAlongUpperInverse is computed by canonicalDeconjugateTransportUpper on SignedExactCoreReadingHom.refl
+      - packageCartesianFactor is computed from the supplied competitor, its base prefix, and the generated upper inverse
+      - IsStronglyCartesian is built from the explicit exists-unique factor theorem
+    unresolved:
+      - arbitrary target-package preimage and the named source of the eventual global disjunction
+  proof_use:
+    used:
+      - canonicalTailAtomEquiv_factor and transportAlongUpper_comp_deconjugate for the first inverse law
+      - transportAlongUpper_comp_injective plus upper associativity and unit laws for the second inverse law
+      - both inverse laws in total factorization and uniqueness
+      - IsHomLift.eq_of_isHomLift to derive competitor base equalities in the Mathlib universal property
+    unused: []
+  structure_field_escape: none-found; no structure or certificate field is introduced, and the factor and universal-property witness are named constructions
+  route_integrity: pass for canonical codomains; the report explicitly retains arbitrary-target object construction before GlobalCartesianLift
+  target_fitting: the theorem is generic over every carrier, source package, exact doctrine morphism, prefix base map, and competing total hom
+  vacuity: the theorem assumes no IsIso instance for the lower morphism and proves the strong universal property for arbitrary competitors; the required explicit noninvertible parametric family remains separately undischarged
+  one_way_as_equivalence: none-found; both upper inverse laws are proved, while no inverse lower source map is defined or assumed
+  goal_or_report_reinterpretation: none; canonical strong cartesianness is recorded only as one construction lemma toward the fixed arbitrary-target left branch
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/CartesianTransport.lean: pass, namespace audit 10 declarations and standard axioms only
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: []
+  blocking_findings: []
+  next_obligation: fixed-head standard four-lane review, PR CI, and merge; then construct the arbitrary target-package inverse reindexing and derive GlobalCartesianLift before fixing the final carrier-global artifact and regime producer
+```
+
+### Cycle 8 acceptance spine
+
+Cycle 8 の直接 axiom audit は上記 `evidence` 10 declaration に固定する。
+canonical target `transportAlong P f` 以外の package、`GlobalCartesianLift`、
+right-branch data、または分岐 artifact の inhabitant を達成したとは数えない。
+
 ### Cycle 7 — F0c2a1 canonical finite-code universe reindexing
 
 ```yaml
@@ -166,7 +283,7 @@ audits:
     - initial head 7348d910 omitted docstrings on three public helper theorems; repaired without changing statements or proof bodies
     - initial head 7348d910 recorded no unused fields even though the five non-Atom coordinate equivalences and five projection laws are deferred to the package layer; repaired by explicit proof-use classification
   blocking_findings: []
-  next_obligation: merge this accepted checkpoint, then discharge F0c2a2/b carrier-global DisjunctionArtifact and named regime producer typing, selecting only package transport actually required by the eventual branch
+  next_obligation: superseded by Cycle 8, which proves canonical package transport strongly cartesian while retaining arbitrary-target package reindexing and the carrier-global artifact/producer as unresolved
 ```
 
 ### Cycle 7 / F0c2a1 acceptance spine
