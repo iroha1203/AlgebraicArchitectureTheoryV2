@@ -25,7 +25,7 @@ base_oid: b67c112b7dfc4aba260901c16568d94bf4f7c08d
 tracking_issue: 4034
 report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
-  proof_state_ref: Issue 4034 Cycle 6 selection comment 5365512778, initial fixed-head review comment 5365769283, and revised GOAL strategy F0
+  proof_state_ref: Issue 4034 Cycle 6 selection comment 5365512778, final fixed-head ledger comment 5366159629, integrated review comment 5366158627, and revised GOAL strategy F0
   proof_dag_predecessors:
     - Cycle 2 F0a finite-code cartesian schema, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
     - Cycle 3 F0b1 basic BC presentation and condition schema, PR 4039 merge 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
@@ -49,9 +49,7 @@ selection:
     - using a counterexample-specific equivalence of empty lift types as universe transport
     - carrying an unrelated caller-supplied CartesianRegime into K1-K4 before the F0c2 producer exists
     - counting an identity lift or tautological schema witness as selection of the global theorem branch
-  unchecked:
-    - fixed-head standard review-pr and four-lane math-lean-review
-    - final CI and merge state
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: defined the actual mathlib strong-cartesian lift bundle over a named CartSemanticInput and endpoint CoreFiber package; restricted carrier lift existence to RealizableHom; placed the carrier quantifier inside GlobalCartesianLift; fixed semantic arrow isomorphisms and a QualifiedCartCondition whose checker is derived from frozen syntax and whose bridge type, presentation replacement invariance, semantic isomorphism invariance, and constructor-relative wide pullback-stable closure are explicit; rebased the structural syntax uniformly across carriers; fixed a right-positive-family interface whose distinct parameters are pairwise nonisomorphic semantic arrows and whose same H_cart-positive members carry endpoint packages and actual strong lifts; fixed a branch-independent family of actual strong lifts over pairwise nonisomorphic noninvertible arrows; fixed finite no-lift/counterexample endpoint types; and fixed CartesianRegime with branch-independent lift and closure eliminators
@@ -168,10 +166,15 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses: pass targeted module check
     - repaired-head direct acceptance-spine #print axioms audit: 42 declarations, each uses only propext/Classical.choice/Quot.sound or no axioms
+    - fixed-head PR CI: 7 of 7 checks green
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: []
+    fixed_head: d6d178452759a22bf6cbfc67680e09da474f048f
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4042#issuecomment-5366158627
+    verdicts:
+      - Math A: no major findings for F0c1 only
+      - Math B: no major findings for F0c1 only
+      - Lean A: no major findings for F0c1 only
+      - Lean B: no content findings for F0c1; tracker fixed-head synchronization closed by Issue comment 5366159629
   initial_review_findings:
     - initial head fd9ff6c6 admitted isomorphic duplicates in ParametricCartPositiveFamily; repaired by pairwise_nonisomorphic
     - initial head fd9ff6c6 used a counterexample-specific StrongCartesianLift equivalence without canonical ULift provenance; repaired by deleting that surface and splitting canonical packageProjection reindexing into F0c2
