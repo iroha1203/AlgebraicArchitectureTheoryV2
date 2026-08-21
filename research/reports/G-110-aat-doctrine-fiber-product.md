@@ -39,8 +39,7 @@ selection:
     - accepting a matching, soundness, equation, package, or reflection certificate from the caller
     - using an empty/default circuit or vacuous context to discharge soundness
     - counting package assembly as FiniteModelLift, K0, or theorem completion
-  unchecked:
-    - repaired report-only delta review and integrated final synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-checkpoint
   proof_obligation_delta: constructed lift/reflect operations for CircuitQuery, FiniteCircuitDatum, and CircuitDetectorCode with two-sided round trips, injectivity, matching, Holds, and evaluation graph laws, including arbitrary lifted target data through semantic configuration descent; directly reconstructed the lifted FiniteModel NoCycle equation system on every lifted ArchitectureObject and proved its EquationHolds equivalences; constructed the exact lifted cycle detector and proved Sound without caller evidence; assembled the complete lifted CoreReading and generated AATCorePackage with component and endpoint graph theorems; and exhibited cyclic/acyclic, accepted/rejected, matching/nonmatching, equation-failing/equation-holding witnesses. The generated package itself has a concrete accepted base circuit whose own circuit_sound theorem refutes its selected equation. Package-total hom rebasing, ambient strong-cartesian reflection, and the FiniteModelLift no-lift corollary remain intentionally unclaimed.
@@ -132,10 +131,15 @@ audits:
     - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/FiniteEquationULiftWitnesses.lean: pass, namespace audit 17 declarations and standard axioms only
     - manifest, umbrella, placeholder, hidden/BiDi Unicode, privacy, import-direction, wiring, and git diff scans: pass
     - fixed content head PR CI: 7/7 success
+    - repaired report-only head PR CI: 7/7 success
   review_refs:
     fixed_head: 9be31e20e9ff7cb9fb77295ce2519d5afad76296
-    integrated_comment: pending final synchronization
-    verdicts: pending repaired report-only delta review
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4050#issuecomment-5369927331
+    verdicts:
+      - Math A: No major findings after report-only repair
+      - Math B: No major findings after report-only repair
+      - Lean A: No major findings
+      - Lean B: No major findings
   initial_review_findings:
     - Math A Minor: selection.unchecked was empty while fixed-head review and integration references were still pending; retain final synchronization explicitly until it is complete
     - Math B Minor: separated terminal projection/injectivity APIs from proof-used dependencies and clarified that the generated package base is cyclic while the acyclic witness is an object-level control under the same equation
