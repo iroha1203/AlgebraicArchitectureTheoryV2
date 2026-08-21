@@ -151,7 +151,7 @@ audits:
     discharged:
       - each top-level reflected computational producer accepts only input, supplied high lift, base, and its mathematical operation, index, axis, or coordinate argument
       - operation, invariant, axis, and coordinate image equivalences, inverses, endpoint alignments, and round trips are internally generated
-      - the operation inverse theorem quantifies every high source operation; the invariant and axis inverse-source theorems quantify every high source index or axis; and coordinate inverse image quantifies every high source coordinate
+      - the operation inverse theorem quantifies every high source operation; the invariant and axis inverse-source theorems quantify every high source index or axis; the coordinate inverse theorem quantifies every low target coordinate, equivalently every canonical high target image through the target equivalence, and the two coordinate round trips cover both low coordinate carriers
       - the witness derives its operation, indices, axes, coordinates, and base noninvertibility from named finite constructions
     prohibited_and_absent:
       - finiteGeneratedLowFactorUpper, finiteGeneratedNormalizedHighFactor_eq_canonical, inverseCorePackageFactor as a returned low answer, globalCartesianLift, caller map/equivalence/image/round-trip certificates, Classical.choose of a low preimage, and empty elimination
@@ -166,7 +166,7 @@ audits:
       - direct actual-high proofs of the remaining eight structural and law fields
       - exact 18-field SignedExactCoreReadingHom and PackageTotalHom assembly
       - high-driven ambient low factor, factorization, and uniqueness
-  structure_field_escape: none; standalone definitions accept no free map, equivalence, image, inverse, round-trip, or law fields
+  structure_field_escape: none in the four target-facing reflected producers; the generic conjugation helpers explicitly accept source, actual-middle, target, and dependent-landing data, but each target-facing instantiation generates those inputs internally and fixes its middle data to the corresponding actual normalized high field; no target-facing producer accepts a free map, equivalence, image, inverse, round-trip, or law certificate
   route_integrity: pass for the four actual-high-derived computational upper fields only; remaining SignedExactCoreReadingHom laws and whole hom descent remain open
   target_fitting: none found in implementation; core theorems quantify all low and high generated inputs and the fixture only instantiates them
   vacuity: none found; the fixture uses a noninvertible base, a nonidentity collapse operation with moved Atom, and coordinate values 3 and 0; singleton invariant and axis directions are explicitly classified as rigid
