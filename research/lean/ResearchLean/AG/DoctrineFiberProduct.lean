@@ -27,6 +27,9 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescentWit
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObjectImageDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedContextImageDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObjectContextImageWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedContextImageFunctor
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedContextEquivalence
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedContextEquivalenceWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -80,7 +83,11 @@ two-source chain.  The generated-image layer now also reflects both opaque
 architecture-object values from that actual high image, lifts and reflects all
 four context carriers and all three raw context-morphism maps on canonical
 images, and proves restriction plus context-category full/faithful laws with
-nontrivial finite witnesses.  The actual generated context equivalence,
-complete equation transport, whole-factor descent, ambient reflection, and
+nontrivial finite witnesses.  The following layer constructs the generated-
+domain Full/Faithful image functors and reflects the actual normalized high
+context equivalence, including its forward and inverse objects and maps and all
+four unit/counit components, with a concrete distinct-context restriction
+witness.  The remaining equation-index and observable-ring transport,
+violation/residual graphs, whole-factor descent, ambient reflection, and
 `FiniteModelLift` remain unproved before K0.
 -/

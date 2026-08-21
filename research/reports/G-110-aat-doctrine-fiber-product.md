@@ -13,6 +13,180 @@
 
 ## Cycle ledger
 
+### Cycle 20 — actual generated context-equivalence reflection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 20
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: faa1129e1eecd5377b87394680a8da66a253b15f
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 19 merge synchronization / Cycle 20 selection comment 5374189023
+  proof_dag_predecessors:
+    - Cycle 17 actual supplied-high generated prefix factor and canonical normalization, PR 4053
+    - Cycle 18 actual-high base, Atom, object-configuration, and configuration-map descent, PR 4054
+    - Cycle 19 complete object-image value descent and canonical context object/map primitives, PR 4055 merge faa1129e
+  proof_obligation: derive the actual normalized high factor's forward and inverse context images internally; reflect its functor, inverse, unit, and counit on every canonical generated-image object and map; and construct the fixed FiniteGeneratedReflectedContextEquivalenceOutput
+  selection_reason: Cycle 19 fixed the exact output type and supplied all-value context and raw-morphism image primitives, but deliberately stopped before consuming the actual equationTransport.contextEquivalence
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTarget.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextImageFunctor.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedContextEquivalence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedContextEquivalenceWitnesses.lean
+    - finiteGeneratedContextImageFunctor
+    - finiteGeneratedActualHighContextEquivalence
+    - finiteGeneratedReflectedContextEquivalence
+  risks:
+    - returning a known low context equivalence while the actual high equivalence appears only in a sibling equality proof
+    - accepting carrier shapes, object preimages, functors, an equivalence, unit, counit, or comparison graphs from the caller
+    - using thin-category proof irrelevance to invent a morphism before reflecting the actual high map
+    - claiming an equivalence with the full high context category or arbitrary Type-u descent
+    - presenting the contextEquivalence projection as a complete EquationSystemExactTransport, whole hom descent, or FiniteModelLift
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: 3f3396edec61232ddbc5398628ded9ea13377087
+  proof_obligation_delta: extended the canonical inverse-package upper API across its internal equation casts with complete context-functor and context-inverse object graphs; constructed generated-domain context image functors and proved them Full and Faithful; projected the actual normalized supplied-high equation context equivalence; internally derived all forward and inverse carrier shapes; reflected every actual forward and inverse object and map; reflected both hom and inverse components of the actual unit and counit; and assembled the exact low FiniteGeneratedReflectedContextEquivalenceOutput. The computational object, map, unit, and counit definitions read the corresponding actual high projections, while the canonical whole-factor equality is used only in the carrier-shape proofs. A concrete finite fixture supplies distinct four-carrier contexts, a categorical restriction generated from a raw restriction whose support, axis, and observable maps all fire, and public forward/inverse object, map, unit, and counit image instances. No equivalence with the full high context category is claimed. The equation-index and observable-ring equivalences, observable naturality, violation/residual graphs, remaining upper fields, whole factor descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTarget.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextImageFunctor.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedContextEquivalence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedContextEquivalenceWitnesses.lean
+  evidence:
+    - inverseCorePackageForwardUpper_contextFunctor_obj_eq
+    - inverseCorePackageForwardUpper_contextInverse_obj_eq
+    - finiteGeneratedHighDomain_object_lift
+    - finiteGeneratedContextImageFunctor
+    - finiteGeneratedContextImageFunctor_full
+    - finiteGeneratedContextImageFunctor_faithful
+    - finiteGeneratedContextImageFunctor_carrierShape
+    - finiteGeneratedContextImageFunctor_obj_ctx_eq_lift
+    - finiteGeneratedActualHighContextEquivalence
+    - finiteGeneratedReflectedForwardActualContext
+    - finiteGeneratedReflectedForwardCarrierShape
+    - finiteGeneratedReflectedForwardObject
+    - finiteGeneratedReflectedInverseActualContext
+    - finiteGeneratedReflectedInverseCarrierShape
+    - finiteGeneratedReflectedInverseObject
+    - finiteGeneratedReflectedForwardObject_image_eq
+    - finiteGeneratedReflectedInverseObject_image_eq
+    - finiteGeneratedReflectedForwardHighMap
+    - finiteGeneratedReflectedForwardMap
+    - finiteGeneratedReflectedInverseHighMap
+    - finiteGeneratedReflectedInverseMap
+    - finiteGeneratedReflectedUnitHighHom
+    - finiteGeneratedReflectedUnitHighInv
+    - finiteGeneratedReflectedCounitHighHom
+    - finiteGeneratedReflectedCounitHighInv
+    - finiteGeneratedReflectedContextEquivalence
+    - finiteGeneratedReflectedForwardMap_image
+    - finiteGeneratedReflectedInverseMap_image
+    - finiteGeneratedReflectedUnitIsoApp_hom_image
+    - finiteGeneratedReflectedUnitIsoApp_inv_image
+    - finiteGeneratedReflectedCounitIsoApp_hom_image
+    - finiteGeneratedReflectedCounitIsoApp_inv_image
+    - finiteSelectiveTwoContextEquivalenceW_ne_V
+    - finiteSelectiveTwoContextEquivalenceRawRestriction_support_graph
+    - finiteSelectiveTwoContextEquivalenceRawRestriction_axis_graph
+    - finiteSelectiveTwoContextEquivalenceRawRestriction_observable_graph
+    - finiteSelectiveTwoContextEquivalence_forward_object_landing
+    - finiteSelectiveTwoContextEquivalence_inverse_object_landing
+    - finiteSelectiveTwoContextEquivalence_forward_map_image
+    - finiteSelectiveTwoContextEquivalence_inverse_map_image
+    - finiteSelectiveTwoContextEquivalence_unit_hom_image
+    - finiteSelectiveTwoContextEquivalence_unit_inv_image
+    - finiteSelectiveTwoContextEquivalence_counit_hom_image
+    - finiteSelectiveTwoContextEquivalence_counit_inv_image
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+    runtime_route_constraints:
+      - Issue 4034 requires actual high functor, inverse, unit, and counit consumption rather than a known low-equivalence alias
+      - canonical whole-hom equality may derive carrier alignment but may not supply the reflected predicates, maps, or equivalence computationally
+      - thinness may close equality and naturality only after the relevant actual high morphism has been reflected through Fullness
+    source_facts:
+      - finiteGeneratedActualHighContextEquivalence is definitionally the contextEquivalence projection of finiteGeneratedNormalizedHighFactor
+      - forward and inverse reflected objects read the actual high context predicates and extension through finiteModelReflectArchitectureContextAt
+      - forward and inverse reflected maps are preimages of the corresponding actual high maps under internally generated Full image functors
+      - all four unit/counit hom and inverse components are preimages of actual high unit/counit routes
+      - finiteGeneratedNormalizedHighFactor_eq_canonical occurs in carrier-shape theorem proofs and not in the computational definitions of reflected objects, maps, unit, or counit
+      - both generated-domain image functors are Full and Faithful, but no essential-surjectivity or equivalence with all high contexts is claimed
+      - the categorical witness arrow is generated from a raw restriction with explicit support, axis, and observable value graphs; thin categorical homs are not claimed to expose those raw maps directly
+    consequence:
+      - the actual normalized high context equivalence now has a generated low equivalence on the full canonical image, including forward/inverse objects and maps plus unit/counit
+      - only the contextEquivalence field of the eventual EquationSystemExactTransport has been reflected
+      - complete equation transport, whole upper/total descent, and ambient strong-lift reflection remain open
+audits:
+  premise_delta:
+    discharged:
+      - complete context action of the canonical inverse-package forward upper across internal source-equation casts
+      - Full/Faithful generated-domain context image functors on both endpoints
+      - internally generated forward and inverse carrier shapes for every low context
+      - actual high forward and inverse object reflection with complete image landing equalities
+      - actual high forward and inverse map reflection on every categorical arrow
+      - actual high unit hom, unit inverse, counit hom, and counit inverse reflection
+      - construction of the fixed FiniteGeneratedReflectedContextEquivalenceOutput
+      - distinct nontrivial contexts, a generated categorical restriction, and all object/map/unit/counit image witnesses
+    remaining:
+      - equation-index equivalence and its generated-image graphs
+      - observable-ring equivalence, restriction naturality, and violation/residual generator graphs
+      - remaining operation, invariant, signature, and proof fields needed for SignedExactCoreReadingHom
+      - whole PackageTotalHom descent, composition/equality reflection, and high-driven ambient factorization/uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - the top-level producer accepts only input, the supplied high lift, and base; no shape, image/preimage, functor, equivalence, unit/counit, or graph certificate is a caller input
+      - forward and inverse shapes are named internal constructions from the actual high equivalence
+      - map, unit, and counit preimages are chosen only by the internally proved Full instances after constructing their actual high arrows
+      - the finite witness generates its input, high lift, base, contexts, restriction, and all output projections internally
+    prohibited_and_absent:
+      - arbitrary high-context descent, full-high essential-surjectivity, known low equivalence return, globalCartesianLift, caller image/preimage certificates, and Classical.choose of a low context
+  proof_use:
+    used:
+      - the actual high equivalence's functor and inverse object projections in reflected object definitions
+      - the actual high functor and inverse maps before Full preimage extraction
+      - the actual high unit and counit hom/inverse components before Full preimage extraction
+      - complete canonical context-action graphs and canonical whole-factor equality only for internal image/carrier alignment
+    not_yet_available:
+      - actual high equation-index and observable-ring transport, observable naturality, and violation/residual descent
+      - whole actual-high-derived SignedExactCoreReadingHom and PackageTotalHom
+  structure_field_escape: none in the generated producer; no generated output data is accepted from its caller
+  route_integrity: pass for the actual contextEquivalence projection on canonical generated images; complete EquationSystemExactTransport and whole factor remain open
+  target_fitting: none found in implementation; all low contexts and categorical arrows are quantified, while the concrete fixture only fires the generic producer
+  vacuity: none found; the witness uses distinct contexts with nontrivial Support, Axis, Observable, and Extension carriers, a raw restriction with all three map graphs, and all eight forward/inverse object-map-unit-counit observations
+  one_way_as_equivalence: none; the image functors are Full/Faithful and the reflected equivalence is only between the two low generated context categories
+  goal_or_report_reinterpretation: none; only contextEquivalence is discharged and FiniteModelLift remains open
+  validation_refs:
+    - official focused wrapper CartesianTarget.lean: pass, 43 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedContextImageFunctor.lean: pass, 16 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedReflectedContextEquivalence.lean: pass, 38 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedReflectedContextEquivalenceWitnesses.lean: pass, 31 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+    - PR 4056 reviewed content head 3f3396edec61232ddbc5398628ded9ea13377087: 7/7 CI green and MERGEABLE/CLEAN
+    - report-only unchecked-state repair 09f37ac62d75: Lean A direct response confirmed the Minor closed with no new finding
+    - no Research aggregate or full build
+  review_refs:
+    independent_final_reviews:
+      - Math A — No major findings
+      - Math B — No major findings
+      - Lean A — No major findings after direct-response closure of the report-only unchecked-state Minor
+      - Lean B — No major findings
+    direct_response: report-gate repair head 09f37ac62d75 records pending review/comment/sync gates; Lean A confirmed the Minor closed with no new finding
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4056#issuecomment-5375272145
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: reflect the actual equation-index and observable-ring equivalences, observable naturality, and violation/residual generators without caller certificates; then assemble the remaining actual-high-derived EquationSystemExactTransport fields before whole upper and total factor descent
+```
+
 ### Cycle 19 — generated-image object and context primitive retraction
 
 ```yaml
