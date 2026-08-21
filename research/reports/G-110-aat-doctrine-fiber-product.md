@@ -13,6 +13,169 @@
 
 ## Cycle ledger
 
+### Cycle 7 — F0c2a1 canonical finite-code universe reindexing
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 7
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 487bee332fbd426cb70ffe926b4c0201ab569a60
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 7 selection comment 5366211911 and route-clarification comment 5366392928
+  proof_dag_predecessors:
+    - Cycle 2 F0a finite-code cartesian schema, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
+    - Cycle 3 F0b1 basic BC presentation and condition schema, PR 4039 merge 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
+    - Cycle 4 F0b2a finite-code pasting and authored raw schema, PR 4040 merge 76ffc581f7075163579ad4d1a246f295c0903f07
+    - Cycle 5 F0b2b authored-support and relative-predicate signatures, PR 4041 merge b67c112b7dfc4aba260901c16568d94bf4f7c08d
+    - Cycle 6 F0c1 strong-lift and qualified-regime signatures, PR 4042 merge 487bee332fbd426cb70ffe926b4c0201ab569a60
+  proof_obligation: construct the canonical cross-universe reindexing of every finite cartesian code component, derive validated presentations and decoder-component compatibility, and prove preservation of the complete finite Bool condition evaluator
+  selection_reason: full equivalences of all ExtractionInstance and AATCorePackage values were rejected as an over-strong auxiliary route because arbitrary Type u doctrine/reading components need not descend to universe zero; the fixed GOAL instead permits this exact finite-code boundary to be discharged before the selected package and strong-cartesian branch construction
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULiftWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - claiming a whole semantic category equivalence from the finite-code image
+    - storing well-formedness, condition bits, semantic arrows, packages, or no-lift conclusions as new raw-code fields
+    - dropping or replacing the noninvertible source table or nonidentity Atom permutation during rebasing
+    - proving only selected evaluator branches instead of all projections, constants, derived sets, universal equalities, and syntax constructors
+    - counting finite-code transport as packageProjection or StrongCartesianLift existence/nonexistence transport
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: defined a six-sort AtomCarrierEquiv with all five projection-commutation laws; canonical first-order source reindexing; predicate support mapping and evaluation naturality; finite permutation support mapping and conjugation; doctrine, pointed-instance, four-field raw-code, typed-presentation, and validated-presentation reindexing; derived WellFormed preservation; source-map, Atom-map, selected-point, extraction, and decoder-component compatibility; equivalences for every condition value sort; naturality of all 13 projections, 3 named constants, 5 derived finite sets, and 7 finite-universal equality atoms; complete reindexing invariance of all 4 CartConditionSyntax constructors; the canonical FiniteModel carrier/presentation specialization; and positive/nonidentity/malformed finite witnesses
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULiftWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - AtomCarrierEquiv
+    - finiteSourceRebaseEquiv
+    - AtomPredicateCode.rebase
+    - AtomPredicateCode.eval_rebase
+    - AtomPermutationCode.rebase
+    - AtomPermutationCode.toEquiv_rebase
+    - FiniteDoctrineCode.rebase
+    - FiniteDoctrineCode.toDoctrine_extracts_rebase_iff
+    - FiniteInstanceCode.rebase
+    - CartRawCode.rebase
+    - CartRawCode.WellFormed.rebase
+    - CartRawCode.rebase_sourceMap
+    - CartRawCode.rebase_atomEquiv_apply
+    - rebaseCartPresentation
+    - CartPresentationBetween.rebase
+    - toSemanticCart_rebase_sourceMap
+    - toSemanticCart_rebase_atomEquiv
+    - toSemanticCart_rebase_sourcePoint
+    - toSemanticCart_rebase_targetPoint
+    - readCartProjection_rebase
+    - readCartNamedConstant_rebase
+    - evalCartFieldTerm_rebase
+    - evalCartDerivedSet_rebase
+    - evalCartUniversalEquality_rebase
+    - evalCartCondition_rebase
+    - finiteModelLiftCarrierEquiv
+    - finiteModelLiftCartPresentation
+    - evalCartCondition_finiteModelLift
+    - finiteModelLiftConstantSourceMap_not_injective
+    - finiteModelLiftSwapPresentation_moves_componentC
+    - finiteModelLiftBadPointRawCode_check_false
+  claim_mapping:
+    theorem_names:
+      - CartRawCode.WellFormed.rebase
+      - toSemanticCart_rebase_sourceMap
+      - toSemanticCart_rebase_atomEquiv
+      - evalCartCondition_rebase
+      - evalCartCondition_finiteModelLift
+    source_labels:
+      - target theorem (B) fixed finite-presentation and universe-polymorphic boundary
+      - target material premise FiniteModelLift precursor
+      - target proof strategy F0 split signature typing
+    conjuncts:
+      - every carrier coordinate and Atom projection has a canonical typed equivalence rather than an Atom-only cast
+      - predicate exceptions and permutation support/graph are mapped injectively, with permutations conjugated rather than erased
+      - doctrine normalization and source maps are conjugated through the canonical FiniteSource equivalence while source cardinalities and first-order indices are preserved
+      - raw WellFormed at the target is derived from the source proof and predicate-transport naturality; no validation field is authored
+      - decoded source maps, Atom permutations, selected points, and extraction predicates commute on corresponding cells
+      - evaluator preservation covers field equality by value-sort equivalence injectivity, membership by unchanged first-order indices, all seven universal atoms, and conjunction recursively
+      - the lifted constant source map remains noninjective, the moved Atom remains moved, positive and negative identity-Atom checks retain their values, and the malformed selected-point code remains rejected
+    undischarged_assumptions:
+      - F0c2a2/b must still fix the carrier-global disjunction artifact and named regime producer; this finite-code result neither constructs nor transports an endpoint AATCorePackage or StrongCartesianLift
+      - if K1 closes the right branch, it must construct the actual FiniteModel no-lift witness and its arbitrary-universe nonexistence preservation without a counterexample-specific lift-type equivalence or caller-provided result field
+      - if K1 closes the left branch, it must construct GlobalCartesianLift directly; no H_cart checker or finite no-lift transport is then counted from this cycle
+      - K0-K4 remain entirely unresolved
+    acceptance_point: F0c2a1 closes the computable finite-code and checker portion of canonical universe reindexing while keeping semantic package and branch conclusions outside the code layer
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - canonical carrier, finite-source, predicate, permutation, doctrine, instance, raw code, and validated presentation reindexing
+      - derived WellFormed and decoder-component compatibility
+      - complete finite condition evaluator preservation
+      - positive, negative, and malformed finite reindexing witnesses
+    remaining:
+      - F0c2a2/b carrier-global branch/artifact/producer signatures and any selected package-level transport actually needed by that branch
+      - K0 nondegenerate proper-fiber witness
+      - K1 branch construction
+      - K2-K4 BC, diagnostic, and closure obligations
+  certificate_provenance:
+    discharged:
+      - finiteModelLiftCarrierEquiv is generated only from ULift up/down and projection laws are rfl
+      - every rebased code field is computed from the corresponding source field
+      - target WellFormed is proved from source WellFormed; evaluator equality is proved by reader and universal-atom naturality
+    unresolved:
+      - any packageProjection-level or strong-cartesian construction
+      - named source of the eventual carrier-global disjunction
+  proof_use:
+    used:
+      - source normalization, extraction exactness, and selected-point laws in CartRawCode.WellFormed.rebase
+      - both source and rebased validation proofs in the universal normalization/default/exception evaluator branches
+      - value-sort equivalence injectivity in fieldEq preservation
+      - canonical source/Atom equivalences in the noninjective, nonidentity, and malformed witnesses
+    unused:
+      - the five non-Atom coordinate equivalences and five projection-commutation laws of AtomCarrierEquiv are constructed canonically but are not consumed by the finite-code layer, which reads only U.Atom; their proof-use is deferred to the still-undischarged package-level construction and is not counted in F0c2a1
+  structure_field_escape: none-found; the only new structure is an input carrier equivalence whose fields are coordinate equivalences and projection-commutation laws, while raw presentation fields remain exactly the reviewed four
+  route_integrity: pass for the finite-code boundary; no image-category or full semantic-category equivalence is claimed
+  target_fitting: the implementation is generic over every AtomCarrierEquiv and every CartPresentation/CartConditionSyntax; concrete witnesses only test the generic route
+  vacuity: positive accepted, negative evaluator, noninjective source-map, moved-Atom, and malformed-rejected witnesses all survive the canonical lift
+  one_way_as_equivalence: none-found; only genuine value equivalences are named equivalences, while validation and decoder laws remain directional/naturality theorems
+  goal_or_report_reinterpretation: none; the rejected whole-category equivalence was an auxiliary Issue route stronger than the fixed GOAL, and Cycle 7 records its replacement without weakening any GOAL conjunct
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULift.lean: pass, namespace audit 89 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteCodeULiftWitnesses.lean: pass, namespace audit 11 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - lake build ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift: pass targeted module check
+    - lake build ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses: pass targeted module check
+    - repaired-head direct acceptance-spine #print axioms audit: 31 evidence declarations plus 11 witness declarations, each uses only standard axioms or no axioms
+    - fixed-head PR CI: 7 of 7 checks green
+  review_refs:
+    fixed_head: adcd90280325c80a506093a388091f13f6dc40b6
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4043#issuecomment-5367057730
+    verdicts:
+      - Math A: no major findings for F0c2a1 only
+      - Math B: no major findings for F0c2a1 only
+      - Lean A: no major findings for F0c2a1 only
+      - Lean B: no major findings for F0c2a1 only
+  initial_review_findings:
+    - initial head 7348d910 omitted docstrings on three public helper theorems; repaired without changing statements or proof bodies
+    - initial head 7348d910 recorded no unused fields even though the five non-Atom coordinate equivalences and five projection laws are deferred to the package layer; repaired by explicit proof-use classification
+  blocking_findings: []
+  next_obligation: merge this accepted checkpoint, then discharge F0c2a2/b carrier-global DisjunctionArtifact and named regime producer typing, selecting only package transport actually required by the eventual branch
+```
+
+### Cycle 7 / F0c2a1 acceptance spine
+
+Cycle 7 の直接 axiom audit は、上記 `evidence` 31 declaration と witness module の
+11 declaration に固定する。ここでは `FiniteModelLift`、`RightBranch`、
+`DisjunctionArtifact`、`cartesianRegimeOfDisjunction`、package reindexing、
+strong-cartesian existence/nonexistence を達成したとは数えない。
+
 ### Cycle 6 — F0c1 strong-lift, qualification, and per-carrier regime signatures
 
 ```yaml
@@ -109,8 +272,8 @@ result:
       - CartesianRegime exports HCart, lift sufficiency, identity, composition, and both pullback-stability directions uniformly across branches
       - the concrete identity lift and tautological qualified condition exercise only the F0 type surface and are explicitly not a K1 branch artifact
     undischarged_assumptions:
-      - F0c2 must construct a canonical AtomCarrier equivalence, base/total category equivalences, and a commuting packageProjection square before defining FiniteModelLift, RightBranch, DisjunctionArtifact, and cartesianRegimeOfDisjunction
-      - F0c2 must derive lifted input/package and strong-cartesian reflection from that reindexing; a package-valued field or counterexample-specific lift-type equivalence is not accepted
+      - F0c2 must construct the canonical finite-code carrier/presentation reindexing, then fix only the selected package/strong-cartesian construction required by the eventual global branch before defining RightBranch, DisjunctionArtifact, and cartesianRegimeOfDisjunction; a full equivalence of all higher-universe semantic objects is neither required nor claimed
+      - if the right branch is selected, F0c2/K1 must derive the lifted input/package and strong-cartesian nonexistence preservation from a uniform construction; a package-valued result field or counterexample-specific lift-type equivalence is not accepted
       - K1 must construct a named GlobalCartesianLift or the final named RightBranch and thereby the actual DisjunctionArtifact
       - in the right branch K1 must define semantic H_cart without referring to lift existence or checker output, prove all qualification fields, construct endpoint packages and actual lifts for the same pairwise arrow-nonisomorphic noninvertible H_cart-positive family, and prove uniform sufficiency
       - if K1 selects the global branch it must separately construct a pairwise arrow-nonisomorphic parametric family of noninvertible RealizableHom inputs and instantiate GlobalCartesianLift on every member and endpoint package
@@ -129,7 +292,7 @@ audits:
       - pairwise arrow-nonisomorphic positive and actual-lift family interfaces
       - exact per-carrier regime and eliminator types
     remaining:
-      - F0c2 canonical packageProjection ULift reindexing and carrier-global producer signatures
+      - F0c2 canonical finite-code reindexing, branch-exact package/strong-cartesian construction, and carrier-global producer signatures
       - K0 nondegenerate proper-fiber witness
       - K1 mathematical branch determination and all branch values
       - K2 route functors, adjunctions, canonical mate, authored comparison, strict/lax pair, and orbit theorems
@@ -141,7 +304,7 @@ audits:
       - every RealizableHom bridge consumes its own presentation and realization_eq
       - uniform syntax is generated by structural constructor rebasing
     unresolved:
-      - F0c2 packageProjection-level canonical ULift reindexing and its realization naturality
+      - F0c2 branch-exact package/strong-cartesian construction beyond the finite decoder components
       - F0c2 RightBranch, DisjunctionArtifact, and named regime producer
       - named K1 source of the selected branch and every theorem field in it
   proof_use:
@@ -177,10 +340,10 @@ audits:
       - Lean B: no content findings for F0c1; tracker fixed-head synchronization closed by Issue comment 5366159629
   initial_review_findings:
     - initial head fd9ff6c6 admitted isomorphic duplicates in ParametricCartPositiveFamily; repaired by pairwise_nonisomorphic
-    - initial head fd9ff6c6 used a counterexample-specific StrongCartesianLift equivalence without canonical ULift provenance; repaired by deleting that surface and splitting canonical packageProjection reindexing into F0c2
+    - initial head fd9ff6c6 used a counterexample-specific StrongCartesianLift equivalence without canonical ULift provenance; repaired by deleting that surface and splitting canonical finite-code reindexing plus branch-exact package construction into F0c2
     - repaired head 11d297d6 left the H_cart-positive and actual-lift families unrelated; repaired by requiring an endpoint package and actual lift on every same ParametricCartPositiveFamily member
   blocking_findings: []
-  next_obligation: F0c2 canonical packageProjection ULift reindexing, global RightBranch/DisjunctionArtifact, and cartesianRegimeOfDisjunction exact signatures before K0
+  next_obligation: superseded by Cycle 7, which discharges canonical finite-code reindexing and retains branch-exact package construction plus global RightBranch/DisjunctionArtifact/cartesianRegimeOfDisjunction signatures before K0
 ```
 
 ### Cycle 6 / F0c1 acceptance spine

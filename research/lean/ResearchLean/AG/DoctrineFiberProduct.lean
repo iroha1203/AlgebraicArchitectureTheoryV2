@@ -8,6 +8,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -20,6 +22,8 @@ support and relative-comparison producer signatures.
 The F0c1 layer additionally fixes the carrier-global left-lift proposition,
 qualified per-carrier right-regime and nondegenerate family interfaces, finite
 counterexample endpoint types, and the branch-independent per-carrier regime
-surface.  Canonical cross-universe package reindexing, the carrier-global
-disjunction artifact, and its generated regime are deferred to F0c2.
+surface.  The F0c2a1 layer adds canonical cross-universe reindexing of the
+complete finite cartesian code, decoder components, and Boolean evaluator.
+Selected package reindexing, strong-cartesian transport, the carrier-global
+disjunction artifact, and its generated regime remain deferred to F0c2a2/b.
 -/
