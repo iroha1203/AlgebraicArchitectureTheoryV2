@@ -6,6 +6,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTransport
@@ -32,7 +33,9 @@ cartesian by a generated suffix factorization, inverse-reindex an arbitrary
 target package without inverting the lower source map, and construct the
 carrier-global left branch.  The finite witness layer additionally constructs
 a branch-independent portfolio of actual lifts over pairwise nonisomorphic,
-noninvertible arrows with nonisomorphic endpoints.  The single carrier-global
-disjunction artifact and its generated regime remain the next F0c2b/K1
-obligations.
+noninvertible arrows with nonisomorphic endpoints.  The branch layer fixes a
+uniform conditional theorem-output surface, selects the single carrier-global
+left artifact, and exports its sole per-carrier regime producer.  Canonical
+finite-package universe reindexing and strong-lift reflection for the separate
+`FiniteModelLift` obligation remain before K0.
 -/
