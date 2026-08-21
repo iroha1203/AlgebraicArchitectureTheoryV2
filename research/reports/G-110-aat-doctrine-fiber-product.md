@@ -39,8 +39,7 @@ selection:
     - accepting image membership, a descended package, total hom, or graph equality as a caller certificate
     - replacing Mathlib ambient strong cartesianness by an image-restricted universal property
     - claiming that Atom/configuration reflection lowers arbitrary Type-u package reading data
-  unchecked:
-    - fixed-head independent review and final integration
+  unchecked: []
 result:
   proposed_result_type: proof-checkpoint
   proof_obligation_delta: proved that any two strong lifts of the same semantic arrow to the same target package have a canonical domain isomorphism, both triangle equations, and verticality over the source identity; specialized the comparison to the generated lift and to the concrete lifted finite core package. Directly lowering an arbitrary lifted domain package and all of its SignedExactCoreReadingHom data remains unavailable, but independent review showed that this does not establish a no-go: the inverse triangle first normalizes an arbitrary lifted hom to the generated high domain, after which the live route can focus on theorem-generated low-to-high naturality and reflection between canonical image endpoints. The proposed terminal goal-defect is therefore withdrawn. A bare FiniteModelLift implication remains inadmissibly empty under GlobalCartesianLift, so the fixed-ledger item stays open until a generated data-level reflection is constructed or its branch-conditioned status is resolved without weakening the fixed contract.
@@ -119,17 +118,26 @@ audits:
   goal_or_report_reinterpretation: the initial terminal goal-defect inference is withdrawn. FiniteModelLift is semantically attached to the right-branch counterexample, but because the material ledger lists it discharge-required this report retains a generated structural artifact as the fail-closed residual rather than declaring it automatically inapplicable.
   validation_refs:
     - official focused wrapper ResearchLean/AG/DoctrineFiberProduct/FiniteModelLiftComparison.lean: pass, namespace audit 9 declarations and standard axioms only
-    - manifest, umbrella, static scans, repaired-head review, and CI: pending final snapshot
+    - manifest and umbrella wiring: pass
+    - fixed GOAL blob and SHA256 lock: pass
+    - diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass
+    - repaired content head CI: 7/7 success, mergeable/CLEAN
+    - no local Research aggregate/full build
   review_refs:
     initial_fixed_head: 4a996eb7ceeb8fbbdf3345869a5958f35af2f2de
-    repaired_head: pending
-    integrated_comment: pending
+    repaired_head: 6d63e24b8f347ce207c7afb099225a465c0c3e7b
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4051#issuecomment-5370360922
     initial_verdicts:
       - Math A Major: global-left does not by itself require a nonempty right-branch counterexample, and generated-image normalization remains a legal route
       - Math B Major: arbitrary ambient package descent and global fullness were overrequired; retain package/hom naturality and image-endpoint reflection as obligations
       - Lean A Major: normalization route remains and the initial public status terminology violates the AAT documentation hard rule
       - Lean B Major: domainIso_inv_fac eliminates the arbitrary-domain obstacle before cross-carrier reflection
       - standard review-pr content gate: Pass for the nine same-carrier declarations and provisional packet
+    repaired_verdicts:
+      - Math A: Pass, no major findings for the Cycle 15 proof-checkpoint only
+      - Math B: Pass, no major findings for the Cycle 15 proof-checkpoint only
+      - Lean A: Pass, no major findings for the Cycle 15 proof-checkpoint only
+      - Lean B: Pass, no major findings for the Cycle 15 proof-checkpoint only
   review_repairs:
     - withdrew blocker-fixed, goal-defect, and next-obligation-none claims
     - renamed the public module and descriptions to state the proved same-carrier comparison directly
