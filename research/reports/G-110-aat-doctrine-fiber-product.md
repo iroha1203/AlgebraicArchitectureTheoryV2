@@ -46,13 +46,10 @@ selection:
     - allowing an index map, ring equivalence, context equality, inverse, or graph certificate from the caller
     - using the selected PUnit index or rigid Int coefficient ring alone as evidence that conjugation is sensitive to its actual middle leg
     - presenting equationEquiv and observableEquiv as the complete EquationSystemExactTransport, whole hom descent, or FiniteModelLift
-  unchecked:
-    - four-lane final review completion
-    - integrated review comment
-    - final report synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-checkpoint
-  reviewed_content_head: pending-final-review
+  reviewed_content_head: cd8a450e163028db1070a0dd0925ebf54a522a58
   proof_obligation_delta: introduced transparent equation-index and equation-observable conjugation primitives and proved that each is injective in its actual middle equivalence for fixed generated images; completed the selected and generated-domain equation-index maps to named equivalences with inverse accessors and two-sided round trips; projected the actual normalized high equationEquiv and reflected it through the outer and inner generated-domain images; constructed the equation-system observable image equivalence by composing the low inverse-package upper, the selected Int-to-ULift-Int target equivalence, and the inverse high upper; projected the actual high observableEquiv at every canonical-image context; aligned only its dependent target context with the Cycle 20 landing theorem; and reflected it through the two generated observable images. Both reflected producers use the proof-used conjugation primitives computationally and accept no equivalence or graph from the caller. All-index and all-context/all-value forward and inverse image graphs are proved. The existing selective-two noninvertible fixture fires both actual reflected fields and both round trips at a generated index and observable value 3. Separate Boolean and product-ring swaps fire the same proof-used primitives, without claiming nontriviality of the selected PUnit index. Role preservation, observable naturality, violation/residual generators, the complete EquationSystemExactTransport, remaining upper fields, whole factor descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
   completion_candidate: no
   lean_artifacts:
@@ -163,10 +160,15 @@ audits:
     - official focused wrapper FiniteGeneratedEquationEquivalenceWitnesses.lean: pass, 13 namespace declarations and standard axioms only
     - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
     - fixed GOAL blob and SHA256 lock: pass
+    - PR 4057 reviewed content head cd8a450e163028db1070a0dd0925ebf54a522a58: 7/7 CI green and MERGEABLE/CLEAN
     - no Research aggregate or full build
   review_refs:
-    independent_final_reviews: pending
-    integrated_comment: pending
+    independent_final_reviews:
+      - Math A — No major findings
+      - Math B — No major findings
+      - Lean A — No major findings
+      - Lean B — No major findings
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4057#issuecomment-5375633359
   stop_condition: none; continue before K0
   blocking_findings: []
   next_obligation: reflect actual role equality, observable restriction naturality, and violation/residual generator laws through the same generated images; then assemble the complete actual-high-derived EquationSystemExactTransport before descending the remaining upper and total hom fields
