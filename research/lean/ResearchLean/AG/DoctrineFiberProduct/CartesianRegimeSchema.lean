@@ -5,17 +5,19 @@ import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 /-!
 # Cartesian-regime signatures for G-110
 
-This module fixes the F0 type surface for the carrier-global cartesian-lift
-disjunction.  Its domain is the already reviewed realization image:
+This module fixes the first F0 type surface for the carrier-global
+cartesian-lift disjunction.  Its domain is the already reviewed realization image:
 `RealizableHom U` supplies both the semantic bottom arrow and its finite
 presentation provenance, while an endpoint package is an object of the actual
 core fiber over the semantic target.
 
-The left branch quantifies over every carrier at one universe before choosing a
-branch.  The right branch carries one uniform family of qualified conditions,
-not a per-carrier disjunction.  A `CartesianRegime U` is obtained only by the
-named `cartesianRegimeOfDisjunction` producer in later theorem use; accepting an
-unrelated regime as a hypothesis does not discharge G-110.
+The left-branch quantifier, qualified per-carrier right-regime data, genuine
+positive-family interfaces, and the branch-independent per-carrier regime are
+fixed here.  The canonical cross-universe reindexing of the entire package
+projection, the carrier-global `RightBranch`, the single `DisjunctionArtifact`,
+and its named producer are deliberately deferred to F0c2.  In particular, no
+counterexample-specific equivalence of empty strong-lift types is accepted as
+an `ULift` transport.
 
 No value of either branch is constructed here.  In particular, this F0 module
 does not choose `H_cart`, prove a checker bridge or sufficiency theorem, produce
@@ -252,12 +254,53 @@ structure ParametricCartPositiveFamily {U : AtomCarrier.{u}}
   holds : ∀ parameter, condition.holds (input parameter)
   /-- The two distinguished parameters produce different semantic inputs. -/
   distinguished_ne : (input first).semantic ≠ (input second).semantic
+  /-- Distinct parameters represent distinct isomorphism classes of semantic arrows. -/
+  pairwise_nonisomorphic : ∀ firstParameter secondParameter : Parameter,
+    firstParameter ≠ secondParameter →
+      ¬ Nonempty (CartSemanticInputIso
+        (input firstParameter).semantic (input secondParameter).semantic)
   /-- Each member has nonisomorphic source and target instances. -/
   endpoints_nonisomorphic : ∀ parameter,
     ¬ Nonempty ((input parameter).semantic.source ≅
       (input parameter).semantic.target)
   /-- Each realized bottom arrow is genuinely noninvertible. -/
   hom_not_isIso : ∀ parameter, ¬ IsIso (input parameter).semantic.hom
+
+/--
+A genuinely parameterized family of constructed strong lifts.  This portfolio
+interface is independent of which global branch K1 eventually proves.  It
+prevents an identity-only witness or duplicated representatives of one arrow
+isomorphism class from discharging the positive-family obligation.
+-/
+structure ParametricCartLiftFamily (U : AtomCarrier.{u})
+    [DecidableEq U.Atom] where
+  /-- Parameter type of the family. -/
+  Parameter : Type u
+  /-- First distinguished parameter. -/
+  first : Parameter
+  /-- Second distinguished parameter. -/
+  second : Parameter
+  /-- The family contains at least two parameters. -/
+  first_ne_second : first ≠ second
+  /-- Realized bottom arrow at every parameter. -/
+  input : Parameter → RealizableHom U
+  /-- Distinct parameters represent distinct isomorphism classes of semantic arrows. -/
+  pairwise_nonisomorphic : ∀ firstParameter secondParameter : Parameter,
+    firstParameter ≠ secondParameter →
+      ¬ Nonempty (CartSemanticInputIso
+        (input firstParameter).semantic (input secondParameter).semantic)
+  /-- Each member joins nonisomorphic endpoint instances. -/
+  endpoints_nonisomorphic : ∀ parameter,
+    ¬ Nonempty ((input parameter).semantic.source ≅
+      (input parameter).semantic.target)
+  /-- Each member is a genuinely noninvertible realized bottom arrow. -/
+  hom_not_isIso : ∀ parameter, ¬ IsIso (input parameter).semantic.hom
+  /-- Endpoint package selected for the explicit lift at every parameter. -/
+  targetPackage : ∀ parameter,
+    CoreFiber (input parameter).semantic.target
+  /-- Actual strong cartesian lift constructed at every parameter. -/
+  lift : ∀ parameter,
+    StrongCartesianLift (input parameter).semantic (targetPackage parameter)
 
 /-- One carrier's qualified right-branch data and uniform lift sufficiency. -/
 structure RightCartesianRegime (U : AtomCarrier.{u}) [DecidableEq U.Atom] where
@@ -268,7 +311,7 @@ structure RightCartesianRegime (U : AtomCarrier.{u}) [DecidableEq U.Atom] where
     ∀ targetPackage : CoreFiber input.semantic.target,
       HasStrongCartesianLift input.semantic targetPackage
 
-/-! ## Finite counterexample transport interface -/
+/-! ## Finite counterexample endpoint types -/
 
 /--
 The canonical universe lift of the fixed finite carrier.  Every coordinate and
@@ -317,115 +360,20 @@ structure CartesianLiftCounterexample {U : AtomCarrier.{u}}
   /-- The same input does not satisfy `H_cart`. -/
   condition_fails : ¬ condition.holds nonexistence.input
 
-/--
-Interface for transporting the concrete universe-zero `FiniteModel` no-lift
-witness to the canonical `ULift` carrier.  `strongLiftEquiv` is the exact
-transport statement: nonexistence at the lifted input is derived from the base
-proof rather than assumed as a second certificate.
+/-
+F0c2 must construct the cross-universe reindexing of `packageProjection`
+before defining `FiniteModelLift`.  A counterexample-specific equivalence of
+strong-lift types is intentionally absent: once the base side is empty, such
+an equivalence could encode the lifted nonexistence conclusion directly.
 -/
-structure FiniteModelLift
-    (baseCondition : QualifiedCartCondition FiniteModel.carrier)
-    (liftedCondition : QualifiedCartCondition finiteModelLiftCarrier.{u}) where
-  /-- Concrete condition-failing no-lift witness on the original finite carrier. -/
-  base : CartesianLiftCounterexample baseCondition
-  /-- Transported realized bottom arrow on the lifted carrier. -/
-  liftedInput : RealizableHom finiteModelLiftCarrier.{u}
-  /-- Transported endpoint package on the lifted carrier. -/
-  liftedTargetPackage : CoreFiber liftedInput.semantic.target
-  /-- Strong lift data are equivalent before and after the explicit universe transport. -/
-  strongLiftEquiv :
-    StrongCartesianLift base.nonexistence.input.semantic
-        base.nonexistence.targetPackage ≃
-      StrongCartesianLift liftedInput.semantic liftedTargetPackage
-  /-- The semantic condition has the same truth value on the transported input. -/
-  condition_preserved :
-    liftedCondition.holds liftedInput ↔
-      baseCondition.holds base.nonexistence.input
 
-namespace FiniteModelLift
-
-/-- Nonexistence transfers from the universe-zero finite witness. -/
-theorem lifted_no_lift
-    {baseCondition : QualifiedCartCondition FiniteModel.carrier}
-    {liftedCondition : QualifiedCartCondition finiteModelLiftCarrier.{u}}
-    (lift : FiniteModelLift baseCondition liftedCondition) :
-    ¬ HasStrongCartesianLift lift.liftedInput.semantic
-      lift.liftedTargetPackage := by
-  intro hexists
-  rcases hexists with ⟨lifted⟩
-  exact lift.base.nonexistence.no_lift ⟨lift.strongLiftEquiv.symm lifted⟩
-
-/-- Package the transported no-lift and condition-failure proofs together. -/
-def counterexample
-    {baseCondition : QualifiedCartCondition FiniteModel.carrier}
-    {liftedCondition : QualifiedCartCondition finiteModelLiftCarrier.{u}}
-    (lift : FiniteModelLift baseCondition liftedCondition) :
-    CartesianLiftCounterexample liftedCondition where
-  nonexistence :=
-    { input := lift.liftedInput
-      targetPackage := lift.liftedTargetPackage
-      no_lift := lift.lifted_no_lift }
-  condition_fails := by
-    intro hholds
-    exact lift.base.condition_fails (lift.condition_preserved.mp hholds)
-
-end FiniteModelLift
-
-/-! ## Global branch artifact and generated per-carrier regime -/
+/-! ## Branch-independent per-carrier regime -/
 
 /--
-The carrier-global right branch.  `regime` chooses one uniform qualified family
-over all carriers at the fixed universe.  The positive family and original
-counterexample use the exact universe-zero finite specialization; the
-`FiniteModelLift` field relates that specialization to the structurally rebased
-condition on the canonical lifted carrier.
+Per-carrier data to be exported from the carrier-global branch chosen in F0c2.
+An arbitrary value of this type does not discharge the global disjunction;
+later theorems must use the named producer built from that artifact.
 -/
-structure RightBranch where
-  /-- Carrier-independent structural syntax selected before any fixture is inspected. -/
-  template : CartConditionSyntax FiniteModel.carrier
-  /-- Universe-zero specialization of the same qualified right-branch family. -/
-  baseRegime : RightCartesianRegime FiniteModel.carrier
-  /-- The base specialization uses exactly the selected structural template. -/
-  base_term : baseRegime.condition.term = template
-  /-- Uniform qualified condition and sufficiency theorem for every carrier. -/
-  regime : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom], RightCartesianRegime U
-  /-- Every carrier specialization is the structural rebasing of the same template. -/
-  regime_term : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom],
-    (regime U).condition.term = rebaseCartCondition template
-  /-- A non-singleton noninvertible positive family on the concrete finite carrier. -/
-  positiveFamily : ParametricCartPositiveFamily
-    baseRegime.condition
-  /-- The finite no-lift counterexample transported to this universe. -/
-  finiteModelLift : FiniteModelLift
-    baseRegime.condition
-    (regime finiteModelLiftCarrier.{u}).condition
-
-namespace RightBranch
-
-/-- The transported finite witness fails both the selected condition and lift existence. -/
-def finiteCounterexample (right : RightBranch.{u}) :
-    CartesianLiftCounterexample
-      (right.regime finiteModelLiftCarrier.{u}).condition :=
-  right.finiteModelLift.counterexample
-
-/-- The transported finite counterexample refutes the carrier-global left branch. -/
-theorem not_global (right : RightBranch.{u}) : ¬ GlobalCartesianLift.{u} := by
-  intro global
-  exact right.finiteModelLift.lifted_no_lift
-    (global finiteModelLiftCarrier.{u}
-      right.finiteModelLift.liftedInput
-      right.finiteModelLift.liftedTargetPackage)
-
-end RightBranch
-
-/-- The single carrier-global disjunction artifact fixed by G-110. -/
-inductive DisjunctionArtifact
-  /-- The unconditional branch supplies lifts over every carrier. -/
-  | global (proof : GlobalCartesianLift.{u})
-  /-- The conditional branch supplies one uniform qualified right branch. -/
-  | conditional (proof : RightBranch.{u})
-
-/-- Per-carrier data exported from the already chosen global disjunction branch. -/
 inductive CartesianRegime (U : AtomCarrier.{u}) [DecidableEq U.Atom]
   /-- The selected global branch, instantiated at this carrier. -/
   | global (lift : CarrierCartesianLift U)
@@ -500,35 +448,6 @@ theorem pullback_snd_mem {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   | conditional right => exact right.condition.pullback_snd_mem first second hfirst
 
 end CartesianRegime
-
-/--
-Instantiate the already chosen global branch at every carrier.  This is the
-only producer counted by G-110; later theorems must use its output rather than
-accept an unrelated `CartesianRegime` as a discharge of the disjunction.
--/
-def cartesianRegimeOfDisjunction
-    (artifact : DisjunctionArtifact.{u})
-    (U : AtomCarrier.{u}) [DecidableEq U.Atom] : CartesianRegime U :=
-  match artifact with
-  | .global global => .global (global U)
-  | .conditional right => .conditional (right.regime U)
-
-/-- The producer specializes the global branch to its carrier-level lift supply. -/
-@[simp]
-theorem cartesianRegimeOfDisjunction_global
-    (global : GlobalCartesianLift.{u})
-    (U : AtomCarrier.{u}) [DecidableEq U.Atom] :
-    cartesianRegimeOfDisjunction (.global global) U = .global (global U) :=
-  rfl
-
-/-- The producer specializes the uniform right branch to its carrier-level regime. -/
-@[simp]
-theorem cartesianRegimeOfDisjunction_conditional
-    (right : RightBranch.{u})
-    (U : AtomCarrier.{u}) [DecidableEq U.Atom] :
-    cartesianRegimeOfDisjunction (.conditional right) U =
-      .conditional (right.regime U) :=
-  rfl
 
 end AAT.AG.DoctrineFiberProduct
 
