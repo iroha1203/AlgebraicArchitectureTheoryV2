@@ -38,6 +38,9 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObservableNaturalityD
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationGeneratorDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedOperationMapDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedInvariantSignatureMapDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperComputationalWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -107,6 +110,14 @@ assembles all seven fields of the generated low
 `EquationSystemExactTransport`.  Its noninvertible fixture fires every field,
 including distinct-context naturality, a nonzero violation coordinate, and
 cyclic and acyclic residual values.  Complete `SignedExactCoreReadingHom` and
-whole-factor descent, ambient reflection, and `FiniteModelLift` remain unproved
-before K0.
+whole-factor descent remain unproved.  The next computational checkpoint now
+reflects the actual normalized high operation map, invariant-index map,
+signature-axis map, and dependent coordinate equivalence through generated
+low/high image equivalences, with all-value image and round-trip laws.  It does
+not yet supply the remaining structural, detector, naturality, invariant, or
+signature laws required by `SignedExactCoreReadingHom`.  The same noninvertible
+fixture fires a nonidentity collapse operation, both directions of the rigid
+singleton maps, and coordinate value `3`; separate Boolean checks witness the
+actual-middle sensitivity of the exact proof-used conjugation primitives.
+Ambient reflection and `FiniteModelLift` also remain unproved before K0.
 -/
