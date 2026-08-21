@@ -30,7 +30,7 @@ selection:
     - Cycle 19 complete object-image value descent and canonical context primitives, PR 4055
     - Cycle 20 actual generated context-equivalence reflection, PR 4056
     - Cycle 21 actual generated equation-index and observable-equivalence reflection, PR 4057 merge 8673b3a1
-  proof_obligation: reflect the actual normalized high equation transport's role, observable-naturality, violation-coordinate, and equation-residual laws through the generated images; assemble the exact seven-field low generated EquationSystemExactTransport without caller laws or a known low transport; and fire all seven fields on the noninvertible finite fixture
+  proof_obligation: reflect the actual normalized high equation transport's role, observable-naturality, violation-coordinate, and equation-residual laws through the generated images; assemble the exact seven-field low generated EquationSystemExactTransport without caller laws or returning a pre-existing low whole-factor transport; and fire all seven fields on the noninvertible finite fixture
   selection_reason: Cycles 20 and 21 supplied the actual-high-derived contextEquivalence, equationEquiv, and observableEquiv computational fields, while the four remaining laws and the complete record assembly were still open
   expected_result_type: proof-checkpoint
   lean_targets:
@@ -55,7 +55,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   reviewed_content_head: pending-final-review
-  proof_obligation_delta: proved selected-target and canonical generated-domain role, observable-restriction, violation-coordinate, and residual image graphs; projected and directly consumed the corresponding four laws of the actual normalized high equation transport; reflected each law through the internally generated context, index, observable, Atom, and complete architecture-object images; and assembled the exact low generated EquationSystemExactTransport with all seven fields. The top-level producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow. Its context, index, observable, role, naturality, violation, and residual fields are named prior or current generated outputs rather than caller laws. The selective-two noninvertible fixture instantiates all seven public projections on distinct contexts and a genuine restriction, a nonzero observable value and violation coordinate, and both cyclic and acyclic residual values. Complete SignedExactCoreReadingHom and PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  proof_obligation_delta: proved selected-target and canonical generated-domain role, observable-restriction, violation-coordinate, and residual image graphs; projected and directly consumed the corresponding four laws of the actual normalized high equation transport; reflected each law through the internally generated context, index, observable, Atom, and complete architecture-object images; and assembled the exact low generated EquationSystemExactTransport with all seven fields. The canonical endpoint image proofs legitimately use the predecessor inverse-package forward equation transports only to align low and high source/target generator data; the assembled outer-to-inner transport is not copied from either endpoint transport. The top-level producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow. Its context, index, observable, role, naturality, violation, and residual fields are named prior or current generated outputs rather than caller laws. The selective-two noninvertible fixture instantiates all seven public projections on distinct contexts and a genuine restriction, a nonzero observable value and violation coordinate, and both cyclic and acyclic residual values. Complete SignedExactCoreReadingHom and PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationRoleDescent.lean
@@ -94,6 +94,8 @@ result:
     - finiteSelectiveTwoEquationTransport_equationEquiv
     - finiteSelectiveTwoEquationTransport_observableEquiv
     - finiteSelectiveTwoEquationTransport_role_eq
+    - finiteSelectiveTwoEquationObservableThreeAtV
+    - finiteSelectiveTwoEquationObservableThreeAtV_ne_zero
     - finiteSelectiveTwoEquationTransport_observable_naturality
     - finiteSelectiveTwoEquationTransport_violationCoordinate_eq
     - finiteSelectiveTwoEquationTransport_cyclic_equationResidual_eq
@@ -142,13 +144,14 @@ audits:
       - every reflected law quantifies its mathematical index, context, arrow, value, Atom, or architecture object rather than accepting a proof packet
       - the witness derives its generated index, observable value, restriction, objects, and base noninvertibility from prior named fixtures
     prohibited_and_absent:
-      - known low equation transport, finiteGeneratedLowFactor, inverseCorePackageFactor, EquationSystemExactTransport.refl, finiteGeneratedNormalizedHighFactor_eq_canonical, globalCartesianLift, caller law/image/graph certificates, Classical.choose of a low preimage, and empty elimination
+      - returning a known low outer-to-inner or reflected final equation transport, finiteGeneratedLowFactor, inverseCorePackageFactor, EquationSystemExactTransport.refl, finiteGeneratedNormalizedHighFactor_eq_canonical, globalCartesianLift, caller law/image/graph certificates, Classical.choose of a low preimage, and empty elimination
   proof_use:
     used:
       - the actual normalized high role_eq in finiteGeneratedActualHighEquationRole_eq and the final reflected role proof
       - the actual normalized high observable_naturality before restriction endpoint descent
       - the actual normalized high violationCoordinate_eq before the target observable cast and canonical image reflection
       - the actual normalized high equationResidual_eq together with the complete reflected architecture-object high-image equality
+      - predecessor low/high generated endpoint equation transports only in the canonical role, restriction, violation, and residual image graphs
       - all seven named component producers in the final EquationSystemExactTransport structure literal
     not_yet_available:
       - complete actual-high-derived SignedExactCoreReadingHom and PackageTotalHom
