@@ -283,7 +283,7 @@ noncomputable def finiteGeneratedNormalizedHighFactor
 /--
 The normalized high factor followed by the generated high hom is the outer
 generated high hom.  The proof uses both the supplied lift factor and its
-canonical inverse triangle.
+canonical forward comparison triangle.
 -/
 theorem finiteGeneratedNormalizedHighFactor_fac
     (input : FiniteGeneratedLiftInput)
