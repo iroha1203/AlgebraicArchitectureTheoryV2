@@ -47,7 +47,10 @@ selection:
     - using thin-category proof irrelevance to invent a morphism before reflecting the actual high map
     - claiming an equivalence with the full high context category or arbitrary Type-u descent
     - presenting the contextEquivalence projection as a complete EquationSystemExactTransport, whole hom descent, or FiniteModelLift
-  unchecked: []
+  unchecked:
+    - four-lane final review completion
+    - integrated review comment
+    - final report synchronization
 result:
   proposed_result_type: proof-checkpoint
   reviewed_content_head: pending-final-review
