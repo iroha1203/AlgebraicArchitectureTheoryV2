@@ -30,6 +30,9 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObjectContextImageWit
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedContextImageFunctor
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedContextEquivalence
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedContextEquivalenceWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationIndexDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObservableEquivalenceDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationEquivalenceWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -87,7 +90,13 @@ nontrivial finite witnesses.  The following layer constructs the generated-
 domain Full/Faithful image functors and reflects the actual normalized high
 context equivalence, including its forward and inverse objects and maps and all
 four unit/counit components, with a concrete distinct-context restriction
-witness.  The remaining equation-index and observable-ring transport,
-violation/residual graphs, whole-factor descent, ambient reflection, and
-`FiniteModelLift` remain unproved before K0.
+witness.  The equation-equivalence layer then completes the generated-domain
+equation-index image equivalences, reflects the actual high index equivalence,
+constructs the equation-observable ring images, and reflects the actual high
+observable equivalence at every canonical-image context.  Its concrete
+noninvertible fixture fires both directions, while the proof-used conjugation
+primitives are separately sensitive on finite swaps.  Role preservation,
+observable naturality, violation/residual graphs, the complete equation
+transport, whole-factor descent, ambient reflection, and `FiniteModelLift`
+remain unproved before K0.
 -/

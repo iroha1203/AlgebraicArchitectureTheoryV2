@@ -13,6 +13,165 @@
 
 ## Cycle ledger
 
+### Cycle 21 — actual generated equation-index and observable-equivalence reflection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 21
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ec48fc0adea8bf4dc877bd98dad1f58ca92a2bdc
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 20 merge synchronization / Cycle 21 selection comment 5375309572
+  proof_dag_predecessors:
+    - Cycle 17 actual supplied-high generated prefix factor and canonical normalization, PR 4053
+    - Cycle 19 complete object-image value descent and canonical context primitives, PR 4055
+    - Cycle 20 actual generated context-equivalence reflection, PR 4056 merge ec48fc0a
+  proof_obligation: complete the generated-domain equation-index image maps to two-sided equivalences; reflect the actual normalized high equationEquiv and context-indexed observableEquiv through internally generated images; prove all-value forward/inverse image graphs; and fire both fields plus their proof-used conjugation primitives nonvacuously
+  selection_reason: Cycle 20 reflected only contextEquivalence, while the existing generated-domain index map was one-way and the equation-system observable rings required a separate Int-to-ULift-Int construction rather than the ArchitectureContext Observable carrier graph
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationIndexDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableEquivalenceDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationEquivalenceWitnesses.lean
+    - finiteGeneratedReflectedEquationIndexEquiv
+    - finiteGeneratedReflectedEquationObservableEquiv
+  risks:
+    - treating the existing one-way generatedDomainEquationIndexLift as an equivalence without an inverse and both round trips
+    - confusing the ArchitectureContext Observable carrier with the equation-system observable coefficient ring
+    - returning a known low equation transport while the actual high fields occur only in sibling equalities
+    - allowing an index map, ring equivalence, context equality, inverse, or graph certificate from the caller
+    - using the selected PUnit index or rigid Int coefficient ring alone as evidence that conjugation is sensitive to its actual middle leg
+    - presenting equationEquiv and observableEquiv as the complete EquationSystemExactTransport, whole hom descent, or FiniteModelLift
+  unchecked:
+    - four-lane final review completion
+    - integrated review comment
+    - final report synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: pending-final-review
+  proof_obligation_delta: introduced transparent equation-index and equation-observable conjugation primitives and proved that each is injective in its actual middle equivalence for fixed generated images; completed the selected and generated-domain equation-index maps to named equivalences with inverse accessors and two-sided round trips; projected the actual normalized high equationEquiv and reflected it through the outer and inner generated-domain images; constructed the equation-system observable image equivalence by composing the low inverse-package upper, the selected Int-to-ULift-Int target equivalence, and the inverse high upper; projected the actual high observableEquiv at every canonical-image context; aligned only its dependent target context with the Cycle 20 landing theorem; and reflected it through the two generated observable images. Both reflected producers use the proof-used conjugation primitives computationally and accept no equivalence or graph from the caller. All-index and all-context/all-value forward and inverse image graphs are proved. The existing selective-two noninvertible fixture fires both actual reflected fields and both round trips at a generated index and observable value 3. Separate Boolean and product-ring swaps fire the same proof-used primitives, without claiming nontriviality of the selected PUnit index. Role preservation, observable naturality, violation/residual generators, the complete EquationSystemExactTransport, remaining upper fields, whole factor descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationIndexDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableEquivalenceDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationEquivalenceWitnesses.lean
+  evidence:
+    - generatedEquationIndexEquivConjugation
+    - generatedEquationIndexEquivConjugation_actual_injective
+    - finiteModelTargetEquationIndexEquiv
+    - finiteGeneratedDomainEquationIndexEquiv
+    - finiteGeneratedDomainEquationIndexReflect
+    - finiteGeneratedDomainEquationIndex_reflect_lift
+    - finiteGeneratedDomainEquationIndex_lift_reflect
+    - finiteGeneratedActualHighEquationIndexEquiv
+    - finiteGeneratedReflectedEquationIndexEquiv
+    - finiteGeneratedReflectedEquationIndex_forward_image
+    - finiteGeneratedReflectedEquationIndex_inverse_image
+    - generatedEquationObservableRingEquivConjugation
+    - generatedEquationObservableRingEquivConjugation_actual_injective
+    - finiteModelTargetEquationObservableEquiv
+    - finiteGeneratedEquationObservableEquiv
+    - finiteGeneratedEquationObservableEquiv_forward_image
+    - finiteGeneratedEquationObservableEquiv_inverse_image
+    - finiteGeneratedActualHighEquationObservableEquiv
+    - finiteGeneratedReflectedEquationObservableTargetCast
+    - finiteGeneratedReflectedEquationObservableEquiv
+    - finiteGeneratedReflectedEquationObservableEquiv_apply_high_image
+    - finiteGeneratedReflectedEquationObservableEquiv_symm_apply_high_image
+    - finiteSelectiveTwoReflectedEquationIndex_forward_high_image
+    - finiteSelectiveTwoReflectedEquationIndex_inverse_high_image
+    - finiteSelectiveTwoReflectedEquationIndex_roundtrip
+    - finiteSelectiveTwoReflectedEquationObservableThree_forward_high_image
+    - finiteSelectiveTwoReflectedEquationObservableThree_inverse_high_image
+    - finiteSelectiveTwoReflectedEquationObservableThree_roundtrip
+    - finiteSelectiveTwoEquationEquivalenceWitness_base_not_isIso
+    - primitiveEquationIndexConjugation_middle_sensitive
+    - primitiveEquationObservableConjugation_middle_sensitive
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+    runtime_route_constraints:
+      - Issue 4034 requires the equation-index and equation-observable equivalences to be read from the actual normalized high transport rather than copied from the known low factor
+      - the Cycle 20 reflected context landing may align dependent observable targets but may not replace the actual high observable map
+      - selected PUnit and Int endpoints require a separate finite sensitivity check of the exact proof-used conjugation operations
+    source_facts:
+      - finiteGeneratedDomainEquationIndexEquiv extends the existing generatedDomainEquationIndexLift and supplies a named inverse plus both round trips
+      - finiteGeneratedActualHighEquationIndexEquiv is definitionally the actual normalized factor's equationEquiv projection
+      - finiteGeneratedReflectedEquationIndexEquiv invokes generatedEquationIndexEquivConjugation with internally generated outer image, actual high field, and inner image
+      - finiteGeneratedEquationObservableEquiv maps through the low target observable equivalence, the selected Int-to-ULift-Int equivalence, and the inverse high target observable equivalence
+      - finiteGeneratedActualHighEquationObservableEquiv is definitionally the actual normalized factor's observableEquiv projection at the generated high context
+      - finiteGeneratedReflectedEquationObservableTargetCast is generated solely from the Cycle 20 canonical-image-equals-actual-image theorem
+      - finiteGeneratedReflectedEquationObservableEquiv invokes generatedEquationObservableRingEquivConjugation with internally generated source, actual, and target legs
+      - both conjugation operations are injective in the actual middle equivalence and are fired on concrete nonidentity finite swaps
+      - the finite witness internally reuses the supplied high lift, noninvertible prefix, generated index, context, and observable value
+    consequence:
+      - the equationEquiv and observableEquiv computational fields now have actual-high-derived low outputs with complete forward/inverse image graphs
+      - only those two fields, in addition to Cycle 20 contextEquivalence, are discharged toward the eventual complete EquationSystemExactTransport
+      - role, naturality, generator laws, whole upper/total descent, and ambient strong-lift reflection remain open
+audits:
+  premise_delta:
+    discharged:
+      - two-sided selected and generated-domain equation-index equivalences
+      - named generated-domain index reflection and both round trips
+      - actual high equationEquiv projection and reflected low equivalence for every index
+      - canonical generated-domain equation-observable RingEquiv for every low context and every ring value
+      - actual high observableEquiv projection, dependent target cast, and reflected low RingEquiv
+      - forward and inverse actual-high image graphs for all indices, contexts, and observable values
+      - actual-middle injectivity for both proof-used conjugation primitives
+      - concrete noninvertible fixture firing plus Boolean and product-ring sensitivity
+    remaining:
+      - actual high role_eq reflection
+      - observable restriction naturality on every reflected context arrow
+      - violationCoordinate and equationResidual generator graphs
+      - assembly of the complete actual-high-derived EquationSystemExactTransport
+      - remaining operation, invariant, signature, and proof fields needed for SignedExactCoreReadingHom
+      - whole PackageTotalHom descent, composition/equality reflection, and high-driven ambient factorization/uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - both top-level reflected producers accept only input, supplied high lift, base, and their quantified index/context/value; all equivalence and cast legs are internally generated
+      - the target observable cast is generated from the prior context landing theorem and carries no observable value or inverse certificate
+      - the finite witness generates its source index and observable value through the canonical low upper and supplies no producer field
+    qualified_primitive:
+      - the generic index and ring conjugation operations are transparent low-level functions used by the actual producers; their separate finite instantiations test the actual-leg dependency but are not caller inputs to the generated producers
+    prohibited_and_absent:
+      - known low equation transport, finiteGeneratedLowFactor, inverseCorePackageFactor, EquationSystemExactTransport.refl, canonical whole-factor rewriting, globalCartesianLift, caller image/equivalence/graph certificates, and Classical.choose of a low preimage
+  proof_use:
+    used:
+      - the actual normalized high equationEquiv in the computational body of finiteGeneratedReflectedEquationIndexEquiv
+      - the actual normalized high observableEquiv in the computational body of finiteGeneratedReflectedEquationObservableEquiv
+      - the Cycle 20 actual context landing only to construct the dependent RingEquiv.cast target alignment
+      - both proof-used conjugation primitives and their generated source and target image legs
+    not_yet_available:
+      - actual high role_eq, observable_naturality, violationCoordinate_eq, and equationResidual_eq reflection
+      - complete actual-high-derived EquationSystemExactTransport, SignedExactCoreReadingHom, and PackageTotalHom
+  structure_field_escape: none; standalone definitions accept no free proof or comparison fields
+  route_integrity: pass for equationEquiv and observableEquiv on the complete canonical generated images; complete equation transport and whole factor remain open
+  target_fitting: none found in implementation; core theorems quantify every generated index, context, and observable value, while the concrete fixture only fires them
+  vacuity: none found; the fixture uses a genuinely noninvertible prefix and both directions of each actual field, and the exact proof-used conjugation primitives distinguish identity from finite swaps
+  one_way_as_equivalence: none; the prior one-way equation-index lift is now the forward map of an explicit Equiv with named inverse and both round trips
+  goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedEquationIndexDescent.lean: pass, 19 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedObservableEquivalenceDescent.lean: pass, 15 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationEquivalenceWitnesses.lean: pass, 13 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+    - no Research aggregate or full build
+  review_refs:
+    independent_final_reviews: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: reflect actual role equality, observable restriction naturality, and violation/residual generator laws through the same generated images; then assemble the complete actual-high-derived EquationSystemExactTransport before descending the remaining upper and total hom fields
+```
+
 ### Cycle 20 — actual generated context-equivalence reflection
 
 ```yaml
