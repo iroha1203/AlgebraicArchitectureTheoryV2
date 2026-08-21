@@ -13,6 +13,129 @@
 
 ## Cycle ledger
 
+### Cycle 13 — canonical finite-package ULift foundation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 13
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 037f343c2972ca342c3b360de12960f7367289f9
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 12 merged / Cycle 13 selection comment 5369081592
+  proof_dag_predecessors:
+    - Cycle 7 finite presentation and checker ULift rebase, PR 4043 merge 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
+    - Cycle 9 arbitrary-target strong cartesian lifts and GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+    - Cycle 12 FiniteModelLift nonvacuity guard, PR 4048 merge 037f343c2972ca342c3b360de12960f7367289f9
+  proof_obligation: construct the first canonical, executable-on-data layer of the finite package universe lift without assuming arbitrary lifted objects, package morphisms, cartesian lifts, reflection certificates, or a no-lift conclusion
+  selection_reason: finite-code rebasing alone does not transport package semantics; the exact family, configuration, hom, doctrine, reading-component, and graph laws must be fixed before equation/CoreReading/package assembly or strong-lift reflection can be audited
+  expected_result_type: proof-checkpoint
+  risks:
+    - claiming a full equivalence of architecture objects or core packages from an Atom-carrier equivalence
+    - lowering arbitrary Type-u object fields to universe zero
+    - using a caller-supplied image/descent certificate
+    - treating finite-model-specific constant/configuration-only readings as generic reading transport
+    - counting this foundation as FiniteModelLift, K0, or theorem completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: constructed canonical family and configuration lift/reflect operations with two-sided round trips, list-finiteness and family-support preservation; constructed configuration-hom lift/reflect by Atom-map conjugation with endpoint-normalized two-sided round trips and identity/composition laws; lifted arbitrary universe-zero architecture objects in one direction; rebased extraction doctrines and Atom axioms with extraction/atomization graphs; generated lifted composition and object readings with graph laws; directly reconstructed the FiniteModel-specific invariant, signature, and all-configuration-hom operation readings; added configuration-based semantic descent for every lifted architecture object; and exhibited positive, negative, nontrivial-relation, and nonidentity-hom finite witnesses. The construction intentionally stops before EquationReading, CoreReading, AATCorePackage, package homs, ambient cartesianness reflection, and FiniteModelLift.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FinitePackageULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FinitePackageULiftWitnesses.lean
+  evidence:
+    - finiteModelLiftAtomFamily
+    - finiteModelReflectAtomFamily_lift
+    - finiteModelLiftAtomConfiguration_reflect
+    - finiteModelLiftConfigurationHom
+    - finiteModelReflectConfigurationHom_lift
+    - finiteModelLiftConfigurationHom_comp
+    - finiteModelLiftExtractionDoctrine_extracts_iff
+    - finiteModelLiftExtractionDoctrine_atomize
+    - finiteModelLiftAtomAxiomSystem
+    - finiteModelLiftCompositionReading_compose
+    - finiteModelLiftObjectReading_object
+    - finiteModelLiftInvariantFamily
+    - finiteModelLiftArchitectureSignature
+    - finiteModelLiftOperationReading
+    - finiteModelSemanticDescent
+    - finiteModelLiftCorePackage_componentA_mem
+    - finiteModelLiftCorePackage_componentC_not_mem
+    - finiteModelLiftCollapseConfigurationHom_roundtrip
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B lines 216-220 requires the finite counterexample carrier to move through canonical ULift rather than an implicit universe-zero specialization
+      - target artifacts lines 594-600 and material-premise ledger lines 738-740 retain FiniteModelLift before K0
+      - completion criteria lines 638-653 require generated provenance, proof use, nonvacuity, and standard-axiom audit
+    source_facts:
+      - finiteModelLiftCarrierEquiv supplies the fixed five-coordinate and Atom equivalences already used by finite presentation rebasing
+      - every Atom-dependent family/configuration field is transported by that equivalence and reflected by its inverse
+      - configuration homs are conjugated rather than copied or accepted as fields, and the conjugation is proved functorial
+      - extraction doctrine carriers are raised through ULift and all four extraction conjuncts are preserved on corresponding cells
+      - the FiniteModel invariant/signature/operation readings are reconstructed only from their reviewed singleton, constant, and all-configuration-hom definitions
+      - semantic descent reads every lifted object's actual reflected configuration and does not pretend to lower its opaque Type-u fields
+    consequence:
+      - finite package transport now has a checked carrier/data foundation and concrete nondegenerate witnesses
+      - no equivalence of all lifted architecture objects, core packages, or package homs follows
+      - no strong-cartesian reflection or no-lift transport is claimed at this checkpoint
+audits:
+  premise_delta:
+    discharged:
+      - Atom-family and Atom-configuration universe rebase and reflection
+      - configuration-hom rebase/reflection graph, round-trip, identity, and composition laws
+      - extraction doctrine, atomization, Atom-axiom, composition-reading, and object-reading foundation
+      - FiniteModel-specific invariant, signature, operation, and semantic-configuration readings
+      - positive/negative family content, nontrivial identification, and nonidentity hom witnesses
+    remaining:
+      - cross-carrier circuit syntax and a sound lifted FiniteModel EquationReading on every lifted object
+      - complete lifted FiniteModel CoreReading and AATCorePackage with projection/endpoint graph laws
+      - package-total hom rebasing and the exact reflection surface needed by ambient strong-cartesian universality
+      - FiniteModelLift as a structurally generated nonexistence corollary
+      - all K0 and K2-K4 obligations
+  certificate_provenance:
+    discharged:
+      - every constructor closes over source family/configuration/doctrine/reading data and finiteModelLiftCarrierEquiv
+      - configuration-hom round trips normalize only generated endpoint equalities through castConfigurationHom
+      - no image membership, descent datum, package morphism, lift, condition result, or no-lift proof is accepted
+    prohibited:
+      - an arbitrary lifted ArchitectureObject inverse or all-package equivalence
+      - default/PEmpty extension presented as ambient strong-cartesian reflection
+      - a caller-supplied package image or high-hom restriction certificate
+  proof_use:
+    used:
+      - both directions and cancellation laws of the fixed Atom equivalence
+      - every family/configuration relation and identification field
+      - every configuration-hom map and preservation law
+      - all four extraction predicates, normalization, source values, and the source AtomAxiomSystem
+      - the source composition and object constructors and their laws
+      - concrete FiniteModel family membership, nonmembership, identification, and collapse-hom data
+    unavailable:
+      - EquationReading and package-total universal-property data do not yet exist at the lifted carrier
+  structure_field_escape: none; this cycle introduces named functions and theorems, not a structure carrying a package, hom, lift, reflection, or conclusion certificate
+  route_integrity: partial and exact; the construction uses the existing canonical carrier equivalence and finite model definitions, while explicitly stopping before the ambient package category where arbitrary high-universe objects and homs must be handled
+  target_fitting: none introduced; the only fixture is the pre-existing reviewed FiniteModel required by the fixed GOAL, and positive/negative facts survive one uniform construction
+  vacuity: concrete lifted membership and nonmembership coexist, a nontrivial identification survives, and the lifted collapse hom has a visible constant Atom map whose reflection returns the original hom
+  one_way_as_equivalence: avoided; architecture-object lifting and semantic descent are stated separately, and no inverse or essential-surjectivity theorem is claimed for arbitrary lifted object fields
+  goal_or_report_reinterpretation: none; FiniteModelLift remains an unconditional fixed-ledger residual and this cycle is only its first structural prerequisite
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FinitePackageULift.lean: pass, namespace audit 45 declarations and standard axioms only
+    - targeted single-module build ResearchLean.AG.DoctrineFiberProduct.FinitePackageULiftWitnesses: pass; no Research aggregate build
+    - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/FinitePackageULiftWitnesses.lean: pass, namespace audit 7 declarations and standard axioms only
+    - module manifest and DoctrineFiberProduct umbrella imports updated
+    - report diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pending final snapshot
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: pending
+  blocking_findings: []
+  stop_condition: none; continue before K0 without weakening the fixed FiniteModelLift obligation
+  next_obligation: construct the direct lifted FiniteModel equation/circuit reading and complete CoreReading/package assembly with endpoint graph laws; then reassess the exact ambient package-hom reflection boundary
+```
+
 ### Cycle 12 — `FiniteModelLift` nonvacuity guard and structural-route checkpoint
 
 ```yaml
