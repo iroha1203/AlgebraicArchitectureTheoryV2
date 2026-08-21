@@ -42,9 +42,7 @@ selection:
     - selecting an empty target fiber or an unrelated family of lift witnesses
     - supplying a package, lift, or cartesianness certificate as a theorem premise or finite-presentation field
     - counting the portfolio as the still-missing carrier-global disjunction artifact or regime producer
-  unchecked:
-    - fixed-head four-lane review
-    - fixed-head CI and final report synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: constructed identity-normalized selective finite doctrines with one, two, and three source cells; validated constant two-to-one and three-to-one exact presentations; generated a concrete package in the shared one-cell target fiber through reviewed package transport and the Cycle 9 arbitrary-target producer; constructed actual strong cartesian lifts of both family members to that package; proved both source tables noninjective, both semantic arrows noninvertible, each source endpoint nonisomorphic to the common target, and the two semantic arrows pairwise nonisomorphic in both orientations; and assembled the Bool-indexed ParametricCartLiftFamily
@@ -136,11 +134,15 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses: pass targeted module check
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - git diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pass
-    - fixed-head PR CI: pending
+    - fixed-head PR CI: 7 of 7 checks green
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: pending
+    fixed_head: 6395554af125edae2b8a9e802c1412c7d5518f49
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4046#issuecomment-5368573694
+    verdicts:
+      - Math A: no major findings for the Cycle 10 portfolio obligation only
+      - Math B: no major findings for the Cycle 10 portfolio obligation only
+      - Lean A: no major findings for the Cycle 10 portfolio obligation only
+      - Lean B: no major findings for the Cycle 10 portfolio obligation only
   initial_review_findings:
     - all four initial lanes found the center portfolio claim intact but identified that CartesianTargetWitnesses was absent from research-modules.txt, so the official focused wrapper rejected the file and the initial wiring-pass claim was false; the module is now registered and the official single-file focused check passes
   blocking_findings: []
