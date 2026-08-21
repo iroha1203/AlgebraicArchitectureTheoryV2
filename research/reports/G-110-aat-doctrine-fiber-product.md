@@ -13,6 +13,164 @@
 
 ## Cycle ledger
 
+### Cycle 16 — generated finite package-hom ULift observations
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 16
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ab63c6f3e75ce794c896e4d04f9e701a9353b7de
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 15 merged / Cycle 16 selection comment 5370429848
+  proof_dag_predecessors:
+    - Cycle 8 inverse-package strong-cartesian constructor, PR 4044 merge 9f144dfd
+    - Cycle 13-14 canonical finite package and equation ULift data, PR 4049/4050 merges c135ea34 / 2a0d76c
+    - Cycle 15 inverse triangle for arbitrary high strong lifts, PR 4051 merge ab63c6f3
+  proof_obligation: consume domainIso_inv_fac before cross-carrier work and construct a typed generated-package/hom naturality theorem; if reflection does not safely fit one review unit, fix its exact downstream signature without claiming a full package functor
+  selection_reason: arbitrary high domains no longer need direct descent after same-carrier normalization, but the generated low/high package homs still lacked a proof-used cross-carrier relation across their upper computational and semantic components
+  expected_result_type: proof-checkpoint at the Issue-authorized typed naturality split gate
+  risks:
+    - caller-supplied package, image, endpoint, index, operation, descent, or graph certificates
+    - calling a selected finite observation a functor or equality of cross-carrier PackageTotalHom values
+    - equation-index equivalence cancellation without detector or EquationHolds semantics
+    - returning the already generated low lift while the arbitrary high lift and its cartesianness are decorative
+    - weakening ambient Mathlib strong cartesianness to an image-only universal property
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: constructed canonical lifting for arbitrary finite-model ExtractionInstance, ExactDoctrineHom, and ExtInstHom with source, Atom, identity, and composition laws; generated named high inverse package and PackageTotalHom data directly from the lifted low arrow; proved endpoint, projection, base, Atom, object, configuration, equation-map, detector, EquationHolds, operation, invariant, axis, and coordinate observations against the generated low inverse package; normalized every supplied ambient high strong lift by canonicalDomainIso.inv followed by its actual hom and used domainIso_inv_fac to identify that composite with the named high hom; bundled all observations in GeneratedPackageHomULiftNaturality indexed only by the original finite input and generated it without caller proof fields; instantiated the packet on a concrete noninvertible two-source portfolio arrow. This is not a complete cross-carrier package functor, arbitrary-hom reflection, FiniteModelLift, K0, or theorem completion.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedLiftNaturality.lean
+  evidence:
+    - finiteModelLiftExactDoctrineHom_id
+    - finiteModelLiftExactDoctrineHom_comp
+    - finiteModelLiftExtInstHom_id
+    - finiteModelLiftExtInstHom_comp
+    - FiniteGeneratedLiftInput.highPackageFromLowData
+    - FiniteGeneratedLiftInput.highPackageHomFromLowData
+    - FiniteGeneratedLiftInput.inverseGeneratedDomain_detectorCode_graph
+    - FiniteGeneratedLiftInput.inverseGeneratedDomain_equationHolds_iff
+    - FiniteGeneratedLiftInput.generatedUpper_operation_configurationMap_graph
+    - FiniteGeneratedLiftInput.generatedUpper_invariantMap_graph
+    - FiniteGeneratedLiftInput.generatedUpper_axisMap_graph
+    - FiniteGeneratedLiftInput.generatedUpper_coordinateEquiv_graph
+    - FiniteGeneratedLiftInput.normalizedHighHom
+    - FiniteGeneratedLiftInput.normalizedHighHom_eq_highPackageHomFromLowData
+    - GeneratedPackageHomULiftNaturality
+    - generatedPackageHomULiftNaturality
+    - finiteSelectiveTwoGeneratedPackageHomULiftNaturality
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as an unconditional pre-K0 discharge item
+      - premise policy forbids supplying transported packages, hom graphs, or conclusion-equivalent certificates
+      - Issue 4034 comment 5370429848 permits a split only at a typed generated-package/hom naturality theorem with the exact downstream reflection signature fixed in this report
+    source_facts:
+      - PackageTotalHom is same-carrier, so the cross-carrier statement is a generated observational relation rather than an ill-typed equality
+      - the named high package and hom close only over input.hom, the canonical carrier equivalence, the selected lifted target package, and inverseCorePackage/inverseCorePackageHom
+      - the equation relation contains both detector syntax and EquationHolds preservation/reflection; it is not only apply_symm_apply for an equation-index equivalence
+      - operation endpoint casts are generated from the proved object-map equality
+      - invariant and signature observations use the selected singleton/constant readings and actual inverse-upper maps
+      - normalizedHighHom contains canonicalDomainIso(lift).inv followed by lift.hom, and its equality uses domainIso_inv_fac
+    consequence:
+      - generated low/high endpoint and upper-component observations are now available as one theorem output
+      - arbitrary high package descent, a full cross-carrier package-category functor, and reflection of arbitrary package homs remain unclaimed
+      - the next cycle must reflect cartesianness from the normalized high hom through the generated observations, not reuse the existing low cartesianness proof
+audits:
+  premise_delta:
+    discharged:
+      - canonical low ExtInstHom lift with identity and composition laws
+      - independent named high inverse package and total hom from the low input
+      - endpoint, base, projection, and selected upper-component cross-carrier graphs
+      - detector syntax and EquationHolds semantics on generated low/high inverse domains
+      - arbitrary-high inverse-triangle normalization before cross-carrier reflection
+      - a caller-certificate-free proof-only naturality producer
+      - noninvertible concrete firing input
+    remaining:
+      - generated reflection of the normalized high hom to a low PackageTotalHom
+      - ambient strong-cartesian reflection using the supplied high IsStronglyCartesian universal property
+      - component graph and one-direction retraction laws for that reflected hom
+      - FiniteModelLift and its generated nonexistence corollary without empty elimination
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - GeneratedPackageHomULiftNaturality is indexed only by FiniteGeneratedLiftInput and all proof fields are filled by the named producer
+      - index, operation, endpoint, package, and hom values are definitions, not caller arguments
+      - the concrete witness uses the reviewed finite portfolio and proves its lower arrow noninvertible
+    prohibited:
+      - taking GeneratedPackageHomULiftNaturality as a premise in the downstream producer instead of invoking generatedPackageHomULiftNaturality
+      - caller-supplied image membership, descent, component graph, reflected hom, or cartesianness proof
+      - using globalCartesianLift or input.lowGeneratedLift.isStronglyCartesian as the downstream reflected cartesianness proof
+  proof_use:
+    used:
+      - inverseCorePackage and inverseCorePackageHom for both generated domains and homs
+      - finite carrier, family, configuration, object, circuit, equation, invariant, signature, and operation lift laws in the selected observations
+      - SignedExactCoreReadingHom equation_holds_iff on both same-carrier sides
+      - StrongCartesianLift.canonicalDomainIso and domainIso_inv_fac on every supplied high lift
+      - the finite portfolio noninjective source map in the non-IsIso witness
+    next_use:
+      - the downstream producer must internally invoke generatedPackageHomULiftNaturality input
+      - lift.hom and lift.isStronglyCartesian must drive the reflected ambient universal-property proof
+      - every arbitrary low competitor in IsStronglyCartesian must be handled by newly generated operations, not a caller certificate or an image-only replacement category
+  structure_field_escape: avoided in the current artifact. The packet contains proofs about named generated data and no replaceable package, hom, index map, operation map, or semantic conclusion field.
+  route_integrity: the arbitrary high lift is first normalized in the ambient package category and only the resulting theorem-generated endpoint/hom is compared cross-carrier. The selected observations do not claim a whole-structure equality that the type system cannot state.
+  target_fitting: the packet is uniform in every source pointed instance and exact arrow into the selected FiniteModel package; the concrete two-source input is only a nondegenerate firing witness.
+  vacuity: the packet is universally produced, its normalization quantifies an inhabited StrongCartesianLift type, detector and EquationHolds layers have semantic content, and the concrete lower arrow is noninvertible.
+  one_way_as_equivalence: avoided. Only one-way canonical lifts plus explicitly listed preservation/reflection propositions are claimed; no arbitrary high object/package is lowered.
+  validation_refs:
+    - official focused wrapper ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedLiftNaturality.lean: pass, 132 namespace declarations and standard axioms only
+    - manifest and umbrella wiring: pass
+    - fixed GOAL blob and SHA256 lock: pass
+    - diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass
+    - no local Research aggregate/full build
+  review_refs:
+    preliminary_design_review:
+      - Math: Pass for the generated observational split; exact reflection signature required in this report
+      - Lean: Pass for the generated observational split; no actionable source finding
+    standard_review_pr: pending
+    independent_final_reviews: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  exact_downstream_reflection_signature: |
+    noncomputable def reflectNormalizedHighHom.{u}
+        (input : FiniteGeneratedLiftInput)
+        (lift : StrongCartesianLift input.highInput input.highTarget) :
+        input.lowGeneratedLift.domain ⟶ FiniteModel.corePackage
+
+    theorem reflectNormalizedHighHom_base.{u} (input) (lift) :
+      (reflectNormalizedHighHom input lift).base = input.hom
+
+    theorem reflectNormalizedHighHom_components.{u} (input) (lift) :
+      ReflectedGeneratedComponentGraph input lift
+        (reflectNormalizedHighHom input lift)
+
+    theorem reflectNormalizedHighHom_retraction.{u} (input) (lift) :
+      reflectNormalizedHighHom input lift = input.lowGeneratedLift.hom
+
+    theorem reflectNormalizedHighHom_isStronglyCartesian.{u} (input) (lift) :
+      (packageProjection FiniteModel.carrier).IsStronglyCartesian
+        input.lowInput.hom (reflectNormalizedHighHom input lift)
+
+    noncomputable def reflectNormalizedStrongCartesianLift.{u}
+        (input : FiniteGeneratedLiftInput)
+        (lift : StrongCartesianLift input.highInput input.highTarget) :
+        StrongCartesianLift input.lowInput input.lowTarget
+
+    ReflectedGeneratedComponentGraph must be a proof-only relation generated
+    from input and lift, covering Atom, object/configuration, equation/detector,
+    operation, invariant, signature, normalized-high-hom, domain, and projection
+    graphs. Its producer must invoke generatedPackageHomULiftNaturality input and
+    use lift.hom plus lift.isStronglyCartesian in the ambient PackageTotalCategory
+    universal-property proof. It may not accept a graph/descent/image certificate,
+    use globalCartesianLift, reuse input.lowGeneratedLift.isStronglyCartesian, or
+    replace ambient IsStronglyCartesian by an image-only property.
+  next_obligation: construct the exact reflected hom/component relation and prove ambient strong-cartesian reflection from the supplied normalized high lift; then package FiniteModelLift and its graph-bearing nonexistence transfer or fail closed with a formal obstruction to this exact signature
+```
+
 ### Cycle 15 — same-carrier strong-lift comparison and reflection checkpoint
 
 ```yaml

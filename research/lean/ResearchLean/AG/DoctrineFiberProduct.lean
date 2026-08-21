@@ -20,6 +20,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedLiftNaturality
 
 /-!
 # Doctrine fiber-product schema
@@ -47,9 +48,14 @@ homs, finite-model reading components, and semantic configurations with exact
 round-trip and graph laws.  The equation layer additionally rebases finite
 circuit syntax, reconstructs the NoCycle equation and sound detector on every
 lifted object, and assembles the complete lifted `CoreReading` and generated
-`AATCorePackage`, with concrete cyclic and acyclic witnesses.  Package-total
-hom rebasing and ambient strong-lift reflection for the separate
+`AATCorePackage`, with concrete cyclic and acyclic witnesses.  Complete
+cross-carrier hom retraction and ambient strong-lift reflection for the separate
 `FiniteModelLift` obligation remain before K0.  The comparison layer records the
 canonical vertical domain isomorphism between two strong lifts inside one
-carrier, while making no cross-carrier package-descent claim.
+carrier.  The generated-lift naturality layer then consumes its inverse
+triangle and proves endpoint, lower-map, upper-component, equation-semantic,
+operation, invariant, and signature observations for the canonical finite
+low/high package homs, including a noninvertible concrete input.  This is an
+observational theorem-output, not a cross-carrier package functor or the still
+unproved ambient strong-lift reflection.
 -/
