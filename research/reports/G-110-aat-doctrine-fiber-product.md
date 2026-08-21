@@ -13,6 +13,146 @@
 
 ## Cycle ledger
 
+### Cycle 10 — nondegenerate parametric cartesian lift portfolio
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 10
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 10 selection comment 5368313496
+  proof_dag_predecessors:
+    - Cycle 2 finite cartesian presentations and realization provenance, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
+    - Cycle 6 branch-independent nondegenerate lift-family signature, PR 4042 merge 487bee332fbd426cb70ffe926b4c0201ab569a60
+    - Cycle 9 arbitrary-target strong cartesian lifts and GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+  proof_obligation: construct one branch-independent ParametricCartLiftFamily with at least two pairwise nonisomorphic realized semantic arrows, nonisomorphic endpoints, noninvertible bottom morphisms, concrete target-fiber packages, and actual strong cartesian lifts for those same members
+  selection_reason: the left branch is now proved uniformly, but the fixed portfolio constraint separately requires a finite nondegenerate family; constant maps from two- and three-cell selective doctrines to one shared one-cell target expose source-cardinality obstructions while Cycle 9 generates their lifts to one concrete package
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTargetWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - using identity arrows or two isomorphic copies of one semantic arrow
+    - proving only inequality of presentations rather than nonexistence of CartSemanticInputIso
+    - selecting an empty target fiber or an unrelated family of lift witnesses
+    - supplying a package, lift, or cartesianness certificate as a theorem premise or finite-presentation field
+    - counting the portfolio as the still-missing carrier-global disjunction artifact or regime producer
+  unchecked:
+    - fixed-head four-lane review
+    - fixed-head CI and final report synchronization
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: constructed identity-normalized selective finite doctrines with one, two, and three source cells; validated constant two-to-one and three-to-one exact presentations; generated a concrete package in the shared one-cell target fiber through reviewed package transport and the Cycle 9 arbitrary-target producer; constructed actual strong cartesian lifts of both family members to that package; proved both source tables noninjective, both semantic arrows noninvertible, each source endpoint nonisomorphic to the common target, and the two semantic arrows pairwise nonisomorphic in both orientations; and assembled the Bool-indexed ParametricCartLiftFamily
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianTargetWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - finiteSelectiveDoctrineCode
+    - finiteSelectiveTwoToOnePresentation
+    - finiteSelectiveThreeToOnePresentation
+    - finiteSelectiveTwoInput
+    - finiteSelectiveThreeInput
+    - finitePortfolioSupportPackage
+    - finitePortfolioSupportPackage_point
+    - finiteSelectiveOneToSupportPresentation
+    - finiteSelectiveOneSupportLift
+    - finiteSelectiveOneTargetPackage
+    - finiteSelectiveTwoSourceMap_not_injective
+    - finiteSelectiveThreeSourceMap_not_injective
+    - finiteSelectiveTwoInput_not_isIso
+    - finiteSelectiveThreeInput_not_isIso
+    - extractionInstanceSourceEquiv
+    - finiteSelectiveTwoEndpoints_not_isomorphic
+    - finiteSelectiveThreeEndpoints_not_isomorphic
+    - finiteSelectiveTwoThreeInputs_not_isomorphic
+    - finiteSelectiveThreeTwoInputs_not_isomorphic
+    - finiteSelectiveTwoLift
+    - finiteSelectiveThreeLift
+    - finiteParametricCartLiftFamily
+  claim_mapping:
+    theorem_names:
+      - finiteSelectiveTwoInput_not_isIso
+      - finiteSelectiveThreeInput_not_isIso
+      - finiteSelectiveTwoThreeInputs_not_isomorphic
+      - finiteSelectiveTwoLift
+      - finiteSelectiveThreeLift
+      - finiteParametricCartLiftFamily
+    source_labels:
+      - target theorem (B) branch-independent lift-construction positive family
+      - target portfolio constraint
+      - target proof strategy K1 finite nondegeneracy witness
+    conjuncts:
+      - Bool supplies two distinguished unequal parameters
+      - the members are realized finite presentations rather than arbitrary semantic arrows
+      - source-cardinality two versus three rules out semantic arrow isomorphism
+      - source-cardinality two or three versus one rules out endpoint isomorphism
+      - each constant source table identifies two explicit distinct cells, hence its decoded bottom morphism cannot be an isomorphism
+      - each exact same member has a concrete target-fiber package and an actual StrongCartesianLift generated by strongCartesianLiftOfTarget
+    undischarged_assumptions:
+      - the single DisjunctionArtifact and cartesianRegimeOfDisjunction remain unresolved
+      - K0 and K2-K4 remain unresolved
+    acceptance_point: the fixed branch-independent portfolio obligation is inhabited nonvacuously; no final branch artifact, generated regime, or G-110 completion is counted
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - concrete nonempty common target fiber
+      - two pairwise nonisomorphic noninvertible realized arrows with nonisomorphic endpoints
+      - actual strong cartesian lifts for the same two portfolio members
+    remaining:
+      - single carrier-global disjunction artifact and named regime producer
+      - K0 and K2-K4
+  certificate_provenance:
+    discharged:
+      - the support package is computed by transportAlong from FiniteModel.corePackage and finiteModelDoctrineFromFixture
+      - the package in the one-cell target fiber is the generated domainObject of strongCartesianLiftOfTarget on an explicit realized bridge
+      - both portfolio lifts are direct applications of strongCartesianLiftOfTarget to the two named semantic inputs and that generated target package
+      - no lift, package recovery equality, isomorphism certificate, or cartesianness proof occurs in either finite presentation or as a theorem premise
+    unresolved:
+      - named source of the eventual carrier-global disjunction and regime
+  proof_use:
+    used:
+      - finiteModelDoctrineFromFixture and the selected finite-code point in concrete package construction
+      - finitePortfolioSupportPackage_point in the bridge target CoreFiber
+      - StrongCartesianLift.domainObject in construction of the shared one-cell target package
+      - explicit unequal source cells and extInstHom_sourceMap_injective_of_isIso in both noninvertibility proofs
+      - source equivalences induced by actual ExtInst isomorphisms and Fintype.card_congr in all endpoint and arrow-isomorphism contradictions
+      - all nondegeneracy and lift declarations in the final ParametricCartLiftFamily fields
+    unused: []
+  structure_field_escape: none-found; the finite presentations retain the reviewed four authored fields, while packages and lifts are downstream named constructions
+  route_integrity: pass; the fixture cardinalities and common target route were fixed in the Issue selection before implementation, and every lift is generated through the reviewed arbitrary-target theorem
+  target_fitting: the family is a fixed Bool-indexed finite witness with source cardinalities two and three over one named selective target; it does not inspect a checker result or select representatives after proving a conclusion
+  vacuity: pass; the target CoreFiber is explicitly inhabited, both arrows are noninvertible, endpoints are nonisomorphic, and the two members are not isomorphic as semantic arrows
+  one_way_as_equivalence: none-found; no lower source-map inverse is constructed, and the only equivalences used are consequences of hypothetical categorical isomorphisms inside contradiction proofs
+  goal_or_report_reinterpretation: none; this cycle discharges only the branch-independent portfolio and explicitly retains the artifact, regime producer, K0, and K2-K4
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/CartesianTargetWitnesses.lean: pass, namespace audit 34 declarations and standard axioms only
+    - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses: pass targeted module check
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - git diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pass
+    - fixed-head PR CI: pending
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: pending
+  initial_review_findings: []
+  blocking_findings: []
+  next_obligation: fix the single carrier-global DisjunctionArtifact and cartesianRegimeOfDisjunction from globalCartesianLift before selecting K0
+```
+
+### Cycle 10 acceptance spine
+
+Cycle 10 の直接 axiom audit は、上記 `evidence` 22 declaration と witness module
+全 34 declaration に固定する。`finiteParametricCartLiftFamily` は固定 GOAL の
+枝非依存 portfolio を inhabit するが、単一 `DisjunctionArtifact`、
+`cartesianRegimeOfDisjunction`、K0、K2–K4 を達成したとは数えない。
+
 ### Cycle 9 — arbitrary-target strong cartesian lifts and the global left branch
 
 ```yaml
