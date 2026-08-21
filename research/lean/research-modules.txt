@@ -53,6 +53,9 @@ ResearchLean.AG.CrossStageCoherence.StrictObstruction	ResearchLean/AG/CrossStage
 ResearchLean.AG.CrossStageCoherence.TowerCompatibility	ResearchLean/AG/CrossStageCoherence/TowerCompatibility.lean
 ResearchLean.AG.CrossStageCoherence.Unification	ResearchLean/AG/CrossStageCoherence/Unification.lean
 ResearchLean.AG.CrossStageCoherence.UpperObstruction	ResearchLean/AG/CrossStageCoherence/UpperObstruction.lean
+ResearchLean.AG.DoctrineFiberProduct	ResearchLean/AG/DoctrineFiberProduct.lean
+ResearchLean.AG.DoctrineFiberProduct.Schema	ResearchLean/AG/DoctrineFiberProduct/Schema.lean
+ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses	ResearchLean/AG/DoctrineFiberProduct/SchemaWitnesses.lean
 ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
 ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
 ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean
