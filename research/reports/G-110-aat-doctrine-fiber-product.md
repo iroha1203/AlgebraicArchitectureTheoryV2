@@ -50,7 +50,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   reviewed_content_head: pending independent review
-  proof_obligation_delta: constructed reflection of arbitrary ExactDoctrineHom and ExtInstHom values between canonical finite-model universe lifts, including two-sided round trips; defined the reflected base of the actual normalized supplied-high factor by applying that operation directly to its base projection; reflected the actual upper Atom equivalence by conjugation; reflected the configuration of the actual high object image and its actual configuration map; proved high-image graphs, prefix equality for the base and upper Atom map, and an Atom-level prefix graph for the configuration map; instantiated every field on the existing two-source chain, whose reflected base is proved noninvertible. No known low factor, low cartesianness, caller certificate, or arbitrary high semantic descent is used by the computational definitions. Full ArchitectureObject data, context/equation transport, whole SignedExactCoreReadingHom and PackageTotalHom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  proof_obligation_delta: constructed reflection of arbitrary ExactDoctrineHom and ExtInstHom values between canonical finite-model universe lifts, including two-sided round trips; defined the reflected base of the actual normalized supplied-high factor by applying that operation directly to its base projection; reflected the actual upper Atom equivalence by conjugation; reflected the configuration of the actual high object image and its actual configuration map; proved high-image graphs, prefix equality for the base and upper Atom map, and an Atom-level prefix graph for the configuration map; instantiated every field on the existing two-source chain, whose reflected base is proved noninvertible. Beyond the required supplied high lift, no known low factor, low cartesianness, additional low/image/descent certificate, or arbitrary high semantic descent is used by the computational definitions. Full ArchitectureObject data, context/equation transport, whole SignedExactCoreReadingHom and PackageTotalHom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescent.lean
@@ -80,8 +80,10 @@ result:
     - finiteSelectiveTwoReflectedCoreObjectConfigurationMap_atom_graph
   claim_mapping:
     fixed_goal_clauses:
-      - target theorem B retains FiniteModelLift as an unconditional pre-K0 discharge item in the material ledger
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required
       - premise policy forbids caller-supplied transported packages, hom graphs, conclusion-equivalent certificates, and decorative premises
+    runtime_route_constraints:
+      - Issue 4034 keeps the unresolved FiniteModelLift ledger item in the current F0 continuation before starting K0
       - Cycle 16-17 proof-use gate requires the low computational factor to be read from the actual supplied-high factor rather than independently generated first
     source_facts:
       - finiteModelReflectExactDoctrineHom reads the high sourceMap and atomEquiv projections and has both lift-reflect round trips on canonical lifted doctrines
@@ -117,7 +119,7 @@ audits:
       - every reflected computational value is a transparent named function of an actual high projection and canonical ULift equivalences
       - the finite witness generates its supplied high lift and all endpoints internally
     prohibited_and_absent:
-      - caller-supplied low factor, image membership, component graph, descent, or cartesianness certificate
+      - caller-supplied low factor, image membership, component graph, descent, or conclusion-equivalent low cartesianness certificate beyond the required supplied high lift
       - Classical.choose of a low preimage
       - finiteGeneratedLowFactor, inverseCorePackageFactor, generated low cartesianness, or globalCartesianLift in reflected definitions
   proof_use:
