@@ -13,6 +13,117 @@
 
 ## Cycle ledger
 
+### Cycle 12 — `FiniteModelLift` nonvacuity guard and structural-route checkpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 12
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a02e0a57ab73aafc412fdd81fb1ad95e5c002e60
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 11 merged / Cycle 12 fixed-contract audit comment 5368825849
+  proof_dag_predecessors:
+    - Cycle 7 finite presentation and checker ULift rebase, PR 4043 merge 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
+    - Cycle 9 arbitrary-target strong cartesian lifts and GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+    - Cycle 11 carrier-global branch artifact and selected regime producer, PR 4047 merge a02e0a57ab73aafc412fdd81fb1ad95e5c002e60
+  proof_obligation: construct and review canonical finite-package ULift reindexing and strong-lift reflection sufficient for the fixed FiniteModelLift obligation before K0; reject a direct empty-elimination implementation and distinguish a genuine data-level transport route from a fixed-contract defect
+  selection_reason: FiniteModelLift is the last fixed-ledger F0 residual after the actual global left branch was selected, so its direct no-lift function type is empty-domain and requires an explicit nonvacuous structural surface before it can count
+  expected_result_type: proof-checkpoint
+  risks:
+    - inhabiting FiniteModelLift by eliminating the now-empty finite no-lift domain
+    - counting finite presentation rebasing as package-level strong-lift reflection
+    - accepting caller-supplied descent data or a counterexample-specific equivalence as provenance
+    - declaring a terminal goal defect before excluding a richer canonical image-relative rebase and reflection theorem
+    - continuing to K0 with an undisposed F0 residual
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: proved cartesianLiftNonexistence_isEmpty from the generated GlobalCartesianLift for every carrier, realized bottom arrow, and endpoint package; rightBranch_isEmpty already instantiates the same contradiction at FiniteModel.carrier. This proves that a direct FiniteModelLift function can be inhabited by empty elimination and therefore cannot count without separately generated package reindexing, data-level strong-lift reflection, and checkable graph laws. It does not rule out constructing those richer operations on canonical image packages and exercising the reflection on actual lifted strong lifts, whose type is inhabited under the global branch. The terminal goal-defect inference proposed at the initial head was therefore rejected; the structural transport route remains the next fixed-ledger obligation.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean
+  existing_evidence:
+    - GlobalCartesianLift
+    - globalCartesianLift
+    - CartesianLiftNonexistence
+    - cartesianLiftNonexistence_isEmpty
+    - RightBranch
+    - rightBranch_isEmpty
+    - DisjunctionArtifact
+    - globalDisjunctionArtifact
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem (B) lines 196-220 chooses one carrier-global left-or-right branch and introduces FiniteModelLift as transport of the right branch finite counterexample
+      - target artifacts lines 594-600 and material-premise ledger lines 738-740 require FiniteModelLift before K0
+      - completion criteria lines 638-653 require every discharge-required ledger item together with provenance and proof-use review
+    source_facts:
+      - globalCartesianLift realizes the global left branch at every carrier, realized input, and target-fiber package
+      - CartesianLiftNonexistence stores exactly an input, target package, and denial of that same lift existence
+      - cartesianLiftNonexistence_isEmpty proves in Lean that these two facts make the no-lift witness type empty at every carrier and universe
+      - rightBranch_isEmpty applies the generated global lift to a hypothetical finite counterexample and closes the contradiction
+      - FiniteCodeULift explicitly stops before package-level reindexing and nonexistence transfer
+    consequence:
+      - no finite no-lift witness remains on which a bare no-lift corollary can fire
+      - empty elimination can inhabit the nominal function type but cannot establish the fixed ULift provenance or proof-use requirements
+      - a richer branch-independent image-package rebase and data-level reflection may still be nonvacuous on actual lifted strong lifts and has not been refuted
+audits:
+  premise_delta:
+    discharged:
+      - source-level incompatibility between the selected global branch and an inhabited CartesianLiftNonexistence
+      - direct empty-elimination FiniteModelLift is exposed as an inadmissible vacuous route
+    remaining:
+      - canonical rebase of the concrete finite input and selected target package into the lifted carrier
+      - data-level reflection from every strong lift over those generated endpoints to a base strong lift, with generated graph and endpoint laws
+      - FiniteModelLift as the no-lift corollary of those named structural operations
+      - all K0 and K2-K4 obligations, which cannot begin before this F0 residual is disposed
+  certificate_provenance:
+    discharged:
+      - the emptiness argument uses the named generated globalCartesianLift and the exact input/package stored by CartesianLiftNonexistence
+      - no hypothetical package rebase, descent datum, or reflection certificate is accepted
+    prohibited:
+      - False.elim or IsEmpty elimination presented as finite counterexample universe transport
+      - a caller-supplied image/descent witness for an arbitrary lifted package
+      - a counterexample-specific equivalence between already-empty strong-lift types
+  proof_use:
+    used:
+      - the full carrier/input/package quantifiers of globalCartesianLift
+      - CartesianLiftNonexistence.input, targetPackage, and no_lift
+      - the fixed target-artifact, completion, ledger, and failure-policy clauses
+    unavailable:
+      - there is no inhabitant of CartesianLiftNonexistence FiniteModel.carrier after globalCartesianLift, so the final no-lift corollary cannot itself demonstrate nonvacuity
+  structure_field_escape: an ex-falso FiniteModelLift would pass type checking while using none of the required universe-rebase structure, so it is explicitly rejected rather than added
+  route_integrity: pending; presentation-only ULift rebase does not imply package transport, while a canonical image-relative package rebase and reflection with graph laws remains an admissible route to test
+  target_fitting: none introduced; no new condition, fixture, package, or certificate was selected
+  vacuity: the nominal base counterexample domain is empty; a bare FiniteModelLift value is vacuous, but a richer reflection theorem can be tested on actual lifted strong lifts and is not excluded by this theorem
+  one_way_as_equivalence: avoided; no full cross-universe package equivalence is claimed
+  goal_or_report_reinterpretation: initial terminal goal-defect inference rejected by Math B review; the report retains FiniteModelLift as an unconditional residual and resumes the structural route
+  validation_refs:
+    - existing focused and CI evidence for globalCartesianLift and rightBranch_isEmpty remains accepted from Cycles 9 and 11
+    - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean: pass, namespace audit 47 declarations and standard axioms only
+    - Cycle 12 changes no GOAL, umbrella, or manifest
+    - report diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pass
+    - fixed-head PR CI: 7/7 success
+  review_refs:
+    fixed_head: 0ab1bb9611b9bc1f53887be47b446bd2702dfb3c
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4048#issuecomment-5369044812
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: No major findings
+  initial_review_findings:
+    - Math B Major: cartesianLiftNonexistence_isEmpty does not exclude a richer canonical image-package rebase and data-level reflection whose proof-use is testable on inhabited lifted strong lifts; terminal goal-defect withdrawn
+    - Math A Minor: narrowed the report from impossibility of every structured implication to nonvacuity failure of the bare no-lift corollary
+    - Lean B Minor: corrected the Cycle 7 predecessor merge SHA
+  blocking_findings: []
+  stop_condition: none; continue before K0 without weakening the fixed FiniteModelLift obligation
+  next_obligation: construct the exact canonical image-relative finite package rebase and data-level strong-lift reflection with endpoint and graph laws, then derive and audit the FiniteModelLift corollary
+```
+
 ### Cycle 11 — carrier-global branch artifact and regime producer
 
 ```yaml
