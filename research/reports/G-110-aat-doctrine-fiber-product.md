@@ -13,6 +13,169 @@
 
 ## Cycle ledger
 
+### Cycle 22 — complete actual-high-derived equation-system transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 22
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 8673b3a161482c18605313b144f56870543685b2
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 21 merge synchronization / Cycle 22 selection comment 5375675447
+  proof_dag_predecessors:
+    - Cycle 19 complete object-image value descent and canonical context primitives, PR 4055
+    - Cycle 20 actual generated context-equivalence reflection, PR 4056
+    - Cycle 21 actual generated equation-index and observable-equivalence reflection, PR 4057 merge 8673b3a1
+  proof_obligation: reflect the actual normalized high equation transport's role, observable-naturality, violation-coordinate, and equation-residual laws through the generated images; assemble the exact seven-field low generated EquationSystemExactTransport without caller laws or a known low transport; and fire all seven fields on the noninvertible finite fixture
+  selection_reason: Cycles 20 and 21 supplied the actual-high-derived contextEquivalence, equationEquiv, and observableEquiv computational fields, while the four remaining laws and the complete record assembly were still open
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationRoleDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableNaturalityDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationGeneratorDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportWitnesses.lean
+    - finiteGeneratedReflectedEquationSystemExactTransport
+  risks:
+    - copying a known low EquationSystemExactTransport or using EquationSystemExactTransport.refl while the supplied high laws occur only in sibling propositions
+    - rewriting the actual normalized high factor to the canonical factor before consuming its four law fields
+    - accepting role, naturality, generator, context, index, object, or endpoint graph certificates from the caller
+    - using context thinness to invent a restriction arrow before the actual high map is reflected
+    - proving residual preservation from configuration-only descent instead of the complete Cycle 19 architecture-object image equality
+    - firing only constant selected values and presenting that as sensitivity of proof-valued law fields
+    - presenting the complete equation transport as a complete SignedExactCoreReadingHom, whole PackageTotalHom descent, ambient reflection, or FiniteModelLift
+  unchecked:
+    - four-lane final math/Lean review completion
+    - integrated review comment on the fixed reviewed head
+    - final report-only synchronization after review
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: pending-final-review
+  proof_obligation_delta: proved selected-target and canonical generated-domain role, observable-restriction, violation-coordinate, and residual image graphs; projected and directly consumed the corresponding four laws of the actual normalized high equation transport; reflected each law through the internally generated context, index, observable, Atom, and complete architecture-object images; and assembled the exact low generated EquationSystemExactTransport with all seven fields. The top-level producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow. Its context, index, observable, role, naturality, violation, and residual fields are named prior or current generated outputs rather than caller laws. The selective-two noninvertible fixture instantiates all seven public projections on distinct contexts and a genuine restriction, a nonzero observable value and violation coordinate, and both cyclic and acyclic residual values. Complete SignedExactCoreReadingHom and PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationRoleDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableNaturalityDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationGeneratorDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportWitnesses.lean
+  evidence:
+    - finiteModelTargetEquationRole_lift
+    - finiteGeneratedDomainEquationRole_image
+    - finiteGeneratedActualHighEquationRole_eq
+    - finiteGeneratedReflectedEquationRole_eq
+    - finiteModelTargetEquationObservableEquiv_restrict
+    - finiteGeneratedEquationObservableEquiv_restrict
+    - finiteGeneratedReflectedEquationObservableEquiv_naturality
+    - finiteModelTargetEquationViolationCoordinate_image
+    - finiteModelTargetEquationResidual_image
+    - finiteGeneratedEquationViolationCoordinate_image
+    - finiteGeneratedEquationResidual_image
+    - finiteGeneratedReflectedEquationObservableTargetCast_violation
+    - finiteGeneratedReflectedEquationObservableTargetCast_residual
+    - finiteGeneratedReflectedViolationCoordinate_eq
+    - finiteGeneratedReflectedEquationResidual_eq
+    - FiniteGeneratedReflectedEquationSystemExactTransportOutput
+    - finiteGeneratedReflectedEquationSystemExactTransport
+    - finiteGeneratedReflectedEquationSystemExactTransport_contextEquivalence
+    - finiteGeneratedReflectedEquationSystemExactTransport_equationEquiv
+    - finiteGeneratedReflectedEquationSystemExactTransport_observableEquiv
+    - finiteGeneratedReflectedEquationSystemExactTransport_role_eq
+    - finiteGeneratedReflectedEquationSystemExactTransport_observable_naturality
+    - finiteGeneratedReflectedEquationSystemExactTransport_violationCoordinate_eq
+    - finiteGeneratedReflectedEquationSystemExactTransport_equationResidual_eq
+    - finiteSelectiveTwoReflectedEquationSystemExactTransport
+    - finiteSelectiveTwoEquationTransport_base_not_isIso
+    - finiteSelectiveTwoEquationTransport_contextEquivalence
+    - finiteSelectiveTwoEquationTransport_equationEquiv
+    - finiteSelectiveTwoEquationTransport_observableEquiv
+    - finiteSelectiveTwoEquationTransport_role_eq
+    - finiteSelectiveTwoEquationTransport_observable_naturality
+    - finiteSelectiveTwoEquationTransport_violationCoordinate_eq
+    - finiteSelectiveTwoEquationTransport_cyclic_equationResidual_eq
+    - finiteSelectiveTwoEquationTransport_acyclic_equationResidual_eq
+    - finiteSelectiveTwoTargetViolationCoordinate_ne_zero
+    - finiteSelectiveTwoCyclic_noCycleResidual_eq_one
+    - finiteSelectiveTwoAcyclic_noCycleResidual_eq_zero
+    - finiteSelectiveTwo_noCycleResidual_object_sensitive
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+    runtime_route_constraints:
+      - Issue 4034 requires all four remaining law fields to be read from the actual normalized high equation transport
+      - prior generated images may align dependent endpoints but may not replace an actual high law with a known low or canonical transport
+      - residual reflection must consume the complete generated architecture-object image equality
+      - the seven-field result is an equation-system checkpoint and may not be promoted to a whole upper or total hom
+    source_facts:
+      - finiteGeneratedActualHighEquationRole_eq is the actual normalized high role_eq projection at every generated high index
+      - finiteGeneratedReflectedEquationObservableEquiv_naturality applies the actual high observable_naturality to every reflected context arrow and observable value
+      - finiteGeneratedReflectedViolationCoordinate_eq applies the actual high violationCoordinate_eq after internally generated context, index, Atom, and observable alignment
+      - finiteGeneratedReflectedEquationResidual_eq applies the actual high equationResidual_eq and aligns its object endpoint through finiteGeneratedReflectedArchitectureObject_high_image
+      - finiteGeneratedReflectedEquationSystemExactTransport fills all seven EquationSystemExactTransport fields from the Cycle 20, Cycle 21, and Cycle 22 reflected producers and laws
+      - the witness instantiates the assembled public projections rather than separately restating the component lemmas
+    consequence:
+      - the complete generated low EquationSystemExactTransport is now constructed from the actual supplied-high transport on canonical generated images
+      - the equationTransport field needed by a future reflected SignedExactCoreReadingHom is discharged
+      - remaining upper computational fields and laws, whole total-hom descent, and ambient strong-lift reflection remain open
+audits:
+  premise_delta:
+    discharged:
+      - actual high role equality reflected for every generated low equation index
+      - actual high observable naturality reflected for every generated low context arrow and observable value
+      - actual high violation-coordinate law reflected for every context, index, and Atom
+      - actual high residual law reflected for every context, complete low architecture object, index, and Atom
+      - exact seven-field generated low EquationSystemExactTransport assembly
+      - concrete noninvertible fixture firing every assembled field, including cyclic and acyclic residual controls
+    remaining:
+      - remaining operation, invariant, signature, composition, and proof fields needed for a complete reflected SignedExactCoreReadingHom
+      - whole PackageTotalHom descent, composition/equality reflection, and high-driven ambient factorization/uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - the top-level transport producer accepts only input, supplied high lift, and base; all seven fields and dependent endpoint alignments are internally generated
+      - every reflected law quantifies its mathematical index, context, arrow, value, Atom, or architecture object rather than accepting a proof packet
+      - the witness derives its generated index, observable value, restriction, objects, and base noninvertibility from prior named fixtures
+    prohibited_and_absent:
+      - known low equation transport, finiteGeneratedLowFactor, inverseCorePackageFactor, EquationSystemExactTransport.refl, finiteGeneratedNormalizedHighFactor_eq_canonical, globalCartesianLift, caller law/image/graph certificates, Classical.choose of a low preimage, and empty elimination
+  proof_use:
+    used:
+      - the actual normalized high role_eq in finiteGeneratedActualHighEquationRole_eq and the final reflected role proof
+      - the actual normalized high observable_naturality before restriction endpoint descent
+      - the actual normalized high violationCoordinate_eq before the target observable cast and canonical image reflection
+      - the actual normalized high equationResidual_eq together with the complete reflected architecture-object high-image equality
+      - all seven named component producers in the final EquationSystemExactTransport structure literal
+    not_yet_available:
+      - complete actual-high-derived SignedExactCoreReadingHom and PackageTotalHom
+      - high-driven ambient low factor, factorization, and uniqueness
+  structure_field_escape: none; standalone definitions accept no free law, transport, image, or comparison fields
+  route_integrity: pass for the complete generated-image EquationSystemExactTransport; whole upper and total hom descent remain open
+  target_fitting: none found in implementation; core laws quantify all generated inputs and the fixture only instantiates them
+  vacuity: none found; the fixture uses a noninvertible base, distinct contexts with a restriction, a nonzero observable value and violation coordinate, and residual values that distinguish cyclic from acyclic objects
+  proof_irrelevance_scope: the four new law fields are propositions, so sensitivity of proof terms is neither claimed nor used; material use is audited from the direct actual-high field dependencies and all-value theorem statements
+  goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedEquationRoleDescent.lean: pass, 4 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedObservableNaturalityDescent.lean: pass, 3 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationGeneratorDescent.lean: pass, 8 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationTransportDescent.lean: pass, 9 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationTransportWitnesses.lean: pass, 16 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+    - no Research aggregate or full build
+  review_refs:
+    independent_final_reviews: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: reflect and assemble the remaining actual-high operation, invariant, signature, composition, and proof fields needed for a complete SignedExactCoreReadingHom; then descend the whole total hom before retrying ambient strong-lift reflection
+```
+
 ### Cycle 21 — actual generated equation-index and observable-equivalence reflection
 
 ```yaml
