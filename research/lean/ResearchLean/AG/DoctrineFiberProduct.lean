@@ -6,6 +6,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -15,4 +17,7 @@ finite pullback closure, fixed Cart/BC condition languages, and finite witnesses
 It also exposes the F0b2 horizontal/vertical pasting constructors and the
 one-field authored 2-cell table, together with the F0b2b discrete authored
 support and relative-comparison producer signatures.
+The F0c layer additionally fixes the carrier-global cartesian-lift disjunction,
+qualified right-branch condition, universe-lifted counterexample interface, and
+the generated per-carrier regime surface.
 -/
