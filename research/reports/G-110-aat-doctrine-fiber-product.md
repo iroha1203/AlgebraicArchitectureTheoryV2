@@ -13,6 +13,129 @@
 
 ## Cycle ledger
 
+### Cycle 15 — ambient `FiniteModelLift` boundary and fixed-contract defect
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 15
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 2a0d76c22a1e21b352007c10592c3143f0a94291
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 14 merged / Cycle 15 selection comment 5369971369
+  proof_dag_predecessors:
+    - Cycle 9 arbitrary-target strong cartesian lifts and GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+    - Cycle 12 emptiness of every CartesianLiftNonexistence under the generated global branch, PR 4048 merge 037f343c2972ca342c3b360de12960f7367289f9
+    - Cycles 13-14 one-way finite package, equation, circuit, and AATCorePackage ULift construction, PR 4049/4050 merges c135ea34373f9d7b98117a7f8c92987f0338d79c / 2a0d76c22a1e21b352007c10592c3143f0a94291
+  proof_obligation: construct the exact package-total hom and arbitrary-strong-lift reflection required to make the unconditional FiniteModelLift nonexistence implication structural and nonvacuous, or fix a primary-source blocker and apply the GOAL failure policy without weakening ambient strong cartesianness
+  selection_reason: object-level finite package ULift is complete, so the only pre-K0 residual is whether an arbitrary high-universe strong lift can be descended to a base lift with generated endpoint and hom graph laws rather than empty elimination
+  expected_result_type: blocker-fixed if the ambient descent is impossible; otherwise proof-checkpoint toward FiniteModelLift
+  risks:
+    - using the already generated base global lift while the supplied high lift is decorative
+    - treating a same-carrier cartesian-domain isomorphism as a cross-carrier package descent
+    - accepting image membership, a descended package, total hom, or graph equality as a caller certificate
+    - replacing Mathlib ambient strong cartesianness by an image-restricted universal property
+    - claiming that Atom/configuration reflection lowers arbitrary Type-u package reading data
+  unchecked:
+    - fixed-head independent review and final integration
+result:
+  proposed_result_type: blocker-fixed
+  proposed_stop_classification: goal-defect
+  proof_obligation_delta: proved the maximal comparison supplied by the existing ambient universal property: any two strong lifts of the same semantic arrow to the same target package have a canonical domain isomorphism, both triangle equations, and verticality over the source identity; specialized it to the generated lift and to the concrete lifted finite core package. This comparison remains inside one carrier. Primary type audit shows that the arbitrary lifted domain package and its SignedExactCoreReadingHom data cannot be lowered to universe zero from the canonical Atom/configuration equivalence, while restricting to image packages changes the ambient universal property. Because GlobalCartesianLift already makes the fixed finite nonexistence premise empty, the only bare FiniteModelLift implication is empty elimination, which the fixed provenance and proof-use policy rejects. The fixed card therefore supplies neither a nonvacuous right-branch premise nor a satisfiable ambient structural replacement after the left branch has been selected.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelLiftBoundary.lean
+  evidence:
+    - StrongCartesianLift.domainIso
+    - StrongCartesianLift.domainIso_hom_fac
+    - StrongCartesianLift.domainIso_inv_fac
+    - StrongCartesianLift.domainIso_hom_isHomLift
+    - StrongCartesianLift.domainIso_inv_isHomLift
+    - StrongCartesianLift.canonicalDomainIso
+    - StrongCartesianLift.canonicalDomainIso_hom_fac
+    - finiteModelLiftIdentityDomainIso
+    - finiteModelLiftIdentityDomainIso_hom_fac
+    - cartesianLiftNonexistence_isEmpty
+    - rightBranch_isEmpty
+    - globalCartesianLift
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B lines 196-220 permits either one carrier-global left branch or one qualified right branch, but lines 216-220 separately require FiniteModelLift for the right-branch finite counterexample at every universe
+      - target artifacts lines 594-600 and material-premise ledger lines 738-740 mark FiniteModelLift discharge-required without conditioning it on selection of the right branch
+      - premise and anti-weakening policy lines 665-671 and 795-807 reject conclusion-equivalent supplied data and require generated proof use
+      - failure policy lines 830-833 requires goal-defect and human revision when the statement/acceptance contract is insufficient
+    source_facts:
+      - globalCartesianLift constructs a StrongCartesianLift for every carrier, realized input, and target-fiber package, so CartesianLiftNonexistence is empty at every universe
+      - StrongCartesianLift.domain is an arbitrary AATCorePackage at the ambient carrier and its hom is a full PackageTotalHom, not an image-tagged finite package
+      - PackageTotalHom and SignedExactCoreReadingHom are same-carrier types; the latter contains maps over all ArchitectureObject values plus dependent equation, operation, invariant, and signature data
+      - arbitrary lifted ArchitectureObject and reading fields contain genuine Type-u carriers; finiteModelSemanticDescent reflects only configuration and intentionally discards opaque StructureMaps and SelectedQuantities
+      - Mathlib cartesian uniqueness produces a vertical isomorphism between domains of two already-cartesian arrows in the same total/base categories; the new Lean boundary theorem records exactly this result
+      - a cross-carrier ambient reflection would additionally require a package/base functor, projection square, fullness for all ambient total homs, and essential-image descent for every arbitrary strong-lift domain
+    consequence:
+      - same-carrier normalization of an arbitrary high lift to the generated high lift is available and proof-used
+      - no cross-carrier package object or total-hom descent is produced by that normalization
+      - a caller-supplied essential-image/descent package would be the missing conclusion-equivalent certificate, while an image-only category would weaken the fixed ambient StrongCartesianLift
+      - the unconditional FiniteModelLift ledger item cannot be discharged nonvacuously after the proved global-left branch under the fixed anti-weakening contract
+audits:
+  premise_delta:
+    discharged:
+      - same-carrier domain comparison for arbitrary pairs of strong cartesian lifts
+      - forward and inverse triangle laws and vertical source-identity laws
+      - comparison with the generated strong lift at arbitrary endpoints
+      - concrete elaborated comparison at the lifted finite core package
+    blocked:
+      - a canonical cross-carrier functor on arbitrary AATCorePackage values
+      - reflection/fullness for arbitrary PackageTotalHom values between lifted image endpoints
+      - theorem-generated descent of an arbitrary StrongCartesianLift.domain to a universe-zero package
+      - a nonvacuous finite no-lift premise after GlobalCartesianLift
+      - FiniteModelLift as a generated nonexistence transfer rather than empty elimination
+      - K0 and K2-K4, which the fixed proof order places after F0
+  certificate_provenance:
+    discharged:
+      - domainIso closes only over the two supplied strong lifts and their actual IsStronglyCartesian proofs
+      - both comparison maps and factorization laws come from Mathlib cartesian uniqueness
+      - the concrete boundary witness uses generated lifted package and strong-lift constructors
+    prohibited:
+      - supplying a low package, low total hom, image-membership proof, domain iso, or hom graph as reflection input
+      - using globalCartesianLift or strongCartesianLiftOfTarget to manufacture the low output while ignoring the high lift
+      - a counterexample-specific equivalence between empty lift types
+  proof_use:
+    used:
+      - both IsStronglyCartesian witnesses in Mathlib domain uniqueness
+      - both total lift morphisms in the forward and inverse triangle equations
+      - packageProjection and the exact semantic bottom arrow in the vertical IsHomLift laws
+      - the generated lifted finite CorePackage in the concrete comparison
+    unavailable:
+      - there is no ambient cross-carrier package-total map or arbitrary-domain descent term to consume
+      - there is no inhabitant of CartesianLiftNonexistence FiniteModel.carrier on which a no-lift transport can fire
+  structure_field_escape: avoided in the Lean artifact; no reflection context structure or caller certificate is introduced. Adding the missing domain/package/hom graph as fields would merely assume the blocked conclusion.
+  route_integrity: the formal theorem stops exactly at the same-carrier vertical iso delivered by cartesian uniqueness. It does not relabel this as package ULift reflection, and it does not change the total category or Mathlib universal-property quantifiers.
+  target_fitting: none; domainIso is uniform over every carrier, semantic input, target package, and pair of strong lifts. The concrete finite-package specialization is only an elaboration witness.
+  vacuity: same-carrier normalization is inhabited and consumes actual lifts, but the requested finite nonexistence implication has an empty source by cartesianLiftNonexistence_isEmpty. This emptiness is the fixed-contract defect, not a success witness.
+  one_way_as_equivalence: avoided; Cycles 13-14 remain one-way at ArchitectureObject/AATCorePackage level, and this cycle adds only a same-carrier iso between strong-lift domains.
+  goal_or_report_reinterpretation: none; the report retains the unconditional FiniteModelLift ledger requirement and concludes that meeting it would require a human change either to branch conditioning or to the ambient package universe/category contract.
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteModelLiftBoundary.lean: pass, namespace audit 9 declarations and standard axioms only
+    - official focused wrapper, manifest, umbrella, static scans, fixed-head review, and CI: pending final snapshot
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: pending
+  blocking_findings:
+    - arbitrary lifted strong-lift domains are not in the canonical finite package image, and current configuration descent cannot lower their full package readings or total homs
+    - same-carrier cartesian uniqueness presupposes two ambient cartesian arrows and yields only a vertical iso; it does not generate a cross-carrier base lift
+    - the base finite nonexistence premise is empty under the already proved global branch, so a bare implication has no admissible nonvacuous proof path
+  stop_condition: proposed goal-defect under fixed GOAL failure policy; no automatic theorem-loop continuation after independent confirmation
+  human_decision_required:
+    - condition FiniteModelLift on selection of the right branch and accept the proved global-left branch without a counterexample transport artifact
+    - or introduce a predecessor-level small/image package category with a genuinely reindexable ambient projection and revise the theorem to quantify there
+    - or explicitly replace the nonexistence transport ledger item by the reviewed object-level package rebase plus same-carrier normalization boundary
+  next_obligation: none under the fixed card if the blocker is confirmed; K0 cannot begin before human revision of the F0 contract
+```
+
 ### Cycle 14 — lifted finite equation, circuit, and core package
 
 ```yaml
