@@ -65,6 +65,18 @@ structure RightBranch : Type (u + 1) where
   finiteCounterexample : CartesianLiftCounterexample baseRegime.condition
 
 /--
+The generated global branch rules out every strong-cartesian no-lift witness,
+at every carrier and universe level.  This is the branch-exclusivity fact used
+to audit the fixed `FiniteModelLift` completion obligation.
+-/
+theorem cartesianLiftNonexistence_isEmpty (U : AtomCarrier.{u})
+    [DecidableEq U.Atom] : IsEmpty (CartesianLiftNonexistence U) := by
+  refine ⟨?_⟩
+  intro counterexample
+  exact counterexample.no_lift
+    (globalCartesianLift U counterexample.input counterexample.targetPackage)
+
+/--
 The proved carrier-global left branch rules out any value of the conditional
 theorem-output structure: its base counterexample contradicts the generated
 universe-zero lift.  This supplies the negative instance required for the new

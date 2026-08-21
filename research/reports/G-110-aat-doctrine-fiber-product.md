@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `target-proof-checkpoint`
+- proof state: `goal-defect`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -12,6 +12,119 @@
 使わない。
 
 ## Cycle ledger
+
+### Cycle 12 — unconditional `FiniteModelLift` fixed-contract defect
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 12
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a02e0a57ab73aafc412fdd81fb1ad95e5c002e60
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 11 merged / Cycle 12 fixed-contract audit comment 5368825849
+  proof_dag_predecessors:
+    - Cycle 7 finite presentation and checker ULift rebase, PR 4043 merge 9400096d46b19f87897d7a51ae452eb274db00f8
+    - Cycle 9 arbitrary-target strong cartesian lifts and GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+    - Cycle 11 carrier-global branch artifact and selected regime producer, PR 4047 merge a02e0a57ab73aafc412fdd81fb1ad95e5c002e60
+  proof_obligation: construct and review canonical finite-package ULift reindexing and strong-lift reflection sufficient for the fixed FiniteModelLift obligation before K0, or stop fail-closed if the literal fixed contract cannot be discharged without vacuity or branch reinterpretation
+  selection_reason: FiniteModelLift is the last fixed-ledger F0 residual after the actual global left branch was selected; the ledger nevertheless lists the finite right-branch counterexample transport as unconditional discharge-required
+  expected_result_type: proof-obligation-discharged or goal-defect
+  risks:
+    - inhabiting FiniteModelLift by eliminating the now-empty finite no-lift domain
+    - counting finite presentation rebasing as package-level strong-lift reflection
+    - accepting caller-supplied descent data or a counterexample-specific equivalence as provenance
+    - silently reinterpreting the unconditional ledger entry as branch-conditional
+    - continuing to K0 with an undisposed F0 residual
+  unchecked:
+    - fixed-head four-lane mathematical and Lean review
+    - fixed-head CI and final report synchronization
+result:
+  proposed_result_type: goal-defect
+  proof_obligation_delta: proved cartesianLiftNonexistence_isEmpty from the generated GlobalCartesianLift for every carrier, realized bottom arrow, and endpoint package; rightBranch_isEmpty already instantiates the same contradiction at FiniteModel.carrier. A function named FiniteModelLift can therefore be inhabited from the base no-lift type only vacuously, without a firing finite counterexample and without material use of ULift package reindexing or strong-lift reflection. The fixed theorem says either global left or qualified right is sufficient, and the actual artifact selects the global left branch, but the target-artifact list and completion ledger still require the right-branch-only finite counterexample transport unconditionally. The fixed contract therefore lacks the branch condition needed for its own completion criteria.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean
+  existing_evidence:
+    - GlobalCartesianLift
+    - globalCartesianLift
+    - CartesianLiftNonexistence
+    - cartesianLiftNonexistence_isEmpty
+    - RightBranch
+    - rightBranch_isEmpty
+    - DisjunctionArtifact
+    - globalDisjunctionArtifact
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem (B) lines 196-220 chooses one carrier-global left-or-right branch and introduces FiniteModelLift as transport of the right branch finite counterexample
+      - target artifacts lines 594-600 list the disjunction artifact together with FiniteModelLift without a branch condition
+      - completion criteria lines 638-653 require every discharge-required ledger item, while explicitly making only the H_cart checker conditional on selecting the right branch
+      - material-premise ledger lines 738-740 marks FiniteModelLift unconditionally discharge-required
+      - failure policy lines 830-835 says either disjunction branch is success and a statement deficiency is goal-defect
+    source_facts:
+      - globalCartesianLift realizes the global left branch at every carrier, realized input, and target-fiber package
+      - CartesianLiftNonexistence stores exactly an input, target package, and denial of that same lift existence
+      - cartesianLiftNonexistence_isEmpty proves in Lean that these two facts make the no-lift witness type empty at every carrier and universe
+      - rightBranch_isEmpty applies the generated global lift to a hypothetical finite counterexample and closes the contradiction
+      - FiniteCodeULift explicitly stops before package-level reindexing and nonexistence transfer
+    contradiction:
+      - no nonvacuous finite no-lift witness remains on which the required universe transport can fire
+      - empty elimination can inhabit the nominal function type but cannot establish the fixed ULift provenance, proof-use, or nonvacuity requirements
+      - treating the obligation as not applicable after selecting the left branch is the mathematically coherent resolution, but it changes the literal completion ledger and requires human revision
+audits:
+  premise_delta:
+    discharged:
+      - source-level incompatibility between the selected global branch and an inhabited CartesianLiftNonexistence
+      - identification of the exact unconditional ledger/artifact clauses that conflict with the branch semantics
+    remaining:
+      - human revision deciding whether FiniteModelLift is right-branch-conditional or replaced by a branch-independent one-way package-rebase theorem
+      - all K0 and K2-K4 obligations, which cannot begin while F0 is fail-closed
+  certificate_provenance:
+    discharged:
+      - the emptiness argument uses the named generated globalCartesianLift and the exact input/package stored by CartesianLiftNonexistence
+      - no hypothetical package rebase, descent datum, or reflection certificate is accepted
+    prohibited:
+      - False.elim or IsEmpty elimination presented as finite counterexample universe transport
+      - a caller-supplied image/descent witness for an arbitrary lifted package
+      - a counterexample-specific equivalence between already-empty strong-lift types
+  proof_use:
+    used:
+      - the full carrier/input/package quantifiers of globalCartesianLift
+      - CartesianLiftNonexistence.input, targetPackage, and no_lift
+      - the fixed target-artifact, completion, ledger, and failure-policy clauses
+    unavailable:
+      - there is no inhabitant of CartesianLiftNonexistence FiniteModel.carrier after globalCartesianLift, so a nonexistence-transfer theorem cannot be exercised on the promised finite witness
+  structure_field_escape: an ex-falso FiniteModelLift would pass type checking while using none of the required universe-rebase structure, so it is explicitly rejected rather than added
+  route_integrity: fail-closed; presentation-only ULift rebase does not imply an equivalence of all extraction instances or packages at the lifted carrier, and the right-branch counterexample route has no source value after the left theorem
+  target_fitting: none introduced; no new condition, fixture, package, or certificate was selected
+  vacuity: blocker found; the nominal base counterexample domain is empty, making any unconditional FiniteModelLift value vacuous
+  one_way_as_equivalence: avoided; no full cross-universe package equivalence is claimed
+  goal_or_report_reinterpretation: none; this report does not silently make FiniteModelLift branch-conditional and instead records the literal contract defect
+  validation_refs:
+    - existing focused and CI evidence for globalCartesianLift and rightBranch_isEmpty remains accepted from Cycles 9 and 11
+    - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean: pass, namespace audit 47 declarations and standard axioms only
+    - Cycle 12 changes no GOAL, umbrella, or manifest
+    - report diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and wiring scans: pass
+    - fixed-head PR CI: pending
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: pending
+  independent_preimplementation_audits:
+    - Math audit: goal-defect; global left theorem empties every no-lift witness and unconditional ledger cannot be discharged with genuine ULift provenance
+    - Lean/source audit: fixed-contract defect candidate; arbitrary lifted package domains also lack canonical descent to the finite universe, while empty elimination is not material proof-use
+  blocking_findings:
+    - the fixed GOAL makes either branch sufficient but unconditionally requires an artifact whose intended input exists only in the unselected right branch
+    - the only theorem inhabitant available after the selected global branch is vacuous and violates the fixed provenance and anti-weakening gates
+  human_revision_required:
+    - mark FiniteModelLift branch-conditional and not-applicable when the global branch is selected, including the target-artifact list, completion ledger, and left-branch exemptions
+    - alternatively replace it with a separately stated branch-independent one-way package-rebase/image-reflection theorem, without claiming finite no-lift transport
+  stop_condition: goal-defect under the fixed failure policy; do not edit the GOAL automatically and do not continue to K0
+  next_obligation: human revision of the FiniteModelLift branch condition or artifact meaning
+```
 
 ### Cycle 11 — carrier-global branch artifact and regime producer
 
