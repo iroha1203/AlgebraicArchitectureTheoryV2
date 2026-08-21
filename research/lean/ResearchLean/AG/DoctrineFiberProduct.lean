@@ -14,6 +14,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULift
+import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULiftWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -35,7 +37,10 @@ carrier-global left branch.  The finite witness layer additionally constructs
 a branch-independent portfolio of actual lifts over pairwise nonisomorphic,
 noninvertible arrows with nonisomorphic endpoints.  The branch layer fixes a
 uniform conditional theorem-output surface, selects the single carrier-global
-left artifact, and exports its sole per-carrier regime producer.  Canonical
-finite-package universe reindexing and strong-lift reflection for the separate
-`FiniteModelLift` obligation remain before K0.
+left artifact, and exports its sole per-carrier regime producer.  The current
+finite-package foundation now rebases families, configurations, configuration
+homs, finite-model reading components, and semantic configurations with exact
+round-trip and graph laws.  Equation/CoreReading/package assembly and ambient
+strong-lift reflection for the separate `FiniteModelLift` obligation remain
+before K0.
 -/
