@@ -13,6 +13,138 @@
 
 ## Cycle ledger
 
+### Cycle 11 — carrier-global branch artifact and regime producer
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 11
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: f23698403c32d7c4b1832e4597fb33742a76f6b4
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 10 merged / Cycle 11 selection comment 5368610427
+  proof_dag_predecessors:
+    - Cycle 6 qualified right-regime and per-carrier CartesianRegime signatures, PR 4042 merge 487bee332fbd426cb70ffe926b4c0201ab569a60
+    - Cycle 9 universe-polymorphic GlobalCartesianLift, PR 4045 merge 75627b6825fb0b715e4fab29fe3a7f3e0f159b79
+    - Cycle 10 branch-independent nondegenerate lift portfolio, PR 4046 merge f23698403c32d7c4b1832e4597fb33742a76f6b4
+  proof_obligation: fix a carrier-uniform RightBranch theorem-output type, one universe-polymorphic DisjunctionArtifact with branch selection outside the carrier quantifier, the required cartesianRegimeOfDisjunction producer, and the actual selected regime generated from globalCartesianLift
+  selection_reason: the left theorem and independent lift portfolio are now constructed, so later K0-K4 must receive one named regime from a single global artifact rather than an arbitrary caller-supplied CartesianRegime; the unselected right surface must still prevent carrier-by-carrier condition fitting without accepting finite-universe transport as a certificate field
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - replacing one global branch artifact by a per-carrier disjunction
+    - letting each carrier choose an unrelated condition or semantic predicate
+    - accepting an arbitrary CartesianRegime as the source of later lift data
+    - storing a counterexample-specific package rebase, lift reflection, or FiniteModelLift certificate in RightBranch
+    - using the contradiction from globalCartesianLift to claim the required canonical ULift transport
+    - counting the artifact/producer as K0 or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: fixed RightBranch with one universe-zero structural syntax template, exact equality to the base qualified condition term, canonical rebase equality for every carrier-level qualified condition, a nondegenerate same-condition positive family, and a finite condition-failing no-lift witness; proved the selected global theorem makes that conditional theorem-output type empty; defined the Type-valued carrier-global DisjunctionArtifact; defined cartesianRegimeOfDisjunction with artifact selection preceding the carrier quantifier; constructed globalDisjunctionArtifact from globalCartesianLift; generated selectedCartesianRegime only through that producer; and connected its membership and lift supply to the existing CartesianRegime eliminator
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - RightBranch
+    - rightBranch_isEmpty
+    - DisjunctionArtifact
+    - cartesianRegimeOfDisjunction
+    - globalDisjunctionArtifact
+    - selectedCartesianRegime
+    - selectedCartesianRegime_eq_global
+    - selectedCartesianRegime_HCart
+    - selectedCartesianRegime_hasStrongCartesianLift
+  claim_mapping:
+    theorem_names:
+      - cartesianRegimeOfDisjunction
+      - globalDisjunctionArtifact
+      - selectedCartesianRegime
+      - selectedCartesianRegime_hasStrongCartesianLift
+    source_labels:
+      - target theorem (B) carrier-global disjunction selection
+      - target material premise CartesianRegime producer
+      - target proof strategy F0c2b branch-output typing and K1 left-branch selection
+    conjuncts:
+      - the disjunction is one Type-valued artifact whose constructors carry complete carrier-global branch payloads
+      - the producer receives that artifact before quantifying every carrier and decidable Atom equality instance
+      - the selected artifact is generated from globalCartesianLift rather than supplied by a caller or finite counterexample
+      - the selected per-carrier regime is generated only by cartesianRegimeOfDisjunction and supplies actual lifts through the reviewed regime eliminator
+      - a hypothetical right branch uses one authored structural condition template, its exact base term, and canonical rebasing at every carrier; checker bridges determine the semantic predicate on all realized inputs
+      - the right theorem-output type carries its own same-condition positive family and finite failing no-lift witness rather than an arbitrary condition alone
+    undischarged_assumptions:
+      - the fixed ledger's canonical package-level ULift reindexing, strong-lift reflection, and FiniteModelLift remain unresolved and are not replaced by ex-falso
+      - K0 and K2-K4 remain unresolved
+    acceptance_point: the single global artifact and named per-carrier regime producer are constructed from the proved left branch; canonical finite counterexample universe transport and all later layers remain uncounted
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - carrier-uniform conditional theorem-output signature
+      - one carrier-global Type-valued disjunction artifact
+      - cartesianRegimeOfDisjunction
+      - selected global artifact and generated per-carrier regime
+      - actual lift supply through the selected producer output
+    remaining:
+      - canonical package ULift reindexing and strong-lift reflection
+      - FiniteModelLift
+      - K0 and K2-K4
+  certificate_provenance:
+    discharged:
+      - globalDisjunctionArtifact directly stores the named globalCartesianLift theorem
+      - selectedCartesianRegime is definitionally cartesianRegimeOfDisjunction applied to that named artifact
+      - selectedCartesianRegime_hasStrongCartesianLift consumes the selected regime through CartesianRegime.hasStrongCartesianLift
+      - right-branch condition uniformity is constrained by term equality and rebaseCartCondition rather than a carrier-indexed choice of syntax
+    unresolved:
+      - no package-level universe rebase or lift-reflection result is accepted as a RightBranch field; those must be named constructions before FiniteModelLift can count
+  proof_use:
+    used:
+      - RightBranch.finiteCounterexample.nonexistence and globalCartesianLift at the base carrier in rightBranch_isEmpty
+      - each DisjunctionArtifact constructor payload in the two producer branches
+      - globalCartesianLift in globalDisjunctionArtifact
+      - globalDisjunctionArtifact in selectedCartesianRegime
+      - selected producer membership in the ordinary regime lift eliminator
+    unused:
+      - RightBranch template and uniformity fields cannot have a runtime consumer because the proved global branch makes RightBranch empty; their statement-level role is to close the fixed conditional signature without creating a value or transporting a no-lift certificate
+  structure_field_escape: none-found for the selected result; RightBranch packages the theorem outputs required only if the conditional branch were selected, while presentation fields remain unchanged and FiniteModelLift is deliberately not a field
+  route_integrity: pass for the artifact/producer; branch selection occurs once before carrier quantification, the selected value comes from globalCartesianLift, and no contradiction is repackaged as ULift provenance
+  target_fitting: rebaseCartCondition fixes every right-regime syntax from one base template and each QualifiedCartCondition bridge fixes its semantic extension on the realization image; the actual selected branch has no condition choice
+  vacuity: the actual global artifact supplies lifts for all realized inputs; rightBranch_isEmpty explicitly records why no positive RightBranch instance can coexist with the proved global theorem rather than supplying a fake right value
+  one_way_as_equivalence: none-found; no package or source-map equivalence is introduced in this layer
+  goal_or_report_reinterpretation: none for F0c2b1; FiniteModelLift remains a separate literal fixed-ledger residual and is not made branch-conditional by this report
+  validation_refs:
+    - research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean: pass, namespace audit 46 declarations and standard axioms only
+    - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianBranch: pass targeted module check
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - git diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and wiring scans: pass
+    - fixed-head PR CI: 7/7 success
+  review_refs:
+    fixed_head: f64cc3630107891ae79804ca8813eeec912f9abd
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4047#issuecomment-5368786784
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: No major findings
+  initial_review_findings: []
+  blocking_findings: []
+  next_obligation: construct and review canonical finite-package ULift reindexing and strong-lift reflection sufficient for the fixed FiniteModelLift obligation before selecting K0
+```
+
+### Cycle 11 acceptance spine
+
+Cycle 11 の直接 axiom audit は上記 `evidence` 9 declaration と current module
+全 46 declaration に固定する。`globalDisjunctionArtifact` と
+`cartesianRegimeOfDisjunction` は固定 GOAL の branch artifact / producer を
+inhabit するが、`FiniteModelLift`、K0、K2–K4、G-110 completion を達成したとは
+数えない。
+
 ### Cycle 10 — nondegenerate parametric cartesian lift portfolio
 
 ```yaml
