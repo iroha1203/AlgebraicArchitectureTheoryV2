@@ -33,6 +33,11 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedContextEquiv
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationIndexDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObservableEquivalenceDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationEquivalenceWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationRoleDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObservableNaturalityDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationGeneratorDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -95,8 +100,13 @@ equation-index image equivalences, reflects the actual high index equivalence,
 constructs the equation-observable ring images, and reflects the actual high
 observable equivalence at every canonical-image context.  Its concrete
 noninvertible fixture fires both directions, while the proof-used conjugation
-primitives are separately sensitive on finite swaps.  Role preservation,
-observable naturality, violation/residual graphs, the complete equation
-transport, whole-factor descent, ambient reflection, and `FiniteModelLift`
-remain unproved before K0.
+primitives are separately sensitive on finite swaps.  The complete equation-
+transport layer now reflects the actual normalized high factor's role,
+observable-naturality, violation-coordinate, and equation-residual laws and
+assembles all seven fields of the generated low
+`EquationSystemExactTransport`.  Its noninvertible fixture fires every field,
+including distinct-context naturality, a nonzero violation coordinate, and
+cyclic and acyclic residual values.  Complete `SignedExactCoreReadingHom` and
+whole-factor descent, ambient reflection, and `FiniteModelLift` remain unproved
+before K0.
 -/
