@@ -44,11 +44,11 @@ selection:
     - empty diagnostic geometry could make every structural diagnostic check vacuous
     - every semantic square could be silently accepted as realizable
   unchecked:
-    - fixed-head four-lane math-lean-review
+    - fixed-head four-lane math-lean-review after the computability and operand-sort repair
     - whether the F0b2 pasting and authored-2-cell layer requires an auxiliary typed square category
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: fixed the basic BC raw/validated boundary, generated semantic pullback realization and provenance, exhaustive first-order serialization of the pre-BC G-106 finite geometry, the fixed four-constructor BC condition language, and concrete positive, negative, nonempty-diagnostic, and non-realizable semantic-square witnesses
+  proof_obligation_delta: fixed the basic BC raw/validated boundary, generated semantic pullback realization and provenance, an executable compatible-source rank/unrank producer, exhaustive first-order serialization of the pre-BC G-106 finite geometry, the fixed four-constructor BC condition language with a shared natural operand sort, and concrete positive, negative, nonempty-diagnostic, and non-realizable semantic-square witnesses
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean
@@ -60,6 +60,8 @@ result:
     - toSemanticBC_sound
     - finiteConstantBCDiagnosticInterpretation
     - finiteConstantBC_generated_leg_source_cards
+    - finiteConstantBC_generated_top_source_point_mem
+    - finiteConstantBC_bottom_point_eq_compatible_first
     - evalBCCondition_firstAtomMapIdentity_bridge
     - evalBCCondition_firstAtomMapIdentity_replacement_invariant
     - finiteBCDiagnostic_vertices_nonempty
@@ -95,6 +97,8 @@ result:
       - BCDiagnosticInterpretation places G-106 AdmissibleTransportData in a separate dependent semantic-input layer
       - every finite cartesian field of all four square legs and every compatible-point and G-106 combinatorial component is represented in BCProjection
       - all cartesian derived sets and finite universals are available for all four generated legs
+      - cartesian natural fields share the BC natural operand sort, so generated-leg membership and cross-group equality are well typed
+      - the compatible-pair source is explicitly enumerated and the complete four-leg evaluator is executable rather than a noncomputable Bool specification
       - semantic G-106 interpretation data is absent from presentation fields and projection evaluation
       - BCNamedConstant contains no natural/source-index value constant
       - BCConditionSyntax has exactly field equality, membership, finite universal equality, and conjunction constructors
@@ -103,7 +107,7 @@ result:
       - malformed point tables are rejected and identity/nonidentity Atom conditions both fire
       - a concrete commutative non-pullback semantic input has neither presentation provenance nor a RealizableSquare certificate
     undischarged_assumptions: []
-    acceptance_point: the finite-only basic BC presentation generates rather than stores its pullback conclusion; package interpretation is a separate dependent semantic input; the compatible table is tied to decoded semantics; the condition evaluator sees all four finite-code square legs and the complete authored finite combinatorics but has neither semantic package values nor a fixture source-value constant; positive and negative validators and realization boundaries close the nonvacuity audit; and no F0b2 pasting, authored-2-cell, or regime claim is included
+    acceptance_point: the finite-only basic BC presentation generates rather than stores its pullback conclusion; package interpretation is a separate dependent semantic input; the compatible table is tied to decoded semantics; explicit compatible-pair enumeration makes the four-leg evaluator executable; the shared natural operand sort lets membership and equality consume generated Cart fields; the evaluator sees the complete authored finite combinatorics but has neither semantic package values nor a fixture source-value constant; positive and negative validators and realization boundaries close the nonvacuity audit; and no F0b2 pasting, authored-2-cell, or regime claim is included
     port_status: unported
 audits:
   premise_delta:
@@ -112,6 +116,7 @@ audits:
       - separate dependent BCDiagnosticInterpretation package layer
       - generated categorical pullback square and selected-point soundness
       - complete four-leg basic BC condition field vocabulary and evaluator
+      - executable compatible-source enumeration and shared natural relation operands
       - finite diagnostic presentation capabilities and nonempty structural witness
       - basic realization provenance and a semantic non-realizability boundary witness
     remaining:
@@ -131,9 +136,9 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - all seven compatible-point equalities in validation and the authored-table soundness theorem
+      - all seven compatible-point equalities in validation; the first five are consumed directly by the authored-table soundness theorem, while the final two redundant image/base equalities remain checked by the validator
       - both typed cospan legs in generated pullback object, projections, and IsPullback proof
-      - all four square legs in BCProjection, BCDerivedSet, and BCUniversalEquality; the generated top/left source-card projections fire on the finite witness
+      - all four square legs in BCProjection, BCDerivedSet, and BCUniversalEquality; generated top/left source-card projections fire, generated top source membership executes to true, and a Cart/compatible-point natural equality executes to true
       - every finite diagnostic field family in a listed projection or structural universal
       - finite support/table data in the Atom-identity semantic bridge
       - collapse and constant source maps in the non-pullback contradiction
@@ -145,13 +150,16 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean: pass, namespace audit 504 declarations and standard axioms only
-    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchemaWitnesses.lean: pass, namespace audit 59 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/Schema.lean: pass, namespace audit 498 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/SchemaWitnesses.lean: pass, namespace audit 46 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean: pass, namespace audit 506 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCSchemaWitnesses.lean: pass, namespace audit 61 declarations and standard axioms only
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - executable #eval of generated-top source membership and Cart/compatible-point equality: true, true
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCSchema: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCSchemaWitnesses: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct: pass targeted umbrella module check
-    - direct #print axioms on all 88 F0b1 acceptance-spine declarations: only propext, Classical.choice, and Quot.sound
+    - direct #print axioms on all 92 F0b1 acceptance-spine declarations plus 14 directly changed F0a producer declarations: only standard axioms
     - placeholder, hidden/BiDi Unicode, privacy, import-direction, wiring, and git diff checks: pass
   blocking_findings: []
   next_obligation: F0b2 pasting, authored 2-cell, mate-relation, and regime-producer signature typing
@@ -179,6 +187,29 @@ bottom` の4脚を列挙する。さらに全 `CartDerivedSet` /
 `CartUniversalEquality` を各脚へ埋め込み、生成 `top / left` の source-card
 projection が具体的4元 pullback codeを読む witness を追加した。signature と
 declaration を変更したため、修正 head は直接対応ではなく4 lane 正式再査読を要する。
+
+### Cycle 3 second fixed-head review and response
+
+第2 fixed head `b9f278dd292e2a4a03a60628cf8bfe509aadfb37` の4 lane 再査読は
+[#4039 rereview comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4039#issuecomment-5364364812)
+に固定した。旧3 finding の解消を確認した一方、統合判定は再び
+`Needs changes` となり、次の2点を検出した。
+
+1. Cart の自然数 projection が `BCFieldKind.cart .natural`、membership と
+   compatible/diagnostic projection が `BCFieldKind.natural` に分かれ、生成
+   `top / left` の `sourcePoint ∈ sourceCells` と cross-group equality が
+   型付け不能だった。
+2. `compatibleSourceEquiv` が `Fintype.equivFin` / classical choice を使ったため、
+   `bcCartPresentation` から `evalBCCondition` までの complete evaluator chain が
+   `noncomputable` となり、有限 checker の操作化を満たさなかった。
+
+第2修正は `BCFieldKind.ofCart` で Cart natural を共通 BC natural sort に写し、
+`cartFieldValueToBC` で値を型付き移送する。さらに左右 source の canonical list
+product を compatibility equality で `filterMap` し、nodup / complete 証明から
+list rank/unrank equivalence `compatibleSourceEquiv` を計算可能に再構成した。
+pullback code と全四脚 evaluator から `noncomputable` を除去し、生成 top の
+source membership と Cart/compatible-point equality がどちらも実際の `#eval` で
+`true` を返すことを確認した。この signature repair も4 lane 正式再査読を要する。
 
 ### Cycle 2 — F0a finite-code cartesian schema typing
 
@@ -339,7 +370,7 @@ code calculus と semantic interpretation を型で分離した。pullback の�
 
 ## F0b1 acceptance spine
 
-F0b1 の直接 axiom audit 対象は次の88 declaration に固定する。semantic package
+F0b1 の直接 axiom audit 対象は次の92 declaration に固定する。semantic package
 layerの `BCDiagnosticInterpretation.data` は presentation / decoded square と
 別の dependent input であり、condition projection/evaluator の対象には含めない。
 
@@ -361,7 +392,8 @@ layerの `BCDiagnosticInterpretation.data` は presentation / decoded square と
   `diagnosticThreeSources`, `diagnosticThreeTargets`,
   `diagnosticThreeStartPaths`, `diagnosticThreeFinishPaths`,
   `diagnosticThreeLeftPastings`, `diagnosticThreeRightPastings`
-- fixed BC vocabulary: `BCFieldKind`, `BCFieldValue`, `BCSquareLeg`,
+- fixed BC vocabulary: `BCFieldKind`, `BCFieldKind.ofCart`, `BCFieldValue`,
+  `cartFieldValueToBC`, `BCSquareLeg`,
   `BCProjection`, `BCNamedConstant`, `BCFieldTerm`, `bcCartPresentation`,
   `readBCProjection`, `readBCNamedConstant`, `evalBCFieldTerm`,
   `BCDerivedSet`, `evalBCDerivedSet`, `BCUniversalEquality`,
@@ -381,6 +413,8 @@ layerの `BCDiagnosticInterpretation.data` は presentation / decoded square と
   `finiteConstantBCRawCode_wellFormed`,
   `finiteConstantBCRawCode_check_true`,
   `finiteConstantBC_generated_leg_source_cards`,
+  `finiteConstantBC_generated_top_source_point_mem`,
+  `finiteConstantBC_bottom_point_eq_compatible_first`,
   `finiteBadBCRawCode_not_wellFormed`, `finiteBadBCRawCode_check_false`,
   `finiteConstantBC_firstAtom_check`,
   `finiteConstantBC_diagnostic_structure_check`,
@@ -415,7 +449,12 @@ recursor を completion claim の代用品にはしない。
   `FiniteCodeCartHom.toSemantic`, `FiniteCodeCartHom.comp`,
   `FiniteCodeCartCategory`, `finiteCodeCartCategory`,
   `finiteCodeCartRealization`,
-  `CompatibleSource`, `pullbackDoctrineCode`, `pullbackInstanceCode`,
+  `finiteSourceCells`, `finiteSourceCells_nodup`,
+  `finiteSourceCells_complete`, `CompatibleSource`,
+  `compatibleSourceValues`, `compatibleSourceValues_nodup`,
+  `compatibleSourceValues_complete`, `compatibleSourceEquiv`,
+  `compatibleSourceValues_length_eq_card`, `pullbackDoctrineCode`,
+  `pullbackInstanceCode`,
   `pullbackFstPresentation`, `pullbackSndPresentation`,
   `PullbackPresentation`, `pullbackPresentation`,
   `pullbackPresentation_commutes`, `pullbackSemanticLift`,

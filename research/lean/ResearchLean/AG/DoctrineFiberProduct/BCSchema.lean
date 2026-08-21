@@ -527,6 +527,15 @@ inductive BCFieldKind
   | paths
   | pastings
 
+/--
+Embed Cart operand sorts into BC sorts.  Natural-valued Cart projections share
+the common BC natural sort so that equality and finite-set membership can
+relate square-leg fields to compatible-point and diagnostic fields.
+-/
+def BCFieldKind.ofCart : CartFieldKind → BCFieldKind
+  | .natural => .natural
+  | kind => .cart kind
+
 /-- Value type attached to every BC operand sort. -/
 def BCFieldValue (U : AtomCarrier.{u}) : BCFieldKind → Type u
   | .cart kind => CartFieldValue U kind
@@ -534,6 +543,12 @@ def BCFieldValue (U : AtomCarrier.{u}) : BCFieldKind → Type u
   | .naturals => ULift (List ℕ)
   | .paths => ULift (List (List DiagnosticEdgeValue))
   | .pastings => ULift (List (List DiagnosticWhiskeredFaceValue))
+
+/-- Transport a Cart value through the typed Cart-to-BC operand embedding. -/
+def cartFieldValueToBC {U : AtomCarrier.{u}} {kind : CartFieldKind}
+    (value : CartFieldValue U kind) :
+    BCFieldValue U (BCFieldKind.ofCart kind) := by
+  cases kind <;> exact value
 
 /-- Equality is executable at every BC operand sort. -/
 instance bcFieldValueDecidableEq {U : AtomCarrier.{u}}
@@ -562,7 +577,8 @@ diagnostic presentation.
 -/
 inductive BCProjection (U : AtomCarrier.{u}) : BCFieldKind → Type u
   | cart {kind : CartFieldKind} (leg : BCSquareLeg)
-      (field : CartProjection U kind) : BCProjection U (.cart kind)
+      (field : CartProjection U kind) :
+      BCProjection U (BCFieldKind.ofCart kind)
   | compatibleFirstPoint : BCProjection U .natural
   | compatibleSecondPoint : BCProjection U .natural
   | compatibleBasePoint : BCProjection U .natural
@@ -584,7 +600,8 @@ inductive BCProjection (U : AtomCarrier.{u}) : BCFieldKind → Type u
 /-- Structural constants allowed by the fixed BC vocabulary. -/
 inductive BCNamedConstant (U : AtomCarrier.{u}) : BCFieldKind → Type u
   | cart {kind : CartFieldKind} (leg : BCSquareLeg)
-      (constant : CartNamedConstant U kind) : BCNamedConstant U (.cart kind)
+      (constant : CartNamedConstant U kind) :
+      BCNamedConstant U (BCFieldKind.ofCart kind)
   | emptyNaturals : BCNamedConstant U .naturals
   | emptyPaths : BCNamedConstant U .paths
   | emptyPastings : BCNamedConstant U .pastings
@@ -597,7 +614,7 @@ inductive BCFieldTerm (U : AtomCarrier.{u}) : BCFieldKind → Type u
       (constant : BCNamedConstant U kind) : BCFieldTerm U kind
 
 /-- Generate the finite-code presentation of any of the four square legs. -/
-noncomputable def bcCartPresentation {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def bcCartPresentation {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (leg : BCSquareLeg) (presentation : BCPresentation U) : CartPresentation U :=
   match leg with
   | .top => (pullbackSndPresentation presentation.1.cospan.first
@@ -608,11 +625,13 @@ noncomputable def bcCartPresentation {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   | .bottom => presentation.1.cospan.first.toPresentation
 
 /-- Evaluate any listed projection from finite authored BC fields only. -/
-noncomputable def readBCProjection {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def readBCProjection {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {kind : BCFieldKind} (projection : BCProjection U kind)
     (presentation : BCPresentation U) : BCFieldValue U kind :=
   match projection with
-  | .cart leg field => readCartProjection field (bcCartPresentation leg presentation)
+  | .cart leg field =>
+      cartFieldValueToBC
+        (readCartProjection field (bcCartPresentation leg presentation))
   | .compatibleFirstPoint =>
       ULift.up (presentation.1.compatiblePoints.sourcePoints 0)
   | .compatibleSecondPoint =>
@@ -646,18 +665,20 @@ noncomputable def readBCProjection {U : AtomCarrier.{u}} [DecidableEq U.Atom]
       ULift.up (diagnosticThreeRightPastings presentation.1.diagnostic)
 
 /-- Interpret a listed BC constant relative only to presentation cardinalities. -/
-noncomputable def readBCNamedConstant {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def readBCNamedConstant {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {kind : BCFieldKind} (constant : BCNamedConstant U kind)
     (presentation : BCPresentation U) : BCFieldValue U kind :=
   match constant with
   | .cart leg cartConstant =>
-      readCartNamedConstant cartConstant (bcCartPresentation leg presentation)
+      cartFieldValueToBC
+        (readCartNamedConstant cartConstant
+          (bcCartPresentation leg presentation))
   | .emptyNaturals => ULift.up []
   | .emptyPaths => ULift.up []
   | .emptyPastings => ULift.up []
 
 /-- Evaluate one BC field term without reading semantic package values. -/
-noncomputable def evalBCFieldTerm {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def evalBCFieldTerm {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {kind : BCFieldKind} (term : BCFieldTerm U kind)
     (presentation : BCPresentation U) : BCFieldValue U kind :=
   match term with
@@ -674,7 +695,7 @@ inductive BCDerivedSet
   | diagnosticThreeCells
 
 /-- Evaluate one listed finite set from the authored BC presentation. -/
-noncomputable def evalBCDerivedSet {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def evalBCDerivedSet {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (set : BCDerivedSet) (presentation : BCPresentation U) : Finset ℕ :=
   match set with
   | .cart leg cartSet =>
@@ -708,7 +729,7 @@ def diagnosticFaces
     (diagnosticThreeRightPastings presentation).flatten
 
 /-- Evaluate one finite universal using only the authored finite fields. -/
-noncomputable def evalBCUniversalEquality {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def evalBCUniversalEquality {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (equality : BCUniversalEquality) (presentation : BCPresentation U) : Bool :=
   match equality with
   | .cart leg cartEquality =>
@@ -748,7 +769,7 @@ inductive BCConditionSyntax (U : AtomCarrier.{u})
   | conjunction (left right : BCConditionSyntax U)
 
 /-- Evaluate the fixed BC syntax without a regime, mate, or checker-result field. -/
-noncomputable def evalBCCondition {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
+def evalBCCondition {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
     BCConditionSyntax U → BCPresentation U → Bool
   | .fieldEq left right, presentation =>
       decide (evalBCFieldTerm left presentation =

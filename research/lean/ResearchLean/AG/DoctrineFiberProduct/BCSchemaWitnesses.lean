@@ -196,7 +196,7 @@ theorem finiteConstantCompatiblePointCode_wellFormed :
     finiteConstantSourceMap]
 
 /-- Valid raw BC code with noninvertible cospan legs and nonempty diagnostic cells. -/
-noncomputable def finiteConstantBCRawCode : BCRawCode FiniteModel.carrier where
+def finiteConstantBCRawCode : BCRawCode FiniteModel.carrier where
   cospan := finiteConstantBCCospan
   compatiblePoints := finiteConstantCompatiblePointCode
   diagnostic := finiteBCDiagnosticPresentation
@@ -206,7 +206,7 @@ theorem finiteConstantBCRawCode_wellFormed : finiteConstantBCRawCode.WellFormed 
   finiteConstantCompatiblePointCode_wellFormed
 
 /-- Validated concrete BC presentation. -/
-noncomputable def finiteConstantBCPresentation : BCPresentation FiniteModel.carrier :=
+def finiteConstantBCPresentation : BCPresentation FiniteModel.carrier :=
   ⟨finiteConstantBCRawCode, finiteConstantBCRawCode_wellFormed⟩
 
 /--
@@ -239,6 +239,24 @@ theorem finiteConstantBC_generated_leg_source_cards :
       pullbackInstanceCode] using congrArg ULift.up
         finiteConstantPullback_sourceCard
 
+/-- Generated top-leg source membership is a well-typed executable BC atom. -/
+theorem finiteConstantBC_generated_top_source_point_mem :
+    evalBCCondition
+      (.fieldMem
+        (.projection (.cart .top .sourcePoint))
+        (.cart .top .sourceCells))
+      finiteConstantBCPresentation = true := by
+  rfl
+
+/-- Cart and compatible-point naturals share the same equality operand sort. -/
+theorem finiteConstantBC_bottom_point_eq_compatible_first :
+    evalBCCondition
+      (.fieldEq
+        (.projection (.cart .bottom .sourcePoint))
+        (.projection .compatibleFirstPoint))
+      finiteConstantBCPresentation = true := by
+  rfl
+
 /-- Malformed compatible-point table whose authored base index is out of range. -/
 def finiteBadBCCompatiblePointCode : CompatiblePointCode where
   sourcePoints := fun _ => 0
@@ -246,7 +264,7 @@ def finiteBadBCCompatiblePointCode : CompatiblePointCode where
   images := fun _ => 0
 
 /-- Raw BC code carrying the malformed compatible-point table. -/
-noncomputable def finiteBadBCRawCode : BCRawCode FiniteModel.carrier where
+def finiteBadBCRawCode : BCRawCode FiniteModel.carrier where
   cospan := finiteConstantBCCospan
   compatiblePoints := finiteBadBCCompatiblePointCode
   diagnostic := finiteBCDiagnosticPresentation
