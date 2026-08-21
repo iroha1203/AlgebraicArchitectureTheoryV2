@@ -43,8 +43,7 @@ selection:
     - proving only a canonical transport codomain theorem rather than ending at every target-fiber package
     - hiding dependent equation or operation round trips behind an equality field
     - counting the global existence theorem alone as the required nondegenerate parametric portfolio or final disjunction artifact
-  unchecked:
-    - repaired-head four-lane rereview and fixed-head CI
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: proved inverse/forward round trips for composition, object, invariant, signature, and operation readings; generated a list-finite inverse selected family and inverse base object; constructed the complete inverse CoreReading and package; generated backward and forward SignedExactCoreReadingHom values including dependent equation and operation transports; proved both hom-level cancellation laws; proved a generic upper-inverse strong-cartesian criterion; aligned an arbitrary target-fiber endpoint by IsHomLift rather than definitional equality; constructed the requested StrongCartesianLift; and inhabited the universe-polymorphic GlobalCartesianLift left branch
@@ -144,11 +143,15 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.CartesianTarget: pass targeted module check
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - direct acceptance-spine #print axioms audit: all 25 evidence declarations use only standard axioms
-    - fixed-head PR CI: pending
+    - fixed-head PR CI: 7 of 7 checks green
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: []
+    fixed_head: cd7b6974f8e62eaccb691e780e5a46f096b0c881
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4045#issuecomment-5368253799
+    verdicts:
+      - Math A: no major findings for the Cycle 9 global-left obligation only
+      - Math B: no major findings for the Cycle 9 global-left obligation only
+      - Lean A: no major findings for the Cycle 9 global-left obligation only
+      - Lean B: no major findings for the Cycle 9 global-left obligation only
   initial_review_findings:
     - all four initial lanes found no Major issue in the global-left theorem but required report precision about conditional generic-helper premises, standalone roundtrip API, and the absence of a direct Cycle 8 theorem dependency
     - Lean B and Math A required unchecked to retain repaired-head review/CI until the final sync
