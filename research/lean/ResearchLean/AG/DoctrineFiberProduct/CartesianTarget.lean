@@ -513,21 +513,6 @@ private theorem castSourceEquationExact_detectorCode
   cases h
   exact hcode i
 
-/-- Reindex the Atom-equivalence parameter of an exact equation transport. -/
-private def castAtomEquationExact {U : AtomCarrier.{u}}
-    {A B : ArchitectureObject U}
-    {C : Site.ContextPreorderCategory A}
-    {D : Site.ContextPreorderCategory B}
-    {E : ArchitecturalEquationSystem C}
-    {G : ArchitecturalEquationSystem D}
-    {e e' : U.Atom ≃ U.Atom}
-    {objectMap : ArchitectureObject U → ArchitectureObject U}
-    (he : e = e')
-    (T : EquationSystemExactTransport E G e objectMap) :
-    EquationSystemExactTransport E G e' objectMap := by
-  cases he
-  exact T
-
 /-- The inverse and forward Atom equivalences compose to the identity. -/
 private def inverseCompositeEquationRefl {U : AtomCarrier.{u}}
     {A : ArchitectureObject U}
@@ -587,15 +572,6 @@ private theorem subsingleton_heq_of_type_eq_local
     (h : alpha = beta) (a : alpha) (b : beta) : HEq a b := by
   cases h
   exact heq_of_eq (Subsingleton.elim _ _)
-
-/-- A ring cast along equal indices is heterogeneously the identity. -/
-private theorem ringEquiv_cast_heq_refl
-    {index : Type*} {R : index → Type*}
-    [(i : index) → CommRing (R i)]
-    {i j : index} (h : i = j) :
-    HEq (RingEquiv.cast (R := R) h) (RingEquiv.refl (R i)) := by
-  cases h
-  rfl
 
 /-- Identity followed by an indexed ring cast is heterogeneously identity. -/
 private theorem ringEquiv_refl_trans_cast_heq_refl
@@ -1026,9 +1002,10 @@ noncomputable def inverseCorePackageHom {U : AtomCarrier.{u}}
   atomEquiv_eq := rfl
 
 /--
-A total package hom with a generated two-sided upper inverse is strongly
-cartesian.  The inverse is only upper data: no inverse of the lower pointed
-doctrine morphism is assumed.
+A total package hom with a specified two-sided upper inverse is strongly
+cartesian.  This conditional criterion assumes only upper data, never an
+inverse of the lower pointed doctrine morphism.  The arbitrary-target theorem
+below instantiates every argument here with named constructions.
 -/
 theorem packageTotalHom_isStronglyCartesian_of_upper_inverse
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}

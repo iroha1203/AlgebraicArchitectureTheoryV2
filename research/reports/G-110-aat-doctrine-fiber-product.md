@@ -31,7 +31,7 @@ selection:
     - Cycle 7 canonical finite-code universe reindexing, PR 4043 merge 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
     - Cycle 8 canonical package transport strong-cartesianness, PR 4044 merge 9f144dfd3e4a04f2af76b3cb086aa0aa078f3b49
   proof_obligation: inverse-reindex every primitive field of an arbitrary target package along the input pointed exact morphism, generate mutually inverse upper morphisms, and construct a strong cartesian lift ending at that exact target package for every carrier and realization input
-  selection_reason: the pointed input already supplies the selected-source equation while exactness supplies an Atom equivalence, so the target reading can be inverse-conjugated without assuming an inverse lower source map; generated upper cancellation then extends Cycle 8 from canonical codomains to every endpoint package
+  selection_reason: the pointed input already supplies the selected-source equation while exactness supplies an Atom equivalence, so the target reading can be inverse-conjugated without assuming an inverse lower source map; Cycle 8 supplied the reviewed universal-property pattern, while this cycle independently generalizes that argument rather than proof-term-calling the canonical transport theorem
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/CartesianTarget.lean
@@ -43,7 +43,8 @@ selection:
     - proving only a canonical transport codomain theorem rather than ending at every target-fiber package
     - hiding dependent equation or operation round trips behind an equality field
     - counting the global existence theorem alone as the required nondegenerate parametric portfolio or final disjunction artifact
-  unchecked: []
+  unchecked:
+    - repaired-head four-lane rereview and fixed-head CI
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: proved inverse/forward round trips for composition, object, invariant, signature, and operation readings; generated a list-finite inverse selected family and inverse base object; constructed the complete inverse CoreReading and package; generated backward and forward SignedExactCoreReadingHom values including dependent equation and operation transports; proved both hom-level cancellation laws; proved a generic upper-inverse strong-cartesian criterion; aligned an arbitrary target-fiber endpoint by IsHomLift rather than definitional equality; constructed the requested StrongCartesianLift; and inhabited the universe-polymorphic GlobalCartesianLift left branch
@@ -115,6 +116,7 @@ audits:
     discharged:
       - every inverse reading and package field is computed from the target package and pointed bottom morphism
       - both upper maps and cancellation laws are named generated declarations
+      - the generic upper-inverse criteria accept an inverse and two laws conditionally, while inverseCorePackageHom_isStronglyCartesian and strongCartesianLiftOfTarget instantiate those premises with the named generated maps and cancellation theorems
       - the IsHomLift endpoint alignment is derived from targetPackage.2 and inverseCorePackage_point
       - the global theorem calls strongCartesianLiftOfTarget rather than accepting a lift or certificate
     unresolved:
@@ -123,13 +125,16 @@ audits:
   proof_use:
     used:
       - source_eq and atomize_naturality to recover the selected finite source family
-      - all primitive reading round trips in the generated upper cancellation proofs
+      - the public composition and object roundtrip theorems in the generated upper cancellation proofs
       - dependent equation-index, detector, context, observable-ring, and operation endpoint equalities in the upper maps and cancellations
       - both upper inverse laws in the strong-cartesian factorization and uniqueness proof
       - targetPackage.2 in the exact endpoint IsHomLift instance
-    unused: []
-  structure_field_escape: none-found; inverse packages, upper maps, cancellation laws, endpoint lifts, and strong-cartesian proofs are generated declarations, not fields of presentation or theorem inputs
-  route_integrity: pass; the route uses pointed source_eq and the upper Atom equivalence only, never an inverse lower source map, supplied vertical iso, or supplied target recovery equality
+    unused:
+      - transportInvariantFamily_symm_roundtrip, transportArchitectureSignature_symm_roundtrip, and transportOperationReading_symm_roundtrip are standalone coverage API rather than named dependencies of the final global proof; operation cancellation instead uses the private endpoint-level HEq theorem, while invariant and signature components close by extensionality
+      - inverseCoreEquationForward_equationMap_heq and inverseCorePackageHom_isStronglyCartesian are standalone consequences not called by strongCartesianLiftOfTarget
+      - Cycle 8 transportAlongHom_isStronglyCartesian is a reviewed conceptual predecessor, not a direct proof-term dependency of the independently generalized upper-inverse criterion
+  structure_field_escape: none-found; the generic criterion explicitly takes upper inverse data as theorem premises, but the final arbitrary-target and global constructors discharge them with named generated declarations rather than presentation fields or caller inputs
+  route_integrity: pass; the route uses pointed source_eq and the upper Atom equivalence only, never an inverse lower source map, supplied vertical iso, or supplied target recovery equality; Cycle 8 is a conceptual predecessor rather than a direct theorem call
   target_fitting: the central construction quantifies every AtomCarrier, CartSemanticInput, and target CoreFiber package; the public left branch then restricts to the fixed RealizableHom domain
   vacuity: the theorem is universal rather than fixture-selected and assumes neither IsIso nor injectivity of the lower source map; the separate nonisomorphic noninvertible family required by the portfolio constraint remains explicitly undischarged
   one_way_as_equivalence: none-found; only the upper SignedExactCoreReadingHom is inverted, with two proved cancellation laws, while the lower source map remains directional
@@ -144,7 +149,10 @@ audits:
     fixed_head: pending
     integrated_comment: pending
     verdicts: []
-  initial_review_findings: []
+  initial_review_findings:
+    - all four initial lanes found no Major issue in the global-left theorem but required report precision about conditional generic-helper premises, standalone roundtrip API, and the absence of a direct Cycle 8 theorem dependency
+    - Lean B and Math A required unchecked to retain repaired-head review/CI until the final sync
+    - Math B found two unused private helper declarations; both were removed before rereview
   blocking_findings: []
   next_obligation: construct a pairwise nonisomorphic noninvertible ParametricCartLiftFamily, then fix the single carrier-global DisjunctionArtifact and cartesianRegimeOfDisjunction from the proved global branch before K0-K4
 ```
