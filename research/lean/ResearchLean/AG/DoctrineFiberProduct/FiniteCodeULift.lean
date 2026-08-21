@@ -506,6 +506,7 @@ theorem sourceTableValue_rebase {U : AtomCarrier.{u}} {V : AtomCarrier.{v}}
   simp only [finiteSourceCells, List.map_map]
   congr 1
 
+/-- The universe-lifted first-order graph is unchanged by source-table rebasing. -/
 @[simp]
 theorem sourceTableValue_rebase_ulift {U : AtomCarrier.{u}}
     {V : AtomCarrier.{v}} (domainCard codomainCard : ℕ)
@@ -527,6 +528,7 @@ theorem sourceTableValue_identity_rebase {U : AtomCarrier.{u}}
   congr 1
   simp [finiteSourceCells, List.map_map, Function.comp_def]
 
+/-- The universe-lifted named identity table is independent of the carrier universe. -/
 @[simp]
 theorem sourceTableValue_identity_rebase_ulift {U : AtomCarrier.{u}}
     {V : AtomCarrier.{v}} (card : ℕ) :
@@ -590,6 +592,7 @@ theorem atomTableValue_rebase {U : AtomCarrier.{u}} {V : AtomCarrier.{v}}
     apply (Equiv.prodCongr equiv equiv).injective
     simpa using hp
 
+/-- The explicit support-and-graph record agrees with reindexing the Atom table. -/
 @[simp]
 theorem atomTableValue_rebase_explicit {U : AtomCarrier.{u}}
     {V : AtomCarrier.{v}} [DecidableEq U.Atom] [DecidableEq V.Atom]

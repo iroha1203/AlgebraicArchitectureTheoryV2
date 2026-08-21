@@ -139,7 +139,8 @@ audits:
       - both source and rebased validation proofs in the universal normalization/default/exception evaluator branches
       - value-sort equivalence injectivity in fieldEq preservation
       - canonical source/Atom equivalences in the noninjective, nonidentity, and malformed witnesses
-    unused: []
+    unused:
+      - the five non-Atom coordinate equivalences and five projection-commutation laws of AtomCarrierEquiv are constructed canonically but are not consumed by the finite-code layer, which reads only U.Atom; their proof-use is deferred to the still-undischarged package-level construction and is not counted in F0c2a1
   structure_field_escape: none-found; the only new structure is an input carrier equivalence whose fields are coordinate equivalences and projection-commutation laws, while raw presentation fields remain exactly the reviewed four
   route_integrity: pass for the finite-code boundary; no image-category or full semantic-category equivalence is claimed
   target_fitting: the implementation is generic over every AtomCarrierEquiv and every CartPresentation/CartConditionSyntax; concrete witnesses only test the generic route
