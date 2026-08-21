@@ -399,6 +399,39 @@ theorem finiteSelectiveTwoLiftedNontrivialContext_extension_type :
     finiteSelectiveTwoLiftedNontrivialContext.{u}.Extension = ULift.{u} (Fin 3) :=
   rfl
 
+/--
+A high context whose empty support carrier cannot have the canonical lifted
+shape of the inhabited Boolean support carrier.
+-/
+noncomputable def finiteSelectiveTwoSupportShapeMismatchContext :
+    Site.ArchitectureContext
+      (finiteModelLiftArchitectureObject.{u}
+        finiteSelectiveTwoActualReflectedNontrivialObject.{u}) where
+  minimal := {
+    Support := PEmpty
+    Axis := ULift.{u} (Fin 2)
+    Observable := ULift.{u} Bool
+    supportReads := fun _ _ => False
+    supportReads_objectFamily := by
+      intro support
+      exact PEmpty.elim support
+    axisReads := fun _ => False
+    observableReads := fun _ => False
+  }
+  Extension := ULift.{u} (Fin 3)
+  extension := ULift.up (2 : Fin 3)
+
+/-- The mismatched high context admits no Boolean-template carrier shape. -/
+theorem finiteSelectiveTwoSupportShapeMismatchContext_no_shape :
+    ¬ Nonempty
+      (FiniteModelContextCarrierShape
+        finiteSelectiveTwoNontrivialContext.{u}
+        finiteSelectiveTwoSupportShapeMismatchContext.{u}) := by
+  rintro ⟨shape⟩
+  have impossible : PEmpty :=
+    _root_.cast shape.support_eq (ULift.up true)
+  exact PEmpty.elim impossible
+
 /-- The internally shape-reflected canonical high context. -/
 noncomputable def finiteSelectiveTwoReflectedLiftedNontrivialContext :=
   finiteModelReflectArchitectureContextAt.{u}

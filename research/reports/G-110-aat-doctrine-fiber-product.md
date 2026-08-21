@@ -49,11 +49,14 @@ selection:
     - claiming arbitrary high-context lowering or an equivalence with the full high context category
     - replacing actual context-equivalence descent by a singleton probe or by thin-hom proof irrelevance
     - presenting primitive lift-reflect APIs as complete EquationSystemExactTransport or whole-factor descent
-  unchecked: []
+  unchecked:
+    - repaired-head four-lane final review
+    - integrated review comment
+    - final report synchronization
 result:
   proposed_result_type: proof-checkpoint
   reviewed_content_head: pending-final-review
-  proof_obligation_delta: constructed an all-value ULift shape retraction; proved that the actual normalized supplied-high objectMap on every lifted finite-model object is a canonical lifted image; derived both opaque carrier shapes internally; defined the reflected complete object by reading its actual high configuration, structureMaps, and selectedQuantities fields; and proved its full high-image equality. Separately constructed generic four-carrier ArchitectureContext lift and carrier-shape reflection, raw ContextMorphism lift/reflection for all three maps, two-sided canonical-endpoint round trips, IsRestriction preservation/reflection, and a Full/Faithful canonical context-category lift. A single internally generated noninvertible fixture fires the full object descent with Bool and Fin 2 values, all four nontrivial context carriers with positive and negative readings, and a nonidentity restriction plus both raw-map round trips. The actual normalized high equation context equivalence is not yet descended; its exact low output type is fixed by FiniteGeneratedReflectedContextEquivalenceOutput. Complete EquationSystemExactTransport, whole hom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  proof_obligation_delta: constructed an all-value ULift shape retraction; proved that the actual normalized supplied-high objectMap on every lifted finite-model object is a canonical lifted image; derived both opaque carrier shapes internally; defined the reflected complete object by reading its actual high configuration, structureMaps, and selectedQuantities fields; and proved its full high-image equality. Separately constructed generic four-carrier ArchitectureContext lift and carrier-shape reflection, raw ContextMorphism lift/reflection for all three maps, two-sided canonical-endpoint round trips, IsRestriction preservation/reflection, and a Full/Faithful canonical context-category lift. A single internally generated noninvertible fixture fires the full object descent with Bool and Fin 2 values, all four nontrivial context carriers with positive and negative readings, a nonidentity restriction plus both raw-map round trips, and a mismatched empty-support high context proving that the public carrier-shape certificate is not automatic. The actual normalized high equation context equivalence is not yet descended; its exact low output type is fixed by FiniteGeneratedReflectedContextEquivalenceOutput. Complete EquationSystemExactTransport, whole hom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObjectImageDescent.lean
@@ -87,6 +90,7 @@ result:
     - finiteSelectiveTwoObjectContextWitnessBase_not_isIso
     - finiteSelectiveTwoReflectedLiftedNontrivialContext_eq
     - finiteSelectiveTwoLiftedReflectedNontrivialContext_eq
+    - finiteSelectiveTwoSupportShapeMismatchContext_no_shape
     - finiteSelectiveTwoNonidentityRestriction_ne_identity
     - finiteSelectiveTwoReflectedLiftedNonidentityRestriction_eq
   claim_mapping:
@@ -117,6 +121,7 @@ audits:
       - canonical four-carrier context lift and shape reflection with both complete context round trips
       - raw context-morphism lift/reflection, all three map graphs, and restriction preservation/reflection
       - Full/Faithful canonical context-category lift on image endpoints
+      - concrete nonexistence of a carrier shape for an inhabited Boolean template versus an empty-support high context
       - nontrivial object, context, and nonidentity restriction witnesses
     remaining:
       - internally generated forward/inverse carrier shapes for the actual high equation context equivalence
@@ -147,13 +152,13 @@ audits:
   structure_field_escape: none in the generated object producer; the generic carrier-shape helper is explicitly outside the missing generated equivalence claim
   route_integrity: pass for complete object image descent and canonical context primitives; actual equation-context equivalence and whole factor remain open
   target_fitting: none found in implementation; object/context primitives quantify all low objects, contexts, and raw morphisms, while the concrete fixture only fires them
-  vacuity: none found; opaque carriers and values are nontrivial, each context predicate has positive and negative cases, and the restriction is not identity
+  vacuity: none found; opaque carriers and values are nontrivial, each context predicate has positive and negative cases, the restriction is not identity, and the public carrier-shape certificate has both a canonical positive instance and a concrete empty-support negative instance
   one_way_as_equivalence: none; the low-to-high context functor is only Full/Faithful, not an equivalence with all high contexts
   goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
   validation_refs:
     - targeted FiniteGeneratedObjectImageDescent check: pass, 16 namespace declarations and standard axioms only
     - targeted FiniteGeneratedContextImageDescent check: pass, 49 namespace declarations and standard axioms only
-    - official focused wrapper FiniteGeneratedObjectContextImageWitnesses.lean: pass, 67 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedObjectContextImageWitnesses.lean: pass, 69 namespace declarations and standard axioms only
     - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
     - fixed GOAL blob and SHA256 lock: pass
     - no Research aggregate or full build
