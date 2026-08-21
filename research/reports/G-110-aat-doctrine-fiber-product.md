@@ -44,9 +44,7 @@ selection:
     - a comparison isomorphism could become an authored input field
     - the authored 2-cell schema could store a natural family, canonical mate, expected equality, or result bit
     - canonical three-arrow seeds could silently narrow the previously accepted BCPresentation class through their generated compatible-point tables
-  unchecked:
-    - fixed-head standard review-pr and four-lane math-lean-review
-    - CI at the final fixed head
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: added direction-indexed horizontal and vertical three-arrow seeds; generated both adjacent component presentations, their shared edge, outer cospan, and outer BCPresentation; proved literal semantic pasting is a pullback in both directions; generated the unique northwest isomorphism to the independently re-enumerated outer pullback, explicitly reindexed the literal paste, and proved equality of the complete named semantic inputs; defined strict composability on existing presentation pairs and proved seed coverage in both directions; proved every existing BCPresentation normalizes to the canonical compatible-point producer; and fixed AuthoredBC2CellPresentation with exactly one G-106-shaped PackageFiberAut assignment table
@@ -158,8 +156,17 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses: pass targeted module check
     - direct #print axioms on all 66 Cycle 4 acceptance-spine declarations: only propext, Classical.choice, and Quot.sound
+    - fixed implementation head 41961b616a76c34b01402fb533a9bbcabc004a3c: CI 7/7 pass
+  review_refs:
+    fixed_head: 41961b616a76c34b01402fb533a9bbcabc004a3c
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4040#issuecomment-5364983129
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: No major findings
   blocking_findings: []
-  next_obligation: fixed-head Cycle 4 rereview, then F0b2b authored-support/MateCoherentRel signature typing before F0c and K0-K4
+  next_obligation: F0b2b authored-support/MateCoherentRel signature typing before F0c and K0-K4
 ```
 
 ### Cycle 3 — F0b1 basic BC presentation and condition schema typing
@@ -462,6 +469,21 @@ equality `toSemanticBC_pastePresentation_eq` を証明した。また existing-p
 共有 typed edge、共有 diagnostic だけから三射 seed を復元して両 component が元の
 presentation に等しい coverage theorem を証明した。F0b2b は K0 より前の次 cycle
 として明記し、比較射や期待等式を field / argument として先取りしない。
+
+### Cycle 4 final fixed-head acceptance
+
+修正 implementation head `41961b616a76c34b01402fb533a9bbcabc004a3c` は、旧判定を
+流用しない4 lane の fresh fixed-head 査読ですべて `No major findings`、CI
+7/7 pass となった。統合判定は
+[#4040 acceptance comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4040#issuecomment-5364983129)
+に固定した。査読は reindex 後の equality が nested paste と二つの pullback
+普遍性を実消費し、outer decoder の別名化ではないこと、pair-level predicate が
+任意の code-level strict pair を被覆すること、typed-edge `HEq` が semantic
+certificate を運ばないこと、正負 witness がともに発火することを独立に確認した。
+
+この受理は F0b2a のみを `proof-obligation-discharged` とする。F0b2b の
+authored-support domain・generated-family interface・`MateCoherentRel` signature、
+F0c、K0--K4、Formal port、G-110 全体は未完了であり、F0b2b を次 cycle とする。
 
 ### Cycle 2 — F0a finite-code cartesian schema typing
 
