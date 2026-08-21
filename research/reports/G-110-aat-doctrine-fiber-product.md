@@ -174,6 +174,39 @@ audits:
   next_obligation: F0c CartesianRegime and DisjunctionArtifact producer signature before K0-K4
 ```
 
+### Cycle 5 acceptance spine
+
+Cycle 5 の直接 axiom audit 対象は次の30 declaration に固定する。generic
+equation scaffold は actual K2 producer または public `MateCoherentRel` として
+数えず、endpoint incidence の一般放電も K2 residual に保つ。
+
+- support context: `AuthoredSupportContext`,
+  `AuthoredSupportContext.supportPackage`,
+  `AuthoredSupportContext.supportObject`,
+  `AuthoredSupportContext.Category`,
+  `AuthoredSupportContext.supportFunctor`
+- authored datum and G-106 bridge: `AuthoredBCDatumSquare`,
+  `AuthoredBCDatumSquare.toTransportData`,
+  `AuthoredBCDatumSquare.toDiagnosticInterpretation`,
+  `AuthoredBCDatumSquare.ofInterpretation`
+- raw endpoint family: `AuthoredBCDatumSquare.endpointComponentTotal`,
+  `AuthoredBCDatumSquare.endpointComponentTotal_isHomLift`,
+  `AuthoredBCDatumSquare.endpointComponent`,
+  `AuthoredBCDatumSquare.endpointAutomorphism`,
+  `AuthoredBCDatumSquare.endpointAutomorphism_app_val`
+- K2 type surface: `AuthoredSupportRoute`, `AuthoredSupportRouteFamily`,
+  `AuthoredComparisonComponents`, `authoredComparisonOfComponents`,
+  `AuthoredComparisonProducerSignature`,
+  `CanonicalMateRestrictionSignature`,
+  `AuthoredSupportComparison.Agrees`,
+  `AuthoredSupportComparison.not_agrees_of_app_ne`,
+  `MateCoherentRelSignature`, `mateCoherentRelEquation`
+- finite and predicate witnesses: `finiteAuthoredBCDatumSquare`,
+  `finiteAuthoredSupport_nonempty`,
+  `finiteAuthoredEndpointAutomorphism_component`,
+  `finiteAuthoredEndpointAutomorphism_eq_identity`,
+  `finiteAgreement_positive`, `finiteAgreement_negative`
+
 ### Cycle 4 — F0b2a finite-code square pasting and authored 2-cell raw schema
 
 ```yaml

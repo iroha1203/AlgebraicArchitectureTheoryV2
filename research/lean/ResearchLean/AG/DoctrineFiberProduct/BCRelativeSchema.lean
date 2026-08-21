@@ -136,17 +136,30 @@ def ofInterpretation {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   twoCellBase := interpretation.data.twoCellBase
   authored := AuthoredBC2CellPresentation.ofTransportData interpretation.data
 
+/--
+Projection API for the G-106 reconstruction.  The simplification normal form
+replaces the reconstructed lift by the comparator-free context lift; its only
+premise is the authored datum input selected by F0b2b.
+-/
 @[simp]
 theorem toTransportData_lift {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U) :
     input.toTransportData.lift = input.context.lift := rfl
 
+/--
+Proof-use API for the one-field authored table.  The simplification normal form
+reads the reconstructed G-106 comparator back as the original authored value.
+-/
 @[simp]
 theorem toTransportData_comparator {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (input : AuthoredBCDatumSquare U)
     (cell : input.context.square.semantic.diagnostic.TwoCell) :
     input.toTransportData.comparator cell = input.authored.comparator cell := rfl
 
+/--
+Compatibility API for `ofInterpretation`.  The simplification normal form
+preserves the reviewed G-106 comparator rather than introducing a replacement.
+-/
 @[simp]
 theorem ofInterpretation_comparator {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (square : RealizableSquare U)
@@ -206,6 +219,10 @@ def endpointAutomorphism {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     input.context.supportFunctor ⟶ input.context.supportFunctor :=
   Discrete.natTrans (fun cell => input.endpointComponent cell.as)
 
+/--
+Component API for the raw endpoint natural family.  The simplification normal
+form exposes the fiber component indexed by the same authored cell tag.
+-/
 @[simp]
 theorem endpointAutomorphism_app {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (input : AuthoredBCDatumSquare U)
@@ -213,6 +230,10 @@ theorem endpointAutomorphism_app {U : AtomCarrier.{u}}
     input.endpointAutomorphism.app (Discrete.mk cell) =
       input.endpointComponent cell := rfl
 
+/--
+Proof-use witness for the raw table: every endpoint component has exactly the
+total morphism underlying the corresponding authored `PackageFiberAut` value.
+-/
 theorem endpointAutomorphism_app_val {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (input : AuthoredBCDatumSquare U)
     (cell : input.context.square.semantic.diagnostic.TwoCell) :
@@ -246,6 +267,11 @@ def authoredComparisonOfComponents {U : AtomCarrier.{u}}
     direct ⟶ viaBase :=
   Discrete.natTrans components
 
+/--
+Application API for component-generated comparisons.  The simplification
+normal form reads a generated discrete natural transformation at its input
+component, so downstream K2 proofs need not unfold the constructor.
+-/
 @[simp]
 theorem authoredComparisonOfComponents_app {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] {context : AuthoredSupportContext U}
@@ -284,10 +310,15 @@ def Agrees {C : Type u₁} [Category.{v₁} C]
     (authored canonical : direct ⟶ viaBase) : Prop :=
   authored = canonical
 
+/-- Positive API instance showing that the comparison-equality shape is inhabited. -/
 theorem agrees_self {C : Type u₁} [Category.{v₁} C]
     {D : Type u₂} [Category.{v₂} D] {direct viaBase : C ⥤ D}
     (comparison : direct ⟶ viaBase) : Agrees comparison comparison := rfl
 
+/--
+Negative API criterion: a mismatch at one authored component refutes equality
+of the two natural transformations without accepting an expected equality.
+-/
 theorem not_agrees_of_app_ne {C : Type u₁} [Category.{v₁} C]
     {D : Type u₂} [Category.{v₂} D] {direct viaBase : C ⥤ D}
     {authored canonical : direct ⟶ viaBase}
@@ -323,6 +354,11 @@ def mateCoherentRelEquation
   fun input => AuthoredSupportComparison.Agrees
     (authored input) (canonical input.context)
 
+/--
+Application API for the F0 equation scaffold.  The simplification normal form
+exposes equality of the two producer results at the supplied authored datum;
+it does not inhabit either K2 producer signature.
+-/
 @[simp]
 theorem mateCoherentRelEquation_apply
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
