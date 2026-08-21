@@ -317,6 +317,59 @@ private def castTargetEquationExact {U : AtomCarrier.{u}}
   cases h
   exact T
 
+private theorem castTargetEquationExact_contextForward_obj_carriers
+    {U : AtomCarrier.{u}}
+    {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A')
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (hT : ∀ W : Site.ContextCategoryObject C₀,
+      (T.contextForward W).ctx.Support = W.ctx.Support ∧
+        (T.contextForward W).ctx.Axis = W.ctx.Axis ∧
+        (T.contextForward W).ctx.Observable = W.ctx.Observable ∧
+        (T.contextForward W).ctx.Extension = W.ctx.Extension)
+    (W : Site.ContextCategoryObject C₀) :
+    ((castTargetEquationExact S h e objectMap T).contextForward W).ctx.Support =
+        W.ctx.Support ∧
+      ((castTargetEquationExact S h e objectMap T).contextForward W).ctx.Axis =
+        W.ctx.Axis ∧
+      ((castTargetEquationExact S h e objectMap T).contextForward W).ctx.Observable =
+        W.ctx.Observable ∧
+      ((castTargetEquationExact S h e objectMap T).contextForward W).ctx.Extension =
+        W.ctx.Extension := by
+  cases h
+  exact hT W
+
+private theorem castTargetEquationExact_contextBackward_obj_carriers
+    {U : AtomCarrier.{u}}
+    {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A')
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (hT : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      (T.contextBackward W).ctx.Support = W.ctx.Support ∧
+        (T.contextBackward W).ctx.Axis = W.ctx.Axis ∧
+        (T.contextBackward W).ctx.Observable = W.ctx.Observable ∧
+        (T.contextBackward W).ctx.Extension = W.ctx.Extension)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder) :
+    ((castTargetEquationExact S h e objectMap T).contextBackward W).ctx.Support =
+        W.ctx.Support ∧
+      ((castTargetEquationExact S h e objectMap T).contextBackward W).ctx.Axis =
+        W.ctx.Axis ∧
+      ((castTargetEquationExact S h e objectMap T).contextBackward W).ctx.Observable =
+        W.ctx.Observable ∧
+      ((castTargetEquationExact S h e objectMap T).contextBackward W).ctx.Extension =
+        W.ctx.Extension := by
+  cases h
+  exact hT W
+
 /-- Detector compatibility is unchanged by reindexing the target base object. -/
 private theorem castTargetEquationExact_detectorCode {U : AtomCarrier.{u}}
     {A₀ A A' : ArchitectureObject U}
@@ -428,6 +481,97 @@ private def castSourceEquationExact {U : AtomCarrier.{u}}
       (castEquationReading h S).equationSystem G e objectMap := by
   cases h
   exact T
+
+private theorem castSourceEquationExact_contextForward_obj_carriers
+    {U : AtomCarrier.{u}}
+    {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (hT : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      (T.contextForward W).ctx.Support = W.ctx.Support ∧
+        (T.contextForward W).ctx.Axis = W.ctx.Axis ∧
+        (T.contextForward W).ctx.Observable = W.ctx.Observable ∧
+        (T.contextForward W).ctx.Extension = W.ctx.Extension)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder) :
+    ((castSourceEquationExact h S e objectMap T).contextForward W).ctx.Support =
+        W.ctx.Support ∧
+      ((castSourceEquationExact h S e objectMap T).contextForward W).ctx.Axis =
+        W.ctx.Axis ∧
+      ((castSourceEquationExact h S e objectMap T).contextForward W).ctx.Observable =
+        W.ctx.Observable ∧
+      ((castSourceEquationExact h S e objectMap T).contextForward W).ctx.Extension =
+        W.ctx.Extension := by
+  cases h
+  exact hT W
+
+private theorem castSourceEquationExact_contextBackward_obj_carriers
+    {U : AtomCarrier.{u}}
+    {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (hT : ∀ W : Site.ContextCategoryObject D,
+      (T.contextBackward W).ctx.Support = W.ctx.Support ∧
+        (T.contextBackward W).ctx.Axis = W.ctx.Axis ∧
+        (T.contextBackward W).ctx.Observable = W.ctx.Observable ∧
+        (T.contextBackward W).ctx.Extension = W.ctx.Extension)
+    (W : Site.ContextCategoryObject D) :
+    ((castSourceEquationExact h S e objectMap T).contextBackward W).ctx.Support =
+        W.ctx.Support ∧
+      ((castSourceEquationExact h S e objectMap T).contextBackward W).ctx.Axis =
+        W.ctx.Axis ∧
+      ((castSourceEquationExact h S e objectMap T).contextBackward W).ctx.Observable =
+        W.ctx.Observable ∧
+      ((castSourceEquationExact h S e objectMap T).contextBackward W).ctx.Extension =
+        W.ctx.Extension := by
+  cases h
+  exact hT W
+
+private theorem castSourceEquationExact_contextForward_obj_eq
+    {U : AtomCarrier.{u}}
+    {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (forwardObject : Site.ContextCategoryObject S.contextPreorder →
+      Site.ArchitectureContext B)
+    (hT : ∀ W, (T.contextForward W).ctx = forwardObject W)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder) :
+    ((castSourceEquationExact h S e objectMap T).contextForward W).ctx =
+      forwardObject
+        ⟨cast (congrArg Site.ArchitectureContext h.symm) W.ctx⟩ := by
+  cases h
+  exact hT W
+
+private theorem castSourceEquationExact_contextBackward_obj_eq
+    {U : AtomCarrier.{u}}
+    {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (backwardObject : Site.ContextCategoryObject D →
+      Site.ArchitectureContext A)
+    (hT : ∀ W, (T.contextBackward W).ctx = backwardObject W)
+    (W : Site.ContextCategoryObject D) :
+    ((castSourceEquationExact h S e objectMap T).contextBackward W).ctx =
+      cast (congrArg Site.ArchitectureContext h) (backwardObject W) := by
+  cases h
+  exact hT W
 
 /-- Target and source base reindexing cancel around equation composition. -/
 private theorem castTargetEquationExact_comp_castSource
@@ -822,6 +966,318 @@ noncomputable def inverseCorePackageForwardUpper {U : AtomCarrier.{u}}
   coordinate_eq A i := by
     simp [inverseCorePackage, inverseCoreReading,
       transportArchitectureSignature]
+
+/--
+The generated forward upper functor acts on complete contexts by the canonical
+backward Atom transport, after aligning the generated source object.
+-/
+theorem inverseCorePackageForwardUpper_contextFunctor_obj_eq
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx =
+      transportArchitectureContextBackward f.doctrineHom.atomEquiv.symm
+        Q.object
+        (cast (congrArg Site.ArchitectureContext (inverseBaseObject_eq Q f))
+          W.ctx) := by
+  change
+    ((castSourceEquationExact (inverseBaseObject_eq Q f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        Q.object Q.reading.equationReading)
+      f.doctrineHom.atomEquiv
+      (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (deconjugateEquationSystemExact f.doctrineHom.atomEquiv.symm
+        f.doctrineHom.atomEquiv Q.object
+        Q.reading.equationReading.contextPreorder
+        Q.reading.equationReading.equationSystem _root_.id
+        (inverseCompositeEquationRefl
+          Q.reading.equationReading.equationSystem
+          f.doctrineHom.atomEquiv))).contextForward W).ctx = _
+  exact castSourceEquationExact_contextForward_obj_eq
+    (h := (inverseBaseObject_eq Q f).symm)
+    (S := transportEquationReading f.doctrineHom.atomEquiv.symm
+      Q.object Q.reading.equationReading)
+    (e := f.doctrineHom.atomEquiv)
+    (objectMap := transportArchitectureObject f.doctrineHom.atomEquiv)
+    (T := deconjugateEquationSystemExact f.doctrineHom.atomEquiv.symm
+      f.doctrineHom.atomEquiv Q.object
+      Q.reading.equationReading.contextPreorder
+      Q.reading.equationReading.equationSystem _root_.id
+      (inverseCompositeEquationRefl
+        Q.reading.equationReading.equationSystem
+        f.doctrineHom.atomEquiv))
+    (forwardObject := fun V =>
+      transportArchitectureContextBackward f.doctrineHom.atomEquiv.symm
+        Q.object V.ctx)
+    (by intro V; rfl) W
+
+/--
+The inverse context functor of the generated forward upper is canonical forward
+Atom transport, reindexed to the generated source object.
+-/
+theorem inverseCorePackageForwardUpper_contextInverse_obj_eq
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx =
+      cast (congrArg Site.ArchitectureContext (inverseBaseObject_eq Q f).symm)
+        (transportArchitectureContext f.doctrineHom.atomEquiv.symm Q.object
+          W.ctx) := by
+  change
+    ((castSourceEquationExact (inverseBaseObject_eq Q f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        Q.object Q.reading.equationReading)
+      f.doctrineHom.atomEquiv
+      (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (deconjugateEquationSystemExact f.doctrineHom.atomEquiv.symm
+        f.doctrineHom.atomEquiv Q.object
+        Q.reading.equationReading.contextPreorder
+        Q.reading.equationReading.equationSystem _root_.id
+        (inverseCompositeEquationRefl
+          Q.reading.equationReading.equationSystem
+          f.doctrineHom.atomEquiv))).contextBackward W).ctx = _
+  exact castSourceEquationExact_contextBackward_obj_eq
+    (h := (inverseBaseObject_eq Q f).symm)
+    (S := transportEquationReading f.doctrineHom.atomEquiv.symm
+      Q.object Q.reading.equationReading)
+    (e := f.doctrineHom.atomEquiv)
+    (objectMap := transportArchitectureObject f.doctrineHom.atomEquiv)
+    (T := deconjugateEquationSystemExact f.doctrineHom.atomEquiv.symm
+      f.doctrineHom.atomEquiv Q.object
+      Q.reading.equationReading.contextPreorder
+      Q.reading.equationReading.equationSystem _root_.id
+      (inverseCompositeEquationRefl
+        Q.reading.equationReading.equationSystem
+        f.doctrineHom.atomEquiv))
+    (backwardObject := fun V =>
+      transportArchitectureContext f.doctrineHom.atomEquiv.symm
+        Q.object V.ctx)
+    (by intro V; rfl) W
+
+private theorem inverseCorePackageForwardUpper_contextFunctor_obj_carriers
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx.Support = W.ctx.Support ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+        W).ctx.Axis = W.ctx.Axis ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+        W).ctx.Observable = W.ctx.Observable ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+        W).ctx.Extension = W.ctx.Extension := by
+  unfold inverseCorePackageForwardUpper inverseCoreEquationForward
+  apply castSourceEquationExact_contextForward_obj_carriers
+  intro V
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+private theorem inverseCorePackageForwardUpper_contextInverse_obj_carriers
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Support = W.ctx.Support ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Axis = W.ctx.Axis ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Observable = W.ctx.Observable ∧
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Extension = W.ctx.Extension := by
+  unfold inverseCorePackageForwardUpper inverseCoreEquationForward
+  apply castSourceEquationExact_contextBackward_obj_carriers
+  intro V
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+private theorem inverseCorePackageBackwardUpper_contextFunctor_obj_carriers
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+      W).ctx.Support = W.ctx.Support ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+        W).ctx.Axis = W.ctx.Axis ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+        W).ctx.Observable = W.ctx.Observable ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+        W).ctx.Extension = W.ctx.Extension := by
+  unfold inverseCorePackageBackwardUpper
+  apply castTargetEquationExact_contextForward_obj_carriers
+  intro V
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+private theorem inverseCorePackageBackwardUpper_contextInverse_obj_carriers
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Support = W.ctx.Support ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Axis = W.ctx.Axis ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Observable = W.ctx.Observable ∧
+      ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+        W).ctx.Extension = W.ctx.Extension := by
+  unfold inverseCorePackageBackwardUpper
+  apply castTargetEquationExact_contextBackward_obj_carriers
+  intro V
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+/-- The forward upper context functor preserves the support carrier. -/
+theorem inverseCorePackageForwardUpper_contextFunctor_obj_support_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx.Support = W.ctx.Support :=
+  (inverseCorePackageForwardUpper_contextFunctor_obj_carriers Q f W).1
+
+/-- The forward upper context functor preserves the axis carrier. -/
+theorem inverseCorePackageForwardUpper_contextFunctor_obj_axis_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx.Axis = W.ctx.Axis :=
+  (inverseCorePackageForwardUpper_contextFunctor_obj_carriers Q f W).2.1
+
+/-- The forward upper context functor preserves the observable carrier. -/
+theorem inverseCorePackageForwardUpper_contextFunctor_obj_observable_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx.Observable = W.ctx.Observable :=
+  (inverseCorePackageForwardUpper_contextFunctor_obj_carriers Q f W).2.2.1
+
+/-- The forward upper context functor preserves the extension carrier. -/
+theorem inverseCorePackageForwardUpper_contextFunctor_obj_extension_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward
+      W).ctx.Extension = W.ctx.Extension :=
+  (inverseCorePackageForwardUpper_contextFunctor_obj_carriers Q f W).2.2.2
+
+/-- The forward upper context inverse preserves the support carrier. -/
+theorem inverseCorePackageForwardUpper_contextInverse_obj_support_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Support = W.ctx.Support :=
+  (inverseCorePackageForwardUpper_contextInverse_obj_carriers Q f W).1
+
+/-- The forward upper context inverse preserves the axis carrier. -/
+theorem inverseCorePackageForwardUpper_contextInverse_obj_axis_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Axis = W.ctx.Axis :=
+  (inverseCorePackageForwardUpper_contextInverse_obj_carriers Q f W).2.1
+
+/-- The forward upper context inverse preserves the observable carrier. -/
+theorem inverseCorePackageForwardUpper_contextInverse_obj_observable_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Observable = W.ctx.Observable :=
+  (inverseCorePackageForwardUpper_contextInverse_obj_carriers Q f W).2.2.1
+
+/-- The forward upper context inverse preserves the extension carrier. -/
+theorem inverseCorePackageForwardUpper_contextInverse_obj_extension_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Extension = W.ctx.Extension :=
+  (inverseCorePackageForwardUpper_contextInverse_obj_carriers Q f W).2.2.2
+
+/-- The backward upper context functor preserves the support carrier. -/
+theorem inverseCorePackageBackwardUpper_contextFunctor_obj_support_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+      W).ctx.Support = W.ctx.Support :=
+  (inverseCorePackageBackwardUpper_contextFunctor_obj_carriers Q f W).1
+
+/-- The backward upper context functor preserves the axis carrier. -/
+theorem inverseCorePackageBackwardUpper_contextFunctor_obj_axis_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+      W).ctx.Axis = W.ctx.Axis :=
+  (inverseCorePackageBackwardUpper_contextFunctor_obj_carriers Q f W).2.1
+
+/-- The backward upper context functor preserves the observable carrier. -/
+theorem inverseCorePackageBackwardUpper_contextFunctor_obj_observable_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+      W).ctx.Observable = W.ctx.Observable :=
+  (inverseCorePackageBackwardUpper_contextFunctor_obj_carriers Q f W).2.2.1
+
+/-- The backward upper context functor preserves the extension carrier. -/
+theorem inverseCorePackageBackwardUpper_contextFunctor_obj_extension_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward
+      W).ctx.Extension = W.ctx.Extension :=
+  (inverseCorePackageBackwardUpper_contextFunctor_obj_carriers Q f W).2.2.2
+
+/-- The backward upper context inverse preserves the support carrier. -/
+theorem inverseCorePackageBackwardUpper_contextInverse_obj_support_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Support = W.ctx.Support :=
+  (inverseCorePackageBackwardUpper_contextInverse_obj_carriers Q f W).1
+
+/-- The backward upper context inverse preserves the axis carrier. -/
+theorem inverseCorePackageBackwardUpper_contextInverse_obj_axis_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Axis = W.ctx.Axis :=
+  (inverseCorePackageBackwardUpper_contextInverse_obj_carriers Q f W).2.1
+
+/-- The backward upper context inverse preserves the observable carrier. -/
+theorem inverseCorePackageBackwardUpper_contextInverse_obj_observable_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Observable = W.ctx.Observable :=
+  (inverseCorePackageBackwardUpper_contextInverse_obj_carriers Q f W).2.2.1
+
+/-- The backward upper context inverse preserves the extension carrier. -/
+theorem inverseCorePackageBackwardUpper_contextInverse_obj_extension_type
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject
+      (inverseCorePackage Q f).algebra.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward
+      W).ctx.Extension = W.ctx.Extension :=
+  (inverseCorePackageBackwardUpper_contextInverse_obj_carriers Q f W).2.2.2
 
 /-- Equation transports cancel in the target-to-source-to-target direction. -/
 private theorem inverseCorePackageBackward_comp_forward_equation
