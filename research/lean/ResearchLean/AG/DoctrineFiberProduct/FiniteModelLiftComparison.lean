@@ -3,10 +3,10 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift
 
 /-!
-# The ambient boundary of finite-model lift reflection
+# Same-carrier comparison for finite-model lift reflection
 
-This module records the strongest comparison supplied by the existing
-cartesian universal property.  Two strong lifts of the same semantic arrow to
+This module records a comparison supplied by the existing cartesian universal
+property.  Two strong lifts of the same semantic arrow to
 the same target package have canonically isomorphic domains, the isomorphism
 is vertical over the source, and both triangle equations hold.  In particular,
 every strong lift is comparable inside its original package-total category to
@@ -103,7 +103,7 @@ theorem canonicalDomainIso_hom_fac {U : AtomCarrier.{u}}
 
 end StrongCartesianLift
 
-/-! ## Concrete lifted finite-package boundary witness -/
+/-! ## Concrete lifted finite-package comparison witness -/
 
 /--
 At the lifted finite package, the generated identity-arrow lift has a domain

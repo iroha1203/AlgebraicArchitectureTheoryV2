@@ -19,7 +19,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULiftWitnesses
-import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftBoundary
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
 
 /-!
 # Doctrine fiber-product schema
@@ -49,7 +49,7 @@ circuit syntax, reconstructs the NoCycle equation and sound detector on every
 lifted object, and assembles the complete lifted `CoreReading` and generated
 `AATCorePackage`, with concrete cyclic and acyclic witnesses.  Package-total
 hom rebasing and ambient strong-lift reflection for the separate
-`FiniteModelLift` obligation remain before K0.  The boundary layer records the
+`FiniteModelLift` obligation remain before K0.  The comparison layer records the
 canonical vertical domain isomorphism between two strong lifts inside one
 carrier, while making no cross-carrier package-descent claim.
 -/
