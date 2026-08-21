@@ -45,8 +45,7 @@ selection:
     - dropping or replacing the noninvertible source table or nonidentity Atom permutation during rebasing
     - proving only selected evaluator branches instead of all projections, constants, derived sets, universal equalities, and syntax constructors
     - counting finite-code transport as packageProjection or StrongCartesianLift existence/nonexistence transport
-  unchecked:
-    - fixed-head standard four-lane review and PR CI are pending
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: defined a six-sort AtomCarrierEquiv with all five projection-commutation laws; canonical first-order source reindexing; predicate support mapping and evaluation naturality; finite permutation support mapping and conjugation; doctrine, pointed-instance, four-field raw-code, typed-presentation, and validated-presentation reindexing; derived WellFormed preservation; source-map, Atom-map, selected-point, extraction, and decoder-component compatibility; equivalences for every condition value sort; naturality of all 13 projections, 3 named constants, 5 derived finite sets, and 7 finite-universal equality atoms; complete reindexing invariance of all 4 CartConditionSyntax constructors; the canonical FiniteModel carrier/presentation specialization; and positive/nonidentity/malformed finite witnesses
@@ -153,12 +152,21 @@ audits:
     - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
     - lake build ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses: pass targeted module check
+    - repaired-head direct acceptance-spine #print axioms audit: 31 evidence declarations plus 11 witness declarations, each uses only standard axioms or no axioms
+    - fixed-head PR CI: 7 of 7 checks green
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: []
+    fixed_head: adcd90280325c80a506093a388091f13f6dc40b6
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4043#issuecomment-5367057730
+    verdicts:
+      - Math A: no major findings for F0c2a1 only
+      - Math B: no major findings for F0c2a1 only
+      - Lean A: no major findings for F0c2a1 only
+      - Lean B: no major findings for F0c2a1 only
+  initial_review_findings:
+    - initial head 7348d910 omitted docstrings on three public helper theorems; repaired without changing statements or proof bodies
+    - initial head 7348d910 recorded no unused fields even though the five non-Atom coordinate equivalences and five projection laws are deferred to the package layer; repaired by explicit proof-use classification
   blocking_findings: []
-  next_obligation: fixed-head standard four-lane review, PR CI, and merge; then F0c2a2/b carrier-global DisjunctionArtifact and named regime producer typing, selecting only package transport actually required by the eventual branch
+  next_obligation: merge this accepted checkpoint, then discharge F0c2a2/b carrier-global DisjunctionArtifact and named regime producer typing, selecting only package transport actually required by the eventual branch
 ```
 
 ### Cycle 7 / F0c2a1 acceptance spine
