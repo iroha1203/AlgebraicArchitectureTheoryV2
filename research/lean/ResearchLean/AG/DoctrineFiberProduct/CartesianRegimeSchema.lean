@@ -236,7 +236,9 @@ end QualifiedCartCondition
 A genuinely parameterized positive family for a right branch.  The family has
 at least two parameters, gives distinct semantic inputs, and every member joins
 nonisomorphic endpoints by a noninvertible realized arrow on which `H_cart`
-holds.
+holds.  Each of those same members also carries an endpoint package and an
+actual strong cartesian lift, so condition nonemptiness cannot be witnessed on
+an empty target fiber or on a family unrelated to the lift portfolio.
 -/
 structure ParametricCartPositiveFamily {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (condition : QualifiedCartCondition U) where
@@ -265,6 +267,12 @@ structure ParametricCartPositiveFamily {U : AtomCarrier.{u}}
       (input parameter).semantic.target)
   /-- Each realized bottom arrow is genuinely noninvertible. -/
   hom_not_isIso : ∀ parameter, ¬ IsIso (input parameter).semantic.hom
+  /-- Endpoint package selected for the explicit lift of this same positive member. -/
+  targetPackage : ∀ parameter,
+    CoreFiber (input parameter).semantic.target
+  /-- Actual strong cartesian lift of this same `H_cart`-positive member. -/
+  lift : ∀ parameter,
+    StrongCartesianLift (input parameter).semantic (targetPackage parameter)
 
 /--
 A genuinely parameterized family of constructed strong lifts.  This portfolio
