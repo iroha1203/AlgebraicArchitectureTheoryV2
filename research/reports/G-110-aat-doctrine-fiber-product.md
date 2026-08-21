@@ -13,6 +13,150 @@
 
 ## Cycle ledger
 
+### Cycle 18 — actual normalized high-factor computational field descent
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 18
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 1abce5fc8b047728045af097c80263e1726f6a8a
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 17 merge synchronization / Cycle 18 selection comment 5373045110
+  proof_dag_predecessors:
+    - Cycle 13-14 canonical finite package, configuration-hom, and equation ULift data, PR 4049/4050 merges c135ea34 / 2a0d76c
+    - Cycle 16 generated low/high package-hom observations and exact reflection output types, PR 4052 merge 6477eff0
+    - Cycle 17 actual supplied-high generated factor, canonical normalization, and low-independence theorem, PR 4053 merge 1abce5fc
+  proof_obligation: construct the first computational fields of a low factor by reading finiteGeneratedNormalizedHighFactor itself, without selecting the known low inverse-upper factor or transporting the whole high hom along its equality with the canonical high factor
+  selection_reason: Cycle 17 proved that pairing an independently generated low factor with a high equality is insufficient, while the existing finite-model ULift API already supports direct reflection of the actual high base, Atom equivalence, object configuration, and configuration map
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescentWitnesses.lean
+    - finiteGeneratedReflectedBase
+    - finiteGeneratedReflectedUpperAtomEquiv
+    - finiteGeneratedReflectedObjectConfiguration
+    - finiteGeneratedReflectedConfigurationMap
+  risks:
+    - returning finiteGeneratedLowFactor or inverseCorePackageFactor through equality transport, Classical.choose, or a wrapper
+    - using finiteGeneratedNormalizedHighFactor_eq_canonical to fill computational data rather than only to prove an image or alignment law
+    - presenting configuration-only reflection as complete ArchitectureObject descent
+    - presenting selected field observations as SignedExactCoreReadingHom, PackageTotalHom, or cartesianness reflection
+    - hiding a caller-supplied image, endpoint, low factor, graph, or descent certificate in a structure field
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: 4c690172be456bb24e4aa8ce05baf518978712a0
+  proof_obligation_delta: constructed reflection of arbitrary ExactDoctrineHom and ExtInstHom values between canonical finite-model universe lifts, including two-sided round trips; defined the reflected base of the actual normalized supplied-high factor by applying that operation directly to its base projection; reflected the actual upper Atom equivalence by conjugation; reflected the configuration of the actual high object image and its actual configuration map; proved high-image graphs, prefix equality for the base and upper Atom map, and an Atom-level prefix graph for the configuration map; instantiated every field on the existing two-source chain, whose reflected base is proved noninvertible. Beyond the required supplied high lift, no known low factor, low cartesianness, additional low/image/descent certificate, or arbitrary high semantic descent is used by the computational definitions. Full ArchitectureObject data, context/equation transport, whole SignedExactCoreReadingHom and PackageTotalHom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescentWitnesses.lean
+  evidence:
+    - finiteModelReflectExactDoctrineHom
+    - finiteModelReflectExactDoctrineHom_lift
+    - finiteModelLiftExactDoctrineHom_reflect
+    - finiteModelReflectExtInstHom
+    - finiteModelReflectExtInstHom_lift
+    - finiteModelLiftExtInstHom_reflect
+    - finiteGeneratedReflectedBase
+    - finiteGeneratedReflectedBase_high_graph
+    - finiteGeneratedReflectedBase_eq
+    - finiteModelReflectAtomEquiv
+    - finiteGeneratedReflectedUpperAtomEquiv
+    - finiteGeneratedReflectedUpperAtomEquiv_high_graph
+    - finiteGeneratedReflectedUpperAtomEquiv_eq
+    - finiteGeneratedReflectedObjectConfiguration
+    - finiteGeneratedReflectedObjectConfiguration_high_graph
+    - finiteGeneratedReflectedConfigurationMap
+    - finiteGeneratedReflectedConfigurationMap_atom_graph
+    - finiteGeneratedReflectedConfigurationMap_atom_eq
+    - finiteSelectiveTwoActualReflectedBase_not_isIso
+    - finiteSelectiveTwoActualHighFactor_upper_atom_graph
+    - finiteSelectiveTwoReflectedCoreObjectConfiguration_high_graph
+    - finiteSelectiveTwoReflectedCoreObjectConfigurationMap_atom_graph
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required
+      - premise policy forbids caller-supplied transported packages, hom graphs, conclusion-equivalent certificates, and decorative premises
+    runtime_route_constraints:
+      - Issue 4034 keeps the unresolved FiniteModelLift ledger item in the current F0 continuation before starting K0
+      - Cycle 16-17 proof-use gate requires the low computational factor to be read from the actual supplied-high factor rather than independently generated first
+    source_facts:
+      - finiteModelReflectExactDoctrineHom reads the high sourceMap and atomEquiv projections and has both lift-reflect round trips on canonical lifted doctrines
+      - finiteGeneratedReflectedBase reads finiteGeneratedNormalizedHighFactor.base directly
+      - finiteGeneratedReflectedUpperAtomEquiv reads finiteGeneratedNormalizedHighFactor.upper.atomEquiv directly
+      - finiteGeneratedReflectedObjectConfiguration reads the configuration of finiteGeneratedNormalizedHighFactor.upper.objectMap applied to a canonically lifted low object
+      - finiteGeneratedReflectedConfigurationMap reads finiteGeneratedNormalizedHighFactor.upper.configurationMap and reflects the actual high ConfigurationHom
+      - finiteGeneratedNormalizedHighFactor_eq_canonical appears only in proof-side graph/equality theorems and not in any reflected computational definition
+      - the witness supplies its high lift, package, prefix, object, and configuration map by named internal constructions and proves the reflected prefix noninvertible
+    consequence:
+      - four computational layers of an actual-high generated-prefix descent are now typed, generated, and fired nonvacuously
+      - opaque ArchitectureObject fields and EquationSystemExactTransport remain outside the claim
+      - no whole hom or ambient universal property follows from this field checkpoint alone
+audits:
+  premise_delta:
+    discharged:
+      - exact-doctrine and pointed-hom reflection on canonical finite-model ULift endpoints
+      - two-sided round-trip laws for those reflected lower homs
+      - actual normalized high base descent and high graph
+      - actual normalized high upper Atom descent and high graph
+      - actual normalized high object-configuration and configuration-map descent
+      - the same concrete firing data instantiate every exported field layer, and their reflected base is noninvertible
+    remaining:
+      - generated-image ArchitectureObject descent retaining StructureMaps and SelectedQuantities rather than discarding them
+      - architecture-context lift and on-image functor/inverse laws for Support, Axis, Observable, and Extension
+      - complete EquationSystemExactTransport descent, including contextEquivalence and observable naturality
+      - remaining operation, invariant, signature, and proof fields needed for SignedExactCoreReadingHom
+      - whole PackageTotalHom descent, composition/equality reflection, and high-driven ambient factorization/uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - every reflected computational value is a transparent named function of an actual high projection and canonical ULift equivalences
+      - the finite witness generates its supplied high lift and all endpoints internally
+    prohibited_and_absent:
+      - caller-supplied low factor, image membership, component graph, descent, or conclusion-equivalent low cartesianness certificate beyond the required supplied high lift
+      - Classical.choose of a low preimage
+      - finiteGeneratedLowFactor, inverseCorePackageFactor, generated low cartesianness, or globalCartesianLift in reflected definitions
+  proof_use:
+    used:
+      - actual high base sourceMap and atomEquiv in finiteModelReflectExactDoctrineHom
+      - actual normalized high base in finiteGeneratedReflectedBase
+      - actual normalized high upper atomEquiv in finiteGeneratedReflectedUpperAtomEquiv
+      - actual normalized high objectMap configuration in finiteGeneratedReflectedObjectConfiguration
+      - actual normalized high configurationMap in finiteGeneratedReflectedConfigurationMap
+      - canonical factor equality only to prove external high-image and prefix-equality theorems
+    not_yet_available:
+      - actual-high computational descent for opaque object data and equation context equivalence
+  structure_field_escape: none found; there is no packet accepting proof or comparison fields
+  route_integrity: pass for the narrowed computational field-descent checkpoint; whole-factor and cartesianness reflection remain explicitly open
+  target_fitting: none found; the generic reflection operations quantify arbitrary homs between canonical lifted finite-model endpoints, and the concrete fixture only fires the API
+  vacuity: none found; the reflected concrete base is propositionally equal to a reviewed non-IsIso arrow
+  one_way_as_equivalence: none found; two-sided equivalence is claimed only for exact/pointed homs between canonical lifted doctrines, while object and context descent remain unclaimed
+  goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
+  validation_refs:
+    - targeted ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescent module check: pass, 25 namespace declarations and standard axioms only
+    - official focused wrapper ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedFactorFieldDescentWitnesses.lean: pass, 17 namespace declarations and standard axioms only
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass at reviewed content head
+    - fixed GOAL blob and SHA256 lock: pass
+    - PR 4054 reviewed content head 4c690172be456bb24e4aa8ce05baf518978712a0: 7/7 CI green, mergeable/CLEAN
+    - no Research aggregate or full build
+  review_refs:
+    independent_final_reviews:
+      - Math A: No major findings for the narrowed Cycle 18 proof-checkpoint only
+      - Math B: one Minor PR-body choice-provenance wording finding, closed by direct response; final No major findings
+      - Lean A: two Minor report premise/runtime-classification findings, closed by report-only direct response; final No major findings
+      - Lean B: provisional selection.unchecked finding withdrawn after cycle-ledger schema re-audit; final No major findings
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4054#issuecomment-5373297986
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: construct generated-image ArchitectureObject shape descent from actual high objectMap fields, then add architecture-context lift and on-image functor/inverse graphs sufficient to descend EquationSystemExactTransport.contextEquivalence and observable data; assemble the remaining upper computational fields into an actual-high-derived SignedExactCoreReadingHom and PackageTotalHom; only then use that descended factor to derive every ambient factor, factorization, and uniqueness field from the supplied high universal property
+```
+
 ### Cycle 17 — supplied-high generated-factor comparison and proof-use checkpoint
 
 ```yaml

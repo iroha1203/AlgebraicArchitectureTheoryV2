@@ -22,6 +22,8 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteEquationULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedLiftNaturality
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorComparison
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedFactorFieldDescentWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -68,4 +70,9 @@ factor, and identifies it with the named high inverse-package factor.  It also
 constructs the corresponding low inverse-upper factor and records explicitly
 that this low projection is independent of the supplied high lift.  Thus it is
 a fail-closed proof-use checkpoint, not an ambient cartesianness reflection.
+The field-descent layer then reads the actual normalized high factor directly
+to reflect its exact-doctrine base, upper Atom map, object configuration, and
+configuration map, and fires those fields on the concrete noninvertible
+two-source chain.  Full object data, context/equation transport, whole-factor
+descent, ambient reflection, and `FiniteModelLift` remain unproved before K0.
 -/
