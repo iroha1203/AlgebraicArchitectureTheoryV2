@@ -1,5 +1,6 @@
 import ResearchLean.AG.AtomFoundation.Categories
 import Mathlib.CategoryTheory.Limits.Shapes.Pullback.IsPullback.Basic
+import Mathlib.Data.List.NodupEquivFin
 import Mathlib.GroupTheory.Perm.Support
 
 /-!
@@ -17,7 +18,8 @@ table.
 `FiniteDoctrineCode` uses the first-order `Fin sourceCard` option explicitly
 left to F0 by `(s4)` of the fixed GOAL.  This makes every source-map cell and
 the named identity source table uniformly executable.  Pullback later
-re-enumerates its finite compatible-pair subtype by `Fin (Fintype.card ...)`.
+re-enumerates its finite compatible-pair subtype by filtering the explicit
+lexicographic product of the two source lists and then using list rank/unrank.
 Atom predicates are finite or cofinite exception tables.  Atom permutations
 are permutations of an authored finite support and are extended by the
 identity outside that support using mathlib's `Equiv.Perm.ofSubtype`.
@@ -764,6 +766,24 @@ def finiteCodeCartRealization {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
 
 /-! ## Pullback closure of the finite-code realization image -/
 
+/-- Enumerate a first-order finite source type in its canonical `Fin` order. -/
+def finiteSourceCells (card : ℕ) : List (FiniteSource.{u} card) :=
+  (List.finRange card).map ULift.up
+
+/-- The canonical first-order source enumeration contains no duplicates. -/
+theorem finiteSourceCells_nodup (card : ℕ) :
+    (finiteSourceCells card : List (FiniteSource.{u} card)).Nodup := by
+  apply (List.nodup_finRange card).map
+  intro first second heq
+  exact congrArg ULift.down heq
+
+/-- Every first-order source cell occurs in the canonical enumeration. -/
+theorem finiteSourceCells_complete (card : ℕ)
+    (source : FiniteSource.{u} card) :
+    source ∈ finiteSourceCells card := by
+  rcases source with ⟨source⟩
+  simp [finiteSourceCells]
+
 /-- Cancel the same transported predicate on the right by its inverse. -/
 theorem AtomPredicateCode.eq_transport_trans_symm_of_transport_eq
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -786,25 +806,87 @@ abbrev CompatibleSource {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     first.sourceMap pair.1 = second.sourceMap pair.2}
 
 /--
-Canonical F0 re-enumeration of the finite compatible-pair subtype by a
-first-order `Fin` source code.
+Explicit lexicographic enumeration of the compatible source pairs.  Filtering
+the canonical product keeps the pullback code executable rather than choosing
+an arbitrary equivalence with `Fin`.
 -/
-noncomputable def compatibleSourceEquiv
+def compatibleSourceValues
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
     (second : CartPresentationBetween right base) :
-    FiniteSource.{u} (Fintype.card (CompatibleSource first second)) ≃
+    List (CompatibleSource first second) :=
+  ((finiteSourceCells left.doctrine.sourceCard).product
+      (finiteSourceCells right.doctrine.sourceCard)).filterMap (fun pair =>
+    if h : first.sourceMap pair.1 = second.sourceMap pair.2 then
+      some ⟨pair, h⟩
+    else
+      none)
+
+/-- The explicit compatible-pair enumeration has no duplicates. -/
+theorem compatibleSourceValues_nodup
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {left right base : FiniteInstanceCode U}
+    (first : CartPresentationBetween left base)
+    (second : CartPresentationBetween right base) :
+    (compatibleSourceValues first second).Nodup := by
+  unfold compatibleSourceValues
+  apply List.Nodup.filterMap
+  · intro pair pair' value hvalue hvalue'
+    by_cases hpair : first.sourceMap pair.1 = second.sourceMap pair.2
+    · by_cases hpair' : first.sourceMap pair'.1 = second.sourceMap pair'.2
+      · simp only [hpair, hpair', ↓reduceDIte, Option.mem_def] at hvalue hvalue'
+        exact congrArg Subtype.val
+          (Option.some.inj (hvalue.trans hvalue'.symm))
+      · simp [hpair'] at hvalue'
+    · simp [hpair] at hvalue
+  · exact (finiteSourceCells_nodup _).product (finiteSourceCells_nodup _)
+
+/-- Every compatible source pair occurs in the explicit enumeration. -/
+theorem compatibleSourceValues_complete
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {left right base : FiniteInstanceCode U}
+    (first : CartPresentationBetween left base)
+    (second : CartPresentationBetween right base)
+    (source : CompatibleSource first second) :
+    source ∈ compatibleSourceValues first second := by
+  rcases source with ⟨⟨leftSource, rightSource⟩, compatible⟩
+  simp [compatibleSourceValues, compatible, finiteSourceCells_complete]
+
+/--
+Canonical computable rank/unrank equivalence from the explicit compatible-pair
+list to the first-order source code used by `FiniteDoctrineCode`.
+-/
+def compatibleSourceEquiv
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {left right base : FiniteInstanceCode U}
+    (first : CartPresentationBetween left base)
+    (second : CartPresentationBetween right base) :
+    FiniteSource.{u} (compatibleSourceValues first second).length ≃
       CompatibleSource first second :=
-  Equiv.ulift.trans (Fintype.equivFin (CompatibleSource first second)).symm
+  Equiv.ulift.trans
+    (List.Nodup.getEquivOfForallMemList
+      (compatibleSourceValues first second)
+      (compatibleSourceValues_nodup first second)
+      (compatibleSourceValues_complete first second))
+
+/-- The executable list cardinal agrees with the subtype cardinal. -/
+theorem compatibleSourceValues_length_eq_card
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {left right base : FiniteInstanceCode U}
+    (first : CartPresentationBetween left base)
+    (second : CartPresentationBetween right base) :
+    (compatibleSourceValues first second).length =
+      Fintype.card (CompatibleSource first second) := by
+  simpa using Fintype.card_congr (compatibleSourceEquiv first second)
 
 /-- Finite-code doctrine on compatible source pairs of a cospan. -/
-noncomputable def pullbackDoctrineCode
+def pullbackDoctrineCode
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
     (second : CartPresentationBetween right base) : FiniteDoctrineCode U where
-  sourceCard := Fintype.card (CompatibleSource first second)
+  sourceCard := (compatibleSourceValues first second).length
   normalize input :=
     let pair := compatibleSourceEquiv first second input
     (compatibleSourceEquiv first second).symm
@@ -818,7 +900,7 @@ noncomputable def pullbackDoctrineCode
       (compatibleSourceEquiv first second input).val.1
 
 /-- Selected compatible point of the generated pullback doctrine code. -/
-noncomputable def pullbackInstanceCode
+def pullbackInstanceCode
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
@@ -892,7 +974,7 @@ theorem pullbackInstanceCode_point_snd
   simp [pullbackInstanceCode]
 
 /-- First projection presentation generated from a finite cospan. -/
-noncomputable def pullbackFstPresentation
+def pullbackFstPresentation
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
@@ -908,7 +990,7 @@ noncomputable def pullbackFstPresentation
     simp [pullbackInstanceCode]
 
 /-- Second projection presentation generated from a finite cospan. -/
-noncomputable def pullbackSndPresentation
+def pullbackSndPresentation
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
@@ -963,7 +1045,7 @@ structure PullbackPresentation
   snd : CartPresentationBetween object right
 
 /-- Generate the pullback presentation entirely from a finite cospan. -/
-noncomputable def pullbackPresentation
+def pullbackPresentation
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {left right base : FiniteInstanceCode U}
     (first : CartPresentationBetween left base)
@@ -1308,10 +1390,6 @@ instance cartFieldValueDecidableEq {U : AtomCarrier.{u}}
     [DecidableEq U.Atom] (kind : CartFieldKind) :
     DecidableEq (CartFieldValue U kind) := by
   cases kind <;> simp only [CartFieldValue] <;> infer_instance
-
-/-- Enumerate a first-order finite source type in its canonical `Fin` order. -/
-def finiteSourceCells (card : ℕ) : List (FiniteSource.{u} card) :=
-  (List.finRange card).map ULift.up
 
 /-- Encode an arbitrary source-map table as first-order natural-number cells. -/
 def sourceTableValue (_U : AtomCarrier.{u}) (domainCard codomainCard : ℕ)

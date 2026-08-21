@@ -360,8 +360,12 @@ theorem finiteConstantCompatibleSource_card :
 /-- The generated self-pullback is represented by a four-source doctrine code. -/
 theorem finiteConstantPullback_sourceCard :
     (pullbackDoctrineCode finiteConstantPresentation
-      finiteConstantPresentation).sourceCard = 4 :=
-  finiteConstantCompatibleSource_card
+      finiteConstantPresentation).sourceCard = 4 := by
+  change
+    (compatibleSourceValues finiteConstantPresentation
+      finiteConstantPresentation).length = 4
+  rw [compatibleSourceValues_length_eq_card]
+  exact finiteConstantCompatibleSource_card
 
 /-- The generated constant-map self-pullback square satisfies the actual universal property. -/
 theorem finiteConstantPullback_isPullback :
