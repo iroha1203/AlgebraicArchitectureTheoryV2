@@ -1338,6 +1338,213 @@ structure GeneratedPackageHomULiftNaturality
       input.normalizedHighHom lift = input.highPackageHomFromLowData
 
 /--
+Exact component contract for the next normalized-hom reflection step.
+
+The reflected low hom and the supplied ambient high lift are explicit indices,
+while every comparison inside the structure is a proposition about named
+generated data.  A future producer must return this structure; it must not
+accept a value of it from the caller.  This signature does not itself prove
+reflection or strong cartesianness of the reflected hom.
+-/
+structure ReflectedGeneratedComponentGraph
+    (input : FiniteGeneratedLiftInput)
+    (lift : StrongCartesianLift input.highInput input.highTarget)
+    (reflected : input.lowGeneratedLift.domain ⟶ FiniteModel.corePackage) :
+    Prop where
+  /-- The supplied high lift is normalized by the canonical inverse triangle. -/
+  normalized :
+    input.normalizedHighHom lift = input.highPackageHomFromLowData
+  /-- The exact generated observational packet is produced internally. -/
+  generated_naturality :
+    GeneratedPackageHomULiftNaturality.{u} input
+  /-- The reflected hom lies over the original low semantic arrow. -/
+  reflected_base :
+    reflected.base = input.hom
+  /-- The normalized high lower component is the lift of the reflected one. -/
+  normalized_base :
+    (input.normalizedHighHom lift).base =
+      finiteModelLiftExtInstHom.{u} reflected.base
+  /-- The reflected low source package lies over the original source instance. -/
+  low_domain_point :
+    packagePoint input.lowGeneratedLift.domain = input.lowInput.source
+  /-- The normalized high source package lies over the lifted source instance. -/
+  high_domain_point :
+    packagePoint input.highGeneratedLift.domain = input.highInput.source
+  /-- The low target point lifts to the selected high target point. -/
+  target_point :
+    finiteModelLiftExtractionInstance.{u}
+        (packagePoint FiniteModel.corePackage) =
+      packagePoint finiteModelLiftCorePackage.{u}
+  /-- Package projection sends the normalized high hom to the lifted bottom arrow. -/
+  normalized_projection :
+    (packageProjection finiteModelLiftCarrier.{u}).map
+        (input.normalizedHighHom lift) = input.highInput.hom
+  /-- The normalized and reflected upper Atom maps commute pointwise. -/
+  upper_atom :
+    ∀ atom : FiniteModel.carrier.Atom,
+      (input.normalizedHighHom lift).upper.atomEquiv
+          (finiteModelLiftCarrierEquiv.{u}.atom atom) =
+        finiteModelLiftCarrierEquiv.{u}.atom
+          (reflected.upper.atomEquiv atom)
+  /-- The normalized and reflected object maps commute on lifted objects. -/
+  upper_object :
+    ∀ object : ArchitectureObject FiniteModel.carrier,
+      (input.normalizedHighHom lift).upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} object) =
+        finiteModelLiftArchitectureObject.{u}
+          (reflected.upper.objectMap object)
+  /-- The normalized configuration maps commute after the generated object cast. -/
+  upper_configurationMap :
+    ∀ object : ArchitectureObject FiniteModel.carrier,
+      (input.normalizedHighHom lift).upper.configurationMap
+          (finiteModelLiftArchitectureObject.{u} object) =
+        castConfigurationHom rfl
+          (congrArg ArchitectureObject.configuration
+            (upper_object object)).symm
+          (finiteModelLiftConfigurationHom.{u}
+            (reflected.upper.configurationMap object))
+  /-- The normalized and reflected equation maps commute with the generated lift. -/
+  upper_equationMap :
+    ∀ index : input.lowGeneratedLift.domain.algebra.equationSystem.Index,
+      (input.normalizedHighHom lift).upper.equationMap
+          (input.generatedDomainEquationIndexLift index) =
+        FiniteGeneratedLiftInput.targetEquationIndexLift.{u}
+          (reflected.upper.equationMap index)
+  /-- Detector syntax on the reflected low and normalized high domains agrees. -/
+  domain_detectorCode :
+    ∀ index : input.lowGeneratedLift.domain.algebra.equationSystem.Index,
+      input.highGeneratedLift.domain.algebra.circuits.code
+          (input.generatedDomainEquationIndexLift index) =
+        finiteModelLiftCircuitDetectorCode.{u}
+          (input.lowGeneratedLift.domain.algebra.circuits.code index)
+  /-- Equation semantics agrees on every reflected low object and its lift. -/
+  domain_equationHolds :
+    ∀ (index : input.lowGeneratedLift.domain.algebra.equationSystem.Index)
+      (object : ArchitectureObject FiniteModel.carrier),
+      input.lowGeneratedLift.domain.algebra.equationSystem.EquationHolds
+          index object ↔
+        input.highGeneratedLift.domain.algebra.equationSystem.EquationHolds
+          (input.generatedDomainEquationIndexLift index)
+          (finiteModelLiftArchitectureObject.{u} object)
+  /-- Normalized and reflected operation reads commute after generated endpoint casts. -/
+  upper_operation :
+    ∀ {source target : ArchitectureObject FiniteModel.carrier}
+      (operation : input.lowGeneratedLift.domain.reading.operationReading.Op
+        source target),
+      finiteModelLiftCorePackage.{u}.reading.operationReading.configurationMap
+          ((input.normalizedHighHom lift).upper.operationMap
+            (input.generatedDomainOperationLift operation)) =
+        castConfigurationHom
+          (congrArg ArchitectureObject.configuration
+            (upper_object source)).symm
+          (congrArg ArchitectureObject.configuration
+            (upper_object target)).symm
+          (finiteModelLiftConfigurationHom.{u}
+            (FiniteModel.corePackage.reading.operationReading.configurationMap
+              (reflected.upper.operationMap operation)))
+  /-- The normalized and reflected invariant maps commute on generated indices. -/
+  upper_invariantMap :
+    ∀ index : input.lowGeneratedLift.domain.reading.invariantReading.Index,
+      (input.normalizedHighHom lift).upper.invariantMap
+          (input.generatedDomainInvariantIndexLift index) =
+        FiniteGeneratedLiftInput.targetInvariantIndexLift.{u}
+          (reflected.upper.invariantMap index)
+  /-- Generated domain invariant truth agrees on lifted objects. -/
+  domain_invariant :
+    ∀ (index : input.lowGeneratedLift.domain.reading.invariantReading.Index)
+      (object : ArchitectureObject FiniteModel.carrier),
+      (match input.lowGeneratedLift.domain.reading.invariantReading.invariant
+          index with
+        | .function _ => False
+        | .predicate predicate => predicate.holds object) ↔
+        (match input.highGeneratedLift.domain.reading.invariantReading.invariant
+            (input.generatedDomainInvariantIndexLift index) with
+          | .function _ => False
+          | .predicate predicate =>
+              predicate.holds (finiteModelLiftArchitectureObject.{u} object))
+  /-- The normalized and reflected signature-axis maps commute. -/
+  upper_axisMap :
+    ∀ axis : input.lowGeneratedLift.domain.reading.signatureReading.Axis,
+      (input.normalizedHighHom lift).upper.axisMap
+          (input.generatedDomainSignatureAxisLift axis) =
+        FiniteGeneratedLiftInput.targetSignatureAxisLift.{u}
+          (reflected.upper.axisMap axis)
+  /-- Generated domain selected-axis status is preserved and reflected. -/
+  domain_axis_selected :
+    ∀ axis : input.lowGeneratedLift.domain.reading.signatureReading.Axis,
+      input.lowGeneratedLift.domain.reading.signatureReading.selected axis ↔
+        input.highGeneratedLift.domain.reading.signatureReading.selected
+          (input.generatedDomainSignatureAxisLift axis)
+  /-- The normalized and reflected coordinate equivalences commute pointwise. -/
+  upper_coordinateEquiv :
+    ∀ (axis : input.lowGeneratedLift.domain.reading.signatureReading.Axis)
+      (coordinate :
+        input.lowGeneratedLift.domain.reading.signatureReading.Coordinate axis),
+      (input.normalizedHighHom lift).upper.coordinateEquiv
+          (input.generatedDomainSignatureAxisLift axis)
+          (input.generatedDomainSignatureCoordinateLift axis coordinate) =
+        FiniteGeneratedLiftInput.targetSignatureCoordinateLift.{u}
+          (reflected.upper.axisMap axis)
+          (reflected.upper.coordinateEquiv axis coordinate)
+  /-- Generated domain coordinate values agree on lifted objects and axes. -/
+  domain_coordinate :
+    ∀ (object : ArchitectureObject FiniteModel.carrier)
+      (axis : input.lowGeneratedLift.domain.reading.signatureReading.Axis),
+      input.highGeneratedLift.domain.reading.signatureReading.coordinate
+          (finiteModelLiftArchitectureObject.{u} object)
+          (input.generatedDomainSignatureAxisLift axis) =
+        ULift.up
+          (input.lowGeneratedLift.domain.reading.signatureReading.coordinate
+            object axis)
+
+/--
+Exact theorem-output surface for the ambient universal property that the next
+reflection step must generate.  The factor function is output data indexed by
+every ambient low competitor; neither it nor any of its laws may be supplied
+to the future producer by a caller.  This structure fixes the full Mathlib
+factorization and uniqueness quantifiers, while proof-use of the supplied high
+lift remains an extrinsic acceptance obligation because proof irrelevance
+cannot encode that provenance in the result type.
+-/
+structure ReflectedGeneratedUniversalProperty
+    (input : FiniteGeneratedLiftInput)
+    (lift : StrongCartesianLift input.highInput input.highTarget)
+    (reflected : input.lowGeneratedLift.domain ⟶ FiniteModel.corePackage) :
+    Type (u + 2) where
+  /-- All generated cross-carrier component graphs for the reflected hom. -/
+  components : ReflectedGeneratedComponentGraph input lift reflected
+  /-- Generated factor for every ambient low universal-property problem. -/
+  factor : ∀ {package : AATCorePackage FiniteModel.carrier}
+    (base : packagePoint package ⟶ input.lowInput.source)
+    (hom : package ⟶ FiniteModel.corePackage)
+    [(packageProjection FiniteModel.carrier).IsHomLift
+      (base ≫ input.lowInput.hom) hom],
+    package ⟶ input.lowGeneratedLift.domain
+  /-- Every generated factor lies over the requested low base arrow. -/
+  factor_isHomLift : ∀ {package : AATCorePackage FiniteModel.carrier}
+    (base : packagePoint package ⟶ input.lowInput.source)
+    (hom : package ⟶ FiniteModel.corePackage)
+    [(packageProjection FiniteModel.carrier).IsHomLift
+      (base ≫ input.lowInput.hom) hom],
+    (packageProjection FiniteModel.carrier).IsHomLift base (factor base hom)
+  /-- Every generated factor followed by the reflected hom is the competitor. -/
+  factor_fac : ∀ {package : AATCorePackage FiniteModel.carrier}
+    (base : packagePoint package ⟶ input.lowInput.source)
+    (hom : package ⟶ FiniteModel.corePackage)
+    [(packageProjection FiniteModel.carrier).IsHomLift
+      (base ≫ input.lowInput.hom) hom],
+    factor base hom ≫ reflected = hom
+  /-- The generated factor is unique among every ambient low factor. -/
+  factor_unique : ∀ {package : AATCorePackage FiniteModel.carrier}
+    (base : packagePoint package ⟶ input.lowInput.source)
+    (hom : package ⟶ FiniteModel.corePackage)
+    [(packageProjection FiniteModel.carrier).IsHomLift
+      (base ≫ input.lowInput.hom) hom]
+    (candidate : package ⟶ input.lowGeneratedLift.domain)
+    [(packageProjection FiniteModel.carrier).IsHomLift base candidate],
+    candidate ≫ reflected = hom → candidate = factor base hom
+
+/--
 Generate the complete observational naturality packet from the finite lower
 arrow.  No proof field or comparison object is accepted from the caller.
 -/
@@ -1372,6 +1579,249 @@ theorem generatedPackageHomULiftNaturality
   domain_coordinate := input.inverseGeneratedDomain_coordinate_graph
   normalized := input.normalizedHighHom_eq_highPackageHomFromLowData
 
+/-! ## Generated package-hom identity and composition coherence -/
+
+/--
+A two-arrow chain ending at one selected target package.  The chain contains
+only pointed-doctrine data; every package, lift, comparison isomorphism, and
+factorization equation below is generated from these four fields.
+-/
+structure GeneratedLiftChain {U : AtomCarrier.{u}}
+    (targetPackage : AATCorePackage U) where
+  /-- Source pointed instance of the first arrow. -/
+  source : ExtractionInstance U
+  /-- Shared middle pointed instance. -/
+  middle : ExtractionInstance U
+  /-- First arrow of the chain. -/
+  first : source ⟶ middle
+  /-- Second arrow, ending at the point selected by the fixed package. -/
+  second : middle ⟶ packagePoint targetPackage
+
+namespace GeneratedLiftChain
+
+/-- Semantic input for the second arrow of a generated chain. -/
+noncomputable def tailInput {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) : CartSemanticInput U where
+  source := chain.middle
+  target := packagePoint Q
+  hom := chain.second
+
+/-- The selected target package for the second arrow. -/
+noncomputable def tailTarget {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) : CoreFiber chain.tailInput.target :=
+  ⟨Q, rfl⟩
+
+/-- The generated lift of the second arrow. -/
+noncomputable def tailLift {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    StrongCartesianLift chain.tailInput chain.tailTarget :=
+  strongCartesianLiftOfTarget chain.tailInput chain.tailTarget
+
+/-- Semantic input for the direct composite arrow. -/
+noncomputable def compositeInput {U : AtomCarrier.{u}}
+    {Q : AATCorePackage U} (chain : GeneratedLiftChain Q) :
+    CartSemanticInput U where
+  source := chain.source
+  target := packagePoint Q
+  hom := chain.first ≫ chain.second
+
+/-- The selected target package for the direct composite arrow. -/
+noncomputable def compositeTarget {U : AtomCarrier.{u}}
+    {Q : AATCorePackage U} (chain : GeneratedLiftChain Q) :
+    CoreFiber chain.compositeInput.target :=
+  ⟨Q, rfl⟩
+
+/-- The lift generated directly from the composite bottom arrow. -/
+noncomputable def directLift {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    StrongCartesianLift chain.compositeInput chain.compositeTarget :=
+  strongCartesianLiftOfTarget chain.compositeInput chain.compositeTarget
+
+/-- The generated tail lift lies over the chain's middle pointed instance. -/
+theorem tailLift_domain_point {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    packagePoint chain.tailLift.domain = chain.middle := by
+  letI := chain.tailLift.isStronglyCartesian
+  exact CategoryTheory.IsHomLift.domain_eq
+    (packageProjection U) chain.tailInput.hom chain.tailLift.hom
+
+/-- Semantic input for lifting the first arrow to the generated tail domain. -/
+noncomputable def headInput {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) : CartSemanticInput U where
+  source := chain.source
+  target := packagePoint chain.tailLift.domain
+  hom := chain.first ≫ eqToHom chain.tailLift_domain_point.symm
+
+/-- The generated tail domain as target of the first-arrow lift. -/
+noncomputable def headTarget {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) : CoreFiber chain.headInput.target :=
+  ⟨chain.tailLift.domain, rfl⟩
+
+/-- The generated lift of the first arrow to the generated tail domain. -/
+noncomputable def headLift {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    StrongCartesianLift chain.headInput chain.headTarget :=
+  strongCartesianLiftOfTarget chain.headInput chain.headTarget
+
+/--
+The staged composite of the two generated package homs.  Its universal
+property is the actual Mathlib composition of the two strong-cartesian
+properties, not a separately supplied certificate.
+-/
+noncomputable def stagedLift {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    StrongCartesianLift chain.compositeInput chain.compositeTarget where
+  domain := chain.headLift.domain
+  hom := chain.headLift.hom ≫ chain.tailLift.hom
+  isStronglyCartesian := by
+    letI := chain.headLift.isStronglyCartesian
+    letI := chain.tailLift.isStronglyCartesian
+    simpa [headInput, compositeInput, tailInput] using
+      CategoryTheory.Functor.IsStronglyCartesian.comp
+        (packageProjection U)
+        (f := chain.headInput.hom) (g := chain.tailInput.hom)
+        (φ := chain.headLift.hom) (ψ := chain.tailLift.hom)
+
+/-- Canonical vertical compositor from the staged domain to the direct domain. -/
+noncomputable def compIso {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    chain.stagedLift.domain ≅ chain.directLift.domain :=
+  StrongCartesianLift.domainIso chain.directLift chain.stagedLift
+
+/--
+The canonical compositor identifies direct and staged generated package homs.
+Strict equality is neither needed nor claimed because their domains differ.
+-/
+theorem compIso_fac {U : AtomCarrier.{u}} {Q : AATCorePackage U}
+    (chain : GeneratedLiftChain Q) :
+    chain.compIso.hom ≫ chain.directLift.hom = chain.stagedLift.hom :=
+  StrongCartesianLift.domainIso_hom_fac _ _
+
+/-- The generated lift of the literal identity bottom arrow. -/
+noncomputable def identityGeneratedLift {U : AtomCarrier.{u}}
+    (Q : AATCorePackage U) :
+    StrongCartesianLift (packageIdentitySemanticInput Q)
+      (packageIdentityTarget Q) :=
+  strongCartesianLiftOfTarget (packageIdentitySemanticInput Q)
+    (packageIdentityTarget Q)
+
+/-- Canonical vertical unitor from the generated identity domain to the package. -/
+noncomputable def unitIso {U : AtomCarrier.{u}} (Q : AATCorePackage U) :
+    (identityGeneratedLift Q).domain ≅ Q :=
+  StrongCartesianLift.domainIso
+    (packageIdentityStrongCartesianLift Q) (identityGeneratedLift Q)
+
+/-- The canonical unitor identifies the generated and literal identity homs. -/
+theorem unitIso_fac {U : AtomCarrier.{u}} (Q : AATCorePackage U) :
+    (unitIso Q).hom ≫ 𝟙 Q = (identityGeneratedLift Q).hom :=
+  StrongCartesianLift.domainIso_hom_fac _ _
+
+end GeneratedLiftChain
+
+/-- Two finite-model pointed arrows ending at the selected finite package. -/
+abbrev FiniteSelectedGeneratedChain :=
+  GeneratedLiftChain FiniteModel.corePackage
+
+namespace FiniteSelectedGeneratedChain
+
+/-- Lift both lower arrows of a selected finite chain through the canonical carrier lift. -/
+def lift (chain : FiniteSelectedGeneratedChain) :
+    GeneratedLiftChain finiteModelLiftCorePackage.{u} where
+  source := finiteModelLiftExtractionInstance.{u} chain.source
+  middle := finiteModelLiftExtractionInstance.{u} chain.middle
+  first := finiteModelLiftExtInstHom.{u} chain.first
+  second := finiteModelLiftExtInstHom.{u} chain.second
+
+/-- Repackage the direct composite as the finite generated-input surface. -/
+def compositeGeneratedInput (chain : FiniteSelectedGeneratedChain) :
+    FiniteGeneratedLiftInput where
+  source := chain.source
+  hom := chain.first ≫ chain.second
+
+/-- Repackage the tail arrow as the finite generated-input surface. -/
+def tailGeneratedInput (chain : FiniteSelectedGeneratedChain) :
+    FiniteGeneratedLiftInput where
+  source := chain.middle
+  hom := chain.second
+
+/-- The high chain composite is the canonical lift of the low composite arrow. -/
+theorem lift_composite_base (chain : FiniteSelectedGeneratedChain) :
+    chain.lift.compositeInput.hom =
+      finiteModelLiftExtInstHom.{u} chain.compositeGeneratedInput.hom := by
+  exact (finiteModelLiftExtInstHom_comp chain.first chain.second).symm
+
+end FiniteSelectedGeneratedChain
+
+/-- The literal identity arrow as a finite generated-input value. -/
+noncomputable def finiteIdentityGeneratedInput : FiniteGeneratedLiftInput where
+  source := packagePoint FiniteModel.corePackage
+  hom := 𝟙 (packagePoint FiniteModel.corePackage)
+
+/-- The high arrow generated from the finite identity is the literal high identity. -/
+theorem finiteIdentityGeneratedInput_high_base :
+    finiteIdentityGeneratedInput.highInput.hom =
+      𝟙 (packagePoint finiteModelLiftCorePackage.{u}) := by
+  exact finiteModelLiftExtInstHom_id (packagePoint FiniteModel.corePackage)
+
+/--
+The generated-package unit/compositor contract at the selected finite target.
+It quantifies every two-arrow finite chain and generates all packages, lifts,
+vertical isomorphisms, and observational packets internally.  It is not a
+functor on arbitrary packages at either carrier.
+-/
+structure GeneratedPackageHomULiftCoherence : Prop where
+  /-- Low generated identity is the literal package identity up to the canonical unitor. -/
+  low_unit :
+    (GeneratedLiftChain.unitIso FiniteModel.corePackage).hom ≫
+        𝟙 FiniteModel.corePackage =
+      (GeneratedLiftChain.identityGeneratedLift FiniteModel.corePackage).hom
+  /-- High generated identity is the literal package identity up to the canonical unitor. -/
+  high_unit :
+    (GeneratedLiftChain.unitIso finiteModelLiftCorePackage.{u}).hom ≫
+        𝟙 finiteModelLiftCorePackage.{u} =
+      (GeneratedLiftChain.identityGeneratedLift
+        finiteModelLiftCorePackage.{u}).hom
+  /-- The high unit bottom arrow is the canonical lift of the low identity. -/
+  high_unit_base :
+    finiteIdentityGeneratedInput.highInput.hom =
+      𝟙 (packagePoint finiteModelLiftCorePackage.{u})
+  /-- Every low direct composite agrees with staged package-hom composition up to canonical iso. -/
+  low_comp : ∀ chain : FiniteSelectedGeneratedChain,
+    chain.compIso.hom ≫ chain.directLift.hom = chain.stagedLift.hom
+  /-- Every lifted direct composite agrees with staged package-hom composition up to canonical iso. -/
+  high_comp : ∀ chain : FiniteSelectedGeneratedChain,
+    (chain.lift.compIso).hom ≫ (chain.lift.directLift).hom =
+      (chain.lift.stagedLift).hom
+  /-- High direct-composite bases are canonical lifts of low composites. -/
+  high_comp_base : ∀ chain : FiniteSelectedGeneratedChain,
+    chain.lift.compositeInput.hom =
+      finiteModelLiftExtInstHom.{u} chain.compositeGeneratedInput.hom
+  /-- Identity-arrow low/high observations are generated without caller fields. -/
+  identity_naturality :
+    GeneratedPackageHomULiftNaturality.{u} finiteIdentityGeneratedInput
+  /-- Composite-arrow low/high observations are generated without caller fields. -/
+  composite_naturality : ∀ chain : FiniteSelectedGeneratedChain,
+    GeneratedPackageHomULiftNaturality.{u} chain.compositeGeneratedInput
+  /-- Tail-arrow low/high observations are generated without caller fields. -/
+  tail_naturality : ∀ chain : FiniteSelectedGeneratedChain,
+    GeneratedPackageHomULiftNaturality.{u} chain.tailGeneratedInput
+
+/-- Generate the complete selected-target unit/compositor coherence packet. -/
+theorem generatedPackageHomULiftCoherence :
+    GeneratedPackageHomULiftCoherence.{u} where
+  low_unit := GeneratedLiftChain.unitIso_fac FiniteModel.corePackage
+  high_unit := GeneratedLiftChain.unitIso_fac finiteModelLiftCorePackage.{u}
+  high_unit_base := finiteIdentityGeneratedInput_high_base
+  low_comp := GeneratedLiftChain.compIso_fac
+  high_comp := fun chain => GeneratedLiftChain.compIso_fac chain.lift
+  high_comp_base := FiniteSelectedGeneratedChain.lift_composite_base
+  identity_naturality :=
+    generatedPackageHomULiftNaturality finiteIdentityGeneratedInput
+  composite_naturality := fun chain =>
+    generatedPackageHomULiftNaturality chain.compositeGeneratedInput
+  tail_naturality := fun chain =>
+    generatedPackageHomULiftNaturality chain.tailGeneratedInput
+
 /-! ## A noninvertible generated input from the finite portfolio -/
 
 local instance finiteGeneratedLiftAtomDecidableEq :
@@ -1399,6 +1849,30 @@ def finiteSelectiveTwoToCoreHom :
   finiteSelectiveTwoInput.semantic.hom ≫
     finiteSelectiveOneToSupportInput.semantic.hom ≫
       finitePortfolioSupportToCoreHom
+
+/--
+The concrete two-source portfolio as a genuine two-arrow selected-target
+chain.  Its first arrow is already noninvertible; no package, lift, or
+coherence comparison is supplied as input.
+-/
+def finiteSelectiveTwoGeneratedChain : FiniteSelectedGeneratedChain where
+  source := finiteSelectiveTwoInput.semantic.source
+  middle := finiteSelectiveTwoInput.semantic.target
+  first := finiteSelectiveTwoInput.semantic.hom
+  second := finiteSelectiveOneToSupportInput.semantic.hom ≫
+    finitePortfolioSupportToCoreHom
+
+/-- The concrete chain's first arrow is genuinely noninvertible. -/
+theorem finiteSelectiveTwoGeneratedChain_first_not_isIso :
+    ¬ IsIso finiteSelectiveTwoGeneratedChain.first :=
+  finiteSelectiveTwoInput_not_isIso
+
+/-- The direct composite of the concrete chain is the previously named portfolio arrow. -/
+theorem finiteSelectiveTwoGeneratedChain_composite_hom :
+    finiteSelectiveTwoGeneratedChain.first ≫
+        finiteSelectiveTwoGeneratedChain.second =
+      finiteSelectiveTwoToCoreHom := by
+  simp [finiteSelectiveTwoGeneratedChain, finiteSelectiveTwoToCoreHom]
 
 /-- The composed portfolio arrow supplies a concrete generated-lift input. -/
 def finiteSelectiveTwoGeneratedLiftInput : FiniteGeneratedLiftInput where
@@ -1433,6 +1907,28 @@ theorem finiteSelectiveTwoToCoreHom_not_isIso :
   letI : IsIso finiteSelectiveTwoToCoreHom := hiso
   exact finiteSelectiveTwoToCore_sourceMap_not_injective
     (extInstHom_sourceMap_injective_of_isIso finiteSelectiveTwoToCoreHom)
+
+/-- The concrete chain's direct composite remains genuinely noninvertible. -/
+theorem finiteSelectiveTwoGeneratedChain_composite_not_isIso :
+    ¬ IsIso
+      (finiteSelectiveTwoGeneratedChain.first ≫
+        finiteSelectiveTwoGeneratedChain.second) := by
+  rw [finiteSelectiveTwoGeneratedChain_composite_hom]
+  exact finiteSelectiveTwoToCoreHom_not_isIso
+
+/-- The generated compositor laws fire on the noninvertible chain in both carriers. -/
+theorem finiteSelectiveTwoGeneratedChain_composition_coherence :
+    (finiteSelectiveTwoGeneratedChain.compIso.hom ≫
+        finiteSelectiveTwoGeneratedChain.directLift.hom =
+      finiteSelectiveTwoGeneratedChain.stagedLift.hom) ∧
+    (((FiniteSelectedGeneratedChain.lift.{u}
+        finiteSelectiveTwoGeneratedChain).compIso).hom ≫
+        (FiniteSelectedGeneratedChain.lift.{u}
+          finiteSelectiveTwoGeneratedChain).directLift.hom =
+      (FiniteSelectedGeneratedChain.lift.{u}
+        finiteSelectiveTwoGeneratedChain).stagedLift.hom) := by
+  exact ⟨GeneratedLiftChain.compIso_fac _,
+    GeneratedLiftChain.compIso_fac _⟩
 
 /--
 The noninvertible two-source portfolio input carries the generated

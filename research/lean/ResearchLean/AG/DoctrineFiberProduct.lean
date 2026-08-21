@@ -55,7 +55,11 @@ canonical vertical domain isomorphism between two strong lifts inside one
 carrier.  The generated-lift naturality layer then consumes its inverse
 triangle and proves endpoint, lower-map, upper-component, equation-semantic,
 operation, invariant, and signature observations for the canonical finite
-low/high package homs, including a noninvertible concrete input.  This is an
-observational theorem-output, not a cross-carrier package functor or the still
-unproved ambient strong-lift reflection.
+low/high package homs.  It also proves selected-target generated identity and
+two-arrow composition coherence up to canonical vertical domain isomorphism,
+fires both layers on a noninvertible concrete chain, and fixes the exact
+component plus ambient-factorization output types for the next reflection
+step.  These are observational and coherence theorem-outputs, not a
+cross-carrier package functor or the still unproved ambient strong-lift
+reflection.
 -/
