@@ -36,12 +36,148 @@ def finiteAllAtomPredicate : AtomPredicateCode FiniteModel.carrier where
   defaultValue := true
   exceptions := ∅
 
+/-- Finite predicate admitting every fixture Atom except `componentC`. -/
+def finiteWithoutComponentCAtomPredicate :
+    AtomPredicateCode FiniteModel.carrier where
+  defaultValue := true
+  exceptions := {FiniteModel.FiniteAtom.componentC}
+
+/-- The finite predicate has an explicit positive `Holds` instance. -/
+theorem finiteWithoutComponentC_holds_componentA :
+    finiteWithoutComponentCAtomPredicate.Holds
+      FiniteModel.FiniteAtom.componentA := by
+  simp [finiteWithoutComponentCAtomPredicate, AtomPredicateCode.Holds,
+    AtomPredicateCode.eval]
+
+/-- The same finite predicate has an explicit negative `Holds` instance. -/
+theorem finiteWithoutComponentC_not_holds_componentC :
+    ¬ finiteWithoutComponentCAtomPredicate.Holds
+      FiniteModel.FiniteAtom.componentC := by
+  simp [finiteWithoutComponentCAtomPredicate, AtomPredicateCode.Holds,
+    AtomPredicateCode.eval]
+
 /-- All-admitting finite doctrine with a first-order source cardinality. -/
 def finiteAllDoctrineCode (sourceCard : ℕ) :
     FiniteDoctrineCode FiniteModel.carrier where
   sourceCard := sourceCard
   normalize := id
   extraction := fun _ => finiteAllAtomPredicate
+
+/-! ## The reviewed FiniteModel doctrine lies in the realization image up to isomorphism -/
+
+/-- Decode a two-cell first-order source as the reviewed FiniteModel source type. -/
+def finiteModelCodeSourceToFixture
+    (source : FiniteSource 2) : FiniteModel.ExtractionSource :=
+  if source.down.val = 0 then FiniteModel.ExtractionSource.all
+  else FiniteModel.ExtractionSource.withoutComponentC
+
+/-- Encode each reviewed FiniteModel source by its first-order source cell. -/
+def finiteModelFixtureSourceToCode :
+    FiniteModel.ExtractionSource → FiniteSource 2
+  | .all => ULift.up 0
+  | .withoutComponentC => ULift.up 1
+
+/-- Source equivalence used to compare the code doctrine with the reviewed fixture. -/
+def finiteModelSourceEquiv :
+    FiniteSource 2 ≃ FiniteModel.ExtractionSource where
+  toFun := finiteModelCodeSourceToFixture
+  invFun := finiteModelFixtureSourceToCode
+  left_inv source := by
+    rcases source with ⟨source⟩
+    apply ULift.ext
+    apply Fin.ext
+    fin_cases source <;> rfl
+  right_inv source := by
+    cases source <;> rfl
+
+/-- The first code source corresponds to the all-admitting fixture source. -/
+@[simp]
+theorem finiteModelSourceEquiv_zero :
+    finiteModelSourceEquiv (ULift.up (0 : Fin 2)) =
+      FiniteModel.ExtractionSource.all :=
+  rfl
+
+/-- The second code source corresponds to the selective fixture source. -/
+@[simp]
+theorem finiteModelSourceEquiv_one :
+    finiteModelSourceEquiv (ULift.up (1 : Fin 2)) =
+      FiniteModel.ExtractionSource.withoutComponentC :=
+  rfl
+
+/-- The inverse source equivalence sends the all-admitting source to cell zero. -/
+@[simp]
+theorem finiteModelSourceEquiv_symm_all :
+    finiteModelSourceEquiv.symm FiniteModel.ExtractionSource.all =
+      ULift.up (0 : Fin 2) :=
+  rfl
+
+/-- The inverse source equivalence sends the selective source to cell one. -/
+@[simp]
+theorem finiteModelSourceEquiv_symm_withoutComponentC :
+    finiteModelSourceEquiv.symm
+        FiniteModel.ExtractionSource.withoutComponentC =
+      ULift.up (1 : Fin 2) :=
+  rfl
+
+/-- Finite doctrine code whose decoding reproduces the reviewed fixture up to source renaming. -/
+def finiteModelDoctrineCode : FiniteDoctrineCode FiniteModel.carrier where
+  sourceCard := 2
+  normalize := id
+  extraction source :=
+    match finiteModelSourceEquiv source with
+    | .all => finiteAllAtomPredicate
+    | .withoutComponentC => finiteWithoutComponentCAtomPredicate
+
+/-- Exact comparison from the decoded finite code to the reviewed fixture doctrine. -/
+def finiteModelDoctrineToFixture :
+    finiteModelDoctrineCode.toDoctrine ⟶ FiniteModel.extractionDoctrine where
+  sourceMap := finiteModelSourceEquiv
+  atomEquiv := Equiv.refl _
+  normalize_eq _ := rfl
+  extraction_iff source atom := by
+    rcases source with ⟨source⟩
+    fin_cases source <;>
+      simp [finiteModelDoctrineCode, finiteModelSourceEquiv,
+        finiteModelCodeSourceToFixture,
+        finiteWithoutComponentCAtomPredicate, finiteAllAtomPredicate,
+        AtomPredicateCode.Holds, AtomPredicateCode.eval,
+        ExtractionDoctrine.extracts, FiniteDoctrineCode.toDoctrine,
+        FiniteModel.extractionDoctrine]
+
+/-- Exact comparison from the reviewed fixture doctrine back to the finite code. -/
+def finiteModelDoctrineFromFixture :
+    FiniteModel.extractionDoctrine ⟶ finiteModelDoctrineCode.toDoctrine where
+  sourceMap := finiteModelSourceEquiv.symm
+  atomEquiv := Equiv.refl _
+  normalize_eq _ := rfl
+  extraction_iff source atom := by
+    cases source <;>
+      simp [finiteModelDoctrineCode, finiteModelSourceEquiv,
+        finiteModelCodeSourceToFixture, finiteModelFixtureSourceToCode,
+        finiteWithoutComponentCAtomPredicate, finiteAllAtomPredicate,
+        AtomPredicateCode.Holds, AtomPredicateCode.eval,
+        ExtractionDoctrine.extracts, FiniteDoctrineCode.toDoctrine,
+        FiniteModel.extractionDoctrine]
+
+/--
+The existing reviewed `FiniteModel.extractionDoctrine` is in the finite-code
+object realization image up to an actual isomorphism in `Doct_U`; it is a
+witness of coverage, not the schema's Source anchor.
+-/
+def finiteModelDoctrineRealizationIso :
+    finiteModelDoctrineCode.toDoctrine ≅ FiniteModel.extractionDoctrine where
+  hom := finiteModelDoctrineToFixture
+  inv := finiteModelDoctrineFromFixture
+  hom_inv_id := by
+    apply ExactDoctrineHom.ext
+    · funext source
+      exact finiteModelSourceEquiv.symm_apply_apply source
+    · rfl
+  inv_hom_id := by
+    apply ExactDoctrineHom.ext
+    · funext source
+      exact finiteModelSourceEquiv.apply_symm_apply source
+    · rfl
 
 /-- First point of the two-source doctrine. -/
 def finiteTwoSourceZero : (finiteAllDoctrineCode 2).Source :=
@@ -84,6 +220,42 @@ def finiteConstantPresentation :
     simp
   source_eq := rfl
 
+/-- The well-formedness checker accepts the concrete noninvertible presentation. -/
+theorem finiteConstantPresentation_check_true :
+    finiteConstantPresentation.toRaw.checkWellFormed = true :=
+  (CartRawCode.checkWellFormed_eq_true_iff
+    finiteConstantPresentation.toRaw).mpr
+      finiteConstantPresentation.toRaw_wellFormed
+
+/--
+Malformed four-field code whose source table sends the selected one-cell point
+to the nonselected point of the two-cell target.
+-/
+def finiteBadPointRawCode : CartRawCode FiniteModel.carrier where
+  source := finiteOneSourceInstance
+  target := finiteTwoSourceInstance
+  sourceMap := fun _ => finiteTwoSourceOne
+  atomEquiv := AtomPermutationCode.refl
+
+/-- The concrete bad-point raw code fails the selected-source decoder law. -/
+theorem finiteBadPointRawCode_not_wellFormed :
+    ¬ finiteBadPointRawCode.WellFormed := by
+  intro hwellFormed
+  have hpoint := hwellFormed.2.2
+  change finiteTwoSourceOne = finiteTwoSourceZero at hpoint
+  have hdown := congrArg
+    (fun source : (finiteAllDoctrineCode 2).Source => source.down.val) hpoint
+  norm_num [finiteTwoSourceZero, finiteTwoSourceOne,
+    finiteAllDoctrineCode] at hdown
+
+/-- The executable validator rejects the same malformed raw code. -/
+theorem finiteBadPointRawCode_check_false :
+    finiteBadPointRawCode.checkWellFormed = false := by
+  apply Bool.eq_false_iff.mpr
+  intro htrue
+  exact finiteBadPointRawCode_not_wellFormed
+    ((CartRawCode.checkWellFormed_eq_true_iff finiteBadPointRawCode).mp htrue)
+
 /-- The two distinct source cells are identified by the authored constant table. -/
 theorem finiteConstantSourceMap_not_injective :
     ¬ Function.Injective finiteConstantSourceMap := by
@@ -119,6 +291,65 @@ theorem finiteConstantPresentation_not_isIso :
   exact finiteConstantSourceMap_not_injective
     (extInstHom_sourceMap_injective_of_isIso
       (toSemanticCart finiteConstantPresentation.toPresentation).hom)
+
+/-- Positive finite-code realization certificate for the noninvertible arrow. -/
+def finiteConstantRealizableHom : RealizableHom FiniteModel.carrier :=
+  realizableHomOf finiteConstantPresentation.toPresentation
+
+/-! ## A semantic arrow outside the finite-code realization boundary -/
+
+/-- All-admitting doctrine with an infinite source type. -/
+def infiniteAllDoctrine : ExtractionDoctrine FiniteModel.carrier where
+  Source := Nat
+  Vocabulary := PUnit
+  SemanticReading := PUnit
+  Resolution := PUnit
+  vocabulary := PUnit.unit
+  semanticReading := PUnit.unit
+  resolution := PUnit.unit
+  vocabularyAllows := fun _ _ => True
+  semanticAllows := fun _ _ _ => True
+  resolutionAllows := fun _ _ _ => True
+  sourceSemantics := fun _ _ => True
+  normalize := id
+
+/-- Pointed instance of the infinite-source doctrine. -/
+def infiniteAllInstance : ExtractionInstance FiniteModel.carrier where
+  doctrine := infiniteAllDoctrine
+  source := (0 : Nat)
+
+/-- Semantic identity arrow whose endpoints have infinite Source. -/
+def infiniteIdentityInput : CartSemanticInput FiniteModel.carrier where
+  source := infiniteAllInstance
+  target := infiniteAllInstance
+  hom := 𝟙 infiniteAllInstance
+
+/-- No finite presentation decodes to the infinite-source semantic identity. -/
+theorem infiniteIdentityInput_not_presented :
+    ¬ ∃ presentation : CartPresentation FiniteModel.carrier,
+      infiniteIdentityInput = toSemanticCart presentation := by
+  rintro ⟨presentation, hsemantic⟩
+  have hsource := congrArg
+    (fun input : CartSemanticInput FiniteModel.carrier =>
+      input.source.doctrine.Source) hsemantic
+  change Nat = presentation.1.source.doctrine.Source at hsource
+  letI : Fintype Nat := Fintype.ofEquiv
+    presentation.1.source.doctrine.Source (Equiv.cast hsource.symm)
+  exact Fintype.false (α := Nat) inferInstance
+
+/--
+Negative certificate instance: the infinite semantic arrow cannot be the
+semantic component of any `RealizableHom` finite-code package.
+-/
+theorem infiniteIdentityInput_has_no_realizableHom :
+    ¬ ∃ realization : RealizableHom FiniteModel.carrier,
+      realization.semantic = infiniteIdentityInput := by
+  rintro ⟨realization, hsemantic⟩
+  apply infiniteIdentityInput_not_presented
+  refine ⟨realization.presentation, ?_⟩
+  calc
+    infiniteIdentityInput = realization.semantic := hsemantic.symm
+    _ = toSemanticCart realization.presentation := realization.realization_eq
 
 /-- The compatible-pair source of the constant map's self-pullback has four cells. -/
 theorem finiteConstantCompatibleSource_card :

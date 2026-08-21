@@ -600,6 +600,168 @@ theorem toSemanticCart_compPresentation_hom {U : AtomCarrier.{u}}
   · rfl
   · exact AtomPermutationCode.toEquiv_trans first.atomEquiv second.atomEquiv
 
+/-! ## The typed finite-code cartesian calculus -/
+
+/--
+Two typed presentations with the same code endpoints are identified exactly
+when their decoded semantic arrows agree.  This quotient relation makes the
+constructor-relative code calculus explicit without claiming that independently
+chosen codes for equal semantic endpoints are definitionally interchangeable.
+-/
+def cartPresentationSetoid {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (source target : FiniteInstanceCode U) :
+    Setoid (CartPresentationBetween source target) where
+  r first second :=
+    (toSemanticCart first.toPresentation).hom =
+      (toSemanticCart second.toPresentation).hom
+  iseqv := ⟨fun _ => rfl, fun h => h.symm, fun h₁ h₂ => h₁.trans h₂⟩
+
+/-- A morphism of the finite-code calculus, modulo equality of its decoding. -/
+abbrev FiniteCodeCartHom {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (source target : FiniteInstanceCode U) :=
+  Quotient (cartPresentationSetoid source target)
+
+namespace FiniteCodeCartHom
+
+/-- Insert a typed presentation into the finite-code quotient calculus. -/
+def ofPresentation {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (presentation : CartPresentationBetween source target) :
+    FiniteCodeCartHom source target :=
+  Quotient.mk _ presentation
+
+end FiniteCodeCartHom
+
+/-- Decode a typed presentation with its code endpoints exposed in the type. -/
+def typedPresentationToSemantic {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (presentation : CartPresentationBetween source target) :
+    source.toSemantic ⟶ target.toSemantic := by
+  simpa [CartPresentationBetween.toPresentation,
+    CartPresentationBetween.toRaw, toSemanticCart,
+    FiniteInstanceCode.toSemantic] using
+      (toSemanticCart presentation.toPresentation).hom
+
+namespace FiniteCodeCartHom
+
+/-- Decode a quotient morphism; the quotient relation is semantic equality. -/
+def toSemantic {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (hom : FiniteCodeCartHom source target) :
+    source.toSemantic ⟶ target.toSemantic :=
+  Quotient.lift typedPresentationToSemantic (fun _ _ h => h) hom
+
+/-- Composition in the quotient calculus is induced by the authored-table constructor. -/
+def comp {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source middle target : FiniteInstanceCode U}
+    (first : FiniteCodeCartHom source middle)
+    (second : FiniteCodeCartHom middle target) :
+    FiniteCodeCartHom source target :=
+  Quotient.map₂ compPresentation
+    (fun first first' hfirst second second' hsecond => by
+      change
+        (toSemanticCart
+          (compPresentation first second).toPresentation).hom =
+        (toSemanticCart
+          (compPresentation first' second').toPresentation).hom
+      rw [toSemanticCart_compPresentation_hom,
+        toSemanticCart_compPresentation_hom, hfirst, hsecond])
+    first second
+
+end FiniteCodeCartHom
+
+/-- Object type of the typed finite-code cartesian calculus. -/
+abbrev FiniteCodeCartCategory (U : AtomCarrier.{u}) [DecidableEq U.Atom] :=
+  FiniteInstanceCode U
+
+/--
+Finite instance codes and decoded-equality classes of typed presentations form
+a category.  Thus code-family composition is an actual typed calculus rather
+than a claim about separately chosen presentations of equal semantic objects.
+-/
+instance finiteCodeCartCategory {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
+    Category (FiniteCodeCartCategory U) where
+  Hom := FiniteCodeCartHom
+  id object := FiniteCodeCartHom.ofPresentation (idTypedPresentation object)
+  comp := FiniteCodeCartHom.comp
+  id_comp := by
+    intro source target hom
+    refine Quotient.inductionOn hom ?_
+    intro presentation
+    apply Quotient.sound
+    change
+      (toSemanticCart
+        (compPresentation (idTypedPresentation source)
+          presentation).toPresentation).hom =
+      (toSemanticCart presentation.toPresentation).hom
+    rw [toSemanticCart_compPresentation_hom]
+    have hid :
+        (toSemanticCart (idTypedPresentation source).toPresentation).hom =
+          𝟙 source.toSemantic := by
+      apply ExtInstHom.ext
+      apply ExactDoctrineHom.ext
+      · rfl
+      · exact AtomPermutationCode.toEquiv_refl
+    rw [hid]
+    change 𝟙 source.toSemantic ≫ typedPresentationToSemantic presentation =
+      typedPresentationToSemantic presentation
+    exact Category.id_comp _
+  comp_id := by
+    intro source target hom
+    refine Quotient.inductionOn hom ?_
+    intro presentation
+    apply Quotient.sound
+    change
+      (toSemanticCart
+        (compPresentation presentation
+          (idTypedPresentation target)).toPresentation).hom =
+      (toSemanticCart presentation.toPresentation).hom
+    rw [toSemanticCart_compPresentation_hom]
+    have hid :
+        (toSemanticCart (idTypedPresentation target).toPresentation).hom =
+          𝟙 target.toSemantic := by
+      apply ExtInstHom.ext
+      apply ExactDoctrineHom.ext
+      · rfl
+      · exact AtomPermutationCode.toEquiv_refl
+    rw [hid]
+    change typedPresentationToSemantic presentation ≫ 𝟙 target.toSemantic =
+      typedPresentationToSemantic presentation
+    exact Category.comp_id _
+  assoc := by
+    intro first second third fourth f g h
+    refine Quotient.inductionOn₃ f g h ?_
+    intro pf pg ph
+    apply Quotient.sound
+    change
+      (toSemanticCart
+        (compPresentation (compPresentation pf pg) ph).toPresentation).hom =
+      (toSemanticCart
+        (compPresentation pf (compPresentation pg ph)).toPresentation).hom
+    simp only [toSemanticCart_compPresentation_hom, Category.assoc]
+
+/--
+Semantic realization of the typed finite-code calculus into `ExtInst_U`.
+The functor laws are the decoder compatibility theorems, not stored fields.
+-/
+def finiteCodeCartRealization {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
+    FiniteCodeCartCategory U ⥤ ExtractionInstance U where
+  obj object := object.toSemantic
+  map hom := FiniteCodeCartHom.toSemantic hom
+  map_id object := by
+    change typedPresentationToSemantic (idTypedPresentation object) =
+      𝟙 object.toSemantic
+    apply ExtInstHom.ext
+    apply ExactDoctrineHom.ext
+    · rfl
+    · exact AtomPermutationCode.toEquiv_refl
+  map_comp first second := by
+    refine Quotient.inductionOn₂ first second ?_
+    intro p q
+    change typedPresentationToSemantic (compPresentation p q) =
+      typedPresentationToSemantic p ≫ typedPresentationToSemantic q
+    exact toSemanticCart_compPresentation_hom p q
+
 /-! ## Pullback closure of the finite-code realization image -/
 
 /-- Cancel the same transported predicate on the right by its inverse. -/
@@ -1070,6 +1232,30 @@ theorem pullbackPresentation_isPullback
     exact pullbackSemanticLift_snd first second cone
   · intro cone candidate hfst hsnd
     exact pullbackSemanticLift_unique first second cone candidate hfst hsnd
+
+/--
+The projections produced inside the typed code calculus realize to the same
+categorical pullback square.  This is the precise realization-image closure
+statement: the input diagram shares authored code objects, while universality
+is tested against every semantic cone after applying the realization functor.
+-/
+theorem finiteCodeCartRealization_pullback_isPullback
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {left right base : FiniteInstanceCode U}
+    (first : CartPresentationBetween left base)
+    (second : CartPresentationBetween right base) :
+    IsPullback
+      (finiteCodeCartRealization.map
+        (FiniteCodeCartHom.ofPresentation
+          (pullbackFstPresentation first second)))
+      (finiteCodeCartRealization.map
+        (FiniteCodeCartHom.ofPresentation
+          (pullbackSndPresentation first second)))
+      (finiteCodeCartRealization.map
+        (FiniteCodeCartHom.ofPresentation first))
+      (finiteCodeCartRealization.map
+        (FiniteCodeCartHom.ofPresentation second)) :=
+  pullbackPresentation_isPullback first second
 
 /-! ## Fixed cartesian condition language -/
 
