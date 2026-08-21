@@ -13,6 +13,130 @@
 
 ## Cycle ledger
 
+### Cycle 14 — lifted finite equation, circuit, and core package
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 14
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: c135ea34373f9d7b98117a7f8c92987f0338d79c
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 13 merged / Cycle 14 selection comment 5369565454
+  proof_dag_predecessors:
+    - Cycle 7 finite presentation and checker ULift rebase, PR 4043 merge 9400096d8a55f12ea6e18ee5f64bf7d73c650bf2
+    - Cycle 12 FiniteModelLift nonvacuity guard, PR 4048 merge 037f343c2972ca342c3b360de12960f7367289f9
+    - Cycle 13 canonical finite-package ULift foundation, PR 4049 merge c135ea34373f9d7b98117a7f8c92987f0338d79c
+  proof_obligation: rebase the finite circuit syntax, construct a direct lifted FiniteModel NoCycle equation and sound detector on every lifted object, assemble the complete lifted CoreReading and AATCorePackage, and exhibit nondegenerate cyclic and acyclic witnesses without introducing a generic EquationReading transport or any reflection certificate
+  selection_reason: Cycle 13 deliberately stopped before equations and package assembly; these generated data and soundness laws are the last object-level prerequisites before package-total hom rebasing and structural strong-lift reflection can be stated exactly
+  expected_result_type: proof-checkpoint
+  risks:
+    - pretending to transport a generic EquationReading across carriers whose contexts quantify arbitrary high-universe objects
+    - lowering arbitrary lifted ArchitectureObject fields rather than reading only their actual configuration
+    - accepting a matching, soundness, equation, package, or reflection certificate from the caller
+    - using an empty/default circuit or vacuous context to discharge soundness
+    - counting package assembly as FiniteModelLift, K0, or theorem completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: constructed lift/reflect operations for CircuitQuery, FiniteCircuitDatum, and CircuitDetectorCode with two-sided round trips, injectivity, matching, Holds, and evaluation graph laws, including arbitrary lifted target data through semantic configuration descent; directly reconstructed the lifted FiniteModel NoCycle equation system on every lifted ArchitectureObject and proved its EquationHolds equivalences; constructed the exact lifted cycle detector and proved Sound without caller evidence; assembled the complete lifted CoreReading and generated AATCorePackage with component and endpoint graph theorems; and exhibited cyclic/acyclic, accepted/rejected, matching/nonmatching, equation-failing/equation-holding witnesses. The generated package itself has a concrete accepted base circuit whose own circuit_sound theorem refutes its selected equation. Package-total hom rebasing, ambient strong-cartesian reflection, and the FiniteModelLift no-lift corollary remain intentionally unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteEquationULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteCorePackageULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteEquationULiftWitnesses.lean
+  evidence:
+    - finiteModelLiftCircuitQuery
+    - finiteModelReflectCircuitQuery_lift
+    - finiteModelLiftCircuitQuery_holds_iff
+    - finiteModelLiftFiniteCircuitDatum
+    - finiteModelLiftFiniteCircuitDatum_matches_iff
+    - finiteModelLiftCircuitDetectorCode_eval
+    - finiteModelReflectCircuitDetectorCode_eval
+    - finiteModelLiftEquationSystem
+    - finiteModelLiftEquationHolds_iff_source
+    - finiteModelLiftEquationCircuitReading
+    - finiteModelLiftEquationCircuitReading_sound
+    - finiteModelLiftCoreReading
+    - finiteModelLiftCorePackage
+    - finiteModelLiftCorePackage_object
+    - finiteModelLiftCorePackage_base_circuit_nonempty
+    - finiteModelLiftCorePackage_base_equationHolds_fails
+    - finiteModelLiftAcyclicObject_equationHolds
+    - finiteModelLiftEmptyQueryDatum_eval_false
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B lines 216-220 requires the finite counterexample carrier to move through canonical ULift rather than an implicit universe-zero specialization
+      - target artifacts lines 594-600 and material-premise ledger lines 738-740 retain FiniteModelLift before K0
+      - completion criteria lines 638-653 require generated provenance, proof use, nonvacuity, and standard-axiom audit
+    source_facts:
+      - finite circuit queries, data, and recursive detector code use the fixed Atom equivalence and preserve Holds, Matches, and Bool evaluation in both generated directions
+      - every lifted target object is read only through finiteModelSemanticDescent of its actual configuration; no opaque Type-u StructureMaps or SelectedQuantities are lowered
+      - the lifted equation residual is the ULift of FiniteModel.noCycleResidual on that descent and therefore quantifies all lifted objects
+      - detector soundness extracts all three concrete dependency edges from an accepted matching datum and contradicts the same descended NoCycle equation
+      - CoreReading and AATCorePackage are generated from the Cycle 13 components plus the new equation reading, not supplied as fields or theorem inputs
+      - the package base circuit is built from the canonical cycle datum and passed through ObjectAlgebra.circuit_sound
+    consequence:
+      - the canonical finite-model package now exists at every target universe with an exact, sound, nonvacuous equation/circuit layer
+      - the cyclic source behavior and an acyclic negative control both survive the same uniform construction
+      - no package-total morphism transport or strong-cartesian preservation/reflection follows merely from this object-level assembly
+audits:
+  premise_delta:
+    discharged:
+      - cross-carrier circuit query, finite datum, and detector-code rebase/reflection laws
+      - direct lifted NoCycle equation semantics on every lifted ArchitectureObject
+      - exact detector evaluation and soundness against the same lifted equation
+      - complete lifted FiniteModel CoreReading and generated AATCorePackage
+      - cyclic/acyclic, accepted/rejected, matching/nonmatching, equation-failure/equation-holding witnesses
+      - generated-package base circuit nonemptiness and package-level circuit soundness use
+    remaining:
+      - package-total hom rebasing between canonical image packages with endpoint and composition graph laws
+      - the exact generated data-level reflection surface needed by ambient strong-cartesian universality
+      - FiniteModelLift as a structurally generated nonexistence corollary
+      - all K0 and K2-K4 obligations
+  certificate_provenance:
+    discharged:
+      - all rebase and reflection functions close over the fixed carrier equivalence and source syntax
+      - the equation system, circuit reading, CoreReading, package, and witnesses are named generated definitions
+      - matching, evaluation, soundness, equation truth, and circuit inhabitants are proved rather than accepted
+    prohibited:
+      - a generic cross-carrier EquationReading equivalence over all contexts
+      - lowering arbitrary lifted object fields or choosing default/preimage objects
+      - caller-supplied Matches, Sound, EquationHolds, package image, lift, or reflection certificates
+  proof_use:
+    used:
+      - both query and datum reflection round trips and injectivity
+      - recursive detector structure and exact-pattern equality
+      - every relation edge of the concrete three-edge cycle
+      - semantic descent and the FiniteModel NoCycle residual/equation facts
+      - all generated CoreReading fields and AATCorePackage projections
+      - the generated package's actual Circuit value and ObjectAlgebra.circuit_sound
+    unavailable:
+      - package-total hom and ambient strong-cartesian reflection data are not yet constructed
+  structure_field_escape: none; no new structure accepts a circuit result, soundness proof, equation truth value, package morphism, cartesian lift, reflection, or conclusion certificate
+  route_integrity: partial and exact; the cycle extends the canonical carrier/data route through a complete package while preserving the boundary between configuration-observable finite semantics and arbitrary high-universe object fields
+  target_fitting: none introduced; the reviewed FiniteModel cycle and acyclic control are both mapped by the same syntax, equation, and package constructors, and the detector evaluator retains a distinct false case
+  vacuity: the lifted cycle datum matches and evaluates true, yields an actual Circuit and equation failure; the lifted acyclic object satisfies the same equation, rejects the cycle match, differs from the cyclic object, and the empty datum evaluates false
+  one_way_as_equivalence: avoided; query/data/code syntax has explicit lift/reflect cancellation, while architecture objects and complete packages remain one-way generated constructions with no essential-surjectivity claim
+  goal_or_report_reinterpretation: none; FiniteModelLift remains an unconditional fixed-ledger residual and this cycle supplies its complete object-level package endpoint only
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteEquationULift.lean: pass, namespace audit 35 declarations and standard axioms only
+    - targeted single-module build ResearchLean.AG.DoctrineFiberProduct.FiniteCorePackageULift: pass, namespace audit 16 declarations and standard axioms only; no Research aggregate build
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteEquationULiftWitnesses.lean: pass, namespace audit 17 declarations and standard axioms only
+    - official focused wrapper, manifest, umbrella, static scans, fixed-head review, and CI: pending final snapshot
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: pending
+  initial_review_findings: []
+  blocking_findings: []
+  stop_condition: none; continue before K0 without weakening the fixed FiniteModelLift obligation
+  next_obligation: construct canonical package-total hom rebasing and the generated reflection operation on strong-cartesian lifts, with endpoint, graph, identity, and composition laws sufficient to derive FiniteModelLift without empty elimination
+```
+
 ### Cycle 13 — canonical finite-package ULift foundation
 
 ```yaml
