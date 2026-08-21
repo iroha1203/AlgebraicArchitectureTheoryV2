@@ -10,6 +10,7 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTransport
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
+import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 
@@ -29,7 +30,9 @@ complete finite cartesian code, decoder components, and Boolean evaluator.
 The next two layers prove that canonical package transport is strongly
 cartesian by a generated suffix factorization, inverse-reindex an arbitrary
 target package without inverting the lower source map, and construct the
-carrier-global left branch.  The nondegenerate parametric lift portfolio, the
-single carrier-global disjunction artifact, and its generated regime remain
-the next F0c2b/K1 obligations.
+carrier-global left branch.  The finite witness layer additionally constructs
+a branch-independent portfolio of actual lifts over pairwise nonisomorphic,
+noninvertible arrows with nonisomorphic endpoints.  The single carrier-global
+disjunction artifact and its generated regime remain the next F0c2b/K1
+obligations.
 -/
