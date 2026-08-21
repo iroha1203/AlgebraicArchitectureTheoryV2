@@ -47,9 +47,7 @@ selection:
     - the canonical mate signature could inspect the raw authored comparator
     - arbitrary NatTrans values or expected equality could be accepted as public relation inputs
     - generic F0 equation scaffolding could be overclaimed as the actual K2 comparison construction
-  unchecked:
-    - fixed-head standard review-pr and four-lane math-lean-review
-    - final CI and merge state
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: separated a comparator-free support context from the authored datum; fixed the support uniformly as Discrete G.TwoCell with a realization functor into the southwest CoreFiber; reconstructed reviewed G-106 semantic data from the separated lift, twoCellBase, and one-field raw table; converted every PackageFiberAut value to a southwest-fiber component and a discrete natural endotransformation; fixed the dependent northeast route-family, component-family, authored-comparison producer, comparator-independent canonical-mate restriction, and final relation signatures; and elaborated the equality equation that K2 must specialize to named producers
@@ -166,10 +164,17 @@ audits:
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema: pass targeted module check
     - lake build ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses: pass targeted module check
     - direct acceptance-spine #print axioms audit: 30 declarations, each uses only propext/Classical.choice/Quot.sound
+    - fixed repaired head 361bcb7d65688282177db48cef9305b3897418be: CI 7/7 pass
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: []
+    initial_fixed_head: 895f5c265954e1db7136c4cdf93d580dc104bfc8
+    fixed_head: 361bcb7d65688282177db48cef9305b3897418be
+    initial_integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365378113
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365424673
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: two minor documentation/reproducibility findings, both repaired and direct-response PASS
   blocking_findings: []
   next_obligation: F0c CartesianRegime and DisjunctionArtifact producer signature before K0-K4
 ```
@@ -206,6 +211,29 @@ equation scaffold は actual K2 producer または public `MateCoherentRel` と�
   `finiteAuthoredEndpointAutomorphism_component`,
   `finiteAuthoredEndpointAutomorphism_eq_identity`,
   `finiteAgreement_positive`, `finiteAgreement_negative`
+
+### Cycle 5 fixed-head acceptance
+
+初回 implementation head `895f5c265954e1db7136c4cdf93d580dc104bfc8` の4 lane
+査読は、数学A/B・Lean Aが `No major findings`、Lean Bが新規API補題9件の
+docstring欠落と、直接axiom audit 30宣言の完全な対象manifest欠落を Minor と判定した。
+初回統合結果は
+[#4041 review comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365378113)
+に固定した。
+
+修復 head `361bcb7d65688282177db48cef9305b3897418be` は、対象9宣言へ
+docstringを追加し、上記acceptance spine 30宣言をreportへ明記した。差分はこの二つの
+findingへの直接対応だけで、宣言の追加削除、statement、proof/definition body、値、
+import、statusを変更していない。有資格なMath/Lean直接対応確認で両findingの解消と
+対象外変更なしを確認し、修復headのCIは7/7 passとなった。最終統合判定は
+[#4041 acceptance comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4041#issuecomment-5365424673)
+に固定した。
+
+この受理はF0b2bのsignature typingだけを `proof-obligation-discharged` とする。
+`endpoint_eq` の一般生成、named route、pullback reindexing、adjunction、raw comparatorを
+実消費するauthored comparison、canonical mate、cleavage independence、closed
+`MateCoherentRel`、strict/lax正負対、orbit theoremはK1/K2に未放電である。F0c、
+K0--K4、Formal port、G-110全体も未完了であり、次cycleはF0cとする。
 
 ### Cycle 4 — F0b2a finite-code square pasting and authored 2-cell raw schema
 
