@@ -13,6 +13,162 @@
 
 ## Cycle ledger
 
+### Cycle 4 — F0b2a finite-code square pasting and authored 2-cell raw schema
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 4
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 3 merge update and revised GOAL strategy F0
+  proof_dag_predecessors:
+    - Cycle 2 F0a finite-code cartesian schema, PR 4038 merge 5dd7bbb297c50498e6cff706258a5237381df9d4
+    - Cycle 3 F0b1 BC presentation and condition schema, PR 4039 merge 1f096739106d22c21ffa49fc6c2bd0c0e6fb940b
+    - G-106 AdmissibleTransportData authored comparator table
+  proof_obligation: generate strictly composable horizontal and vertical pairs of finite-code pullback squares, an outer BCPresentation, semantic pasting pullback theorems, and realization compatibility without identifying independently enumerated northwest pullback codes; fix the one-field AuthoredBC2CellPresentation raw table without supplying a natural family, canonical mate, or expected equality
+  selection_reason: pasting closure is the remaining finite-code constructor required before the other F0 signatures; the authored raw table can be fixed independently, while the authored-support and MateCoherentRel signatures remain the immediately following F0b2b obligation and must be fixed before K0 without supplying direct or canonical comparisons as abstract fields or arguments
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - arbitrary semantic squares or IsPullback certificates could be accepted as pasting input
+    - horizontal or vertical adjacency could be asserted by caller-supplied semantic equality rather than generated at typed code endpoints
+    - the iterated and outer canonical pullback codes could be falsely identified by definitional equality
+    - a comparison isomorphism could become an authored input field
+    - the authored 2-cell schema could store a natural family, canonical mate, expected equality, or result bit
+    - canonical three-arrow seeds could silently narrow the previously accepted BCPresentation class through their generated compatible-point tables
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: added direction-indexed horizontal and vertical three-arrow seeds; generated both adjacent component presentations, their shared edge, outer cospan, and outer BCPresentation; proved literal semantic pasting is a pullback in both directions; generated the unique northwest isomorphism to the independently re-enumerated outer pullback, explicitly reindexed the literal paste, and proved equality of the complete named semantic inputs; defined strict composability on existing presentation pairs and proved seed coverage in both directions; proved every existing BCPresentation normalizes to the canonical compatible-point producer; and fixed AuthoredBC2CellPresentation with exactly one G-106-shaped PackageFiberAut assignment table
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingSchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingSchemaWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - compatiblePointCodeOfCospan_wellFormed
+    - bcPresentationOfCospan_normalizes
+    - HorizontalBCPastingData.leftPresentation
+    - HorizontalBCPastingData.rightPresentation
+    - HorizontalBCPastingData.nestedSquare_isPullback
+    - HorizontalBCPastingData.pasteNorthwestIso_hom_left
+    - HorizontalBCPastingData.pasteNorthwestIso_hom_top
+    - HorizontalBCPastingData.realization_eq_reindexNested
+    - VerticalBCPastingData.upperPresentation
+    - VerticalBCPastingData.lowerPresentation
+    - VerticalBCPastingData.nestedSquare_isPullback
+    - VerticalBCPastingData.pasteNorthwestIso_hom_left
+    - VerticalBCPastingData.pasteNorthwestIso_hom_top
+    - VerticalBCPastingData.realization_eq_reindexNested
+    - strictHorizontalComposable_coverage
+    - strictVerticalComposable_coverage
+    - toSemanticBC_pastePresentation_eq
+    - AuthoredBC2CellPresentation.ofTransportData
+    - finiteHorizontalBCPasting_sourceCard
+    - finiteVerticalBCPasting_sourceCard
+    - finiteAuthoredBC2CellPresentation_comparator
+  claim_mapping:
+    theorem_names:
+      - BCPastingInput
+      - pastePresentation
+      - nestedPasteSquare
+      - nestedPasteSquare_isPullback
+      - StrictHorizontalComposable
+      - StrictVerticalComposable
+      - normalizedNestedPasteSemanticInput
+      - toSemanticBC_pastePresentation_eq
+      - HorizontalBCPastingData.pasteNorthwestIso
+      - VerticalBCPastingData.pasteNorthwestIso
+      - AuthoredBC2CellPresentation
+    source_labels:
+      - target theorem schema invariant (s5) pasting closure
+      - target proof strategy F0 schema typing
+      - target theorem (C) authored comparator raw-schema boundary
+    conjuncts:
+      - a horizontal input has exactly three typed finite-code arrows and one shared pre-base-change diagnostic presentation
+      - the right pullback is generated first and its first projection is definitionally the shared vertical edge used by the generated left pullback
+      - a vertical input has exactly three typed finite-code arrows and one shared pre-base-change diagnostic presentation
+      - the lower pullback is generated first and its second projection is definitionally the shared horizontal edge used by the generated upper pullback
+      - pastePresentation generates the outer finite cospan by Cart presentation composition and then applies the existing BCPresentation producer
+      - the compatible-point table is generated and validated; bcPresentationOfCospan_normalizes proves this canonical table does not remove existing validated presentations
+      - pair-level strict composability names exactly the two shared code objects, shared typed edge, and shared pre-BC diagnostic; every such existing pair is covered by a three-arrow seed
+      - horizontal and vertical literal semantic pastes are pullbacks by IsPullback.paste_horiz and IsPullback.paste_vert
+      - the nested and outer pullbacks share the exact outer cospan but may have different finite northwest enumerations
+      - the northwest comparison is generated by IsPullback.isoIsPullback, and its hom commutes with both projections
+      - reindexNorthwest transports only the two northwest incident arrows, and toSemanticBC_pastePresentation_eq identifies the complete outer semantic input with the normalized literal paste by equality
+      - finite noninvertible examples exercise horizontal and vertical pasting and compute a four-cell outer source
+      - AuthoredBC2CellPresentation has exactly one comparator field indexed by finite G-106 2-cells and support packages
+      - ofTransportData reuses the reviewed G-106 comparator table definitionally
+      - no natural family, canonical/direct comparison, expected equality, mate relation, regime, or result bit is stored
+    undischarged_assumptions: []
+    acceptance_point: finite-code pasting is generated from typed arrows and tested by categorical universality, not certified by inputs; the pair-level predicates and coverage theorems prevent narrowing to chosen seeds; the canonical northwest isomorphism forced by independent finite re-enumeration is consumed by an explicit reindexing operation and an equality-level named-semantic-input theorem; canonical compatible points preserve the full existing BCPresentation class; and the authored 2-cell raw boundary is fixed without inventing comparison fields
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - finite-code horizontal and vertical pastePresentation constructors
+      - equality-level realization compatibility after explicit canonical northwest reindexing
+      - canonical compatible-point generation, single-presentation normalization, and pair-level strict-composability coverage
+      - one-field AuthoredBC2CellPresentation raw schema
+    remaining:
+      - F0b2b authored-support domain, generated-family interface, and MateCoherentRel signature fixed before K0 without caller-supplied comparison fields
+      - F0c CartesianRegime and DisjunctionArtifact producer signature
+      - K0 nondegenerate proper-fiber witness
+      - K1-K4 theorem obligations, including H_bc pasting closure and mate/diagnostic-comparison pasting coherence
+  certificate_provenance:
+    discharged:
+      - each component PullbackPresentation is generated from a typed finite cospan
+      - nestedSquare_isPullback invokes the two component realization theorems and Mathlib pasting
+      - pasteNorthwestIso is generated from the nested and outer IsPullback proofs
+      - toSemanticBC_pastePresentation_eq consumes that generated isomorphism and does not accept a comparison or equality argument
+      - neither BCPastingInput variant has a square, IsPullback proof, comparison isomorphism, or equality field
+      - AuthoredBC2CellPresentation.ofTransportData copies only data.comparator
+    unresolved: []
+  proof_use:
+    used:
+      - all three horizontal arrows in the two component pullbacks, bottom composition, outer cospan, and pasted universality proof
+      - all three vertical arrows in the two component pullbacks, right composition, outer cospan, and pasted universality proof
+      - both generated component pullback proofs in each Mathlib pasting theorem
+      - nested and outer IsPullback proofs in the unique northwest comparison and its two projection equations
+      - both projection equations in the reindexed square equality and the complete BCSemanticInput equality
+      - shared-object, shared-edge, and diagnostic equalities in both existing-pair seed coverage theorems
+      - all seven compatible-point equations in the canonical well-formedness proof, and the five field-determining equations in the normalization theorem
+      - G-106 comparator values in AuthoredBC2CellPresentation.ofTransportData and its concrete witness
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCPastingSchema.lean: pass, namespace audit 137 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct/BCPastingSchemaWitnesses.lean: pass, namespace audit 17 declarations and standard axioms only
+    - lake env lean ResearchLean/AG/DoctrineFiberProduct.lean: pass
+    - lake build ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema: pass targeted module check
+    - lake build ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses: pass targeted module check
+    - direct #print axioms on all 66 Cycle 4 acceptance-spine declarations: only propext, Classical.choice, and Quot.sound
+    - fixed implementation head 41961b616a76c34b01402fb533a9bbcabc004a3c: CI 7/7 pass
+  review_refs:
+    fixed_head: 41961b616a76c34b01402fb533a9bbcabc004a3c
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4040#issuecomment-5364983129
+    verdicts:
+      - Math A: No major findings
+      - Math B: No major findings
+      - Lean A: No major findings
+      - Lean B: No major findings
+  blocking_findings: []
+  next_obligation: F0b2b authored-support/MateCoherentRel signature typing before F0c and K0-K4
+```
+
 ### Cycle 3 — F0b1 basic BC presentation and condition schema typing
 
 ```yaml
@@ -210,6 +366,124 @@ list rank/unrank equivalence `compatibleSourceEquiv` を計算可能に再構成
 pullback code と全四脚 evaluator から `noncomputable` を除去し、生成 top の
 source membership と Cart/compatible-point equality がどちらも実際の `#eval` で
 `true` を返すことを確認した。この signature repair も4 lane 正式再査読を要する。
+
+### Cycle 3 final fixed-head acceptance
+
+最終 fixed head `73ff2dfefb24b182cb8b940ab2abd260989f9615` は、4 lane の
+fresh fixed-head 査読ですべて `No major findings`、CI 7/7 pass となった。
+統合判定は
+[#4039 acceptance comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4039#issuecomment-5364567800)
+に固定した。PR #4039 は merge commit
+`1f096739106d22c21ffa49fc6c2bd0c0e6fb940b` として main に統合済みである。
+この受理は F0b1 のみを `proof-obligation-discharged` とし、F0b2 / F0c /
+K0–K4 または G-110 全体の完了を主張しない。
+
+### Cycle 4 acceptance spine
+
+Cycle 4 の直接 axiom audit 対象は次の66 declaration に固定する。生成された
+northwest isomorphism は semantic output であり、pasting input または authored
+raw field ではない。
+
+- semantic reindexing: `ExtInstSquare.ext_heterogeneous`,
+  `ExtInstSquare.reindexNorthwest`,
+  `compatiblePointSemanticInputOfSquare_heq`,
+  `BCSemanticInput.ext_heterogeneous`
+- canonical BC point producer: `compatiblePointCodeOfCospan`,
+  `compatiblePointCodeOfCospan_wellFormed`, `bcPresentationOfCospan`,
+  `bcPresentationOfCospan_normalizes`
+- input types: `HorizontalBCPastingData`, `VerticalBCPastingData`,
+  `BCPastingInput`, `StrictHorizontalComposable`, `StrictVerticalComposable`,
+  `AuthoredBC2CellPresentation`
+- horizontal producer: `HorizontalBCPastingData.rightPullback`,
+  `HorizontalBCPastingData.leftPullback`,
+  `HorizontalBCPastingData.leftPresentation`,
+  `HorizontalBCPastingData.rightPresentation`,
+  `HorizontalBCPastingData.outerCospan`,
+  `HorizontalBCPastingData.pastePresentation`,
+  `HorizontalBCPastingData.nestedSquare`,
+  `HorizontalBCPastingData.nestedSquare_isPullback`
+- vertical producer: `VerticalBCPastingData.lowerPullback`,
+  `VerticalBCPastingData.upperPullback`,
+  `VerticalBCPastingData.upperPresentation`,
+  `VerticalBCPastingData.lowerPresentation`,
+  `VerticalBCPastingData.outerCospan`,
+  `VerticalBCPastingData.pastePresentation`,
+  `VerticalBCPastingData.nestedSquare`,
+  `VerticalBCPastingData.nestedSquare_isPullback`
+- direction-indexed calculus: `pastePresentation`, `nestedPasteSquare`,
+  `nestedPasteSquare_isPullback`,
+  `HorizontalBCPastingData.strictComposable`,
+  `VerticalBCPastingData.strictComposable`,
+  `strictHorizontalComposable_coverage`,
+  `strictVerticalComposable_coverage`
+- realization comparison: `HorizontalBCPastingData.pasteNorthwestIso`,
+  `HorizontalBCPastingData.pasteNorthwestIso_hom_left`,
+  `HorizontalBCPastingData.pasteNorthwestIso_hom_top`,
+  `HorizontalBCPastingData.realization_eq_reindexNested`,
+  `VerticalBCPastingData.pasteNorthwestIso`,
+  `VerticalBCPastingData.pasteNorthwestIso_hom_left`,
+  `VerticalBCPastingData.pasteNorthwestIso_hom_top`,
+  `VerticalBCPastingData.realization_eq_reindexNested`,
+  `normalizedNestedPasteSquare`, `normalizedNestedPasteSemanticInput`,
+  `toSemanticBC_pastePresentation_eq`
+- authored raw table: `AuthoredBC2CellPresentation.ofTransportData`,
+  `AuthoredBC2CellPresentation.ofTransportData_comparator`
+- finite witnesses: `finiteHorizontalBCPastingData`,
+  `finiteHorizontalBCPasting_diagnostic_shared`,
+  `finiteHorizontalBCPasting_sourceCard`,
+  `finiteHorizontalBCPasting_isPullback`,
+  `finiteHorizontalBCPasting_strictComposable`,
+  `finiteHorizontalBCPasting_realization_eq`,
+  `finiteVerticalBCPastingData`,
+  `finiteVerticalBCPasting_diagnostic_shared`,
+  `finiteVerticalBCPasting_sourceCard`,
+  `finiteVerticalBCPasting_isPullback`,
+  `finiteVerticalBCPasting_strictComposable`,
+  `finiteVerticalBCPasting_realization_eq`,
+  `finiteConstantBC_not_strictHorizontal_self`,
+  `finiteConstantBC_not_strictVertical_self`,
+  `finiteAuthoredBC2CellPresentation`,
+  `finiteAuthoredBC2CellPresentation_comparator`
+
+### Cycle 4 initial fixed-head review and response
+
+初回 fixed head `dd020ae424b39eb19babc7b7641eb075d39e2e45` の4 lane 査読は
+[#4040 review comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4040#issuecomment-5364845275)
+に固定した。pasting の向き、Mathlib の普遍性証明、northwest isomorphism の
+provenance、一フィールド authored schema、有限 witness は通過したが、固定 GOAL
+に対する次の anti-weakening gap を検出した。
+
+1. 初回実装は outer と nested paste の northwest object を canonical isomorphism と
+   二つの射影式で比較するだけで、s5 が要求する realization compatibility の equality
+   を与えていなかった。
+2. 三射 seed が生成する隣接 presentation のみを扱い、すでに受理済みの任意の
+   strict-composable BCPresentation pair を seed が被覆する定理を持たなかった。
+3. F0b2b の authored-support / MateCoherentRel signature を K2 producer 実装後まで
+   待つ記述は、K0--K4 前に relative predicate の型を固定する GOAL の順序を満たさない。
+
+修正では canonical northwest isomorphism の inverse で literal nested square の
+二本の northwest incident arrow だけを明示的に reindex し、outer
+`BCSemanticInput` と、square・compatible points・diagnostic のすべてを含む
+equality `toSemanticBC_pastePresentation_eq` を証明した。また existing-pair の
+`StrictHorizontalComposable` / `StrictVerticalComposable` を定義し、共有 object、
+共有 typed edge、共有 diagnostic だけから三射 seed を復元して両 component が元の
+presentation に等しい coverage theorem を証明した。F0b2b は K0 より前の次 cycle
+として明記し、比較射や期待等式を field / argument として先取りしない。
+
+### Cycle 4 final fixed-head acceptance
+
+修正 implementation head `41961b616a76c34b01402fb533a9bbcabc004a3c` は、旧判定を
+流用しない4 lane の fresh fixed-head 査読ですべて `No major findings`、CI
+7/7 pass となった。統合判定は
+[#4040 acceptance comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4040#issuecomment-5364983129)
+に固定した。査読は reindex 後の equality が nested paste と二つの pullback
+普遍性を実消費し、outer decoder の別名化ではないこと、pair-level predicate が
+任意の code-level strict pair を被覆すること、typed-edge `HEq` が semantic
+certificate を運ばないこと、正負 witness がともに発火することを独立に確認した。
+
+この受理は F0b2a のみを `proof-obligation-discharged` とする。F0b2b の
+authored-support domain・generated-family interface・`MateCoherentRel` signature、
+F0c、K0--K4、Formal port、G-110 全体は未完了であり、F0b2b を次 cycle とする。
 
 ### Cycle 2 — F0a finite-code cartesian schema typing
 
