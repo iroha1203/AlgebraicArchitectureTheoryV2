@@ -13,6 +13,182 @@
 
 ## Cycle ledger
 
+### Cycle 23 — actual generated upper computational maps
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 23
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 2ba9d35edb66f536300903ccc14b4a068b757e14
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 22 merge synchronization / Cycle 23 selection comment 5376198751
+  proof_dag_predecessors:
+    - Cycle 19 complete actual-high architecture-object image descent, PR 4055
+    - Cycle 20 actual generated context-equivalence reflection, PR 4056
+    - Cycle 22 complete actual-high-derived EquationSystemExactTransport, PR 4058 merge 2ba9d35e
+  proof_obligation: construct genuine two-sided generated-domain images for operations, invariant indices, signature axes, and dependent coordinates; define the reflected operationMap, invariantMap, axisMap, and coordinateEquiv by reading the corresponding computational fields of the actual normalized high factor; prove all-input forward and inverse image graphs and round trips; and fire the exact proof-used constructions on the noninvertible selective-two fixture without claiming the remaining SignedExactCoreReadingHom laws
+  selection_reason: Cycle 22 discharged the complete equationTransport field, while the four remaining computational upper fields still lacked actual-high-derived low producers and two-sided generated-image APIs
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedOperationMapDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedInvariantSignatureMapDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperComputationalWitnesses.lean
+    - finiteGeneratedReflectedOperationMap
+    - finiteGeneratedReflectedInvariantMap
+    - finiteGeneratedReflectedAxisMap
+    - finiteGeneratedReflectedCoordinateEquiv
+  risks:
+    - returning finiteGeneratedLowFactorUpper or updating a known low upper while the supplied high fields occur only in sibling propositions
+    - rewriting the actual normalized high factor to its canonical factor before its operationMap, invariantMap, axisMap, or coordinateEquiv supplies the reflected computational value
+    - accepting a low map, image equivalence, inverse, endpoint graph, or round-trip certificate from the caller
+    - treating one-way operation lifting as a genuine image equivalence without arbitrary-high inverse coverage
+    - casting an actual operation through complete object-image endpoints in the wrong direction
+    - treating the selected PUnit invariant/axis directions or the True predicate as sensitivity evidence
+    - presenting the four computational fields as the remaining structural and proof laws, a complete SignedExactCoreReadingHom, whole PackageTotalHom descent, ambient reflection, or FiniteModelLift
+  unchecked:
+    - fixed-head four-lane math-lean-review
+    - integrated PR audit comment
+    - CI and final report synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: completed the generated-domain operation lift and reflection to a two-sided equivalence with operation datum, configuration-map, and Atom-map graphs; defined the reflected operationMap by applying the actual normalized high operationMap to the generated high image and reflecting its result through the complete architecture-object endpoint equalities; completed the generated-domain invariant-index and signature-axis maps to two-sided equivalences; completed the dependent coordinate images at every axis to two-sided equivalences with landing alignment; and defined the reflected invariantMap, axisMap, and coordinateEquiv by conjugating the corresponding actual normalized high fields through those internally generated images. The public theorems cover every low source input and every high source input in the inverse direction where appropriate, and provide both coordinate round trips. The selective-two noninvertible fixture fires a genuinely nonidentity collapse operation and its Atom action, both directions of the rigid singleton invariant and axis maps, and coordinate value 3 with its inverse image and round trip. Separate Boolean instances fire the exact proof-used ordinary and dependent conjugation primitives, without claiming sensitivity of the selected PUnit or True components. The existing complete object transport gives the future configuration_eq field after projection, but its explicit field theorem and the remaining structural, detector, naturality, invariant, and signature laws are not assembled here. Complete SignedExactCoreReadingHom, PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedOperationMapDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedInvariantSignatureMapDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperComputationalWitnesses.lean
+  evidence:
+    - finiteGeneratedDomainOperationLift
+    - finiteGeneratedDomainOperationReflect
+    - finiteGeneratedDomainOperationEquiv
+    - finiteGeneratedDomainOperation_reflect_lift
+    - finiteGeneratedDomainOperation_lift_reflect
+    - finiteGeneratedDomainOperation_configurationMap_graph
+    - finiteGeneratedDomainOperation_inverse_configurationMap_graph
+    - finiteGeneratedReflectedOperationMap
+    - finiteGeneratedReflectedOperationMap_forward_image
+    - finiteGeneratedReflectedOperationMap_inverse_image
+    - finiteGeneratedReflectedOperationMap_atom_graph
+    - generatedIndexMapConjugation
+    - generatedIndexMapConjugation_actual_injective
+    - generatedDependentEquivConjugation
+    - generatedDependentEquivConjugation_apply_high_image
+    - generatedDependentEquivConjugation_symm_apply_high_image
+    - finiteGeneratedInvariantIndexEquiv
+    - finiteGeneratedInvariantIndexInverseEquiv
+    - finiteGeneratedSignatureAxisEquiv
+    - finiteGeneratedSignatureAxisInverseEquiv
+    - finiteGeneratedSignatureCoordinateEquiv
+    - finiteGeneratedSignatureCoordinateInverseEquiv
+    - finiteGeneratedReflectedInvariantMap
+    - finiteGeneratedReflectedInvariantMap_high_image
+    - finiteGeneratedReflectedInvariantMap_inverse_source_high_image
+    - finiteGeneratedReflectedAxisMap
+    - finiteGeneratedReflectedAxisMap_high_image
+    - finiteGeneratedReflectedAxisMap_inverse_source_high_image
+    - finiteGeneratedReflectedCoordinateLandingEquiv
+    - finiteGeneratedReflectedCoordinateEquiv
+    - finiteGeneratedReflectedCoordinateEquiv_apply_high_image
+    - finiteGeneratedReflectedCoordinateEquiv_symm_apply_high_image
+    - finiteGeneratedReflectedCoordinateEquiv_symm_apply_apply
+    - finiteGeneratedReflectedCoordinateEquiv_apply_symm_apply
+    - finiteSelectiveTwoUpperComputationalBase_not_isIso
+    - finiteSelectiveTwoOuterCollapseOperation_atom_graph
+    - finiteSelectiveTwoOuterCollapseOperation_nonidentity
+    - finiteSelectiveTwoActualReflectedCollapseOperation_forward_image
+    - finiteSelectiveTwoActualReflectedCollapseOperation_inverse_image
+    - finiteSelectiveTwoActualReflectedCollapseOperation_atom_graph
+    - finiteSelectiveTwoActualReflectedInvariantIndex_high_image
+    - finiteSelectiveTwoActualReflectedInvariantIndex_inverse_source_high_image
+    - finiteSelectiveTwoActualReflectedSignatureAxis_high_image
+    - finiteSelectiveTwoActualReflectedSignatureAxis_inverse_source_high_image
+    - finiteSelectiveTwoUpperSignatureCoordinateThree_ne_zero
+    - finiteSelectiveTwoActualReflectedSignatureCoordinateThree_forward_high_image
+    - finiteSelectiveTwoActualReflectedSignatureCoordinateThree_inverse_high_image
+    - finiteSelectiveTwoActualReflectedSignatureCoordinateThree_roundtrip
+    - primitiveGeneratedIndexMapConjugation_middle_sensitive
+    - primitiveGeneratedDependentEquivConjugation_middle_sensitive
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+    runtime_route_constraints:
+      - Issue 4034 requires the four reflected computational values to be read from the actual normalized high factor
+      - generated endpoint equalities may align dependent types but may not replace an actual high field with a known low or canonical upper
+      - operation reflection must use complete architecture-object endpoint images, not configuration-only descent
+      - rigid selected indices require all-input theorems and honest scope language rather than a false nontriviality claim
+      - this checkpoint may not be promoted to a complete upper or total hom before every remaining law is directly reflected and assembled
+    source_facts:
+      - finiteGeneratedDomainOperationEquiv is a genuine equivalence between the low and high generated-domain operation types, with both round trips and arbitrary-high inverse coverage
+      - finiteGeneratedReflectedOperationMap applies the actual normalized high upper operationMap before reflecting the resulting operation
+      - finiteGeneratedReflectedInvariantMap and finiteGeneratedReflectedAxisMap use generatedIndexMapConjugation with the actual normalized high invariantMap and axisMap as the middle functions
+      - finiteGeneratedReflectedCoordinateEquiv uses generatedDependentEquivConjugation with the actual normalized high coordinateEquiv as the middle equivalence and an internally generated dependent target landing
+      - the witness instantiates the public reflected producers and their all-input image theorems rather than reconstructing known low maps
+    consequence:
+      - the four remaining computational map fields for a future generated low SignedExactCoreReadingHom now have actual-high-derived producers
+      - operation, invariant, axis, and dependent coordinate generated images now have the two-sided APIs needed to state and prove their remaining laws
+      - the remaining structural and proof fields, whole upper assembly, total-hom descent, and ambient strong-lift reflection remain open
+audits:
+  premise_delta:
+    discharged:
+      - two-sided generated operation image with configuration and Atom graphs
+      - actual-high-derived operationMap for every generated low operation and arbitrary-high inverse image
+      - two-sided generated invariant-index and signature-axis images
+      - actual-high-derived invariantMap and axisMap with forward and arbitrary-high inverse-source graphs
+      - dependent coordinate image equivalences and actual-high-derived coordinateEquiv with both image directions and round trips
+      - noninvertible fixture firing a nonidentity operation and nonzero coordinate value, plus exact-primitive Boolean sensitivity
+    remaining:
+      - direct reflection of extraction_eq, composition_eq, object_formation_eq, detectorCode_eq, operation_naturality, invariant_transport, axis_selected_iff, and coordinate_eq from the corresponding actual high fields
+      - explicit configuration_eq field theorem and exact assembly of all 18 SignedExactCoreReadingHom fields; the underlying complete object transport theorem is already available
+      - whole PackageTotalHom descent, composition and equality reflection, and high-driven ambient factorization and uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - each top-level reflected computational producer accepts only input, supplied high lift, base, and its mathematical operation, index, axis, or coordinate argument
+      - operation, invariant, axis, and coordinate image equivalences, inverses, endpoint alignments, and round trips are internally generated
+      - the operation inverse theorem quantifies every high source operation; the invariant and axis inverse-source theorems quantify every high source index or axis; and coordinate inverse image quantifies every high source coordinate
+      - the witness derives its operation, indices, axes, coordinates, and base noninvertibility from named finite constructions
+    prohibited_and_absent:
+      - finiteGeneratedLowFactorUpper, finiteGeneratedNormalizedHighFactor_eq_canonical, inverseCorePackageFactor as a returned low answer, globalCartesianLift, caller map/equivalence/image/round-trip certificates, Classical.choose of a low preimage, and empty elimination
+  proof_use:
+    used:
+      - the actual normalized high operationMap in the transparent finiteGeneratedReflectedOperationMap body
+      - the actual normalized high invariantMap and axisMap as the middle functions of the two transparent reflected map bodies
+      - the actual normalized high coordinateEquiv as the middle equivalence of the transparent dependent reflected coordinate body
+      - complete Cycle 19 object-image equalities only for dependent operation endpoints
+      - all four actual-derived computational producers in the concrete noninvertible fixture
+    not_yet_available:
+      - direct actual-high proofs of the remaining eight structural and law fields
+      - exact 18-field SignedExactCoreReadingHom and PackageTotalHom assembly
+      - high-driven ambient low factor, factorization, and uniqueness
+  structure_field_escape: none; standalone definitions accept no free map, equivalence, image, inverse, round-trip, or law fields
+  route_integrity: pass for the four actual-high-derived computational upper fields only; remaining SignedExactCoreReadingHom laws and whole hom descent remain open
+  target_fitting: none found in implementation; core theorems quantify all low and high generated inputs and the fixture only instantiates them
+  vacuity: none found; the fixture uses a noninvertible base, a nonidentity collapse operation with moved Atom, and coordinate values 3 and 0; singleton invariant and axis directions are explicitly classified as rigid
+  proof_irrelevance_scope: selected invariant and axis indices are PUnit and the invariant predicate is True, so nontriviality is not claimed there; the exact proof-used ordinary and dependent conjugation primitives are separately shown sensitive to Boolean middle maps
+  goal_or_report_reinterpretation: none; FiniteModelLift and the fixed ambient reflection output remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedOperationMapDescent.lean: pass, 17 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedInvariantSignatureMapDescent.lean: pass, 37 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperComputationalWitnesses.lean: pass, 29 namespace declarations and standard axioms only
+    - targeted module check FiniteGeneratedOperationMapDescent: pass; used only to materialize its olean for the dependent witness import
+    - targeted module check FiniteGeneratedInvariantSignatureMapDescent: pass; used only to materialize its olean for the dependent witness import
+    - no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+  review_refs:
+    independent_final_reviews: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: reflect the remaining structural, detector, operation-naturality, invariant, and signature laws directly from their corresponding actual normalized high fields; expose configuration_eq from the existing complete object transport; assemble the exact 18-field SignedExactCoreReadingHom; then descend the whole PackageTotalHom before retrying ambient strong-lift reflection
+```
+
 ### Cycle 22 — complete actual-high-derived equation-system transport
 
 ```yaml
