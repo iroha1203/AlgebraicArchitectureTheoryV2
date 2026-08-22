@@ -13,6 +13,179 @@
 
 ## Cycle ledger
 
+### Cycle 24 — complete actual-high-derived generated upper
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 24
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 86467f9221f03f920f79b4dca0ebc4060411817e
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 23 merge synchronization / Cycle 24 selection comment 5376513253
+  proof_dag_predecessors:
+    - Cycle 19 complete actual-high architecture-object image descent, PR 4055
+    - Cycle 22 complete actual-high-derived EquationSystemExactTransport, PR 4058
+    - Cycle 23 actual-high-derived operation, invariant, axis, and coordinate computational fields, PR 4059 merge 86467f92
+  proof_obligation: reflect the nine remaining SignedExactCoreReadingHom proof fields directly from the corresponding fields of the actual normalized high factor; assemble the exact existing eighteen-field generated low SignedExactCoreReadingHom without a custom packet or additional premise; export every field projection; and fire the complete assembly on the selective-two noninvertible fixture with the available nonconstant controls
+  selection_reason: Cycle 23 supplied all remaining computational fields and genuine generated-image equivalences, leaving exactly the structural, detector, operation-naturality, invariant, and signature proof fields plus direct upper assembly
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperStructuralLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedDetectorLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedOperationNaturalityDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedInvariantSignatureLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperAssembly.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperAssemblyWitnesses.lean
+    - finiteGeneratedReflectedSignedExactCoreReadingHom
+  risks:
+    - returning or record-updating finiteGeneratedLowFactorUpper while the supplied high lift is ignored
+    - rewriting the actual normalized high factor wholesale to its canonical factor before a reflected law is produced
+    - using a known low law as the proof while the corresponding actual high law occurs only in a sibling proposition or no-op rewrite
+    - accepting a low upper, law packet, image or preimage, equivalence, landing graph, or round-trip certificate from the caller
+    - replacing complete object formation by configuration-only descent or assuming a generic inverse for opaque ArchitectureObject fields
+    - simplifying the rigid PUnit, True, or constant-coordinate fields before consuming their actual high laws
+    - presenting the completed generated upper as a whole PackageTotalHom, ambient strong-lift reflection, FiniteModelLift, K0, or theorem completion
+  unchecked:
+    - independent Math A, Math B, Lean A, and Lean B final-snapshot review
+    - integrated review comment and finding closure
+    - pull-request CI and merge synchronization
+    - final report synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: 035453aaebd21fa838e3e39ea7d16464dbfc2d72
+  proof_obligation_delta: directly reflected configuration_eq, extraction_eq, composition_eq, object_formation_eq, detectorCode_eq, operation_naturality, invariant_transport, axis_selected_iff, and coordinate_eq from the corresponding nine fields of the actual normalized high upper. Each proof first consumes its actual field and then descends through the internally generated Atom, family, configuration, complete architecture-object, equation-index, detector, operation, invariant, axis, or dependent-coordinate images. The object-formation proof remains specialized to the generated finite object reading and does not assert a generic inverse for arbitrary opaque high objects. The accepted Cycle 18 through Cycle 23 data producers, complete equation transport, and these nine laws are assembled literally into the existing SignedExactCoreReadingHom type between the outer and inner generated low domains. The producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow, and exports eighteen auditable field projections. A single selective-two producer fires all eighteen projections: distinct all and empty families, cyclic and acyclic object inputs, accepted and rejected detector data, a nonidentity collapse operation and its naturality square, the complete seven-field equation transport, and coordinate value 3 with an inverse round trip. Singleton invariant and axis laws and the constant coordinate-read law are fired without a false sensitivity claim. Whole PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperStructuralLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedDetectorLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedOperationNaturalityDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedInvariantSignatureLawDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperAssembly.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperAssemblyWitnesses.lean
+  evidence:
+    - finiteGeneratedReflectedConfiguration_eq
+    - finiteGeneratedReflectedExtraction_eq
+    - finiteGeneratedReflectedComposition_eq
+    - finiteGeneratedReflectedObjectFormation_eq
+    - finiteGeneratedActualHighDetectorCode_eq
+    - finiteGeneratedReflectedDetectorCode_eq
+    - finiteGeneratedReflectedDetectorCode_eval_high_image
+    - finiteGeneratedReflectedOperationMap_naturality
+    - finiteGeneratedReflectedInvariant_transport
+    - finiteGeneratedReflectedAxis_selected_iff
+    - finiteGeneratedReflectedCoordinate_eq
+    - FiniteGeneratedReflectedSignedExactCoreReadingHomOutput
+    - finiteGeneratedReflectedSignedExactCoreReadingHom
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_atomEquiv
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_extraction_eq
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_composition_eq
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_objectMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_object_formation_eq
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_configurationMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_configurationMap_atomMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_configuration_eq
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_equationTransport
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_detectorCode_eq
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_operationMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_operation_naturality
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_invariantMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_invariant_transport
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_axisMap
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_coordinateEquiv
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_axis_selected_iff
+    - finiteGeneratedReflectedSignedExactCoreReadingHom_coordinate_eq
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_atomEquiv_nonconstant
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_composition_eq
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_object_formation_eq
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_detectorCode_eq
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_operationMap
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_operation_naturality
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_equationTransport
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_coordinateEquiv_value_three
+    - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_coordinate_eq_constant_law
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - the premise policy forbids caller-supplied transported packages, hom graphs, low preimages, image membership, and conclusion-equivalent certificates
+      - F0 proof checkpoints may be split, but each artifact must remain connected to the unchanged final output
+    runtime_route_constraints:
+      - Issue 4034 requires all nine law proofs to consume the corresponding actual normalized high fields directly
+      - generated endpoint equalities may align dependent types but may not replace an actual high field by a known low or canonical upper
+      - complete object data, not only configurations, must be used for object formation and dependent laws
+      - rigid selected semantics require direct proof-term dependency and honest witness language rather than invented sensitivity
+      - this upper checkpoint may not be promoted to whole total-hom descent or ambient cartesianness reflection
+    source_facts:
+      - the four structural proofs use actual upper configuration_eq, extraction_eq, composition_eq, and object_formation_eq before generated-image descent
+      - the detector, operation, invariant, selected-axis, and coordinate proofs directly use the matching five actual high fields
+      - finiteGeneratedReflectedSignedExactCoreReadingHom is a literal eighteen-field record assembled from accepted named producers and the nine new named laws
+      - the output alias depends only on the two low endpoints, while the producer takes and uses the supplied high lift
+      - every fixture theorem reads a field of the single assembled selective-two hom rather than reconstructing a known low upper
+    consequence:
+      - the exact generated low SignedExactCoreReadingHom between the outer and inner inverse-package domains is now available
+      - all eighteen upper fields have public projection theorems and a concrete noninvertible fixture firing
+      - the next obligation is whole PackageTotalHom descent and the equality or composition reflection needed for ambient factors
+audits:
+  premise_delta:
+    discharged:
+      - all nine remaining actual-high-derived SignedExactCoreReadingHom proof fields
+      - exact eighteen-field generated low upper assembly
+      - one assembled noninvertible fixture firing all eighteen projections with all available nonconstant controls
+    remaining:
+      - exact lower and upper pairing into a whole PackageTotalHom descended from the actual normalized high factor
+      - whole-hom image, composition, and equality-reflection laws sufficient to reflect high-generated factors
+      - high-driven ambient low factorization and uniqueness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - every top-level law and assembly producer accepts only input, supplied high lift, base, and the mathematically quantified family, configuration, object, index, operation, or axis arguments
+      - family, configuration, complete object, detector, operation, invariant, axis, coordinate, and equation images are internally generated
+      - the fixture derives its data and base from existing named selective-two constructions and applies the assembled producer once
+    prohibited_and_absent:
+      - finiteGeneratedLowFactorUpper, finiteGeneratedNormalizedHighFactor_eq_canonical, a caller low upper or law packet, globalCartesianLift, Classical.choose of a low preimage, and empty elimination
+  proof_use:
+    used:
+      - all four actual structural laws in FiniteGeneratedUpperStructuralLawDescent
+      - the actual detectorCode_eq in FiniteGeneratedDetectorLawDescent
+      - the actual operation_naturality in FiniteGeneratedOperationNaturalityDescent
+      - the actual invariant_transport, axis_selected_iff, and coordinate_eq in FiniteGeneratedInvariantSignatureLawDescent
+      - all accepted actual-derived data producers and the complete actual-derived equation transport in the final assembly
+      - all eighteen assembled projections in the single selective-two fixture
+    not_yet_available:
+      - a complete actual-high-derived PackageTotalHom
+      - composition and equality reflection for arbitrary generated-image factor homs
+      - an ambient low universal-property producer driven by the supplied high lift
+  structure_field_escape: none; neither a target-facing law nor the assembly accepts a law, image, inverse, upper, or completion certificate, and the fixture constructs no replacement record
+  route_integrity: pass for the complete generated upper only; whole total-hom descent and ambient reflection remain open
+  target_fitting: none found in the generic implementation; all structure fields retain their full quantification and the fixture only instantiates them
+  vacuity: none found at the assembly level; the fixture uses distinct family and object inputs, positive and negative detector controls, a nonidentity operation, and coordinate values 3 and 0, while rigid fields are classified explicitly
+  proof_irrelevance_scope: invariant and signature indices are PUnit, their selected predicates are True, and the coordinate reading is constant 0; these proof fields are audited by direct dependency rather than a false nontriviality claim
+  goal_or_report_reinterpretation: none; whole PackageTotalHom descent, ambient reflection, FiniteModelLift, K0, and theorem completion remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedUpperStructuralLawDescent.lean: pass, 10 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedDetectorLawDescent.lean: pass, 5 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedOperationNaturalityDescent.lean: pass, 5 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedInvariantSignatureLawDescent.lean: pass, 3 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperAssembly.lean: pass, 20 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperAssemblyWitnesses.lean: pass, 19 namespace declarations and standard axioms only
+    - targeted module checks for the four law modules, the assembly module, and required predecessor witness modules: pass; used only to materialize oleans for dependent focused imports
+    - no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+  review_refs:
+    independent_final_reviews: pending
+    direct_response: pending
+    integrated_comment: pending
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: assemble an actual-high-derived whole PackageTotalHom from the reflected lower and complete upper components, prove its generated-image and projection laws, and add the composition or equality reflection needed before retrying ambient strong-lift reflection
+```
+
 ### Cycle 23 — actual generated upper computational maps
 
 ```yaml
