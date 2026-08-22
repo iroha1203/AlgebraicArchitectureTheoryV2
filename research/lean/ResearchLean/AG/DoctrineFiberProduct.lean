@@ -168,9 +168,10 @@ lift, composes it with the canonical high completion tail, reflects that
 completed lift through the generated universal property, and cancels the
 canonical low tail.  It thereby constructs a realized-prefix strong lift and
 fires both triangles on a noninvertible selective-two input.  The reflected
-domain and hom remain the pre-existing canonical generated low data, however,
-and the construction covers only completion-tail inverse packages.  It is
-therefore not the fixed-ledger `FiniteModelLift` transport of an arbitrary
-finite counterexample.  That item, K0, and the later target obligations remain
-open.
+domain and hom remain the pre-existing canonical generated low data, and the
+comparison also retains the generated high anchor; both ultimately come from
+`strongCartesianLiftOfTarget`.  The construction covers only completion-tail
+inverse packages.  It is therefore not the fixed-ledger `FiniteModelLift`
+transport of an arbitrary finite counterexample.  That item, K0, and the later
+target obligations remain open.
 -/

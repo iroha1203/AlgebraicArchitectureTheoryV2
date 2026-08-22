@@ -17,7 +17,10 @@ and strong-cartesian certificates are generated internally.
 
 This is a normalized generated-endpoint checkpoint, not the fixed-ledger
 `FiniteModelLift`: the Cycle 26 reflector deliberately retains the canonical
-generated low domain and hom, and the construction does not cover an arbitrary
+generated low domain and hom and compares against the generated high lift; both
+anchors ultimately come from `strongCartesianLiftOfTarget`.  The supplied lift
+is materially used in the comparison, factor graphs, and returned certificate,
+but the construction does not cover an arbitrary
 `CartesianLiftNonexistence.targetPackage`.  In particular this module does not
 package its data theorem as a no-lift result.  The selected global-left branch
 already proves the source counterexample type empty, so such a conditional
