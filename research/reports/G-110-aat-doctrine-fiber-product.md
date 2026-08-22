@@ -13,6 +13,152 @@
 
 ## Cycle ledger
 
+### Cycle 39 — package-projection Beck--Chevalley exactness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 39
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a0b17d373715ccb6b0a2528f26ef6dc8022a3948
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 38 merge synchronization comment 5382985835 and Cycle 39 selection comment 5383012575
+  proof_dag_predecessors:
+    - G-110 arbitrary-target inverseCorePackageHom with its generated upper two-sided inverse and cancellation laws
+    - Cycle 35 generated package transport/reindexing adjunction, unit, counit, and universal properties
+    - Cycle 37 unit-square-counit canonical mate expansion
+    - Cycle 38 arbitrary-cleavage mate comparison and selected normalization
+  proof_obligation: derive packageProjection-specific invertibility of the generated unit and counit components from explicit upper inverses and the cartesian/cocartesian universal properties; prove the Cycle 37 canonical mate IsIso for every BCPresentation by consuming its unit-square-counit expansion; transport exactness to every arbitrary-cleavage mate through the Cycle 38 comparison; fire both conclusions on one producer-derived finite pullback whose four legs are all noninvertible
+  selection_reason: Cycle 38 left packageProjection-specific exactness as the immediate open K2 subnode, while the realized total-hom inverse data, generated adjunction, explicit mate expansion, and arbitrary-cleavage comparison already supplied the required proof route without an exactness certificate
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean
+    - ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactnessWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - inferring mate invertibility from pullbackness or pseudofunctor coherence alone
+    - leaving IsIso, adjunction equivalence, inverse, exactness, or mate certificates as caller premises of the public unit/counit or mate exactness route
+    - proving only the selected-cleavage mate rather than every arbitrary-cleavage mate
+    - leaving one or more finite control legs invertible
+    - promoting package-specific exactness to arbitrary endpoint rebasing, MateCoherentRel, K3-K4, FiniteModelLift, or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: 85aecf5287b1f22e14bc60fe0eb4365c459e9710
+  review_target_head: f3954e288b4631ffced09ce1b329d7268866c095
+  proof_obligation_delta: Cycle 39 first proves a generic criterion saying that a package total hom supplied with a two-sided inverse of its complete upper map is strongly cocartesian. It then discharges that criterion specifically for the G-110 arbitrary-target strongCartesianLiftOfTarget construction by using inverseCorePackageBackwardUpper and its two generated cancellation theorems; SignedExactCoreReadingHom itself carries no inverse field. The generated selected cartesian lift is compared to that explicit cocartesian lift through cartesian uniqueness, so it is also strongly cocartesian. Conversely, the support lift used by the counit is proved strongly cartesian. Over identity base maps, these two universal-property packages produce total isomorphisms, and the total-to-fiber reflection theorem yields IsIso for every component of the generated unit and counit. The Cycle 37 component formula then expresses the canonical mate as generated unit, mapped square isomorphism, and generated counit, so every component and hence the natural transformation are IsIso. Cycle 38 selected comparison transports this result to every arbitrary-cleavage mate. A symmetric three-to-two cospan generates an actual pullback whose bottom, right, left, and top legs are all proved noninvertible; both canonical and arbitrary-cleavage exactness fire on this single control. No caller exactness or invertibility certificate is consumed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean
+    - ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactnessWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - packageTotalHom_isStronglyCocartesian_of_upper_inverse
+    - packageTotalHom_isStronglyCocartesian_of_upper_inverse_lift
+    - strongCartesianLiftOfTarget_isStronglyCocartesian
+    - selectedCoreFiberCartesianLift_isStronglyCocartesian
+    - coreFiberHom_isIso_of_total_isIso
+    - coreFiberLift_isStronglyCartesian_support
+    - coreTransportReindexUnit_app_isIso
+    - coreTransportReindexCounit_app_isIso
+    - coreTransportReindexUnit_isIso
+    - coreTransportReindexCounit_isIso
+    - coreBeckChevalleyMate_app_isIso
+    - coreBeckChevalleyMate_isIso
+    - coreBeckChevalleyCleavageMate_isIso
+    - finiteBCExactness_isPullback
+    - finiteBCExactness_bottom_not_isIso
+    - finiteBCExactness_right_not_isIso
+    - finiteBCExactness_left_not_isIso
+    - finiteBCExactness_top_not_isIso
+    - finiteBCExactnessMate_isIso
+    - finiteBCExactnessCleavageMate_isIso
+  claim_mapping:
+    theorem_names:
+      - selectedCoreFiberCartesianLift_isStronglyCocartesian
+      - coreTransportReindexUnit_app_isIso
+      - coreTransportReindexCounit_app_isIso
+      - coreBeckChevalleyMate_isIso
+      - coreBeckChevalleyCleavageMate_isIso
+      - finiteBCExactnessMate_isIso
+      - finiteBCExactnessCleavageMate_isIso
+    source_labels:
+      - target theorem (C) Beck--Chevalley mate exactness
+      - G-110 arbitrary-target inverseCorePackageHom and cancellation-law predecessor
+      - Cycle 35 generated adjunction predecessor
+      - Cycle 37 canonical mate component predecessor
+      - Cycle 38 arbitrary-cleavage comparison predecessor
+    conjuncts:
+      - generated package transport/reindexing unit and counit are componentwise invertible
+      - canonical Beck--Chevalley mate is invertible for every validated BCPresentation
+      - the corresponding mate is invertible for every pair of arbitrary cartesian cleavages
+      - one producer-derived finite pullback has all four legs noninvertible and fires both results
+    undischarged_assumptions:
+      - arbitrary endpoint-isomorphism rebasing beyond the exact producer endpoint bridge
+      - authored-support induced comparison, MateCoherentRel positive/negative pair, full-orbit invariance, and nontrivial orbit witness
+      - fixed-ledger arbitrary-target FiniteModelLift
+      - K3 diagnostic base-change action, H_bc condition package, and positive/negative vanishing pair
+      - K4 pullback-square pasting and G-106/G-109 coherence bridge
+      - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
+  dependency_dag:
+    - generated inverseCorePackage upper inverse -> explicit strongly cocartesian arbitrary-target lift -> selected lift comparison -> selected lift strongly cocartesian
+    - selected lift over the realized base is strongly cartesian and strongly cocartesian -> generated unit component is strongly cartesian over identity -> total IsIso -> fiber IsIso
+    - support lift over the realized base is strongly cocartesian and strongly cartesian -> generated counit component is strongly cocartesian over identity -> total IsIso -> fiber IsIso
+    - unit IsIso plus mapped square IsIso plus counit IsIso -> canonical mate component IsIso -> canonical mate IsIso
+    - Cycle 38 arbitrary-to-selected comparison plus selected mate IsIso -> arbitrary-cleavage mate IsIso
+    - symmetric finite cospan producer plus projection bridges -> four noninvertible legs and exactness firing
+  premise_audit:
+    direction_hypotheses:
+      - validated BCPresentation; arbitrary-cleavage theorem additionally quantifies over the two cleavage values
+    discharge_required_consumed:
+      - the generated inverseCorePackageBackwardUpper and its two cancellation theorems for each arbitrary-target lift
+      - generated cartesian and cocartesian universal properties
+      - Cycle 35 unit and counit components
+      - Cycle 37 unit-square-counit mate expansion
+      - Cycle 38 arbitrary-to-selected mate comparison
+    conclusion_equivalent_inputs: none
+    structure_field_escape: none on the public exactness route; the generic cocartesian criterion explicitly takes an upper inverse and two equations, and its sole concrete arbitrary-target use discharges all three from inverseCorePackageHom before the certificate-free unit/counit and mate theorems
+    proof_use: upper inverse equations prove factor and uniqueness for cocartesianness; cartesian uniqueness transports that structure to the selected lift; identity-base universal properties construct the unit and counit inverses; the mate proof rewrites by the explicit component formula; arbitrary-cleavage exactness cancels the generated Cycle 38 comparison
+  route_integrity:
+    selected_route: exact decoded BCPresentation, realized packageProjection total morphisms, generated Cycle 35 adjunction, Cycle 37 mate, and Cycle 38 comparison
+    provenance: G-110 inverseCorePackageHom, its generated backward upper hom and cancellation laws, and reviewed generated universal properties; the finite witness is produced from the symmetric finite cospan and the existing pointed-pullback bridge
+    nonvacuity: the symmetric three-to-two control is an actual producer-derived pullback and each of its four structural legs is noninvertible
+    forbidden_routes_absent:
+      - no exactness, IsIso, inverse, adjunction-equivalence, mate, or comparison certificate input to the public unit/counit and Beck--Chevalley exactness theorems
+      - no derivation from pullbackness or coherence alone
+      - no selected-cleavage-only conclusion
+      - no invertible-leg control
+      - no endpoint rebasing, MateCoherentRel, K3-K4, FiniteModelLift, or completion claim
+  regression_scenarios:
+    pullback_implies_exactness: rejected; the proof uses package upper inverses and both universal-property directions before invoking the mate formula
+    supplied_inverse: rejected; every inverse is generated from the existing package total hom or universal property
+    selected_only: rejected; coreBeckChevalleyCleavageMate_isIso quantifies over arbitrary left and right cleavages
+    degenerate_control: rejected; four separate non-IsIso theorems cover bottom, right, left, and top
+    completion_overclaim: rejected; completion_candidate remains no and all later obligations remain explicit
+  verification:
+    - focused direct check PackageProjectionBeckChevalleyExactness.lean: pass; 14 namespace declarations, standard axioms only
+    - targeted module PackageProjectionBeckChevalleyExactness: pass
+    - focused direct check PackageProjectionBeckChevalleyExactnessWitnesses.lean: pass; 11 namespace declarations, standard axioms only
+    - targeted module PackageProjectionBeckChevalleyExactnessWitnesses: pass
+    - exact G-110 umbrella module ResearchLean.AG.DoctrineFiberProduct: pass
+    - placeholder/unsafe/new-axiom scan on both exact files: clean
+    - hidden/BiDi and private-path scan on both exact files: clean
+    - Formal to ResearchLean import-direction scan: no new reverse import
+    - Research aggregate/full build: not run, per hard rule
+  review:
+    exact_head: f3954e288b4631ffced09ce1b329d7268866c095
+    four_lane_result: Math A, Math B, Lean A, and Lean B independently passed after the sole initial inverse-provenance documentation finding was integrated and all four lanes re-reviewed the corrected exact head
+    refutation_attempts: generic mates preserving IsIso, pullbackness or coherence alone implying exactness, upper-inverse field or caller-certificate escape, circular unit/counit IsIso, mate orientation, selected-only weakening, arbitrary-cleavage cancellation direction, invertible or split finite controls, axiom and dependency hygiene, and scope/ledger completeness were checked and rejected
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4080#issuecomment-5383082087
+    ci: 7 of 7 checks passed, including lake build, research integrity gates, tooling checks, and Workers build
+    status: accepted package-projection Beck--Chevalley exactness proof-checkpoint; G-110 completion remains no
+next:
+  proof_obligation: construct arbitrary endpoint-isomorphism rebasing for the package Beck--Chevalley mate without changing the fixed exact producer endpoint; authored-support MateCoherentRel and later K3-K4 obligations remain separate
+```
+
 ### Cycle 38 — canonical mate independence under arbitrary cleavages
 
 ```yaml
