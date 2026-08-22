@@ -30,9 +30,8 @@ selection:
     - Cycle 30 generic pointedPullback and pointedPullback_isPullback producer
     - G-109 reviewed covariant core transport functor and compositor
     - Cycle 35 producer-derived core transport/reindexing adjunction, unit, counit, and triangles
-    - Cycle 36 arbitrary-cleavage adjunction independence
-  proof_obligation: for every validated BCPresentation, generate the exact pointed finite-code pullback bridge and transport the Cycle 30 pullback theorem to the decoded four-leg square; construct the covariant square isomorphism from the two G-109 compositors and decoded commutativity; apply Mathlib mateEquiv to the two Cycle 35 adjunctions to generate the fixed-orientation canonical mate; expose its unit/compositor-square/counit component and naturality; fire the surface on a finite square with noninvertible relevant reindexing legs and a genuine nonidentity vertical map
-  selection_reason: all producer-derived reindexing, coherence, adjunction, and cleavage-independence predecessors were accepted, making the canonical mate the shortest open K2 subnode before packageProjection-specific exactness and the authored-support relative obstruction
+  proof_obligation: for every validated BCPresentation, generate the exact pointed finite-code pullback bridge and transport the Cycle 30 pullback theorem to the decoded four-leg square; construct the covariant square isomorphism from the two G-109 compositors and decoded commutativity; apply Mathlib mateEquiv to the two Cycle 35 selected adjunctions to generate the fixed-orientation selected-cleavage canonical mate; expose its unit/compositor-square/counit component and naturality; fire the surface on a finite square with noninvertible relevant reindexing legs and a genuine nonidentity vertical map
+  selection_reason: the producer-derived selected reindexing, coherence, and adjunction predecessors were accepted, making construction of the selected-cleavage canonical mate the shortest open K2 subnode; Cycle 36 supplies the separate adjunction-level comparison predecessor that a later mate-level cleavage-independence theorem must still consume
   expected_result_type: proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMate.lean
@@ -50,7 +49,7 @@ result:
   proposed_result_type: proof-checkpoint
   content_head: 8ef650ccaf284154587fc1873dcb2bb55e6f79f1
   review_target_head: pending report commit and PR review
-  proof_obligation_delta: The decoded finite-code pullback is connected to the Cycle 30 generic pointed pullback by the producer-generated doctrine isomorphism plus an internally proved selected-point equation. Both projection graphs transport pointedPullback_isPullback to the exact four decoded legs of every BCPresentation. The top/right and left/bottom typed composite presentations decode to the same semantic arrow by generated square commutativity; the G-109 compositors and typed presentation comparison therefore form the covariant square isomorphism. Mathlib mateEquiv consumes this isomorphism and the Cycle 35 adjunctions on pi1 and sigma2 to construct the fixed mate `(pi2)_! (pi1)^* -> (sigma2)^* (sigma1)_!`. A named component theorem exposes the right-leg unit, mapped square comparison, and mapped left-leg counit, and a separate theorem exposes naturality on every vertical source-fiber map. The asymmetric finite witness uses identity/support versus selective-two/support; both the generated pi1 and sigma2 are proved noninvertible, while naturality fires on the reviewed nonidentity four-axis swap. No mate invertibility or exactness conclusion is claimed.
+  proof_obligation_delta: The decoded finite-code pullback is connected to the Cycle 30 generic pointed pullback by the producer-generated doctrine isomorphism plus an internally proved selected-point equation. Both projection graphs transport pointedPullback_isPullback to the exact four decoded legs of every BCPresentation. The top/right and left/bottom typed composite presentations decode to the same semantic arrow by generated square commutativity; the G-109 compositors and typed presentation comparison therefore form the covariant square isomorphism. Mathlib mateEquiv consumes this isomorphism and the Cycle 35 selected adjunctions on pi1 and sigma2 to construct the fixed mate `(pi2)_! (pi1)^* -> (sigma2)^* (sigma1)_!`. A named component theorem exposes the right-leg unit, mapped square comparison, and mapped left-leg counit, and a separate theorem exposes naturality on every vertical source-fiber map. The asymmetric finite witness uses identity/support versus selective-two/support; both the generated pi1 and sigma2 are proved noninvertible, while naturality fires on the reviewed nonidentity four-axis swap. This checkpoint does not yet compare mates generated from arbitrary cleavages and claims no mate invertibility or exactness conclusion.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMate.lean
@@ -99,6 +98,7 @@ result:
       - the mate component formula and naturality are exported without caller-supplied comparison data
       - a finite example fires naturality with both relevant reindexing legs noninvertible and the vertical map nonidentity
     undischarged_assumptions:
+      - mate-level cleavage independence: construct the arbitrary-cleavage mate and prove its comparison with the selected mate by consuming Cycle 36 adjunction, unit, and counit compatibility
       - packageProjection-specific Beck--Chevalley exactness support and positive IsIso theorem
       - arbitrary endpoint-isomorphism rebasing beyond the exact producer endpoint bridge
       - authored-support induced comparison, MateCoherentRel positive/negative pair, full-orbit invariance, and nontrivial orbit witness
@@ -125,7 +125,7 @@ result:
     proof_use: the pointed bridge proves the selected source equation componentwise and both projection graph equations; IsPullback.of_iso consumes those graphs; the square comparison consumes both compositors and semantic commutativity; mateEquiv consumes both adjunctions and the square comparison; the component expansion exposes the generated unit and counit; the witness proves noninvertibility by explicit source-map noninjectivity and fires naturality on the named nonidentity map
   route_integrity:
     selected_route: exact decoded finite-code pullback, exact G-109 core transport functors, and exact Cycle 35 selected reindexing adjunctions
-    provenance: reviewed Cycle 30, G-109, Cycle 35, and Cycle 36 declarations; the finite witness supplies only raw finite cospan/point data
+    provenance: reviewed Cycle 30, G-109, and Cycle 35 declarations; Cycle 36 remains an unconsumed predecessor for the next mate-level cleavage-independence theorem; the finite witness supplies only raw finite cospan/point data
     nonvacuity: generated pi1 and authored sigma2 are both noninvertible, and the vertical axis-swap map is provably nonidentity
     forbidden_routes_absent:
       - no caller endpoint isomorphism or pullback certificate
@@ -150,9 +150,15 @@ result:
     - Formal to ResearchLean import-direction scan: no new reverse import
     - Research aggregate/full build: not run, per hard rule
   review:
-    status: pending standard four-lane review on the final PR snapshot
+    initial_exact_head: 45aeb86e43bb1e81222b1122027c0352a1922b36
+    initial_four_lane_result: Lean construction claims passed all four lanes; one central ledger finding and one repeated noncentral docstring finding required repair
+    central_finding: Cycle 36 proves adjunction-level cleavage independence, but this cycle neither constructs arbitrary-cleavage mates nor proves comparison with the selected mate; the first ledger incorrectly omitted mate-level cleavage independence from remaining obligations
+    noncentral_finding: the module docstring reversed the left Lean-composition display while the declaration itself had the correct fixed orientation
+    initial_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4078#issuecomment-5382853151
+    repair: restrict the accepted delta to the selected-cleavage mate, restore mate-level cleavage independence as the next discharge obligation, remove Cycle 36 from consumed provenance, and correct the docstring display; no declaration, proof, or import changed
+    status: pending fresh full four-lane rerun after central-ledger repair
 next:
-  proof_obligation: prove packageProjection-specific Beck--Chevalley exactness support and the resulting positive IsIso theorem for the generated mate without deriving it from pullbackness or pseudofunctor coherence alone; keep authored-support MateCoherentRel and K3-K4 as separate downstream subnodes
+  proof_obligation: consume Cycle 36 arbitrary-cleavage adjunction, unit, and counit comparison theorems to construct mates for arbitrary left/right cleavages and prove their generated comparison with the selected mate; only after that prove packageProjection-specific exactness and positive IsIso without deriving either from pullbackness or pseudofunctor coherence alone
 ```
 
 ### Cycle 36 — cleavage-independent core transport/reindexing adjunction

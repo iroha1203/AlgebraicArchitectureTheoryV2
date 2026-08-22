@@ -12,12 +12,15 @@ connects its decoded finite-code pullback to the generic pointed pullback of
 Cycle 30.  It then compares the two covariant routes around the generated
 square and applies the Cycle 35 adjunctions to obtain the canonical mate
 
-`(π₂)_! ⋙ (π₁)^* ⟶ (σ₁)_! ⋙ (σ₂)^*`.
+`(π₁)^* ⋙ (π₂)_! ⟶ (σ₁)_! ⋙ (σ₂)^*`.
 
 The displayed notation follows application order: the left side first
 reindexes along `π₁` and then transports along `π₂`; the right side first
 transports along `σ₁` and then reindexes along `σ₂`.  No pullback certificate,
 comparison transformation, adjunction, unit, or counit is supplied by a caller.
+The reindexing functors and adjunctions here use the fixed selected cleavage;
+comparison with mates generated from arbitrary cleavages is a downstream
+obligation, not a conclusion of this module.
 
 ## Implementation notes
 

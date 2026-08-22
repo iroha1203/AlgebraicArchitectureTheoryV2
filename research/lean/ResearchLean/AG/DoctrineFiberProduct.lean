@@ -260,7 +260,7 @@ natural isomorphism to the selected reindexing functor; transporting the right
 adjoint along this bridge gives the arbitrary-cleavage adjunction, and the
 Cycle 33 canonical comparison intertwines both transpose directions, unit, and
 counit.  A literal/twisted four-axis pair makes that comparison nonidentity.
-The canonical Beck--Chevalley layer now connects every validated finite-code
+The selected-cleavage canonical Beck--Chevalley layer now connects every validated finite-code
 pullback to the generic pointed producer, derives the exact four-leg pullback
 square, compares its two covariant transport routes through the G-109
 compositors, and applies the Cycle 35 adjunctions through `mateEquiv`.  Its
@@ -268,6 +268,6 @@ component exposes the generated unit, square comparison, and counit, and its
 naturality is fired on a genuine nonidentity four-axis map over an asymmetric
 finite square whose left projection and right leg are both noninvertible.
 This constructs the canonical mate only; no invertibility or exactness theorem
-is claimed.  Arbitrary endpoint-isomorphism rebasing, K3--K4, and final target
-assembly remain open.
+is claimed.  Mate-level comparison across arbitrary cleavages, arbitrary
+endpoint-isomorphism rebasing, K3--K4, and final target assembly remain open.
 -/
