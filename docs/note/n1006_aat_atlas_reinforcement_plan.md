@@ -244,6 +244,12 @@ hidden_A(gf)  = hidden_A(f)  + hidden_A(g)  − χ_A
 - reading 圏上の関手化(G-107 frontier)は program context / 意味のモジュライの
   種であり、登路(n1005 §4)の土台に接続する。
 - 論文A 実証節の第三段(解像度スイープ)の theorem 側の錨である(n1001 §12)。
+- 他の研究課題への接続(大定理版): 比較写像錐の両端の `H¹` は SAGA が測る修復の
+  ドリフトそのものであり、混在 face の `d₂` は解像度欠損を SAGA / G-106 の `H²`
+  整合性へ送る橋になる点で SAGA 系列に接続し、`Σ_M^op` 上の欠損加群を reading 圏上の
+  局所系へ、整数係数の錐 `D_{A,ℤ}` と base change `D_{A,k} ≃ D_{A,ℤ} ⊗^L k` を
+  Fitting / jump locus へ上げる線が、係数 base change カードを経て意味のモジュライ
+  (SHIGURE = Semantic Scheme Representability)への登路に乗る。
 
 ### 1.4 CS 一般から見た現在の弱さ
 
