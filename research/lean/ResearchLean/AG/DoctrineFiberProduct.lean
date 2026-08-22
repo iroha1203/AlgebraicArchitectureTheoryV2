@@ -19,6 +19,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingFiniteCodeP
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingFiniteCodePseudoactionWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunction
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunctionWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependence
+import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
@@ -249,7 +251,6 @@ cartesian-uniqueness pentagon and both unit laws package these data as a
 raw-distinct padded representative, noninvertible quotient legs, and the same
 nonidentity vertical map fire the full quotient surface.  This is descent up to
 generated natural isomorphism; no `Quotient.lift` targets a functor type.
-Arbitrary endpoint-isomorphism rebasing, compatibility of the selected
-adjunction with arbitrary cleavage comparison, the Beck--Chevalley mate,
-K3--K4, and final target assembly remain open.
+Arbitrary endpoint-isomorphism rebasing, the Beck--Chevalley mate, K3--K4, and
+final target assembly remain open.
 -/
