@@ -24,6 +24,7 @@ open CategoryTheory
 open AtomFoundation
 open CrossStageCoherence
 
+/-- Decidable equality for the finite-model Atom carrier used by this witness. -/
 local instance finiteCartesianReindexAtomDecidableEq :
     DecidableEq FiniteModel.carrier.Atom := by
   change DecidableEq FiniteModel.FiniteAtom
