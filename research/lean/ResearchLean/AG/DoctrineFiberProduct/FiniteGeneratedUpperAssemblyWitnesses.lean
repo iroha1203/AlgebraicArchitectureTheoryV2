@@ -17,8 +17,10 @@ The invariant index and signature axis of the fixture are singleton types, so
 their transport laws are recorded as rigid laws rather than sensitivity
 claims.  Likewise, `coordinate_eq` records the fixture's constant coordinate
 reading; nontrivial coordinate behavior is witnessed separately by applying
-`coordinateEquiv` to `3` and taking its round trip.  No completed low upper,
-canonical-factor rewrite, or caller-supplied law certificate is used here.
+`coordinateEquiv` to `3` and taking its round trip.  The canonical backward
+upper is used only to generate the detector's source index and data; no
+completed reflected upper is used to construct or justify the assembly, and
+no canonical-factor rewrite or caller-supplied law certificate is used here.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

@@ -56,8 +56,8 @@ selection:
     - final report synchronization
 result:
   proposed_result_type: proof-checkpoint
-  reviewed_content_head: 035453aaebd21fa838e3e39ea7d16464dbfc2d72
-  proof_obligation_delta: directly reflected configuration_eq, extraction_eq, composition_eq, object_formation_eq, detectorCode_eq, operation_naturality, invariant_transport, axis_selected_iff, and coordinate_eq from the corresponding nine fields of the actual normalized high upper. Each proof first consumes its actual field and then descends through the internally generated Atom, family, configuration, complete architecture-object, equation-index, detector, operation, invariant, axis, or dependent-coordinate images. The object-formation proof remains specialized to the generated finite object reading and does not assert a generic inverse for arbitrary opaque high objects. The accepted Cycle 18 through Cycle 23 data producers, complete equation transport, and these nine laws are assembled literally into the existing SignedExactCoreReadingHom type between the outer and inner generated low domains. The producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow, and exports eighteen auditable field projections. A single selective-two producer fires all eighteen projections: distinct all and empty families, cyclic and acyclic object inputs, accepted and rejected detector data, a nonidentity collapse operation and its naturality square, the complete seven-field equation transport, and coordinate value 3 with an inverse round trip. Singleton invariant and axis laws and the constant coordinate-read law are fired without a false sensitivity claim. Whole PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
+  reviewed_content_head: 3c345062932f71288f5f701df312247cc082e1b5
+  proof_obligation_delta: directly reflected configuration_eq, extraction_eq, composition_eq, object_formation_eq, detectorCode_eq, operation_naturality, invariant_transport, axis_selected_iff, and coordinate_eq from the corresponding nine fields of the actual normalized high upper. Each proof first consumes its actual field and then descends through the internally generated Atom, family, configuration, complete architecture-object, equation-index, detector, operation, invariant, axis, or dependent-coordinate images. The object-formation proof remains specialized to the generated finite object reading and does not assert a generic inverse for arbitrary opaque high objects. The accepted Cycle 18 through Cycle 23 data producers, complete equation transport, and these nine laws are assembled literally into the existing SignedExactCoreReadingHom type between the outer and inner generated low domains. The producer accepts only the finite generated input, supplied high strong-cartesian lift, and ambient base arrow, and exports eighteen auditable field projections. A single selective-two producer fires all eighteen projections: distinct all and empty families, cyclic and acyclic object inputs, accepted and rejected detector data on both the generated source and assembled target codes, a nonidentity collapse operation and its naturality square, the complete seven-field equation transport, and coordinate value 3 with an inverse round trip. Singleton invariant and axis laws and the constant coordinate-read law are fired without a false sensitivity claim. Whole PackageTotalHom descent, ambient factor reflection, FiniteModelLift, K0, and theorem completion remain unclaimed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperStructuralLawDescent.lean
@@ -102,6 +102,9 @@ result:
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_atomEquiv_nonconstant
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_composition_eq
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_object_formation_eq
+    - finiteSelectiveTwoDetectorSourceIndex
+    - finiteSelectiveTwoOuterCycleQueryDatum
+    - finiteSelectiveTwoOuterEmptyQueryDatum
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_detectorCode_eq
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_operationMap
     - finiteSelectiveTwoReflectedSignedExactCoreReadingHom_operation_naturality
@@ -172,7 +175,7 @@ audits:
     - official focused wrapper FiniteGeneratedOperationNaturalityDescent.lean: pass, 5 namespace declarations and standard axioms only
     - official focused wrapper FiniteGeneratedInvariantSignatureLawDescent.lean: pass, 3 namespace declarations and standard axioms only
     - official focused wrapper FiniteGeneratedUpperAssembly.lean: pass, 20 namespace declarations and standard axioms only
-    - official focused wrapper FiniteGeneratedUpperAssemblyWitnesses.lean: pass, 19 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperAssemblyWitnesses.lean: pass after detector-control repair, 22 namespace declarations and standard axioms only
     - targeted module checks for the four law modules, the assembly module, and required predecessor witness modules: pass; used only to materialize oleans for dependent focused imports
     - no Research aggregate or full build
     - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
