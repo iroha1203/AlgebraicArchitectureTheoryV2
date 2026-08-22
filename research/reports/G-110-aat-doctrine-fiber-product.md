@@ -48,7 +48,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   content_head: 8ef650ccaf284154587fc1873dcb2bb55e6f79f1
-  review_target_head: pending report commit and PR review
+  review_target_head: 390f9abf17b207ecdb4e4e788c041c98f3ce8fb6
   proof_obligation_delta: The decoded finite-code pullback is connected to the Cycle 30 generic pointed pullback by the producer-generated doctrine isomorphism plus an internally proved selected-point equation. Both projection graphs transport pointedPullback_isPullback to the exact four decoded legs of every BCPresentation. The top/right and left/bottom typed composite presentations decode to the same semantic arrow by generated square commutativity; the G-109 compositors and typed presentation comparison therefore form the covariant square isomorphism. Mathlib mateEquiv consumes this isomorphism and the Cycle 35 selected adjunctions on pi1 and sigma2 to construct the fixed mate `(pi2)_! (pi1)^* -> (sigma2)^* (sigma1)_!`. A named component theorem exposes the right-leg unit, mapped square comparison, and mapped left-leg counit, and a separate theorem exposes naturality on every vertical source-fiber map. The asymmetric finite witness uses identity/support versus selective-two/support; both the generated pi1 and sigma2 are proved noninvertible, while naturality fires on the reviewed nonidentity four-axis swap. This checkpoint does not yet compare mates generated from arbitrary cleavages and claims no mate invertibility or exactness conclusion.
   completion_candidate: no
   lean_artifacts:
@@ -156,7 +156,12 @@ result:
     noncentral_finding: the module docstring reversed the left Lean-composition display while the declaration itself had the correct fixed orientation
     initial_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4078#issuecomment-5382853151
     repair: restrict the accepted delta to the selected-cleavage mate, restore mate-level cleavage independence as the next discharge obligation, remove Cycle 36 from consumed provenance, and correct the docstring display; no declaration, proof, or import changed
-    status: pending fresh full four-lane rerun after central-ledger repair
+    fresh_full_rerun: all four lanes passed the central mathematical and Lean claims at 390f9abf17b207ecdb4e4e788c041c98f3ce8fb6; one noncentral implementation-note finding remained
+    noncentral_repair_head: c1aba8db3ee9f5ef457fc10610e16c25f77c7fa5
+    noncentral_repair: corrected the prose compositor directions to inverse top/right, decoded comparison, and forward left/bottom; declaration, proof, and import surfaces were unchanged
+    direct_response: fresh finding-limited audit of 390f9abf..c1aba8db passed with no findings and confirmed the repair was comment-only
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4078#issuecomment-5382875861
+    status: accepted selected-cleavage canonical-mate proof-checkpoint; G-110 completion remains no
 next:
   proof_obligation: consume Cycle 36 arbitrary-cleavage adjunction, unit, and counit comparison theorems to construct mates for arbitrary left/right cleavages and prove their generated comparison with the selected mate; only after that prove packageProjection-specific exactness and positive IsIso without deriving either from pullbackness or pseudofunctor coherence alone
 ```
