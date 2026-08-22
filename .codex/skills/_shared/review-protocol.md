@@ -46,9 +46,10 @@
   - Math / Lean: proof内部または台帳・docs記載の修正であり、査読済みのtheorem / defの
     statement(signature)の変更、defやinstanceの本体・値の変更、宣言の削除、`axiom`の追加、
     import方向の変更、台帳statusの変更のいずれも含まないもの。宣言(theorem / def /
-    instance / structure / example 等)の追加は、findingが指定した補助補題・公開API・
-    正規化則の追加であり、査読済みstatementを変えず、追加宣言のplaceholder scanと
-    `#print axioms`がcleanな場合に限り資格内とする。それ以外の宣言追加は資格外。
+    instance / structure / example 等)の追加は、findingが名指しした補助補題・公開API・
+    正規化則に限り、査読済みstatementを変えず、追加宣言のplaceholder scanと
+    `#print axioms`がcleanな場合に資格内とする。findingが名指ししていない宣言の追加を
+    1つでも含む修正は資格外。
 - 直接対応の確認subagentは、次を独立に検査する。1つでも満たさなければ解消判定を出さず
   資格喪失として報告し、親は正式レビューの再実行へ戻す(fail-closed)。資格の判定を
   親の自己分類に委ねない。
@@ -56,8 +57,8 @@
   2. diffがfinding対象外の変更を含まない。
   3. diffが上記の資格条件を満たす。Math / Leanでは修正対象ファイルへのplaceholder scan
      (`rg -n "\b(axiom|admit|sorry|unsafe)\b" <files>`)を含めて検査する。
-  4. 追加宣言がある場合、追加がfindingの指定どおりで、査読済みstatementを変えず、
-     追加宣言の`#print axioms`が標準公理だけであることを確認する。
+  4. 追加宣言がある場合、追加宣言がすべてfindingが名指ししたものであり、査読済みstatementを
+     変えず、追加宣言の`#print axioms`が標準公理だけであることを確認する。
 - 直接対応の確認subagentは、対象finding以外で新たに気づいた事項を中心/非中心の区分付きで
   記録として返す。中心の事項はfail-closedで報告する。範囲外の気づきを解消判定やmerge可否に
   どう反映するかは呼び出し側のSKILLが定める。

@@ -59,7 +59,7 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 すべてのPRを標準`$review-pr`へ渡す。target-theorem固有のroute、lane、修正後確認を`review-pr`へ追加しない。標準review-prは固定headのexact diff、変更責務、Issue受入条件を監査し、責務に対応する分野別敵対レビューへ委譲する。
 
-1 cycleの正式レビューは、初回と本筋修正後の再実行1回までとする(findingの中心/非中心の区分、本筋修正と微調整の手続きは共有review protocol「レビューバッチと修正後確認」が正本)。再実行後になお中心findingが残る、または新たに出る場合は、そのheadをmergeせず、cycle resultを`rejected`として記録し、次cycleで選定し直す。非中心findingは直接対応で解消するまでmergeしない。直接対応の確認subagentが範囲外で新たに挙げた非中心の事項は後出しとして監査記録に残すだけで、解消判定とmerge可否に影響させない。新たに挙げた中心の事項は本筋修正として扱い、上の再実行1回に数える。
+1 cycleの正式レビューは、初回と本筋修正後の再実行1回までとする(findingの中心/非中心の区分、本筋修正と微調整の手続きは共有review protocol「レビューバッチと修正後確認」が正本)。再実行後になお中心findingが残る、または新たに出る場合は、そのheadをmergeせず、cycle resultを`rejected`として記録し、次cycleで選定し直す。非中心findingは直接対応で解消するまでmergeしない。直接対応の確認subagentが範囲外で新たに挙げた非中心の事項は後出しとして監査記録に残し、merge後のtracking Issueコメントに一行で引き継ぐ。解消判定とmerge可否には影響させない。新たに挙げた中心の事項は本筋修正として扱い、上の再実行1回に数える。
 
 標準レビュー後、rootはその独立review evidenceと固定headの実体からstatement、premise discharge、provenance、proof-use、field escape、route、nonvacuity、dependency、回帰scenarioを再統合する。中心項目の未確認、不一致、証拠なしはmerge不可とする。
 
