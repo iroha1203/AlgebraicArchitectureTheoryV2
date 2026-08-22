@@ -13,6 +13,169 @@
 
 ## Cycle ledger
 
+### Cycle 29 — arbitrary `Doct_U` pullbacks and a proper finite fiber
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 29
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 8c93c256d2763a2125600857af2da514dddd89ac
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 28 merge synchronization comment 5378335661 and Cycle 29 selection comment 5378412642
+  proof_dag_predecessors:
+    - G-101 exact extraction-doctrine category Doct_U and exact doctrine morphisms
+    - Cycle 2 finite-code pullback presentation and ExtInst_U realization closure
+    - Cycle 28 normalized generated-endpoint checkpoint, PR 4065 merge 8c93c256
+  proof_obligation: discharge target conjunct (A) and ledger K0 by constructing the pullback of every exact-doctrine cospan in Doct_U without decidable-Atom, finiteness, point, or caller pullback premises; preserve every semantic cone's actual Atom equivalence; connect the existing finite-code pullback representation by an internally generated doctrine isomorphism; and fire a representation-invariant proper-fiber witness satisfying nonemptiness, canonical-pair non-surjectivity, two noninvertible projections, compatible and common-base-incompatible pairs
+  selection_reason: the existing pullbackPresentation_isPullback theorem quantifies arbitrary pointed ExtInst_U cones only after fixing a finite-code cospan and therefore does not prove the unpointed arbitrary-Doct_U statement in (A). The old two-source constant cospan has every component pair compatible, so its canonical pair map is surjective and it cannot satisfy the K0 witness. A symmetric three-to-two cospan with table [0, 0, 1] supplies independent collisions in both projections and an incompatible product pair while keeping the pullback inhabited.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullback.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullbackFiniteCode.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullbackWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - weakening arbitrary Doct_U cospans to finite presentations, pointed instances, identity Atom maps, or cones carrying a supplied factor or pullback certificate
+    - reusing pullbackPresentation_isPullback while silently dropping unpointed semantic cones
+    - calling the old all-compatible two-to-one self-cospan a proper fiber
+    - expressing the witness by raw equality or a cross-type intersection rather than typed common-base compatibility and an isomorphism-invariant property
+    - proving projection noninvertibility only for an enumeration without connecting the finite-code and semantic pullback representations
+    - promoting K0 to FiniteModelLift, K2-K4, or final theorem completion
+  unchecked:
+    - fresh fixed-head four-lane Math A/B and Lean A/B review
+    - final PR CI and merge synchronization
+result:
+  proposed_result_type: proof-obligation-discharged
+  content_head: 0afdfdb4c9f7734ab995cd82b24bd5745a80c5bb
+  reviewed_content_head: pending
+  proof_obligation_delta: constructed DoctrinePullbackSource as the subtype of source pairs with equal common-base image and assembled doctrinePullback for every exact-doctrine cospan. The two generated projections commute; every semantic doctrine cone receives a unique factor whose Atom equivalence is exactly the cone first leg's actual equivalence, yielding doctrinePullback_isPullback with no DecidableEq, finite presentation, selected point, or caller certificate. ProperDoctrineFiber packages only the resulting nonempty-source, pair-map non-surjectivity, and two projection non-IsIso propositions, and properDoctrineFiber_iff_of_iso proves their invariance under internally commuting doctrine isomorphisms. The finite-code bridge builds an isomorphism from the decoded compatible-source rank/unrank representation to the arbitrary semantic producer, proves both projection graphs, and transports the pullback theorem to the decoded finite presentation in Doct_U. The symmetric three-by-three over two witness exhibits compatible pairs (0,0), (0,1), and (1,0), the common-base-incompatible component pair (0,2), non-surjectivity, independent collisions proving both projections noninvertible, transport of properness to the finite-code representation, and a nonidentity finite Atom swap cone whose universal factor retains that Atom map.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullback.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullbackFiniteCode.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DoctrinePullbackWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - DoctrinePullbackSource
+    - doctrinePullback
+    - doctrinePullbackFst
+    - doctrinePullbackSnd
+    - doctrinePullback_commutes
+    - doctrinePullbackLift
+    - doctrinePullbackLift_atomEquiv
+    - doctrinePullbackLift_fst
+    - doctrinePullbackLift_snd
+    - doctrinePullbackLift_unique
+    - doctrinePullback_isPullback
+    - ProperDoctrineFiber
+    - properDoctrineFiber_iff_of_iso
+    - doctrinePullbackFiniteCodeIso
+    - doctrinePullbackFiniteCodeIso_hom_fst
+    - doctrinePullbackFiniteCodeIso_hom_snd
+    - pullbackPresentation_doctrine_isPullback
+    - finiteProperFiberCompatible00
+    - finiteProperFiberCompatible01
+    - finiteProperFiberCompatible10
+    - finiteProperFiberIncompatible02_commonBase_ne
+    - finiteProperFiberIncompatible02_not_in_range
+    - finiteProperDoctrinePullback_pairMap_not_surjective
+    - finiteProperDoctrinePullback_fst_not_isIso
+    - finiteProperDoctrinePullback_snd_not_isIso
+    - finiteProperDoctrineFiber
+    - finiteProperFiberFiniteCode_proper
+    - finiteProperFiberFiniteCode_isPullback
+    - finiteProperFiberSwapLift_componentC
+  claim_mapping:
+    theorem_names:
+      - doctrinePullback_isPullback
+      - properDoctrineFiber_iff_of_iso
+      - pullbackPresentation_doctrine_isPullback
+      - finiteProperDoctrineFiber
+      - finiteProperFiberFiniteCode_proper
+      - finiteProperFiberSwapLift_componentC
+    source_labels:
+      - target theorem (A) fiber product construction and universality in Doct_U
+      - target theorem (A) finite realization-image proper-fiber witness
+      - material-premise ledger K0
+      - dullness filter excluding identity-Atom-only cone universality and empty pullbacks
+    conjuncts:
+      - every exact-doctrine cospan on every fixed carrier has an internally constructed pullback in Doct_U
+      - universality ranges over every semantic doctrine cone and copies the first leg's arbitrary Atom equivalence into the generated factor
+      - the proper finite fiber is inhabited, its canonical source-to-component-pair map is not surjective, and neither projection is an isomorphism
+      - compatible pairs and an incompatible component pair are both typed over the same common-base maps
+      - proper-fiber conclusions are invariant under commuting doctrine isomorphisms and transport to the existing finite-code pullback representation
+      - a nonidentity Atom cone concretely fires the generic universal factor
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - K2-K4
+      - final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: candidate discharge of target conjunct (A) and K0 only; G-110 remains target-proof-checkpoint
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary fixed AtomCarrier U and the G-101 Doct_U category API
+      - finite realization-image code calculus only for the required K0 witness and representation bridge
+    input_geometry:
+      - arbitrary DOne, DTwo, Base and exact morphisms sigmaOne, sigmaTwo
+      - arbitrary PullbackCone sigmaOne sigmaTwo in the universal property
+    discharge_required:
+      - compatible-pair source subtype and componentwise normalization
+      - both projection exactness laws and square commutativity
+      - arbitrary-cone factorization and uniqueness including the Atom component
+      - internally generated finite-code doctrine isomorphism and projection graphs
+      - nonempty, non-surjective, two-noninvertible proper witness and its representation transport
+    conclusion_equivalent_risk:
+      - IsPullback, factor, factorization equations, properness, source equivalence, and projection invertibility are never producer inputs
+    unused_or_ambient_only:
+      - the selected point of FiniteInstanceCode is absent from the generic Doct_U producer
+      - Cycle 28 strong-lift artifacts are predecessor context only and are unused by K0 proofs
+  certificate_provenance:
+    - compatibility of normalized pairs is generated from sigmaOne.normalize_eq, sigmaTwo.normalize_eq, and the input pair equality
+    - the universal source pair is generated by evaluating the cone condition on every source
+    - the second projection and second factorization Atom laws are derived from the cospan and cone equations
+    - the finite-code source equivalence is compatibleSourceEquiv generated from the complete duplicate-free enumeration
+    - ProperDoctrineFiber contains propositions only and is proved from explicit pairs, range exclusion, and IsIso source-map injectivity
+  proof_use:
+    - doctrinePullbackLift.atomEquiv is definitionally cone.fst.atomEquiv and doctrinePullbackLift_snd consumes cone.condition on atomEquiv
+    - doctrinePullbackLift_unique consumes both factorization equations to identify both source components and the first equation to identify the Atom equivalence
+    - doctrinePullbackFiniteCodeIso uses compatibleSourceEquiv in both hom directions and its projection graphs drive IsPullback.of_iso'
+    - properDoctrineFiber_iff_of_iso transports nonemptiness and pair-map surjectivity through all three source equivalences and transports IsIso through the commuting projection graphs
+  anti_weakening:
+    verdict: pending-four-lane-review
+    notes:
+      - generic construction has no DecidableEq, finiteness, point, presentation, factor, or pullback hypothesis
+      - witness uses the selected symmetric three-to-two cospan rather than the all-compatible old fixture
+      - no claim is made about intersections of differently typed Source values
+  witness_nondegeneracy:
+    - finiteProperFiberCompatible00 inhabits the pullback source
+    - finiteProperFiberIncompatible02_commonBase_ne gives a typed unequal pair of common-base images
+    - finiteProperFiberIncompatible02_not_in_range refutes surjectivity of the canonical component-pair map
+    - independent pairs 00/01 and 00/10 collide under the first and second projections respectively
+    - finiteProperFiberSwapCone_fst_componentC and finiteProperFiberSwapLift_componentC fire a nonidentity Atom equivalence
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused DoctrinePullback.lean: pass; namespace audit 13 declarations and standard axioms only
+    - targeted module DoctrinePullback: pass
+    - focused DoctrinePullbackFiniteCode.lean: pass; namespace audit 10 declarations and standard axioms only
+    - targeted module DoctrinePullbackFiniteCode: pass
+    - focused DoctrinePullbackWitnesses.lean: pass; namespace audit 42 declarations and standard axioms only
+    - targeted module DoctrinePullbackWitnesses: pass
+    - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
+  review_refs:
+    fixed_head: pending
+    integrated_comment: pending
+    verdicts: []
+  blocking_findings: []
+  next_obligation: fresh four-lane review and CI for Cycle 29; after acceptance continue K2 while retaining arbitrary-target FiniteModelLift as open
+```
+
 ### Cycle 28 — semantic-input lift transport and the remaining `FiniteModelLift` gap
 
 ```yaml
