@@ -6,6 +6,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMateWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -288,7 +290,19 @@ its componentwise invertibility for every validated presentation.  Cycle 38
 comparison transports this result to every pair of arbitrary cleavages.  A
 symmetric three-to-two cospan fires the result on a producer-derived pullback
 whose four legs are all noninvertible.  No caller exactness, mate, inverse, or
-adjunction-equivalence certificate is accepted.  Arbitrary endpoint-
-isomorphism rebasing, authored-support `MateCoherentRel`, K3--K4, fixed-ledger
+adjunction-equivalence certificate is accepted.  Authored-support
+`MateCoherentRel`, K3--K4, fixed-ledger
 `FiniteModelLift`, and final target assembly remain open.
+The authored-support restriction layer then consumes each
+`RealizableSquare.realization_eq` to generate the exact direct and via-base
+route families fixed by the F0b2b schema.  It restricts the canonical mate by
+whiskering with the comparator-free discrete support functor, exposes each
+component as the exact producer mate through a named decoded support object,
+and inherits Cycle 39 invertibility.  The existing nonempty authored cell fires
+an actual component; the four-noninvertible-leg pullback remains a separate
+Cycle 39 control.  No raw authored comparator is inspected yet.  The earlier
+report phrase "arbitrary endpoint-isomorphism rebasing" was not an independently
+fixed GOAL artifact and was not used to invent a new schema.  The authored
+induced comparison, `MateCoherentRel`, its strict/lax and orbit witnesses,
+K3--K4, fixed-ledger `FiniteModelLift`, and final assembly remain open.
 -/
