@@ -13,6 +13,149 @@
 
 ## Cycle ledger
 
+### Cycle 40 — canonical Beck--Chevalley mate on authored support
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 40
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: b44196671a6708e586ed993151a6996ef527f4c0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 39 merge synchronization comment 5383099155 and Cycle 40 fail-closed selection comment 5383125159
+  scope_correction: the prior report phrase arbitrary endpoint-isomorphism rebasing was not an independently fixed GOAL artifact and was ambiguous among northwest-only apex replacement, four-corner square conjugation, and same-fiber component conjugation; arbitrary semantic replacement also loses the RealizableHom provenance required by the selected reindexing APIs, so no new endpoint-isomorphism schema or semantic-arrow layer was invented
+  proof_dag_predecessors:
+    - F0b2b AuthoredSupportContext and exact direct/via-base/canonical producer signatures
+    - Cycle 37 exact canonical Beck--Chevalley mate over every BCPresentation
+    - Cycle 39 canonical mate exactness and four-noninvertible-leg control
+    - existing nonempty finite authored-support context and raw-table boundary witness
+  proof_obligation: for every comparator-free AuthoredSupportContext, generate the exact direct route by restricting the Cycle 37 source functor along supportFunctor; generate the exact via-base route similarly; inhabit CanonicalMateRestrictionSignature by restricting the exact canonical mate without inspecting the authored comparator; expose each component through a named decoded support object and direct use of RealizableSquare.realization_eq; inherit Cycle 39 IsIso; fire a component on the existing nonempty authored support while retaining the four-noninvertible-leg exactness fixture as a separate control
+  selection_reason: the fixed GOAL and BCRelativeSchema already determine the authored-support route and canonical restriction types, making them the shortest well-typed predecessor of the authored induced comparison and MateCoherentRel; endpoint rebasing had no single fixed quantification and was not required because every AuthoredSupportContext already contains exact RealizableSquare provenance
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredSupportCanonicalMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredSupportCanonicalMateWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting either route, a natural transformation, mate, comparison, unit, counit, endpoint isomorphism, or exactness certificate from a caller
+    - inspecting input.authored or an authored comparator on the canonical side
+    - hiding RealizableSquare endpoint alignment behind a whole-functor equality cast
+    - inventing a new endpoint-isomorphism schema outside the fixed GOAL
+    - claiming the identity authored-support fixture itself has four noninvertible legs
+    - promoting this restriction checkpoint to the authored induced comparison, MateCoherentRel, orbit invariance, K3-K4, FiniteModelLift, or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: d448f19daddefe2f0e83f4d0be4c99e1b27ca4df
+  review_target_head: pending
+  proof_obligation_delta: For every comparator-free AuthoredSupportContext, Cycle 40 destructs only its RealizableSquare provenance and consumes realization_eq to identify the semantic square with the exact decoded BCPresentation. The direct route is supportFunctor followed by the selected left-projection reindexing and top transport; the via-base route is supportFunctor followed by bottom transport and selected right-leg reindexing. These definitions inhabit the two fixed AuthoredSupportRouteFamily signatures. Whiskering the Cycle 37 canonical mate with the discrete support functor produces the fixed CanonicalMateRestrictionSignature and depends on no authored values. Because the semantic and decoded southwest fibers are propositionally rather than definitionally equal, authoredSupportDecodedObject names the exact decoded object and the application theorem records the component correspondence by HEq after direct realization_eq elimination instead of a whole-functor cast. Componentwise Cycle 39 exactness makes the restricted natural transformation IsIso. The existing finite authored fixture supplies one actual support cell whose restricted component is IsIso. A separate theorem re-exports the symmetric Cycle 39 producer pullback, all four non-IsIso legs, and canonical exactness without conflating the two fixtures. No authored induced comparison or MateCoherentRel is claimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredSupportCanonicalMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredSupportCanonicalMateWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - authoredSupportDirectRoute
+    - authoredSupportViaBaseRoute
+    - authoredSupportDirectRouteFamily
+    - authoredSupportViaBaseRouteFamily
+    - authoredSupportCanonicalMate
+    - authoredSupportCanonicalMateFamily
+    - authoredSupportDecodedObject
+    - authoredSupportCanonicalMate_app_heq
+    - authoredSupportCanonicalMate_isIso
+    - finiteAuthoredSupportDirectRoute
+    - finiteAuthoredSupportViaBaseRoute
+    - finiteAuthoredSupportCanonicalMate
+    - finiteAuthoredSupportCanonicalMate_component_heq
+    - finiteAuthoredSupportCanonicalMate_component_isIso
+    - finiteAuthoredSupport_separate_four_leg_exactness_control
+  claim_mapping:
+    theorem_names:
+      - authoredSupportCanonicalMate_app_heq
+      - authoredSupportCanonicalMate_isIso
+      - finiteAuthoredSupportCanonicalMate_component_heq
+      - finiteAuthoredSupportCanonicalMate_component_isIso
+      - finiteAuthoredSupport_separate_four_leg_exactness_control
+    source_labels:
+      - target theorem (C) authored-support induced comparison and MateCoherentRel predecessor
+      - F0b2b exact producer signatures
+      - Cycle 37 canonical mate predecessor
+      - Cycle 39 exactness predecessor
+    conjuncts:
+      - exact direct and via-base route families are generated for every comparator-free authored support
+      - the canonical mate restricts to the same support without reading the raw authored table
+      - every restricted component is the exact decoded producer component and is invertible
+      - one nonempty authored cell fires the component while a separate fixture retains four noninvertible square legs
+    undischarged_assumptions:
+      - authored pointwise-table induced comparison with direct raw-field proof-use
+      - public MateCoherentRel over the two named producers
+      - strict positive and lax negative pair, presentation replacement invariance, full reselection-orbit nonvanishing, and nontrivial orbit witness
+      - fixed-ledger arbitrary-target FiniteModelLift
+      - K3 diagnostic base-change action, H_bc condition package, and positive/negative vanishing pair
+      - K4 pullback-square pasting and G-106/G-109 coherence bridge
+      - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
+  dependency_dag:
+    - comparator-free AuthoredSupportContext plus realization_eq -> exact decoded BCPresentation and supportFunctor
+    - supportFunctor plus left selected reindexing plus top transport -> authored direct route
+    - supportFunctor plus bottom transport plus right selected reindexing -> authored via-base route
+    - supportFunctor whiskered with Cycle 37 canonical mate -> canonical authored-support comparison
+    - Cycle 39 component IsIso -> restricted component IsIso -> restricted NatTrans IsIso
+    - nonempty finite authored cell -> actual restricted component firing
+    - separate symmetric Cycle 39 fixture -> producer pullback plus four noninvertible legs plus exact mate
+  premise_audit:
+    direction_hypotheses:
+      - comparator-free AuthoredSupportContext, whose fixed fields are a RealizableSquare, G-106 lift geometry, and endpoint incidence equalities
+    discharge_required_consumed:
+      - RealizableSquare.realization_eq
+      - typed left/right RealizableHom values from the exact BCPresentation
+      - Cycle 37 canonical mate
+      - Cycle 39 canonical mate component exactness
+    conclusion_equivalent_inputs: none
+    structure_field_escape: none; AuthoredSupportContext contains no route, natural transformation, mate, comparison, exactness, or endpoint-isomorphism field, and the canonical producer does not accept AuthoredBCDatumSquare or inspect input.authored
+    proof_use: both route definitions destruct the exact realization_eq; the canonical restriction directly whiskers coreBeckChevalleyMate; the HEq component theorem again eliminates realization_eq; the IsIso instance directly consumes coreBeckChevalleyMate_app_isIso
+  route_integrity:
+    selected_route: exact BCPresentation stored by RealizableSquare, fixed selected left/right reindexing functors, G-109 top/bottom transports, and Cycle 37 canonical mate
+    provenance: comparator-free authored support plus exact realization provenance; no endpoint-isomorphism or semantic replacement schema is introduced
+    nonvacuity: the finite authored category contains the named diagnostic cell and its actual canonical component is IsIso; four noninvertible square legs remain verified on the distinct symmetric Cycle 39 control
+    forbidden_routes_absent:
+      - no caller route, natural transformation, mate, comparison, unit/counit, endpoint iso, or exactness certificate
+      - no raw authored comparator access on the canonical side
+      - no whole-functor equality cast
+      - no invented endpoint-rebase schema
+      - no combined-fixture overclaim
+      - no authored comparison, MateCoherentRel, orbit, K3-K4, FiniteModelLift, or completion claim
+  regression_scenarios:
+    canonical_reads_authored: rejected; the producer quantifies only over AuthoredSupportContext and cannot access AuthoredBCDatumSquare.authored
+    supplied_routes: rejected; both fixed route families are named definitions generated from the exact four legs
+    hidden_endpoint_cast: rejected; a named decoded object and HEq theorem expose the sole realization_eq transport
+    empty_support: rejected; the concrete Category is inhabited by FiniteBCDiagnosticCell.cell and the exact component IsIso is instantiated there
+    combined_fixture_overclaim: rejected; the witness module explicitly keeps nonempty authored support and four-noninvertible-leg exactness as separate controls
+    scope_invention: rejected; endpoint-isomorphism rebasing is recorded as an unfixed ambiguous report phrase and no new schema is introduced
+  verification:
+    - focused direct check BCAuthoredSupportCanonicalMate.lean: pass; 9 namespace declarations, standard axioms only
+    - targeted module BCAuthoredSupportCanonicalMate: pass
+    - focused direct check BCAuthoredSupportCanonicalMateWitnesses.lean: pass; 8 namespace declarations, standard axioms only
+    - targeted module BCAuthoredSupportCanonicalMateWitnesses: pass
+    - exact G-110 umbrella module ResearchLean.AG.DoctrineFiberProduct: pass
+    - placeholder/unsafe/new-axiom scan on both exact files: clean
+    - hidden/BiDi and private-path scan on both exact files: clean
+    - Formal to ResearchLean import-direction scan: no new reverse import
+    - Research aggregate/full build: not run, per hard rule
+  review:
+    exact_head: pending
+    four_lane_result: pending fresh Math A, Math B, Lean A, and Lean B review at the final snapshot
+    refutation_attempts: pending
+    integrated_comment: pending
+    ci: pending
+    status: pending
+next:
+  proof_obligation: generate the authored comparison from the raw pointwise table on the fixed support with direct authored-field proof-use, then define MateCoherentRel from the authored and canonical named producers; strict/lax and orbit obligations remain later nodes
+```
+
 ### Cycle 39 — package-projection Beck--Chevalley exactness
 
 ```yaml
