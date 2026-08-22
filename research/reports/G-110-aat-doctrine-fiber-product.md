@@ -16,7 +16,7 @@
 ### Cycle 34 — presentation replacement and common-semantic reindexing descent
 
 ```yaml
-ledger_type: target_cycle_selection
+ledger_type: target_cycle_result
 goal: G-110-aat-doctrine-fiber-product
 cycle: 34
 goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
@@ -48,11 +48,139 @@ selection:
     - firing only proof-field-distinct presentations, invertible legs, identity vertical maps, or claiming opaque selected comparison nonidentity merely from raw presentation inequality
     - promoting presentation replacement to an adjunction, canonical Beck--Chevalley mate, K3-K4, or G-110 completion
   unchecked:
-    - common-semantic provenance and selected comparison implementation
-    - typed relative compositor and unitor replacement compatibility
-    - raw-distinct finite semantic-equality witness and nondegenerate firing
-    - focused Lean checks, exact targeted modules, umbrella check, and standard-axiom audit
     - fixed-head four-lane review, direct-response repair, report synchronization, merge, and Issue synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: d80a9d13867d49193eebe93a4905b533e99df2a7
+  reviewed_content_head: d80a9d13867d49193eebe93a4905b533e99df2a7
+  proof_obligation_delta: CartRealizationProvenance indexes finite presentation provenance over one literal CartSemanticInput and stores no lift, cleavage, comparison, or coherence certificate. Every two provenance values generate selected reindexing functors whose components are compared by the StrongCartesianLift domain isomorphism; both lift triangles, naturality on every vertical map, and whole-natural-isomorphism reflexivity, symmetry, and cocycle follow from cartesian uniqueness. For exact-endpoint CartPresentationBetween values, equality of decoded homs generates equality of their full typed semantic inputs and retags only the selected lift's strong-cartesianness proposition. This yields the typed selected comparison without transporting a complete functor. An arbitrary direct presentation satisfying the decoded composition equation receives a relative contravariant compositor, and an arbitrary identity-decoding presentation receives a relative unitor. Simultaneous replacement of both composable legs and the direct presentation, and replacement of two identity presentations, preserve those structures by direct use of the Cycle 33 cleavage compatibility laws. The finite fixture replaces the empty-support identity Atom code by a singleton-support code decoding the same identity permutation; it proves typed and raw presentation inequality, equality of decoded homs and full semantic inputs, fires both comparison surfaces and all triangles/naturality/refl/symm/cocycle, and instantiates compositor/unitor replacement on a noninvertible selective leg and a nonidentity vertical axis map. It deliberately makes no claim that opaque selected comparison components are nonidentity merely because authored codes differ.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationReplacement.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - CartRealizationProvenance
+    - CartRealizationProvenance.toRealizableHom
+    - RealizableHom.provenance
+    - selectedCoreFiberCleavageBridge
+    - cartRealizationProvenanceComparisonApp_hom_fac
+    - cartRealizationProvenanceComparisonApp_inv_fac
+    - cartRealizationProvenanceComparison_naturality
+    - cartRealizationProvenanceComparison
+    - cartRealizationProvenanceComparison_refl
+    - cartRealizationProvenanceComparison_symm
+    - cartRealizationProvenanceComparison_cocycle
+    - typedCartSemanticInput_eq_of_hom_eq
+    - selectedTypedCoreFiberPresentationComparisonApp_hom_fac
+    - selectedTypedCoreFiberPresentationComparisonApp_inv_fac
+    - selectedTypedCoreFiberPresentationComparison_naturality
+    - selectedTypedCoreFiberPresentationComparison
+    - selectedTypedCoreFiberPresentationComparison_refl
+    - selectedTypedCoreFiberPresentationComparison_symm
+    - selectedTypedCoreFiberPresentationComparison_cocycle
+    - selectedTypedCoreFiberPresentationCompositor
+    - selectedTypedCoreFiberPresentationCompositor_compatibility
+    - selectedTypedCoreFiberPresentationUnitor
+    - selectedTypedCoreFiberPresentationUnitor_compatibility
+    - finiteSelectiveTwoToSupportPresentation_ne_padded
+    - finiteSelectiveTwoToSupportRawPresentation_ne_padded
+    - finiteSelectiveTwoToSupportPresentation_semanticInput_eq
+    - finiteSelectiveTypedPresentationComparison_naturality
+    - finiteSelectivePresentationCompositor_compatibility
+    - finiteSupportPresentationUnitor_compatibility
+    - finitePresentationDescentCompositorFirstLeg_not_isIso
+    - finitePresentationDescentAxisSwap_ne_id
+  claim_mapping:
+    theorem_names:
+      - cartRealizationProvenanceComparison
+      - cartRealizationProvenanceComparison_refl
+      - cartRealizationProvenanceComparison_symm
+      - cartRealizationProvenanceComparison_cocycle
+      - selectedTypedCoreFiberPresentationComparison
+      - selectedTypedCoreFiberPresentationCompositor_compatibility
+      - selectedTypedCoreFiberPresentationUnitor_compatibility
+      - finiteSelectiveTwoToSupportPresentation_ne_padded
+      - finiteSelectiveTwoToSupportPresentation_semanticInput_eq
+      - finitePresentationDescentCompositorFirstLeg_not_isIso
+    source_labels:
+      - target theorem (C) contravariant reindexing coherence subnode
+      - K2 common-semantic presentation-replacement checkpoint
+      - Cycle 33 cartesian-cleavage choice-independence and replacement coherence
+    conjuncts:
+      - every two finite provenance values over one literal CartSemanticInput have a producer-derived selected reindexing natural isomorphism with both lift triangles and naturality
+      - common-semantic comparisons satisfy whole-natural-isomorphism reflexivity, symmetry, and three-provenance cocycle
+      - exact-endpoint typed presentations with equal decoded arrows admit the same selected comparison after retagging only strong-cartesianness, never the whole functor
+      - arbitrary semantically matching direct and identity presentations generate relative contravariant compositors and unitors
+      - simultaneous replacement of both legs and the direct presentation preserves the compositor, and replacement of identity presentations preserves the unitor
+      - raw-distinct identity-decoding finite presentations fire the full surface with a noninvertible leg and nonidentity vertical map
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - arbitrary endpoint-isomorphism rebasing and a representative-independent pseudofunctor or strictification beyond the exact-endpoint/common-literal semantic calculus
+      - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
+      - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
+      - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
+      - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: common-literal-semantic presentation replacement and exact-endpoint relative compositor/unitor descent checkpoint only; no strict quotient functor, arbitrary endpoint rebase, adjunction, mate, or G-110 completion is claimed
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary AtomCarrier U, arbitrary literal CartSemanticInput, and arbitrary finite realization provenance over that input
+      - exact-endpoint FiniteInstanceCode and CartPresentationBetween values only for the typed comparison and relative compositor/unitor calculus
+      - packageProjection core fibers, selected strong-cartesian lifts, and Cycle 33 cartesian uniqueness/coherence APIs
+    input_geometry:
+      - arbitrary pairs and triples of finite provenance values over one common semantic input
+      - arbitrary target-fiber objects and arbitrary vertical target-fiber maps
+      - arbitrary exact-endpoint typed direct, first-leg, second-leg, and identity presentations satisfying internally consumed decoded-arrow equalities
+    direction_hypothesis:
+      - realization_eq and decoded-arrow equalities identify authored finite provenance with one literal semantic input and are consumed to retag only strong-cartesianness propositions
+      - selected lifts, comparisons, triangles, naturality, compositors, unitors, and compatibility data are internally generated and are never caller premises
+    discharge_required:
+      - both comparison lift triangles and naturality for every vertical map
+      - whole comparison reflexivity, symmetry, and cocycle
+      - relative compositor and unitor component triangles and naturality
+      - simultaneous compositor replacement and two-identity unitor replacement compatibility
+      - raw-code inequality, decoded semantic equality, and noninvertible/nonidentity finite firing
+    conclusion_equivalent_risk:
+      - no caller lift, cleavage, endpoint iso, comparison, NatIso, triangle, naturality, compositor, unitor, or coherence packet appears in a selected public producer
+      - semantic equality is not used to cast a complete RealizableHom or reindexing functor
+    unused_or_ambient_only:
+      - no strict quotient functor, arbitrary endpoint equivalence, adjunction, mate, exactness, positive IsIso, K3-K4, or final assembly API is used or claimed
+  certificate_provenance:
+    - CartRealizationProvenance contains only an authored presentation and its equality to the fixed semantic input
+    - comparison components use StrongCartesianLift.domainIso on the two internally selected lifts; their factor graphs and all whole-coherence laws are derived by the cartesian universal property
+    - typed semantic equality reuses the second selected lift's domain and hom while rewriting only its IsStronglyCartesian proposition before applying the same generated comparison
+    - relative compositor and unitor compose accepted Cycle 32 components with the producer-generated typed presentation comparison; their replacement equations explicitly consume Cycle 33 cleavage compatibility
+  proof_use:
+    - common-provenance naturality and refl/symm/cocycle postcompose with actual selected lifts before applying strong-cartesian uniqueness
+    - selectedTypedCoreFiberPresentationComparisonApp compares the actual first selected lift with the actual second lift retagged along the internally derived full semantic-input equality
+    - compositor compatibility normalizes first, second, and direct selected lifts to one literal semantic input and uses each generated comparison triangle plus coreFiberCleavageReindexCompositor_compatibility
+    - unitor compatibility uses the canonical and replacement identity selected lifts and coreFiberCleavageReindexUnitor_compatibility
+  anti_weakening:
+    verdict: pass
+    notes:
+      - the common-provenance comparison quantifies all representatives, objects, and vertical maps; the typed surface quantifies all semantically equal exact-endpoint presentations
+      - the finite witness proves raw presentation inequality separately from semantic equality and does not infer an opaque selected comparison's nonidentity from that inequality
+      - descent is stated up to generated natural isomorphism, not functor equality or a strict quotient
+  witness_nondegeneracy:
+    - finitePresentationPaddedIdentityAtomCode has singleton support but decodes to Equiv.refl, while the canonical composite and identity codes have empty support
+    - typed and raw presentation inequalities and full CartSemanticInput equalities are independently proved
+    - both provenance and typed selected comparison triangles, naturality, refl/symm/cocycle are instantiated
+    - relative compositor compatibility uses the genuine selective two-to-one-to-support chain and proves its first leg noninvertible
+    - relative unitor compatibility uses canonical and padded identity presentations
+    - naturality fires on finiteReindexAxisSwapHom, which is independently nonidentity
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused CartesianRegimeReindexingPresentationReplacement.lean: pass; namespace audit 39 declarations and standard axioms only
+    - focused CartesianRegimeReindexingPresentationCoherence.lean: pass; namespace audit 21 declarations and standard axioms only
+    - focused CartesianRegimeReindexingPresentationWitnesses.lean: pass; namespace audit 56 declarations and standard axioms only
+    - targeted modules CartesianRegimeReindexingPresentationReplacement, CartesianRegimeReindexingPresentationCoherence, and CartesianRegimeReindexingPresentationWitnesses: pass
+    - exact umbrella target ResearchLean.AG.DoctrineFiberProduct: pass
+    - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, private-path, import-direction, manifest, and umbrella scans: pass
 ```
 
 ### Cycle 33 — cartesian-cleavage choice independence
