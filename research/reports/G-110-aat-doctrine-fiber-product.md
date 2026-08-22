@@ -13,6 +13,152 @@
 
 ## Cycle ledger
 
+### Cycle 28 — realization-compatible strong-lift transport and `FiniteModelLift`
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 28
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 2c34fb0c21a83dd4ed9b0701f849ee1e62564b22
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 27 merge synchronization comment 5377884640 and Cycle 28 selection comment 5378017080
+  proof_dag_predecessors:
+    - Cycle 26 reflected ambient universal property and strong lift, PR 4062
+    - Cycle 27 realization-compatible finite-presentation ULift bridge, PR 4063 merge 2c34fb0c
+  proof_obligation: transport every supplied strong-cartesian lift on the genuine rebased high realization and its internally transported selected target back to the direct high semantic lift; complete that prefix to the selected core package; reflect the completed lift through Cycle 26; cancel the generated low completion tail to recover a strong-cartesian lift of the original realized prefix; and derive the one-way universe-polymorphic FiniteModelLift nonexistence transport without empty elimination
+  selection_reason: Cycle 27 supplies source and target isomorphisms between the direct semantic lift and the rebased realization, but the Cycle 26 reflector consumes a completed generated arrow to the selected finite core package. The supplied prefix lift must therefore be conjugated across both endpoint isomorphisms, composed with the generated high completion tail, reflected as a full lift, and then structurally factored through the low completion tail. Returning only the reflected full composite would have the wrong target and would not transport the original prefix lift.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelStrongLiftIsoTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelLift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULiftWitnesses.lean
+  risks:
+    - accepting a source or target package isomorphism, transported package, lift, factor, or factorization certificate from the caller
+    - replacing the genuine rebased realization by the direct semantic lift through an unsupported definitional equality
+    - returning only the reflected completed lift instead of cancelling the low tail to recover the original realized prefix
+    - reusing globalCartesianLift, the existing low generated cartesianness certificate, CartesianLiftNonexistence emptiness, or strongCartesianLiftOfTarget in the generic producer
+    - presenting a one-way conditional no-lift transport as an equivalence of lift types or as an inhabited right-branch counterexample
+    - promoting the selected generated-endpoint construction to arbitrary package transport, K0, K2-K4, or theorem completion
+  unchecked:
+    - four independent fixed-head content reviews
+    - PR CI and mergeability
+    - final report and tracker synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: 1ab7d108692aaa4e67acfd0316fa6cabc7c07050
+  proof_obligation_delta: constructed a total-package isomorphism for canonical CoreFiber transport over every base isomorphism and proved that its forward and inverse maps lie over the corresponding base maps. For every CartSemanticInputIso, target package, and supplied strong-cartesian lift on the second input at the internally transported target, the new pullStrongCartesianLift conjugates the supplied hom by the inverse source and target total isomorphisms, composes the three strong-cartesian legs, and uses the semantic-input commuting square to recover the first input exactly; its public conjugation triangle recovers the supplied hom. For every finite-model RealizableHom and authored tail to FiniteModel.corePackage, the completion producer builds the low, direct-high, and rebased-high targets internally; pulls the supplied high prefix lift through the Cycle 27 semantic-input isomorphism; composes it with the generated high inverse-package tail; reflects that completed high lift with the Cycle 26 producer; and applies the low tail universal property followed by Mathlib IsStronglyCartesian.of_comp to recover a strong-cartesian lift of the original realized prefix. Public theorems retain the high conjugation triangle, complete reflected component graph, low-tail factor IsHomLift, and low-tail cancellation triangle. finiteModelLift_no_lift and the named FiniteModelLift package this data-level producer into the one-way universe-polymorphic nonexistence transport. The selective-two support-prefix fixture supplies an actual high lift only at the witness layer, fires both transport triangles and the complete reflected graph, and proves that the low and rebased high base arrows are non-IsIso. The Cycle 27 witness DecidableEq instance is definitionally aligned with the realization-ULift instance so that the instance-indexed RealizableHom API is reusable without casts or caller certificates.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelStrongLiftIsoTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelLift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULiftWitnesses.lean
+  evidence:
+    - coreFiberLiftIsoOfIso
+    - coreFiberLiftIsoOfIso_hom_isHomLift
+    - coreFiberLiftIsoOfIso_inv_isHomLift
+    - CartSemanticInputIso.pullStrongCartesianLift
+    - CartSemanticInputIso.pullStrongCartesianLift_conjugation_triangle
+    - finiteModelCompletedRebasedHighTarget
+    - finiteModelCompletedPulledHighPrefixLift
+    - finiteModelCompletedHighTransport_triangle
+    - finiteModelCompletedHighLift
+    - finiteModelReflectedCompletedLift
+    - finiteModelReflectedCompletedLift_components
+    - finiteModelCompletedLowFactor
+    - finiteModelCompletedLowFactor_isHomLift
+    - finiteModelCompletedLowFactor_triangle
+    - finiteModelReflectCompletedStrongCartesianLift
+    - finiteModelReflectCompletedStrongCartesianLift_triangle
+    - finiteModelLift_no_lift
+    - FiniteModelLift
+    - finiteSelectiveTwoCompletedRebasedHighLift
+    - finiteSelectiveTwoFiniteModelStrongLift
+    - finiteSelectiveTwoFiniteModelHighTransport_triangle
+    - finiteSelectiveTwoFiniteModelReflected_components
+    - finiteSelectiveTwoFiniteModelStrongLift_triangle
+    - finiteSelectiveTwoFiniteModelStrongLift_noninvertible
+  claim_mapping:
+    theorem_names:
+      - CartSemanticInputIso.pullStrongCartesianLift
+      - finiteModelReflectCompletedStrongCartesianLift
+      - finiteModelLift_no_lift
+      - FiniteModelLift
+    source_labels:
+      - target theorem B universe-polymorphic FiniteModelLift clause
+      - target artifact list FiniteModelLift entry
+      - material-premise ledger FiniteModelLift discharge-required entry
+      - Cycle 12 nonvacuous structural-route guard
+    conjuncts:
+      - every supplied lift on the internally transported target of an isomorphic semantic input pulls back to a lift on the original input
+      - every realized finite-model prefix completed by a tail to the selected core reflects from a supplied rebased high lift to a strong-cartesian lift of that original prefix
+      - a low no-lift premise therefore transports to the internally generated rebased high realization and selected target in every universe
+      - the selective-two noninvertible fixture exercises the data producer on an actual high lift independently of any no-lift premise
+    undischarged_assumptions:
+      - an inhabited universe-zero finite no-lift premise is not asserted under the selected global-left branch
+      - K0 and K2-K4
+      - final Doctrine Fiber Product and Base Change theorem assembly
+    acceptance_point: FiniteModelLift is proposed as a discharged fixed-ledger structural transport; G-110 remains target-proof-checkpoint because K0, K2-K4, and final theorem assembly are open
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - total-package isomorphism over every base isomorphism generated by canonical CoreFiber transport
+      - supplied strong-cartesian lift transport along every CartSemanticInputIso at the internally transported target
+      - completion of every realized finite-model prefix to the selected core package in low and high carriers
+      - reflection of the completed high lift and structural cancellation of the low completion tail
+      - one-way universe-polymorphic FiniteModelLift nonexistence transport
+      - actual selective-two firing over non-IsIso low and high bases
+    remaining:
+      - K0
+      - K2-K4
+      - final target theorem assembly and independent completion review
+  certificate_provenance:
+    discharged:
+      - coreFiberLiftIsoOfIso accepts only a base isomorphism and source package and computes the total isomorphism from coreFiberLift
+      - pullStrongCartesianLift accepts only a semantic-input isomorphism, first-input target package, and supplied second-input lift; both total bridges and all strong-cartesian certificates are generated internally
+      - finiteModelReflectCompletedStrongCartesianLift accepts only a realized input, authored completion tail, and supplied rebased high lift; all generated inputs, packages, tails, factors, and factorization laws are internal outputs
+      - finiteModelLift_no_lift accepts only the low no-lift premise required by the one-way implication and contradicts a high lift through the data producer
+    unresolved: []
+  proof_use:
+    used:
+      - supplied lift hom and isStronglyCartesian in the three-leg semantic-input conjugation
+      - CartSemanticInputIso.hom_comm and both endpoint isomorphisms in the base equality and conjugation triangle
+      - pulled high prefix lift and high inverse-package tail in the completed high lift
+      - reflectNormalizedStrongCartesianLift and reflectNormalizedHighHom_components on that actual completed high lift
+      - low inverse-package tail IsStronglyCartesian.map and fac to generate the original-prefix factor and its triangle
+      - low tail strong cartesianness, reflected composite strong cartesianness, factor IsHomLift, and Mathlib IsStronglyCartesian.of_comp in the returned prefix lift
+      - finiteModelReflectCompletedStrongCartesianLift in the contradiction proving finiteModelLift_no_lift
+    unused:
+      - globalCartesianLift
+      - cartesianLiftNonexistence_isEmpty or any empty elimination
+      - input.lowGeneratedLift.isStronglyCartesian or another pre-existing low generated certificate in the new generic producer
+      - strongCartesianLiftOfTarget outside the concrete selective-two firing
+      - any caller-supplied package transport, endpoint equality, factor, universal-property packet, or low lift
+  structure_field_escape: none found; the generic output is computed from the supplied high lift through transport, completion, Cycle 26 reflection, low factorization, and of_comp rather than accepting or projecting the required low lift
+  route_integrity: pass proposed; the output target is the original realized-prefix endpoint, not the completed core endpoint, and the low cancellation triangle visibly connects the returned lift to the supplied-high-derived reflected full lift
+  target_fitting: none found; the generic producer quantifies over every finite-model RealizableHom, every authored tail to the selected core package, and every supplied lift on the internally transported rebased target. The selective-two fixture only instantiates this surface.
+  vacuity: the conditional no-lift premise is not inhabited under the selected global-left branch and is not used as the nonvacuity witness. The data producer is independently exercised by an actual supplied high lift and returns an actual low lift over a concrete non-IsIso prefix.
+  one_way_as_equivalence: none found; FiniteModelLift transports low nonexistence to one internally generated high target only, and no inverse implication, lift-type equivalence, arbitrary high target descent, or essential-surjectivity claim is made
+  goal_or_report_reinterpretation: none proposed; the literal FiniteModelLift ledger item is addressed by a nonempty structural producer plus its conditional corollary, while the selected global-left branch and absence of an actual right-branch counterexample remain unchanged
+  validation_refs:
+    - exact focused check FiniteModelStrongLiftIsoTransport.lean: pass, 9 namespace declarations and standard axioms only
+    - exact focused check FiniteModelLift.lean: pass, 31 namespace declarations and standard axioms only
+    - exact focused compatibility recheck FiniteModelRealizationULiftWitnesses.lean: pass, 16 namespace declarations and standard axioms only
+    - targeted module builds for FiniteModelStrongLiftIsoTransport, FiniteModelRealizationULiftWitnesses, and FiniteModelLift: pass; no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, prohibited-dependency, hidden and bidirectional Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+  review_refs:
+    independent_final_reviews: pending
+    direct_response: pending
+    integrated_comment: pending
+  blocking_findings: []
+  next_obligation: select and implement K0 from the unchanged fixed GOAL after Cycle 28 fixed-head review and merge, or fail closed with a formal blocker to its exact signature
+```
+
 ### Cycle 27 — realization-compatible finite-presentation ULift bridge
 
 ```yaml
