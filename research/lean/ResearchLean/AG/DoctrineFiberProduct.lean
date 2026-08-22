@@ -8,6 +8,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
@@ -204,6 +206,15 @@ the lift at its codomain; the factor graph, uniqueness, identity law, and
 composition law are all exported.  A noninvertible selective-two base and a
 nonidentity four-axis vertical map fire the graph and laws, and an identity-base
 sensitivity control proves that the selected map action is not constant.
-Base-arrow unitor/compositor and cleavage independence, the adjunction, the
-Beck--Chevalley mate, K3--K4, and the final target assembly remain open.
+The constructor-relative coherence layer then exposes exact-endpoint typed
+realizations, composes the selected cartesian lifts, and constructs the
+contravariant compositor and unitor from cartesian uniqueness.  Their
+naturality, associativity relative to one fixed left-associated composite, and
+both unit laws are proved by comparing the actual generated lift triangles.
+A noninvertible three-to-two-to-one selective chain and a genuine nonidentity
+vertical map fire these laws.  Semantic associativity and unit equalities are
+used only to type the strong-cartesianness of explicit composites; arbitrary
+presentation replacement and cleavage-choice independence remain open.
+The adjunction, Beck--Chevalley mate, K3--K4, and final target assembly also
+remain open.
 -/
