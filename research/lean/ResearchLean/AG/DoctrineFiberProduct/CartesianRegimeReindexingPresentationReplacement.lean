@@ -13,6 +13,18 @@ semantic arrows retags only the strong-cartesianness proposition of a selected
 lift.  No complete functor is transported.  The resulting component
 comparisons, triangles, naturality, and whole-comparison coherence are therefore
 generated internally from the selected lifts.
+
+## Implementation notes
+
+A selected reindexing functor is dependently indexed by the semantic source and
+target of its `RealizableHom`.  Equality of decoded arrows alone therefore does
+not type a direct natural isomorphism between presentations with different
+endpoint codes.  This module first places authored provenance over one literal
+`CartSemanticInput`; the exact-endpoint specialization then reuses the second
+selected lift while rewriting only its strong-cartesianness proposition.  It
+deliberately rejects transporting a complete `RealizableHom` or functor as the
+answer.  Quotient-level packaging is supplied separately from these generated
+representative comparisons.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

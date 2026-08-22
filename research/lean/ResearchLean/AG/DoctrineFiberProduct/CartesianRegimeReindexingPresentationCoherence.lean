@@ -223,8 +223,8 @@ theorem selectedTypedCoreFiberPresentationCompositorApp_inv_fac
 
 /--
 The relative compositor component is natural on every vertical target map.
-Naturality is generated from the Cycle 32 compositor and the Lane A
-presentation comparison.
+Naturality is generated from the Cycle 32 compositor and
+`selectedTypedCoreFiberPresentationComparison`.
 -/
 theorem selectedTypedCoreFiberPresentationCompositor_naturality
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -343,9 +343,10 @@ private noncomputable def selectedTypedCoreFiberPresentationRetaggedCleavage
           exact lift.isStronglyCartesian }
 
 /--
-The two Lane A presentation comparisons whiskered across a contravariant
-composable pair.  Its component is the second-leg comparison mapped by the
-first functor, followed by the first-leg comparison at the replaced object.
+The two `selectedTypedCoreFiberPresentationComparison` values whiskered across
+a contravariant composable pair.  Its component is the second-leg comparison
+mapped by the first functor, followed by the first-leg comparison at the
+replaced object.
 -/
 noncomputable def selectedTypedCoreFiberPresentationHorizontalComparison
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -373,8 +374,8 @@ noncomputable def selectedTypedCoreFiberPresentationHorizontalComparison
 Componentwise compatibility of relative compositors under simultaneous
 replacement of the two legs and the direct presentation.  The proof
 normalizes all six selected lift families to the first literal composite input
-and applies Cycle 33 choice compatibility before returning through the Lane A
-presentation comparisons.
+and applies Cycle 33 choice compatibility before returning through the
+generated typed presentation comparisons.
 -/
 theorem selectedTypedCoreFiberPresentationCompositor_compatibility_app
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]

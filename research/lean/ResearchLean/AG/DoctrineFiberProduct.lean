@@ -15,6 +15,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageCoh
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationCoherence
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingFiniteCodePseudoaction
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingFiniteCodePseudoactionWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
@@ -236,7 +238,15 @@ typed presentations it also constructs relative compositors and unitors and
 proves simultaneous replacement compatibility without transporting a whole
 functor.  Raw-distinct identity-decoding codes fire the comparison and
 coherence on a noninvertible selective leg and a nonidentity vertical map.
-This is descent up to generated natural isomorphism, not a strict quotient
-functor.  Arbitrary endpoint-isomorphism rebasing, the adjunction,
-Beck--Chevalley mate, K3--K4, and final target assembly remain open.
+The finite-code quotient layer then selects a `Quotient.out` representative for
+each `FiniteCodeCartHom`, compares every supplied representative to that
+selected action by generated natural isomorphism, and constructs quotient
+compositors and unitors with representative-replacement compatibility.  The
+cartesian-uniqueness pentagon and both unit laws package these data as a
+`Pseudofunctor` on the opposite locally discrete finite-code category.  A
+raw-distinct padded representative, noninvertible quotient legs, and the same
+nonidentity vertical map fire the full quotient surface.  This is descent up to
+generated natural isomorphism; no `Quotient.lift` targets a functor type.
+Arbitrary endpoint-isomorphism rebasing, the adjunction, Beck--Chevalley mate,
+K3--K4, and final target assembly remain open.
 -/
