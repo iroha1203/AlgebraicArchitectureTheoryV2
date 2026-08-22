@@ -13,6 +13,163 @@
 
 ## Cycle ledger
 
+### Cycle 36 — cleavage-independent core transport/reindexing adjunction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 36
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: c79487fbfd44bf87f46a5fd8c91ee28facdfcd9f
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 35 merge synchronization comment 5382565767 and Cycle 36 selection comment 5382579240
+  proof_dag_predecessors:
+    - Cycle 33 arbitrary-cleavage comparison, both lift triangles, naturality, and coherence
+    - Cycle 35 producer-derived selected core transport/reindexing adjunction, its hom equivalence, unit, counit, and triangles
+    - Cycle 33 finite literal and twisted cleavages with their visibly nonidentity four-axis comparison
+  proof_obligation: for every RealizableHom and arbitrary CoreFiberCartesianCleavage, generate the comparison to the exact selected reindexing functor from cartesian-lift universality; transport the Cycle 35 adjunction along that generated natural isomorphism and expose both transpose directions, unit, counit, and both triangles; prove that the Cycle 33 canonical comparison between any two cleavages intertwines the forward and inverse hom equivalences, unit, and counit; fire the surface on the finite literal and twisted cleavages with a visibly nonidentity comparison
+  selection_reason: Cycle 35 constructed the exact selected-cleavage adjunction but left the GOAL-required cleavage independence open; Cycle 33 already supplies the canonical cleavage comparison and its lift triangles, so connecting those two reviewed predecessors is the shortest remaining K2 discharge after the reviewed Cycle 30 pointed-pullback bridge and before the canonical Beck--Chevalley mate
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCleavageIndependence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCleavageIndependenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting an adjunction, hom equivalence, unit, counit, triangle, or compatibility certificate from a caller
+    - replacing arbitrary-cleavage quantification by the fixed selected cleavage
+    - constructing unrelated adjunctions for two cleavages without proving that the Cycle 33 canonical comparison intertwines their transpose maps, unit, and counit
+    - hiding the comparison behind functor equality or a whole-adjunction cast rather than consuming the generated cartesian-lift comparison
+    - calling a proof-field-only difference or an identity comparison nontrivial
+    - promoting cleavage independence to a canonical Beck--Chevalley mate, packageProjection exactness, K3-K4, or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: 748281246e041b5bbd0a74342ed18eda66c9a1f4
+  review_target_head: 7c0f77f851b4231fca80aeb7797720a14ca2d090
+  proof_obligation_delta: For every arbitrary CoreFiberCartesianCleavage, strong-cartesian lift uniqueness generates a component isomorphism from its reindexing object to the Cycle 31 selected object. Both component factor triangles and naturality on every vertical target-fiber map package these components as a natural isomorphism to the exact selected reindexing functor. Cycle 35's exact core-transport/selected-reindexing adjunction is transported only along that generated right-functor isomorphism. Named formulas identify the resulting forward transpose as the selected transpose followed by the inverse bridge and the inverse transpose as the forward bridge followed by the selected inverse transpose; the generated unit and counit components and both triangle identities are exposed. For any two arbitrary cleavages, the Cycle 33 canonical comparison and both selected-bridge factor triangles prove compatibility of the forward transpose, inverse transpose, unit, and counit. The finite literal and twisted identity cleavages fire all four comparison laws and opposite triangle identities; their component comparison sends axis zero to axis one and is therefore genuinely nonidentity. This Cycle 36 fixture uses an identity base arrow and claims nontriviality only for cleavage choice; the Cycle 35 finite fixture separately retains the adjunction's noninvertible-base firing.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCleavageIndependence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCleavageIndependenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - coreFiberCleavageSelectedComparisonApp
+    - coreFiberCleavageSelectedComparisonApp_hom_fac
+    - coreFiberCleavageSelectedComparisonApp_inv_fac
+    - coreFiberCleavageSelectedComparison_naturality
+    - coreFiberCleavageSelectedComparison
+    - coreFiberCleavageComparison_selected_hom
+    - coreFiberCleavageComparison_selected_inv
+    - coreTransportCleavageAdjunction
+    - coreTransportCleavageAdjunction_homEquiv_apply
+    - coreTransportCleavageAdjunction_homEquiv_symm_apply
+    - coreTransportCleavageUnit
+    - coreTransportCleavageCounit
+    - coreTransportCleavageUnit_app
+    - coreTransportCleavageCounit_app
+    - coreTransportCleavage_left_triangle
+    - coreTransportCleavage_right_triangle
+    - coreTransportCleavageHomEquiv_comparison
+    - coreTransportCleavageHomEquiv_symm_comparison
+    - coreTransportCleavageUnit_comparison
+    - coreTransportCleavageCounit_comparison
+    - finiteCoreLiteralCleavageAdjunction
+    - finiteCoreTwistedCleavageAdjunction
+    - finiteCoreCleavageHomEquiv_comparison
+    - finiteCoreCleavageHomEquiv_symm_comparison
+    - finiteCoreCleavageUnit_comparison
+    - finiteCoreCleavageCounit_comparison
+    - finiteCoreLiteralCleavage_left_triangle
+    - finiteCoreTwistedCleavage_right_triangle
+    - finiteCoreCleavageComparison_axis_zero
+    - finiteCoreCleavageAxisSwap_ne_id
+  claim_mapping:
+    theorem_names:
+      - coreFiberCleavageSelectedComparison
+      - coreTransportCleavageAdjunction
+      - coreTransportCleavageHomEquiv_comparison
+      - coreTransportCleavageHomEquiv_symm_comparison
+      - coreTransportCleavageUnit_comparison
+      - coreTransportCleavageCounit_comparison
+      - finiteCoreCleavageComparison_axis_zero
+      - finiteCoreCleavageAxisSwap_ne_id
+    source_labels:
+      - target theorem (C) cleavage-independence discharge artifact
+      - Cycle 33 canonical arbitrary-cleavage comparison predecessor
+      - Cycle 35 producer-derived selected adjunction predecessor
+    conjuncts:
+      - every arbitrary cleavage over every realized finite-code base arrow receives an adjunction generated from the exact selected adjunction and the canonical cartesian comparison
+      - both transpose directions, unit, counit, and both triangles are exposed for that generated adjunction
+      - the Cycle 33 comparison between every two cleavages intertwines both transpose directions, unit, and counit
+      - a finite literal/twisted pair fires the comparison laws with a provably nonidentity four-axis component
+    undischarged_assumptions:
+      - arbitrary endpoint-isomorphism rebasing beyond exact-endpoint presentation replacement
+      - canonical Beck--Chevalley mate and packageProjection-specific exactness/positive IsIso
+      - authored-support MateCoherentRel positive/negative pair and nontrivial full-orbit invariance
+      - fixed-ledger arbitrary-target FiniteModelLift, which remains open
+      - K3 diagnostic base-change action, H_bc condition package, positive/negative vanishing pair
+      - K4 pullback-square pasting and push/pull coherence bridge
+      - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
+  dependency_dag:
+    - arbitrary CoreFiberCartesianCleavage + selectedCoreFiberCartesianLift -> generated component domainIso and both factor triangles -> natural isomorphism to selectedCoreFiberReindexFunctor
+    - Cycle 35 selected adjunction + generated right-functor natural isomorphism -> arbitrary-cleavage adjunction -> hom equivalence, unit, counit, and triangles
+    - Cycle 33 comparisonApp factor triangles + each cleavage's selected bridge -> forward/inverse hom-equivalence compatibility and unit/counit squares
+    - finite literal/twisted cleavages + four-axis comparison computation -> nonidentity cleavage-choice firing
+  premise_audit:
+    direction_hypotheses:
+      - RealizableHom presentation witness supplied by the existing finite-code schema
+      - arbitrary CoreFiberCartesianCleavage universally quantified as a lift family over that semantic arrow
+    discharge_required_consumed:
+      - arbitrary cleavage's internally supplied strong-cartesian lifts and their factor laws
+      - selectedCoreFiberCartesianLift and its strong-cartesian universality
+      - Cycle 33 canonical comparison and its hom factor triangle
+      - Cycle 35 exact selected adjunction and its generated transpose maps
+    conclusion_equivalent_inputs: none
+    structure_field_escape: none; the public construction accepts only RealizableHom, arbitrary cleavage lift families, and fiber objects/morphisms, while the selected bridge, adjunction, hom compatibility, unit/counit compatibility, and triangles are generated conclusions
+    proof_use: component bridges and naturality consume strong-cartesian uniqueness and both lift factor graphs; Adjunction.ofNatIsoRight consumes the generated bridge rather than a caller certificate; the explicit transpose formulas expose the transport direction; comparison compatibility consumes the Cycle 33 comparison factor triangle together with both cleavages' selected-bridge triangles; finite theorems compute the comparison on an axis and prove it differs from identity
+  route_integrity:
+    selected_route: exact G-109 coreFiberTransportFunctor against each cleavage's exact reindexFunctor, connected through the exact Cycle 35 selectedCoreFiberReindexFunctor
+    provenance: reviewed Cycle 33 and Cycle 35 declarations plus arbitrary strong-cartesian lift families
+    nonvacuity: finite literal/twisted cleavage comparison is visibly nonidentity; noninvertible-base adjunction nonvacuity remains supplied separately by Cycle 35
+    forbidden_routes_absent:
+      - no caller adjunction, hom equivalence, unit, counit, triangle, or compatibility certificate
+      - no whole-functor equality cast and no whole-adjunction cast
+      - no proof-field-only nonidentity claim
+  regression_scenarios:
+    selected_only_statement: rejected; the construction universally quantifies arbitrary CoreFiberCartesianCleavage values
+    conclusion_as_field: rejected; the adjunction and all compatibility laws are generated after accepting only lift families
+    comparison_not_consumed: rejected; forward/inverse transpose and unit/counit theorems explicitly use the Cycle 33 comparison
+    vacuous_witness: rejected; the comparison is computed on axis zero and shown unequal to identity
+    completion_from_checkpoint: rejected; completion_candidate remains no
+  verification:
+    - focused direct check CoreTransportReindexCleavageIndependence.lean: pass; 20 namespace declarations, standard axioms only
+    - targeted module CoreTransportReindexCleavageIndependence: pass
+    - focused direct check CoreTransportReindexCleavageIndependenceWitnesses.lean: pass; 12 namespace declarations, standard axioms only
+    - targeted module CoreTransportReindexCleavageIndependenceWitnesses: pass
+    - exact G-110 umbrella module ResearchLean.AG.DoctrineFiberProduct: pass
+    - placeholder/unsafe/new-axiom scan on both exact files: clean
+    - hidden/BiDi and private-path scan on both exact files: clean
+    - Formal to ResearchLean import-direction scan: no new reverse import
+    - Research aggregate/full build: not run, per hard rule
+  review:
+    initial_exact_head: 7c0f77f851b4231fca80aeb7797720a14ca2d090
+    initial_four_lane_result: all four lanes passed the central mathematical and Lean claims; three noncentral ledger/documentation findings required direct response
+    noncentral_findings:
+      - Cycle 30 pointedPullback_isPullback had been incorrectly returned to the undischarged list and next obligation
+      - fixed-ledger arbitrary-target FiniteModelLift was described conditionally instead of as definitely open
+      - the nontrivial domainIso/ofNatIsoRight route lacked Implementation notes and an affirmative umbrella summary
+    repaired_head: 2951b837be8a38ee1cf220c3eea8c2831abc13e7
+    repair: synchronized the cumulative proof DAG and FiniteModelLift state, documented the generated comparison and rejected routes, and added the positive umbrella summary; no Lean declaration, proof, or import changed
+    direct_response: fresh finding-limited audit of 7c0f77f8..2951b837 passed with no findings and confirmed that all Lean changes were comment-only
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4077#issuecomment-5382705629
+    status: accepted arbitrary-cleavage adjunction-independence proof-checkpoint; G-110 completion remains no
+next:
+  proof_obligation: consume the reviewed Cycle 30 pointedPullback_isPullback together with the accepted push/pull compositors and generated adjunction units/counits to construct the canonical Beck--Chevalley mate; keep packageProjection-specific exactness and authored-support relative obstruction as separate downstream subnodes
+```
+
 ### Cycle 35 — producer-derived core transport/reindexing adjunction
 
 ```yaml
