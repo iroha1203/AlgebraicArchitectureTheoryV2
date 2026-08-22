@@ -152,7 +152,7 @@ The unique vertical comparison from the domain of `second` to the domain of
 `first`.  Its direction is contravariant: it factors the second lift through
 the first lift.
 -/
-noncomputable def strongCartesianLiftDomainComparisonHom
+private noncomputable def strongCartesianLiftDomainComparisonHom
     {U : AtomCarrier.{u}}
     {input : CartSemanticInput U} {targetPackage : CoreFiber input.target}
     (first second : StrongCartesianLift input targetPackage) :
@@ -166,7 +166,7 @@ noncomputable def strongCartesianLiftDomainComparisonHom
   infer_instance
 
 /-- The cartesian comparison followed by the first lift is the second lift. -/
-theorem strongCartesianLiftDomainComparisonHom_fac
+private theorem strongCartesianLiftDomainComparisonHom_fac
     {U : AtomCarrier.{u}}
     {input : CartSemanticInput U} {targetPackage : CoreFiber input.target}
     (first second : StrongCartesianLift input targetPackage) :
@@ -179,7 +179,7 @@ theorem strongCartesianLiftDomainComparisonHom_fac
     (Category.id_comp input.hom).symm second.hom
 
 /-- Two strong cartesian lifts of one arrow have canonically isomorphic domains. -/
-noncomputable def strongCartesianLiftDomainComparisonIso
+private noncomputable def strongCartesianLiftDomainComparisonIso
     {U : AtomCarrier.{u}}
     {input : CartSemanticInput U} {targetPackage : CoreFiber input.target}
     (first second : StrongCartesianLift input targetPackage) :
