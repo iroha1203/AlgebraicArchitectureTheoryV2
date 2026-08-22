@@ -1089,10 +1089,7 @@ theorem highGeneratedLift_base (input : FiniteGeneratedLiftInput) :
 /-- The domain package of the generated low lift lies over the original source. -/
 theorem lowGeneratedLift_domain_point (input : FiniteGeneratedLiftInput) :
     packagePoint input.lowGeneratedLift.domain = input.source := by
-  letI := input.lowGeneratedLift.isStronglyCartesian
-  exact CategoryTheory.IsHomLift.domain_eq
-    (packageProjection FiniteModel.carrier) input.lowInput.hom
-      input.lowGeneratedLift.hom
+  simp [lowGeneratedLift, strongCartesianLiftOfTarget, lowTarget, lowInput]
 
 /-- The domain package of the generated high lift lies over the lifted source. -/
 theorem highGeneratedLift_domain_point (input : FiniteGeneratedLiftInput) :
