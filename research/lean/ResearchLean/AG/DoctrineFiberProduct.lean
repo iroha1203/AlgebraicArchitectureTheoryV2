@@ -60,6 +60,8 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalPro
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalPropertyWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULiftWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelStrongLiftIsoTransport
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLift
 
 /-!
 # Doctrine fiber-product schema
@@ -87,9 +89,10 @@ homs, finite-model reading components, and semantic configurations with exact
 round-trip and graph laws.  The equation layer additionally rebases finite
 circuit syntax, reconstructs the NoCycle equation and sound detector on every
 lifted object, and assembles the complete lifted `CoreReading` and generated
-`AATCorePackage`, with concrete cyclic and acyclic witnesses.  Complete
-cross-carrier hom retraction and ambient strong-lift reflection for the separate
-`FiniteModelLift` obligation remain before K0.  The comparison layer records the
+`AATCorePackage`, with concrete cyclic and acyclic witnesses.  At that
+foundation stage, complete cross-carrier hom retraction and ambient strong-lift
+reflection for the separate `FiniteModelLift` obligation remained before K0.
+The comparison layer records the
 canonical vertical domain isomorphism between two strong lifts inside one
 carrier.  The generated-lift naturality layer then consumes its inverse
 triangle and proves endpoint, lower-map, upper-component, equation-semantic,
@@ -152,12 +155,21 @@ property packets, derives Mathlib strong cartesianness without reusing the
 existing low certificate, and returns the fixed reflected strong lift.  A
 single noninvertible selective-two fixture fires the whole triangle, a concrete
 ambient factor, arbitrary-candidate uniqueness, and the reflected lift.
-`FiniteModelLift` and the later K0 obligation remain unproved.
+At this stage the realization boundary needed by `FiniteModelLift` and the later
+K0 obligation still remains.
 The realization-ULift layer now also rebases every finite presentation to a
 genuine high-universe `RealizableHom` and constructs the canonical
 arrow-category isomorphism from the directly lifted low decoder arrow to that
 rebased realization.  Its selective-two support-prefix witness remains
 noninvertible in every universe and connects back to the reviewed generated
-core arrow.  Transporting packages and supplied strong lifts along these
-endpoint isomorphisms, and only then deriving `FiniteModelLift`, remains open.
+core arrow.  The completion layer transports every supplied strong lift on the
+internally generated rebased endpoint back to the direct high semantic lift,
+composes it with the canonical high completion tail, reflects that completed
+lift through the generated universal property, and cancels the canonical low
+tail.  It thereby constructs the original realized-prefix strong lift and the
+one-way `FiniteModelLift` nonexistence transport for every realized input and
+completion tail.  The selective-two fixture fires the data producer on an
+actual high lift over low and high noninvertible bases; it does not assert an
+inhabited right-branch no-lift premise.  K0 and the later target obligations
+remain open.
 -/

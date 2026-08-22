@@ -19,9 +19,8 @@ open AtomFoundation
 
 /-- Executable Atom equality on the universe-zero finite carrier. -/
 local instance finiteModelRealizationWitnessAtomDecidableEq :
-    DecidableEq FiniteModel.carrier.Atom := by
-  change DecidableEq FiniteModel.FiniteAtom
-  infer_instance
+    DecidableEq FiniteModel.carrier.Atom :=
+  finiteModelRealizationULiftAtomDecidableEq
 
 /-- The selective-two arrow composed with the exact finite-code support bridge. -/
 def finiteSelectiveTwoToSupportPresentation :
