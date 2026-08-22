@@ -71,6 +71,11 @@
 
 ## Subagent入力
 
+lane subagentと修正後確認のsubagentは、監査(固定headに対する一回の正式レビューまたは
+一回の修正後確認)ごとに新規に起動し、親の会話履歴を継承させない。Codexの`spawn_agent`では
+`fork_turns: "none"`を明示する(省略時は全履歴forkになる)。前の監査に使ったsubagentへ
+後続taskを送って再利用しない。必要な情報は次の入力として本文に書いて渡す。
+
 各laneには次だけを渡す。
 
 - 対象ファイル、diff、PR、またはreview packet
