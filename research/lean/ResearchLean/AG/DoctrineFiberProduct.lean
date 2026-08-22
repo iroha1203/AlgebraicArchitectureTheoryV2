@@ -47,6 +47,15 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedOperationNaturalityDe
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedInvariantSignatureLawDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperAssembly
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperAssemblyWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperCompositionEquationDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportCompositionDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedContextEquivalenceCompositionDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedObservableCompositionDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWholeCompositionDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperCompositionOperationSignatureDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomAssembly
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriangle
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriangleWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -127,7 +136,13 @@ then assembled into the exact eighteen-field generated low
 every assembled projection, including distinct family and object controls,
 accepted and rejected detector data, a nonidentity collapse operation, the
 complete equation transport, and coordinate value `3`; rigid singleton and
-constant laws are recorded without a sensitivity claim.  Whole
-`PackageTotalHom` descent, ambient factor reflection, and `FiniteModelLift`
-remain unproved before K0.
+constant laws are recorded without a sensitivity claim.  The next layer pairs
+that upper with the reflected lower map to construct the generated low
+`PackageTotalHom`, descends the supplied high factorization through all seven
+computational upper fields to prove its exact composition triangle, and uses
+it to factor every ambient low competitor with the required lift and
+factorization laws.  A single noninvertible selective-two fixture fires the
+whole triangle and a concrete ambient factor.  Ambient uniqueness and strong-
+cartesianness reflection, `FiniteModelLift`, and the later K0 obligation remain
+unproved.
 -/
