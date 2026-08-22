@@ -27,7 +27,7 @@ report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
   proof_state_ref: Issue 4034 Cycle 26 merge synchronization comment 5377705516 and Cycle 27 selection comment 5377743041
   proof_dag_predecessors:
-    - Cycle 7 finite-code rebase and decoder component graphs, PR 4037
+    - Cycle 7 finite-code rebase and decoder component graphs, PR 4043
     - Cycle 13 through Cycle 26 selected generated-package lift reflection, ending at PR 4062 merge f2f505b2
   proof_obligation: bridge the exact realization boundary between the direct semantic ULift used by the reviewed generated-lift reflection and the genuine high-universe RealizableHom produced by rebasing a finite presentation; generate decoder-doctrine, pointed-instance, and arrow-category isomorphisms without caller certificates; instantiate the bridge on the noninvertible selective-two support-prefix presentation
   selection_reason: a rebased finite presentation has first-order source type FiniteSource at the target universe, while direct semantic lifting nests ULift over the low finite source; these endpoints are canonically isomorphic but not definitionally equal, so package and strong-lift transport must be built over an explicit generated semantic-input isomorphism
