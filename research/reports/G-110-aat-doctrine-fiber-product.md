@@ -47,7 +47,7 @@ selection:
     - final PR CI, merge, and tracking-Issue synchronization
 result:
   proposed_result_type: proof-obligation-discharged
-  content_head: f7d4e77935902a2e45a3918a81a662ce69ca6d0b
+  content_head: fac123dd5327e64332a691d5497bcf6d25e18347
   reviewed_content_head: pending
   proof_obligation_delta: constructed pointedPullbackSource directly from the two selected input sources and sigmaOne.source_eq.trans sigmaTwo.source_eq.symm, equipped the Cycle 29 doctrine pullback with that internally generated point, and lifted both doctrine projections to ExtInst_U. Every pointed pullback cone is converted only to its underlying doctrine cone; doctrinePullbackLift supplies the computational factor and the two pointed cone-leg source_eq proofs generate its source equation. The factor preserves the first leg's actual Atom equivalence, satisfies both projection laws, is unique, and yields pointedPullback_isPullback with no finite, DecidableEq, compatibility-certificate, or caller-pullback premise. The symmetric three-by-three over two witness identifies the generated point with the named compatible pair, retains source nonemptiness and both projection non-IsIso facts, and fires a nonidentity finite Atom swap through the generated pointed factor.
   completion_candidate: no
@@ -59,7 +59,9 @@ result:
     - pointedPullbackSource
     - pointedPullback
     - pointedPullbackFst
+    - pointedPullbackFst_doctrineHom
     - pointedPullbackSnd
+    - pointedPullbackSnd_doctrineHom
     - pointedPullback_commutes
     - pointedPullbackLift
     - pointedPullbackLift_atomEquiv
@@ -67,6 +69,7 @@ result:
     - pointedPullbackLift_snd
     - pointedPullbackLift_unique
     - pointedPullback_isPullback
+    - finiteProperPointedLeg_doctrineHom
     - finiteProperPointedPullback_source_eq_compatible00
     - finiteProperPointedPullback_source_compatible
     - finiteProperPointedPullback_source_nonempty
@@ -143,13 +146,15 @@ audits:
   empty_elimination: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused PointedDoctrinePullback.lean: pass; namespace audit 11 declarations and standard axioms only
+    - focused PointedDoctrinePullback.lean: pass; namespace audit 13 declarations and standard axioms only
     - targeted module PointedDoctrinePullback: pass
-    - focused PointedDoctrinePullbackWitnesses.lean: pass; namespace audit 12 declarations and standard axioms only
+    - focused PointedDoctrinePullbackWitnesses.lean: pass; namespace audit 13 declarations and standard axioms only
     - targeted module PointedDoctrinePullbackWitnesses: pass
     - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
   review_refs:
     fixed_head: pending
+    initial_integrated_rejection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4067#issuecomment-5379133281
+    direct_response: not used; the no-unfold repair added three public computation declarations, so a fresh four-lane review is required
     standard_review: pending
     independent_final_reviews: []
     integrated_comment: pending
