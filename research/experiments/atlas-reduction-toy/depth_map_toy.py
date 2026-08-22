@@ -180,7 +180,7 @@ def run(title, laws):
     fine = fine_nerve(); coarse = coarse_nerve(fine)
     print(f"==== {title} ====")
     print("サービス水準の辺:", sorted(coarse.E))
-    print("-- 深さマップ(観点なし。配線だけから計算)  J_A = (phantom, hidden)")
+    print("-- 欠損プロファイル(観点なし。配線だけから計算)  J_A = (phantom, hidden)")
     depth = {}
     for k in range(1, len(CONCEPTS) + 1):
         for A in combinations(CONCEPTS, k):
@@ -191,7 +191,7 @@ def run(title, laws):
                   f"H¹(service)={hc} H¹(module)={hf}  → phantom={j[0]} hidden={j[1]}")
     print("  一様不変(どの観点でもサービス単位で読んでよい)?",
           "YES" if all(j == (0, 0) for j in depth.values()) else "NO")
-    print("-- 観点(law)を入れて直接計算 → 深さマップの値の和に一致する")
+    print("-- 観点(law)を入れて直接計算 → 欠損プロファイルの値の和に一致する")
     for name, law in laws.items():
         j, hc, hf = J(law_complex(coarse, law), law_complex(fine, law), law_edge_map)
         classes = {}
