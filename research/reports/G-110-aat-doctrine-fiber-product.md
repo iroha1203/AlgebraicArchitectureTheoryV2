@@ -51,7 +51,7 @@ selection:
     - final report synchronization
 result:
   proposed_result_type: proof-checkpoint
-  content_head: f528d9b008ff3f8011e4e6ad1a0c8bbea56b8750
+  content_head: d71d3d5d1af005a9dd6ada9cd9948df75b4d7e1f
   reviewed_content_head: pending
   proof_obligation_delta: typedCartSemanticInput and typedRealizableHom retain literal finite-code endpoints. selectedCoreFiberIteratedCartesianLift composes the two actual selected lifts and transports only its strong-cartesianness across the internally proved semantic composition equality. The unique comparison between this iterated lift and the directly selected composite lift yields a contravariant natural compositor with its factor triangle. Comparing the literal identity lift with the selected identity lift yields the natural unitor and triangle. Relative comparison helpers keep one direct typed presentation fixed while using semantic associativity or unit equality only to type an explicit composed lift. Both associativity routes factor the same three-step lift, and both unit routes factor the original selected lift, so cartesian uniqueness proves the pointwise coherence laws. A three-to-two-to-one-to-support selective chain supplies two independently verified noninvertible legs; the genuine four-axis swap fires compositor and unitor naturality.
   completion_candidate: no
@@ -66,7 +66,6 @@ result:
     - typedRealizableHom_comp_hom
     - selectedTypedCoreFiberReindexFunctor
     - selectedTypedCoreFiberCartesianLift
-    - strongCartesianLiftDomainComparisonIso
     - selectedCoreFiberIteratedCartesianLift
     - selectedCoreFiberReindexCompositorApp
     - selectedCoreFiberReindexCompositorApp_hom_fac
@@ -144,7 +143,7 @@ audits:
       - arbitrary RealizableHom presentation equivalences, cleavage comparisons, G-109 covariant coherence, adjunction, and mate APIs are not used or claimed
   certificate_provenance:
     - selectedTypedCoreFiberCartesianLift is the exact-endpoint specialization of the Cycle 31 selected-regime producer
-    - strongCartesianLiftDomainComparisonIso is assembled from the two directions of the strong-cartesian universal factor and proves both inverse laws by the same universal uniqueness
+    - the module-private strong-cartesian comparison helper is assembled from the two directions of the universal factor and proves both inverse laws by the same universal uniqueness; no caller-supplied lift comparison is exported
     - compositor and unitor components compare actual selected lifts; relative helpers receive only an internally proved base-hom equality, not a comparison or factor certificate
   proof_use:
     - selectedCoreFiberReindexCompositorApp_hom_fac consumes the direct and iterated selected lift comparison
@@ -167,13 +166,19 @@ audits:
   empty_elimination: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused CartesianRegimeReindexingCoherence.lean: pass; namespace audit 39 declarations and standard axioms only
+    - focused CartesianRegimeReindexingCoherence.lean after the public-firewall repair: pass; namespace audit 36 declarations and standard axioms only
     - focused CartesianRegimeReindexingCoherenceWitnesses.lean: pass; namespace audit 20 declarations and standard axioms only
     - targeted modules CartesianRegimeReindexingCoherence and CartesianRegimeReindexingCoherenceWitnesses: pass
     - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, import-direction, manifest, and umbrella scans: pass
   review_refs:
+    initial_fixed_head: b66a55dc50930be266f3468a6be3f695cb70b76c
+    initial_standard_review:
+      - Lean A found that three generic comparison helpers accepted caller-supplied StrongCartesianLift values on the public namespace surface
+      - Math A, Math B, and Lean B found no other Cycle 32 content issue
+    repair_head: d71d3d5d1af005a9dd6ada9cd9948df75b4d7e1f
+    direct_response: not used; making three declarations module-private changes the public declaration surface, so a fresh four-lane review is required
     fixed_head: pending
-    standard_review: pending
+    standard_review: pending-fresh-four-lane
   blocking_findings: []
   next_obligation: complete fixed-head review and merge Cycle 32; then construct arbitrary-presentation and cleavage-choice comparison coherence before the adjunction and Beck--Chevalley mate
 ```
