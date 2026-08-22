@@ -13,6 +13,138 @@
 
 ## Cycle ledger
 
+### Cycle 38 — canonical mate independence under arbitrary cleavages
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 38
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: f05a69bc9300f2cb6e1ea91787c898e8b7f39b62
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 37 merge synchronization comment 5382888528 and Cycle 38 selection comment 5382907491
+  proof_dag_predecessors:
+    - Cycle 33 canonical comparison between arbitrary cartesian cleavages
+    - Cycle 36 arbitrary-cleavage adjunction, unit, counit, and hom-equivalence compatibility
+    - Cycle 37 selected-cleavage canonical Beck--Chevalley mate and asymmetric finite square
+  proof_obligation: for every BCPresentation and arbitrary cleavages on pi1 and sigma2, generate the mate from the Cycle 36 adjunctions and the Cycle 37 square; expose its unit-square-counit component and naturality; prove pairwise mate comparison by consuming the Cycle 36 counit and hom-equivalence comparison laws; normalize every arbitrary mate to the Cycle 37 selected mate; separately fire visible cleavage choice and noninvertible-leg controls without claiming that one fixture has both properties
+  selection_reason: Cycle 37 left mate-level cleavage independence as the immediate open K2 subnode, while Cycles 33 and 36 already supplied the exact generated comparison laws needed to discharge it without caller certificates
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMateCleavageIndependence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMateCleavageIndependenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting a square, adjunction, mate, or cleavage-comparison certificate from a caller
+    - proving only selected-cleavage specialization rather than arbitrary-cleavage pairwise comparison
+    - ignoring either the left counit comparison or right hom-equivalence comparison
+    - overclaiming a single finite fixture with both visible cleavage difference and noninvertible reindexing legs
+    - inferring mate IsIso or packageProjection exactness from pullbackness and coherence
+    - promoting this checkpoint to endpoint rebasing, MateCoherentRel, K3-K4, FiniteModelLift, or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: 7b0e17664821e3da8201c78df490894387ca5ebc
+  review_target_head: pending
+  proof_obligation_delta: For every validated BCPresentation and every pair of cartesian cleavages on the exact pi1 and sigma2 semantic legs, Cycle 36 generates both adjunctions and Cycle 37 supplies the covariant square, so mateEquiv constructs the fixed-orientation mate without caller categorical certificates. Named theorems expose the unit-square-counit component, naturality, and right-adjunction transpose. For any two pairs of cleavages, square naturality and the Cycle 36 left-counit and right-hom-equivalence comparison theorems prove the canonical mate comparison. Generated arbitrary-to-selected bridges then normalize every such mate to the Cycle 37 mate. One finite identity-square control uses the reviewed literal and twisted right cleavages, exposes their visibly nonidentity comparison, and fires naturality on a nonidentity axis swap. A separate asymmetric control specializes normalization while retaining noninvertible pi1 and sigma2. The controls are deliberately not conflated. No mate invertibility or exactness conclusion is claimed.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMateCleavageIndependence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMateCleavageIndependenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - bcLeftInput
+    - bcRightInput
+    - coreBeckChevalleyCleavageMate
+    - coreBeckChevalleyCleavageMate_app
+    - coreBeckChevalleyCleavageMate_naturality
+    - coreBeckChevalleyCleavageMate_homEquiv
+    - coreBeckChevalleyCleavageMate_comparison
+    - coreBeckChevalleyMate_homEquiv
+    - bcRightAdjunction_homEquiv_apply
+    - coreBeckChevalleyCleavageMate_selectedComparison
+    - finiteIdentityCoreBeckChevalleyMate_comparison
+    - finiteIdentityMateRightComparison_axis_zero
+    - finiteIdentityLiteralCoreBeckChevalleyMate_axisSwap_naturality
+    - finiteIdentityMate_axisSwap_ne_id
+    - finiteCanonicalSelectedCleavageMate_comparison
+    - finiteCanonicalSelectedCleavageMate_left_not_isIso
+    - finiteCanonicalSelectedCleavageMate_right_not_isIso
+  claim_mapping:
+    theorem_names:
+      - coreBeckChevalleyCleavageMate_comparison
+      - coreBeckChevalleyCleavageMate_selectedComparison
+      - finiteIdentityMateRightComparison_axis_zero
+      - finiteIdentityMate_axisSwap_ne_id
+      - finiteCanonicalSelectedCleavageMate_left_not_isIso
+      - finiteCanonicalSelectedCleavageMate_right_not_isIso
+    source_labels:
+      - target theorem (C) cleavage-independent canonical-mate artifact
+      - Cycle 33 cleavage-comparison predecessor
+      - Cycle 36 arbitrary-adjunction compatibility predecessor
+      - Cycle 37 selected canonical-mate predecessor
+    conjuncts:
+      - every pair of arbitrary cleavages on the two reindexing legs generates a fixed-orientation mate
+      - every two such pairs are related by the canonical left and right cleavage comparisons
+      - every arbitrary mate normalizes to the selected Cycle 37 mate
+      - finite controls separately witness genuine choice difference and noninvertible reindexing legs
+    undischarged_assumptions:
+      - packageProjection-specific Beck--Chevalley exactness support and a positive IsIso theorem
+      - arbitrary endpoint-isomorphism rebasing beyond the exact producer endpoint bridge
+      - authored-support induced comparison, MateCoherentRel positive/negative pair, full-orbit invariance, and nontrivial orbit witness
+      - fixed-ledger arbitrary-target FiniteModelLift
+      - K3 diagnostic base-change action, H_bc condition package, and positive/negative vanishing pair
+      - K4 pullback-square pasting and G-106/G-109 coherence bridge
+      - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
+  dependency_dag:
+    - BCPresentation plus arbitrary pi1/sigma2 cleavages -> Cycle 36 adjunctions plus Cycle 37 square -> mateEquiv -> arbitrary-cleavage mate
+    - left Cycle 33 comparison plus Cycle 36 counit compatibility plus square naturality -> left side of pairwise mate comparison
+    - right Cycle 36 hom-equivalence compatibility -> right side of pairwise mate comparison
+    - arbitrary-to-selected bridges plus selected transpose formula -> normalization to Cycle 37 mate
+  premise_audit:
+    direction_hypotheses:
+      - validated BCPresentation and two arbitrary CoreFiberCartesianCleavage values on each exact reindexing leg
+    discharge_required_consumed:
+      - Cycle 33 canonical cleavage comparisons
+      - Cycle 36 generated arbitrary adjunctions, counit comparison, and hom-equivalence comparison
+      - Cycle 37 generated covariant square and selected mate
+    conclusion_equivalent_inputs: none
+    structure_field_escape: none; no square comparison, adjunction, unit, counit, mate, or mate-comparison certificate is an input field
+    proof_use: mateEquiv consumes the generated arbitrary adjunctions and square; pairwise comparison rewrites through the generated left counit comparison and right transpose comparison; selected normalization consumes both generated arbitrary-to-selected bridges
+  route_integrity:
+    selected_route: exact decoded BCPresentation legs, generated arbitrary-cleavage adjunctions, and the exact Cycle 37 square comparison
+    provenance: reviewed Cycles 33, 36, and 37 declarations; the finite witnesses reuse reviewed raw fixtures and add no categorical certificate fields
+    nonvacuity: the identity control has a right comparison that moves axis zero to axis one and a nonidentity vertical map; the separate asymmetric control has both reindexing legs noninvertible
+    forbidden_routes_absent:
+      - no caller square, adjunction, mate, or comparison certificate
+      - no functor equality cast replacing generated natural isomorphisms
+      - no combined-fixture claim
+      - no mate IsIso, exactness, rebasing, MateCoherentRel, K3-K4, or completion claim
+  regression_scenarios:
+    selected_only: rejected; the public mate and pairwise theorem quantify over arbitrary left and right cleavages
+    unused_predecessor: rejected; the proof explicitly consumes Cycle 36 counit and hom-equivalence comparison theorems
+    hand_authored_comparison: rejected; both sides use generated CoreFiberCartesianCleavage.comparison or arbitrary-to-selected bridges
+    combined_fixture_overclaim: rejected; visible choice difference and noninvertible legs remain in distinct controls
+    exactness_from_coherence: rejected; completion_candidate remains no and packageProjection exactness stays explicit
+  verification:
+    - focused direct check CoreBeckChevalleyMateCleavageIndependence.lean: pass; 10 namespace declarations, standard axioms only
+    - targeted module CoreBeckChevalleyMateCleavageIndependence: pass
+    - focused direct check CoreBeckChevalleyMateCleavageIndependenceWitnesses.lean: pass; 14 namespace declarations, standard axioms only
+    - targeted module CoreBeckChevalleyMateCleavageIndependenceWitnesses: pass
+    - exact G-110 umbrella module ResearchLean.AG.DoctrineFiberProduct: pass
+    - placeholder/unsafe/new-axiom scan on both exact files: clean
+    - hidden/BiDi and private-path scan on both exact files: clean
+    - Formal to ResearchLean import-direction scan: no new reverse import
+    - Research aggregate/full build: not run, per hard rule
+  review:
+    status: pending standard four-lane review at the final PR head
+next:
+  proof_obligation: prove packageProjection-specific Beck--Chevalley exactness support and a positive IsIso theorem without deriving either from pullbackness or pseudofunctor coherence alone; arbitrary endpoint-isomorphism rebasing remains a separate open obligation
+```
+
 ### Cycle 37 — producer-anchored canonical core Beck--Chevalley mate
 
 ```yaml
