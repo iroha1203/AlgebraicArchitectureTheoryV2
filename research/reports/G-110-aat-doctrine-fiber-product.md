@@ -46,12 +46,12 @@ selection:
     - proving projection noninvertibility only for an enumeration without connecting the finite-code and semantic pullback representations
     - promoting K0 to FiniteModelLift, K2-K4, or final theorem completion
   unchecked:
-    - fresh fixed-head four-lane Math A/B and Lean A/B review
+    - final report-only synchronization audit
     - final PR CI and merge synchronization
 result:
   proposed_result_type: proof-obligation-discharged
   content_head: 812c34c5943fb03c064ea6b1b01f82301d3109e0
-  reviewed_content_head: pending
+  reviewed_content_head: 812c34c5943fb03c064ea6b1b01f82301d3109e0
   proof_obligation_delta: constructed DoctrinePullbackSource as the subtype of source pairs with equal common-base image and assembled doctrinePullback for every exact-doctrine cospan. The two generated projections commute; every semantic doctrine cone receives a unique factor whose Atom equivalence is exactly the cone first leg's actual equivalence, yielding doctrinePullback_isPullback with no DecidableEq, finite presentation, selected point, or caller certificate. ProperDoctrineFiber packages only the resulting nonempty-source, pair-map non-surjectivity, and two projection non-IsIso propositions; properDoctrineFiber_id_id_false supplies its general negative instance, while properDoctrineFiber_iff_of_iso proves invariance under internally commuting doctrine isomorphisms. The finite-code bridge builds an isomorphism from the decoded compatible-source rank/unrank representation to the arbitrary semantic producer, proves both projection graphs, and transports the pullback theorem to the decoded finite presentation in Doct_U. The symmetric three-by-three over two witness exhibits compatible pairs (0,0), (0,1), and (1,0), the common-base-incompatible component pair (0,2), non-surjectivity, independent collisions proving both projections noninvertible, transport of properness to the finite-code representation, and a nonidentity finite Atom swap cone whose universal factor retains that Atom map.
   completion_candidate: no
   lean_artifacts:
@@ -147,7 +147,7 @@ audits:
     - doctrinePullbackFiniteCodeIso uses compatibleSourceEquiv in both hom directions and its projection graphs drive IsPullback.of_iso'
     - properDoctrineFiber_iff_of_iso transports nonemptiness and pair-map surjectivity through all three source equivalences and transports IsIso through the commuting projection graphs
   anti_weakening:
-    verdict: pending-four-lane-review
+    verdict: pass
     notes:
       - generic construction has no DecidableEq, finiteness, point, presentation, factor, or pullback hypothesis
       - witness uses the selected symmetric three-to-two cospan rather than the all-compatible old fixture
@@ -170,11 +170,17 @@ audits:
     - targeted module DoctrinePullbackWitnesses: pass
     - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
   review_refs:
-    fixed_head: pending
-    integrated_comment: pending
-    verdicts: []
+    fixed_head: 7a5b66af9f468fa1a60b9ced1cc39ac55945fe98
+    initial_integrated_rejection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4066#issuecomment-5378950198
+    direct_response: not used; the qualified instance-pair repair added a theorem declaration, so a fresh four-lane review was completed
+    independent_final_reviews:
+      - Math A: No major findings at repaired Lean content head 812c34c5
+      - Math B: No major findings at repaired Lean content head 812c34c5
+      - Lean A: No major findings at repaired Lean content head 812c34c5
+      - Lean B: No major findings at repaired Lean content head 812c34c5
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4066#issuecomment-5378975237
   blocking_findings: []
-  next_obligation: fresh four-lane review and CI for Cycle 29; after acceptance continue K2 while retaining arbitrary-target FiniteModelLift as open
+  next_obligation: after final report synchronization and merge, continue K2 while retaining arbitrary-target FiniteModelLift as open
 ```
 
 ### Cycle 28 — semantic-input lift transport and the remaining `FiniteModelLift` gap
