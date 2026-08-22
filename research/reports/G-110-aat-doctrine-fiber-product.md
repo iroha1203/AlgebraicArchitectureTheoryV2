@@ -13,7 +13,7 @@
 
 ## Cycle ledger
 
-### Cycle 34 — presentation replacement and common-semantic reindexing descent
+### Cycle 34 — presentation replacement and finite-code quotient pseudoaction
 
 ```yaml
 ledger_type: target_cycle_result
@@ -31,12 +31,14 @@ selection:
     - Cycle 32 exact-endpoint typed contravariant compositor and unitor with constructor-relative coherence
     - Cycle 33 arbitrary-cleavage comparison, both lift triangles, naturality, refl/symm/cocycle, and replacement-compatible compositor/unitor
     - CartPresentation, CartPresentationBetween, CartSemanticInput, RealizableHom, cartPresentationSetoid, and the finite-code realization calculus
-  proof_obligation: index presentation provenance over one literal CartSemanticInput; derive the selected reindexing comparison for every two provenance values with both component triangles, naturality, refl/symm/cocycle; specialize it to exact-endpoint semantically equal CartPresentationBetween values; derive relative compositor and unitor for arbitrary semantically matching direct and identity presentations; prove simultaneous presentation-replacement compatibility; and fire the surface on raw-distinct but semantically equal finite presentations with a noninvertible leg and nonidentity vertical map
-  selection_reason: A RealizableHom reindexing functor is indexed by its semantic source and target, so equality of semantic arrows alone cannot compare unre-based functors with different dependent endpoint types. Full CartSemanticInput equality may generate a common literal index, after which Cycle 33 cartesian uniqueness supplies the comparison. This cycle records that provenance-preserving descent and forbids whole-functor casts or strict quotient descent from NatIso data.
+  proof_obligation: index presentation provenance over one literal CartSemanticInput; derive the selected reindexing comparison for every two provenance values with both component triangles, naturality, refl/symm/cocycle; specialize it to exact-endpoint semantically equal CartPresentationBetween values; derive relative compositor and unitor for arbitrary semantically matching direct and identity presentations; prove simultaneous presentation-replacement compatibility; expose the selected FiniteCodeCartHom quotient pseudoaction up to generated NatIso with arbitrary-representative comparison, quotient compositor/unitor, replacement compatibility, pentagon, both unit laws, and a Mathlib Pseudofunctor package without Quotient.lift into Functor; and fire the complete surface on raw-distinct but semantically equal finite presentations with noninvertible legs and a nonidentity vertical map
+  selection_reason: A RealizableHom reindexing functor is indexed by its semantic source and target, so equality of semantic arrows alone cannot compare unre-based functors with different dependent endpoint types. Full CartSemanticInput equality may generate a common literal index, after which Cycle 33 cartesian uniqueness supplies the comparison. This cycle records that provenance-preserving descent, forbids whole-functor casts and strict Quotient.lift into Functor, and—once the typed API closes—packages the selected quotient action only up to generated natural isomorphism.
   expected_result_type: proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationReplacement.lean
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingFiniteCodePseudoaction.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingFiniteCodePseudoactionWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct.lean
   risks:
@@ -44,6 +46,8 @@ selection:
     - using semantic equality to cast a complete RealizableHom or reindexing functor into the result instead of rebasing provenance into one literal semantic input
     - stating a direct NatIso between functors whose source or target CoreFiber categories are differently indexed
     - claiming a strict quotient functor even though presentation replacement supplies natural isomorphism rather than functor equality
+    - treating Quotient.out as a mathematical normal form, or replacing generated representative comparisons and coherence by equality casts
+    - omitting the selected quotient pseudoaction after the typed replacement and compatibility surfaces have closed
     - proving only same-code endpoint replacement while calling it arbitrary RealizableHom presentation descent
     - firing only proof-field-distinct presentations, invertible legs, identity vertical maps, or claiming opaque selected comparison nonidentity merely from raw presentation inequality
     - promoting presentation replacement to an adjunction, canonical Beck--Chevalley mate, K3-K4, or G-110 completion
@@ -51,13 +55,15 @@ selection:
     - fixed-head four-lane review, direct-response repair, report synchronization, merge, and Issue synchronization
 result:
   proposed_result_type: proof-checkpoint
-  content_head: d80a9d13867d49193eebe93a4905b533e99df2a7
-  reviewed_content_head: d80a9d13867d49193eebe93a4905b533e99df2a7
-  proof_obligation_delta: CartRealizationProvenance indexes finite presentation provenance over one literal CartSemanticInput and stores no lift, cleavage, comparison, or coherence certificate. Every two provenance values generate selected reindexing functors whose components are compared by the StrongCartesianLift domain isomorphism; both lift triangles, naturality on every vertical map, and whole-natural-isomorphism reflexivity, symmetry, and cocycle follow from cartesian uniqueness. For exact-endpoint CartPresentationBetween values, equality of decoded homs generates equality of their full typed semantic inputs and retags only the selected lift's strong-cartesianness proposition. This yields the typed selected comparison without transporting a complete functor. An arbitrary direct presentation satisfying the decoded composition equation receives a relative contravariant compositor, and an arbitrary identity-decoding presentation receives a relative unitor. Simultaneous replacement of both composable legs and the direct presentation, and replacement of two identity presentations, preserve those structures by direct use of the Cycle 33 cleavage compatibility laws. The finite fixture replaces the empty-support identity Atom code by a singleton-support code decoding the same identity permutation; it proves typed and raw presentation inequality, equality of decoded homs and full semantic inputs, fires both comparison surfaces and all triangles/naturality/refl/symm/cocycle, and instantiates compositor/unitor replacement on a noninvertible selective leg and a nonidentity vertical axis map. It deliberately makes no claim that opaque selected comparison components are nonidentity merely because authored codes differ.
+  content_head: 7d8227d3c1e8301aa9f13af20b5ce2453ea4ca7c
+  reviewed_content_head: 7d8227d3c1e8301aa9f13af20b5ce2453ea4ca7c
+  proof_obligation_delta: CartRealizationProvenance indexes finite presentation provenance over one literal CartSemanticInput and stores no lift, cleavage, comparison, or coherence certificate. Every two provenance values generate selected reindexing functors whose components are compared by the StrongCartesianLift domain isomorphism; both lift triangles, naturality on every vertical map, and whole-natural-isomorphism reflexivity, symmetry, and cocycle follow from cartesian uniqueness. For exact-endpoint CartPresentationBetween values, equality of decoded homs generates equality of their full typed semantic inputs and retags only the selected lift's strong-cartesianness proposition. This yields the typed selected comparison without transporting a complete functor. An arbitrary direct presentation satisfying the decoded composition equation receives a relative contravariant compositor, and an arbitrary identity-decoding presentation receives a relative unitor. Simultaneous replacement of both composable legs and the direct presentation, and replacement of two identity presentations, preserve those structures by direct use of the Cycle 33 cleavage compatibility laws. At the finite-code quotient, the action evaluates the distinguished Quotient.out representative but compares every supplied representative to that action by the generated typed NatIso. Quotient compositors and unitors are constructed from the actual selected lifts, their replacement laws consume the typed compatibility surface, and cartesian uniqueness proves the pentagon and both unit laws before LocallyDiscrete.mkPseudofunctor packages the contravariant action on the opposite category. No Quotient.lift targets Functor. The finite fixture replaces the empty-support identity Atom code by a singleton-support code decoding the same identity permutation; it proves typed and raw presentation inequality, equality of decoded homs and full semantic inputs, fires both representative comparison triangles, naturality, refl/symm/cocycle, quotient compositor/unitor and replacement laws, pentagon and both units, and retains two noninvertible quotient legs plus a nonidentity vertical axis map. It deliberately makes no claim that opaque selected comparison components are nonidentity merely because authored codes differ.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationReplacement.lean
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingFiniteCodePseudoaction.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingFiniteCodePseudoactionWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct.lean
   evidence:
@@ -84,6 +90,18 @@ result:
     - selectedTypedCoreFiberPresentationCompositor_compatibility
     - selectedTypedCoreFiberPresentationUnitor
     - selectedTypedCoreFiberPresentationUnitor_compatibility
+    - FiniteCodeCartHom.representative
+    - FiniteCodeCartHom.presentations_semantic_eq
+    - finiteCodeSelectedCoreFiberRepresentativeComparison
+    - finiteCodeSelectedCoreFiberRepresentativeComparison_cocycle
+    - finiteCodeSelectedCoreFiberRepresentativeCompositor_compatibility
+    - finiteCodeSelectedCoreFiberRepresentativeUnitor_compatibility
+    - finiteCodeSelectedCoreFiberCompositor
+    - finiteCodeSelectedCoreFiberUnitor
+    - finiteCodeSelectedCoreFiberCompositor_assoc
+    - finiteCodeSelectedCoreFiberCompositor_left_unit
+    - finiteCodeSelectedCoreFiberCompositor_right_unit
+    - finiteCodeSelectedCoreFiberReindexPseudoaction
     - finiteSelectiveTwoToSupportPresentation_ne_padded
     - finiteSelectiveTwoToSupportRawPresentation_ne_padded
     - finiteSelectiveTwoToSupportPresentation_semanticInput_eq
@@ -92,6 +110,17 @@ result:
     - finiteSupportPresentationUnitor_compatibility
     - finitePresentationDescentCompositorFirstLeg_not_isIso
     - finitePresentationDescentAxisSwap_ne_id
+    - finiteCodeRawDistinctSelectivePresentationPair
+    - finiteCodeSelectivePaddedCanonicalComparisonApp_hom_fac
+    - finiteCodeSelectivePaddedCanonicalComparison_naturality
+    - finiteCodeSelectiveRepresentativeComparison_cocycle
+    - finiteCodePaddedSelectiveRepresentativeCompositor_compatibility
+    - finiteCodePaddedSupportRepresentativeUnitor_compatibility
+    - finiteCodeSelectiveQuotientCompositor_assoc
+    - finiteCodeSelectiveQuotientCompositor_left_unit
+    - finiteCodeSelectiveQuotientCompositor_right_unit
+    - finiteCodeSelectiveTwoToOneHom_not_isIso
+    - finiteCodePseudoactionWitnessAxisSwap_ne_id
   claim_mapping:
     theorem_names:
       - cartRealizationProvenanceComparison
@@ -101,12 +130,23 @@ result:
       - selectedTypedCoreFiberPresentationComparison
       - selectedTypedCoreFiberPresentationCompositor_compatibility
       - selectedTypedCoreFiberPresentationUnitor_compatibility
+      - finiteCodeSelectedCoreFiberRepresentativeComparison
+      - finiteCodeSelectedCoreFiberRepresentativeCompositor_compatibility
+      - finiteCodeSelectedCoreFiberRepresentativeUnitor_compatibility
+      - finiteCodeSelectedCoreFiberCompositor_assoc
+      - finiteCodeSelectedCoreFiberCompositor_left_unit
+      - finiteCodeSelectedCoreFiberCompositor_right_unit
+      - finiteCodeSelectedCoreFiberReindexPseudoaction
       - finiteSelectiveTwoToSupportPresentation_ne_padded
       - finiteSelectiveTwoToSupportPresentation_semanticInput_eq
       - finitePresentationDescentCompositorFirstLeg_not_isIso
+      - finiteCodeRawDistinctSelectivePresentationPair
+      - finiteCodeSelectiveQuotientCompositor_assoc
+      - finiteCodeSelectiveTwoToOneHom_not_isIso
     source_labels:
       - target theorem (C) contravariant reindexing coherence subnode
       - K2 common-semantic presentation-replacement checkpoint
+      - Cycle 34 conditional quotient-level selected finite-code pseudoaction obligation
       - Cycle 33 cartesian-cleavage choice-independence and replacement coherence
     conjuncts:
       - every two finite provenance values over one literal CartSemanticInput have a producer-derived selected reindexing natural isomorphism with both lift triangles and naturality
@@ -114,26 +154,30 @@ result:
       - exact-endpoint typed presentations with equal decoded arrows admit the same selected comparison after retagging only strong-cartesianness, never the whole functor
       - arbitrary semantically matching direct and identity presentations generate relative contravariant compositors and unitors
       - simultaneous replacement of both legs and the direct presentation preserves the compositor, and replacement of identity presentations preserves the unitor
+      - every FiniteCodeCartHom receives a selected contravariant action through a distinguished representative, while every other representative is related by a generated natural isomorphism with triangles, naturality, refl/symm/cocycle, and composition/unit replacement laws
+      - quotient compositors and unitors satisfy the cartesian-uniqueness pentagon and both unit laws and assemble a Pseudofunctor on the opposite locally discrete finite-code category without Quotient.lift into Functor
       - raw-distinct identity-decoding finite presentations fire the full surface with a noninvertible leg and nonidentity vertical map
     undischarged_assumptions:
       - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
-      - arbitrary endpoint-isomorphism rebasing and a representative-independent pseudofunctor or strictification beyond the exact-endpoint/common-literal semantic calculus
+      - arbitrary endpoint-isomorphism rebasing and any strict quotient functor or strictification beyond the selected NatIso-level finite-code pseudoaction
       - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
       - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
       - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
       - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
-    acceptance_point: common-literal-semantic presentation replacement and exact-endpoint relative compositor/unitor descent checkpoint only; no strict quotient functor, arbitrary endpoint rebase, adjunction, mate, or G-110 completion is claimed
+    acceptance_point: common-literal-semantic presentation replacement, exact-endpoint relative compositor/unitor descent, and selected finite-code quotient pseudoaction up to generated NatIso; no strict Quotient.lift into Functor, arbitrary endpoint rebase, adjunction, mate, or G-110 completion is claimed
     port_status: not-applicable
 audits:
   premise_delta:
     ambient_boundary:
       - arbitrary AtomCarrier U, arbitrary literal CartSemanticInput, and arbitrary finite realization provenance over that input
       - exact-endpoint FiniteInstanceCode and CartPresentationBetween values only for the typed comparison and relative compositor/unitor calculus
+      - arbitrary FiniteCodeCartHom values and the opposite locally discrete finite-code category for the selected quotient pseudoaction
       - packageProjection core fibers, selected strong-cartesian lifts, and Cycle 33 cartesian uniqueness/coherence APIs
     input_geometry:
       - arbitrary pairs and triples of finite provenance values over one common semantic input
       - arbitrary target-fiber objects and arbitrary vertical target-fiber maps
       - arbitrary exact-endpoint typed direct, first-leg, second-leg, and identity presentations satisfying internally consumed decoded-arrow equalities
+      - arbitrary quotient morphisms and arbitrary typed representatives proved to belong to those quotient classes
     direction_hypothesis:
       - realization_eq and decoded-arrow equalities identify authored finite provenance with one literal semantic input and are consumed to retag only strong-cartesianness propositions
       - selected lifts, comparisons, triangles, naturality, compositors, unitors, and compatibility data are internally generated and are never caller premises
@@ -142,28 +186,34 @@ audits:
       - whole comparison reflexivity, symmetry, and cocycle
       - relative compositor and unitor component triangles and naturality
       - simultaneous compositor replacement and two-identity unitor replacement compatibility
+      - quotient-level representative independence, compositor/unitor, arbitrary-representative replacement compatibility, pentagon, both unit laws, and the final Pseudofunctor package
       - raw-code inequality, decoded semantic equality, and noninvertible/nonidentity finite firing
     conclusion_equivalent_risk:
       - no caller lift, cleavage, endpoint iso, comparison, NatIso, triangle, naturality, compositor, unitor, or coherence packet appears in a selected public producer
       - semantic equality is not used to cast a complete RealizableHom or reindexing functor
+      - quotient membership proofs derive semantic equalities but do not supply the comparison, compositor, unitor, pentagon, or unit laws
     unused_or_ambient_only:
-      - no strict quotient functor, arbitrary endpoint equivalence, adjunction, mate, exactness, positive IsIso, K3-K4, or final assembly API is used or claimed
+      - no Quotient.lift into Functor, arbitrary endpoint equivalence, adjunction, mate, exactness, positive IsIso, K3-K4, or final assembly API is used or claimed
   certificate_provenance:
     - CartRealizationProvenance contains only an authored presentation and its equality to the fixed semantic input
     - comparison components use StrongCartesianLift.domainIso on the two internally selected lifts; their factor graphs and all whole-coherence laws are derived by the cartesian universal property
     - typed semantic equality reuses the second selected lift's domain and hom while rewriting only its IsStronglyCartesian proposition before applying the same generated comparison
     - relative compositor and unitor compose accepted Cycle 32 components with the producer-generated typed presentation comparison; their replacement equations explicitly consume Cycle 33 cleavage compatibility
+    - the quotient action makes only the distinguished Quotient.out representative choice; arbitrary-representative comparisons, compositor/unitor replacement, and all pseudoaction coherence are generated from the already accepted typed APIs and cartesian uniqueness
   proof_use:
     - common-provenance naturality and refl/symm/cocycle postcompose with actual selected lifts before applying strong-cartesian uniqueness
     - selectedTypedCoreFiberPresentationComparisonApp compares the actual first selected lift with the actual second lift retagged along the internally derived full semantic-input equality
     - compositor compatibility normalizes first, second, and direct selected lifts to one literal semantic input and uses each generated comparison triangle plus coreFiberCleavageReindexCompositor_compatibility
     - unitor compatibility uses the canonical and replacement identity selected lifts and coreFiberCleavageReindexUnitor_compatibility
+    - quotient representative comparisons consume the quotient-derived decoder equalities and the actual typed selected lifts; the quotient pentagon and units compare explicit iterated lift triangles by IsStronglyCartesian uniqueness
+    - the Mathlib Pseudofunctor coherence fields cancel the inverse quotient compositor/unitor components against these generated forward pentagon/unit routes; equality casts appear only at the terminal bicategory typing boundary
   anti_weakening:
     verdict: pass
     notes:
       - the common-provenance comparison quantifies all representatives, objects, and vertical maps; the typed surface quantifies all semantically equal exact-endpoint presentations
+      - the quotient pseudoaction quantifies all finite-code quotient morphisms and all their supplied typed representatives; its final laws are whole Pseudofunctor coherence fields rather than fixture-only component markers
       - the finite witness proves raw presentation inequality separately from semantic equality and does not infer an opaque selected comparison's nonidentity from that inequality
-      - descent is stated up to generated natural isomorphism, not functor equality or a strict quotient
+      - descent is stated up to generated natural isomorphism; Quotient.out selects an evaluation representative but is not claimed to be a mathematical normal form, and no strict Quotient.lift into Functor is used
   witness_nondegeneracy:
     - finitePresentationPaddedIdentityAtomCode has singleton support but decodes to Equiv.refl, while the canonical composite and identity codes have empty support
     - typed and raw presentation inequalities and full CartSemanticInput equalities are independently proved
@@ -171,6 +221,8 @@ audits:
     - relative compositor compatibility uses the genuine selective two-to-one-to-support chain and proves its first leg noninvertible
     - relative unitor compatibility uses canonical and padded identity presentations
     - naturality fires on finiteReindexAxisSwapHom, which is independently nonidentity
+    - the same authored quotient chain fires representative hom/inverse triangles, naturality, refl/symm/cocycle, quotient compositor/unitor, arbitrary-representative compatibility, pentagon, and both unit laws
+    - finiteCodeSelectiveTwoToOneHom and finiteCodeSelectiveTwoToSupportHom have non-IsIso semantic realizations, independently of the nonidentity axis-swap vertical map
   structure_field_escape: none-found
   empty_elimination: none-found
   goal_or_report_reinterpretation: none-found
@@ -178,9 +230,25 @@ audits:
     - focused CartesianRegimeReindexingPresentationReplacement.lean: pass; namespace audit 39 declarations and standard axioms only
     - focused CartesianRegimeReindexingPresentationCoherence.lean: pass; namespace audit 21 declarations and standard axioms only
     - focused CartesianRegimeReindexingPresentationWitnesses.lean: pass; namespace audit 56 declarations and standard axioms only
-    - targeted modules CartesianRegimeReindexingPresentationReplacement, CartesianRegimeReindexingPresentationCoherence, and CartesianRegimeReindexingPresentationWitnesses: pass
+    - focused CartesianRegimeReindexingFiniteCodePseudoaction.lean: pass with no warnings; namespace audit 80 declarations and standard axioms only
+    - focused CartesianRegimeReindexingFiniteCodePseudoactionWitnesses.lean: pass; namespace audit 37 declarations and standard axioms only
+    - targeted modules CartesianRegimeReindexingPresentationReplacement, CartesianRegimeReindexingPresentationCoherence, CartesianRegimeReindexingPresentationWitnesses, CartesianRegimeReindexingFiniteCodePseudoaction, and CartesianRegimeReindexingFiniteCodePseudoactionWitnesses: pass; no Research aggregate or full build
     - exact umbrella target ResearchLean.AG.DoctrineFiberProduct: pass
     - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, private-path, import-direction, manifest, and umbrella scans: pass
+  initial_review_findings:
+    - Math A Major: the conditional quotient-level pseudoaction obligation fired once the typed replacement API closed, but no FiniteCodeCartHom pseudoaction was present and the report had moved it to future scope
+    - Lean B Major: the same missing quotient-level selected pseudoaction made Cycle 34 incomplete despite the valid representative-level API
+    - Lean A Minor: unstable Lane A wording and the missing Implementation notes section weakened public API documentation without changing the mathematics
+    - Math B: no content finding at the initial head
+  review_refs:
+    initial_fixed_head: d80a9d13867d49193eebe93a4905b533e99df2a7
+    initial_report_head: 2a3b50c06d0d48c59e3a1084bc524e0d05e5c32b
+    repair_head: 7d8227d3c1e8301aa9f13af20b5ce2453ea4ca7c
+    direct_response: not used; the repair adds two public modules, a Pseudofunctor declaration, representative/coherence laws, finite witnesses, imports, manifest entries, and stable documentation, so a fresh four-lane review is required
+    fresh_review: pending at the repaired content head
+  blocking_findings:
+    - fresh four-lane content review and integration record pending
+  next_obligation: complete the repaired-head four-lane review and report synchronization; if clean, merge Cycle 34 and select the adjunction node before the canonical Beck--Chevalley mate
 ```
 
 ### Cycle 33 — cartesian-cleavage choice independence
