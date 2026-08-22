@@ -33,24 +33,29 @@ tracking Issue を正本とし、本ノートには持ち込まない。
    比喩の出所は計測器の解像度と標本化であり、レビューの経験則ではない。
 4. 補強の中心は「数から対象へ」。`J_A` を次元化する前の欠損対象に戻し、表現・
    局所分解・合成・局所大域・限界・安全な解像度の幾何を、その対象の定理族として
-   束ねる(§1.2、§4)。定理水準の candidate: 完全局所分解と必要条件 C3′・
-   transgression(R8)、解像度合成の六項完全列と相殺写像 `χ_A`(R14)、最粗の
-   安全な読みの非一意性と指数 frontier(R10)、概念方向の Mayer–Vietoris(R15)、
-   `(r, k)` 二変数の有限観測不可能性(R3)。一様判定の coNP 完全性(R4a)は中心
-   構造ではなく frontier の後に置く。失敗しうる主張と、失敗しえない構成(表現・
-   `Σ_M`・六項完全列・関手性)は §6 で分ける。
+   束ねる(§1.2、§4)。中心命題は「**意味側には全 law 診断を完全に表現する正準で
+   有限な最小座標系(意味閉包 `cl_M`、`Σ_M`)が存在し、安全な観測解像度側には
+   一般に正準な最粗点も有限局所的な完全判定も存在しない。その間で失われる診断は
+   欠損対象として完全に表現・分解・輸送・計算できる**」。定理水準の candidate:
+   観測クラスの退化定理と完全局所分解の系(R8)、解像度合成の六項完全列と相殺
+   写像 `χ_A`(R14)、No Complete-Shell / No Natural Selector / 指数 frontier
+   (R10)、概念方向の Mayer–Vietoris(R15)、`(r, k)` 二変数の有限観測不可能性
+   (R3)、正の側の support-width 算法と Excision(R17 / R18)。一様判定の coNP
+   完全性(R4a)と欠損 locus の実現(R19)、Interchange(R16)は後続。失敗しうる
+   主張と、失敗しえない構成は §6 で分ける。
 5. 必須は R2(差分表の充填)と R1(実システムの多解像度観測。P1–P10 を事前登録
    し、完全列のどの項が支配的かを測る)。前提確認 R0(第一論文の係数は ℚ、
    decider の一回実行、観測クラスの確認)を最初に置く。優先順位は
-   R0 > R2 > R14 > R8 > R1a > R10 > R15 > R3 > R9 > R1c > R11 > R4a > R4b > R5 ≫ R7
-   (§5)。R12(エージェント読解)と R13(方法論論文)は別トラック。係数 base
-   change(整数係数の錐・Fitting・jump locus)は次カードへ送る。
+   R0 > R2 > R14 > R8 > R1a > R10 > R15 > R11 > R3 > R9 > R1c > R17 > R18 > R4a >
+   R19 > R16 > R4b > R5 ≫ R7(§5)。第一論文の範囲は §5 で線を引き、本ノートの
+   補強項目はこの版で凍結する。R12(エージェント読解)と R13(方法論論文)は別
+   トラック。係数 base change(整数係数の錐・Fitting・jump locus)は次カードへ送る。
 6. 判定は二段(§6)。「CS に届いた」の最低条件は三つ(差分表が肯定形で埋まる、
    実測で欠損プロファイルが領域ごと・源ごとに異なる値を取る、R8 / R10 / R15 /
-   R3 のいずれかが定理として立つ)。「ジャーナルの大定理」の完成条件は五つ
-   (表現・完全局所分解・解像度合成・非局所性または frontier・Lean と実測)。
-   最低条件が揃わなければ Atlas は「AAT の測定器の校正理論」として正確に主張し、
-   それ以上を名乗らない。
+   R3 のいずれかが定理として立つ)。「ジャーナルの大定理」の完成条件は二階建て
+   (Foundation = 構成の完備、Main = 鋭い構造定理・正準 / 非正準・無限族・正の
+   算法の四本、そのうえで Lean と実測)。最低条件が揃わなければ Atlas は「AAT の
+   測定器の校正理論」として正確に主張し、それ以上を名乗らない。
 
 ## 参照
 
@@ -132,13 +137,17 @@ nerve に ℤ/2 torsion が実在しうる)。どちらで測定の鎖を回す�
 だけである。主定理として売らず、枠の命題として置く(禁忌 5)。§7 の最小例が確認
 する「law の直接計算 = 値クラスの和」はこの命題の最小発火例である。
 
-**(c) 台署名半束 `Σ_M`。** `σ_M(A) :=`(`A` が選ぶ粗 cell、細 cell、制限された
-比較写像)とし、`Σ_M := im σ_M`。A-subnerve の選択は台と `A` の交わりで決まるので
-`σ_M(A ∪ B) = σ_M(A) ∨ σ_M(B)` が候補。同じ署名なら同じ欠損対象(定義的)、全 law
-診断は `Σ_M` を通して factor し、一様判定は `Σ_M` の代表だけで足りる。最悪の場合
-`|Σ_M| = 2^|Target| − 1`(任意の部分集合族が欠損集合として実現される。R4a の構造
-結果)。R10 と合わせると「**診断の座標化は正準だが、安全な解像度の選択は正準で
-ない**」という対照になる。
+**(c) 意味閉包と台署名半束 `Σ_M`。** 比較データの全 cell `Ω_M` と、各 target `t`
+が選ぶ cell 集合 `S_t ⊆ Ω_M`(台に `t` を含む cell)から `α_M(A) := ⋃_{t∈A} S_t`、
+`γ_M(X) := {t | S_t ⊆ X}` と置くと `α_M(A) ⊆ X ⟺ A ⊆ γ_M(X)`、すなわち Galois
+接続 `α_M ⊣ γ_M` が立ち、`cl_M := γ_M ∘ α_M` は正準な有限閉包作用素になる。
+A-subnerve は `α_M(A)` そのものなので、台署名半束 `Σ_M ≅ Fix(cl_M) ≅ im α_M`、
+`D_A ≃ D_{cl_M(A)}`(定義的)、`σ_M(A ∪ B) = σ_M(A) ∨ σ_M(B)`。全 law 診断は `Σ_M` を
+通して factor し、一様判定は `Σ_M` の代表だけで足りる。`Σ_M` は comparison geometry
+を保存する意味商の中で最粗、すなわち診断に必要な意味の区別だけを残した正準な
+最小座標系である。最悪の場合 `|Σ_M| = 2^|Target| − 1`(任意の部分集合族が欠損集合
+として実現される。R4a / R19)。R10 と合わせると「**診断の座標化は正準だが、安全な
+解像度の選択は正準でない**」という対照になり、これが Atlas の中心命題の骨である。
 
 **(d) 欠損加群。** `A ⊆ B` なら `N_A ⊆ N_B` なので cochain の制限が
 `H¹(N_B) → H¹(N_A)` を与え、`A ↦ H¹(N_A)` は `Σ_M^op` 上の関手、粗側・細側の二つの
@@ -257,6 +266,8 @@ candidate(witness の Lean 化後に昇格する):
 10. 観点を固定すれば判定は多項式、全観点では coNP 完全(R4a)。
 11. 途中の解像度で生じた偽の類は、前段で隠蔽された類と相殺されうる(合成の
     相殺写像 `χ_A`。R14)。
+12. 外部の cost / utility を足さない限り、対称な候補の中から正準な安全解像度を
+    一つ選ぶことはできない(No Natural Selector。R10)。
 
 そのうえで、CS 一般にまだ届かない理由は五つある。
 
@@ -320,7 +331,7 @@ candidate(witness の Lean 化後に昇格する):
 | --- | --- | --- |
 | Leray / Grothendieck 合成関手スペクトル系列 | 写像に沿う順像と higher direct image | G-104 (ii) はその有限・局所係数・次数1版の系。Atlas の固有分 = law 係数の block 分解で座標ごとに適用、退化宣言つき部分写像の Lean 固定、位置(非必要性7枚+非分解性)、decider、**必要条件 C3′**(R8、現行クラス限定) |
 | Vietoris–Begle、Quillen Theorem A、McCord 1966、poset fiber theorems(Björner–Wachs–Welker 2005) | 局所非輪状 ⟹ 同型 | 条件 C は VB 型の incidence 十分条件であり、self-loop について真に強い(C の下では座標 subnerve 内の粗 self-loop は `H¹`-neutral にしかなれない)。弱化した局所十分条件 C^loc(R8) |
-| persistence(Zomorodian–Carlsson 2005)、rank invariant、interleaving 安定性(Chazal–de Silva–Glisse–Oudot 2016、Bauer–Lesnick 2015)、zigzag(Carlsson–de Silva 2010)、Möbius 反転(Patel 2018、Kim–Mémoli 2021、要確認) | 解像度 poset 上の module と barcode | 鎖上の rank invariant = `J`、barcode = 欠損プロファイル(hidden = birth、phantom = death)。概念方向は被覆 `{N_t}` の Mayer–Vietoris(関心事で分けると見えない閉路 = 連結準同型の像)。安定性は入れ子の観測者族に限る。一手の編集で `J_A` は各成分 ≤ 1 しか動かない(R7 の下界補題) |
+| persistence(Zomorodian–Carlsson 2005)、rank invariant、interleaving 安定性(Chazal–de Silva–Glisse–Oudot 2016、Bauer–Lesnick 2015)、zigzag(Carlsson–de Silva 2010)、Möbius 反転(Patel 2018、Kim–Mémoli 2021、要確認) | 解像度 poset 上の module と barcode | 鎖 `q_i ≤ q_j` 上で `r_ij = rank(H¹(q_i) → H¹(q_j))` とすると `phantom_ij = dim H¹(q_i) − r_ij`、`hidden_ij = dim H¹(q_j) − r_ij`。`J` は rank invariant そのものではなく、端点の次元と rank から導かれる両側欠損。barcode は要求しない(一般の poset では区間分解が無い)。概念方向は被覆 `{N_t}` の Mayer–Vietoris(関心事で分けると見えない閉路 = 連結準同型の像)。安定性は入れ子の観測者族に限る。一手の編集で `J_A` は各成分 ≤ 1 しか動かない(R7 の下界補題) |
 | cellular sheaf(Curry 2014、Hansen–Ghrist 2019) | 一般の制限写像、Laplacian | 順像係数の再定式化は採用(R8)。一般の制限写像は A-還元を壊すので、「法則 = subnerve 上の定数層の直和」という特別なクラスが還元を可能にしていると明言する。Laplacian は計算・表示手段に限り、量としては presentation 依存で不採用(禁忌 6) |
 
 ### 3.3 「局所 ⟹ 大域」の定理族
@@ -427,7 +438,14 @@ candidate(witness の Lean 化後に昇格する):
 ### R2 最近接先行との差分表の充填(必須、R1 の PRD より先)
 
 - 内容: §3 の各行を書誌突合つきで埋める。有向 / 無向の区別、辺種類の粗視化が
-  定理の形に乗るかの検討を含む。
+  定理の形に乗るかの検討を含む。加えて、似ていると説明するだけでなく、その分野の
+  標準対象から Atlas へ送る **translation proposition** を短く持つ: 抽象解釈(ある
+  クラスの抽象写像を Atlas の比較として埋め込み、強保存 / exactness を零欠損に
+  対応させ、complete shell が存在する regime と No Complete-Shell regime を分ける)
+  と DB / CSP(schema / 台 hypergraph を Atlas の意味台系へ送り、join-tree /
+  非輪状の場合に R15 が局所大域の欠損計算を与える)の二本を第一論文の目標にする。
+  分散計算(`Obs_{r,k}` を LOCAL / 局所証明モデルへ)、TDA、SE、エージェントへの
+  translation は後続。
 - 判定: 粒度依存の直接の定量実証は無い(最近接は lifting 系列)と見られるため、
   CS への接点 の主軸は「集約アーティファクトを概念領域ごとに `(ker, coker)` で厳密に
   勘定し、機構を名指しし、判定を計算に置く」に限る。positioning の主軸候補は
@@ -479,7 +497,8 @@ candidate(witness の Lean 化後に昇格する):
   存在するか」の計算量(困難性を予想、根拠なし)。構造の半分は R10。
 - 位置: 支線。中心構造ではないので、`Σ_M` による exact 圧縮・最悪 `2^n − 1`・
   指数 frontier(R10)の後に問う。gadget が崩れても本体の価値は落ちない構成に
-  する。CS に可読な問いであり、かつツールの量化域の設計(一様モードの
+  する。「任意の部分集合族が欠損集合として実現される」は R19 へ格上げし、立てば
+  coNP 困難性はその系になる。CS に可読な問いであり、かつツールの量化域の設計(一様モードの
   実現可能性)に直結する。
 - 判定: 多項式アルゴリズム+正当性、または困難性証明のいずれか。
 
@@ -511,38 +530,41 @@ candidate(witness の Lean 化後に昇格する):
   R4b(最大粗化)と双対なので問題定義ノートは一本にする。
 - 位置: 支線(大)。本計画では**問題定義の固定まで**。起票は Atlas 論文の後。
 
-### R8 完全局所分解定理(最優先の後継 GOAL)
+### R8 完全局所分解 — defect triangle と観測クラスの退化定理(最優先の後継 GOAL)
 
-- 内容: §1.2 (e) を有限 2 次元・退化宣言つき部分写像で固定する。成果物は次の順:
-  1. 比較写像の分解 `f_A = edge ∘ H¹(unit)`
-  2. phantom の同定 `phantom_A = dim ker H¹(unit)`
-  3. hidden の短完全列 `0 → coker H¹(unit) → hidden_A → ker d₂ → 0`
-  4. pure class(面は全辺 mapped か全辺退化)での特殊化 `d₂ = 0` と等式
-     `hidden_A = dim coker H¹(unit) + Σ_c b₁(Φ_c^A)`
-  5. 必要条件 C3′(系)
-  6. 順像の系(粗係数 = `φ_*F` なら phantom ≡ 0)
-  7. 弱化十分条件 C^loc(L0 各粗 cell が lift を持つ / L1 各位相的 fiber が非空
-     連結 / L2 各粗辺の lift が一意 / L3 各位相的 fiber の `H¹ = 0`)と
-     `C ⊊ C^loc ⊆ 零 locus ⊆ {C3′}`(strictness witness は G-107 の C3 witness が
-     候補。C0 / C2 / C4 / C5 の成立は要確認)
-  8. 誤差予算不等式(数値的な系。等号例・緩み例を witness で対にする)
-  9. transgression 定理(混在 face を許す観測クラスで `d₂ ≠ 0` の実例。R9 で実現)
+- 主目標(candidate): cochain 水準で比較写像を `C_A --η_A--> P_A --ε_A--> C'_A`
+  (`η_A` = 粗い観測者が自前で再構成した係数と細かい観測の順像の差、`ε_A` = fiber
+  topology / higher direct image の寄与)と二段に分け、`D^reobs_A := Cone(η_A)`、
+  `D^fiber_A := Cone(ε_A)`、`D^total_A := Cone(ε_A ∘ η_A)` に対する八面体公理の
+  exact triangle `D^reobs_A → D^total_A → D^fiber_A → D^reobs_A[1]` を **defect
+  triangle** と呼ぶ。三項の意味は再観測欠損 / 総欠損 / fiber 欠損で、phantom
+  (unit 側)・hidden(unit 余核+fiber 側)・`d₂`(fiber 欠損が二次整合性へ移る
+  connecting 機構)がこの一つの三角形から降りる。主定理として狙うのは
+  **観測クラスの退化定理**: 許容される退化 face パターンのどの組合せ条件の下で `d₂`
+  が全 `A`・全係数で恒等的に零になるかの特徴づけ(iff が重ければ、`d₂ = 0` となる
+  最大の観測クラスと、非零 transgression を生む最小の禁止パターンの対)。
+- 系として並ぶもの(旧 1–9): `f_A = edge ∘ H¹(unit)`、`phantom_A = dim ker H¹(unit)`、
+  hidden の短完全列 `0 → coker H¹(unit) → hidden_A → ker d₂ → 0`、pure class
+  (面は全辺 mapped か全辺退化)= degeneration-safe class での等式
+  `hidden_A = dim coker H¹(unit) + Σ_c b₁(Φ_c^A)`、必要条件 C3′、順像の系(unit 側を
+  殺した特殊化)、弱化十分条件 C^loc と `C ⊊ C^loc ⊆ 零 locus ⊆ {C3′}`(strictness
+  witness は G-107 の C3 witness が候補。C0 / C2 / C4 / C5 の成立は要確認)、誤差
+  予算不等式(次元化した系)、混在 face の transgression 定理(R9 で実現)。
 - 失敗しうる主張: Leray 列が部分写像+退化宣言の観測クラスで成り立つこと、pure
-  class で `d₂ = 0`、C3′、`C ⊊ C^loc`、transgression の実例。表現・六項完全列の
-  ような失敗しえない構成と区別する(§6)。
+  class で `d₂ = 0`、退化定理の特徴づけ、C3′、`C ⊊ C^loc`、transgression の実例。
+  defect triangle・八面体公理は標準構成であり成果に数えない(§6)。
 - なぜ CS の外が気にするか: 「粗 chart 内部の閉路は粗い観測からは見えず、隠蔽
   される類の個数は chart ごとの `H¹` の和以上」「偽の類は集計でなく再観測から
-  生まれる」「観測モデルが、局所欠損を残すか二次整合性へ吸収するかを決める」の
-  三文が定理で言える。計測の読者には誤差予算、SE の読者には blame、CS には有限
-  Leray 型の完全列。
-- 既知との関係: 分解は Leray / Grothendieck の系であり新規性なし。成果は Atlas
-  固有の観測クラス・law 由来係数・退化の意味論・欠損の解釈の部分にある。必要条件
-  C3′ は失敗しえた主張(混在 face で失敗する)なので定理を名乗れる。
+  生まれる」「観測モデルが、局所欠損を一次診断として残すか二次整合性へ送るかを
+  決める」の三文が定理で言える。SAGA / G-106 の `H²` 整合性と接続すれば `d₂` は
+  「解像度診断の情報が coherence obstruction へ移る」橋になる。
+- 既知との関係: 三角形・Leray / Grothendieck は標準理論であり新規性なし。成果は
+  Atlas 固有の観測クラス・law 由来係数・退化の意味論の下で、各項と connecting
+  morphism がどの診断機構に対応するかにある。
 - 位置: 幹寄りの土台。R6 を R14 へ、R9 を後半として吸収。
-- 判定: 1–5 が Lean で立つ。分解は「古典の完全列の AAT への適用」と書き、新定理と
-  売らない(禁忌 5)。
-- 規模: 1–6 小〜中、7–9 中。Mathlib にスペクトル系列は実用水準で無いと見られ、
-  有限次元線形代数で直接書く。
+- 判定: pure class の等式・C3′・transgression の実例が Lean で立つ(第一論文)。
+  退化定理の特徴づけは主定理候補として同カードの上位目標。
+- 規模: 系の部分 小〜中、退化定理 中〜大。
 
 ### R9 観測モデルの拡張 — 混在 face(R8 の後半を実現するカード)
 
@@ -557,31 +579,48 @@ candidate(witness の Lean 化後に昇格する):
 - 位置: 土台補強(G-104 の fixed statement は変えず新カード)。
 - 規模: 中。
 
-### R10 安全な解像度の幾何 — 非一意性と指数 frontier
+### R10 安全な解像度の幾何 — No Complete-Shell / No Natural Selector / 指数 frontier
 
 - 内容: 細読み `q'` と粗化の規約(商 nerve の作り方 — 平行辺の同一視、fiber 内辺の
   退化、face の扱い。R1 の抽出規約と同一物)を固定し、`U = {q ≤ q' : 一様}` に
-  ついて (a) **共通粗化で閉じない**: 6 角形 `a…f` で `{a, c}` 併合・`{d, f}` 併合は
-  それぞれ `J = (0, 0)`、同時併合で hidden = 1、(b) **区間で閉じない**: 経路
-  `a–b–c–d` で `{a, d}` 併合は phantom = 1、全併合は `(0, 0)`(非空虚版は正方形 +
-  pendant 経路で `(0,0) → (1,0) → (0,0)`)、(c) 4-cycle の辺縮約 4 本は `U` の
-  極大元の反鎖、(d) よって貪欲併合は失敗する。いずれも例示スクリプトと同じ線形
-  代数で検算済み(証拠ではない)。
-  (e) **指数 frontier**(candidate): 互いに比較不能な極大安全読みを複数持つ gadget
-  を `n` 個直和すると、`J` は成分ごとに直和分解するので、極大安全読みの数は積で
-  増える(例: 4 個なら `4^n`)。証明義務: 直和の粗化 poset が積に分解すること —
-  成分をまたぐ chart 併合(fiber が非連結になる)を安全でないと示すか、構造を
-  尊重する粗化に poset を制限する。立てば「安全な解像度の frontier は指数的に
-  大きく、全列挙は最悪指数の出力を要し、貪欲併合は正準な答えを与えず、『どこまで
-  粗く読むか』は Pareto frontier である」。R4b の困難性を待たずに立つ。
+  ついて三段で述べる。
+  1. **No Complete-Shell**(candidate): `U` は reading 束上のどの閉包作用素・内部
+     作用素の固定点集合としても表現できない。閉包の固定点集合は meet で、内部の
+     固定点集合は join で閉じるので、**両方向の witness** が要る。join 側 = (a)
+     共通粗化で閉じない(6 角形 `a…f` で `{a, c}` 併合・`{d, f}` 併合はそれぞれ
+     `J = (0, 0)`、同時併合で hidden = 1)。meet 側(共通精細化で閉じない)は別途
+     witness を固定する。あわせて (b) 区間で閉じない(経路 `a–b–c–d` で `{a, d}`
+     併合は phantom = 1、全併合は `(0, 0)`。非空虚版は正方形 + pendant 経路で
+     `(0,0) → (1,0) → (0,0)`)、(c) 4-cycle の辺縮約 4 本は `U` の極大元の反鎖、
+     (d) よって貪欲併合は失敗する。(a)–(d) は例示スクリプトと同じ線形代数で検算
+     済み(証拠ではない)。立てば、抽象解釈の complete shell / 最粗強保存 /
+     最粗 lumpable 分割の regime との関係が related work の一文ではなく
+     **分離定理**になる。
+  2. **No Natural Selector**(candidate): 4-cycle の辺縮約 4 本は自己同型群 `D₄` の
+     一軌道をなし、`D₄` の固定点を持たない。同型不変(自己同型同変)な selector
+     `selector(M) ∈ MaxSafe(M)` は `Aut(M)` の固定点を選ばねばならないので、この
+     witness 上に selector は存在しない。結論は「外部の cost / preference / task
+     semantics を足さない限り、Atlas から正準な安全解像度を一つ選ぶことはできない」。
+     抽象モデル構成・状態集約・graph coarsening・エージェントの文脈選択・zoom 水準
+     選択の全てに同じ形で響く。
+  3. **指数 frontier**(candidate): 互いに比較不能な極大安全読みを複数持つ gadget
+     を `n` 個直和すると、`J` は成分ごとに直和分解するので、極大安全読みの数は積で
+     増える(例: 4 個なら `4^n`)。証明義務: 直和の粗化 poset が積に分解すること —
+     成分をまたぐ chart 併合(fiber が非連結になる)を安全でないと示すか、構造を
+     尊重する粗化に poset を制限する。
+- 三段が揃えば、実務の問い「どこまで粗く読めばよいか」に対し「一点解ではなく
+  frontier を返す問題であり、一点を選ぶには理論外の utility が要る」と答えられる。
+  R4 より前に置く理由は、計算量が gadget 帰着の成否に依存するのに対し、これらは
+  安全解像度空間そのものの幾何から出ることにある。
 - なぜ CS の外が気にするか: 抽象解釈には最粗の完全精細化が常にあり、bisimulation
   と lumpability には最粗の正確な商が、十分統計量には最小十分が一意にある。Atlas は
-  「一意でない側」に立ち、理由は `H¹` が商で生じも消えもする構造にある。実務の
-  問い「どこまで降りるか」の答えが一点でなく極小元の集合(反鎖)だと言い切れる。
-- 位置: 支線(R4b の構造半分、R5 の否定半分)。
-- 判定: witness の Lean 化。「H¹ は閉包作用素でないから当然」という読みに対しては、
-  失われた束的性質を GRS の証明と対置して一文で言う。
-- 規模: 小。
+  「一意でない側」に立ち、理由は `H¹` が商で生じも消えもする構造にある。
+- 位置: 支線(R4b の構造半分、R5 の否定半分)。§1.2 (c) の正準な意味閉包と対を
+  なす(「診断の座標化は正準、安全な解像度の選択は非正準」)。
+- 判定: 1 の両方向 witness と 2 の軌道論法が Lean で立つ。「`H¹` は閉包作用素で
+  ないから当然」という読みに対しては、失われた束的性質を GRS の証明と対置して
+  一文で言う。
+- 規模: 1–2 小、3 中。
 
 ### R11 検証済み証書パイプライン
 
@@ -598,7 +637,8 @@ candidate(witness の Lean 化後に昇格する):
 - 将来: rank 証書に加えて核の基底・余核の生成系・完全列の可換性・欠損源の内訳の
   証書まで出し、checker が `presentation → cochain map → H¹ → 欠損対象 → 分解` の
   意味論を検証する。検証範囲を presentation 以降に限る限り「verified architecture
-  diagnosis」と言える。
+  diagnosis」と言える。R18(Excision)と結べば、変更差分に対する増分の検証済み
+  診断になる。
 - 位置: 土台補強。規模: Lean 2〜4k 行、harness 数百行。リスク: 係数体(R0)、
   `decide` の詰まり、一様モードの `2^|Target|`(R4a)。
 - 判定: 実システムの数値(R1)と、checker が harness の誤りを弾いた実績の両方。
@@ -626,20 +666,27 @@ candidate(witness の Lean 化後に昇格する):
   書けなければ出さない。
 - 位置: 支線(執筆トラック)。
 
-### R14 欠損対象・表現・台署名半束・合成(枠の命題と合成定理)
+### R14 欠損対象・意味閉包・表現・合成(枠の構成と合成定理)
 
 - 内容: §1.2 (a)–(d)・(f)。(i) 比較写像錐 `D_A` の定義と、`J_A` が `H¹` 水準の
-  切片であることの明示 (ii) 表現命題 `D_L ≅ ⊕_λ D_{A_λ}`、`J_L = Σ_λ J_{A_λ}`、
-  指示 law による実現(G-104 の block 直和分解と G-107 (i) の錐水準への持ち上げ)
-  (iii) `Σ_M` と `σ_M(A ∪ B) = σ_M(A) ∨ σ_M(B)`、一様判定は代表で足りる、最悪
-  `2^n − 1` (iv) `Σ_M^op` 上の欠損加群 `Phantom_u / Hidden_u` と比較写像の自然
-  変換性 (v) 解像度合成の六項完全列と相殺写像 `χ_A`、合成式、零欠損射の合成閉と
-  2-out-of-3。
-- 性格: (i)–(iv) と (v) の完全列は構成と命題であり失敗しえない。定理として数える
-  のは (v) の合成式の semantic 化(相殺写像の解釈)と、その witness(R10 の非単調
-  例が相殺の発火例であること)のみ。
+  切片であることの明示 (ii) **意味閉包**: 比較データの全 cell `Ω_M` と各 target
+  `t` が選ぶ cell 集合 `S_t` から `α_M(A) := ⋃_{t∈A} S_t`、`γ_M(X) := {t | S_t ⊆ X}`
+  を置くと `α_M(A) ⊆ X ⟺ A ⊆ γ_M(X)`(Galois 接続 `α_M ⊣ γ_M`)、
+  `cl_M := γ_M ∘ α_M` は有限閉包作用素、台署名半束 `Σ_M ≅ Fix(cl_M) ≅ im α_M`、
+  `D_A ≃ D_{cl_M(A)}`。`Σ_M` は「comparison geometry を保存する意味商の中で最粗」
+  であり、診断に必要な意味の区別だけを残した正準な最小座標系になる (iii) 表現
+  `D_L ≅ ⊕_λ D_{cl_M(A_λ)}`、`J_L = Σ_λ J_{A_λ}`、指示 law による実現(G-104 の
+  block 直和分解と G-107 (i) の錐水準への持ち上げ)。普遍性(直和加法的な law
+  診断不変量は `Σ_M` 上の値から一意に復元される)は candidate (iv) `Σ_M^op` 上の
+  欠損加群 `Phantom_u / Hidden_u` と比較写像の自然変換性 (v) 解像度合成の六項
+  完全列と相殺写像 `χ_A`、合成式、零欠損射の合成閉と 2-out-of-3 (vi) 多段精細化
+  `q₀ ≤ … ≤ q_n` では `D_A(q₀, q_n)` に隣接比較 `D_A(q_{i−1}, q_i)` からの filtration
+  が入り、`χ_A` はその三段ケースである(一般の multiresolution は R16)。
+- 性格: (i)–(iv)・(vi) と (v) の完全列は構成と命題であり失敗しえない。定理として
+  数えるのは (v) の合成式の semantic 化(相殺写像の解釈)と、その witness(R10 の
+  非単調例が相殺の発火例であること)、(iii) の普遍性のみ。
 - 位置: 幹寄りの土台(reading 圏の関手化。R5 の関手性・R6 を吸収)。
-- 判定: Lean で (ii)(v) が立ち、R1 の P7・P9 と接続する。
+- 判定: Lean で (ii)(iii)(v) が立ち、R1 の P7・P9 と接続する。
 - 規模: 小〜中。
 
 ### R15 概念方向の Mayer–Vietoris(局所大域定理)
@@ -653,30 +700,98 @@ candidate(witness の Lean 化後に昇格する):
 - 位置: 支線(R3-w を吸収)。判定: 連結射の同定が Lean で立ち、R1 の P10 に接続
   する。規模: 小〜中。
 
+### R16 Interchange / Multiresolution(次の大定理候補。第一論文外)
+
+- 内容: (i) 解像度列 `q₀ ≤ … ≤ q_n` の総比較の欠損対象に隣接比較からの filtration を
+  入れ、`E₁^{i,*} ≃ H*(D_A(q_{i−1}, q_i)) ⇒ H*(D_A(q₀, q_n))` 型のスペクトル系列を
+  立てる(higher differential = ある粒度で生じた欠損が後続の粒度変更でどの欠損と
+  相殺されるか。`χ_A` はその最初の非自明ケース)。(ii) 意味領域の被覆 `{A_i}` と
+  解像度方向を一つの二重複体 `B^{p,q} = ⊕ D^q_{A_{i₀}∩…∩A_{i_p}}` に並べ、意味の
+  貼り合わせを先に取る経路と解像度欠損を先に取る経路が同じ total 欠損に収束する
+  条件(**Interchange**: 「関心事で分けてから zoom するのと、zoom してから関心事で
+  分けるのは、いつ同じ診断を与えるか」)を示し、破れる場合は差を higher differential
+  として残す。
+- 位置: 支線(SHIGURE / 係数 base change / G-106 と接続)。第一論文の完成条件には
+  入れない。規模: 大。
+
+### R17 Support-width の算法(正の計算可能性。candidate)
+
+- 内容: `Σ_M` は target–cell の台 incidence から得られる近傍和の族なので、generic
+  treewidth より先に、台 incidence グラフの boolean-width / neighborhood-union width
+  型の既存パラメータで状態数を制御できるかを調べる。候補 statement: 台 incidence
+  グラフの分解幅 `b` と nerve 側の separator 幅 `τ` に対し、一様性と全欠損源を
+  `f(b, τ) · poly(|M|)` で計算する(分解の separator ごとに署名状態を有限個保持し、
+  台の和を動的計画で合成、各状態上に rank 情報を局所行列として保持、root で全
+  `A`-欠損を復元)。概念台の hypergraph が join-tree / 非輪状 / 有界 hypertree-width
+  を持つ場合に R15 の Mayer–Vietoris で欠損を局所計算できるかも問う。
+- 意味: R3 / R10 / R4 が負の側、これが正の側。「無制限の意味的相互作用は非局所で
+  困難だが、台の幾何の幅が小さい系では exact な診断が tractable」という二分法に
+  なる。R1 / R11 の一様モードの実現可能性にも直結する。
+- 位置: 支線。Atlas 固有のパラメータを新造する前に既存 width で試す。規模: 中〜大。
+
+### R18 Excision と増分更新(candidate)
+
+- 内容: presentation の変更 `M → M'` が cell 部分複体 `K` と意味台 `S` に限られる
+  とき、relative cone `E_A(M', M) := Cone(D_A(M) → D_A(M'))` について、
+  `A ∩ S = ∅ ⇒ E_A ≃ 0`(K1 の局所性から大半は定義的)、影響する台署名は `S` と
+  交わる正準な ideal に限られる、欠損の変化量は relative complex の rank / Betti
+  data で制御される、影響外の証書・核の基底・完全列 witness は再利用できる。対に
+  なる一文は「**判定は大域的だが、判定値の変化は台-局所である**」(R3 との対)。
+- 接続: R11 と結べば、ArchSig / harness が変更台 `S`・影響署名・局所 rank 更新・
+  再利用証書・新しい欠損の provenance を出し、Lean checker がその局所更新だけを
+  検証する「変更差分に対する verified incremental architecture diagnosis」になる。
+  R7 の編集下界も relative defect の応用として再配置できる(どの変形がどの
+  relative defect を殺すか、一手で消せる rank の上限)。
+- 位置: 支線(tooling と R11 の柱)。規模: 中。
+
+### R19 Defect-Locus Realization(high-upside frontier。第一論文外)
+
+- 内容: R4a に埋まっている「任意の部分集合族が欠損集合として実現される」を独立の
+  定理候補に上げる。段階: Stage A 任意の反鎖 `𝒜 ⊆ 2^Target` を
+  `Min{A | J_A ≠ 0}` として実現 / Stage B 任意の単調 Boolean 関数 `F` で
+  `J_A ≠ 0 ⟺ F(A) = 1` / Stage C 任意の Boolean 回路 / CNF から多項式サイズの
+  Atlas instance(coNP 困難性は系)。立てば、欠損 locus は単調でも劣モジュラでも
+  なく、貪欲精細化に一般保証は無く、最小の欠損台は指数個になりえ、
+  `|Σ_M| = 2^|Target| − 1` が最悪例として実現され、有界幅の観測者は完全でない、が
+  一つの表現完全性定理から降りる。
+- リスク: 高。K0 / K1・比較射・nerve の well-formedness・law 由来台の制約の下で
+  どこまで任意パターンを符号化できるかは未検証。完成条件には入れず、別カード候補。
+- 位置: 支線(R3-w・R10 frontier・R4a・`Σ_M` 最悪サイズを束ねる可能性)。規模: 大。
+
 ## 5. 優先順位と配分
 
-- 優先順位: **R0 > R2 > R14 > R8 > R1a > R10 > R15 > R3 > R9 > R1c > R11 > R4a >
-  R4b > R5 ≫ R7**。R12・R13 は別トラック。R1a は Codex 並走で理論項目と同時に
-  進む。
-- Atlas 論文(2 本目)の骨格: 枠 = コード観測と解像度(§2)/ 対象 = 欠損対象
-  (R14 の構成)/ 主定理 = 安定性(G-104)+ 還元と decider(G-107 (i)(ii))+
-  局所観測の限界(G-107 (v))+ 完全局所分解(R8)+ 解像度合成(R14 (v))/
-  実測 = R1a(P1–P10)/ 差分 = R2 / 応用節 = 三担い手。R10・R15・R3・R4a は
-  改訂で取り込み、R5・R6 は節として置く。候補題「Atlas: An Exact Resolution
-  Calculus for Software Architecture Diagnostics」は証明の後に決める(禁忌 4)。
+- 優先順位: **R0 > R2 > R14 > R8 > R1a > R10 > R15 > R11 > R3 > R9 > R1c > R17 >
+  R18 > R4a > R19 > R16 > R4b > R5 ≫ R7**。R12・R13 は別トラック。R1a は Codex
+  並走で理論項目と同時に進む。
+- **第一論文の範囲**(ここで線を引く): 枠 = コード観測と解像度(§2)/ 対象 =
+  欠損対象と意味閉包(R14 (i)–(iv))/ 主定理 = 安定性(G-104)+ 還元と decider
+  (G-107 (i)(ii))+ 局所観測の限界(G-107 (v))+ 完全局所分解の系(R8 の pure
+  class 等式・C3′・transgression の実例)+ 解像度合成(R14 (v))+ 安全解像度の
+  幾何(R10 の No Complete-Shell と No Natural Selector)+ 概念方向 MV 二領域版
+  (R15)/ 実測 = R1a(P1–P10)/ 検証 = R11 の最小構成 / 差分 = R2(抽象解釈と
+  DB / CSP への translation proposition を各一本)/ 応用節 = 三担い手。退化定理の
+  特徴づけ(R8 主目標)・`(r,k)`(R3)・指数 frontier・R16–R19・R4a は改訂または
+  後継論文で取り込む。候補題「Atlas: An Exact Resolution Calculus for Software
+  Architecture Diagnostics」は証明の後に決める(禁忌 4)。
+- 抽象核は degree-parametric にしておく(`J_A^i`、`Safe_[a,b]`)。第一論文の実証は
+  `H¹` に集中し、`H⁰` = 切断 / 大域整合、`H²` = 整合性の意味づけは AAT 既存の
+  ものを使う。混在 face の `d₂` は `H¹` 欠損が `H²` 整合性へ移る最初の例。
 - 係数: 第一論文は ℚ 固定(現行 Lean 資産と整合し、証明コストが最小)。整数係数の
   比較写像錐 `D_{A,ℤ}` と `D_{A,k} ≃ D_{A,ℤ} ⊗^L_ℤ k`、ℚ と F₂ の差 = torsion、
   係数の選択で安全性が変わる素数 = determinantal / Fitting locus、は次カード
   (n1005 の係数 base change・jump-locus の相対幾何と接続)。
-- 後継 GOAL の単位: R14、R8、R10、R15、R3、R9、R4a、R5 をそれぞれ 1 カード(採番は
-  起票時)。G-104 / G-107 の fixed statement は変更しない。active GOAL と並走可能
-  かはコスト基準で裁定する。
+- 後継 GOAL の単位: R14、R8、R10、R15、R3、R9、R17、R18、R4a、R19、R16、R5 を
+  それぞれ 1 カード(採番は起票時)。G-104 / G-107 の fixed statement は変更しない。
+  active GOAL と並走可能かはコスト基準で裁定する。
 - 論文A との関係: R1 は論文A 実証節計画の第三段と同一対象であり、Atlas 論文が
   先行して測り、論文A はその結果を参照する。
 - 打ち切りの条件: R2 の判定で実証研究が無く、R1 の欠損プロファイルが全域非零
   なら、Atlas は「AAT の測定器の校正理論」として正確に主張し、CS への接点は
   exactness と「局所 ⟹ 大域」族の差分表のみで戦う。全域零なら method 水準と他系へ
   進む。どちらの結果も資産として記録する。
+- **計画の凍結**: 本ノートの補強項目はこの版で固定する。以後の追加・格上げは
+  カード起票時の statement 固定と、論文の執筆で行う(レビューの往復を飽和させ
+  ない。研究の全体目標の禁忌 9)。
 
 ## 6. 判定規準 — 二段のゲート
 
@@ -691,32 +806,38 @@ candidate(witness の Lean 化後に昇格する):
    同定、R3 の分離族のいずれかが定理として立っている(R3-w 単独は補助定理と数え、
    R4a は立てば加点)。
 
-**大定理の完成条件(ジャーナルの主定理として)**。次の五つ。
+**大定理の完成条件(ジャーナルの主定理として)**。二階建てにする。
 
-1. **表現**: 全 law 由来診断の欠損が有限個の `A`-欠損対象から完全に再構成される
-   (R14 (ii))。
-2. **完全局所分解**: phantom / hidden / unit / fiber / transgression が完全列で
-   結ばれる(R8)。
-3. **解像度合成**: 三段精細化の欠損が六項完全列と相殺写像で計算される(R14 (v))。
-4. **非局所性または frontier**: `(r, k)` 有限観測不可能性(R3)または指数 frontier
-   (R10)の少なくとも一方が無限族で立つ。
-5. **Lean と実測**: 中心定理の機械検証と、複数実システムで完全列の各項の測定
-   (R1a、R11)。
+- **Foundation complete**(構成。失敗しえない): 比較写像錐 `D_A`、意味の Galois
+  接続と `Σ_M`、law block 表現、defect triangle、pairwise(と多段の filtration)
+  合成、検証済み checker。
+- **Main theorem complete**(失敗しうる主張。少なくとも次の四本):
+  1. **鋭い構造定理**: `d₂ = 0` の最大観測クラス / 禁止パターンの特徴づけ、または
+     同等に鋭い退化定理(R8)。
+  2. **正準 / 非正準の定理**: 意味側の正準閉包(R14 (ii))と、解像度側の No
+     Complete-Shell / No Natural Selector(R10)。
+  3. **無限族の定理**: `(r, k)` 非局所性(R3)、指数 frontier(R10)、欠損 locus の
+     実現(R19)の少なくとも一つ。
+  4. **正の算法 / 応用定理**: support-width の tractability(R17)、join-tree 定理、
+     Excision / 増分更新(R18)のいずれか。
+- そのうえで Lean(中心定理の機械検証)と実測(複数実システムで完全列の各項の
+  測定。R1a、R11)を必須とする。
 
 揃えば Atlas は「AAT の測定器を校正する補助定理」ではなく、architecture 診断の
 exact resolution calculus として独立に読める。最低条件だけなら「校正理論」として
-正確に主張し、それ以上を名乗らない。
+正確に主張し、それ以上を名乗らない。第一論文は Foundation と Main の一部(§5 の
+範囲)で閉じ、残りは後継論文に送る。
 
 **失敗しうる主張と構成の区別**(禁忌 5)。主定理は前者から選ぶ。
 
 | 構成・命題(失敗しえない) | 定理(失敗しうる) |
 | --- | --- |
-| 比較写像錐 `D_A`、表現 `D_L ≅ ⊕ D_{A_λ}`、`Σ_M`、欠損加群と自然変換、六項完全列、2-out-of-3、関手性、rank–nullity の打ち消し | Leray 列が部分写像+退化宣言の観測クラスで成り立つこと、pure class の `d₂ = 0`、必要条件 C3′、transgression の実例、`C ⊊ C^loc`、合成式の semantic 化の witness、非一意性 witness、指数 frontier、MV 連結射の同定、`(r, k)` 分離族、coNP 困難性 |
+| 比較写像錐 `D_A`、Galois 接続と閉包 `cl_M`、`Σ_M ≅ Fix(cl_M)`、表現 `D_L ≅ ⊕ D_{A_λ}`、欠損加群と自然変換、defect triangle(八面体公理)、六項完全列、2-out-of-3、関手性、多段 filtration、rank–nullity の打ち消し、Excision の `A ∩ S = ∅` 部分 | Leray 列が部分写像+退化宣言の観測クラスで成り立つこと、pure class の `d₂ = 0`、退化定理の特徴づけ、必要条件 C3′、transgression の実例、`C ⊊ C^loc`、合成式の semantic 化の witness、表現の普遍性、No Complete-Shell(両方向 witness)、No Natural Selector、指数 frontier、MV 連結射の同定、`(r, k)` 分離族、support-width の tractability、Excision の rank 制御、欠損 locus の実現、Interchange、coNP 困難性 |
 
 本計画の停止規則は研究の全体目標の禁忌に従う: 比喩に定理の代役をさせない(4)、
 関手性・合成閉・rank–nullity のような言い換えに定理の名を与えない(5)、`J_A` と
 そこから導かれる整数(幅・`χ_A`)以外の数を並べない(6)、計測に降りない定理を
-積まない(7)。
+積まない(7)、レビュー指摘ゼロ・補強項目の増殖を目標にしない(9)。
 
 ## 7. 説明素材 — 還元の最小例
 
@@ -745,9 +866,11 @@ exact resolution calculus として独立に読める。最低条件だけなら
 
 - 本ノートは正本ではない。G-104 / G-107 の事実関係は各 report を、証明義務を
   持つ statement の固定はカード起票時を正とする。
-- §1.2・§4 の R3 / R4 / R8 / R10 / R14 / R15 に書いた数学(欠損対象、表現、`Σ_M`、
-  Leray 分解、必要条件 C3′、C^loc、transgression、六項完全列と `χ_A`、MV、coNP
-  完全性、`T_n` 族、非一意性 witness、指数 frontier)はすべて candidate であり、手証明と
+- §1.2・§4 の R3 / R4 / R8 / R10 / R14–R19 に書いた数学(欠損対象、意味閉包と
+  `Σ_M`、表現、Leray 分解と defect triangle、退化定理、必要条件 C3′、C^loc、
+  transgression、六項完全列と `χ_A`、MV、No Complete-Shell / No Natural Selector、
+  指数 frontier、`T_n` 族、coNP 完全性、support-width、Excision、欠損 locus の実現、
+  Interchange)はすべて candidate であり、手証明と
   有限例の機械検算しか無い。Lean で立つまで、本文・記事・カードの statement に
   事実として書かない。
 - 錐の次数混合に注意: `J_A` は `H¹` 水準の切片であり、錐コホモロジーの次元その
