@@ -1,7 +1,8 @@
 # Math Lean Review lanes
 
 数学査読 A/B と Lean 査読 A/B の4本を、同じ合格基準を持つ重複独立査読として
-実行する。A/Bを主査と補助に分けない。他laneの出力や親の期待を渡さない。
+実行する。A/Bを主査と補助に分けない。親の会話履歴、他laneの出力、親の期待を渡さない
+(起動規律は共有review protocolの「Subagent入力」)。
 
 ## Lane定義
 

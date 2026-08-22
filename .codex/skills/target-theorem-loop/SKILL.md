@@ -42,7 +42,7 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 7. `git diff --check`、staged diff、未追跡file、保護領域の変更有無を確認し、実装、report、cycle ledgerを同じPRへ収録する。PR本文は原則`Refs #<tracking-issue>`とする。
 8. PR headを固定し、標準`$review-pr <PR番号> tracking Issue #<N>`でそのPRのexact diffと変更責務を監査する。`Refs`だけにIssue関連付けを委ねない。監査コメントでAAT/Lean数学claimとして`$math-lean-review`へ委譲されたことを確認し、未委譲なら`Blocked / cannot determine`としてmergeしない。標準レビュー後、rootが[acceptance contract](references/acceptance-contract.md)をreview evidenceと差分実体へ適用し、結果をPRコメントへ置く。completion candidateでは両方の合格後に[completion ledger](references/completion-ledger.md)のfinal packetを同じ固定headから生成し、独立`$math-lean-review research/goals/<goal-id>.md <goal-id>`でGOALカードと累積証拠全体を照合する。必要な全判定とCIが通った場合だけmergeし、merge commit、CI、PR review、completion review、次obligationをtracking Issueへコメントする。
 
-PR作成まではroot一体で完結する。最初の独立subagent起動点はPRレビューである。
+PR作成まではroot一体で完結する。最初の独立subagent起動点はPRレビューである。PRレビュー、修正後確認、completion candidateの最終4本のsubagentは監査ごとに新規に起動し、ループの会話履歴や前の監査に使ったsubagentを引き継がせない(正本は共有review protocolの「Subagent入力」)。
 
 cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、completion candidateのfinal packet、標準review-pr監査記録、merge後のtracking Issueコメントとする。final packetは固定headに対するPRコメントであり、treeへ追加しない。数学claimの判定範囲はGOALのclaim boundaryに限る。
 
