@@ -147,6 +147,7 @@ result:
   premise_audit:
     direction_hypotheses:
       - RealizableHom presentation witness supplied by the existing finite-code schema
+      - semantic_eq decoded-arrow equality for GOAL-authorized exact-endpoint presentation replacement
     discharge_required_consumed:
       - selectedCartesianRegime and its internally generated strong cartesian lift
       - G-109 canonical core transport and internally generated strong cocartesian lift
@@ -187,7 +188,10 @@ result:
     central_finding: the first head preserved only the first presentation's factor graph; the second presentation's transpose/hom equivalence/unit/counit did not occur in the claimed compatibility theorems
     repaired_content_head: 92afa071f31d7ea654a4876cd82ac1f5ea444069
     repair: added a componentwise G-109 transport NatIso, both transpose commuting equations, explicit hom-equivalence compatibility, actual unit/counit squares, and nondegenerate padded finite firing; restored adjunction-specific arbitrary-cleavage compatibility to the undischarged ledger
-    status: pending one fresh four-lane full rerun and root acceptance-contract integration
+    formal_rerun_exact_head: c56d19e964616bb432eae6d5c362cb7f48632e1d
+    formal_rerun: central claims passed all four fresh lanes; two noncentral ledger/documentation drifts were returned for direct response
+    direct_response: umbrella status now distinguishes the constructed selected adjunction from open arbitrary-cleavage compatibility, and semantic_eq is classified as a direction hypothesis; finding-limited audit passed with no Lean declaration/proof/import change
+    status: accepted selected-cleavage adjunction proof-checkpoint; G-110 completion remains no
 next:
   proof_obligation: first connect the Cycle 33 arbitrary-cleavage comparison to the Cycle 35 selected adjunction hom equivalence/unit/counit, then construct the pointed pullback square from the existing compatible-point producer and generate the canonical Beck--Chevalley mate from the Cycle 35 units/counits and accepted push/pull compositors; keep packageProjection-specific exactness and authored-support relative obstruction as separate downstream subnodes if the typed mate surface closes first
 ```
