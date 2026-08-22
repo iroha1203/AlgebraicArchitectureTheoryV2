@@ -48,7 +48,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   content_head: 85aecf5287b1f22e14bc60fe0eb4365c459e9710
-  review_target_head: pending
+  review_target_head: f3954e288b4631ffced09ce1b329d7268866c095
   proof_obligation_delta: Cycle 39 first proves a generic criterion saying that a package total hom supplied with a two-sided inverse of its complete upper map is strongly cocartesian. It then discharges that criterion specifically for the G-110 arbitrary-target strongCartesianLiftOfTarget construction by using inverseCorePackageBackwardUpper and its two generated cancellation theorems; SignedExactCoreReadingHom itself carries no inverse field. The generated selected cartesian lift is compared to that explicit cocartesian lift through cartesian uniqueness, so it is also strongly cocartesian. Conversely, the support lift used by the counit is proved strongly cartesian. Over identity base maps, these two universal-property packages produce total isomorphisms, and the total-to-fiber reflection theorem yields IsIso for every component of the generated unit and counit. The Cycle 37 component formula then expresses the canonical mate as generated unit, mapped square isomorphism, and generated counit, so every component and hence the natural transformation are IsIso. Cycle 38 selected comparison transports this result to every arbitrary-cleavage mate. A symmetric three-to-two cospan generates an actual pullback whose bottom, right, left, and top legs are all proved noninvertible; both canonical and arbitrary-cleavage exactness fire on this single control. No caller exactness or invertibility certificate is consumed.
   completion_candidate: no
   lean_artifacts:
@@ -149,12 +149,12 @@ result:
     - Formal to ResearchLean import-direction scan: no new reverse import
     - Research aggregate/full build: not run, per hard rule
   review:
-    exact_head: pending
-    four_lane_result: pending fresh Math A, Math B, Lean A, and Lean B review at the final snapshot
-    refutation_attempts: pending
-    integrated_comment: pending
-    ci: pending
-    status: pending
+    exact_head: f3954e288b4631ffced09ce1b329d7268866c095
+    four_lane_result: Math A, Math B, Lean A, and Lean B independently passed after the sole initial inverse-provenance documentation finding was integrated and all four lanes re-reviewed the corrected exact head
+    refutation_attempts: generic mates preserving IsIso, pullbackness or coherence alone implying exactness, upper-inverse field or caller-certificate escape, circular unit/counit IsIso, mate orientation, selected-only weakening, arbitrary-cleavage cancellation direction, invertible or split finite controls, axiom and dependency hygiene, and scope/ledger completeness were checked and rejected
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4080#issuecomment-5383082087
+    ci: 7 of 7 checks passed, including lake build, research integrity gates, tooling checks, and Workers build
+    status: accepted package-projection Beck--Chevalley exactness proof-checkpoint; G-110 completion remains no
 next:
   proof_obligation: construct arbitrary endpoint-isomorphism rebasing for the package Beck--Chevalley mate without changing the fixed exact producer endpoint; authored-support MateCoherentRel and later K3-K4 obligations remain separate
 ```
