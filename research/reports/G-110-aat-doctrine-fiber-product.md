@@ -13,6 +13,195 @@
 
 ## Cycle ledger
 
+### Cycle 33 — cartesian-cleavage choice independence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 33
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ac10a421155562c406fa3098bfe99aac3270d2d0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 32 merge synchronization comment 5380000610 and Cycle 33 selection comment 5380220475
+  proof_dag_predecessors:
+    - Cycle 31 producer-derived cartesian reindexing functor and its exact factor and uniqueness laws
+    - Cycle 32 selected typed compositor, unitor, associativity, unit laws, and exact-endpoint presentation discipline
+    - Mathlib strong-cartesian comparison, factorization, uniqueness, composition, fiber extensionality, and whiskering APIs
+  proof_obligation: isolate a minimal cartesian cleavage over one literal CartSemanticInput; derive its complete reindexing functor; construct the canonical natural isomorphism between every two choices with forward and inverse lift triangles, naturality, reflexivity, symmetry, and cocycle; derive choice-relative compositors and unitors and prove simultaneous replacement compatibility; bridge the selected specialization directly to Cycle 32; and fire the comparison on an actually different finite lift family with a computationally nonidentity component and a noninvertible compositor leg
+  selection_reason: Cycle 32 proves coherence only for the fixed selected lift constructor. Cartesian uniqueness should make the reindexing independent of any alternative lift family over the same literal semantic input, but this is distinct from replacing one RealizableHom presentation by another. This cycle therefore quantifies arbitrary lift families as comparison subjects while keeping all comparison and coherence data producer-derived. Presentation replacement remains the next dependent descent obligation.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavage.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavageCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavageWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - adding comparison components, natural isomorphisms, factor triangles, naturality, refl, cocycle, compositor compatibility, or unitor compatibility as fields of the cleavage or as caller premises
+    - calling arbitrary cleavages an escape merely because they are quantified comparison subjects, or conversely using them to discharge the selected regime's existence obligation
+    - casting or identifying differently presented RealizableHom values using only equality of their semantic arrows
+    - proving only objectwise comparison without the derived vertical-map action, both lift triangles, or naturality on every vertical map
+    - proving compositor or unitor compatibility only for the selected cleavage instead of arbitrary simultaneous replacements
+    - firing only propositionally equal lift records, identity vertical maps, invertible base legs, or a computationally constant comparison component
+    - promoting same-input choice independence to arbitrary presentation descent, an adjunction, a Beck--Chevalley mate, K3-K4, or final G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: 1d42f25398122f910e1ea22f6ff90c7bad8304e9
+  reviewed_content_head: 1d42f25398122f910e1ea22f6ff90c7bad8304e9
+  proof_obligation_delta: CoreFiberCartesianCleavage has exactly one field, a strong-cartesian lift at each target-fiber object. Its reindexing object, every vertical map, factor graph, uniqueness, identity law, composition law, and functor are generated from that field by the universal property. For any two choices over the same literal CartSemanticInput, StrongCartesianLift.domainIso supplies both directions of the comparison; their lift triangles prove inverse laws and naturality, and the same uniqueness proves whole-natural-isomorphism reflexivity, symmetry, and three-choice cocycle. Arbitrary choice-relative two-step lifts and literal identity lifts generate the contravariant compositor and unitor. Simultaneous comparison of the first, second, and composite choices proves compositor compatibility, while identity-choice comparison proves unitor compatibility. The selected specialization is connected by an explicit natural bridge to the accepted Cycle 32 functor, compositor, and unitor. A finite identity input uses a visible four-axis swap at one named target and literal lifts elsewhere; reflecting its dependent Axis carrier shows that the canonical comparison sends axis zero to axis one. The same fixture fires both lift triangles, naturality, refl/cocycle, unitor compatibility, a noninvertible-leg compositor compatibility, and both selected bridges.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavage.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavageCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCleavageWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - CoreFiberCartesianCleavage
+    - CoreFiberCartesianCleavage.reindexMap_fac
+    - CoreFiberCartesianCleavage.reindexMap_unique
+    - CoreFiberCartesianCleavage.reindexFunctor
+    - CoreFiberCartesianCleavage.comparisonApp
+    - CoreFiberCartesianCleavage.comparisonApp_hom_fac
+    - CoreFiberCartesianCleavage.comparisonApp_inv_fac
+    - CoreFiberCartesianCleavage.comparison_naturality
+    - CoreFiberCartesianCleavage.comparison
+    - CoreFiberCartesianCleavage.comparison_refl
+    - CoreFiberCartesianCleavage.comparison_symm
+    - CoreFiberCartesianCleavage.comparison_cocycle
+    - coreFiberCleavageReindexCompositor
+    - coreFiberCleavageReindexUnitor
+    - coreFiberCleavageReindexCompositor_compatibility
+    - coreFiberCleavageReindexUnitor_compatibility
+    - selectedTypedCoreFiberCartesianCleavage
+    - selectedTypedCoreFiberCleavageBridge
+    - selectedTypedCoreFiberCleavageCompositor_bridge
+    - selectedTypedCoreFiberCleavageUnitor_bridge
+    - finiteCleavageAxisSwapHom_ne_id
+    - finiteCleavageComparisonApp_axis_zero
+    - finiteCleavageComparisonApp_hom_fac
+    - finiteCleavageComparisonApp_inv_fac
+    - finiteCleavageComparison_naturality
+    - finiteCleavageComparison_cocycle
+    - finiteCleavageUnitor_compatibility
+    - finiteCleavageSelectiveLeg_not_isIso
+    - finiteCleavageCompositor_compatibility
+    - finiteCleavageSelectedCompositor_bridge
+    - finiteCleavageSelectedUnitor_bridge
+  claim_mapping:
+    theorem_names:
+      - CoreFiberCartesianCleavage.comparison
+      - CoreFiberCartesianCleavage.comparison_refl
+      - CoreFiberCartesianCleavage.comparison_symm
+      - CoreFiberCartesianCleavage.comparison_cocycle
+      - coreFiberCleavageReindexCompositor_compatibility
+      - coreFiberCleavageReindexUnitor_compatibility
+      - selectedTypedCoreFiberCleavageCompositor_bridge
+      - selectedTypedCoreFiberCleavageUnitor_bridge
+      - finiteCleavageComparisonApp_axis_zero
+    source_labels:
+      - target theorem (C) contravariant reindexing coherence subnode
+      - K2 cartesian-cleavage choice-independence checkpoint
+      - Cycle 32 selected constructor-relative functor and coherence surface
+    conjuncts:
+      - every cleavage over one literal CartSemanticInput derives its full reindexing functor and universal factor laws from its lift family alone
+      - every two such cleavages have a producer-derived natural isomorphism with both lift triangles and naturality on all vertical maps
+      - the comparisons satisfy whole-natural-isomorphism reflexivity, symmetry, and three-choice cocycle
+      - arbitrary first, second, and composite cleavage replacements preserve the choice-relative contravariant compositor, and arbitrary identity-choice replacement preserves the unitor
+      - the selected specialization agrees with the accepted Cycle 32 functor, compositor, and unitor through explicit natural bridges
+      - a finite alternate lift family has a computationally nonidentity comparison component and fires all compatibility laws with a noninvertible base leg
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - arbitrary RealizableHom presentation replacement, endpoint rebasing, and descent of the reindexing functor and coherence across that replacement
+      - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
+      - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
+      - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
+      - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: same-literal-input cartesian-cleavage choice-independence checkpoint only; arbitrary presentation descent remains open and G-110 remains target-proof-checkpoint
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary AtomCarrier U and arbitrary CartSemanticInput for the generic cleavage comparison
+      - exact-endpoint finite CartPresentationBetween values and DecidableEq U.Atom only for choice-relative compositor, unitor, and selected specialization
+      - packageProjection core fibers and Mathlib strong-cartesian universal-property API
+    input_geometry:
+      - arbitrary target-fiber objects and arbitrary vertical target-fiber morphisms
+      - arbitrary first, second, and third cleavage choices over one literal semantic input
+      - arbitrary first-leg, second-leg, and composite choices for every exact-endpoint typed composable pair
+    direction_hypothesis:
+      - arbitrary cleavage lift families are the universally quantified objects being compared, not certificates for the comparison conclusion and not a discharge of the selected regime's lift existence
+      - the selected specialization remains internally generated from selectedTypedCoreFiberCartesianLift
+    discharge_required:
+      - all derived map factor and uniqueness laws
+      - both directions of the canonical component and their lift triangles
+      - naturality, reflexivity, symmetry, and cocycle of the whole comparison
+      - arbitrary simultaneous compositor replacement and arbitrary unitor replacement compatibility
+      - exact agreement with Cycle 32 selected surfaces
+      - nonidentity and noninvertible finite firing
+    conclusion_equivalent_risk:
+      - no comparison component, natural isomorphism, factor triangle, map law, naturality law, refl/symmetry/cocycle law, or compositor/unitor compatibility law is an input field or public producer argument
+    unused_or_ambient_only:
+      - no alternate cleavage is used by selectedCoreFiberCartesianCleavage or to prove selected lift existence
+      - semantic composition equality is used only to type the explicit two-step strong-cartesian lift
+      - arbitrary presentation equivalences, quotient/setoid descent, adjunction, mate, and K3-K4 APIs are not used or claimed
+  certificate_provenance:
+    - CoreFiberCartesianCleavage stores only the family being compared; its maps and all laws are generated by strong-cartesian factorization and uniqueness
+    - comparisonApp uses StrongCartesianLift.domainIso in both directions and proves its inverse laws from the generated vertical domain isomorphism
+    - compositor and unitor components compare explicit two-step or literal identity lifts to the chosen direct lift; caller comparison or coherence certificates do not appear
+    - selectedTypedCoreFiberCleavageBridge is an internally typed identity-total-hom bridge between two presentations of the same selected lift, with its triangle and naturality proved before the compositor/unitor bridge
+  proof_use:
+    - comparison_naturality postcomposes both routes with the second target lift and uses both reindexing factor graphs plus comparison triangles
+    - comparison_refl, comparison_symm, and comparison_cocycle postcompose with the appropriate actual chosen lift before applying strong-cartesian uniqueness
+    - compositor compatibility reduces both sides to the same second-choice target lift after consuming the first-, second-, and composite-choice comparison triangles
+    - unitor compatibility reduces both identity-choice routes to the literal total identity
+    - selected compositor and unitor bridges compare the generic selected triangles directly with the Cycle 32 selected triangles
+  anti_weakening:
+    verdict: pass
+    notes:
+      - generic comparisons quantify all choices, target objects, and vertical maps over one literal input; compatibility quantifies all simultaneous typed-constructor choices
+      - the theorem surface does not identify differently presented RealizableHom inputs and explicitly leaves that dependent descent open
+      - no adjunction, Beck--Chevalley mate, K3-K4, or completion claim is included
+  witness_nondegeneracy:
+    - finiteCleavageTwistedIdentityChoice differs from the literal choice by an actual four-axis swap lift at one named target
+    - finiteCleavageAxisSwapHom is provably nonidentity
+    - finiteCleavageComparisonApp_axis_zero reflects the dependent target Axis and proves that the canonical comparison sends zero to one
+    - both comparison triangles and comparison naturality fire on the same alternate choice and nonidentity vertical swap
+    - the three-choice cocycle includes the literal, twisted, and producer-derived selected choices
+    - compositor compatibility uses finiteSelectiveTwoToSupportPresentation, whose semantic leg is independently noninvertible
+    - the selected compositor and unitor bridges are instantiated on the existing selective chain and support endpoint
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused CartesianRegimeReindexingCleavage.lean: pass; namespace audit 36 declarations and standard axioms only
+    - focused CartesianRegimeReindexingCleavageCoherence.lean: pass; namespace audit 28 declarations and standard axioms only
+    - focused CartesianRegimeReindexingCleavageWitnesses.lean: pass; namespace audit 28 declarations and standard axioms only
+    - targeted modules CartesianRegimeReindexingCleavage, CartesianRegimeReindexingCleavageCoherence, and CartesianRegimeReindexingCleavageWitnesses: pass
+    - exact umbrella target ResearchLean.AG.DoctrineFiberProduct: pass
+    - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, private-path, import-direction, manifest, and umbrella scans: pass
+    - fixed reviewed head 043a4863b335bebcfcace5d76f617b7a846f651e: 7 of 7 PR checks successful and mergeable/CLEAN; the Research-only lake build job skipped Lean setup, build, kernel axiom audit, and premise report, so it is not counted as theorem evidence
+    - report-sync head 2ff10ace2fbd50a01bcbeed5e8909a6f6159ebd9: 7 of 7 PR checks successful and mergeable/CLEAN; independent report-only audit passed after closing one PR title/body language and template finding without changing the Git head
+  review_refs:
+    fixed_head: 043a4863b335bebcfcace5d76f617b7a846f651e
+    standard_review: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4070#issuecomment-5380539824
+    final_report_sync_head: 2ff10ace2fbd50a01bcbeed5e8909a6f6159ebd9
+    report_only_audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4070#issuecomment-5380605339
+    report_only_direct_response:
+      - initial finding: the live PR title/body were English and did not follow the repository PR template
+      - repair: the title and complete template packet were rewritten in Japanese, retaining the checkpoint scope, validation qualification, and the explicit continuing-tracker reason for Refs #4034
+      - closure: public-quality reinspection confirmed the finding closed with no Git-head, claim, source-of-truth, or responsibility-surface change
+    fresh_review_verdicts:
+      - Math A: No major findings; checked statement scope, material-premise classification, producer provenance, proof-use, every coherence law, finite nondegeneracy, and remaining obligations
+      - Math B: No major findings; independently attacked field escape, objectwise-only weakening, selected-choice leakage, semantic-equality casting, finite degeneration, and presentation-descent overclaim
+      - Lean A: No major findings; traced the six-file fixed diff, comparison and coherence proof terms, selected bridges, imports, manifest, report scope, and the finite witness
+      - Lean B: No major findings; independently checked signatures, dependent casts, producer provenance, arbitrary-choice quantification, proof-use, module DAG, and source/report alignment
+  blocking_findings: []
+  next_obligation: merge Cycle 33 and synchronize Issue 4034; then construct arbitrary RealizableHom presentation replacement and cleavage/coherence descent without weakening the fixed K2 scope
+```
+
 ### Cycle 32 — constructor-relative cartesian reindexing coherence
 
 ```yaml

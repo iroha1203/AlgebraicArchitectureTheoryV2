@@ -10,6 +10,9 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherenceWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavage
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageCoherence
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
@@ -213,8 +216,15 @@ naturality, associativity relative to one fixed left-associated composite, and
 both unit laws are proved by comparing the actual generated lift triangles.
 A noninvertible three-to-two-to-one selective chain and a genuine nonidentity
 vertical map fire these laws.  Semantic associativity and unit equalities are
-used only to type the strong-cartesianness of explicit composites; arbitrary
-presentation replacement and cleavage-choice independence remain open.
-The adjunction, Beck--Chevalley mate, K3--K4, and final target assembly also
-remain open.
+used only to type the strong-cartesianness of explicit composites.  The
+cleavage-independence layer then treats every lift family over one literal
+semantic input as a comparison subject, derives its reindexing functor, and
+constructs the unique natural isomorphism between any two choices.  It proves
+reflexivity, symmetry, cocycle, and simultaneous compositor/unitor replacement
+compatibility, and specializes the construction back to the selected Cycle 32
+functor and coherence.  A four-axis twisted identity cleavage makes the
+comparison computationally nonidentity, while a noninvertible selective leg
+fires compositor compatibility.  These results do not identify differently
+presented `RealizableHom` values.  Arbitrary presentation replacement, the
+adjunction, Beck--Chevalley mate, K3--K4, and final target assembly remain open.
 -/
