@@ -17,6 +17,7 @@ universe u
 open CategoryTheory
 open AtomFoundation
 
+/-- Configuration homomorphisms with aligned endpoints are determined by their Atom maps. -/
 private theorem configurationHom_heq_of_endpoint_eq
     {C C' D D' : AtomConfiguration FiniteModel.carrier}
     (first : ConfigurationHom C D) (second : ConfigurationHom C' D')
@@ -27,6 +28,7 @@ private theorem configurationHom_heq_of_endpoint_eq
   cases htarget
   exact heq_of_eq (ConfigurationHom.ext hatom)
 
+/-- Finite-model operation maps are determined by common Atom and object data. -/
 private theorem operationMap_heq_of_atomEquiv_objectMap_eq
     {P : AATCorePackage FiniteModel.carrier}
     (first second : SignedExactCoreReadingHom P FiniteModel.corePackage)
@@ -59,9 +61,10 @@ private theorem operationMap_heq_of_atomEquiv_objectMap_eq
 
 /--
 The operation map of the reflected composite agrees heterogeneously with the
-outer generated operation map.  The actual high triangle first supplies the
-Atom and complete-object equalities; exact operation naturality then determines
-the resulting finite-model configuration homomorphism.
+outer generated operation map.  The proof evaluates the `operationMap`
+projection of the actual high triangle on every generated high operation,
+aligns the reflected and generated endpoints, and reflects the resulting
+configuration Atom map through the two canonical operation images.
 -/
 theorem finiteGeneratedReflectedUpper_comp_operationMap
     (input : FiniteGeneratedLiftInput)
@@ -80,17 +83,194 @@ theorem finiteGeneratedReflectedUpper_comp_operationMap
         (finiteGeneratedOuterInput input base).lowGeneratedLift.domain
         FiniteModel.corePackage
         (finiteGeneratedOuterInput input base).lowGeneratedLift.hom.upper) := by
-  let composite :=
-    (finiteGeneratedReflectedSignedExactCoreReadingHom input lift base).comp
-      input.lowGeneratedLift.hom.upper
-  let outerUpper :=
-    (finiteGeneratedOuterInput input base).lowGeneratedLift.hom.upper
-  have hatom : composite.atomEquiv = outerUpper.atomEquiv :=
-    finiteGeneratedReflectedUpper_comp_atomEquiv input lift base
-  have hobject : composite.objectMap = outerUpper.objectMap :=
-    finiteGeneratedReflectedUpper_comp_objectMap input lift base
-  exact operationMap_heq_of_atomEquiv_objectMap_eq
-    composite outerUpper hatom hobject
+  let outer := finiteGeneratedOuterInput input base
+  let actual := finiteGeneratedNormalizedHighFactor input lift base
+  have hhigh := finiteGeneratedNormalizedHighFactor_upper_fac input lift base
+  have hobject := finiteGeneratedReflectedUpper_comp_objectMap input lift base
+  have operationMap_apply_heq_of_eq
+      {P Q : AATCorePackage finiteModelLiftCarrier.{u}}
+      {first second : SignedExactCoreReadingHom P Q}
+      (equality : first = second)
+      {source target : ArchitectureObject finiteModelLiftCarrier.{u}}
+      (operation : P.reading.operationReading.Op source target) :
+      HEq (first.operationMap operation) (second.operationMap operation) := by
+    cases equality
+    rfl
+  have operationMap_heq_of_operation_heq
+      {P Q : AATCorePackage finiteModelLiftCarrier.{u}}
+      (hom : SignedExactCoreReadingHom P Q)
+      {source source' target target' :
+        ArchitectureObject finiteModelLiftCarrier.{u}}
+      (hsource : source = source') (htarget : target = target')
+      {operation : P.reading.operationReading.Op source target}
+      {operation' : P.reading.operationReading.Op source' target'}
+      (hoperation : HEq operation operation') :
+      HEq (hom.operationMap operation) (hom.operationMap operation') := by
+    cases hsource
+    cases htarget
+    exact heq_of_eq (congrArg hom.operationMap (eq_of_heq hoperation))
+  have castOperation_heq_local
+      (reading : OperationReading finiteModelLiftCarrier.{u})
+      {source source' target target' :
+        ArchitectureObject finiteModelLiftCarrier.{u}}
+      (hsource : source = source') (htarget : target = target')
+      (operation : reading.Op source target) :
+      HEq (castOperation reading hsource htarget operation) operation := by
+    cases hsource
+    cases htarget
+    rfl
+  have operationConfigurationMap_atomMap_eq_local
+      (reading : OperationReading finiteModelLiftCarrier.{u})
+      {source source' target target' :
+        ArchitectureObject finiteModelLiftCarrier.{u}}
+      (hsource : source = source') (htarget : target = target')
+      {operation : reading.Op source target}
+      {operation' : reading.Op source' target'}
+      (hoperation : HEq operation operation') :
+      (reading.configurationMap operation).atomMap =
+        (reading.configurationMap operation').atomMap := by
+    cases hsource
+    cases htarget
+    exact congrArg
+      (fun value => (reading.configurationMap value).atomMap)
+      (eq_of_heq hoperation)
+  apply Function.hfunext rfl
+  intro source source' hsource
+  cases hsource
+  apply Function.hfunext rfl
+  intro target target' htarget
+  cases htarget
+  apply Function.hfunext rfl
+  intro operation operation' hoperation
+  cases hoperation
+  let reflected :=
+    finiteGeneratedReflectedOperationMap input lift base operation
+  let innerNamed := input.generatedDomainOperationLift reflected
+  let innerCanonical :=
+    finiteGeneratedDomainOperationEquiv.{u} input
+      (finiteGeneratedReflectedArchitectureObject input lift base source)
+      (finiteGeneratedReflectedArchitectureObject input lift base target)
+      reflected
+  let outerNamed := outer.generatedDomainOperationLift operation
+  let outerCanonical :=
+    finiteGeneratedDomainOperationEquiv.{u} outer source target operation
+  have hinnerLift : innerNamed = innerCanonical := by
+    apply ConfigurationHom.ext
+    simp [innerNamed, innerCanonical,
+      FiniteGeneratedLiftInput.generatedDomainOperationLift,
+      finiteGeneratedDomainOperationLift,
+      inverseCorePackageForwardUpper]
+  have houterLift : outerNamed = outerCanonical := by
+    apply ConfigurationHom.ext
+    simp [outerNamed, outerCanonical,
+      FiniteGeneratedLiftInput.generatedDomainOperationLift,
+      finiteGeneratedDomainOperationLift,
+      inverseCorePackageForwardUpper]
+  have hsourceImage :=
+    finiteGeneratedReflectedArchitectureObject_high_image.{u}
+      input lift base source
+  have htargetImage :=
+    finiteGeneratedReflectedArchitectureObject_high_image.{u}
+      input lift base target
+  have hforward :=
+    finiteGeneratedReflectedOperationMap_forward_image.{u}
+      input lift base operation
+  have hinnerActual :
+      HEq innerNamed (actual.upper.operationMap outerCanonical) := by
+    exact HEq.trans
+      (heq_of_eq (hinnerLift.trans hforward))
+      (castOperation_heq_local
+        input.highGeneratedLift.domain.reading.operationReading
+        hsourceImage.symm htargetImage.symm
+        (actual.upper.operationMap outerCanonical))
+  have hinnerMapped :
+      HEq
+        (input.highGeneratedLift.hom.upper.operationMap innerNamed)
+        (input.highGeneratedLift.hom.upper.operationMap
+          (actual.upper.operationMap outerCanonical)) :=
+    operationMap_heq_of_operation_heq
+      input.highGeneratedLift.hom.upper
+      hsourceImage htargetImage hinnerActual
+  have hfacMapped :
+      HEq
+        (input.highGeneratedLift.hom.upper.operationMap
+          (actual.upper.operationMap outerCanonical))
+        (outer.highGeneratedLift.hom.upper.operationMap outerCanonical) := by
+    simpa [SignedExactCoreReadingHom.comp] using
+      operationMap_apply_heq_of_eq hhigh outerCanonical
+  have houterMapped :
+      outer.highGeneratedLift.hom.upper.operationMap outerCanonical =
+        outer.highGeneratedLift.hom.upper.operationMap outerNamed :=
+    congrArg outer.highGeneratedLift.hom.upper.operationMap houterLift.symm
+  have hhighOutput :
+      HEq
+        (input.highGeneratedLift.hom.upper.operationMap innerNamed)
+        (outer.highGeneratedLift.hom.upper.operationMap outerNamed) :=
+    HEq.trans hinnerMapped
+      (HEq.trans hfacMapped (heq_of_eq houterMapped))
+  have hfacSource := congrArg
+    (fun upper =>
+      upper.objectMap (finiteModelLiftArchitectureObject.{u} source))
+    hhigh
+  have hfacTarget := congrArg
+    (fun upper =>
+      upper.objectMap (finiteModelLiftArchitectureObject.{u} target))
+    hhigh
+  change
+    input.highGeneratedLift.hom.upper.objectMap
+        (actual.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} source)) =
+      outer.highGeneratedLift.hom.upper.objectMap
+        (finiteModelLiftArchitectureObject.{u} source) at hfacSource
+  change
+    input.highGeneratedLift.hom.upper.objectMap
+        (actual.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} target)) =
+      outer.highGeneratedLift.hom.upper.objectMap
+        (finiteModelLiftArchitectureObject.{u} target) at hfacTarget
+  have hhighSource :=
+    (congrArg input.highGeneratedLift.hom.upper.objectMap
+      hsourceImage).trans hfacSource
+  have hhighTarget :=
+    (congrArg input.highGeneratedLift.hom.upper.objectMap
+      htargetImage).trans hfacTarget
+  have hhighAtomMap :=
+    operationConfigurationMap_atomMap_eq_local
+      finiteModelLiftCorePackage.{u}.reading.operationReading
+      hhighSource hhighTarget hhighOutput
+  change HEq
+    (input.lowGeneratedLift.hom.upper.operationMap reflected)
+    (outer.lowGeneratedLift.hom.upper.operationMap operation)
+  apply configurationHom_heq_of_endpoint_eq
+  · exact congrArg ArchitectureObject.configuration
+      (congrFun hobject source)
+  · exact congrArg ArchitectureObject.configuration
+      (congrFun hobject target)
+  · funext atom
+    apply finiteModelLiftCarrierEquiv.{u}.atom.injective
+    calc
+      finiteModelLiftCarrierEquiv.{u}.atom
+          ((FiniteModel.corePackage.reading.operationReading.configurationMap
+            (input.lowGeneratedLift.hom.upper.operationMap reflected)).atomMap atom) =
+        (finiteModelLiftCorePackage.{u}.reading.operationReading.configurationMap
+          (input.highGeneratedLift.hom.upper.operationMap innerNamed)).atomMap
+            (finiteModelLiftCarrierEquiv.{u}.atom atom) := by
+              simpa [innerNamed,
+                input.highGeneratedLift_hom_eq_highPackageHomFromLowData] using
+                (input.generatedUpper_operation_atomMap_graph
+                  reflected atom).symm
+      _ =
+        (finiteModelLiftCorePackage.{u}.reading.operationReading.configurationMap
+          (outer.highGeneratedLift.hom.upper.operationMap outerNamed)).atomMap
+            (finiteModelLiftCarrierEquiv.{u}.atom atom) :=
+              congrFun hhighAtomMap
+                (finiteModelLiftCarrierEquiv.{u}.atom atom)
+      _ = finiteModelLiftCarrierEquiv.{u}.atom
+          ((FiniteModel.corePackage.reading.operationReading.configurationMap
+            (outer.lowGeneratedLift.hom.upper.operationMap operation)).atomMap atom) := by
+              simpa [outerNamed,
+                outer.highGeneratedLift_hom_eq_highPackageHomFromLowData] using
+                outer.generatedUpper_operation_atomMap_graph operation atom
 
 /--
 The invariant-index map of the reflected composite is the outer generated

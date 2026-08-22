@@ -132,16 +132,82 @@ theorem finiteGeneratedReflectedUpper_comp_objectMap
       (finiteGeneratedOuterInput input base).lowGeneratedLift.hom.upper.objectMap := by
   funext object
   let outer := finiteGeneratedOuterInput input base
+  let reflected :=
+    finiteGeneratedReflectedArchitectureObject input lift base object
+  have hActual :
+      input.highPackageHomFromLowData.upper.objectMap
+          ((finiteGeneratedNormalizedHighFactor input lift base).upper.objectMap
+            (finiteModelLiftArchitectureObject.{u} object)) =
+        outer.highPackageHomFromLowData.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} object) := by
+    have h := congrArg
+      (fun upper =>
+        upper.objectMap (finiteModelLiftArchitectureObject.{u} object))
+      (finiteGeneratedNormalizedHighFactor_upper_fac input lift base)
+    change
+      input.highPackageHomFromLowData.upper.objectMap
+          ((finiteGeneratedNormalizedHighFactor input lift base).upper.objectMap
+            (finiteModelLiftArchitectureObject.{u} object)) =
+        outer.highPackageHomFromLowData.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} object) at h
+    exact h
+  have hLift :
+      finiteModelLiftArchitectureObject.{u}
+          (input.lowGeneratedLift.hom.upper.objectMap reflected) =
+        finiteModelLiftArchitectureObject.{u}
+          (outer.lowGeneratedLift.hom.upper.objectMap object) := by
+    calc
+      _ = input.highPackageHomFromLowData.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} reflected) :=
+        (input.highPackageHomFromLowData_upper_objectMap_lift reflected).symm
+      _ = input.highPackageHomFromLowData.upper.objectMap
+          ((finiteGeneratedNormalizedHighFactor input lift base).upper.objectMap
+            (finiteModelLiftArchitectureObject.{u} object)) := by
+        rw [finiteGeneratedReflectedArchitectureObject_high_image]
+      _ = outer.highPackageHomFromLowData.upper.objectMap
+          (finiteModelLiftArchitectureObject.{u} object) :=
+        hActual
+      _ = finiteModelLiftArchitectureObject.{u}
+          (outer.lowGeneratedLift.hom.upper.objectMap object) :=
+        outer.highPackageHomFromLowData_upper_objectMap_lift object
   change
-    input.lowGeneratedLift.hom.upper.objectMap
-        (finiteGeneratedReflectedArchitectureObject input lift base object) =
+    input.lowGeneratedLift.hom.upper.objectMap reflected =
       outer.lowGeneratedLift.hom.upper.objectMap object
-  rw [finiteGeneratedReflectedArchitectureObject_transport]
   rw [input.lowGeneratedLift_upper_objectMap,
-    outer.lowGeneratedLift_upper_objectMap]
-  rw [← transportArchitectureObject_trans]
-  rw [finiteGeneratedReflectedUpper_comp_atomEquiv_explicit input lift base]
+    outer.lowGeneratedLift_upper_objectMap] at hLift ⊢
+  have lift_injective_on_same_shape
+      (firstConfiguration secondConfiguration :
+        AtomConfiguration FiniteModel.carrier)
+      (StructureMaps SelectedQuantities : Type)
+      (firstStructureMaps secondStructureMaps : StructureMaps)
+      (firstSelectedQuantities secondSelectedQuantities : SelectedQuantities)
+      (h : finiteModelLiftArchitectureObject.{u}
+          (ArchitectureObject.mk firstConfiguration StructureMaps
+            SelectedQuantities firstStructureMaps firstSelectedQuantities) =
+        finiteModelLiftArchitectureObject.{u}
+          (ArchitectureObject.mk secondConfiguration StructureMaps
+            SelectedQuantities secondStructureMaps secondSelectedQuantities)) :
+      (ArchitectureObject.mk firstConfiguration StructureMaps
+          SelectedQuantities firstStructureMaps firstSelectedQuantities :
+        ArchitectureObject FiniteModel.carrier) =
+        ArchitectureObject.mk secondConfiguration StructureMaps
+          SelectedQuantities secondStructureMaps secondSelectedQuantities := by
+    simp only [finiteModelLiftArchitectureObject] at h
+    injection h with hConfiguration _ _ hStructureMaps hSelectedQuantities
+    have hConfiguration' :=
+      finiteModelLiftAtomConfiguration_injective.{u} hConfiguration
+    have hStructureMaps' := ULift.up_injective hStructureMaps
+    have hSelectedQuantities' := ULift.up_injective hSelectedQuantities
+    cases hConfiguration'
+    cases hStructureMaps'
+    cases hSelectedQuantities'
+    rfl
+  exact lift_injective_on_same_shape
+    _ _ object.StructureMaps object.SelectedQuantities
+    reflected.structureMaps object.structureMaps
+    reflected.selectedQuantities object.selectedQuantities hLift
 
+/-- Equality of exact uppers induces heterogeneous equality of dependent transports. -/
 private theorem equationTransport_heq_of_eq
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {f g : SignedExactCoreReadingHom P Q} (h : f = g) :

@@ -20,12 +20,14 @@ universe u
 open CategoryTheory
 open AtomFoundation
 
+/-- Casting a value along a type equality preserves it heterogeneously. -/
 private theorem cast_heq_self
     {alpha beta : Sort v} (equality : alpha = beta) (value : alpha) :
     HEq (cast equality value) value := by
   cases equality
   rfl
 
+/-- Canonical context lifting commutes heterogeneously with an object cast. -/
 private theorem finiteModelLiftArchitectureContext_cast_heq
     {A B : ArchitectureObject FiniteModel.carrier}
     (equality : A = B) (source : Site.ArchitectureContext A) :
@@ -35,6 +37,7 @@ private theorem finiteModelLiftArchitectureContext_cast_heq
   cases equality
   rfl
 
+/-- Backward context transport respects equality of permutations and contexts. -/
 private theorem transportArchitectureContextBackward_heq
     {U : AtomCarrier.{u}} {object : ArchitectureObject U}
     {first second : Equiv.Perm U.Atom}
@@ -50,6 +53,7 @@ private theorem transportArchitectureContextBackward_heq
   cases context_eq
   rfl
 
+/-- Context-category objects are determined by their wrapped contexts. -/
 private theorem contextCategoryObject_ext
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A}
@@ -60,6 +64,7 @@ private theorem contextCategoryObject_ext
   cases equality
   rfl
 
+/-- Values in propositionally equal subsingleton types are heterogeneously equal. -/
 private theorem subsingleton_heq_of_type_eq
     {alpha beta : Sort v} [Subsingleton alpha] [Subsingleton beta]
     (type_eq : alpha = beta) (first : alpha) (second : beta) :
@@ -67,6 +72,7 @@ private theorem subsingleton_heq_of_type_eq
   cases type_eq
   exact heq_of_eq (Subsingleton.elim _ _)
 
+/-- The generated forward context functor cancels its generated inverse on objects. -/
 private theorem inverseCorePackageForwardUpper_contextForward_backward
     {U : AtomCarrier.{u}} {X : ExtractionInstance U}
     (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
