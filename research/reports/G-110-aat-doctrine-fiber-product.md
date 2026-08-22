@@ -13,6 +13,182 @@
 
 ## Cycle ledger
 
+### Cycle 25 — generated total hom, whole triangle, and ambient factor
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 25
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 5b4d944cf7520396ae65e4ffdb389c8db0f24871
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 24 merge synchronization / Cycle 25 selection comment 5376955988
+  proof_dag_predecessors:
+    - Cycle 17 supplied-high generated prefix factor and exact high factorization triangle, PR 4053
+    - Cycle 18 through Cycle 23 generated-image descent for every computational upper field
+    - Cycle 24 complete actual-high-derived SignedExactCoreReadingHom, PR 4060 merge 5b4d944c
+  proof_obligation: pair the actual-high-derived lower and complete upper components into the exact generated low PackageTotalHom; descend the supplied high factorization through all seven computational SignedExactCoreReadingHom fields to prove the whole generated prefix triangle; use that triangle to construct, for every ambient low competitor, a factor with IsHomLift and factorization laws; and fire the same construction on a noninvertible selective-two fixture without claiming ambient uniqueness or strong cartesianness
+  selection_reason: Cycle 24 completed the generated low upper, but the lower-upper compatibility, whole composition triangle, and arbitrary ambient factor remained absent
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomAssembly.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperCompositionEquationDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextEquivalenceCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportWholeCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperCompositionOperationSignatureDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomTriangle.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomTriangleWitnesses.lean
+  risks:
+    - returning the existing low inverse-package factor or rewriting the actual normalized high factor wholesale to its canonical factor
+    - proving only the Atom or object component of the upper triangle while leaving a dependent equation, operation, invariant, axis, or coordinate field unreflected
+    - using thin context categories or the rigidity of Int observables to invent object or observable equalities without the actual high factorization
+    - accepting a low total hom, upper, factor, image, preimage, equality, or composition certificate from the caller
+    - constructing an ambient factor from the existing low cartesianness proof while the supplied high lift is decorative
+    - promoting factor existence and factorization to uniqueness, reflected strong cartesianness, FiniteModelLift, K0, or theorem completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: 4de0c83d784a2bb13899e5304156dfda1273e965
+  proof_obligation_delta: paired the actual-high-derived reflected base and Cycle 24 complete upper into the exact PackageTotalHom between the outer and inner generated low domains, with lower-upper Atom compatibility, projection equality, IsHomLift, and high-image graphs. Projecting finiteGeneratedNormalizedHighFactor_fac to the supplied high upper gives the sole whole-factorization source. Its objectMap projection is evaluated on every lifted low object, aligned with the complete reflected-object high image and both generated upper object graphs, and reflected only on the shared opaque carrier shape. Its operationMap projection is evaluated on every generated high operation, transported through the reflected-operation image, and reflected through both generated operation images; endpoint and Atom-map equality are taken only after this actual high value equality. The same high upper equality is descended to the remaining exact low Atom, context, equation-index, all-context observable-family, invariant, axis, and dependent coordinate composition equalities. These pieces assemble the complete equation-transport HEq and all seven computational SignedExactCoreReadingHom fields. SignedExactCoreReadingHom.ext then proves the upper composition equality, and PackageTotalHom.ext proves the exact whole generated prefix triangle. For every ambient package, base, competitor hom, and IsHomLift premise, the new ambient factor is the existing vertical-to-outer decomposition followed by this supplied-high-derived total hom; its IsHomLift and factorization laws use both legs and the whole triangle. No uniqueness theorem is asserted. A selective-two fixture constructs one total hom over a non-IsIso base, routes all eighteen Cycle 24 upper observations through it, fires the whole triangle, and constructs a concrete ambient factor for a generated competitor whose composite base is also non-IsIso.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomAssembly.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperCompositionEquationDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedContextEquivalenceCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedObservableCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedEquationTransportWholeCompositionDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedUpperCompositionOperationSignatureDescent.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomTriangle.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedPackageTotalHomTriangleWitnesses.lean
+  evidence:
+    - FiniteGeneratedReflectedPackageTotalHomOutput
+    - finiteGeneratedReflectedPackageTotalHom
+    - finiteGeneratedReflectedPackageTotalHom_base_eq
+    - finiteGeneratedReflectedPackageTotalHom_upper
+    - finiteGeneratedReflectedPackageTotalHom_projection_eq
+    - finiteGeneratedReflectedPackageTotalHom_isHomLift
+    - finiteGeneratedReflectedPackageTotalHom_base_high_image
+    - finiteGeneratedReflectedPackageTotalHom_atom_high_image
+    - finiteGeneratedNormalizedHighFactor_upper_fac
+    - finiteGeneratedReflectedUpper_comp_atomEquiv
+    - finiteGeneratedReflectedUpper_comp_objectMap
+    - finiteGeneratedReflectedUpper_comp_contextEquivalence
+    - finiteGeneratedReflectedUpper_comp_equationEquiv
+    - finiteGeneratedReflectedUpper_comp_observable_high_image
+    - finiteGeneratedReflectedUpper_comp_observableEquiv
+    - finiteGeneratedReflectedUpper_comp_equationTransport
+    - finiteGeneratedReflectedUpper_comp_operationMap
+    - finiteGeneratedReflectedUpper_comp_invariantMap
+    - finiteGeneratedReflectedUpper_comp_axisMap
+    - finiteGeneratedReflectedUpper_comp_coordinateEquiv
+    - finiteGeneratedReflectedUpper_comp
+    - finiteGeneratedReflectedPackageTotalHom_fac
+    - finiteGeneratedReflectedAmbientFactor
+    - finiteGeneratedReflectedAmbientFactor_isHomLift
+    - finiteGeneratedReflectedAmbientFactor_fac
+    - finiteSelectiveTwoReflectedPackageTotalHom
+    - finiteSelectiveTwoReflectedPackageTotalHom_base_not_isIso
+    - finiteSelectiveTwoReflectedPackageTotalHom_upper_eq
+    - finiteSelectiveTwoReflectedPackageTotalHom_fac
+    - finiteSelectiveTwoGeneratedAmbientCompetitor_base_not_isIso
+    - finiteSelectiveTwoReflectedAmbientFactor
+    - finiteSelectiveTwoReflectedAmbientFactor_isHomLift
+    - finiteSelectiveTwoReflectedAmbientFactor_fac
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem B and the material ledger retain FiniteModelLift as discharge-required before K0
+      - the premise policy forbids caller-supplied transported packages, low preimages, image membership, hom graphs, and conclusion-equivalent certificates
+      - F0 proof checkpoints may be split, but each artifact must remain connected to the unchanged final output
+    runtime_route_constraints:
+      - the supplied high lift and its actual normalized factorization must drive the generated total hom triangle and ambient factorization
+      - all seven computational SignedExactCoreReadingHom fields must be descended before a whole upper or total-hom equality is claimed
+      - context and observable descent must retain full object and all-value quantification; thinness and rigid selected semantics cannot supply missing data
+      - ambient uniqueness and strong cartesianness may not be inferred from factor existence and factorization alone
+    source_facts:
+      - finiteGeneratedReflectedPackageTotalHom is a literal base-plus-upper assembly and its upper is the Cycle 24 actual-high-derived SignedExactCoreReadingHom
+      - finiteGeneratedNormalizedHighFactor_upper_fac is obtained by projecting the supplied high factorization, not by replacing it with the canonical low factor
+      - the object composition theorem projects objectMap from that high equality on every lifted object before complete reflected-object and generated-upper image alignment
+      - the operation composition theorem projects operationMap from that high equality on every generated high operation before reflecting its configuration Atom map
+      - finiteGeneratedReflectedUpper_comp applies SignedExactCoreReadingHom.ext to Atom, object, equation transport, operation, invariant, axis, and coordinate descents
+      - finiteGeneratedReflectedPackageTotalHom_fac applies PackageTotalHom.ext to the descended base and complete upper equations
+      - finiteGeneratedReflectedAmbientFactor contains the supplied-high-derived total hom as its second computational leg for every ambient competitor
+      - the fixture reads all eighteen upper observations and the triangle from one assembled total hom and separately fires the arbitrary ambient-factor API
+    consequence:
+      - an exact generated low PackageTotalHom and its whole composition triangle are now available
+      - every ambient low competitor has a generated factor with the required IsHomLift and factorization laws
+      - ambient uniqueness, the reflected universal-property packet, reflected strong cartesianness, and FiniteModelLift remain open
+audits:
+  premise_delta:
+    discharged:
+      - exact lower-upper assembly into the generated low PackageTotalHom
+      - all seven computational-field descents for the whole generated prefix triangle
+      - arbitrary ambient low factor existence, IsHomLift, and factorization
+      - one noninvertible selective-two fixture firing the total hom, triangle, and ambient factor
+    remaining:
+      - ambient factor uniqueness with an accepted provenance route
+      - ReflectedGeneratedUniversalProperty and reflected generated strong cartesianness
+      - FiniteModelLift and generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - the total-hom and ambient-factor producers accept only input, supplied high lift, ambient package/base/hom, and the ordinary IsHomLift premise
+      - all endpoint, image, context, equation, observable, operation, invariant, axis, coordinate, composition, and factorization equalities are internally generated
+      - the fixture derives its total hom, competitor, IsHomLift instance, and ambient factor from named selective-two data
+    prohibited_and_absent:
+      - finiteGeneratedLowFactor, finiteGeneratedLowFactorUpper, caller low preimages or image certificates, globalCartesianLift, input.lowGeneratedLift.isStronglyCartesian, and Classical.choose of a low preimage
+      - direct or wholesale use of finiteGeneratedNormalizedHighFactor_eq_canonical as the low triangle proof source; the predecessor complete-object image theorem may use canonical comparison only to establish its internally generated endpoint and opaque-carrier alignment, while the Cycle 25 object and operation equalities are driven by the corresponding projections of the actual high factorization
+  proof_use:
+    used:
+      - the actual supplied-high factorization in finiteGeneratedNormalizedHighFactor_upper_fac and every downstream whole-composition descent
+      - the Cycle 24 actual-high-derived lower and complete upper in the total-hom assembly
+      - the objectMap projection of the actual high equality, complete reflected-object high image, and both generated upper object images for every low architecture object
+      - the operationMap projection of the actual high equality, reflected-operation high image, and both generated operation images for every low generated operation
+      - actual high context objects, maps, unit/counit, index values, and observable values in the dependent equation-transport descent
+      - all seven computational upper fields in SignedExactCoreReadingHom.ext
+      - both legs of the ambient factor in its IsHomLift and factorization proofs
+    not_yet_available:
+      - a high-driven proof of uniqueness for every arbitrary low candidate
+      - the completed reflected ambient universal property and strongly cartesian lift
+  structure_field_escape: none; no target-facing producer accepts a total hom, upper, factor, image, preimage, graph, equality, or uniqueness certificate
+  route_integrity: pass for generated total-hom assembly, whole triangle, and ambient factor existence/factorization only; uniqueness and strong cartesianness remain open
+  target_fitting: none found in the generic implementation; the ambient factor theorem retains arbitrary package, base, competitor hom, and IsHomLift quantification
+  vacuity: none found at this checkpoint; the fixture uses a non-IsIso base, all eighteen upper observations, an exact whole triangle, and a concrete generated competitor with non-IsIso composite base
+  proof_irrelevance_scope: proof fields inside equation transport and the complete upper are eliminated only after every computational field has been matched; no computational equality is obtained from proof irrelevance
+  goal_or_report_reinterpretation: none; ambient uniqueness, ReflectedGeneratedUniversalProperty, reflected strong cartesianness, FiniteModelLift, K0, and theorem completion remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedPackageTotalHomAssembly.lean: pass, 11 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperCompositionEquationDescent.lean: pass, 5 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationTransportCompositionDescent.lean: pass, 4 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedContextEquivalenceCompositionDescent.lean: pass, 6 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedObservableCompositionDescent.lean: pass, 2 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedEquationTransportWholeCompositionDescent.lean: pass, 1 namespace declaration and standard axioms only
+    - official focused wrapper FiniteGeneratedUpperCompositionOperationSignatureDescent.lean: pass, 4 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedPackageTotalHomTriangle.lean: pass, 6 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedPackageTotalHomTriangleWitnesses.lean: pass, 34 namespace declarations and standard axioms only
+    - targeted module builds for all nine Cycle 25 modules: pass; used only to materialize oleans for dependent focused imports
+    - no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+    - PR 4061 reviewed content head 4de0c83d784a2bb13899e5304156dfda1273e965: 7/7 CI green and MERGEABLE/CLEAN
+  review_refs:
+    independent_final_reviews:
+      - Math A — Pass / no major findings at the initial content head
+      - Math B — Pass / no major findings at the initial content head
+      - Lean A — Pass / no major findings at the initial content head
+      - Lean B — objectMap and operationMap proof-use Major plus private-docstring Minor; all repaired in the eligible direct-response range
+    direct_response: repair 2b04755c0c43b47931bd57abc274ee1a6be63812..4de0c83d784a2bb13899e5304156dfda1273e965 changed only the two theorem proof bodies, private docstrings, and finding-specific report provenance prose; one independent read-only verifier confirmed both Major findings and the Minor closed, theorem and def statements, def and instance bodies, declaration set and counts, imports, and report status unchanged, all required scans clean, and no new finding in the repair range; a second four-lane review was therefore unnecessary under the shared review protocol
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4061#issuecomment-5377480849
+  stop_condition: none; continue before K0
+  blocking_findings: []
+  next_obligation: determine and implement an accepted provenance route for arbitrary ambient factor uniqueness, then assemble the exact reflected universal-property packet and strongly cartesian generated lift without reusing the existing low cartesianness proof
+```
+
 ### Cycle 24 — complete actual-high-derived generated upper
 
 ```yaml
