@@ -13,6 +13,9 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherenceWi
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavage
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageCoherence
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCleavageWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationReplacement
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationCoherence
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchema
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
@@ -225,6 +228,15 @@ compatibility, and specializes the construction back to the selected Cycle 32
 functor and coherence.  A four-axis twisted identity cleavage makes the
 comparison computationally nonidentity, while a noninvertible selective leg
 fires compositor compatibility.  These results do not identify differently
-presented `RealizableHom` values.  Arbitrary presentation replacement, the
-adjunction, Beck--Chevalley mate, K3--K4, and final target assembly remain open.
+presented `RealizableHom` values.  The presentation-replacement layer now
+indexes finite provenance over one literal semantic input and derives the
+selected comparison for every two representatives, including both lift
+triangles, naturality, reflexivity, symmetry, and cocycle.  On exact-endpoint
+typed presentations it also constructs relative compositors and unitors and
+proves simultaneous replacement compatibility without transporting a whole
+functor.  Raw-distinct identity-decoding codes fire the comparison and
+coherence on a noninvertible selective leg and a nonidentity vertical map.
+This is descent up to generated natural isomorphism, not a strict quotient
+functor.  Arbitrary endpoint-isomorphism rebasing, the adjunction,
+Beck--Chevalley mate, K3--K4, and final target assembly remain open.
 -/

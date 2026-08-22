@@ -13,6 +13,48 @@
 
 ## Cycle ledger
 
+### Cycle 34 — presentation replacement and common-semantic reindexing descent
+
+```yaml
+ledger_type: target_cycle_selection
+goal: G-110-aat-doctrine-fiber-product
+cycle: 34
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 32712146a11a252e3476250e03a1f8b18b386dd1
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 33 merge synchronization comment 5380624006 and Cycle 34 selection comment 5380666516
+  proof_dag_predecessors:
+    - Cycle 31 producer-derived selected core-fiber reindexing functor and its exact factor and uniqueness laws
+    - Cycle 32 exact-endpoint typed contravariant compositor and unitor with constructor-relative coherence
+    - Cycle 33 arbitrary-cleavage comparison, both lift triangles, naturality, refl/symm/cocycle, and replacement-compatible compositor/unitor
+    - CartPresentation, CartPresentationBetween, CartSemanticInput, RealizableHom, cartPresentationSetoid, and the finite-code realization calculus
+  proof_obligation: index presentation provenance over one literal CartSemanticInput; derive the selected reindexing comparison for every two provenance values with both component triangles, naturality, refl/symm/cocycle; specialize it to exact-endpoint semantically equal CartPresentationBetween values; derive relative compositor and unitor for arbitrary semantically matching direct and identity presentations; prove simultaneous presentation-replacement compatibility; and fire the surface on raw-distinct but semantically equal finite presentations with a noninvertible leg and nonidentity vertical map
+  selection_reason: A RealizableHom reindexing functor is indexed by its semantic source and target, so equality of semantic arrows alone cannot compare unre-based functors with different dependent endpoint types. Full CartSemanticInput equality may generate a common literal index, after which Cycle 33 cartesian uniqueness supplies the comparison. This cycle records that provenance-preserving descent and forbids whole-functor casts or strict quotient descent from NatIso data.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationReplacement.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting a lift, cleavage, endpoint iso, comparison, NatIso, triangle, naturality, compositor, unitor, or coherence certificate from a caller
+    - using semantic equality to cast a complete RealizableHom or reindexing functor into the result instead of rebasing provenance into one literal semantic input
+    - stating a direct NatIso between functors whose source or target CoreFiber categories are differently indexed
+    - claiming a strict quotient functor even though presentation replacement supplies natural isomorphism rather than functor equality
+    - proving only same-code endpoint replacement while calling it arbitrary RealizableHom presentation descent
+    - firing only proof-field-distinct presentations, invertible legs, identity vertical maps, or claiming opaque selected comparison nonidentity merely from raw presentation inequality
+    - promoting presentation replacement to an adjunction, canonical Beck--Chevalley mate, K3-K4, or G-110 completion
+  unchecked:
+    - common-semantic provenance and selected comparison implementation
+    - typed relative compositor and unitor replacement compatibility
+    - raw-distinct finite semantic-equality witness and nondegenerate firing
+    - focused Lean checks, exact targeted modules, umbrella check, and standard-axiom audit
+    - fixed-head four-lane review, direct-response repair, report synchronization, merge, and Issue synchronization
+```
+
 ### Cycle 33 — cartesian-cleavage choice independence
 
 ```yaml
