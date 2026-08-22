@@ -13,9 +13,15 @@ property, and finally cancelled against the canonical low completion tail.
 
 The resulting prefix lift is produced for every realized input and completion
 tail.  Endpoint packages, semantic isomorphisms, factors, factorization laws,
-and strong-cartesian certificates are generated internally.  The named
-`FiniteModelLift` output is only the resulting one-way nonexistence transport;
-no equivalence of lift types or arbitrary high-package descent is asserted.
+and strong-cartesian certificates are generated internally.
+
+This is a normalized generated-endpoint checkpoint, not the fixed-ledger
+`FiniteModelLift`: the Cycle 26 reflector deliberately retains the canonical
+generated low domain and hom, and the construction does not cover an arbitrary
+`CartesianLiftNonexistence.targetPackage`.  In particular this module does not
+package its data theorem as a no-lift result.  The selected global-left branch
+already proves the source counterexample type empty, so such a conditional
+wrapper would not be nonvacuous evidence for the fixed ledger item.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -382,35 +388,6 @@ theorem finiteModelReflectCompletedStrongCartesianLift_triangle
         finiteModelCompletedLowTailHom input tail =
       (finiteModelReflectedCompletedLift.{u} input tail lift).hom :=
   finiteModelCompletedLowFactor_triangle.{u} input tail lift
-
-/-! ## One-way finite-model nonexistence output -/
-
-/-- A low no-lift premise excludes a supplied lift on the generated rebased high target. -/
-theorem finiteModelLift_no_lift
-    (input : RealizableHom FiniteModel.carrier)
-    (tail : input.semantic.target ⟶ packagePoint FiniteModel.corePackage)
-    (hLow : ¬ HasStrongCartesianLift input.semantic
-      (finiteModelCompletedLowTarget input tail)) :
-    ¬ HasStrongCartesianLift
-      (finiteModelLiftRealizableHom.{u} input).semantic
-      (finiteModelCompletedRebasedHighTarget.{u} input tail) := by
-  rintro ⟨lift⟩
-  exact hLow ⟨finiteModelReflectCompletedStrongCartesianLift.{u}
-    input tail lift⟩
-
-/--
-The exact named one-way `FiniteModelLift` output: generated ULift realization,
-generated endpoint package, and nonexistence transported by the data producer.
--/
-noncomputable def FiniteModelLift
-    (input : RealizableHom FiniteModel.carrier)
-    (tail : input.semantic.target ⟶ packagePoint FiniteModel.corePackage)
-    (hLow : ¬ HasStrongCartesianLift input.semantic
-      (finiteModelCompletedLowTarget input tail)) :
-    CartesianLiftNonexistence finiteModelLiftCarrier.{u} where
-  input := finiteModelLiftRealizableHom.{u} input
-  targetPackage := finiteModelCompletedRebasedHighTarget.{u} input tail
-  no_lift := finiteModelLift_no_lift.{u} input tail hLow
 
 /-! ## Concrete nonvacuity firing -/
 

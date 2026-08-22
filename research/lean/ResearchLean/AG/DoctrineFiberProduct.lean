@@ -162,14 +162,15 @@ genuine high-universe `RealizableHom` and constructs the canonical
 arrow-category isomorphism from the directly lifted low decoder arrow to that
 rebased realization.  Its selective-two support-prefix witness remains
 noninvertible in every universe and connects back to the reviewed generated
-core arrow.  The completion layer transports every supplied strong lift on the
-internally generated rebased endpoint back to the direct high semantic lift,
-composes it with the canonical high completion tail, reflects that completed
-lift through the generated universal property, and cancels the canonical low
-tail.  It thereby constructs the original realized-prefix strong lift and the
-one-way `FiniteModelLift` nonexistence transport for every realized input and
-completion tail.  The selective-two fixture fires the data producer on an
-actual high lift over low and high noninvertible bases; it does not assert an
-inhabited right-branch no-lift premise.  K0 and the later target obligations
-remain open.
+core arrow.  The completion checkpoint transports every supplied strong lift
+on the internally generated rebased endpoint back to the direct high semantic
+lift, composes it with the canonical high completion tail, reflects that
+completed lift through the generated universal property, and cancels the
+canonical low tail.  It thereby constructs a realized-prefix strong lift and
+fires both triangles on a noninvertible selective-two input.  The reflected
+domain and hom remain the pre-existing canonical generated low data, however,
+and the construction covers only completion-tail inverse packages.  It is
+therefore not the fixed-ledger `FiniteModelLift` transport of an arbitrary
+finite counterexample.  That item, K0, and the later target obligations remain
+open.
 -/
