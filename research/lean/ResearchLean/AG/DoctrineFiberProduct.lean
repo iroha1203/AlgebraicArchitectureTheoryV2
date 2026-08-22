@@ -12,6 +12,9 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTransport
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullback
+import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackFiniteCode
+import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULift
@@ -172,6 +175,15 @@ domain and hom remain the pre-existing canonical generated low data, and the
 comparison also retains the generated high anchor; both ultimately come from
 `strongCartesianLiftOfTarget`.  The construction covers only completion-tail
 inverse packages.  It is therefore not the fixed-ledger `FiniteModelLift`
-transport of an arbitrary finite counterexample.  That item, K0, and the later
-target obligations remain open.
+transport of an arbitrary finite counterexample.  The doctrine-pullback layer
+now independently constructs the pullback of every exact-doctrine cospan in
+`Doct_U`, with no decidable-Atom or finite-presentation premise and with the
+actual Atom equivalence of every semantic cone.  Its internally generated
+finite-code isomorphism preserves both projections and transports the
+pullback theorem and proper-fiber invariant.  A symmetric three-by-three over
+two fixture supplies compatible and common-base-incompatible pairs, a
+nonempty proper subfiber of the component product, failure of surjectivity,
+two noninvertible projections, and a nonidentity-Atom cone.
+This supplies the K0 construction and witness artifacts only.  The fixed-ledger
+`FiniteModelLift`, K2--K4, and the final target assembly remain open.
 -/
