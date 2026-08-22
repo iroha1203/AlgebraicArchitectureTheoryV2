@@ -13,6 +13,161 @@
 
 ## Cycle ledger
 
+### Cycle 30 — generic pointed pullback bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 30
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: b943b582dd00a0487b05dceaa63c5278b5b3bc47
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 29 merge synchronization comment 5379013074 and Cycle 30 selection comment 5379029132
+  proof_dag_predecessors:
+    - G-101 pointed extraction-doctrine category ExtInst_U and source-preserving morphisms
+    - Cycle 29 arbitrary Doct_U pullback producer and proper finite witness, PR 4066 merge b943b582
+  proof_obligation: discharge the explicit K2 bridge by generating the selected point, projections, arbitrary-cone factor, factorization, uniqueness, and pointedPullback_isPullback in ExtInst_U from every pointed exact-doctrine cospan. The selected sources and the two ExtInstHom.source_eq fields are the compatible point cone; no separate compatibility, lift, factorization, or pullback certificate is accepted. Fire the result on the proper three-by-three over two cospan while retaining both noninvertible projections and a nonidentity-Atom universal factor.
+  selection_reason: the fixed ledger requires the pointed ExtInst_U pullback to be generated from the concrete K0 Source pullback and source_eq proof-use. The existing pullbackPresentation_isPullback theorem remains correct for finite-code cospans but does not discharge this generic K0-to-pointed bridge. Producer-derived reindexing is the following K2 node and is deliberately not combined with this bridge.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullback.lean
+    - ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullbackWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting the northwest point, compatibility equality, universal factor, factorization laws, uniqueness, or IsPullback from the caller
+    - hiding the arbitrary pointed-cone factor behind choice from an already assembled pullback theorem rather than consuming doctrinePullbackLift
+    - restricting the generic bridge to finite presentation inputs, identity Atom equivalences, or the old all-compatible fixture
+    - counting the finite Schema pullback as the generic K0-to-ExtInst bridge
+    - promoting the bridge to the reindexing functor, adjunction, Beck-Chevalley mate, K3-K4, or final theorem completion
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  content_head: fac123dd5327e64332a691d5497bcf6d25e18347
+  reviewed_content_head: fac123dd5327e64332a691d5497bcf6d25e18347
+  proof_obligation_delta: constructed pointedPullbackSource directly from the two selected input sources and sigmaOne.source_eq.trans sigmaTwo.source_eq.symm, equipped the Cycle 29 doctrine pullback with that internally generated point, and lifted both doctrine projections to ExtInst_U. Every pointed pullback cone is converted only to its underlying doctrine cone; doctrinePullbackLift supplies the computational factor and the two pointed cone-leg source_eq proofs generate its source equation. The factor preserves the first leg's actual Atom equivalence, satisfies both projection laws, is unique, and yields pointedPullback_isPullback with no finite, DecidableEq, compatibility-certificate, or caller-pullback premise. The symmetric three-by-three over two witness identifies the generated point with the named compatible pair, retains source nonemptiness and both projection non-IsIso facts, and fires a nonidentity finite Atom swap through the generated pointed factor.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullback.lean
+    - ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullbackWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - pointedPullbackSource
+    - pointedPullback
+    - pointedPullbackFst
+    - pointedPullbackFst_doctrineHom
+    - pointedPullbackSnd
+    - pointedPullbackSnd_doctrineHom
+    - pointedPullback_commutes
+    - pointedPullbackLift
+    - pointedPullbackLift_atomEquiv
+    - pointedPullbackLift_fst
+    - pointedPullbackLift_snd
+    - pointedPullbackLift_unique
+    - pointedPullback_isPullback
+    - finiteProperPointedLeg_doctrineHom
+    - finiteProperPointedPullback_source_eq_compatible00
+    - finiteProperPointedPullback_source_compatible
+    - finiteProperPointedPullback_source_nonempty
+    - finiteProperPointedPullback_fst_not_isIso
+    - finiteProperPointedPullback_snd_not_isIso
+    - finiteProperPointedPullback_isPullback
+    - finiteProperPointedSwapLift_componentC
+  claim_mapping:
+    theorem_names:
+      - pointedPullback_isPullback
+      - pointedPullbackLift_atomEquiv
+      - pointedPullbackLift_unique
+      - finiteProperPointedPullback_isPullback
+      - finiteProperPointedPullback_fst_not_isIso
+      - finiteProperPointedPullback_snd_not_isIso
+      - finiteProperPointedSwapLift_componentC
+    source_labels:
+      - target theorem (C) compatible point cone and ExtInst_U pullback bridge
+      - material-premise ledger pointed ExtInst pullback bridge
+      - Cycle 29 proper K0 witness reused as a nondegenerate pointed firing
+    conjuncts:
+      - every pointed exact-doctrine cospan obtains an internally selected K0 pullback point from its two source_eq fields
+      - universality ranges over every pointed semantic cone and its generated factor preserves the first leg's arbitrary Atom equivalence
+      - both pointed factorization laws and uniqueness descend to the reviewed K0 doctrine pullback theorems
+      - the resulting square is a categorical pullback in ExtInst_U without a caller IsPullback certificate
+      - the proper finite firing remains inhabited with two noninvertible pointed projections and a nonidentity-Atom factor
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - producer-derived reindexing functor, id and composition laws, adjunction, compositor and unitor, cleavage independence, and the packageProjection Beck-Chevalley mate and IsIso theorem
+      - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: candidate discharge of the pointedPullback_isPullback ledger item only; G-110 remains target-proof-checkpoint
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary fixed AtomCarrier U and the reviewed G-101 Doct_U and ExtInst_U category APIs
+      - Cycle 29 doctrinePullback construction and universality
+    input_geometry:
+      - arbitrary pointed instances DOne, DTwo, Base and pointed exact morphisms sigmaOne, sigmaTwo
+      - arbitrary PullbackCone sigmaOne sigmaTwo in the universal property
+    direction_hypothesis:
+      - the selected sources and the two pointed cospan source_eq laws constitute the fixed compatible point cone
+    discharge_required:
+      - compatible selected source of the K0 pullback
+      - pointed projections and their square commutativity
+      - arbitrary pointed-cone factor source_eq, both factorization laws, uniqueness, and IsPullback
+      - nonempty, two-noninvertible, nonidentity-Atom finite firing
+    conclusion_equivalent_risk:
+      - northwest point, compatibility equality, factor, factorization laws, uniqueness, and IsPullback are never producer inputs
+    unused_or_ambient_only:
+      - finite presentation and DecidableEq occur only in the witness
+      - reindexing, cartesian lifts, adjunctions, and mate APIs are absent from the producer
+  certificate_provenance:
+    - pointedPullbackSource is the pair of the two input selected sources and its compatibility proof is exactly sigmaOne.source_eq followed by sigmaTwo.source_eq.symm
+    - the universal doctrine factor is doctrinePullbackLift applied to the doctrine projection of the arbitrary pointed cone
+    - the factor source_eq is generated componentwise from cone.fst.source_eq and cone.snd.source_eq
+    - factorization and uniqueness are proved after ExtInstHom.ext by the corresponding Cycle 29 doctrine theorems
+  proof_use:
+    - pointedPullbackLift.doctrineHom is the explicit K0 doctrine factor and its Atom equivalence is definitionally cone.fst.doctrineHom.atomEquiv
+    - pointedPullbackLift.source_eq consumes both pointed cone-leg source_eq proofs
+    - pointedPullbackLift_unique sends both pointed factorization equalities to doctrinePullbackLift_unique
+    - the concrete non-IsIso proofs consume the two independent Cycle 29 source collisions through ExtInstHom source-map injectivity
+  anti_weakening:
+    verdict: pass
+    notes:
+      - generic construction has no DecidableEq, finiteness, presentation, compatibility packet, factor, or pullback premise
+      - ordinary pointed cone input appears only as the universally quantified cone receiving its factor
+      - finite Schema pullback, reindexing, adjunction, and mate statements are not counted in this checkpoint
+  witness_nondegeneracy:
+    - the generated selected source equals finiteProperFiberCompatible00 and directly supplies Nonempty
+    - finiteProperFiberCompatible00/01 and 00/10 independently refute invertibility of the two pointed projections
+    - finiteProperPointedSwapCone and finiteProperPointedSwapLift_componentC fire componentC-to-dependsAB through the actual universal factor
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused PointedDoctrinePullback.lean: pass; namespace audit 13 declarations and standard axioms only
+    - targeted module PointedDoctrinePullback: pass
+    - focused PointedDoctrinePullbackWitnesses.lean: pass; namespace audit 13 declarations and standard axioms only
+    - targeted module PointedDoctrinePullbackWitnesses: pass
+    - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
+    - PR checks at reviewed head 10a7fa36: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because Lean setup, build, kernel-audit, and premise-report steps were skipped
+    - PR checks at report synchronization head d10ea254: 7/7 success with the same Research-only lake build step exclusions
+  review_refs:
+    fixed_head: 10a7fa3631435cd48c6cb2552f68f1807610d5fb
+    initial_integrated_rejection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4067#issuecomment-5379133281
+    direct_response: not used; the no-unfold repair added three public computation declarations, so a fresh four-lane review is required
+    standard_review: repaired fixed-head four-lane math-lean-review completed with no blocking, major, or minor findings
+    independent_final_reviews:
+      - Math A: No major findings at repaired Lean content head fac123dd
+      - Math B: No major findings at repaired Lean content head fac123dd
+      - Lean A: No major findings at repaired Lean content head fac123dd
+      - Lean B: No major findings at repaired Lean content head fac123dd
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4067#issuecomment-5379250808
+    final_report_sync_head: d10ea2546a76a0222c60acd21c71a2e3ad216d49
+    report_only_audit: no findings; 10a7fa36..d10ea254 changes only this report, all Lean, GOAL, umbrella, and manifest blobs are unchanged, the four verdicts and integrated comment are synchronized, and both reviewed and report-sync heads have 7/7 successful checks
+  blocking_findings: []
+  next_obligation: merge Cycle 30, then construct the producer-derived reindexing functor and its functor laws while retaining arbitrary-target FiniteModelLift as open
+```
+
 ### Cycle 29 — arbitrary `Doct_U` pullbacks and a proper finite fiber
 
 ```yaml

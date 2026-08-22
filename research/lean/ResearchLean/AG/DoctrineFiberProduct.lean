@@ -15,6 +15,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullback
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackFiniteCode
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
+import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FinitePackageULift
@@ -185,5 +187,14 @@ two fixture supplies compatible and common-base-incompatible pairs, a
 nonempty proper subfiber of the component product, failure of surjectivity,
 two noninvertible projections, and a nonidentity-Atom cone.
 This supplies the K0 construction and witness artifacts only.  The fixed-ledger
-`FiniteModelLift`, K2--K4, and the final target assembly remain open.
+`FiniteModelLift` remains open.  The following pointed-pullback layer consumes
+the selected sources and source equations of every pointed exact-doctrine
+cospan to equip the K0 source pullback with its generated point.  Every pointed
+cone receives the explicit K0 factor together with an internally proved source
+equation, yielding the required pullback in `ExtInst_U` while preserving the
+cone's actual Atom equivalence.  The proper three-by-three over two witness
+retains its generated compatible point, both noninvertible projections, and a
+nonidentity-Atom universal factor.  This discharges only the first K2 bridge;
+producer-derived reindexing, adjunctions, the Beck--Chevalley mate, K3--K4, and
+the final target assembly remain open.
 -/
