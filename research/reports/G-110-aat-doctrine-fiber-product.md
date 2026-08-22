@@ -13,6 +13,171 @@
 
 ## Cycle ledger
 
+### Cycle 32 — constructor-relative cartesian reindexing coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 32
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a56d9519dfe37979874b92418e5960583e8041b2
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 31 merge synchronization comment 5379610614 and Cycle 32 selection comment 5379703627
+  proof_dag_predecessors:
+    - Cycle 31 selectedCoreFiberReindexFunctor and its producer-derived map laws, PR 4068 merge a56d9519
+    - typed finite presentation identity and composition constructors with their semantic hom equalities
+    - Mathlib strong-cartesian composition, factorization, uniqueness, and fiber extensionality APIs
+  proof_obligation: expose exact-endpoint typed reindexing functors; construct the actual two-step selected lift; derive the contravariant compositor and unitor, their component triangles, and naturality; prove constructor-relative associativity against one fixed left-associated direct presentation and both unit laws; and fire all results on a finite chain with noninvertible legs and a genuine nonidentity vertical map
+  selection_reason: Cycle 31 supplied the fixed-arrow functor but no comparison between reindexing along typed identity or composition constructors. RealizableHom carries presentation provenance, so semantic associativity and unit equalities cannot identify differently presented inputs. This cycle therefore compares only explicit selected lifts over fixed typed constructors and transports equality solely in the strong-cartesianness proposition. Arbitrary presentation replacement and cleavage-choice independence remain separate obligations.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCoherenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting a lift, comparison component, natural isomorphism, factorization, naturality, associativity, or unit certificate from the caller
+    - casting one RealizableHom or selected functor to a differently presented input using only semantic equality
+    - reusing the covariant G-109 compositor or unitor despite the opposite direction and universal property
+    - proving only component existence without the actual lift triangle or naturality on every vertical map
+    - calling objectwise associativity presentation independence or full cleavage coherence
+    - firing only identity arrows, invertible base arrows, or constant vertical maps in the finite witness
+    - promoting this checkpoint to the adjunction, Beck--Chevalley mate, K3-K4, or final G-110 theorem
+  unchecked:
+    - fixed-head four-lane math-lean-review
+    - PR checks and public integrated audit
+    - final report synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: f528d9b008ff3f8011e4e6ad1a0c8bbea56b8750
+  reviewed_content_head: pending
+  proof_obligation_delta: typedCartSemanticInput and typedRealizableHom retain literal finite-code endpoints. selectedCoreFiberIteratedCartesianLift composes the two actual selected lifts and transports only its strong-cartesianness across the internally proved semantic composition equality. The unique comparison between this iterated lift and the directly selected composite lift yields a contravariant natural compositor with its factor triangle. Comparing the literal identity lift with the selected identity lift yields the natural unitor and triangle. Relative comparison helpers keep one direct typed presentation fixed while using semantic associativity or unit equality only to type an explicit composed lift. Both associativity routes factor the same three-step lift, and both unit routes factor the original selected lift, so cartesian uniqueness proves the pointwise coherence laws. A three-to-two-to-one-to-support selective chain supplies two independently verified noninvertible legs; the genuine four-axis swap fires compositor and unitor naturality.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingCoherenceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - typedCartSemanticInput
+    - typedRealizableHom
+    - typedRealizableHom_id_hom
+    - typedRealizableHom_comp_hom
+    - selectedTypedCoreFiberReindexFunctor
+    - selectedTypedCoreFiberCartesianLift
+    - strongCartesianLiftDomainComparisonIso
+    - selectedCoreFiberIteratedCartesianLift
+    - selectedCoreFiberReindexCompositorApp
+    - selectedCoreFiberReindexCompositorApp_hom_fac
+    - selectedCoreFiberReindexCompositor_naturality
+    - selectedCoreFiberReindexCompositor
+    - selectedCoreFiberIdentityCartesianLift
+    - selectedCoreFiberReindexUnitorApp
+    - selectedCoreFiberReindexUnitorApp_hom_fac
+    - selectedCoreFiberReindexUnitor_naturality
+    - selectedCoreFiberReindexUnitor
+    - selectedCoreFiberReindexAssocLeftRoute_fac
+    - selectedCoreFiberReindexAssocRightRoute_fac
+    - selectedCoreFiberReindexCompositor_assoc
+    - selectedCoreFiberReindexLeftUnitRoute_fac
+    - selectedCoreFiberReindexRightUnitRoute_fac
+    - selectedCoreFiberReindexCompositor_left_unit
+    - selectedCoreFiberReindexCompositor_right_unit
+    - finiteSelectiveThreeToTwoCoherenceInput_not_isIso
+    - finiteSelectiveCoherenceMiddle_not_isIso
+    - finiteSelectiveReindexCompositor_naturality
+    - finiteSupportReindexUnitor_naturality
+    - finiteSelectiveReindexCompositor_assoc
+    - finiteSelectiveReindexCompositor_left_unit
+    - finiteSelectiveReindexCompositor_right_unit
+    - finiteSelectiveReindexCoherence_axisSwap_ne_id
+  claim_mapping:
+    theorem_names:
+      - selectedCoreFiberReindexCompositor
+      - selectedCoreFiberReindexUnitor
+      - selectedCoreFiberReindexCompositor_assoc
+      - selectedCoreFiberReindexCompositor_left_unit
+      - selectedCoreFiberReindexCompositor_right_unit
+      - finiteSelectiveReindexCompositor_assoc
+      - finiteSelectiveReindexCoherence_axisSwap_ne_id
+    source_labels:
+      - target theorem (C) contravariant reindexing coherence subnode
+      - K2 typed-constructor unitor/compositor and coherence checkpoint
+      - selected cartesian regime as the internally generated cleavage source
+    conjuncts:
+      - every pair of composable typed presentations has a producer-derived contravariant compositor natural isomorphism
+      - every typed finite instance has a producer-derived identity unitor natural isomorphism
+      - every compositor and unitor component exposes its actual selected-lift factor triangle and is natural on all vertical maps
+      - both three-step compositor routes to one fixed left-associated direct presentation are equal on every target package
+      - both unit routes relative to the original typed presentation equal identity on every target package
+      - a finite noninvertible selective chain and nonidentity vertical map fire all selected laws without caller certificates
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - comparison under arbitrary RealizableHom presentation replacement and independence of arbitrary generated cartesian-lift choices, including reflexivity, cocycle, and compatibility with this compositor and unitor
+      - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
+      - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
+      - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
+      - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: constructor-relative selected-reindexing coherence checkpoint only; no arbitrary presentation or cleavage-choice independence, and G-110 remains target-proof-checkpoint
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary AtomCarrier U with the existing DecidableEq U.Atom boundary of typed finite presentations and CartesianRegime
+      - packageProjection core fibers and Mathlib strong-cartesian universal-property API
+    input_geometry:
+      - arbitrary composable CartPresentationBetween values with literal finite-code endpoints
+      - arbitrary target-fiber objects and arbitrary vertical target-fiber morphisms
+    direction_hypothesis:
+      - no caller direction certificate; every lift is selected through the Cycle 31 producer
+    discharge_required:
+      - strong cartesianness of the explicit two-step and identity lifts
+      - invertible comparison components and their factor triangles
+      - naturality on every vertical map
+      - constructor-relative associativity and both unit laws on every target object
+      - noninvertible/nonidentity finite firing
+    conclusion_equivalent_risk:
+      - no lift, cleavage, comparison, natural isomorphism, factorization law, naturality law, associativity law, or unit law is an argument to a public producer
+    unused_or_ambient_only:
+      - semantic composition and unit equalities transport only the strong-cartesianness proposition of explicit hom composites
+      - arbitrary RealizableHom presentation equivalences, cleavage comparisons, G-109 covariant coherence, adjunction, and mate APIs are not used or claimed
+  certificate_provenance:
+    - selectedTypedCoreFiberCartesianLift is the exact-endpoint specialization of the Cycle 31 selected-regime producer
+    - strongCartesianLiftDomainComparisonIso is assembled from the two directions of the strong-cartesian universal factor and proves both inverse laws by the same universal uniqueness
+    - compositor and unitor components compare actual selected lifts; relative helpers receive only an internally proved base-hom equality, not a comparison or factor certificate
+  proof_use:
+    - selectedCoreFiberReindexCompositorApp_hom_fac consumes the direct and iterated selected lift comparison
+    - compositor and unitor naturality compare both routes after postcomposition with the selected target lift and use the actual map factor graph
+    - left and right associativity routes each reduce to the same literal three-lift composite before cartesian uniqueness
+    - left and right unit routes each reduce to the original selected lift before cartesian uniqueness
+  anti_weakening:
+    verdict: pass-pending-independent-review
+    notes:
+      - generic declarations quantify every typed composable pair or triple and every target package; naturality quantifies every vertical map
+      - no theorem identifies differently presented RealizableHom values, and the module explicitly excludes arbitrary presentation or cleavage-choice independence
+      - no adjunction, Beck--Chevalley mate, K3-K4, or completion claim is included
+  witness_nondegeneracy:
+    - finiteSelectiveThreeToTwoCoherenceSourceMap collapses distinct selected and third source cells, proving its typed semantic hom noninvertible
+    - finiteSelectiveTwoToOnePresentation supplies a second reviewed noninvertible leg
+    - associativity fires on the genuine three-to-two-to-one-to-support chain without identity padding
+    - finiteReindexAxisSwapHom is provably nonidentity and fires compositor and unitor naturality
+    - compositor and both unit laws are instantiated on the selected finite chain
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused CartesianRegimeReindexingCoherence.lean: pass; namespace audit 39 declarations and standard axioms only
+    - focused CartesianRegimeReindexingCoherenceWitnesses.lean: pass; namespace audit 20 declarations and standard axioms only
+    - targeted modules CartesianRegimeReindexingCoherence and CartesianRegimeReindexingCoherenceWitnesses: pass
+    - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, import-direction, manifest, and umbrella scans: pass
+  review_refs:
+    fixed_head: pending
+    standard_review: pending
+  blocking_findings: []
+  next_obligation: complete fixed-head review and merge Cycle 32; then construct arbitrary-presentation and cleavage-choice comparison coherence before the adjunction and Beck--Chevalley mate
+```
+
 ### Cycle 31 — producer-derived cartesian reindexing functor
 
 ```yaml
