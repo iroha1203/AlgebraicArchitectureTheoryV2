@@ -187,6 +187,27 @@ theorem finiteSelectiveTwoReflectedSignedExactCoreReadingHom_configuration_eq :
 /-! ## Equation and detector projections -/
 
 /--
+The concrete outer equation index obtained by transporting the finite core
+detector index through the generated backward upper.
+-/
+noncomputable def finiteSelectiveTwoDetectorSourceIndex :
+    finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.equationSystem.Index :=
+  finiteSelectiveTwoCollapseBackwardUpper.equationMap PUnit.unit
+
+/--
+The accepted finite cycle datum transported into the outer generated detector.
+-/
+noncomputable def finiteSelectiveTwoOuterCycleQueryDatum :
+    FiniteCircuitDatum FiniteModel.carrier :=
+  finiteSelectiveTwoCollapseBackwardUpper.queryMap
+    FiniteModel.cycleQueryDatum
+
+/-- The rejected empty datum transported into the outer generated detector. -/
+noncomputable def finiteSelectiveTwoOuterEmptyQueryDatum :
+    FiniteCircuitDatum FiniteModel.carrier :=
+  finiteSelectiveTwoCollapseBackwardUpper.queryMap ⟨[]⟩
+
+/--
 The assembled equation field is the same previously witnessed exact transport;
 that structure's three data fields and four law fields have all been fired.
 -/
@@ -208,24 +229,82 @@ theorem finiteSelectiveTwoReflectedSignedExactCoreReadingHom_equationTransport :
     finiteSelectiveTwoObjectContextWitnessBase
 
 /--
-The assembled detector-code law fires at the concrete equation index, alongside
-the finite exact detector's positive cycle and negative empty-datum evaluations.
+The assembled detector-code law fires at the concrete generated index.  The
+same source and target codes accept the transported cycle datum and reject the
+transported empty datum, so both controls are connected to this assembled hom.
 -/
 theorem finiteSelectiveTwoReflectedSignedExactCoreReadingHom_detectorCode_eq :
     (finiteSelectiveTwoObjectContextWitnessInput.lowGeneratedLift.domain.algebra.circuits.code
           (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.equationMap
-            finiteSelectiveTwoEquationSourceIndex) =
+            finiteSelectiveTwoDetectorSourceIndex) =
         (finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.circuits.code
-          finiteSelectiveTwoEquationSourceIndex).transport
+          finiteSelectiveTwoDetectorSourceIndex).transport
             finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.atomEquiv) ∧
-      FiniteModel.coreReading.equationReading.circuits.accepts
-          PUnit.unit FiniteModel.cycleQueryDatum = true ∧
-      FiniteModel.coreReading.equationReading.circuits.accepts
-          PUnit.unit ⟨[]⟩ = false := by
+      (finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.circuits.code
+          finiteSelectiveTwoDetectorSourceIndex).eval
+            finiteSelectiveTwoOuterCycleQueryDatum = true ∧
+      (finiteSelectiveTwoObjectContextWitnessInput.lowGeneratedLift.domain.algebra.circuits.code
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.equationMap
+            finiteSelectiveTwoDetectorSourceIndex)).eval
+        (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.queryMap
+          finiteSelectiveTwoOuterCycleQueryDatum) = true ∧
+      (finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.circuits.code
+          finiteSelectiveTwoDetectorSourceIndex).eval
+            finiteSelectiveTwoOuterEmptyQueryDatum = false ∧
+      (finiteSelectiveTwoObjectContextWitnessInput.lowGeneratedLift.domain.algebra.circuits.code
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.equationMap
+            finiteSelectiveTwoDetectorSourceIndex)).eval
+        (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.queryMap
+          finiteSelectiveTwoOuterEmptyQueryDatum) = false := by
+  have hsourceCycle :
+      finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.circuits.accepts
+          finiteSelectiveTwoDetectorSourceIndex
+          finiteSelectiveTwoOuterCycleQueryDatum = true := by
+    simpa only [finiteSelectiveTwoDetectorSourceIndex,
+      finiteSelectiveTwoOuterCycleQueryDatum] using
+      (finiteSelectiveTwoCollapseBackwardUpper.accepts_iff
+        PUnit.unit FiniteModel.cycleQueryDatum).mp
+          FiniteModel.cycleQueryDatum_accepted
+  have htargetCycle :
+      finiteSelectiveTwoObjectContextWitnessInput.lowGeneratedLift.domain.algebra.circuits.accepts
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.equationMap
+            finiteSelectiveTwoDetectorSourceIndex)
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.queryMap
+            finiteSelectiveTwoOuterCycleQueryDatum) = true :=
+    (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.accepts_iff
+      finiteSelectiveTwoDetectorSourceIndex
+      finiteSelectiveTwoOuterCycleQueryDatum).mp hsourceCycle
+  have hsourceEmpty :
+      finiteSelectiveTwoUpperComputationalOuterInput.lowGeneratedLift.domain.algebra.circuits.accepts
+          finiteSelectiveTwoDetectorSourceIndex
+          finiteSelectiveTwoOuterEmptyQueryDatum = false := by
+    apply Bool.eq_false_of_not_eq_true
+    intro hsourceTrue
+    have hcoreTrue :
+        FiniteModel.coreReading.equationReading.circuits.accepts
+            PUnit.unit ⟨[]⟩ = true := by
+      apply (finiteSelectiveTwoCollapseBackwardUpper.accepts_iff
+        PUnit.unit ⟨[]⟩).mpr
+      simpa only [finiteSelectiveTwoDetectorSourceIndex,
+        finiteSelectiveTwoOuterEmptyQueryDatum] using hsourceTrue
+    exact Bool.false_ne_true
+      (FiniteModel.emptyQueryDatum_rejected.symm.trans hcoreTrue)
+  have htargetEmpty :
+      finiteSelectiveTwoObjectContextWitnessInput.lowGeneratedLift.domain.algebra.circuits.accepts
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.equationMap
+            finiteSelectiveTwoDetectorSourceIndex)
+          (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.queryMap
+            finiteSelectiveTwoOuterEmptyQueryDatum) = false := by
+    apply Bool.eq_false_of_not_eq_true
+    intro htargetTrue
+    have hsourceTrue :=
+      (finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.accepts_iff
+        finiteSelectiveTwoDetectorSourceIndex
+        finiteSelectiveTwoOuterEmptyQueryDatum).mpr htargetTrue
+    exact Bool.false_ne_true (hsourceEmpty.symm.trans hsourceTrue)
   exact ⟨finiteSelectiveTwoReflectedSignedExactCoreReadingHom.{u}.detectorCode_eq
-      finiteSelectiveTwoEquationSourceIndex,
-    FiniteModel.cycleQueryDatum_accepted,
-    FiniteModel.emptyQueryDatum_rejected⟩
+      finiteSelectiveTwoDetectorSourceIndex,
+    hsourceCycle, htargetCycle, hsourceEmpty, htargetEmpty⟩
 
 /-! ## Operation projection and law -/
 
