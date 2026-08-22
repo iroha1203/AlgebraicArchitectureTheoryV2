@@ -24,20 +24,31 @@
      最終達成条件レビュー。
   3. `prd-loop`のエスカレーション規則が指定する強化ゲート(`$math-lean-review`の直接起動)。
 - Math / Lean は実装中、focused checkまたは必要な単一subagentの確認に限定する。
+- 正式レビューの各laneは、findingを`中心`(statement強度、premise放電、certificate
+  provenance、proof-use、structure-field escape、route、nonvacuity、依存、axiom、claim scope
+  など中心claimに関わるもの)と`非中心`(APIの形、命名、docs、台帳文言、補助補題の整備など)に
+  分けて出し、担当観点で見つけられるfindingを中心・非中心を問わず一度に全部出す。
+  親は統合時に区分を検算する。
 - PRレビューゲートの正式レビューでfindingが出た場合、全findingをまとめて実装フェーズへ戻す。
-  修正後の既定は「直接対応」であり、正式レビューの再実行ではない。完了判定ゲート
-  (`target-theorem-loop` / `prd-completion-review`)のfindingには直接対応を適用しない。
-  従来どおり実装フェーズへ戻し、完了判定はそのゲートの正式再実行だけで更新する。
+  中心・非中心のいずれも、解消されるまで当該分野は合格にならない。修正後の手続きは、
+  直したfindingの最大重大度で決める。
+  - 本筋修正(中心findingを直した): 実装を完了し直して最終スナップショットを固定し、正式レビューを
+    再実行する。構造が変わっているので、再実行で新たに出るfindingは正当とする。
+  - 微調整(非中心findingだけを直した): 「直接対応」で確認する。正式レビューを再実行しない。
+  完了判定ゲート(`target-theorem-loop` / `prd-completion-review`)のfindingには直接対応を
+  適用しない。従来どおり実装フェーズへ戻し、完了判定はそのゲートの正式再実行だけで更新する。
 - **直接対応**: 既存findingの対象だけを直した修正を、親が変更箇所とfindingに限定した
   単一subagentで確認する。全観点・全laneや`review-pr`を再起動しない。直接対応の資格条件は
   分野別に次とする。資格条件を1つでも満たさない修正、および資格の判定が不能な修正は、
   実装を完了し直して最終スナップショットを固定し、正式レビューを再実行する(資格喪失)。
   - Tool / Docs / Website: 公開契約・schema・公開API・入力契約(観測 / 法・方程式)・claim scope・
     source of truth・責務・新しいsurfaceのいずれも変えない修正。
-  - Math / Lean: proof内部または台帳・docs記載の修正であり、theorem / defのstatement
-    (signature)の変更、defやinstanceの本体・値の変更、宣言(theorem / def / instance /
-    structure / example / axiom 等)の追加・削除、import方向の変更、台帳statusの変更の
-    いずれも含まないもの。
+  - Math / Lean: proof内部または台帳・docs記載の修正であり、査読済みのtheorem / defの
+    statement(signature)の変更、defやinstanceの本体・値の変更、宣言の削除、`axiom`の追加、
+    import方向の変更、台帳statusの変更のいずれも含まないもの。宣言(theorem / def /
+    instance / structure / example 等)の追加は、findingが指定した補助補題・公開API・
+    正規化則の追加であり、査読済みstatementを変えず、追加宣言のplaceholder scanと
+    `#print axioms`がcleanな場合に限り資格内とする。それ以外の宣言追加は資格外。
 - 直接対応の確認subagentは、次を独立に検査する。1つでも満たさなければ解消判定を出さず
   資格喪失として報告し、親は正式レビューの再実行へ戻す(fail-closed)。資格の判定を
   親の自己分類に委ねない。
@@ -45,8 +56,13 @@
   2. diffがfinding対象外の変更を含まない。
   3. diffが上記の資格条件を満たす。Math / Leanでは修正対象ファイルへのplaceholder scan
      (`rg -n "\b(axiom|admit|sorry|unsafe)\b" <files>`)を含めて検査する。
+  4. 追加宣言がある場合、追加がfindingの指定どおりで、査読済みstatementを変えず、
+     追加宣言の`#print axioms`が標準公理だけであることを確認する。
+- 直接対応の確認subagentが、対象finding以外で新たに気づいた非中心の事項は後出しとして
+  監査記録に記録だけ残し、解消判定とmerge可否に影響させない。新たに気づいた中心の事項は
+  fail-closedで報告し、親は本筋修正として扱う。
 - 修正後確認の出力は、各findingの解消、変更範囲、実行したfocused check・test・scan、未確認範囲とする。
-  直接対応では、この出力を既存のPR監査記録へ追記する。初回正式レビューの全findingが解消され、
+  直接対応では、この出力を既存のPR監査記録へ追記する。直近の正式レビューの全findingが解消され、
   修正後確認が有資格なら、これを2回目の正式レビューなしの最終内容証拠として扱い、
   当該分野のレビューゲート合格(承認)と同等に扱う。
 
@@ -87,7 +103,8 @@
 sourceと実体を独立に確認してください。ファイルは編集しないでください。
 
 日本語で次を返してください。
-1. Findings: 重大度順。各findingにファイルと行、反証されたclaim、根拠を含める。
+1. Findings: 重大度順。各findingに中心/非中心の区分、ファイルと行、反証されたclaim、根拠を含める。
+   担当観点で見つけられるfindingは、中心・非中心を問わずここで全部出してください。
 2. Refutation attempts: 何を落とそうとし、どの証拠で成功または失敗したか。
 3. Evidence checked: 読んだsource、実行結果、生成物。
 4. Coverage limits: 未確認範囲と残リスク。
@@ -101,7 +118,7 @@ findingが無い場合は、担当観点に適用可能な反証面をどのよ�
 
 lane結果は次をすべて満たす場合だけ統合に使用する。
 
-- findingに具体的な根拠と対象claimがある。
+- findingに具体的な根拠と対象claimがあり、中心/非中心の区分が付いている。
 - findingなしの場合、担当観点に適用可能な反証面の被覆、各試行、
   対象外とした反証面の理由が示されている。
 - 確認したsourceと未確認範囲が分かれている。
