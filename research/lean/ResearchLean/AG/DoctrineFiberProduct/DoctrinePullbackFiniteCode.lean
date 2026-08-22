@@ -50,6 +50,13 @@ def ProperDoctrineFiber
     ¬ IsIso piOne ∧
     ¬ IsIso piTwo
 
+/-- Two identity projections never form a proper doctrine fiber. -/
+theorem properDoctrineFiber_id_id_false
+    {U : AtomCarrier.{u}} (D : ExtractionDoctrine U) :
+    ¬ ProperDoctrineFiber (𝟙 D) (𝟙 D) := by
+  intro hproper
+  exact hproper.2.2.1 (inferInstance : IsIso (𝟙 D))
+
 /-- An isomorphism of doctrines induces an equivalence of their source types. -/
 def doctrineSourceEquiv
     {U : AtomCarrier.{u}} {D E : ExtractionDoctrine U} (e : D ≅ E) :
