@@ -44,11 +44,12 @@ tracking Issue を正本とし、本ノートには持ち込まない。
    完全性(R4a)と欠損 locus の実現(R19)、Interchange(R16)は後続。失敗しうる
    主張と、失敗しえない構成は §6 で分ける。
 5. 必須は R2(差分表の充填)と R1(実システムの多解像度観測。P1–P10 を事前登録
-   し、完全列のどの項が支配的かを測る)。前提確認 R0(第一論文の係数は ℚ、
+   し、完全列のどの項が支配的かを測る)。前提確認 R0(今回の論文の係数は ℚ、
    decider の一回実行、観測クラスの確認)を最初に置く。優先順位は
-   R0 > R2 > R14 > R8 > R1a > R10 > R15 > R11 > R3 > R9 > R1c > R17 > R18 > R4a >
-   R19 > R16 > R4b > R5 ≫ R7(§5)。第一論文の範囲は §5 で線を引き、本ノートの
-   補強項目はこの版で凍結する。R12(エージェント読解)と R13(方法論論文)は別
+   R0 > R2 > R1a > R14 > R8 > R10 > R3-w > R15 > R18 > R11 > R3-r > R9 > R1c > R17 >
+   R4a > R19 > R16 > R4b > R5 ≫ R7(§5)。論文は大定理版の最小構成で一本(§5)、
+   着手は Gr4(G-110)完了後、期間の目安は 1 か月。本ノートの補強項目はこの版で
+   凍結する。R12(エージェント読解)と R13(方法論論文)は別
    トラック。係数 base change(整数係数の錐・Fitting・jump locus)は次カードへ送る。
 6. 判定は二段(§6)。「CS に届いた」の最低条件は三つ(差分表が肯定形で埋まる、
    実測で欠損プロファイルが領域ごと・源ごとに異なる値を取る、R8 / R10 / R15 /
@@ -443,7 +444,7 @@ candidate(witness の Lean 化後に昇格する):
   クラスの抽象写像を Atlas の比較として埋め込み、強保存 / exactness を零欠損に
   対応させ、complete shell が存在する regime と No Complete-Shell regime を分ける)
   と DB / CSP(schema / 台 hypergraph を Atlas の意味台系へ送り、join-tree /
-  非輪状の場合に R15 が局所大域の欠損計算を与える)の二本を第一論文の目標にする。
+  非輪状の場合に R15 が局所大域の欠損計算を与える)の二本を今回の論文の目標にする。
   分散計算(`Obs_{r,k}` を LOCAL / 局所証明モデルへ)、TDA、SE、エージェントへの
   translation は後続。
 - 判定: 粒度依存の直接の定量実証は無い(最近接は lifting 系列)と見られるため、
@@ -562,7 +563,7 @@ candidate(witness の Lean 化後に昇格する):
   Atlas 固有の観測クラス・law 由来係数・退化の意味論の下で、各項と connecting
   morphism がどの診断機構に対応するかにある。
 - 位置: 幹寄りの土台。R6 を R14 へ、R9 を後半として吸収。
-- 判定: pure class の等式・C3′・transgression の実例が Lean で立つ(第一論文)。
+- 判定: pure class の等式・C3′・transgression の実例が Lean で立つ(今回の論文)。
   退化定理の特徴づけは主定理候補として同カードの上位目標。
 - 規模: 系の部分 小〜中、退化定理 中〜大。
 
@@ -700,7 +701,7 @@ candidate(witness の Lean 化後に昇格する):
 - 位置: 支線(R3-w を吸収)。判定: 連結射の同定が Lean で立ち、R1 の P10 に接続
   する。規模: 小〜中。
 
-### R16 Interchange / Multiresolution(次の大定理候補。第一論文外)
+### R16 Interchange / Multiresolution(次の大定理候補。別論文)
 
 - 内容: (i) 解像度列 `q₀ ≤ … ≤ q_n` の総比較の欠損対象に隣接比較からの filtration を
   入れ、`E₁^{i,*} ≃ H*(D_A(q_{i−1}, q_i)) ⇒ H*(D_A(q₀, q_n))` 型のスペクトル系列を
@@ -711,7 +712,7 @@ candidate(witness の Lean 化後に昇格する):
   条件(**Interchange**: 「関心事で分けてから zoom するのと、zoom してから関心事で
   分けるのは、いつ同じ診断を与えるか」)を示し、破れる場合は差を higher differential
   として残す。
-- 位置: 支線(SHIGURE / 係数 base change / G-106 と接続)。第一論文の完成条件には
+- 位置: 支線(SHIGURE / 係数 base change / G-106 と接続)。今回の論文の完成条件には
   入れない。規模: 大。
 
 ### R17 Support-width の算法(正の計算可能性。candidate)
@@ -744,7 +745,7 @@ candidate(witness の Lean 化後に昇格する):
   relative defect を殺すか、一手で消せる rank の上限)。
 - 位置: 支線(tooling と R11 の柱)。規模: 中。
 
-### R19 Defect-Locus Realization(high-upside frontier。第一論文外)
+### R19 Defect-Locus Realization(high-upside frontier。別論文)
 
 - 内容: R4a に埋まっている「任意の部分集合族が欠損集合として実現される」を独立の
   定理候補に上げる。段階: Stage A 任意の反鎖 `𝒜 ⊆ 2^Target` を
@@ -760,23 +761,30 @@ candidate(witness の Lean 化後に昇格する):
 
 ## 5. 優先順位と配分
 
-- 優先順位: **R0 > R2 > R14 > R8 > R1a > R10 > R15 > R11 > R3 > R9 > R1c > R17 >
-  R18 > R4a > R19 > R16 > R4b > R5 ≫ R7**。R12・R13 は別トラック。R1a は Codex
-  並走で理論項目と同時に進む。
-- **第一論文の範囲**(ここで線を引く): 枠 = コード観測と解像度(§2)/ 対象 =
-  欠損対象と意味閉包(R14 (i)–(iv))/ 主定理 = 安定性(G-104)+ 還元と decider
-  (G-107 (i)(ii))+ 局所観測の限界(G-107 (v))+ 完全局所分解の系(R8 の pure
-  class 等式・C3′・transgression の実例)+ 解像度合成(R14 (v))+ 安全解像度の
-  幾何(R10 の No Complete-Shell と No Natural Selector)+ 概念方向 MV 二領域版
-  (R15)/ 実測 = R1a(P1–P10)/ 検証 = R11 の最小構成 / 差分 = R2(抽象解釈と
-  DB / CSP への translation proposition を各一本)/ 応用節 = 三担い手。退化定理の
-  特徴づけ(R8 主目標)・`(r,k)`(R3)・指数 frontier・R16–R19・R4a は改訂または
-  後継論文で取り込む。候補題「Atlas: An Exact Resolution Calculus for Software
-  Architecture Diagnostics」は証明の後に決める(禁忌 4)。
-- 抽象核は degree-parametric にしておく(`J_A^i`、`Safe_[a,b]`)。第一論文の実証は
+- 優先順位: **R0 > R2 > R1a(並走)> R14 > R8(最小成員)> R10(No Complete-Shell /
+  No Natural Selector)> R3-w > R15 > R18(基本部分)> R11 > R3-r > R9 > R1c > R17 >
+  R4a > R19 > R16 > R4b > R5 ≫ R7**。R12・R13 は別トラック。R1a は Codex 並走で
+  理論項目と同時に進む。
+- **論文の形と着手時期**: Atlas 論文は一本で、**大定理版の最小構成**で閉じる。§6 の
+  Main theorem の四クラスには、それぞれ小さくて本物の成員がある — (1) 鋭い構造
+  定理 = pure class の等式+必要条件 C3′+混在 face の最小禁止パターン(`d₂ ≠ 0` の
+  実例。「最大の degeneration-safe class と最小禁止パターンの対」)、(2) 正準 /
+  非正準 = 意味閉包 `cl_M`+No Complete-Shell(両方向 witness)+No Natural Selector、
+  (3) 無限族 = 幅の族(交互 `(k+1)` 多角形、全 `k`)または半径の族
+  `T_{2n}` vs `T_n ⊔ T_n`、(4) 正の算法 = Excision の基本部分または R15 による
+  join-tree の局所計算。これに Foundation(R14 (i)–(iv)・R14 (v) 合成・R15 二領域版・
+  R11 最小構成)、Lean、実測(R1a、P1–P10)、差分と translation 二本(R2)、応用節を
+  合わせて一本にする。「大」は個々の定理の深さではなく、一つの対象から四クラスの
+  定理が出て実測に降りることで立つ。重い成員 — `d₂ ≡ 0` の完全な特徴づけ、`(r, k)`
+  同時分離、指数 frontier、Realization(R19)、support-width の動的計画(R17)、
+  Interchange(R16)、coNP 完全性(R4a)— は別の問いとして別論文にし、約束しない。
+  **着手は Gr4(G-110)完了後**、期間の目安は 1 か月。候補題「Atlas: An Exact
+  Resolution Calculus for Software Architecture Diagnostics」は証明の後に決める
+  (禁忌 4)。
+- 抽象核は degree-parametric にしておく(`J_A^i`、`Safe_[a,b]`)。今回の論文の実証は
   `H¹` に集中し、`H⁰` = 切断 / 大域整合、`H²` = 整合性の意味づけは AAT 既存の
   ものを使う。混在 face の `d₂` は `H¹` 欠損が `H²` 整合性へ移る最初の例。
-- 係数: 第一論文は ℚ 固定(現行 Lean 資産と整合し、証明コストが最小)。整数係数の
+- 係数: 今回の論文は ℚ 固定(現行 Lean 資産と整合し、証明コストが最小)。整数係数の
   比較写像錐 `D_{A,ℤ}` と `D_{A,k} ≃ D_{A,ℤ} ⊗^L_ℤ k`、ℚ と F₂ の差 = torsion、
   係数の選択で安全性が変わる素数 = determinantal / Fitting locus、は次カード
   (n1005 の係数 base change・jump-locus の相対幾何と接続)。
@@ -825,8 +833,8 @@ candidate(witness の Lean 化後に昇格する):
 
 揃えば Atlas は「AAT の測定器を校正する補助定理」ではなく、architecture 診断の
 exact resolution calculus として独立に読める。最低条件だけなら「校正理論」として
-正確に主張し、それ以上を名乗らない。第一論文は Foundation と Main の一部(§5 の
-範囲)で閉じ、残りは後継論文に送る。
+正確に主張し、それ以上を名乗らない。論文は Foundation と Main の最小成員(§5)で
+閉じ、重い成員は別の問いとして別論文にする。
 
 **失敗しうる主張と構成の区別**(禁忌 5)。主定理は前者から選ぶ。
 
