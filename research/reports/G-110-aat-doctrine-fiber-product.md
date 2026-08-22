@@ -31,7 +31,7 @@ selection:
     - Cycle 35 producer-derived selected core transport/reindexing adjunction, its hom equivalence, unit, counit, and triangles
     - Cycle 33 finite literal and twisted cleavages with their visibly nonidentity four-axis comparison
   proof_obligation: for every RealizableHom and arbitrary CoreFiberCartesianCleavage, generate the comparison to the exact selected reindexing functor from cartesian-lift universality; transport the Cycle 35 adjunction along that generated natural isomorphism and expose both transpose directions, unit, counit, and both triangles; prove that the Cycle 33 canonical comparison between any two cleavages intertwines the forward and inverse hom equivalences, unit, and counit; fire the surface on the finite literal and twisted cleavages with a visibly nonidentity comparison
-  selection_reason: Cycle 35 constructed the exact selected-cleavage adjunction but left the GOAL-required cleavage independence open; Cycle 33 already supplies the canonical cleavage comparison and its lift triangles, so connecting those two reviewed predecessors is the shortest remaining K2 discharge before pointed pullback and the canonical Beck--Chevalley mate
+  selection_reason: Cycle 35 constructed the exact selected-cleavage adjunction but left the GOAL-required cleavage independence open; Cycle 33 already supplies the canonical cleavage comparison and its lift triangles, so connecting those two reviewed predecessors is the shortest remaining K2 discharge after the reviewed Cycle 30 pointed-pullback bridge and before the canonical Beck--Chevalley mate
   expected_result_type: proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCleavageIndependence.lean
@@ -107,10 +107,9 @@ result:
       - a finite literal/twisted pair fires the comparison laws with a provably nonidentity four-axis component
     undischarged_assumptions:
       - arbitrary endpoint-isomorphism rebasing beyond exact-endpoint presentation replacement
-      - pointed pullback square assembly and pointedPullback_isPullback
       - canonical Beck--Chevalley mate and packageProjection-specific exactness/positive IsIso
       - authored-support MateCoherentRel positive/negative pair and nontrivial full-orbit invariance
-      - arbitrary-target FiniteModelLift if not already closed by a later accepted predecessor
+      - fixed-ledger arbitrary-target FiniteModelLift, which remains open
       - K3 diagnostic base-change action, H_bc condition package, positive/negative vanishing pair
       - K4 pullback-square pasting and push/pull coherence bridge
       - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
@@ -159,7 +158,7 @@ result:
     initial_exact_head: pending
     status: pending standard four-lane review
 next:
-  proof_obligation: construct the compatible-point pointed pullback square and generate pointedPullback_isPullback from the finite Source pullback and source_eq; then construct the canonical Beck--Chevalley mate from the accepted push/pull compositors and generated adjunction units/counits, keeping packageProjection-specific exactness and authored-support relative obstruction as separate downstream subnodes
+  proof_obligation: consume the reviewed Cycle 30 pointedPullback_isPullback together with the accepted push/pull compositors and generated adjunction units/counits to construct the canonical Beck--Chevalley mate; keep packageProjection-specific exactness and authored-support relative obstruction as separate downstream subnodes
 ```
 
 ### Cycle 35 — producer-derived core transport/reindexing adjunction

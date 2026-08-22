@@ -251,6 +251,13 @@ cartesian-uniqueness pentagon and both unit laws package these data as a
 raw-distinct padded representative, noninvertible quotient legs, and the same
 nonidentity vertical map fire the full quotient surface.  This is descent up to
 generated natural isomorphism; no `Quotient.lift` targets a functor type.
+The core transport/reindexing layer then generates the selected adjunction from
+the G-109 cocartesian transport and selected cartesian reindexing universal
+properties.  For every arbitrary cleavage, cartesian uniqueness generates its
+natural isomorphism to the selected reindexing functor; transporting the right
+adjoint along this bridge gives the arbitrary-cleavage adjunction, and the
+Cycle 33 canonical comparison intertwines both transpose directions, unit, and
+counit.  A literal/twisted four-axis pair makes that comparison nonidentity.
 Arbitrary endpoint-isomorphism rebasing, the Beck--Chevalley mate, K3--K4, and
 final target assembly remain open.
 -/

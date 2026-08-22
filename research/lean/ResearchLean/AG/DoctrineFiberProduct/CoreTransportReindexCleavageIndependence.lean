@@ -10,6 +10,19 @@ the adjunction along the generated natural isomorphism, and proves that the
 canonical Cycle 33 comparison intertwines the resulting hom correspondence,
 unit, and counit.  An arbitrary cleavage is only a universally quantified lift
 family; no adjunction or compatibility certificate is accepted from a caller.
+
+## Implementation notes
+
+The component bridge is the direct `StrongCartesianLift.domainIso`: this keeps
+both lift-factor triangles visible and makes naturality follow from cartesian
+uniqueness.  We reject functor equality casts because cleavage independence is
+canonical only up to this generated natural isomorphism.  Its direction is
+`cleavage.reindexFunctor ≅ selectedCoreFiberReindexFunctor input`, so
+`Adjunction.ofNatIsoRight` consumes the symmetric isomorphism to transport the
+Cycle 35 selected right adjoint to the arbitrary cleavage.  We also reject a
+caller-supplied adjunction or compatibility record: all transpose, unit,
+counit, and comparison laws below are generated from the lift family and the
+reviewed selected adjunction.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
