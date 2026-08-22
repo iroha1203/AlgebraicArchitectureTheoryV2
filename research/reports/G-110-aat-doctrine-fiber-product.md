@@ -13,6 +13,133 @@
 
 ## Cycle ledger
 
+### Cycle 26 — reflected ambient universal property and strong lift
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 26
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 7672f958b7f9842dac7dc246a52914319c9ab3e0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 25 merge synchronization comment 5377501393 and Cycle 26 selection comment 5377524422
+  proof_dag_predecessors:
+    - Cycle 16 exact ReflectedGeneratedComponentGraph and ReflectedGeneratedUniversalProperty output types, PR 4052
+    - Cycle 17 explicit inverseCorePackageFactor uniqueness by upper inverse cancellation, PR 4053
+    - Cycle 24 complete actual-high-derived generated SignedExactCoreReadingHom, PR 4060
+    - Cycle 25 actual-high-derived PackageTotalHom, whole triangle, and arbitrary ambient factor with IsHomLift/fac, PR 4061 merge 7672f958
+  proof_obligation: prove uniqueness for every ambient package/base/hom/candidate quantified by ReflectedGeneratedUniversalProperty; assemble the exact Cycle 16 reflected hom, component graph, universal-property, retraction, IsStronglyCartesian, and StrongCartesianLift declarations; and fire them on the noninvertible selective-two ambient problem without reusing the existing low cartesianness certificate
+  selection_reason: Cycle 25 made factor existence and factorization materially dependent on the supplied high lift, leaving only arbitrary-candidate uniqueness and the fixed reflection packet/strong-lift assembly
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedUniversalProperty.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedUniversalPropertyWitnesses.lean
+  risks:
+    - using input.lowGeneratedLift.isStronglyCartesian, globalCartesianLift, a known low cartesianness certificate, or the existing low Mathlib map/uniq
+    - returning an independently generated low factor instead of finiteGeneratedReflectedAmbientFactor while the supplied high lift is decorative
+    - accepting a factor, universal-property packet, candidate preimage, uniqueness proof, or component graph from the caller
+    - weakening the arbitrary ambient package/base/hom/candidate quantifiers to the selective-two fixture or an image-only category
+    - claiming reflection of arbitrary high uniqueness when the accepted proof is high-driven factor/fac plus intrinsic inverse-package cancellation
+    - promoting this exact reflection checkpoint to FiniteModelLift, K0, or theorem completion
+  unchecked:
+    - fixed-head independent Math A and Math B review
+    - fixed-head independent Lean A and Lean B review
+    - standard PR audit, CI, and merge synchronization
+result:
+  proposed_result_type: proof-obligation-discharged
+  reviewed_content_head: pending fixed-head review; candidate 555299c65f422943a8852c5b5b5f39494990ecbc
+  proof_obligation_delta: proved that every arbitrary candidate for the Cycle 25 ambient factorization equals the actual-high-derived factor by applying inverseCorePackageFactor_unique to the candidate and to the generated factor and comparing their identical explicit normal forms. The generated factor comparison consumes its new IsHomLift and supplied-high-derived fac; no low strong-cartesian proof is used. Defined the exact Cycle 16 reflectNormalizedHighHom at the fixed generated low endpoint, generated its component graph internally, assembled ReflectedGeneratedUniversalProperty with the Cycle 25 factor and all four laws, proved the required one-direction retraction, and derived Mathlib IsStronglyCartesian solely from that packet. Packaged the result as a fresh StrongCartesianLift record with the exact generated domain and reflected hom. The selective-two witness instantiates the component packet, the full universal property, factor/lift/fac, arbitrary-candidate uniqueness, strong cartesianness, and the reflected strong lift on the existing noninvertible prefix and noninvertible composite competitor.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedUniversalProperty.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteGeneratedReflectedUniversalPropertyWitnesses.lean
+  evidence:
+    - finiteGeneratedReflectedAmbientFactor_unique
+    - reflectNormalizedHighHom
+    - reflectNormalizedHighHom_base
+    - reflectNormalizedHighHom_components
+    - reflectNormalizedUniversalProperty
+    - reflectNormalizedUniversalProperty_factor
+    - reflectNormalizedHighHom_retraction
+    - reflectNormalizedHighHom_isStronglyCartesian
+    - reflectNormalizedStrongCartesianLift
+    - reflectNormalizedStrongCartesianLift_domain
+    - reflectNormalizedStrongCartesianLift_hom
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_factor
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_factor_isHomLift
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_factor_fac
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_factor_unique
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_base_not_isIso
+    - finiteSelectiveTwoReflectNormalizedUniversalProperty_competitor_base_not_isIso
+    - finiteSelectiveTwoReflectNormalizedHighHom_isStronglyCartesian
+    - finiteSelectiveTwoReflectNormalizedStrongCartesianLift
+  claim_mapping:
+    theorem_names:
+      - reflectNormalizedHighHom
+      - reflectNormalizedUniversalProperty
+      - reflectNormalizedHighHom_isStronglyCartesian
+      - reflectNormalizedStrongCartesianLift
+    source_labels:
+      - Cycle 16 exact_downstream_reflection_signature
+      - GOAL material ledger FiniteModelLift remains discharge-required before K0
+    conjuncts:
+      - the exact reflected hom, base, components, universal-property, retraction, strong-cartesian theorem, strong lift, domain, and hom signatures are present without weakening
+      - every ambient factor is finiteGeneratedReflectedAmbientFactor and retains the arbitrary package/base/hom quantifiers
+      - every arbitrary candidate is compared by structural inverse-package cancellation after the generated factor's high-derived fac is established
+      - Mathlib IsStronglyCartesian is constructed from the new packet and not from the existing low certificate
+    undischarged_assumptions:
+      - FiniteModelLift and graph-bearing generated nonexistence transfer
+      - K0 and K2-K4 after the F0 ledger is resolved
+    acceptance_point: exact Cycle 16 ambient reflection obligation is proposed as discharged; the unchanged theorem remains a target-proof-checkpoint because FiniteModelLift and later obligations are open
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - arbitrary ambient factor uniqueness at the exact ReflectedGeneratedUniversalProperty quantifiers
+      - caller-free ReflectedGeneratedUniversalProperty producer
+      - Mathlib strong cartesianness derived from the new packet
+      - exact reflected StrongCartesianLift producer and domain/hom projections
+      - noninvertible selective-two firing with arbitrary candidate quantification
+    remaining:
+      - FiniteModelLift and its generated nonexistence corollary without empty elimination
+      - K0 and K2-K4 after the F0 ledger is resolved
+  certificate_provenance:
+    discharged:
+      - the universal-property producer accepts only the finite input and supplied high lift
+      - factor, IsHomLift, fac, uniqueness, component graph, and strong-cartesian proof are internally generated
+      - the concrete factor and competitor IsHomLift premise are inherited from the reviewed Cycle 25 fixture
+    unresolved: []
+  proof_use:
+    used:
+      - finiteGeneratedReflectedAmbientFactor as the computational factor output for every ambient problem
+      - finiteGeneratedReflectedAmbientFactor_isHomLift and finiteGeneratedReflectedAmbientFactor_fac in both uniqueness and packet assembly
+      - inverseCorePackageFactor_unique only as structural cancellation for the arbitrary candidate and generated factor
+      - canonicalLowGeneratedComponentComparison as the reviewed internally generated component packet
+      - all four ReflectedGeneratedUniversalProperty fields in the Mathlib IsStronglyCartesian constructor
+    unused:
+      - input.lowGeneratedLift.isStronglyCartesian
+      - globalCartesianLift
+      - finiteGeneratedLowFactor and finiteGeneratedLowFactorUpper
+      - arbitrary high package/hom rebase or reflected high uniqueness
+  structure_field_escape: none found; no factor, universal property, component packet, candidate preimage, or uniqueness certificate is a producer argument
+  route_integrity: proposed pass; factor value and fac are supplied-high-derived, while uniqueness is explicitly classified as intrinsic low inverse-package cancellation rather than arbitrary high uniqueness reflection
+  target_fitting: none found; the generic theorem retains every ambient package/base/hom/candidate and the fixture only fires it
+  vacuity: none found; the witness uses a non-IsIso prefix, a competitor over a non-IsIso composite, an inhabited generated factor, and an arbitrary-candidate uniqueness theorem
+  one_way_as_equivalence: none found; no arbitrary cross-carrier package equivalence or high-package descent is claimed
+  goal_or_report_reinterpretation: none found; FiniteModelLift, K0, K2-K4, and theorem completion remain open
+  validation_refs:
+    - official focused wrapper FiniteGeneratedReflectedUniversalProperty.lean: pass, 11 namespace declarations and standard axioms only
+    - official focused wrapper FiniteGeneratedReflectedUniversalPropertyWitnesses.lean: pass, 16 namespace declarations and standard axioms only
+    - targeted module build FiniteGeneratedReflectedUniversalProperty: pass; no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, prohibited-dependency, hidden/BiDi Unicode, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+  blocking_findings: []
+  next_obligation: construct FiniteModelLift and its graph-bearing generated nonexistence transfer from the reflected strong lift, then proceed to K0 or fail closed with a formal obstruction
+```
+
 ### Cycle 25 — generated total hom, whole triangle, and ambient factor
 
 ```yaml
