@@ -28,8 +28,8 @@ The finite-code northwest object is not definitionally the generic Cycle 30
 pullback.  We therefore use the producer-generated doctrine isomorphism and
 prove its selected-point equation, rather than casting either endpoint or
 assuming an endpoint isomorphism.  The covariant square comparison is the
-G-109 compositor on the top/right route, the decoded square equality, and the
-inverse compositor on the left/bottom route.  `mateEquiv` is then used directly
+inverse G-109 compositor on the top/right route, the decoded square equality,
+and the compositor on the left/bottom route.  `mateEquiv` is then used directly
 with the generated Cycle 35 adjunctions.  This keeps the unit/counit provenance
 visible and rejects a hand-authored mate or a target-fitted component formula.
 -/
