@@ -52,12 +52,12 @@ selection:
     - firing only proof-field-distinct presentations, invertible legs, identity vertical maps, or claiming opaque selected comparison nonidentity merely from raw presentation inequality
     - promoting presentation replacement to an adjunction, canonical Beck--Chevalley mate, K3-K4, or G-110 completion
   unchecked:
-    - fixed-head four-lane review of the third repair, integration record, final report synchronization, merge, and Issue synchronization
+    - fixed-head four-lane review of the fourth repair, integration record, final report synchronization, merge, and Issue synchronization
 result:
   proposed_result_type: proof-checkpoint
-  content_head: c75827e6d93b0b5e6418db59b5fddd4e11e3313b
-  review_target_head: c75827e6d93b0b5e6418db59b5fddd4e11e3313b
-  proof_obligation_delta: CartRealizationProvenance indexes finite presentation provenance over one literal CartSemanticInput and stores no lift, cleavage, comparison, or coherence certificate. Every two provenance values generate selected reindexing functors whose components are compared by the StrongCartesianLift domain isomorphism; both lift triangles, naturality on every vertical map, and whole-natural-isomorphism reflexivity, symmetry, and cocycle follow from cartesian uniqueness. For exact-endpoint CartPresentationBetween values, equality of decoded homs generates equality of their full typed semantic inputs and retags only the selected lift's strong-cartesianness proposition. This yields the typed selected comparison without transporting a complete functor. An arbitrary direct presentation satisfying the decoded composition equation receives a relative contravariant compositor, and an arbitrary identity-decoding presentation receives a relative unitor. Simultaneous replacement of both composable legs and the direct presentation, and replacement of two identity presentations, preserve those structures by direct use of the Cycle 33 cleavage compatibility laws. At the finite-code quotient, the action evaluates the distinguished Quotient.out representative but compares every supplied representative to that action by the generated typed NatIso. Quotient compositors and unitors are constructed from the actual selected lifts, their replacement laws consume the typed compatibility surface, and cartesian uniqueness proves the pentagon and both unit laws before LocallyDiscrete.mkPseudofunctor packages the contravariant action on the opposite category. No Quotient.lift targets Functor. Named object, map, mapId, and mapComp theorems expose that package without unfolding it, and the quotient-level map factor theorem is the stable characterization used by downstream associativity and unit proofs. The finite fixture replaces the empty-support identity Atom code by a singleton-support code decoding the same identity permutation; it proves typed and raw presentation inequality, equality of decoded homs and full semantic inputs, fires both representative comparison triangles, naturality, refl/symm/cocycle, quotient compositor/unitor and replacement laws, pentagon and both units, reads all four packaged fields on the same quotient chain, and retains two noninvertible quotient legs plus a nonidentity vertical axis map. The infinite-source semantic identity supplies an independent typed negative CartRealizationProvenance example. The fixture deliberately makes no claim that opaque selected comparison components are nonidentity merely because authored codes differ.
+  content_head: dfa1b06f990f8172fd169eeb4759d258420fabb7
+  review_target_head: dfa1b06f990f8172fd169eeb4759d258420fabb7
+  proof_obligation_delta: CartRealizationProvenance indexes finite presentation provenance over one literal CartSemanticInput and stores no lift, cleavage, comparison, or coherence certificate. Every two provenance values generate selected reindexing functors whose components are compared by the StrongCartesianLift domain isomorphism; both lift triangles, naturality on every vertical map, and whole-natural-isomorphism reflexivity, symmetry, and cocycle follow from cartesian uniqueness. For exact-endpoint CartPresentationBetween values, equality of decoded homs generates equality of their full typed semantic inputs and retags only the selected lift's strong-cartesianness proposition. This yields the typed selected comparison without transporting a complete functor. An arbitrary direct presentation satisfying the decoded composition equation receives a relative contravariant compositor, and an arbitrary identity-decoding presentation receives a relative unitor. Simultaneous replacement of both composable legs and the direct presentation, and replacement of two identity presentations, preserve those structures by direct use of the Cycle 33 cleavage compatibility laws. At the finite-code quotient, the action evaluates the distinguished Quotient.out representative but compares every supplied representative to that action by the generated typed NatIso. Quotient compositors and unitors are constructed from the actual selected lifts, their replacement laws consume the typed compatibility surface, and cartesian uniqueness proves the pentagon and both unit laws before LocallyDiscrete.mkPseudofunctor packages the contravariant action on the opposite category. No Quotient.lift targets Functor. Named object, map, mapId, and mapComp theorems expose that package without unfolding it; the quotient-level map factor theorem is the stable characterization used by downstream associativity and unit proofs; and three inverse-normalization theorems isolate route unfolding from the final package coherence proof. The finite fixture replaces the empty-support identity Atom code by a singleton-support code decoding the same identity permutation; it proves typed and raw presentation inequality, equality of decoded homs and full semantic inputs, fires both representative comparison triangles, naturality, refl/symm/cocycle, quotient compositor/unitor and replacement laws, pentagon and both units, reads all four packaged fields on the same quotient chain, and retains two noninvertible quotient legs plus a nonidentity vertical axis map. The infinite-source semantic identity supplies an independent typed negative CartRealizationProvenance example. The fixture deliberately makes no claim that opaque selected comparison components are nonidentity merely because authored codes differ.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingPresentationReplacement.lean
@@ -107,6 +107,9 @@ result:
     - finiteCodeSelectedCoreFiberReindexPseudoaction_mapId
     - finiteCodeSelectedCoreFiberReindexPseudoaction_mapComp
     - finiteCodeSelectedCoreFiberReindexFunctor_map_fac
+    - finiteCodeSelectedCoreFiberAssocRightRoute_inverse_normalization
+    - finiteCodeSelectedCoreFiberRightUnitRoute_inverse_normalization
+    - finiteCodeSelectedCoreFiberLeftUnitRoute_inverse_normalization
     - finiteSelectiveTwoToSupportPresentation_ne_padded
     - finiteSelectiveTwoToSupportRawPresentation_ne_padded
     - finiteSelectiveTwoToSupportPresentation_semanticInput_eq
@@ -247,7 +250,7 @@ audits:
     - focused CartesianRegimeReindexingPresentationReplacement.lean: pass; namespace audit 39 declarations and standard axioms only
     - focused CartesianRegimeReindexingPresentationCoherence.lean: pass; namespace audit 20 declarations and standard axioms only
     - focused CartesianRegimeReindexingPresentationWitnesses.lean: pass; namespace audit 57 declarations and standard axioms only
-    - focused CartesianRegimeReindexingFiniteCodePseudoaction.lean: pass with no warnings; namespace audit 86 declarations and standard axioms only
+    - focused CartesianRegimeReindexingFiniteCodePseudoaction.lean: pass with no warnings; namespace audit 89 declarations and standard axioms only
     - focused CartesianRegimeReindexingFiniteCodePseudoactionWitnesses.lean: pass; namespace audit 41 declarations and standard axioms only
     - targeted modules CartesianRegimeReindexingPresentationReplacement, CartesianRegimeReindexingPresentationCoherence, CartesianRegimeReindexingPresentationWitnesses, CartesianRegimeReindexingFiniteCodePseudoaction, and CartesianRegimeReindexingFiniteCodePseudoactionWitnesses: pass; no Research aggregate or full build
     - exact umbrella target ResearchLean.AG.DoctrineFiberProduct: pass
@@ -264,6 +267,10 @@ audits:
   second_repair_review_findings:
     - Math A, Math B, and Lean B: no content finding at fixed report head 58a275b735ac223a866a22ed0568fdd67d1d7e7c and Lean content head eae1591cfb6f53384935fb63ef665a55501f8883
     - Lean A Minor: the quotient-level selected functor and lift lacked a stable map factor theorem, so associativity and right-unit proofs unfolded both definitions downstream
+  third_repair_review_findings:
+    - Math B: no content finding at fixed report head b14728b1e39804aa87f7d710a70c013dd6148e3d and Lean content head c75827e6d93b0b5e6418db59b5fddd4e11e3313b
+    - Lean A Minor: the final package coherence still unfolded the public associativity and unit route definitions in three places instead of consuming named inverse-normalization laws
+    - Math A and Lean B were stopped without integrated verdicts after the actionable finding invalidated the review target
   review_refs:
     initial_fixed_head: d80a9d13867d49193eebe93a4905b533e99df2a7
     initial_report_head: 2a3b50c06d0d48c59e3a1084bc524e0d05e5c32b
@@ -274,7 +281,9 @@ audits:
     second_direct_response: not used; the repair adds public projection and witness declarations, so the repaired packet requires another fresh four-lane review
     third_repair_head: c75827e6d93b0b5e6418db59b5fddd4e11e3313b
     third_direct_response: not used; the repair adds the public finiteCodeSelectedCoreFiberReindexFunctor_map_fac theorem, so the repaired packet requires another fresh four-lane review
-    fresh_review: pending at the third repaired content head
+    fourth_repair_head: dfa1b06f990f8172fd169eeb4759d258420fabb7
+    fourth_direct_response: not used; the repair adds three public inverse-normalization theorems, so the repaired packet requires another fresh four-lane review
+    fresh_review: pending at the fourth repaired content head
   blocking_findings:
     - fresh four-lane content review and integration record pending
   next_obligation: complete the repaired-head four-lane review and report synchronization; if clean, merge Cycle 34 and select the adjunction node before the canonical Beck--Chevalley mate
