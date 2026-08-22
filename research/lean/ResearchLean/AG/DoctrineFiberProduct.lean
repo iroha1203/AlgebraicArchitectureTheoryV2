@@ -58,6 +58,8 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriang
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriangleWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalProperty
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalPropertyWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULiftWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -151,4 +153,11 @@ existing low certificate, and returns the fixed reflected strong lift.  A
 single noninvertible selective-two fixture fires the whole triangle, a concrete
 ambient factor, arbitrary-candidate uniqueness, and the reflected lift.
 `FiniteModelLift` and the later K0 obligation remain unproved.
+The realization-ULift layer now also rebases every finite presentation to a
+genuine high-universe `RealizableHom` and constructs the canonical
+arrow-category isomorphism from the directly lifted low decoder arrow to that
+rebased realization.  Its selective-two support-prefix witness remains
+noninvertible in every universe and connects back to the reviewed generated
+core arrow.  Transporting packages and supplied strong lifts along these
+endpoint isomorphisms, and only then deriving `FiniteModelLift`, remains open.
 -/
