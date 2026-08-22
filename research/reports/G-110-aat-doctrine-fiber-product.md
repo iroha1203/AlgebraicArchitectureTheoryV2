@@ -13,6 +13,172 @@
 
 ## Cycle ledger
 
+### Cycle 31 — producer-derived cartesian reindexing functor
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 31
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 66fbe2d5866f790b1f94fd9afc7f4270f9591061
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 30 merge synchronization comment 5379311529 and Cycle 31 selection comment 5379364390
+  proof_dag_predecessors:
+    - selectedCartesianRegime and selectedCartesianRegime_HCart from the fixed cartesian branch artifact
+    - Mathlib packageProjection strong-cartesian map, factorization, uniqueness, and extensionality APIs
+    - Cycle 30 generic pointed pullback bridge, PR 4067 merge 66fbe2d5
+  proof_obligation: construct the selected pullback reindexing functor on core fibers for every RealizableHom by generating each cartesian lift internally from the selected regime; define every vertical map as the universal factor through the codomain lift; export its factor graph, uniqueness, identity law, and composition law; and fire those results on a noninvertible selective-two base with a nonidentity four-axis vertical map plus an identity-base sensitivity control
+  selection_reason: Cycle 30 supplies the generic pointed pullback bridge required before the fixed K2 fiber construction. The next independent node is the contravariant object-and-map action of f^*. It must be generated from the selected cartesian regime rather than accept a lift, cleavage, factor, map, or law packet. Base-arrow unitor/compositor data, cleavage independence, the adjunction with the G-109 covariant core transport, and the Beck--Chevalley mate are separate later nodes.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexing.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - accepting a strong cartesian lift, cleavage, object action, map, factorization equality, uniqueness proof, or functor-law packet from the caller
+    - defining only object pullback and silently obtaining the map action or functor laws from an unrelated preassembled functor
+    - using choice over a supplied low preimage rather than the selected regime's internally generated existence theorem
+    - weakening factor uniqueness or the identity/composition laws to a selected object, map, or finite fixture
+    - calling a nonidentity target map or a noninvertible base sufficient without firing the actual factor graph and a nonconstant-map control
+    - promoting fixed-arrow functoriality to base-arrow unitor/compositor, cleavage independence, adjunction, mate invertibility, K3-K4, or final G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  content_head: db1a511950b0499b358bc5ef048cfe69238d8d71
+  reviewed_content_head: 14471cd33278b42ccf73fd4c6b55b79561f9f47d
+  proof_obligation_delta: cartesianRegimeChosenLift obtains a strong cartesian lift solely from CartesianRegime.hasStrongCartesianLift at the admitted realized arrow and target package. Its domain defines the reindexed object. For every vertical target-fiber morphism, cartesianRegimeReindexMap applies Mathlib IsStronglyCartesian.map to the codomain lift and the composite of the domain lift with that morphism. The defining factor graph, its uniqueness among all vertical candidates, and identity and composition laws are proved from the same strong-cartesian universal property, then assembled into cartesianRegimeReindexFunctor. The selected public producer has only the realized arrow as data input and specializes this generic construction to selectedCartesianRegime. The finite firing uses a noninvertible selective-two realized base and an actual nonidentity four-axis swap, while a separate identity-base control uses cartesian-lift invertibility and cancellation to prove that the generated map action cannot be constant.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexing.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexingWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - cartesianRegimeChosenLift
+    - cartesianRegimeReindexObject
+    - cartesianRegimeReindexMap
+    - cartesianRegimeReindexMap_fac
+    - cartesianRegimeReindexMap_unique
+    - cartesianRegimeReindexMap_id
+    - cartesianRegimeReindexMap_comp
+    - cartesianRegimeReindexFunctor
+    - selectedCoreFiberCartesianLift
+    - selectedCoreFiberReindexFunctor
+    - selectedCoreFiberReindexFunctor_obj
+    - selectedCoreFiberReindexFunctor_map
+    - selectedCoreFiberReindexFunctor_map_fac
+    - selectedCoreFiberReindexFunctor_map_unique
+    - selectedCoreFiberReindexFunctor_map_id
+    - selectedCoreFiberReindexFunctor_map_comp
+    - finiteReindexAxisSwapHom_ne_id
+    - finiteSelectiveTwoReindexInput_not_isIso
+    - finiteSelectiveTwoReindexedAxisSwap_fac
+    - finiteSelectiveTwoReindex_map_id
+    - finiteSelectiveTwoReindex_map_comp
+    - finiteReindexIdentityAxisSwapHom_ne_id
+    - finiteReindexIdentityAxisSwap_map_ne_id
+  claim_mapping:
+    theorem_names:
+      - selectedCoreFiberReindexFunctor
+      - selectedCoreFiberReindexFunctor_map_fac
+      - selectedCoreFiberReindexFunctor_map_unique
+      - selectedCoreFiberReindexFunctor_map_id
+      - selectedCoreFiberReindexFunctor_map_comp
+      - finiteSelectiveTwoReindexedAxisSwap_fac
+      - finiteReindexIdentityAxisSwap_map_ne_id
+    source_labels:
+      - target theorem (C) producer-derived pullback reindexing object and map
+      - K2 reindexing functor identity and composition subnode
+      - selected cartesian regime as the internally generated cleavage source
+    conjuncts:
+      - every selected-regime realized arrow and every target-fiber object receives an internally generated strong cartesian lift
+      - every vertical target morphism is sent to the unique vertical factor through the codomain lift
+      - the generated map action satisfies the complete factor graph and universal uniqueness statement
+      - object and map actions form a functor with all-object identity and all-composable-map composition laws
+      - the finite firing combines a noninvertible base, nonidentity target map, actual factor graph, functor laws, and a nonconstant-map sensitivity control
+    undischarged_assumptions:
+      - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
+      - base-arrow reindexing unitor and compositor, their coherence, and independence of the internally selected cleavage
+      - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
+      - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
+      - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
+      - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
+    acceptance_point: producer-derived fixed-arrow core-fiber reindexing functor checkpoint only; G-110 remains target-proof-checkpoint
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary:
+      - arbitrary AtomCarrier U with the existing DecidableEq U.Atom boundary of CartesianRegime
+      - packageProjection core fibers and Mathlib strong-cartesian universal-property API
+    input_geometry:
+      - generic helper receives a CartesianRegime, an arbitrary RealizableHom, and proof that the regime admits that arrow
+      - selected public producer receives only an arbitrary RealizableHom; its regime and membership are named branch outputs
+      - arbitrary target-fiber objects and arbitrary vertical target-fiber morphisms
+    direction_hypothesis:
+      - regime.HCart membership is the generic eliminator input; selectedCartesianRegime_HCart generates it for the fixed public producer
+    discharge_required:
+      - strong cartesian lift at every target object
+      - vertical map factor, factorization equality, and uniqueness
+      - all-object identity and all-composable-map composition laws
+      - noninvertible/nonidentity finite firing and nonconstant-map control
+    conclusion_equivalent_risk:
+      - no lift, cleavage, object action, map, factor, graph, uniqueness proof, or functor law is a selected-producer argument
+    unused_or_ambient_only:
+      - Classical.choice appears only inside cartesianRegimeChosenLift and chooses from regime.hasStrongCartesianLift; it does not recover a caller-supplied preimage
+      - finite presentations and the four-axis permutation occur only in the witness
+      - G-109 covariant pushforward, adjunction, compositor/unitor, and mate APIs are not claimed by this checkpoint
+  certificate_provenance:
+    - cartesianRegimeChosenLift consumes regime.hasStrongCartesianLift for the actual input, membership, and target package
+    - cartesianRegimeReindexMap consumes the domain and codomain generated lifts and Mathlib IsStronglyCartesian.map
+    - selectedCoreFiberReindexFunctor specializes only the named selectedCartesianRegime and selectedCartesianRegime_HCart outputs
+  proof_use:
+    - cartesianRegimeReindexMap_fac is the direct IsStronglyCartesian.fac equation for the generated codomain lift
+    - cartesianRegimeReindexMap_unique consumes the candidate factor graph in IsStronglyCartesian.map_uniq
+    - cartesianRegimeReindexMap_id and cartesianRegimeReindexMap_comp compare candidates by strong-cartesian extensionality and the actual factor graph
+    - finiteReindexIdentityAxisSwap_map_ne_id combines the generated factor graph with IsStronglyCartesian.isIso_of_base_isIso and categorical cancellation
+  anti_weakening:
+    verdict: pass
+    notes:
+      - generic statements quantify every admitted realized arrow, every target object, every vertical map, and every composable pair
+      - selected producer accepts neither a regime nor its membership, and no witness-specific object occurs in its type
+      - this checkpoint does not count base-arrow pseudofunctor coherence, cleavage independence, adjunction, mate, or completion
+  witness_nondegeneracy:
+    - finiteSelectiveTwoToSupportInput supplies a reviewed non-IsIso semantic base arrow
+    - finiteReindexAxisSwapHom exchanges distinct axes zero and one and is therefore a genuine nonidentity vertical target map
+    - the selected factor graph and both functor laws fire on that base and map
+    - the identity-base control proves the same nonidentity map is not collapsed to identity by the selected map action
+  structure_field_escape: none-found
+  empty_elimination: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused CartesianRegimeReindexing.lean: pass; namespace audit 16 declarations and standard axioms only
+    - focused CartesianRegimeReindexingWitnesses.lean before and after the doc-only repair: pass; namespace audit 24 declarations and standard axioms only
+    - targeted modules CartesianRegimeReindexing and CartesianRegimeReindexingWitnesses: pass
+    - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
+    - PR checks at repaired reviewed head 14471cd3: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because Lean setup, build, kernel-audit, and premise-report steps were skipped
+    - PR checks at initial report-sync head 0a70d2a6: 7/7 success with the same Research-only lake build step exclusions
+    - PR checks at repaired report-sync head 3e033d2f: 7/7 success with the same Research-only lake build step exclusions
+  review_refs:
+    fixed_head: 873283b0d0651c0c47c44446fba59f11cb0e796b
+    standard_review: four-lane math-lean-review completed; one documentation-only Minor was repaired and directly rechecked by its reporting reviewer
+    independent_final_reviews:
+      - Math A: No major findings at fixed head 873283b0
+      - Math B: No major findings at fixed head 873283b0
+      - Lean A: No major findings at fixed head 873283b0
+      - Lean B: Minor for a missing named-local-instance docstring at fixed head 873283b0; Pass after qualified direct response at repaired head 14471cd3
+    qualified_direct_response: 873283b0..14471cd3 adds exactly one docstring line, changes no declaration, type, proof, import, report, umbrella, or manifest, and was accepted by Lean B without a fresh four-lane review
+    initial_integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379504079
+    qualified_audit_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379577393
+    public_audit_correction: the qualified audit comment supplies each lane's findings, refutation attempts, checked evidence, coverage limits, Issue acceptance mapping, validation commands, direct-response qualification, and the complete fixed-GOAL remaining K2 scope omitted by the initial abbreviated comment
+    initial_report_sync_head: 0a70d2a61be637fe1c51f4a17feb27613524c36d
+    final_report_sync_head: 3e033d2f418493d2258081440b10b6a292de17f9
+    report_only_audit: PASS; the qualified direct-response audit confirmed that the public-review-traceability Major and remaining-K2-scope Minor are both substantively repaired, the exact repair range changes only this report, the fixed GOAL and Lean artifacts are unchanged, and the repaired report-sync head has 7/7 successful checks
+  blocking_findings: []
+  next_obligation: merge Cycle 31; then construct base-arrow unitor/compositor and cleavage-independence data before the adjunction and Beck--Chevalley mate
+```
+
 ### Cycle 30 — generic pointed pullback bridge
 
 ```yaml
