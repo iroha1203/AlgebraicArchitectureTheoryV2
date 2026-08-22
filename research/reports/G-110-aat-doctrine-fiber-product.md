@@ -45,12 +45,11 @@ selection:
     - calling a nonidentity target map or a noninvertible base sufficient without firing the actual factor graph and a nonconstant-map control
     - promoting fixed-arrow functoriality to base-arrow unitor/compositor, cleavage independence, adjunction, mate invertibility, K3-K4, or final G-110 completion
   unchecked:
-    - fixed-head four-lane math-lean-review and integrated PR disposition
-    - PR CI and final report-only synchronization audit
+    - final report-only synchronization audit and report-sync-head CI
 result:
   proposed_result_type: proof-checkpoint
   content_head: db1a511950b0499b358bc5ef048cfe69238d8d71
-  reviewed_content_head: pending
+  reviewed_content_head: 14471cd33278b42ccf73fd4c6b55b79561f9f47d
   proof_obligation_delta: cartesianRegimeChosenLift obtains a strong cartesian lift solely from CartesianRegime.hasStrongCartesianLift at the admitted realized arrow and target package. Its domain defines the reindexed object. For every vertical target-fiber morphism, cartesianRegimeReindexMap applies Mathlib IsStronglyCartesian.map to the codomain lift and the composite of the domain lift with that morphism. The defining factor graph, its uniqueness among all vertical candidates, and identity and composition laws are proved from the same strong-cartesian universal property, then assembled into cartesianRegimeReindexFunctor. The selected public producer has only the realized arrow as data input and specializes this generic construction to selectedCartesianRegime. The finite firing uses a noninvertible selective-two realized base and an actual nonidentity four-axis swap, while a separate identity-base control uses cartesian-lift invertibility and cancellation to prove that the generated map action cannot be constant.
   completion_candidate: no
   lean_artifacts:
@@ -139,7 +138,7 @@ audits:
     - cartesianRegimeReindexMap_id and cartesianRegimeReindexMap_comp compare candidates by strong-cartesian extensionality and the actual factor graph
     - finiteReindexIdentityAxisSwap_map_ne_id combines the generated factor graph with IsStronglyCartesian.isIso_of_base_isIso and categorical cancellation
   anti_weakening:
-    verdict: pass-pending-independent-review
+    verdict: pass
     notes:
       - generic statements quantify every admitted realized arrow, every target object, every vertical map, and every composable pair
       - selected producer accepts neither a regime nor its membership, and no witness-specific object occurs in its type
@@ -154,18 +153,24 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - focused CartesianRegimeReindexing.lean: pass; namespace audit 16 declarations and standard axioms only
-    - focused CartesianRegimeReindexingWitnesses.lean: pass; namespace audit 24 declarations and standard axioms only
+    - focused CartesianRegimeReindexingWitnesses.lean before and after the doc-only repair: pass; namespace audit 24 declarations and standard axioms only
     - targeted modules CartesianRegimeReindexing and CartesianRegimeReindexingWitnesses: pass
     - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
+    - PR checks at repaired reviewed head 14471cd3: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because Lean setup, build, kernel-audit, and premise-report steps were skipped
   review_refs:
-    fixed_head: pending
-    standard_review: pending four-lane math-lean-review
-    independent_final_reviews: []
-    integrated_comment: pending
+    fixed_head: 873283b0d0651c0c47c44446fba59f11cb0e796b
+    standard_review: four-lane math-lean-review completed; one documentation-only Minor was repaired and directly rechecked by its reporting reviewer
+    independent_final_reviews:
+      - Math A: No major findings at fixed head 873283b0
+      - Math B: No major findings at fixed head 873283b0
+      - Lean A: No major findings at fixed head 873283b0
+      - Lean B: Minor for a missing named-local-instance docstring at fixed head 873283b0; Pass after qualified direct response at repaired head 14471cd3
+    qualified_direct_response: 873283b0..14471cd3 adds exactly one docstring line, changes no declaration, type, proof, import, report, umbrella, or manifest, and was accepted by Lean B without a fresh four-lane review
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379504079
     final_report_sync_head: pending
     report_only_audit: pending
   blocking_findings: []
-  next_obligation: run the fixed-head four-lane review and PR gate; after merge, construct base-arrow unitor/compositor and cleavage-independence data before the adjunction and Beck--Chevalley mate
+  next_obligation: complete the report-only audit and merge Cycle 31; then construct base-arrow unitor/compositor and cleavage-independence data before the adjunction and Beck--Chevalley mate
 ```
 
 ### Cycle 30 — generic pointed pullback bridge
