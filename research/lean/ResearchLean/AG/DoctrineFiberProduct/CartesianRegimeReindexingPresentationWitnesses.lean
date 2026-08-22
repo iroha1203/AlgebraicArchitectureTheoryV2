@@ -9,7 +9,9 @@ This module supplies raw-distinct finite presentations that decode to the same
 semantic cartesian input.  The alternate code pads the identity Atom
 permutation with a nonempty authored support; its decoder is still the literal
 identity permutation.  Thus the distinction is genuine code data rather than
-proof-field noise.
+proof-field noise.  The existing infinite-source semantic identity supplies a
+typed negative example showing that finite realization provenance is not
+automatically inhabited.
 
 ## Implementation notes
 
@@ -184,6 +186,13 @@ theorem finiteSelectiveTwoToSupportPresentation_semanticInput_eq :
     finiteSelectiveTwoToSupportPresentation_semanticHom_eq
 
 /-! ## Fixed-input provenance comparison -/
+
+/-- The infinite-source semantic identity admits no finite realization provenance. -/
+theorem infiniteIdentityInput_has_no_cartRealizationProvenance :
+    ¬ Nonempty (CartRealizationProvenance infiniteIdentityInput) := by
+  rintro ⟨provenance⟩
+  exact infiniteIdentityInput_not_presented
+    ⟨provenance.presentation, provenance.realization_eq⟩
 
 /--
 The canonical selective presentation regarded as finite provenance over its

@@ -16,7 +16,9 @@ The quotient compositor, unitor, their arbitrary-representative compatibility,
 associativity, and both unit laws are fired without supplying a lift,
 comparison, natural isomorphism, or coherence certificate.  Nondegeneracy is
 recorded independently by a noninvertible quotient leg and the genuine
-four-axis swap.  Raw presentation inequality is not used to assert that an
+four-axis swap.  The packaged pseudofunctor's object, morphism, identity, and
+composition fields are observed through its public projection API on these
+same fixtures.  Raw presentation inequality is not used to assert that an
 opaque comparison component is nonidentity.
 
 ## Implementation notes
@@ -400,6 +402,87 @@ noncomputable def finiteCodeSupportQuotientUnitor :
       finiteCodeSelectedCoreFiberReindexFunctor
         (𝟙 finitePortfolioSupportInstance) :=
   finiteCodeSelectedCoreFiberUnitor finitePortfolioSupportInstance
+
+/-! ## Packaged pseudoaction projections -/
+
+/-- The packaged pseudoaction exposes the finite support core fiber as its object. -/
+theorem finiteCodeSupportPseudoaction_obj :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction
+      (U := FiniteModel.carrier)).obj
+        (LocallyDiscrete.mk
+          (Opposite.op finitePortfolioSupportInstance)) =
+      Cat.of (CoreFiber finitePortfolioSupportInstance.toSemantic) := by
+  simpa using
+    finiteCodeSelectedCoreFiberReindexPseudoaction_obj
+      (U := FiniteModel.carrier)
+      (LocallyDiscrete.mk (Opposite.op finitePortfolioSupportInstance))
+
+/-- The packaged morphism action is the selected action of the noninvertible leg. -/
+theorem finiteCodeSelectivePseudoaction_map :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction
+      (U := FiniteModel.carrier)).map
+        (Quiver.Hom.op
+          (X := (finiteSelectiveTwoInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          (Y := (finiteSelectiveOneInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          finiteCodeSelectiveTwoToOneHom).toLoc =
+      (finiteCodeSelectedCoreFiberReindexFunctor
+        finiteCodeSelectiveTwoToOneHom).toCatHom := by
+  simpa using
+    finiteCodeSelectedCoreFiberReindexPseudoaction_map
+      (U := FiniteModel.carrier)
+      (Quiver.Hom.op
+        (X := (finiteSelectiveTwoInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        (Y := (finiteSelectiveOneInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        finiteCodeSelectiveTwoToOneHom).toLoc
+
+/-- The packaged identity comparison is the inverse concrete quotient unitor. -/
+theorem finiteCodeSupportPseudoaction_mapId :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction
+      (U := FiniteModel.carrier)).mapId
+        (LocallyDiscrete.mk
+          (Opposite.op finitePortfolioSupportInstance)) =
+      Cat.Hom.isoMk finiteCodeSupportQuotientUnitor.symm := by
+  simpa only [finiteCodeSupportQuotientUnitor] using
+    finiteCodeSelectedCoreFiberReindexPseudoaction_mapId
+      (U := FiniteModel.carrier)
+      (LocallyDiscrete.mk (Opposite.op finitePortfolioSupportInstance))
+
+/-- The packaged composition comparison is the inverse selective quotient compositor. -/
+theorem finiteCodeSelectivePseudoaction_mapComp :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction
+      (U := FiniteModel.carrier)).mapComp
+        (Quiver.Hom.op
+          (X := (finiteSelectiveOneInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          (Y := (finitePortfolioSupportInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          finiteCodeSelectiveOneToSupportHom).toLoc
+        (Quiver.Hom.op
+          (X := (finiteSelectiveTwoInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          (Y := (finiteSelectiveOneInstance :
+            FiniteCodeCartCategory FiniteModel.carrier))
+          finiteCodeSelectiveTwoToOneHom).toLoc =
+      Cat.Hom.isoMk finiteCodeSelectiveQuotientCompositor.symm := by
+  simpa only [finiteCodeSelectiveQuotientCompositor] using
+    finiteCodeSelectedCoreFiberReindexPseudoaction_mapComp
+      (U := FiniteModel.carrier)
+      (Quiver.Hom.op
+        (X := (finiteSelectiveOneInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        (Y := (finitePortfolioSupportInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        finiteCodeSelectiveOneToSupportHom).toLoc
+      (Quiver.Hom.op
+        (X := (finiteSelectiveTwoInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        (Y := (finiteSelectiveOneInstance :
+          FiniteCodeCartCategory FiniteModel.carrier))
+        finiteCodeSelectiveTwoToOneHom).toLoc
 
 /-! ## Representative compatibility and quotient coherence -/
 

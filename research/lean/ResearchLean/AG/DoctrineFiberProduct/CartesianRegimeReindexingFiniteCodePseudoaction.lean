@@ -24,6 +24,11 @@ The only noncomputable choice in the quotient action is the selected
 typed presentations, and proofs that those presentations represent the stated
 quotient morphisms.  They accept no lift, cleavage, endpoint isomorphism,
 comparison component, natural isomorphism, or coherence certificate.
+
+The final Mathlib `Pseudofunctor` package has named projection theorems for
+its object, morphism, identity, and composition fields.  Downstream callers
+can therefore recover the selected action, unitor, and compositor without
+unfolding the package implementation.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -38,6 +43,11 @@ set_option maxHeartbeats 3000000
 
 local infixr:81 " ≫q " => FiniteCodeCartHom.comp
 
+/--
+Category associativity expressed through the local quotient-composition
+notation.  This private normalization lemma aligns the generated quotient
+comparison with the associator field of the packaged pseudofunctor.
+-/
 private theorem finiteCodeComp_assoc
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {firstObject secondObject thirdObject fourthObject : FiniteInstanceCode U}
@@ -48,6 +58,10 @@ private theorem finiteCodeComp_assoc
   exact @Category.assoc (FiniteCodeCartCategory U) _ firstObject
     secondObject thirdObject fourthObject first second third
 
+/--
+The left identity law expressed through the local quotient-composition
+notation.  It normalizes the corresponding packaged unit coherence proof.
+-/
 private theorem finiteCodeId_comp
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -57,6 +71,10 @@ private theorem finiteCodeId_comp
     (hom : source ⟶ target) = hom
   exact Category.id_comp _
 
+/--
+The right identity law expressed through the local quotient-composition
+notation.  It normalizes the corresponding packaged unit coherence proof.
+-/
 private theorem finiteCodeComp_id
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -472,6 +490,12 @@ theorem finiteCodeSelectedCoreFiberHomComparison_eqToIso
   rw [finiteCodeSelectedCoreFiberHomComparison_refl]
   rfl
 
+/--
+At a target package, the generated comparison for an equality of quotient
+morphisms agrees with equality elimination on the selected action object.
+This private component normalization is used only to discharge Mathlib's
+locally-discrete `map₂` coherence fields.
+-/
 private theorem finiteCodeSelectedCoreFiberHomComparison_hom_app_eqToHom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -1758,6 +1782,67 @@ noncomputable def finiteCodeSelectedCoreFiberReindexPseudoaction
         simpa only using
           finiteCodeSelectedCoreFiberHomComparison_hom_app_eqToHom
             (finiteCodeId_comp hom.unop) targetPackage
+
+/-! ## Public projections of the packaged pseudoaction -/
+
+/--
+The object field of the packaged pseudoaction is exactly the core fiber over
+the decoded finite instance code.
+-/
+theorem finiteCodeSelectedCoreFiberReindexPseudoaction_obj
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (instanceCode :
+      LocallyDiscrete (FiniteCodeCartCategory U)ᵒᵖ) :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction (U := U)).obj
+        instanceCode =
+      Cat.of (CoreFiber instanceCode.as.unop.toSemantic) :=
+  rfl
+
+/--
+The morphism field of the packaged pseudoaction is exactly the selected
+contravariant reindexing functor of the distinguished quotient representative.
+-/
+theorem finiteCodeSelectedCoreFiberReindexPseudoaction_map
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target :
+      LocallyDiscrete (FiniteCodeCartCategory U)ᵒᵖ}
+    (hom : source ⟶ target) :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction (U := U)).map hom =
+      (finiteCodeSelectedCoreFiberReindexFunctor hom.as.unop).toCatHom :=
+  rfl
+
+/--
+The identity comparison field of the packaged pseudoaction is exactly the
+inverse of the selected quotient unitor, in Mathlib's pseudofunctor direction.
+-/
+theorem finiteCodeSelectedCoreFiberReindexPseudoaction_mapId
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (instanceCode :
+      LocallyDiscrete (FiniteCodeCartCategory U)ᵒᵖ) :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction (U := U)).mapId
+        instanceCode =
+      Cat.Hom.isoMk
+        (finiteCodeSelectedCoreFiberUnitor
+          instanceCode.as.unop).symm :=
+  rfl
+
+/--
+The composition comparison field of the packaged pseudoaction is exactly the
+inverse selected quotient compositor, with the two opposite-category arrows
+returned to their finite-code order.
+-/
+theorem finiteCodeSelectedCoreFiberReindexPseudoaction_mapComp
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {firstObject secondObject thirdObject :
+      LocallyDiscrete (FiniteCodeCartCategory U)ᵒᵖ}
+    (first : firstObject ⟶ secondObject)
+    (second : secondObject ⟶ thirdObject) :
+    (finiteCodeSelectedCoreFiberReindexPseudoaction (U := U)).mapComp
+        first second =
+      Cat.Hom.isoMk
+        (finiteCodeSelectedCoreFiberCompositor
+          second.as.unop first.as.unop).symm :=
+  rfl
 
 end AAT.AG.DoctrineFiberProduct
 

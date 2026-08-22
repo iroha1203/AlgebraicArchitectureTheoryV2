@@ -592,7 +592,8 @@ theorem selectedTypedCoreFiberPresentationCompositor_compatibility_app
               ((firstChoice₁.lift
                 (secondChoice₁.reindexFunctor.obj targetPackage)).hom ≫
                 (secondChoice₁.lift targetPackage).hom)) := by
-          simp only [coreFiberCleavageIteratedCartesianLift, Category.assoc]
+          rw [coreFiberCleavageIteratedCartesianLift_hom]
+          exact Category.assoc _ _ _
         _ = (firstChoice₀.reindexFunctor.map
               (CoreFiberCartesianCleavage.comparisonApp secondChoice₀
                 secondChoice₁ targetPackage).hom).1 ≫
@@ -682,7 +683,8 @@ theorem selectedTypedCoreFiberPresentationCompositor_compatibility_app
                   targetPackage)).hom ≫
                 (selectedTypedCoreFiberCartesianLift second₁
                   targetPackage).hom)) := by
-          simp only [selectedCoreFiberIteratedCartesianLift, Category.assoc]
+          rw [selectedCoreFiberIteratedCartesianLift_hom]
+          exact Category.assoc _ _ _
         _ = ((selectedTypedCoreFiberReindexFunctor first₀).map
               (selectedTypedCoreFiberPresentationComparisonApp second₀ second₁
                 second_eq targetPackage).hom).1 ≫
