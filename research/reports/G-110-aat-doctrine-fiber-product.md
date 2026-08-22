@@ -45,9 +45,7 @@ selection:
     - expressing the witness by raw equality or a cross-type intersection rather than typed common-base compatibility and an isomorphism-invariant property
     - proving projection noninvertibility only for an enumeration without connecting the finite-code and semantic pullback representations
     - promoting K0 to FiniteModelLift, K2-K4, or final theorem completion
-  unchecked:
-    - final report-only synchronization audit
-    - final PR CI and merge synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   content_head: 812c34c5943fb03c064ea6b1b01f82301d3109e0
@@ -169,6 +167,7 @@ audits:
     - focused DoctrinePullbackWitnesses.lean: pass; namespace audit 42 declarations and standard axioms only
     - targeted module DoctrinePullbackWitnesses: pass
     - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
+    - PR checks at report synchronization head f02bf3f8: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because its Lean build and kernel-audit steps were skipped
   review_refs:
     fixed_head: 7a5b66af9f468fa1a60b9ced1cc39ac55945fe98
     initial_integrated_rejection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4066#issuecomment-5378950198
@@ -179,8 +178,10 @@ audits:
       - Lean A: No major findings at repaired Lean content head 812c34c5
       - Lean B: No major findings at repaired Lean content head 812c34c5
     integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4066#issuecomment-5378975237
+    final_report_sync_head: f02bf3f8cbb1a4b718ce7c03cc09bf4dd20db09a
+    report_only_audit: Math A no finding; Lean blobs unchanged and all review, scope, validation, and open-obligation references synchronized
   blocking_findings: []
-  next_obligation: after final report synchronization and merge, continue K2 while retaining arbitrary-target FiniteModelLift as open
+  next_obligation: merge Cycle 29, then continue K2 while retaining arbitrary-target FiniteModelLift as open
 ```
 
 ### Cycle 28 — semantic-input lift transport and the remaining `FiniteModelLift` gap
