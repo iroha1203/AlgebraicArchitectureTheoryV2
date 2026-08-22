@@ -50,7 +50,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   content_head: d448f19daddefe2f0e83f4d0be4c99e1b27ca4df
-  review_target_head: pending
+  review_target_head: 1fd5eb6201cf55462d431a765856d7c9bbec653a
   proof_obligation_delta: For every comparator-free AuthoredSupportContext, Cycle 40 destructs only its RealizableSquare provenance and consumes realization_eq to identify the semantic square with the exact decoded BCPresentation. The direct route is supportFunctor followed by the selected left-projection reindexing and top transport; the via-base route is supportFunctor followed by bottom transport and selected right-leg reindexing. These definitions inhabit the two fixed AuthoredSupportRouteFamily signatures. Whiskering the Cycle 37 canonical mate with the discrete support functor produces the fixed CanonicalMateRestrictionSignature and depends on no authored values. Because the semantic and decoded southwest fibers are propositionally rather than definitionally equal, authoredSupportDecodedObject names the exact decoded object and the application theorem records the component correspondence by HEq after direct realization_eq elimination instead of a whole-functor cast. Componentwise Cycle 39 exactness makes the restricted natural transformation IsIso. The existing finite authored fixture supplies one actual support cell whose restricted component is IsIso. A separate theorem re-exports the symmetric Cycle 39 producer pullback, all four non-IsIso legs, and canonical exactness without conflating the two fixtures. No authored induced comparison or MateCoherentRel is claimed.
   completion_candidate: no
   lean_artifacts:
@@ -146,12 +146,12 @@ result:
     - Formal to ResearchLean import-direction scan: no new reverse import
     - Research aggregate/full build: not run, per hard rule
   review:
-    exact_head: pending
-    four_lane_result: pending fresh Math A, Math B, Lean A, and Lean B review at the final snapshot
-    refutation_attempts: pending
-    integrated_comment: pending
-    ci: pending
-    status: pending
+    exact_head: 1fd5eb6201cf55462d431a765856d7c9bbec653a
+    four_lane_result: Math A, Math B, Lean A, and Lean B independently passed with no central or noncentral findings
+    refutation_attempts: route orientation, unused realization provenance, authored-comparator dependence, caller route or mate certificate, hidden whole-functor cast, HEq weakening, IsIso transport circularity, empty support, combined-fixture overclaim, invented endpoint-rebase schema, axiom and dependency hygiene, and scope/ledger completeness were checked and rejected
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4081#issuecomment-5383159859
+    ci: 7 of 7 checks passed, including lake build, research integrity gates, tooling checks, and Workers build
+    status: accepted canonical authored-support restriction proof-checkpoint; G-110 completion remains no
 next:
   proof_obligation: generate the authored comparison from the raw pointwise table on the fixed support with direct authored-field proof-use, then define MateCoherentRel from the authored and canonical named producers; strict/lax and orbit obligations remain later nodes
 ```
