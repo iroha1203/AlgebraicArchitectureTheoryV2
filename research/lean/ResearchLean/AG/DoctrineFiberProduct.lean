@@ -56,6 +56,8 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperCompositionOpera
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomAssembly
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriangle
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedPackageTotalHomTriangleWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalProperty
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedReflectedUniversalPropertyWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -141,8 +143,12 @@ that upper with the reflected lower map to construct the generated low
 `PackageTotalHom`, descends the supplied high factorization through all seven
 computational upper fields to prove its exact composition triangle, and uses
 it to factor every ambient low competitor with the required lift and
-factorization laws.  A single noninvertible selective-two fixture fires the
-whole triangle and a concrete ambient factor.  Ambient uniqueness and strong-
-cartesianness reflection, `FiniteModelLift`, and the later K0 obligation remain
-unproved.
+factorization laws.  The reflected universal-property layer then proves every
+ambient candidate unique by inverse-package cancellation against that actual-
+high-derived factor, assembles the exact generated component and universal-
+property packets, derives Mathlib strong cartesianness without reusing the
+existing low certificate, and returns the fixed reflected strong lift.  A
+single noninvertible selective-two fixture fires the whole triangle, a concrete
+ambient factor, arbitrary-candidate uniqueness, and the reflected lift.
+`FiniteModelLift` and the later K0 obligation remain unproved.
 -/
