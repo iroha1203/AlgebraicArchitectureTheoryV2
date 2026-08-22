@@ -48,7 +48,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   content_head: 7b0e17664821e3da8201c78df490894387ca5ebc
-  review_target_head: pending
+  review_target_head: 9e04152c20ac308ea20708f0f5571363da3e9e68
   proof_obligation_delta: For every validated BCPresentation and every pair of cartesian cleavages on the exact pi1 and sigma2 semantic legs, Cycle 36 generates both adjunctions and Cycle 37 supplies the covariant square, so mateEquiv constructs the fixed-orientation mate without caller categorical certificates. Named theorems expose the unit-square-counit component, naturality, and right-adjunction transpose. For any two pairs of cleavages, square naturality and the Cycle 36 left-counit and right-hom-equivalence comparison theorems prove the canonical mate comparison. Generated arbitrary-to-selected bridges then normalize every such mate to the Cycle 37 mate. One finite identity-square control uses the reviewed literal and twisted right cleavages, exposes their visibly nonidentity comparison, and fires naturality on a nonidentity axis swap. A separate asymmetric control specializes normalization while retaining noninvertible pi1 and sigma2. The controls are deliberately not conflated. No mate invertibility or exactness conclusion is claimed.
   completion_candidate: no
   lean_artifacts:
@@ -140,7 +140,12 @@ result:
     - Formal to ResearchLean import-direction scan: no new reverse import
     - Research aggregate/full build: not run, per hard rule
   review:
-    status: pending standard four-lane review at the final PR head
+    exact_head: 9e04152c20ac308ea20708f0f5571363da3e9e68
+    four_lane_result: Math A, Math B, Lean A, and Lean B independently passed with no central or noncentral findings
+    refutation_attempts: mate and whisker orientation, selected-only weakening, unused Cycle 36 predecessor, caller certificate escape, arbitrary-to-selected bridge direction, combined-fixture overclaim, exactness or IsIso promotion, axiom and dependency hygiene, and ledger completeness were all checked and rejected
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4079#issuecomment-5382972825
+    ci: 7 of 7 checks passed, including lake build and research integrity gates
+    status: accepted arbitrary-cleavage canonical-mate proof-checkpoint; G-110 completion remains no
 next:
   proof_obligation: prove packageProjection-specific Beck--Chevalley exactness support and a positive IsIso theorem without deriving either from pullbackness or pseudofunctor coherence alone; arbitrary endpoint-isomorphism rebasing remains a separate open obligation
 ```
