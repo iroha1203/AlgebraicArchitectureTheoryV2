@@ -12,10 +12,13 @@ transport/reindexing unit and counit invertible.  The canonical
 Beck--Chevalley mate is then componentwise a composite of the generated unit,
 the generated square isomorphism, and the generated counit.
 
-No pullback, exactness, adjoint-equivalence, unit, counit, mate, or inverse
-certificate is accepted from a caller.  The public exactness theorem remains
-on the validated `BCPresentation` surface, whose pointed pullback is generated
-internally by `bcPresentation_isPullback_from_producer`.
+The generic cocartesian criterion states its upper inverse and cancellation
+equations explicitly.  Its concrete arbitrary-target use generates all three
+internally.  Consequently no pullback, exactness, adjoint-equivalence, unit,
+counit, mate, or inverse certificate is accepted by the public unit/counit or
+Beck--Chevalley exactness theorems.  The latter remain on the validated
+`BCPresentation` surface, whose pointed pullback is generated internally by
+`bcPresentation_isPullback_from_producer`.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

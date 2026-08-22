@@ -27,7 +27,7 @@ report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
   proof_state_ref: Issue 4034 Cycle 38 merge synchronization comment 5382985835 and Cycle 39 selection comment 5383012575
   proof_dag_predecessors:
-    - G-109 realized package total hom with explicit upper two-sided inverse data
+    - G-110 arbitrary-target inverseCorePackageHom with its generated upper two-sided inverse and cancellation laws
     - Cycle 35 generated package transport/reindexing adjunction, unit, counit, and universal properties
     - Cycle 37 unit-square-counit canonical mate expansion
     - Cycle 38 arbitrary-cleavage mate comparison and selected normalization
@@ -40,7 +40,7 @@ selection:
     - ResearchLean/AG/DoctrineFiberProduct.lean
   risks:
     - inferring mate invertibility from pullbackness or pseudofunctor coherence alone
-    - accepting IsIso, adjunction equivalence, inverse, exactness, or mate certificates from a caller
+    - leaving IsIso, adjunction equivalence, inverse, exactness, or mate certificates as caller premises of the public unit/counit or mate exactness route
     - proving only the selected-cleavage mate rather than every arbitrary-cleavage mate
     - leaving one or more finite control legs invertible
     - promoting package-specific exactness to arbitrary endpoint rebasing, MateCoherentRel, K3-K4, FiniteModelLift, or G-110 completion
@@ -49,7 +49,7 @@ result:
   proposed_result_type: proof-checkpoint
   content_head: 85aecf5287b1f22e14bc60fe0eb4365c459e9710
   review_target_head: pending
-  proof_obligation_delta: Every realized package total hom has the explicit upper inverse already carried by SignedExactCoreReadingHom; Cycle 39 proves directly that this makes the total hom strongly cocartesian, including its arbitrary-target factor and uniqueness laws. The generated selected cartesian lift is compared to that explicit cocartesian lift through cartesian uniqueness, so it is also strongly cocartesian. Conversely, the support lift used by the counit is proved strongly cartesian. Over identity base maps, these two universal-property packages produce total isomorphisms, and the total-to-fiber reflection theorem yields IsIso for every component of the generated unit and counit. The Cycle 37 component formula then expresses the canonical mate as generated unit, mapped square isomorphism, and generated counit, so every component and hence the natural transformation are IsIso. Cycle 38 selected comparison transports this result to every arbitrary-cleavage mate. A symmetric three-to-two cospan generates an actual pointed pullback whose bottom, right, left, and top legs are all proved noninvertible; both canonical and arbitrary-cleavage exactness fire on this single control. No caller exactness or invertibility certificate is consumed.
+  proof_obligation_delta: Cycle 39 first proves a generic criterion saying that a package total hom supplied with a two-sided inverse of its complete upper map is strongly cocartesian. It then discharges that criterion specifically for the G-110 arbitrary-target strongCartesianLiftOfTarget construction by using inverseCorePackageBackwardUpper and its two generated cancellation theorems; SignedExactCoreReadingHom itself carries no inverse field. The generated selected cartesian lift is compared to that explicit cocartesian lift through cartesian uniqueness, so it is also strongly cocartesian. Conversely, the support lift used by the counit is proved strongly cartesian. Over identity base maps, these two universal-property packages produce total isomorphisms, and the total-to-fiber reflection theorem yields IsIso for every component of the generated unit and counit. The Cycle 37 component formula then expresses the canonical mate as generated unit, mapped square isomorphism, and generated counit, so every component and hence the natural transformation are IsIso. Cycle 38 selected comparison transports this result to every arbitrary-cleavage mate. A symmetric three-to-two cospan generates an actual pullback whose bottom, right, left, and top legs are all proved noninvertible; both canonical and arbitrary-cleavage exactness fire on this single control. No caller exactness or invertibility certificate is consumed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean
@@ -87,7 +87,7 @@ result:
       - finiteBCExactnessCleavageMate_isIso
     source_labels:
       - target theorem (C) Beck--Chevalley mate exactness
-      - G-109 explicit realized package upper inverse predecessor
+      - G-110 arbitrary-target inverseCorePackageHom and cancellation-law predecessor
       - Cycle 35 generated adjunction predecessor
       - Cycle 37 canonical mate component predecessor
       - Cycle 38 arbitrary-cleavage comparison predecessor
@@ -104,9 +104,9 @@ result:
       - K4 pullback-square pasting and G-106/G-109 coherence bridge
       - final (A)-(E) assembly, cumulative premise audit, and completion four-lane review
   dependency_dag:
-    - realized package upper inverse -> explicit strongly cocartesian total lift -> selected lift comparison -> selected lift strongly cocartesian
-    - selected lift strongly cartesian and strongly cocartesian over identity -> total IsIso -> fiber IsIso -> unit component IsIso
-    - support lift strongly cocartesian and strongly cartesian over identity -> total IsIso -> fiber IsIso -> counit component IsIso
+    - generated inverseCorePackage upper inverse -> explicit strongly cocartesian arbitrary-target lift -> selected lift comparison -> selected lift strongly cocartesian
+    - selected lift over the realized base is strongly cartesian and strongly cocartesian -> generated unit component is strongly cartesian over identity -> total IsIso -> fiber IsIso
+    - support lift over the realized base is strongly cocartesian and strongly cartesian -> generated counit component is strongly cocartesian over identity -> total IsIso -> fiber IsIso
     - unit IsIso plus mapped square IsIso plus counit IsIso -> canonical mate component IsIso -> canonical mate IsIso
     - Cycle 38 arbitrary-to-selected comparison plus selected mate IsIso -> arbitrary-cleavage mate IsIso
     - symmetric finite cospan producer plus projection bridges -> four noninvertible legs and exactness firing
@@ -114,20 +114,20 @@ result:
     direction_hypotheses:
       - validated BCPresentation; arbitrary-cleavage theorem additionally quantifies over the two cleavage values
     discharge_required_consumed:
-      - explicit upper inverse fields of every realized package total hom
+      - the generated inverseCorePackageBackwardUpper and its two cancellation theorems for each arbitrary-target lift
       - generated cartesian and cocartesian universal properties
       - Cycle 35 unit and counit components
       - Cycle 37 unit-square-counit mate expansion
       - Cycle 38 arbitrary-to-selected mate comparison
     conclusion_equivalent_inputs: none
-    structure_field_escape: none; no IsIso, inverse package, exactness support, adjunction equivalence, mate, or mate-comparison certificate is an input
+    structure_field_escape: none on the public exactness route; the generic cocartesian criterion explicitly takes an upper inverse and two equations, and its sole concrete arbitrary-target use discharges all three from inverseCorePackageHom before the certificate-free unit/counit and mate theorems
     proof_use: upper inverse equations prove factor and uniqueness for cocartesianness; cartesian uniqueness transports that structure to the selected lift; identity-base universal properties construct the unit and counit inverses; the mate proof rewrites by the explicit component formula; arbitrary-cleavage exactness cancels the generated Cycle 38 comparison
   route_integrity:
     selected_route: exact decoded BCPresentation, realized packageProjection total morphisms, generated Cycle 35 adjunction, Cycle 37 mate, and Cycle 38 comparison
-    provenance: existing SignedExactCoreReadingHom upper inverses and reviewed generated universal properties; the finite witness is produced from the symmetric finite cospan and the existing pointed-pullback bridge
+    provenance: G-110 inverseCorePackageHom, its generated backward upper hom and cancellation laws, and reviewed generated universal properties; the finite witness is produced from the symmetric finite cospan and the existing pointed-pullback bridge
     nonvacuity: the symmetric three-to-two control is an actual producer-derived pullback and each of its four structural legs is noninvertible
     forbidden_routes_absent:
-      - no exactness, IsIso, inverse, adjunction-equivalence, mate, or comparison certificate input
+      - no exactness, IsIso, inverse, adjunction-equivalence, mate, or comparison certificate input to the public unit/counit and Beck--Chevalley exactness theorems
       - no derivation from pullbackness or coherence alone
       - no selected-cleavage-only conclusion
       - no invertible-leg control
