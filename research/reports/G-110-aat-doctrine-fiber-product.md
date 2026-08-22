@@ -45,8 +45,7 @@ selection:
     - calling objectwise associativity presentation independence or full cleavage coherence
     - firing only identity arrows, invertible base arrows, or constant vertical maps in the finite witness
     - promoting this checkpoint to the adjunction, Beck--Chevalley mate, K3-K4, or final G-110 theorem
-  unchecked:
-    - final report-only audit and final-head CI
+  unchecked: []
 result:
   proposed_result_type: proof-checkpoint
   content_head: d71d3d5d1af005a9dd6ada9cd9948df75b4d7e1f
@@ -169,6 +168,7 @@ audits:
     - targeted modules CartesianRegimeReindexingCoherence and CartesianRegimeReindexingCoherenceWitnesses: pass
     - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, import-direction, manifest, and umbrella scans: pass
     - repaired fixed head 37f96ee8bcac677fa6d8a01d597b2b1c842088d0: 7 of 7 PR checks successful and mergeable/CLEAN; the Research-only lake build job skipped Lean setup, build, kernel axiom audit, and premise report, so it is not counted as theorem evidence
+    - report-sync head 981594de5888e72bfacbd18430cc6bf76fbbb032: 7 of 7 PR checks successful; independent report-only audit passed with no actionable finding
   review_refs:
     initial_fixed_head: b66a55dc50930be266f3468a6be3f695cb70b76c
     initial_standard_review:
@@ -178,13 +178,15 @@ audits:
     direct_response: not used; making three declarations module-private changes the public declaration surface, so a fresh four-lane review is required
     fixed_head: 37f96ee8bcac677fa6d8a01d597b2b1c842088d0
     standard_review: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4069#issuecomment-5379945963
+    final_report_sync_head: 981594de5888e72bfacbd18430cc6bf76fbbb032
+    report_only_audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4069#issuecomment-5379985719
     fresh_review_verdicts:
       - Math A: No major findings; checked orientation, premise classification, selected-lift provenance, proof-use, and finite nondegeneracy
       - Math B: No major findings; checked all public signatures, private helper boundaries, factor graphs, witness connection, and remaining-scope accuracy
       - Lean A: No major findings; independently confirmed the prior three-declaration public-firewall finding is closed, the helpers have no external references, and no alternate caller-certificate path remains
       - Lean B: No major findings; independently checked endpoint typing, dependency/provenance, both comparison directions, all coherence proof terms, and static wiring
   blocking_findings: []
-  next_obligation: complete the report-only audit and merge Cycle 32; then construct arbitrary-presentation and cleavage-choice comparison coherence before the adjunction and Beck--Chevalley mate
+  next_obligation: merge Cycle 32 and synchronize Issue 4034; then construct arbitrary-presentation and cleavage-choice comparison coherence before the adjunction and Beck--Chevalley mate
 ```
 
 ### Cycle 31 — producer-derived cartesian reindexing functor
