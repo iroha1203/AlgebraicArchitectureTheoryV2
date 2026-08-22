@@ -449,10 +449,180 @@ theorem coreTransportReindex_right_triangle
 /-! ## Exact-endpoint presentation replacement compatibility -/
 
 /--
-After replacing a typed presentation by a semantically equal one, the forward
-transpose still has the same authored total factor graph.  The generated Cycle
-34 comparison is the only bridge between the two selected cartesian lifts.
+The canonical G-109 transport comparison for two exact-endpoint presentations
+with equal decoded semantic arrows.  Only the strong-cocartesianness proposition
+of the second lift is retagged; neither transport functor is cast wholesale.
 -/
+noncomputable def typedCoreFiberTransportPresentationComparisonApp
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    (sourcePackage : CoreFiber source.toSemantic) :
+    (coreFiberTransportFunctor
+        (typedPresentationToSemantic first)).obj sourcePackage ≅
+      (coreFiberTransportFunctor
+        (typedPresentationToSemantic second)).obj sourcePackage := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first) sourcePackage) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first) sourcePackage
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic second) sourcePackage) := by
+    rw [semantic_eq]
+    exact coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic second) sourcePackage
+  exact strongLiftComparisonIso (packageProjection U)
+    (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic first) sourcePackage)
+    (coreFiberLift (typedPresentationToSemantic second) sourcePackage)
+
+/-- The forward transport comparison factors the first lift as the second lift. -/
+theorem typedCoreFiberTransportPresentationComparisonApp_hom_fac
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    (sourcePackage : CoreFiber source.toSemantic) :
+    coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 =
+      coreFiberLift (typedPresentationToSemantic second) sourcePackage := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first) sourcePackage) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first) sourcePackage
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic second) sourcePackage) := by
+    rw [semantic_eq]
+    exact coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic second) sourcePackage
+  exact strongLiftComparisonHom_fac (packageProjection U)
+    (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic first) sourcePackage)
+    (coreFiberLift (typedPresentationToSemantic second) sourcePackage)
+
+/-- The inverse transport comparison factors the second lift as the first lift. -/
+theorem typedCoreFiberTransportPresentationComparisonApp_inv_fac
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    (sourcePackage : CoreFiber source.toSemantic) :
+    coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).inv.1 =
+      coreFiberLift (typedPresentationToSemantic first) sourcePackage := by
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first) sourcePackage) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first) sourcePackage
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic second) sourcePackage) := by
+    rw [semantic_eq]
+    exact coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic second) sourcePackage
+  exact strongLiftComparisonHom_fac (packageProjection U)
+    (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic second) sourcePackage)
+    (coreFiberLift (typedPresentationToSemantic first) sourcePackage)
+
+/-- The G-109 transport comparison is natural on source-fiber morphisms. -/
+theorem typedCoreFiberTransportPresentationComparison_naturality
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    {sourcePackage targetPackage : CoreFiber source.toSemantic}
+    (hom : sourcePackage ⟶ targetPackage) :
+    (coreFiberTransportFunctor
+        (typedPresentationToSemantic first)).map hom ≫
+      (typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq targetPackage).hom =
+    (typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq sourcePackage).hom ≫
+      (coreFiberTransportFunctor
+        (typedPresentationToSemantic second)).map hom := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first) sourcePackage) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first) sourcePackage
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic first) sourcePackage)
+    (𝟙 target.toSemantic)
+  change coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+      (((coreFiberTransportFunctor
+          (typedPresentationToSemantic first)).map hom).1 ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1) =
+    coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+      ((typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 ≫
+        ((coreFiberTransportFunctor
+          (typedPresentationToSemantic second)).map hom).1)
+  calc
+    _ = (coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).map hom).1) ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 :=
+      (Category.assoc _ _ _).symm
+    _ = (hom.1 ≫
+          coreFiberLift (typedPresentationToSemantic first) targetPackage) ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 := by
+      rw [show coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).map hom).1 =
+          hom.1 ≫ coreFiberLift (typedPresentationToSemantic first) targetPackage by
+        simpa only [coreFiberTransportFunctor] using
+          coreFiberTransportMap_fac (typedPresentationToSemantic first) hom]
+    _ = hom.1 ≫ coreFiberLift (typedPresentationToSemantic second) targetPackage := by
+      rw [Category.assoc,
+        typedCoreFiberTransportPresentationComparisonApp_hom_fac]
+    _ = (coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic second)).map hom).1) := by
+      rw [show coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic second)).map hom).1 =
+          hom.1 ≫ coreFiberLift (typedPresentationToSemantic second) targetPackage by
+        simpa only [coreFiberTransportFunctor] using
+          coreFiberTransportMap_fac (typedPresentationToSemantic second) hom]
+    _ = _ := by
+      rw [← Category.assoc,
+        typedCoreFiberTransportPresentationComparisonApp_hom_fac]
+
+/-- The componentwise G-109 comparison assembled as a natural isomorphism. -/
+noncomputable def typedCoreFiberTransportPresentationComparison
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second) :
+    coreFiberTransportFunctor (typedPresentationToSemantic first) ≅
+      coreFiberTransportFunctor (typedPresentationToSemantic second) :=
+  NatIso.ofComponents
+    (typedCoreFiberTransportPresentationComparisonApp first second semantic_eq)
+    (by
+      intro sourcePackage targetPackage hom
+      exact typedCoreFiberTransportPresentationComparison_naturality
+        first second semantic_eq hom)
+
+/-- The two presentation-derived forward transposes commute with both comparisons. -/
 theorem coreTransportToReindexHom_typedPresentationCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -463,22 +633,165 @@ theorem coreTransportToReindexHom_typedPresentationCompatibility
     (targetPackage : CoreFiber target.toSemantic)
     (hom : (coreFiberTransportFunctor
         (typedPresentationToSemantic first)).obj sourcePackage ⟶ targetPackage) :
-    (coreTransportToReindexHom (typedRealizableHom first) sourcePackage
-        targetPackage hom).1 ≫
+    coreTransportToReindexHom (typedRealizableHom first) sourcePackage
+        targetPackage hom ≫
       (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
-        targetPackage).hom.1 ≫
-      (selectedTypedCoreFiberCartesianLift second targetPackage).hom =
-        coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫ hom.1 := by
-  rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
-  simpa only [typedRealizableHom, typedCartSemanticInput,
-    selectedTypedCoreFiberCartesianLift] using
-      coreTransportToReindexHom_fac (typedRealizableHom first)
-        sourcePackage targetPackage hom
+        targetPackage).hom =
+    coreTransportToReindexHom (typedRealizableHom second) sourcePackage
+      targetPackage
+      ((typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq sourcePackage).inv ≫ hom) := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let secondLift := selectedTypedCoreFiberCartesianLift second targetPackage
+  letI : (packageProjection U).IsStronglyCartesian
+      (typedPresentationToSemantic second) secondLift.hom := by
+    simpa only [typedCartSemanticInput] using secondLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U) (typedPresentationToSemantic second)
+    secondLift.hom (𝟙 source.toSemantic)
+  change ((coreTransportToReindexHom (typedRealizableHom first) sourcePackage
+      targetPackage hom).1 ≫
+        (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1) ≫ secondLift.hom =
+    (coreTransportToReindexHom (typedRealizableHom second) sourcePackage
+      targetPackage
+      ((typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq sourcePackage).inv ≫ hom)).1 ≫ secondLift.hom
+  calc
+    _ = (coreTransportToReindexHom (typedRealizableHom first) sourcePackage
+          targetPackage hom).1 ≫
+        ((selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫ secondLift.hom) :=
+      Category.assoc _ _ _
+    _ = (coreTransportToReindexHom (typedRealizableHom first) sourcePackage
+          targetPackage hom).1 ≫
+        (selectedTypedCoreFiberCartesianLift first targetPackage).hom := by
+      rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
+    _ = coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+        hom.1 := by
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberCartesianLift] using
+        coreTransportToReindexHom_fac (typedRealizableHom first)
+          sourcePackage targetPackage hom
+    _ = (coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+          (typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq sourcePackage).inv.1) ≫ hom.1 := by
+      rw [typedCoreFiberTransportPresentationComparisonApp_inv_fac]
+    _ = coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+        ((typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).inv.1 ≫ hom.1) :=
+      Category.assoc _ _ _
+    _ = _ := by
+      symm
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberCartesianLift] using
+        coreTransportToReindexHom_fac (typedRealizableHom second)
+          sourcePackage targetPackage
+          ((typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq sourcePackage).inv ≫ hom)
 
-/--
-The generated unit survives presentation replacement through the same Cycle
-34 comparison and factors to the unchanged canonical cocartesian lift.
--/
+/-- The inverse transposes commute with the same two generated comparisons. -/
+theorem reindexToCoreTransportHom_typedPresentationCompatibility
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    (sourcePackage : CoreFiber source.toSemantic)
+    (targetPackage : CoreFiber target.toSemantic)
+    (hom : sourcePackage ⟶
+      (selectedTypedCoreFiberReindexFunctor first).obj targetPackage) :
+    (typedCoreFiberTransportPresentationComparisonApp first second semantic_eq
+        sourcePackage).hom ≫
+      reindexToCoreTransportHom (typedRealizableHom second) sourcePackage
+        targetPackage
+        (hom ≫ (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom) =
+    reindexToCoreTransportHom (typedRealizableHom first) sourcePackage
+      targetPackage hom := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first) sourcePackage) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first) sourcePackage
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic first) sourcePackage)
+    (𝟙 target.toSemantic)
+  change coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+      ((typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 ≫
+        (reindexToCoreTransportHom (typedRealizableHom second) sourcePackage
+          targetPackage
+          (hom ≫ (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom)).1) =
+    coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+      (reindexToCoreTransportHom (typedRealizableHom first) sourcePackage
+        targetPackage hom).1
+  calc
+    _ = (coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+          (typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq sourcePackage).hom.1) ≫
+        (reindexToCoreTransportHom (typedRealizableHom second) sourcePackage
+          targetPackage
+          (hom ≫ (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom)).1 :=
+      (Category.assoc _ _ _).symm
+    _ = coreFiberLift (typedPresentationToSemantic second) sourcePackage ≫
+        (reindexToCoreTransportHom (typedRealizableHom second) sourcePackage
+          targetPackage
+          (hom ≫ (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom)).1 := by
+      rw [typedCoreFiberTransportPresentationComparisonApp_hom_fac]
+    _ = (hom.1 ≫
+          (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom.1) ≫
+        (selectedTypedCoreFiberCartesianLift second targetPackage).hom := by
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberCartesianLift] using
+        reindexToCoreTransportHom_fac (typedRealizableHom second)
+          sourcePackage targetPackage
+          (hom ≫ (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom)
+    _ = hom.1 ≫
+        ((selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+          (selectedTypedCoreFiberCartesianLift second targetPackage).hom) :=
+      Category.assoc _ _ _
+    _ = hom.1 ≫
+        (selectedTypedCoreFiberCartesianLift first targetPackage).hom := by
+      rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
+    _ = _ := by
+      symm
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberCartesianLift] using
+        reindexToCoreTransportHom_fac (typedRealizableHom first)
+          sourcePackage targetPackage hom
+
+/-- Pointwise compatibility of the two generated hom-set equivalences. -/
+theorem coreTransportReindexHomEquiv_typedPresentationCompatibility
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second)
+    (sourcePackage : CoreFiber source.toSemantic)
+    (targetPackage : CoreFiber target.toSemantic)
+    (hom : (coreFiberTransportFunctor
+        (typedPresentationToSemantic first)).obj sourcePackage ⟶ targetPackage) :
+    (coreTransportReindexHomEquiv (typedRealizableHom first) sourcePackage
+        targetPackage) hom ≫
+      (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
+        targetPackage).hom =
+    (coreTransportReindexHomEquiv (typedRealizableHom second) sourcePackage
+      targetPackage)
+      ((typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq sourcePackage).inv ≫ hom) :=
+  coreTransportToReindexHom_typedPresentationCompatibility first second
+    semantic_eq sourcePackage targetPackage hom
+
+/-- The generated units form the actual presentation-replacement square. -/
 theorem coreTransportReindexUnit_typedPresentationCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -486,23 +799,103 @@ theorem coreTransportReindexUnit_typedPresentationCompatibility
     (semantic_eq : typedPresentationToSemantic first =
       typedPresentationToSemantic second)
     (sourcePackage : CoreFiber source.toSemantic) :
-    ((coreTransportReindexUnit (typedRealizableHom first)).app sourcePackage).1 ≫
+    (coreTransportReindexUnit (typedRealizableHom first)).app sourcePackage ≫
       (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
         ((coreFiberTransportFunctor (typedPresentationToSemantic first)).obj
-          sourcePackage)).hom.1 ≫
-      (selectedTypedCoreFiberCartesianLift second
-        ((coreFiberTransportFunctor (typedPresentationToSemantic first)).obj
-          sourcePackage)).hom =
-      coreFiberLift (typedPresentationToSemantic first) sourcePackage := by
-  rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
-  simpa only [typedRealizableHom, typedCartSemanticInput,
-    selectedTypedCoreFiberCartesianLift] using
-      coreTransportReindexUnit_app_fac (typedRealizableHom first) sourcePackage
+          sourcePackage)).hom ≫
+      (selectedTypedCoreFiberReindexFunctor second).map
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom =
+    (coreTransportReindexUnit
+      (typedRealizableHom second)).app sourcePackage := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let secondLift := selectedTypedCoreFiberCartesianLift second
+    ((coreFiberTransportFunctor
+      (typedPresentationToSemantic second)).obj sourcePackage)
+  letI : (packageProjection U).IsStronglyCartesian
+      (typedPresentationToSemantic second) secondLift.hom := by
+    simpa only [typedCartSemanticInput] using secondLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U) (typedPresentationToSemantic second)
+    secondLift.hom (𝟙 source.toSemantic)
+  change (((coreTransportReindexUnit
+      (typedRealizableHom first)).app sourcePackage).1 ≫
+    (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
+      ((coreFiberTransportFunctor (typedPresentationToSemantic first)).obj
+        sourcePackage)).hom.1 ≫
+    ((selectedTypedCoreFiberReindexFunctor second).map
+      (typedCoreFiberTransportPresentationComparisonApp first second
+        semantic_eq sourcePackage).hom).1) ≫ secondLift.hom =
+    ((coreTransportReindexUnit
+      (typedRealizableHom second)).app sourcePackage).1 ≫ secondLift.hom
+  calc
+    _ = (((coreTransportReindexUnit
+          (typedRealizableHom first)).app sourcePackage).1 ≫
+          (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq
+            ((coreFiberTransportFunctor
+              (typedPresentationToSemantic first)).obj sourcePackage)).hom.1) ≫
+        (((selectedTypedCoreFiberReindexFunctor second).map
+          (typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq sourcePackage).hom).1 ≫ secondLift.hom) :=
+      Category.assoc _ _ _
+    _ = (((coreTransportReindexUnit
+          (typedRealizableHom first)).app sourcePackage).1 ≫
+          (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq
+            ((coreFiberTransportFunctor
+              (typedPresentationToSemantic first)).obj sourcePackage)).hom.1) ≫
+        ((selectedTypedCoreFiberCartesianLift second
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).obj sourcePackage)).hom ≫
+          (typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq sourcePackage).hom.1) := by
+      rw [selectedTypedCoreFiberReindexFunctor_map_fac]
+    _ = ((coreTransportReindexUnit
+          (typedRealizableHom first)).app sourcePackage).1 ≫
+        ((selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).obj sourcePackage)).hom.1 ≫
+          (selectedTypedCoreFiberCartesianLift second
+            ((coreFiberTransportFunctor
+              (typedPresentationToSemantic first)).obj sourcePackage)).hom) ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 := by simp only [Category.assoc]
+    _ = ((coreTransportReindexUnit
+          (typedRealizableHom first)).app sourcePackage).1 ≫
+        (selectedTypedCoreFiberCartesianLift first
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).obj sourcePackage)).hom ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 := by
+      rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
+    _ = coreFiberLift (typedPresentationToSemantic first) sourcePackage ≫
+        (typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq sourcePackage).hom.1 := by
+      rw [← Category.assoc]
+      rw [show ((coreTransportReindexUnit
+          (typedRealizableHom first)).app sourcePackage).1 ≫
+          (selectedTypedCoreFiberCartesianLift first
+            ((coreFiberTransportFunctor
+              (typedPresentationToSemantic first)).obj sourcePackage)).hom =
+        coreFiberLift (typedPresentationToSemantic first) sourcePackage by
+        simpa only [typedRealizableHom, typedCartSemanticInput,
+          selectedTypedCoreFiberCartesianLift] using
+          coreTransportReindexUnit_app_fac (typedRealizableHom first)
+            sourcePackage]
+    _ = coreFiberLift (typedPresentationToSemantic second) sourcePackage :=
+      typedCoreFiberTransportPresentationComparisonApp_hom_fac first second
+        semantic_eq sourcePackage
+    _ = ((coreTransportReindexUnit
+          (typedRealizableHom second)).app sourcePackage).1 ≫ secondLift.hom := by
+      symm
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberCartesianLift] using
+        coreTransportReindexUnit_app_fac (typedRealizableHom second)
+          sourcePackage
 
-/--
-The first counit and the Cycle 34 presentation comparison identify the same
-selected cartesian lift; no complete adjunction is transported by equality.
--/
+/-- The generated counits form the actual presentation-replacement square. -/
 theorem coreTransportReindexCounit_typedPresentationCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -510,19 +903,122 @@ theorem coreTransportReindexCounit_typedPresentationCompatibility
     (semantic_eq : typedPresentationToSemantic first =
       typedPresentationToSemantic second)
     (targetPackage : CoreFiber target.toSemantic) :
-    (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
-        targetPackage).hom.1 ≫
-      (selectedTypedCoreFiberCartesianLift second targetPackage).hom =
-    coreFiberLift (typedPresentationToSemantic first)
-        ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage) ≫
+    (coreFiberTransportFunctor
+        (typedPresentationToSemantic first)).map
+      (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
+        targetPackage).hom ≫
+    (typedCoreFiberTransportPresentationComparisonApp first second semantic_eq
+      ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage)).hom ≫
+    (coreTransportReindexCounit
+      (typedRealizableHom second)).app targetPackage =
+    (coreTransportReindexCounit
+      (typedRealizableHom first)).app targetPackage := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  letI : (packageProjection U).IsStronglyCocartesian
+      (typedPresentationToSemantic first)
+      (coreFiberLift (typedPresentationToSemantic first)
+        ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage)) :=
+    coreFiberLift_isStronglyCocartesian
+      (typedPresentationToSemantic first)
+      ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage)
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (typedPresentationToSemantic first)
+    (coreFiberLift (typedPresentationToSemantic first)
+      ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage))
+    (𝟙 target.toSemantic)
+  change coreFiberLift (typedPresentationToSemantic first)
+      ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage) ≫
+    (((coreFiberTransportFunctor
+        (typedPresentationToSemantic first)).map
+      (selectedTypedCoreFiberPresentationComparisonApp first second semantic_eq
+        targetPackage).hom).1 ≫
+      (typedCoreFiberTransportPresentationComparisonApp first second semantic_eq
+        ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage)).hom.1 ≫
       ((coreTransportReindexCounit
-        (typedRealizableHom first)).app targetPackage).1 := by
-  rw [selectedTypedCoreFiberPresentationComparisonApp_hom_fac]
-  symm
-  simpa only [typedRealizableHom, typedCartSemanticInput,
-    selectedTypedCoreFiberReindexFunctor,
-    selectedTypedCoreFiberCartesianLift] using
-      coreTransportReindexCounit_app_fac (typedRealizableHom first) targetPackage
+        (typedRealizableHom second)).app targetPackage).1) =
+    coreFiberLift (typedPresentationToSemantic first)
+      ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage) ≫
+      ((coreTransportReindexCounit
+        (typedRealizableHom first)).app targetPackage).1
+  calc
+    _ = (coreFiberLift (typedPresentationToSemantic first)
+          ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage) ≫
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic first)).map
+            (selectedTypedCoreFiberPresentationComparisonApp first second
+              semantic_eq targetPackage).hom).1) ≫
+        ((typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq
+          ((selectedTypedCoreFiberReindexFunctor second).obj
+            targetPackage)).hom.1 ≫
+          ((coreTransportReindexCounit
+            (typedRealizableHom second)).app targetPackage).1) :=
+      (Category.assoc _ _ _).symm
+    _ = ((selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+          coreFiberLift (typedPresentationToSemantic first)
+            ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage)) ≫
+        ((typedCoreFiberTransportPresentationComparisonApp first second
+          semantic_eq
+          ((selectedTypedCoreFiberReindexFunctor second).obj
+            targetPackage)).hom.1 ≫
+          ((coreTransportReindexCounit
+            (typedRealizableHom second)).app targetPackage).1) := by
+      rw [show coreFiberLift (typedPresentationToSemantic first)
+          ((selectedTypedCoreFiberReindexFunctor first).obj targetPackage) ≫
+        ((coreFiberTransportFunctor
+          (typedPresentationToSemantic first)).map
+          (selectedTypedCoreFiberPresentationComparisonApp first second
+            semantic_eq targetPackage).hom).1 =
+        (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+          coreFiberLift (typedPresentationToSemantic first)
+            ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage) by
+        simpa only [coreFiberTransportFunctor] using
+          coreFiberTransportMap_fac (typedPresentationToSemantic first)
+            (selectedTypedCoreFiberPresentationComparisonApp first second
+              semantic_eq targetPackage).hom]
+    _ = (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+        (coreFiberLift (typedPresentationToSemantic first)
+          ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage) ≫
+          (typedCoreFiberTransportPresentationComparisonApp first second
+            semantic_eq
+            ((selectedTypedCoreFiberReindexFunctor second).obj
+              targetPackage)).hom.1) ≫
+        ((coreTransportReindexCounit
+          (typedRealizableHom second)).app targetPackage).1 := by
+      simp only [Category.assoc]
+    _ = (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+        coreFiberLift (typedPresentationToSemantic second)
+          ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage) ≫
+        ((coreTransportReindexCounit
+          (typedRealizableHom second)).app targetPackage).1 := by
+      rw [typedCoreFiberTransportPresentationComparisonApp_hom_fac]
+    _ = (selectedTypedCoreFiberPresentationComparisonApp first second
+          semantic_eq targetPackage).hom.1 ≫
+        (selectedTypedCoreFiberCartesianLift second targetPackage).hom := by
+      rw [show coreFiberLift (typedPresentationToSemantic second)
+          ((selectedTypedCoreFiberReindexFunctor second).obj targetPackage) ≫
+        ((coreTransportReindexCounit
+          (typedRealizableHom second)).app targetPackage).1 =
+        (selectedTypedCoreFiberCartesianLift second targetPackage).hom by
+        simpa only [typedRealizableHom, typedCartSemanticInput,
+          selectedTypedCoreFiberReindexFunctor,
+          selectedTypedCoreFiberCartesianLift] using
+          coreTransportReindexCounit_app_fac (typedRealizableHom second)
+            targetPackage]
+    _ = (selectedTypedCoreFiberCartesianLift first targetPackage).hom :=
+      selectedTypedCoreFiberPresentationComparisonApp_hom_fac first second
+        semantic_eq targetPackage
+    _ = _ := by
+      symm
+      simpa only [typedRealizableHom, typedCartSemanticInput,
+        selectedTypedCoreFiberReindexFunctor,
+        selectedTypedCoreFiberCartesianLift] using
+        coreTransportReindexCounit_app_fac (typedRealizableHom first)
+          targetPackage
 
 end AAT.AG.DoctrineFiberProduct
 

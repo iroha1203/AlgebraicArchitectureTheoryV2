@@ -165,36 +165,153 @@ theorem finiteCoreTransportReindex_right_triangle :
           𝟭 (CoreFiber finiteSelectiveTwoToSupportInput.semantic.source)) :=
   coreTransportReindex_right_triangle finiteSelectiveTwoToSupportInput
 
+/-- Producer-side comparison for the raw-distinct padded presentation. -/
+noncomputable def finiteCoreTransportPaddedPresentationComparisonApp
+    (sourcePackage : CoreFiber
+      finiteSelectiveTwoInstance.toSemantic) :=
+  typedCoreFiberTransportPresentationComparisonApp
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    sourcePackage
+
+/-- Selector-side comparison for the raw-distinct padded presentation. -/
+noncomputable def finiteCoreReindexPaddedPresentationComparisonApp
+    (targetPackage : CoreFiber
+      finitePortfolioSupportInstance.toSemantic) :=
+  selectedTypedCoreFiberPresentationComparisonApp
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    targetPackage
+
 /--
-The finite unit factor graph is unchanged after replacing the canonical code by
-the raw-distinct padded presentation with the same semantic decoder.
+The actual hom-set correspondence commutes across the raw-distinct padded
+presentation, fired on the finite counit over the noninvertible base leg.
 -/
-theorem finiteCoreTransportReindexUnit_paddedPresentationCompatibility :
-    ((coreTransportReindexUnit
+theorem finiteCoreTransportReindexHomEquiv_paddedPresentationCompatibility :
+    (coreTransportReindexHomEquiv
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)
+      finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget)
+        ((coreTransportReindexCounit
+          (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+            finiteReindexFourAxisTarget) ≫
+      (finiteCoreReindexPaddedPresentationComparisonApp
+        finiteReindexFourAxisTarget).hom =
+    (coreTransportReindexHomEquiv
+      (typedRealizableHom finitePaddedSelectiveTwoToSupportPresentation)
+      finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget)
+        ((finiteCoreTransportPaddedPresentationComparisonApp
+          finiteSelectiveTwoReindexedFourAxisObject).inv ≫
+          (coreTransportReindexCounit
+            (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+              finiteReindexFourAxisTarget) :=
+  coreTransportReindexHomEquiv_typedPresentationCompatibility
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+    ((coreTransportReindexCounit
       (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
-        finiteSelectiveTwoReindexedFourAxisObject).1 ≫
-      (selectedTypedCoreFiberPresentationComparisonApp
-        finiteSelectiveTwoToSupportPresentation
-        finitePaddedSelectiveTwoToSupportPresentation
-        finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+        finiteReindexFourAxisTarget)
+
+/-- The inverse correspondence commutes across the same padded presentation. -/
+theorem finiteCoreTransportReindexInverse_paddedPresentationCompatibility :
+    (finiteCoreTransportPaddedPresentationComparisonApp
+      finiteSelectiveTwoReindexedFourAxisObject).hom ≫
+      reindexToCoreTransportHom
+        (typedRealizableHom finitePaddedSelectiveTwoToSupportPresentation)
+        finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+        ((𝟙 finiteSelectiveTwoReindexedFourAxisObject) ≫
+          (finiteCoreReindexPaddedPresentationComparisonApp
+            finiteReindexFourAxisTarget).hom) =
+    reindexToCoreTransportHom
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)
+      finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+      (𝟙 finiteSelectiveTwoReindexedFourAxisObject) :=
+  reindexToCoreTransportHom_typedPresentationCompatibility
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+    (𝟙 finiteSelectiveTwoReindexedFourAxisObject)
+
+/-- The generated unit forms the padded-presentation comparison square. -/
+theorem finiteCoreTransportReindexUnit_paddedPresentationCompatibility :
+    (coreTransportReindexUnit
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+        finiteSelectiveTwoReindexedFourAxisObject ≫
+      (finiteCoreReindexPaddedPresentationComparisonApp
         ((coreFiberTransportFunctor
           (typedPresentationToSemantic
             finiteSelectiveTwoToSupportPresentation)).obj
-              finiteSelectiveTwoReindexedFourAxisObject)).hom.1 ≫
-      (selectedTypedCoreFiberCartesianLift
-        finitePaddedSelectiveTwoToSupportPresentation
-        ((coreFiberTransportFunctor
-          (typedPresentationToSemantic
-            finiteSelectiveTwoToSupportPresentation)).obj
-              finiteSelectiveTwoReindexedFourAxisObject)).hom =
-    coreFiberLift
-      (typedPresentationToSemantic finiteSelectiveTwoToSupportPresentation)
-      finiteSelectiveTwoReindexedFourAxisObject :=
+              finiteSelectiveTwoReindexedFourAxisObject)).hom ≫
+      (selectedTypedCoreFiberReindexFunctor
+        finitePaddedSelectiveTwoToSupportPresentation).map
+        (finiteCoreTransportPaddedPresentationComparisonApp
+          finiteSelectiveTwoReindexedFourAxisObject).hom =
+    (coreTransportReindexUnit
+      (typedRealizableHom finitePaddedSelectiveTwoToSupportPresentation)).app
+        finiteSelectiveTwoReindexedFourAxisObject :=
   coreTransportReindexUnit_typedPresentationCompatibility
     finiteSelectiveTwoToSupportPresentation
     finitePaddedSelectiveTwoToSupportPresentation
     finiteSelectiveTwoToSupportPresentation_semanticHom_eq
     finiteSelectiveTwoReindexedFourAxisObject
+
+/-- The generated counit forms the padded-presentation comparison square. -/
+theorem finiteCoreTransportReindexCounit_paddedPresentationCompatibility :
+    (coreFiberTransportFunctor
+      (typedPresentationToSemantic
+        finiteSelectiveTwoToSupportPresentation)).map
+        (finiteCoreReindexPaddedPresentationComparisonApp
+          finiteReindexFourAxisTarget).hom ≫
+      (finiteCoreTransportPaddedPresentationComparisonApp
+        ((selectedTypedCoreFiberReindexFunctor
+          finitePaddedSelectiveTwoToSupportPresentation).obj
+            finiteReindexFourAxisTarget)).hom ≫
+      (coreTransportReindexCounit
+        (typedRealizableHom
+          finitePaddedSelectiveTwoToSupportPresentation)).app
+            finiteReindexFourAxisTarget =
+    (coreTransportReindexCounit
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+        finiteReindexFourAxisTarget :=
+  coreTransportReindexCounit_typedPresentationCompatibility
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    finiteReindexFourAxisTarget
+
+/--
+Presentation compatibility also fires after composing the finite counit with
+the genuine nonidentity target-axis swap.
+-/
+theorem finiteCoreTransportReindexAxisSwap_paddedPresentationCompatibility :
+    coreTransportToReindexHom
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)
+      finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+      ((coreTransportReindexCounit
+        (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+          finiteReindexFourAxisTarget ≫ finiteReindexAxisSwapHom) ≫
+      (finiteCoreReindexPaddedPresentationComparisonApp
+        finiteReindexFourAxisTarget).hom =
+    coreTransportToReindexHom
+      (typedRealizableHom finitePaddedSelectiveTwoToSupportPresentation)
+      finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+      ((finiteCoreTransportPaddedPresentationComparisonApp
+        finiteSelectiveTwoReindexedFourAxisObject).inv ≫
+        ((coreTransportReindexCounit
+          (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+            finiteReindexFourAxisTarget ≫ finiteReindexAxisSwapHom)) :=
+  coreTransportToReindexHom_typedPresentationCompatibility
+    finiteSelectiveTwoToSupportPresentation
+    finitePaddedSelectiveTwoToSupportPresentation
+    finiteSelectiveTwoToSupportPresentation_semanticHom_eq
+    finiteSelectiveTwoReindexedFourAxisObject finiteReindexFourAxisTarget
+    ((coreTransportReindexCounit
+      (typedRealizableHom finiteSelectiveTwoToSupportPresentation)).app
+        finiteReindexFourAxisTarget ≫ finiteReindexAxisSwapHom)
 
 end AAT.AG.DoctrineFiberProduct
 
