@@ -23,6 +23,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMate
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateCleavageIndependence
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateCleavageIndependenceWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactness
+import ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactnessWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependence
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
@@ -275,7 +277,17 @@ mate from every pair of arbitrary cleavages on the two reindexing legs.  Cycle
 naturality prove pairwise comparison and normalization to the selected mate.
 A support-identity control fires a visibly twisted choice and nonidentity map;
 the separate Cycle 37 asymmetric control retains both noninvertible reindexing
-legs.  These are intentionally two controls, not one combined fixture.  No
-mate invertibility or exactness theorem is claimed.  Arbitrary endpoint-
-isomorphism rebasing, K3--K4, and final target assembly remain open.
+legs.  These are intentionally two controls, not one combined fixture.  The
+package-projection exactness layer now derives explicit two-sided upper
+inverses for every realized total hom, uses the generated universal properties
+to make the selected transport unit strongly cartesian and counit strongly
+cocartesian over identity, and reflects their total isomorphisms into the core
+fibers.  Expanding the canonical mate as unit, square, and counit then proves
+its componentwise invertibility for every validated presentation.  Cycle 38
+comparison transports this result to every pair of arbitrary cleavages.  A
+symmetric three-to-two cospan fires the result on a producer-derived pullback
+whose four legs are all noninvertible.  No caller exactness, mate, inverse, or
+adjunction-equivalence certificate is accepted.  Arbitrary endpoint-
+isomorphism rebasing, authored-support `MateCoherentRel`, K3--K4, fixed-ledger
+`FiniteModelLift`, and final target assembly remain open.
 -/
