@@ -102,7 +102,9 @@ result:
     undischarged_assumptions:
       - fixed-ledger FiniteModelLift for arbitrary CartesianLiftNonexistence targets
       - base-arrow reindexing unitor and compositor, their coherence, and independence of the internally selected cleavage
-      - adjunction with the G-109 covariant core pseudofunctor, packageProjection Beck--Chevalley mate and IsIso theorem
+      - adjunction with the G-109 covariant core pseudofunctor, the canonical natural Beck--Chevalley mate, packageProjection-specific exactness support, and the positive IsIso theorem
+      - AuthoredBC2CellPresentation, the authored-support induced comparison, and the strict/lax MateCoherentRel positive/negative pair; the relative negative is a canonicity obstruction independent of positive IsIso
+      - canonical-comparison replacement and proof-use invariance, InReselectionOrbit all-orbit nonvanishing, and a concrete nontrivial-orbit witness
       - K3-K4 and final Doctrine Fiber Product and Base Change theorem assembly and completion review
     acceptance_point: producer-derived fixed-arrow core-fiber reindexing functor checkpoint only; G-110 remains target-proof-checkpoint
     port_status: not-applicable
@@ -157,6 +159,7 @@ audits:
     - targeted modules CartesianRegimeReindexing and CartesianRegimeReindexingWitnesses: pass
     - git diff --check, untracked-file whitespace, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
     - PR checks at repaired reviewed head 14471cd3: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because Lean setup, build, kernel-audit, and premise-report steps were skipped
+    - PR checks at initial report-sync head 0a70d2a6: 7/7 success with the same Research-only lake build step exclusions
   review_refs:
     fixed_head: 873283b0d0651c0c47c44446fba59f11cb0e796b
     standard_review: four-lane math-lean-review completed; one documentation-only Minor was repaired and directly rechecked by its reporting reviewer
@@ -166,10 +169,14 @@ audits:
       - Lean A: No major findings at fixed head 873283b0
       - Lean B: Minor for a missing named-local-instance docstring at fixed head 873283b0; Pass after qualified direct response at repaired head 14471cd3
     qualified_direct_response: 873283b0..14471cd3 adds exactly one docstring line, changes no declaration, type, proof, import, report, umbrella, or manifest, and was accepted by Lean B without a fresh four-lane review
-    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379504079
+    initial_integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379504079
+    qualified_audit_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4068#issuecomment-5379577393
+    public_audit_correction: the qualified audit comment supplies each lane's findings, refutation attempts, checked evidence, coverage limits, Issue acceptance mapping, validation commands, direct-response qualification, and the complete fixed-GOAL remaining K2 scope omitted by the initial abbreviated comment
+    initial_report_sync_head: 0a70d2a61be637fe1c51f4a17feb27613524c36d
     final_report_sync_head: pending
-    report_only_audit: pending
-  blocking_findings: []
+    report_only_audit: first audit found one public-review-traceability Major and one remaining-K2-scope Minor; both repairs are present in the qualified audit comment and this report, with repaired report-only audit pending
+  blocking_findings:
+    - repaired public-review-traceability and remaining-K2-scope findings pending qualified report-only direct response
   next_obligation: complete the report-only audit and merge Cycle 31; then construct base-arrow unitor/compositor and cleavage-independence data before the adjunction and Beck--Chevalley mate
 ```
 
