@@ -48,7 +48,7 @@ tracking Issue を正本とし、本ノートには持ち込まない。
    decider の一回実行、観測クラスの確認)を最初に置く。優先順位は
    R0 > R2 > R1a > R14 > R8 > R10 > R3-w > R15 > R18 > R11 > R3-r > R9 > R1c > R17 >
    R4a > R19 > R16 > R4b > R5 ≫ R7(§5)。論文は大定理版の最小構成で一本(§5)、
-   着手は Gr4(G-110)完了後、期間の目安は 1 か月。本ノートの補強項目はこの版で
+   着手は Gr4 完了後(Gr4 は G-110 一枚では閉じず、G-110 と後続 n 枚のカードで成る)、期間の目安は 1 か月。本ノートの補強項目はこの版で
    凍結する。R12(エージェント読解)と R13(方法論論文)は別
    トラック。係数 base change(整数係数の錐・Fitting・jump locus)は次カードへ送る。
 6. 判定は二段(§6)。「CS に届いた」の最低条件は三つ(差分表が肯定形で埋まる、
@@ -778,7 +778,7 @@ candidate(witness の Lean 化後に昇格する):
   定理が出て実測に降りることで立つ。重い成員 — `d₂ ≡ 0` の完全な特徴づけ、`(r, k)`
   同時分離、指数 frontier、Realization(R19)、support-width の動的計画(R17)、
   Interchange(R16)、coNP 完全性(R4a)— は別の問いとして別論文にし、約束しない。
-  **着手は Gr4(G-110)完了後**、期間の目安は 1 か月。候補題「Atlas: An Exact
+  **着手は Gr4 完了後**(Gr4 は G-110 一枚では閉じず、G-110 と後続 n 枚のカードで成る)、期間の目安は 1 か月。候補題「Atlas: An Exact
   Resolution Calculus for Software Architecture Diagnostics」は証明の後に決める
   (禁忌 4)。
 - 抽象核は degree-parametric にしておく(`J_A^i`、`Safe_[a,b]`)。今回の論文の実証は
