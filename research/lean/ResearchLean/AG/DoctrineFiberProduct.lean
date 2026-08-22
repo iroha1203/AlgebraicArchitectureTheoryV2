@@ -21,6 +21,8 @@ import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunction
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunctionWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMate
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateCleavageIndependence
+import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateCleavageIndependenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependence
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
@@ -267,7 +269,13 @@ compositors, and applies the Cycle 35 adjunctions through `mateEquiv`.  Its
 component exposes the generated unit, square comparison, and counit, and its
 naturality is fired on a genuine nonidentity four-axis map over an asymmetric
 finite square whose left projection and right leg are both noninvertible.
-This constructs the canonical mate only; no invertibility or exactness theorem
-is claimed.  Mate-level comparison across arbitrary cleavages, arbitrary
-endpoint-isomorphism rebasing, K3--K4, and final target assembly remain open.
+The mate-level cleavage-independence layer then generates the corresponding
+mate from every pair of arbitrary cleavages on the two reindexing legs.  Cycle
+33 comparisons, Cycle 36 counit and hom-equivalence compatibility, and square
+naturality prove pairwise comparison and normalization to the selected mate.
+A support-identity control fires a visibly twisted choice and nonidentity map;
+the separate Cycle 37 asymmetric control retains both noninvertible reindexing
+legs.  These are intentionally two controls, not one combined fixture.  No
+mate invertibility or exactness theorem is claimed.  Arbitrary endpoint-
+isomorphism rebasing, K3--K4, and final target assembly remain open.
 -/
