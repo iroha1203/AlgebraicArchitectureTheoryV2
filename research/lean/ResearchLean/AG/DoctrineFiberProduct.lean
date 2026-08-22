@@ -41,6 +41,12 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWitn
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedOperationMapDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedInvariantSignatureMapDescent
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperComputationalWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperStructuralLawDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedDetectorLawDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedOperationNaturalityDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedInvariantSignatureLawDescent
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperAssembly
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedUpperAssemblyWitnesses
 
 /-!
 # Doctrine fiber-product schema
@@ -109,15 +115,19 @@ observable-naturality, violation-coordinate, and equation-residual laws and
 assembles all seven fields of the generated low
 `EquationSystemExactTransport`.  Its noninvertible fixture fires every field,
 including distinct-context naturality, a nonzero violation coordinate, and
-cyclic and acyclic residual values.  Complete `SignedExactCoreReadingHom` and
-whole-factor descent remain unproved.  The next computational checkpoint now
-reflects the actual normalized high operation map, invariant-index map,
-signature-axis map, and dependent coordinate equivalence through generated
-low/high image equivalences, with all-value image and round-trip laws.  It does
-not yet supply the remaining structural, detector, naturality, invariant, or
-signature laws required by `SignedExactCoreReadingHom`.  The same noninvertible
-fixture fires a nonidentity collapse operation, both directions of the rigid
-singleton maps, and coordinate value `3`; separate Boolean checks witness the
-actual-middle sensitivity of the exact proof-used conjugation primitives.
-Ambient reflection and `FiniteModelLift` also remain unproved before K0.
+cyclic and acyclic residual values.  The next computational checkpoint reflects
+the actual normalized high operation map, invariant-index map, signature-axis
+map, and dependent coordinate equivalence through generated low/high image
+equivalences, with all-value image and round-trip laws.  The following law
+layer directly consumes all nine remaining structural, detector, operation,
+invariant, and signature laws of that actual high factor and reflects them
+through the generated images.  These laws and the earlier data producers are
+then assembled into the exact eighteen-field generated low
+`SignedExactCoreReadingHom`.  A single noninvertible selective-two fixture fires
+every assembled projection, including distinct family and object controls,
+accepted and rejected detector data, a nonidentity collapse operation, the
+complete equation transport, and coordinate value `3`; rigid singleton and
+constant laws are recorded without a sensitivity claim.  Whole
+`PackageTotalHom` descent, ambient factor reflection, and `FiniteModelLift`
+remain unproved before K0.
 -/
