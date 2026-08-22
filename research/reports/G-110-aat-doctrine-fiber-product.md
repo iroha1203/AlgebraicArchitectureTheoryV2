@@ -42,9 +42,7 @@ selection:
     - restricting the generic bridge to finite presentation inputs, identity Atom equivalences, or the old all-compatible fixture
     - counting the finite Schema pullback as the generic K0-to-ExtInst bridge
     - promoting the bridge to the reindexing functor, adjunction, Beck-Chevalley mate, K3-K4, or final theorem completion
-  unchecked:
-    - final report-only synchronization audit
-    - final PR CI, merge, and tracking-Issue synchronization
+  unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
   content_head: fac123dd5327e64332a691d5497bcf6d25e18347
@@ -152,6 +150,7 @@ audits:
     - targeted module PointedDoctrinePullbackWitnesses: pass
     - git diff --check, placeholder, hidden/BiDi Unicode, privacy, import-direction, manifest, and umbrella scans: pass
     - PR checks at reviewed head 10a7fa36: 7/7 success; the Research-only lake build job is not counted as theorem elaboration evidence because Lean setup, build, kernel-audit, and premise-report steps were skipped
+    - PR checks at report synchronization head d10ea254: 7/7 success with the same Research-only lake build step exclusions
   review_refs:
     fixed_head: 10a7fa3631435cd48c6cb2552f68f1807610d5fb
     initial_integrated_rejection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4067#issuecomment-5379133281
@@ -163,8 +162,8 @@ audits:
       - Lean A: No major findings at repaired Lean content head fac123dd
       - Lean B: No major findings at repaired Lean content head fac123dd
     integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4067#issuecomment-5379250808
-    final_report_sync_head: pending
-    report_only_audit: pending
+    final_report_sync_head: d10ea2546a76a0222c60acd21c71a2e3ad216d49
+    report_only_audit: no findings; 10a7fa36..d10ea254 changes only this report, all Lean, GOAL, umbrella, and manifest blobs are unchanged, the four verdicts and integrated comment are synchronized, and both reviewed and report-sync heads have 7/7 successful checks
   blocking_findings: []
   next_obligation: merge Cycle 30, then construct the producer-derived reindexing functor and its functor laws while retaining arbitrary-target FiniteModelLift as open
 ```
