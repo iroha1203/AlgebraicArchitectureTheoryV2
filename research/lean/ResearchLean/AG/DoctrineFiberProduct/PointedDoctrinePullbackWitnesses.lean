@@ -31,6 +31,12 @@ def finiteProperPointedLeg :
     finiteThreeSourceInstance.toSemantic ⟶ finiteTwoSourceInstance.toSemantic :=
   typedPresentationToSemantic finiteThreeToTwoPresentation
 
+/-- The pointed finite leg exposes the reviewed Cycle 29 doctrine leg. -/
+@[simp]
+theorem finiteProperPointedLeg_doctrineHom :
+    finiteProperPointedLeg.doctrineHom = finiteThreeToTwoDoctrineHom :=
+  rfl
+
 /-- The generated selected pullback source is the named compatible pair `(0, 0)`. -/
 theorem finiteProperPointedPullback_source_eq_compatible00 :
     (pointedPullback finiteProperPointedLeg finiteProperPointedLeg).source =
@@ -65,8 +71,8 @@ theorem finiteProperPointedPullback_fst_not_isIso :
     (pointedPullbackFst finiteProperPointedLeg finiteProperPointedLeg)
   exact finiteProperFiberCompatible00_ne_01
     (hinjective (by
-      simpa [pointedPullbackFst, finiteProperPointedLeg,
-        finiteThreeToTwoDoctrineHom] using
+      simpa only [pointedPullbackFst_doctrineHom,
+        finiteProperPointedLeg_doctrineHom] using
         finiteProperDoctrinePullback_fst_collision))
 
 /-- The second pointed projection remains noninvertible. -/
@@ -80,8 +86,8 @@ theorem finiteProperPointedPullback_snd_not_isIso :
     (pointedPullbackSnd finiteProperPointedLeg finiteProperPointedLeg)
   exact finiteProperFiberCompatible00_ne_10
     (hinjective (by
-      simpa [pointedPullbackSnd, finiteProperPointedLeg,
-        finiteThreeToTwoDoctrineHom] using
+      simpa only [pointedPullbackSnd_doctrineHom,
+        finiteProperPointedLeg_doctrineHom] using
         finiteProperDoctrinePullback_snd_collision))
 
 /-- The generated pointed projections form the concrete pullback in `ExtInst_U`. -/

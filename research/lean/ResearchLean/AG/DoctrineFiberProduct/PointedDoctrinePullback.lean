@@ -47,6 +47,15 @@ def pointedPullbackFst
   doctrineHom := doctrinePullbackFst sigmaOne.doctrineHom sigmaTwo.doctrineHom
   source_eq := rfl
 
+/-- The first pointed projection exposes the generated K0 doctrine projection. -/
+@[simp]
+theorem pointedPullbackFst_doctrineHom
+    {U : AtomCarrier.{u}} {DOne DTwo Base : ExtractionInstance U}
+    (sigmaOne : DOne ⟶ Base) (sigmaTwo : DTwo ⟶ Base) :
+    (pointedPullbackFst sigmaOne sigmaTwo).doctrineHom =
+      doctrinePullbackFst sigmaOne.doctrineHom sigmaTwo.doctrineHom :=
+  rfl
+
 /-- Second pointed projection from the generated pullback. -/
 def pointedPullbackSnd
     {U : AtomCarrier.{u}} {DOne DTwo Base : ExtractionInstance U}
@@ -54,6 +63,15 @@ def pointedPullbackSnd
     pointedPullback sigmaOne sigmaTwo ⟶ DTwo where
   doctrineHom := doctrinePullbackSnd sigmaOne.doctrineHom sigmaTwo.doctrineHom
   source_eq := rfl
+
+/-- The second pointed projection exposes the generated K0 doctrine projection. -/
+@[simp]
+theorem pointedPullbackSnd_doctrineHom
+    {U : AtomCarrier.{u}} {DOne DTwo Base : ExtractionInstance U}
+    (sigmaOne : DOne ⟶ Base) (sigmaTwo : DTwo ⟶ Base) :
+    (pointedPullbackSnd sigmaOne sigmaTwo).doctrineHom =
+      doctrinePullbackSnd sigmaOne.doctrineHom sigmaTwo.doctrineHom :=
+  rfl
 
 /-- The two pointed projections commute over the input cospan. -/
 theorem pointedPullback_commutes
