@@ -13,6 +13,134 @@
 
 ## Cycle ledger
 
+### Cycle 27 — realization-compatible finite-presentation ULift bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 27
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: f2f505b21d9e58d2bf4f740cb8a4a145bc246d4a
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 26 merge synchronization comment 5377705516 and Cycle 27 selection comment 5377743041
+  proof_dag_predecessors:
+    - Cycle 7 finite-code rebase and decoder component graphs, PR 4037
+    - Cycle 13 through Cycle 26 selected generated-package lift reflection, ending at PR 4062 merge f2f505b2
+  proof_obligation: bridge the exact realization boundary between the direct semantic ULift used by the reviewed generated-lift reflection and the genuine high-universe RealizableHom produced by rebasing a finite presentation; generate decoder-doctrine, pointed-instance, and arrow-category isomorphisms without caller certificates; instantiate the bridge on the noninvertible selective-two support-prefix presentation
+  selection_reason: a rebased finite presentation has first-order source type FiniteSource at the target universe, while direct semantic lifting nests ULift over the low finite source; these endpoints are canonically isomorphic but not definitionally equal, so package and strong-lift transport must be built over an explicit generated semantic-input isomorphism
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULiftWitnesses.lean
+  risks:
+    - accepting an exact-doctrine, pointed-instance, or semantic-input isomorphism or equality certificate from the caller
+    - replacing the rebased decoder input by the directly lifted semantic input through an unsupported definitional equality
+    - claiming equivalence of all extraction instances or all packages across universes
+    - using CartesianLiftNonexistence emptiness, globalCartesianLift, a package, or a strong lift to construct the realization bridge
+    - promoting this decoder-level checkpoint to package transport, strong-lift reflection, FiniteModelLift, K0, or theorem completion
+  unchecked:
+    - fixed-head independent review
+    - PR CI and mergeability
+    - final report and Issue synchronization
+result:
+  proposed_result_type: proof-checkpoint
+  reviewed_content_head: pending
+  proof_obligation_delta: defined direct semantic lifting for every finite-model CartSemanticInput; constructed mutually inverse exact doctrine morphisms between the directly lifted decoder doctrine and the decoder of the rebased finite code, with finite-source and Atom graphs; lifted them to pointed extraction-instance isomorphisms; assembled, for every finite presentation, a CartSemanticInputIso whose generated source and target isomorphisms make the lower arrow square commute; generated a genuine high-universe RealizableHom solely from the rebased presentation and exposed the corresponding semantic-input isomorphism for every low RealizableHom. The selective-two-to-support composite is now a named realized prefix of the reviewed generated arrow to FiniteModel.corePackage; both its low realization and every high-universe rebase identify two explicitly distinct source cells and are non-IsIso.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULift.lean
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteModelRealizationULiftWitnesses.lean
+  evidence:
+    - finiteModelLiftSemanticInput
+    - finiteModelLiftDecodedDoctrineHom
+    - finiteModelLiftDecodedDoctrineInv
+    - finiteModelLiftDecodedDoctrineIso
+    - finiteModelLiftDecodedDoctrineIso_hom_sourceMap
+    - finiteModelLiftDecodedDoctrineIso_inv_sourceMap
+    - finiteModelLiftDecodedInstanceIso
+    - finiteModelLiftPresentationSemanticIso
+    - finiteModelLiftPresentationSemanticIso_hom_comm
+    - finiteModelLiftRealizableHom
+    - finiteModelLiftRealizableHomSemanticIso
+    - finiteSelectiveTwoToSupportPresentation
+    - finiteSelectiveTwoToSupportInput
+    - finiteSelectiveTwoToSupportInput_comp_core
+    - finiteSelectiveTwoToSupportInput_not_isIso
+    - finiteSelectiveTwoToSupportSemanticIso
+    - finiteSelectiveTwoToSupportSemanticIso_hom_comm
+    - finiteSelectiveTwoToSupportLiftedInput_not_isIso
+  claim_mapping:
+    theorem_names:
+      - finiteModelLiftPresentationSemanticIso
+      - finiteModelLiftRealizableHom
+      - finiteModelLiftRealizableHomSemanticIso
+    source_labels:
+      - target theorem B FiniteModelLift universe transport clause
+      - GOAL realization-image quantification and FiniteModelLift material-premise ledger
+      - Cycle 12 graph-bearing nonvacuity guard
+    conjuncts:
+      - every low finite presentation generates a genuine rebased high RealizableHom
+      - direct semantic lifting and rebased decoding are related by internally generated source and target isomorphisms
+      - the lower-arrow square commutes as an actual CartSemanticInputIso field
+      - the concrete noninvertible realized prefix remains noninvertible at every lifted universe
+    undischarged_assumptions:
+      - selected package transport along the generated target isomorphism
+      - conversion of every supplied strong lift on the rebased realized input to the canonical-image high lift consumed by reflectNormalizedStrongCartesianLift
+      - graph-bearing FiniteModelLift nonexistence corollary
+      - K0 and K2-K4
+    acceptance_point: realization-compatible finite-presentation ULift is proposed as a proof checkpoint only; the fixed FiniteModelLift ledger item remains open
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - direct semantic ULift for arbitrary finite-model semantic inputs
+      - decoder-doctrine and pointed-instance finite-image isomorphisms
+      - arrow-category semantic-input isomorphism for every finite presentation
+      - genuine rebased RealizableHom producer
+      - noninvertible selective-two realized firing in every universe
+    remaining:
+      - package and supplied-strong-lift transport along the generated endpoint isomorphisms
+      - FiniteModelLift and graph-bearing nonexistence transfer
+      - K0 and K2-K4
+  certificate_provenance:
+    discharged:
+      - every generic producer accepts only a finite code, presentation, semantic input, or RealizableHom
+      - all doctrine, instance, and semantic-input isomorphisms are computed internally from finiteSourceRebaseEquiv and finiteModelLiftCarrierEquiv
+      - the concrete high realized arrow is generated from the rebased selective-two presentation
+    unresolved: []
+  proof_use:
+    used:
+      - finiteSourceRebaseEquiv in both directions of every decoder source isomorphism
+      - FiniteDoctrineCode.toDoctrine_extracts_rebase_iff in both exactness proofs
+      - toSemanticCart_rebase_atomEquiv and finiteModelLiftExtInstHom_atomEquiv in the lower-square proof
+      - the realization_eq field only to align an arbitrary RealizableHom with its own authored presentation
+    unused:
+      - CartesianLiftNonexistence and cartesianLiftNonexistence_isEmpty
+      - globalCartesianLift
+      - any package, PackageTotalHom, StrongCartesianLift, or cartesianness certificate
+      - reflectNormalizedStrongCartesianLift
+  structure_field_escape: none found; no endpoint isomorphism, commuting-square proof, high semantic input, or realization equality is accepted as a replaceable caller certificate
+  route_integrity: proposed pass; finite presentation rebase generates the high RealizableHom, while the direct semantic lift is retained as a distinct endpoint connected only by the explicit generated arrow-category isomorphism
+  target_fitting: none found; the generic bridge quantifies over every finite code, presentation, and realized arrow, and the selective-two fixture only fires that surface
+  vacuity: none found; the generic isomorphism types are inhabited independently of no-lift premises, and the fixture proves concrete low and high non-IsIso arrows by two distinct source cells with equal images
+  one_way_as_equivalence: none found; equivalence is claimed only between two canonical finite-image decoder objects, not arbitrary extraction instances or packages
+  goal_or_report_reinterpretation: none found; package transport, supplied strong-lift conversion, FiniteModelLift, K0, K2-K4, and theorem completion remain open
+  validation_refs:
+    - exact focused check FiniteModelRealizationULift.lean: pass, 18 namespace declarations and standard axioms only
+    - exact focused check FiniteModelRealizationULiftWitnesses.lean: pass, 16 namespace declarations and standard axioms only
+    - targeted module builds for both new modules: pass; no Research aggregate or full build
+    - manifest and umbrella wiring, diff, placeholder, prohibited-dependency, privacy, and import-direction scans: pass locally
+    - fixed GOAL blob and SHA256 lock: pass
+  review_refs:
+    independent_final_reviews: pending
+    integrated_comment: pending
+  blocking_findings: []
+  next_obligation: transport the selected lifted package and every supplied high strong lift along the generated endpoint isomorphisms, then feed the resulting canonical-image high lift to reflectNormalizedStrongCartesianLift and derive the graph-bearing FiniteModelLift nonexistence corollary without empty elimination
+```
+
 ### Cycle 26 — reflected ambient universal property and strong lift
 
 ```yaml
