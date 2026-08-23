@@ -13,6 +13,77 @@
 
 ## Cycle ledger
 
+### Cycle 54 — raw-distinct finite BC replacement firing witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 54
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ebfdccf8e8b11796b403023394a2cf69e653fdbc
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 53 remaining nonvacuity obligation and PR 4094 fixed-head review
+  proof_dag_predecessors:
+    - Cycle 33 raw-distinct cartesian presentation replacement witness
+    - Cycle 52 BC realization provenance
+    - Cycle 53 public route/mate comparison square
+  proof_obligation: construct two unequal finite BCPresentation values with equal complete toSemanticBC output and instantiate the public route/mate replacement theorem
+  selection_reason: arbitrary same-input provenance quantification did not by itself prove that a nontrivial raw replacement exists. Replacing one cospan leg's empty identity Atom support by a singleton-supported identity code changes the authored presentation while preserving its semantic arrow.
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: finiteConstantPresentation and finitePaddedConstantPresentation have the same noninvertible source map and semantic identity Atom equivalence but unequal authored Atom supports. Their generated BC cospans share all endpoint codes, the second leg, selected points, and diagnostic geometry. Extensionality of pointed doctrine morphisms and generated pullback squares proves equality of the complete toSemanticBC decoders. finiteReplacementBCPresentation_mate_square then instantiates the Cycle 53 public comparison square on this raw-distinct pair.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPresentationReplacementWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - finitePaddedConstantPresentation
+    - finiteConstantPresentation_ne_padded
+    - finiteCanonicalReplacementBCPresentation
+    - finitePaddedReplacementBCPresentation
+    - finiteReplacementBCPresentations_ne
+    - finiteConstantPresentation_semantic_eq
+    - finiteConstantPullbackSnd_semantic_eq
+    - finiteReplacementBCPresentations_semantic_eq
+    - finiteCanonicalReplacementBCProvenance
+    - finitePaddedReplacementBCProvenance
+    - finiteReplacementBCPresentation_mate_square
+  claim_mapping:
+    raw_difference: the first cospan leg has empty versus singleton authored Atom support
+    semantic_equality: both complete BC decoders are propositionally equal, including generated square, compatible points, and diagnostic geometry
+    theorem_firing: the public direct/via-base route comparisons and reference-fixed mate square are instantiated on the unequal pair
+audits:
+  premise_delta:
+    discharged:
+      - existence of a raw-distinct equal-decoding finite BCPresentation pair
+      - nonvacuous firing of the public presentation replacement theorem
+    remaining:
+      - identify the reference-fixed rebased replacement mate with the replacement presentation's canonical mate
+  certificate_provenance:
+    discharged:
+      - presentation inequality is witnessed by authored support membership
+      - semantic equality is proved by extensionality from computational source maps and decoded Atom equivalences
+  proof_use:
+    used:
+      - the first cospan leg's raw Atom support difference
+      - the padded identity decoder equality
+      - generated pullback top arrow and fixed bottom arrow semantic equalities
+      - complete BCSemanticInput extensionality
+  route_integrity: the witness changes an actual noninvertible cospan leg and fires the generated public route comparisons; it is not a proof-field-only or diagnostic-order-only replacement
+  vacuity: none-found; the finite presentations are theorem-proved unequal and their complete semantic decoders theorem-proved equal
+  validation_refs:
+    - focused BCPresentationReplacementWitnesses.lean: pass; 13 namespace declarations, standard axioms only
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: prove compatibility of the presentation-built covariant square isomorphism with the semantic square isomorphism, then identify the rebased replacement mate with bcProvenanceCanonicalMate replacement
+```
+
 ### Cycle 53 — public route/mate bridge on fixed authored support
 
 ```yaml
@@ -77,7 +148,9 @@ audits:
       - complete BCSemanticInput equality through BCRealizationProvenance
       - left and right selected cartesian lifts
       - reference canonical mate and cleavage-independence theorem
-      - fixed authored support functor and complete reconstructed transport datum
+      - fixed authored support functor
+    preserved_but_not_consumed_by_structural_mate:
+      - two-cell base equations and authored comparator table, via the datum-level replacement equalities
   route_integrity: no equality-cast route, twist factorization, caller-supplied mate, or comparator certificate is used
   vacuity: concern-open; arbitrary provenance pairs are quantified, but a raw-distinct finite BC pair has not yet been instantiated
   validation_refs:
@@ -167,11 +240,11 @@ audits:
       - presentation-generated selected cleavages
       - cartesian uniqueness and reviewed cleavage-independence mate comparison
     unused:
-      - diagnostic and authored comparator values are held fixed by equality of the complete BCSemanticInput but are not yet consumed in this structural bridge
+      - diagnostic geometry is held fixed by equality of the complete BCSemanticInput; the authored comparator is outside BCSemanticInput and was not fixed in Cycle 52
   structure_field_escape: none-found
   route_integrity: direct and via-base comparisons are generated from finite realization provenance and universal cartesian comparison; no comparison or mate field is accepted
   target_fitting: none-found
-  vacuity: none-found; the construction quantifies arbitrary pairs of realization provenances over one semantic input
+  vacuity: concern-open; Cycle 52 quantified conditional provenance pairs but did not instantiate a raw-distinct equal-decoding finite BC pair
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none
   validation_refs:
