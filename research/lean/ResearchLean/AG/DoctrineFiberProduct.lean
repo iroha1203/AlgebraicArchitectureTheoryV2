@@ -22,6 +22,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetQuotientNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetCoforkNoGoWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredPreMateInsertionNoGo
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -357,4 +358,16 @@ diagnostic-generated non-twist factor; changing the target category or its
 morphism notion would instead require a separate GOAL-defect decision.  Any
 accepted route must still prove naturality and presentation-replacement
 compatibility.
+The next non-Cofork test inserts the actual G-106 residual before the generated
+Beck--Chevalley mate, at the entrance to its unit--square--counit path.
+Naturality moves that source-derived insertion through the entire mate and
+normalizes it to the canonical component followed by the same via-base raw
+residual.  Since both the canonical mate and every raw residual are
+isomorphisms, every such natural insertion remains a forbidden canonical
+post-isomorphism twist.  The fixed lax second face fires a genuine mismatch and
+identifies its nonidentity residual without assuming either fact.  Thus moving
+the residual into the adjunction formula does not create the missing non-twist
+factor; a remaining candidate would need a separately generated noninvertible
+intermediate operation whose provenance is not merely functorial transport of
+the authored automorphism.
 -/
