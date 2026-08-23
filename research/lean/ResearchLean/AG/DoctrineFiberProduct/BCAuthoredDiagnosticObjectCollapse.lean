@@ -180,8 +180,9 @@ theorem finiteInitialDiagnosticObjectCollapse_second_not_isIso :
   exact finiteAxisFoldEraseTotal_not_isIso
 
 /-- A functor naturally isomorphic to identity reflects equality with
-identity. -/
-private theorem diagnosticObjectCollapse_eq_id_of_map_eq_id_of_natIso_id
+identity.  This public helper avoids witness modules duplicating the same
+unitor argument. -/
+theorem eq_id_of_map_eq_id_of_natIso
     {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
     (unitor : functor ≅ (𝟭 C : C ⥤ C)) {object : C}
     (hom : object ⟶ object)
@@ -195,6 +196,17 @@ private theorem diagnosticObjectCollapse_eq_id_of_map_eq_id_of_natIso_id
     _ = 𝟙 (functor.obj object) ≫ unitor.hom.app object := by
       rw [mapped_eq]
     _ = unitor.hom.app object ≫ 𝟙 object := by simp
+
+/-- A functor naturally isomorphic to identity reflects isomorphisms. -/
+theorem isIso_of_map_isIso_of_natIso
+    {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
+    (unitor : functor ≅ (𝟭 C : C ⥤ C)) {source target : C}
+    (hom : source ⟶ target) [IsIso (functor.map hom)] : IsIso hom := by
+  letI : IsIso (unitor.hom.app source ≫ hom) := by
+    change IsIso (unitor.hom.app source ≫ (𝟭 C).map hom)
+    rw [← unitor.hom.naturality hom]
+    infer_instance
+  exact IsIso.of_isIso_comp_left (unitor.hom.app source) hom
 
 /-- A generated non-twist factor remains nonidentity on the public via-base
 route whenever its raw diagnostic component fires. -/
@@ -221,14 +233,14 @@ theorem finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_ne_id
         cochain (Discrete.mk cell) = 𝟙 _
     exact viaBase_eq
   have transported_eq : transported = 𝟙 _ :=
-    diagnosticObjectCollapse_eq_id_of_map_eq_id_of_natIso_id
+    eq_id_of_map_eq_id_of_natIso
       (selectedCoreFiberReindexFunctor
         (typedRealizableHom
           (idTypedPresentation finiteAuthoredSupportInstance)))
       (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
       transported reindexed_eq
   have factor_eq : factor = 𝟙 _ :=
-    diagnosticObjectCollapse_eq_id_of_map_eq_id_of_natIso_id
+    eq_id_of_map_eq_id_of_natIso
       (coreFiberTransportFunctor
         (𝟙 finiteAuthoredSupportInstance.toSemantic))
       (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic)
@@ -246,6 +258,48 @@ theorem finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_ne_id
   apply finiteAxisFoldEraseObject_not_injective
   intro first second equality
   simpa only [objectMap_eq, id_eq] using equality
+
+/-- A firing component remains noninvertible after transport to the public
+via-base route. -/
+theorem finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_not_isIso
+    (cochain : DefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+    (cell : DoubleDiamondTwoCell PUnit) (fires : cochain cell ≠ 1) :
+    ¬ IsIso (finiteViaBaseDiagnosticObjectCollapseComponentAtCochain
+      cochain (Discrete.mk cell)) := by
+  intro imageIsIso
+  letI : IsIso (finiteViaBaseDiagnosticObjectCollapseComponentAtCochain
+      cochain (Discrete.mk cell)) := imageIsIso
+  let factor := finiteDiagnosticObjectCollapseComponentAtCochain cochain cell
+  let transported :=
+    (coreFiberTransportFunctor
+      (𝟙 finiteAuthoredSupportInstance.toSemantic)).map factor
+  let reindexed :=
+    (selectedCoreFiberReindexFunctor
+      (typedRealizableHom
+        (idTypedPresentation finiteAuthoredSupportInstance))).map transported
+  letI : IsIso reindexed := by
+    change IsIso (finiteViaBaseDiagnosticObjectCollapseComponentAtCochain
+      cochain (Discrete.mk cell))
+    infer_instance
+  letI : IsIso transported :=
+    isIso_of_map_isIso_of_natIso
+      (selectedCoreFiberReindexFunctor
+        (typedRealizableHom
+          (idTypedPresentation finiteAuthoredSupportInstance)))
+      (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
+      transported
+  letI : IsIso factor :=
+    isIso_of_map_isIso_of_natIso
+      (coreFiberTransportFunctor
+        (𝟙 finiteAuthoredSupportInstance.toSemantic))
+      (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic) factor
+  letI : IsIso factor.1 := by
+    change IsIso (CategoryTheory.Functor.Fiber.fiberInclusion.map factor)
+    infer_instance
+  apply finiteDiagnosticObjectCollapseTotalAtCochain_not_isIso
+    cochain cell fires
+  change IsIso factor.1
+  infer_instance
 
 /-- The initial firing face is the concrete specialization of the general
 via-base nonidentity theorem. -/

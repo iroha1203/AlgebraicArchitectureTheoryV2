@@ -44,7 +44,7 @@ selection:
   unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: raw diagnostic equality with identity now selects identity, while raw nonidentity selects the reviewed exact object erasure. The initial lax second face computes to the erasure and is noninvertible. The selected southwest factor is transported along the actual bottom and right functors to an endomorphism of the public via-base route, then composed with the public canonical mate to form a component-generated authored-support comparison. Every genuine reselection cochain has a nonidentity component because the fixed datum is not coherentizable; the generated non-twist comparison therefore differs from the canonical mate throughout the full G-106 reselection orbit.
+  proof_obligation_delta: raw diagnostic equality with identity now selects identity, while raw nonidentity selects the reviewed exact object erasure. The initial lax second face computes to the erasure and is noninvertible. The selected southwest factor is transported along the actual bottom and right functors to an endomorphism of the public via-base route; the two identity unitors reflect IsIso, so every firing via-base factor remains noninvertible. That factor is composed with the public canonical mate to form a component-generated authored-support comparison. Every genuine reselection cochain has a nonidentity component because the fixed datum is not coherentizable; the generated non-twist comparison therefore differs from the canonical mate throughout the full G-106 reselection orbit.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapse.lean
@@ -55,6 +55,7 @@ result:
     - finiteInitialDiagnosticObjectCollapse_second_eq_erase
     - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain
     - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_ne_id
+    - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_not_isIso
     - finiteDiagnosticObjectCollapseComparisonAtCochain
     - finiteDiagnosticObjectCollapseComparisonAtCochain_identity_eq_canonical
     - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
@@ -82,6 +83,7 @@ audits:
       - branch selection is computed from the actual raw cochain component
       - nonidentity selects the internally constructed exact erasure without a collapse or firing certificate
       - bottom transport and right reindexing place the factor on the public via-base route
+      - identity unitors reflect IsIso and prove that a firing transported factor remains noninvertible
       - noncoherentizability supplies a firing component for every genuine reselection cochain
     remaining:
       - define the all-input public producer or an input-derived package-generic non-twist construction
@@ -107,7 +109,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCAuthoredDiagnosticObjectCollapse.lean: pass; 23 namespace declarations, standard axioms only
+    - focused BCAuthoredDiagnosticObjectCollapse.lean: pass; 26 namespace declarations, standard axioms only
     - exact target module build ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse: pass; 4061 jobs
   blocking_findings: []
   next_obligation: generalize the diagnostic-selected non-twist comparison across presentation replacement and connect it to the all-input public K2 producer/relation without a supplied collapse
