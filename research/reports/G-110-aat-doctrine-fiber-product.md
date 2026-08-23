@@ -13,6 +13,63 @@
 
 ## Cycle ledger
 
+### Cycle 58 — diagnostic comparison presentation replacement
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 58
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 4d9388201ce78d0bbe382c16881eb61ebd50b7f0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycles 52--57 completed the actual canonical-mate finite-presentation replacement bridge
+  proof_obligation: prove that the diagnostic-generated authored comparison commutes with the same generated direct-route and via-base-route isomorphisms while the semantic input, G-106 transport datum, and complete authored table remain fixed
+  selection_reason: Cycle 46 left actual presentation replacement open; Cycle 57 now supplies the canonical square needed to assemble the full diagnostic comparison square
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: bcProvenanceCanonicalMate_replacement turns the Cycle 57 rebased equality into the canonical provenance square. The authored canonical mate, transported raw defect, and transported unified fold are each normalized onto provenance-indexed routes. The latter two commute with replacement by naturality of the generated via-base route isomorphism. A four-factor categorical lemma composes those three squares into authoredDiagnosticComparisonAtCochain_replacement, and generatedAuthoredDiagnosticComparison_replacement specializes it to the named initial-cochain producer.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticPresentationReplacement.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - bcProvenanceCanonicalMate_replacement
+    - authoredSupportCanonicalMate_replacement
+    - authoredViaBaseRawDefectComponentAtCochain_replacement
+    - authoredViaBaseUnifiedAxisFoldComponentAtCochain_replacement
+    - authoredDiagnosticComparisonAtCochain_replacement
+    - generatedAuthoredDiagnosticComparison_replacement
+audits:
+  premise_delta:
+    discharged:
+      - actual finite-presentation replacement for the arbitrary-cochain diagnostic comparison
+      - actual finite-presentation replacement for the named generated auxiliary producer
+    remaining:
+      - construct the fixed public MateCoherentRel/full-orbit bridge without promoting the unforced auxiliary fold as K2's induced comparison
+  certificate_provenance:
+    discharged:
+      - route isomorphisms come from realization provenance; raw and fold squares are instances of their naturality
+  proof_use:
+    used:
+      - Cycle 57 canonical mate replacement square
+      - G-106 raw defect component at the supplied cochain
+      - internally generated unified diagnostic fold at the same cochain
+      - literal preservation of toTransportData and the authored comparator under replacePresentation
+  route_integrity: no mate, route comparison, fold, expected equality, or compatibility certificate is supplied by the caller
+  vacuity: none-found; the theorem is quantified over arbitrary datum, replacement provenance, and defect cochain
+  validation_refs:
+    - focused BCAuthoredDiagnosticPresentationReplacement.lean: pass; 9 namespace declarations, standard axioms only
+    - exact target module build: pass; 4050 jobs
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, construct the public relation/orbit bridge or a theorem-backed fixed-target obstruction; do not promote the auxiliary producer by renaming alone
+```
+
 ### Cycle 57 — semantic mate replacement square and canonical identification
 
 ```yaml
