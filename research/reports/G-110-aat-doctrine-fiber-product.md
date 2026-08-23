@@ -126,7 +126,7 @@ result:
       lean_b: no major findings
     integrated_verdict: pass for the Cycle 44 target-proof-checkpoint only; not K2 or G-110 completion
     integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4085#issuecomment-5384205384
-    ci: 7 of 7 required checks successful at reviewed_head
+    ci: 7 of 7 checks successful at reviewed_head, including 5 of 5 branch-required checks
   stop_condition: none
   next_obligation: merge the Cycle 44 proof-checkpoint after standard review, then construct the double-diamond pairwise raw-defect quotient that cancels the common reselection component and prove the generated mismatch on every InReselectionOrbit representative
 ```
