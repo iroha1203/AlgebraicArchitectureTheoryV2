@@ -13,6 +13,124 @@
 
 ## Cycle ledger
 
+### Cycle 44 — diagnostic axis fold at the initial representative
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 44
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 5893cca6da0ab6771c609e1b73a92faf325de753
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 43 merge synchronization comment 5383944560
+  proof_dag_predecessors:
+    - F0b2b raw AuthoredBCDatumSquare and exact producer signatures
+    - G-106 initialRawDefectCochain as a PackageFiberAut-valued diagnostic action
+    - Cycle 40 exact authored-support routes and canonical mate
+    - Cycle 43 theorem-level rejection of all universal-factor routes that preserve the raw automorphism
+  proof_obligation: construct from a diagnostic PackageFiberAut value a genuinely noninvertible endomorphism by folding one moved signature axis onto its image when the automorphism fixes architecture objects; prove the fold laws, identity specialization, and noninvertibility from its generated axis graph; transport that fold into a cross-route authored comparison without accepting an arbitrary endomorphism or comparison certificate
+  selection_reason: Cycle 43 proves that functorially transporting the raw automorphism preserves the forbidden twist class. The shortest route out of that class is to generate a noninvertible map before BC transport. SignedExactCoreReadingHom permits a noninjective axisMap when coordinate and selected-status laws are generated from the same object-fixing automorphism.
+  expected_result_type: proof-checkpoint
+  risks:
+    - arbitrary choice of a noninvertible endomorphism unrelated to the diagnostic action
+    - failure of the dependent coordinate law after folding a moved axis
+    - fold existence encoded as a caller certificate rather than derived from a concrete lax fixture
+    - transport functors failing to reflect the fold's noninvertibility
+    - another theorem-level normalization to an automorphism twist
+    - target-fitting branch on a fixture identity
+  unchecked:
+    - whether every reselection in a fixed lax orbit retains an object-fixing moved-axis witness
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: AxisFoldWitness now generates a noninjective signature-axis map, its dependent coordinate equivalence and coordinate law, the complete SignedExactCoreReadingHom, and a PackageTotalHom directly from one object-fixing moved-axis diagnostic automorphism. packageTotalHom_axisMap_injective_of_isIso and total_not_isIso prove that a fold generated under AxisFoldAvailable cannot be an automorphism. generatedAxisFoldTotal selects such an intrinsic witness when it exists and otherwise returns identity; generatedAxisFoldTotal_one proves strict specialization without a caller endomorphism. authoredDiagnosticAxisFoldComponent sends this generated fold into the southwest fiber, authoredDiagnosticAxisFoldLeftFactor generates the left factor by cocartesian universality, and authoredDiagnosticAxisFoldComparison assembles the exact authored-support family. Generically, its normalization is the canonical mate followed by the transported generated fold. For the finite double-diamond fixture specifically, identity edge lifts and identity/swap authored faces live on one decoded three-axis package; its second raw defect is the adjacent swap, AxisFoldAvailable is discharged concretely, the generated via-base fold remains noninvertible through both identity-route unitors, the authored component differs from the canonical mate, and the lax datum refutes DiagnosticAxisFoldMateCoherentRel. Thus this concrete firing is not an automorphism twist. The existing strict authored square fires the same relation. G-106 double-diamond uniqueness also proves no edge reselection can make both faces coherent. The remaining all-orbit gap is exact: a single-cell AxisFoldWitness requires objectMap=id, which arbitrary reselection need not preserve; Cycle 45 must form a pairwise raw-defect quotient that cancels the common reselection action before folding.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFold.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldComparison.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldComparisonWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - PackageFiberAut.AxisFoldWitness
+    - PackageFiberAut.AxisFoldWitness.total_not_isIso
+    - PackageFiberAut.generatedAxisFoldTotal_not_isIso
+    - PackageFiberAut.generatedAxisFoldTotal_one
+    - authoredDiagnosticAxisFoldLeftFactor_fac
+    - authoredDiagnosticAxisFoldLeftFactor_eq_counit_comp_fold
+    - authoredDiagnosticAxisFoldComparisonComponent_eq_canonical_comp_fold
+    - finiteAxisFoldSwap_generated_not_isIso
+    - finiteAxisFold_not_coherentizable
+    - finiteAxisFold_initialRawDefect_second
+    - finiteAxisFold_viaBaseFold_second_not_isIso
+    - finiteAxisFoldBCDatumSquare_not_mateCoherent
+    - finiteAuthoredBCDatumSquare_diagnosticAxisFoldMateCoherent
+  claim_mapping:
+    generated_axis_fold: AxisFoldWitness produces the axis map, dependent coordinate data, complete SignedExactCoreReadingHom, and PackageTotalHom; not_injective_axisMap plus packageTotalHom_axisMap_injective_of_isIso proves total_not_isIso when AxisFoldAvailable is discharged
+    generic_comparison: initialRawDefectCochain is converted to generatedAxisFoldTotal, reindexed, factored by cocartesian universality, and assembled by authoredDiagnosticAxisFoldComparison; the generic normalization claims only canonical mate followed by the transported generated fold
+    lax_negative: finiteAxisFoldSwapWitness discharges AxisFoldAvailable for the second face; the two identity-route unitors reflect IsIso back to the source fold, yielding a non-IsIso transported fold, component inequality, and failure of DiagnosticAxisFoldMateCoherentRel
+    strict_positive: the existing finite CoherentAt proof yields identity initial raw defect, hence identity fold and the same DiagnosticAxisFoldMateCoherentRel
+    orbit_boundary: finiteAxisFold_not_coherentizable rules out simultaneous face coherence under edge reselection, but does not prove comparison failure for every InReselectionOrbit representative
+  premise_audit:
+    ambient_boundary:
+      - AtomCarrier and DecidableEq on atoms
+      - reviewed G-106 raw-defect and double-diamond APIs
+      - existing reindex, core-transport, cocartesian-factor, and canonical-mate APIs
+    direction_hypothesis:
+      - AuthoredBCDatumSquare realization_eq, edgeStrong, endpoint_eq, twoCellBase, and base-change-preceding authored comparator
+      - strict specialization hdefect, discharged in the finite control from CoherentAt through the reviewed raw-defect equivalence
+    discharge_required:
+      - AxisFoldWitness source, moved, objectMap_eq, and axisDecidableEq are used to generate the fold and prove source/image collision
+      - AxisFoldAvailable is required only for generic non-IsIso conclusions and is concretely discharged by finiteAxisFoldSwapWitness in the lax firing
+      - two identity-route unitors reflect non-IsIso only in the finite fixture; no generic transport-reflection claim is made
+    conclusion_equivalent_risk:
+      - authored.comparator remains a raw semantic input and does not store a fold, BC comparison, expected equality, or noninvertibility certificate
+      - AxisFoldWitness stores a moved source and object-map equality, not the generated endomorphism or its non-IsIso conclusion
+      - authored comparator supply alone does not discharge all-orbit comparison failure
+  structure_field_escape:
+    status: none found
+    justification: every material input is consumed along the raw-defect-to-fold-to-factor-to-comparison dependency chain; the strict identity and finite lax non-IsIso conclusions are derived rather than stored as fields
+  proof_use:
+    - moved proves the generated axisMap is noninjective
+    - objectMap_eq turns the diagnostic coordinate law into the dependent coordinate law at a fixed architecture object
+    - axisDecidableEq controls the fold branch, while coordinateEquiv and axis_selected_iff generate its coordinate and selected-status fields
+    - authored.comparator enters toTransportData, initialRawDefectCochain, generatedAxisFoldTotal, the cocartesian left factor, and the assembled comparison
+    - the finite non-IsIso proof consumes both identity-route unitors and the source fold non-IsIso theorem; canonical-mate IsIso supplies cancellation for component inequality
+  route_integrity:
+    status: checkpoint-only
+    anti_twist: the generic theorem makes no noninvertibility claim; the concrete lax firing proves its transported generated fold is non-IsIso
+    anti_wrapper: no arbitrary fold, endomorphism, comparison, expected equality, or factorization certificate is accepted from a caller
+    unresolved: all InReselectionOrbit representatives, orbit nontriviality, and presentation-replacement invariance remain undischarged
+  audits:
+    remaining:
+      - pairwise raw-defect quotient cancelling the common reselection action
+      - nonidentity generated fold and relation failure for every representative in the fixed lax orbit
+      - nontrivial orbit witness and presentation-replacement invariance required by K2
+      - FiniteModelLift, K3-K4, and final target assembly
+  validation:
+    - focused BCDiagnosticAxisFold.lean: pass; 35 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldWitnesses.lean: pass; 3 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldComparison.lean: pass; 18 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldComparisonWitnesses.lean: pass; 32 public namespace declarations, standard axioms only
+    - targeted lake builds only; no Research aggregate or full build was run
+    - git diff --check: pass
+  review:
+    reviewed_head: 12db0b00c1ce29f7aa2865fb2415bf394ee06e2f
+    initial_round: one central report-strength finding and noncentral ledger, docstring, no-unfold, and helper-visibility findings; all were batched into commit 12db0b00c1ce29f7aa2865fb2415bf394ee06e2f
+    post_core_fix_round:
+      math_a: no major findings
+      math_b: no major findings
+      lean_a: no major findings
+      lean_b: no major findings
+    integrated_verdict: pass for the Cycle 44 target-proof-checkpoint only; not K2 or G-110 completion
+    integrated_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4085#issuecomment-5384205384
+    ci: 7 of 7 checks successful at reviewed_head, including 5 of 5 branch-required checks
+  stop_condition: none
+  next_obligation: merge the Cycle 44 proof-checkpoint after standard review, then construct the double-diamond pairwise raw-defect quotient that cancels the common reselection component and prove the generated mismatch on every InReselectionOrbit representative
+```
+
 ### Cycle 43 — universal-factorization anti-wrapper refutation
 
 ```yaml
