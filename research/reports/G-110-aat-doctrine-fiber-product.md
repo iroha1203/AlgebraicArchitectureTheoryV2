@@ -49,6 +49,7 @@ result:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonNoGo.lean
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonNoGoWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
   evidence:
     - IsCanonicalPostIsoTwist
     - HasNontrivialCanonicalPostIsoResidual
