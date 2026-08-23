@@ -109,8 +109,9 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCAuthoredDiagnosticObjectCollapse.lean: pass; 26 namespace declarations, standard axioms only
-    - exact target module build ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse: pass; 4061 jobs
+    - focused BCAuthoredDiagnosticObjectCollapse.lean: pass; 24 namespace declarations, standard axioms only
+    - shared identity-unitor reflection API migration: six focused files pass; standard axioms only
+    - targeted changed-module set build including BCAuthoredDiagnosticObjectCollapse and migrated witnesses: pass; 4067 jobs
   blocking_findings: []
   next_obligation: generalize the diagnostic-selected non-twist comparison across presentation replacement and connect it to the all-input public K2 producer/relation without a supplied collapse
 review:

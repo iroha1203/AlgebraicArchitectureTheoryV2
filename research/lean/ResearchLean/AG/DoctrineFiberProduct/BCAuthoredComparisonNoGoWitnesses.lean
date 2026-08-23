@@ -22,21 +22,6 @@ local instance finiteAuthoredNoGoAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
-/-- A functor naturally isomorphic to identity reflects equality with identity. -/
-private theorem eq_id_of_map_eq_id_of_natIso_id
-    {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
-    (unitor : functor ≅ (𝟭 C : C ⥤ C)) {object : C} (hom : object ⟶ object)
-    (mapped_eq : functor.map hom = 𝟙 (functor.obj object)) :
-    hom = 𝟙 object := by
-  apply (cancel_epi (unitor.hom.app object)).1
-  calc
-    unitor.hom.app object ≫ hom =
-        functor.map hom ≫ unitor.hom.app object :=
-      (unitor.hom.naturality hom).symm
-    _ = 𝟙 (functor.obj object) ≫ unitor.hom.app object := by
-      rw [mapped_eq]
-    _ = unitor.hom.app object ≫ 𝟙 object := by simp
-
 /-- The Cycle 43 transported raw residual is nonidentity on the lax second face. -/
 theorem finiteAxisFold_viaBaseRawDefect_second_ne_id :
     authoredViaBaseRawDefectComponent finiteAxisFoldBCDatumSquare
@@ -58,14 +43,14 @@ theorem finiteAxisFold_viaBaseRawDefect_second_ne_id :
         (Discrete.mk DoubleDiamondTwoCell.second) = 𝟙 _
     exact viaBase_eq
   have transported_eq : transported = 𝟙 _ :=
-    eq_id_of_map_eq_id_of_natIso_id
+    eq_id_of_map_eq_id_of_natIso
       (selectedCoreFiberReindexFunctor
         (typedRealizableHom
           (idTypedPresentation finiteAuthoredSupportInstance)))
       (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
       transported reindexed_eq
   have raw_eq : raw = 𝟙 _ :=
-    eq_id_of_map_eq_id_of_natIso_id
+    eq_id_of_map_eq_id_of_natIso
       (coreFiberTransportFunctor
         (𝟙 finiteAuthoredSupportInstance.toSemantic))
       (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic)
