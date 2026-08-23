@@ -40,4 +40,3 @@ theorem finiteAxisFold_identityEndpointAction_nonconstant :
 end AAT.AG.DoctrineFiberProduct
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
-
