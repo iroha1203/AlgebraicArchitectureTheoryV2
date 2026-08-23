@@ -63,7 +63,7 @@ theorem finiteAxisFold_pairwiseRawDefect_eq_swap
         (rawDefectCochain finiteAxisFoldTransportData reselection)
         DoubleDiamondTwoCell.first DoubleDiamondTwoCell.second rfl =
       finiteAxisFoldSwap := by
-  rw [PackageFiberAut.pairwiseRawDefect]
+  rw [PackageFiberAut.pairwiseRawDefect_eq]
   simp only [rawDefectCochain, rawTwoCellDefect]
   rw [← finiteAxisFold_canonicalComparator_faces_eq reselection]
   have cast_eq :
@@ -75,7 +75,12 @@ theorem finiteAxisFold_pairwiseRawDefect_eq_swap
               DoubleDiamondTwoCell.first)⁻¹) =
         (canonicalTwoCellComparator finiteAxisFoldTransportData reselection
           DoubleDiamondTwoCell.first)⁻¹ := by
-    simp [PackageFiberAut.castTarget, finiteAxisFoldTransportData]
+    apply Eq.trans (eq_of_heq (PackageFiberAut.castTarget_heq
+      finiteAxisFoldTransportData rfl
+      (finiteAxisFoldTransportData.comparator DoubleDiamondTwoCell.first *
+        (canonicalTwoCellComparator finiteAxisFoldTransportData reselection
+          DoubleDiamondTwoCell.first)⁻¹)))
+    simp [finiteAxisFoldTransportData]
   rw [cast_eq]
   simp [finiteAxisFoldTransportData, mul_assoc]
 
@@ -95,7 +100,7 @@ theorem finiteAxisFold_pairwiseRawDefect_reselection_invariant
 The concrete authored faces retain the same pairwise quotient after replacing
 their common generated canonical comparator.
 -/
-theorem finiteAxisFold_pairwise_commonCanonical_replacement_invariant
+theorem finiteAxisFold_pairwise_commonFactor_invariant
     (firstCanonical secondCanonical :
       PackageFiberAut finiteAxisFoldSupportPackage) :
     (finiteAxisFoldSwap * firstCanonical⁻¹) *
@@ -104,7 +109,7 @@ theorem finiteAxisFold_pairwise_commonCanonical_replacement_invariant
       (finiteAxisFoldSwap * secondCanonical⁻¹) *
         ((1 : PackageFiberAut finiteAxisFoldSupportPackage) *
           secondCanonical⁻¹)⁻¹ := by
-  exact PackageFiberAut.commonCanonicalPairwiseQuotient_replacement_invariant
+  exact PackageFiberAut.commonCanonicalPairwiseQuotient_factor_invariant
     (1 : PackageFiberAut finiteAxisFoldSupportPackage)
     finiteAxisFoldSwap firstCanonical secondCanonical
 
@@ -116,6 +121,8 @@ noncomputable def finiteAxisFold_pairwiseWitness
       DoubleDiamondTwoCell.second where
   first := DoubleDiamondTwoCell.first
   package_eq := rfl
+  leftPath_heq := HEq.rfl
+  rightPath_heq := HEq.rfl
   fold := by
     rw [finiteAxisFold_pairwiseRawDefect_eq_swap reselection]
     exact finiteAxisFoldSwapWitness
@@ -285,7 +292,7 @@ theorem finiteAxisFold_pairwise_not_mateCoherent_on_orbit
 
 /-- The named initial-cochain relation fails on the fixed lax datum. -/
 theorem finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent :
-    ¬ MateCoherentRel FiniteModel.carrier
+    ¬ DiagnosticPairwiseAxisFoldMateCoherentRel FiniteModel.carrier
       finiteAxisFoldBCDatumSquare := by
   exact finiteAxisFold_pairwise_not_mateCoherent
     (1 : EdgeReselection finiteAxisFoldBCDatumSquare.toTransportData.lift)
@@ -300,7 +307,7 @@ theorem finiteAuthored_pairwiseUnavailable
     ¬ PackageFiberAut.PairwiseAxisFoldAvailableAt
       finiteAuthoredBCDatumSquare.toTransportData cochain supportCell := by
   rintro ⟨witness⟩
-  rcases witness with ⟨first, package_eq, fold⟩
+  rcases witness with ⟨first, package_eq, _leftPath_heq, _rightPath_heq, fold⟩
   cases first
   cases supportCell
   have package_eq_rfl : package_eq = rfl := Subsingleton.elim _ _
@@ -309,13 +316,14 @@ theorem finiteAuthored_pairwiseUnavailable
       PackageFiberAut.pairwiseRawDefect
           finiteAuthoredBCDatumSquare.toTransportData cochain
           FiniteBCDiagnosticCell.cell FiniteBCDiagnosticCell.cell rfl = 1 := by
-    simp [PackageFiberAut.pairwiseRawDefect, PackageFiberAut.castTarget]
+    rw [PackageFiberAut.pairwiseRawDefect_eq]
+    simp only [PackageFiberAut.castTarget_rfl, mul_inv_cancel]
   rw [quotient_one] at fold
   exact PackageFiberAut.not_axisFoldAvailable_one ⟨fold⟩
 
 /-- The strict finite datum fires the same named pairwise relation. -/
 theorem finiteAuthoredBCDatumSquare_pairwiseMateCoherent :
-    MateCoherentRel FiniteModel.carrier
+    DiagnosticPairwiseAxisFoldMateCoherentRel FiniteModel.carrier
       finiteAuthoredBCDatumSquare := by
   apply pairwiseAxisFoldMateCoherentAtCochain_of_unavailable
   intro supportCell

@@ -31,7 +31,7 @@ selection:
     - Cycle 39 packageProjection Beck--Chevalley exactness
     - Cycle 40 exact authored-support routes and canonical mate restriction
     - Cycle 44 diagnostic-generated noninvertible axis fold and exact canonical-comp-fold normalization
-  proof_obligation: on the fixed lax double diamond, compare the two facewise raw defects over their common endpoint so that the common generated canonical comparator cancels; use the resulting cochain-indexed quotient to generate the authored comparison at every actual reselection coordinate; prove failure of the public MateCoherentRel on the initial coordinate, failure of the same comparison equation over the full InReselectionOrbit, a strict positive instance, a concrete nontrivial orbit, and invariance under replacement of the common canonical comparator
+  proof_obligation: on the fixed lax double diamond, compare the two facewise raw defects over their common endpoint and identical boundary paths so that the common generated canonical comparator cancels; use the resulting cochain-indexed quotient to generate a diagnostic comparison at every actual reselection coordinate; prove failure of that auxiliary comparison equation over the full InReselectionOrbit, a strict control, and a concrete nontrivial orbit; the public authored-table MateCoherentRel and actual presentation-replacement bridge remain separate obligations
   selection_reason: Cycle 44 proves a genuine noninvertible diagnostic fold only at the initial representative because a single raw component can lose the object-fixing moved axis. The double-diamond faces have identical boundary paths, so their ordered quotient cancels the common canonical comparator at every coordinate while retaining the authored relative swap. This is the shortest route to the fixed all-orbit K2 negative without introducing a new gauge, arbitrary comparison, fold, or noninvertibility certificate.
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -43,11 +43,13 @@ selection:
     - comparing face values that do not share a generated canonical factor
     - proving only the initial coordinate instead of every InReselectionOrbit representative
     - a singleton orbit making the all-orbit theorem vacuous
-    - claiming presentation replacement without a theorem that cancels the replaced common comparator
-  unchecked: []
+    - claiming presentation replacement from a group-level common-factor identity
+  unchecked:
+    - public authored-table MateCoherentRel fidelity outside the fixed double-diamond diagnostic
+    - actual presentation replacement for the canonical and authored comparison producers
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: PackageFiberAut.pairwiseRawDefect forms the ordered quotient of two actual DefectCochain components after retagging only along equality of their target packages. commonCanonicalPairwiseQuotient_eq proves that a common generated canonical right factor cancels, and commonCanonicalPairwiseQuotient_replacement_invariant proves equality after replacing that common factor. PairwiseAxisFoldWitnessAt stores only the first face, endpoint equality, and moved-axis witness for the computed quotient; generatedPairwiseAxisFoldTotalAt derives the endomorphism and is non-IsIso whenever that witness is available. The exact authored-support comparison is rebuilt at an arbitrary cochain by the selected reindexing functor, cocartesian universal factor, BC unit, square isomorphism, transport, and right reindexing. Its component normalizes to the previously reviewed canonical mate followed by the transported generated fold. The public MateCoherentRel is exactly the initial-cochain specialization of that generated comparison equation. In the fixed double diamond, both faces have the same canonical comparator at every reselection; their quotient is always the adjacent swap, independent of reselection and of replacement of the common canonical comparator. The swap supplies the same concrete moved-axis fold at every coordinate, its via-base image remains non-IsIso, and therefore the comparison differs from the canonical mate at every coordinate. finiteAxisFold_pairwise_not_mateCoherent_on_orbit quantifies over every actual InReselectionOrbit representative. A right-edge swap supplies a second raw cochain distinct from the initial cochain, proving orbit nontriviality. The strict singleton datum makes every pairwise quotient identity and satisfies the same public MateCoherentRel.
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: PackageFiberAut.pairwiseRawDefect forms the ordered quotient of two actual DefectCochain components after retagging only along equality of their target packages. PairwiseAxisFoldWitnessAt now additionally requires literal equality of both boundary paths, so arbitrary same-endpoint cells cannot witness common-factor cancellation. commonCanonicalPairwiseQuotient_eq proves that an already identified common right factor cancels, and commonCanonicalPairwiseQuotient_factor_invariant proves only the corresponding group-level factor invariance. generatedPairwiseAxisFoldTotalAt derives the endomorphism and is non-IsIso whenever the typed witness is available. The exact diagnostic comparison is rebuilt at an arbitrary cochain by the selected reindexing functor, cocartesian universal factor, BC unit, square isomorphism, transport, and right reindexing, and normalizes to the reviewed canonical mate followed by the transported generated fold. In the fixed double diamond, both faces have identical boundary paths and the same canonical comparator at every reselection; their quotient is always the adjacent swap. The swap supplies the same concrete moved-axis fold at every coordinate, its via-base image remains non-IsIso, and therefore the auxiliary comparison differs from the canonical mate at every coordinate. finiteAxisFold_pairwise_not_mateCoherent_on_orbit quantifies over every actual InReselectionOrbit representative. A right-edge swap supplies a second raw cochain distinct from the initial cochain, proving orbit nontriviality. The singleton datum is retained only as a diagnostic control. This checkpoint does not claim that DiagnosticPairwiseAxisFoldMateCoherentRel is the fixed public authored-table relation and does not claim actual presentation-replacement invariance.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPairwiseAxisFold.lean
@@ -56,45 +58,46 @@ result:
   evidence:
     - PackageFiberAut.pairwiseRawDefect
     - PackageFiberAut.commonCanonicalPairwiseQuotient_eq
-    - PackageFiberAut.commonCanonicalPairwiseQuotient_replacement_invariant
+    - PackageFiberAut.commonCanonicalPairwiseQuotient_factor_invariant
     - PackageFiberAut.generatedPairwiseAxisFoldTotalAt_not_isIso
     - authoredPairwiseAxisFoldLeftFactor_fac
     - authoredPairwiseAxisFoldLeftFactor_eq_counit_comp_fold
     - authoredPairwiseAxisFoldComparisonComponentAtCochain_eq_canonical_comp_fold
-    - MateCoherentRel
+    - DiagnosticPairwiseAxisFoldMateCoherentRel
     - finiteAxisFold_canonicalComparator_faces_eq
     - finiteAxisFold_pairwiseRawDefect_eq_swap
     - finiteAxisFold_pairwiseRawDefect_reselection_invariant
-    - finiteAxisFold_pairwise_commonCanonical_replacement_invariant
+    - finiteAxisFold_pairwise_commonFactor_invariant
     - finiteAxisFold_pairwise_not_mateCoherent_on_orbit
     - finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
     - finiteAuthoredBCDatumSquare_pairwiseMateCoherent
     - finiteAxisFold_input_reselectionOrbit_nontrivial
   claim_mapping:
     theorem_names:
-      - MateCoherentRel
+      - DiagnosticPairwiseAxisFoldMateCoherentRel
       - finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
       - finiteAuthoredBCDatumSquare_pairwiseMateCoherent
       - finiteAxisFold_pairwise_not_mateCoherent_on_orbit
       - finiteAxisFold_input_reselectionOrbit_nontrivial
-      - finiteAxisFold_pairwise_commonCanonical_replacement_invariant
+      - finiteAxisFold_pairwise_commonFactor_invariant
     source_labels:
-      - target theorem C authored-relative canonicity obstruction
-      - target proof artifacts MateCoherentRel strict/lax pair and full InReselectionOrbit nonvanishing
-      - material premise ledger AuthoredBC2CellPresentation and relative-obstruction orbit invariance
+      - target theorem C diagnostic predecessor on the fixed double diamond
+      - target proof artifact full InReselectionOrbit nonvanishing predecessor
     conjuncts:
-      - public relation domain and equation -> MateCoherentRel specializes the cochain-indexed generated authored comparison and reviewed canonical mate to initialRawDefectCochain
-      - strict positive -> finiteAuthoredBCDatumSquare_pairwiseMateCoherent
-      - lax negative -> finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
+      - auxiliary initial relation -> DiagnosticPairwiseAxisFoldMateCoherentRel specializes the cochain-indexed diagnostic comparison and reviewed canonical mate to initialRawDefectCochain
+      - singleton diagnostic control -> finiteAuthoredBCDatumSquare_pairwiseMateCoherent
+      - fixed lax diagnostic -> finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
       - full actual orbit -> finiteAxisFold_pairwise_not_mateCoherent_on_orbit
       - orbit nontriviality -> finiteAxisFold_input_reselectionOrbit_nontrivial
-      - common-comparator replacement -> commonCanonicalPairwiseQuotient_replacement_invariant and finiteAxisFold_pairwise_commonCanonical_replacement_invariant
+      - common-factor algebra -> commonCanonicalPairwiseQuotient_factor_invariant and finiteAxisFold_pairwise_commonFactor_invariant
     undischarged_assumptions:
       - fixed-ledger arbitrary-target FiniteModelLift
       - K3 diagnostic base-change action, qualified H_bc package, and positive/negative vanishing pair
       - K4 pullback-square pasting and G-106/G-109 coherence bridge
       - cumulative final assembly and completion review
-    acceptance_point: the selected Cycle 45 full-orbit authored-relative obstruction is generated from the actual G-106 raw cochain, remains a non-IsIso fold after transport, fires both sides of the fixed public relation, has a concrete non-singleton orbit, and cancels any replacement of the shared canonical factor; later independent GOAL obligations remain open
+      - public authored-table MateCoherentRel with nonvacuous strict/lax fidelity
+      - actual presentation-replacement invariance for both named producers
+    acceptance_point: the Cycle 45 fixed-double-diamond diagnostic is generated from the actual G-106 raw cochain, remains a non-IsIso fold after transport over every actual reselection, and has a concrete non-singleton orbit; it is a predecessor checkpoint only
     port_status: unported
 audits:
   premise_delta:
@@ -102,15 +105,17 @@ audits:
       - common target package -> finite double-diamond endpoint equality and finiteAxisFold_canonicalComparator_faces_eq
       - all InReselectionOrbit coordinates -> finiteAxisFold_pairwise_not_mateCoherent_on_orbit
       - orbit nontriviality -> finiteAxisFold_input_reselectionOrbit_nontrivial
-      - common-canonical replacement -> commonCanonicalPairwiseQuotient_replacement_invariant
+      - common right-factor cancellation -> commonCanonicalPairwiseQuotient_factor_invariant
     remaining:
+      - public authored-table MateCoherentRel and actual presentation replacement
       - FiniteModelLift, K3, K4, and final assembly as listed in claim_mapping
   certificate_provenance:
     discharged:
       - pairwise quotient is computed from the supplied G-106 cochain and endpoint equality
       - finite fold witness is generated from the quotient theorem equating it to the concrete adjacent swap
       - authored comparison and its factor are generated by existing reindexing, transport, adjunction, and cocartesian universal APIs
-    unresolved: []
+    unresolved:
+      - provenance bridge from actual presentation replacement to the common canonical factor
   proof_use:
     used:
       - both raw cochain face components and their common canonical comparator
@@ -121,23 +126,25 @@ audits:
       - InReselectionOrbit witness by elimination to an actual EdgeReselection
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: pass for the fixed diagnostic route; public producer and presentation replacement remain unchecked
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCDiagnosticPairwiseAxisFold.lean: pass; 44 namespace declarations, standard axioms only
-    - focused BCDiagnosticPairwiseAxisFoldWitnesses.lean: pass; 25 namespace declarations, standard axioms only
-    - targeted module build for BCDiagnosticPairwiseAxisFold only: pass; no Research aggregate or full build
-    - git diff --cached --check, focused manifest registration, placeholder,
-      hidden/BiDi, private-path, and Research import-direction scans: pass
-  blocking_findings: []
-  next_obligation: fixed-ledger arbitrary-target FiniteModelLift, unless standard review finds a central defect in the Cycle 45 public relation or all-orbit route
+    - post-core-fix focused BCDiagnosticPairwiseAxisFold.lean: pass; 48 namespace declarations, standard axioms only
+    - post-core-fix focused BCDiagnosticPairwiseAxisFoldWitnesses.lean: pass; 25 namespace declarations, standard axioms only
+    - targeted builds for exactly the two changed modules: pass; no Research aggregate or full build
+    - git diff --check, focused module manifest, placeholder, hidden/BiDi, and Research import-direction scans: pass
+  blocking_findings:
+    - initial Math B review refuted the public-relation fidelity claim; resolved by removing the public name and limiting this cycle to the typed fixed-double-diamond diagnostic checkpoint
+    - initial Math A/B and Lean A/B reviews found no actual presentation-replacement theorem; resolved for this PR by renaming the group lemma, removing the discharge claim, and returning that bridge to the remaining ledger
+    - Lean A requested no-unfold APIs and premise-provenance docstrings; pairwiseRawDefect_eq and strengthened declaration documentation added
+  next_obligation: after this checkpoint merges, construct the actual authored-table producer and presentation-replacement bridge required by the public MateCoherentRel
 review:
-  status: pending standard fixed-head review
+  status: pending one fresh four-lane fixed-head review after the core-fix commit
 stop_condition: none
-next_obligation: create and review the Cycle 45 PR; after merge, resume with fixed-ledger arbitrary-target FiniteModelLift
+next_obligation: validate and re-review the repaired Cycle 45 checkpoint; after merge, construct the public authored-table MateCoherentRel and actual presentation-replacement bridge
 ```
 
 ### Cycle 44 — diagnostic axis fold at the initial representative
