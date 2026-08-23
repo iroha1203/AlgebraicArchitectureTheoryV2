@@ -42,7 +42,7 @@ selection:
   unchecked:
     - whether a universal quotient/reflection can be internally generated from the raw orbit and inserted into the existing cocartesian assembly
 result:
-  proposed_result_type: proof-checkpoint
+  proposed_result_type: rejected
   proof_obligation_delta: IsCanonicalPostIsoTwist classifies two parallel components by a target automorphism residual. isCanonicalPostIsoTwist_of_isIso proves existence, and canonicalPostIsoResidual_unique proves cancellation recovers the residual uniquely. hasNontrivialCanonicalPostIsoResidual_of_ne proves that a genuine mismatch yields a nonidentity residual. The Cycle 43 initial raw component is proved IsIso in the southwest fiber and remains IsIso after bottom transport and right reindexing. Its complete universal-factorization component is therefore IsIso, and authoredFactorizationComparisonComponent_has_raw_residual identifies the exact residual as the transported initial raw defect. The finite lax double diamond now discharges the previously hypothetical mismatch: finiteAxisFold_viaBaseRawDefect_second_ne_id reflects identity equality through the two identity-equivalent functors and reads the adjacent axis swap; finiteAxisFold_factorizationComparison_second_ne_canonical cancels the canonical mate; and finiteAxisFold_factorizationComparison_second_has_nontrivial_residual fires the obstruction. This excludes the exact Cycle 43 invertible route on the fixed lax witness. It does not exclude a non-IsIso universal quotient/reflection generated from the raw orbit, and therefore does not satisfy a fixed-GOAL stop condition.
   completion_candidate: no
   lean_artifacts:
@@ -109,11 +109,11 @@ audits:
     - repository scans: pass after the central review fix
   blocking_findings:
     - initial Math A, Math B, and Lean B review rejected the goal-defect stop inference because the theorem excludes only the invertible Cycle 43 route and the fixed GOAL prose already defines admissibility gates
-  next_obligation: review and merge this scoped checkpoint, then construct the schema-preserving universal quotient/reflection route or prove a corresponding current-data no-go theorem
+  next_obligation: do not merge this cycle; reselect the useful residual and finite-witness proof DAG into Cycle 48 together with a schema-preserving fixed-target universal-quotient no-go obligation
 review:
-  status: central fix applied; one full four-lane rerun required
+  status: rejected; the one allowed full rerun found stale GOAL-defect scope text in the aggregate module, so target-theorem-loop forbids merging this cycle even though the text was subsequently corrected
 stop_condition_candidate: none
-next_obligation: complete the one allowed full review rerun, merge the checkpoint if accepted, synchronize the tracker, and continue the target-theorem loop with the universal quotient/reflection obligation
+next_obligation: close PR 4088 without merge, synchronize the rejection, and open Cycle 48 from main with the corrected residual checkpoint plus fixed-target universal quotient/reflection no-go
 ```
 
 ### Cycle 46 — generated authored diagnostic on the supplied cochain
