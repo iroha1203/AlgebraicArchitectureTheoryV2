@@ -11,11 +11,11 @@ edges and uses cartesian uniqueness to compare the two selected reindexing
 routes.  Thus replacement is indexed by equality of the complete decoded BC
 input, rather than equality of the authored finite endpoint codes.
 
-The final section isolates the remaining compatibility law: the canonical
-covariant square isomorphism used by `coreBeckChevalleyMate` must agree after
-replacement.  The comparison below fixes that square isomorphism at the
-reference presentation and proves the complete change-of-cleavage mate square;
-no authored comparator or Beck--Chevalley equality is accepted as data.
+The final section isolates presentation replacement for the canonical mate.
+The covariant square comparison is normalized onto the fixed semantic square;
+the remaining comparison separates square provenance from route provenance and
+then tracks the generated adjunction data.  No authored comparator or
+Beck--Chevalley equality is accepted as data.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -245,6 +245,7 @@ theorem coreFiberLift_eqToIso_fac
     coreFiberLift first sourcePackage
   simp
 
+/-- The generated comparison between equal decoded presentations is equality transport. -/
 theorem typedCoreFiberTransportPresentationComparison_eqToIso
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     {source target : FiniteInstanceCode U}
@@ -329,6 +330,166 @@ theorem bcProvenanceCoreTransportSquareIso_eq
       bcProvenanceCoreTransportSquareIso second :=
   (bcProvenanceCoreTransportSquareIso_eq_semantic first).trans
     (bcProvenanceCoreTransportSquareIso_eq_semantic second).symm
+
+/--
+The mate with square provenance and selected-route provenance exposed as
+independent inputs over one fixed semantic BC square.
+-/
+noncomputable def bcSemanticSelectedMate
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (squareProvenance routeProvenance : BCRealizationProvenance input) :
+    bcProvenanceDirectRoute routeProvenance ⟶
+      bcProvenanceViaBaseRoute routeProvenance :=
+  (mateEquiv
+    (coreTransportReindexAdjunction
+      routeProvenance.leftProvenance.toRealizableHom)
+    (coreTransportReindexAdjunction
+      routeProvenance.rightProvenance.toRealizableHom)
+    (bcProvenanceCoreTransportSquareIso squareProvenance).hom).natTrans
+
+/-- The selected semantic mate is independent of its square provenance. -/
+theorem bcSemanticSelectedMate_reference_independent
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (first second routeProvenance : BCRealizationProvenance input) :
+    bcSemanticSelectedMate first routeProvenance =
+      bcSemanticSelectedMate second routeProvenance := by
+  unfold bcSemanticSelectedMate
+  rw [bcProvenanceCoreTransportSquareIso_eq first second]
+
+/-- With one provenance in both roles, the semantic selected mate is canonical. -/
+theorem bcSemanticSelectedMate_self
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (provenance : BCRealizationProvenance input) :
+    bcSemanticSelectedMate provenance provenance =
+      bcProvenanceCanonicalMate provenance := by
+  rcases provenance with ⟨presentation, rfl⟩
+  rfl
+
+/-- The generated units commute with replacement of realization provenance. -/
+theorem coreTransportReindexUnit_provenanceCompatibility
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : CartSemanticInput U}
+    (first second : CartRealizationProvenance input)
+    (sourcePackage : CoreFiber input.source) :
+    (coreTransportReindexUnit first.toRealizableHom).app sourcePackage ≫
+        (cartRealizationProvenanceComparison first second).hom.app
+          ((coreFiberTransportFunctor input.hom).obj sourcePackage) =
+      (coreTransportReindexUnit second.toRealizableHom).app sourcePackage := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let secondLift := selectedCoreFiberCartesianLift second.toRealizableHom
+    ((coreFiberTransportFunctor input.hom).obj sourcePackage)
+  letI : (packageProjection U).IsStronglyCartesian input.hom
+      secondLift.hom := by
+    simpa only [CartRealizationProvenance.toRealizableHom] using
+      secondLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U) input.hom secondLift.hom (𝟙 input.source)
+  change (((coreTransportReindexUnit first.toRealizableHom).app
+      sourcePackage).1 ≫
+        ((cartRealizationProvenanceComparison first second).hom.app
+          ((coreFiberTransportFunctor input.hom).obj sourcePackage)).1) ≫
+      secondLift.hom =
+    ((coreTransportReindexUnit second.toRealizableHom).app sourcePackage).1 ≫
+      secondLift.hom
+  dsimp [secondLift]
+  rw [Category.assoc, show
+    ((cartRealizationProvenanceComparison first second).hom.app
+        ((coreFiberTransportFunctor input.hom).obj sourcePackage)).1 ≫
+      (selectedCoreFiberCartesianLift second.toRealizableHom
+        ((coreFiberTransportFunctor input.hom).obj sourcePackage)).hom =
+    (selectedCoreFiberCartesianLift first.toRealizableHom
+      ((coreFiberTransportFunctor input.hom).obj sourcePackage)).hom by
+      exact cartRealizationProvenanceComparisonApp_hom_fac first second _]
+  simpa only [CartRealizationProvenance.toRealizableHom] using
+    (coreTransportReindexUnit_app_fac first.toRealizableHom sourcePackage).trans
+      (coreTransportReindexUnit_app_fac second.toRealizableHom sourcePackage).symm
+
+/-- The generated counits commute with replacement of realization provenance. -/
+theorem coreTransportReindexCounit_provenanceCompatibility
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : CartSemanticInput U}
+    (first second : CartRealizationProvenance input)
+    (targetPackage : CoreFiber input.target) :
+    (coreFiberTransportFunctor input.hom).map
+          ((cartRealizationProvenanceComparison first second).hom.app
+            targetPackage) ≫
+        (coreTransportReindexCounit second.toRealizableHom).app targetPackage =
+      (coreTransportReindexCounit first.toRealizableHom).app targetPackage := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  letI := coreFiberLift_isStronglyCocartesian input.hom
+    ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj targetPackage)
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) input.hom
+    (coreFiberLift input.hom
+      ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj targetPackage))
+    (𝟙 input.target)
+  change coreFiberLift input.hom
+        ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj
+          targetPackage) ≫
+      (((coreFiberTransportFunctor input.hom).map
+        ((cartRealizationProvenanceComparison first second).hom.app
+          targetPackage)).1 ≫
+        ((coreTransportReindexCounit second.toRealizableHom).app
+          targetPackage).1) =
+    coreFiberLift input.hom
+        ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj
+          targetPackage) ≫
+      ((coreTransportReindexCounit first.toRealizableHom).app targetPackage).1
+  calc
+    _ = (coreFiberLift input.hom
+          ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj
+            targetPackage) ≫
+        ((coreFiberTransportFunctor input.hom).map
+          ((cartRealizationProvenanceComparison first second).hom.app
+            targetPackage)).1) ≫
+        ((coreTransportReindexCounit second.toRealizableHom).app
+          targetPackage).1 := (Category.assoc _ _ _).symm
+    _ = ((cartRealizationProvenanceComparison first second).hom.app
+          targetPackage).1 ≫
+        coreFiberLift input.hom
+          ((selectedCoreFiberReindexFunctor second.toRealizableHom).obj
+            targetPackage) ≫
+        ((coreTransportReindexCounit second.toRealizableHom).app
+          targetPackage).1 := by
+      rw [show coreFiberLift input.hom
+            ((selectedCoreFiberReindexFunctor first.toRealizableHom).obj
+              targetPackage) ≫
+          ((coreFiberTransportFunctor input.hom).map
+            ((cartRealizationProvenanceComparison first second).hom.app
+              targetPackage)).1 =
+        ((cartRealizationProvenanceComparison first second).hom.app
+            targetPackage).1 ≫
+          coreFiberLift input.hom
+            ((selectedCoreFiberReindexFunctor second.toRealizableHom).obj
+              targetPackage) by
+        exact coreFiberTransportMap_fac input.hom
+          ((cartRealizationProvenanceComparison first second).hom.app
+            targetPackage)]
+      exact Category.assoc _ _ _
+    _ = ((cartRealizationProvenanceComparison first second).hom.app
+          targetPackage).1 ≫
+        (selectedCoreFiberCartesianLift second.toRealizableHom
+          targetPackage).hom := by
+      rw [show coreFiberLift input.hom
+            ((selectedCoreFiberReindexFunctor second.toRealizableHom).obj
+              targetPackage) ≫
+          ((coreTransportReindexCounit second.toRealizableHom).app
+            targetPackage).1 =
+        (selectedCoreFiberCartesianLift second.toRealizableHom
+          targetPackage).hom by
+        simpa only [CartRealizationProvenance.toRealizableHom] using
+          coreTransportReindexCounit_app_fac second.toRealizableHom
+            targetPackage]
+    _ = (selectedCoreFiberCartesianLift first.toRealizableHom
+          targetPackage).hom :=
+      cartRealizationProvenanceComparisonApp_hom_fac first second targetPackage
+    _ = _ := by
+      symm
+      simpa only [CartRealizationProvenance.toRealizableHom] using
+        coreTransportReindexCounit_app_fac first.toRealizableHom targetPackage
 
 /--
 Two presentations of one semantic BC input have canonically isomorphic direct
@@ -704,6 +865,21 @@ theorem bcProvenanceCanonicalMate_rebasedReplacement
     coreBeckChevalleyMate presentation ≫
       (rightComparison.inv ≫ rightBridge.hom)
   simpa [Category.assoc] using postcomposed
+
+/-- A self-replacement normalizes back to the provenance's canonical mate. -/
+theorem bcSelectedRebasedReplacementMate_self
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (provenance : BCRealizationProvenance input) :
+    bcSelectedRebasedReplacementMate provenance provenance =
+      bcProvenanceCanonicalMate provenance := by
+  have comparison :=
+    bcProvenanceCanonicalMate_rebasedReplacement provenance provenance
+  unfold bcProvenanceDirectRouteComparison
+    bcProvenanceViaBaseRouteComparison at comparison
+  rw [cartRealizationProvenanceComparison_refl,
+    cartRealizationProvenanceComparison_refl] at comparison
+  simpa using comparison
 
 /-! ## Authored-support restriction of presentation replacement -/
 
