@@ -13,6 +13,126 @@
 
 ## Cycle ledger
 
+### Cycle 67 — generated non-twist comparison on the genuine reselection orbit
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 67
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 797617bc7531fc78e7c8aa24adc7e81f7a6cf867
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 66 accepted the package-selected canonical normalization and left the diagnostic selector, public producer/relation, genuine orbit bridge, and replacement compatibility open
+  proof_dag_predecessors:
+    - canonicalObjectNormalizationTotal
+    - canonicalTwoCellComparator
+    - rawDefectCochain
+    - reselectLiftData
+    - authoredSupportCanonicalMate
+  proof_obligation: generate the two-route authored comparison from the G-106 raw diagnostic without a supplied collapse morphism, define one all-input public relation, prove its strict positive and lax full-orbit negative instances, and preserve it under presentation replacement
+  selection_reason: the missing route is now constructible from the accepted package normalization and the existing G-106 edge-reselection action; no API absence is a stop condition
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducer.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean
+  risks:
+    - choosing an arbitrary noninvertible endomorphism instead of the package-selected map
+    - replacing the real edge-reselection action by an invented authored-table action
+    - proving a cochain-indexed auxiliary predicate but not the fixed public MateCoherentRel
+    - claiming general admissibility where the selector has an explicit fallback branch
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: authoredDiagnosticObjectCollapseComponentAtCochain selects identity on a vanishing component, the package-selected canonical normalization when the component fires and its reading laws are admissible, and identity otherwise. Transport through the exact via-base route produces an all-input AuthoredComparisonProducerSignature and the fixed public MateCoherentRel. The strict fixture satisfies that relation. For the lax fixture every support discharges admissibility, every firing selected factor is the reviewed finite noninvertible normalization, and every genuine G-106 edge reselection yields a reselected datum whose initial raw defect is the corresponding orbit cochain and which fails the same fixed public relation. Presentation replacement preserves the producer equation and public relation.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducer.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - authoredDiagnosticObjectCollapseComponentAtCochain
+    - authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical
+    - generatedAuthoredDiagnosticObjectCollapseComparison
+    - MateCoherentRel
+    - generatedAuthoredDiagnosticObjectCollapseComparison_replacement
+    - mateCoherentRel_replacePresentation_iff
+    - AuthoredBCDatumSquare.reselectEdges
+    - AuthoredBCDatumSquare.initialRawDefectCochain_reselectEdges
+    - finiteAxisFold_reselectEdges_not_mateCoherentRel
+    - finiteAxisFold_public_not_mateCoherentRel_on_orbit
+    - finiteAuthoredBCDatumSquare_mateCoherentRel
+    - finiteAxisFold_input_reselectionOrbit_nontrivial
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFold_public_not_mateCoherentRel_on_orbit
+      - finiteAuthoredBCDatumSquare_mateCoherentRel
+      - mateCoherentRel_replacePresentation_iff
+    source_labels:
+      - target proof artifacts K2 authored support induced comparison
+      - target proof artifacts fixed MateCoherentRel positive-negative pair and full reselection orbit
+      - target proof artifacts presentation replacement invariance
+    conjuncts:
+      - diagnostic-generated non-twist factor -> authoredDiagnosticObjectCollapseComponentAtCochain
+      - all-input comparison producer -> generatedAuthoredDiagnosticObjectCollapseComparison
+      - fixed public equation -> MateCoherentRel
+      - strict positive fixture -> finiteAuthoredBCDatumSquare_mateCoherentRel
+      - lax negative fixture on every actual orbit representative -> finiteAxisFold_public_not_mateCoherentRel_on_orbit
+      - nontrivial orbit -> finiteAxisFold_input_reselectionOrbit_nontrivial
+      - presentation replacement -> mateCoherentRel_replacePresentation_iff
+    undischarged_assumptions: []
+    acceptance_point: the authored-support K2 comparison is generated for every input from the raw diagnostic and package-selected normalization branch, the fixed public relation has the required strict-positive and genuine full-orbit lax-negative witnesses, and replacement invariance is proved; this does not discharge K3, K4, final assembly, or G-110 completion
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - no collapse morphism or comparison is supplied by the caller
+      - diagnostic firing is read from rawDefectCochain
+      - finite support admissibility and noninvertibility are concretely proved
+      - every actual G-106 reselection orbit cochain is represented by the initial diagnostic of a reselected authored datum
+      - the same public relation is used for strict positive, lax negative, orbit, and replacement statements
+    remaining:
+      - K3 diagnostic base-change action, admissibility condition, checker bridge, and positive-negative pair
+      - K4 pasting closure, comparison compatibility, pullback-side composition coherence, and G-106/G-109 bridge
+      - final target assembly and completion review
+  certificate_provenance:
+    discharged:
+      - the selected normalization object map comes from AATCorePackage.reading.objectReading
+      - admissibility proves reading-law compatibility and cannot change the fixed constructor by proof irrelevance
+      - edge orbit representatives are generated by reselectLiftData and reselectedTwoCellBase
+      - the authored comparator table remains fixed under reselectEdges
+    unresolved: []
+  proof_use:
+    used:
+      - raw diagnostic identity versus firing branch
+      - canonical normalization admissibility and finite noninvertibility
+      - exact via-base transport and canonical mate epimorphism cancellation
+      - reselectedPathLift_mul and canonicalTwoCellComparator_fac
+      - finiteAxisFold_not_coherentizable on every reselection
+      - provenance route comparisons for presentation replacement
+    unused: []
+  structure_field_escape: none-found; AuthoredBCDatumSquare retains only context, base equality, and authored comparator input fields, while the selected factor and comparison are generated
+  route_integrity: the comparison is canonical mate followed by the package-selected factor on the actual authored support route; the orbit bridge changes edge lifts through the reviewed G-106 action and leaves the authored table fixed
+  target_fitting: none-found
+  vacuity: strict positive and lax negative fixtures are both inhabited; the lax orbit is nontrivial and every orbit coordinate fires somewhere
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCAuthoredDiagnosticObjectCollapseProducer.lean: pass; 24 namespace declarations, standard axioms only
+    - focused BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean: pass; 15 namespace declarations, standard axioms only
+    - targeted producer module build: pass; 4066 jobs
+    - targeted producer-witness module build: pass; 4071 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, select the smallest K3 diagnostic base-change action obligation and retain the existing H_bc qualification and checker contract
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, begin K3 with the generated diagnostic base-change action and its named actual-firing condition
+```
+
 ### Cycle 66 — package-selected canonical object normalization
 
 ```yaml
