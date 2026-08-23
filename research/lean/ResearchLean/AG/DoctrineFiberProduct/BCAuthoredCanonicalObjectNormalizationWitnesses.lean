@@ -121,7 +121,45 @@ theorem finiteCanonicalObjectNormalization_admissible :
     simpa only [finiteCanonicalObjectNormalization_eq_erase] using
       finiteAxisFoldEraseUpper.coordinate_eq object axis
 
-/-- The package-forced canonical normalization is genuinely noninvertible. -/
+/-- An equation reading on the same generated object whose residual observes
+auxiliary object data. Its rejecting detector is sound because it accepts no
+circuit datum. -/
+private noncomputable def auxiliarySensitiveSupportEquationReading :
+    EquationReading FiniteModel.object where
+  contextPreorder :=
+    FiniteModel.coreReading.equationReading.contextPreorder
+  equationSystem := auxiliarySensitiveEquationSystem
+    FiniteModel.coreReading.equationReading.contextPreorder
+  circuits := {
+    code := fun _ => .reject
+  }
+  circuitSound := by
+    intro _index _object _datum _matches accepts _equation
+    simp at accepts
+
+/-- A finite core package whose equation residual distinguishes auxiliary
+object readings over one fixed Atom configuration. -/
+noncomputable def auxiliarySensitiveCorePackage :
+    AATCorePackage FiniteModel.carrier where
+  axioms := FiniteModel.corePackage.axioms
+  reading := {
+    FiniteModel.corePackage.reading with
+    equationReading := auxiliarySensitiveSupportEquationReading
+  }
+
+/-- Canonical-normalization admissibility is a genuine condition: the
+auxiliary-sensitive support package does not satisfy it. -/
+theorem auxiliarySensitiveCorePackage_not_admissible :
+    ¬ CanonicalObjectNormalizationAdmissible
+      auxiliarySensitiveCorePackage := by
+  intro admissible
+  apply auxiliarySensitiveEquationSystem_not_configurationInvariant
+    FiniteModel.coreReading.equationReading.contextPreorder
+  simpa [auxiliarySensitiveCorePackage,
+    auxiliarySensitiveSupportEquationReading] using
+    admissible.equationResidual_configurationInvariant
+
+/-- The package-selected canonical normalization is genuinely noninvertible. -/
 theorem finiteCanonicalObjectNormalizationTotal_not_isIso :
     ¬ IsIso (show finiteAxisFoldSupportPackage ⟶
       finiteAxisFoldSupportPackage from

@@ -400,6 +400,6 @@ predicate records exactly when the other readings ignore this normalization,
 and then constructs a proof-independent exact total endomorphism.  On the
 finite lax support this normalization specializes to the reviewed Cycle 63
 object erasure and is noninvertible.  Connecting raw authored diagnostics to
-this package-forced normalization and then resolving the fixed public-relation
+this package-selected object normalization and then resolving the fixed public-relation
 orbit bridge remain later K2 obligations.
 -/

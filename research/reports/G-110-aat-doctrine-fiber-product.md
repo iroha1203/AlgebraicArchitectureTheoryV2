@@ -57,6 +57,7 @@ result:
     - canonicalObjectNormalizationTotal
     - canonicalObjectNormalizationTotal_proof_irrel
     - finiteCanonicalObjectNormalization_admissible
+    - auxiliarySensitiveCorePackage_not_admissible
     - finiteCanonicalObjectNormalizationTotal_not_isIso
   claim_mapping:
     theorem_names:
@@ -83,6 +84,7 @@ audits:
       - normalization object map is fixed by the existing package objectReading
       - proof irrelevance prevents admissibility proofs from changing the output of the fixed constructor
       - the fixed finite support discharges every reading compatibility law
+      - an auxiliary-sensitive package refutes canonical-normalization admissibility
       - the fixed normalization is noninvertible
     remaining:
       - discharge CanonicalObjectNormalizationAdmissible on each support where the selector fires, or retain that branch condition explicitly
@@ -92,7 +94,7 @@ audits:
       - prove presentation-replacement compatibility for the resulting comparison
   certificate_provenance:
     discharged:
-      - no arbitrary endomorphism, comparison, or expected equality is selected or supplied
+      - no arbitrary endomorphism, K2 comparison, or K2 target equality is selected or supplied; exactness laws remain explicit admissibility fields
       - the selected object per configuration comes from AATCorePackage.reading.objectReading
       - finite admissibility reuses reviewed equation/operation/invariant/signature laws
     unresolved:
@@ -109,7 +111,7 @@ audits:
   structure_field_escape: the object map is package-selected and contains no supplied morphism; exactness remains conditional on the discharge-required CanonicalObjectNormalizationAdmissible laws, concretely discharged only for the finite support
   route_integrity: pass for the package-selected object-map and finite-instance checkpoint; an exact total factor is not characterized as unique among all package endomorphisms, and the public producer remains unclaimed
   target_fitting: none-found
-  vacuity: the finite admissibility instance is inhabited and its normalization is concretely noninvertible; a negative package-level admissibility instance is not established or required by this checkpoint
+  vacuity: the finite support inhabits admissibility and has a concretely noninvertible normalization; auxiliarySensitiveCorePackage_not_admissible supplies the package-level negative instance
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
