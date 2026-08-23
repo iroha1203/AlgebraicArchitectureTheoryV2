@@ -46,9 +46,10 @@ result:
 audits:
   premise_delta:
     discharged:
-      - actual finite-presentation replacement for the arbitrary-cochain diagnostic comparison
-      - actual finite-presentation replacement for the named generated auxiliary producer
+      - universal finite-presentation replacement equality for the arbitrary-cochain diagnostic comparison
+      - universal finite-presentation replacement equality for the named generated auxiliary producer
     remaining:
+      - specialize the replacement equality on one nonempty authored datum with raw-distinct equal-decoding presentations
       - construct the fixed public MateCoherentRel/full-orbit bridge without promoting the unforced auxiliary fold as K2's induced comparison
   certificate_provenance:
     discharged:
@@ -60,14 +61,14 @@ audits:
       - internally generated unified diagnostic fold at the same cochain
       - literal preservation of toTransportData and the authored comparator under replacePresentation
   route_integrity: no mate, route comparison, fold, expected equality, or compatibility certificate is supplied by the caller
-  vacuity: none-found; the theorem is quantified over arbitrary datum, replacement provenance, and defect cochain
+  vacuity: the universal equality is usable for every supplied replacement provenance, but this cycle does not yet exhibit a nonempty authored raw-distinct equal-decoding specialization
   validation_refs:
     - focused BCAuthoredDiagnosticPresentationReplacement.lean: pass; 9 namespace declarations, standard axioms only
     - exact target module build: pass; 4050 jobs
 review:
   status: pending standard fixed-head review
 stop_condition_candidate: none
-next_obligation: after merge, construct the public relation/orbit bridge or a theorem-backed fixed-target obstruction; do not promote the auxiliary producer by renaming alone
+next_obligation: after merge, first build a nonempty authored raw-distinct equal-decoding specialization, then construct the public relation/orbit bridge or a theorem-backed fixed-target obstruction; do not promote the auxiliary producer by renaming alone
 ```
 
 ### Cycle 57 — semantic mate replacement square and canonical identification
