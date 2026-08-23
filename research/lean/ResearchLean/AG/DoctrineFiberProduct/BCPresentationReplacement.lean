@@ -674,8 +674,9 @@ noncomputable def authoredSupportSelectedRebasedReplacementMate
 
 /--
 Presentation replacement commutes with the canonical mate after restriction to
-the same authored support.  The context's lift and authored table are fixed by
-`replacePresentation`; this theorem changes only finite realization provenance.
+the same authored support.  The context replacement fixes its lift and endpoint
+data; the separate datum-level replacement fixes the authored table
+definitionally.  This structural theorem consumes only the fixed support.
 -/
 theorem authoredSupportCanonicalMate_rebasedReplacement
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
