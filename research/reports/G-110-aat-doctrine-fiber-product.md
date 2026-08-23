@@ -13,6 +13,145 @@
 
 ## Cycle ledger
 
+### Cycle 66 — package-selected canonical object normalization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 66
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a5b94e57d6f169dee88cbb663b8f15d2079f9361
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 65 review rejected arbitrary Classical.choose of an unrelated noninvertible support endomorphism
+  proof_dag_predecessors:
+    - finiteAxisFoldEraseTotal
+    - finiteAxisFoldEraseTotal_not_isIso
+    - AATCorePackage.reading.objectReading
+  proof_obligation: replace arbitrary endomorphism selection by the package-selected normalization to its selected object on each existing configuration, expose exactness as explicit reading laws, and recover the reviewed finite noninvertible erasure
+  selection_reason: the object reading is already part of every support package and uniquely fixes the normalization object map; no authored comparison, collapse morphism, or existential endomorphism is selected
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalizationWitnesses.lean
+  risks:
+    - hiding arbitrary morphism data inside an admissibility certificate
+    - assuming auxiliary readings are configuration-insensitive without proof
+    - promoting this normalization checkpoint to the public K2 producer
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: canonicalObjectNormalization sends every architecture object to the object selected by the package's existing objectReading on the same configuration. It retains configuration, fixes selected objects, and is idempotent. CanonicalObjectNormalizationAdmissible records the conditional equation, operation, invariant, and signature compatibility laws needed by the exact constructor; proof irrelevance proves only that different proofs of these laws cannot change that constructor's morphism. On finiteAxisFoldSupportPackage the normalization object map is exactly finiteAxisFoldEraseObject, the reviewed reading laws discharge admissibility, and noninjectivity makes the resulting total normalization non-IsIso.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalizationWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - canonicalObjectNormalization
+    - canonicalObjectNormalization_idempotent
+    - CanonicalObjectNormalizationAdmissible
+    - CanonicalObjectNormalizationAdmissible.equationResidual_configurationInvariant
+    - canonicalObjectNormalizationTotal
+    - canonicalObjectNormalizationTotal_proof_irrel
+    - finiteCanonicalObjectNormalization_admissible
+    - auxiliarySensitiveCorePackage_not_admissible
+    - finiteCanonicalObjectNormalizationTotal_not_isIso
+  claim_mapping:
+    theorem_names:
+      - finiteCanonicalObjectNormalizationTotal_not_isIso
+    source_labels:
+      - target proof strategy K2 non-twist factor route
+      - Cycle 65 fixed-head forcing-theorem finding
+    conjuncts:
+      - package-selected normalization object map -> canonicalObjectNormalization
+      - conditional exactness surface -> CanonicalObjectNormalizationAdmissible
+      - proof-independent output of the fixed constructor -> canonicalObjectNormalizationTotal_proof_irrel
+      - fixed finite non-twist witness -> finiteCanonicalObjectNormalizationTotal_not_isIso
+    undischarged_assumptions:
+      - diagnostic firing selector for this canonical normalization
+      - general-package discharge of CanonicalObjectNormalizationAdmissible or a conditional all-input selector
+      - all-input AuthoredComparisonProducerSignature
+      - fixed public MateCoherentRel and full-orbit bridge
+      - presentation-replacement compatibility of the resulting comparison
+    acceptance_point: the previously arbitrary object-collapse choice is replaced by a package-selected idempotent object map, with a conditional exact constructor and a concretely discharged finite noninvertible instance; no public K2 claim is made
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - normalization object map is fixed by the existing package objectReading
+      - proof irrelevance prevents admissibility proofs from changing the output of the fixed constructor
+      - the fixed finite support discharges every reading compatibility law
+      - an auxiliary-sensitive package refutes canonical-normalization admissibility
+      - the fixed normalization is noninvertible
+    remaining:
+      - discharge CanonicalObjectNormalizationAdmissible on each support where the selector fires, or retain that branch condition explicitly
+      - generate the comparison from the raw authored diagnostic using this fixed normalization
+      - define the all-input AuthoredComparisonProducerSignature
+      - bridge the public initial relation to genuine reselection-orbit representatives
+      - prove presentation-replacement compatibility for the resulting comparison
+  certificate_provenance:
+    discharged:
+      - no arbitrary endomorphism, K2 comparison, or K2 target equality is selected or supplied; exactness laws remain explicit admissibility fields
+      - the selected object per configuration comes from AATCorePackage.reading.objectReading
+      - finite admissibility reuses reviewed equation/operation/invariant/signature laws
+    unresolved:
+      - general-package admissibility is discharge-required and currently conditional
+      - authored diagnostic proof-use for the later comparison selector
+  proof_use:
+    used:
+      - ObjectReading.object and configuration_eq
+      - equation residual normalization invariance
+      - operation endpoint transport and naturality
+      - invariant and signature coordinate transport
+      - finiteAxisFoldEraseObject noninjectivity
+    unused: []
+  structure_field_escape: the object map is package-selected and contains no supplied morphism; exactness remains conditional on the discharge-required CanonicalObjectNormalizationAdmissible laws, concretely discharged only for the finite support
+  route_integrity: pass for the package-selected object-map and finite-instance checkpoint; an exact total factor is not characterized as unique among all package endomorphisms, and the public producer remains unclaimed
+  target_fitting: none-found
+  vacuity: the finite support inhabits admissibility and has a concretely noninvertible normalization; auxiliarySensitiveCorePackage_not_admissible supplies the package-level negative instance
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCAuthoredCanonicalObjectNormalization.lean: pass; 23 namespace declarations, standard axioms only
+    - focused BCAuthoredCanonicalObjectNormalizationWitnesses.lean: pass; 8 namespace declarations, standard axioms only
+    - targeted normalization and witness module build: pass; 4062 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, make the raw diagnostic select the package normalization only on supports where admissibility is discharged, define the all-input producer, prove presentation-replacement compatibility, and construct a public-relation orbit bridge without an authored-table action invention
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, connect the raw diagnostic to conditionally admissible canonical object normalization, complete the all-input and presentation-replacement surfaces, and connect the public relation to genuine orbit representatives
+```
+
+### Cycle 65 — rejected arbitrary all-input selector
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 65
+base_oid: a5b94e57d6f169dee88cbb663b8f15d2079f9361
+tracking_issue: 4034
+pull_request: 4106
+reviewed_head: 756d889805be97f6eed684c1c6cc87aeae1161cd
+result:
+  proposed_result_type: rejected
+  completion_candidate: no
+  proof_obligation_delta: none accepted; nonidentity raw data only triggered Classical.choose of an arbitrary existing noninvertible support endomorphism, and the all-orbit theorem used a separate cochain-indexed predicate rather than the fixed public relation
+audits:
+  route_integrity: fail
+  target_fitting: found
+  blocking_findings:
+    - selected factor was not forced by the authored comparator or a universal construction
+    - no bridge connected every orbit representative to the fixed public MateCoherentRel
+review:
+  status: rejected; PR 4106 closed without merge
+next_obligation: construct a package-forced normalization factor and a genuine public-relation orbit bridge
+```
+
 ### Cycle 64 — diagnostic-generated object-collapse comparison
 
 ```yaml
