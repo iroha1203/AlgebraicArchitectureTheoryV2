@@ -338,5 +338,11 @@ canonical post-twist.  This is a scoped route obstruction, not a global K2
 refutation.  The fixed GOAL prose supplies the provenance and anti-target-fitting
 acceptance gate; constructing a schema-preserving noninvertible universal
 quotient or reflection, or proving its current-data impossibility, remains the
-next obligation.
+next obligation.  The standard `Cofork` analysis further fixes the direction
+barrier: a coequalizing arrow lands in its cocone point, and an endomorphism of
+the existing via-base target requires an additional return map.  For the fixed
+lax residual every such conditional returned endomorphism is noninvertible,
+but neither an input-generated cofork nor return-map provenance has been
+constructed.  Those two data, their naturality, and presentation-replacement
+compatibility are the next K2 obligations.
 -/
