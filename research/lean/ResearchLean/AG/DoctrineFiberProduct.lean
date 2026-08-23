@@ -8,6 +8,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMateWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDefectComparison
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDefectComparisonWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -305,4 +307,12 @@ report phrase "arbitrary endpoint-isomorphism rebasing" was not an independently
 fixed GOAL artifact and was not used to invent a new schema.  The authored
 induced comparison, `MateCoherentRel`, its strict/lax and orbit witnesses,
 K3--K4, fixed-ledger `FiniteModelLift`, and final assembly remain open.
+The authored-defect comparison layer now realizes the existing G-106 initial
+raw defect on the exact discrete support, transports it through the fixed
+direct route, and composes it with the comparator-free canonical mate.  This
+defines the public `MateCoherentRel` without accepting a comparison or defect
+certificate.  G-106 `CoherentAt` proves agreement on the existing inhabited
+strict fixture.  The lax all-orbit negative fixture, orbit nontriviality,
+presentation-replacement invariance, K3--K4, fixed-ledger `FiniteModelLift`,
+and final assembly remain open.
 -/

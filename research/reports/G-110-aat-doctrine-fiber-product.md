@@ -13,6 +13,115 @@
 
 ## Cycle ledger
 
+### Cycle 42 — authored comparison from the G-106 initial raw defect
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 42
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: dda3848d62ee1816e197e2388c8f825a8b26c1ce
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 41 rejection correction comment 5383305279 and Cycle 42 selection correction comment 5383347741
+  proof_dag_predecessors:
+    - F0b2b comparator-free AuthoredSupportContext, raw AuthoredBCDatumSquare, producer signatures, and MateCoherentRel equation
+    - G-106 canonicalTwoCellComparator, rawTwoCellDefect, initialRawDefectCochain, identityDefectCochain, and CoherentAt equivalence
+    - Cycle 40 exact authored-support direct and via-base routes and canonical mate restriction
+  proof_obligation: generate the authored comparison from the existing G-106 relative raw defect rather than a free authored twist; transport that defect through the fixed direct route; define the public MateCoherentRel over the two named producers; prove a coherent initial raw cochain yields the canonical mate; fire the result on the existing nonempty strict fixture
+  selection_reason: the fixed GOAL requires direct raw-field proof-use and anchors the relative obstruction to the existing G-106 raw defect and reselection orbit. Cycle 41's raw-automorphism-only twists were explicitly inadmissible and its underdetermination claim was rejected by the permitted full review rerun.
+  expected_result_type: proof-checkpoint
+  risks:
+    - using the authored comparator alone as a free twist of the canonical mate
+    - accepting a comparison, mate, expected equality, raw defect, or coherence certificate from the caller
+    - replacing the existing G-106 raw defect or reselection action with a new gauge
+    - claiming the strict positive firing also supplies the lax all-orbit negative witness
+    - promoting this checkpoint to K3-K4, FiniteModelLift, or G-110 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: authoredInitialDefectAutomorphism realizes the existing G-106 initialRawDefectCochain on the exact discrete authored support. authoredSupportDirectEndomorphism transports that natural endomorphism through the fixed Cycle 40 direct route. authoredDefectComparison composes the transported relative defect with the comparator-free canonical mate, and the public MateCoherentRel closes the F0 equation over exactly these two named producers. The coherent criterion consumes equality of the independently defined raw and identity cochains, proves both support and route defects are identity, and concludes comparison agreement. The existing nonempty identity-square fixture proves CoherentAt at the initial coordinate, derives raw-defect identity through the G-106 equivalence theorem, and fires MateCoherentRel on an actual authored cell. The lax all-reselection negative fixture, orbit nontriviality witness, presentation replacement invariance, K3-K4, arbitrary-target FiniteModelLift, and final assembly remain open.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDefectComparison.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDefectComparisonWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - authoredInitialDefectTotal
+    - authoredInitialDefectAutomorphism
+    - authoredSupportDirectEndomorphism
+    - authoredDirectRouteDefect
+    - authoredDefectComparison
+    - MateCoherentRel
+    - mateCoherentRel_of_initialRawDefect_eq_identity
+    - not_mateCoherentRel_of_directRouteDefect_ne_identity
+    - finiteAuthoredSupport_coherentAt_identity
+    - finiteAuthoredSupport_initialRawDefect_eq_identity
+    - finiteAuthoredBCDatumSquare_mateCoherentRel
+    - finiteAuthoredDefectComparison_nonempty_support
+  claim_mapping:
+    fixed_goal_clauses:
+      - target theorem C requires an authored-support induced comparison generated from the finite raw table and a public MateCoherentRel against the canonical mate
+      - raw defect and orbit vocabulary must be the existing G-106 definitions; no new assignment-table gauge may be invented
+      - direct return or cosmetic repackaging of the authored comparator, including a free canonical-mate twist, does not discharge the obligation
+      - strict and lax fixtures share the same public relation, but the lax all-orbit negative half is a later residual
+    source_facts:
+      - AuthoredBCDatumSquare.toTransportData reconstructs the reviewed G-106 datum and directly retains input.authored.comparator
+      - initialRawDefectCochain is rawTwoCellDefect at identity reselection, namely authored comparator relative to canonicalTwoCellComparator
+      - the support category is discrete, so componentwise raw defects generate the exact natural endomorphism without a naturality certificate input
+      - Cycle 40 supplies the exact direct route and comparator-free canonical mate
+    consequence:
+      - the authored producer now depends on the raw field through the independently fixed G-106 relative defect, not through a raw-only twist
+      - coherent initial G-106 data produces exactly the canonical BC mate
+      - a nonidentity transported defect is sufficient to refute the same public relation
+      - the concrete strict support is inhabited and exercises the producer
+  premise_audit:
+    direction_hypotheses:
+      - AuthoredBCDatumSquare only
+    discharge_required_consumed:
+      - input.toTransportData and its authored comparator projection
+      - G-106 initialRawDefectCochain and identityDefectCochain
+      - Cycle 40 direct route and canonical mate
+      - G-106 CoherentAt to raw-cochain identity theorem in the strict firing
+    conclusion_equivalent_inputs: none
+    structure_field_escape: none; no comparison, mate, expected equality, raw defect, coherence proof, or orbit value is stored in AuthoredBCDatumSquare or accepted by the producer
+    proof_use: the producer computes initialRawDefectCochain from input.toTransportData, realizes each value in the southwest fiber, whiskers the resulting support natural transformation through the direct route, and composes it with the separately generated canonical mate
+  route_integrity:
+    selected_route: existing G-106 authored-versus-canonical path defect, fixed Cycle 40 direct route, and fixed Cycle 40 canonical mate
+    nonvacuity: the finite strict fixture has one actual authored cell; CoherentAt is proved from its identity path lifts and consumed through the non-definitional G-106 equivalence
+    forbidden_routes_absent:
+      - no raw-authored-only twist
+      - no new gauge or orbit definition
+      - no caller comparison, mate, defect, expected equality, or certificate
+      - no lax negative, K3-K4, FiniteModelLift, or completion claim
+  audits:
+    premise_delta:
+      discharged:
+        - named authored comparison producer with direct G-106 raw-field provenance
+        - public MateCoherentRel definition over the named authored and canonical producers
+        - coherent-initial-defect criterion
+        - nonempty strict positive firing
+      remaining:
+        - concrete lax negative fixture with all-reselection nonvanishing and a nontrivial orbit witness
+        - presentation replacement invariance and explicit anti-wrapper proof-use audit for the final strict/lax pair
+        - fixed-ledger arbitrary-target FiniteModelLift
+        - K3 diagnostic base-change action and H_bc positive/negative pair
+        - K4 pullback-square pasting and G-106/G-109 coherence bridge
+        - final target theorem assembly and completion review
+    vacuity: none in the new producer or strict firing; the support category is concretely inhabited and CoherentAt is proved on its cell
+    goal_or_report_reinterpretation: none; Cycle 41's rejected underdetermination claim is not merged or reused
+  validation_refs:
+    - official focused check BCAuthoredDefectComparison.lean: pass, 15 namespace declarations and standard axioms only
+    - official focused check BCAuthoredDefectComparisonWitnesses.lean: pass, 6 namespace declarations and standard axioms only
+    - targeted module check BCAuthoredDefectComparison: pass; no Research aggregate or full build
+  review_refs:
+    status: pending independent four-lane review
+  stop_condition: none
+  next_obligation: construct a BC-authored lax fixture from an existing G-106 closed nonvanishing presentation, prove not MateCoherentRel throughout its genuine InReselectionOrbit with a concrete nontrivial orbit witness, and add presentation-replacement invariance without changing the public relation
+```
+
 ### Cycle 40 — canonical Beck--Chevalley mate on authored support
 
 ```yaml
