@@ -13,6 +13,64 @@
 
 ## Cycle ledger
 
+### Cycle 62 — non-axis collapse field audit
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 62
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 1703f5e38e2f69a02e170a36b5bcfc1522891000
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 61 excludes comparator-induced noninjective axis collapse but leaves other exact-endomorphism fields unclassified
+  proof_obligation: determine whether invariant, equation, Atom, or dependent coordinate transport in the fixed authored support package can supply a noninjective alternative to the rejected axis fold
+  selection_reason: these are the remaining index/coordinate maps visible in SignedExactCoreReadingHom before auditing object and operation maps
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: every exact endomorphism of finiteAxisFoldSupportPackage has the identity map on its singleton invariant index. Its equation map is the function of the stored equation equivalence, its Atom map is the stored Atom equivalence, and each dependent coordinate map is a stored equivalence. All four maps are therefore injective and cannot supply the noninjective collapse sought as a non-axis alternative.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredNonAxisCollapseAudit.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - finiteAxisFoldSupportPackage_invariantMap_eq_id
+    - finiteAxisFoldSupportPackage_invariantMap_injective
+    - finiteAxisFoldSupportPackage_equationMap_injective
+    - finiteAxisFoldSupportPackage_atomMap_injective
+    - finiteAxisFoldSupportPackage_coordinateEquiv_injective
+audits:
+  premise_delta:
+    discharged:
+      - invariant-index collapse
+      - equation-index collapse
+      - primitive Atom collapse
+      - pointwise dependent-coordinate collapse
+    remaining:
+      - audit objectMap and operationMap, then either construct a surviving non-axis K2 factor or prove the relevant fixed-fixture structural reduction
+  certificate_provenance:
+    discharged:
+      - injectivity follows from the exact-hom schema and the concrete singleton invariant index, not caller certificates
+  proof_use:
+    used:
+      - concrete finiteAxisFoldSupportPackage
+      - stored Atom, equation, and coordinate equivalences
+  structure_field_escape: none-found
+  route_integrity: no public producer or comparison is defined
+  target_fitting: none; the theorems quantify every exact endomorphism of the fixed support package
+  vacuity: none-found
+  validation_refs:
+    - focused BCAuthoredNonAxisCollapseAudit.lean: pass; 5 namespace declarations, standard axioms only
+    - exact target module build: pass; 4059 jobs
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, audit objectMap and operationMap for the fixed support package and complete or refute the fixed-fixture reduction
+```
+
 ### Cycle 61 — comparator-induction obstruction for the fixed swap
 
 ```yaml
