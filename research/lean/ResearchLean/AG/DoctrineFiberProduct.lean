@@ -331,10 +331,11 @@ The residual-isomorphism classification then proves that any invertible
 authored component against the invertible canonical mate is necessarily the
 canonical component followed by a target automorphism.  The exact Cycle 43
 universal-factorization component lies in this class, with residual equal to
-the transported initial raw defect; any mismatch in that route is therefore a
-nontrivial canonical post-twist.  This is a scoped route obstruction, not a
-global K2 refutation.  The F0b2b producer signature does not formalize which
-generated constructions are admissible, so the fixed K2 provenance and
-anti-twist requirements reach a GOAL-defect gate rather than selecting another
-unforced collapse.
+the transported initial raw defect.  The finite lax double diamond proves that
+residual nonidentity concretely, so the mismatch in that route is a forbidden
+canonical post-twist.  This is a scoped route obstruction, not a global K2
+refutation.  The fixed GOAL prose supplies the provenance and anti-target-fitting
+acceptance gate; constructing a schema-preserving noninvertible universal
+quotient or reflection, or proving its current-data impossibility, remains the
+next obligation.
 -/

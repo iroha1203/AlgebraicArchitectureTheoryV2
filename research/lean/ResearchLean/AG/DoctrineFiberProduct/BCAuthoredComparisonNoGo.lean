@@ -47,7 +47,7 @@ def HasNontrivialCanonicalPostIsoResidual
     authored = canonical ≫ residual.hom ∧ residual.hom ≠ 𝟙 Y
 
 /--
-Two invertible parallel components always admit the canonical-post-residual
+Two invertible parallel components always have the canonical-post-residual
 classification.  The residual is `canonical⁻¹ ≫ authored`.
 -/
   theorem isCanonicalPostIsoTwist_of_isIso
