@@ -153,10 +153,10 @@ review:
     - added pairwiseRawDefect_eq, castTarget_heq, premise-provenance docs, and downstream no-unfold use
     - downgraded the cycle result to proof-checkpoint
   post_core_fix_round:
-    math_a: no central findings; one report metadata issue fixed in the report-only tail
+    math_a: no central findings; one report metadata issue fixed in the report-only tail, and stale PR-body drift was fixed at unchanged reviewed head during review
     math_b: no central findings; one report enum issue fixed in the report-only tail
     lean_a: no central or noncentral findings
-    lean_b: no Lean-claim finding; stale PR-body drift was fixed at unchanged reviewed head, and selection-history metadata was fixed in the report-only tail
+    lean_b: no Lean-claim finding; stale PR-body drift was fixed at unchanged reviewed head, and selection-history plus result-enum metadata were fixed in the report-only tail
   integrated_verdict: pass for the fixed-double-diamond full-orbit diagnostic proof-checkpoint only; public authored-table MateCoherentRel, actual presentation replacement, FiniteModelLift, K3, K4, final assembly, and G-110 completion are not accepted
   ci: reviewed head passed 7 of 7 PR checks
   status: pass pending report-only tail audit
