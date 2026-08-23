@@ -13,6 +13,84 @@
 
 ## Cycle ledger
 
+### Cycle 51 — replacement-invariant orbit-local fold no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 51
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 525c98d55a959a5db80bea40c26682ad8048c97a
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 50 merge synchronization comment 5385213996 and Cycle 51 fixed selection comment 5385228778
+  proof_dag_predecessors:
+    - Cycles 44--46 diagnostic-generated noninvertible one-axis fold
+    - Cycle 46 formal-review rejection of its arbitrary orientation as the public authored comparison
+    - Cycle 50 natural insertion normalization to a forbidden post-isomorphism twist
+  proof_obligation: determine whether the existing noninvertible axis fold can be made comparator-only and presentation-replacement-invariant by removing its arbitrary orientation; on the fixed lax Fin 3 witness require equivariance under the authored adjacent transposition and locality within its supplied axis orbits
+  selection_reason: the fixed authored schema supplies only a comparator automorphism table. The prior fold becomes noninvertible by choosing one endpoint of its symmetric two-cycle. Replacement invariance requires the resulting axis operation to commute with that relabelling, while comparator-only provenance restricts it to the supplied orbit.
+  expected_result_type: blocker-fixed
+  risks:
+    - treating axis injectivity as categorical invertibility
+    - presenting the scoped fixed-witness theorem as a global classification of K2 producers
+    - accepting an orientation, order, fold, comparison, or noninvertibility certificate from the caller
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: FiniteAxisFoldSwapEquivariant states commutation with the actual authored adjacent transposition and FiniteAxisFoldSwapOrbitLocal states that no axis outside its supplied orbit is introduced. finiteAxisFold_swapEquivariant_orbitLocal_injective proves every operation satisfying both conditions is injective. The concrete previous fold is exposed as finiteAxisFoldSwapWitnessAxisMap; it sends zero to one while fixing one and two, so it is orbit-local but finiteAxisFoldSwapWitness_not_equivariant proves it fails replacement equivariance. Its noninjectivity therefore depends exactly on the selected orientation and cannot be repaired by hiding that choice.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAxisFoldReplacementInvarianceNoGo.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - finiteAxisFold_swapEquivariant_orbitLocal_injective
+    - finiteAxisFold_not_swapEquivariant_and_orbitLocal_of_not_injective
+    - finiteAxisFoldSwapWitness_axisMap_zero
+    - finiteAxisFoldSwapWitness_axisMap_one
+    - finiteAxisFoldSwapWitness_axisMap_two
+    - finiteAxisFoldSwapWitness_orbitLocal
+    - finiteAxisFoldSwapWitness_not_equivariant
+    - finiteAxisFoldSwapWitness_invariance_noGo
+  claim_mapping:
+    replacement_invariance: equivariance under the concrete authored swap
+    comparator_only_scope: each axis image remains in its supplied swap orbit
+    no_go: both properties force injectivity, whereas the earlier fold obtains noninvertibility from a noninjective oriented collapse
+    concrete_firing: the existing source-zero fold is orbit-local and explicitly violates equivariance at axis zero
+    global_boundary: no categorical IsIso conclusion and no quantification over unrelated K2 producers
+audits:
+  premise_delta:
+    discharged:
+      - whether the existing one-axis fold can become replacement-invariant merely by hiding its selected orientation -> no
+    remaining:
+      - construct additional structure from the fixed authored table without an orientation choice, or prove a broader exhaustion/GOAL-defect theorem
+  certificate_provenance:
+    discharged:
+      - the no-go consumes only the fixed adjacent-swap comparator and the existing internally generated fold
+    unresolved:
+      - any producer using structure beyond comparator-orbit transport
+  proof_use:
+    used:
+      - actual authored swap action
+      - prior fold axis map and its proved noninjectivity
+      - equivariance and orbit-locality as the exact repair conditions under test
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: the earlier fold remains auxiliary; no public MateCoherentRel is defined
+  target_fitting: the theorem explains rather than hides the selected orientation
+  vacuity: the concrete fold fires orbit locality, noninjectivity, and failure of equivariance
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none; this is a scoped fold-repair blocker
+  validation_refs:
+    - focused BCAxisFoldReplacementInvarianceNoGo.lean: pass; 12 namespace declarations, standard axioms only
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: complete standard review; then determine whether the comparator-only schema admits any replacement-invariant non-twist producer beyond functorial automorphism transport, oriented folds, and the impossible exact-core Cofork route
+```
+
 ### Cycle 50 — natural unit-interior insertion normalization
 
 ```yaml

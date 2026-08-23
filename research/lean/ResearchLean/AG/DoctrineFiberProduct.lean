@@ -23,6 +23,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetQuotientNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetCoforkNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredPreMateInsertionNoGo
+import ResearchLean.AG.DoctrineFiberProduct.BCAxisFoldReplacementInvarianceNoGo
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -371,4 +372,12 @@ the residual into the adjunction formula does not create the missing non-twist
 factor; a remaining candidate would need a separately generated noninvertible
 intermediate operation whose provenance is not merely functorial transport of
 the authored automorphism.
+
+The fixed lax swap also rules out repairing the earlier noninvertible axis fold
+by hiding its selected orientation.  On its `Fin 3` axis presentation, every
+operation that commutes with the authored transposition and stays within each
+supplied transposition orbit is injective.  The concrete one-axis fold is
+orbit-local but fails equivariance: choosing axis zero distinguishes the two
+symmetric orientations.  This is a scoped replacement-invariance obstruction
+for that fold route, not a categorical `IsIso` theorem or a global K2 no-go.
 -/
