@@ -11,9 +11,9 @@ same configuration.  No endomorphism is chosen from an existential.
 
 The normalization becomes an exact package endomorphism when the remaining
 equation, operation, invariant, and signature readings are insensitive to that
-normalization.  Those laws form a Prop-valued admissibility predicate; the
-resulting morphism data are then definitionally determined by the package and
-the equality proofs are proof-irrelevant.
+normalization.  Those conditional laws form a Prop-valued admissibility
+predicate.  Within this constructor, the object map is fixed by the package and
+different admissibility proofs cannot change the resulting morphism.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -125,9 +125,9 @@ structure CanonicalObjectNormalizationAdmissible
       P.reading.signatureReading.coordinate
         (canonicalObjectNormalization P object) axis
 
-/-- Admissibility entails the previously audited configuration-invariance law
-for equation residuals.  The existing auxiliary-sensitive equation system
-refutes that law, so this premise is substantive rather than automatic. -/
+/-- Admissibility entails configuration-invariance of this package's equation
+residuals.  Thus the equation part of admissibility is an explicit conditional
+law, rather than a consequence of object normalization alone. -/
 theorem CanonicalObjectNormalizationAdmissible.equationResidual_configurationInvariant
     {U : AtomCarrier.{u}} {P : AATCorePackage U}
     (admissible : CanonicalObjectNormalizationAdmissible P) :
