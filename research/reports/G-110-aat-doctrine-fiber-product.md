@@ -13,6 +13,163 @@
 
 ## Cycle ledger
 
+### Cycle 45 — pairwise diagnostic quotient on the full reselection orbit
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 45
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: f5634c405ce7244af80d1234cbc8edd17d72cd2c
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 44 merge synchronization comment 5384235674 and Cycle 45 fixed selection comment 5384246482
+  proof_dag_predecessors:
+    - G-106 rawDefectCochain and InReselectionOrbit on the fixed double diamond
+    - Cycle 39 packageProjection Beck--Chevalley exactness
+    - Cycle 40 exact authored-support routes and canonical mate restriction
+    - Cycle 44 diagnostic-generated noninvertible axis fold and exact canonical-comp-fold normalization
+  proof_obligation: on the fixed lax double diamond, compare the two facewise raw defects over their common endpoint and identical boundary paths so that the common generated canonical comparator cancels; use the resulting cochain-indexed quotient to generate the named authored-support relation as an initial-cochain specialization, prove its lax failure and strict control together with failure of the cochain-indexed equation over the full InReselectionOrbit, and construct a concrete nontrivial orbit; actual presentation-replacement invariance remains a separate theorem
+  selection_reason: Cycle 44 proves a genuine noninvertible diagnostic fold only at the initial representative because a single raw component can lose the object-fixing moved axis. The double-diamond faces have identical boundary paths, so their ordered quotient cancels the common canonical comparator at every coordinate while retaining the authored relative swap. This is the shortest route to the fixed all-orbit K2 negative without introducing a new gauge, arbitrary comparison, fold, or noninvertibility certificate.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPairwiseAxisFold.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPairwiseAxisFoldWitnesses.lean
+  risks:
+    - defining a new predicate instead of the fixed public MateCoherentRel equation
+    - authored twist or an arbitrary noninvertible endomorphism masquerading as the relative obstruction
+    - comparing face values that do not share a generated canonical factor
+    - proving only the initial coordinate instead of every InReselectionOrbit representative
+    - a singleton orbit making the all-orbit theorem vacuous
+    - claiming presentation replacement from a group-level common-factor identity
+  unchecked:
+    - public authored-table MateCoherentRel fidelity outside the fixed double-diamond diagnostic
+    - actual presentation replacement for the canonical and authored comparison producers
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: PackageFiberAut.pairwiseRawDefect forms the ordered quotient of two actual DefectCochain components after retagging only along equality of their target packages. PairwiseAxisFoldWitnessAt now additionally requires literal equality of both boundary paths, so arbitrary same-endpoint cells cannot witness common-factor cancellation. commonCanonicalPairwiseQuotient_eq proves that an already identified common right factor cancels, and commonCanonicalPairwiseQuotient_factor_invariant proves only the corresponding group-level factor invariance. generatedPairwiseAxisFoldTotalAt derives the endomorphism and is non-IsIso whenever the typed witness is available. The exact diagnostic comparison is rebuilt at an arbitrary cochain by the selected reindexing functor, cocartesian universal factor, BC unit, square isomorphism, transport, and right reindexing, and normalizes to the reviewed canonical mate followed by the transported generated fold. In the fixed double diamond, both faces have identical boundary paths and the same canonical comparator at every reselection; their quotient is always the adjacent swap. The swap supplies the same concrete moved-axis fold at every coordinate, its via-base image remains non-IsIso, and therefore the auxiliary comparison differs from the canonical mate at every coordinate. finiteAxisFold_pairwise_not_mateCoherent_on_orbit quantifies over every actual InReselectionOrbit representative. A right-edge swap supplies a second raw cochain distinct from the initial cochain, proving orbit nontriviality. The singleton datum is retained only as a diagnostic control. This checkpoint does not claim that DiagnosticPairwiseAxisFoldMateCoherentRel is the fixed public authored-table relation and does not claim actual presentation-replacement invariance.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPairwiseAxisFold.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPairwiseAxisFoldWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - PackageFiberAut.pairwiseRawDefect
+    - PackageFiberAut.commonCanonicalPairwiseQuotient_eq
+    - PackageFiberAut.commonCanonicalPairwiseQuotient_factor_invariant
+    - PackageFiberAut.generatedPairwiseAxisFoldTotalAt_not_isIso
+    - authoredPairwiseAxisFoldLeftFactor_fac
+    - authoredPairwiseAxisFoldLeftFactor_eq_counit_comp_fold
+    - authoredPairwiseAxisFoldComparisonComponentAtCochain_eq_canonical_comp_fold
+    - DiagnosticPairwiseAxisFoldMateCoherentRel
+    - finiteAxisFold_canonicalComparator_faces_eq
+    - finiteAxisFold_pairwiseRawDefect_eq_swap
+    - finiteAxisFold_pairwiseRawDefect_reselection_invariant
+    - finiteAxisFold_pairwise_commonFactor_invariant
+    - finiteAxisFold_pairwise_not_mateCoherent_on_orbit
+    - finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
+    - finiteAuthoredBCDatumSquare_pairwiseMateCoherent
+    - finiteAxisFold_input_reselectionOrbit_nontrivial
+  claim_mapping:
+    theorem_names:
+      - DiagnosticPairwiseAxisFoldMateCoherentRel
+      - finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
+      - finiteAuthoredBCDatumSquare_pairwiseMateCoherent
+      - finiteAxisFold_pairwise_not_mateCoherent_on_orbit
+      - finiteAxisFold_input_reselectionOrbit_nontrivial
+      - finiteAxisFold_pairwise_commonFactor_invariant
+    source_labels:
+      - target theorem C diagnostic predecessor on the fixed double diamond
+      - target proof artifact full InReselectionOrbit nonvanishing predecessor
+    conjuncts:
+      - auxiliary initial relation -> DiagnosticPairwiseAxisFoldMateCoherentRel specializes the cochain-indexed diagnostic comparison and reviewed canonical mate to initialRawDefectCochain
+      - singleton diagnostic control -> finiteAuthoredBCDatumSquare_pairwiseMateCoherent
+      - fixed lax diagnostic -> finiteAxisFoldBCDatumSquare_not_pairwiseMateCoherent
+      - full actual orbit -> finiteAxisFold_pairwise_not_mateCoherent_on_orbit
+      - orbit nontriviality -> finiteAxisFold_input_reselectionOrbit_nontrivial
+      - common-factor algebra -> commonCanonicalPairwiseQuotient_factor_invariant and finiteAxisFold_pairwise_commonFactor_invariant
+    undischarged_assumptions:
+      - fixed-ledger arbitrary-target FiniteModelLift
+      - K3 diagnostic base-change action, qualified H_bc package, and positive/negative vanishing pair
+      - K4 pullback-square pasting and G-106/G-109 coherence bridge
+      - cumulative final assembly and completion review
+      - public authored-table MateCoherentRel with nonvacuous strict/lax fidelity
+      - actual presentation-replacement invariance for both named producers
+    acceptance_point: the Cycle 45 fixed-double-diamond diagnostic is generated from the actual G-106 raw cochain, remains a non-IsIso fold after transport over every actual reselection, and has a concrete non-singleton orbit; it is a predecessor checkpoint only
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - common target package -> finite double-diamond endpoint equality and finiteAxisFold_canonicalComparator_faces_eq
+      - all InReselectionOrbit coordinates -> finiteAxisFold_pairwise_not_mateCoherent_on_orbit
+      - orbit nontriviality -> finiteAxisFold_input_reselectionOrbit_nontrivial
+      - common right-factor cancellation -> commonCanonicalPairwiseQuotient_factor_invariant
+    remaining:
+      - public authored-table MateCoherentRel and actual presentation replacement
+      - FiniteModelLift, K3, K4, and final assembly as listed in claim_mapping
+  certificate_provenance:
+    discharged:
+      - pairwise quotient is computed from the supplied G-106 cochain and endpoint equality
+      - finite fold witness is generated from the quotient theorem equating it to the concrete adjacent swap
+      - authored comparison and its factor are generated by existing reindexing, transport, adjunction, and cocartesian universal APIs
+    unresolved:
+      - provenance bridge from actual presentation replacement to the common canonical factor
+  proof_use:
+    used:
+      - both raw cochain face components and their common canonical comparator
+      - endpoint equality in castTarget
+      - moved-axis swap witness in generated non-IsIso fold
+      - both identity-route unitors in transport reflection
+      - canonical-mate IsIso in component cancellation
+      - InReselectionOrbit witness by elimination to an actual EdgeReselection
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass for the fixed diagnostic route; public producer and presentation replacement remain unchecked
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - post-core-fix focused BCDiagnosticPairwiseAxisFold.lean: pass; 48 namespace declarations, standard axioms only
+    - post-core-fix focused BCDiagnosticPairwiseAxisFoldWitnesses.lean: pass; 25 namespace declarations, standard axioms only
+    - targeted builds for exactly the two changed modules: pass; no Research aggregate or full build
+    - git diff --check, focused module manifest, placeholder, hidden/BiDi, and Research import-direction scans: pass
+  blocking_findings:
+    - initial Math B review refuted the public-relation fidelity claim; resolved by removing the public name and limiting this cycle to the typed fixed-double-diamond diagnostic checkpoint
+    - initial Math A/B and Lean A/B reviews found no actual presentation-replacement theorem; resolved for this PR by renaming the group lemma, removing the discharge claim, and returning that bridge to the remaining ledger
+    - Lean A requested no-unfold APIs and premise-provenance docstrings; pairwiseRawDefect_eq and strengthened declaration documentation added
+  next_obligation: after this checkpoint merges, construct the actual authored-table producer and presentation-replacement bridge required by the public MateCoherentRel
+review:
+  reviewed_head: ae98249585bb2be843712635542fa1c087eea9b1
+  initial_round:
+    - Math A, Lean A, and Lean B found the claimed presentation replacement was only a group identity
+    - Math B additionally refuted the generic public-relation fidelity by a singleton-support counterexample and missing same-boundary constraint
+  core_fix:
+    - removed the public MateCoherentRel name and limited the result to DiagnosticPairwiseAxisFoldMateCoherentRel
+    - required both boundary paths by HEq in PairwiseAxisFoldWitnessAt
+    - renamed replacement claims to group-level factor invariance and returned actual presentation replacement to remaining obligations
+    - added pairwiseRawDefect_eq, castTarget_heq, premise-provenance docs, and downstream no-unfold use
+    - downgraded the cycle result to proof-checkpoint
+  post_core_fix_round:
+    math_a: no central findings; one report metadata issue fixed in the report-only tail, and stale PR-body drift was fixed at unchanged reviewed head during review
+    math_b: no central findings; one report enum issue fixed in the report-only tail
+    lean_a: no central or noncentral findings
+    lean_b: no Lean-claim finding; stale PR-body drift was fixed at unchanged reviewed head, and selection-history plus result-enum metadata were fixed in the report-only tail
+  integrated_verdict: pass for the fixed-double-diamond full-orbit diagnostic proof-checkpoint only; public authored-table MateCoherentRel, actual presentation replacement, FiniteModelLift, K3, K4, final assembly, and G-110 completion are not accepted
+  ci: reviewed head passed 7 of 7 PR checks
+  report_tail_audit:
+    reviewed_tail: a2fc7e5a208b28e54f177ef75ce97a5394490480
+    protection_scope: no findings
+    completion_claim_discipline: no findings
+    consistency_traceability: initial noncentral lane-summary omission fixed at reviewed_tail; direct reaudit pass
+    public_quality_privacy: no findings
+  status: pass
+stop_condition: none
+next_obligation: audit the report-only review tail and merge the Cycle 45 checkpoint; then construct the public authored-table MateCoherentRel and actual presentation-replacement bridge
+```
+
 ### Cycle 44 — diagnostic axis fold at the initial representative
 
 ```yaml
