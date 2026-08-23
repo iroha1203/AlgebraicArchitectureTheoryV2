@@ -13,6 +13,61 @@
 
 ## Cycle ledger
 
+### Cycle 57 — semantic mate replacement square and canonical identification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 57
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: b8e20e761d2bd022d370890f30ee6bb5c83c6859
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 56 separated square provenance from selected-route provenance and proved generated unit/counit compatibility
+  proof_obligation: assemble the semantic selected mate comparison square and identify the reference-fixed rebased mate with the replacement canonical mate
+  selection_reason: this is the remaining non-self naturality law isolated by Cycle 56 and directly composes the already generated square, unit, counit, and route comparisons
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: coreTransportReindexHomEquiv_provenanceCompatibility transports the generated right adjunction hom-set equivalence across provenance. bcSemanticSelectedMate_replacement combines it with the covariant-square naturality and generated left counit compatibility to prove the public replacement square. Cancelling the direct-route isomorphism against the existing cleavage-rebased square proves that the rebased mate is the semantic mate and hence the replacement provenance's canonical mate. The same equality is restricted to fixed authored support in normalized provenance-route form.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPresentationReplacement.lean
+  evidence:
+    - coreTransportReindexHomEquiv_provenanceCompatibility
+    - bcSemanticSelectedMate_homEquiv
+    - bcSemanticSelectedMate_replacement
+    - bcSelectedRebasedReplacementMate_eq_semanticSelectedMate
+    - bcSelectedRebasedReplacementMate_eq_canonical
+    - authoredSupportSelectedRebasedReplacementMate_eq_canonical
+audits:
+  premise_delta:
+    discharged:
+      - semantic selected mate public comparison square under non-self provenance replacement
+      - equality of the reference-fixed rebased mate and replacement canonical mate
+      - authored-support normalization of that canonical equality
+    remaining:
+      - re-audit the fixed GOAL acceptance table after merge and select the next undischarged target obligation
+  certificate_provenance:
+    discharged:
+      - every square, route comparison, unit, counit, and hom-set equivalence is generated from the fixed semantic input and finite realization provenance
+  proof_use:
+    used:
+      - Cycle 55 presentation-independent covariant square comparison
+      - Cycle 56 generated unit and counit provenance compatibility
+      - Cycle 53 cleavage-rebased public mate comparison square
+  route_integrity: the comparison square is derived inside mateEquiv from naturality and generated adjunction data; no caller-supplied mate or comparison certificate is introduced
+  vacuity: none-found; the theorem is quantified over arbitrary reference and replacement provenances, and Cycle 54 supplies a raw-distinct equal-decoding witness
+  validation_refs:
+    - focused BCPresentationReplacement.lean: pass; 70 namespace declarations, standard axioms only
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, re-audit the fixed GOAL acceptance table and continue with the highest-priority undischarged obligation
+```
+
 ### Cycle 56 — square/route provenance separation for the canonical mate
 
 ```yaml
