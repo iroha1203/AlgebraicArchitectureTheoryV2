@@ -13,6 +13,117 @@
 
 ## Cycle ledger
 
+### Cycle 65 — all-input object-collapse producer and public relation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 65
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: a5b94e57d6f169dee88cbb663b8f15d2079f9361
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 64 generates a genuine non-twist comparison only for the fixed lax fixture
+  proof_dag_predecessors:
+    - finiteAxisFoldEraseTotal
+    - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+    - AuthoredComparisonProducerSignature
+    - authoredSupportCanonicalMate_replacement
+  proof_obligation: construct the all-input authored comparison producer and fixed public MateCoherentRel without a supplied collapse, then prove strict/lax, full-orbit, and presentation-replacement obligations
+  selection_reason: the support object itself can internally supply a noninvertible endomorphism when one exists; the raw diagnostic decides whether that factor fires, and the fixed finite erasure proves availability on the lax witness
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducer.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean
+    - MateCoherentRel
+  risks:
+    - adding collapse availability as an authored input field or theorem argument
+    - selecting a nonidentity automorphism twist instead of a noninvertible factor
+    - fixing only the finite fixture while leaving AuthoredComparisonProducerSignature uninhabited
+    - losing the comparison under presentation replacement
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: AuthoredSupportObjectCollapseAvailableAt is a property of the existing support object. For every authored datum and raw cochain, identity selects identity; a nonidentity component internally selects a noninvertible support endomorphism when that property is inhabited and otherwise returns identity. Transport through the actual bottom/right route yields an all-input AuthoredComparisonProducerSignature. Its initial-raw specialization and the canonical mate define the fixed public MateCoherentRel. The generated comparison commutes with finite presentation replacement, giving relation invariance. On the lax finite fixture, the reviewed exact erasure proves availability at every face, transported selected factors remain noninvertible, and mismatch persists on the full genuine G-106 orbit. The existing strict fixture satisfies the same relation because its initial raw cochain is identity.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducer.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - generatedAuthoredDiagnosticObjectCollapseComparison
+    - MateCoherentRel
+    - generatedAuthoredDiagnosticObjectCollapseComparison_replacement
+    - mateCoherentRel_replacePresentation_iff
+    - finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+    - finiteAuthoredBCDatumSquare_mateCoherentRel
+    - finiteAxisFold_not_mateCoherentAtCochain_on_orbit
+    - finiteAxisFold_replacePresentation_not_mateCoherentRel
+  claim_mapping:
+    theorem_names:
+      - finiteAuthoredBCDatumSquare_mateCoherentRel
+      - finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+      - finiteAxisFold_not_mateCoherentAtCochain_on_orbit
+      - mateCoherentRel_replacePresentation_iff
+    source_labels:
+      - target theorem C authored-support induced comparison
+      - Beck-Chevalley MateCoherentRel strict/lax pair
+      - target route integrity and all-orbit gates
+    conjuncts:
+      - all-input producer -> generatedAuthoredDiagnosticObjectCollapseComparison
+      - fixed public relation -> MateCoherentRel
+      - strict positive -> finiteAuthoredBCDatumSquare_mateCoherentRel
+      - lax negative -> finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+      - full orbit -> finiteAxisFold_not_mateCoherentAtCochain_on_orbit
+      - replacement invariance -> mateCoherentRel_replacePresentation_iff
+    undischarged_assumptions: []
+    acceptance_point: the named all-input non-twist producer and fixed public relation now have the required strict/lax, orbit, and replacement theorems
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - the producer takes only AuthoredBCDatumSquare and reads its initial raw diagnostic
+      - collapse availability is derived from the support category and is not an input field
+      - a firing available factor is noninvertible before and after the fixed identity route transport
+      - strict and lax instances use the same public MateCoherentRel
+      - the lax mismatch is invariant on the full genuine reselection orbit
+      - both the producer and public relation are invariant under finite presentation replacement
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - branch selection reads equality of the actual initialRawDefectCochain component
+      - the finite availability witness is the reviewed Cycle 63 exact erasure
+      - no comparison, natural family, expected equality, collapse, or firing certificate is accepted in the authored schema
+    unresolved: []
+  proof_use:
+    used:
+      - initialRawDefectCochain through the all-input producer specialization
+      - finiteAxisFoldEraseTotal and finiteAxisFoldEraseTotal_not_isIso
+      - bottom transport, right reindexing, and identity-unit reflection
+      - authoredSupportCanonicalMate_replacement and provenance route comparisons
+      - finiteAxisFold_not_coherentizable and InReselectionOrbit
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass; the mismatch factor is noninvertible and is not the authored automorphism or an axis-fold twist
+  target_fitting: none-found
+  vacuity: none-found; the strict fixture is positive, the lax fixture is negative, its support is nonempty, and its reselection orbit is nontrivial
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCAuthoredDiagnosticObjectCollapseProducer.lean: pass; 19 namespace declarations, standard axioms only
+    - focused BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean: pass; 12 namespace declarations, standard axioms only
+    - targeted producer, witness, and DoctrineFiberProduct umbrella build: pass; 4152 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, select the first remaining K3 diagnostic base-change action obligation from the fixed GOAL ledger
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, continue to K3 diagnostic base-change action and its condition/positive-negative obligations
+```
+
 ### Cycle 64 — diagnostic-generated object-collapse comparison
 
 ```yaml

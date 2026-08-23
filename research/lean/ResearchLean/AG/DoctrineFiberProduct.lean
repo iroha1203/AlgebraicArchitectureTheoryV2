@@ -31,6 +31,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticPresentationReplacementWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacementWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
@@ -389,4 +391,16 @@ one-axis fold is orbit-local but fails equivariance: choosing axis zero
 distinguishes the two symmetric orientations.  No theorem here derives those
 two conditions from presentation replacement or comparator-only provenance;
 this is not a categorical `IsIso` theorem or a global K2 no-go.
+
+The all-input diagnostic object-collapse layer now defines the named authored
+comparison producer and the fixed public `MateCoherentRel` without adding a
+collapse morphism or firing certificate to the authored datum.  Identity raw
+components select identity; a firing component internally selects a
+noninvertible endomorphism when the existing support geometry admits one.  The
+finite lax package supplies that existence through the reviewed exact object
+erasure, while the strict fixture has identity raw diagnostic.  Consequently
+the same public relation has a strict positive instance, a lax negative
+instance, full G-106 orbit nonvanishing, and finite-presentation replacement
+invariance.  The remaining G-110 obligations lie after K2 rather than in the
+authored-comparison producer signature.
 -/
