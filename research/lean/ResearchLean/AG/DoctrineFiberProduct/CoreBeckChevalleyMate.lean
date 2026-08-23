@@ -207,10 +207,11 @@ noncomputable def typedCoreFiberTransportCompositor
     coreFiberTransportFunctor
         (typedPresentationToSemantic (compPresentation first second)) ≅
       coreFiberTransportFunctor (typedPresentationToSemantic first) ⋙
-        coreFiberTransportFunctor (typedPresentationToSemantic second) := by
-  rw [typedPresentationToSemantic_comp first second]
-  exact coreFiberCompositor (typedPresentationToSemantic first)
-    (typedPresentationToSemantic second)
+        coreFiberTransportFunctor (typedPresentationToSemantic second) :=
+  eqToIso (congrArg coreFiberTransportFunctor
+      (typedPresentationToSemantic_comp first second)) ≪≫
+    coreFiberCompositor (typedPresentationToSemantic first)
+      (typedPresentationToSemantic second)
 
 /-- The top/right composite presentation. -/
 def bcTopRightPresentation {U : AtomCarrier.{u}} [DecidableEq U.Atom]

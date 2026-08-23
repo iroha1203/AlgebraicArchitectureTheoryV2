@@ -228,6 +228,109 @@ noncomputable def bcSemanticCoreTransportSquareIso
     coreFiberCompositor input.square.left input.square.bottom
 
 /--
+The generated exact-endpoint transport comparison is the equality-induced
+isomorphism of the underlying semantic transport functors.  The proof uses the
+strong-cocartesian characterization of the generated comparison component.
+-/
+theorem coreFiberLift_eqToIso_fac
+    {U : AtomCarrier.{u}} {source target : ExtractionInstance U}
+    (first second : source ⟶ target) (semantic_eq : first = second)
+    (sourcePackage : CoreFiber source) :
+    coreFiberLift first sourcePackage ≫
+        ((eqToIso (congrArg coreFiberTransportFunctor semantic_eq)).hom.app
+          sourcePackage).1 =
+      coreFiberLift second sourcePackage := by
+  cases semantic_eq
+  change coreFiberLift first sourcePackage ≫ 𝟙 _ =
+    coreFiberLift first sourcePackage
+  simp
+
+theorem typedCoreFiberTransportPresentationComparison_eqToIso
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source target : FiniteInstanceCode U}
+    (first second : CartPresentationBetween source target)
+    (semantic_eq : typedPresentationToSemantic first =
+      typedPresentationToSemantic second) :
+    typedCoreFiberTransportPresentationComparison first second semantic_eq =
+      eqToIso (congrArg coreFiberTransportFunctor semantic_eq) := by
+  apply Iso.ext
+  apply NatTrans.ext
+  funext sourcePackage
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let firstLift := coreFiberLift
+    (typedPresentationToSemantic first) sourcePackage
+  letI := coreFiberLift_isStronglyCocartesian
+    (typedPresentationToSemantic first) sourcePackage
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (typedPresentationToSemantic first) firstLift
+    (𝟙 target.toSemantic)
+  change firstLift ≫
+      (typedCoreFiberTransportPresentationComparisonApp first second semantic_eq
+        sourcePackage).hom.1 = firstLift ≫
+      ((eqToIso (congrArg coreFiberTransportFunctor semantic_eq)).hom.app
+        sourcePackage).1
+  rw [typedCoreFiberTransportPresentationComparisonApp_hom_fac]
+  exact (coreFiberLift_eqToIso_fac
+    (typedPresentationToSemantic first)
+    (typedPresentationToSemantic second) semantic_eq sourcePackage).symm
+
+/-- Expose the equality transport hidden by the typed compositor wrapper. -/
+theorem typedCoreFiberTransportCompositor_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {source middle target : FiniteInstanceCode U}
+    (first : CartPresentationBetween source middle)
+    (second : CartPresentationBetween middle target) :
+    typedCoreFiberTransportCompositor first second =
+      eqToIso (congrArg coreFiberTransportFunctor
+        (typedPresentationToSemantic_comp first second)) ≪≫
+        coreFiberCompositor (typedPresentationToSemantic first)
+          (typedPresentationToSemantic second) := by
+  rfl
+
+/-- Every presentation-built square comparison is the semantic square comparison. -/
+theorem bcProvenanceCoreTransportSquareIso_eq_semantic
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (provenance : BCRealizationProvenance input) :
+    bcProvenanceCoreTransportSquareIso provenance =
+      bcSemanticCoreTransportSquareIso input := by
+  rcases provenance with ⟨presentation, rfl⟩
+  change bcCoreTransportSquareIso presentation =
+    bcSemanticCoreTransportSquareIso (toSemanticBC presentation)
+  rw [show bcCoreTransportSquareIso presentation =
+      (typedCoreFiberTransportCompositor
+          (bcTopPresentation presentation)
+          (bcRightPresentation presentation)).symm ≪≫
+        typedCoreFiberTransportPresentationComparison
+          (bcTopRightPresentation presentation)
+          (bcLeftBottomPresentation presentation)
+          (bcCompositePresentations_semantic_eq presentation) ≪≫
+        typedCoreFiberTransportCompositor
+          (bcLeftPresentation presentation)
+          (bcBottomPresentation presentation) by rfl]
+  rw [typedCoreFiberTransportPresentationComparison_eqToIso]
+  rw [typedCoreFiberTransportCompositor_eq,
+    typedCoreFiberTransportCompositor_eq]
+  unfold bcSemanticCoreTransportSquareIso
+  apply Iso.ext
+  apply NatTrans.ext
+  funext sourcePackage
+  simp only [Iso.trans_hom, Iso.symm_hom, Iso.trans_inv,
+    eqToIso.hom, eqToIso.inv, NatTrans.comp_app, Category.assoc,
+    eqToHom_app, eqToHom_trans_assoc]
+  congr 2
+
+/-- The covariant square comparison is independent of finite presentation provenance. -/
+theorem bcProvenanceCoreTransportSquareIso_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (first second : BCRealizationProvenance input) :
+    bcProvenanceCoreTransportSquareIso first =
+      bcProvenanceCoreTransportSquareIso second :=
+  (bcProvenanceCoreTransportSquareIso_eq_semantic first).trans
+    (bcProvenanceCoreTransportSquareIso_eq_semantic second).symm
+
+/--
 Two presentations of one semantic BC input have canonically isomorphic direct
 routes, generated by uniqueness of the selected cartesian lifts.
 -/
