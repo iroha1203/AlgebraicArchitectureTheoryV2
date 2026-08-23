@@ -142,10 +142,12 @@ noncomputable def finiteAxisFoldSwapWitness :
     decide
   objectMap_eq := rfl
 
+/-- The concrete adjacent swap supplies an intrinsic axis-fold witness. -/
 theorem finiteAxisFoldSwap_available :
     PackageFiberAut.AxisFoldAvailable finiteAxisFoldSwap :=
   ⟨finiteAxisFoldSwapWitness⟩
 
+/-- The generated fold for the concrete adjacent swap is noninvertible. -/
 theorem finiteAxisFoldSwap_generated_not_isIso :
     ¬ IsIso
       (show finiteAxisFoldSupportPackage ⟶ finiteAxisFoldSupportPackage from
@@ -181,6 +183,7 @@ noncomputable def finiteAxisFoldBCPresentation : BCPresentation FiniteModel.carr
   bcPresentationOfCospan finiteAuthoredSupportCospan
     finiteAxisFoldDiagnosticPresentation
 
+/-- The decoded identity BC square used by the double-diamond witness. -/
 noncomputable def finiteAxisFoldSquare : RealizableSquare FiniteModel.carrier :=
   realizableSquareOf finiteAxisFoldBCPresentation
 
@@ -257,6 +260,7 @@ noncomputable def finiteAxisFoldBCDatumSquare :
   AuthoredBCDatumSquare.ofInterpretation finiteAxisFoldSquare
     finiteAxisFoldInterpretation finiteAxisFold_endpoint_eq
 
+/-- The double-diamond authored support contains its second face. -/
 theorem finiteAxisFoldSupport_nonempty :
     Nonempty finiteAxisFoldBCDatumSquare.context.Category :=
   ⟨Discrete.mk DoubleDiamondTwoCell.second⟩
@@ -313,7 +317,7 @@ theorem finiteAxisFold_initialRawDefect_second_available :
   exact finiteAxisFoldSwap_available
 
 /-- A functor naturally isomorphic to identity reflects isomorphisms. -/
-theorem isIso_of_map_isIso_of_natIso_id
+private theorem isIso_of_map_isIso_of_natIso_id
     {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
     (unitor : functor ≅ 𝟭 C) {source target : C}
     (hom : source ⟶ target) [IsIso (functor.map hom)] : IsIso hom := by
@@ -364,13 +368,21 @@ theorem finiteAxisFold_viaBaseFold_second_not_isIso :
     infer_instance
   have fold_val_eq :
       fold.1 = PackageFiberAut.generatedAxisFoldTotal finiteAxisFoldSwap := by
-    dsimp [fold, authoredDiagnosticAxisFoldDecodedComponent,
-      authoredDiagnosticAxisFoldComponent, authoredDiagnosticAxisFoldTotal]
-    change PackageFiberAut.generatedAxisFoldTotal
-        (initialRawDefectCochain finiteAxisFoldTransportData
-          DoubleDiamondTwoCell.second) =
-      PackageFiberAut.generatedAxisFoldTotal finiteAxisFoldSwap
-    rw [finiteAxisFold_initialRawDefect_second]
+    have fold_heq : HEq fold.1
+        (PackageFiberAut.generatedAxisFoldTotal
+          (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData
+            DoubleDiamondTwoCell.second)) := by
+      simpa only [fold] using
+        (authoredDiagnosticAxisFoldDecodedComponent_val_heq
+          finiteAxisFoldBCDatumSquare DoubleDiamondTwoCell.second)
+    rw [eq_of_heq fold_heq]
+    have raw_eq :
+        initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData
+            DoubleDiamondTwoCell.second =
+          finiteAxisFoldSwap := by
+      simpa only [finiteAxisFold_toTransportData] using
+        finiteAxisFold_initialRawDefect_second
+    exact congrArg PackageFiberAut.generatedAxisFoldTotal raw_eq
   apply finiteAxisFoldSwap_generated_not_isIso
   rw [← fold_val_eq]
   infer_instance

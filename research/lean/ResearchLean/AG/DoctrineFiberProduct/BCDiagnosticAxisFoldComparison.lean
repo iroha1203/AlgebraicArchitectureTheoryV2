@@ -74,6 +74,23 @@ noncomputable def authoredDiagnosticAxisFoldDecodedComponent
       twoCellBase, authored⟩ cell
 
 /--
+The underlying package morphism of the decoded component is the fold generated
+from the initial raw defect.  `HEq` records the retagging across
+`realization_eq`; concrete realized inputs can recover ordinary equality.
+-/
+theorem authoredDiagnosticAxisFoldDecodedComponent_val_heq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : AuthoredBCDatumSquare U)
+    (cell : input.context.square.semantic.diagnostic.TwoCell) :
+    HEq (authoredDiagnosticAxisFoldDecodedComponent input cell).1
+      (PackageFiberAut.generatedAxisFoldTotal
+        (initialRawDefectCochain input.toTransportData cell)) := by
+  rcases input with ⟨⟨⟨semantic, presentation, realization_eq⟩,
+    lift, endpoint_eq⟩, twoCellBase, authored⟩
+  cases realization_eq
+  rfl
+
+/--
 Generate the left factor from the reindexed diagnostic fold by the package
 cocartesian universal property.
 -/
