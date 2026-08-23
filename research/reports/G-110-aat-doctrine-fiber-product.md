@@ -13,6 +13,145 @@
 
 ## Cycle ledger
 
+### Cycle 71 — ordinary G-106 source-fiber incidence bridge to the actual BC routes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 71
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: b5af8340bb37914331ceccdc33a877ff2de7612c
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 69 constructed the actual direct and via-base target data from a parallel fiberwise source representation, while Cycle 70 accepted an arbitrary global total-category action rather than generating the actual square action
+  proof_dag_predecessors:
+    - BCDiagnosticInterpretation
+    - AdmissibleTransportData
+    - FiberwiseAdmissibleTransportData
+    - bcDiagnosticDirectFunctor
+    - bcDiagnosticViaBaseFunctor
+    - bcDiagnosticTransportedComparator_naturality
+  proof_obligation: connect an ordinary accepted G-106 interpretation to the actual BC direct and via-base routes by deriving the fiberwise source representation from source incidence, without accepting any target package, edge qualification, two-cell equation, or comparator
+  selection_reason: the actual BC functors are defined on the southwest core fiber, so source incidence is the smallest input-side qualification that makes the existing ordinary interpretation their mathematical domain; strongly cocartesian source edges over identity then become fiber isomorphisms by theorem
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticSourceFiberBridge.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticSourceFiberBridgeWitnesses.lean
+  risks:
+    - treating source incidence as a target certificate or an H_bc conclusion
+    - supplying edge invertibility instead of deriving it from source edgeStrong and verticality
+    - replacing the ordinary G-106 source packages, edge lifts, or comparators during conversion
+    - claiming the source-fiber qualified construction covers arbitrary-base diagnostic edges
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Conditional on DiagnosticSourceFiberIncidence, which is not generated from an arbitrary BCDiagnosticInterpretation, fiberEdgeIso derives total and fiber invertibility from source edgeStrong plus identity-base verticality. toFiberwise preserves each source package, edge lift, and comparator pointwise. The two actual BC functors then generate direct and via-base target AdmissibleTransportData, with named theorems deriving target edgeStrong and twoCellBase and fixing both comparator generation equations. The exact BC mate identifies the two generated target comparator tables pointwise. The finite ordinary double-diamond interpretation supplies a positive qualified instance with genuinely distinct authored comparators, while the finite nonidentity transport triangle proves that the qualification does not hold for all ordinary G-106 data.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticSourceFiberBridge.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticSourceFiberBridgeWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - DiagnosticSourceFiberIncidence.fiberEdgeIso
+    - DiagnosticSourceFiberIncidence.toFiberwise
+    - DiagnosticSourceFiberIncidence.toFiberwise_package
+    - DiagnosticSourceFiberIncidence.toFiberwise_edgeLift
+    - DiagnosticSourceFiberIncidence.toFiberwise_comparator
+    - bcDiagnosticDirectTransportedInterpretationData
+    - bcDiagnosticViaBaseTransportedInterpretationData
+    - bcDiagnosticDirectTransportedInterpretationData_comparator
+    - bcDiagnosticViaBaseTransportedInterpretationData_comparator
+    - bcDiagnosticDirectTransportedInterpretationData_edgeStrong
+    - bcDiagnosticViaBaseTransportedInterpretationData_edgeStrong
+    - bcDiagnosticDirectTransportedInterpretationData_twoCellBase
+    - bcDiagnosticViaBaseTransportedInterpretationData_twoCellBase
+    - bcDiagnosticTransportedInterpretationComparator_naturality
+    - finiteAxisFoldSourceFiberIncidence
+    - finiteAxisFoldSourceFiberBridge_comparators_ne
+    - finiteAxisFoldBridgeTransportedComparator_naturality
+    - finiteTransportTriangle_not_sourceFiberIncident
+  claim_mapping:
+    theorem_names:
+      - bcDiagnosticDirectTransportedInterpretationData_comparator
+      - bcDiagnosticViaBaseTransportedInterpretationData_comparator
+      - bcDiagnosticDirectTransportedInterpretationData_edgeStrong
+      - bcDiagnosticViaBaseTransportedInterpretationData_edgeStrong
+      - bcDiagnosticDirectTransportedInterpretationData_twoCellBase
+      - bcDiagnosticViaBaseTransportedInterpretationData_twoCellBase
+      - bcDiagnosticTransportedInterpretationComparator_naturality
+    source_labels:
+      - target theorem D(d1) same-combinatorial interpretation action on the source-fiber qualified ordinary G-106 domain
+      - target theorem D(d2) actual direct and via-base endpoint group homomorphisms from Cycle 68
+      - target theorem D(d3) actual-route generated transported admissible data on that domain
+    conjuncts:
+      - ordinary G-106 source interpretation -> source-incidence-generated fiberwise representation
+      - unchanged combinatorial layer -> both target constructors retain the decoded diagnostic presentation
+      - derived source edge invertibility -> source edgeStrong plus source identity-base verticality
+      - derived target edgeStrong -> mapped fiber isomorphism
+      - derived target twoCellBase -> common target core fiber
+      - generated target comparators -> actual direct and via-base endpoint group homomorphisms
+      - actual route comparison -> exact canonical BC mate naturality
+      - nonvacuity -> pre-existing ordinary double-diamond interpretation with distinct authored comparators
+    undischarged_assumptions:
+      - DiagnosticSourceFiberIncidence is caller-supplied and is not generated from an arbitrary ordinary BCDiagnosticInterpretation
+      - full-domain d1 and d3 remain open outside the selected southwest identity-base source fiber
+      - arbitrary-base source diagnostic edges are handled only by the generic Cycle 70 engine, not by the actual square core-fiber routes
+      - H_bc and conditional d4-d6
+      - named actual-firing positive-negative vanishing pair and checker bridge
+    acceptance_point: this is a conditional support theorem: ordinary accepted G-106 data equipped with actual southwest source-fiber incidence feeds the actual direct and via-base BC routes without target-field supply; generation of that incidence, full-domain d1 and d3, H_bc, d4-d6, K3 completion, and G-110 completion are not claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - given source incidence, the Cycle 69 parallel fiberwise representation is generated internally from the ordinary BCDiagnosticInterpretation
+      - source fiber-edge invertibility is derived rather than supplied
+      - actual direct and via-base target edgeStrong, twoCellBase, and comparator generation are exposed as named theorems
+      - the actual mate comparison is stated directly for ordinary interpretation input
+    remaining:
+      - generate or otherwise discharge DiagnosticSourceFiberIncidence from the fixed semantic schema, or construct a full-domain actual-route action
+      - determine the required treatment of arbitrary-base source diagnostic edges from the fixed semantic schema
+      - define qualified H_bc and consume it only in d4-d6
+      - construct the source-firing positive-negative vanishing pair
+  certificate_provenance:
+    discharged:
+      - vertex and edge incidence refer only to already selected source packages and edge lifts
+      - fiberEdgeIso consumes source edgeStrong and IsHomLift over identity
+      - target fields are generated exclusively through the actual core-fiber functors
+      - comparator comparison consumes the exact canonical BC mate
+    unresolved:
+      - DiagnosticSourceFiberIncidence provenance for arbitrary ordinary BCDiagnosticInterpretation inputs
+  proof_use:
+    used:
+      - BCDiagnosticInterpretation.data
+      - source AdmissibleTransportData.edgeStrong
+      - source incidence edgeVertical
+      - Functor.IsStronglyCocartesian.isIso_of_base_isIso
+      - bcDiagnosticDirectFunctor and bcDiagnosticViaBaseFunctor
+      - bcDiagnosticTransportedComparator_naturality
+      - finiteAxisFold_comparators_ne
+    unused:
+      - source AdmissibleTransportData.twoCellBase in this qualified conversion route; the target twoCellBase equations are re-derived from the common target fiber, while the Cycle 70 generic engine consumes the source field
+  structure_field_escape: none-found for target data; DiagnosticSourceFiberIncidence contains only source vertex-base and source edge-verticality facts, while edge invertibility and every target G-106 field are theorems or generated definitions
+  route_integrity: the target constructors use the existing actual direct and via-base core-fiber functors and exact canonical mate; no generic action is relabeled as square-generated
+  target_fitting: none-found; the finiteAxisFold interpretation and distinct-comparator theorem predate this cycle
+  vacuity: finiteAxisFoldSourceFiberIncidence is a positive instance with two genuinely distinct authored source comparators; finiteTransportTriangle_not_sourceFiberIncident is a named negative instance showing that the qualification excludes ordinary data with nonidentity base transport
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; the qualified southwest-source-fiber domain is named explicitly and arbitrary-base coverage remains open
+  validation_refs:
+    - focused BCDiagnosticSourceFiberBridge.lean: pass; 23 namespace declarations, standard axioms only
+    - focused BCDiagnosticSourceFiberBridgeWitnesses.lean: pass; 10 namespace declarations, standard axioms only
+    - targeted bridge and witness module build: pass; 4060 jobs
+    - common diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and umbrella-wiring scans: pass
+  blocking_findings: []
+  next_obligation: after merge, construct the full-domain actual diagnostic action or generate and discharge DiagnosticSourceFiberIncidence from the fixed semantic schema before selecting d4
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, return to full-domain d1 and d3 by constructing the actual diagnostic action or generating source-fiber incidence from the fixed semantic BC schema
+```
+
 ### Cycle 70 — arbitrary-source total diagnostic transport engine
 
 ```yaml
