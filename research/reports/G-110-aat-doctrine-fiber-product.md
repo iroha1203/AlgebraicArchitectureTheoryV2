@@ -13,6 +13,92 @@
 
 ## Cycle ledger
 
+### Cycle 51 — swap-symmetric orbit-local fold no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 51
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 525c98d55a959a5db80bea40c26682ad8048c97a
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 50 merge synchronization comment 5385213996 and Cycle 51 fixed selection comment 5385228778
+  proof_dag_predecessors:
+    - Cycles 44--46 diagnostic-generated noninvertible one-axis fold
+    - Cycle 46 formal-review rejection of its arbitrary orientation as the public authored comparison
+    - Cycle 50 natural insertion normalization to a forbidden post-isomorphism twist
+  proof_obligation: test the conditional repair class in which an axis operation on the fixed lax Fin 3 witness is equivariant under the authored adjacent transposition and local to its supplied orbits; determine whether the existing noninvertible fold lies in that class
+  selection_reason: the prior fold becomes noninvertible by choosing one endpoint of its symmetric two-cycle. Commutation with the swap and locality to its orbits are explicit algebraic conditions under which that orientation would be removed. This cycle does not derive either condition from actual presentation replacement or comparator-only provenance.
+  expected_result_type: blocker-fixed
+  risks:
+    - treating axis injectivity as categorical invertibility
+    - presenting the scoped fixed-witness theorem as a global classification of K2 producers
+    - accepting an orientation, order, fold, comparison, or noninvertibility certificate from the caller
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: FiniteAxisFoldSwapEquivariant states commutation with the actual authored adjacent transposition and FiniteAxisFoldSwapOrbitLocal states locality to its supplied orbits. finiteAxisFold_swapEquivariant_orbitLocal_injective proves every operation satisfying both conditions is injective. finiteAxisFoldWitness_orbitLocal and finiteAxisFoldWitness_not_equivariant prove that every AxisFoldWitness for the fixed swap is orbit-local and breaks swap equivariance. finiteAxisFoldGeneratedAxisMap_eq_chosen opens the actual generatedAxisFoldTotal availability branch and transports those results to its Classical.choice-selected witness, so the exact Cycle 44 generator fails the symmetric repair condition independently of which orientation is selected. The named source-zero witness supplies computational values and separate predicate controls. The cycle does not prove that GOAL presentation replacement implies equivariance or that comparator-only generation implies orbit locality.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAxisFoldSwapSymmetryNoGo.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - finiteAxisFold_swapEquivariant_orbitLocal_injective
+    - finiteAxisFold_not_swapEquivariant_and_orbitLocal_of_not_injective
+    - finiteAxisFoldWitness_orbitLocal
+    - finiteAxisFoldWitness_not_equivariant
+    - finiteAxisFoldGeneratedAxisMap_eq_chosen
+    - finiteAxisFoldGeneratedAxisMap_orbitLocal
+    - finiteAxisFoldGeneratedAxisMap_not_equivariant
+    - finiteAxisFoldSwapWitness_axisMap_zero
+    - finiteAxisFoldSwapWitness_axisMap_one
+    - finiteAxisFoldSwapWitness_axisMap_two
+    - finiteAxisFoldSwapWitness_orbitLocal
+    - finiteAxisFoldSwapWitness_not_equivariant
+    - finiteAxisFoldSwapEquivariant_id
+    - finiteAxisFoldSwapOrbitLocal_not_constZero
+    - finiteAxisFoldSwapWitness_invariance_noGo
+  claim_mapping:
+    swap_symmetry: equivariance under the concrete authored swap is an explicit hypothesis
+    orbit_local_scope: each axis image remains in its supplied swap orbit is an explicit hypothesis
+    no_go: both properties force injectivity, whereas the earlier fold obtains noninvertibility from a noninjective oriented collapse
+    concrete_firing: the actual choice-based generator is orbit-local and non-equivariant for every possible selected witness; the named source-zero fold computes the failure at axis zero
+    global_boundary: no categorical IsIso conclusion and no quantification over unrelated K2 producers
+audits:
+  premise_delta:
+    discharged:
+      - whether the existing one-axis fold satisfies the swap-equivariant orbit-local repair conditions -> no
+    remaining:
+      - construct additional structure from the fixed authored table without an orientation choice, or prove a broader exhaustion/GOAL-defect theorem
+  certificate_provenance:
+    discharged:
+      - the concrete firing opens the exact generatedAxisFoldTotal branch and covers its arbitrary Classical.choice witness
+    unresolved:
+      - any producer using structure beyond comparator-orbit transport
+  proof_use:
+    used:
+      - actual authored swap action
+      - every possible prior fold witness and the actual choice-based generated axis map
+      - equivariance and orbit-locality as explicit conditional repair hypotheses
+    unused: []
+  structure_field_escape: none-found; the central theorem is conditional and does not claim that its hypotheses are generated from the authored schema
+  route_integrity: the earlier fold remains auxiliary; no public MateCoherentRel or presentation-replacement bridge is defined
+  target_fitting: the theorem explains rather than hides the selected orientation
+  vacuity: the concrete fold fires orbit locality, noninjectivity, and failure of equivariance
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none; this is a scoped conditional fold-symmetry blocker, not an actual presentation-replacement obstruction
+  validation_refs:
+    - focused BCAxisFoldSwapSymmetryNoGo.lean: pass after claim-scope and generated-choice bridge fix; 21 namespace declarations, standard axioms only
+    - targeted build for exactly BCAxisFoldSwapSymmetryNoGo: pass; 4057 jobs; no Research aggregate or full build
+review:
+  status: initial Math A/B rejected actual-presentation-replacement and comparator-only provenance overclaims, Lean A requested two-sided predicate controls, and Lean B found the missing bridge to generatedAxisFoldTotal; the batch fix scopes the claim to explicit swap symmetry/orbit locality, adds both controls, and proves the result for every possible choice-selected fold witness; one full post-core-fix rerun required
+stop_condition_candidate: none
+next_obligation: complete standard review; then construct the missing bridge from actual presentation replacement/comparator-only generation to concrete algebraic constraints, or select a different non-twist producer
+```
+
 ### Cycle 50 — natural unit-interior insertion normalization
 
 ```yaml
