@@ -21,6 +21,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparisonWitnes
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetQuotientNoGo
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetCoforkNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -345,4 +346,15 @@ lax residual every such conditional returned endomorphism is noninvertible,
 but neither an input-generated cofork nor return-map provenance has been
 constructed.  Those two data, their naturality, and presentation-replacement
 compatibility are the next K2 obligations.
+
+The finite Cofork nonexistence witness then closes the remaining vacuity on the
+reviewed lax datum.  Its raw adjacent transposition fixes axis `2` but acts
+there by a nonidentity coordinate equivalence.  Because every exact-core arrow
+has an equivalence on that coordinate, no outgoing arrow can coequalize the
+raw action with identity; identity-like transport and reindexing carry this
+nonexistence to the authored via-base route.  Hence the proposed standard
+`Cofork` route cannot be created inside the current exact fiber category for
+that datum.  A successful K2 construction must change the quotient morphism
+surface or use a different diagnostic factor, then prove its naturality and
+presentation-replacement compatibility.
 -/
