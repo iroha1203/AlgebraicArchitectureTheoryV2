@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMateCleavageIndependence
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationReplacement
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
 
 /-!
 # Beck--Chevalley presentation replacement
@@ -40,7 +41,7 @@ structure BCRealizationProvenance
 namespace BCRealizationProvenance
 
 /-- The first-projection semantic input extracted from the fixed BC square. -/
-def leftInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def leftInput {U : AtomCarrier.{u}}
     (input : BCSemanticInput U) :
     CartSemanticInput U where
   source := input.square.northwest
@@ -48,7 +49,7 @@ def leftInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   hom := input.square.left
 
 /-- The second-projection semantic input extracted from the fixed BC square. -/
-def topInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def topInput {U : AtomCarrier.{u}}
     (input : BCSemanticInput U) :
     CartSemanticInput U where
   source := input.square.northwest
@@ -56,7 +57,7 @@ def topInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   hom := input.square.top
 
 /-- The first cospan-leg semantic input extracted from the fixed BC square. -/
-def bottomInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def bottomInput {U : AtomCarrier.{u}}
     (input : BCSemanticInput U) :
     CartSemanticInput U where
   source := input.square.southwest
@@ -64,7 +65,7 @@ def bottomInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   hom := input.square.bottom
 
 /-- The second cospan-leg semantic input extracted from the fixed BC square. -/
-def rightInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def rightInput {U : AtomCarrier.{u}}
     (input : BCSemanticInput U) :
     CartSemanticInput U where
   source := input.square.northeast
@@ -108,6 +109,70 @@ def rightProvenance {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     rfl
 
 end BCRealizationProvenance
+
+/-! ## Replacement with authored diagnostic data held fixed -/
+
+/-- Repackage BC realization provenance as a realizable square. -/
+def BCRealizationProvenance.toRealizableSquare
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U} (provenance : BCRealizationProvenance input) :
+    RealizableSquare U where
+  semantic := input
+  presentation := provenance.presentation
+  realization_eq := provenance.realization_eq.symm
+
+/--
+Replace only the finite BC presentation underlying an authored support context.
+The semantic square, G-106 lift, and authored endpoint incidence remain literal.
+-/
+def AuthoredSupportContext.replacePresentation
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U)
+    (replacement : BCRealizationProvenance context.square.semantic) :
+    AuthoredSupportContext U where
+  square := replacement.toRealizableSquare
+  lift := context.lift
+  endpoint_eq := context.endpoint_eq
+
+/-- Read the existing realizable-square presentation as fixed-input provenance. -/
+def AuthoredSupportContext.realizationProvenance
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U) :
+    BCRealizationProvenance context.square.semantic where
+  presentation := context.square.presentation
+  realization_eq := context.square.realization_eq.symm
+
+/--
+Replace only the finite BC presentation underlying an authored BC datum.  The
+diagnostic interpretation and the complete authored comparator table are reused.
+-/
+def AuthoredBCDatumSquare.replacePresentation
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (datum : AuthoredBCDatumSquare U)
+    (replacement : BCRealizationProvenance datum.context.square.semantic) :
+    AuthoredBCDatumSquare U where
+  context := datum.context.replacePresentation replacement
+  twoCellBase := datum.twoCellBase
+  authored := datum.authored
+
+/-- Presentation replacement preserves the reviewed G-106 transport datum. -/
+@[simp]
+theorem AuthoredBCDatumSquare.replacePresentation_toTransportData
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (datum : AuthoredBCDatumSquare U)
+    (replacement : BCRealizationProvenance datum.context.square.semantic) :
+    (datum.replacePresentation replacement).toTransportData =
+      datum.toTransportData := rfl
+
+/-- Presentation replacement preserves every authored comparator entry. -/
+@[simp]
+theorem AuthoredBCDatumSquare.replacePresentation_authored
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (datum : AuthoredBCDatumSquare U)
+    (replacement : BCRealizationProvenance datum.context.square.semantic)
+    (cell : datum.context.square.semantic.diagnostic.TwoCell) :
+    (datum.replacePresentation replacement).authored.comparator cell =
+      datum.authored.comparator cell := rfl
 
 /-! ## Direct and via-base route comparison -/
 
@@ -202,7 +267,7 @@ noncomputable def bcReplacementLeftCleavage
     (reference replacement : BCRealizationProvenance input) :
     CoreFiberCartesianCleavage
       (bcLeftInput reference.presentation).semantic := by
-  rcases reference with ⟨reference, rfl⟩
+  rcases reference with ⟨presentation, rfl⟩
   exact selectedCoreFiberCartesianCleavage
     replacement.leftProvenance.toRealizableHom
 
@@ -216,9 +281,142 @@ noncomputable def bcReplacementRightCleavage
     (reference replacement : BCRealizationProvenance input) :
     CoreFiberCartesianCleavage
       (bcRightInput reference.presentation).semantic := by
-  rcases reference with ⟨reference, rfl⟩
+  rcases reference with ⟨presentation, rfl⟩
   exact selectedCoreFiberCartesianCleavage
     replacement.rightProvenance.toRealizableHom
+
+/--
+The canonical left selected-functor comparison factored through the rebased
+replacement cleavage used by the cleavage-independent mate theorem.
+-/
+noncomputable def bcReplacementLeftSelectedComparison
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    selectedCoreFiberReindexFunctor reference.leftProvenance.toRealizableHom ≅
+      selectedCoreFiberReindexFunctor replacement.leftProvenance.toRealizableHom := by
+  rcases reference with ⟨reference, rfl⟩
+  exact
+    (coreFiberCleavageSelectedComparison
+      (bcLeftInput reference)
+      (bcReplacementLeftCleavage
+        ⟨reference, rfl⟩ replacement)).symm ≪≫
+      selectedCoreFiberCleavageBridge replacement.leftProvenance.toRealizableHom
+
+/-- Right-hand analogue of `bcReplacementLeftSelectedComparison`. -/
+noncomputable def bcReplacementRightSelectedComparison
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    selectedCoreFiberReindexFunctor reference.rightProvenance.toRealizableHom ≅
+      selectedCoreFiberReindexFunctor replacement.rightProvenance.toRealizableHom := by
+  rcases reference with ⟨reference, rfl⟩
+  exact
+    (coreFiberCleavageSelectedComparison
+      (bcRightInput reference)
+      (bcReplacementRightCleavage
+        ⟨reference, rfl⟩ replacement)).symm ≪≫
+      selectedCoreFiberCleavageBridge replacement.rightProvenance.toRealizableHom
+
+/-- The factored left comparison is the public provenance comparison. -/
+theorem bcReplacementLeftSelectedComparison_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    bcReplacementLeftSelectedComparison reference replacement =
+      cartRealizationProvenanceComparison reference.leftProvenance
+        replacement.leftProvenance := by
+  rcases reference with ⟨presentation, rfl⟩
+  apply Iso.ext
+  apply NatTrans.ext
+  funext targetPackage
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let replacementLift := selectedCoreFiberCartesianLift
+    replacement.leftProvenance.toRealizableHom targetPackage
+  letI : (packageProjection U).IsStronglyCartesian
+      (BCRealizationProvenance.leftInput
+        (toSemanticBC presentation)).hom replacementLift.hom :=
+    replacementLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U)
+    (BCRealizationProvenance.leftInput (toSemanticBC presentation)).hom
+    replacementLift.hom
+    (𝟙 (BCRealizationProvenance.leftInput (toSemanticBC presentation)).source)
+  change
+    (((coreFiberCleavageSelectedComparisonApp
+        (bcLeftInput presentation)
+        (bcReplacementLeftCleavage ⟨presentation, rfl⟩ replacement)
+        targetPackage).inv.1 ≫
+      (selectedCoreFiberCleavageBridgeApp
+        replacement.leftProvenance.toRealizableHom targetPackage).hom.1) ≫
+        replacementLift.hom) =
+      (cartRealizationProvenanceComparisonApp
+        (BCRealizationProvenance.leftProvenance ⟨presentation, rfl⟩)
+        replacement.leftProvenance targetPackage).hom.1 ≫ replacementLift.hom
+  rw [Category.assoc, selectedCoreFiberCleavageBridgeApp_hom_fac]
+  change
+    (coreFiberCleavageSelectedComparisonApp
+        (bcLeftInput presentation)
+        (bcReplacementLeftCleavage ⟨presentation, rfl⟩ replacement)
+        targetPackage).inv.1 ≫
+        ((bcReplacementLeftCleavage ⟨presentation, rfl⟩ replacement).lift
+          targetPackage).hom =
+      (cartRealizationProvenanceComparisonApp
+        (BCRealizationProvenance.leftProvenance ⟨presentation, rfl⟩)
+        replacement.leftProvenance targetPackage).hom.1 ≫ replacementLift.hom
+  rw [coreFiberCleavageSelectedComparisonApp_inv_fac,
+    cartRealizationProvenanceComparisonApp_hom_fac]
+  rfl
+
+/-- The factored right comparison is the public provenance comparison. -/
+theorem bcReplacementRightSelectedComparison_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    bcReplacementRightSelectedComparison reference replacement =
+      cartRealizationProvenanceComparison reference.rightProvenance
+        replacement.rightProvenance := by
+  rcases reference with ⟨presentation, rfl⟩
+  apply Iso.ext
+  apply NatTrans.ext
+  funext targetPackage
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let replacementLift := selectedCoreFiberCartesianLift
+    replacement.rightProvenance.toRealizableHom targetPackage
+  letI : (packageProjection U).IsStronglyCartesian
+      (BCRealizationProvenance.rightInput
+        (toSemanticBC presentation)).hom replacementLift.hom :=
+    replacementLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U)
+    (BCRealizationProvenance.rightInput (toSemanticBC presentation)).hom
+    replacementLift.hom
+    (𝟙 (BCRealizationProvenance.rightInput (toSemanticBC presentation)).source)
+  change
+    (((coreFiberCleavageSelectedComparisonApp
+        (bcRightInput presentation)
+        (bcReplacementRightCleavage ⟨presentation, rfl⟩ replacement)
+        targetPackage).inv.1 ≫
+      (selectedCoreFiberCleavageBridgeApp
+        replacement.rightProvenance.toRealizableHom targetPackage).hom.1) ≫
+        replacementLift.hom) =
+      (cartRealizationProvenanceComparisonApp
+        (BCRealizationProvenance.rightProvenance ⟨presentation, rfl⟩)
+        replacement.rightProvenance targetPackage).hom.1 ≫ replacementLift.hom
+  rw [Category.assoc, selectedCoreFiberCleavageBridgeApp_hom_fac]
+  change
+    (coreFiberCleavageSelectedComparisonApp
+        (bcRightInput presentation)
+        (bcReplacementRightCleavage ⟨presentation, rfl⟩ replacement)
+        targetPackage).inv.1 ≫
+        ((bcReplacementRightCleavage ⟨presentation, rfl⟩ replacement).lift
+          targetPackage).hom =
+      (cartRealizationProvenanceComparisonApp
+        (BCRealizationProvenance.rightProvenance ⟨presentation, rfl⟩)
+        replacement.rightProvenance targetPackage).hom.1 ≫ replacementLift.hom
+  rw [coreFiberCleavageSelectedComparisonApp_inv_fac,
+    cartRealizationProvenanceComparisonApp_hom_fac]
+  rfl
 
 /--
 The replacement mate with the covariant square isomorphism fixed at the
@@ -232,6 +430,31 @@ noncomputable def bcRebasedReplacementMate
   coreBeckChevalleyCleavageMate reference.presentation
     (bcReplacementLeftCleavage reference replacement)
     (bcReplacementRightCleavage reference replacement)
+
+/--
+Normalize the rebased replacement mate onto the public selected routes generated
+by `replacement`.  The two conjugating isomorphisms are generated by the same
+selected cartesian lifts; no route comparison is supplied by a caller.
+-/
+noncomputable def bcSelectedRebasedReplacementMate
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    bcProvenanceDirectRoute replacement ⟶
+      bcProvenanceViaBaseRoute replacement := by
+  rcases reference with ⟨presentation, rfl⟩
+  exact
+    Functor.whiskerRight
+        (selectedCoreFiberCleavageBridge
+          replacement.leftProvenance.toRealizableHom).inv
+        (coreFiberTransportFunctor
+          (toSemanticBC presentation).square.top) ≫
+      bcRebasedReplacementMate ⟨presentation, rfl⟩ replacement ≫
+      Functor.whiskerLeft
+        (coreFiberTransportFunctor
+          (toSemanticBC presentation).square.bottom)
+        (selectedCoreFiberCleavageBridge
+          replacement.rightProvenance.toRealizableHom).hom
 
 /--
 Changing both presentation-generated cleavages commutes with the canonical
@@ -262,6 +485,226 @@ theorem coreBeckChevalleyMate_rebasedReplacement
     reference.presentation
     (bcReplacementLeftCleavage reference replacement)
     (bcReplacementRightCleavage reference replacement)
+
+/--
+Inverse form of the cleavage comparison square.  This is the orientation needed
+to normalize the rebased mate onto the replacement-selected routes.
+-/
+theorem coreBeckChevalleyMate_rebasedReplacement_inv
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    Functor.whiskerRight
+          (coreFiberCleavageSelectedComparison
+            (bcLeftInput reference.presentation)
+            (bcReplacementLeftCleavage reference replacement)).inv
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation reference.presentation))) ≫
+        bcRebasedReplacementMate reference replacement =
+      coreBeckChevalleyMate reference.presentation ≫
+        Functor.whiskerLeft
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation reference.presentation)))
+          (coreFiberCleavageSelectedComparison
+            (bcRightInput reference.presentation)
+            (bcReplacementRightCleavage reference replacement)).inv := by
+  let leftComparison := Functor.isoWhiskerRight
+    (coreFiberCleavageSelectedComparison
+      (bcLeftInput reference.presentation)
+      (bcReplacementLeftCleavage reference replacement))
+    (coreFiberTransportFunctor
+      (typedPresentationToSemantic (bcTopPresentation reference.presentation)))
+  let rightComparison := Functor.isoWhiskerLeft
+    (coreFiberTransportFunctor
+      (typedPresentationToSemantic
+        (bcBottomPresentation reference.presentation)))
+    (coreFiberCleavageSelectedComparison
+      (bcRightInput reference.presentation)
+      (bcReplacementRightCleavage reference replacement))
+  have comparisonSquare :=
+    coreBeckChevalleyMate_rebasedReplacement reference replacement
+  change leftComparison.hom ≫ coreBeckChevalleyMate reference.presentation =
+    bcRebasedReplacementMate reference replacement ≫
+      rightComparison.hom at comparisonSquare
+  change leftComparison.inv ≫ bcRebasedReplacementMate reference replacement =
+    coreBeckChevalleyMate reference.presentation ≫ rightComparison.inv
+  calc
+    _ = leftComparison.inv ≫
+          (bcRebasedReplacementMate reference replacement ≫
+            rightComparison.hom) ≫ rightComparison.inv := by simp
+    _ = leftComparison.inv ≫
+          (leftComparison.hom ≫
+            coreBeckChevalleyMate reference.presentation) ≫
+            rightComparison.inv := by rw [← comparisonSquare]
+    _ = _ := by simp
+
+/--
+The canonical mate square written entirely with the public presentation-route
+comparisons.  Thus the two route isomorphisms and the mate theorem are one
+generated construction, rather than unrelated declarations.
+-/
+theorem bcProvenanceCanonicalMate_rebasedReplacement
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U}
+    (reference replacement : BCRealizationProvenance input) :
+    (bcProvenanceDirectRouteComparison reference replacement).hom ≫
+        bcSelectedRebasedReplacementMate reference replacement =
+      bcProvenanceCanonicalMate reference ≫
+        (bcProvenanceViaBaseRouteComparison reference replacement).hom := by
+  rcases reference with ⟨presentation, rfl⟩
+  let leftComparison := Functor.isoWhiskerRight
+    (coreFiberCleavageSelectedComparison
+      (bcLeftInput presentation)
+      (bcReplacementLeftCleavage ⟨presentation, rfl⟩ replacement))
+    (coreFiberTransportFunctor (toSemanticBC presentation).square.top)
+  let rightComparison := Functor.isoWhiskerLeft
+    (coreFiberTransportFunctor (toSemanticBC presentation).square.bottom)
+    (coreFiberCleavageSelectedComparison
+      (bcRightInput presentation)
+      (bcReplacementRightCleavage ⟨presentation, rfl⟩ replacement))
+  let leftBridge := Functor.isoWhiskerRight
+    (selectedCoreFiberCleavageBridge
+      replacement.leftProvenance.toRealizableHom)
+    (coreFiberTransportFunctor (toSemanticBC presentation).square.top)
+  let rightBridge := Functor.isoWhiskerLeft
+    (coreFiberTransportFunctor
+      (toSemanticBC presentation).square.bottom)
+    (selectedCoreFiberCleavageBridge
+      replacement.rightProvenance.toRealizableHom)
+  have inverseSquare :=
+    coreBeckChevalleyMate_rebasedReplacement_inv
+      (⟨presentation, rfl⟩ :
+        BCRealizationProvenance (toSemanticBC presentation)) replacement
+  change leftComparison.inv ≫
+      bcRebasedReplacementMate ⟨presentation, rfl⟩ replacement =
+    coreBeckChevalleyMate presentation ≫ rightComparison.inv at inverseSquare
+  have postcomposed := congrArg (fun transformation =>
+    transformation ≫ rightBridge.hom) inverseSquare
+  unfold bcProvenanceDirectRouteComparison
+    bcProvenanceViaBaseRouteComparison
+  rw [← bcReplacementLeftSelectedComparison_eq
+      (⟨presentation, rfl⟩ :
+        BCRealizationProvenance (toSemanticBC presentation)) replacement,
+    ← bcReplacementRightSelectedComparison_eq
+      (⟨presentation, rfl⟩ :
+        BCRealizationProvenance (toSemanticBC presentation)) replacement]
+  dsimp [bcReplacementLeftSelectedComparison,
+    bcReplacementRightSelectedComparison,
+    bcSelectedRebasedReplacementMate, bcProvenanceCanonicalMate]
+  rw [Functor.whiskerRight_comp]
+  change (leftComparison.inv ≫ leftBridge.hom) ≫
+      (leftBridge.inv ≫
+        bcRebasedReplacementMate ⟨presentation, rfl⟩ replacement ≫
+          rightBridge.hom) =
+    coreBeckChevalleyMate presentation ≫
+      (rightComparison.inv ≫ rightBridge.hom)
+  simpa [Category.assoc] using postcomposed
+
+/-! ## Authored-support restriction of presentation replacement -/
+
+/-- Normalize the existing authored direct route to its provenance-indexed form. -/
+noncomputable def authoredSupportDirectRouteProvenanceIso
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U) :
+    authoredSupportDirectRoute context ≅
+      context.supportFunctor ⋙
+        bcProvenanceDirectRoute context.realizationProvenance := by
+  rcases context with ⟨⟨semantic, presentation, realization_eq⟩,
+    lift, endpoint_eq⟩
+  cases realization_eq
+  exact Iso.refl _
+
+/-- Normalize the existing authored via-base route to its provenance-indexed form. -/
+noncomputable def authoredSupportViaBaseRouteProvenanceIso
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U) :
+    authoredSupportViaBaseRoute context ≅
+      context.supportFunctor ⋙
+        bcProvenanceViaBaseRoute context.realizationProvenance := by
+  rcases context with ⟨⟨semantic, presentation, realization_eq⟩,
+    lift, endpoint_eq⟩
+  cases realization_eq
+  exact Iso.refl _
+
+/-- The public direct-route comparison restricted to fixed authored support. -/
+noncomputable def authoredSupportDirectRouteReplacementComparison
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U)
+    (replacement : BCRealizationProvenance context.square.semantic) :
+    authoredSupportDirectRoute context ≅
+      authoredSupportDirectRoute (context.replacePresentation replacement) :=
+  authoredSupportDirectRouteProvenanceIso context ≪≫
+    Functor.isoWhiskerLeft context.supportFunctor
+      (bcProvenanceDirectRouteComparison context.realizationProvenance
+        replacement) ≪≫
+    (authoredSupportDirectRouteProvenanceIso
+      (context.replacePresentation replacement)).symm
+
+/-- The public via-base comparison restricted to fixed authored support. -/
+noncomputable def authoredSupportViaBaseRouteReplacementComparison
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U)
+    (replacement : BCRealizationProvenance context.square.semantic) :
+    authoredSupportViaBaseRoute context ≅
+      authoredSupportViaBaseRoute (context.replacePresentation replacement) :=
+  authoredSupportViaBaseRouteProvenanceIso context ≪≫
+    Functor.isoWhiskerLeft context.supportFunctor
+      (bcProvenanceViaBaseRouteComparison context.realizationProvenance
+        replacement) ≪≫
+    (authoredSupportViaBaseRouteProvenanceIso
+      (context.replacePresentation replacement)).symm
+
+/-- Restrict the selected rebased replacement mate to the fixed authored support. -/
+noncomputable def authoredSupportSelectedRebasedReplacementMate
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U)
+    (replacement : BCRealizationProvenance context.square.semantic) :
+    authoredSupportDirectRoute (context.replacePresentation replacement) ⟶
+      authoredSupportViaBaseRoute
+        (context.replacePresentation replacement) :=
+  (authoredSupportDirectRouteProvenanceIso
+      (context.replacePresentation replacement)).hom ≫
+    Functor.whiskerLeft context.supportFunctor
+      (bcSelectedRebasedReplacementMate context.realizationProvenance
+        replacement) ≫
+    (authoredSupportViaBaseRouteProvenanceIso
+      (context.replacePresentation replacement)).inv
+
+/--
+Presentation replacement commutes with the canonical mate after restriction to
+the same authored support.  The context's lift and authored table are fixed by
+`replacePresentation`; this theorem changes only finite realization provenance.
+-/
+theorem authoredSupportCanonicalMate_rebasedReplacement
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (context : AuthoredSupportContext U)
+    (replacement : BCRealizationProvenance context.square.semantic) :
+    (authoredSupportDirectRouteReplacementComparison
+        context replacement).hom ≫
+      authoredSupportSelectedRebasedReplacementMate context replacement =
+    authoredSupportCanonicalMate context ≫
+      (authoredSupportViaBaseRouteReplacementComparison
+        context replacement).hom := by
+  rcases context with ⟨⟨semantic, presentation, realization_eq⟩,
+    lift, endpoint_eq⟩
+  cases realization_eq
+  have publicSquare := bcProvenanceCanonicalMate_rebasedReplacement
+    (⟨presentation, rfl⟩ :
+      BCRealizationProvenance (toSemanticBC presentation)) replacement
+  have restrictedSquare := congrArg
+    (Functor.whiskerLeft
+      (AuthoredSupportContext.supportFunctor
+        ⟨⟨toSemanticBC presentation, presentation, rfl⟩,
+          lift, endpoint_eq⟩)) publicSquare
+  simpa [authoredSupportDirectRouteReplacementComparison,
+    authoredSupportViaBaseRouteReplacementComparison,
+    authoredSupportSelectedRebasedReplacementMate,
+    authoredSupportDirectRouteProvenanceIso,
+    authoredSupportViaBaseRouteProvenanceIso,
+    authoredSupportCanonicalMate,
+    Functor.whiskerLeft_comp, Category.assoc] using restrictedSquare
 
 end AAT.AG.DoctrineFiberProduct
 
