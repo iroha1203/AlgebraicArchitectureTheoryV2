@@ -147,7 +147,7 @@ review:
     public_quality_privacy: no findings
   status: pass
 stop_condition: none
-next_obligation: audit the report-only review tail, merge the auxiliary checkpoint, then construct the universal K2 authored comparison route
+next_obligation: merge the auxiliary checkpoint, then construct the universal K2 authored comparison route
 ```
 
 ### Cycle 45 — pairwise diagnostic quotient on the full reselection orbit
