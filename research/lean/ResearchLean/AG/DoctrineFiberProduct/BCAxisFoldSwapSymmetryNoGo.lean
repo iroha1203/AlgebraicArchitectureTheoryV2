@@ -42,7 +42,7 @@ def FiniteAxisFoldSwapOrbitLocal (axisMap : Fin 3 → Fin 3) : Prop :=
       axisMap axis = finiteAxisFoldAuthoredSwapAxis axis
 
 /--
-Every replacement-equivariant, comparator-orbit-local operation on the fixed
+Every swap-equivariant, swap-orbit-local operation on the fixed
 three-axis witness is injective.
 -/
 theorem finiteAxisFold_swapEquivariant_orbitLocal_injective
@@ -200,7 +200,7 @@ theorem finiteAxisFoldSwapWitness_orbitLocal :
       finiteAxisFoldSwapWitness_axisMap_two]
 
 /--
-The concrete one-axis fold is not replacement-equivariant: selecting axis zero
+The concrete one-axis fold is not swap-equivariant: selecting axis zero
 as the source distinguishes the two symmetric orientations of the swap orbit.
 -/
 theorem finiteAxisFoldSwapWitness_not_equivariant :
