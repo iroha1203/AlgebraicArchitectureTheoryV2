@@ -222,6 +222,8 @@ noncomputable def authoredDiagnosticObjectCollapseComparisonAtCochain
       authoredViaBaseDiagnosticObjectCollapseComponentAtCochain
         input cochain cell)
 
+/-- Evaluate the cochain-indexed generated comparison at one authored support
+cell. -/
 @[simp]
 theorem authoredDiagnosticObjectCollapseComparisonAtCochain_app
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -321,6 +323,7 @@ noncomputable def generatedAuthoredDiagnosticObjectCollapseComparison
   fun input => authoredDiagnosticObjectCollapseComparisonAtCochain input
     (initialRawDefectCochain input.toTransportData)
 
+/-- The named producer specializes to the initial raw diagnostic cochain. -/
 @[simp]
 theorem generatedAuthoredDiagnosticObjectCollapseComparison_apply
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -336,6 +339,7 @@ def MateCoherentRel
   mateCoherentRelEquation generatedAuthoredDiagnosticObjectCollapseComparison
     (authoredSupportCanonicalMateFamily U)
 
+/-- Unfold the fixed public relation as equality with the canonical mate. -/
 @[simp]
 theorem MateCoherentRel_apply
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -420,6 +424,7 @@ def AuthoredBCDatumSquare.reselectEdges
   twoCellBase := reselectedTwoCellBase input.toTransportData reselection
   authored := input.authored
 
+/-- Edge reselection preserves the underlying realizable semantic square. -/
 @[simp]
 theorem AuthoredBCDatumSquare.reselectEdges_context
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]

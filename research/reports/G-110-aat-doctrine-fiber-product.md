@@ -121,7 +121,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - focused BCAuthoredDiagnosticObjectCollapseProducer.lean: pass; 24 namespace declarations, standard axioms only
-    - focused BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean: pass; 15 namespace declarations, standard axioms only
+    - focused BCAuthoredDiagnosticObjectCollapseProducerWitnesses.lean: pass; 16 namespace declarations, standard axioms only
     - targeted producer module build: pass; 4066 jobs
     - targeted producer-witness module build: pass; 4071 jobs
     - common scans: pass

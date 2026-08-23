@@ -174,6 +174,14 @@ def MateCoherentAtCochain
     (authoredDiagnosticObjectCollapseComparisonAtCochain input cochain)
     (authoredSupportCanonicalMate input.context)
 
+/-- The auxiliary cochain-indexed equation holds on the strict fixture at the
+identity diagnostic cochain. -/
+theorem finiteAuthoredBCDatumSquare_mateCoherentAtIdentityCochain :
+    MateCoherentAtCochain finiteAuthoredBCDatumSquare
+      (identityDefectCochain finiteAuthoredBCDatumSquare.toTransportData) := by
+  exact authoredDiagnosticObjectCollapseComparisonAtCochain_eq_canonical
+    finiteAuthoredBCDatumSquare _ rfl
+
 /-- The all-input non-twist comparison mismatch survives every genuine G-106
 reselection of the lax fixture. -/
 theorem finiteAxisFold_not_mateCoherentAtCochain_on_orbit
