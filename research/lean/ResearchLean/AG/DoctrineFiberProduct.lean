@@ -29,6 +29,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredNonAxisCollapseAudit
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalizationWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticPresentationReplacement
@@ -399,7 +401,10 @@ the idempotent retraction to that selected object.  A Prop-valued admissibility
 predicate records exactly when the other readings ignore this normalization,
 and then constructs a proof-independent exact total endomorphism.  On the
 finite lax support this normalization specializes to the reviewed Cycle 63
-object erasure and is noninvertible.  Connecting raw authored diagnostics to
-this package-selected object normalization and then resolving the fixed public-relation
-orbit bridge remain later K2 obligations.
+object erasure and is noninvertible.  The raw authored diagnostic now selects
+this normalization on every admissible firing support, generating the fixed
+public relation.  Its strict positive and lax negative witnesses use that same
+relation, and every genuine G-106 reselection-orbit coordinate is represented
+by a reselected datum on which the lax relation fails.  K3 diagnostic base
+change and K4 pasting remain later obligations.
 -/
