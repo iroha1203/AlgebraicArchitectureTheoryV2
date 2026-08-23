@@ -13,10 +13,10 @@
 
 ## Cycle ledger
 
-### Cycle 41 — authored-comparison schema underdetermination blocker
+### Cycle 41 — authored-comparison interface underdetermination stop evidence
 
 ```yaml
-ledger_type: target_cycle_blocker
+ledger_type: target_cycle_stop_evidence
 goal: G-110-aat-doctrine-fiber-product
 cycle: 41
 goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
@@ -32,7 +32,7 @@ selection:
     - fixed target (C) requirement that the pointwise authored table induce a cross-route comparison with direct raw-field proof-use
     - fixed target exclusion of a canonical comparison twisted by a nontrivial self-isomorphism or a definitionally forced mismatch
   attempted_obligation: generate the authored comparison from input.authored on the fixed support, without accepting a comparison or inventing a post-target action
-  expected_result_type: either a genuine authored induced comparison or an exact reusable blocker
+  expected_result_type: either a genuine authored induced comparison or exact evidence that the fixed acceptance semantics do not select one
   risks:
     - returning the canonical mate while ignoring input.authored
     - using the authored table only to twist the canonical mate on either side
@@ -40,11 +40,15 @@ selection:
     - adding a new route-incidence field or action to the fixed F0b2b schema
     - weakening the target's explicit anti-twist and proof-use gates
 result:
-  proposed_result_type: goal-defect-blocker
+  proposed_result_type: specification-underdetermination
   completion_candidate: no
-  blocker_summary: AuthoredBCDatumSquare.authored yields only an automorphism of the southwest support functor. Functorial transport yields endomorphisms of the direct and via-base routes, not a morphism between them. The only available cross-route bridge is the comparator-free canonical mate; its naturality identifies the two obvious authored twists. The bare producer signature is independently inhabited by a definition that ignores authored. Thus the fixed schema lacks the incidence/factorization law required to define the demanded authored-induced comparison while excluding the forbidden canonical-twist routes.
+  evidence_scope: This cycle does not prove that every Lean-definable producer factors through the canonical mate, nor that a non-twist producer is mathematically impossible. It proves an interface and acceptance-specification defect: the bare signature admits distinct comparison values on one nonidentity authored input, while the fixed card rejects both exhibited semantics and supplies no equation or incidence map selecting another as the comparison induced by the authored table.
+  blocker_summary: AuthoredBCDatumSquare.authored canonically yields an automorphism of the southwest support functor. Functorial transport yields endomorphisms of the direct and via-base routes. The canonical mate turns either endomorphism into a cross-route twist, and naturality identifies the two sides; the fixed GOAL excludes that route. The same producer signature is also inhabited by a definition that ignores authored, which the proof-use gate excludes. A four-axis finite datum makes the raw endpoint automorphism nonidentity and proves the twist comparison differs from the ignoring comparison, so the function type has genuine semantic latitude. Existing G-106 twoCellBase, canonicalTwoCellComparator, oriented-face, and pasting APIs were traced: their outputs remain diagnostic endpoint PackageFiberAut values and the fixed input contains no map identifying those diagnostic paths with the two BC route objects. The card states that the table induces a comparison but fixes neither that missing incidence/factorization equation nor another acceptance rule that distinguishes a lawful non-twist producer. The loop therefore cannot choose the semantics without changing the fixed target.
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonUnderdetermination.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonUnderdeterminationWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
   evidence:
     - authoredSupportDirectEndomorphism
     - authoredSupportViaBaseEndomorphism
@@ -56,32 +60,43 @@ result:
     - authoredCanonicalMate_twists_eq
     - authoredComparisonIgnoringAuthored
     - authoredComparisonIgnoringAuthored_apply
+    - finiteAuthoredAxisSwap
+    - finiteAuthoredAxisSwapDatumSquare
+    - finiteAuthoredAxisSwap_component_ne_identity
+    - finiteAuthoredAxisSwap_endpointAutomorphism_ne_identity
+    - finiteAuthoredAxisSwap_directEndomorphism_ne_identity
+    - finiteAuthoredAxisSwap_leftTwist_ne_ignoring
   proof_use_audit:
     raw_field_route: input.authored -> endpointAutomorphism -> direct/via-base route endomorphisms
-    missing_route: no field or theorem maps that southwest automorphism to an independently generated direct-to-via-base comparison
+    g106_route_audit: twoCellBase compares diagnostic path-lift base maps; canonicalTwoCellComparator, orientedFaceAuthoredComparator, and authoredPastingComparator return diagnostic endpoint PackageFiberAut values; none has the fixed direct.obj-to-viaBase.obj component type or a stored incidence map to it
     canonical_route: authoredComparisonIgnoringAuthored witnesses that the codomain signature alone cannot enforce raw-field use
     twist_route: authoredCanonicalMate_twists_eq proves the left and right authored twists coincide by ordinary mate naturality; the fixed GOAL explicitly excludes this discharge pattern
+    nonvacuity: the four-axis datum has a nonidentity endpoint automorphism, its direct-route endomorphism remains nonidentity, and cancellation against the invertible canonical mate proves the twist and ignoring comparison values differ
   structure_field_escape:
     supplied_cross_route_comparison: none
     supplied_incidence_or_factorization_law: none
-    schema_revision_needed: yes; adding either item changes the fixed F0b2b input and requires a human-approved GOAL revision rather than target-loop implementation
+    acceptance_rule_present: no; the fixed artifacts do not state the equation by which the authored endpoint table is to induce the BC cross-route comparison
+    human_decision_needed: fix an authored-to-BC incidence/factorization rule or explicitly select different comparison semantics; this is a GOAL decision, not an implementation choice
   route_integrity:
-    accepted_result: blocker theorem only; no authored comparison or MateCoherentRel is claimed
+    accepted_result: underdetermination evidence only; no authored comparison, no universal nondefinability theorem, and no MateCoherentRel is claimed
     forbidden_routes_rejected:
       - canonical mate returned without authored proof-use
       - canonical mate twisted by the authored support automorphism
       - invented incidence/factorization action not present in the fixed card
   verification:
     - focused direct check BCAuthoredComparisonUnderdetermination.lean: pass; 10 namespace declarations, standard axioms only
-    - targeted module BCAuthoredComparisonUnderdetermination: pass
+    - focused direct check BCAuthoredComparisonUnderdeterminationWitnesses.lean: pass; 12 namespace declarations, standard axioms only
+    - official manifest-driven focused checks for both files: pass
+    - umbrella import wiring updated; aggregate root elaboration not run under the Research hard rule
     - git diff --check: pass
     - Research aggregate/full build: not run, per hard rule
   stop_condition:
-    kind: goal-defect
-    required_human_decision: revise F0b2b and target (C) with a fixed authored incidence/factorization law, or explicitly change the demanded comparison semantics; the target theorem loop may not choose that new law
+    kind: fixed-acceptance-semantics-underdetermined
+    not_claimed: no universal theorem of nondefinability is asserted
+    required_human_decision: revise F0b2b or target (C) with a fixed authored incidence/factorization law, or explicitly choose another admissible induced-comparison semantics; the target theorem loop may not invent that selection after target fixation
     issue_comment: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034#issuecomment-5383184620
 next:
-  proof_obligation: no implementation node remains on the fixed schema that both directly uses input.authored and avoids the target's forbidden canonical/twist routes
+  proof_obligation: once the human-fixed induction semantics selects an admissible producer, implement it with direct authored proof-use and then define MateCoherentRel; until then the fixed acceptance test cannot distinguish a valid non-twist producer from an invented post-target rule
 ```
 
 ### Cycle 40 — canonical Beck--Chevalley mate on authored support

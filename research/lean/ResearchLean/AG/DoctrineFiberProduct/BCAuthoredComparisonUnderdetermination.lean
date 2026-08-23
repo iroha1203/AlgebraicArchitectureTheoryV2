@@ -62,8 +62,8 @@ noncomputable def authoredSupportViaBaseEndomorphism
 
 /--
 Naturality of the canonical mate identifies the left and right route twists.
-This is the strongest cross-route result available from an arbitrary support
-endomorphism without an additional incidence/factorization law.
+This records the equality of these two evident constructions; it is not a
+classification of every term definable from `AuthoredBCDatumSquare`.
 -/
 theorem authoredSupportCanonicalMate_naturality
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
