@@ -139,8 +139,13 @@ review:
     lean_b: no findings
   integrated_verdict: pass for the auxiliary generated-diagnostic proof-checkpoint only; K2 public producer/relation/orbit bridge, presentation replacement, FiniteModelLift, K3, K4, final assembly, and G-110 completion are not accepted
   ci: post-core-fix head passed 7 of 7 PR checks
-  report_tail_audit: pending
-  status: pass-pending-report-tail-audit
+  report_tail_audit:
+    reviewed_tail: 04c577d482bed95443344d83c6ac8c9f94ad47af
+    protection_scope: no findings; theorem statements and bodies unchanged
+    completion_claim_discipline: no findings; auxiliary checkpoint only and K2 remains open
+    consistency_traceability: no findings; heads, four-lane summaries, wording fix, CI, and next obligation agree
+    public_quality_privacy: no findings
+  status: pass
 stop_condition: none
 next_obligation: audit the report-only review tail, merge the auxiliary checkpoint, then construct the universal K2 authored comparison route
 ```
