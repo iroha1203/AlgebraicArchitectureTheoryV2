@@ -27,6 +27,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAxisFoldSwapSymmetryNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparatorInductionObstruction
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredNonAxisCollapseAudit
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalizationWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticPresentationReplacement
@@ -389,4 +391,15 @@ one-axis fold is orbit-local but fails equivariance: choosing axis zero
 distinguishes the two symmetric orientations.  No theorem here derives those
 two conditions from presentation replacement or comparator-only provenance;
 this is not a categorical `IsIso` theorem or a global K2 no-go.
+
+The object-collapse route is now separated from arbitrary endomorphism choice.
+Every package already chooses one architecture object on each Atom
+configuration through its object reading; canonical object normalization is
+the idempotent retraction to that selected object.  A Prop-valued admissibility
+predicate records exactly when the other readings ignore this normalization,
+and then constructs a proof-independent exact total endomorphism.  On the
+finite lax support this normalization specializes to the reviewed Cycle 63
+object erasure and is noninvertible.  Connecting raw authored diagnostics to
+this package-forced normalization and then resolving the fixed public-relation
+orbit bridge remain later K2 obligations.
 -/
