@@ -89,18 +89,14 @@ audits:
     - focused BCAuthoredFixedTargetCoforkNoGoWitnesses.lean: pass; 3 namespace declarations, standard axioms only
     - targeted build for exactly BCAuthoredFixedTargetCoforkNoGoWitnesses: pass; 4063 jobs; no Research aggregate or full build
     - repository diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass
-    - PR 4090 CI at ccc38af9: 7 of 7 checks passed
-    - initial four-lane review at 692e376d: central scope finding and noncentral ledger findings fixed in b2ae98b5
-    - one allowed full post-core-fix rerun at b2ae98b5: Math A, Math B, and Lean A returned No major findings; Lean B returned one noncentral terminology finding
-    - direct response at ccc38af9: the sole noncentral terminology finding is resolved, with no new finding in the fixed diff
   blocking_findings:
     - initial Math B review found that the aggregate/report presented changing the morphism surface or diagnostic factor as an exhaustive K2 dichotomy without a reduction theorem; the wording now limits the theorem to the standard Cofork route and retains non-Cofork constructions
     - initial Math A found that an external weak quotient followed by an exact coequalizing return cannot evade the support no-arrow theorem; category change is now separated as a GOAL-defect decision rather than a fixed-GOAL obligation
     - initial Lean A/B found the missing Cycle 49 selection reference, and Lean B found the result-opposite heading; both ledger defects are corrected
 review:
-  status: accepted after the one allowed full post-core-fix rerun; Math A, Math B, and Lean A returned No major findings, and Lean B's sole noncentral terminology finding was resolved by direct response at ccc38af9
+  status: initial four-lane review findings fixed; one full post-core-fix rerun required
 stop_condition_candidate: none
-next_obligation: merge this accepted blocker-fixed checkpoint, synchronize Issue 4034, then select a non-Cofork construction that does not require raw absorption or a different diagnostic-generated non-twist factor inside the fixed BC target
+next_obligation: validate the review fix and run the one allowed full rerun; if accepted, select a non-Cofork construction that does not require raw absorption or a different diagnostic-generated non-twist factor inside the fixed BC target
 ```
 
 ### Cycle 48 — fixed-target quotient and return-map barrier
