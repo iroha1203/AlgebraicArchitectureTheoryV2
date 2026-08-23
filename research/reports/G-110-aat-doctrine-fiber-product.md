@@ -13,6 +13,71 @@
 
 ## Cycle ledger
 
+### Cycle 55 — presentation-independent covariant BC square comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 55
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 8b0fc26b977d4d0dcdfdb68e3caad9c684c53a4f
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 54 remaining square-isomorphism compatibility obligation and merged PR 4095
+  proof_dag_predecessors:
+    - Cycle 37 canonical Beck--Chevalley mate
+    - Cycle 52 semantic BC realization provenance
+    - Cycle 54 raw-distinct equal-decoding BC replacement witness
+  proof_obligation: prove that the covariant square isomorphism assembled from a finite BCPresentation is exactly the isomorphism assembled from the fixed semantic BC square, and hence is independent of realization provenance
+  selection_reason: the reference-fixed rebased mate and the replacement canonical mate differ only at the covariant square comparison after the cleavage and route bridges already proved in Cycles 52--54
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: typedCoreFiberTransportPresentationComparison_eqToIso identifies the generated exact-endpoint presentation comparison with equality transport by strong-cocartesian uniqueness. The typed compositor now exposes its semantic-composition equality isomorphism explicitly. These normal forms prove bcProvenanceCoreTransportSquareIso_eq_semantic and the two-provenance independence theorem bcProvenanceCoreTransportSquareIso_eq.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPresentationReplacement.lean
+  evidence:
+    - coreFiberLift_eqToIso_fac
+    - typedCoreFiberTransportPresentationComparison_eqToIso
+    - typedCoreFiberTransportCompositor_eq
+    - bcProvenanceCoreTransportSquareIso_eq_semantic
+    - bcProvenanceCoreTransportSquareIso_eq
+  claim_mapping:
+    comparison_normalization: the generated comparison is the equality-induced semantic transport isomorphism
+    compositor_normalization: presentation composition contributes only its decoded semantic equality followed by the G-109 compositor
+    provenance_independence: both presentation-built square comparisons equal the one square comparison generated from the fixed literal semantic input
+audits:
+  premise_delta:
+    discharged:
+      - compatibility of the presentation-built covariant square isomorphism with the fixed semantic square isomorphism
+      - independence of the covariant square comparison from finite BC realization provenance
+    remaining:
+      - identify bcSelectedRebasedReplacementMate reference replacement with bcProvenanceCanonicalMate replacement using the proved square comparison equality
+  certificate_provenance:
+    discharged:
+      - all equality isomorphisms are generated from decoder and square commutativity theorems
+      - the transport comparison is characterized by the generated strong-cocartesian lift
+  proof_use:
+    used:
+      - typed presentation-composition decoder equality on both routes
+      - equality of the two decoded composite presentations
+      - fixed semantic square commutativity
+      - G-109 core transport compositors
+  route_integrity: the theorem compares the actual BC square isomorphisms consumed by mateEquiv; it does not factor through a twist, accept a comparison certificate, or replace the mate by an equality cast
+  vacuity: none-found; Cycle 54 supplies unequal presentations with equal complete semantic BC input on which this theorem fires
+  validation_refs:
+    - focused CoreBeckChevalleyMate module build: pass; 4038 jobs, standard axioms only
+    - focused BCPresentationReplacement.lean: pass; 58 namespace declarations, standard axioms only
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: identify the reference-fixed rebased replacement mate with bcProvenanceCanonicalMate replacement, then propagate that equality to the authored-support theorem
+```
+
 ### Cycle 54 — raw-distinct finite BC replacement firing witness
 
 ```yaml
