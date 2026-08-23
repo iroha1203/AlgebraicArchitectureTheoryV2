@@ -13,6 +13,131 @@
 
 ## Cycle ledger
 
+### Cycle 69 — fiberwise same-combinatorial transported datum engine
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 69
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ee33b5403207c47015ae3d9fea8b66970dd1db38
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 68 generated the d2 endpoint group homomorphism and canonical direct-via comparison but left d1 and d3 open
+  proof_dag_predecessors:
+    - FiberwiseAdmissibleTransportData
+    - coreFiberFunctorPackageAutHom
+    - bcDiagnosticDirectFunctor
+    - bcDiagnosticViaBaseFunctor
+    - bcDiagnosticEndpointComparison_naturality
+  proof_obligation: construct a same-combinatorial transported-datum engine on the fiberwise identity-base subdomain, deriving target edgeStrong and twoCellBase and fixing the target comparator by the d2 generation equation; then specialize it to the actual direct and via-base BC routes
+  selection_reason: the repository had no target-data constructor beneath d3; the fiberwise subdomain is the smallest nonempty layer where every post-base-change G-106 field can be generated without accepting target certificates
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticFiberwiseTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticFiberwiseTransportWitnesses.lean
+  risks:
+    - treating source fiber isomorphisms as a discharge of arbitrary G-106 edge transport
+    - supplying target edgeStrong or twoCellBase rather than deriving them
+    - copying the source comparator instead of applying the generated endpoint homomorphism
+    - promoting pointwise direct-via comparator naturality to raw-defect or orbit preservation
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: FiberwiseAdmissibleTransportData represents a diagnostic interpretation internal to one core fiber by vertex objects, edge isomorphisms, and the source authored comparator only. Its conversion to AdmissibleTransportData derives strong cocartesianness from mapped isomorphisms and derives every parallel-path base equation from the common fiber. Mapping through any core-fiber functor leaves the combinatorial presentation fixed and generates the target comparator by coreFiberFunctorPackageAutHom. The actual direct and via-base BC functors now generate transported G-106 data, and the canonical mate-generated endpoint comparison identifies their comparator tables pointwise. The finite double-diamond fixture instantiates both actual routes with distinct identity/swap source comparators.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticFiberwiseTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticFiberwiseTransportWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - FiberwiseAdmissibleTransportData.edgeLift_isStronglyCocartesian
+    - FiberwiseAdmissibleTransportData.pathLift_eq_pathIso_hom
+    - FiberwiseAdmissibleTransportData.twoCellBase
+    - FiberwiseAdmissibleTransportData.transported
+    - FiberwiseAdmissibleTransportData.transported_comparator
+    - FiberwiseAdmissibleTransportData.transported_edgeStrong
+    - FiberwiseAdmissibleTransportData.transported_twoCellBase
+    - bcDiagnosticDirectTransportedData
+    - bcDiagnosticViaBaseTransportedData
+    - bcDiagnosticTransportedComparator_naturality
+    - finiteAxisFoldTransportedComparator_naturality
+  claim_mapping:
+    theorem_names:
+      - FiberwiseAdmissibleTransportData.transported_comparator
+      - FiberwiseAdmissibleTransportData.transported_edgeStrong
+      - FiberwiseAdmissibleTransportData.transported_twoCellBase
+      - bcDiagnosticTransportedComparator_naturality
+    source_labels:
+      - target theorem D(d1) same-combinatorial interpretation action, fiberwise subdomain only
+      - target theorem D(d3) generated transported datum, fiberwise subdomain only
+      - target theorem D diagnostic comparison generated from A-C
+    conjuncts:
+      - unchanged vertex/edge/two-cell types -> FiberwiseAdmissibleTransportData.map
+      - generated target packages and edge lifts -> FiberwiseAdmissibleTransportData.map and toLiftData
+      - derived edgeStrong -> transported_edgeStrong
+      - derived twoCellBase -> transported_twoCellBase
+      - generated comparator equation -> transported_comparator
+      - actual direct/via route constructors -> bcDiagnosticDirectTransportedData and bcDiagnosticViaBaseTransportedData
+      - canonical comparison of target tables -> bcDiagnosticTransportedComparator_naturality
+      - nonempty finite source and actual-route target data -> finiteAxisFoldFiberwiseTransportData and finiteAxisFoldDirectTransportedData
+    undischarged_assumptions:
+      - bridge from the full accepted G-106 AdmissibleTransportData input domain to the fiberwise representation or a more general total interpretation action
+      - full d1 and d3 outside identity-base fiberwise edges
+      - H_bc and conditional d4-d6
+      - named actual-firing positive-negative vanishing pair and checker bridge
+    acceptance_point: the missing target-data constructor exists and consumes no post-base-change fields on a nonempty fiberwise subdomain; full d1/d3, raw-defect preservation, orbit mapping, vanishing preservation, H_bc, K3 completion, and G-110 completion are not claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - target edgeStrong is derived from the mapped edge isomorphism
+      - target twoCellBase is derived from composed fiber isomorphisms over one fixed base
+      - target comparator is generated pointwise by the d2 endpoint homomorphism
+      - direct and via-base transported comparator tables are related by the canonical mate
+    remaining:
+      - generate the full-domain interpretation action from the accepted square and source G-106 data
+      - define qualified H_bc and consume it only in d4-d6
+      - derive raw-defect, reselection-equivariance, orbit, and vanishing preservation through the mandated proof DAG
+      - construct the source-firing positive-negative pair and checker bridge
+  certificate_provenance:
+    discharged:
+      - source edge isomorphisms generate target edge lifts through Functor.mapIso
+      - strong cocartesianness follows from total IsIso and the canonical IsHomLift instance
+      - base equations follow from the fiber morphism lift equations and path composition
+      - comparator generation uses coreFiberFunctorPackageAutHom rather than a target table input
+    unresolved: []
+  proof_use:
+    used:
+      - fiberInclusion preservation of edge isomorphisms
+      - IsStronglyCocartesian.of_isIso
+      - Functor.mapIso and path composition
+      - Cycle 68 endpoint group homomorphism
+      - Cycle 68 canonical mate naturality
+      - finiteAxisFold_comparators_ne
+    unused: []
+  structure_field_escape: none-found for the target datum; FiberwiseAdmissibleTransportData contains only source packages, source edge isomorphisms, and the source authored comparator
+  route_integrity: actual target data uses bcDiagnosticDirectFunctor and bcDiagnosticViaBaseFunctor, and comparison uses bcDiagnosticEndpointComparison rather than a supplied isomorphism
+  target_fitting: none-found; the finite double-diamond fixture and identity/swap table predate this cycle
+  vacuity: the finite source has nonempty vertices, edges, and two-cells, and its two comparator values are distinct
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; the fiberwise restriction is recorded as an explicit remaining full-domain obligation
+  validation_refs:
+    - focused BCDiagnosticFiberwiseTransport.lean: pass; 34 namespace declarations, standard axioms only
+    - focused BCDiagnosticFiberwiseTransportWitnesses.lean: pass; 11 namespace declarations, standard axioms only
+    - targeted fiberwise transport module build: pass; 4043 jobs
+    - targeted fiberwise transport witness module build: pass; 4059 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, construct the full-domain bridge from accepted G-106 data and the semantic BC square to a same-combinatorial action, without accepting target lifts or qualifications
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, remove the fiberwise restriction by generating the total interpretation action needed for arbitrary admissible source edges
+```
+
 ### Cycle 68 — generated endpoint automorphism action for diagnostic base change
 
 ```yaml
