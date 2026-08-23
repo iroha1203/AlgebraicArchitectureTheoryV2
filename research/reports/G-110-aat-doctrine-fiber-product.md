@@ -13,6 +13,105 @@
 
 ## Cycle ledger
 
+### Cycle 63 — exact object-collapse endomorphism
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 63
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: ec52417b2e9297c03b8e194e68b36848e3e9d372
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 62 leaves objectMap and operationMap as the remaining exact-endomorphism fields that may support a non-axis collapse
+  proof_dag_predecessors:
+    - finiteAxisFoldSupportPackage
+    - finiteAxisFoldSupportPackage_coordinateEquiv_injective
+    - finiteAxisFoldSupportPackage_equationMap_injective
+  proof_obligation: decide whether same-configuration object collapse survives the exact-hom laws on the fixed authored support and, if so, construct the complete exact package endomorphism
+  selection_reason: a surviving object collapse gives a concrete non-twist noninvertible factor inside the fixed BC target and directly removes the missing-exact-hom API gap
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean
+    - finiteAxisFoldEraseTotal_not_isIso
+  risks:
+    - equation residual compatibility after transported equation-reading reindexing
+    - operationMap endpoint casts and naturality
+    - confusing an unconditional object erasure with a diagnostic-generated K2 comparison
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: the finite authored-support reading admits a configuration-preserving erasure of auxiliary object readings. Configuration-only residual dependence is proved for the finite equation system and preserved through Atom transport and equation-reading base reindexing. The erasure therefore extends to a complete SignedExactCoreReadingHom and PackageTotalHom; its operation map is constructed by endpoint casts and satisfies configuration naturality. Two explicit same-configuration objects with PUnit and Bool structure-map readings are distinct but have equal erasure, so the total endomorphism is not an isomorphism.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - finiteAxisFoldEraseObject_not_injective
+    - finiteEquationResidual_configurationInvariant
+    - transportEquationResidual_configurationInvariant
+    - castEquationResidual_configurationInvariant
+    - finiteAxisFoldEraseEquationTransport
+    - finiteAxisFoldEraseUpper
+    - finiteAxisFoldEraseTotal
+    - packageTotalHom_objectMap_injective_of_isIso
+    - finiteAxisFoldEraseTotal_not_isIso
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldEraseTotal_not_isIso
+    source_labels:
+      - target proof strategy K2 non-twist factor route
+      - target route integrity gate
+    conjuncts:
+      - fixed-support non-axis exact factor -> finiteAxisFoldEraseTotal
+      - noninvertibility -> finiteAxisFoldEraseTotal_not_isIso
+      - residual and operation compatibility -> finiteAxisFoldEraseEquationTransport / finiteAxisFoldEraseUpper
+    undischarged_assumptions:
+      - generation of this erasure from the authored diagnostic input
+      - insertion into the two canonical authored-support comparison paths
+      - MateCoherentRel and all-orbit negative theorem
+    acceptance_point: the selected object/operation exact-lifting obligation is closed by a concrete construction; it is not yet the public K2 producer
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - same-configuration object collapse survives every SignedExactCoreReadingHom field required on the fixed authored support
+      - operationMap and operation_naturality for that collapse are internally constructed
+      - noninvertibility is derived from explicit object-map noninjectivity
+    remaining:
+      - generate or select the object erasure from authored diagnostic data without a conclusion certificate
+      - compose it into the public authored comparison and prove presentation replacement plus all-orbit noncoherence
+  certificate_provenance:
+    discharged:
+      - erasure is defined from the fixed finite reading, Atom equivalence, and input object configuration
+      - noninjectivity uses explicit PUnit/Bool same-configuration objects
+    unresolved:
+      - diagnostic-to-erasure selection theorem
+  proof_use:
+    used:
+      - finite NoCycle residual definition
+      - canonical Atom transport and equation-reading cast
+      - finite operation reading and endpoint casts
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass for the exact endomorphism; public diagnostic generation remains unconstructed
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCAuthoredObjectCollapse.lean: pass; 19 namespace declarations, standard axioms only
+    - exact target module build ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse: pass; 4060 jobs
+  blocking_findings: []
+  next_obligation: construct an input-generated selector that uses authored diagnostic data to choose the exact object erasure, then insert that generated non-twist factor into the two K2 comparison paths
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, construct the diagnostic-generated object-collapse factor and public authored comparison bridge
+```
+
 ### Cycle 62 — non-axis collapse field audit
 
 ```yaml
