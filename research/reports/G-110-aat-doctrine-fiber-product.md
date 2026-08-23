@@ -116,7 +116,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - focused BCAuthoredCanonicalObjectNormalization.lean: pass; 23 namespace declarations, standard axioms only
-    - focused BCAuthoredCanonicalObjectNormalizationWitnesses.lean: pass; 6 namespace declarations, standard axioms only
+    - focused BCAuthoredCanonicalObjectNormalizationWitnesses.lean: pass; 8 namespace declarations, standard axioms only
     - targeted normalization and witness module build: pass; 4062 jobs
     - common scans: pass
   blocking_findings: []
