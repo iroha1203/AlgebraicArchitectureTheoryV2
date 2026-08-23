@@ -18,6 +18,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFold
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparison
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparisonWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGo
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -325,4 +326,14 @@ is not an automorphism twist.  It is not the fixed K2 authored comparison:
 universal provenance for that producer, its public `MateCoherentRel` and orbit
 bridge, actual square-presentation replacement, K3--K4, fixed-ledger
 `FiniteModelLift`, and final assembly remain open.
+The residual-isomorphism classification then proves that any invertible
+authored component against the invertible canonical mate is necessarily the
+canonical component followed by a target automorphism.  The exact Cycle 43
+universal-factorization component lies in this class, with residual equal to
+the transported initial raw defect; any mismatch in that route is therefore a
+nontrivial canonical post-twist.  This is a scoped route obstruction, not a
+global K2 refutation.  The F0b2b producer signature does not formalize which
+generated constructions are admissible, so the fixed K2 provenance and
+anti-twist requirements reach a GOAL-defect gate rather than selecting another
+unforced collapse.
 -/
