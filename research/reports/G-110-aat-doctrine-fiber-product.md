@@ -44,7 +44,7 @@ selection:
     - standard four-lane formal review
 result:
   proposed_result_type: blocker-fixed
-  proof_obligation_delta: coreBeckChevalleyPreMateInsertion places an arbitrary source-fiber diagnostic immediately before the generated mate. coreBeckChevalleyPreMateInsertion_eq_post applies the mate's full naturality and proves that this placement slides through the unit--square--counit composite to the canonical mate followed by the via-base functor image of the same diagnostic. coreBeckChevalleyPreMateInsertion_isIso proves that an invertible diagnostic therefore remains invertible. authoredPreMateDiagnosticComponent specializes the construction to the actual initial G-106 residual without accepting a caller endomorphism, and its exact normalization identifies the postfactor with authoredViaBaseRawDefectComponent. The fixed lax second face proves the component genuinely differs from the canonical mate and that the residual is nonidentity, so the route fires concretely but is exactly a forbidden canonical post-automorphism twist rather than a non-twist K2 comparison.
+  proof_obligation_delta: coreBeckChevalleyPreMateInsertion, coreBeckChevalleyPostUnitInsertion, and coreBeckChevalleyPostSquareInsertion place an arbitrary source-fiber diagnostic before the unit, after the unit, and after the square; the fourth placement is postcomposition after the counit. The three boundary theorems separately consume unit naturality, generated-square naturality, and counit naturality, and coreBeckChevalleyNaturalInsertionBoundary_normalization identifies all four placements with the canonical mate followed by the via-base functor image of the same diagnostic. coreBeckChevalleyPreMateInsertion_isIso proves that an invertible diagnostic therefore remains invertible. authoredPreMateDiagnosticComponent specializes the construction to the actual initial G-106 residual without accepting a caller endomorphism, and its exact normalization identifies the postfactor with authoredViaBaseRawDefectComponent. The fixed lax second face proves the component genuinely differs from the canonical mate and that the residual is nonidentity, so every natural boundary placement fires concretely but is exactly a forbidden canonical post-automorphism twist rather than a non-twist K2 comparison.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredPreMateInsertionNoGo.lean
@@ -52,7 +52,13 @@ result:
     - research-modules.txt
   evidence:
     - coreBeckChevalleyPreMateInsertion
+    - coreBeckChevalleyPostUnitInsertion
+    - coreBeckChevalleyPostSquareInsertion
     - coreBeckChevalleyPreMateInsertion_eq_post
+    - coreBeckChevalleyPreMateInsertion_eq_postUnit
+    - coreBeckChevalleyPostUnitInsertion_eq_postSquare
+    - coreBeckChevalleyPostSquareInsertion_eq_post
+    - coreBeckChevalleyNaturalInsertionBoundary_normalization
     - coreBeckChevalleyPreMateInsertion_isIso
     - authoredPreMateDiagnosticComponent
     - authoredPreMateDiagnosticComponent_eq_canonical_comp_viaRawDefect
@@ -61,8 +67,8 @@ result:
     - finiteAxisFold_preMateDiagnostic_second_ne_canonical
     - finiteAxisFold_preMateDiagnostic_has_nontrivial_postIsoResidual
   claim_mapping:
-    generic_route: source diagnostic followed by the generated canonical mate
-    normalization: full mate naturality moves the diagnostic to the via-base postfactor
+    generic_route: source diagnostic at each of the four natural boundaries of the generated unit--square--counit mate
+    normalization: unit, square, and counit naturality separately identify all boundary placements with the via-base postfactor
     authored_provenance: the diagnostic is the actual initialRawDefectCochain component and its postfactor is the existing via-base image
     finite_firing: the fixed adjacent-swap residual gives a noncanonical component with a concrete nonidentity residual
     route_no_go: because the residual is an isomorphism, the fired mismatch is precisely a forbidden canonical post-isomorphism twist
@@ -71,7 +77,7 @@ result:
 audits:
   premise_delta:
     discharged:
-      - whether moving the G-106 residual into the unit--square--counit path can evade the Cycle 43 twist normalization -> refuted by full mate naturality
+      - whether moving the G-106 residual among the natural boundaries of the unit--square--counit path can evade the Cycle 43 twist normalization -> refuted by the three constituent naturality laws
     remaining:
       - construct a separately generated noninvertible intermediate operation with provenance from the fixed authored data and no fold/quotient/return input, or determine that all GOAL-admissible K2 routes are exhausted
   certificate_provenance:
@@ -82,7 +88,7 @@ audits:
   proof_use:
     used:
       - actual source residual
-      - full naturality of the generated canonical mate
+      - unit, square-comparison, and counit naturality
       - canonical mate IsIso
       - transported residual IsIso
       - concrete finite residual nonidentity
@@ -94,10 +100,10 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none; this is a scoped blocker, not a global K2 refutation
   validation_refs:
-    - focused BCAuthoredPreMateInsertionNoGo.lean: pass; 10 namespace declarations, standard axioms only
+    - focused BCAuthoredPreMateInsertionNoGo.lean: pass after the review fix; 16 namespace declarations, standard axioms only
     - targeted build for exactly BCAuthoredPreMateInsertionNoGo: pass; 4062 jobs; no Research aggregate or full build
 review:
-  status: pending standard review after PR creation
+  status: initial Math B central finding fixed by adding all internal boundary placements and separate unit, square, and counit naturality proofs; one full post-core-fix rerun required
 stop_condition_candidate: none
 next_obligation: complete standard review of this blocker-fixed route; if accepted, audit whether any GOAL-admissible non-Cofork producer remains beyond functorial source insertion, the rejected diagnostic folds, and the impossible fixed-target Cofork route
 ```
