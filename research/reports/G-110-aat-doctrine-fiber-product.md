@@ -70,7 +70,7 @@ audits:
     discharged:
       - the residual, fixed axis, coordinate action, and contradiction are all computed from the existing finite G-106 datum
     unresolved:
-      - a target-fitting non-Cofork construction or alternative diagnostic-generated factor
+      - a GOAL-admissible non-Cofork construction or alternative diagnostic-generated factor
   proof_use:
     used:
       - exact initial raw residual value
