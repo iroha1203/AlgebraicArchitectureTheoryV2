@@ -13,6 +13,127 @@
 
 ## Cycle ledger
 
+### Cycle 68 — generated endpoint automorphism action for diagnostic base change
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 68
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: c2cae2d735acdbc3be479bd4cc9561e1c61458c8
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 67 discharged the selected K2 public comparison and left every K3 diagnostic base-change layer open
+  proof_dag_predecessors:
+    - PackageFiberAut
+    - coreFiberTransportFunctor
+    - selectedCoreFiberReindexFunctor
+    - coreBeckChevalleyMate
+    - coreBeckChevalleyMate_isIso
+  proof_obligation: construct the unconditional d2 endpoint PackageFiberAut group homomorphism, its pointwise cochain action and identity preservation, and the generated direct-versus-via-base endpoint comparison without accepting a diagnostic comparison map
+  selection_reason: d2 is the smallest independently checkable K3 layer; it is generated functorially from G-101 core fibers and the accepted exact BC mate and does not require premature H_bc assumptions
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphism.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphismWitnesses.lean
+  risks:
+    - storing an endpoint comparison rather than generating it from the canonical mate
+    - forgetting the identity cochain law
+    - treating this endpoint/cochain action as transported admissible data or raw-defect preservation
+    - using a constant finite action as nonvacuity evidence
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: packageFiberAutCoreFiberEquiv identifies each G-106 PackageFiberAut with the categorical automorphism group of its core-fiber object. Every generated core-fiber functor therefore induces coreFiberFunctorPackageAutHom, a group homomorphism preserving identity and multiplication. Applied vertexwise, it generates the endpoint package family and pointwise defect-cochain map on the unchanged finite combinatorial presentation, with identity-cochain and multiplication laws. The two exact BC routes are generated from the finite presentation; coreBeckChevalleyMate_isIso supplies their endpoint package isomorphism, and mate naturality proves that conjugating the direct image through this generated comparison equals the via-base image. On the finite lax support, the identity core-fiber action sends the adjacent swap to itself and differs from its identity image.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphism.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphismWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - packageFiberAutCoreFiberEquiv
+    - coreFiberFunctorPackageAutHom
+    - coreFiberFunctorPackageAutHom_one
+    - coreFiberFunctorPackageAutHom_mul
+    - bcDiagnosticDirectFunctor
+    - bcDiagnosticViaBaseFunctor
+    - bcDiagnosticComparisonIso
+    - bcDiagnosticEndpointComparison
+    - bcDiagnosticEndpointComparison_naturality
+    - coreFiberFunctorDefectCochainMap
+    - coreFiberFunctorDefectCochainMap_identity
+    - coreFiberFunctorDefectCochainMap_mul
+    - finiteAxisFold_identityEndpointAction_nonconstant
+  claim_mapping:
+    theorem_names:
+      - coreFiberFunctorDefectCochainMap_identity
+      - bcDiagnosticEndpointComparison_naturality
+      - finiteAxisFold_identityEndpointAction_nonconstant
+    source_labels:
+      - target theorem D(d2) endpoint PackageFiberAut group homomorphism
+      - target theorem D diagnostic comparison map generated from A-C
+    conjuncts:
+      - endpoint group hom -> coreFiberFunctorPackageAutHom
+      - identity preservation -> coreFiberFunctorPackageAutHom_one and coreFiberFunctorDefectCochainMap_identity
+      - cochain map on fixed combinatorial cells -> coreFiberFunctorDefectCochainMap
+      - generated direct-via comparison -> bcDiagnosticComparisonIso and bcDiagnosticEndpointComparison
+      - comparison naturality -> bcDiagnosticEndpointComparison_naturality
+      - nonconstant finite action -> finiteAxisFold_identityEndpointAction_nonconstant
+    undischarged_assumptions:
+      - d1 same-combinatorial-layer interpretation pullback
+      - d3 transported AdmissibleTransportData with generated comparator and derived edgeStrong/twoCellBase
+      - H_bc and conditional d4-d6
+      - named actual-firing positive-negative vanishing pair and checker bridge
+    acceptance_point: the endpoint group-hom/cochain-map layer and the canonical direct-via endpoint comparison are generated and proved functorial; no transported datum, raw-defect preservation, orbit mapping, vanishing preservation, H_bc, or K3 completion is claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - endpoint automorphism maps are generated by core-fiber functors
+      - direct-via endpoint comparison is generated by the exact canonical mate
+      - identity cochain and pointwise multiplication are preserved
+      - the concrete finite identity action is nonconstant
+    remaining:
+      - construct d1 and d3 without supplied post-base-change certificates
+      - define qualified H_bc and consume it only in d4-d6
+      - derive vanishing preservation through the complete mandated proof DAG
+      - construct the source-firing positive-negative pair and checker bridge
+  certificate_provenance:
+    discharged:
+      - PackageFiberAut-to-fiber-Aut conversion uses the existing fiber membership equation
+      - endpoint maps are Functor.mapAut transported back through a proved group equivalence
+      - the comparison is asIso of the producer-generated canonical mate using its proved IsIso theorem
+    unresolved: []
+  proof_use:
+    used:
+      - PackageFiberAut hom/inv and identity-base equations
+      - functor mapAut multiplication and identity laws
+      - coreBeckChevalleyMate_isIso
+      - coreBeckChevalleyMate naturality on every source automorphism
+      - finiteAxisFoldSwap_ne_one
+    unused: []
+  structure_field_escape: none-found; no new input structure or certificate is introduced
+  route_integrity: direct and via-base functors are the exact routes appearing in coreBeckChevalleyMate, and endpoint comparison is generated by that mate rather than supplied
+  target_fitting: none-found
+  vacuity: the generic maps quantify over every endpoint automorphism; the finite adjacent swap is mapped to itself and remains distinct from the identity image
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCDiagnosticBaseChangeAutomorphism.lean: pass; 16 namespace declarations, standard axioms only
+    - focused BCDiagnosticBaseChangeAutomorphismWitnesses.lean: pass; 4 namespace declarations, standard axioms only
+    - targeted base-change automorphism module build: pass; 4042 jobs
+    - targeted base-change automorphism witness module build: pass; 4060 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, construct d1 and d3 together so target packages, edge lifts, edgeStrong, twoCellBase, and comparator generation arise from the same fixed-combinatorial interpretation pullback
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, build the same-combinatorial-layer transported admissible datum and expose its generated comparator equation before introducing H_bc
+```
+
 ### Cycle 67 — generated non-twist comparison on the genuine reselection orbit
 
 ```yaml
