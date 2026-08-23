@@ -1,6 +1,14 @@
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticBaseChangeAutomorphism
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesses
 
+/-!
+# Finite witness for the diagnostic endpoint action
+
+The identity core-fiber functor on the finite axis-fold support sends the
+concrete adjacent swap to itself.  Its endpoint action therefore separates
+that swap from the identity automorphism.
+-/
+
 namespace AAT.AG.DoctrineFiberProduct
 
 open CategoryTheory
