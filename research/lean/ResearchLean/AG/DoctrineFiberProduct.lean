@@ -16,6 +16,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparison
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparisonWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFold
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparison
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparisonWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -313,4 +315,14 @@ report phrase "arbitrary endpoint-isomorphism rebasing" was not an independently
 fixed GOAL artifact and was not used to invent a new schema.  The authored
 induced comparison, `MateCoherentRel`, its strict/lax and orbit witnesses,
 K3--K4, fixed-ledger `FiniteModelLift`, and final assembly remain open.
+The authored diagnostic layer now retains the actual G-106 raw component at
+every supplied cochain coordinate and follows it with an internally generated
+direct-first, same-boundary-pairwise-fallback fold.  The resulting auxiliary
+initial-coordinate relation has strict and lax controls, while its
+cochain-indexed equation fails throughout a concrete nontrivial reselection
+orbit.  The lax fold remains noninvertible after transport, so this diagnostic
+is not an automorphism twist.  It is not the fixed K2 authored comparison:
+universal provenance for that producer, its public `MateCoherentRel` and orbit
+bridge, actual square-presentation replacement, K3--K4, fixed-ledger
+`FiniteModelLift`, and final assembly remain open.
 -/
