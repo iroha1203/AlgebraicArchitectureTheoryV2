@@ -21,6 +21,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparisonWitnes
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetQuotientNoGo
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetCoforkNoGoWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -336,13 +337,24 @@ the transported initial raw defect.  The finite lax double diamond proves that
 residual nonidentity concretely, so the mismatch in that route is a forbidden
 canonical post-twist.  This is a scoped route obstruction, not a global K2
 refutation.  The fixed GOAL prose supplies the provenance and anti-target-fitting
-acceptance gate; constructing a schema-preserving noninvertible universal
-quotient or reflection, or proving its current-data impossibility, remains the
-next obligation.  The standard `Cofork` analysis further fixes the direction
+acceptance gate.  The standard `Cofork` analysis further fixes the direction
 barrier: a coequalizing arrow lands in its cocone point, and an endomorphism of
 the existing via-base target requires an additional return map.  For the fixed
 lax residual every such conditional returned endomorphism is noninvertible,
-but neither an input-generated cofork nor return-map provenance has been
-constructed.  Those two data, their naturality, and presentation-replacement
-compatibility are the next K2 obligations.
+while that cycle left existence of the input-generated cofork unresolved.
+
+The finite Cofork nonexistence witness then closes the remaining vacuity on the
+reviewed lax datum.  Its raw adjacent transposition fixes axis `2` but acts
+there by a nonidentity coordinate equivalence.  Because every exact-core arrow
+has an equivalence on that coordinate, no outgoing arrow can coequalize the
+raw action with identity; identity-like transport and reindexing carry this
+nonexistence to the authored via-base route.  Hence the proposed standard
+`Cofork` route cannot be created inside the current exact fiber category for
+that datum.  This does not prove that every K2 producer factors through such a
+coequalizing arrow.  Within the fixed GOAL, the remaining candidates include a
+non-Cofork construction that does not require raw absorption or a different
+diagnostic-generated non-twist factor; changing the target category or its
+morphism notion would instead require a separate GOAL-defect decision.  Any
+accepted route must still prove naturality and presentation-replacement
+compatibility.
 -/
