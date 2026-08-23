@@ -13,7 +13,7 @@
 
 ## Cycle ledger
 
-### Cycle 49 — generated finite Cofork with canonical return
+### Cycle 49 — finite standard Cofork nonexistence
 
 ```yaml
 ledger_type: target_cycle_result
@@ -25,7 +25,7 @@ base_oid: 8faa8044805e5cac29e20f23bb30646dfb049df2
 tracking_issue: 4034
 report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
-  proof_state_ref: Issue 4034 Cycle 48 merge synchronization comment 5384910468
+  proof_state_ref: Issue 4034 Cycle 48 merge synchronization comment 5384910468 and Cycle 49 fixed selection comment 5384925074
   proof_dag_predecessors:
     - G-106 initial raw-defect cochain on the fixed lax double diamond
     - diagnostic axis-fold construction generated from a moved object-fixing axis
@@ -57,19 +57,20 @@ result:
     fixed_coordinate_obstruction: the concrete residual fixes signature axis 2 but acts there by a nonidentity coordinate equivalence
     support_no_go: no exact-core arrow from the fixed support object coequalizes that residual with identity
     via_base_no_go: no standard Cofork exists after the actual identity-like transport and reindex route
-    global_boundary: quotient categories with weaker coordinate morphisms and different diagnostic factors remain unrefuted
+    global_boundary: the theorem does not show that every K2 producer factors through a Cofork; non-Cofork constructions on the same exact category, quotient categories with weaker coordinate morphisms, and different diagnostic factors remain unrefuted
     port_status: unported
 audits:
   premise_delta:
     discharged:
       - existence of a standard Cofork on the fixed finite via-base datum -> refuted by a generated finite no-go theorem
     remaining:
-      - construct K2 on a morphism surface that permits the required diagnostic collapse, or generate a different non-twist factor that stays inside the fixed BC target
+      - construct a non-Cofork K2 factor that does not require raw absorption, or generate a different non-twist factor that stays inside the fixed BC target
+      - treat any proposal to change the target category or its morphism notion as a separate GOAL-defect decision rather than a current K2 discharge
   certificate_provenance:
     discharged:
       - the residual, fixed axis, coordinate action, and contradiction are all computed from the existing finite G-106 datum
     unresolved:
-      - a target-fitting generated replacement morphism surface or alternative factor
+      - a target-fitting non-Cofork construction or alternative diagnostic-generated factor
   proof_use:
     used:
       - exact initial raw residual value
@@ -88,9 +89,14 @@ audits:
     - focused BCAuthoredFixedTargetCoforkNoGoWitnesses.lean: pass; 3 namespace declarations, standard axioms only
     - targeted build for exactly BCAuthoredFixedTargetCoforkNoGoWitnesses: pass; 4063 jobs; no Research aggregate or full build
     - repository diff, placeholder, hidden/BiDi Unicode, privacy, and import-direction scans: pass
-  blocking_findings: []
+  blocking_findings:
+    - initial Math B review found that the aggregate/report presented changing the morphism surface or diagnostic factor as an exhaustive K2 dichotomy without a reduction theorem; the wording now limits the theorem to the standard Cofork route and retains non-Cofork constructions
+    - initial Math A found that an external weak quotient followed by an exact coequalizing return cannot evade the support no-arrow theorem; category change is now separated as a GOAL-defect decision rather than a fixed-GOAL obligation
+    - initial Lean A/B found the missing Cycle 49 selection reference, and Lean B found the result-opposite heading; both ledger defects are corrected
+review:
+  status: initial four-lane review findings fixed; one full post-core-fix rerun required
 stop_condition_candidate: none
-next_obligation: validate and review this stronger no-go; if accepted, select either a quotient morphism surface with non-equivalence coordinate maps and a return to the fixed BC target, or a different diagnostic-generated non-twist factor that avoids the fixed-coordinate obstruction
+next_obligation: validate the review fix and run the one allowed full rerun; if accepted, select a non-Cofork construction that does not require raw absorption or a different diagnostic-generated non-twist factor inside the fixed BC target
 ```
 
 ### Cycle 48 — fixed-target quotient and return-map barrier
