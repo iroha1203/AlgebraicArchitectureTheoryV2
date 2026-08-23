@@ -13,6 +13,126 @@
 
 ## Cycle ledger
 
+### Cycle 70 — arbitrary-source total diagnostic transport engine
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 70
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: f64c490f527c7566e637a2a566c596ff7e0da763
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 69 generated target data only for identity-base fiberwise source edges
+  proof_dag_predecessors:
+    - AdmissibleTransportData
+    - PackageTotalHom.packageTotalCategory
+    - DiagnosticPackageTotalAction
+    - DiagnosticPackageTotalAction.mapPackageFiberAut
+  proof_obligation: remove the fiberwise source restriction by constructing the generic arbitrary-source d1/d3 engine from a total-category action, deriving all target G-106 fields and fixing comparator generation; leave construction of the square-generated action itself explicit
+  selection_reason: arbitrary nonidentity source edges require an action on the package total category rather than only a functor between two core fibers
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticTotalTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticTotalTransportWitnesses.lean
+  risks:
+    - accepting target edge qualifications or two-cell equations as action fields
+    - allowing the mapped comparator to leave the target fiber
+    - confusing the generic total-action engine with construction of the actual BC action
+    - witnessing only identity-base edges
+  unchecked: []
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: DiagnosticPackageTotalAction packages a functor on the package total category with two structural laws, preservation of strongly cocartesian morphisms and congruence of image base morphisms under source-base equality. For every arbitrary AdmissibleTransportData input, transportedData maps packages and edge lifts functorially, derives target edgeStrong from the first law, derives target twoCellBase from source path equality and the second law, and generates each target comparator by mapping its source automorphism and proving the image remains vertical. The finite transport triangle shows the engine consumes genuine nonidentity source transports and preserves their nontrivial Atom equivalence under the inhabited identity action.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticTotalTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticTotalTransportWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - DiagnosticPackageTotalAction.mapPackageFiberAut
+    - DiagnosticPackageTotalAction.mapPackageFiberAut_one
+    - DiagnosticPackageTotalAction.mapPackageFiberAut_mul
+    - DiagnosticPackageTotalAction.transportedEdgeLift_isStronglyCocartesian
+    - DiagnosticPackageTotalAction.transportedPathLift_eq_map
+    - DiagnosticPackageTotalAction.transportedTwoCellBase
+    - DiagnosticPackageTotalAction.transportedData
+    - DiagnosticPackageTotalAction.transportedData_comparator
+    - finiteTransportTriangleIdentityTransported_edge_atomEquiv_ne_refl
+  claim_mapping:
+    theorem_names:
+      - DiagnosticPackageTotalAction.transportedData_comparator
+      - DiagnosticPackageTotalAction.transportedData_edgeStrong
+      - DiagnosticPackageTotalAction.transportedData_twoCellBase
+      - finiteTransportTriangleIdentityTransported_edge_atomEquiv_ne_refl
+    source_labels:
+      - target theorem D(d1) same-combinatorial interpretation action, generic total-action engine
+      - target theorem D(d3) generated transported datum, generic total-action engine
+    conjuncts:
+      - arbitrary source packages and edges -> transportedPackage and transportedEdgeLift
+      - unchanged combinatorial layer -> transportedLiftData and transportedData retain G
+      - derived target edgeStrong -> transportedData_edgeStrong
+      - derived target twoCellBase -> transportedData_twoCellBase
+      - generated vertical comparator -> mapPackageFiberAut and transportedData_comparator
+      - identity and multiplication preservation -> mapPackageFiberAut_one and mapPackageFiberAut_mul
+      - nonidentity-edge nonvacuity -> finiteTransportTriangleIdentityTransported_edge_atomEquiv_ne_refl
+    undischarged_assumptions:
+      - construct DiagnosticPackageTotalAction from the accepted semantic BC square and A-C rather than supplying an arbitrary action
+      - identify its core-fiber restrictions with the Cycle 68 direct/via endpoint group homomorphisms
+      - H_bc and conditional d4-d6
+      - named actual-firing positive-negative vanishing pair and checker bridge
+    acceptance_point: the arbitrary-source target-data engine exists and accepts no target diagnostic fields; the actual square-generated total action, full d1/d3 discharge, H_bc, d4-d6, K3 completion, and G-110 completion are not claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - arbitrary source edge lifts no longer need identity base morphisms
+      - target edgeStrong is derived uniformly from the structural action law
+      - target twoCellBase is derived uniformly from source equality and base congruence
+      - mapped comparator verticality is derived from source verticality and identity functoriality
+      - the engine handles a concrete nonidentity Atom transport
+    remaining:
+      - generate the actual total action from the semantic BC square and prove its two structural laws
+      - connect the actual total action to the canonical mate comparison
+      - define qualified H_bc and consume it only in d4-d6
+      - construct the source-firing positive-negative vanishing pair
+  certificate_provenance:
+    discharged:
+      - action maps source total morphisms functorially
+      - target edge qualification consumes source edgeStrong through map_stronglyCocartesian
+      - target base equality consumes source twoCellBase through map_base_eq_of_base_eq
+      - comparator fiber membership is proved by comparing the source automorphism base with identity and using Functor.map_id
+    unresolved: []
+  proof_use:
+    used:
+      - source AdmissibleTransportData.edgeStrong
+      - source AdmissibleTransportData.twoCellBase
+      - source PackageFiberAut.hom_base_eq
+      - Functor.map_id and Functor.map_comp
+      - finiteTransportTriangle_edge_atomEquiv_ne_refl
+    unused: []
+  structure_field_escape: none-found for target data; the action stores only global functorial preservation laws and no target diagnostic package, lift, field, comparison, or vanishing certificate
+  route_integrity: the generic engine is not labeled as the actual BC route; construction and identification of the square-generated action remain explicit obligations
+  target_fitting: none-found; finiteTransportTriangleData and its nonidentity-edge theorem predate this cycle
+  vacuity: the witness contains genuine nonidentity base transport and three nontrivial authored comparator coordinates
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; the action-construction gap is not counted as d1/d3 discharge
+  validation_refs:
+    - focused BCDiagnosticTotalTransport.lean: pass; 29 namespace declarations, standard axioms only
+    - focused BCDiagnosticTotalTransportWitnesses.lean: pass; 5 namespace declarations, standard axioms only
+    - targeted total transport module build: pass; 4044 jobs
+    - targeted total transport witness module build: pass; 4050 jobs
+    - common scans: pass
+  blocking_findings: []
+  next_obligation: after merge, generate the actual DiagnosticPackageTotalAction from the accepted semantic BC square and prove its structural laws from A-C rather than accepting them
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, construct and identify the square-generated total action with the existing direct/via core-fiber routes
+```
+
 ### Cycle 69 — fiberwise same-combinatorial transported datum engine
 
 ```yaml
