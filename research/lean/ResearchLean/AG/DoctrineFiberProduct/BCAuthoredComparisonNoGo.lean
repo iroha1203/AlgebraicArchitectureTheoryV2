@@ -26,34 +26,13 @@ open AtomFoundation CrossStageCoherence TransportCoherence
 /-! ## Generic componentwise classification -/
 
 /--
-An authored component differs from a canonical component only by an
-automorphism of their common target.  This is a componentwise route predicate;
-it makes no claim that independently chosen residuals are natural in an index.
--/
-def IsCanonicalPostIsoTwist
-    {C : Type u} [Category.{v} C] {X Y : C}
-    (canonical authored : X ⟶ Y) : Prop :=
-  ∃ residual : Y ≅ Y, authored = canonical ≫ residual.hom
-
-/--
-The nontrivial form of `IsCanonicalPostIsoTwist`: the residual automorphism is
-not the identity.  This records a genuine component mismatch without promoting
-it to a global no-go theorem.
--/
-def HasNontrivialCanonicalPostIsoResidual
-    {C : Type u} [Category.{v} C] {X Y : C}
-    (canonical authored : X ⟶ Y) : Prop :=
-  ∃ residual : Y ≅ Y,
-    authored = canonical ≫ residual.hom ∧ residual.hom ≠ 𝟙 Y
-
-/--
 Two invertible parallel components always have the canonical-post-residual
 classification.  The residual is `canonical⁻¹ ≫ authored`.
 -/
   theorem isCanonicalPostIsoTwist_of_isIso
     {C : Type u} [Category.{v} C] {X Y : C}
     (canonical authored : X ⟶ Y) [IsIso canonical] [IsIso authored] :
-    IsCanonicalPostIsoTwist canonical authored := by
+    ∃ residual : Y ≅ Y, authored = canonical ≫ residual.hom := by
   refine ⟨(asIso canonical).symm.trans (asIso authored), ?_⟩
   simp
 
@@ -65,7 +44,8 @@ theorem hasNontrivialCanonicalPostIsoResidual_of_ne
     {C : Type u} [Category.{v} C] {X Y : C}
     (canonical authored : X ⟶ Y) [IsIso canonical] [IsIso authored]
     (hne : authored ≠ canonical) :
-    HasNontrivialCanonicalPostIsoResidual canonical authored := by
+    ∃ residual : Y ≅ Y,
+      authored = canonical ≫ residual.hom ∧ residual.hom ≠ 𝟙 Y := by
   rcases isCanonicalPostIsoTwist_of_isIso canonical authored with
     ⟨residual, authored_eq⟩
   refine ⟨residual, authored_eq, ?_⟩
@@ -179,9 +159,11 @@ theorem authoredFactorizationComparisonComponent_isCanonicalPostIsoTwist
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U)
     (cell : input.context.Category) :
-    IsCanonicalPostIsoTwist
-      ((authoredSupportCanonicalMate input.context).app cell)
-      (authoredFactorizationComparisonComponent input cell) := by
+    ∃ residual :
+        (authoredSupportViaBaseRoute input.context).obj cell ≅
+          (authoredSupportViaBaseRoute input.context).obj cell,
+      authoredFactorizationComparisonComponent input cell =
+        (authoredSupportCanonicalMate input.context).app cell ≫ residual.hom := by
   letI : IsIso (authoredFactorizationComparisonComponent input cell) :=
     authoredFactorizationComparisonComponent_isIso input cell
   exact isCanonicalPostIsoTwist_of_isIso
@@ -200,9 +182,13 @@ theorem authoredFactorizationComparisonComponent_has_nontrivial_residual_of_ne
     (cell : input.context.Category)
     (hne : authoredFactorizationComparisonComponent input cell ≠
       (authoredSupportCanonicalMate input.context).app cell) :
-    HasNontrivialCanonicalPostIsoResidual
-      ((authoredSupportCanonicalMate input.context).app cell)
-      (authoredFactorizationComparisonComponent input cell) := by
+    ∃ residual :
+        (authoredSupportViaBaseRoute input.context).obj cell ≅
+          (authoredSupportViaBaseRoute input.context).obj cell,
+      authoredFactorizationComparisonComponent input cell =
+          (authoredSupportCanonicalMate input.context).app cell ≫ residual.hom ∧
+        residual.hom ≠
+          𝟙 ((authoredSupportViaBaseRoute input.context).obj cell) := by
   letI : IsIso (authoredFactorizationComparisonComponent input cell) :=
     authoredFactorizationComparisonComponent_isIso input cell
   exact hasNontrivialCanonicalPostIsoResidual_of_ne

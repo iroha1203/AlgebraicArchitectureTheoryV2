@@ -107,11 +107,19 @@ theorem finiteAxisFold_factorizationComparison_second_ne_canonical :
 
 /-- The finite mismatch produces a nonidentity canonical-post-isomorphism residual. -/
 theorem finiteAxisFold_factorizationComparison_second_has_nontrivial_residual :
-    HasNontrivialCanonicalPostIsoResidual
-      ((authoredSupportCanonicalMate finiteAxisFoldBCDatumSquare.context).app
-        (Discrete.mk DoubleDiamondTwoCell.second))
-      (authoredFactorizationComparisonComponent finiteAxisFoldBCDatumSquare
-        (Discrete.mk DoubleDiamondTwoCell.second)) :=
+    ∃ residual :
+        (authoredSupportViaBaseRoute finiteAxisFoldBCDatumSquare.context).obj
+            (Discrete.mk DoubleDiamondTwoCell.second) ≅
+          (authoredSupportViaBaseRoute finiteAxisFoldBCDatumSquare.context).obj
+            (Discrete.mk DoubleDiamondTwoCell.second),
+      authoredFactorizationComparisonComponent finiteAxisFoldBCDatumSquare
+          (Discrete.mk DoubleDiamondTwoCell.second) =
+          (authoredSupportCanonicalMate finiteAxisFoldBCDatumSquare.context).app
+              (Discrete.mk DoubleDiamondTwoCell.second) ≫ residual.hom ∧
+        residual.hom ≠
+          𝟙 ((authoredSupportViaBaseRoute
+            finiteAxisFoldBCDatumSquare.context).obj
+              (Discrete.mk DoubleDiamondTwoCell.second)) :=
   authoredFactorizationComparisonComponent_has_nontrivial_residual_of_ne
     finiteAxisFoldBCDatumSquare
     (Discrete.mk DoubleDiamondTwoCell.second)
