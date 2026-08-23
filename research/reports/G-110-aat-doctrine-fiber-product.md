@@ -13,6 +13,96 @@
 
 ## Cycle ledger
 
+### Cycle 61 — comparator-induction obstruction for the fixed swap
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 61
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 08b4ef716c3135f07346d3e8734b3cb298e893a0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 60 PR 4101 was rejected because it definitionally promoted the Cycle 46 choice-based auxiliary fold without an authored-table or universal forcing theorem
+  proof_obligation: formalize the finite induction laws for an axis operation generated only by the fixed authored adjacent transposition and decide whether any non-twist diagnostic axis collapse can satisfy them
+  selection_reason: the rejected producer becomes noninvertible by orienting one endpoint of a symmetric two-cycle. Comparator equivariance and locality to supplied comparator orbits make the missing induction requirement explicit without accepting a fold or orientation certificate from the caller.
+  expected_result_type: blocker-fixed
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: FiniteAxisFoldComparatorInduced packages equivariance under the actual authored swap and the no-new-axis orbit-locality law. Every such operation is injective. FiniteAxisFoldCollapse records the noninjective axis action used to make the diagnostic factor non-IsIso, and finiteAxisFold_not_comparatorInduced_and_collapse proves the two requirements incompatible. The exact choice-based generated axis map has a collapse and therefore fails comparator induction. FiniteAxisFoldInducedFold packages an oriented AxisFoldWitness with the induction laws, and its type is empty. Thus the Cycle 46/60 axis-fold producer cannot be promoted by supplying the missing comparator-induction law.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparatorInductionObstruction.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - FiniteAxisFoldComparatorInduced
+    - FiniteAxisFoldCollapse
+    - finiteAxisFold_comparatorInduced_injective
+    - finiteAxisFold_not_comparatorInduced_and_collapse
+    - finiteAxisFoldGeneratedAxisMap_collapse
+    - finiteAxisFoldGeneratedAxisMap_not_comparatorInduced
+    - FiniteAxisFoldInducedFold
+    - finiteAxisFoldInducedFold_isEmpty
+    - finiteAxisFold_no_comparatorInduced_fold
+audits:
+  premise_delta:
+    discharged:
+      - whether the existing choice-based axis fold can satisfy the explicit comparator-induction laws -> no
+    remaining:
+      - construct a K2 producer from additional structure already present in the fixed authored datum but outside comparator-orbit axis collapse, or determine that the fixed schema lacks the structure required by every admissible non-twist route
+  certificate_provenance:
+    discharged:
+      - the obstruction consumes the actual finite authored swap and universally quantifies the candidate axis operation or fold witness
+  proof_use:
+    used:
+      - actual authored adjacent-transposition axis action
+      - equivariance, comparator-orbit locality, and the noninjective collapse used by the attempted route
+  structure_field_escape: none-found
+  route_integrity: no public comparison is defined; the failed Cycle 60 promotion remains rejected
+  target_fitting: the theorem eliminates every axis operation satisfying the stated induction laws, including the exact prior generator
+  vacuity: none-found; the actual generated axis map supplies the collapse and concretely fails induction
+  validation_refs:
+    - focused BCAuthoredComparatorInductionObstruction.lean: pass; 22 namespace declarations visible to the namespace audit, standard axioms only
+    - exact target module build: pass; 4058 jobs
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: theorem-backed fixed-route obstruction; not yet a global K2 impossibility because constructions using additional fixed input structure remain unclassified
+next_obligation: after merge, either construct a non-axis-collapse K2 producer from existing fixed datum structure or prove the broader reduction from every GOAL-admissible comparator-only non-twist route to the obstructed induction laws
+```
+
+### Cycle 60 — rejected public promotion attempt
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 60
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 08b4ef716c3135f07346d3e8734b3cb298e893a0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_obligation: expose the Cycle 46 cochain-indexed diagnostic under a public producer contract together with strict/lax, orbit, and presentation-replacement laws
+  expected_result_type: proof-obligation-discharged
+result:
+  proposed_result_type: rejected
+  completion_candidate: no
+  rejected_head: a15c8edab62da90f7b5b403d8ae77342aa03d4d1
+  rejected_pr: 4101
+  proof_obligation_delta: none accepted. The proposed authoredBCComparisonAtCochain was definitionally authoredDiagnosticComparisonAtCochain, and its public producer was only the initial-cochain specialization. The strict/lax, orbit, and presentation laws were valid for that auxiliary construction but did not force its choice-based postfold from the authored table or a universal property. mateCoherentRel_iff_initial restated only the initial coordinate and did not bridge arbitrary orbit coordinates to the same public relation.
+audits:
+  blocking_findings:
+    - all four fixed-head lanes found the same forbidden auxiliary promotion and missing postfold provenance
+    - math review additionally found that the claimed exact initial-to-full-orbit bridge consisted of separate initial and orbit statements rather than an orbit-quantified bridge to one public relation
+  route_integrity: fail; Cycle 46's rejected auxiliary was promoted by a definitional alias without a new forcing theorem
+review:
+  status: rejected; PR 4101 closed without merge
+stop_condition_candidate: none
+next_obligation: formalize and test the missing comparator-induction law instead of renaming the auxiliary construction
+```
+
 ### Cycle 59 — nonvacuous authored diagnostic replacement witness
 
 ```yaml
