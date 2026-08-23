@@ -47,7 +47,7 @@ selection:
   unchecked: []
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: DiagnosticSourceFiberIncidence states that the packages and existing edge lifts of an ordinary AdmissibleTransportData input lie in the selected southwest source fiber. fiberEdgeIso derives total and fiber invertibility from source edgeStrong plus identity-base verticality. toFiberwise preserves each source package, edge lift, and comparator pointwise. The two actual BC functors then generate direct and via-base target AdmissibleTransportData, with named theorems deriving target edgeStrong and twoCellBase and fixing both comparator generation equations. The exact BC mate identifies the two generated target comparator tables pointwise. The existing finite ordinary double-diamond BCDiagnosticInterpretation inhabits the qualification and retains its genuinely distinct authored comparators.
+  proof_obligation_delta: Conditional on DiagnosticSourceFiberIncidence, which is not generated from an arbitrary BCDiagnosticInterpretation, fiberEdgeIso derives total and fiber invertibility from source edgeStrong plus identity-base verticality. toFiberwise preserves each source package, edge lift, and comparator pointwise. The two actual BC functors then generate direct and via-base target AdmissibleTransportData, with named theorems deriving target edgeStrong and twoCellBase and fixing both comparator generation equations. The exact BC mate identifies the two generated target comparator tables pointwise. The finite ordinary double-diamond interpretation supplies a positive qualified instance with genuinely distinct authored comparators, while the finite nonidentity transport triangle proves that the qualification does not hold for all ordinary G-106 data.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticSourceFiberBridge.lean
@@ -71,6 +71,7 @@ result:
     - finiteAxisFoldSourceFiberIncidence
     - finiteAxisFoldSourceFiberBridge_comparators_ne
     - finiteAxisFoldBridgeTransportedComparator_naturality
+    - finiteTransportTriangle_not_sourceFiberIncident
   claim_mapping:
     theorem_names:
       - bcDiagnosticDirectTransportedInterpretationData_comparator
@@ -94,19 +95,22 @@ result:
       - actual route comparison -> exact canonical BC mate naturality
       - nonvacuity -> pre-existing ordinary double-diamond interpretation with distinct authored comparators
     undischarged_assumptions:
+      - DiagnosticSourceFiberIncidence is caller-supplied and is not generated from an arbitrary ordinary BCDiagnosticInterpretation
+      - full-domain d1 and d3 remain open outside the selected southwest identity-base source fiber
       - arbitrary-base source diagnostic edges are handled only by the generic Cycle 70 engine, not by the actual square core-fiber routes
       - H_bc and conditional d4-d6
       - named actual-firing positive-negative vanishing pair and checker bridge
-    acceptance_point: ordinary accepted G-106 data on the actual southwest source fiber now feeds the actual direct and via-base BC routes without target-field supply; arbitrary-base source incidence, H_bc, d4-d6, K3 completion, and G-110 completion are not claimed
+    acceptance_point: this is a conditional support theorem: ordinary accepted G-106 data equipped with actual southwest source-fiber incidence feeds the actual direct and via-base BC routes without target-field supply; generation of that incidence, full-domain d1 and d3, H_bc, d4-d6, K3 completion, and G-110 completion are not claimed
     port_status: unported
 audits:
   premise_delta:
     discharged:
-      - the Cycle 69 parallel fiberwise representation is now generated from an ordinary BCDiagnosticInterpretation plus source incidence
+      - given source incidence, the Cycle 69 parallel fiberwise representation is generated internally from the ordinary BCDiagnosticInterpretation
       - source fiber-edge invertibility is derived rather than supplied
       - actual direct and via-base target edgeStrong, twoCellBase, and comparator generation are exposed as named theorems
       - the actual mate comparison is stated directly for ordinary interpretation input
     remaining:
+      - generate or otherwise discharge DiagnosticSourceFiberIncidence from the fixed semantic schema, or construct a full-domain actual-route action
       - determine the required treatment of arbitrary-base source diagnostic edges from the fixed semantic schema
       - define qualified H_bc and consume it only in d4-d6
       - construct the source-firing positive-negative vanishing pair
@@ -116,7 +120,8 @@ audits:
       - fiberEdgeIso consumes source edgeStrong and IsHomLift over identity
       - target fields are generated exclusively through the actual core-fiber functors
       - comparator comparison consumes the exact canonical BC mate
-    unresolved: []
+    unresolved:
+      - DiagnosticSourceFiberIncidence provenance for arbitrary ordinary BCDiagnosticInterpretation inputs
   proof_use:
     used:
       - BCDiagnosticInterpretation.data
@@ -126,24 +131,25 @@ audits:
       - bcDiagnosticDirectFunctor and bcDiagnosticViaBaseFunctor
       - bcDiagnosticTransportedComparator_naturality
       - finiteAxisFold_comparators_ne
-    unused: []
+    unused:
+      - source AdmissibleTransportData.twoCellBase in this qualified conversion route; the target twoCellBase equations are re-derived from the common target fiber, while the Cycle 70 generic engine consumes the source field
   structure_field_escape: none-found for target data; DiagnosticSourceFiberIncidence contains only source vertex-base and source edge-verticality facts, while edge invertibility and every target G-106 field are theorems or generated definitions
   route_integrity: the target constructors use the existing actual direct and via-base core-fiber functors and exact canonical mate; no generic action is relabeled as square-generated
   target_fitting: none-found; the finiteAxisFold interpretation and distinct-comparator theorem predate this cycle
-  vacuity: the standard BCDiagnosticInterpretation fixture is nonempty and has two genuinely distinct authored source comparators
+  vacuity: finiteAxisFoldSourceFiberIncidence is a positive instance with two genuinely distinct authored source comparators; finiteTransportTriangle_not_sourceFiberIncident is a named negative instance showing that the qualification excludes ordinary data with nonidentity base transport
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found; the qualified southwest-source-fiber domain is named explicitly and arbitrary-base coverage remains open
   validation_refs:
     - focused BCDiagnosticSourceFiberBridge.lean: pass; 23 namespace declarations, standard axioms only
-    - focused BCDiagnosticSourceFiberBridgeWitnesses.lean: pass; 9 namespace declarations, standard axioms only
+    - focused BCDiagnosticSourceFiberBridgeWitnesses.lean: pass; 10 namespace declarations, standard axioms only
     - targeted bridge and witness module build: pass; 4060 jobs
     - common diff, placeholder, hidden/BiDi Unicode, privacy, import-direction, and umbrella-wiring scans: pass
   blocking_findings: []
-  next_obligation: after merge, construct the first H_bc-qualified d4 raw-defect preservation theorem on the actual source-fiber route, consuming the d3 comparator generation equation as a proof term
+  next_obligation: after merge, construct the full-domain actual diagnostic action or generate and discharge DiagnosticSourceFiberIncidence from the fixed semantic schema before selecting d4
 review:
   status: pending standard fixed-head review
 stop_condition_candidate: none
-next_obligation: after merge, define the qualified H_bc input-side condition needed for d4 and prove actual-route pointwise raw-defect preservation while consuming the generated comparator equation
+next_obligation: after merge, return to full-domain d1 and d3 by constructing the actual diagnostic action or generating source-fiber incidence from the fixed semantic BC schema
 ```
 
 ### Cycle 70 — arbitrary-source total diagnostic transport engine

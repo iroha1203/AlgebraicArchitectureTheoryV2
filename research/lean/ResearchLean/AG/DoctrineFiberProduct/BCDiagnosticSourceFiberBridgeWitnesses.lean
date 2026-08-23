@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticSourceFiberBridge
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparisonWitnesses
+import ResearchLean.AG.TransportCoherence.FiniteWitnesses
 
 /-!
 # Finite witness for the source-fiber incidence bridge
@@ -98,6 +99,39 @@ theorem finiteAxisFoldBridgeTransportedComparator_naturality
   exact bcDiagnosticTransportedInterpretationComparator_naturality
     finiteAxisFoldBCPresentation finiteAxisFoldPresentationInterpretation
     finiteAxisFoldSourceFiberIncidence cell
+
+/-- Source-fiber incidence is a genuine qualification rather than a vacuous
+wrapper around every ordinary G-106 datum.  The finite transport triangle has
+a nonidentity Atom transport on every edge, so it cannot place those edges
+vertically over one identity base. -/
+theorem finiteTransportTriangle_not_sourceFiberIncident
+    (X : ExtractionInstance FiniteModel.carrier) :
+    ¬ Nonempty (DiagnosticSourceFiberIncidence FiniteModel.carrier
+      finiteTransportTriangleData X) := by
+  rintro ⟨incidence⟩
+  let edge : @TransportTriangleEdge FiniteModel.carrier.Atom
+      .source .target := .e0
+  let edgeLift := finiteTransportTriangleData.lift.edgeLift edge
+  letI : (packageProjection FiniteModel.carrier).IsHomLift
+      (𝟙 X) edgeLift := incidence.edgeVertical edge
+  have hfac := CategoryTheory.IsHomLift.fac'
+    (packageProjection FiniteModel.carrier) (𝟙 X) edgeLift
+  have hdomain :
+      CategoryTheory.IsHomLift.domain_eq
+          (packageProjection FiniteModel.carrier) (𝟙 X) edgeLift =
+        incidence.vertexBase SingleDiskVertex.source :=
+    Subsingleton.elim _ _
+  have hcodomain :
+      CategoryTheory.IsHomLift.codomain_eq
+          (packageProjection FiniteModel.carrier) (𝟙 X) edgeLift =
+        incidence.vertexBase SingleDiskVertex.target :=
+    Subsingleton.elim _ _
+  rw [hdomain, hcodomain] at hfac
+  apply finiteTransportTriangle_edge_atomEquiv_ne_refl edge
+  change edgeLift.upper.atomEquiv = Equiv.refl FiniteModel.carrier.Atom
+  change edgeLift.base = _ at hfac
+  rw [edgeLift.atomEquiv_eq, hfac]
+  simp
 
 end AAT.AG.DoctrineFiberProduct
 
