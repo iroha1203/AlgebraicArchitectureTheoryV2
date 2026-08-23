@@ -41,7 +41,12 @@
   (左枝なら全域 lift、右枝なら `H_cart ↔ lift 存在`・`H_bc ↔ 保存`
   の必要十分化または最大 admissible class theorem — n1001 §3.5 の
   「相対的視点の全操作が閉じる」の忠実な転写。条件外入力の帰趨を
-  未決定のまま Gr4 を記録しない)、(ii) refinement 系統
+  未決定のまま Gr4 を記録しない。(D) 診断 base change の
+  full-domain 化 = source-fiber incidence 資格の解除もこの項に
+  含める — global / indexed base-change schema(全
+  `ExtractionInstance` 上の base 作用・全 package の cocartesian
+  保存 lift・実 BC 経路との制限比較)の建設を要する。義務の移管で
+  あり削除ではない — 改訂裁定 2026-08-24)、(ii) refinement 系統
   (`RefinementDoctrineHom` の圏化と refinement base change)、
   (iii) 上段(`GeomRead` / `ObProblem`)への base-change lift(Gr3
   段横断輸送への接続 bridge)、(iv) **IsIso 水準の Beck–Chevalley
@@ -107,6 +112,8 @@
   導入しない(相対 pullback のみ)。carrier を動かす主張、係数 base
   change(ℚ→R。別カード)、nerve / cover 接続、`ObProblem` 段の
   class 構成の変更、derived fiber product(観察は frontier)、
+  full-domain 診断 base change 作用(source-fiber incidence 資格の
+  解除 — frontier / Gr4 完遂 gate 第一項)、
   refinement 射(`RefinementDoctrineHom`)の圏化(n1005 §4.3 の
   Gr4 残課題のうち本カードが解消するのは極限構造・base change
   交換・診断・閉性であり、refinement 圏化は frontier)は
@@ -166,7 +173,13 @@
   への拡張(Gr4 完遂 gate の一 — subcalculus から sector 全域への
   昇格。第一段 = 有限 carrier・有限 Source 上の同型までの coverage
   (有限 carrier では全抽出述語が有限集合で、全置換が有限 support を
-  持つ)、第二段 = sector 全域)、IsIso 水準の Beck–Chevalley exchange-failure の存否決定
+  持つ)、第二段 = sector 全域)、
+  full-domain 診断 base change 作用(source-fiber incidence 資格の
+  解除 — 全 `ExtractionInstance` 上の base 作用・全 package の
+  cocartesian 保存 lift・実 BC 経路との制限比較を伴う global /
+  indexed base-change schema。一つの pullback square からは決まら
+  ないため claim から外す — Gr4 完遂 gate 第一項へ移管)、
+  IsIso 水準の Beck–Chevalley exchange-failure の存否決定
   (Gr4 完遂 gate の四 — n1005 §4.3 の exchange-failure 義務の
   移管先)、
   jump-locus 相対幾何(n1005 §5「隊列」後続 draft 候補2 = 係数
@@ -512,7 +525,36 @@
      interpretation(endpoint package・lift・admissible data)にのみ
      作用する、と target を固定する(従属添字の reindex 問題を発生
      させない。組合せ層まで動かす一般 presentation hom は
-     frontier)。その上で: (d1) 同一組合せ層上の interpretation
+     frontier)。**量化域(診断入力資格)を固定する**(改訂裁定
+     2026-08-24) — (d1)–(d6) の診断入力は、ordinary interpretation
+     (`BCDiagnosticInterpretation` — decode した診断幾何上の G-106
+     admissible data)に pointed square の southwest 頂点への
+     **source-fiber incidence**(`DiagnosticSourceFiberIncidence`、
+     southwest 特殊化は `BCDiagnosticSourceFiberIncidence` — 全
+     source package が southwest 対象上に載ること・全 source edge が
+     その恒等上で vertical であることのみを記録する入力資格)を
+     付した対で量化する。incidence は (C) の compatible point
+     cone と同格の direction-hypothesis 入力である — 任意 ordinary
+     interpretation からの普遍生成は主張しない(現行 ordinary
+     schema に対する普遍生成の不在は schema no-go theorem
+     (`no_universalBCDiagnosticSourceFiberIncidence`)として
+     artifact に保持し、主張域限定の範囲根拠とする)。incidence の
+     field は base change 前の source 幾何のみであり、source edge の
+     可逆性は field に持たず source `edgeStrong` と恒等上
+     verticality から導出する(fiber isomorphism の構成としての
+     導出 — 可逆性・target 側 field・比較 certificate の埋め込みは
+     資格違反)。(d1)–(d3) は
+     pointed square が生成する実 BC 経路(southwest -> northeast の
+     direct / via-base core-fiber functor)で放電する — square を
+     消費しない汎用 total-category 作用の供給による放電は数えない。
+     実経路の (d3) 導出は source の `twoCellBase` field を消費しない
+     (incidence の恒等上 verticality が target 側 `twoCellBase` の
+     導出を代替する — 入力 schema(G-106
+     `AdmissibleTransportData`)は改変しない)。full-domain 化
+     (incidence 資格の解除)は global / indexed base-change schema
+     を要するため本カードの claim から外し、Gr4 完遂 gate 第一項へ
+     移管する(program context・frontier — 義務の移管であり削除では
+     ない)。その上で: (d1) 同一組合せ層上の interpretation
      引き戻しの構成、(d2) 各終点の `PackageFiberAut` 群準同型
      (endpoint ごと、identity cochain 保存)、(d3) transported
      admissible data の constructor — **target comparator の生成式を
@@ -526,8 +568,8 @@
      reselection 作用の equivariance theorem、(d6) (d2)(d4)(d5) から
      導出する orbit map theorem(`InReselectionOrbit` の raw
      basepoint 整合に (d4) が必要)。**条件の消費箇所を固定する**: (d1)–(d3) と
-     診断比較写像は無条件の構成、**(d4)–(d6) は `H_bc` を消費する
-     条件付き theorem** とする(d4–d6 を無条件で採ると、単位元を
+     診断比較写像は incidence 付き入力上の無条件構成、**(d4)–(d6) は
+     `H_bc` を消費する条件付き theorem** とする(d4–d6 を無条件で採ると、単位元を
      保存する (d2) 準同型により source の vanishing witness がその
      まま target へ写り、vanishing 保存が無条件に従って負例
      conjunct と両立しない — 条件の消費箇所を theorem signature と
@@ -542,8 +584,8 @@
      した導出は放電と数えない(proof-use audit の対象)。反射は
      frontier — G-109 effectivity 反射と同じ側)と、`H_bc` を満たさず保存が破れる反例(source 側
      vanishing が実発火し、target 側で消滅しない)を対で構成する。
-     正例・負例とも source 側 vanishing の実発火を **named
-     predicate** で要求する — 同一 fixture 上で
+     正例・負例とも incidence 付き入力上で source 側 vanishing の
+     実発火を **named predicate** で要求する — 同一 fixture 上で
      `∃ c, initialRawDefectCochain data c ≠ 1`(初期 defect の非
      恒等)かつ、それを identity cochain へ移す実 reselection
      witness が存在すること(初期 defect が恒等で identity
@@ -609,8 +651,15 @@
   lax 負例 = authored 相対の canonicity obstruction 独立 theorem)
   と実在 `InReselectionOrbit` 全軌道の非消滅 theorem・軌道非自明性
   witness、
-  診断 base change 作用の構成一式((d1)–(d3) 無条件+(d4)–(d6)
-  条件付きと診断比較写像・named 実発火 predicate)、`H_bc` の定義・
+  `DiagnosticSourceFiberIncidence`((D) の southwest source-fiber
+  入力資格 structure — southwest 特殊化は
+  `BCDiagnosticSourceFiberIncidence`)と source edge 可逆性の導出
+  (fiber isomorphism 構成)・schema no-go theorem
+  (`no_universalBCDiagnosticSourceFiberIncidence` — 主張域限定の
+  範囲根拠)、
+  診断 base change 作用の構成一式(incidence 付き入力上の
+  (d1)–(d3) 無条件+(d4)–(d6) 条件付きと診断比較写像・named 実発火
+  predicate — (d1)–(d3) は実 BC 経路で放電)、`H_bc` の定義・
   資格条項 theorem 群(admissible-square calculus)・checker+非
   定義的 bridge・vanishing 保存定理・保存破れ反例(source 実発火)、
   貼り合わせ閉性 theorem・比較射整合 theorem・引き戻し側合成
@@ -660,10 +709,12 @@
   記録は capstone カード完遂時であり(program context)、本カードの
   report には subcalculus 達成と範囲根拠のみを記す(達成は exact
   底層の極限構造・base change 交換・診断可換性・閉性。量化域 =
-  realization 付き入力(有限 presentable な底射・square)である
+  realization 付き入力(有限 presentable な底射・square)であり、
+  (D) の診断 base change は source-fiber incidence 付き入力上である
   ことも併記する。範囲併記の様式は G-109 の Gr3 記録に従う)。
 - `target premise discharge policy`: 入力(doctrine の射の対、package、
-  base change **前**の診断の図式データ)だけを残せる。引き戻し済み
+  base change **前**の診断の図式データ、(D) の source-fiber
+  incidence)だけを残せる。引き戻し済み
   (transported)図式・診断比較写像の供給は放電と数えない。普遍性、
   退化しない witness、(B) の分岐確定、`H_cart` / `H_bc` の十分性、
   比較射の同型性と破れ、診断 base change 作用、閉性はすべて
@@ -711,10 +762,27 @@
   - `instance 水準の admissible data field(各 fixture の
     edgeStrong・twoCellBase・authored comparator)`:
     `direction-hypothesis`。base change 前入力の資格(役割 = (D) の
-    入力と witness fixture の素材。proof-use = (d3) 導出の入力。
+    入力と witness fixture の素材。proof-use = `edgeStrong`・
+    authored comparator は (d3) 導出の入力、`twoCellBase` は source
+    側診断(canonical comparator 経由の raw defect・named 実発火
+    predicate)の入力 — 実 BC 経路の (d3) 導出では消費しない
+    (incidence の恒等上 verticality が代替。(D) 本文と同一)。
     witness fixture では具体構成で非空性を放電する。結論相当でない
     理由 = base change 後の同種 field はここから供給せず (d3) で
     導出する)。
+  - `DiagnosticSourceFiberIncidence((D) の southwest source-fiber
+    入力資格)`: `direction-hypothesis`。入力資格。southwest 特殊化
+    は `BCDiagnosticSourceFiberIncidence`(schema no-go theorem の
+    量化域)。field は base change 前の source 幾何のみ(全 source
+    package の southwest 載りと全 source edge の恒等上
+    verticality)— edge の可逆性・target 側 field・比較
+    certificate は含まず、可逆性は source `edgeStrong` と
+    verticality から導出する(fiber isomorphism の構成)。任意
+    ordinary interpretation からの普遍生成は主張しない(現行
+    ordinary schema に対する不在は schema no-go theorem
+    `no_universalBCDiagnosticSourceFiberIncidence` が確定する —
+    主張域限定の範囲根拠)。full-domain 化は Gr4 完遂 gate 第一項へ
+    移管する(program context)。
   - `AuthoredBC2CellPresentation(負例 lax fixture の raw field)`:
     `conclusion-equivalent-risk`(入力資格として残すが risk 種別で
     監査する)。schema はカード本文で固定済み(G-106 authored
@@ -781,9 +849,12 @@
     endpoint)上でのみ生成する(full-fiber natural family への
     canonical 拡張は主張しない)。
   - `診断 base change 作用の構成`: `discharge-required`。(d1)–(d3)
-    と診断比較写像は無条件に、**(d4)–(d6) は `H_bc` 消費の条件付き
-    theorem として**、G-101 普遍性と (A)–(C) から生成する(条件の
-    消費箇所は theorem signature に固定する)。引き戻し済み図式の
+    と診断比較写像は incidence 付き入力上で無条件に、**(d4)–(d6) は
+    `H_bc` 消費の条件付き theorem として**、G-101 普遍性と (A)–(C)
+    から生成する(条件の消費箇所は theorem signature に固定する。
+    (d1)–(d3) は pointed square が生成する実 BC 経路で放電し、
+    square を消費しない汎用 total-category 作用の供給による放電は
+    数えない)。引き戻し済み図式の
     入力供給、および base change 後の `edgeStrong` / `twoCellBase` /
     authored comparator の再供給は放電と数えない(authored field の
     資格は base change 前の入力 presentation に限る — G-106 の
@@ -813,7 +884,12 @@
   functor / compositor 経路は G-109 core pseudofunctor API を消費し、
   G-101 からの再建はしない(経路の一意化)。
   authored comparator / lax datum は base change 前の入力に限り、
-  base change 後の comparator は生成する。有限 presentation は
+  base change 後の comparator は生成する。(D) の (d1)–(d3) は
+  pointed square が生成する実 BC 経路(direct / via-base core-fiber
+  functor)で放電し、square を消費しない汎用 total-category 作用の
+  供給・relabel は禁止。source-fiber incidence は base change 前の
+  source 幾何のみを記録する(edge 可逆性・target field・比較
+  certificate の埋め込みは禁止)。有限 presentation は
   `toSemantic` realization を持ち、condition bit・結論 certificate
   を含まない。主張の量化域は realization 付き入力に限る(像外の
   semantic 入力への拡張主張をしない)。条件言語の許容定数・有限
