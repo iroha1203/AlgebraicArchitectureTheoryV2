@@ -316,17 +316,6 @@ theorem finiteAxisFold_initialRawDefect_second_available :
   rw [finiteAxisFold_toTransportData, finiteAxisFold_initialRawDefect_second]
   exact finiteAxisFoldSwap_available
 
-/-- A functor naturally isomorphic to identity reflects isomorphisms. -/
-private theorem isIso_of_map_isIso_of_natIso_id
-    {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
-    (unitor : functor ≅ 𝟭 C) {source target : C}
-    (hom : source ⟶ target) [IsIso (functor.map hom)] : IsIso hom := by
-  letI : IsIso (unitor.hom.app source ≫ hom) := by
-    change IsIso (unitor.hom.app source ≫ (𝟭 C).map hom)
-    rw [← unitor.hom.naturality hom]
-    infer_instance
-  exact IsIso.of_isIso_comp_left (unitor.hom.app source) hom
-
 /-- The transported fold at the nonidentity face remains noninvertible. -/
 theorem finiteAxisFold_viaBaseFold_second_not_isIso :
     ¬ IsIso
@@ -351,14 +340,14 @@ theorem finiteAxisFold_viaBaseFold_second_not_isIso :
         (Discrete.mk DoubleDiamondTwoCell.second))
     infer_instance
   letI : IsIso transported :=
-    isIso_of_map_isIso_of_natIso_id
+    isIso_of_map_isIso_of_natIso
       (selectedCoreFiberReindexFunctor
         (typedRealizableHom
           (idTypedPresentation finiteAuthoredSupportInstance)))
       (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
       transported
   letI : IsIso fold :=
-    isIso_of_map_isIso_of_natIso_id
+    isIso_of_map_isIso_of_natIso
       (coreFiberTransportFunctor
         (𝟙 finiteAuthoredSupportInstance.toSemantic))
       (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic) fold

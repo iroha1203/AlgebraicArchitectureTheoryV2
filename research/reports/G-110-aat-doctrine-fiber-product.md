@@ -13,6 +13,113 @@
 
 ## Cycle ledger
 
+### Cycle 64 — diagnostic-generated object-collapse comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 64
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 4daa69a7e5ec277709468c79aeaa9d62ab8402b8
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 63 constructs the genuine non-twist exact object erasure but does not generate it from the authored diagnostic or place it on the public routes
+  proof_dag_predecessors:
+    - finiteAxisFoldEraseTotal
+    - finiteAxisFoldEraseTotal_not_isIso
+    - initialRawDefectCochain
+    - authoredSupportCanonicalMate
+  proof_obligation: make the reviewed object erasure an output of the fixed G-106 raw diagnostic and bridge that selected factor into the public direct/via-base authored-support routes
+  selection_reason: this is the shortest construction from the reviewed non-twist factor to the fixed K2 route while consuming the actual authored raw cochain rather than accepting a firing certificate
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapse.lean
+    - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+  risks:
+    - replacing diagnostic generation by a caller-supplied branch certificate
+    - losing the factor under bottom transport and right reindexing
+    - promoting a fixed-support comparison to the public all-input K2 producer
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: raw diagnostic equality with identity now selects identity, while raw nonidentity selects the reviewed exact object erasure. The initial lax second face computes to the erasure and is noninvertible. The selected southwest factor is transported along the actual bottom and right functors to an endomorphism of the public via-base route; the two identity unitors reflect IsIso, so every firing via-base factor remains noninvertible. That factor is composed with the public canonical mate to form a component-generated authored-support comparison. Every genuine reselection cochain has a nonidentity component because the fixed datum is not coherentizable; the generated non-twist comparison therefore differs from the canonical mate throughout the full G-106 reselection orbit.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticObjectCollapse.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - finiteDiagnosticObjectCollapseTotalAtCochain
+    - finiteDiagnosticObjectCollapseTotalAtCochain_not_isIso
+    - finiteInitialDiagnosticObjectCollapse_second_eq_erase
+    - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain
+    - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_ne_id
+    - finiteViaBaseDiagnosticObjectCollapseComponentAtCochain_not_isIso
+    - finiteDiagnosticObjectCollapseComparisonAtCochain
+    - finiteDiagnosticObjectCollapseComparisonAtCochain_identity_eq_canonical
+    - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+    - finiteGeneratedDiagnosticObjectCollapseComparison_second_ne_canonical
+  claim_mapping:
+    theorem_names:
+      - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+    source_labels:
+      - target proof strategy K2 non-twist factor route
+      - target route integrity and all-orbit gates
+    conjuncts:
+      - authored diagnostic generation -> finiteDiagnosticObjectCollapseTotalAtCochain
+      - non-twist noninvertibility -> finiteInitialDiagnosticObjectCollapse_second_not_isIso
+      - public route bridge -> finiteDiagnosticObjectCollapseComparisonAtCochain
+      - full orbit persistence -> finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+    undischarged_assumptions:
+      - extension from the fixed finite datum to the all-input AuthoredComparisonProducerSignature
+      - presentation-replacement compatibility of the object-collapse comparison
+      - identification with the fixed public MateCoherentRel
+    acceptance_point: the fixed authored diagnostic now generates the reviewed non-twist factor and a public-route comparison with full-orbit mismatch; it is not yet the all-input K2 producer
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - branch selection is computed from the actual raw cochain component
+      - nonidentity selects the internally constructed exact erasure without a collapse or firing certificate
+      - bottom transport and right reindexing place the factor on the public via-base route
+      - identity unitors reflect IsIso and prove that a firing transported factor remains noninvertible
+      - noncoherentizability supplies a firing component for every genuine reselection cochain
+    remaining:
+      - define the all-input public producer or an input-derived package-generic non-twist construction
+      - prove finite presentation replacement for the selected object-collapse comparison
+      - connect the reviewed comparison to the fixed public MateCoherentRel
+  certificate_provenance:
+    discharged:
+      - selector consumes cochain cell equality against the independent identity cochain
+      - the selected nonidentity branch is the reviewed Cycle 63 construction
+    unresolved:
+      - all-input producer provenance
+  proof_use:
+    used:
+      - initialRawDefectCochain and the fixed authored comparator computation
+      - finiteAxisFoldEraseTotal and its concrete object-map noninjectivity
+      - bottom transport, right reindexing, and their identity unitors
+      - finiteAxisFold_not_coherentizable and the raw-cochain coherence equivalence
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass for the fixed finite diagnostic and public-route bridge; all-input producer remains unconstructed
+  target_fitting: none-found
+  vacuity: none-found; identity cochain gives the positive predicate instance and every orbit cochain gives a negative instance
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - focused BCAuthoredDiagnosticObjectCollapse.lean: pass; 24 namespace declarations, standard axioms only
+    - shared identity-unitor reflection API migration: six focused files pass; standard axioms only
+    - targeted changed-module set build including BCAuthoredDiagnosticObjectCollapse and migrated witnesses: pass; 4067 jobs
+  blocking_findings: []
+  next_obligation: generalize the diagnostic-selected non-twist comparison across presentation replacement and connect it to the all-input public K2 producer/relation without a supplied collapse
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, construct presentation-replacement compatibility and the all-input public K2 producer bridge
+```
+
 ### Cycle 63 — exact object-collapse endomorphism
 
 ```yaml

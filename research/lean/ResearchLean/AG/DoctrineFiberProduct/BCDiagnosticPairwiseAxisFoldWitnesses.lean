@@ -161,17 +161,6 @@ theorem finiteAxisFold_input_pairwiseAvailable
   simpa only [finiteAxisFold_toTransportData] using
     finiteAxisFold_pairwiseAvailable reselection
 
-/-- A functor naturally isomorphic to identity reflects isomorphisms. -/
-private theorem isIso_of_map_isIso_of_natIso_id_pairwise
-    {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
-    (unitor : functor ≅ 𝟭 C) {source target : C}
-    (hom : source ⟶ target) [IsIso (functor.map hom)] : IsIso hom := by
-  letI : IsIso (unitor.hom.app source ≫ hom) := by
-    change IsIso (unitor.hom.app source ≫ (𝟭 C).map hom)
-    rw [← unitor.hom.naturality hom]
-    infer_instance
-  exact IsIso.of_isIso_comp_left (unitor.hom.app source) hom
-
 /-- The via-base pairwise fold remains noninvertible at every coordinate. -/
 theorem finiteAxisFold_viaBasePairwise_not_isIso
     (reselection : EdgeReselection
@@ -205,14 +194,14 @@ theorem finiteAxisFold_viaBasePairwise_not_isIso
         (Discrete.mk DoubleDiamondTwoCell.second))
     infer_instance
   letI : IsIso transported :=
-    isIso_of_map_isIso_of_natIso_id_pairwise
+    isIso_of_map_isIso_of_natIso
       (selectedCoreFiberReindexFunctor
         (typedRealizableHom
           (idTypedPresentation finiteAuthoredSupportInstance)))
       (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
       transported
   letI : IsIso fold :=
-    isIso_of_map_isIso_of_natIso_id_pairwise
+    isIso_of_map_isIso_of_natIso
       (coreFiberTransportFunctor
         (𝟙 finiteAuthoredSupportInstance.toSemantic))
       (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic) fold

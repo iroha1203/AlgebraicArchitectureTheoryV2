@@ -39,17 +39,6 @@ theorem finiteAxisFold_generatedUnified_not_isIso
     DoubleDiamondTwoCell.second
     (Or.inr (finiteAxisFold_input_pairwiseAvailable reselection))
 
-/-- A functor naturally isomorphic to identity reflects isomorphisms. -/
-private theorem isIso_of_map_isIso_of_natIso_id_authoredDiagnostic
-    {C : Type u₁} [Category.{v₁} C] (functor : C ⥤ C)
-    (unitor : functor ≅ 𝟭 C) {source target : C}
-    (hom : source ⟶ target) [IsIso (functor.map hom)] : IsIso hom := by
-  letI : IsIso (unitor.hom.app source ≫ hom) := by
-    change IsIso (unitor.hom.app source ≫ (𝟭 C).map hom)
-    rw [← unitor.hom.naturality hom]
-    infer_instance
-  exact IsIso.of_isIso_comp_left (unitor.hom.app source) hom
-
 /-- The via-base image of the selected unified fold stays noninvertible. -/
 theorem finiteAxisFold_viaBaseUnified_not_isIso
     (reselection : EdgeReselection
@@ -83,14 +72,14 @@ theorem finiteAxisFold_viaBaseUnified_not_isIso
         (Discrete.mk DoubleDiamondTwoCell.second))
     infer_instance
   letI : IsIso transported :=
-    isIso_of_map_isIso_of_natIso_id_authoredDiagnostic
+    isIso_of_map_isIso_of_natIso
       (selectedCoreFiberReindexFunctor
         (typedRealizableHom
           (idTypedPresentation finiteAuthoredSupportInstance)))
       (selectedCoreFiberReindexUnitor finiteAuthoredSupportInstance).symm
       transported
   letI : IsIso fold :=
-    isIso_of_map_isIso_of_natIso_id_authoredDiagnostic
+    isIso_of_map_isIso_of_natIso
       (coreFiberTransportFunctor
         (𝟙 finiteAuthoredSupportInstance.toSemantic))
       (coreFiberUnitor finiteAuthoredSupportInstance.toSemantic) fold
