@@ -13,6 +13,64 @@
 
 ## Cycle ledger
 
+### Cycle 56 — square/route provenance separation for the canonical mate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 56
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: cd1954e60543121354b8ee65f4332eaea235ea4b
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycle 55 presentation-independent covariant square comparison and merged PR 4096
+  proof_obligation: separate square provenance from selected-route provenance in the generated mate and identify the exact remaining compatibility needed for full presentation replacement
+  selection_reason: Cycle 55 proves that square provenance is irrelevant; exposing both provenance roles in one mate distinguishes that discharged layer from adjunction unit/counit provenance
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: bcSemanticSelectedMate accepts independently generated square and route provenances over one literal semantic input. Its value is independent of square provenance and reduces to bcProvenanceCanonicalMate when both roles use one provenance. The existing selected rebased mate also reduces to the canonical mate on self-replacement. coreTransportReindexUnit_provenanceCompatibility and coreTransportReindexCounit_provenanceCompatibility construct the two generated adjunction laws under cartRealizationProvenanceComparison by cartesian and cocartesian uniqueness. Thus the remaining non-self comparison is the mate naturality square assembled from proved compatibility laws, not a missing premise.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPresentationReplacement.lean
+  evidence:
+    - bcSemanticSelectedMate
+    - bcSemanticSelectedMate_reference_independent
+    - bcSemanticSelectedMate_self
+    - coreTransportReindexUnit_provenanceCompatibility
+    - coreTransportReindexCounit_provenanceCompatibility
+    - bcSelectedRebasedReplacementMate_self
+audits:
+  premise_delta:
+    discharged:
+      - square provenance independence at the mateEquiv input
+      - normalization of both semantic and rebased mates on self-replacement
+      - generated unit compatibility under cartRealizationProvenanceComparison
+      - generated counit compatibility under cartRealizationProvenanceComparison
+    remaining:
+      - assemble the semantic selected mate's public comparison square from the generated unit and counit compatibility laws
+      - use those laws to prove bcSelectedRebasedReplacementMate reference replacement = bcProvenanceCanonicalMate replacement
+  certificate_provenance:
+    discharged:
+      - both adjunctions are generated from the route provenance
+      - the square comparison is generated from the square provenance
+  proof_use:
+    used:
+      - Cycle 55 square comparison provenance equality
+      - reflexivity of generated cartesian provenance comparisons
+      - the Cycle 53 public mate comparison square
+  route_integrity: the separation is inside mateEquiv itself; it introduces no caller-supplied mate, unit, counit, or comparison certificate
+  vacuity: none-found; the self theorem is general and Cycle 54 provides a raw-distinct pair for the remaining non-self law
+  validation_refs:
+    - focused BCPresentationReplacement.lean: pass; 64 namespace declarations, standard axioms only
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: assemble the semantic selected mate public comparison square, cancel the direct-route comparison against the existing rebased square, and propagate the resulting canonical mate equality to authored support
+```
+
 ### Cycle 55 — presentation-independent covariant BC square comparison
 
 ```yaml
