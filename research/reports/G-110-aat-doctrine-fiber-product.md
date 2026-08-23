@@ -13,6 +13,78 @@
 
 ## Cycle ledger
 
+### Cycle 60 — public authored comparison, orbit bridge, and MateCoherentRel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 60
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 08b4ef716c3135f07346d3e8734b3cb298e893a0
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Cycles 46 and 52--59 provide the arbitrary-cochain direct diagnostic construction, canonical provenance route, actual presentation replacement, and a nonempty raw-distinct firing fixture
+  proof_obligation: close the public K2 interface by naming the G-106-generated authored comparison and fixed MateCoherentRel, connect its initial specialization to the full reselection-orbit equation, prove the strict/lax pair and nontrivial orbit, and prove relation-level presentation invariance
+  selection_reason: the complete proof DAG now supplies every law needed to expose the fixed construction as a public producer contract rather than relying on a caller comparison, fold, equality, or presentation certificate
+  expected_result_type: proof-obligation-discharged
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: authoredBCComparisonAtCochain is the direct G-106 cochain-indexed construction. authoredBCComparison fixes its initial raw-cochain specialization, and MateCoherentRel applies the F0 equation scaffold to that producer and the generated canonical mate. mateCoherentRel_iff_initial is the exact public-to-orbit bridge. The fixed lax datum fails the same construction equation at every point of a nontrivial InReselectionOrbit and therefore fails the public relation; the strict datum satisfies it. authoredBCComparison_replacement and the canonical replacement square yield mateCoherentRel_replacePresentation_iff by cancellation through the generated route isomorphisms. The relation-level theorem fires on the nonempty raw-distinct padded strict fixture.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredPublicMateCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - authoredBCComparisonAtCochain
+    - authoredBCComparison
+    - MateCoherentAtCochain
+    - MateCoherentRel
+    - authoredBCComparison_uses_authoredComparator
+    - mateCoherentRel_iff_initial
+    - finiteAxisFold_not_mateCoherentAtCochain_on_orbit
+    - finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+    - finiteAuthoredBCDatumSquare_mateCoherentRel
+    - finiteAxisFold_mateCoherentRel_orbit_nontrivial
+    - authoredBCComparison_replacement
+    - mateCoherentRel_replacePresentation_iff
+    - finiteAuthored_authoredBCComparison_replacement_nonvacuous
+    - finitePaddedAuthoredBCDatumSquare_mateCoherentRel
+audits:
+  premise_delta:
+    discharged:
+      - K2 named authored-table producer and fixed public MateCoherentRel
+      - exact initial-to-full-orbit construction bridge
+      - strict positive, lax negative, and nontrivial full-orbit witness
+      - producer- and relation-level finite-presentation replacement
+    remaining:
+      - fixed-ledger arbitrary-target FiniteModelLift
+      - K3 diagnostic base-change action, qualified H_bc package, and positive/negative vanishing pair
+      - K4 pullback-square pasting and G-106/G-109 coherence bridge
+      - cumulative final assembly and completion review
+  certificate_provenance:
+    discharged:
+      - the producer consumes the authored table through initialRawDefectCochain and uses the fixed direct-first/same-boundary-pairwise generator; all route comparisons come from realization provenance
+  proof_use:
+    used:
+      - actual input.authored.comparator in the noncommutative raw defect
+      - actual raw cochain at every orbit coordinate
+      - internally generated direct or typed same-boundary pairwise diagnostic fold
+      - generated canonical mate, presentation route isomorphisms, and their cancellation laws
+  structure_field_escape: none-found
+  route_integrity: no comparison, fold witness, equality, expected comparison, compatibility, or noninvertibility certificate is accepted from the caller; the public contract fixes the producer before applying it to the strict/lax fixtures
+  target_fitting: the public interface exposes the already fixed uniform generator and its complete laws; the finite witnesses only instantiate that producer
+  vacuity: none-found; the lax orbit is nontrivial and the raw-distinct strict replacement fires the relation-level theorem
+  validation_refs:
+    - focused BCAuthoredPublicMateCoherence.lean: pass; 17 namespace declarations, standard axioms only
+    - exact target module build: pass; 4083 jobs
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, discharge arbitrary-target FiniteModelLift or advance the next fixed K3 diagnostic base-change obligation according to the K-ledger dependency order
+```
+
 ### Cycle 59 — nonvacuous authored diagnostic replacement witness
 
 ```yaml
