@@ -13,6 +13,71 @@
 
 ## Cycle ledger
 
+### Cycle 44 — diagnostic axis-orbit fold
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 44
+goal_blob_sha: 4b497352e586ed85c36fbcf4ea80730415f70040
+goal_sha256: e6891d264ae8446341ee5b4fa4e73542b341c6551de70cb65cfda995a7b72e34
+base_oid: 5893cca6da0ab6771c609e1b73a92faf325de753
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 Cycle 43 merge synchronization comment 5383944560
+  proof_dag_predecessors:
+    - F0b2b raw AuthoredBCDatumSquare and exact producer signatures
+    - G-106 initialRawDefectCochain as a PackageFiberAut-valued diagnostic action
+    - Cycle 40 exact authored-support routes and canonical mate
+    - Cycle 43 theorem-level rejection of all universal-factor routes that preserve the raw automorphism
+  proof_obligation: construct from a diagnostic PackageFiberAut value a genuinely noninvertible endomorphism by folding one moved signature axis onto its image when the automorphism fixes architecture objects; prove the fold laws, identity specialization, and noninvertibility from its generated axis graph; transport that fold into a cross-route authored comparison without accepting an arbitrary endomorphism or comparison certificate
+  selection_reason: Cycle 43 proves that functorially transporting the raw automorphism preserves the forbidden twist class. The shortest route out of that class is to generate a noninvertible map before BC transport. SignedExactCoreReadingHom permits a noninjective axisMap when coordinate and selected-status laws are generated from the same object-fixing automorphism.
+  expected_result_type: proof-checkpoint
+  risks:
+    - arbitrary choice of a noninvertible endomorphism unrelated to the diagnostic action
+    - failure of the dependent coordinate law after folding a moved axis
+    - fold existence encoded as a caller certificate rather than derived from a concrete lax fixture
+    - transport functors failing to reflect the fold's noninvertibility
+    - another theorem-level normalization to an automorphism twist
+    - target-fitting branch on a fixture identity
+  unchecked:
+    - whether every reselection in a fixed lax orbit retains an object-fixing moved-axis witness
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: AxisFoldWitness now generates a noninjective signature-axis map, its dependent coordinate equivalence and coordinate law, the complete SignedExactCoreReadingHom, and a PackageTotalHom directly from one object-fixing moved-axis diagnostic automorphism. packageTotalHom_axisMap_injective_of_isIso and total_not_isIso prove that this generated fold cannot be an automorphism. generatedAxisFoldTotal selects such an intrinsic witness when it exists and otherwise returns identity; generatedAxisFoldTotal_one proves strict specialization without a caller endomorphism. authoredDiagnosticAxisFoldComponent sends the generated fold into the southwest fiber, authoredDiagnosticAxisFoldLeftFactor generates the left factor by cocartesian universality, and authoredDiagnosticAxisFoldComparison assembles the exact authored-support family. Its normalization is canonical mate followed by the transported noninvertible fold, not an automorphism twist. The finite double-diamond fixture has identity edge lifts and identity/swap authored faces on one decoded three-axis package. Its second raw defect is the adjacent swap, the generated via-base fold remains noninvertible through both identity-route unitors, the authored component differs from the canonical mate, and the lax datum refutes DiagnosticAxisFoldMateCoherentRel. The existing strict authored square fires the same relation. G-106 double-diamond uniqueness also proves no edge reselection can make both faces coherent. The remaining all-orbit gap is now exact: a single-cell AxisFoldWitness requires objectMap=id, which arbitrary reselection need not preserve; Cycle 45 must form a pairwise raw-defect quotient that cancels the common reselection action before folding.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFold.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldComparison.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticAxisFoldComparisonWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - PackageFiberAut.AxisFoldWitness
+    - PackageFiberAut.AxisFoldWitness.total_not_isIso
+    - PackageFiberAut.generatedAxisFoldTotal_not_isIso
+    - PackageFiberAut.generatedAxisFoldTotal_one
+    - authoredDiagnosticAxisFoldLeftFactor_fac
+    - authoredDiagnosticAxisFoldLeftFactor_eq_counit_comp_fold
+    - authoredDiagnosticAxisFoldComparisonComponent_eq_canonical_comp_fold
+    - finiteAxisFoldSwap_generated_not_isIso
+    - finiteAxisFold_not_coherentizable
+    - finiteAxisFold_initialRawDefect_second
+    - finiteAxisFold_viaBaseFold_second_not_isIso
+    - finiteAxisFoldBCDatumSquare_not_mateCoherent
+    - finiteAuthoredBCDatumSquare_diagnosticAxisFoldMateCoherent
+  validation:
+    - focused BCDiagnosticAxisFold.lean: pass; 35 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldWitnesses.lean: pass; 3 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldComparison.lean: pass; 17 namespace declarations, standard axioms only
+    - focused BCDiagnosticAxisFoldComparisonWitnesses.lean: pass; 33 namespace declarations, standard axioms only
+    - targeted lake builds only; no Research aggregate or full build was run
+    - git diff --check: pass
+  stop_condition: none
+  next_obligation: merge the Cycle 44 proof-checkpoint after standard review, then construct the double-diamond pairwise raw-defect quotient that cancels the common reselection component and prove the generated mismatch on every InReselectionOrbit representative
+```
+
 ### Cycle 43 — universal-factorization anti-wrapper refutation
 
 ```yaml
