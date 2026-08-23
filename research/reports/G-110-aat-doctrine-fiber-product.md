@@ -93,7 +93,7 @@ audits:
       - K2 public producer/relation/orbit bridge, actual presentation replacement, FiniteModelLift, K3, K4, and final assembly
   certificate_provenance:
     discharged:
-      - no comparison, endomorphism, fold, equality, or noninvertibility certificate is accepted from the caller
+      - beyond the fixed authored comparator table, no additional comparison, diagnostic/fold endomorphism, fold, equality, or noninvertibility certificate is accepted from the caller
       - raw factor comes from the supplied DefectCochain and unified fold from direct or same-boundary pairwise availability
     unresolved:
       - universal provenance forcing the K2 authored comparison
@@ -122,7 +122,7 @@ audits:
     - Math B Major: full-orbit theorem is the cochain-indexed extension rather than the initial auxiliary relation; resolved by correcting claims and retaining the public orbit bridge as open
   next_obligation: construct the authored-table induced comparison through a universal route and an exact public-relation orbit bridge; presentation replacement remains subsequent
 review:
-  reviewed_head: f08cc2e518c69df35c67475d5fdf607f5f57eadf
+  initial_reviewed_head: f08cc2e518c69df35c67475d5fdf607f5f57eadf
   initial_round:
     math_a: no central findings; two report precision issues
     math_b: Critical target-fitting postfactor and Major public-relation orbit gap
@@ -131,10 +131,18 @@ review:
   core_fix:
     - renamed the named producer and relation as generated auxiliary diagnostics and explicitly stated that they are not K2's fixed public MateCoherentRel
     - removed all K2 discharge claims and distinguished initial auxiliary relation failure from full-orbit cochain-indexed equation failure
-  post_core_fix_round: pending
-  status: pending-post-core-fix-rerun
+  post_core_fix_reviewed_head: 70b50c51ac72e85b1353623311343bab0ef99f23
+  post_core_fix_round:
+    math_a: no findings
+    math_b: no central findings; one caller-endomorphism wording issue fixed in the report-only tail
+    lean_a: no findings
+    lean_b: no findings
+  integrated_verdict: pass for the auxiliary generated-diagnostic proof-checkpoint only; K2 public producer/relation/orbit bridge, presentation replacement, FiniteModelLift, K3, K4, final assembly, and G-110 completion are not accepted
+  ci: post-core-fix head passed 7 of 7 PR checks
+  report_tail_audit: pending
+  status: pass-pending-report-tail-audit
 stop_condition: none
-next_obligation: rerun the four-lane review at the repaired head, then merge the auxiliary checkpoint if accepted and construct the universal K2 authored comparison route
+next_obligation: audit the report-only review tail, merge the auxiliary checkpoint, then construct the universal K2 authored comparison route
 ```
 
 ### Cycle 45 — pairwise diagnostic quotient on the full reselection orbit

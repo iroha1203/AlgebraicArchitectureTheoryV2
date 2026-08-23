@@ -9,7 +9,8 @@ coordinate.  Fold selection is direct-first: a moved axis of the component is
 used when available, then the same-boundary pairwise diagnostic is tried, and
 identity is the final fallback.
 
-No comparison, endomorphism, fold witness, expected equality, or
+Beyond the fixed authored comparator table, no additional comparison,
+diagnostic/fold endomorphism, fold witness, expected equality, or
 noninvertibility certificate is accepted from a caller.
 -/
 
