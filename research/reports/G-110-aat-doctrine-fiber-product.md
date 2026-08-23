@@ -13,7 +13,7 @@
 
 ## Cycle ledger
 
-### Cycle 47 — residual-isomorphism classification and GOAL-defect gate
+### Cycle 47 — residual-isomorphism classification and concrete lax firing
 
 ```yaml
 ledger_type: target_cycle_result
@@ -31,42 +31,47 @@ selection:
     - Cycle 40 invertible authored-support canonical mate
     - Cycle 43 exact universal-factorization normalization to canonical mate followed by transported raw defect
     - Cycles 44-46 generated non-IsIso diagnostic folds and review rejection of their promotion to K2
-  proof_obligation: classify the exact invertible universal/raw-factor route as a canonical post-isomorphism twist; determine whether the fixed GOAL supplies a formal admissibility rule capable of selecting a different universally induced producer without target-fitting; distinguish a scoped route no-go from global target refutation
-  selection_reason: independent constructive and no-go searches agree that omitting the raw value returns the canonical mate, inserting the raw PackageFiberAut into the exact universal equation normalizes to a forbidden automorphism twist, and appending a non-IsIso collapse succeeds only after an unforced choice. The bare F0b2b producer function type contains no K2AdmissibleProducer predicate or free-construction syntax that distinguishes a legitimate fourth route.
-  expected_result_type: goal-defect-candidate
+  proof_obligation: classify the exact invertible universal/raw-factor route as a canonical post-isomorphism twist; fire that classification on the fixed lax witness without assuming the mismatch; distinguish this scoped route obstruction from the still-open universal quotient/reflection route
+  selection_reason: independent constructive and no-go searches agree that omitting the raw value returns the canonical mate, inserting the raw PackageFiberAut into the exact universal equation normalizes to a forbidden automorphism twist, and the previously generated non-IsIso folds have not yet been proved universally forced. This cycle fixes the exact invertible route boundary without treating absence of a Lean admissibility predicate as a defect in the fixed GOAL acceptance contract.
+  expected_result_type: proof-checkpoint
   risks:
     - overstating a route-class obstruction as target-refuted
     - treating every IsIso comparison as forbidden without requiring an actual mismatch/nonidentity residual
     - inventing a new admissibility predicate and thereby revising the fixed schema
     - using the GOAL's prose gate as though it were a Lean-quantified construction language
   unchecked:
-    - independent formal review of the goal-defect classification and stop-policy application
+    - whether a universal quotient/reflection can be internally generated from the raw orbit and inserted into the existing cocartesian assembly
 result:
-  proposed_result_type: goal-defect-candidate
-  proof_obligation_delta: IsCanonicalPostIsoTwist classifies two parallel components by a target automorphism residual. isCanonicalPostIsoTwist_of_isIso proves that any invertible authored component against an invertible canonical component has residual canonical⁻¹ followed by authored. hasNontrivialCanonicalPostIsoResidual_of_ne proves that a genuine mismatch yields a nonidentity residual. The Cycle 43 initial raw component is proved IsIso in the southwest fiber and remains IsIso after bottom transport and right reindexing. Its complete universal-factorization component is therefore IsIso, and authoredFactorizationComparisonComponent_has_raw_residual identifies the exact residual as the transported initial raw defect. Consequently every Cycle 43 component lies in the canonical post-isomorphism route class, and any mismatch in that exact route is a nontrivial canonical post-twist forbidden by the fixed acceptance gate. This does not refute every inhabitant of AuthoredComparisonProducerSignature. That signature is only a function type: it admits authored-ignoring and arbitrary postfactor definitions and has no formal predicate or syntax for universal provenance, anti-twist, anti-postfactor, or replacement invariance. A global no-go theorem cannot be stated without adding a new admissibility surface, which would revise the fixed F0 schema. Under the fixed failure policy this is evidence for goal-defect, not target-refuted.
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: IsCanonicalPostIsoTwist classifies two parallel components by a target automorphism residual. isCanonicalPostIsoTwist_of_isIso proves existence, and canonicalPostIsoResidual_unique proves cancellation recovers the residual uniquely. hasNontrivialCanonicalPostIsoResidual_of_ne proves that a genuine mismatch yields a nonidentity residual. The Cycle 43 initial raw component is proved IsIso in the southwest fiber and remains IsIso after bottom transport and right reindexing. Its complete universal-factorization component is therefore IsIso, and authoredFactorizationComparisonComponent_has_raw_residual identifies the exact residual as the transported initial raw defect. The finite lax double diamond now discharges the previously hypothetical mismatch: finiteAxisFold_viaBaseRawDefect_second_ne_id reflects identity equality through the two identity-equivalent functors and reads the adjacent axis swap; finiteAxisFold_factorizationComparison_second_ne_canonical cancels the canonical mate; and finiteAxisFold_factorizationComparison_second_has_nontrivial_residual fires the obstruction. This excludes the exact Cycle 43 invertible route on the fixed lax witness. It does not exclude a non-IsIso universal quotient/reflection generated from the raw orbit, and therefore does not satisfy a fixed-GOAL stop condition.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonNoGo.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredComparisonNoGoWitnesses.lean
     - ResearchLean/AG/DoctrineFiberProduct.lean
   evidence:
     - IsCanonicalPostIsoTwist
     - HasNontrivialCanonicalPostIsoResidual
     - isCanonicalPostIsoTwist_of_isIso
     - hasNontrivialCanonicalPostIsoResidual_of_ne
+    - canonicalPostIsoResidual_unique
     - authoredInitialRawDefectComponent_isIso
     - authoredViaBaseRawDefectComponent_isIso
     - authoredFactorizationComparisonComponent_isIso
     - authoredFactorizationComparisonComponent_has_raw_residual
     - authoredFactorizationComparisonComponent_isCanonicalPostIsoTwist
     - authoredFactorizationComparisonComponent_has_nontrivial_residual_of_ne
+    - finiteAxisFold_viaBaseRawDefect_second_ne_id
+    - finiteAxisFold_factorizationComparison_second_ne_canonical
+    - finiteAxisFold_factorizationComparison_second_has_nontrivial_residual
   claim_mapping:
     generic_classification: invertible parallel components differ by a target automorphism residual
-    nontriviality: component inequality makes the residual nonidentity
+    nontriviality: component inequality makes the residual nonidentity, and the fixed lax witness supplies that inequality concretely
     exact_route: the Cycle 43 universal-factorization residual is exactly the transported initial raw defect
     route_no_go: a lax mismatch from the exact Cycle 43 route is a forbidden nontrivial canonical post-twist
     global_boundary: no theorem quantifies all AuthoredComparisonProducerSignature inhabitants or refutes K2 globally
-    schema_defect: no formal admissibility surface distinguishes universal induced comparison from authored-ignoring or target-fitted producers
-    acceptance_point: independent review must decide whether this under-specification satisfies the fixed goal-defect stop condition; no GOAL change is made automatically
+    remaining_route: a schema-preserving non-IsIso universal quotient/reflection remains neither constructed nor refuted
+    acceptance_point: the fixed GOAL prose already supplies the route-integrity and anti-target-fitting acceptance contract; no GOAL change is proposed
     port_status: unported
 audits:
   premise_delta:
@@ -74,8 +79,9 @@ audits:
       - canonical IsIso -> Cycle 40 authored-support canonical-mate instance
       - raw residual IsIso -> PackageFiberAut inverse, fiber IsIso construction, and functorial IsIso preservation
       - Cycle 43 exact residual -> reviewed canonical-comp-viaRawDefect normalization
+      - concrete lax mismatch -> adjacent finite-axis swap reflected through transport and reindex functors naturally isomorphic to identity
     remaining:
-      - no fixed formal K2 admissibility predicate exists to quantify the intended producer class
+      - construct a universal quotient/reflection from the raw orbit, or prove its absence for the current data
   certificate_provenance:
     discharged:
       - residual is constructed as canonical inverse followed by authored comparison, not caller-supplied
@@ -85,26 +91,28 @@ audits:
   proof_use:
     used:
       - IsIso instances of canonical and authored components
-      - component inequality for nonidentity residual
+      - concrete finite-axis component inequality for nonidentity residual
       - initialRawDefectCochain and PackageFiberAut inverse data
       - Cycle 43 normalization theorem
     unused: []
   structure_field_escape: none-found for the scoped classification
   route_integrity: pass for the exact route-class no-go; no global K2 refutation claimed
   target_fitting: no new producer or collapse is constructed
-  vacuity: generic theorem is fired on the exact Cycle 43 component; mismatch remains an explicit hypothesis in the nontrivial-residual theorem
+  vacuity: generic theorem is fired on the exact Cycle 43 component and the fixed lax witness discharges its mismatch hypothesis
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: candidate goal-defect only; subject to independent review
+  goal_or_report_reinterpretation: none; initial review rejected the proposed goal-defect inference and the ledger was corrected to proof-checkpoint
   validation_refs:
-    - focused BCAuthoredComparisonNoGo.lean: pass; 10 namespace declarations, standard axioms only
-    - targeted build for exactly BCAuthoredComparisonNoGo: pass; no Research aggregate or full build
-    - repository scans: pending before PR
-  blocking_findings: []
-  next_obligation: create and review the Cycle 47 blocker-classification PR; if the goal-defect classification is accepted, merge, synchronize the tracker, and stop without weakening the fixed GOAL
+    - focused BCAuthoredComparisonNoGo.lean: pass; 11 namespace declarations, standard axioms only
+    - focused BCAuthoredComparisonNoGoWitnesses.lean: pass; 4 namespace declarations, standard axioms only
+    - targeted build for exactly BCAuthoredComparisonNoGoWitnesses (including its direct dependency BCAuthoredComparisonNoGo): pass; no Research aggregate or full build
+    - repository scans: pass after the central review fix
+  blocking_findings:
+    - initial Math A, Math B, and Lean B review rejected the goal-defect stop inference because the theorem excludes only the invertible Cycle 43 route and the fixed GOAL prose already defines admissibility gates
+  next_obligation: review and merge this scoped checkpoint, then construct the schema-preserving universal quotient/reflection route or prove a corresponding current-data no-go theorem
 review:
-  status: pending
-stop_condition_candidate: goal-defect
-next_obligation: run standard review and apply the fixed GOAL failure policy
+  status: central fix applied; one full four-lane rerun required
+stop_condition_candidate: none
+next_obligation: complete the one allowed full review rerun, merge the checkpoint if accepted, synchronize the tracker, and continue the target-theorem loop with the universal quotient/reflection obligation
 ```
 
 ### Cycle 46 — generated authored diagnostic on the supplied cochain

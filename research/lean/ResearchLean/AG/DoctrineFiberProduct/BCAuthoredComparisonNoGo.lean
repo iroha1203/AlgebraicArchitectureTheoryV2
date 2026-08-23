@@ -73,6 +73,21 @@ theorem hasNontrivialCanonicalPostIsoResidual_of_ne
   apply hne
   rw [authored_eq, residual_eq, Category.comp_id]
 
+/--
+The post-residual in the classification is unique.  Thus the residual is not
+merely an existential witness: cancellation by the invertible canonical
+component recovers it from the authored component.
+-/
+theorem canonicalPostIsoResidual_unique
+    {C : Type u} [Category.{v} C] {X Y : C}
+    (canonical authored : X ⟶ Y) [IsIso canonical]
+    (first second : Y ≅ Y)
+    (hfirst : authored = canonical ≫ first.hom)
+    (hsecond : authored = canonical ≫ second.hom) :
+    first.hom = second.hom := by
+  apply (cancel_epi canonical).1
+  exact hfirst.symm.trans hsecond
+
 /-! ## Cycle 43 factorization route -/
 
 /-- The Cycle 43 initial raw defect is invertible in the southwest fiber. -/
@@ -157,7 +172,7 @@ theorem authoredFactorizationComparisonComponent_has_raw_residual
 
 /--
 Consequently the Cycle 43 component lies in the generic
-canonical-post-isomorphism route class.  This is goal-defect evidence for this
+canonical-post-isomorphism route class.  This is obstruction evidence for this
 factorization route, not a refutation of the fixed G-110 target.
 -/
 theorem authoredFactorizationComparisonComponent_isCanonicalPostIsoTwist
