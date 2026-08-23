@@ -8,6 +8,16 @@ readings in addition to their Atom configuration.  The finite reading's
 generated objects use `PUnit` for both readings.  Replacing arbitrary auxiliary
 readings by those canonical units therefore preserves configuration while
 collapsing distinct objects over the same configuration.
+
+Implementation notes: this module uses object erasure because the fixed finite
+equation and operation readings observe the retained configuration, while the
+exact-hom object field still ranges over the auxiliary readings of every
+`ArchitectureObject`.  The earlier axis-collapse route is not reused: exact
+axis transport is an equivalence and therefore cannot supply this
+noninjectivity.  The authored diagnostic selector is deliberately kept out of
+the erasure definition; making the unconditional exact factor diagnostic-
+generated is the next, separately audited K2 obligation rather than a premise
+hidden in this construction.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -99,6 +109,42 @@ def EquationResidualConfigurationInvariant
     first.configuration = second.configuration →
       E.equationResidual W first index atom =
         E.equationResidual W second index atom
+
+/-- A small equation system whose residual observes an auxiliary object
+reading, used as the negative instance for configuration invariance. -/
+noncomputable def auxiliarySensitiveEquationSystem
+    (C : Site.ContextPreorderCategory FiniteModel.object) :
+    ArchitecturalEquationSystem C := by
+  classical
+  exact {
+    Index := PUnit
+    role := fun _ => EquationRole.required
+    Observable := fun _ => Int
+    observableCommRing := fun _ => inferInstance
+    restrict := fun _ => RingHom.id Int
+    restrict_id := by intros; rfl
+    restrict_comp := by intros; rfl
+    violationCoordinate := fun _ _ _ => 0
+    violationCoordinate_restrict := by intros; rfl
+    equationResidual := fun _ object _ _ =>
+      if object = finiteAxisFoldBoolObject then 1 else 0
+    equationResidual_restrict := by intros; rfl
+  }
+
+/-- Configuration invariance is a substantive condition: an equation residual
+may distinguish auxiliary readings over the same configuration. -/
+theorem auxiliarySensitiveEquationSystem_not_configurationInvariant
+    (C : Site.ContextPreorderCategory FiniteModel.object) :
+    ¬ EquationResidualConfigurationInvariant
+      (auxiliarySensitiveEquationSystem C) := by
+  intro invariant
+  have residual_eq := invariant
+    (Site.ContextCategoryObject.of C FiniteModel.equationProbeContext)
+    finiteAxisFoldUnitObject finiteAxisFoldBoolObject PUnit.unit
+    FiniteModel.FiniteAtom.componentA
+    (finiteAxisFoldEraseObject_configuration FiniteModel.object)
+  simp [auxiliarySensitiveEquationSystem,
+    finiteAxisFoldUnitObject_ne_boolObject] at residual_eq
 
 /-- The finite NoCycle residual has configuration-only dependence. -/
 theorem finiteEquationResidual_configurationInvariant

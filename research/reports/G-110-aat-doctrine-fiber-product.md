@@ -50,6 +50,7 @@ result:
     - ResearchLean/AG/DoctrineFiberProduct.lean
   evidence:
     - finiteAxisFoldEraseObject_not_injective
+    - auxiliarySensitiveEquationSystem_not_configurationInvariant
     - finiteEquationResidual_configurationInvariant
     - transportEquationResidual_configurationInvariant
     - castEquationResidual_configurationInvariant
@@ -102,7 +103,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCAuthoredObjectCollapse.lean: pass; 19 namespace declarations, standard axioms only
+    - focused BCAuthoredObjectCollapse.lean: pass; 21 namespace declarations, standard axioms only
     - exact target module build ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse: pass; 4060 jobs
   blocking_findings: []
   next_obligation: construct an input-generated selector that uses authored diagnostic data to choose the exact object erasure, then insert that generated non-twist factor into the two K2 comparison paths
