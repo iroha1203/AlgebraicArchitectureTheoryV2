@@ -18,6 +18,9 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFold
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparison
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticComparisonWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGo
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredComparisonNoGoWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredFixedTargetQuotientNoGo
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
@@ -325,4 +328,21 @@ is not an automorphism twist.  It is not the fixed K2 authored comparison:
 universal provenance for that producer, its public `MateCoherentRel` and orbit
 bridge, actual square-presentation replacement, K3--K4, fixed-ledger
 `FiniteModelLift`, and final assembly remain open.
+The residual-isomorphism classification then proves that any invertible
+authored component against the invertible canonical mate is necessarily the
+canonical component followed by a target automorphism.  The exact Cycle 43
+universal-factorization component lies in this class, with residual equal to
+the transported initial raw defect.  The finite lax double diamond proves that
+residual nonidentity concretely, so the mismatch in that route is a forbidden
+canonical post-twist.  This is a scoped route obstruction, not a global K2
+refutation.  The fixed GOAL prose supplies the provenance and anti-target-fitting
+acceptance gate; constructing a schema-preserving noninvertible universal
+quotient or reflection, or proving its current-data impossibility, remains the
+next obligation.  The standard `Cofork` analysis further fixes the direction
+barrier: a coequalizing arrow lands in its cocone point, and an endomorphism of
+the existing via-base target requires an additional return map.  For the fixed
+lax residual every such conditional returned endomorphism is noninvertible,
+but neither an input-generated cofork nor return-map provenance has been
+constructed.  Those two data, their naturality, and presentation-replacement
+compatibility are the next K2 obligations.
 -/
