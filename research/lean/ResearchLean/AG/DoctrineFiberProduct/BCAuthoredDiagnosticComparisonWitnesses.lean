@@ -4,8 +4,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesse
 /-!
 # Finite witnesses for the authored diagnostic comparison
 
-The fixed lax double diamond refutes the public authored comparison throughout
-its full reselection orbit.  The comparison retains the actual raw defect at
+The fixed lax double diamond refutes an auxiliary authored diagnostic throughout
+its full reselection orbit.  The diagnostic retains the actual raw defect at
 each supplied coordinate and then uses the internally generated direct-first,
 pairwise-fallback fold.  The strict finite datum is the positive control.
 -/
@@ -159,7 +159,8 @@ theorem finiteAxisFold_diagnosticComparison_ne_canonical
 theorem finiteAxisFold_not_mateCoherent
     (reselection : EdgeReselection
       finiteAxisFoldBCDatumSquare.toTransportData.lift) :
-    ¬ MateCoherentAtCochain finiteAxisFoldBCDatumSquare
+    ¬ GeneratedAuthoredDiagnosticMateCoherentAtCochain
+      finiteAxisFoldBCDatumSquare
       (rawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData
         reselection) := by
   apply AuthoredSupportComparison.not_agrees_of_app_ne
@@ -171,21 +172,26 @@ theorem finiteAxisFold_not_mateCoherent_on_orbit
     (cochain : DefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
     (inOrbit : InReselectionOrbit
       finiteAxisFoldBCDatumSquare.toTransportData cochain) :
-    ¬ MateCoherentAtCochain finiteAxisFoldBCDatumSquare cochain := by
+    ¬ GeneratedAuthoredDiagnosticMateCoherentAtCochain
+      finiteAxisFoldBCDatumSquare cochain := by
   rcases inOrbit with ⟨reselection, rfl⟩
   exact finiteAxisFold_not_mateCoherent reselection
 
-/-- The public authored relation fails on the fixed lax datum. -/
-theorem finiteAxisFoldBCDatumSquare_not_authoredMateCoherent :
-    ¬ MateCoherentRel FiniteModel.carrier finiteAxisFoldBCDatumSquare := by
-  rw [mateCoherentRel_apply, authoredDiagnosticComparison_apply]
+/-- The auxiliary initial-coordinate diagnostic fails on the fixed lax datum. -/
+theorem finiteAxisFoldBCDatumSquare_not_generatedAuthoredDiagnosticMateCoherent :
+    ¬ GeneratedAuthoredDiagnosticMateCoherentRel FiniteModel.carrier
+      finiteAxisFoldBCDatumSquare := by
+  rw [generatedAuthoredDiagnosticMateCoherentRel_apply,
+    generatedAuthoredDiagnosticComparison_apply]
   exact finiteAxisFold_not_mateCoherent
     (1 : EdgeReselection finiteAxisFoldBCDatumSquare.toTransportData.lift)
 
-/-- The strict finite datum fires the same public authored relation. -/
-theorem finiteAuthoredBCDatumSquare_authoredMateCoherent :
-    MateCoherentRel FiniteModel.carrier finiteAuthoredBCDatumSquare := by
-  rw [mateCoherentRel_apply, authoredDiagnosticComparison_apply]
+/-- The strict finite datum fires the same auxiliary diagnostic relation. -/
+theorem finiteAuthoredBCDatumSquare_generatedAuthoredDiagnosticMateCoherent :
+    GeneratedAuthoredDiagnosticMateCoherentRel FiniteModel.carrier
+      finiteAuthoredBCDatumSquare := by
+  rw [generatedAuthoredDiagnosticMateCoherentRel_apply,
+    generatedAuthoredDiagnosticComparison_apply]
   apply authoredDiagnosticComparisonAtCochain_eq_canonical
   · simpa [finiteAuthoredFactorization_toTransportData] using
       finiteAuthoredFactorization_initialRawDefect_eq_identity

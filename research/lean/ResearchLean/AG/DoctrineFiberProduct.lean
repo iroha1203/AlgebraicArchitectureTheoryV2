@@ -317,11 +317,12 @@ induced comparison, `MateCoherentRel`, its strict/lax and orbit witnesses,
 K3--K4, fixed-ledger `FiniteModelLift`, and final assembly remain open.
 The authored diagnostic layer now retains the actual G-106 raw component at
 every supplied cochain coordinate and follows it with an internally generated
-direct-first, same-boundary-pairwise-fallback fold.  Its public producer is the
-literal initial-cochain specialization, and its public `MateCoherentRel` is
-fired by the strict finite datum and refuted by the fixed lax double diamond
-throughout a concrete nontrivial reselection orbit.  The lax fold remains
-noninvertible after transport, so this witness is not an automorphism twist.
-Actual square-presentation replacement for both named producers, K3--K4,
-fixed-ledger `FiniteModelLift`, and final assembly remain open.
+direct-first, same-boundary-pairwise-fallback fold.  The resulting auxiliary
+initial-coordinate relation has strict and lax controls, while its
+cochain-indexed equation fails throughout a concrete nontrivial reselection
+orbit.  The lax fold remains noninvertible after transport, so this diagnostic
+is not an automorphism twist.  It is not the fixed K2 authored comparison:
+universal provenance for that producer, its public `MateCoherentRel` and orbit
+bridge, actual square-presentation replacement, K3--K4, fixed-ledger
+`FiniteModelLift`, and final assembly remain open.
 -/

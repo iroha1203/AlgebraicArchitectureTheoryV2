@@ -738,8 +738,8 @@ theorem authoredDiagnosticComparisonAtCochain_eq_canonical
     input cochain cell unifiedUnavailable]
   simp
 
-/-- The named public producer is the literal initial raw-cochain specialization. -/
-noncomputable def authoredDiagnosticComparison
+/-- The named auxiliary diagnostic is the literal initial raw-cochain specialization. -/
+noncomputable def generatedAuthoredDiagnosticComparison
     {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
     AuthoredComparisonProducerSignature
       (authoredSupportDirectRouteFamily U)
@@ -747,8 +747,8 @@ noncomputable def authoredDiagnosticComparison
   fun input => authoredDiagnosticComparisonAtCochain input
     (initialRawDefectCochain input.toTransportData)
 
-/-- Relative coherence of the same generated comparison at any supplied cochain. -/
-def MateCoherentAtCochain
+/-- Relative coherence of the auxiliary diagnostic at any supplied cochain. -/
+def GeneratedAuthoredDiagnosticMateCoherentAtCochain
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U)
     (cochain : DefectCochain input.toTransportData) : Prop :=
@@ -756,32 +756,32 @@ def MateCoherentAtCochain
     (authoredDiagnosticComparisonAtCochain input cochain)
     (authoredSupportCanonicalMate input.context)
 
-/-- The public K2 relation for the named authored and canonical producers. -/
-def MateCoherentRel
+/-- The auxiliary initial-coordinate diagnostic relation.  This is not K2's fixed public relation. -/
+def GeneratedAuthoredDiagnosticMateCoherentRel
     (U : AtomCarrier.{u}) [DecidableEq U.Atom] :
     MateCoherentRelSignature U :=
-  mateCoherentRelEquation authoredDiagnosticComparison
+  mateCoherentRelEquation generatedAuthoredDiagnosticComparison
     (authoredSupportCanonicalMateFamily U)
 
 /-! ## Application and proof-use APIs -/
 
 /-- The producer application is definitionally the initial cochain specialization. -/
 @[simp]
-theorem authoredDiagnosticComparison_apply
+theorem generatedAuthoredDiagnosticComparison_apply
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U) :
-    authoredDiagnosticComparison input =
+    generatedAuthoredDiagnosticComparison input =
       authoredDiagnosticComparisonAtCochain input
         (initialRawDefectCochain input.toTransportData) := rfl
 
-/-- The public relation exposes exactly the named producer equality. -/
+/-- The auxiliary relation exposes exactly the named diagnostic equality. -/
 @[simp]
-theorem mateCoherentRel_apply
+theorem generatedAuthoredDiagnosticMateCoherentRel_apply
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U) :
-    MateCoherentRel U input =
+    GeneratedAuthoredDiagnosticMateCoherentRel U input =
       AuthoredSupportComparison.Agrees
-        (authoredDiagnosticComparison input)
+        (generatedAuthoredDiagnosticComparison input)
         (authoredSupportCanonicalMate input.context) := rfl
 
 /--
@@ -798,12 +798,12 @@ theorem authoredInitialRawDefectTotal_uses_authoredComparator
         (PackageFiberAut.hom (input.authored.comparator cell)) := by
   exact rawTwoCellDefect_hom input.toTransportData 1 cell
 
-/-- Application-level normalization of the public producer at one authored cell. -/
-theorem authoredDiagnosticComparison_app_eq_canonical_comp_raw_comp_fold
+/-- Application-level normalization of the auxiliary producer at one authored cell. -/
+theorem generatedAuthoredDiagnosticComparison_app_eq_canonical_comp_raw_comp_fold
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : AuthoredBCDatumSquare U)
     (cell : input.context.Category) :
-    (authoredDiagnosticComparison input).app cell =
+    (generatedAuthoredDiagnosticComparison input).app cell =
       (authoredSupportCanonicalMate input.context).app cell ≫
         authoredViaBaseRawDefectComponentAtCochain input
           (initialRawDefectCochain input.toTransportData) cell ≫

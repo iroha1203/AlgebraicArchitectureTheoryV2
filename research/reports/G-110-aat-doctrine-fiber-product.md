@@ -13,7 +13,7 @@
 
 ## Cycle ledger
 
-### Cycle 46 — public authored comparison from the supplied diagnostic cochain
+### Cycle 46 — generated authored diagnostic on the supplied cochain
 
 ```yaml
 ledger_type: target_cycle_result
@@ -31,20 +31,22 @@ selection:
     - Cycle 40 exact authored-support routes and canonical mate
     - Cycle 43 canonical-comp-raw factorization
     - Cycle 44 direct diagnostic fold and Cycle 45 same-boundary pairwise fallback
-  proof_obligation: construct the fixed public authored-support comparison producer without accepting a caller comparison, endomorphism, fold, expected equality, or noninvertibility certificate; retain the actual supplied raw defect at every cochain coordinate, append an internally selected direct-first/pairwise-fallback fold at that same coordinate, expose the literal initial-cochain specialization as MateCoherentRel, and prove the fixed lax negative over the full nontrivial orbit together with the strict positive control
+  proof_obligation: test whether retaining the actual supplied raw defect at every cochain coordinate and appending an internally selected direct-first/pairwise-fallback fold at that same coordinate can realize the fixed public authored-support comparison; prove the resulting diagnostic's lax negative over the full nontrivial orbit and strict positive without accepting caller comparison, fold, equality, or noninvertibility data
   selection_reason: the Cycle 45 quotient alone is an auxiliary diagnostic, while freezing the Cycle 43 raw factor at the initial coordinate would break the required orbit theorem. Keeping the actual raw factor at every coordinate and appending the generated unified fold preserves authored-comparator provenance and carries the non-twist obstruction through the full orbit.
   expected_result_type: proof-checkpoint
   risks:
     - dropping or freezing the supplied raw cochain factor
-    - exposing the Cycle 45 auxiliary predicate under the fixed public name
+    - exposing an auxiliary generated diagnostic under the fixed public name
     - accepting caller comparison or noninvertibility data
     - proving only the initial representative or using a singleton orbit
     - treating group-factor invariance as actual presentation replacement
   unchecked:
-    - actual replacement of the square presentation for both named comparison producers
+    - whether the generated fold is uniquely forced as the authored-table induced comparison required by K2
+    - public MateCoherentRel and its full-orbit bridge
+    - actual replacement of the square presentation for both K2 producers
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: authoredRawDefectTotalAtCochain and its decoded/via-base images retain the supplied G-106 component at every coordinate. Cocartesian universality generates the raw left factor and its comparison normalizes to canonical mate followed by the transported raw component. generatedUnifiedAxisFoldTotalAt selects a direct diagnostic fold when available, otherwise the typed same-boundary pairwise fold, otherwise identity. authoredDiagnosticComparisonComponentAtCochain composes canonical mate, supplied raw factor, and generated fold in that order. The named authoredDiagnosticComparison is literally the initialRawDefectCochain specialization; MateCoherentRel is the fixed equality with the canonical producer; authoredInitialRawDefectTotal_uses_authoredComparator exposes proof-use of input.authored.comparator. On the fixed lax double diamond the selected fold is non-IsIso at every reselection; canonical and raw prefixes are isomorphisms, so every combined component differs from canonical. The public relation fails over the full nontrivial InReselectionOrbit. On the strict datum the raw cochain and unified fold are identity, so the same public relation holds. This discharges the authored-support producer, public relation, strict/lax pair, full-orbit nonvanishing, and orbit-nontriviality portion of K2, but not actual presentation replacement.
+  proof_obligation_delta: authoredRawDefectTotalAtCochain and its decoded/via-base images retain the supplied G-106 component at every coordinate. Cocartesian universality generates the raw left factor and its comparison normalizes to canonical mate followed by the transported raw component. generatedUnifiedAxisFoldTotalAt selects a direct diagnostic fold when available, otherwise the typed same-boundary pairwise fold, otherwise identity. authoredDiagnosticComparisonComponentAtCochain composes canonical mate, supplied raw factor, and generated fold in that order. The named auxiliary generatedAuthoredDiagnosticComparison is literally the initialRawDefectCochain specialization, and authoredInitialRawDefectTotal_uses_authoredComparator exposes proof-use of input.authored.comparator. On the fixed lax double diamond the selected fold is non-IsIso at every reselection; canonical and raw prefixes are isomorphisms, so the cochain-indexed diagnostic differs from canonical throughout the nontrivial InReselectionOrbit. Its initial-coordinate auxiliary relation fails, while the strict datum fires the same auxiliary relation. Formal review refuted promoting this construction to K2: the noninvertible postfactor is not uniquely forced by the authored table or a universal property, and the full-orbit theorem concerns the cochain-indexed extension rather than the fixed initial relation. The public MateCoherentRel name and all K2 discharge claims are therefore withheld.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCAuthoredDiagnosticComparison.lean
@@ -55,45 +57,47 @@ result:
     - authoredRawDefectTotalAtCochain
     - authoredRawFactorizationComparisonComponentAtCochain_eq_canonical_comp_raw
     - authoredDiagnosticComparisonComponentAtCochain_eq_canonical_comp_raw_comp_fold
-    - authoredDiagnosticComparison
-    - MateCoherentRel
+    - generatedAuthoredDiagnosticComparison
+    - GeneratedAuthoredDiagnosticMateCoherentRel
     - authoredInitialRawDefectTotal_uses_authoredComparator
     - finiteAxisFold_generatedUnified_not_isIso
     - finiteAxisFold_not_mateCoherent_on_orbit
-    - finiteAxisFoldBCDatumSquare_not_authoredMateCoherent
-    - finiteAuthoredBCDatumSquare_authoredMateCoherent
+    - finiteAxisFoldBCDatumSquare_not_generatedAuthoredDiagnosticMateCoherent
+    - finiteAuthoredBCDatumSquare_generatedAuthoredDiagnosticMateCoherent
     - finiteAxisFold_authoredComparison_orbit_nontrivial
   claim_mapping:
-    public_producer: authoredDiagnosticComparison is the initial-cochain specialization of the arbitrary-cochain canonical-then-raw-then-unified-fold construction
-    public_relation: MateCoherentRel compares authoredDiagnosticComparison with authoredSupportCanonicalMate on the fixed authored support
+    auxiliary_producer: generatedAuthoredDiagnosticComparison is the initial-cochain specialization of the arbitrary-cochain canonical-then-raw-then-unified-fold diagnostic
+    auxiliary_relation: GeneratedAuthoredDiagnosticMateCoherentRel compares that diagnostic with authoredSupportCanonicalMate and is explicitly not K2's fixed public relation
     raw_provenance: authoredInitialRawDefectTotal_uses_authoredComparator exposes the actual input.authored.comparator in G-106 raw-defect order
-    strict_positive: finiteAuthoredBCDatumSquare_authoredMateCoherent
-    lax_negative: finiteAxisFoldBCDatumSquare_not_authoredMateCoherent
-    full_orbit: finiteAxisFold_not_mateCoherent_on_orbit
+    strict_control: finiteAuthoredBCDatumSquare_generatedAuthoredDiagnosticMateCoherent
+    lax_initial_control: finiteAxisFoldBCDatumSquare_not_generatedAuthoredDiagnosticMateCoherent
+    full_orbit_auxiliary_equation: finiteAxisFold_not_mateCoherent_on_orbit
     orbit_nontriviality: finiteAxisFold_authoredComparison_orbit_nontrivial
     undischarged_assumptions:
-      - actual presentation replacement for canonical and authored comparison producers
+      - K2 authored-table induced comparison and fixed public MateCoherentRel
+      - exact bridge from every orbit coordinate to the same public relation
+      - actual presentation replacement for both K2 producers
       - fixed-ledger arbitrary-target FiniteModelLift
       - K3 diagnostic base-change action, qualified H_bc package, and positive/negative vanishing pair
       - K4 pullback-square pasting and G-106/G-109 coherence bridge
       - cumulative final assembly and completion review
-    acceptance_point: K2 authored-support producer and strict/lax full-orbit proof artifact are discharged only at the fixed presentation; this cycle is not G-110 completion
+    acceptance_point: the arbitrary-cochain generated diagnostic and its strict/lax controls are a non-twist predecessor only; K2 is not discharged
     port_status: unported
 audits:
   premise_delta:
     discharged:
       - arbitrary cochain raw factor
       - internally generated non-twist fold
-      - fixed public relation fidelity
-      - strict/lax pair and full nontrivial orbit
+      - auxiliary strict/lax diagnostic pair and full nontrivial orbit equation
     remaining:
-      - actual presentation replacement, FiniteModelLift, K3, K4, and final assembly
+      - K2 public producer/relation/orbit bridge, actual presentation replacement, FiniteModelLift, K3, K4, and final assembly
   certificate_provenance:
     discharged:
       - no comparison, endomorphism, fold, equality, or noninvertibility certificate is accepted from the caller
       - raw factor comes from the supplied DefectCochain and unified fold from direct or same-boundary pairwise availability
     unresolved:
-      - transport of both named producers across actual square-presentation replacement
+      - universal provenance forcing the K2 authored comparison
+      - public-relation orbit bridge and presentation replacement
   proof_use:
     used:
       - input.authored.comparator through initialRawDefectCochain and explicit proof-use theorem
@@ -103,8 +107,8 @@ audits:
       - identity-route unitors, canonical/raw IsIso instances, and actual EdgeReselection witnesses
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass for the fixed-presentation authored producer; presentation replacement remains unchecked
-  target_fitting: none-found
+  route_integrity: pass only as an auxiliary diagnostic; rejected as the fixed K2 authored producer
+  target_fitting: initial formal review found that the extra non-IsIso postfactor can manufacture mismatch without proving mismatch of the universally induced authored comparison; resolved by removing the public name and K2 discharge claim
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
@@ -112,13 +116,25 @@ audits:
     - focused BCAuthoredDiagnosticComparison.lean: pass; 40 namespace declarations, standard axioms only
     - focused BCAuthoredDiagnosticComparisonWitnesses.lean: pass; 9 namespace declarations, standard axioms only
     - targeted builds for exactly the two new modules: pass; no Research aggregate or full build
-    - git diff --check and required repository scans: pending before PR
-  blocking_findings: []
-  next_obligation: construct actual presentation replacement for both named producers, then proceed to the next fixed G-110 proof obligation
+    - git diff --check and required repository scans: pass before PR
+  blocking_findings:
+    - Math B Critical: generated non-IsIso postfactor is not uniquely forced by the authored table or universal factorization; resolved by limiting the artifact to an auxiliary diagnostic and withholding K2
+    - Math B Major: full-orbit theorem is the cochain-indexed extension rather than the initial auxiliary relation; resolved by correcting claims and retaining the public orbit bridge as open
+  next_obligation: construct the authored-table induced comparison through a universal route and an exact public-relation orbit bridge; presentation replacement remains subsequent
 review:
-  status: pending
+  reviewed_head: f08cc2e518c69df35c67475d5fdf607f5f57eadf
+  initial_round:
+    math_a: no central findings; two report precision issues
+    math_b: Critical target-fitting postfactor and Major public-relation orbit gap
+    lean_a: no findings
+    lean_b: no central findings; same report precision issues
+  core_fix:
+    - renamed the named producer and relation as generated auxiliary diagnostics and explicitly stated that they are not K2's fixed public MateCoherentRel
+    - removed all K2 discharge claims and distinguished initial auxiliary relation failure from full-orbit cochain-indexed equation failure
+  post_core_fix_round: pending
+  status: pending-post-core-fix-rerun
 stop_condition: none
-next_obligation: create the Cycle 46 PR, run the standard four-lane target-theorem review and CI, merge if accepted, then construct actual presentation replacement
+next_obligation: rerun the four-lane review at the repaired head, then merge the auxiliary checkpoint if accepted and construct the universal K2 authored comparison route
 ```
 
 ### Cycle 45 — pairwise diagnostic quotient on the full reselection orbit
