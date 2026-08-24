@@ -70,7 +70,7 @@ selection:
     - pullback-side composition coherence, K4 and final assembly
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: coreFiberPentagonLeftRoute_hom_eq_g106 and coreFiberPentagonRightRoute_hom_eq_g106 independently identify the two actual G-109 package routes with the endpoint-casted G-106 left-adjacent and inverse-associator-plus-right-adjacent paths. Their Fiber-level counterparts retain the actual functor morphisms. coreFiberG106RouteHom_eq directly rewrites by transportAlong_comp_coherence, and coreFiberCompositor_assoc_via_g106 derives the actual G-109 compositor equality through that G-106 route equality without using coreFiberCompositor_assoc.
+  proof_obligation_delta: coreFiberPentagonLeftRoute_eq_components directly rewrites the actual left route by the Cycle 78 binary and Cycle 80 whiskered component bridges. coreFiberPentagonRightRoute_eq_components directly rewrites the actual right route by the Cycle 81 associator and two Cycle 78 binary component bridges. The resulting component routes are then identified with the endpoint-casted G-106 left-adjacent and inverse-associator-plus-right-adjacent paths. coreFiberG106RouteHom_eq directly rewrites by transportAlong_comp_coherence, and coreFiberCompositor_assoc_via_g106 derives the actual G-109 compositor equality through that G-106 route equality without using coreFiberCompositor_assoc.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceRoutes.lean
@@ -79,6 +79,10 @@ result:
   evidence:
     - coreFiberG106LeftRouteHom
     - coreFiberG106RightRouteHom
+    - coreFiberG106LeftComponentRoute
+    - coreFiberG106RightComponentRoute
+    - coreFiberPentagonLeftRoute_eq_components
+    - coreFiberPentagonRightRoute_eq_components
     - coreFiberPentagonLeftRoute_hom_eq_g106
     - coreFiberPentagonRightRoute_hom_eq_g106
     - coreFiberPentagonLeftRoute_eq_g106
@@ -120,6 +124,9 @@ audits:
       - transportAlongLeftAdjacentCompHom_fac
       - transportAlongAdjacentCompHom_fac
       - transportAlong_comp_coherence
+      - coreFiberCompositorApp_hom_eq_g106
+      - coreFiberCompositor_whiskered_eq_g106
+      - coreFiberAssociatorCast_eq_g106
       - coreFiberPentagonLeftRoute_fac
       - coreFiberPentagonRightRoute_fac
     unused:
@@ -131,7 +138,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - targeted BCPastingCoherenceRoutesWitnesses module build: pass
-    - main module: 15 declarations, standard axioms only
+    - main module: 21 declarations, standard axioms only
     - witness module: 1 declaration, standard axioms only
   blocking_findings: []
   next_obligation: connect the C Beck--Chevalley comparison and D diagnostic covariance layers to horizontal and vertical square pasting, then construct the missing pullback-side composition coherence

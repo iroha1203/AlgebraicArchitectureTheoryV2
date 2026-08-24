@@ -82,6 +82,66 @@ noncomputable def coreFiberG106RightRouteHom {U : AtomCarrier.{u}}
           ((coreFiberTransportFunctor sigma).obj G))).doctrineHom ≫
     eqToHom (coreFiberTripleIteratedPackageEq sigma tau upsilon G).symm
 
+/-- The left actual route with both components replaced by the reviewed bridges. -/
+noncomputable def coreFiberG106LeftComponentRoute {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    (coreFiberTransportFunctor ((sigma ≫ tau) ≫ upsilon)).obj G ⟶
+      (coreFiberTransportFunctor upsilon).obj
+        ((coreFiberTransportFunctor tau).obj
+          ((coreFiberTransportFunctor sigma).obj G)) :=
+  coreFiberG106CompositorHom (sigma ≫ tau) upsilon G ≫
+    coreFiberG106WhiskeredCompositorHom sigma tau upsilon G
+
+/-- The right actual route with its associator and binary components replaced. -/
+noncomputable def coreFiberG106RightComponentRoute {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    (coreFiberTransportFunctor ((sigma ≫ tau) ≫ upsilon)).obj G ⟶
+      (coreFiberTransportFunctor upsilon).obj
+        ((coreFiberTransportFunctor tau).obj
+          ((coreFiberTransportFunctor sigma).obj G)) :=
+  coreFiberG106AssociatorHom sigma tau upsilon G ≫
+    coreFiberG106CompositorHom sigma (tau ≫ upsilon) G ≫
+    coreFiberG106CompositorHom tau upsilon
+      ((coreFiberTransportFunctor sigma).obj G)
+
+/-- The actual left route is the componentwise G-106 bridge composition. -/
+theorem coreFiberPentagonLeftRoute_eq_components {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    coreFiberPentagonLeftRoute sigma tau upsilon G =
+      coreFiberG106LeftComponentRoute sigma tau upsilon G := by
+  change (coreFiberCompositorApp (sigma ≫ tau) upsilon G).hom ≫
+      (coreFiberTransportFunctor upsilon).map
+        (coreFiberCompositorApp sigma tau G).hom =
+    coreFiberG106CompositorHom (sigma ≫ tau) upsilon G ≫
+      coreFiberG106WhiskeredCompositorHom sigma tau upsilon G
+  rw [coreFiberCompositorApp_hom_eq_g106,
+    coreFiberCompositor_whiskered_eq_g106]
+
+/-- The actual right route is the componentwise G-106 bridge composition. -/
+theorem coreFiberPentagonRightRoute_eq_components {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    coreFiberPentagonRightRoute sigma tau upsilon G =
+      coreFiberG106RightComponentRoute sigma tau upsilon G := by
+  change coreFiberAssociatorCast sigma tau upsilon G ≫
+      (coreFiberCompositorApp sigma (tau ≫ upsilon) G).hom ≫
+      (coreFiberCompositorApp tau upsilon
+        ((coreFiberTransportFunctor sigma).obj G)).hom =
+    coreFiberG106AssociatorHom sigma tau upsilon G ≫
+      coreFiberG106CompositorHom sigma (tau ≫ upsilon) G ≫
+      coreFiberG106CompositorHom tau upsilon
+        ((coreFiberTransportFunctor sigma).obj G)
+  rw [coreFiberAssociatorCast_eq_g106,
+    coreFiberCompositorApp_hom_eq_g106,
+    coreFiberCompositorApp_hom_eq_g106]
+
 theorem coreFiberG106RouteHom_eq {U : AtomCarrier.{u}}
     {W X Y Z : ExtractionInstance U}
     (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
@@ -150,11 +210,11 @@ theorem coreFiberG106LeftRouteHom_fac {U : AtomCarrier.{u}}
   rw [transportAlongLeftAdjacentCompHom_fac]
   rfl
 
-theorem coreFiberPentagonLeftRoute_hom_eq_g106 {U : AtomCarrier.{u}}
+theorem coreFiberG106LeftComponentRoute_hom_eq_path {U : AtomCarrier.{u}}
     {W X Y Z : ExtractionInstance U}
     (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
     (G : CoreFiber W) :
-    (coreFiberPentagonLeftRoute sigma tau upsilon G).1 =
+    (coreFiberG106LeftComponentRoute sigma tau upsilon G).1 =
       coreFiberG106LeftRouteHom sigma tau upsilon G := by
   let rhs := coreFiberG106LeftRouteHom sigma tau upsilon G
   letI : (packageProjection U).IsStronglyCocartesian
@@ -162,8 +222,8 @@ theorem coreFiberPentagonLeftRoute_hom_eq_g106 {U : AtomCarrier.{u}}
       (coreFiberLift ((sigma ≫ tau) ≫ upsilon) G) :=
     coreFiberLift_isStronglyCocartesian ((sigma ≫ tau) ≫ upsilon) G
   letI : (packageProjection U).IsHomLift (𝟙 Z)
-      (coreFiberPentagonLeftRoute sigma tau upsilon G).1 :=
-    (coreFiberPentagonLeftRoute sigma tau upsilon G).2
+      (coreFiberG106LeftComponentRoute sigma tau upsilon G).1 :=
+    (coreFiberG106LeftComponentRoute sigma tau upsilon G).2
   letI : (packageProjection U).IsHomLift (𝟙 Z) rhs := by
     apply CategoryTheory.IsHomLift.of_commsq
       (packageProjection U) (𝟙 Z) rhs
@@ -209,7 +269,29 @@ theorem coreFiberPentagonLeftRoute_hom_eq_g106 {U : AtomCarrier.{u}}
   apply CategoryTheory.Functor.IsStronglyCocartesian.ext
     (packageProjection U) ((sigma ≫ tau) ≫ upsilon)
     (coreFiberLift ((sigma ≫ tau) ≫ upsilon) G) (𝟙 Z)
-  rw [coreFiberPentagonLeftRoute_fac, coreFiberG106LeftRouteHom_fac]
+  have hcomponent :
+      coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫
+          (coreFiberG106LeftComponentRoute sigma tau upsilon G).1 =
+        coreFiberTripleIteratedLift sigma tau upsilon G := by
+    calc
+      _ = coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫
+          (coreFiberPentagonLeftRoute sigma tau upsilon G).1 :=
+        congrArg (fun q => coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫ q.1)
+          (coreFiberPentagonLeftRoute_eq_components sigma tau upsilon G).symm
+      _ = _ := coreFiberPentagonLeftRoute_fac sigma tau upsilon G
+  exact hcomponent.trans
+    (coreFiberG106LeftRouteHom_fac sigma tau upsilon G).symm
+
+/-- The actual left route is the componentwise bridge followed by the G-106 path. -/
+theorem coreFiberPentagonLeftRoute_hom_eq_g106 {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    (coreFiberPentagonLeftRoute sigma tau upsilon G).1 =
+      coreFiberG106LeftRouteHom sigma tau upsilon G :=
+  (congrArg (fun q => q.1)
+    (coreFiberPentagonLeftRoute_eq_components sigma tau upsilon G)).trans
+    (coreFiberG106LeftComponentRoute_hom_eq_path sigma tau upsilon G)
 
 theorem eqToHom_comp5 {C : Type u} [Category C]
     {A B C' D E F : C} (hAB : A = B) (hBC : B = C')
@@ -250,11 +332,11 @@ theorem coreFiberG106RightRouteHom_fac {U : AtomCarrier.{u}}
   rw [transportAlongAdjacentCompHom_fac]
   rfl
 
-theorem coreFiberPentagonRightRoute_hom_eq_g106 {U : AtomCarrier.{u}}
+theorem coreFiberG106RightComponentRoute_hom_eq_path {U : AtomCarrier.{u}}
     {W X Y Z : ExtractionInstance U}
     (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
     (G : CoreFiber W) :
-    (coreFiberPentagonRightRoute sigma tau upsilon G).1 =
+    (coreFiberG106RightComponentRoute sigma tau upsilon G).1 =
       coreFiberG106RightRouteHom sigma tau upsilon G := by
   let f := (coreFiberBaseHom sigma G).doctrineHom
   let g := (coreFiberBaseHom tau
@@ -268,8 +350,8 @@ theorem coreFiberPentagonRightRoute_hom_eq_g106 {U : AtomCarrier.{u}}
       (coreFiberLift ((sigma ≫ tau) ≫ upsilon) G) :=
     coreFiberLift_isStronglyCocartesian ((sigma ≫ tau) ≫ upsilon) G
   letI : (packageProjection U).IsHomLift (𝟙 Z)
-      (coreFiberPentagonRightRoute sigma tau upsilon G).1 :=
-    (coreFiberPentagonRightRoute sigma tau upsilon G).2
+      (coreFiberG106RightComponentRoute sigma tau upsilon G).1 :=
+    (coreFiberG106RightComponentRoute sigma tau upsilon G).2
   letI : (packageProjection U).IsHomLift (𝟙 Z) rhs := by
     apply CategoryTheory.IsHomLift.of_commsq
       (packageProjection U) (𝟙 Z) rhs
@@ -307,7 +389,29 @@ theorem coreFiberPentagonRightRoute_hom_eq_g106 {U : AtomCarrier.{u}}
   apply CategoryTheory.Functor.IsStronglyCocartesian.ext
     (packageProjection U) ((sigma ≫ tau) ≫ upsilon)
     (coreFiberLift ((sigma ≫ tau) ≫ upsilon) G) (𝟙 Z)
-  rw [coreFiberPentagonRightRoute_fac, coreFiberG106RightRouteHom_fac]
+  have hcomponent :
+      coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫
+          (coreFiberG106RightComponentRoute sigma tau upsilon G).1 =
+        coreFiberTripleIteratedLift sigma tau upsilon G := by
+    calc
+      _ = coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫
+          (coreFiberPentagonRightRoute sigma tau upsilon G).1 :=
+        congrArg (fun q => coreFiberLift ((sigma ≫ tau) ≫ upsilon) G ≫ q.1)
+          (coreFiberPentagonRightRoute_eq_components sigma tau upsilon G).symm
+      _ = _ := coreFiberPentagonRightRoute_fac sigma tau upsilon G
+  exact hcomponent.trans
+    (coreFiberG106RightRouteHom_fac sigma tau upsilon G).symm
+
+/-- The actual right route is the componentwise bridge followed by the G-106 path. -/
+theorem coreFiberPentagonRightRoute_hom_eq_g106 {U : AtomCarrier.{u}}
+    {W X Y Z : ExtractionInstance U}
+    (sigma : W ⟶ X) (tau : X ⟶ Y) (upsilon : Y ⟶ Z)
+    (G : CoreFiber W) :
+    (coreFiberPentagonRightRoute sigma tau upsilon G).1 =
+      coreFiberG106RightRouteHom sigma tau upsilon G :=
+  (congrArg (fun q => q.1)
+    (coreFiberPentagonRightRoute_eq_components sigma tau upsilon G)).trans
+    (coreFiberG106RightComponentRoute_hom_eq_path sigma tau upsilon G)
 
 noncomputable def coreFiberG106LeftRoute {U : AtomCarrier.{u}}
     {W X Y Z : ExtractionInstance U}
