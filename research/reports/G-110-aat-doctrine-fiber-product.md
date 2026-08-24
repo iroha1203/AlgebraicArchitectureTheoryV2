@@ -3,7 +3,8 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `target-proof-checkpoint`
+- proof state: `active / target-proof-checkpoint`(2026-08-24 改訂後カード。旧固定
+  カードは Cycle 75 で `target-refuted`)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -11,7 +12,72 @@
 あり、この report はそれらを再定義しない。target-theorem mode のため SCORE は
 使わない。
 
+## 2026-08-24 GOAL revision — unconditional diagnostic covariance
+
+Cycle 75 は旧固定カードの (D) が要求した source-vanishing /
+target-nonvanishing witness を
+`no_bcDiagnosticQualifiedVanishingCounterexample` で否定し、旧カードを
+`target-refuted` として停止した。この停止結果を保持した上で、人間裁定により
+G-110(D) を source-fiber-qualified な実 BC 二経路上の無条件 forward
+covariance へ改訂した。
+
+- (d1)–(d3) は Cycle 74 の actual-route package を維持する。
+- (d4) は canonical `mapEdgeReselection`、(d5) は `coherentAt_map`、
+  (d6) は一般 fiberwise functor と direct / via-base 実経路の
+  `TransportObstructionVanishes` 保存とする。
+- 旧 `H_bc`・`BCConditionSyntax` checker/bridge・pointwise raw-defect
+  保存・orbit map は改訂後 G-110 の completion obligation から外す。
+  既存 declaration は履歴 artifact として保持する。
+- 初期 raw defect と source reselection がともに非恒等で、source coherence
+  と両 target coherence が同時に発火する named finite witness を K3 の残る
+  nonvacuity obligation とする。
+- full-domain indexed action は Gr4 gate 第一項、diagnostic conservativity /
+  reflection / orbit exactness と obstruction-killing finite witness は独立した
+  Gr4 gate 第五項へ移管する。
+- Cycle 75 の reviewed declarations は改訂後 (d4)–(d6) の既存候補である。
+  新 fixed card に対する statement match・proof-use・finite nonvacuity の監査を
+  次の target-theorem cycle で行うまでは、K3 completion と数えない。
+
 ## Cycle ledger
+
+### Cycle 75 — unconditional vanishing preservation and old-target refutation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 75
+goal_blob_sha: 8da7d67addc66c4c17bf74af4cb708a62ab09cfd
+goal_sha256: 840b02c6dc19c435cce9aa3f8a9a62c9483f02bfcc90ab4f0b39f983dba3c31e
+base_oid: 1b8fcdcfdb8e2d40cf2efb1597f9a10942c71a61
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_obligation: decide the fixed H_bc-conditional D(d4)-D(d6) route by proving how coherent reselections and obstruction vanishing behave under the actual core-fiber transports
+  expected_result_type: proof-obligation-discharged or target-refuted
+result:
+  proposed_result_type: target-refuted
+  proof_obligation_delta: transportObstructionVanishes_map proves unconditional forward preservation for every fiberwise core-fiber functor; the direct and via-base specializations cover both actual qualified BC routes; no_bcDiagnosticQualifiedVanishingCounterexample denies the mandatory old-card negative witness on a broader domain before adding H_bc or named-firing restrictions
+  completion_candidate: no
+  accepted_head: 44ea0e081f3e3cff445905cd04d6fe1f642ca5cf
+  merge_commit: 28d7f70d86bf8db835c353a70b61bb4b64ac9c16
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticVanishingPreservation.lean
+  evidence:
+    - mapEdgeReselection
+    - coherentAt_map
+    - transportObstructionVanishes_map
+    - bcDiagnosticDirectTransportObstructionVanishes
+    - bcDiagnosticViaBaseTransportObstructionVanishes
+    - no_bcDiagnosticQualifiedVanishingCounterexample
+audits:
+  route_integrity: pass; both specializations consume the actual direct and via-base core-fiber functors
+  proof_use: pass; vanishing is converted to a coherent reselection, mapped by mapEdgeReselection, and closed by coherentAt_map
+  axiom_audit: 18 namespace declarations, standard axioms only
+  review: Math A, Math B, Lean A, and Lean B all No major findings
+  ci: 7/7 pass
+stop_condition: target-refuted on the old fixed card; human GOAL revision required
+next_obligation: none under the old fixed card
+```
 
 ### Cycle 74 — qualified actual-route diagnostic base change `(d1)`–`(d3)`
 

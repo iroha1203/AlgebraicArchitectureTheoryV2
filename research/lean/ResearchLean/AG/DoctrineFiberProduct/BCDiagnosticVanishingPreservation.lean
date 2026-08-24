@@ -8,8 +8,9 @@ The fixed `(d1)`--`(d3)` transport maps a source-fiber interpretation by an
 actual core-fiber functor.  Every coherent edge reselection maps to a coherent
 target reselection, so obstruction vanishing is preserved without an `H_bc`
 hypothesis.  Specializing to the direct and via-base Beck--Chevalley routes
-proves that the negative conjunct required by G-110(D) cannot occur on the
-revised source-fiber-incidence domain.
+proves that the negative conjunct required by the pre-2026-08-24 G-110(D)
+cannot occur on the source-fiber-incidence domain.  The revised card takes
+these declarations as candidates for its unconditional covariance layer.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -320,9 +321,10 @@ theorem bcDiagnosticViaBaseTransportObstructionVanishes
   exact transportObstructionVanishes_map incidence.toFiberwise
     (bcDiagnosticViaBaseFunctor presentation) vanishes
 
-/-- There is no qualified G-110(D) witness whose source obstruction vanishes
-and whose transported obstruction fails to vanish along either actual route.
-This refutes the required negative conjunct on the fixed input domain. -/
+/-- There is no qualified witness whose source obstruction vanishes and whose
+transported obstruction fails to vanish along either actual route.  This
+refutes the negative conjunct of the pre-2026-08-24 G-110(D) on its fixed input
+domain and supports the revised unconditional covariance statement. -/
 theorem no_bcDiagnosticQualifiedVanishingCounterexample
     {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
     ¬ ∃ (presentation : BCPresentation U)

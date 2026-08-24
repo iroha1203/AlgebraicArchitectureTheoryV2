@@ -23,8 +23,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   base change — exact 底層の有限 presentation 付き subcalculus、5層
   (A)–(E)。依存先 G-101 / G-106 / G-109(core pseudofunctor API)は
   完遂済み。Gr4 達成の記録は本カードでは行わず、coverage 拡張・
-  refinement 系統・上段 lift・IsIso 水準 BC exchange-failure 存否
-  決定の 4 gate を束ねる後続 capstone カードが行う)
+  full-domain indexed action、refinement 系統、上段 lift、IsIso 水準
+  BC exchange-failure 存否決定、diagnostic conservativity / reflection /
+  orbit exactness の 5 gate を束ねる後続 capstone カードが行う)
 
 ## draft（人間の確認待ち）
 
