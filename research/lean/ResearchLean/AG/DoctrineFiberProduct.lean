@@ -66,6 +66,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticSourceFiberBridgeWitness
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticQualifiedBaseChange
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticQualifiedBaseChangeWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticSourceFiberNoGoWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticVanishingPreservation
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependence
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexCleavageIndependenceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingPresentationWitnesses
@@ -417,5 +418,23 @@ this normalization on every admissible firing support, generating the fixed
 public relation.  Its strict positive and lax negative witnesses use that same
 relation, and every genuine G-106 reselection-orbit coordinate is represented
 by a reselected datum on which the lax relation fails.  K3 diagnostic base
-change and K4 pasting remain later obligations.
+change and K4 pasting remained later obligations at that cycle.
+
+The revised G-110(D) input domain then supplies southwest source-fiber
+incidence as a direction hypothesis.  This incidence converts the ordinary
+G-106 datum to the fixed southwest core fiber and generates `(d1)`--`(d3)`
+through the actual direct and via-base Beck--Chevalley functors.  Target edge
+qualification, two-cell base equality, comparator generation, and mate
+naturality are outputs, while a finite axis-fold input fires the package with
+distinct authored comparators.
+
+The next cycle proves that every coherent source reselection maps functorially
+to a coherent target reselection.  Consequently both actual Beck--Chevalley
+routes preserve `TransportObstructionVanishes` for every qualified input,
+without an `H_bc` hypothesis.  Hence no source-vanishing and
+target-nonvanishing witness exists on the fixed G-110(D) domain.  This is the
+card's explicit `target-refuted` stop: the required negative conjunct is
+false, rather than a completion of the target theorem.  Replacing it with an
+unconditional preservation statement requires a separate human revision of
+the fixed GOAL.
 -/
