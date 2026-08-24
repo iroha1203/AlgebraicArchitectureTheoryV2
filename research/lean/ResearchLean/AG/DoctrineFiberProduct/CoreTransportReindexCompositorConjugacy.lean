@@ -22,6 +22,10 @@ universe u u1 u2 v1 v2
 open CategoryTheory
 open AtomFoundation CrossStageCoherence
 
+/-- Categorical calculation used internally by the G-110 specialization:
+transporting an adjunction across the inverse of a left natural isomorphism
+and a right natural isomorphism makes the latter exactly the conjugate of the
+former. -/
 private theorem conjugateIsoEquiv_ofNatIsoLeft_symm_ofNatIsoRight
     {C : Type u1} {D : Type u2}
     [Category.{v1} C] [Category.{v2} D]
@@ -65,3 +69,5 @@ theorem coreTransportReindexCompositor_conjugateIsoEquiv
   exact conjugateIsoEquiv_ofNatIsoLeft_symm_ofNatIsoRight _ _ _
 
 end AAT.AG.DoctrineFiberProduct
+
+#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
