@@ -120,6 +120,36 @@ theorem horizontalCompositorAlignedComponentSquare_eq
             (bcBottomPresentation data.rightPresentation))).inv := by
   rfl
 
+/-- No-unfold characterization of the existing horizontal component
+comparison hom used by the aligned-square theorem. -/
+theorem horizontalBCPastingComponentComparison_hom_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    (horizontalBCPastingComponentComparison data).hom =
+      ((Functor.isoWhiskerRight
+        (coreFiberCompositor
+          (toSemanticBC data.leftPresentation).square.top
+          (toSemanticBC data.rightPresentation).square.top)
+        (coreFiberTransportFunctor
+          (toSemanticBC data.rightPresentation).square.right)).trans
+      ((Functor.isoWhiskerLeft
+          (coreFiberTransportFunctor
+            (toSemanticBC data.leftPresentation).square.top)
+          (bcSemanticCoreTransportSquareIso
+            (toSemanticBC data.rightPresentation))).trans
+        ((Functor.isoWhiskerRight
+            (bcSemanticCoreTransportSquareIso
+              (toSemanticBC data.leftPresentation))
+            (coreFiberTransportFunctor
+              (toSemanticBC data.rightPresentation).square.bottom)).trans
+          (Functor.isoWhiskerLeft
+            (coreFiberTransportFunctor
+              (toSemanticBC data.leftPresentation).square.left)
+            (coreFiberCompositor
+              (toSemanticBC data.leftPresentation).square.bottom
+              (toSemanticBC data.rightPresentation).square.bottom).symm)))).hom := by
+  rfl
+
 /-- The compositor-aligned generated component square is the hom of the
 existing horizontal component comparison. -/
 theorem horizontalCompositorAlignedComponentSquare_eq_componentComparison
@@ -142,11 +172,12 @@ theorem horizontalCompositorAlignedComponentSquare_eq_componentComparison
     exact bcProvenanceCoreTransportSquareIso_eq_semantic
       (⟨data.rightPresentation, rfl⟩ :
         BCRealizationProvenance (toSemanticBC data.rightPresentation))
+  rw [horizontalCompositorAlignedComponentSquare_eq,
+    horizontalTypedComponentSquare_eq,
+    horizontalBCPastingComponentComparison_hom_eq]
   apply NatTrans.ext
   funext X
-  simp [horizontalCompositorAlignedComponentSquare,
-    horizontalTypedComponentSquare,
-    horizontalBCPastingComponentComparison, hleft, hright,
+  simp [hleft, hright,
     TwoSquare.hComp, TwoSquare.whiskerTop, TwoSquare.whiskerBottom]
   rfl
 

@@ -85,6 +85,7 @@ result:
     - horizontalTypedComponentSquare_eq
     - horizontalCompositorAlignedComponentSquare
     - horizontalCompositorAlignedComponentSquare_eq
+    - horizontalBCPastingComponentComparison_hom_eq
     - horizontalCompositorAlignedComponentSquare_eq_componentComparison
   claim_mapping:
     theorem_names:
@@ -134,7 +135,7 @@ audits:
   goal_or_report_reinterpretation: none-found; the component-only equality is not promoted to the still-unproved full outer comparison or mate equality
   validation_refs:
     - focused BCHorizontalTypedComponentSquareAlignment single-file elaboration: pass
-    - five declarations under the module namespace, standard axioms only
+    - six declarations under the module namespace, standard axioms only
     - targeted predecessor module build only; Research aggregate or full build: not run
   blocking_findings: []
   next_obligation: combine the component-square alignment with the generated northwest, top and bottom alignments to prove horizontalTypedOuterComparisonNormalForm equals horizontalBCPastingOuterBoundaryComparison.hom without whole-expression reduction
