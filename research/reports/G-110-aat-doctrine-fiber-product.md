@@ -13,6 +13,122 @@
 
 ## Cycle ledger
 
+### Cycle 74 — qualified actual-route diagnostic base change `(d1)`–`(d3)`
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 74
+goal_blob_sha: 8da7d67addc66c4c17bf74af4cb708a62ab09cfd
+goal_sha256: 840b02c6dc19c435cce9aa3f8a9a62c9483f02bfcc90ab4f0b39f983dba3c31e
+base_oid: 981ddcd9a3dca380dee0a7a760748291cdc18483
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: PR 4114 revised D so that ordinary BCDiagnosticInterpretation plus southwest BCDiagnosticSourceFiberIncidence is the fixed input domain; Issue 4034 names the reviewed Cycle 68 and Cycle 71 artifacts as the first discharge candidate
+  proof_dag_predecessors:
+    - coreFiberFunctorPackageAutHom
+    - coreFiberFunctorPackageAutHom_one
+    - DiagnosticSourceFiberIncidence.toFiberwise
+    - bcDiagnosticDirectTransportedInterpretationData
+    - bcDiagnosticViaBaseTransportedInterpretationData
+    - bcDiagnosticTransportedInterpretationComparator_naturality
+    - finiteAxisFoldSourceFiberIncidence
+  proof_obligation: assemble and prove the complete unconditional D(d1)-D(d3) package on the revised source-fiber-qualified input domain, using only the actual square-generated direct and via-base core-fiber routes
+  selection_reason: this applies the human-approved quantifier revision to the existing reviewed DAG and closes the exact prerequisite before H_bc and conditional d4-d6 can be selected
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticQualifiedBaseChange.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticQualifiedBaseChangeWitnesses.lean
+  risks:
+    - repackaging arbitrary target fields instead of constructing them through the actual BC functors
+    - counting source-fiber incidence as a discharged theorem rather than the revised direction-hypothesis input
+    - consuming source twoCellBase in the actual-route d3 derivation
+    - treating the generated d1-d3 package as H_bc, d4-d6, or K3 completion
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: QualifiedDiagnosticBaseChangeD1D3 fixes the revised universal package over every validated BCPresentation, ordinary interpretation, and southwest source-fiber incidence input. qualifiedDiagnosticBaseChangeD1D3 generates the fiberwise source representation, the direct and via-base endpoint group homomorphisms with identity preservation, both actual-route transported AdmissibleTransportData values, target comparator equations, target edgeStrong and twoCellBase proofs, and the exact-mate comparator comparison. The finite axis-fold interpretation instantiates the package while retaining two distinct authored source comparators.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticQualifiedBaseChange.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticQualifiedBaseChangeWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - QualifiedDiagnosticBaseChangeD1D3
+    - qualifiedDiagnosticBaseChangeD1D3
+    - finiteAxisFoldQualifiedDiagnosticBaseChangeD1D3
+    - finiteAxisFoldQualifiedDiagnosticBaseChangeD1D3_comparators_ne
+  claim_mapping:
+    theorem_names:
+      - qualifiedDiagnosticBaseChangeD1D3
+      - finiteAxisFoldQualifiedDiagnosticBaseChangeD1D3
+      - finiteAxisFoldQualifiedDiagnosticBaseChangeD1D3_comparators_ne
+    source_labels:
+      - target theorem D(d1) same-combinatorial interpretation action on source-fiber-qualified input
+      - target theorem D(d2) actual direct and via-base endpoint group homomorphisms with identity preservation
+      - target theorem D(d3) actual-route generated transported admissible data
+    conjuncts:
+      - ordinary interpretation plus southwest incidence -> unchanged source packages, edge lifts, and comparators in the actual source core fiber
+      - actual direct and via-base core-fiber functors -> endpoint PackageFiberAut group homomorphisms preserving identity
+      - actual direct and via-base routes -> generated target AdmissibleTransportData with derived edgeStrong and twoCellBase
+      - generated target comparators -> fixed endpoint-action equations
+      - exact canonical mate -> pointwise comparison of the two generated comparator tables
+      - nonvacuity -> reviewed finite axis-fold input with distinct authored source comparators
+    undischarged_assumptions:
+      - H_bc definition, qualification theorems, checker, and non-definitional bridge
+      - conditional d4 raw-defect preservation, d5 reselection equivariance, and d6 orbit map
+      - named source-firing positive-negative vanishing pair
+      - K3 completion, K4, and final G-110 assembly
+    acceptance_point: the revised qualified domain is universal in presentation, ordinary interpretation, and incidence, and every target field is generated by the actual square-dependent BC routes; d1-d3 are discharged while H_bc and every conditional downstream layer remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - D(d1) same-combinatorial source interpretation conversion on the revised incidence-qualified input domain
+      - D(d2) endpoint group homomorphisms and identity-cochain preservation for both actual BC routes
+      - D(d3) generated direct and via-base transported data, comparator equations, edgeStrong, and twoCellBase
+    remaining:
+      - H_bc definition and all fixed qualification/checker obligations
+      - H_bc-conditional d4-d6 and vanishing preservation proof DAG
+      - source-firing positive-negative pair
+      - K3 completion, K4, and final assembly
+  certificate_provenance:
+    discharged:
+      - source incidence is exactly the revised direction-hypothesis and supplies only source vertex-base and edge-verticality facts
+      - endpoint actions come from coreFiberFunctorPackageAutHom applied to the actual direct and via-base functors
+      - target data come from the existing actual-route constructors, and the comparison consumes the exact canonical mate
+    unresolved:
+      - H_bc condition provenance and checker bridge
+      - d4-d6 and vanishing artifacts
+  proof_use:
+    used:
+      - BCDiagnosticSourceFiberIncidence
+      - DiagnosticSourceFiberIncidence.toFiberwise and its package/edge/comparator preservation theorems
+      - coreFiberFunctorPackageAutHom_one
+      - both actual transported-data constructors and all generated comparator/edgeStrong/twoCellBase theorems
+      - bcDiagnosticTransportedInterpretationComparator_naturality
+      - finiteAxisFoldSourceFiberIncidence and finiteAxisFoldSourceFiberBridge_comparators_ne
+    unused:
+      - source AdmissibleTransportData.twoCellBase in the actual-route d3 derivation; target twoCellBase is re-derived from incidence and the common target core fiber
+      - H_bc and all conditional d4-d6 material, which are outside this unconditional package
+  structure_field_escape: none-found; the public producer constructs every conclusion field from reviewed predecessor theorems, while no target package, edge qualification, two-cell equation, comparator, or comparison is an input
+  route_integrity: pass; both actions and transported data name bcDiagnosticDirectFunctor and bcDiagnosticViaBaseFunctor, and the comparison names the exact canonical mate route
+  target_fitting: none-found; the universal package is assembled from pre-existing reviewed definitions and the finite firing witness predates this cycle
+  vacuity: none-found; finiteAxisFoldQualifiedDiagnosticBaseChangeD1D3 inhabits the package and its two source comparators are proved distinct
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; the package matches the revised card exactly and does not claim full-domain action, H_bc, d4-d6, or K3 completion
+  validation_refs:
+    - focused BCDiagnosticQualifiedBaseChange.lean: pass; 18 namespace declarations, standard axioms only
+    - targeted BCDiagnosticQualifiedBaseChangeWitnesses module: pass; 4062 jobs; core 18 and witness 3 namespace declarations, standard axioms only
+  blocking_findings: []
+  next_obligation: define H_bc in the fixed BCConditionSyntax vocabulary and prove its qualification/checker bridge before selecting conditional d4
+review:
+  status: pending standard fixed-head review
+stop_condition_candidate: none
+next_obligation: after merge, select H_bc definition and qualification/checker bridge as the next K3 prerequisite
+```
+
 ### Cycle 72 — realized-schema no-go for universal source-fiber incidence
 
 ```yaml
