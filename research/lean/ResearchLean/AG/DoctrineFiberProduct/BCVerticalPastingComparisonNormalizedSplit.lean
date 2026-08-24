@@ -11,8 +11,10 @@ universe u
 open CategoryTheory
 open AtomFoundation CrossStageCoherence
 
-/-- The normalized component comparison splits into top normalization and its
-remaining inner route. -/
+/-- G-110(E) vertical covariant-square predecessor API: split the generated
+normalized comparison into canonical top normalization and its inner route.
+This definitional lemma records proof-use of the compositor rather than
+accepting a pre-split route. -/
 theorem verticalBCPastingNormalizedComponentComparison_hom_app_split
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)

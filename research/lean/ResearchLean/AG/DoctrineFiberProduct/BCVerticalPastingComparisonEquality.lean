@@ -18,8 +18,12 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- Vertical pasting agrees with the independently generated covariant
-comparison of the normalized outer semantic square. -/
+/-- G-110(E) vertical covariant-square predecessor checkpoint: generated
+vertical pasting agrees with the independently generated covariant comparison
+of the normalized outer semantic square.  `VerticalBCPastingData` supplies only
+finite presentations; the comparison and strong-cocartesian certificate are
+generated internally.  This is not the canonical `coreBeckChevalleyMate`
+pasting theorem, whose reindexing and unit/counit coherence remain open. -/
 theorem verticalBCPastingComparison_eq_outer
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U) :

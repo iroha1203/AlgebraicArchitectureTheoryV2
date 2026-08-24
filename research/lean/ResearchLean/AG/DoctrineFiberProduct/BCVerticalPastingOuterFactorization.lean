@@ -13,8 +13,10 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- The named exact-boundary route has the normalized outer lift
-factorization. -/
+/-- G-110(E) vertical covariant-square predecessor API: the named generated
+exact-boundary route has the normalized outer lift factorization.  The initial
+right-edge transport comes from finite-presentation realization and the
+remaining route from the component squares. -/
 theorem verticalBCPastingOuterBoundaryRouteHom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)
@@ -37,8 +39,9 @@ theorem verticalBCPastingOuterBoundaryRouteHom_fac
   exact verticalBCPastingNormalizedComponentComparison_hom_fac
     data sourcePackage
 
-/-- The exact-boundary vertical comparison has the normalized outer lift
-factorization. -/
+/-- G-110(E) vertical covariant-square predecessor API: transfer the named
+route factorization to the generated exact-boundary comparison.  The route
+equality is definitional and no comparison or lift certificate is assumed. -/
 theorem verticalBCPastingOuterBoundaryComparison_hom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)

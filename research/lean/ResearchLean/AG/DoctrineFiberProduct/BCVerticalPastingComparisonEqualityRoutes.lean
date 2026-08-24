@@ -13,8 +13,10 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- Top normalization followed by the literal vertical comparison has the
-expected lift factorization. -/
+/-- G-110(E) vertical covariant-square predecessor API: canonical northwest
+top normalization followed by the literal generated comparison has the stated
+lift factorization.  The northwest isomorphism and component comparison are
+generated from `VerticalBCPastingData`. -/
 theorem verticalBCPastingTopComponentRoute_hom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)
@@ -74,8 +76,10 @@ theorem verticalBCPastingTopComponentRoute_hom_fac
       (fun q => coreFiberLift data.pasteNorthwestIso.inv sourcePackage ≫ q)
       (verticalBCPastingComponentComparison_hom_fac data nestedPackage)
 
-/-- The left normalization compositor identifies the literal left-composite
-lift with the normalized-left lift. -/
+/-- G-110(E) vertical covariant-square predecessor API: the generated left
+normalization compositor identifies the literal left-composite lift with the
+normalized-left lift.  No endpoint equality or compositor is supplied by the
+caller. -/
 theorem verticalBCPastingLeftRoute_hom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)
@@ -106,7 +110,9 @@ theorem verticalBCPastingLeftRoute_hom_fac
       (toSemanticBC data.lowerPresentation).square.bottom
       sourcePackage
 
-/-- The top normalization whisker is the mapped compositor component. -/
+/-- G-110(E) vertical covariant-square predecessor API: expose the generated
+top-normalization whisker as the mapped G-109 compositor component.  This
+definitional API lemma consumes only the canonical northwest normalization. -/
 theorem verticalBCPastingNormalizedTop_hom_app
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)
@@ -126,8 +132,10 @@ theorem verticalBCPastingNormalizedTop_hom_app
           sourcePackage).hom).1 := by
   rfl
 
-/-- The normalized outer top-right lift is the explicit northwest-normalized
-component source lift. -/
+/-- G-110(E) vertical covariant-square predecessor API: expose the normalized
+outer top-right lift as the explicit northwest-normalized component source
+lift.  The equality follows from the generated normalized square definition,
+not from a caller certificate. -/
 theorem verticalBCPastingNormalizedSourceLift_eq
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)

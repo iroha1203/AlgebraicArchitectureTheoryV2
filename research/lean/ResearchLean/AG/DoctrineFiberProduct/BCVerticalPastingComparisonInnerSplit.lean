@@ -13,8 +13,10 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- The inner normalized route splits into component comparison and left
-normalization. -/
+/-- G-110(E) vertical covariant-square predecessor API: split the inner route
+into the generated component comparison and canonical left normalization.
+Both factors come from `VerticalBCPastingData`; no factorization certificate is
+assumed. -/
 theorem verticalBCPastingNormalizedInner_hom_app_split
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)

@@ -13,8 +13,10 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- The normalized vertical component comparison has the expected
-composite-right lift factorization. -/
+/-- G-110(E) vertical covariant-square predecessor API: the normalized
+generated component comparison carries the normalized source lift to the
+composite-right target lift.  Its northwest and component factors are produced
+from `VerticalBCPastingData`, with no supplied factorization certificate. -/
 theorem verticalBCPastingNormalizedComponentComparison_hom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)

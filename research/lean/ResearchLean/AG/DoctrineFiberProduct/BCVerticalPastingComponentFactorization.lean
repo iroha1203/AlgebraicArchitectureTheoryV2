@@ -13,8 +13,10 @@ open AtomFoundation CrossStageCoherence
 
 set_option maxHeartbeats 2000000
 
-/-- Expanding a compositor on the second edge of an iterated lift produces
-the corresponding three-stage lift. -/
+/-- G-110(E) vertical covariant-square predecessor API: expanding the generated
+G-109 compositor on the second edge produces the corresponding three-stage
+lift.  Its arrows and lift are ordinary categorical inputs; no factorization
+certificate is assumed. -/
 theorem coreFiberIteratedLift_second_compositor_hom_fac
     {U : AtomCarrier.{u}}
     {W X Y Z : ExtractionInstance U}
@@ -31,8 +33,10 @@ theorem coreFiberIteratedLift_second_compositor_hom_fac
   rw [coreFiberCompositorApp_hom_fac]
   exact (Category.assoc _ _ _).symm
 
-/-- The literal vertical component comparison carries the outer top-right
-iterated lift to the outer left-bottom iterated lift. -/
+/-- G-110(E) vertical covariant-square predecessor API: the literal generated
+component comparison carries the outer top-right lift to the outer left-bottom
+lift.  The two square comparisons and both compositors arise from the upper
+and lower presentations in `VerticalBCPastingData`; none is caller-authored. -/
 theorem verticalBCPastingComponentComparison_hom_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U)
