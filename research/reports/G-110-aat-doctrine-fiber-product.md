@@ -40,6 +40,102 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 93 — generated canonical-mate composition algebra
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 93
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 2ba5dab1e9d2e02c2379dd8433cf7629e6013fc1
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5394816561
+  proof_dag_predecessors:
+    - coreBeckChevalleyMate
+    - mateEquiv_vcomp
+    - mateEquiv_hcomp
+  proof_obligation: specialize mates composition to the generated horizontal and vertical component squares so their canonical mate routes consume the generated adjunction units and counits before exact outer-presentation alignment
+  selection_reason: Cycles 91 and 92 identified both covariant component comparisons with their normalized outer comparisons; mathlib mates composition now fixes the uniquely oriented component-mate pasting routes, while selected reindexing and composite-adjunction alignment remain separate
+  expected_result_type: target-proof-checkpoint
+  risks:
+    - using vertical and horizontal TwoSquare composition in the wrong geometric directions
+    - reversing the right-adjoint mate order in vertical pasting
+    - calling a composed-adjunction mate the canonical mate of the independently generated outer presentation
+  unchecked:
+    - horizontal northwest/reindexing alignment with the canonical mate of the outer presentation
+    - vertical composite-adjunction alignment with the canonical mate of the outer presentation
+    - pullback-side composition coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: horizontalBCPasting_mateEquiv_vcomp specializes mateEquiv_vcomp to the generated left and right squares, while verticalBCPasting_mateEquiv_hcomp specializes mateEquiv_hcomp to the generated upper and lower squares; their public corollaries identify the component routes with compositions of the corresponding coreBeckChevalleyMate declarations
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingMateComposition.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingMateComposition.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - horizontalBCPasting_mateEquiv_vcomp
+    - horizontalBCPasting_coreBeckChevalleyMate_vcomp
+    - verticalBCPasting_mateEquiv_hcomp
+    - verticalBCPasting_coreBeckChevalleyMate_hcomp
+  claim_mapping:
+    theorem_names:
+      - horizontalBCPasting_coreBeckChevalleyMate_vcomp
+      - verticalBCPasting_coreBeckChevalleyMate_hcomp
+    source_labels:
+      - target theorem E generated canonical-mate composition algebra predecessor
+    conjuncts:
+      - horizontal geometric pasting uses mateEquiv_vcomp and preserves the left-to-right component order
+      - vertical geometric pasting uses mateEquiv_hcomp and the required reversed right-adjoint mate order
+      - both component routes use the public generated coreBeckChevalleyMate declarations
+    undischarged_assumptions:
+      - exact alignment with coreBeckChevalleyMate of each independently generated outer presentation
+      - selected reindexing composition and composite-adjunction coherence
+      - pullback-side composition coherence, actual D pasting, named finite nonvacuity, K4 and final target assembly
+    acceptance_point: unit/counit mate-composition algebra is proved for both generated component routes; outer canonical-mate alignment and final target completion are not claimed
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - horizontal composition law for the two generated component mates
+      - vertical composition law for the two generated component mates under composed adjunctions
+      - public coreBeckChevalleyMate proof-use in both component routes
+    remaining:
+      - horizontal northwest and selected-reindexing alignment to the outer canonical mate
+      - vertical covariant and contravariant compositor compatibility between composed and outer adjunctions
+      - pullback-side composition coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - component adjunctions, comparisons, units and counits are generated from the component BCPresentations
+      - mate route equalities follow from mathlib mateEquiv_vcomp and mateEquiv_hcomp
+    unresolved: []
+  proof_use:
+    used:
+      - coreBeckChevalleyMate
+      - bcLeftAdjunction
+      - bcRightAdjunction
+      - bcCoreTransportSquareIso
+      - mateEquiv_vcomp
+      - mateEquiv_hcomp
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: the horizontal theorem composes left then right squares across the shared adjunction; the vertical theorem composes upper then lower covariant squares and reverses mate order exactly as mateEquiv_hcomp requires
+  target_fitting: none-found
+  vacuity: both theorems are parametric in generated horizontal or vertical pasting data; named target-level nonvacuity remains open
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: composed component mates are not identified with the independently generated outer canonical mate until the remaining reindexing and adjunction-alignment theorems are proved
+  validation_refs:
+    - focused BCHorizontalPastingMateComposition single-file elaboration: pass
+    - focused BCVerticalPastingMateComposition single-file elaboration: pass
+    - four declarations across the two modules, standard axioms only
+  blocking_findings: []
+  next_obligation: construct horizontal northwest/reindexing alignment and vertical composite-adjunction alignment, then identify both composed mate routes with coreBeckChevalleyMate of the independently generated outer presentations
+```
+
 ### Cycle 92 — vertical covariant-square comparison equality
 
 ```yaml
@@ -68,7 +164,7 @@ selection:
     - identifying comparison isomorphisms from common endpoints without proving lift factorization
   unchecked:
     - horizontal and vertical canonical-mate pasting, including selected reindexing and unit/counit coherence
-    - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+    - pullback-side composition coherence
     - actual D pasting, named finite nonvacuity, K4 and final target assembly
 result:
   proposed_result_type: target-proof-checkpoint
@@ -101,7 +197,7 @@ result:
       - the exact-boundary componentwise route equals the independently generated comparison of the normalized outer square
     undischarged_assumptions:
       - horizontal and vertical coreBeckChevalleyMate pasting, including selected reindexing and unit/counit coherence
-      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - pullback-side composition coherence
       - actual D pasting, named finite nonvacuity, K4 and final target assembly
     acceptance_point: both horizontal and vertical covariant transport-square comparison-Iso equalities are now proved as predecessors of E; no coreBeckChevalleyMate pasting or final target completion is claimed
     port_status: unported (Research-proved)
@@ -112,7 +208,7 @@ audits:
       - vertical normalized route lift factorization including right-edge equality transport
     remaining:
       - horizontal and vertical coreBeckChevalleyMate pasting with selected reindexing and unit/counit coherence
-      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - pullback-side composition coherence
       - actual D pasting, named finite nonvacuity, K4 and final assembly
   certificate_provenance:
     discharged:
@@ -141,7 +237,7 @@ audits:
     - focused BCVerticalPastingComparisonEquality single-file elaboration: pass
     - one declaration under the final module namespace, standard axioms only
   blocking_findings: []
-  next_obligation: prove horizontal and vertical coreBeckChevalleyMate pasting with the required selected reindexing, unit/counit and pullback-side composition coherence, including the G-106/G-109 bridge that consumes transportAlong_comp_coherence
+  next_obligation: prove horizontal and vertical coreBeckChevalleyMate pasting with the required selected reindexing, unit/counit and pullback-side composition coherence, retaining the Cycle 82 G-106/G-109 bridge for final integration
 ```
 
 ### Cycle 91 — horizontal covariant-square comparison equality
@@ -171,7 +267,7 @@ selection:
   unchecked:
     - vertical normalization, boundary alignment and outer-comparison equality
     - horizontal and vertical canonical-mate pasting, including reindexing and unit/counit coherence
-    - pullback-side composition coherence, the G-106/G-109 bridge consuming transportAlong_comp_coherence, and actual D pasting
+    - pullback-side composition coherence and actual D pasting
     - named finite nonvacuity, K4 and final target assembly
 result:
   proposed_result_type: target-proof-checkpoint
@@ -205,7 +301,7 @@ result:
     undischarged_assumptions:
       - vertical comparison normalization and outer equality
       - horizontal and vertical coreBeckChevalleyMate pasting, including selected reindexing and unit/counit coherence
-      - pullback-side composition coherence, the G-106/G-109 bridge consuming transportAlong_comp_coherence, and actual D pasting
+      - pullback-side composition coherence and actual D pasting
       - named finite nonvacuity, K4 and final target assembly
     acceptance_point: the horizontal covariant transport-square comparison-Iso equality is proved as a predecessor of E; no coreBeckChevalleyMate pasting, vertical, or final target completion is claimed
     port_status: unported (Research-proved)
@@ -217,7 +313,7 @@ audits:
     remaining:
       - vertical normalization, alignment and comparison-Iso equality
       - horizontal and vertical coreBeckChevalleyMate pasting with selected reindexing and unit/counit coherence
-      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - pullback-side composition coherence
       - actual D pasting, named finite nonvacuity, K4 and final assembly
   certificate_provenance:
     discharged:
