@@ -60,12 +60,16 @@ selection:
     - coreFiberTransportEqIso
     - coreTransportReindexAdjunction
     - mateEquiv
+  next_stage_inputs:
     - coreTransportReindexCompositorAdjunction_eq_direct
     - horizontalBCPasting_mateEquiv_vcomp
     - verticalBCPasting_mateEquiv_hcomp
   proof_obligation: construct the generated contravariant second mates that align the normalized outer left reindex functor with the literal horizontal and vertical component routes across the inverse canonical northwest transport
   selection_reason: Cycle 95 discharged finite-composition adjunction coherence; the remaining functor mismatch in both mate-composition routes is exactly the canonical northwest isomorphism supplied by the pasting schema
   expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingNorthwestSecondMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
   risks:
     - reversing the canonical northwest isomorphism
     - supplying a reindex alignment instead of deriving it as a mate
@@ -84,10 +88,12 @@ result:
   evidence:
     - horizontalPasteNorthwest_inv_left_eq
     - horizontalPasteNorthwestLeftTransportIso
+    - horizontalPasteNorthwestLeftTransportSquare
     - horizontalPasteNorthwestReindexAlignment
     - horizontalPasteNorthwestReindexAlignmentNormalized
     - verticalPasteNorthwest_inv_left_eq
     - verticalPasteNorthwestLeftTransportIso
+    - verticalPasteNorthwestLeftTransportSquare
     - verticalPasteNorthwestReindexAlignment
     - verticalPasteNorthwestReindexAlignmentNormalized
   claim_mapping:
@@ -129,6 +135,9 @@ audits:
       - coreFiberCompositor
       - coreFiberTransportEqIso
       - Functor.isoWhiskerLeft
+      - Functor.rightUnitor
+      - Adjunction.comp
+      - bcLeftAdjunction
       - mateEquiv
       - Functor.leftUnitor
     unused: []
