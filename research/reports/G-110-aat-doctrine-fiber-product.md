@@ -40,6 +40,121 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 100 — typed two-square normal forms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 100
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 4e18a519b84ef548dfc9e98f14615ff6a724cd1e
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5397305127
+  proof_dag_predecessors:
+    - horizontalNormalizedNorthwestLeftTransportSquare
+    - verticalNormalizedNorthwestLeftTransportSquare
+    - mateEquiv_vcomp
+  proof_obligation: construct horizontal and vertical generated TwoSquare normal forms on the exact normalized outer functor boundaries and prove the northwest-to-component mate composition step
+  selection_reason: Cycle 99 fixes the vertical target reindex orientation, while direct final-equation checking isolates nested Iso.trans expansion as the remaining obstacle; named typed normal forms expose the generated square composition and external alignments required by mate laws
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingTypedTwoSquareNormalForm.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - reversing whiskerTop, whiskerRight, or whiskerBottom orientation
+    - hiding the northwest square or component square inside an opaque caller comparison
+    - claiming equality with the independently named outer comparison before proving it
+  unchecked:
+    - equality of each typed normal form natural transformation with the corresponding outer boundary comparison hom
+    - horizontal and vertical component-to-outer mate commuting equations
+    - actual D pasting, named finite nonvacuity, K4 and final assembly
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: both directions now have a generated TwoSquare on the exact normalized outer functor boundaries, and the mate of each raw northwest-plus-component square is proved to be the composite of its two generated mates
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingTypedTwoSquareNormalForm.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - horizontalOuterTopToTypedComponents
+    - horizontalOuterTopToTypedComponents_eq
+    - horizontalTypedComponentsToOuterBottom
+    - horizontalTypedComponentsToOuterBottom_eq
+    - horizontalTypedRawComparisonSquare
+    - horizontalTypedRawComparisonSquare_eq
+    - horizontalTypedOuterComparisonNormalForm
+    - horizontalTypedOuterComparisonNormalForm_eq
+    - horizontalNormalizedNorthwest_mateEquiv_vcomp
+    - verticalTypedRawComparisonSquare
+    - verticalTypedRawComparisonSquare_eq
+    - verticalTypedComponentsToOuterBottom
+    - verticalTypedComponentsToOuterBottom_eq
+    - verticalTypedOuterComparisonNormalForm
+    - verticalTypedOuterComparisonNormalForm_eq
+    - verticalTypedOuterComparisonNormalForm_eq_staged
+    - verticalNormalizedNorthwest_mateEquiv_vcomp
+  claim_mapping:
+    theorem_names:
+      - horizontalNormalizedNorthwest_mateEquiv_vcomp
+      - verticalNormalizedNorthwest_mateEquiv_vcomp
+    source_labels:
+      - target theorem E typed component-to-outer mate-composition predecessors
+    conjuncts:
+      - the horizontal generated square is placed on normalized outer top and bottom boundaries and its northwest-component mate decomposes vertically
+      - the vertical generated square is placed on normalized outer top, right and bottom boundaries and its northwest-component mate decomposes vertically
+    undischarged_assumptions:
+      - typed-normal-form equality with horizontalBCPastingOuterBoundaryComparison.hom and verticalBCPastingOuterBoundaryComparison.hom
+      - horizontal and vertical component-to-outer mate commuting equations
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
+    acceptance_point: the normal forms and mate decompositions are generated only from normalized provenance, component squares, G-109 compositors, equality transports and mathlib mate composition; equality with the independent outer comparisons remains explicit
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - exact horizontal normalized outer functor boundaries for the generated component TwoSquare
+      - exact vertical normalized outer functor boundaries for the generated component TwoSquare
+      - horizontal and vertical northwest-plus-component mate decomposition
+    remaining:
+      - natural-transformation equality of both normal forms with the independently named outer comparisons
+      - final horizontal and vertical aligned mate equations
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - northwest squares are generated by normalized realization provenance and mate alignment APIs
+      - component squares are generated by bcCoreTransportSquareIso
+      - external alignments are generated by top and transport compositors, equality transports and unitors
+    unresolved: []
+  proof_use:
+    used:
+      - mateEquiv_vcomp
+      - horizontalNormalizedNorthwestLeftTransportSquare
+      - verticalNormalizedNorthwestLeftTransportSquare
+      - bcCoreTransportSquareIso
+      - horizontalBCPastingNormalizedTopCompositor
+      - verticalBCPastingNormalizedTopCompositor
+      - verticalNormalizedRightTransportIso
+      - coreFiberCompositor
+      - coreFiberTransportEqIso
+      - Functor.leftUnitor
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass; horizontal uses left-then-right component squares and vertical uses the upper-then-lower covariant square with the lower-then-upper composed right adjunction
+  target_fitting: none-found
+  vacuity: none-found; all declarations are parametric in arbitrary finite horizontal or vertical pasting data
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; typed normal forms and mate decomposition are not promoted to the still-unproved outer-comparison or final mate equalities
+  validation_refs:
+    - focused BCPastingTypedTwoSquareNormalForm single-file elaboration: pass
+    - seventeen declarations under the module namespace, standard axioms only
+    - Research aggregate or full build: not run
+  blocking_findings: []
+  next_obligation: prove the horizontal and vertical typed normal-form natural transformations equal the corresponding outer boundary comparison homs, using staged associator and unitor normalization instead of whole-expression reduction
+```
+
 ### Cycle 99 — vertical selected-reindex target alignment
 
 ```yaml
