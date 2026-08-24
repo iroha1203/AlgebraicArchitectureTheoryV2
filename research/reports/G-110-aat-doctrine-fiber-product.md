@@ -40,6 +40,84 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 98 — generated compositor conjugacy
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 98
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: abe75f4c646a48ed3c8bcc17fb4c14a0ffecc896
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5396618808
+  proof_dag_predecessors:
+    - coreTransportReindexCompositorAdjunction_eq_direct
+    - typedCoreFiberTransportCompositor
+    - selectedCoreFiberReindexCompositor
+    - conjugateIsoEquiv
+    - Adjunction.ofNatIsoLeft
+    - Adjunction.ofNatIsoRight
+  proof_obligation: identify the right-adjoint conjugate of the typed covariant compositor with the generated selected-reindex compositor
+  selection_reason: Cycle 97 fixes the normalized source and target alignments, and their final mate equations require the generated covariant compositor and generated contravariant compositor to be recognized as mates without a caller-supplied coherence equality
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCompositorConjugacy.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - assuming the two generated compositors are definitionally equal as mates
+    - introducing a caller-supplied right-adjoint comparison
+    - proving only a componentwise special case instead of the natural-isomorphism equality
+  unchecked:
+    - horizontal and vertical component-to-outer mate equations
+    - actual D pasting, named finite nonvacuity, K4 and final assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: the generated selected-reindex compositor is now proved to be exactly the conjugate of the generated covariant compositor under the composite and direct generated adjunctions
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexCompositorConjugacy.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - coreTransportReindexCompositor_conjugateIsoEquiv
+  claim_mapping:
+    theorem_names:
+      - coreTransportReindexCompositor_conjugateIsoEquiv
+    source_labels:
+      - target theorem E finite-composition mate-coherence predecessor
+    conjuncts:
+      - the mate of the generated covariant finite compositor is the generated selected-reindex compositor
+  premise_discharge:
+    material_premises:
+      - finite cartesian presentations first and second
+      - generated component and direct transport--reindex adjunctions
+      - generated covariant and selected-reindex compositors
+    derivation:
+      - rewrite the direct generated adjunction by coreTransportReindexCompositorAdjunction_eq_direct
+      - expand adjunction transport across the inverse left isomorphism and the right isomorphism
+      - apply right-isomorphism naturality and the composite adjunction right triangle identity
+    proof_use:
+      - coreTransportReindexCompositorAdjunction_eq_direct
+      - naturality of selectedCoreFiberReindexCompositor.hom
+      - Adjunction.right_triangle_components
+    caller_supplied_coherence: none
+  validation:
+    focused_lean: pass
+    public_declarations: 1
+    axiom_audit: propext, Classical.choice, Quot.sound only
+    research_full_build: not run
+  review:
+    status: pending
+  remaining_obligations:
+    - prove the horizontal and vertical aligned component-to-outer mate equations
+    - assemble the actual D pasting theorem
+    - discharge named finite nonvacuity, K4 and final completion criteria
+  next_obligation: combine this conjugacy theorem with the normalized mate-alignment packet and horizontal/vertical mate-composition theorems to prove the final component-to-outer mate equations
+```
+
 ### Cycle 97 — normalized-provenance mate-alignment packet
 
 ```yaml
