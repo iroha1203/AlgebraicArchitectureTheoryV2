@@ -420,8 +420,8 @@ relation, and every genuine G-106 reselection-orbit coordinate is represented
 by a reselected datum on which the lax relation fails.  K3 diagnostic base
 change and K4 pasting remained later obligations at that cycle.
 
-The revised G-110(D) input domain then supplies southwest source-fiber
-incidence as a direction hypothesis.  This incidence converts the ordinary
+The source-fiber-qualified G-110(D) input domain then supplies southwest
+source-fiber incidence as a direction hypothesis.  This incidence converts the ordinary
 G-106 datum to the fixed southwest core fiber and generates `(d1)`--`(d3)`
 through the actual direct and via-base Beck--Chevalley functors.  Target edge
 qualification, two-cell base equality, comparator generation, and mate
@@ -432,9 +432,9 @@ The next cycle proves that every coherent source reselection maps functorially
 to a coherent target reselection.  Consequently both actual Beck--Chevalley
 routes preserve `TransportObstructionVanishes` for every qualified input,
 without an `H_bc` hypothesis.  Hence no source-vanishing and
-target-nonvanishing witness exists on the fixed G-110(D) domain.  This is the
-card's explicit `target-refuted` stop: the required negative conjunct is
-false, rather than a completion of the target theorem.  Replacing it with an
-unconditional preservation statement requires a separate human revision of
-the fixed GOAL.
+target-nonvanishing witness exists on that input domain.  This gave the
+pre-2026-08-24 card its explicit `target-refuted` stop.  The subsequent human
+GOAL revision adopts this functorial map, coherence preservation, and vanishing
+preservation as the unconditional `(d4)`--`(d6)` covariance candidates; K3 also
+requires their revised-card audit and a named nonidentity finite firing witness.
 -/

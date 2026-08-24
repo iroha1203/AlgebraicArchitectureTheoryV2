@@ -463,12 +463,16 @@ Gr4(底の base change 完備)の証明義務は5層に分解できる。
   Set 的 family fibration に還元される場合、交換は古典的に無条件成立して
   「集合論的 Beck–Chevalley の再証明」に堕ちる。交換が破れる非 pullback /
   lax square の negative witness を対で要求して、初めて数学的本体と呼べる。
-- **(D) 診断の base change 可換性。** 無条件では成立しない見込みで、成立
-  条件の同定自体が定理になる。「不変性+条件+反例」型で G-104 / G-107 の
-  方法論資産が効く、カードの数学的重心。語彙の注意: 「flat base change
-  類似」の flat は lawful locus の既存命名 `Flat_U(X)` と衝突するため、
-  起票前に語彙を裁定する。先行考察はスキーム射幾何ノートの fiber product・
-  derived fiber product・functor of points の各節を素材とする。
+- **(D) 診断の base change 共変性。** G-110 Cycle 75 で、source-fiber
+  incidence 付きの実 BC 経路は reselection・coherence・obstruction
+  vanishing を無条件に送ることが確定した。カードはこの forward action を
+  canonical な (d1)–(d6) として構成し、初期 defect と reselection がともに
+  非恒等な有限 witness 上で発火させる。逆向きの reflection、reselection
+  orbit の検出、情報損失の分類は、full-domain indexed action 上の
+  `DiagnosticConservative` を扱う独立 Gr4 gate とする。語彙の注意:
+  「flat base change 類似」の flat は lawful locus の既存命名
+  `Flat_U(X)` と衝突するため使わない。先行考察はスキーム射幾何ノートの
+  fiber product・derived fiber product・functor of points の各節を素材とする。
 - **(E) 閉性。** pullback square の貼り合わせ。G-106 の合成 coherence に
   依存する唯一の層。
 
@@ -477,9 +481,10 @@ G-101 が圏 `Doct_U`・`ExtInst_U`・opcartesian 普遍性
 (`transportAlongHom_isStronglyCocartesian`)まで建設済みで、残るは極限構造の
 不在、refinement 射の圏化、どの圏の fiber product を心臓と呼ぶかの裁定の
 3点である。リスクの筆頭は Boolean regime の零次元性により fiber product が
-集合論的交わりへ退化すること — 非自明性は (C) の negative witness と (D) に
-置く。G-106 依存は (E) に局所化できるため、Gr4 の大部分は G-106 と並走
-可能である。
+集合論的交わりへ退化すること — 非自明性は (C) の negative witness、(D) の
+非恒等 finite firing、後続 gate の diagnostic conservativity に置く。G-106 の
+構成依存は (D)(E) に現れ、既存 reviewed API を消費するため再建しない。
+Gr4 の大部分は G-106 と並走可能である。
 
 ### 4.4 登路の空席と隠れ依存
 
@@ -603,10 +608,11 @@ program analysis 系)が既に公開されている以上、証明済み成果�
    (saturation の独立カード化は裁定事項)。law 語彙と TwoPhase 語彙の
    橋渡し方式も起草時の候補提示事項。target-theorem mode の必須項目を
    満たせる見込みが最も具体的な一枚。
-4. **Gr4 カード**(doctrine fiber product)— G-106 依存は閉性層 (E) のみに
-   局所化できるため並走可能(§4.3 を claim 素材に)。ただし (D) の成立条件
-   同定は起票時に target statement を固定できないリスクがあるため、mode の
-   裁定を素描段階で行う。
+4. **Gr4 カード**(doctrine fiber product)— G-110 は exact-bottom の有限
+   presentation 付き subcalculus と、source-fiber-qualified な診断共変性を
+   第一手として固定する。full-domain indexed action と diagnostic
+   conservativity / reflection / orbit exactness は別 gate に分け、最後に
+   capstone が Gr4 達成を記録する。
 5. **Gr3 完成カード**(段横断合成整合)— G-106 は Gr3 の 2-障害核であり
    (§4.6)、段横断の一般合成は G-106 の固定 target statement の対象外。
    完成には (0) 塔上層
