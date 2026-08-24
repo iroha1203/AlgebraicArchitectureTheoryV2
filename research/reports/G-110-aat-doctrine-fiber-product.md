@@ -40,6 +40,107 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 101 — horizontal typed component-square alignment
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 101
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: ca645f700b68ec4b8c42625e00737b370661d488
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5397993649
+  proof_dag_predecessors:
+    - bcCoreTransportSquareIso
+    - bcProvenanceCoreTransportSquareIso_eq_semantic
+    - coreFiberCompositor
+    - horizontalBCPastingComponentComparison
+  proof_obligation: identify the top-and-bottom compositor alignment of the literal horizontal component-square composite with the existing generated horizontal component comparison
+  selection_reason: direct reduction of the full Cycle 100 horizontal normal form timed out; the first remaining definitional mismatch is exactly the component-square composite versus composite-edge transport functors, so isolating its generated compositor alignment gives the smallest reusable proof delta
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalTypedComponentSquareAlignment.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - reversing the top or bottom compositor orientation
+    - replacing presentation-indexed component squares without consuming their semantic identification theorem
+    - promoting a component-only alignment to the full outer comparison equality
+  unchecked:
+    - equality of horizontalTypedOuterComparisonNormalForm with horizontalBCPastingOuterBoundaryComparison.hom
+    - vertical typed-normal-form equality and both final component-to-outer mate equations
+    - actual D pasting, named finite nonvacuity, K4 and final assembly
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: the literal left-then-right generated component squares, aligned by generated top and bottom core-fiber compositors, are proved equal to the existing horizontal component comparison hom
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalTypedComponentSquareAlignment.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - horizontalTypedComponentSquare
+    - horizontalTypedComponentSquare_eq
+    - horizontalCompositorAlignedComponentSquare
+    - horizontalCompositorAlignedComponentSquare_eq
+    - horizontalBCPastingComponentComparison_hom_eq
+    - horizontalCompositorAlignedComponentSquare_eq_componentComparison
+  claim_mapping:
+    theorem_names:
+      - horizontalCompositorAlignedComponentSquare_eq_componentComparison
+    source_labels:
+      - target theorem E horizontal typed component-to-outer predecessor
+    conjuncts:
+      - the presentation-indexed left and right component squares compose horizontally in the selected order
+      - generated top and bottom compositors identify that square with the reviewed horizontal component comparison
+    undischarged_assumptions:
+      - northwest and normalized outer alignment around the horizontal component comparison
+      - full horizontal and vertical typed-normal-form equalities
+      - final horizontal and vertical component-to-outer mate equations
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
+    acceptance_point: the component alignment uses only generated presentation squares, their proved semantic identities, and generated core-fiber compositors
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - exact top and bottom compositor alignment from literal horizontal component transport composites to composite semantic-edge transport functors
+      - equality of the aligned generated component square with horizontalBCPastingComponentComparison.hom
+    remaining:
+      - northwest and normalized outer alignment for the full horizontal normal form
+      - vertical typed-normal-form equality and both final aligned mate equations
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - both component squares come from bcCoreTransportSquareIso and are identified semantically by bcProvenanceCoreTransportSquareIso_eq_semantic
+      - top and bottom alignments come from coreFiberCompositor
+    unresolved: []
+  proof_use:
+    used:
+      - bcCoreTransportSquareIso
+      - bcProvenanceCoreTransportSquareIso_eq_semantic
+      - bcSemanticCoreTransportSquareIso
+      - coreFiberCompositor
+      - horizontalBCPastingComponentComparison
+      - TwoSquare.hComp
+      - TwoSquare.whiskerTop
+      - TwoSquare.whiskerBottom
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass; left-then-right component squares use compositor hom on top and compositor inv on bottom
+  target_fitting: none-found
+  vacuity: none-found; the theorem is parametric in arbitrary finite horizontal pasting data
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; the component-only equality is not promoted to the still-unproved full outer comparison or mate equality
+  validation_refs:
+    - focused BCHorizontalTypedComponentSquareAlignment single-file elaboration: pass
+    - six declarations under the module namespace, standard axioms only
+    - targeted predecessor module build only; Research aggregate or full build: not run
+  blocking_findings: []
+  next_obligation: combine the component-square alignment with the generated northwest, top and bottom alignments to prove horizontalTypedOuterComparisonNormalForm equals horizontalBCPastingOuterBoundaryComparison.hom without whole-expression reduction
+```
+
 ### Cycle 100 — typed two-square normal forms
 
 ```yaml
