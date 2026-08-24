@@ -55,11 +55,8 @@ selection:
   proof_state_ref: Issue 4034 comment 5394816561
   proof_dag_predecessors:
     - coreBeckChevalleyMate
-    - horizontalBCPastingComparison_eq_outer
-    - verticalBCPastingComparison_eq_outer
     - mateEquiv_vcomp
     - mateEquiv_hcomp
-    - coreFiberCompositor_assoc_via_g106
   proof_obligation: specialize mates composition to the generated horizontal and vertical component squares so their canonical mate routes consume the generated adjunction units and counits before exact outer-presentation alignment
   selection_reason: Cycles 91 and 92 identified both covariant component comparisons with their normalized outer comparisons; mathlib mates composition now fixes the uniquely oriented component-mate pasting routes, while selected reindexing and composite-adjunction alignment remain separate
   expected_result_type: target-proof-checkpoint
@@ -98,7 +95,7 @@ result:
     undischarged_assumptions:
       - exact alignment with coreBeckChevalleyMate of each independently generated outer presentation
       - selected reindexing composition and composite-adjunction coherence
-      - actual D pasting, named finite nonvacuity, K4 and final target assembly
+      - pullback-side composition coherence, actual D pasting, named finite nonvacuity, K4 and final target assembly
     acceptance_point: unit/counit mate-composition algebra is proved for both generated component routes; outer canonical-mate alignment and final target completion are not claimed
     port_status: unported (Research-proved)
 audits:
