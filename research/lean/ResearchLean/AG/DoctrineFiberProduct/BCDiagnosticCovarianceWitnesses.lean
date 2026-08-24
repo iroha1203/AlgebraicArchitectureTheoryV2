@@ -15,7 +15,7 @@ reselections and preserve obstruction vanishing.
 Implementation notes: a single-disk diagnostic is used because G-106 proves
 its absorbing reselection for arbitrary authored data.  The closed
 double-diamond fixture is deliberately not reused: its unequal authored faces
-are reviewed evidence of nonvanishing and admit no globally coherent
+are reviewed evidence of nonvanishing and have no globally coherent
 reselection.
 -/
 
