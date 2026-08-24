@@ -60,7 +60,11 @@ selection:
     - Adjunction.comp
     - Adjunction.ofNatIsoLeft
     - Adjunction.ofNatIsoRight
-  proof_obligation: construct the component-composite adjunction directly on the finite-composite presentation functors and expose its generated unit and counit routes before proving equality with the independently generated direct adjunction
+    - coreTransportToReindexHom_fac
+    - selectedCoreFiberReindexCompositorApp_hom_fac
+    - coreFiberLift_eqToIso_fac
+    - coreFiberCompositorApp_hom_fac
+  proof_obligation: construct the component-composite adjunction directly on the finite-composite presentation functors, expose its generated unit and counit routes, and prove equality with the independently generated direct adjunction
   selection_reason: Cycle 94 reduced outer-mate alignment to finite-composition adjunction coherence and northwest alignment; transporting Adjunction.comp across the two reviewed compositors is the smallest typed predecessor shared by both directions
   expected_result_type: target-proof-checkpoint
   risks:
@@ -68,12 +72,11 @@ selection:
     - hiding a caller-supplied adjunction or coherence equality
     - omitting one component unit, counit or compositor from the transported structure
   unchecked:
-    - equality of the compositor-transported adjunction with coreTransportReindexAdjunction of the direct composite presentation
     - northwest second-mate alignment and component-to-outer mate commuting equations
     - pullback-side composition coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: coreTransportReindexCompositorAdjunction transports the component Adjunction.comp across the inverse covariant compositor and forward selected-reindex compositor; its unit and counit component theorems expose both generated component units or counits and both compositor directions in the exact order
+  proof_obligation_delta: coreTransportReindexCompositorAdjunction transports the component Adjunction.comp across the inverse covariant compositor and forward selected-reindex compositor; its unit and counit component theorems expose both generated component units or counits and both compositor directions in the exact order; strong-cartesian uniqueness proves that this transported structure equals the independently generated direct adjunction
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/CoreTransportReindexAdjunctionComposition.lean
@@ -81,31 +84,34 @@ result:
     - research-modules.txt
   evidence:
     - coreTransportReindexCompositorAdjunction
+    - typedCoreFiberTransportCompositor_hom_fac
     - coreTransportReindexCompositorAdjunction_unit_app
     - coreTransportReindexCompositorAdjunction_counit_app
+    - coreTransportReindexCompositorAdjunction_eq_direct
   claim_mapping:
     theorem_names:
       - coreTransportReindexCompositorAdjunction_unit_app
       - coreTransportReindexCompositorAdjunction_counit_app
+      - coreTransportReindexCompositorAdjunction_eq_direct
     source_labels:
       - target theorem E pullback-side finite-composition adjunction predecessor
     conjuncts:
       - the component adjunction composite is transported onto the direct composite transport and selected-reindex functors
       - the transported unit explicitly consumes both generated units, the inverse covariant compositor and the forward reindex compositor
       - the transported counit explicitly consumes the forward covariant compositor, inverse reindex compositor and both generated counits
+      - the transported composite adjunction equals the independently generated direct adjunction by transpose factorization, both compositor triangles and strong-cartesian uniqueness
     undischarged_assumptions:
-      - equality of this transported unit or counit with the independently generated direct unit or counit
       - northwest semantic-isomorphism mate alignment and final component-to-outer comparison
       - actual D pasting, named finite nonvacuity, K4 and final target assembly
-    acceptance_point: the exact composite-adjunction candidate and both component formulas are generated without caller coherence data; uniqueness against the direct generated adjunction is not claimed
+    acceptance_point: the exact composite-adjunction candidate, both component formulas and its equality with the direct generated adjunction are proved without caller coherence data
     port_status: unported (Research-proved)
 audits:
   premise_delta:
     discharged:
       - construction of an adjunction on the direct finite-composite functor pair from component adjunctions and reviewed compositors
       - exact unit and counit expansion of that transported adjunction
+      - direct-versus-transported adjunction equality by generated lift factorization and strong-cartesian uniqueness
     remaining:
-      - direct-versus-transported adjunction equality by generated lift uniqueness
       - northwest second mate and component-to-outer mate commuting equations
       - pullback-side coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
   certificate_provenance:
@@ -122,18 +128,23 @@ audits:
       - Adjunction.comp_counit_app
       - typedCoreFiberTransportCompositor
       - selectedCoreFiberReindexCompositor
+      - coreTransportToReindexHom_fac
+      - selectedCoreFiberReindexCompositorApp_hom_fac
+      - coreFiberLift_eqToIso_fac
+      - coreFiberCompositorApp_hom_fac
+      - CategoryTheory.Functor.IsStronglyCartesian.ext
     unused: []
   structure_field_escape: none-found
   route_integrity: the direct covariant functor is aligned by typedCoreFiberTransportCompositor.symm and the iterated contravariant functor by selectedCoreFiberReindexCompositor in their required orientations
   target_fitting: none-found
   vacuity: all declarations are parametric in arbitrary two-arrow finite presentation composites
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: sharing left and right functors does not make adjunction structures equal; the direct-versus-transported equality remains explicit
+  goal_or_report_reinterpretation: sharing left and right functors is not treated as definitional equality; the direct-versus-transported equality is separately proved from generated factorization laws
   validation_refs:
     - focused CoreTransportReindexAdjunctionComposition single-file elaboration: pass
-    - three public declarations under the module namespace, standard axioms only
+    - five public declarations under the module namespace, standard axioms only
   blocking_findings: []
-  next_obligation: prove equality of coreTransportReindexCompositorAdjunction with coreTransportReindexAdjunction of compPresentation from the generated lift factorization theorems, then specialize it to pasting and construct the northwest second mate
+  next_obligation: specialize the generic adjunction equality to horizontal and vertical pasting, construct the northwest second mate, and prove the component-to-outer mate commuting equations
 ```
 
 ### Cycle 94 — normalized outer canonical-mate comparison alignment
