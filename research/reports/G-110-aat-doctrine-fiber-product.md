@@ -70,6 +70,7 @@ selection:
   unchecked:
     - horizontal and vertical componentwise C comparison composition
     - actual horizontal and vertical D route specialization and its reindexing and transport compositors
+    - final K4 integration of the Cycle 82 G-106/G-109 coherence bridge and its transportAlong_comp_coherence proof-use
     - named finite nonvacuity specialization with both actual target coherences
     - pullback-side composition coherence, K4 and final assembly
 result:
@@ -93,6 +94,7 @@ result:
     undischarged_assumptions:
       - componentwise horizontal and vertical comparison composition
       - pullback reindexing and transport-compositor compatibility for actual routes
+      - final K4 assembly consuming the Cycle 82 G-106/G-109 bridge and transportAlong_comp_coherence proof chain
       - the remaining D pasting and named finite nonvacuity obligations
     acceptance_point: outer-presentation comparison realization is discharged uniformly for either pasting direction; comparison composition and route specialization remain open
     port_status: unported (Research-proved)
@@ -104,6 +106,7 @@ audits:
     remaining:
       - componentwise horizontal and vertical C comparison composition
       - actual D route specialization with reindexing and transport compositors
+      - final K4 integration of the already proved Cycle 82 G-106/G-109 coherence bridge
       - named finite nonvacuity, pullback-side coherence, K4 and final assembly
   certificate_provenance:
     discharged:
@@ -117,6 +120,8 @@ audits:
       - toSemanticBC_pastePresentation_eq
       - bcProvenanceCoreTransportSquareIso_eq_semantic
     unused: []
+  prior_evidence_retained:
+    - Cycle 82 proved the G-106/G-109 route bridge and consumed transportAlong_comp_coherence; Cycle 85 does not reopen that proof and leaves its final K4 integration explicit
   structure_field_escape: none-found
   route_integrity: the comparison is transported only across the reviewed outer-presentation realization equality and retains the canonical northwest-normalized pasted square
   target_fitting: none-found
@@ -124,10 +129,10 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCPastingComparisonRealization file check: pass
+    - official focused BCPastingComparisonRealization module check: pass
     - two declarations under the module namespace, standard axioms only
   blocking_findings: []
-  next_obligation: prove componentwise horizontal and vertical C comparison composition through the canonical northwest normalization and pullback reindexing compositors, then specialize the D composition laws to the actual routes
+  next_obligation: prove componentwise horizontal and vertical C comparison composition through the canonical northwest normalization and pullback reindexing compositors, then specialize the D composition laws to the actual routes while retaining the Cycle 82 G-106/G-109 bridge for final K4 assembly
 ```
 
 ### Cycle 84 — endpoint action and reselection composition laws
