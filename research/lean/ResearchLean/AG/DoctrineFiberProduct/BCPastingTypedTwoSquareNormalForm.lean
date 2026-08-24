@@ -68,6 +68,16 @@ noncomputable def horizontalTypedRawComparisonSquare
     ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
       (bcCoreTransportSquareIso data.rightPresentation).hom)
 
+/-- No-unfold characterization of the horizontal typed raw square. -/
+theorem horizontalTypedRawComparisonSquare_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalTypedRawComparisonSquare data =
+      horizontalNormalizedNorthwestLeftTransportSquare data ≫ₕ
+        ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
+          (bcCoreTransportSquareIso data.rightPresentation).hom) := by
+  rfl
+
 /-- External top alignment from the normalized horizontal outer edge to the
 northwest-prefixed literal component top route. -/
 noncomputable def horizontalOuterTopToTypedComponents
@@ -90,6 +100,21 @@ noncomputable def horizontalOuterTopToTypedComponents
           (bcTopPresentation data.leftPresentation))
         (typedPresentationToSemantic
           (bcTopPresentation data.rightPresentation))).hom
+
+/-- No-unfold characterization of the horizontal external top alignment. -/
+theorem horizontalOuterTopToTypedComponents_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalOuterTopToTypedComponents data =
+      (horizontalBCPastingNormalizedTopCompositor data).hom ≫
+        Functor.whiskerLeft
+          (coreFiberTransportFunctor data.pasteNorthwestIso.inv)
+          (coreFiberCompositor
+            (typedPresentationToSemantic
+              (bcTopPresentation data.leftPresentation))
+            (typedPresentationToSemantic
+              (bcTopPresentation data.rightPresentation))).hom := by
+  rfl
 
 /-- External bottom alignment from the literal horizontal component route to
 the normalized outer bottom edge. -/
@@ -120,6 +145,27 @@ noncomputable def horizontalTypedComponentsToOuterBottom
         (bcBottomPresentation data.rightPresentation))).inv ≫
     (coreFiberTransportEqIso
       (horizontalBCPastingNormalizedBottom_eq data).symm).hom
+
+/-- No-unfold characterization of the horizontal external bottom alignment. -/
+theorem horizontalTypedComponentsToOuterBottom_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalTypedComponentsToOuterBottom data =
+      (Functor.leftUnitor
+        (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.rightPresentation)))).hom ≫
+      (coreFiberCompositor
+        (typedPresentationToSemantic
+          (bcBottomPresentation data.leftPresentation))
+        (typedPresentationToSemantic
+          (bcBottomPresentation data.rightPresentation))).inv ≫
+      (coreFiberTransportEqIso
+        (horizontalBCPastingNormalizedBottom_eq data).symm).hom := by
+  rfl
 
 /-- Horizontal generated component comparison on the exact normalized outer
 top, left, right, and bottom functor boundaries. -/
@@ -159,9 +205,7 @@ theorem horizontalNormalizedNorthwest_mateEquiv_vcomp
         (bcPastingNormalizedProvenance
           (.horizontal data)).leftProvenance.toRealizableHom)
       (bcRightAdjunction data.rightPresentation)
-      (horizontalNormalizedNorthwestLeftTransportSquare data ≫ₕ
-        ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
-          (bcCoreTransportSquareIso data.rightPresentation).hom))) =
+      (horizontalTypedRawComparisonSquare data)) =
       (mateEquiv
         (coreTransportReindexAdjunction
           (bcPastingNormalizedProvenance
