@@ -68,7 +68,7 @@ theorem coreFiberBaseHom_comp_doctrineHom {U : AtomCarrier.{u}}
     _ = _ := rfl
 
 /-- The explicit source-object cast from G-109 direct transport to G-106 direct transport. -/
-noncomputable def coreFiberDirectPackageEq {U : AtomCarrier.{u}}
+theorem coreFiberDirectPackageEq {U : AtomCarrier.{u}}
     {X Y Z : ExtractionInstance U}
     (sigma : X ⟶ Y) (tau : Y ⟶ Z) (G : CoreFiber X) :
     coreFiberTransportObject (sigma ≫ tau) G =
