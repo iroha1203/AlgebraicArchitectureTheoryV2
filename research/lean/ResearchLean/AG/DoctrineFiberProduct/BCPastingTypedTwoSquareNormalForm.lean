@@ -39,11 +39,49 @@ open CategoryTheory.NatTrans CategoryTheory.TwoSquare
 
 set_option maxHeartbeats 2000000
 
+/-- The generated horizontal northwest and component square before its
+external top and bottom functor alignments. -/
+noncomputable def horizontalTypedRawComparisonSquare
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    TwoSquare
+      (coreFiberTransportFunctor data.pasteNorthwestIso.inv ⋙
+        (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation data.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation data.rightPresentation))))
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).left)
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).right)
+      (𝟭 (CoreFiber
+          (normalizedNestedPasteSquare (.horizontal data)).southwest) ⋙
+        (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.rightPresentation)))) :=
+  horizontalNormalizedNorthwestLeftTransportSquare data ≫ₕ
+    ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
+      (bcCoreTransportSquareIso data.rightPresentation).hom)
+
 /-- External top alignment from the normalized horizontal outer edge to the
 northwest-prefixed literal component top route. -/
 noncomputable def horizontalOuterTopToTypedComponents
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (data : HorizontalBCPastingData U) :=
+    (data : HorizontalBCPastingData U) :
+    coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).top ⟶
+      (coreFiberTransportFunctor data.pasteNorthwestIso.inv ⋙
+        (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation data.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation data.rightPresentation)))) :=
   (horizontalBCPastingNormalizedTopCompositor data).hom ≫
     Functor.whiskerLeft
       (coreFiberTransportFunctor data.pasteNorthwestIso.inv)
@@ -57,7 +95,17 @@ noncomputable def horizontalOuterTopToTypedComponents
 the normalized outer bottom edge. -/
 noncomputable def horizontalTypedComponentsToOuterBottom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (data : HorizontalBCPastingData U) :=
+    (data : HorizontalBCPastingData U) :
+    (𝟭 (CoreFiber
+          (normalizedNestedPasteSquare (.horizontal data)).southwest) ⋙
+        (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.rightPresentation)))) ⟶
+      coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).bottom :=
   (Functor.leftUnitor
       (coreFiberTransportFunctor
           (typedPresentationToSemantic
@@ -77,12 +125,29 @@ noncomputable def horizontalTypedComponentsToOuterBottom
 top, left, right, and bottom functor boundaries. -/
 noncomputable def horizontalTypedOuterComparisonNormalForm
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (data : HorizontalBCPastingData U) :=
-  ((horizontalNormalizedNorthwestLeftTransportSquare data ≫ₕ
-      ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
-        (bcCoreTransportSquareIso data.rightPresentation).hom)).whiskerTop
+    (data : HorizontalBCPastingData U) :
+    TwoSquare
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).top)
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).left)
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).right)
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.horizontal data)).bottom) :=
+  ((horizontalTypedRawComparisonSquare data).whiskerTop
     (horizontalOuterTopToTypedComponents data)).whiskerBottom
       (horizontalTypedComponentsToOuterBottom data)
+
+/-- No-unfold characterization of the horizontal typed outer normal form. -/
+theorem horizontalTypedOuterComparisonNormalForm_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalTypedOuterComparisonNormalForm data =
+      ((horizontalTypedRawComparisonSquare data).whiskerTop
+        (horizontalOuterTopToTypedComponents data)).whiskerBottom
+          (horizontalTypedComponentsToOuterBottom data) := by
+  rfl
 
 /-- The mate of the horizontal northwest square pasted with the component
 square is the composite of their generated mates. -/
@@ -114,7 +179,25 @@ theorem horizontalNormalizedNorthwest_mateEquiv_vcomp
 top, right, and bottom functor alignments. -/
 noncomputable def verticalTypedRawComparisonSquare
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (data : VerticalBCPastingData U) :=
+    (data : VerticalBCPastingData U) :
+    TwoSquare
+      (coreFiberTransportFunctor data.pasteNorthwestIso.inv ⋙
+        coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcTopPresentation data.upperPresentation)))
+      (coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.vertical data)).left)
+      (coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcRightPresentation data.upperPresentation)) ⋙
+        coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcRightPresentation data.lowerPresentation)))
+      (𝟭 (CoreFiber
+          (normalizedNestedPasteSquare (.vertical data)).southwest) ⋙
+        coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcBottomPresentation data.lowerPresentation))) :=
   verticalNormalizedNorthwestLeftTransportSquare data ≫ₕ
     ((TwoSquare.mk _ _ _ _
       (bcCoreTransportSquareIso data.upperPresentation).hom) ≫ᵥ
@@ -143,6 +226,21 @@ noncomputable def verticalTypedOuterComparisonNormalForm
           (typedPresentationToSemantic
             (bcBottomPresentation data.lowerPresentation)))).hom ≫
       (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv)
+
+/-- No-unfold characterization of the vertical typed outer normal form. -/
+theorem verticalTypedOuterComparisonNormalForm_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalTypedOuterComparisonNormalForm data =
+      (((verticalTypedRawComparisonSquare data).whiskerTop
+        (verticalBCPastingNormalizedTopCompositor data).hom).whiskerRight
+        (verticalNormalizedRightTransportIso data).hom).whiskerBottom
+      ((Functor.leftUnitor
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.lowerPresentation)))).hom ≫
+        (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv) := by
+  rfl
 
 /-- The mate of the vertical northwest square pasted with the vertically
 composed component square is the composite of their generated mates. -/
