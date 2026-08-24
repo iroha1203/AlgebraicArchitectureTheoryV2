@@ -177,8 +177,7 @@ theorem horizontalCompositorAlignedComponentSquare_eq_componentComparison
     horizontalBCPastingComponentComparison_hom_eq]
   apply NatTrans.ext
   funext X
-  simp [hleft, hright,
-    TwoSquare.hComp, TwoSquare.whiskerTop, TwoSquare.whiskerBottom]
+  simp [hleft, hright]
   rfl
 
 end AAT.AG.DoctrineFiberProduct
