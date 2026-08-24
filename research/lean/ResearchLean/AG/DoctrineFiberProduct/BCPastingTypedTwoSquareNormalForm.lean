@@ -248,6 +248,48 @@ noncomputable def verticalTypedRawComparisonSquare
     (TwoSquare.mk _ _ _ _
       (bcCoreTransportSquareIso data.lowerPresentation).hom))
 
+/-- No-unfold characterization of the vertical typed raw square. -/
+theorem verticalTypedRawComparisonSquare_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalTypedRawComparisonSquare data =
+      verticalNormalizedNorthwestLeftTransportSquare data ≫ₕ
+        ((TwoSquare.mk _ _ _ _
+          (bcCoreTransportSquareIso data.upperPresentation).hom) ≫ᵥ
+        (TwoSquare.mk _ _ _ _
+          (bcCoreTransportSquareIso data.lowerPresentation).hom)) := by
+  rfl
+
+/-- External bottom alignment from the literal vertical component route to
+the normalized outer bottom edge. -/
+noncomputable def verticalTypedComponentsToOuterBottom
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    (𝟭 (CoreFiber
+          (normalizedNestedPasteSquare (.vertical data)).southwest) ⋙
+        coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcBottomPresentation data.lowerPresentation))) ⟶
+      coreFiberTransportFunctor
+        (normalizedNestedPasteSquare (.vertical data)).bottom :=
+  (Functor.leftUnitor
+    (coreFiberTransportFunctor
+      (typedPresentationToSemantic
+        (bcBottomPresentation data.lowerPresentation)))).hom ≫
+  (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv
+
+/-- No-unfold characterization of the vertical external bottom alignment. -/
+theorem verticalTypedComponentsToOuterBottom_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalTypedComponentsToOuterBottom data =
+      (Functor.leftUnitor
+        (coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcBottomPresentation data.lowerPresentation)))).hom ≫
+      (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv := by
+  rfl
+
 /-- Vertical generated component comparison on the exact normalized outer
 top, left, right, and bottom functor boundaries. -/
 noncomputable def verticalTypedOuterComparisonNormalForm
@@ -265,11 +307,7 @@ noncomputable def verticalTypedOuterComparisonNormalForm
   (((verticalTypedRawComparisonSquare data).whiskerTop
       (verticalBCPastingNormalizedTopCompositor data).hom).whiskerRight
       (verticalNormalizedRightTransportIso data).hom).whiskerBottom
-    ((Functor.leftUnitor
-        (coreFiberTransportFunctor
-          (typedPresentationToSemantic
-            (bcBottomPresentation data.lowerPresentation)))).hom ≫
-      (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv)
+    (verticalTypedComponentsToOuterBottom data)
 
 /-- No-unfold characterization of the vertical typed outer normal form. -/
 theorem verticalTypedOuterComparisonNormalForm_eq
@@ -279,11 +317,7 @@ theorem verticalTypedOuterComparisonNormalForm_eq
       (((verticalTypedRawComparisonSquare data).whiskerTop
         (verticalBCPastingNormalizedTopCompositor data).hom).whiskerRight
         (verticalNormalizedRightTransportIso data).hom).whiskerBottom
-      ((Functor.leftUnitor
-          (coreFiberTransportFunctor
-            (typedPresentationToSemantic
-              (bcBottomPresentation data.lowerPresentation)))).hom ≫
-        (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv) := by
+      (verticalTypedComponentsToOuterBottom data) := by
   rfl
 
 /-- The mate of the vertical northwest square pasted with the vertically

@@ -56,9 +56,6 @@ selection:
   proof_dag_predecessors:
     - horizontalNormalizedNorthwestLeftTransportSquare
     - verticalNormalizedNorthwestLeftTransportSquare
-    - horizontalBCPasting_mateEquiv_vcomp
-    - verticalBCPasting_mateEquiv_hcomp
-    - verticalNormalizedRightTransportIso_eq_typedCompositor
     - mateEquiv_vcomp
   proof_obligation: construct horizontal and vertical generated TwoSquare normal forms on the exact normalized outer functor boundaries and prove the northwest-to-component mate composition step
   selection_reason: Cycle 99 fixes the vertical target reindex orientation, while direct final-equation checking isolates nested Iso.trans expansion as the remaining obstacle; named typed normal forms expose the generated square composition and external alignments required by mate laws
@@ -93,6 +90,9 @@ result:
     - horizontalTypedOuterComparisonNormalForm_eq
     - horizontalNormalizedNorthwest_mateEquiv_vcomp
     - verticalTypedRawComparisonSquare
+    - verticalTypedRawComparisonSquare_eq
+    - verticalTypedComponentsToOuterBottom
+    - verticalTypedComponentsToOuterBottom_eq
     - verticalTypedOuterComparisonNormalForm
     - verticalTypedOuterComparisonNormalForm_eq
     - verticalNormalizedNorthwest_mateEquiv_vcomp
@@ -148,7 +148,7 @@ audits:
   goal_or_report_reinterpretation: none-found; typed normal forms and mate decomposition are not promoted to the still-unproved outer-comparison or final mate equalities
   validation_refs:
     - focused BCPastingTypedTwoSquareNormalForm single-file elaboration: pass
-    - thirteen declarations under the module namespace, standard axioms only
+    - sixteen declarations under the module namespace, standard axioms only
     - Research aggregate or full build: not run
   blocking_findings: []
   next_obligation: prove the horizontal and vertical typed normal-form natural transformations equal the corresponding outer boundary comparison homs, using staged associator and unitor normalization instead of whole-expression reduction
