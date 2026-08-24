@@ -40,6 +40,94 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 79 — first whiskering factorization of the binary component bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 79
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 20f686783213407d879dd95e956457f14726808b
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5390715666
+  proof_dag_predecessors:
+    - coreFiberCompositorApp_hom_eq_transportAlong_compFiberIso
+    - coreFiberTransportMap_fac
+  proof_obligation: expose the casted G-106 binary comparison as the actual first package factor in the G-109 compositor whiskering along a third pointed arrow
+  selection_reason: Cycle 78 fixed the binary component itself; the next route-specific predecessor is its image under coreFiberTransportFunctor, before endpoint casts can be compared with transportAlong_whiskeredCompFiberIso
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceWhiskering.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceWhiskeringWitnesses.lean
+  risks:
+    - claiming equality with transportAlong_whiskeredCompFiberIso before endpoint casts are constructed
+    - hiding the binary source cast by definitional equality
+    - promoting a factorization checkpoint to the full three-arrow bridge
+  unchecked:
+    - endpoint-cast comparison with transportAlong_whiskeredCompFiberIso
+    - associator-cast compatibility
+    - route-specific three-arrow identification and transportAlong_comp_coherence proof-use
+    - C/D pasting compatibility, pullback-side coherence, K4 and final assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: coreFiberCompositor_whiskered_g106_fac rewrites the actual G-109 transported compositor through coreFiberTransportMap_fac and the reviewed Cycle 78 component equality. Its right side visibly starts with coreFiberDirectPackageEq followed by transportAlong_compFiberIso, then the third canonical lift. It does not yet identify the transported component with the G-106 whiskered comparison.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceWhiskering.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceWhiskeringWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - coreFiberCompositor_whiskered_g106_fac
+    - finiteCoreFiberCompositorWhiskeredG106_identity_control
+  claim_mapping:
+    theorem_names:
+      - coreFiberCompositor_whiskered_g106_fac
+    source_labels:
+      - target theorem E first whiskering predecessor of the G-106/G-109 bridge
+    conjuncts:
+      - the transported G-109 component factors through the same explicit casted G-106 binary comparison
+    undischarged_assumptions:
+      - endpoint-cast comparison with transportAlong_whiskeredCompFiberIso
+      - associator compatibility and route-specific three-arrow bridge
+      - explicit transportAlong_comp_coherence proof-use
+      - remaining K4 and final A-E assembly
+    acceptance_point: the theorem fixes the first whiskered package factor only and leaves the named G-106 whiskered comparison unclaimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - first G-109 whiskering factorization through the Cycle 78 G-106 binary component
+    remaining:
+      - endpoint casts and direct transportAlong_whiskeredCompFiberIso identification
+      - associator and three-arrow coherence bridge
+      - remaining K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - the factorization is generated from coreFiberTransportMap_fac and the Cycle 78 component equality
+    unresolved: []
+  proof_use:
+    used:
+      - coreFiberTransportMap_fac
+      - coreFiberCompositorApp_hom_eq_transportAlong_compFiberIso
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: first whiskered factor fixed; full three-arrow route integrity remains unchecked
+  vacuity: universal three-arrow factorization; finite identity control is not a nondegeneracy claim
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - targeted BCPastingCoherenceWhiskeringWitnesses module build: pass
+    - main module: 1 declaration, standard axioms only
+    - witness module: 1 declaration, standard axioms only
+    - direct axiom print for both reporting declarations: propext, Classical.choice, and Quot.sound only
+  blocking_findings:
+    - full whiskering compatibility remains open until endpoint casts identify this factorization with transportAlong_whiskeredCompFiberIso
+  next_obligation: construct endpoint casts and identify the transported component directly with transportAlong_whiskeredCompFiberIso, then prove associator-cast compatibility
+```
+
 ### Cycle 78 — direct binary G-106/G-109 compositor component bridge
 
 ```yaml
