@@ -40,6 +40,101 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 81 — direct G-106/G-109 associator identification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 81
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 70b7758c7204f70f1a0f54e6b5bac63fb18c1302
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5390890371
+  proof_dag_predecessors:
+    - coreFiberLift_eqCast_fac
+    - transportAlong_assocFiberIso_hom_fac
+    - coreFiberWhiskeringBaseHom_eq
+  proof_obligation: identify G-109 coreFiberAssociatorCast directly with the correctly oriented G-106 transportAlong_assocFiberIso comparison while retaining both direct-transport endpoint casts
+  selection_reason: Cycle 80 fixed the named whiskered component; associator compatibility is the remaining component-level predecessor before either complete three-arrow route can be identified
+  expected_result_type: target-proof-checkpoint
+  risks:
+    - using the G-106 forward leg despite the opposite G-109 associator orientation
+    - erasing either direct-transport endpoint cast
+    - promoting associator compatibility to the full route theorem
+  unchecked:
+    - both route-specific three-arrow identifications
+    - nondecorative transportAlong_comp_coherence proof-use
+    - C/D pasting, pullback-side coherence, K4 and final assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: coreFiberTripleLeftPackageEq and coreFiberTripleRightPackageEq retain the two direct-transport endpoint casts. coreFiberAssociatorCast_hom_eq proves that the actual left-to-right G-109 associator is the left endpoint cast followed by transportAlong_assocFiberIso.iso.inv and the inverse right endpoint cast; coreFiberAssociatorCast_eq_g106 records the same equality in the actual target Fiber.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceAssociator.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceAssociatorWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  evidence:
+    - transportAlong_assocFiberIso_inv_fac
+    - coreFiberTripleLeftBaseHom_eq
+    - coreFiberTripleRightBaseHom_eq
+    - coreFiberTripleLeftPackageEq
+    - coreFiberTripleRightPackageEq
+    - coreFiberTripleLeftLift_cast_fac
+    - coreFiberTripleRightLift_cast_fac
+    - coreFiberAssociatorCast_hom_eq
+    - coreFiberG106AssociatorHom
+    - coreFiberAssociatorCast_eq_g106
+    - finiteCoreFiberAssociatorG106_identity_control
+  claim_mapping:
+    theorem_names:
+      - coreFiberAssociatorCast_hom_eq
+      - coreFiberAssociatorCast_eq_g106
+    source_labels:
+      - target theorem E associator predecessor of the G-106/G-109 three-arrow bridge
+    conjuncts:
+      - the G-109 left-to-right associator equals the endpoint-casted inverse of the named G-106 associator iso
+      - the equality holds for package and actual Fiber morphisms
+    undischarged_assumptions:
+      - route-specific three-arrow comparison and transportAlong_comp_coherence proof-use
+      - remaining C/D pasting, pullback-side coherence, K4 and final A-E assembly
+    acceptance_point: associator orientation and both endpoint casts are explicit; no complete path equality is claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged:
+      - direct associator-cast compatibility between G-109 and G-106
+    remaining:
+      - route-specific three-arrow bridge and explicit transportAlong_comp_coherence consumption
+      - C/D pasting, pullback-side coherence, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - left and right exact doctrine morphisms are computed from the three authored pointed arrows
+      - the comparison is generated from canonical lift casts, the G-106 associator factorization, inverse cancellation, and strong cocartesian uniqueness
+    unresolved: []
+  proof_use:
+    used:
+      - coreFiberLift_eqCast_fac
+      - transportAlong_assocFiberIso_hom_fac
+      - coreFiberWhiskeringBaseHom_eq
+      - coreFiberBaseHom_comp_doctrineHom
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: associator orientation fixed as iso.inv; complete left and right routes remain unchecked
+  vacuity: universal three-arrow associator equality; finite identity control is only an elaboration control
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - targeted BCPastingCoherenceAssociatorWitnesses module build: pass
+    - main module: 11 declarations, standard axioms only
+    - witness module: 1 declaration, standard axioms only
+  blocking_findings:
+    - G-110(E) remains open until both actual G-109 routes are identified with the corresponding G-106 paths and transportAlong_comp_coherence is used in the final equality
+  next_obligation: identify the G-109 left route with the casted G-106 left-adjacent path and the G-109 right route with the casted inverse-associator plus right-adjacent path
+```
+
 ### Cycle 80 — direct G-106/G-109 whiskered-component identification
 
 ```yaml
