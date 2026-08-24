@@ -54,11 +54,12 @@ theorem verticalNormalizedRightReindexAlignment_eq_selectedCompositor_inv
         (bcRightPresentation data.upperPresentation)
         (bcRightPresentation data.lowerPresentation)).inv := by
   unfold verticalNormalizedRightReindexAlignment
+  rw [verticalNormalizedRightTransportIso_eq_typedCompositor]
   have conjugacy := congrArg Iso.inv
     (coreTransportReindexCompositor_conjugateIsoEquiv
       (bcRightPresentation data.upperPresentation)
       (bcRightPresentation data.lowerPresentation))
-  simpa [conjugateIsoEquiv, verticalNormalizedRightTransportIso] using conjugacy
+  simpa [conjugateIsoEquiv] using conjugacy
 
 /-- The complete normalized vertical mate-target alignment uses bottom-edge
 equality transport followed by the inverse generated selected-reindex
