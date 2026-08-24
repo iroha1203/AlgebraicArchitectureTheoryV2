@@ -122,7 +122,7 @@ result:
       - the normalized vertical outer target is mapped through bottom equality transport and a conjugate-generated lower-then-upper right reindex alignment
     undischarged_assumptions:
       - the two component-to-outer mate commuting equations
-      - the generic compositor conjugacy equation used by the vertical target alignment
+      - the generic compositor conjugacy equation needed to identify the vertical target alignment with the selected-reindex compositor route in the final commuting equation
       - actual D pasting, named finite nonvacuity, K4 and final target assembly
     acceptance_point: every alignment is generated from normalized realization provenance, canonical northwest comparison, G-109 compositors, equality transports, unitors and mate or conjugate equivalences; no route transformation is caller-supplied
     port_status: unported (Research-proved)
