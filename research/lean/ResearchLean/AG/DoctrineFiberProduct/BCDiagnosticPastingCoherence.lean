@@ -18,7 +18,9 @@ universe u
 open CategoryTheory
 open AtomFoundation CrossStageCoherence TransportCoherence
 
-/-- Mapping an edge reselection through a composite functor agrees pointwise
+/-- The common G-110(E) `(d4)` API predecessor for horizontal and vertical
+pasting.  From a source fiberwise diagnostic datum, two composable core-fiber
+functors, and a source reselection, it identifies the composite canonical map
 with the two successive canonical maps. -/
 theorem mapEdgeReselection_comp
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}

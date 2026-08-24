@@ -56,7 +56,6 @@ selection:
   proof_dag_predecessors:
     - mapEdgeReselection
     - coreFiberFunctorPackageAutHom_hom
-    - BCPastingInput horizontal and vertical constructors
   proof_obligation: prove that the canonical D mapped reselection for a composite core-fiber functor equals the successive canonical maps for its two factors
   selection_reason: both horizontal and vertical square-pasting routes require this same d4 composition law before route-specific diagnostic coherence and vanishing compatibility can be stated without a caller-supplied comparison
   expected_result_type: target-proof-checkpoint
@@ -90,9 +89,10 @@ result:
     undischarged_assumptions:
       - identification of pasted actual BC routes with the relevant composite functors
       - composition compatibility for transported data, coherence preservation, and vanishing preservation
+      - named finite nonvacuity specialization with nonidentity initial defect and reselection
       - C comparison compatibility and pullback-side coherence
     acceptance_point: the common d4 composition law is discharged for arbitrary composable core-fiber functors; the route-specific D pasting package remains open
-    port_status: unported
+    port_status: unported (Research-proved)
 audits:
   premise_delta:
     discharged:
@@ -100,6 +100,7 @@ audits:
     remaining:
       - actual horizontal and vertical BC-route specialization
       - d3, d5, and d6 composition compatibility
+      - named finite nonvacuity specialization and its two actual target coherences
       - C comparison compatibility, pullback-side coherence, K4 and final assembly
   certificate_provenance:
     discharged:
@@ -114,14 +115,14 @@ audits:
   structure_field_escape: none-found
   route_integrity: generic composite route is compared directly with its ordered first-then-second factors
   target_fitting: none-found
-  vacuity: universal in diagnostic data, both functors, and every source reselection
+  vacuity: the lemma is parametric in diagnostic data, both functors, and every source reselection; target-level named finite nonvacuity remains unverified in this cycle
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - focused BCDiagnosticPastingCoherence file check: pass
     - one declaration under the module namespace, standard axioms only
   blocking_findings: []
-  next_obligation: identify the actual horizontal and vertical diagnostic routes with composite functors and lift mapEdgeReselection_comp to transported-data, coherence, and vanishing compatibility
+  next_obligation: identify the actual horizontal and vertical diagnostic routes with composite functors, lift mapEdgeReselection_comp to transported-data, coherence, and vanishing compatibility, and retain the named finite nonvacuity obligation
 ```
 
 ### Cycle 82 — complete G-106/G-109 three-arrow route bridge
