@@ -40,7 +40,7 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
-### Cycle 91 — horizontal pasted-comparison equality
+### Cycle 91 — horizontal covariant-square comparison equality
 
 ```yaml
 ledger_type: target_cycle_result
@@ -66,13 +66,17 @@ selection:
     - relying on definitional reduction of the generated bottom presentation
   unchecked:
     - vertical normalization, boundary alignment and outer-comparison equality
-    - pullback-side mate coherence and actual D pasting
+    - horizontal and vertical canonical-mate pasting, including reindexing and unit/counit coherence
+    - pullback-side composition coherence, the G-106/G-109 bridge consuming transportAlong_comp_coherence, and actual D pasting
     - named finite nonvacuity, K4 and final target assembly
 result:
   proposed_result_type: target-proof-checkpoint
   proof_obligation_delta: the horizontal route is factorized through the generated northwest compositors, both component comparisons, the normalized-left compositor, and the generated bottom equality transport; strong-cocartesian uniqueness then proves horizontalBCPastingComparison_eq_outer, the equality of the pasted comparison Iso with the independently generated normalized outer semantic comparison Iso
   completion_candidate: no
   lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingComparisonNormalization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingNormalizedComparison.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingBottomAlignment.lean
     - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonFactorization.lean
     - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonEqualityRoutes.lean
     - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonNormalizedSplit.lean
@@ -89,25 +93,28 @@ result:
     theorem_names:
       - horizontalBCPastingComparison_eq_outer
     source_labels:
-      - target theorem E horizontal C comparison pasting
+      - target theorem E horizontal covariant transport-square comparison coherence predecessor
     conjuncts:
       - the componentwise horizontal comparison retains both generated square comparisons and all normalization compositors
       - the generated bottom equality transport is consumed in the lift factorization
       - the aligned componentwise route equals the independently generated comparison of the normalized outer square
     undischarged_assumptions:
       - vertical comparison normalization and outer equality
-      - pullback-side mate coherence and actual D pasting
+      - horizontal and vertical coreBeckChevalleyMate pasting, including selected reindexing and unit/counit coherence
+      - pullback-side composition coherence, the G-106/G-109 bridge consuming transportAlong_comp_coherence, and actual D pasting
       - named finite nonvacuity, K4 and final target assembly
-    acceptance_point: the actual horizontal comparison-Iso equality is proved; no vertical or final target completion is claimed
+    acceptance_point: the horizontal covariant transport-square comparison-Iso equality is proved as a predecessor of E; no coreBeckChevalleyMate pasting, vertical, or final target completion is claimed
     port_status: unported (Research-proved)
 audits:
   premise_delta:
     discharged:
-      - horizontal comparison-Iso equality
+      - horizontal covariant transport-square comparison-Iso equality
       - horizontal normalized route lift factorization including bottom equality transport
     remaining:
       - vertical normalization, alignment and comparison-Iso equality
-      - pullback-side coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
+      - horizontal and vertical coreBeckChevalleyMate pasting with selected reindexing and unit/counit coherence
+      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
   certificate_provenance:
     discharged:
       - the bottom transport comes from horizontalBCPastingNormalizedBottom_eq
@@ -129,13 +136,12 @@ audits:
   target_fitting: none-found
   vacuity: the equality is parametric in generated horizontal pasting data; named target-level nonvacuity remains open
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
+  goal_or_report_reinterpretation: the result is limited to the covariant transport-square predecessor and does not discharge the canonical mate named by C and E
   validation_refs:
-    - targeted BCHorizontalPastingComparisonEquality module build: pass
+    - focused BCHorizontalPastingComparisonEquality single-file elaboration: pass
     - four declarations under the final module namespace, standard axioms only
-    - targeted ResearchLean.AG.DoctrineFiberProduct umbrella build: pass
   blocking_findings: []
-  next_obligation: construct the vertical normalization, exact-boundary alignment and equality with the normalized outer semantic comparison, then continue to pullback-side and actual diagnostic pasting coherence
+  next_obligation: construct the vertical covariant-square normalization, exact-boundary alignment and equality with the normalized outer semantic comparison; then prove horizontal and vertical coreBeckChevalleyMate pasting with the required reindexing, unit/counit and pullback-side composition coherence before actual diagnostic pasting
 ```
 
 ### Cycle 90 — horizontal outer-boundary comparison alignment
