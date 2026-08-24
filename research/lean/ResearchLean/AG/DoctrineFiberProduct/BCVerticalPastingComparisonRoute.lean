@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.BCHorizontalPastingComparisonRoute
+import ResearchLean.AG.DoctrineFiberProduct.BCPastingComparisonNormalization
 
 /-!
 # Vertical componentwise Beck--Chevalley comparison route
