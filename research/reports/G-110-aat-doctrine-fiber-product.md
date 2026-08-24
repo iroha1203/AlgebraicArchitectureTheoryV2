@@ -95,6 +95,7 @@ result:
     - verticalTypedComponentsToOuterBottom_eq
     - verticalTypedOuterComparisonNormalForm
     - verticalTypedOuterComparisonNormalForm_eq
+    - verticalTypedOuterComparisonNormalForm_eq_staged
     - verticalNormalizedNorthwest_mateEquiv_vcomp
   claim_mapping:
     theorem_names:
@@ -148,7 +149,7 @@ audits:
   goal_or_report_reinterpretation: none-found; typed normal forms and mate decomposition are not promoted to the still-unproved outer-comparison or final mate equalities
   validation_refs:
     - focused BCPastingTypedTwoSquareNormalForm single-file elaboration: pass
-    - sixteen declarations under the module namespace, standard axioms only
+    - seventeen declarations under the module namespace, standard axioms only
     - Research aggregate or full build: not run
   blocking_findings: []
   next_obligation: prove the horizontal and vertical typed normal-form natural transformations equal the corresponding outer boundary comparison homs, using staged associator and unitor normalization instead of whole-expression reduction

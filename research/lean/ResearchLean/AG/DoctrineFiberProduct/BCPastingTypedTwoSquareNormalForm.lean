@@ -307,10 +307,30 @@ noncomputable def verticalTypedOuterComparisonNormalForm
   (((verticalTypedRawComparisonSquare data).whiskerTop
       (verticalBCPastingNormalizedTopCompositor data).hom).whiskerRight
       (verticalNormalizedRightTransportIso data).hom).whiskerBottom
-    (verticalTypedComponentsToOuterBottom data)
+    ((Functor.leftUnitor
+        (coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcBottomPresentation data.lowerPresentation)))).hom ≫
+      (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv)
 
 /-- No-unfold characterization of the vertical typed outer normal form. -/
 theorem verticalTypedOuterComparisonNormalForm_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalTypedOuterComparisonNormalForm data =
+      (((verticalTypedRawComparisonSquare data).whiskerTop
+        (verticalBCPastingNormalizedTopCompositor data).hom).whiskerRight
+        (verticalNormalizedRightTransportIso data).hom).whiskerBottom
+      ((Functor.leftUnitor
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.lowerPresentation)))).hom ≫
+        (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).inv) := by
+  rfl
+
+/-- Staged no-unfold characterization of the vertical typed outer normal form
+through the named external bottom alignment. -/
+theorem verticalTypedOuterComparisonNormalForm_eq_staged
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (data : VerticalBCPastingData U) :
     verticalTypedOuterComparisonNormalForm data =
