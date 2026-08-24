@@ -40,6 +40,110 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 92 — vertical covariant-square comparison equality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 92
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 20449208a5c419f2d5bc597feb3dbb7310c14dcf
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5394409295
+  proof_dag_predecessors:
+    - verticalBCPastingComponentComparison
+    - verticalBCPastingNormalizedTopCompositor
+    - verticalBCPastingNormalizedLeftCompositor
+    - bcSemanticCoreTransportSquareIso_hom_fac
+    - coreFiberIteratedLift_isStronglyCocartesian
+  proof_obligation: normalize the vertical componentwise covariant comparison onto the exact outer-square boundary and prove equality with the independently generated normalized outer semantic comparison
+  selection_reason: Cycle 91 discharged the horizontal covariant-square predecessor; the generated vertical route and northwest compositors were already available, leaving right-edge realization alignment and the corresponding lift factorization
+  expected_result_type: target-proof-checkpoint
+  risks:
+    - reversing the generated right-edge equality transport at the source
+    - dropping either component comparison or the right and left compositors
+    - identifying comparison isomorphisms from common endpoints without proving lift factorization
+  unchecked:
+    - horizontal and vertical canonical-mate pasting, including selected reindexing and unit/counit coherence
+    - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+    - actual D pasting, named finite nonvacuity, K4 and final target assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: verticalBCPastingNormalizedRight_eq derives the normalized outer right edge from finite presentation composition; the normalized route consumes the right compositor, upper and lower square comparisons, northwest normalization and the left compositor; strong-cocartesian uniqueness then proves verticalBCPastingComparison_eq_outer
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComparisonNormalization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComponentFactorization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComparisonEqualityRoutes.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComparisonNormalizedSplit.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComparisonInnerSplit.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingNormalizedFactorization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingOuterFactorization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCVerticalPastingComparisonEquality.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - verticalBCPastingComponentComparison_hom_fac
+    - verticalBCPastingNormalizedComponentComparison_hom_fac
+    - verticalBCPastingOuterBoundaryComparison_hom_fac
+    - verticalBCPastingComparison_eq_outer
+  claim_mapping:
+    theorem_names:
+      - verticalBCPastingComparison_eq_outer
+    source_labels:
+      - target theorem E vertical covariant transport-square comparison coherence predecessor
+    conjuncts:
+      - the componentwise vertical comparison retains both generated square comparisons and the right and left compositors
+      - the generated right-edge equality transport and northwest normalization are consumed in the lift factorization
+      - the exact-boundary componentwise route equals the independently generated comparison of the normalized outer square
+    undischarged_assumptions:
+      - horizontal and vertical coreBeckChevalleyMate pasting, including selected reindexing and unit/counit coherence
+      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - actual D pasting, named finite nonvacuity, K4 and final target assembly
+    acceptance_point: both horizontal and vertical covariant transport-square comparison-Iso equalities are now proved as predecessors of E; no coreBeckChevalleyMate pasting or final target completion is claimed
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - vertical covariant transport-square comparison-Iso equality
+      - vertical normalized route lift factorization including right-edge equality transport
+    remaining:
+      - horizontal and vertical coreBeckChevalleyMate pasting with selected reindexing and unit/counit coherence
+      - pullback-side composition coherence and the G-106/G-109 bridge consuming transportAlong_comp_coherence
+      - actual D pasting, named finite nonvacuity, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - the right-edge equality comes from toSemanticCart_compPresentation_hom applied to rightTop and rightBottom
+      - both component comparisons and the outer comparison come from generated semantic square data
+      - equality follows from strong-cocartesian uniqueness after both hom components factor the same normalized iterated lift
+    unresolved: []
+  proof_use:
+    used:
+      - verticalBCPastingComponentComparison
+      - verticalBCPastingNormalizedTopCompositor
+      - verticalBCPastingNormalizedLeftCompositor
+      - verticalBCPastingNormalizedRight_eq
+      - bcSemanticCoreTransportSquareIso_whisker_right_hom_fac
+      - coreFiberIteratedLift_transportEqIso_fac
+      - bcSemanticCoreTransportSquareIso_hom_fac
+      - coreFiberIteratedLift_isStronglyCocartesian
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: the proof consumes the generated right compositor, upper and lower square comparisons, northwest and left compositors, and right-edge equality transport before uniqueness; no caller-authored comparison is substituted
+  target_fitting: none-found
+  vacuity: the equality is parametric in generated vertical pasting data; named target-level nonvacuity remains open
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: the result is limited to the covariant transport-square predecessor and does not discharge the canonical mate named by C and E
+  validation_refs:
+    - focused BCVerticalPastingComparisonEquality single-file elaboration: pass
+    - one declaration under the final module namespace, standard axioms only
+  blocking_findings: []
+  next_obligation: prove horizontal and vertical coreBeckChevalleyMate pasting with the required selected reindexing, unit/counit and pullback-side composition coherence, including the G-106/G-109 bridge that consumes transportAlong_comp_coherence
+```
+
 ### Cycle 91 — horizontal covariant-square comparison equality
 
 ```yaml
