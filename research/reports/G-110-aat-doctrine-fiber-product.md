@@ -40,7 +40,7 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
-### Cycle 78 — G-106 package coherence to G-109 fiber compositor bridge
+### Cycle 78 — direct binary G-106/G-109 compositor component bridge
 
 ```yaml
 ledger_type: target_cycle_result
@@ -54,32 +54,30 @@ report_path: research/reports/G-110-aat-doctrine-fiber-product.md
 selection:
   proof_state_ref: Issue 4034 comment 5390389022
   proof_dag_predecessors:
-    - BCPastingClosure
-    - transportAlong_comp_coherence
-    - transportAlongAdjacentCompHom_fac
-    - transportAlongLeftAlignedCompHom_fac
-    - coreFiberPentagonLeftRoute_fac
-    - coreFiberPentagonRightRoute_fac
-  proof_obligation: construct the fixed K4/E bridge showing that the two G-109 core-fiber compositor routes, after forgetting to package morphisms and precomposing with the canonical composite lift, are the two G-106 adjacent-composition routes; derive the fiber compositor equality by explicitly consuming transportAlong_comp_coherence
-  selection_reason: Cycle 77 fixes square-pasting closure, while every later C/D pasting-compatibility theorem needs a nondecorative connection between G-106 package coherence and the G-109 fiber compositor; factorization through the same generated three-step lift gives the smallest exact bridge
-  expected_result_type: proof-obligation-discharged
+    - coreFiberLift_projection
+    - coreFiberCompositorApp_hom_fac
+    - transportAlong_compFiberIso_hom_fac
+  proof_obligation: identify one G-109 binary compositor component directly with the corresponding G-106 generated binary comparison, retaining every source-object and pointed-fiber cast explicitly
+  selection_reason: the first review of the earlier three-arrow candidate found that common precomposition alone did not determine which G-109 route corresponded to which G-106 path. The smallest fail-closed repair is the component-level binary bridge required before whiskering and associator compatibility can be stated without exchanging the two paths.
+  expected_result_type: target-proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceBridge.lean
     - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceBridgeWitnesses.lean
   risks:
-    - merely conjoining the independent G-106 and G-109 equalities
-    - citing transportAlong_comp_coherence without using it in the fiber equality proof term
+    - identifying only the two post-composition factorizations rather than the compositor component itself
     - erasing the package/fiber casts by a false definitional equality
-    - mistaking the optional finite identity-base elaboration control for a restriction of the universal bridge
-    - claiming comparison or diagnostic pasting compatibility from the bridge alone
+    - promoting the binary component bridge to the full three-arrow coherence bridge
+    - mistaking the finite identity-base elaboration control for nondegeneracy
   unchecked:
+    - whiskering compatibility between coreFiberTransportMap and transportAlong_whiskeredCompFiberIso
+    - associator-cast compatibility between coreFiberAssociatorCast and transportAlong_assocFiberIso
+    - route-specific three-arrow identification and nondecorative transportAlong_comp_coherence proof-use
     - C comparison compatibility with horizontal and vertical pasting
     - D diagnostic comparison, mapped reselection, coherence, and vanishing compatibility with pasting
-    - pullback-side composition coherence beyond the covariant package/fiber bridge
     - final A-E assembly
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: coreFiberPentagonLeftRoute_package_fac and coreFiberPentagonRightRoute_package_fac identify the two G-109 compositor routes after the same canonical lift with the adjacent and left-aligned G-106 package paths. coreFiberCompositor_assoc_from_transportAlong_comp_coherence derives the fiber equality through those two bridge equations and consumes transportAlong_comp_coherence under congrArg before strong-lift uniqueness. The theorem is universal in three pointed base arrows and one source CoreFiber object; the finite identity control checks the dependent casts without restricting that quantification.
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: coreFiberBaseHom_comp_doctrineHom computes the exact doctrine-hom equality behind pointed composition. coreFiberDirectPackageEq retains the resulting object cast. coreFiberCompositorApp_hom_eq_transportAlong_compFiberIso proves equality of the actual G-109 package component with that cast followed by the G-106 generated comparison, and coreFiberCompositorApp_hom_eq_g106 packages the same equality as a target-fiber morphism. The earlier common-factor three-arrow claims were removed; transportAlong_comp_coherence is not yet claimed as consumed.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCPastingCoherenceBridge.lean
@@ -87,65 +85,67 @@ result:
     - ResearchLean/AG/DoctrineFiberProduct.lean
   evidence:
     - coreFiberLift_as_transportAlongHom
-    - coreFiberPackageTripleHom
-    - coreFiberTripleIteratedLift_eq_package
-    - coreFiberPentagonLeftRoute_package_fac
-    - coreFiberPentagonRightRoute_package_fac
-    - coreFiberCompositor_assoc_from_transportAlong_comp_coherence
-    - finiteCoreFiberCompositorPackageBridge_identity_control
+    - coreFiberBaseHom_comp
+    - coreFiberBaseHom_comp_doctrineHom
+    - coreFiberDirectPackageEq
+    - coreFiberDirectLift_cast_fac
+    - coreFiberCompositorApp_binary_bridge
+    - coreFiberCompositorApp_hom_eq_transportAlong_compFiberIso
+    - coreFiberG106CompositorHom
+    - coreFiberCompositorApp_hom_eq_g106
+    - finiteCoreFiberBinaryCompositorBridge_identity_control
   claim_mapping:
     theorem_names:
-      - coreFiberPentagonLeftRoute_package_fac
-      - coreFiberPentagonRightRoute_package_fac
-      - coreFiberCompositor_assoc_from_transportAlong_comp_coherence
+      - coreFiberCompositorApp_hom_eq_transportAlong_compFiberIso
+      - coreFiberCompositorApp_hom_eq_g106
     source_labels:
-      - target theorem E package-level G-106 equality to fiber-functor G-109 compositor bridge
-      - explicit transportAlong_comp_coherence proof-term consumption
+      - target theorem E binary predecessor for the package-level G-106 to fiber-functor G-109 bridge
     conjuncts:
-      - the left G-109 compositor path factors through the G-106 adjacent-comparison path
-      - the right G-109 compositor path factors through the G-106 left-aligned comparison path
-      - the two fiber paths are equal by the G-106 package coherence theorem and strongly cocartesian uniqueness
+      - the G-109 binary compositor component equals the casted corresponding G-106 generated comparison
+      - the equality holds both for the underlying package morphism and the actual target-fiber morphism
     undischarged_assumptions:
+      - whiskering and associator compatibility
+      - route-specific three-arrow bridge and transportAlong_comp_coherence proof-use
       - C comparison compatibility with horizontal and vertical BC pasting
       - D diagnostic comparison, mapped reselection, coherence, and vanishing compatibility with pasting
       - pullback-side composition coherence and K4 assembly
       - final A-E assembly and completion review
-    acceptance_point: the final fiber equality is not imported from coreFiberCompositor_assoc; it is reproved from the two explicit package/fiber factorization equations, and transportAlong_comp_coherence occurs as the equality argument consumed by congrArg in the proof term
+    acceptance_point: the actual compositor component is identified before any three-arrow path comparison, with an explicit source cast derived from pointed-base composition; no full E discharge is claimed
     port_status: unported
 audits:
   premise_delta:
     discharged:
-      - E package-level G-106 to G-109 fiber compositor compatibility
-      - explicit proof-use of transportAlong_comp_coherence
+      - binary component predecessor of the E package-level G-106 to G-109 fiber compositor compatibility
     remaining:
+      - whiskering and associator compatibility
+      - route-specific three-arrow bridge and explicit proof-use of transportAlong_comp_coherence
       - C and D pasting compatibility
       - pullback-side composition coherence
       - K4 and final G-110 assembly
   certificate_provenance:
     discharged:
-      - both package/fiber bridge equations are generated from the existing left/right compositor factorization theorems and G-106 factorization theorems
-      - final equality is generated from the reviewed G-106 coherence theorem and strong-lift uniqueness
+      - pointed-base equality is derived from coreFiberLift_projection
+      - binary component equality is derived from the G-109 and G-106 generated factorization equations plus strong-lift uniqueness
     unresolved: []
   proof_use:
     used:
-      - coreFiberPentagonLeftRoute_fac
-      - coreFiberPentagonRightRoute_fac
-      - transportAlongAdjacentCompHom_fac
-      - transportAlongLeftAlignedCompHom_fac
-      - transportAlong_comp_coherence
+      - coreFiberLift_projection
+      - coreFiberCompositorApp_hom_fac
+      - transportAlong_compFiberIso_hom_fac
       - CategoryTheory.Functor.IsStronglyCocartesian.ext
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass
-  vacuity: universal theorem; finite identity control is not a nondegeneracy claim
+  route_integrity: binary component fixed; three-arrow route integrity remains unchecked
+  vacuity: universal binary theorem; finite identity control is not a nondegeneracy claim
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - focused BCPastingCoherenceBridge.lean elaboration: pass; 6 declarations, standard axioms only
+    - focused BCPastingCoherenceBridge.lean elaboration: pass; 11 declarations, standard axioms only
     - focused BCPastingCoherenceBridgeWitnesses.lean elaboration: pass; 2 declarations, standard axioms only
-    - direct axiom print for the seven reporting declarations: propext, Classical.choice, and Quot.sound only
-  blocking_findings: []
-  next_obligation: specialize the bridge to horizontal and vertical BCPastingInput and prove C comparison compatibility with pasted outer presentations before diagnostic compatibility
+    - direct axiom print for the nine reporting declarations: propext, Classical.choice, and Quot.sound only
+  blocking_findings:
+    - full E bridge remains open until whiskering and associator compatibility make the left/right three-arrow correspondence route-specific
+  next_obligation: prove the whiskered binary comparison and associator-cast compatibility, then identify G-109 left with G-106 left-aligned and G-109 right with G-106 adjacent before consuming transportAlong_comp_coherence
 ```
 
 ### Cycle 77 — horizontal/vertical pullback-pasting closure package
