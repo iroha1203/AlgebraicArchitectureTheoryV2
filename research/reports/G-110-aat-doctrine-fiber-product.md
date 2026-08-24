@@ -40,6 +40,104 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 91 — horizontal pasted-comparison equality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 91
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: cf2c3e44739f2bb03ef92825b24b6e682f1585a7
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5391894801
+  proof_dag_predecessors:
+    - horizontalBCPastingOuterBoundaryComparison
+    - bcSemanticCoreTransportSquareIso_hom_fac
+    - coreFiberIteratedLift_isStronglyCocartesian
+  proof_obligation: prove that the aligned horizontal componentwise comparison is the independently generated comparison of the normalized outer semantic square
+  selection_reason: Cycle 90 put both comparison isomorphisms on the same exact functor boundary; strong-cocartesian uniqueness can now identify them after proving the pasted route carries the canonical top-right lift to the canonical left-bottom lift
+  expected_result_type: target-proof-checkpoint
+  risks:
+    - treating equal source and target functors as equality of comparison isomorphisms
+    - dropping the northwest, compositor, or bottom equality-transport factors during component expansion
+    - relying on definitional reduction of the generated bottom presentation
+  unchecked:
+    - vertical normalization, boundary alignment and outer-comparison equality
+    - pullback-side mate coherence and actual D pasting
+    - named finite nonvacuity, K4 and final target assembly
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: the horizontal route is factorized through the generated northwest compositors, both component comparisons, the normalized-left compositor, and the generated bottom equality transport; strong-cocartesian uniqueness then proves horizontalBCPastingComparison_eq_outer, the equality of the pasted comparison Iso with the independently generated normalized outer semantic comparison Iso
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonFactorization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonEqualityRoutes.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonNormalizedSplit.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonInnerSplit.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingNormalizedFactorization.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCHorizontalPastingComparisonEquality.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - horizontalBCPastingNormalizedComponentComparison_hom_fac
+    - horizontalBCPastingOuterBoundaryComparison_hom_fac
+    - horizontalBCPastingComparison_eq_outer
+  claim_mapping:
+    theorem_names:
+      - horizontalBCPastingComparison_eq_outer
+    source_labels:
+      - target theorem E horizontal C comparison pasting
+    conjuncts:
+      - the componentwise horizontal comparison retains both generated square comparisons and all normalization compositors
+      - the generated bottom equality transport is consumed in the lift factorization
+      - the aligned componentwise route equals the independently generated comparison of the normalized outer square
+    undischarged_assumptions:
+      - vertical comparison normalization and outer equality
+      - pullback-side mate coherence and actual D pasting
+      - named finite nonvacuity, K4 and final target assembly
+    acceptance_point: the actual horizontal comparison-Iso equality is proved; no vertical or final target completion is claimed
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - horizontal comparison-Iso equality
+      - horizontal normalized route lift factorization including bottom equality transport
+    remaining:
+      - vertical normalization, alignment and comparison-Iso equality
+      - pullback-side coherence, actual D pasting, named finite nonvacuity, K4 and final assembly
+  certificate_provenance:
+    discharged:
+      - the bottom transport comes from horizontalBCPastingNormalizedBottom_eq
+      - the outer comparison comes from normalizedNestedPasteSemanticInput and bcSemanticCoreTransportSquareIso
+      - equality follows from strong-cocartesian uniqueness after both hom components are proved to factor the same iterated lift
+    unresolved: []
+  proof_use:
+    used:
+      - horizontalBCPastingComponentComparison_hom_fac
+      - horizontalBCPastingNormalizedTopCompositor
+      - horizontalBCPastingNormalizedLeftCompositor
+      - horizontalBCPastingNormalizedBottom_eq
+      - coreFiberIteratedLift_transportEqIso_fac
+      - bcSemanticCoreTransportSquareIso_hom_fac
+      - coreFiberIteratedLift_isStronglyCocartesian
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: the proof expands and consumes every horizontal pasted-route factor before applying uniqueness; it does not replace the route by a caller-authored comparison
+  target_fitting: none-found
+  vacuity: the equality is parametric in generated horizontal pasting data; named target-level nonvacuity remains open
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - targeted BCHorizontalPastingComparisonEquality module build: pass
+    - four declarations under the final module namespace, standard axioms only
+    - targeted ResearchLean.AG.DoctrineFiberProduct umbrella build: pass
+  blocking_findings: []
+  next_obligation: construct the vertical normalization, exact-boundary alignment and equality with the normalized outer semantic comparison, then continue to pullback-side and actual diagnostic pasting coherence
+```
+
 ### Cycle 90 — horizontal outer-boundary comparison alignment
 
 ```yaml

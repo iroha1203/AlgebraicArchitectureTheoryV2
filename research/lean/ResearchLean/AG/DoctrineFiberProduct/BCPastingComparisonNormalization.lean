@@ -37,8 +37,12 @@ noncomputable def horizontalBCPastingNormalizedTopCompositor
     coreFiberTransportFunctor
         (normalizedNestedPasteSquare (.horizontal data)).top ≅
       coreFiberTransportFunctor (bcPastingNorthwestIso (.horizontal data)).inv ⋙
-        coreFiberTransportFunctor data.nestedSquare.top :=
-  coreFiberCompositor _ _
+        coreFiberTransportFunctor
+          ((toSemanticBC data.leftPresentation).square.top ≫
+            (toSemanticBC data.rightPresentation).square.top) :=
+  coreFiberCompositor _
+    ((toSemanticBC data.leftPresentation).square.top ≫
+      (toSemanticBC data.rightPresentation).square.top)
 
 /-- Horizontal normalized left-edge transport factors through the inverse
 northwest comparison and the literal pasted left edge. -/
@@ -48,8 +52,9 @@ noncomputable def horizontalBCPastingNormalizedLeftCompositor
     coreFiberTransportFunctor
         (normalizedNestedPasteSquare (.horizontal data)).left ≅
       coreFiberTransportFunctor (bcPastingNorthwestIso (.horizontal data)).inv ⋙
-        coreFiberTransportFunctor data.nestedSquare.left :=
-  coreFiberCompositor _ _
+        coreFiberTransportFunctor
+          (toSemanticBC data.leftPresentation).square.left :=
+  coreFiberCompositor _ (toSemanticBC data.leftPresentation).square.left
 
 /-- Vertical normalized top-edge transport factors through the inverse
 northwest comparison and the literal pasted top edge. -/

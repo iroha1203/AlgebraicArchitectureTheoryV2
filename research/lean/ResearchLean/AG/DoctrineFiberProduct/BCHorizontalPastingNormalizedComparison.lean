@@ -26,7 +26,8 @@ noncomputable def horizontalBCPastingNormalizedComponentComparison
     (data : HorizontalBCPastingData U) :
     coreFiberTransportFunctor
           (normalizedNestedPasteSquare (.horizontal data)).top ⋙
-        coreFiberTransportFunctor data.nestedSquare.right ≅
+        coreFiberTransportFunctor
+          (toSemanticBC data.rightPresentation).square.right ≅
       coreFiberTransportFunctor
           (normalizedNestedPasteSquare (.horizontal data)).left ⋙
         coreFiberTransportFunctor
@@ -34,7 +35,8 @@ noncomputable def horizontalBCPastingNormalizedComponentComparison
             (toSemanticBC data.rightPresentation).square.bottom) :=
   (Functor.isoWhiskerRight
       (horizontalBCPastingNormalizedTopCompositor data)
-      (coreFiberTransportFunctor data.nestedSquare.right)).trans
+      (coreFiberTransportFunctor
+        (toSemanticBC data.rightPresentation).square.right)).trans
     ((Functor.isoWhiskerLeft
         (coreFiberTransportFunctor
           (bcPastingNorthwestIso (.horizontal data)).inv)
