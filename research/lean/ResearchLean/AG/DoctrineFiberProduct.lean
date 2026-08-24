@@ -4,6 +4,8 @@ import ResearchLean.AG.DoctrineFiberProduct.BCSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCPastingClosure
+import ResearchLean.AG.DoctrineFiberProduct.BCPastingClosureWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCRelativeSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
