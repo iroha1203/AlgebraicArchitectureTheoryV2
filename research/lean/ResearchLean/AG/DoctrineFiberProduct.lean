@@ -135,6 +135,7 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullback
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackFiniteCode
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeRaw
 import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
 import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteCodeULift
