@@ -109,6 +109,41 @@ noncomputable def packageFiberAutMulEquivOfCoreFiberIso
     ((Aut.autMulEquivOfIso iso).trans
       (packageFiberAutCoreFiberEquiv Q).symm)
 
+/-- Naturality of an arbitrary core-fiber natural isomorphism identifies the
+two induced actions on every source automorphism.  This is the reusable
+endpoint-action engine behind both a single Beck--Chevalley comparison and
+the pasted component-to-outer comparison. -/
+theorem coreFiberFunctorMapAut_iso_naturality
+    {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
+    {F H : CoreFiber X ⥤ CoreFiber Y} (comparison : F ≅ H)
+    (P : CoreFiber X) (automorphism : Aut P) :
+    Aut.autMulEquivOfIso (comparison.app P) (F.mapAut P automorphism) =
+      H.mapAut P automorphism := by
+  apply Iso.ext
+  change comparison.inv.app P ≫ F.map automorphism.hom ≫
+        comparison.hom.app P = H.map automorphism.hom
+  have naturality := comparison.hom.naturality automorphism.hom
+  calc
+    _ = comparison.inv.app P ≫
+        (comparison.hom.app P ≫ H.map automorphism.hom) := by
+      rw [naturality]
+    _ = _ := by simp
+
+/-- Package-fiber form of natural-isomorphism compatibility for the generated
+endpoint group homomorphisms. -/
+theorem coreFiberFunctorPackageAutHom_iso_naturality
+    {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
+    {F H : CoreFiber X ⥤ CoreFiber Y} (comparison : F ≅ H)
+    (P : CoreFiber X) (automorphism : PackageFiberAut P.1) :
+    packageFiberAutMulEquivOfCoreFiberIso (comparison.app P)
+        (coreFiberFunctorPackageAutHom F P automorphism) =
+      coreFiberFunctorPackageAutHom H P automorphism := by
+  apply (packageFiberAutCoreFiberEquiv (H.obj P)).injective
+  simpa [packageFiberAutMulEquivOfCoreFiberIso,
+    coreFiberFunctorPackageAutHom] using
+      (coreFiberFunctorMapAut_iso_naturality comparison P
+        (packageFiberAutCoreFiberEquiv P automorphism))
+
 /-- The generated direct BC route on the core fiber. -/
 noncomputable def bcDiagnosticDirectFunctor
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -158,25 +193,18 @@ theorem bcDiagnosticCoreFiberAutComparison_naturality
     Aut.autMulEquivOfIso (bcDiagnosticComparisonIso presentation P)
         ((bcDiagnosticDirectFunctor presentation).mapAut P automorphism) =
       (bcDiagnosticViaBaseFunctor presentation).mapAut P automorphism := by
-  apply Iso.ext
   letI : IsIso (coreBeckChevalleyMate presentation) :=
     coreBeckChevalleyMate_isIso presentation
-  change inv ((coreBeckChevalleyMate presentation).app P) ≫
-        (bcDiagnosticDirectFunctor presentation).map automorphism.hom ≫
-        (coreBeckChevalleyMate presentation).app P =
-      (bcDiagnosticViaBaseFunctor presentation).map automorphism.hom
-  have naturality :
-      (bcDiagnosticDirectFunctor presentation).map automorphism.hom ≫
-          (coreBeckChevalleyMate presentation).app P =
-        (coreBeckChevalleyMate presentation).app P ≫
-          (bcDiagnosticViaBaseFunctor presentation).map automorphism.hom := by
-    exact (coreBeckChevalleyMate presentation).naturality automorphism.hom
-  calc
-    _ = inv ((coreBeckChevalleyMate presentation).app P) ≫
-        ((coreBeckChevalleyMate presentation).app P ≫
-          (bcDiagnosticViaBaseFunctor presentation).map automorphism.hom) := by
-      rw [naturality]
-    _ = _ := by simp
+  have comparison_app_eq :
+      (asIso (coreBeckChevalleyMate presentation)).app P =
+        bcDiagnosticComparisonIso presentation P := by
+    apply Iso.ext
+    rfl
+  rw [← comparison_app_eq]
+  simpa [bcDiagnosticDirectFunctor,
+    bcDiagnosticViaBaseFunctor] using
+      (coreFiberFunctorMapAut_iso_naturality
+        (asIso (coreBeckChevalleyMate presentation)) P automorphism)
 
 /-- Naturality of the generated mate identifies the direct and via-base
 images of every source endpoint automorphism. -/
@@ -190,13 +218,18 @@ theorem bcDiagnosticEndpointComparison_naturality
           (bcDiagnosticDirectFunctor presentation) P automorphism) =
       coreFiberFunctorPackageAutHom
         (bcDiagnosticViaBaseFunctor presentation) P automorphism := by
-  apply (packageFiberAutCoreFiberEquiv
-    ((bcDiagnosticViaBaseFunctor presentation).obj P)).injective
-  simpa [bcDiagnosticEndpointComparison,
-    packageFiberAutMulEquivOfCoreFiberIso,
-    coreFiberFunctorPackageAutHom] using
-      (bcDiagnosticCoreFiberAutComparison_naturality
-        presentation P (packageFiberAutCoreFiberEquiv P automorphism))
+  letI : IsIso (coreBeckChevalleyMate presentation) :=
+    coreBeckChevalleyMate_isIso presentation
+  have comparison_app_eq :
+      (asIso (coreBeckChevalleyMate presentation)).app P =
+        bcDiagnosticComparisonIso presentation P := by
+    apply Iso.ext
+    rfl
+  unfold bcDiagnosticEndpointComparison
+  rw [← comparison_app_eq]
+  simpa [bcDiagnosticDirectFunctor, bcDiagnosticViaBaseFunctor] using
+      (coreFiberFunctorPackageAutHom_iso_naturality
+        (asIso (coreBeckChevalleyMate presentation)) P automorphism)
 
 /-! ## Pointwise action on a fixed combinatorial cochain -/
 
