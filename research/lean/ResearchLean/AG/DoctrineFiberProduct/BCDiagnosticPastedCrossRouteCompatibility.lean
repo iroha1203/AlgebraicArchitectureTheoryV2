@@ -157,22 +157,106 @@ theorem horizontalComponentVia_reselection_eq_successive
 
 /-! ## Horizontal G-106 proof-used diagnostic path -/
 
-/-- The actual horizontal three-arrow source-alignment route, postcomposed
-with the component mate and a reselected diagnostic path.  The proof directly
-uses `coreFiberCompositor_assoc_via_g106`, whose proof consumes
-`transportAlong_comp_coherence`. -/
-def HorizontalPastedDiagnosticPathViaG106
+/-- The actual horizontal source alignment is the G-106-justified three-arrow
+compositor route followed by the generated northwest reindex alignment. -/
+theorem horizontalDataMateSourceAlignment_app_eq_g106Route
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (pasting : HorizontalBCPastingData U)
+    (P : CoreFiber
+      pasting.pastePresentation.1.cospan.firstSource.toSemantic) :
+    let sigma := pasting.pasteNorthwestIso.inv
+    let tau := typedPresentationToSemantic
+      (bcTopPresentation pasting.leftPresentation)
+    let upsilon := typedPresentationToSemantic
+      (bcTopPresentation pasting.rightPresentation)
+    let package :=
+      (selectedCoreFiberReindexFunctor
+        (bcPastingNormalizedProvenance
+          (.horizontal pasting)).leftProvenance.toRealizableHom).obj P
+    let northwestAlignment :=
+      horizontalDataNormalizedNorthwestReindexAlignment pasting
+    coreFiberAssociatorCast sigma tau upsilon package ≫
+        (horizontalDataMateSourceAlignment pasting).app P =
+      coreFiberPentagonLeftRoute sigma tau upsilon package ≫
+        (coreFiberTransportFunctor tau ⋙
+          coreFiberTransportFunctor upsilon).map
+            (northwestAlignment.app P) := by
+  dsimp only
+  calc
+    _ = coreFiberPentagonRightRoute pasting.pasteNorthwestIso.inv
+          (typedPresentationToSemantic
+            (bcTopPresentation pasting.leftPresentation))
+          (typedPresentationToSemantic
+            (bcTopPresentation pasting.rightPresentation))
+          ((selectedCoreFiberReindexFunctor
+            (bcPastingNormalizedProvenance
+              (.horizontal pasting)).leftProvenance.toRealizableHom).obj P) ≫
+        (coreFiberTransportFunctor
+          (typedPresentationToSemantic
+            (bcTopPresentation pasting.leftPresentation)) ⋙
+          coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation pasting.rightPresentation))).map
+          ((horizontalDataNormalizedNorthwestReindexAlignment pasting).app P) := by
+      have hnat := coreFiberCompositor_naturality
+        (typedPresentationToSemantic
+          (bcTopPresentation pasting.leftPresentation))
+        (typedPresentationToSemantic
+          (bcTopPresentation pasting.rightPresentation))
+        ((horizontalDataNormalizedNorthwestReindexAlignment pasting).app P)
+      have hpref := congrArg
+        (fun q =>
+          (coreFiberAssociatorCast pasting.pasteNorthwestIso.inv
+              (typedPresentationToSemantic
+                (bcTopPresentation pasting.leftPresentation))
+              (typedPresentationToSemantic
+                (bcTopPresentation pasting.rightPresentation))
+              ((selectedCoreFiberReindexFunctor
+                (bcPastingNormalizedProvenance
+                  (.horizontal pasting)).leftProvenance.toRealizableHom).obj P) ≫
+            (coreFiberCompositorApp pasting.pasteNorthwestIso.inv
+              (typedPresentationToSemantic
+                  (bcTopPresentation pasting.leftPresentation) ≫
+                typedPresentationToSemantic
+                  (bcTopPresentation pasting.rightPresentation))
+              ((selectedCoreFiberReindexFunctor
+                (bcPastingNormalizedProvenance
+                  (.horizontal pasting)).leftProvenance.toRealizableHom).obj P)).hom) ≫ q)
+        hnat
+      simpa [horizontalDataMateSourceAlignment,
+        horizontalDataNormalizedTopCompositor,
+        horizontalBCPastingNormalizedTopCompositor,
+        coreFiberPentagonRightRoute, coreFiberAssociatorCast,
+        coreFiberCompositor, Category.assoc] using hpref
+    _ = _ := by
+      exact congrArg
+        (fun route => route ≫
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcTopPresentation pasting.leftPresentation)) ⋙
+            coreFiberTransportFunctor
+              (typedPresentationToSemantic
+                (bcTopPresentation pasting.rightPresentation))).map
+            ((horizontalDataNormalizedNorthwestReindexAlignment pasting).app P))
+        (coreFiberCompositor_assoc_via_g106
+          pasting.pasteNorthwestIso.inv
+          (typedPresentationToSemantic
+            (bcTopPresentation pasting.leftPresentation))
+          (typedPresentationToSemantic
+            (bcTopPresentation pasting.rightPresentation))
+          ((selectedCoreFiberReindexFunctor
+            (bcPastingNormalizedProvenance
+              (.horizontal pasting)).leftProvenance.toRealizableHom).obj P)).symm
+
+/-- G-106 normal form of the actual horizontal four-side package square. -/
+def HorizontalPastedPackageSquareViaG106
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (pasting : HorizontalBCPastingData U)
     (interpretation : BCDiagnosticInterpretation U
       (toSemanticBC pasting.pastePresentation))
     (incidence : BCDiagnosticSourceFiberIncidence
       pasting.pastePresentation interpretation)
-    (reselection : EdgeReselection
-      (incidence.toFiberwise.map
-        (horizontalPastedOuterDirectFunctor pasting)).toLiftData)
-    {i j : (toSemanticBC pasting.pastePresentation).diagnostic.Vertex}
-    (path : (toSemanticBC pasting.pastePresentation).diagnostic.Path i j) : Prop :=
+    (vertex : (toSemanticBC pasting.pastePresentation).diagnostic.Vertex) : Prop :=
     let data := incidence.toFiberwise
     let sigma := pasting.pasteNorthwestIso.inv
     let tau := typedPresentationToSemantic
@@ -183,50 +267,45 @@ def HorizontalPastedDiagnosticPathViaG106
       (selectedCoreFiberReindexFunctor
         (bcPastingNormalizedProvenance
           (.horizontal pasting)).leftProvenance.toRealizableHom).obj
-        (data.package i)
+        (data.package vertex)
     let northwestAlignment :=
       horizontalDataNormalizedNorthwestReindexAlignment pasting
-    let componentReselection :=
-      transportEdgeReselectionAlongNaturalIso data
-        (horizontalLiteralComponentMateIso pasting)
-        (transportEdgeReselectionAlongNaturalIso data
-          (horizontalDataMateSourceAlignmentIso pasting) reselection)
     coreFiberPentagonLeftRoute sigma tau upsilon package ≫
         (coreFiberTransportFunctor tau ⋙
           coreFiberTransportFunctor upsilon).map
-            (northwestAlignment.app (data.package i)) ≫
-        (horizontalLiteralComponentMateIso pasting).hom.app (data.package i) ≫
-        fiberReselectedPath
-          (data.map (horizontalPastedComponentViaFunctor pasting))
-          componentReselection path =
-      coreFiberPentagonRightRoute sigma tau upsilon package ≫
-        (coreFiberTransportFunctor tau ⋙
-          coreFiberTransportFunctor upsilon).map
-            (northwestAlignment.app (data.package i)) ≫
-        (horizontalLiteralComponentMateIso pasting).hom.app (data.package i) ≫
-        fiberReselectedPath
-          (data.map (horizontalPastedComponentViaFunctor pasting))
-          componentReselection path
+            (northwestAlignment.app (data.package vertex)) ≫
+        (horizontalLiteralComponentMate pasting).app
+          (data.package vertex) =
+      coreFiberAssociatorCast sigma tau upsilon package ≫
+        (bcProvenanceCanonicalMate
+          (bcPastingNormalizedProvenance (.horizontal pasting))).app
+          (data.package vertex) ≫
+        (horizontalOuterMateTargetAlignment pasting).app
+          (data.package vertex)
 
-/-- The G-106 route equality generates the pasted diagnostic path
-compatibility, rather than being stored as detached evidence. -/
-theorem horizontalPastedDiagnosticPath_via_g106
+/-- The G-106 source-alignment normal form is consumed in the same package
+equation as the outer mate and target alignment. -/
+theorem horizontalPastedPackageSquare_via_g106
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (pasting : HorizontalBCPastingData U)
     (interpretation : BCDiagnosticInterpretation U
       (toSemanticBC pasting.pastePresentation))
     (incidence : BCDiagnosticSourceFiberIncidence
       pasting.pastePresentation interpretation)
-    (reselection : EdgeReselection
-      (incidence.toFiberwise.map
-        (horizontalPastedOuterDirectFunctor pasting)).toLiftData)
-    {i j : (toSemanticBC pasting.pastePresentation).diagnostic.Vertex}
-    (path : (toSemanticBC pasting.pastePresentation).diagnostic.Path i j) :
-    HorizontalPastedDiagnosticPathViaG106 pasting interpretation incidence
-      reselection path := by
-  unfold HorizontalPastedDiagnosticPathViaG106
+    (vertex : (toSemanticBC pasting.pastePresentation).diagnostic.Vertex) :
+    HorizontalPastedPackageSquareViaG106 pasting interpretation incidence
+      vertex := by
+  unfold HorizontalPastedPackageSquareViaG106
   dsimp only
-  rw [coreFiberCompositor_assoc_via_g106]
+  slice_lhs 1 2 =>
+    rw [← horizontalDataMateSourceAlignment_app_eq_g106Route]
+  slice_lhs 2 3 =>
+    change (horizontalDataMateSourceAlignment pasting ≫
+      horizontalLiteralComponentMate pasting).app
+        (incidence.toFiberwise.package vertex)
+    unfold horizontalLiteralComponentMate
+    rw [horizontalLiteralComponentMates_eq_outerCanonicalMate]
+  simp only [NatTrans.comp_app]
 
 /-! ## Vertical successive actions -/
 
@@ -426,11 +505,17 @@ structure HorizontalPastedBCDiagnosticCrossRouteCompatibility
       pasting.pastePresentation interpretation) : Prop where
   outerRouteComposition :
     BCDiagnosticCompositionCompatibility incidence.toFiberwise
-        (bcDiagnosticDirectFirstFunctor pasting.pastePresentation)
-        (bcDiagnosticDirectSecondFunctor pasting.pastePresentation) ∧
+        (selectedCoreFiberReindexFunctor
+          (bcPastingNormalizedProvenance
+            (.horizontal pasting)).leftProvenance.toRealizableHom)
+        (coreFiberTransportFunctor
+          (normalizedNestedPasteSquare (.horizontal pasting)).top) ∧
       BCDiagnosticCompositionCompatibility incidence.toFiberwise
-        (bcDiagnosticViaBaseFirstFunctor pasting.pastePresentation)
-        (bcDiagnosticViaBaseSecondFunctor pasting.pastePresentation)
+        (coreFiberTransportFunctor
+          (normalizedNestedPasteSquare (.horizontal pasting)).bottom)
+        (selectedCoreFiberReindexFunctor
+          (bcPastingNormalizedProvenance
+            (.horizontal pasting)).rightProvenance.toRealizableHom)
   isoSquare : FiberwiseDiagnosticNaturalIsoSquareCompatibility
     incidence.toFiberwise
     (horizontalDataMateSourceAlignmentIso pasting)
@@ -477,14 +562,8 @@ structure HorizontalPastedBCDiagnosticCrossRouteCompatibility
           (horizontalComponentBottomRightFunctor pasting)
           (mapEdgeReselection incidence.toFiberwise
             (horizontalComponentBottomLeftFunctor pasting) reselection))
-  diagnosticPath_via_g106 : ∀
-    (reselection : EdgeReselection
-      (incidence.toFiberwise.map
-        (horizontalPastedOuterDirectFunctor pasting)).toLiftData)
-    {i j : (toSemanticBC pasting.pastePresentation).diagnostic.Vertex}
-    (path : (toSemanticBC pasting.pastePresentation).diagnostic.Path i j),
-      HorizontalPastedDiagnosticPathViaG106 pasting interpretation incidence
-        reselection path
+  packageSquare_via_g106 : ∀ vertex,
+    HorizontalPastedPackageSquareViaG106 pasting interpretation incidence vertex
 
 noncomputable def horizontalPastedBCDiagnosticCrossRouteCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -495,8 +574,9 @@ noncomputable def horizontalPastedBCDiagnosticCrossRouteCompatibility
       pasting.pastePresentation interpretation) :
     HorizontalPastedBCDiagnosticCrossRouteCompatibility
       pasting interpretation incidence where
-  outerRouteComposition := horizontalPastedBCDiagnosticCompositionCompatibility
-    pasting interpretation incidence
+  outerRouteComposition :=
+    ⟨diagnosticCompositionCompatibility _ _ _,
+      diagnosticCompositionCompatibility _ _ _⟩
   isoSquare := horizontalPastedBCDiagnosticIsoSquareCompatibility
     pasting interpretation incidence
   componentDirect_successive :=
@@ -507,8 +587,8 @@ noncomputable def horizontalPastedBCDiagnosticCrossRouteCompatibility
     horizontalComponentDirect_reselection_eq_successive pasting incidence.toFiberwise
   componentVia_reselection_successive :=
     horizontalComponentVia_reselection_eq_successive pasting incidence.toFiberwise
-  diagnosticPath_via_g106 :=
-    horizontalPastedDiagnosticPath_via_g106 pasting interpretation incidence
+  packageSquare_via_g106 :=
+    horizontalPastedPackageSquare_via_g106 pasting interpretation incidence
 
 structure VerticalPastedBCDiagnosticCrossRouteCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -519,11 +599,17 @@ structure VerticalPastedBCDiagnosticCrossRouteCompatibility
       pasting.pastePresentation interpretation) : Prop where
   outerRouteComposition :
     BCDiagnosticCompositionCompatibility incidence.toFiberwise
-        (bcDiagnosticDirectFirstFunctor pasting.pastePresentation)
-        (bcDiagnosticDirectSecondFunctor pasting.pastePresentation) ∧
+        (selectedCoreFiberReindexFunctor
+          (bcPastingNormalizedProvenance
+            (.vertical pasting)).leftProvenance.toRealizableHom)
+        (coreFiberTransportFunctor
+          (normalizedNestedPasteSquare (.vertical pasting)).top) ∧
       BCDiagnosticCompositionCompatibility incidence.toFiberwise
-        (bcDiagnosticViaBaseFirstFunctor pasting.pastePresentation)
-        (bcDiagnosticViaBaseSecondFunctor pasting.pastePresentation)
+        (coreFiberTransportFunctor
+          (normalizedNestedPasteSquare (.vertical pasting)).bottom)
+        (selectedCoreFiberReindexFunctor
+          (bcPastingNormalizedProvenance
+            (.vertical pasting)).rightProvenance.toRealizableHom)
   isoSquare : FiberwiseDiagnosticNaturalIsoSquareCompatibility
     incidence.toFiberwise
     (verticalMateSourceAlignmentIso pasting)
@@ -601,8 +687,9 @@ noncomputable def verticalPastedBCDiagnosticCrossRouteCompatibility
       pasting.pastePresentation interpretation) :
     VerticalPastedBCDiagnosticCrossRouteCompatibility
       pasting interpretation incidence where
-  outerRouteComposition := verticalPastedBCDiagnosticCompositionCompatibility
-    pasting interpretation incidence
+  outerRouteComposition :=
+    ⟨diagnosticCompositionCompatibility _ _ _,
+      diagnosticCompositionCompatibility _ _ _⟩
   isoSquare := verticalPastedBCDiagnosticIsoSquareCompatibility
     pasting interpretation incidence
   componentDirect_successive :=
