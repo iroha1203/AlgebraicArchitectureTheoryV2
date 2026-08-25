@@ -11,7 +11,8 @@ no separately supplied target package or target soundness certificate is accepte
 
 The resulting `.{u + 1}` schema and the separate exact-zero construction do
 not constitute one symbolic `.{u}` producer, because Lean universe parameters
-cannot be split at term level.  That fixed-ledger producer remains open.
+cannot be split at term level.  They remain separate helper constructors; the
+branch-conditioned G-110 contract does not require their combination.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

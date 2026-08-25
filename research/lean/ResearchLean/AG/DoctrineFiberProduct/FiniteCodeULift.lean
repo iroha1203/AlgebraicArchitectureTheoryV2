@@ -10,11 +10,10 @@ computably along that equivalence: predicates, finite-support permutations,
 doctrines, pointed instances, raw cartesian arrows, and validated
 presentations.
 
-The construction deliberately stops at the finite-code and decoder-component
-boundary.  It does not claim an equivalence between all extraction instances
-or all core packages at two universes: the target carrier may contain doctrine
-components outside the canonical `ULift` image.  The selected finite package
-and strong-cartesian nonexistence transfer remain a separate F0c2 obligation.
+The construction supplies the finite-code and decoder components of the
+arbitrary-package helper route.  The branch-conditioned G-110 contract uses a
+named package and strong-cartesian nonexistence transfer only when the right
+branch is selected.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

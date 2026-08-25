@@ -219,7 +219,7 @@ circuit syntax, reconstructs the NoCycle equation and sound detector on every
 lifted object, and assembles the complete lifted `CoreReading` and generated
 `AATCorePackage`, with concrete cyclic and acyclic witnesses.  At that
 foundation stage, complete cross-carrier hom retraction and ambient strong-lift
-reflection for the separate `FiniteModelLift` obligation remained before K0.
+reflection for the pre-revision `FiniteModelLift` ledger item remained before K0.
 The comparison layer records the
 canonical vertical domain isomorphism between two strong lifts inside one
 carrier.  The generated-lift naturality layer then consumes its inverse
@@ -299,7 +299,7 @@ fires both triangles on a noninvertible selective-two input.  The reflected
 domain and hom remain the pre-existing canonical generated low data, and the
 comparison also retains the generated high anchor; both ultimately come from
 `strongCartesianLiftOfTarget`.  The construction covers only completion-tail
-inverse packages.  It is therefore not the fixed-ledger `FiniteModelLift`
+inverse packages.  It is therefore not the pre-revision `FiniteModelLift`
 transport of an arbitrary finite counterexample.  The doctrine-pullback layer
 now independently constructs the pullback of every exact-doctrine cospan in
 `Doct_U`, with no decidable-Atom or finite-presentation premise and with the
@@ -309,8 +309,9 @@ pullback theorem and proper-fiber invariant.  A symmetric three-by-three over
 two fixture supplies compatible and common-base-incompatible pairs, a
 nonempty proper subfiber of the component product, failure of surjectivity,
 two noninvertible projections, and a nonidentity-Atom cone.
-This supplies the K0 construction and witness artifacts only.  The fixed-ledger
-`FiniteModelLift` remains open.  The following pointed-pullback layer consumes
+At that historical stage this supplied the K0 construction and witness
+artifacts while the pre-revision `FiniteModelLift` ledger item remained open.
+The following pointed-pullback layer consumes
 the selected sources and source equations of every pointed exact-doctrine
 cospan to equip the K0 source pullback with its generated point.  Every pointed
 cone receives the explicit K0 factor together with an internally proved source
@@ -390,7 +391,7 @@ comparison transports this result to every pair of arbitrary cleavages.  A
 symmetric three-to-two cospan fires the result on a producer-derived pullback
 whose four legs are all noninvertible.  No caller exactness, mate, inverse, or
 adjunction-equivalence certificate is accepted.  Authored-support
-`MateCoherentRel`, K3--K4, fixed-ledger
+`MateCoherentRel`, K3--K4, the pre-revision
 `FiniteModelLift`, and final target assembly remain open.
 The authored-support restriction layer then consumes each
 `RealizableSquare.realization_eq` to generate the exact direct and via-base
@@ -403,7 +404,8 @@ Cycle 39 control.  No raw authored comparator is inspected yet.  The earlier
 report phrase "arbitrary endpoint-isomorphism rebasing" was not an independently
 fixed GOAL artifact and was not used to invent a new schema.  The authored
 induced comparison, `MateCoherentRel`, its strict/lax and orbit witnesses,
-K3--K4, fixed-ledger `FiniteModelLift`, and final assembly remain open.
+K3--K4, the pre-revision `FiniteModelLift` ledger item, and final assembly
+remain open at this stage.
 The authored diagnostic layer now retains the actual G-106 raw component at
 every supplied cochain coordinate and follows it with an internally generated
 direct-first, same-boundary-pairwise-fallback fold.  The resulting auxiliary
@@ -412,7 +414,7 @@ cochain-indexed equation fails throughout a concrete nontrivial reselection
 orbit.  The lax fold remains noninvertible after transport, so this diagnostic
 is not an automorphism twist.  It is not the fixed K2 authored comparison:
 universal provenance for that producer, its public `MateCoherentRel` and orbit
-bridge, actual square-presentation replacement, K3--K4, fixed-ledger
+bridge, actual square-presentation replacement, K3--K4, the pre-revision
 `FiniteModelLift`, and final assembly remain open.
 The residual-isomorphism classification then proves that any invertible
 authored component against the invertible canonical mate is necessarily the
@@ -497,12 +499,13 @@ GOAL revision adopts this functorial map, coherence preservation, and vanishing
 preservation as the unconditional `(d4)`--`(d6)` covariance candidates; K3 also
 requires their revised-card audit and a named nonidentity finite firing witness.
 
-The final A--E assembly passed its implementation review, but the independent
-completion audit recovered the fixed-ledger `FiniteModelLift` item that the
-assembly had omitted.  The selected global-left branch makes both the required
-universe-zero `CartesianLiftNonexistence` source and every canonical lifted
-target empty.  `FiniteModelLiftObstruction` fixes why a bare implication between
-those no-lift types is only an empty wrapper.  It does not refute the remaining
-data-level route: arbitrary target-package universe rebasing followed by
-strong-lift reflection must still be constructed or formally obstructed.
+The final A--E assembly passed its implementation review.  A later completion
+audit recovered an unconditional `FiniteModelLift` ledger item, and Cycle 110
+showed that its arbitrary-package symbolic-universe route does not fit the
+package representation.  The human-approved branch-conditioned revision uses
+the selected global-left theorem to mark the right-branch finite obstruction
+transport as not applicable.  `FiniteModelLiftObstruction` records why a bare
+implication between the empty no-lift types is not transport evidence.  The
+zero and successor-form arbitrary-package constructions remain helper
+artifacts rather than G-110 or Gr4 completion premises.
 -/

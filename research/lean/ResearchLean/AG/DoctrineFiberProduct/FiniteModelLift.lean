@@ -15,16 +15,15 @@ The resulting prefix lift is produced for every realized input and completion
 tail.  Endpoint packages, semantic isomorphisms, factors, factorization laws,
 and strong-cartesian certificates are generated internally.
 
-This is a normalized generated-endpoint checkpoint, not the fixed-ledger
-`FiniteModelLift`: the Cycle 26 reflector deliberately retains the canonical
-generated low domain and hom and compares against the generated high lift; both
-anchors ultimately come from `strongCartesianLiftOfTarget`.  The supplied lift
-is materially used in the comparison, factor graphs, and returned certificate,
-but the construction does not cover an arbitrary
-`CartesianLiftNonexistence.targetPackage`.  In particular this module does not
-package its data theorem as a no-lift result.  The selected global-left branch
-already proves the source counterexample type empty, so such a conditional
-wrapper would not be nonvacuous evidence for the fixed ledger item.
+This is a normalized generated-endpoint checkpoint.  The Cycle 26 reflector
+retains the canonical generated low domain and hom and compares against the
+generated high lift; both anchors ultimately come from
+`strongCartesianLiftOfTarget`.  The supplied lift is materially used in the
+comparison, factor graphs, and returned certificate.  The selected global-left
+branch proves the source counterexample type empty.  If the right branch is
+selected instead, its `FiniteModelLift` family must connect the named
+counterexample endpoints and derive the named no-lift result; this checkpoint
+supplies the reflection and positive-nonvacuity route for that future proof.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
