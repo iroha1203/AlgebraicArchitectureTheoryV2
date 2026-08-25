@@ -3,12 +3,12 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `active / target-proof-checkpoint`(Cycle 109 は PR #4151 で
-  merge 済み。Cycle 110 が arbitrary-package exact symbolic-universe
-  producer の schema blocker を固定し、人間許可済みの分岐契約へ GOAL を
-  改訂した。次cycleは改訂後カードから再開する。2026-08-24 改訂前カードは
-  Cycle 75 で `target-refuted`)
-- completion candidate: `no`
+- proof state: `active / target-proof-checkpoint`(Cycle 111 は改訂後 (B) の
+  typed conditional payload を Lean に固定し、選択済み global-left artifact
+  に対する累積 A--E premise / proof-use 監査を完了した。標準 PR review と
+  独立 completion review の通過までは `target-theorem-proved` としない。
+  2026-08-24 改訂前カードは Cycle 75 で `target-refuted`)
+- completion candidate: `yes`(Cycle 111、final review 未実施)
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで
@@ -71,6 +71,239 @@ constraintと候補routeのscopeは tracking Issue #4034 の Cycle 110 comment�
 G-110 completionやGr4達成は主張しない。
 
 ## Cycle ledger
+
+### Cycle 111 — revised branch typing and cumulative A--E completion candidate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 111
+goal_blob_sha: ed508ae5900eb55468979a5052df63717174e6ac
+goal_sha256: 83f74d18d84f6f9afebdc7be28c7869845ea9a4c59b4ca7132d68c03c53d5bf5
+base_oid: bc18a74d196135268be685ee80780131695c724c
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_obligation: >-
+    replace the bare conditional RightBranch payload by the revised
+    RightBranchArtifact indexed package, retain the selected global-left producer,
+    and audit every fixed-card A--E material premise and proof-use as one cumulative
+    completion-candidate unit
+  selection_reason: >-
+    Cycle 106 already assembled the reviewed A--E spine; the human-approved GOAL
+    revision makes the old arbitrary-package FiniteModelLift row not applicable on
+    the selected global-left branch, leaving branch typing plus cumulative audit
+result:
+  proposed_result_type: completion-candidate
+  proof_obligation_delta:
+    - FiniteModelLiftComponentGraph transports the four dependent endpoints to one FiniteGeneratedLiftInput, identifies every reflected low lift with its canonical generated lift, and requires ReflectedGeneratedComponentGraph for every supplied high lift, including normalization and all Atom/object/configuration/equation/operation/invariant/signature component equations
+    - RightFiniteModelLiftFamily ties its generated low endpoints to the same right.finiteCounterexample by equality and HEq and retains the revised universe-u lifted endpoints, reflection, component graph, and high no-lift signature; no right-family value is constructed on the selected left branch
+    - RightBranchArtifact pairs one right value with RightFiniteModelLiftFamily right
+    - DisjunctionArtifact.conditional now accepts only RightBranchArtifact
+    - cartesianRegimeOfDisjunction consumes proof.right.regime while the selected globalDisjunctionArtifact remains definitionally global
+    - rightBranchArtifact_isEmpty projects the typed payload to rightBranch_isEmpty, retaining cartesianLiftNonexistence_isEmpty as the left/right consistency proof
+    - doctrineFiberProductAndBaseChangeTheorem now records exclusion of the complete typed right payload
+  completion_candidate: yes
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranch.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianBranchArtifact.lean
+    - ResearchLean/AG/DoctrineFiberProduct/CartesianRegimeReindexing.lean
+    - ResearchLean/AG/DoctrineFiberProduct/TargetTheorem.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  cumulative_target:
+    theorem: doctrineFiberProductAndBaseChangeTheorem
+    layers:
+      A:
+        - doctrinePullback_isPullback
+        - finiteProperDoctrineFiber
+      B:
+        - toSemanticCart_sound
+        - globalCartesianLift
+        - globalDisjunctionArtifact
+        - cartesianRegimeOfDisjunction
+        - rightBranchArtifact_isEmpty
+        - selectedCartesianRegime_HCart
+        - finiteParametricCartLiftFamily
+      C:
+        - pointedPullback_isPullback
+        - coreBeckChevalleyMate_isIso
+        - coreBeckChevalleyCleavageMate_isIso
+        - finiteAuthoredBCDatumSquare_mateCoherentRel
+        - finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+        - finiteAxisFold_public_not_mateCoherentRel_on_orbit
+        - finiteAxisFold_authoredComparison_orbit_nontrivial
+        - generatedAuthoredDiagnosticObjectCollapseComparison_replacement
+        - mateCoherentRel_replacePresentation_iff
+      D:
+        - qualifiedDiagnosticBaseChangeD1D3
+        - bcDiagnosticDirectReselectedPath_map
+        - bcDiagnosticViaBaseReselectedPath_map
+        - bcDiagnosticDirectCoherentAt_map
+        - bcDiagnosticViaBaseCoherentAt_map
+        - bcDiagnosticDirectTransportObstructionVanishes
+        - bcDiagnosticViaBaseTransportObstructionVanishes
+        - finiteDiagnosticCovariance_nonvacuous
+      E:
+        - bcPastingClosure
+        - horizontalPastedBCDiagnosticCrossRouteCompatibility
+        - verticalPastedBCDiagnosticCrossRouteCompatibility
+  material_premises:
+    - premise: carrier U / FiniteModel
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: theorem quantification and fixed finite witnesses
+      proof_use: all five target layers and named A/C/D witnesses
+    - premise: G-101 / G-106 reviewed artifacts
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: fixed GOAL anchors
+      proof_use: doctrine pullback, diagnostic covariance, and K4 coherence bridge
+    - premise: fiber product universality and nondegeneracy
+      role: discharge-required
+      status: discharged
+      provenance: doctrinePullback_isPullback / finiteProperDoctrineFiber
+      proof_use: DoctrineFiberProductLayer and pointedPullback_isPullback dependency
+    - premise: compatible point cone
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: PointedDoctrinePullback constructors
+      proof_use: pointedPullback_isPullback
+    - premise: H_cart definition, qualification, and checker
+      role: discharge-required-on-right-branch
+      status: not-applicable
+      provenance: globalDisjunctionArtifact selects globalCartesianLift
+      proof_use: not-applicable; selected branch exclusion does not consume right-branch checker or qualification data
+    - premise: individual H_cart membership
+      role: direction-hypothesis-on-right-branch
+      status: not-applicable
+      provenance: selected global regime has universal membership
+      proof_use: selectedCartesianRegime_HCart
+    - premise: finite presentation and toSemantic bridge
+      role: discharge-required
+      status: discharged
+      provenance: CartPresentation / BCPresentation / toSemanticCart_sound / realization soundness and replacement families
+      proof_use: every realized input in B--E is decoded from the fixed presentation schemas
+    - premise: G-106 AdmissibleTransportData API
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: fixed G-106 reviewed anchor
+      proof_use: source diagnostic transport and K4 coherence dependency DAG
+    - premise: instance-level edgeStrong / twoCellBase / authored comparator
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: base-change-before authored diagnostic input and fixed finite fixtures
+      proof_use: edgeStrong and authored comparator generate d3; twoCellBase generates the source raw-defect firing while target-side data is constructed
+    - premise: DiagnosticSourceFiberIncidence / BCDiagnosticSourceFiberIncidence
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: source-only incidence schemas and no_universalBCDiagnosticSourceFiberIncidence
+      proof_use: qualifiedDiagnosticBaseChangeD1D3 and all direct/via-base d4--d6 producers derive target data from source incidence
+    - premise: AuthoredBC2CellPresentation raw comparator table
+      role: conclusion-equivalent-risk
+      status: discharged
+      provenance: fixed pre-base-change authored input and generatedAuthoredDiagnosticObjectCollapseComparison
+      proof_use: generated comparison and canonical constructions consume the raw table without returning it; negative relation persists on the realized reselection orbit
+    - premise: relative obstruction orbit invariance
+      role: discharge-required
+      status: discharged
+      provenance: finiteAxisFold_public_not_mateCoherentRel_on_orbit / finiteAxisFold_authoredComparison_orbit_nontrivial
+      proof_use: BeckChevalleyLayer canonicityOrbitFailure / canonicityOrbitNontrivial
+    - premise: pointed ExtInst pullback bridge
+      role: discharge-required
+      status: discharged
+      provenance: pointedPullback_isPullback
+      proof_use: BeckChevalleyLayer.pointedPullback
+    - premise: FiniteModelLift obstruction transport
+      role: discharge-required-on-right-branch
+      status: not-applicable
+      provenance: cartesianLiftNonexistence_isEmpty / rightBranchArtifact_isEmpty
+      proof_use: not-applicable; CartesianLiftLayer.rightBranchExcluded records branch consistency without consuming the conditional finiteModelLift field
+    - premise: CartesianRegime producer
+      role: discharge-required
+      status: discharged
+      provenance: cartesianRegimeOfDisjunction / globalDisjunctionArtifact
+      proof_use: CartesianLiftLayer.producerMembership / producerLift
+    - premise: caller-supplied CartesianRegime
+      role: conclusion-equivalent-risk
+      status: discharged
+      provenance: selectedCartesianRegime is computed from globalDisjunctionArtifact
+      proof_use: downstream reindexing and TargetTheorem consume the named producer rather than a regime argument
+    - premise: branch-independent parametric positive lift family
+      role: discharge-required
+      status: discharged
+      provenance: finiteParametricCartLiftFamily
+      proof_use: CartesianLiftLayer.parametricPositiveFamilyExists is constructed from the named two-member family whose pairwise nonisomorphic members include noninvertible base arrows and actual generated strong lifts
+    - premise: presentation closure and realization compatibility
+      role: discharge-required
+      status: discharged
+      provenance: Schema / BCSchema / BCPastingSchema constructor and soundness families
+      proof_use: selected reindexing, BC presentations, and BCPastingClosure dependency DAG
+    - premise: G-106 / G-109 coherence bridge
+      role: discharge-required
+      status: discharged
+      provenance: coreFiberCompositor_assoc_via_g106
+      proof_use: horizontalPastedPackageSquare_via_g106 and horizontal target compatibility
+    - premise: G-109 core pseudofunctor API
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: fixed GOAL anchor
+      proof_use: core transport/reindex adjunction and K4 compositors
+    - premise: B disjunction and sufficient lift
+      role: discharge-required
+      status: discharged
+      provenance: globalDisjunctionArtifact / globalCartesianLift
+      proof_use: CartesianLiftLayer
+    - premise: Beck--Chevalley comparison and positive/negative MateCoherentRel pair
+      role: discharge-required
+      status: discharged
+      provenance: BeckChevalleyLayer listed declarations
+      proof_use: doctrineFiberProductAndBaseChangeTheorem.beckChevalley
+    - premise: pullback reindexing, laws, adjunction, compositor, and unitor
+      role: discharge-required
+      status: discharged
+      provenance: selectedCoreFiberReindexFunctor / selectedCoreFiberReindexCompositor / selectedCoreFiberReindexUnitor / coreTransportReindexAdjunction
+      proof_use: canonical mate, exactness, and K4 dependency DAG
+    - premise: packageProjection Beck--Chevalley exactness
+      role: discharge-required
+      status: discharged
+      provenance: coreBeckChevalleyMate_isIso / coreBeckChevalleyCleavageMate_isIso
+      proof_use: BeckChevalleyLayer canonical and arbitrary-cleavage fields
+    - premise: authored-support induced comparison
+      role: discharge-required
+      status: discharged
+      provenance: generatedAuthoredDiagnosticObjectCollapseComparison and replacement theorem
+      proof_use: MateCoherentRel positive/negative and replacement fields
+    - premise: diagnostic covariance and finite nonvacuity
+      role: discharge-required
+      status: discharged
+      provenance: DiagnosticBaseChangeLayer listed declarations
+      proof_use: doctrineFiberProductAndBaseChangeTheorem.diagnosticBaseChange
+    - premise: closure and comparison compatibility
+      role: discharge-required
+      status: discharged
+      provenance: BCPastingClosure and both pasted cross-route compatibility packages
+      proof_use: doctrineFiberProductAndBaseChangeTheorem.pastingClosure
+  audits:
+    statement_match: pass-candidate
+    premise_discharge: pass-candidate
+    proof_use: pass-candidate
+    structure_field_escape: none-found-on-selected-global-branch
+    route_integrity: pass-candidate
+    nonvacuity: pass-candidate
+    branch_consistency: pass-candidate
+    port_status: unported (Research-proved)
+  static_check:
+    focused_manifest_check: passed (101 namespace declarations; standard axioms only)
+    targeted_module_build: passed by coordinating agent (CartesianBranchArtifact)
+    target_theorem_focused_check: passed (67 namespace declarations; standard axioms only)
+    research_import_direction: passed (228 modules scanned)
+    diff_hidden_bidi_placeholder_privacy_scans: passed
+  remaining:
+    - same-head standard PR review
+    - final packet generation and independent four-lane math-lean-review
+    - CI, merge, and tracking Issue completion synchronization
+```
 
 ### Cycle 110 — single exact symbolic-universe producer route audit
 

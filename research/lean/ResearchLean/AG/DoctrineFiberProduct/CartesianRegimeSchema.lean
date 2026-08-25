@@ -13,9 +13,10 @@ core fiber over the semantic target.
 
 The left-branch quantifier, qualified per-carrier right-regime data, genuine
 positive-family interfaces, and the branch-independent per-carrier regime are
-fixed here.  `CartesianBranch` constructs the carrier-global branch artifact
-and its named producer.  The separate cross-universe modules record helper
-constructions for finite package representations.
+fixed here.  `CartesianBranch` defines the conditional branch data and its
+exclusion theorem; `CartesianBranchArtifact` constructs the carrier-global
+artifact and its named producer.  The separate cross-universe modules record
+helper constructions for finite package representations.
 
 No value of either branch is constructed in this schema module.  Subsequent
 modules construct the selected global lift, branch artifact, and regime
