@@ -262,7 +262,8 @@
      exact reindexing はこの反例資格より強い Lean 表現上の補助
      artifact であり、G-110 にも Gr4 gate にも移管しない。Gr4 gate
      第一項に残る数学的義務は、各固定 carrier 内の全 package に対する
-     cocartesian 保存 lift と full-domain indexed action である。
+     cocartesian 保存 lift・full-domain indexed action・実 BC 経路との
+     制限比較である。
      **右枝時の型付き結合を固定する**: 右枝を選択する実装は、bare
      `RightBranch` ではなく、選択した `right : RightBranch.{u}` と
      `RightFiniteModelLiftFamily.{u} right` を同時生成する
