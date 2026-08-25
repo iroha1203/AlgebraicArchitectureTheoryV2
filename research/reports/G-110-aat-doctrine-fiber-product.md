@@ -233,7 +233,7 @@ result:
       role: discharge-required
       status: discharged
       provenance: finiteParametricCartLiftFamily
-      proof_use: two pairwise nonisomorphic members include a noninvertible base arrow and actual generated strong lifts
+      proof_use: CartesianLiftLayer.parametricPositiveFamilyExists is constructed from the named two-member family whose pairwise nonisomorphic members include noninvertible base arrows and actual generated strong lifts
     - premise: presentation closure and realization compatibility
       role: discharge-required
       status: discharged
@@ -295,9 +295,8 @@ result:
     port_status: unported (Research-proved)
   static_check:
     focused_manifest_check: passed (101 namespace declarations; standard axioms only)
-    targeted_module_build: passed (CartesianBranchArtifact)
-    target_theorem_focused_check: passed (66 namespace declarations; standard axioms only)
-    doctrine_fiber_product_aggregate_file_check: passed
+    targeted_module_build: passed by coordinating agent (CartesianBranchArtifact)
+    target_theorem_focused_check: passed (67 namespace declarations; standard axioms only)
     research_import_direction: passed (228 modules scanned)
     diff_hidden_bidi_placeholder_privacy_scans: passed
   remaining:

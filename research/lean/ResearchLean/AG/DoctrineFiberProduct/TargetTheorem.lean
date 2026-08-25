@@ -1,6 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranchArtifact
+import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactness
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticCovarianceWitnesses
@@ -48,8 +49,9 @@ structure DoctrineFiberProductLayer
       (doctrinePullbackSnd finiteThreeToTwoDoctrineHom
         finiteThreeToTwoDoctrineHom)
 
-/-- `(B)`: the one carrier-global branch, its finite-code soundness surface,
-and the selected-regime lift producer used downstream. -/
+/-- `(B)`: the one carrier-global branch, its branch-independent nondegenerate
+positive family, finite-code soundness surface, and selected-regime lift
+producer used downstream. -/
 structure CartesianLiftLayer
     (U : AtomCarrier.{u}) [DecidableEq U.Atom] : Prop where
   schemaSound : ∀ presentation : CartPresentation U,
@@ -70,6 +72,8 @@ structure CartesianLiftLayer
   artifactBranch :
     globalDisjunctionArtifact = .global globalCartesianLift
   rightBranchExcluded : IsEmpty RightBranchArtifact.{u}
+  parametricPositiveFamilyExists :
+    Nonempty (ParametricCartLiftFamily FiniteModel.carrier)
   producerMembership : ∀ (input : RealizableHom U),
     (cartesianRegimeOfDisjunction globalDisjunctionArtifact U).HCart input
   producerLift : ∀ (input : RealizableHom U)
@@ -290,6 +294,7 @@ theorem doctrineFiberProductAndBaseChangeTheorem
       globalBranch := globalCartesianLift
       artifactBranch := rfl
       rightBranchExcluded := rightBranchArtifact_isEmpty
+      parametricPositiveFamilyExists := ⟨finiteParametricCartLiftFamily⟩
       producerMembership := selectedCartesianRegime_HCart U
       producerLift := fun input targetPackage membership =>
         CartesianRegime.hasStrongCartesianLift
