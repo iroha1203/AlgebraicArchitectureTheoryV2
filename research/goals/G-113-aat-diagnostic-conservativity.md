@@ -17,7 +17,7 @@
 - `predecessor`: G-110(完遂済み。無条件 forward covariance
   (`transportObstructionVanishes_map` 系)と
   `no_bcDiagnosticQualifiedVanishingCounterexample`。固定錨は下記
-  ledger 行)、G-111(indexed schema — draft、昇格順で先行)、G-106
+  ledger 行)、G-111(indexed schema — 昇格順で先行)、G-106
   (reselection orbit 語彙)、G-109(core pseudofunctor API —
   `CoreFiber` を型に含む seed を消費する)。
 - `tracking issue`: 未起票(active 昇格時に起票)

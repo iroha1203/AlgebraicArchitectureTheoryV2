@@ -16,7 +16,7 @@
   ある**(n1007 は source note)。
 - `predecessor`: G-110(完遂済み。MateCoherentRel 正負対と pullback
   square 上の mate exactness = 既決の正例。固定錨は下記 ledger 行)、
-  G-111〜G-115(draft — 完遂後に各 final head を固定して昇格する)。
+  G-111〜G-115(完遂後に各 final head を固定して錨に載せる)。
 - `tracking issue`: 未起票(active 昇格時に起票)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳の設計元、§7 成立条件、§8 達成階梯対応表)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 exchange-failure 義務)、

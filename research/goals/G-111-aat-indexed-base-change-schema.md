@@ -7,7 +7,8 @@
 - `program context`: Gr4 完遂 gate 第一項前半の担当カード(担当義務 =
   O1–O4。義務台帳の正本は G-116 カード、設計の source note は n1007
   §3–§5)。Gr4 後続6枚(G-111〜G-116)の第一手であり、昇格順の先頭。
-  依存は G-110 のみ(reviewed artifact への参照)。**供給契約**: 本
+  Gr4 後続6枚内の先行依存は G-110 のみ(そのほかは完遂済みカードの
+  reviewed artifact 参照)。**供給契約**: 本
   カードの indexed schema 型は G-113 の量化域として成果物形式で供給
   する(G-113 は本カードの schema 型を再定義しない)。**lift の分界**:
   本カードの O2 は cocartesian 保存 lift であり、strong cartesian lift
@@ -15,9 +16,9 @@
   二重計上・脱落の両リスクを持つ(G-112 と相互参照)。**新設語彙の
   命名権**: indexed schema 型の命名は本カード専属。本カードの
   statement 改訂は G-113 の draft 差し戻しへ伝播し、あらゆる改訂は
-  G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110)の
-  statement が改訂された場合、本カードは draft へ差し戻して再固定する
-  (伝播規定)。
+  G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110・
+  G-109)の statement が改訂された場合、本カードは draft へ差し戻して
+  再固定する(伝播規定)。
 - `predecessor`: G-110(doctrine fiber product と base change。完遂済み =
   `target-theorem-proved`。`research/lean/ResearchLean/AG/
   DoctrineFiberProduct/` 配下、unported。固定錨は下記 ledger 行)、
@@ -94,18 +95,28 @@
      限り、coherence 保存・vanishing 保存・可換性の結論語彙を含まない
      (G-110 (s4) 様式の継承)**。vertexwise core-fiber functor 族の
      edge 適合(naturality)データは authored 生成データ(base 作用の
-     生成データの一部)として資格付けし、資格条項を次に固定する —
-     **置き場所** = indexed schema の生成データ層。型は functor 族と
-     presentation の 1-cell / 2-cell に対する naturality 成分(自然
-     変換成分+可換等式)のみで、作用層の語彙で閉じる。**結論非参照**
-     = 型・述語に診断結論語彙(defect cochain 保存・obstruction
-     vanishing・coherence 保存・reselection orbit)を含めず、edge
-     適合等式は action functor 間の可換性のみ主張する。**監査方法** =
+     生成データの一部)として資格付けし、資格条項を次に固定する。
+     **置き場所と依存域**: indexed schema の生成データ層。型は functor
+     族と診断 presentation の 1-cell / 2-cell に対する naturality 成分
+     (自然変換成分+可換等式)のみ。成分は presentation と頂点
+     instance の水準でのみ index し、診断 interpretation の admissible
+     data(comparator・edge lift 値)への依存・出現を持たない。
+     **語彙の線引き(provenance 基準)**: 作用層語彙 = G-109
+     CoreFiber API・schema 自身の生成 transport / reindex functor・
+     authored functor 族・圏論の合成 / iso 原始のみ。定義展開が
+     `comparator` / `EdgeReselection` / `DefectCochain` /
+     `CoherentAt` / `TransportObstructionVanishes` /
+     `InReselectionOrbit` を導入する項は診断結論側とし、field の型・
+     等式への出現を**定義展開閉包で**禁止する(名前の不出現では判定
+     しない。線引きの追加・変更は target 改訂扱い)。**監査方法**:
      structure-field escape audit で (i) edge 適合 field が作用層語彙
-     のみで型付けされること、(ii) (d5)(d6) が edge 適合 field の述語
-     射影で放電されないことを検査する。F0 で診断語彙なしに型付け
-     不能と判明した場合は `goal-defect` で停止する(failure policy と
-     整合。signature の最終確定は F0 が担う)。
+     のみで型付けされること(定義展開閉包で判定)、(ii) (b)–(e) の
+     どの conjunct も edge 適合 field の射影・定義展開同値・wrapper
+     lemma 経由で放電されないこと、(iii) (d5)(d6) の proof term が
+     source 側 coherence / vanishing 仮定を実消費すること(G-110
+     route gate の消費条項様式)を検査する。F0 で診断語彙なしに
+     型付け不能と判明した場合は `goal-defect` で停止する(failure
+     policy と整合。signature の最終確定は F0 が担う)。
   2. **(b) cocartesian 保存 lift**: 各固定 carrier 内の全 package に
      対する cocartesian 保存 lift を、**indexed schema の base 作用に
      対する lift として**証明する(作用との整合等式 — G-101 lift との
@@ -128,8 +139,9 @@
      (d4)–(d6) が発火する witness(G-110 witness の indexed 昇格)、
      (ii) **proper-extension witness** — incidence が存在しない
      (pointed-square 制限像の外にある)instance 上で (d) が発火する
-     witness。資格解除が新しい入力を実際に獲得したことの実在証明で
-     あり、(i) だけでは代替できない。
+     witness。当該 instance は 2-cell 非空で (i) と同水準の非退化条件
+     を満たす(空虚発火の排除)。資格解除が新しい入力を実際に獲得した
+     ことの実在証明であり、(i) だけでは代替できない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110 / G-109 / G-106 / G-101 の reviewed module は参照のみ。
@@ -183,9 +195,10 @@
   - `indexed schema authored 生成データ`:
     `conclusion-equivalent-risk`(入力資格として残すが risk 種別で監査
     する)。役割 = base 作用の生成入力。監査 artifact = 生成手続きが
-    共変性・可換性を field から読まないことの structure-field escape
-    audit(支える結論 = (a)(d)。結論相当でない理由 = 資格条項が結論
-    語彙を排除し、共変性は (d) の theorem が生成する)。
+    (d1)–(d6)・制限比較水準の共変性・可換性を field から読まないこと
+    の structure-field escape audit(edge 適合等式の消費は (a) 資格
+    条項の範囲で許す。支える結論 = (a)(d)。結論相当でない理由 = 資格
+    条項が結論語彙を排除し、共変性は (d) の theorem が生成する)。
   - `well-formedness 述語と edge 適合データの資格条項`:
     `discharge-required`。決定可能条件限定・結論非参照の資格 theorem /
     audit として放電する(支える結論 = (a) の schema 資格。proof-use =
@@ -211,7 +224,9 @@
   proof obligation 選定時に固定し、証明後の target-fitting 選択を
   しない。禁止経路 — 結論相当データの供給、定義的 bridge、pointed
   square 族の再ラベル、G-101 定理の再 instantiation 単独での (b)
-  放電。
+  放電、edge 適合 field への (b)(c) 相当等式の供給
+  (`bcDiagnosticDirectFunctor` 系・G-101 lift 由来 functor の field
+  型への出現は不可)。
 - `target anti-weakening rule`: 共変性・vanishing 保存・cocartesian
   性を theorem argument、typeclass、structure field、certificate
   field、**well-formedness 述語**へ移して成功扱いしない。
