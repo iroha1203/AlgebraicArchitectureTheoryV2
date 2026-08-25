@@ -1,17 +1,20 @@
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 
 /-!
-# Obstruction to a nonvacuous finite no-lift transport
+# Empty-wrapper obstruction for finite no-lift transport
 
 The fixed G-110 ledger asks for a universe-polymorphic `FiniteModelLift` that
 starts from a concrete universe-zero `CartesianLiftNonexistence` and transports
 its nonexistence proof to the canonical `ULift` carrier.  The selected global
 left branch proves more: `CartesianLiftNonexistence` is empty at every carrier.
 
-This module records the resulting obstruction at the exact source and target
-types of the requested transport.  A function out of the empty source can of
-course be defined, but it has no firing witness and therefore cannot satisfy
-the fixed nonvacuity and anti-empty-elimination acceptance requirement.
+This module records the resulting obstruction at the source and target types
+of the no-lift corollary.  A function out of the empty source can of course be
+defined, but that empty wrapper is not evidence for the data-level package
+reindexing and strong-lift reflection route required by the fixed ledger.
+
+These theorems do not rule out that structural route.  They isolate why a bare
+`CartesianLiftNonexistence` implication cannot replace it.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -46,33 +49,6 @@ theorem finiteModelLiftSource_not_nonempty :
     ¬ Nonempty FiniteModelLiftSource := by
   intro source
   exact finiteModelLiftSource_isEmpty.false source.some
-
-/--
-A proposed transport from the fixed source to the lifted target never has an
-input firing.  This theorem is independent of the implementation of
-`transport`: the obstruction is the empty source forced by the selected
-global-left theorem.
--/
-theorem finiteModelLiftTransport_never_fires
-    (transport : FiniteModelLiftSource → FiniteModelLiftTarget.{u}) :
-    ¬ ∃ source : FiniteModelLiftSource,
-      transport source = transport source := by
-  rintro ⟨source, _⟩
-  exact finiteModelLiftSource_isEmpty.false source
-
-/--
-The combined source-and-target firing packet demanded by a nonvacuous
-counterexample transport is uninhabited under the selected global branch.
--/
-structure FiniteModelLiftFiring : Type (u + 1) where
-  source : FiniteModelLiftSource
-  target : FiniteModelLiftTarget.{u}
-
-/-- No nonvacuous finite-model no-lift transport packet can be produced. -/
-theorem finiteModelLiftFiring_isEmpty : IsEmpty FiniteModelLiftFiring.{u} := by
-  refine ⟨?_⟩
-  intro firing
-  exact finiteModelLiftSource_isEmpty.false firing.source
 
 end AAT.AG.DoctrineFiberProduct
 

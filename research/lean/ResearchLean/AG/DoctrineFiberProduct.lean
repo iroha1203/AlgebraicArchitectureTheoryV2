@@ -498,8 +498,8 @@ The final A--E assembly passed its implementation review, but the independent
 completion audit recovered the fixed-ledger `FiniteModelLift` item that the
 assembly had omitted.  The selected global-left branch makes both the required
 universe-zero `CartesianLiftNonexistence` source and every canonical lifted
-target empty.  `FiniteModelLiftObstruction` fixes this as a kernel-checked
-nonvacuity obstruction: every transport function has no source firing, and the
-combined source/target firing packet is empty.  Thus a conditional function by
-empty elimination cannot discharge the unchanged ledger requirement.
+target empty.  `FiniteModelLiftObstruction` fixes why a bare implication between
+those no-lift types is only an empty wrapper.  It does not refute the remaining
+data-level route: arbitrary target-package universe rebasing followed by
+strong-lift reflection must still be constructed or formally obstructed.
 -/
