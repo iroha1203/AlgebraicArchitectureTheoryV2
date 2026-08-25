@@ -1,7 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
 
 /-!
-# Carrier-global cartesian branch artifact and regime producer
+# Carrier-global cartesian branch condition and exclusion
 
 This module fixes the remaining branch-selection surface of the G-110
 cartesian layer.  A right-branch value must use one authored structural syntax
@@ -10,12 +10,11 @@ checker bridges therefore prevent carrier-by-carrier semantic target fitting.
 The right theorem output also contains its own nondegenerate positive family
 and finite condition-failing no-lift witness.
 
-The actual artifact selects the already proved carrier-global left branch.
-`cartesianRegimeOfDisjunction` is the sole exported producer from the global
-branch choice to per-carrier `CartesianRegime` data.  Before a conditional
-artifact can serve as a G-110 completion output, its `RightBranch` value must be
-paired with the branch-local named-package lift/reflection family specified by
-the revised GOAL.
+`CartesianBranchArtifact` owns the actual disjunction artifact and the sole
+producer from its branch choice to per-carrier `CartesianRegime` data.  Before
+a conditional artifact can serve as a G-110 completion output, its
+`RightBranch` value must be paired there with the branch-local named-package
+lift/reflection family specified by the revised GOAL.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -87,9 +86,9 @@ theorem rightBranch_isEmpty : IsEmpty RightBranch.{u} := by
   refine ⟨?_⟩
   intro right
   let counterexample := right.finiteCounterexample.nonexistence
-  exact counterexample.no_lift
-    (globalCartesianLift FiniteModel.carrier counterexample.input
-      counterexample.targetPackage)
+  exact
+    (cartesianLiftNonexistence_isEmpty FiniteModel.carrier).false
+      counterexample
 
 end AAT.AG.DoctrineFiberProduct
 
