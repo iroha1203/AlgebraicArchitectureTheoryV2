@@ -187,6 +187,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelStrongLiftIsoTransport
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftObstruction
+import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULift
 
 /-!
 # Doctrine fiber-product schema
