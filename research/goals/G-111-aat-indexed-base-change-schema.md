@@ -31,7 +31,9 @@
   G-101(opcartesian 普遍性)、G-106(raw defect / reselection 語彙)、
   G-109(core pseudofunctor API — `CoreFiber` を型に含む seed を消費
   する)。
-- `tracking issue`: 未起票(起票はマージ後・loop 起動前)
+- `tracking issue`: #4158(runtime state 正本。proof state・cycle
+  履歴・F0 で確定した schema signature と許容 producer 一覧の fixed
+  head はここに同期する)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-111、§5 判定線)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 (D))、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (i)・(B) 条項・(D) 移管文)
