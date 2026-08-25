@@ -1,7 +1,7 @@
 # G-111-aat-indexed-base-change-schema — indexed base-change schema と診断の full-domain 化
 
 - `id`: `G-111-aat-indexed-base-change-schema`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第一項前半の担当カード(担当義務 =
@@ -24,7 +24,7 @@
   G-101(opcartesian 普遍性)、G-106(raw defect / reselection 語彙)、
   G-109(core pseudofunctor API — `CoreFiber` を型に含む seed を消費
   する)。
-- `tracking issue`: 未起票(active 昇格時に起票)
+- `tracking issue`: 未起票(起票はマージ後・loop 起動前)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-111、§5 判定線)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 (D))、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (i)・(B) 条項・(D) 移管文)
@@ -93,9 +93,19 @@
      **well-formedness 述語は decoder 全域性・型整合の決定可能条件に
      限り、coherence 保存・vanishing 保存・可換性の結論語彙を含まない
      (G-110 (s4) 様式の継承)**。vertexwise core-fiber functor 族の
-     edge 適合(naturality)データは生成データとして資格付けし、その
-     資格条項(置き場所・監査方法・結論非参照)は**昇格レビューまでに
-     固定**する(F0 は signature の確定のみを担う)。
+     edge 適合(naturality)データは authored 生成データ(base 作用の
+     生成データの一部)として資格付けし、資格条項を次に固定する —
+     **置き場所** = indexed schema の生成データ層。型は functor 族と
+     presentation の 1-cell / 2-cell に対する naturality 成分(自然
+     変換成分+可換等式)のみで、作用層の語彙で閉じる。**結論非参照**
+     = 型・述語に診断結論語彙(defect cochain 保存・obstruction
+     vanishing・coherence 保存・reselection orbit)を含めず、edge
+     適合等式は action functor 間の可換性のみ主張する。**監査方法** =
+     structure-field escape audit で (i) edge 適合 field が作用層語彙
+     のみで型付けされること、(ii) (d5)(d6) が edge 適合 field の述語
+     射影で放電されないことを検査する。F0 で診断語彙なしに型付け
+     不能と判明した場合は `goal-defect` で停止する(failure policy と
+     整合。signature の最終確定は F0 が担う)。
   2. **(b) cocartesian 保存 lift**: 各固定 carrier 内の全 package に
      対する cocartesian 保存 lift を、**indexed schema の base 作用に
      対する lift として**証明する(作用との整合等式 — G-101 lift との
@@ -134,10 +144,9 @@
   一式と診断比較写像、named finite nonvacuity witness、
   proper-extension witness、report
   `research/reports/G-111-aat-indexed-base-change-schema.md`。
-- `target proof strategy`: 昇格レビュー(edge 適合データの資格条項
-  固定)→ F0 schema typing(indexed schema・universe 契約を
-  elaboration の実フィードバック付きで確定)→ K0 schema 建設と base
-  作用 → K1 cocartesian 保存 lift → K2 制限比較 → K3 full-domain
+- `target proof strategy`: F0 schema typing(indexed schema・universe
+  契約を elaboration の実フィードバック付きで確定)→ K0 schema 建設と
+  base 作用 → K1 cocartesian 保存 lift → K2 制限比較 → K3 full-domain
   (d1)–(d6) → K4 witness 対と閉性監査。既存成果の利用 map:
   `no_universalBCDiagnosticSourceFiberIncidence`(incidence 資格の解除
   が普遍生成では不可能なことを確定する範囲標識 — 要件本体は G-110
