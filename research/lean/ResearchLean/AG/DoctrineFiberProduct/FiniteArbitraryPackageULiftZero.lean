@@ -173,7 +173,7 @@ theorem finiteModelZeroLiftArchitectureContext_reflect
     finiteModelZeroLiftArchitectureContext]
   exact ⟨rfl, rfl, rfl⟩
 
-/-! ## Exact raw context-morphism round trip -/
+/-! ## Exact raw context-morphism lift, reflection, and restriction preservation -/
 
 /-- Rebase all three maps of a low raw context morphism at universe zero. -/
 def finiteModelZeroLiftContextMorphism
