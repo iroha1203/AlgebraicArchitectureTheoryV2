@@ -2,8 +2,7 @@ import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 import ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactness
-import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapse
-import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticPresentationReplacement
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticCovarianceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingClosure
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPastedCrossRouteCompatibility
@@ -68,10 +67,14 @@ structure CartesianLiftLayer
         (toSemanticCart presentation).source.source =
       (toSemanticCart presentation).target.source
   globalBranch : GlobalCartesianLift.{u}
-  disjunction : GlobalCartesianLift.{u} ∨ Nonempty RightBranch.{u}
+  artifactBranch :
+    globalDisjunctionArtifact = .global globalCartesianLift
   rightBranchExcluded : IsEmpty RightBranch.{u}
-  selectedLift : ∀ (input : RealizableHom U)
+  producerMembership : ∀ (input : RealizableHom U),
+    (cartesianRegimeOfDisjunction globalDisjunctionArtifact U).HCart input
+  producerLift : ∀ (input : RealizableHom U)
     (targetPackage : CoreFiber input.semantic.target),
+    (cartesianRegimeOfDisjunction globalDisjunctionArtifact U).HCart input →
     HasStrongCartesianLift input.semantic targetPackage
 
 /-- `(C)`: pointed pullback generation, exact canonical mates for all
@@ -94,23 +97,38 @@ structure BeckChevalleyLayer
     IsIso (coreBeckChevalleyCleavageMate presentation
       leftCleavage rightCleavage)
   canonicityPositive :
-    FiniteDiagnosticObjectCollapseMateCoherentAtCochain
-      (identityDefectCochain
-        finiteAxisFoldBCDatumSquare.toTransportData)
-  canonicityNegative : ∀
+    MateCoherentRel FiniteModel.carrier finiteAuthoredBCDatumSquare
+  canonicityNegative :
+    ¬ MateCoherentRel FiniteModel.carrier finiteAxisFoldBCDatumSquare
+  canonicityOrbitFailure : ∀
     (cochain : DefectCochain finiteAxisFoldBCDatumSquare.toTransportData),
     InReselectionOrbit finiteAxisFoldBCDatumSquare.toTransportData cochain →
-      ¬ FiniteDiagnosticObjectCollapseMateCoherentAtCochain cochain
+      ∃ reselection : EdgeReselection finiteAxisFoldBCDatumSquare.context.lift,
+        initialRawDefectCochain
+            (finiteAxisFoldBCDatumSquare.reselectEdges reselection).toTransportData =
+          cochain ∧
+        ¬ MateCoherentRel FiniteModel.carrier
+          (finiteAxisFoldBCDatumSquare.reselectEdges reselection)
+  canonicityOrbitNontrivial :
+    ∃ cochain : DefectCochain finiteAxisFoldBCDatumSquare.toTransportData,
+      InReselectionOrbit finiteAxisFoldBCDatumSquare.toTransportData cochain ∧
+        cochain ≠
+          initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData
   comparisonReplacement : ∀
-    (datum : AuthoredBCDatumSquare U)
-    (replacement : BCRealizationProvenance datum.context.square.semantic),
+    (input : AuthoredBCDatumSquare U)
+    (replacement : BCRealizationProvenance input.context.square.semantic),
     (authoredSupportDirectRouteReplacementComparison
-        datum.context replacement).hom ≫
-      generatedAuthoredDiagnosticComparison
-        (datum.replacePresentation replacement) =
-    generatedAuthoredDiagnosticComparison datum ≫
+        input.context replacement).hom ≫
+      generatedAuthoredDiagnosticObjectCollapseComparison
+        (input.replacePresentation replacement) =
+    generatedAuthoredDiagnosticObjectCollapseComparison input ≫
       (authoredSupportViaBaseRouteReplacementComparison
-        datum.context replacement).hom
+        input.context replacement).hom
+  relationReplacement : ∀
+    (input : AuthoredBCDatumSquare U)
+    (replacement : BCRealizationProvenance input.context.square.semantic),
+    MateCoherentRel U (input.replacePresentation replacement) ↔
+      MateCoherentRel U input
 
 /-- The named finite `(D)` firing, kept as one proposition so the target
 theorem cannot forget either nonidentity input or either actual-route output. -/
@@ -270,19 +288,27 @@ theorem doctrineFiberProductAndBaseChangeTheorem
   cartesianLift :=
     { schemaSound := toSemanticCart_sound
       globalBranch := globalCartesianLift
-      disjunction := Or.inl globalCartesianLift
+      artifactBranch := rfl
       rightBranchExcluded := rightBranch_isEmpty
-      selectedLift := selectedCartesianRegime_hasStrongCartesianLift U }
+      producerMembership := selectedCartesianRegime_HCart U
+      producerLift := fun input targetPackage membership =>
+        CartesianRegime.hasStrongCartesianLift
+          (cartesianRegimeOfDisjunction globalDisjunctionArtifact U)
+          input membership targetPackage }
   beckChevalley :=
     { pointedPullback := pointedPullback_isPullback
       canonicalMateExact := coreBeckChevalleyMate_isIso
       arbitraryCleavageMateExact := coreBeckChevalleyCleavageMate_isIso
       canonicityPositive :=
-        finiteDiagnosticObjectCollapse_identity_mateCoherent
-      canonicityNegative :=
-        finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+        finiteAuthoredBCDatumSquare_mateCoherentRel
+      canonicityNegative := finiteAxisFoldBCDatumSquare_not_mateCoherentRel
+      canonicityOrbitFailure :=
+        finiteAxisFold_public_not_mateCoherentRel_on_orbit
+      canonicityOrbitNontrivial :=
+        finiteAxisFold_authoredComparison_orbit_nontrivial
       comparisonReplacement :=
-        generatedAuthoredDiagnosticComparison_replacement }
+        generatedAuthoredDiagnosticObjectCollapseComparison_replacement
+      relationReplacement := mateCoherentRel_replacePresentation_iff }
   diagnosticBaseChange :=
     { generatedD1D3 := qualifiedDiagnosticBaseChangeD1D3
       directReselectedPath := bcDiagnosticDirectReselectedPath_map

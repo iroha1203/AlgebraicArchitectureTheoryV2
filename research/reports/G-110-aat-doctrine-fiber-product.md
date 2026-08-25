@@ -66,7 +66,7 @@ selection:
   expected_result_type: completion-candidate
 result:
   proposed_result_type: completion-candidate
-  proof_obligation_delta: the fixed target now has one named Lean theorem assembling A fiber-product universality and proper finite firing, B carrier-global cartesian branch and selected-regime lift, C pointed pullback exact mates and authored-support canonicity positive/negative pair with replacement law, D unconditional d1-d6 covariance and named finite nonvacuity, and E finite-code pullback closure with horizontal and vertical pasted diagnostic compatibility
+  proof_obligation_delta: the fixed target now has one named Lean theorem assembling A fiber-product universality and proper finite firing, B the named global disjunction artifact and its produced-regime lift, C pointed pullback exact mates and the public MateCoherentRel strict/lax pair with full-orbit failure, nontrivial orbit and replacement laws, D unconditional d1-d6 covariance and named finite nonvacuity, and E finite-code pullback closure with horizontal and vertical pasted diagnostic compatibility
   completion_candidate: yes
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/TargetTheorem.lean
@@ -80,6 +80,12 @@ result:
     - PastingClosureLayer
     - DoctrineFiberProductAndBaseChangeTheorem
     - doctrineFiberProductAndBaseChangeTheorem
+    - globalDisjunctionArtifact
+    - cartesianRegimeOfDisjunction
+    - finiteAuthoredBCDatumSquare_mateCoherentRel
+    - finiteAxisFold_public_not_mateCoherentRel_on_orbit
+    - finiteAxisFold_authoredComparison_orbit_nontrivial
+    - mateCoherentRel_replacePresentation_iff
   claim_mapping:
     theorem_names:
       - doctrineFiberProductAndBaseChangeTheorem
@@ -98,8 +104,9 @@ audits:
   premise_delta:
     discharged:
       - final A-E theorem statement and constructor
-      - proof-use of every accepted headline artifact in the final constructor
-      - fixed finite nondegeneracy, noncanonicity, and diagnostic nonvacuity witnesses
+      - proof-use of the named B branch artifact and regime producer in the final constructor
+      - public C relation, strict/lax pair, full-orbit failure, orbit nontriviality and replacement invariance
+      - fixed finite nondegeneracy and diagnostic nonvacuity witnesses
     remaining:
       - completion-candidate final review
       - exact-head CI and Issue 4034 completion synchronization
