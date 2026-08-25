@@ -282,7 +282,7 @@
      右枝反例を後から等置する実装は放電と数えない。このsignatureの
      dependent equality / `HEq` の最終Lean表現は右枝を選択する場合の
      typing obligation とし、tracking Issue に fixed head を記録する。
-     declaration の型境界は次から弱めない(`right` は選択した右枝証拠、
+     declaration signature の下限は次から弱めない(`right` は選択した右枝証拠、
      `v` はtransport先universe):
 
      ```lean

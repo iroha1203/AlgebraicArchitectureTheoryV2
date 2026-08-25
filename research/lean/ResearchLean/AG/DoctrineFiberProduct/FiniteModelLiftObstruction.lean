@@ -3,15 +3,18 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
 /-!
 # Empty-wrapper obstruction for finite no-lift transport
 
-The fixed G-110 ledger asks for a universe-polymorphic `FiniteModelLift` that
-starts from a concrete universe-zero `CartesianLiftNonexistence` and transports
-its nonexistence proof to the canonical `ULift` carrier.  The selected global
-left branch proves more: `CartesianLiftNonexistence` is empty at every carrier.
+The G-110 right-branch ledger asks for a universe-polymorphic `FiniteModelLift`
+that starts from a concrete universe-zero `CartesianLiftNonexistence` and
+transports its nonexistence proof to the canonical `ULift` carrier.  The
+selected global left branch instead proves that `CartesianLiftNonexistence` is
+empty at every carrier, so the right-branch transport is not applicable to the
+current artifact.
 
 This module records the resulting obstruction at the source and target types
 of the no-lift corollary.  A function out of the empty source can of course be
 defined, but that empty wrapper is not evidence for the data-level package
-reindexing and strong-lift reflection route required by the fixed ledger.
+reindexing and strong-lift reflection route required when the right branch is
+selected.
 
 These theorems do not rule out that structural route.  They isolate why a bare
 `CartesianLiftNonexistence` implication cannot replace it.
