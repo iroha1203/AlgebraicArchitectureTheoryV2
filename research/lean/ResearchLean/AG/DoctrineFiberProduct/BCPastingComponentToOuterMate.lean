@@ -301,6 +301,18 @@ noncomputable def horizontalDataNormalizedNorthwestLeftTransportSquare
       (coreFiberTransportFunctor
         (normalizedNestedPasteSquare (.horizontal data)).left).rightUnitor.inv)
 
+/-- Public constructor equation for the direction-qualified horizontal
+northwest covariant square. -/
+theorem horizontalDataNormalizedNorthwestLeftTransportSquare_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalDataNormalizedNorthwestLeftTransportSquare data =
+      TwoSquare.mk _ _ _ _
+        ((horizontalBCPastingNormalizedLeftCompositor data).inv ≫
+          (coreFiberTransportFunctor
+            (normalizedNestedPasteSquare
+              (.horizontal data)).left).rightUnitor.inv) := rfl
+
 /-- Direction-qualified northwest square pasted with both literal horizontal
 component squares. -/
 noncomputable def horizontalDataTypedRawComparisonSquare
@@ -309,6 +321,16 @@ noncomputable def horizontalDataTypedRawComparisonSquare
   horizontalDataNormalizedNorthwestLeftTransportSquare data ≫ₕ
     ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
       (bcCoreTransportSquareIso data.rightPresentation).hom)
+
+/-- Public constructor equation for the direction-qualified raw horizontal
+comparison square. -/
+theorem horizontalDataTypedRawComparisonSquare_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : HorizontalBCPastingData U) :
+    horizontalDataTypedRawComparisonSquare data =
+      horizontalDataNormalizedNorthwestLeftTransportSquare data ≫ₕ
+        ((bcCoreTransportSquareIso data.leftPresentation).hom ≫ₕ
+          (bcCoreTransportSquareIso data.rightPresentation).hom) := rfl
 
 /-- Direction-qualified horizontal typed outer comparison normal form. -/
 noncomputable def horizontalDataTypedOuterComparisonNormalForm
@@ -537,7 +559,7 @@ theorem horizontalComponentMate_eq_outerCanonicalMate
         (bcBottomPresentation data.rightPresentation))) X
   simp
   simp only [bcPastingNorthwestIso]
-  simp [horizontalDataNormalizedNorthwestLeftTransportSquare]
+  simp [horizontalDataNormalizedNorthwestLeftTransportSquare_eq]
   slice_lhs 1 3 =>
     rw [horizontalMateTopCompositor_naturality_app]
   rw [hcancel]
@@ -561,6 +583,66 @@ theorem horizontalLiteralComponentMates_eq_outerCanonicalMate
   rw [← congrArg TwoSquare.natTrans
     (horizontalBCPasting_coreBeckChevalleyMate_vcomp data)]
   exact horizontalComponentMate_eq_outerCanonicalMate data
+
+/-- Public constructor equation for the generated vertical northwest reindex
+alignment used by the Cycle 102 acceptance proof. -/
+theorem verticalNormalizedNorthwestReindexAlignment_eq_expanded
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalNormalizedNorthwestReindexAlignment data =
+      ((mateEquiv
+        (coreTransportReindexAdjunction
+          (bcPastingNormalizedProvenance
+            (.vertical data)).leftProvenance.toRealizableHom)
+        ((bcLeftAdjunction data.upperPresentation).comp
+          (bcLeftAdjunction data.lowerPresentation))
+        (verticalNormalizedNorthwestLeftTransportSquare data)).natTrans) ≫
+          (Functor.leftUnitor _).hom := rfl
+
+/-- Public constructor equation for the generated vertical source alignment. -/
+theorem verticalMateSourceAlignment_eq_expanded
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalMateSourceAlignment data =
+      Functor.whiskerLeft
+          (selectedCoreFiberReindexFunctor
+            (bcPastingNormalizedProvenance
+              (.vertical data)).leftProvenance.toRealizableHom)
+          (verticalBCPastingNormalizedTopCompositor data).hom ≫
+        (Functor.associator _ _ _).inv ≫
+        Functor.whiskerRight
+          (verticalNormalizedNorthwestReindexAlignment data)
+          (coreFiberTransportFunctor data.nestedSquare.top) := rfl
+
+/-- Public constructor equation for the generated vertical right reindex
+alignment. -/
+theorem verticalNormalizedRightReindexAlignment_eq_expanded
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalNormalizedRightReindexAlignment data =
+      conjugateEquiv
+        (coreTransportReindexAdjunction
+          (bcPastingNormalizedProvenance
+            (.vertical data)).rightProvenance.toRealizableHom)
+        ((bcRightAdjunction data.upperPresentation).comp
+          (bcRightAdjunction data.lowerPresentation))
+        (verticalNormalizedRightTransportIso data).inv := rfl
+
+/-- Public constructor equation for the generated vertical target alignment. -/
+theorem verticalMateTargetAlignment_eq_expanded
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalMateTargetAlignment data =
+      Functor.whiskerRight
+          (coreFiberTransportEqIso (verticalNormalizedBottom_eq data)).hom
+          (selectedCoreFiberReindexFunctor
+            (bcPastingNormalizedProvenance
+              (.vertical data)).rightProvenance.toRealizableHom) ≫
+        Functor.whiskerLeft
+          (coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation data.lowerPresentation)))
+          (verticalNormalizedRightReindexAlignment data) := rfl
 
 /-- The literal mate of the vertically composed generated component squares,
 named so downstream alignment theorems do not repeatedly normalize its
@@ -761,10 +843,10 @@ theorem verticalDecomposedMateAlignment
   rw [verticalComponentMateNatTrans_eq]
   rw [verticalDecomposedOuterMateNatTrans_eq]
   have htailCancel := verticalMateTargetCancellation data
-  simp only [verticalMateSourceAlignment,
-    verticalNormalizedNorthwestReindexAlignment,
-    verticalMateTargetAlignment,
-    verticalNormalizedRightReindexAlignment,
+  simp only [verticalMateSourceAlignment_eq_expanded,
+    verticalNormalizedNorthwestReindexAlignment_eq_expanded,
+    verticalMateTargetAlignment_eq_expanded,
+    verticalNormalizedRightReindexAlignment_eq_expanded,
     TwoSquare.whiskerBottom,
     TwoSquare.vComp,
     Category.assoc,

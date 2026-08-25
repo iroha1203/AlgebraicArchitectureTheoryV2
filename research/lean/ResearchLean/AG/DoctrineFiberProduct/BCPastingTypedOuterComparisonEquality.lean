@@ -220,6 +220,16 @@ noncomputable def verticalTypedComponentSquareForOuterEquality
   (TwoSquare.mk _ _ _ _
     (bcCoreTransportSquareIso data.lowerPresentation).hom)
 
+/-- Public constructor equation for the literal vertical component square. -/
+theorem verticalTypedComponentSquareForOuterEquality_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalTypedComponentSquareForOuterEquality data =
+      (TwoSquare.mk _ _ _ _
+        (bcCoreTransportSquareIso data.upperPresentation).hom) ≫ᵥ
+      (TwoSquare.mk _ _ _ _
+        (bcCoreTransportSquareIso data.lowerPresentation).hom) := rfl
+
 /-- The vertical component square after aligning both composite side
 functors by the generated core compositors. -/
 noncomputable def verticalCompositorAlignedComponentSquareForOuterEquality
@@ -249,6 +259,43 @@ noncomputable def verticalCompositorAlignedComponentSquareForOuterEquality
         (bcLeftPresentation data.upperPresentation))
       (typedPresentationToSemantic
         (bcLeftPresentation data.lowerPresentation))).inv
+
+/-- Public constructor equation for the compositor-aligned vertical component
+square. -/
+theorem verticalCompositorAlignedComponentSquareForOuterEquality_eq_whiskered
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalCompositorAlignedComponentSquareForOuterEquality data =
+      ((verticalTypedComponentSquareForOuterEquality data).whiskerRight
+        (coreFiberCompositor
+          (typedPresentationToSemantic
+            (bcRightPresentation data.upperPresentation))
+          (typedPresentationToSemantic
+            (bcRightPresentation data.lowerPresentation))).hom).whiskerLeft
+        (coreFiberCompositor
+          (typedPresentationToSemantic
+            (bcLeftPresentation data.upperPresentation))
+          (typedPresentationToSemantic
+            (bcLeftPresentation data.lowerPresentation))).inv := rfl
+
+/-- Public constructor equation for the generated vertical northwest covariant
+alignment square used by the typed outer comparison. -/
+theorem verticalNormalizedNorthwestLeftTransportSquare_eq_expanded
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (data : VerticalBCPastingData U) :
+    verticalNormalizedNorthwestLeftTransportSquare data =
+      TwoSquare.mk _ _ _ _
+        (Functor.whiskerLeft
+            (coreFiberTransportFunctor data.pasteNorthwestIso.inv)
+            (coreFiberCompositor
+              (typedPresentationToSemantic
+                (bcLeftPresentation data.upperPresentation))
+              (typedPresentationToSemantic
+                (bcLeftPresentation data.lowerPresentation))).inv ≫
+          (verticalBCPastingNormalizedLeftCompositor data).inv ≫
+          (coreFiberTransportFunctor
+            (normalizedNestedPasteSquare
+              (.vertical data)).left).rightUnitor.inv) := rfl
 
 /-- The compositor-aligned vertical component square is the reviewed vertical
 component comparison. -/
@@ -441,9 +488,9 @@ theorem verticalTypedOuterComparisonNormalForm_eq_reviewed
       Functor.associator_inv_app, Functor.comp_obj,
       Category.assoc, Category.id_comp, Category.comp_id,
       Functor.id_obj]
-    simp [verticalNormalizedNorthwestLeftTransportSquare,
-      verticalCompositorAlignedComponentSquareForOuterEquality,
-      verticalTypedComponentSquareForOuterEquality]
+    simp [verticalNormalizedNorthwestLeftTransportSquare_eq_expanded,
+      verticalCompositorAlignedComponentSquareForOuterEquality_eq_whiskered,
+      verticalTypedComponentSquareForOuterEquality_eq]
     rw [verticalTopRightAlignment_app_assoc]
     rfl
 

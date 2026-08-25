@@ -166,8 +166,9 @@ audits:
   validation_refs:
     - focused BCPastingTypedOuterComparisonEquality single-file elaboration: pass
     - focused BCPastingComponentToOuterMate single-file elaboration: pass
-    - BCPastingTypedOuterComparisonEquality axiom audit: 20 declarations, standard axioms only
-    - BCPastingComponentToOuterMate axiom audit: 34 declarations, standard axioms only
+    - BCPastingTypedOuterComparisonEquality axiom audit: 23 declarations, standard axioms only
+    - BCPastingComponentToOuterMate axiom audit: 40 declarations, standard axioms only
+    - public constructor equations cover the direction-qualified horizontal and vertical acceptance-proof normal forms; direct implementation-definition unfolding was removed from the reviewed proof sites
     - direct axiom audit of both literal-component acceptance theorems and both intermediate component-to-outer theorems: standard axioms only
     - targeted BCPastingComponentToOuterMate single-module build: pass
     - Research aggregate or full build: not run
