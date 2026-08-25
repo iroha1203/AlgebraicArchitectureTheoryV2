@@ -12,10 +12,10 @@ and finite condition-failing no-lift witness.
 
 The actual artifact selects the already proved carrier-global left branch.
 `cartesianRegimeOfDisjunction` is the sole exported producer from the global
-branch choice to per-carrier `CartesianRegime` data.  The separate canonical
-`FiniteModelLift` package/lift-reflection obligation is not encoded as a right-
-branch field here: accepting it as a field would reintroduce the certificate
-escape rejected by F0c2.
+branch choice to per-carrier `CartesianRegime` data.  The right-branch-only
+`FiniteModelLift` package/lift-reflection family is not encoded as a structure
+field here: a right-branch construction must generate it as a separate theorem
+family.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -67,7 +67,8 @@ structure RightBranch : Type (u + 1) where
 /--
 The generated global branch rules out every strong-cartesian no-lift witness,
 at every carrier and universe level.  This is the branch-exclusivity fact used
-to audit the fixed `FiniteModelLift` completion obligation.
+to mark the right-branch `FiniteModelLift` family as not applicable when the
+global branch is selected.
 -/
 theorem cartesianLiftNonexistence_isEmpty (U : AtomCarrier.{u})
     [DecidableEq U.Atom] : IsEmpty (CartesianLiftNonexistence U) := by

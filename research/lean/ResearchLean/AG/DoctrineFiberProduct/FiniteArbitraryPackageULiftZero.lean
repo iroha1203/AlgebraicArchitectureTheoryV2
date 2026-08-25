@@ -12,8 +12,9 @@ successor-universe construction.
 The module constructs context objects, raw context morphisms, arbitrary context
 preorders and their category equivalence, then transports arbitrary equation
 systems, finite detector semantics, and the complete source package reading.
-Cross-carrier total-hom graphs, supplied strong-lift reflection, and the named
-`FiniteModelLift` corollary remain later obligations.
+Together with the successor-form construction, these declarations record the
+arbitrary-package helper route.  The branch-conditioned G-110 contract instead
+uses a named counterexample package only when the right branch is selected.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

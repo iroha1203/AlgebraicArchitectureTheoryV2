@@ -745,9 +745,10 @@ The context category of an arbitrary finite-carrier package has a generated
 successor-universe lift.  Tagged image objects are strict, while every
 additional high context is represented by its finite Atom-reading profile.
 
-This declaration does not by itself cover the exact universe-zero endpoint of
-the fixed `FiniteModelLift.{u}` signature.  That reconciliation remains a
-separate package-assembly obligation.
+This declaration supplies the successor-form context equivalence used by the
+arbitrary-package helper route.  The exact-zero constructor is recorded
+separately; the branch-conditioned G-110 contract does not combine them into a
+single symbolic-universe producer.
 -/
 noncomputable def finiteModelTaggedContextEquivalence
     {A : ArchitectureObject FiniteModel.carrier}
