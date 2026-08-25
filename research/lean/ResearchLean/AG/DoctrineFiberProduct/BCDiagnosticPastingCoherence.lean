@@ -111,6 +111,14 @@ theorem fiberwiseAdmissibleTransportData_map_comp
       (coreFiberFunctorPackageAutHom_comp F H
         (data.package (G.twoTarget cell)))
 
+/-- Public constructor equation for the reviewed transported diagnostic datum. -/
+theorem fiberwiseAdmissibleTransportData_transported_eq_toTransportData
+    {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U}
+    (data : FiberwiseAdmissibleTransportData G U X)
+    (F : CoreFiber X ⥤ CoreFiber Y) :
+    data.transported F = (data.map F).toTransportData := rfl
+
 /-- The reviewed admissible transport-data constructor itself commutes with
 two-stage functorial transport. -/
 theorem fiberwiseAdmissibleTransportData_transported_comp
@@ -120,8 +128,14 @@ theorem fiberwiseAdmissibleTransportData_transported_comp
     (F : CoreFiber X ⥤ CoreFiber Y)
     (H : CoreFiber Y ⥤ CoreFiber Z) :
     data.transported (F ⋙ H) = (data.map F).transported H := by
-  unfold FiberwiseAdmissibleTransportData.transported
-  rw [fiberwiseAdmissibleTransportData_map_comp]
+  calc
+    data.transported (F ⋙ H) =
+        (data.map (F ⋙ H)).toTransportData :=
+      fiberwiseAdmissibleTransportData_transported_eq_toTransportData _ _
+    _ = ((data.map F).map H).toTransportData := by
+      rw [fiberwiseAdmissibleTransportData_map_comp]
+    _ = (data.map F).transported H :=
+      (fiberwiseAdmissibleTransportData_transported_eq_toTransportData _ _).symm
 
 /-- The G-110(E) `(d5)` composition law.  A source coherence proof generates
 the first target coherence and then the second; neither target certificate is
