@@ -39,7 +39,9 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
 6. SAKURA 論文の構成裁定の素描(§8): Foundation / Main 二階建て、中心
    図表 = 達成階梯対応表(G-116 成果物として義務化)、統一 statement
-   candidate、差分表の充填先、論文Bとの関係(裁定事項)。
+   candidate、差分表の充填先。**論文Bとの関係は裁定済み — SAKURA 論文は
+   論文B「連合する読み」と同一の論文の現行版であり、旧計画は拘束
+   しない**。
 
 ## 参照
 
@@ -78,8 +80,8 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
 - 固有名: **SAKURA**。表記は大文字ローマ字(SHIGURE と同 register)。
   日本語文中は「SAKURA 海域」と書く。
 - 説明名(英名): **Sea of Coherent Readings**。内容名として固有名と併用
-  する(論文B「連合する読み」n1005 §7 への素材供給と対応 — 関係の裁定は
-  §8)。
+  し、SAKURA 論文(§8 — 論文B「連合する読み」の現行版)の英題候補を
+  兼ねる。
 - backronym: **Semantic Ascent through Kartesian Universality and
   Relative Alignment**。K 綴りは backronym 上の意匠(cartesian の K
   転写)である。Ascent = 上昇(登路と海面)、Kartesian Universality =
@@ -638,9 +640,9 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
   change と一体で輸送されること、(3) 全て Lean で固定されること、
   (4) 存否未決だった exchange-failure に決定を与えること。執筆時に
   n1006 §3 と同水準の差分表として充填する。
-- **論文Bとの関係(裁定事項)**: 論文B「連合する読み」(n1005 §7、
-  問いと収録候補は n1001 で固定済み)に対し、SAKURA 論文は (i) 同一物、
-  (ii) 論文Bの前半部(Gr 系列を Part I とする包含)、(iii) ロードマップ
-  外の別トラック、の三択。裁定までは両者の関係を「素材供給」と表現する
-  (§1)。Sea of Coherent Readings を論文Bの英題候補と兼ねるかも同時に
-  裁定する。
+- **論文Bとの関係(裁定済み 2026-08-25)**: SAKURA 論文は論文B「連合
+  する読み」(n1005 §7)と**同一の論文**であり、その現行版である。
+  論文Bの旧計画(n1001 の問い・収録候補・ロードマップ上の位置)は
+  **拘束しない** — 本節の構成裁定を正とし、旧計画の候補群は執筆 PRD
+  起草時に採否を選び直す素材として扱う。Sea of Coherent Readings は
+  同論文の英題候補を兼ねる(最終確定は執筆時)。
