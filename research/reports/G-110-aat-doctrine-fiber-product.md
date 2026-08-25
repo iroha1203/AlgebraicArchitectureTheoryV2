@@ -96,7 +96,7 @@ selection:
 result:
   proposed_result_type: completion-candidate
   proof_obligation_delta:
-    - FiniteModelLiftComponentGraph fixes the canonical rebased input, named low/high target packages, and both low/high total-hom lift graphs
+    - FiniteModelLiftComponentGraph transports the four dependent endpoints to one FiniteGeneratedLiftInput, identifies every reflected low lift with its canonical generated lift, and requires ReflectedGeneratedComponentGraph for every supplied high lift, including normalization and all Atom/object/configuration/equation/operation/invariant/signature component equations
     - RightFiniteModelLiftFamily ties its generated low endpoints to the same right.finiteCounterexample by equality and HEq and retains the revised universe-u lifted endpoints, reflection, component graph, and high no-lift signature; no right-family value is constructed on the selected left branch
     - RightBranchArtifact pairs one right value with RightFiniteModelLiftFamily right
     - DisjunctionArtifact.conditional now accepts only RightBranchArtifact
@@ -124,6 +124,7 @@ result:
         - cartesianRegimeOfDisjunction
         - rightBranchArtifact_isEmpty
         - selectedCartesianRegime_HCart
+        - finiteParametricCartLiftFamily
       C:
         - pointedPullback_isPullback
         - coreBeckChevalleyMate_isIso
@@ -165,7 +166,7 @@ result:
       proof_use: DoctrineFiberProductLayer and pointedPullback_isPullback dependency
     - premise: compatible point cone
       role: direction-hypothesis
-      status: discharged-as-input-qualification
+      status: justified-boundary
       provenance: PointedDoctrinePullback constructors
       proof_use: pointedPullback_isPullback
     - premise: H_cart definition, qualification, and checker
@@ -178,6 +179,36 @@ result:
       status: not-applicable
       provenance: selected global regime has universal membership
       proof_use: selectedCartesianRegime_HCart
+    - premise: finite presentation and toSemantic bridge
+      role: discharge-required
+      status: discharged
+      provenance: CartPresentation / BCPresentation / toSemanticCart_sound / realization soundness and replacement families
+      proof_use: every realized input in B--E is decoded from the fixed presentation schemas
+    - premise: G-106 AdmissibleTransportData API
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: fixed G-106 reviewed anchor
+      proof_use: source diagnostic transport and K4 coherence dependency DAG
+    - premise: instance-level edgeStrong / twoCellBase / authored comparator
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: base-change-before authored diagnostic input and fixed finite fixtures
+      proof_use: edgeStrong and authored comparator generate d3; twoCellBase generates the source raw-defect firing while target-side data is constructed
+    - premise: DiagnosticSourceFiberIncidence / BCDiagnosticSourceFiberIncidence
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: source-only incidence schemas and no_universalBCDiagnosticSourceFiberIncidence
+      proof_use: qualifiedDiagnosticBaseChangeD1D3 and all direct/via-base d4--d6 producers derive target data from source incidence
+    - premise: AuthoredBC2CellPresentation raw comparator table
+      role: conclusion-equivalent-risk
+      status: discharged
+      provenance: fixed pre-base-change authored input and generatedAuthoredDiagnosticObjectCollapseComparison
+      proof_use: generated comparison and canonical constructions consume the raw table without returning it; negative relation persists on the realized reselection orbit
+    - premise: relative obstruction orbit invariance
+      role: discharge-required
+      status: discharged
+      provenance: finiteAxisFold_public_not_mateCoherentRel_on_orbit / finiteAxisFold_authoredComparison_orbit_nontrivial
+      proof_use: BeckChevalleyLayer canonicityOrbitFailure / canonicityOrbitNontrivial
     - premise: pointed ExtInst pullback bridge
       role: discharge-required
       status: discharged
@@ -193,6 +224,16 @@ result:
       status: discharged
       provenance: cartesianRegimeOfDisjunction / globalDisjunctionArtifact
       proof_use: CartesianLiftLayer.producerMembership / producerLift
+    - premise: caller-supplied CartesianRegime
+      role: conclusion-equivalent-risk
+      status: discharged
+      provenance: selectedCartesianRegime is computed from globalDisjunctionArtifact
+      proof_use: downstream reindexing and TargetTheorem consume the named producer rather than a regime argument
+    - premise: branch-independent parametric positive lift family
+      role: discharge-required
+      status: discharged
+      provenance: finiteParametricCartLiftFamily
+      proof_use: two pairwise nonisomorphic members include a noninvertible base arrow and actual generated strong lifts
     - premise: presentation closure and realization compatibility
       role: discharge-required
       status: discharged
@@ -253,7 +294,7 @@ result:
     branch_consistency: pass-candidate
     port_status: unported (Research-proved)
   static_check:
-    focused_manifest_check: passed (74 namespace declarations; standard axioms only)
+    focused_manifest_check: passed (101 namespace declarations; standard axioms only)
     targeted_module_build: passed (CartesianBranchArtifact)
     target_theorem_focused_check: passed (66 namespace declarations; standard axioms only)
     doctrine_fiber_product_aggregate_file_check: passed

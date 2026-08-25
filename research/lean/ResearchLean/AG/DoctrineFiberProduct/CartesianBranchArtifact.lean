@@ -1,5 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
-import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedLiftNaturality
 
 /-!
 # Typed carrier-global cartesian branch artifact
@@ -23,11 +23,59 @@ local instance finiteBranchArtifactAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
+/-- One semantic input and target package, bundled for dependent lift transport. -/
+structure CartesianLiftEndpoint (U : AtomCarrier.{u}) where
+  input : CartSemanticInput U
+  targetPackage : CoreFiber input.target
+
+namespace CartesianLiftEndpoint
+
+/-- Strong lift type at one bundled endpoint. -/
+abbrev Lift {U : AtomCarrier.{u}} (endpoint : CartesianLiftEndpoint U) :=
+  StrongCartesianLift endpoint.input endpoint.targetPackage
+
+/-- Transport a strong lift along equality of its complete dependent endpoint. -/
+def transportLift {U : AtomCarrier.{u}}
+    {first second : CartesianLiftEndpoint U}
+    (endpoint_eq : first = second) (lift : first.Lift) : second.Lift := by
+  subst second
+  exact lift
+
+end CartesianLiftEndpoint
+
+/-- The actual low endpoint selected by a right-branch family. -/
+def finiteModelLowEndpoint
+    (input : RealizableHom FiniteModel.carrier)
+    (targetPackage : CoreFiber input.semantic.target) :
+    CartesianLiftEndpoint FiniteModel.carrier :=
+  ⟨input.semantic, targetPackage⟩
+
+/-- The actual high endpoint selected by a right-branch family. -/
+def finiteModelHighEndpoint
+    (input : RealizableHom finiteModelLiftCarrier.{u})
+    (targetPackage : CoreFiber input.semantic.target) :
+    CartesianLiftEndpoint finiteModelLiftCarrier.{u} :=
+  ⟨input.semantic, targetPackage⟩
+
+/-- The named generated low endpoint used by the exact component graph. -/
+noncomputable def generatedFiniteModelLowEndpoint
+    (input : FiniteGeneratedLiftInput) :
+    CartesianLiftEndpoint FiniteModel.carrier :=
+  ⟨input.lowInput, input.lowTarget⟩
+
+/-- The named generated high endpoint used by the exact component graph. -/
+noncomputable def generatedFiniteModelHighEndpoint
+    (input : FiniteGeneratedLiftInput) :
+    CartesianLiftEndpoint finiteModelLiftCarrier.{u} :=
+  ⟨input.highInput, input.highTarget⟩
+
 /--
-The endpoint and total-hom graph required of the named finite-obstruction
-reflection.  The high input is the canonical rebasing of the low input; both
-supplied high lifts and their reflected low lifts retain their package points
-and base morphisms.
+The complete endpoint, package, and total-hom graph required of the named
+finite-obstruction reflection.  Endpoint equalities transport the supplied
+high lift and the reflected low lift to one generated input.  The existing
+`ReflectedGeneratedComponentGraph` then retains normalization, generated
+naturality, base/projection equations, Atom/object/configuration/equation/
+operation/invariant/signature component equations, and domain observations.
 -/
 structure FiniteModelLiftComponentGraph
     (lowInput : RealizableHom FiniteModel.carrier)
@@ -35,16 +83,23 @@ structure FiniteModelLiftComponentGraph
     (highInput : RealizableHom finiteModelLiftCarrier.{u})
     (highTarget : CoreFiber highInput.semantic.target)
     (reflect : StrongCartesianLift highInput.semantic highTarget →
-      StrongCartesianLift lowInput.semantic lowTarget) : Prop where
-  highInput_eq : highInput = finiteModelLiftRealizableHom.{u} lowInput
-  lowTargetPackage_eq : lowTarget.1 = FiniteModel.corePackage
-  highTargetPackage_eq : highTarget.1 = finiteModelLiftCorePackage.{u}
-  lowTotalHom : ∀ (lift : StrongCartesianLift highInput.semantic highTarget),
-    (packageProjection FiniteModel.carrier).IsHomLift
-      lowInput.semantic.hom (reflect lift).hom
-  highTotalHom : ∀ (lift : StrongCartesianLift highInput.semantic highTarget),
-    (packageProjection finiteModelLiftCarrier.{u}).IsHomLift
-      highInput.semantic.hom lift.hom
+      StrongCartesianLift lowInput.semantic lowTarget) where
+  generatedInput : FiniteGeneratedLiftInput
+  lowEndpoint_eq :
+    finiteModelLowEndpoint lowInput lowTarget =
+      generatedFiniteModelLowEndpoint generatedInput
+  highEndpoint_eq :
+    finiteModelHighEndpoint highInput highTarget =
+      generatedFiniteModelHighEndpoint.{u} generatedInput
+  reflectedLift_eq : ∀
+    (lift : StrongCartesianLift highInput.semantic highTarget),
+    CartesianLiftEndpoint.transportLift lowEndpoint_eq (reflect lift) =
+      generatedInput.lowGeneratedLift
+  components : ∀
+    (lift : StrongCartesianLift highInput.semantic highTarget),
+    ReflectedGeneratedComponentGraph.{u, 0, 0, 0, 0, 0, 0, 0} generatedInput
+      (CartesianLiftEndpoint.transportLift highEndpoint_eq lift)
+      generatedInput.lowGeneratedLift.hom
 
 /--
 The right-branch-local finite obstruction family.  Its low endpoints are tied
