@@ -321,8 +321,8 @@ theorem verticalCompositorAlignedComponentSquareForOuterEquality_eq
         BCRealizationProvenance (toSemanticBC data.lowerPresentation))
   apply NatTrans.ext
   funext X
-  simp [verticalCompositorAlignedComponentSquareForOuterEquality,
-    verticalTypedComponentSquareForOuterEquality,
+  simp [verticalCompositorAlignedComponentSquareForOuterEquality_eq_whiskered,
+    verticalTypedComponentSquareForOuterEquality_eq,
     verticalBCPastingComponentComparison, hupp, hlow]
   rfl
 
