@@ -1,6 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.DoctrinePullbackWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
-import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
+import ResearchLean.AG.DoctrineFiberProduct.CartesianBranchArtifact
 import ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactness
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticCovarianceWitnesses
@@ -69,7 +69,7 @@ structure CartesianLiftLayer
   globalBranch : GlobalCartesianLift.{u}
   artifactBranch :
     globalDisjunctionArtifact = .global globalCartesianLift
-  rightBranchExcluded : IsEmpty RightBranch.{u}
+  rightBranchExcluded : IsEmpty RightBranchArtifact.{u}
   producerMembership : ∀ (input : RealizableHom U),
     (cartesianRegimeOfDisjunction globalDisjunctionArtifact U).HCart input
   producerLift : ∀ (input : RealizableHom U)
@@ -289,7 +289,7 @@ theorem doctrineFiberProductAndBaseChangeTheorem
     { schemaSound := toSemanticCart_sound
       globalBranch := globalCartesianLift
       artifactBranch := rfl
-      rightBranchExcluded := rightBranch_isEmpty
+      rightBranchExcluded := rightBranchArtifact_isEmpty
       producerMembership := selectedCartesianRegime_HCart U
       producerLift := fun input targetPackage membership =>
         CartesianRegime.hasStrongCartesianLift

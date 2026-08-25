@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.CartesianBranch
+import ResearchLean.AG.DoctrineFiberProduct.CartesianBranchArtifact
 
 /-!
 # Producer-derived cartesian reindexing

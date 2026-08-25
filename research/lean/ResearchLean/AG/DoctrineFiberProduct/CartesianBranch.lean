@@ -91,64 +91,6 @@ theorem rightBranch_isEmpty : IsEmpty RightBranch.{u} := by
     (globalCartesianLift FiniteModel.carrier counterexample.input
       counterexample.targetPackage)
 
-/-! ## One global branch choice and its sole per-carrier producer -/
-
-/--
-One carrier-global branch choice.  The quantifier over carriers occurs inside
-each constructor payload, so this cannot degenerate to a per-carrier choice.
--/
-inductive DisjunctionArtifact : Type (u + 1)
-  /-- The unconditional carrier-global lift theorem was selected. -/
-  | global (proof : GlobalCartesianLift.{u})
-  /-- The conditional schema payload; the revised completion package also pairs its finite lift family. -/
-  | conditional (proof : RightBranch.{u})
-
-/--
-The required producer from one carrier-global branch artifact to every
-per-carrier regime.  Later G-110 layers must consume this output rather than an
-arbitrary caller-supplied `CartesianRegime`.
--/
-def cartesianRegimeOfDisjunction
-    (artifact : DisjunctionArtifact.{u}) :
-    ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom], CartesianRegime U := by
-  intro U _
-  cases artifact with
-  | global proof => exact .global (proof U)
-  | conditional proof => exact .conditional (proof.regime U)
-
-/-- The actual G-110 branch artifact generated from the proved global theorem. -/
-def globalDisjunctionArtifact : DisjunctionArtifact.{u} :=
-  .global globalCartesianLift
-
-/-- The selected per-carrier regime, produced only from the named global artifact. -/
-def selectedCartesianRegime (U : AtomCarrier.{u})
-    [DecidableEq U.Atom] : CartesianRegime U :=
-  cartesianRegimeOfDisjunction globalDisjunctionArtifact U
-
-/-- The selected regime is definitionally the global branch instantiated at the carrier. -/
-theorem selectedCartesianRegime_eq_global (U : AtomCarrier.{u})
-    [DecidableEq U.Atom] :
-    selectedCartesianRegime U = .global (globalCartesianLift U) :=
-  rfl
-
-/-- Every realized arrow belongs to the regime produced by the selected artifact. -/
-theorem selectedCartesianRegime_HCart (U : AtomCarrier.{u})
-    [DecidableEq U.Atom] (input : RealizableHom U) :
-    (selectedCartesianRegime U).HCart input := by
-  trivial
-
-/--
-The selected producer supplies an actual strong cartesian lift for every
-realized arrow and endpoint package through the ordinary regime eliminator.
--/
-theorem selectedCartesianRegime_hasStrongCartesianLift
-    (U : AtomCarrier.{u}) [DecidableEq U.Atom]
-    (input : RealizableHom U)
-    (targetPackage : CoreFiber input.semantic.target) :
-    HasStrongCartesianLift input.semantic targetPackage :=
-  CartesianRegime.hasStrongCartesianLift (selectedCartesianRegime U) input
-    (selectedCartesianRegime_HCart U input) targetPackage
-
 end AAT.AG.DoctrineFiberProduct
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
