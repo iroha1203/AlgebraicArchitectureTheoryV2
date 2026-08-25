@@ -11,8 +11,8 @@ that missing decoder-level arrow-category isomorphism from the presentation
 alone.
 
 No package, strong lift, nonexistence proof, or endpoint isomorphism is supplied
-by the caller.  Package transport and the final `FiniteModelLift` corollary are
-separate later obligations.
+by the caller.  This decoder-level isomorphism remains a helper for the
+right-branch named-package transport and its positive reflection fixture.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

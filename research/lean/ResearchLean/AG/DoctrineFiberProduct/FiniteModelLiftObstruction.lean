@@ -31,19 +31,19 @@ local instance finiteModelLiftObstructionAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
-/-- The exact universe-zero source type required by the fixed finite lift ledger. -/
+/-- The universe-zero source type for a right-branch finite obstruction transport. -/
 abbrev FiniteModelLiftSource :=
   CartesianLiftNonexistence FiniteModel.carrier
 
-/-- The exact canonical `ULift`-carrier target type of the requested transport. -/
+/-- The canonical `ULift`-carrier target type of that right-branch transport. -/
 abbrev FiniteModelLiftTarget : Type (u + 1) :=
   CartesianLiftNonexistence finiteModelLiftCarrier.{u}
 
-/-- The selected global branch makes the requested universe-zero source empty. -/
+/-- The selected global branch makes the universe-zero source empty. -/
 theorem finiteModelLiftSource_isEmpty : IsEmpty FiniteModelLiftSource :=
   cartesianLiftNonexistence_isEmpty FiniteModel.carrier
 
-/-- The selected global branch also makes every requested lifted target empty. -/
+/-- The selected global branch also makes every canonical lifted target empty. -/
 theorem finiteModelLiftTarget_isEmpty : IsEmpty FiniteModelLiftTarget.{u} :=
   cartesianLiftNonexistence_isEmpty finiteModelLiftCarrier.{u}
 

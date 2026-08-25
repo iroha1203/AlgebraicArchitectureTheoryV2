@@ -13,16 +13,13 @@ core fiber over the semantic target.
 
 The left-branch quantifier, qualified per-carrier right-regime data, genuine
 positive-family interfaces, and the branch-independent per-carrier regime are
-fixed here.  The canonical cross-universe reindexing of the entire package
-projection, the carrier-global `RightBranch`, the single `DisjunctionArtifact`,
-and its named producer are deliberately deferred to F0c2.  In particular, no
-counterexample-specific equivalence of empty strong-lift types is accepted as
-an `ULift` transport.
+fixed here.  `CartesianBranch` constructs the carrier-global branch artifact
+and its named producer.  The separate cross-universe modules record helper
+constructions for finite package representations.
 
-No value of either branch is constructed here.  In particular, this F0 module
-does not choose `H_cart`, prove a checker bridge or sufficiency theorem, produce
-a cartesian lift, or prove a finite nonexistence counterexample.  Those are K1
-proof obligations.
+No value of either branch is constructed in this schema module.  Subsequent
+modules construct the selected global lift, branch artifact, and regime
+producer from these signatures.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -369,10 +366,10 @@ structure CartesianLiftCounterexample {U : AtomCarrier.{u}}
   condition_fails : ¬ condition.holds nonexistence.input
 
 /-
-F0c2 must construct the cross-universe reindexing of `packageProjection`
-before defining `FiniteModelLift`.  A counterexample-specific equivalence of
-strong-lift types is intentionally absent: once the base side is empty, such
-an equivalence could encode the lifted nonexistence conclusion directly.
+The pre-revision F0c2 route investigated cross-universe reindexing of
+`packageProjection` before a finite no-lift transport.  The branch-conditioned
+contract uses a named package only in the right-branch theorem package; the
+selected global branch makes that package inapplicable.
 -/
 
 /-! ## Branch-independent per-carrier regime -/

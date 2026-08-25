@@ -54,11 +54,13 @@ constraintと候補routeのscopeは tracking Issue #4034 の Cycle 110 comment�
 - 左枝を選択した現artifactでは `globalCartesianLift` が全carrier・全realized arrow・
   全target packageのliftを生成し、`cartesianLiftNonexistence_isEmpty` が右枝反例の
   不在を固定する。右枝専用の `FiniteModelLift` は `not-applicable` とする。
-- 右枝を選択する場合は、fixed finite fixtureから生成したnamed input / target package、
-  `RightBranch.finiteCounterexample` とのdependent endpoint一致、任意universeでの
-  canonical lift、全component graph、supplied-high-lift reflection、high no-liftを
-  同じsignature familyで構成する。caller package/certificate、field accessor、empty
-  eliminationは放電と数えない。
+- 右枝を選択する場合は、bare `RightBranch` ではなく、選択した right と
+  `RightFiniteModelLiftFamily right` を同時生成する `RightBranchArtifact` を
+  conditional payload とする。fixed finite fixture由来のnamed input / target package、
+  rightのfinite counterexampleとのdependent endpoint一致、同じuniverseでのcanonical
+  lift、全component graph、supplied-high-lift reflection、high no-liftを一つの
+  branch-local familyで構成する。任意 `RightBranch` 全体のendpointを同一視せず、caller
+  package/certificate、field accessor、empty eliminationは放電と数えない。
 - 任意packageのcross-universe exact reindexingは、finite obstructionの数学的資格より
   強いLean表現上の補助artifactなので、G-110から除きGr4 gateにも移管しない。Gr4 gate
   第一項に残る数学的義務は、各固定carrier内の全packageに対するcocartesian保存lift、
@@ -89,7 +91,7 @@ accepted_predecessor:
   - Cycle 109 / PR #4151
 revision_required:
   - make FiniteModelLift a right-branch-only obligation
-  - bind its named generated package and the right-branch counterexample in one typed signature family
+  - pair the selected right branch and its named generated package in one branch-local typed theorem package
   - retire arbitrary-package cross-universe exact reindexing from the mathematical completion contract
 ```
 

@@ -242,6 +242,7 @@
      **universe の固定**: 分岐・producer・regime は
      universe-polymorphic な完全 signature
      (`GlobalCartesianLift.{u}` / `RightBranch.{u}` /
+     `RightBranchArtifact.{u}` /
      `DisjunctionArtifact.{u}` / `cartesianRegimeOfDisjunction.{u}`)
      で立てる。右枝の有限反例は universe 0 の `FiniteModel.carrier`
      上で構成する。**右枝を選択した場合に限り**、その固定有限
@@ -262,8 +263,13 @@
      artifact であり、G-110 にも Gr4 gate にも移管しない。Gr4 gate
      第一項に残る数学的義務は、各固定 carrier 内の全 package に対する
      cocartesian 保存 lift と full-domain indexed action である。
-     **右枝時の型付き結合を固定する**: 右枝を選択する実装は、同じ
-     signature family に (i) fixed finite fixture data だけから生成する
+     **右枝時の型付き結合を固定する**: 右枝を選択する実装は、bare
+     `RightBranch` ではなく、選択した `right : RightBranch.{u}` と
+     `RightFiniteModelLiftFamily.{u} right` を同時生成する
+     `RightBranchArtifact.{u}` を conditional payload とする。これは
+     任意 `right : RightBranch` を一つの反例へ同一視する全称 theorem
+     ではない。同じ branch-local signature family に (i) fixed finite
+     fixture data だけから生成する
      `finiteCounterexampleInput` と `finiteCounterexampleTargetPackage`、
      (ii) `RightBranch.finiteCounterexample.nonexistence` の input / target
      package がその2出力に一致する dependent endpoint theorem、
@@ -282,49 +288,62 @@
      右枝反例を後から等置する実装は放電と数えない。このsignatureの
      dependent equality / `HEq` の最終Lean表現は右枝を選択する場合の
      typing obligation とし、tracking Issue に fixed head を記録する。
-     declaration signature の下限は次から弱めない(`right` は選択した右枝証拠、
-     `v` はtransport先universe):
+     declaration signature の下限は次から弱めない(`right` は同じ
+     output package 内で生成された右枝証拠、transport先はその
+     declaration の universe `u`):
 
      ```lean
-     finiteCounterexampleInput : RealizableHom FiniteModel.carrier
-     finiteCounterexampleTargetPackage :
-       CoreFiber finiteCounterexampleInput.semantic.target
-     finiteCounterexampleNoLift :
-       ¬ HasStrongCartesianLift finiteCounterexampleInput.semantic
-         finiteCounterexampleTargetPackage
-     finiteCounterexampleNonexistence :
-         CartesianLiftNonexistence FiniteModel.carrier :=
-       { input := finiteCounterexampleInput
-         targetPackage := finiteCounterexampleTargetPackage
-         no_lift := finiteCounterexampleNoLift }
-     rightFiniteCounterexample_eq (right : RightBranch.{u}) :
-       right.finiteCounterexample.nonexistence =
-         finiteCounterexampleNonexistence
-     rightFiniteCounterexampleInput_eq (right : RightBranch.{u}) :
-       right.finiteCounterexample.nonexistence.input =
-         finiteCounterexampleInput
-     rightFiniteCounterexampleTargetPackage_heq (right : RightBranch.{u}) :
-       HEq right.finiteCounterexample.nonexistence.targetPackage
-         finiteCounterexampleTargetPackage
-     finiteModelLiftCounterexampleInput.{v} :
-       RealizableHom finiteModelLiftCarrier.{v}
-     finiteModelLiftCounterexampleTargetPackage.{v} :
-       CoreFiber (finiteModelLiftCounterexampleInput.{v}).semantic.target
-     reflectFiniteModelCounterexampleLift.{v} :
-       StrongCartesianLift
-           (finiteModelLiftCounterexampleInput.{v}).semantic
-           finiteModelLiftCounterexampleTargetPackage.{v} →
-         StrongCartesianLift finiteCounterexampleInput.semantic
+     structure RightFiniteModelLiftFamily.{u} (right : RightBranch.{u}) where
+       finiteCounterexampleInput : RealizableHom FiniteModel.carrier
+       finiteCounterexampleTargetPackage :
+         CoreFiber finiteCounterexampleInput.semantic.target
+       finiteCounterexampleNoLift :
+         ¬ HasStrongCartesianLift finiteCounterexampleInput.semantic
            finiteCounterexampleTargetPackage
-     finiteModelLift_noLift.{v} :
-       ¬ HasStrongCartesianLift
-         (finiteModelLiftCounterexampleInput.{v}).semantic
-         finiteModelLiftCounterexampleTargetPackage.{v}
+       rightFiniteCounterexampleInput_eq :
+         right.finiteCounterexample.nonexistence.input =
+           finiteCounterexampleInput
+       rightFiniteCounterexampleTargetPackage_heq :
+         HEq right.finiteCounterexample.nonexistence.targetPackage
+           finiteCounterexampleTargetPackage
+       rightFiniteCounterexample_eq :
+         right.finiteCounterexample.nonexistence =
+           { input := finiteCounterexampleInput
+             targetPackage := finiteCounterexampleTargetPackage
+             no_lift := finiteCounterexampleNoLift }
+       finiteModelLiftCounterexampleInput :
+         RealizableHom finiteModelLiftCarrier.{u}
+       finiteModelLiftCounterexampleTargetPackage :
+         CoreFiber finiteModelLiftCounterexampleInput.semantic.target
+       reflectFiniteModelCounterexampleLift :
+         StrongCartesianLift finiteModelLiftCounterexampleInput.semantic
+             finiteModelLiftCounterexampleTargetPackage →
+           StrongCartesianLift finiteCounterexampleInput.semantic
+             finiteCounterexampleTargetPackage
+       componentGraph : FiniteModelLiftComponentGraph
+         finiteCounterexampleInput finiteCounterexampleTargetPackage
+         finiteModelLiftCounterexampleInput
+         finiteModelLiftCounterexampleTargetPackage
+         reflectFiniteModelCounterexampleLift
+       finiteModelLift_noLift :
+         ¬ HasStrongCartesianLift
+           finiteModelLiftCounterexampleInput.semantic
+           finiteModelLiftCounterexampleTargetPackage
+
+     structure RightBranchArtifact.{u} where
+       right : RightBranch.{u}
+       finiteModelLift : RightFiniteModelLiftFamily.{u} right
      ```
 
-     `FiniteModelLiftComponentGraph.{v}` は上記4 endpointとreflectionを
+     `DisjunctionArtifact.conditional` の最終 payload は bare
+     `RightBranch` ではなく `RightBranchArtifact` とする。右枝 producer
+     は `right` と `finiteModelLift` を同時に構成し、family fieldを
+     caller-supplied certificateとして受け取らない。
+     `FiniteModelLiftComponentGraph` は上記4 endpointとreflectionを
      indexに持ち、input/package/total-homのcanonical lift graphを保持する。
-     `finiteModelLift_noLift` のproof termは
+     `finiteCounterexampleNoLift` のproof termは right branch の
+     `finiteCounterexample.nonexistence.no_lift` と2本の endpoint 一致を
+     実消費し、`finiteModelLift_noLift` のproof termは
      `reflectFiniteModelCounterexampleLift` と
      `finiteCounterexampleNoLift` を実消費する。
      **二層の入力型と量化の

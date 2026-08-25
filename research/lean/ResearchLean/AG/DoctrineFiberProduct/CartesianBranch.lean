@@ -12,10 +12,10 @@ and finite condition-failing no-lift witness.
 
 The actual artifact selects the already proved carrier-global left branch.
 `cartesianRegimeOfDisjunction` is the sole exported producer from the global
-branch choice to per-carrier `CartesianRegime` data.  The right-branch-only
-`FiniteModelLift` package/lift-reflection family is not encoded as a structure
-field here: a right-branch construction must generate it as a separate theorem
-family.
+branch choice to per-carrier `CartesianRegime` data.  Before a conditional
+artifact can serve as a G-110 completion output, its `RightBranch` value must be
+paired with the branch-local named-package lift/reflection family specified by
+the revised GOAL.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -42,9 +42,9 @@ structural syntax through its checker bridge.  The positive family and finite
 counterexample are mathematical outputs, not fields of a presentation.
 
 No value of this structure is assumed by the selected left branch.  A genuine
-right-branch construction would additionally have to use the separately named
-canonical `FiniteModelLift` theorem to transport its finite obstruction; that
-result is deliberately not accepted as a field here.
+right-branch construction must generate this value together with its named
+finite-obstruction transport in the revised `RightBranchArtifact` theorem
+package.
 -/
 structure RightBranch : Type (u + 1) where
   /-- Carrier-independent authored condition template at the finite base carrier. -/
@@ -100,7 +100,7 @@ each constructor payload, so this cannot degenerate to a per-carrier choice.
 inductive DisjunctionArtifact : Type (u + 1)
   /-- The unconditional carrier-global lift theorem was selected. -/
   | global (proof : GlobalCartesianLift.{u})
-  /-- One uniform qualified conditional theorem was selected. -/
+  /-- The conditional schema payload; the revised completion package also pairs its finite lift family. -/
   | conditional (proof : RightBranch.{u})
 
 /--
