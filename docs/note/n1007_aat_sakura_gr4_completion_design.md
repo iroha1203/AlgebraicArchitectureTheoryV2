@@ -39,9 +39,8 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
 6. SAKURA 論文の構成裁定の素描(§8): Foundation / Main 二階建て、中心
    図表 = 達成階梯対応表(G-116 成果物として義務化)、統一 statement
-   candidate、差分表の充填先。**論文Bとの関係は裁定済み — SAKURA 論文は
-   論文B「連合する読み」と同一の論文の現行版であり、旧計画は拘束
-   しない**。
+   candidate、差分表の充填先。**SAKURA 論文は論文B「連合する読み」と
+   同一の論文の現行版であり、旧計画は拘束しない**。
 
 ## 参照
 
@@ -58,8 +57,8 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
   (Gr2 の証明対象 — 階梯対応表で遡及記載する。§8)
 - Lean reviewed artifact(`research/lean/ResearchLean/AG/` 配下の
   `DoctrineFiberProduct` / `CrossStageCoherence` / `GeometryTransport` /
-  `TransportCoherence` / `AtomFoundation`。§4 の錨は 2026-08-25 に
-  宣言名と実型を突合済み)
+  `TransportCoherence` / `AtomFoundation`。§4 の錨は宣言名と実型を
+  突合済み)
 
 **上流考察ノート**(定義・分割の初出。正本ではない):
 
@@ -88,7 +87,6 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
   fiber product の普遍性と carrier 大域 cartesian lift(G-110 (A)(B))、
   Relative Alignment = 終対象を置かない相対原理と段横断整合(Gr3)。
   全語が証明済み内容に対応する。
-- 命名日: 2026-08-25(G-110 完遂日)。
 
 **情景**(SHIGURE の「片時雨 = descent 貼り合わせの写し絵」と同じ役割):
 
@@ -106,7 +104,7 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
 
 **二段記録(範囲併記)**:
 
-- **開花宣言** = G-110 完遂(2026-08-25)。証明根拠は **Gr2 の証明**
+- **開花宣言** = G-110 完遂。証明根拠は **Gr2 の証明**
   (G-101)・**Gr3 の証明**(G-106+G-108+G-109 の三点セット、範囲は
   G-109 カードの記録に従う)・**Gr4 exact-bottom 第一手**(G-110 — 有限
   presentation 付き(realization 像)底層射上の全域 lift exact-bottom・
@@ -131,7 +129,7 @@ lifecycle の経緯(PR・Issue・cycle 履歴)は各 report と tracking Issue �
   階梯)のみとする。合格電報・「満ちる」の語共有・俗語への内蔵反論
   (開花 = 完了判定)は和文 outreach 専用とする。
 
-**衝突調査(2026-08-25)**: 数学圏に SAKURA を冠する定理・予想は検索で
+**衝突調査**: 数学圏に SAKURA を冠する定理・予想は検索で
 確認されない。近接分野では暗号の Sakura(tree hashing の coding)と
 サイドチャネル評価ボード SAKURA-G / X、国内技術圏にさくらインターネット・
 サクラエディタがあるが、いずれも海域名の使用域と重ならない軟衝突である。
@@ -236,8 +234,8 @@ cocartesian 側)と分類(lift・cartesian 側)の二枚に分ける)。gate 5�
 反証時の影響を一枚に局所化する(statement の conjunct 数が改訂コストと
 相関するという運用実測 — 正本は各 tracking Issue)。以下の claim 骨格は
 設計候補であり、conjunct の最終固定は各カードの起票・昇格レビューと F0
-typing cycle で行う。錨に挙げた宣言は 2026-08-25 に Lean 木で実在と実型を
-突合済み。
+typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を突合済みで
+ある。
 
 **6枚共通の定型項目ブロック(起票時に全カードへ複写する)**:
 
@@ -640,8 +638,8 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
   change と一体で輸送されること、(3) 全て Lean で固定されること、
   (4) 存否未決だった exchange-failure に決定を与えること。執筆時に
   n1006 §3 と同水準の差分表として充填する。
-- **論文Bとの関係(裁定済み 2026-08-25)**: SAKURA 論文は論文B「連合
-  する読み」(n1005 §7)と**同一の論文**であり、その現行版である。
+- **論文Bとの関係**: SAKURA 論文は論文B「連合する読み」(n1005 §7)と
+  **同一の論文**であり、その現行版である。
   論文Bの旧計画(n1001 の問い・収録候補・ロードマップ上の位置)は
   **拘束しない** — 本節の構成裁定を正とし、旧計画の候補群は執筆 PRD
   起草時に採否を選び直す素材として扱う。Sea of Coherent Readings は
