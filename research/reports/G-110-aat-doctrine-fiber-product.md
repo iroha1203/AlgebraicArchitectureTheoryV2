@@ -58,11 +58,15 @@ selection:
     - verticalTypedOuterComparisonNormalForm
     - horizontalBCPastingOuterBoundaryComparison
     - verticalBCPastingOuterBoundaryComparison
+    - horizontalBCPastingComparison_eq_outer
+    - verticalBCPastingComparison_eq_outer
     - horizontalBCPastingOuterCanonicalMate_eq
     - verticalBCPastingOuterCanonicalMate_eq
+    - horizontalBCPasting_coreBeckChevalleyMate_vcomp
+    - verticalBCPasting_coreBeckChevalleyMate_hcomp
     - mateEquiv_conjugateEquiv_vcomp
     - verticalNormalizedNorthwest_mateEquiv_vcomp
-  proof_obligation: prove both typed normalized outer comparisons equal the independently generated outer comparison, then prove both literal component-mate composites equal the canonical normalized outer mate after generated source and target alignments
+  proof_obligation: prove both typed normalized outer comparisons equal the named outer boundary comparisons already identified with the independently generated semantic comparisons, then prove both literal component-mate composites equal the canonical normalized outer mate after generated source and target alignments
   selection_reason: the prior target-blocked classification incorrectly treated a missing direction-qualified transport API as a stop condition; target-theorem-loop instead requires constructing that API, and batching both directions through the final mate equations avoids repeated auxiliary-only review cycles
   expected_result_type: proof-checkpoint
   lean_targets:
@@ -80,7 +84,7 @@ selection:
     - final DoctrineFiberProduct theorem assembly and completion review
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: horizontal and vertical typed outer comparison normal forms now equal their independently generated normalized outer comparisons, and both generated component-mate composites commute with the corresponding canonical outer mate under named generated alignments
+  proof_obligation_delta: horizontal and vertical typed outer comparison normal forms now equal their named normalized outer boundary comparisons, whose independent semantic provenance was established by predecessor uniqueness theorems, and both literal generated component-mate composites commute with the corresponding canonical outer mate under named generated alignments
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCPastingTypedOuterComparisonEquality.lean
@@ -93,23 +97,27 @@ result:
     - horizontalDataNormalizedNorthwestLeftTransportSquare
     - horizontalDataTypedOuterComparisonNatTrans_eq_outer
     - horizontalComponentMate_eq_outerCanonicalMate
+    - horizontalLiteralComponentMates_eq_outerCanonicalMate
     - verticalMateTargetCancellation
     - verticalDecomposedMateAlignment
     - verticalTypedOuterMate_eq_decomposed
     - verticalComponentMate_eq_outerCanonicalMate
+    - verticalLiteralComponentMates_eq_outerCanonicalMate
   claim_mapping:
     theorem_names:
       - horizontalTypedOuterComparisonNatTrans_eq_outer
       - verticalTypedOuterComparisonNormalForm_eq_outer
       - horizontalComponentMate_eq_outerCanonicalMate
       - verticalComponentMate_eq_outerCanonicalMate
+      - horizontalLiteralComponentMates_eq_outerCanonicalMate
+      - verticalLiteralComponentMates_eq_outerCanonicalMate
     source_labels:
       - target theorem E horizontal and vertical Beck--Chevalley pasting compatibility
     conjuncts:
-      - the generated horizontal component comparison equals the independently generated normalized horizontal outer comparison after northwest, top and bottom alignment
-      - the generated vertical component comparison equals the independently generated normalized vertical outer comparison after northwest, top, right and bottom alignment
-      - the horizontal composite of generated component mates equals the normalized outer canonical mate after named source and target alignment
-      - the vertical composite of generated component mates equals the normalized outer canonical mate after named source and target alignment
+      - the generated horizontal component comparison equals the named normalized horizontal outer boundary comparison after northwest, top and bottom alignment; the predecessor semantic-comparison theorem supplies its independent outer-square provenance
+      - the generated vertical component comparison equals the named normalized vertical outer boundary comparison after northwest, top, right and bottom alignment; the predecessor semantic-comparison theorem supplies its independent outer-square provenance
+      - the literal vertical composite of the generated horizontal component mates equals the normalized outer canonical mate after named source and target alignment
+      - the literal horizontal composite of the generated vertical component mates equals the normalized outer canonical mate after named source and target alignment
     undischarged_assumptions:
       - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
       - K4 admissible composition and locality
@@ -120,7 +128,7 @@ audits:
   premise_delta:
     discharged:
       - direction-qualified horizontal northwest transport square on data.pasteNorthwestIso
-      - horizontal and vertical typed-normal-form equality with independently generated outer comparisons
+      - horizontal and vertical typed-normal-form equality with named outer boundary comparisons and their predecessor semantic-provenance bridges
       - horizontal and vertical aligned component-to-outer mate equations
     remaining:
       - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
@@ -135,10 +143,14 @@ audits:
   proof_use:
     used:
       - horizontalCompositorAlignedComponentSquare_eq_componentComparison
-      - horizontalBCPastingOuterBoundaryComparison_eq
-      - verticalBCPastingOuterBoundaryComparison_eq
+      - horizontalReviewedOuterComparisonNormalForm_eq_outer
+      - verticalReviewedOuterComparisonNatTrans_eq_outer
+      - horizontalBCPastingComparison_eq_outer
+      - verticalBCPastingComparison_eq_outer
       - horizontalBCPastingOuterCanonicalMate_eq
       - verticalBCPastingOuterCanonicalMate_eq
+      - horizontalBCPasting_coreBeckChevalleyMate_vcomp
+      - verticalBCPasting_coreBeckChevalleyMate_hcomp
       - mateEquiv_conjugateEquiv_vcomp
       - verticalNormalizedNorthwest_mateEquiv_vcomp
       - conjugateEquiv_comm
@@ -154,8 +166,9 @@ audits:
   validation_refs:
     - focused BCPastingTypedOuterComparisonEquality single-file elaboration: pass
     - focused BCPastingComponentToOuterMate single-file elaboration: pass
-    - BCPastingTypedOuterComparisonEquality axiom audit: 19 declarations, standard axioms only
-    - BCPastingComponentToOuterMate axiom audit: 25 declarations, standard axioms only
+    - BCPastingTypedOuterComparisonEquality axiom audit: 20 declarations, standard axioms only
+    - BCPastingComponentToOuterMate axiom audit: 34 declarations, standard axioms only
+    - direct axiom audit of both literal-component acceptance theorems and both intermediate component-to-outer theorems: standard axioms only
     - targeted BCPastingComponentToOuterMate single-module build: pass
     - Research aggregate or full build: not run
   blocking_findings: []
