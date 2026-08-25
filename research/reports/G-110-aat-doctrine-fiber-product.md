@@ -40,6 +40,128 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 102 — typed outer comparison and component-to-outer mate packet
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 102
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: f0eb4ce0c435cb5dcfa73451d2f83e9aa2f3c058
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5402766742
+  proof_dag_predecessors:
+    - horizontalCompositorAlignedComponentSquare_eq_componentComparison
+    - verticalTypedOuterComparisonNormalForm
+    - horizontalBCPastingOuterBoundaryComparison
+    - verticalBCPastingOuterBoundaryComparison
+    - horizontalBCPastingOuterCanonicalMate_eq
+    - verticalBCPastingOuterCanonicalMate_eq
+    - mateEquiv_conjugateEquiv_vcomp
+    - verticalNormalizedNorthwest_mateEquiv_vcomp
+  proof_obligation: prove both typed normalized outer comparisons equal the independently generated outer comparison, then prove both literal component-mate composites equal the canonical normalized outer mate after generated source and target alignments
+  selection_reason: the prior target-blocked classification incorrectly treated a missing direction-qualified transport API as a stop condition; target-theorem-loop instead requires constructing that API, and batching both directions through the final mate equations avoids repeated auxiliary-only review cycles
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingTypedOuterComparisonEquality.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingComponentToOuterMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - rewriting a direction-independent northwest alias through a dependent functor endpoint
+    - cancelling vertical right-adjoint conjugates only after expanding them into unit/counit components
+    - confusing covariant outer-square equality with the contravariant mate equation
+    - promoting K2 pasting completion to the full target theorem
+  unchecked:
+    - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
+    - K4 admissible composition and locality
+    - final DoctrineFiberProduct theorem assembly and completion review
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: horizontal and vertical typed outer comparison normal forms now equal their independently generated normalized outer comparisons, and both generated component-mate composites commute with the corresponding canonical outer mate under named generated alignments
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingTypedOuterComparisonEquality.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCPastingComponentToOuterMate.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - horizontalTypedOuterComparisonNatTrans_eq_outer
+    - verticalTypedOuterComparisonNormalForm_eq_outer
+    - horizontalDataNormalizedNorthwestLeftTransportSquare
+    - horizontalDataTypedOuterComparisonNatTrans_eq_outer
+    - horizontalComponentMate_eq_outerCanonicalMate
+    - verticalMateTargetCancellation
+    - verticalDecomposedMateAlignment
+    - verticalTypedOuterMate_eq_decomposed
+    - verticalComponentMate_eq_outerCanonicalMate
+  claim_mapping:
+    theorem_names:
+      - horizontalTypedOuterComparisonNatTrans_eq_outer
+      - verticalTypedOuterComparisonNormalForm_eq_outer
+      - horizontalComponentMate_eq_outerCanonicalMate
+      - verticalComponentMate_eq_outerCanonicalMate
+    source_labels:
+      - target theorem E horizontal and vertical Beck--Chevalley pasting compatibility
+    conjuncts:
+      - the generated horizontal component comparison equals the independently generated normalized horizontal outer comparison after northwest, top and bottom alignment
+      - the generated vertical component comparison equals the independently generated normalized vertical outer comparison after northwest, top, right and bottom alignment
+      - the horizontal composite of generated component mates equals the normalized outer canonical mate after named source and target alignment
+      - the vertical composite of generated component mates equals the normalized outer canonical mate after named source and target alignment
+    undischarged_assumptions:
+      - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
+      - K4 admissible composition and locality
+      - final DoctrineFiberProduct theorem assembly and completion review
+    acceptance_point: both directions use generated finite presentations, generated transport/reindex adjunctions, mate laws, and proved alignment equalities; no caller-supplied comparison or coherence field is introduced
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - direction-qualified horizontal northwest transport square on data.pasteNorthwestIso
+      - horizontal and vertical typed-normal-form equality with independently generated outer comparisons
+      - horizontal and vertical aligned component-to-outer mate equations
+    remaining:
+      - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
+      - K4 admissible composition and locality
+      - final DoctrineFiberProduct theorem assembly and completion review
+  certificate_provenance:
+    discharged:
+      - outer comparisons are generated from normalized finite pasting provenance
+      - component squares and source/target alignments are generated by presentation, compositor, equality-transport, and conjugacy APIs
+      - mate equalities consume mathlib mate composition and conjugate cancellation laws
+    unresolved: []
+  proof_use:
+    used:
+      - horizontalCompositorAlignedComponentSquare_eq_componentComparison
+      - horizontalBCPastingOuterBoundaryComparison_eq
+      - verticalBCPastingOuterBoundaryComparison_eq
+      - horizontalBCPastingOuterCanonicalMate_eq
+      - verticalBCPastingOuterCanonicalMate_eq
+      - mateEquiv_conjugateEquiv_vcomp
+      - verticalNormalizedNorthwest_mateEquiv_vcomp
+      - conjugateEquiv_comm
+      - coreFiberCompositor
+      - coreFiberTransportEqIso
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass; horizontal uses the data-qualified northwest source and vertical cancels generated covariant/contravariant right alignments before component expansion
+  target_fitting: none-found
+  vacuity: none-found; all four main equalities are parametric in arbitrary finite horizontal or vertical pasting data
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; this closes the K2 mate-pasting equations but remains a target-proof-checkpoint pending D, K3, K4 and final assembly
+  validation_refs:
+    - focused BCPastingTypedOuterComparisonEquality single-file elaboration: pass
+    - focused BCPastingComponentToOuterMate single-file elaboration: pass
+    - BCPastingTypedOuterComparisonEquality axiom audit: 19 declarations, standard axioms only
+    - BCPastingComponentToOuterMate axiom audit: 25 declarations, standard axioms only
+    - targeted BCPastingComponentToOuterMate single-module build: pass
+    - Research aggregate or full build: not run
+  blocking_findings: []
+  next_obligation: connect the completed mate-pasting equations to the actual diagnostic D package, discharge the revised-card named finite nonidentity K3 witness, then continue to K4 and final theorem assembly
+```
+
 ### Cycle 101 — horizontal typed component-square alignment
 
 ```yaml
