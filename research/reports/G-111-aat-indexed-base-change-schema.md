@@ -12,7 +12,7 @@ mode のため SCORE は使わない。
 
 ## Cycle ledger
 
-### Cycle 1 — F0 raw generator and semantic action signatures
+### Cycle 1 — F0 raw generator, producer, and action-law signatures
 
 ```yaml
 ledger_type: target_cycle_result
@@ -30,8 +30,9 @@ selection:
     - "G-109 CorePseudofunctor reviewed API"
   proof_obligation: >-
     F0 schema typing: fix the raw finite generator, identity / composition /
-    pasting syntax, universe contract, base-total action signature, and the
-    separate projection/fiber output types without importing diagnostic vocabulary
+    pasting syntax, universe contract, raw-to-action producer, projection and
+    universal edge law, action-level identity / composition / strict-pasting
+    laws, and the total-induced fiber output without diagnostic vocabulary
   selection_reason: >-
     F0 is the first fixed-card obligation and determines whether K0 can be stated
     without supplying endofunctor values or conclusion-equivalent certificates
@@ -41,36 +42,46 @@ selection:
     - IndexedBCPrimitiveGenerator
     - IndexedBCRawGenerator
     - IndexedBaseChangeAction
+    - IndexedBaseChangeProducer
   risks:
     - authored generator accidentally contains a base, total, or fiber functor value
     - raw module imports diagnostic vocabulary through a G-110 diagnostic module
     - projection compatibility or cocartesian preservation escapes into a structure field
     - universe mismatch between ExtInstCategory, PackageTotalCategory, and CoreFiber
   unchecked:
-    - K0 named base / total / fiber producers and their soundness theorems
+    - K0 named inhabitant of IndexedBaseChangeProducer and its Laws theorem
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: >-
-    The raw layer is an intrinsically finite syntax tree over finite-support Atom
-    permutation tables. The semantic layer fixes only base and total endofunctor
-    output types; projection compatibility and induced fiber action remain separate
-    theorem/output obligations for K0.
+    The raw layer is a finite syntax tree over exact finite-support Atom
+    permutation tables. F0 fixes the sole producer shape, its projection and
+    universal-edge laws, action identity/composition/strict-pasting laws, and a
+    canonical fiber restriction whose object and map values are the generated
+    total action. K0 must construct the named producer and prove this fixed law bundle.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean
   evidence:
     - IndexedBCPrimitiveGenerator.atomEquiv
     - IndexedBCRawGenerator.WellFormed
-    - IndexedBCRawGenerator.wellFormed
+    - IndexedBCRawGenerator.wellFormed_identity
+    - IndexedBCRawGenerator.not_wellFormed_redundant_singleton
     - IndexedBCRawGenerator.atomEquiv
     - IndexedBaseChangeAction.ProjectionCompatible
-    - IndexedBaseChangeAction.InducedFiberAction
+    - IndexedBaseChangeAction.UniversalEdgeLaw
+    - IndexedBaseChangeAction.universalEdgeLaw
+    - IndexedBaseChangeAction.inducedFiberAction
+    - IndexedBaseChangeProducer.Laws
   claim_mapping:
     theorem_names:
-      - IndexedBCRawGenerator.wellFormed
+      - IndexedBCRawGenerator.wellFormed_identity
+      - IndexedBCRawGenerator.not_wellFormed_redundant_singleton
       - IndexedBCRawGenerator.atomEquiv_identity
       - IndexedBCRawGenerator.atomEquiv_comp
       - IndexedBCRawGenerator.atomEquiv_paste
+      - IndexedBaseChangeAction.universalEdgeLaw
+      - IndexedBaseChangeAction.inducedFiberAction_obj_val
+      - IndexedBaseChangeAction.inducedFiberAction_map_val
     source_labels:
       - "target theorem (a): raw generator layer"
       - "target theorem (a): indexed action layer signature"
@@ -80,21 +91,26 @@ result:
       - "id / comp / paste constructors -> IndexedBCRawGenerator constructors and decoder equations"
       - "base / total action spine -> IndexedBaseChangeAction"
       - "projection square is not a field -> ProjectionCompatible"
-      - "fiber action is a derived output type -> InducedFiberAction"
+      - "universal package-edge equation -> UniversalEdgeLaw / universalEdgeLaw"
+      - "fiber action is the total restriction -> inducedFiberAction and value lemmas"
+      - "raw-to-action producer type -> IndexedBaseChangeProducer"
+      - "identity / composition / strict-pasting preservation -> IndexedBaseChangeProducer.Laws"
     undischarged_assumptions:
-      - K0 producer construction and projection soundness
+      - K0 producer construction and the named Laws proof
       - K1 cocartesian lift compatibility and preservation
       - K2-K5 diagnostic, restriction, and witness obligations
     acceptance_point: >-
-      F0 fixes a diagnostic-free, elaborated signature and closes schema typing;
-      it does not claim a generated action or any later target conjunct.
+      F0 fixes and elaborates the complete diagnostic-free producer/law signature;
+      it does not claim a K0 inhabitant or any later target conjunct.
     port_status: unported
 audits:
   premise_delta:
     discharged:
-      - "F0 signature qualification: diagnostic-free module boundary and decidable intrinsic raw well-formedness"
+      - "F0 signature qualification: diagnostic-free module and a decidable exact-support predicate with positive and negative instances"
+      - "producer / universal-edge / action identity-composition-strict-pasting law types"
+      - "fiber restriction definition consumes projection compatibility and reuses total.obj / total.map"
     remaining:
-      - "K0 universal action edge law, projection soundness, and definition-unfolding audit"
+      - "K0 named producer, projection law bundle, and definition-unfolding audit"
       - "all cocartesian, comparison, covariance, and witness premises"
   certificate_provenance:
     discharged:
@@ -104,19 +120,32 @@ audits:
   proof_use:
     used:
       - "G-101 ExtInstCategory / PackageTotalCategory / packageProjection"
-      - "G-109 CoreFiber output type"
+      - "G-109 CoreFiber and its vertical IsHomLift proof"
+      - "projection functor equality in the universal edge theorem and induced fiber map"
+      - "generated total.obj / total.map in the induced fiber action"
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: "F0 signature route: pass; K0 generated-action route: cannot-determine"
   target_fitting: none-found
-  vacuity: cannot-determine
+  vacuity: "raw qualification nonvacuous: identity passes and a redundant singleton support fails"
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
+  goal_or_report_reinterpretation: >-
+    initial exact-head review rejected the narrower raw-only reading; the revised
+    delta restores producer, universal edge, action-law, and total-induced fiber signatures
   validation_refs:
-    - "lake env lean ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean: pass; namespace axiom audit reports 76 declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean: pass; namespace axiom audit reports 105 declarations, standard axioms only"
     - "lake build ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeRaw: pass; exact targeted module only"
-    - "#print axioms on six reported declarations: propext / Classical.choice / Quot.sound only"
+    - "#print axioms on six revised qualification/edge/fiber/law declarations: propext / Classical.choice / Quot.sound only"
     - "placeholder, forbidden diagnostic-vocabulary, hidden/BiDi Unicode, Research import direction, git diff --check: clean"
+  review_history:
+    - "exact head a70b627f: four-lane standard review rejected the initial F0 claim"
+    - "central repairs: complete producer/law signature, total-induced fiber restriction, nonvacuous raw qualification, strict-pasting selection"
+  allowable_declarations:
+    - "raw constructors: IndexedBCRawGenerator.identity / atom / comp / paste"
+    - "semantic constructors: IndexedBaseChangeAction.identity / comp / paste"
+    - "producer type: IndexedBaseChangeProducer"
+    - "K0 proof contract: IndexedBaseChangeProducer.Laws"
+    - "fiber output: IndexedBaseChangeAction.inducedFiberAction only"
   blocking_findings: []
-  next_obligation: "K0 named base / total action producers and projection soundness"
+  next_obligation: "K0 construct a named IndexedBaseChangeProducer and prove IndexedBaseChangeProducer.Laws"
 ```
