@@ -18,14 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
-  (Gr4 の中間カード(第一手): doctrine 圏の fiber product と
-  base change — exact 底層の有限 presentation 付き subcalculus、5層
-  (A)–(E)。依存先 G-101 / G-106 / G-109(core pseudofunctor API)は
-  完遂済み。Gr4 達成の記録は本カードでは行わず、coverage 拡張・
-  full-domain indexed action、refinement 系統、上段 lift、IsIso 水準
-  BC exchange-failure 存否決定、diagnostic conservativity / reflection /
-  orbit exactness の 5 gate を束ねる後続 capstone カードが行う)
 
 ## draft（人間の確認待ち）
 
@@ -44,6 +36,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-107-aat-uniform-invariance-characterization](G-107-aat-uniform-invariance-characterization.md)
 - [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
 - [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
+- [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)

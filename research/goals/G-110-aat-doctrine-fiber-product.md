@@ -1,7 +1,60 @@
 # G-110-aat-doctrine-fiber-product — doctrine 圏の fiber product と base change
 
 - `id`: `G-110-aat-doctrine-fiber-product`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Doctrine Fiber Product
+  and Base Change Theorem の固定5層 (A)–(E) を全放電
+  ($target-theorem-loop Cycle 1–111、2026-08-20〜2026-08-25)。
+  主要成果:
+  (A) doctrine fiber product の構成と全 cone 上の普遍性+同型不変な
+  真部分 fiber witness(`Nonempty` pullback・canonical 射の非全射性・
+  両射影の非同型性・compatible / incompatible pair)、
+  (B) carrier 大域の左枝で disjunction を確定 — 全 realization-image
+  底射・全 target package に対する強 cartesian lift の存在定理+
+  非同型・非可逆2成員の actual lift 族+型付き条件枝契約。左枝整合は
+  `cartesianLiftNonexistence_isEmpty` で固定し、右枝専用の `H_cart`
+  checker と `FiniteModelLift` は completion criteria の定めどおり
+  `not-applicable`(放電扱いにしない)、
+  (C) pointed Beck–Chevalley exactness(`pointedPullback_isPullback`・
+  pullback reindexing functor・随伴・canonical mate・
+  `packageProjection` 固有 support theorem)+authored 相対の正負
+  canonicity 対(`MateCoherentRel`、replacement invariance と非自明
+  orbit witness 付き)、
+  (D) source-fiber-incidence 付き実 BC 二経路(direct / via-base)上の
+  無条件 forward 診断共変性 (d1)–(d6)+named finite nonvacuity
+  (初期 defect 非恒等・source reselection 非恒等・source / 両
+  target coherence の同一 validated 入力上での同時発火)、
+  (E) 水平・垂直 pasting 閉性+比較射整合+G-106 / G-109 coherence
+  bridge の material proof-use。
+  standard PR review は fixed head の4 lane findings を是正の上通過、
+  独立 formal completion review(`$math-lean-review`)は4 lane 全て
+  `No major findings`、exact-head CI 7/7・merge state
+  `MERGEABLE/CLEAN`。正式判定は standard review
+  ([PR #4153 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409072091))、
+  final completion packet
+  ([PR #4153 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409275633))、
+  target completion audit
+  ([PR #4153 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409346364))
+  と tracking Issue
+  [#4034 完了記録コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034#issuecomment-5409351478)
+  で固定。fixed GOAL blob SHA `ed508ae5`(SHA-256
+  `83f74d18d84f6f9afebdc7be28c7869845ea9a4c59b4ca7132d68c03c53d5bf5`)、
+  final head `a1471483`、完了 PR
+  [#4153](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153)
+  (merge `315a2537`)。実装 PR 系列と cycle 履歴は tracking Issue
+  #4034 を正本とする。公理監査は focused Lean check で standard
+  axioms のみ pass、Research import direction 228 modules pass
+  (Research aggregate / full build は hard rule に従い未実行)。
+  **達成の記録は「有限 presentation 付き(realization 像)底層射上の
+  全域 lift exact-bottom・diagnostic-covariant subcalculus 達成」に
+  限定する**(左枝確定のため completion criteria の読み替えを適用)。
+  **Gr4 達成の記録は本カードでは行わない** — coverage 拡張と
+  full-domain 分類・refinement 系統・上段 lift・IsIso 水準
+  exchange-failure 存否決定・diagnostic conservativity / reflection /
+  orbit exactness は Gr4 完遂 gate(後続 gate カード群+capstone)に
+  残る(program context)。`Formal/AG` への移植は未実施
+  (porting status: `unported`)。
+- `completed at`: `2026-08-25 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`(mode 裁定済み 2026-08-18、(D)
   statement 改訂 2026-08-24、(B) universe transport 改訂

@@ -3,17 +3,52 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `active / target-proof-checkpoint`(Cycle 111 は改訂後 (B) の
-  typed conditional payload を Lean に固定し、選択済み global-left artifact
-  に対する累積 A--E premise / proof-use 監査を完了した。標準 PR review と
-  独立 completion review の通過までは `target-theorem-proved` としない。
-  2026-08-24 改訂前カードは Cycle 75 で `target-refuted`)
-- completion candidate: `yes`(Cycle 111、final review 未実施)
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
 監査を記録する。target statement と completion criteria の正本は GOAL カードで
 あり、この report はそれらを再定義しない。target-theorem mode のため SCORE は
 使わない。
+
+## Completion judgment(final、2026-08-25)
+
+- fixed GOAL blob SHA: `ed508ae5900eb55468979a5052df63717174e6ac`
+- fixed GOAL SHA-256:
+  `83f74d18d84f6f9afebdc7be28c7869845ea9a4c59b4ca7132d68c03c53d5bf5`
+- final head: `a1471483aca30c3d9d6e942deb38688401a8fed0`
+- 完了 PR: [#4153](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153)
+  (merge `315a2537cea51e1f8ea131351f4de9ef22b21145`)
+- standard PR review: fixed head の4 lane findings を是正の上通過
+  ([PR #4153 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409072091))
+- final completion packet:
+  [PR #4153 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409275633)
+- formal completion review: 独立4 lane(Math A / Math B / Lean A / Lean B)
+  全て `No major findings`
+- target completion audit:
+  [PR #4153 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4153#issuecomment-5409346364)
+- exact-head CI: 7/7 success、merge state `MERGEABLE/CLEAN`
+- 公理監査: focused Lean check は standard axioms のみ pass、Research
+  import direction 228 modules pass(Research aggregate / full build は
+  hard rule に従い未実行)
+- 固定5層 (A)–(E): 全放電。(B) は carrier 大域の左枝で確定し、左枝
+  整合は `cartesianLiftNonexistence_isEmpty`、右枝専用の `H_cart`
+  checker と `FiniteModelLift` は completion criteria の定めどおり
+  `not-applicable`(放電扱いにしない)
+- remaining known mathematical proof obligations: `[]`
+- unchecked completion gates: なし
+
+正式判定は `target-theorem-proved`。達成の記録は「有限 presentation
+付き(realization 像)底層射上の全域 lift exact-bottom・
+diagnostic-covariant subcalculus 達成」に限定する(左枝確定のため
+completion criteria の読み替えを適用)。Gr4 達成の記録は行わない —
+coverage 拡張と full-domain 分類・refinement 系統・上段 lift・IsIso
+水準 exchange-failure 存否決定・diagnostic conservativity /
+reflection / orbit exactness は Gr4 完遂 gate(後続 gate カード群+
+capstone)に残る。
+
+tracking Issue 側の完了記録は
+[#4034 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034#issuecomment-5409351478)。
 
 ## 2026-08-24 GOAL revision — unconditional diagnostic covariance
 
