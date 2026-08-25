@@ -186,6 +186,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelRealizationULiftWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelStrongLiftIsoTransport
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLift
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftObstruction
 
 /-!
 # Doctrine fiber-product schema
@@ -492,4 +493,13 @@ pre-2026-08-24 card its explicit `target-refuted` stop.  The subsequent human
 GOAL revision adopts this functorial map, coherence preservation, and vanishing
 preservation as the unconditional `(d4)`--`(d6)` covariance candidates; K3 also
 requires their revised-card audit and a named nonidentity finite firing witness.
+
+The final A--E assembly passed its implementation review, but the independent
+completion audit recovered the fixed-ledger `FiniteModelLift` item that the
+assembly had omitted.  The selected global-left branch makes both the required
+universe-zero `CartesianLiftNonexistence` source and every canonical lifted
+target empty.  `FiniteModelLiftObstruction` fixes this as a kernel-checked
+nonvacuity obstruction: every transport function has no source firing, and the
+combined source/target firing packet is empty.  Thus a conditional function by
+empty elimination cannot discharge the unchanged ledger requirement.
 -/
