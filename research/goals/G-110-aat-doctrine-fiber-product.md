@@ -48,9 +48,8 @@
   full-domain 化 = source-fiber incidence 資格の解除もこの項に
   含める — global / indexed base-change schema(全
   `ExtractionInstance` 上の base 作用・全 package の cocartesian
-  保存 lift・任意 `AATCorePackage` の exact symbolic-universe
-  reindexing・実 BC 経路との制限比較)の建設を要する。義務の移管で
-  あり削除ではない — 改訂裁定 2026-08-24 / 2026-08-25)、
+  保存 lift・実 BC 経路との制限比較)の建設を要する。義務の移管で
+  あり削除ではない — 改訂裁定 2026-08-24)、
   (ii) refinement 系統
   (`RefinementDoctrineHom` の圏化と refinement base change)、
   (iii) 上段(`GeomRead` / `ObProblem`)への base-change lift(Gr3
@@ -190,10 +189,9 @@
   持つ)、第二段 = sector 全域)、
   full-domain 診断 base change 作用(source-fiber incidence 資格の
   解除 — 全 `ExtractionInstance` 上の base 作用・全 package の
-  cocartesian 保存 lift・任意 `AATCorePackage` の exact
-  symbolic-universe reindexing・実 BC 経路との制限比較を伴う
-  global / indexed base-change schema。一つの pullback square からは
-  決まらないため claim から外す — Gr4 完遂 gate 第一項へ移管)、
+  cocartesian 保存 lift・実 BC 経路との制限比較を伴う global /
+  indexed base-change schema。一つの pullback square からは決まら
+  ないため claim から外す — Gr4 完遂 gate 第一項へ移管)、
   diagnostic conservativity / reflection / orbit exactness の分類
   (full-domain indexed action 上で構造的な十分 class・反射 theorem・
   obstruction-killing finite witness・貼り合わせ閉性を揃える Gr4 完遂
@@ -259,8 +257,76 @@
      `FiniteModelLift` は completion obligation ではない
      (`cartesianLiftNonexistence_isEmpty` による枝整合を記録する)。
      ただし universe-polymorphic signature 自体を弱めず、右枝時の
-     暗黙の `u = 0` 限定はしない。任意 package の exact reindexing は
-     Gr4 完遂 gate 第一項へ移管し、義務を削除しない。
+     暗黙の `u = 0` 限定はしない。任意 package の cross-universe
+     exact reindexing はこの反例資格より強い Lean 表現上の補助
+     artifact であり、G-110 にも Gr4 gate にも移管しない。Gr4 gate
+     第一項に残る数学的義務は、各固定 carrier 内の全 package に対する
+     cocartesian 保存 lift と full-domain indexed action である。
+     **右枝時の型付き結合を固定する**: 右枝を選択する実装は、同じ
+     signature family に (i) fixed finite fixture data だけから生成する
+     `finiteCounterexampleInput` と `finiteCounterexampleTargetPackage`、
+     (ii) `RightBranch.finiteCounterexample.nonexistence` の input / target
+     package がその2出力に一致する dependent endpoint theorem、
+     (iii) `finiteModelLiftCounterexampleInput.{u}` と
+     `finiteModelLiftCounterexampleTargetPackage.{u}`、(iv) supplied high
+     lift を明示引数に取る
+     `reflectFiniteModelCounterexampleLift.{u}`、(v) low / high input・
+     package・total-hom の全 component graph を束ねる
+     `FiniteModelLiftComponentGraph.{u}`、(vi) low `no_lift` と reflection
+     から high `no_lift` を導く `finiteModelLift_noLift.{u}` を持つ。
+     (i) の computational body は
+     `RightBranch.finiteCounterexample.nonexistence.input` / `targetPackage`
+     field を読まず、fixed fixture の finite data から生成する。(ii) が
+     field-selected 反例と生成 package を結び、(iii)–(vi) は同じ
+     (i) の output を index とする。別 fixture の graph / reflection と
+     右枝反例を後から等置する実装は放電と数えない。このsignatureの
+     dependent equality / `HEq` の最終Lean表現は右枝を選択する場合の
+     typing obligation とし、tracking Issue に fixed head を記録する。
+     declaration の型境界は次から弱めない(`right` は選択した右枝証拠、
+     `v` はtransport先universe):
+
+     ```lean
+     finiteCounterexampleInput : RealizableHom FiniteModel.carrier
+     finiteCounterexampleTargetPackage :
+       CoreFiber finiteCounterexampleInput.semantic.target
+     finiteCounterexampleNoLift :
+       ¬ HasStrongCartesianLift finiteCounterexampleInput.semantic
+         finiteCounterexampleTargetPackage
+     finiteCounterexampleNonexistence :
+         CartesianLiftNonexistence FiniteModel.carrier :=
+       { input := finiteCounterexampleInput
+         targetPackage := finiteCounterexampleTargetPackage
+         no_lift := finiteCounterexampleNoLift }
+     rightFiniteCounterexample_eq (right : RightBranch.{u}) :
+       right.finiteCounterexample.nonexistence =
+         finiteCounterexampleNonexistence
+     rightFiniteCounterexampleInput_eq (right : RightBranch.{u}) :
+       right.finiteCounterexample.nonexistence.input =
+         finiteCounterexampleInput
+     rightFiniteCounterexampleTargetPackage_heq (right : RightBranch.{u}) :
+       HEq right.finiteCounterexample.nonexistence.targetPackage
+         finiteCounterexampleTargetPackage
+     finiteModelLiftCounterexampleInput.{v} :
+       RealizableHom finiteModelLiftCarrier.{v}
+     finiteModelLiftCounterexampleTargetPackage.{v} :
+       CoreFiber (finiteModelLiftCounterexampleInput.{v}).semantic.target
+     reflectFiniteModelCounterexampleLift.{v} :
+       StrongCartesianLift
+           (finiteModelLiftCounterexampleInput.{v}).semantic
+           finiteModelLiftCounterexampleTargetPackage.{v} →
+         StrongCartesianLift finiteCounterexampleInput.semantic
+           finiteCounterexampleTargetPackage
+     finiteModelLift_noLift.{v} :
+       ¬ HasStrongCartesianLift
+         (finiteModelLiftCounterexampleInput.{v}).semantic
+         finiteModelLiftCounterexampleTargetPackage.{v}
+     ```
+
+     `FiniteModelLiftComponentGraph.{v}` は上記4 endpointとreflectionを
+     indexに持ち、input/package/total-homのcanonical lift graphを保持する。
+     `finiteModelLift_noLift` のproof termは
+     `reflectFiniteModelCounterexampleLift` と
+     `finiteCounterexampleNoLift` を実消費する。
      **二層の入力型と量化の
      固定**: presentation 層 `CartPresentation U`(底射の有限
      presentation データ)と semantic 層 `CartSemanticInput U`
@@ -825,10 +891,17 @@
     構成する(大域左枝の反証資格)。反例入力の任意 `targetPackage`、
     package reindexing certificate、reflection certificate の caller
     供給は放電と数えない。reflection producer は named positive
-    fixture でも発火させ、empty elimination を排除する。左枝選択時は
+    fixture でも発火させ、empty elimination を排除する。生成 low
+    input / package と `RightBranch.finiteCounterexample.nonexistence` の
+    dependent endpoint 一致、lifted input / package、component graph、
+    reflection、high `no_lift` は (B) で固定した同じ signature family の
+    index を共有しなければならず、別 fixture 間の後付け対応は不可。
+    左枝選択時は
     `cartesianLiftNonexistence_isEmpty` が右枝反例の不在を固定するため
-    本行を `not-applicable` とし、任意 package の exact reindexing は
-    Gr4 完遂 gate 第一項へ移管する。
+    本行を `not-applicable` とする。任意 package の cross-universe
+    exact reindexing は本行の数学的結論より強い補助 artifact なので
+    completion obligation から除くが、左枝と右枝十分性にある固定
+    carrier 内の全 target package 量化は維持する。
   - `CartesianRegime producer(cartesianRegimeOfDisjunction :
     DisjunctionArtifact -> ∀ U, CartesianRegime U)`:
     `discharge-required`。左枝 = 大域存在定理、右枝 = 一様 `H_cart`・
@@ -907,8 +980,11 @@
   概念で立てる構成は完了と数えない。右枝の `FiniteModelLift` を
   `CartesianLiftNonexistence.targetPackage` の任意供給、reindexing /
   reflection certificate の field、または empty elimination で立てる
-  構成も完了と数えない。`ambient-boundary` に残せるのは入力幾何だけで
-  ある。
+  構成も完了と数えない。named input / package producer の computational
+  body が `RightBranch.finiteCounterexample.nonexistence` の input / package
+  fieldを返す accessorである構成、または別 fixture の reflectionを
+  endpoint equalityなしに反例へ転用する構成も不可。`ambient-boundary`
+  に残せるのは入力幾何だけである。
 - `target route integrity gate`: 許容経路 — pullback・canonical
   mate・診断比較写像は入力と普遍性からのみ生成する。selected point
   cone・cleavage・有限 witness を証明後に target-fitting 選択しない
@@ -916,8 +992,9 @@
   負例 lax fixture の全 raw field も同時に固定する)。右枝の named
   target package も同じ時点で固定有限 fixture から生成し、canonical
   universe lift と reflection はその producer の出力だけを消費する。
-  任意 package の exact reindexing を G-110 の completion 証拠へ
-  読み替えず、Gr4 完遂 gate 第一項の未達義務として維持する。(C) の fiber
+  任意 package の cross-universe exact reindexing を G-110 または
+  Gr4 の数学的 completion 証拠へ読み替えない。固定 carrier 内の
+  全 package に対する lift 量化は別物として維持する。(C) の fiber
   functor / compositor 経路は G-109 core pseudofunctor API を消費し、
   G-101 からの再建はしない(経路の一意化)。
   authored comparator / lax datum は base change 前の入力に限り、

@@ -3,9 +3,11 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `active / target-proof-checkpoint`(Cycle 109 arbitrary-package
-  zero/successor universe rebase review 前。2026-08-24 改訂前カードは Cycle 75
-  で `target-refuted`)
+- proof state: `active / target-proof-checkpoint`(Cycle 109 は PR #4151 で
+  merge 済み。Cycle 110 が arbitrary-package exact symbolic-universe
+  producer の schema blocker を固定し、人間許可済みの分岐契約へ GOAL を
+  改訂した。次cycleは改訂後カードから再開する。2026-08-24 改訂前カードは
+  Cycle 75 で `target-refuted`)
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引、proof obligation delta、material premise
@@ -39,18 +41,71 @@ covariance へ改訂した。
   新 fixed card に対する statement match・proof-use・finite nonvacuity の監査を
   次の target-theorem cycle で行うまでは、K3 completion と数えない。
 
+## 2026-08-25 GOAL revision — branch-conditioned finite obstruction transport
+
+Cycle 108–109 は任意packageのexact-zero routeとsymbolic successor-form routeを
+別々に構成した。Cycle 110 は、それらを一つの exact symbolic-universe producerへ
+統合するには `ArchitectureContext.Extension` の universe assignmentが合わず、Leanの
+universe parameterにもterm-level zero/successor分解がないことを固定した。再現した
+constraintと候補routeのscopeは tracking Issue #4034 の Cycle 110 commentを正本とする。
+
+人間裁定により、(B) のfinite obstruction transportは次の分岐契約へ改訂する。
+
+- 左枝を選択した現artifactでは `globalCartesianLift` が全carrier・全realized arrow・
+  全target packageのliftを生成し、`cartesianLiftNonexistence_isEmpty` が右枝反例の
+  不在を固定する。右枝専用の `FiniteModelLift` は `not-applicable` とする。
+- 右枝を選択する場合は、fixed finite fixtureから生成したnamed input / target package、
+  `RightBranch.finiteCounterexample` とのdependent endpoint一致、任意universeでの
+  canonical lift、全component graph、supplied-high-lift reflection、high no-liftを
+  同じsignature familyで構成する。caller package/certificate、field accessor、empty
+  eliminationは放電と数えない。
+- 任意packageのcross-universe exact reindexingは、finite obstructionの数学的資格より
+  強いLean表現上の補助artifactなので、G-110から除きGr4 gateにも移管しない。Gr4 gate
+  第一項に残る数学的義務は、各固定carrier内の全packageに対するcocartesian保存lift、
+  full-domain indexed action、実BC経路との制限比較である。
+
+この改訂は (B) のcarrier-global disjunction、左枝と右枝十分性の固定carrier内の
+全target package量化、右枝時のuniverse-polymorphic obstruction資格を維持する。
+G-110 completionやGr4達成は主張しない。
+
 ## Cycle ledger
+
+### Cycle 110 — single exact symbolic-universe producer route audit
+
+```yaml
+ledger_type: target_goal_revision_trigger
+goal: G-110-aat-doctrine-fiber-product
+cycle: 110
+base_oid: f8385e5047b7a9faf91c737ce6eb3dd2532ac31a
+proof_state: goal-defect
+completion_candidate: no
+repository_delta: none
+evidence:
+  - Issue #4034 Cycle 110 comment 5407131790
+  - exact low-context tag requires Type (max 1 u) where ArchitectureContext.Extension expects Type u
+  - literal arbitrary-high reflection requires lowering four Type u context carriers to Type 0
+  - separate exact-zero and successor-form constructors cannot be combined by term-level universe case analysis
+accepted_predecessor:
+  - Cycle 109 / PR #4151
+revision_required:
+  - make FiniteModelLift a right-branch-only obligation
+  - bind its named generated package and the right-branch counterexample in one typed signature family
+  - retire arbitrary-package cross-universe exact reindexing from the mathematical completion contract
+```
 
 ### Cycle 109 — arbitrary finite-carrier exact-zero and successor-form package rebases
 
 ```yaml
-ledger_type: target_cycle_candidate
+ledger_type: target_cycle_result
 goal: G-110-aat-doctrine-fiber-product
 cycle: 109
 goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
 goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
 proof_state: target-proof-checkpoint
 completion_candidate: no
+pr: 4151
+final_head: c520c0689c1c498a55b5fb0219336ff6df3ac443
+merge_commit: f8385e5047b7a9faf91c737ce6eb3dd2532ac31a
 artifacts:
   - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftZero.lean
   - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftSuccessor.lean
