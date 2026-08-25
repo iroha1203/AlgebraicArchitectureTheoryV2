@@ -79,8 +79,8 @@ selection:
     - confusing covariant outer-square equality with the contravariant mate equation
     - promoting K2 pasting completion to the full target theorem
   unchecked:
-    - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
-    - K4 admissible composition and locality
+    - actual horizontal and vertical specialization of the accepted D diagnostic composition laws
+    - final K4 integration of D compatibility with the accepted square closure and G-106 / G-109 coherence bridge
     - final DoctrineFiberProduct theorem assembly and completion review
 result:
   proposed_result_type: proof-checkpoint
@@ -119,8 +119,8 @@ result:
       - the literal vertical composite of the generated horizontal component mates equals the normalized outer canonical mate after named source and target alignment
       - the literal horizontal composite of the generated vertical component mates equals the normalized outer canonical mate after named source and target alignment
     undischarged_assumptions:
-      - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
-      - K4 admissible composition and locality
+      - actual horizontal and vertical specialization of the accepted D diagnostic composition laws
+      - final K4 integration of D compatibility with the accepted square closure and G-106 / G-109 coherence bridge
       - final DoctrineFiberProduct theorem assembly and completion review
     acceptance_point: both directions use generated finite presentations, generated transport/reindex adjunctions, mate laws, and proved alignment equalities; no caller-supplied comparison or coherence field is introduced
     port_status: unported (Research-proved)
@@ -131,8 +131,8 @@ audits:
       - horizontal and vertical typed-normal-form equality with named outer boundary comparisons and their predecessor semantic-provenance bridges
       - horizontal and vertical aligned component-to-outer mate equations
     remaining:
-      - actual diagnostic D pasting and revised-card K3 finite nonidentity firing witness
-      - K4 admissible composition and locality
+      - actual horizontal and vertical specialization of the accepted D diagnostic composition laws
+      - final K4 integration of D compatibility with the accepted square closure and G-106 / G-109 coherence bridge
       - final DoctrineFiberProduct theorem assembly and completion review
   certificate_provenance:
     discharged:
@@ -162,7 +162,7 @@ audits:
   target_fitting: none-found
   vacuity: none-found; all four main equalities are parametric in arbitrary finite horizontal or vertical pasting data
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found; this closes the K2 mate-pasting equations but remains a target-proof-checkpoint pending D, K3, K4 and final assembly
+  goal_or_report_reinterpretation: none-found; this closes the C comparison mate-pasting portion of E but remains a target-proof-checkpoint pending actual-route D pasting compatibility, final K4 integration and final assembly; revised-card K3 and its named finite witness were already discharged in Cycle 76
   validation_refs:
     - focused BCPastingTypedOuterComparisonEquality single-file elaboration: pass
     - focused BCPastingComponentToOuterMate single-file elaboration: pass
@@ -172,7 +172,7 @@ audits:
     - targeted BCPastingComponentToOuterMate single-module build: pass
     - Research aggregate or full build: not run
   blocking_findings: []
-  next_obligation: connect the completed mate-pasting equations to the actual diagnostic D package, discharge the revised-card named finite nonidentity K3 witness, then continue to K4 and final theorem assembly
+  next_obligation: specialize the accepted generic D composition laws to the actual horizontal and vertical pasted BC routes, assemble final K4 compatibility with the accepted closure and G-106 / G-109 bridge, then construct the final theorem assembly
 ```
 
 ### Cycle 101 — horizontal typed component-square alignment
