@@ -185,14 +185,20 @@
      source coherence / vanishing 成立・generated target 側の
      coherence / vanishing 発火、かつ witness の action は (a) の
      同一 producer から生成する(fixture 専用の後付け action の禁止)。
-     (i)(ii) の少なくとも一方で **action の非自明性を同一 producer
-     出力・同一 witness fixture 上の具体成分で**要求する — named
-     total morphism の像の非自明性、named endpoint automorphism
-     `a ≠ 1` の像の非恒等、または named BC fixture への C0 制限が実
-     BC 経路の非自明成分を実消費すること、のいずれかの形(functor
-     全体の不等式 `action ≠ 𝟭` 単独は artifact と数えない。具体形の
-     選定は witness fixture 固定時に行う)。資格解除が新しい入力を
-     実際に獲得したことの実在証明であり、(i) だけでは代替できない。
+     (i)(ii) の少なくとも一方で **action の非自明性を identity
+     action との差で**要求する — 同一 producer 出力・同一 witness
+     fixture 上の指定成分について、generated action の像が identity
+     action による像と一致しないことを証明する(endpoint の型が
+     異なる場合は fixture 固定時に選定した canonical equality / iso
+     で比較する)。具体形は、endpoint を揃えた上での
+     `total.map f ≠ f`・`mapPackageFiberAut a ≠ a`、または named
+     nonidentity BC fixture への C0 制限の指定成分が identity
+     restriction の対応成分と一致しないこと、のいずれか(選定は
+     witness fixture 固定時)。非恒等な source 成分の像が非恒等で
+     あることは identity action でも成立するため artifact と数えず、
+     functor 全体の不等式 `action ≠ 𝟭` 単独も同様とする。資格解除が
+     新しい入力を実際に獲得したことの実在証明であり、(i) だけでは
+     代替できない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110 / G-109 / G-106 / G-101 の reviewed module は参照のみ。
