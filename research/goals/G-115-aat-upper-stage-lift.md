@@ -8,18 +8,21 @@
   O10–O11。義務台帳の正本は G-116 カード、設計の source note は n1007
   §3–§5)。6枚の中ではどのカードにも依存せず G-111 系と並走可能
   (外部依存は G-110 に加え G-109 / G-108 の reviewed artifact)。
-  本カードの成果物は G-116 gate (iv) の上段 regime 型を供給する —
-  G-116 は regime を新設建設しないため、この供給は成果物形式の義務で
-  ある。改訂は G-116 の達成記録要件へ伝播する。**昇格前 gate:
-  `ObProblem` の Lean 指示対象の裁定**(semantic adequacy 条件は
-  target theorem (c))。
+  **供給契約**: 本カードの成果物は G-116 gate (iv) の上段 regime 型を
+  供給する — G-116 は regime を新設建設しないため、この供給は成果物
+  形式の義務である。**新設語彙の命名権**: `ObProblem` interface の
+  命名は本カード専属。本カードの改訂は G-116 の達成記録要件へ伝播
+  する。依存する reviewed カード(G-108 / G-109 / G-110)の statement
+  が改訂された場合、本カードは draft へ差し戻して再固定する(伝播
+  規定)。**昇格前 gate: `ObProblem` の Lean 指示対象の裁定**
+  (semantic adequacy 条件は target theorem (c))。
 - `predecessor`: G-110(完遂済み。pointed pullback・reindexing
-  functor。固定錨は G-111 カード ledger と同一)、G-109(core
-  pseudofunctor package と段横断輸送。完遂済み。
+  functor。固定錨は下記 ledger 行)、G-109(core pseudofunctor
+  package と段横断輸送。完遂済み。
   `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下、
   unported)、G-108(geometry 段輸送。完遂済み。
   `research/lean/ResearchLean/AG/GeometryTransport/` 配下、unported。
-  G-109 / G-108 の固定錨は G-110 カード ledger の錨を継承する)。
+  固定錨は下記 ledger 行に直接記載)。
 - `tracking issue`: 未起票(active 昇格時に起票)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-115)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔 — `ObProblem` 段の定義)、
@@ -38,16 +41,20 @@
   は閉じたが実際の障害類への接続は未証」のまま O11 が放電されたことに
   なってしまう。だから完了には adequacy bridge(interface が「構成
   された cocycle / class」を表すこと)と、その class の naturality への
-  移送を義務化する。`GeomRead` 段側のリスクは lift の base equality
-  一本での代用(G-109 (i) が禁じた形)である。
+  移送を義務化する。もう一つの安価経路は底段の再包装 — O11 の
+  naturality が G-111 の (d1)–(d6) の restatement で立つ形であり、
+  上段 lift の実消費で防ぐ。`GeomRead` 段側のリスクは lift の base
+  equality 一本での代用(G-109 (i) が禁じた形)である。
 - `rival`: fibred 2-category の change of base・pseudofunctor の
   restriction 一般論。差は「AAT の具体塔の上で、診断障害類の
   naturality まで込みで Lean 固定する」点に置く。
-- `claim boundary`: G-108 / G-109 で建設済みの塔の段(`GeomRead` 段・
-  core 段)と G-110 の pointed pullback square の上で語る。`ObProblem`
-  段の class 構成自体は変更しない(読み出しと naturality のみ)。
-  carrier change・係数・段射影 `p` 方向の effectivity 反射・nerve /
-  cover 接続は域外(G-116 カードの域外リストを継承)。
+- `claim boundary`: 固定した一般 carrier `U`、G-108 / G-109 で建設済み
+  の塔の段(`GeomRead` 段・core 段)と G-110 の pointed pullback
+  square の上で語る。係数は動かさない。終対象・絶対積は導入しない。
+  `ObProblem` 段の class 構成自体は変更しない(読み出しと naturality
+  のみ)。carrier change・係数 base change・段射影 `p` 方向の
+  effectivity 反射・nerve / cover 接続は域外(G-116 カードの域外
+  リストを継承)。
 - `capability categories`: base-change、tower-lift、bridge、
   naturality。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
@@ -65,7 +72,9 @@
   構成、離散段(`ExtInst -> Doct`)での vacuous 発火、`ObProblem`
   interface に class 構成の変更を紛れ込ませる構成、定数 class 読み出し
   での vacuous naturality、**adequacy bridge を欠く代理 interface での
-  O11 放電**、G-109 pseudofunctor theorem の再証明を成果と数える構成。
+  O11 放電**、**O11 の naturality を底段 (d1)–(d6) の restatement で
+  立てる構成**(上段 lift の実消費を欠く形)、G-109 pseudofunctor
+  theorem の再証明を成果と数える構成。
 - `frontier`: `ObProblem` 段の class naturality の一般化(class 構成を
   動かす方向 — 域外のまま観察のみ)、上段診断と G-113 保守性の相互
   作用、無限段の塔。
@@ -74,9 +83,13 @@
   G-108 / G-109 / G-110 の設定の上で:
   1. **(a) `GeomRead` 段 lift**: pointed pullback square の BC 構造
      (引き戻し・canonical mate)を geometry 段 fiber へ持ち上げ、
-     G-109 pseudofunctor package(compositor / unitor・pseudonatural
-     compatibility)と両立する形で段射影と可換にする。**上段 regime 型
-     (G-116 が消費する mate 比較の型)を成果物形式に含める**。
+     G-109 pseudofunctor package と両立する形で段射影と可換にする。
+     **可換の水準を固定する** — 可換は指定 canonical 2-cell による
+     pseudonatural 可換(compositor / unitor との coherence 等式込み)
+     とし、等式で立てる成分は F0 で列挙する(square ごとの ad hoc な
+     iso 選択による「iso までの可換」は放電と数えない)。**上段
+     regime 型(G-116 が消費する mate 比較の型)を成果物形式に
+     含める**。
   2. **(b) Gr3 接続 bridge**: 持ち上げた BC 作用と G-109 の段横断
      輸送・G-110 の G-106 / G-109 coherence bridge との整合 theorem を
      証明する。
@@ -90,67 +103,86 @@
      interface が「構成された cocycle / class」を表すことの adequacy
      bridge と、その class の base-change naturality への移送を含める
      (semantic adequacy 条件)。代理 interface 上の naturality だけ
-     では放電と数えない。** class 構成自体は変更しない。
+     では放電と数えない。さらに O11 の naturality は (a) の
+     `GeomRead` 段 lift を proof term として実消費する上段 statement
+     でなければならず、底段 (d1)–(d6) から段 lift を経由せず従う形は
+     放電と数えない**(G-111 O4 との判定線)。class 構成自体は変更
+     しない。
   4. **(d) 非退化発火 witness**: 非自明 geometry fiber 上の発火
      (G-108 系 fixture 資産が素材)と、`ObProblem` interface 上で
      非恒等 class 読み出しが BC lift で実際に動く fixture の両方を
      構成する。
-- `target theorem boundary`: Lean 置き場所は起票時に固定する(原則
+- `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
-  module。上段接続 module の分離は F0 で判断)。G-108 / G-109 /
-  G-110 の reviewed module は参照のみ。完了面は (a)–(d) まで。class
-  構成の変更・`p` 方向 effectivity・IsIso 水準の存否(G-116)は主張
-  しない。
-- `target proof artifacts`: `GeomRead` 段 BC lift 一式と段射影可換
-  theorem、上段 regime 型、Gr3 接続 bridge theorem、`ObProblem`
-  interface(裁定後の指示対象)と adequacy bridge、障害類の
-  base-change naturality theorem、両段の非退化発火 witness、report
+  module で固定する(module 分割の詳細のみ F0 で判断する)。G-108 /
+  G-109 / G-110 の reviewed module は参照のみ。完了面は (a)–(d)
+  まで。class 構成の変更・`p` 方向 effectivity・IsIso 水準の存否
+  (G-116)は主張しない。
+- `target proof artifacts`: `GeomRead` 段 BC lift 一式と pseudonatural
+  可換 theorem(coherence 等式込み)、上段 regime 型、Gr3 接続
+  bridge theorem、`ObProblem` interface(裁定後の指示対象)と
+  adequacy bridge、障害類の base-change naturality theorem(段 lift の
+  実消費付き)、両段の非退化発火 witness、report
   `research/reports/G-115-aat-upper-stage-lift.md`。
 - `target proof strategy`: 昇格前 gate(`ObProblem` 指示対象裁定)→
   F0 typing(lift・regime 型・interface・adequacy bridge の
-  signature)→ K0 `GeomRead` 段 lift → K1 regime 型と Gr3 bridge →
-  K2 `ObProblem` interface と adequacy bridge → K3 naturality →
-  K4 witness と監査。既存成果の利用 map: `CoreFiber` /
-  `coreFiberTransportFunctor`(G-109 pseudofunctor)、
+  signature、等式成分の列挙)→ K0 `GeomRead` 段 lift → K1 regime 型と
+  Gr3 bridge → K2 `ObProblem` interface と adequacy bridge →
+  K3 naturality → K4 witness と監査。既存成果の利用 map:
+  `CoreFiber` / `coreFiberTransportFunctor`(G-109 pseudofunctor)、
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
   (G-108)、G-110 pullback reindexing functor・
   `pointedPullback_isPullback`。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
-  `ResearchLean` に受理され、axiom / placeholder audit が clean である
-  こと。下記 ledger の `discharge-required` を放電し、audit で
+  `ResearchLean` に受理され、axiom / placeholder audit が clean で
+  あること。下記 ledger の `discharge-required` を放電し、audit で
   provenance、proof-use、structure-field escape、route integrity を監査
-  すること。二段 review gate(各実装 PR の標準 fixed-head `$review-pr`
-  +completion 時の独立 `$math-lean-review` 4査読全 `No major
-  findings`)を通過すること(正本 = target-goal-contract.md)。
+  すること。二段 review gate(各実装 PR の標準 fixed-head
+  `$review-pr`、completion candidate での Lean / report / tracking
+  Issue 同期と final review packet 作成、独立 `$math-lean-review`
+  4査読全 `No major findings`)を通過すること(正本 =
+  target-goal-contract.md)。
 - `target premise discharge policy`: 入力(square・上段対象・witness
   fixture)だけを残せる。lift・naturality・adequacy の結論相当データの
   供給は放電と数えない。
 - `target material premise ledger`:
-  - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ(固定錨は
-    G-111 カード ledger と同一)。
-  - `G-109 core pseudofunctor package / G-108 GeometryTransport`:
-    `ambient-boundary`。参照のみ、改変しない(固定錨は G-110 カード
-    ledger の錨を継承)。
-  - `GeomRead 段 BC lift と regime 型`: `discharge-required`。
-  - `Gr3 接続 bridge`: `discharge-required`。
+  - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
+    しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
+    `a1471483`、merge `315a2537`)(支える結論 = pointed square と
+    reindexing の設定)。
+  - `G-109 core pseudofunctor package`: `ambient-boundary`。参照のみ、
+    改変しない(固定錨は G-110 カード ledger の G-109 錨を継承:
+    final reviewed head `b5ca4630`。proof-use = (a)(b) の両立対象)。
+  - `G-108 GeometryTransport`: `ambient-boundary`。参照のみ、改変
+    しない。**固定錨: 実装 PR #4015(final reviewed head `a1d70d01`、
+    merge `12c3e6c2`)**(proof-use = `GeomReadCategory` /
+    `geomTransportAlongHom` の消費と (d) の fixture 素材)。
+  - `GeomRead 段 BC lift と regime 型`: `discharge-required`(支える
+    結論 = (a)。discharge artifact = lift 構成+pseudonatural 可換
+    theorem+regime 型。結論相当でない理由 = 構成して証明する)。
+  - `Gr3 接続 bridge`: `discharge-required`(支える結論 = (b)。
+    proof-use = G-109 compositor / G-110 coherence bridge の実消費)。
   - `ObProblem interface と adequacy bridge`: `discharge-required`
-    (指示対象の裁定は昇格前 gate。adequacy bridge を欠く interface
-    は放電と数えない)。
-  - `障害類の base-change naturality`: `discharge-required`。
-  - `両段の非退化発火 witness`: `discharge-required`。
+    (支える結論 = (c)。指示対象の裁定は昇格前 gate。adequacy bridge
+    を欠く interface は放電と数えない)。
+  - `障害類の base-change naturality`: `discharge-required`(支える
+    結論 = (c)。proof-use = (a) の段 lift の実消費を audit で確認)。
+  - `両段の非退化発火 witness`: `discharge-required`(支える結論 =
+    (d))。
 - `target route integrity gate`: lift・mate・naturality は G-109 /
   G-110 の普遍性と reviewed API からのみ生成する(G-101 からの再建は
   しない)。`ObProblem` interface の指示対象は昇格前に裁定・固定し、
   証明後の差し替えをしない。witness fixture は proof obligation 選定
   時に固定する。禁止経路 — base equality による lift 代用、adequacy
-  bridge の省略、class 構成の変更の混入。
+  bridge の省略、底段共変性の restatement、class 構成の変更の混入。
 - `target anti-weakening rule`: lift 存在・naturality・adequacy を
   theorem argument、typeclass、structure field、certificate field へ
   移して成功扱いしない。`ambient-boundary` に残せるのは入力幾何だけで
   ある。
 - `target failure policy`: fail-closed を原則とする。`ObProblem`
-  interface の Lean 建設が型不能なら `target-blocked`(gate (iii) の
-  縮小 = `ObProblem` 部分の分離は人間裁定であり、自動 weakening を
-  しない)。(a)(c) の反例(lift 不能・naturality の破れ)は中心
-  conjunct 反証 = `target-refuted`。fixed target の変更は人間の別判断と
-  する。
+  interface の Lean 建設が型不能・statement 不足と判明した場合は
+  `goal-defect` で停止する(gate (iii) の縮小 = `ObProblem` 部分の
+  分離は人間裁定であり、自動 weakening をしない)。(a)(c) の反例
+  (lift 不能・naturality の破れ)は中心 conjunct 反証 =
+  `target-refuted`。(b) bridge の反証も `target-refuted`。witness の
+  停滞は `target-blocked`。fixed target の変更は人間の別判断とする。
