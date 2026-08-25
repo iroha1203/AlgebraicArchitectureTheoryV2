@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-110-aat-doctrine-fiber-product.md`](../goals/G-110-aat-doctrine-fiber-product.md)
 - tracking Issue: [#4034](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4034)
 - target theorem: Doctrine Fiber Product and Base Change Theorem
-- proof state: `active / target-proof-checkpoint`(Cycle 108 arbitrary-package
-  successor-context rebase review 前。2026-08-24 改訂前カードは Cycle 75
+- proof state: `active / target-proof-checkpoint`(Cycle 109 arbitrary-package
+  zero/successor universe rebase review 前。2026-08-24 改訂前カードは Cycle 75
   で `target-refuted`)
 - completion candidate: `no`
 
@@ -40,6 +40,47 @@ covariance へ改訂した。
   次の target-theorem cycle で行うまでは、K3 completion と数えない。
 
 ## Cycle ledger
+
+### Cycle 109 — arbitrary finite-carrier exact-zero and successor-form package rebases
+
+```yaml
+ledger_type: target_cycle_candidate
+goal: G-110-aat-doctrine-fiber-product
+cycle: 109
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+proof_state: target-proof-checkpoint
+completion_candidate: no
+artifacts:
+  - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftZero.lean
+  - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftSuccessor.lean
+candidate_scope:
+  - exact universe-zero architecture-object and context-object strict round trips
+  - exact universe-zero raw context-morphism lift/reflection and restriction preservation
+  - arbitrary exact-zero context preorder and actual category equivalence
+  - arbitrary exact-zero architectural equation, finite detector, detector-soundness, equation-reading, CoreReading, and AATCorePackage rebase
+  - arbitrary successor-universe architectural equation, finite detector, detector-soundness, equation-reading, CoreReading, and AATCorePackage rebase through the Cycle 108 tagged context equivalence
+  - separate exact-zero and symbolic successor-form package constructors
+premise_delta:
+  candidate_discharged:
+    - exact universe-zero endpoint omitted by Cycle 108
+    - arbitrary equation and circuit reading rebase at zero and successor endpoints
+    - arbitrary AATCorePackage assembly at the exact-zero and successor-form endpoints
+  remaining:
+    - a single exact AATCorePackage finiteModelLiftCarrier.{u} producer usable at an arbitrary symbolic universe parameter u; the separate .{0} and .{u+1} constructors do not supply term-level universe case analysis
+    - cross-universe total-hom component graph
+    - reflection of every supplied lifted StrongCartesianLift to the original low target package
+    - named FiniteModelLift no-lift corollary
+validation:
+  - focused FiniteArbitraryPackageULiftZero elaboration: pass
+  - targeted FiniteArbitraryPackageULiftZero module build: pass
+  - focused FiniteArbitraryPackageULiftSuccessor elaboration: pass
+  - axiom audits: 35 zero declarations and 10 successor declarations, standard axioms only
+  - Research aggregate or full build: not run
+claim_boundary:
+  - the zero and successor-form constructors are separate schemas and do not discharge the fixed single universe-polymorphic FiniteModelLift.{u} signature
+  - this cycle does not yet claim a cross-carrier PackageTotalHom, supplied-lift reflection, FiniteModelLift, or G-110 completion
+```
 
 ### Cycle 108 — arbitrary finite-carrier successor-context rebase
 
