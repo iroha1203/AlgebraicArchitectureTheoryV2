@@ -155,8 +155,8 @@ noncomputable def finiteModelLiftOperationReadingAt
 
 /-! ## Tagged context embedding
 
-The complete low context is retained as the extension tag one universe above
-the requested lift parameter.  This makes the embedding definitionally
+The complete low context is retained as the extension tag at a successor
+universe.  This makes the embedding definitionally
 injective even though equality of bare `ULift` carrier types is not reflected
 by Lean's intensional type theory.
 -/
@@ -742,8 +742,12 @@ noncomputable def finiteModelTaggedContextCounitIsoApp
 
 /--
 The context category of an arbitrary finite-carrier package has a generated
-universe lift.  Tagged image objects are strict, while every additional high
-context is represented by its finite Atom-reading profile.
+successor-universe lift.  Tagged image objects are strict, while every
+additional high context is represented by its finite Atom-reading profile.
+
+This declaration does not by itself cover the exact universe-zero endpoint of
+the fixed `FiniteModelLift.{u}` signature.  That reconciliation remains a
+separate package-assembly obligation.
 -/
 noncomputable def finiteModelTaggedContextEquivalence
     {A : ArchitectureObject FiniteModel.carrier}
