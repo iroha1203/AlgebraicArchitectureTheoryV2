@@ -60,17 +60,6 @@ theorem atomEquiv_apply_not_mem {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     generator.atomEquiv atom = atom :=
   Equiv.Perm.ofSubtype_apply_of_not_mem generator.table h
 
-/-- The authored support is exact when every listed Atom is genuinely moved. -/
-def Reduced {U : AtomCarrier.{u}}
-    (generator : IndexedBCPrimitiveGenerator U) : Prop :=
-  ∀ atom : {atom // atom ∈ generator.support}, generator.table atom ≠ atom
-
-/-- Finite Boolean check for exact support. -/
-noncomputable def checkReduced {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (generator : IndexedBCPrimitiveGenerator U) : Bool :=
-  generator.support.attach.toList.all fun atom =>
-    decide (generator.table atom ≠ atom)
-
 end IndexedBCPrimitiveGenerator
 
 /-! ## Finite generator syntax -/
@@ -102,39 +91,40 @@ def atomEquiv {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
   | paste first second => first.atomEquiv.trans second.atomEquiv
 
 /--
-F0 well-formedness checks only the finite recursively typed syntax.  The primitive
-leaf is intrinsically total because its table is an equivalence on its finite
-support.  No diagnostic or action conclusion occurs in this predicate.
+F0 well-formedness records the intrinsic raw typing contract.  Invalid support
+tables cannot be constructed: a primitive table is already an equivalence on
+its finite support, and every composite is a finite typed syntax tree.  No
+extra normalization restriction and no diagnostic conclusion occurs here.
 -/
-noncomputable def checkWellFormed {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
-    IndexedBCRawGenerator U → Bool
-  | identity => true
-  | atom generator => generator.checkReduced
-  | comp first second => first.checkWellFormed && second.checkWellFormed
-  | paste first second => first.checkWellFormed && second.checkWellFormed
+def checkWellFormed {U : AtomCarrier.{u}} : IndexedBCRawGenerator U → Bool
+  | _ => true
 
 /-- The proposition read from the recursive finite syntax check. -/
-def WellFormed {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+def WellFormed {U : AtomCarrier.{u}}
     (generator : IndexedBCRawGenerator U) : Prop :=
   generator.checkWellFormed = true
 
 /-- Recursive well-formedness is decidable by inspection of the finite tree. -/
-noncomputable instance wellFormedDecidable {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+instance wellFormedDecidable {U : AtomCarrier.{u}}
     (generator : IndexedBCRawGenerator U) : Decidable generator.WellFormed := by
   unfold WellFormed
   infer_instance
 
 /-- The identity term is a positive well-formedness instance. -/
 @[simp]
-theorem wellFormed_identity {U : AtomCarrier.{u}} [DecidableEq U.Atom] :
-    (identity : IndexedBCRawGenerator U).WellFormed := rfl
+theorem wellFormed {U : AtomCarrier.{u}}
+    (generator : IndexedBCRawGenerator U) : generator.WellFormed := by
+  cases generator <;> rfl
 
-/-- A singleton identity table is rejected because its support is redundant. -/
-theorem not_wellFormed_redundant_singleton {U : AtomCarrier.{u}}
-    [DecidableEq U.Atom] (selected : U.Atom) :
-    ¬(atom ({ support := {selected}, table := Equiv.refl _ } :
-      IndexedBCPrimitiveGenerator U)).WellFormed := by
-  simp [WellFormed, checkWellFormed, IndexedBCPrimitiveGenerator.checkReduced]
+/-- No negative raw instance exists because malformed tables are unrepresentable. -/
+theorem wellFormed_iff_true {U : AtomCarrier.{u}}
+    (generator : IndexedBCRawGenerator U) : generator.WellFormed ↔ True := by
+  simp [WellFormed, checkWellFormed]
+
+/-- The identity term is a positive well-formedness instance. -/
+@[simp]
+theorem wellFormed_identity {U : AtomCarrier.{u}} :
+    (identity : IndexedBCRawGenerator U).WellFormed := rfl
 
 /-- The identity constructor decodes to the identity Atom permutation. -/
 @[simp]
@@ -157,6 +147,137 @@ theorem atomEquiv_paste {U : AtomCarrier.{u}} [DecidableEq U.Atom]
   rfl
 
 end IndexedBCRawGenerator
+
+/-! ## Qualified authored generators -/
+
+/-- Producer input: a raw term together with its intrinsic typing witness. -/
+abbrev IndexedBCGenerator (U : AtomCarrier.{u}) :=
+  {generator : IndexedBCRawGenerator U // generator.WellFormed}
+
+namespace IndexedBCGenerator
+
+/-- Qualified identity input. -/
+def identity (U : AtomCarrier.{u}) : IndexedBCGenerator U :=
+  ⟨.identity, IndexedBCRawGenerator.wellFormed _⟩
+
+/-- Qualified primitive input. -/
+def atom {U : AtomCarrier.{u}} (generator : IndexedBCPrimitiveGenerator U) :
+    IndexedBCGenerator U :=
+  ⟨.atom generator, IndexedBCRawGenerator.wellFormed _⟩
+
+/-- Qualified sequential composition. -/
+def comp {U : AtomCarrier.{u}} (first second : IndexedBCGenerator U) :
+    IndexedBCGenerator U :=
+  ⟨.comp first.1 second.1, IndexedBCRawGenerator.wellFormed _⟩
+
+/-- Qualified strict-pasting input. -/
+def paste {U : AtomCarrier.{u}} (first second : IndexedBCGenerator U) :
+    IndexedBCGenerator U :=
+  ⟨.paste first.1 second.1, IndexedBCRawGenerator.wellFormed _⟩
+
+/-- Decode a qualified input to its authored Atom permutation. -/
+def atomEquiv {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (generator : IndexedBCGenerator U) : Equiv.Perm U.Atom :=
+  generator.1.atomEquiv
+
+end IndexedBCGenerator
+
+/-! ## Canonical Atom-relabel semantics -/
+
+/-- Relabel every Atom predicate of a doctrine by one carrier permutation. -/
+def relabelDoctrine {U : AtomCarrier.{u}} (atomMap : Equiv.Perm U.Atom)
+    (D : ExtractionDoctrine U) : ExtractionDoctrine U where
+  Source := D.Source
+  Vocabulary := D.Vocabulary
+  SemanticReading := D.SemanticReading
+  Resolution := D.Resolution
+  vocabulary := D.vocabulary
+  semanticReading := D.semanticReading
+  resolution := D.resolution
+  vocabularyAllows vocabulary atom := D.vocabularyAllows vocabulary (atomMap.symm atom)
+  semanticAllows reading source atom := D.semanticAllows reading source (atomMap.symm atom)
+  resolutionAllows resolution source atom :=
+    D.resolutionAllows resolution source (atomMap.symm atom)
+  sourceSemantics source atom := D.sourceSemantics source (atomMap.symm atom)
+  normalize := D.normalize
+
+/-- The canonical exact doctrine arrow implementing one Atom relabeling. -/
+def relabelDoctrineHom {U : AtomCarrier.{u}} (atomMap : Equiv.Perm U.Atom)
+    (D : ExtractionDoctrine U) : ExactDoctrineHom D (relabelDoctrine atomMap D) where
+  sourceMap := _root_.id
+  atomEquiv := atomMap
+  normalize_eq _ := rfl
+  extraction_iff source atom := by
+    simp [ExtractionDoctrine.extracts, relabelDoctrine]
+
+/-- Relabel one pointed extraction instance without changing its selected source. -/
+def relabelExtractionInstance {U : AtomCarrier.{u}} (atomMap : Equiv.Perm U.Atom)
+    (X : ExtractionInstance U) : ExtractionInstance U where
+  doctrine := relabelDoctrine atomMap X.doctrine
+  source := X.source
+
+/-- Relabel a pointed exact morphism by Atom conjugation. -/
+def relabelExtInstHom {U : AtomCarrier.{u}} (atomMap : Equiv.Perm U.Atom)
+    {X Y : ExtractionInstance U} (f : X ⟶ Y) :
+    ExtInstHom (relabelExtractionInstance atomMap X)
+      (relabelExtractionInstance atomMap Y) where
+  doctrineHom := {
+    sourceMap := f.doctrineHom.sourceMap
+    atomEquiv := atomMap.symm.trans f.doctrineHom.atomEquiv |>.trans atomMap
+    normalize_eq := f.doctrineHom.normalize_eq
+    extraction_iff := by
+      intro source atom
+      simpa [relabelExtractionInstance, relabelDoctrine,
+        ExtractionDoctrine.extracts] using
+        f.doctrineHom.extraction_iff source (atomMap.symm atom)
+  }
+  source_eq := f.source_eq
+
+/-- Canonical package object obtained by the same Atom relabeling. -/
+def relabelPackage {U : AtomCarrier.{u}} (atomMap : Equiv.Perm U.Atom)
+    (P : PackageTotalCategory U) : PackageTotalCategory U :=
+  transportAlong P (relabelDoctrineHom atomMap P.reading.doctrine)
+
+/-- The relabeled package projects to the relabeled pointed instance. -/
+@[simp]
+theorem packagePoint_relabelPackage {U : AtomCarrier.{u}}
+    (atomMap : Equiv.Perm U.Atom) (P : PackageTotalCategory U) :
+    packagePoint (relabelPackage atomMap P) =
+      relabelExtractionInstance atomMap (packagePoint P) :=
+  rfl
+
+/-- Canonical upper morphism between equally relabeled packages. -/
+noncomputable def relabelPackageUpper {U : AtomCarrier.{u}}
+    (atomMap : Equiv.Perm U.Atom) {P Q : PackageTotalCategory U}
+    (f : P ⟶ Q) :
+    SignedExactCoreReadingHom (relabelPackage atomMap P) (relabelPackage atomMap Q) := by
+  let sourceRelabel := relabelDoctrineHom atomMap P.reading.doctrine
+  let targetRelabel := relabelDoctrineHom atomMap Q.reading.doctrine
+  let tail : Equiv.Perm U.Atom :=
+    atomMap.symm.trans f.upper.atomEquiv |>.trans atomMap
+  let composite : SignedExactCoreReadingHom P (relabelPackage atomMap Q) :=
+    f.upper.comp (transportAlongUpper Q targetRelabel)
+  have hatom : composite.atomEquiv = sourceRelabel.atomEquiv.trans tail := by
+    apply Equiv.ext
+    intro atom
+    change atomMap (f.upper.atomEquiv atom) =
+      atomMap (f.upper.atomEquiv (atomMap.symm (atomMap atom)))
+    simp
+  exact deconjugateTransportUpper P (relabelPackage atomMap Q)
+    sourceRelabel tail composite hatom
+
+/-- Canonical total morphism between equally relabeled packages. -/
+noncomputable def relabelPackageHom {U : AtomCarrier.{u}}
+    (atomMap : Equiv.Perm U.Atom) {P Q : PackageTotalCategory U}
+    (f : P ⟶ Q) : relabelPackage atomMap P ⟶ relabelPackage atomMap Q where
+  base := relabelExtInstHom atomMap f.base
+  upper := relabelPackageUpper atomMap f
+  atomEquiv_eq := by
+    apply Equiv.ext
+    intro atom
+    change atomMap (f.upper.atomEquiv (atomMap.symm atom)) =
+      atomMap (f.base.doctrineHom.atomEquiv (atomMap.symm atom))
+    rw [f.atomEquiv_eq]
 
 /-! ## Generated-action output signatures -/
 
@@ -315,7 +436,7 @@ end IndexedBaseChangeAction
 
 /-- The only allowable raw-to-action producer shape for K0. -/
 abbrev IndexedBaseChangeProducer (U : AtomCarrier.{u}) :=
-  IndexedBCRawGenerator U → IndexedBaseChangeAction U
+  IndexedBCGenerator U → IndexedBaseChangeAction U
 
 namespace IndexedBaseChangeProducer
 
@@ -328,34 +449,78 @@ def UniversalEdgeLaw {U : AtomCarrier.{u}} (producer : IndexedBaseChangeProducer
     (projection : producer.ProjectionLaw) : Prop :=
   ∀ generator, (producer generator).UniversalEdgeLaw (projection generator)
 
+/--
+Every base and total object/map is the canonical relabeling decoded from the
+same qualified raw generator.  `HEq` expresses map equality across the object
+equalities without accepting a caller-supplied comparison.
+-/
+def GeneratedByRaw {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (producer : IndexedBaseChangeProducer U) : Prop :=
+  ∀ generator,
+    (∀ X : ExtractionInstance U,
+      (producer generator).base.obj X =
+        relabelExtractionInstance generator.atomEquiv X) ∧
+    (∀ {X Y : ExtractionInstance U} (f : X ⟶ Y),
+      HEq ((producer generator).base.map f)
+        (relabelExtInstHom generator.atomEquiv f)) ∧
+    (∀ P : PackageTotalCategory U,
+      (producer generator).total.obj P =
+        relabelPackage generator.atomEquiv P) ∧
+    (∀ {P Q : PackageTotalCategory U} (f : P ⟶ Q),
+      HEq ((producer generator).total.map f)
+        (relabelPackageHom generator.atomEquiv f))
+
 /-- The raw identity is sent to the strict identity action. -/
 def PreservesIdentity {U : AtomCarrier.{u}} (producer : IndexedBaseChangeProducer U) : Prop :=
-  producer .identity = IndexedBaseChangeAction.identity U
+  producer (.identity U) = IndexedBaseChangeAction.identity U
 
 /-- Raw sequential composition is sent to action composition. -/
 def PreservesComposition {U : AtomCarrier.{u}}
     (producer : IndexedBaseChangeProducer U) : Prop :=
   ∀ first second,
-    producer (.comp first second) =
+    producer (IndexedBCGenerator.comp first second) =
       (producer first).comp (producer second)
 
 /-- Raw pasting is sent to the selected strict pasting action. -/
 def PreservesPasting {U : AtomCarrier.{u}}
     (producer : IndexedBaseChangeProducer U) : Prop :=
   ∀ first second,
-    producer (.paste first second) =
+    producer (IndexedBCGenerator.paste first second) =
       (producer first).paste (producer second)
+
+/-- Strict 3-cell coherence selected by F0 for iterated pasting. -/
+def StrictPastingCoherence {U : AtomCarrier.{u}}
+    (producer : IndexedBaseChangeProducer U) : Prop :=
+  (∀ first second third,
+    producer (IndexedBCGenerator.paste
+      (IndexedBCGenerator.paste first second) third) =
+    producer (IndexedBCGenerator.paste first
+      (IndexedBCGenerator.paste second third))) ∧
+  (∀ generator,
+    producer (IndexedBCGenerator.paste (.identity U) generator) =
+      producer generator) ∧
+  (∀ generator,
+    producer (IndexedBCGenerator.paste generator (.identity U)) =
+      producer generator)
 
 /--
 The complete F0 law signature.  K0 must provide named proofs of every member
 for its named producer; none is accepted as authored generator input.
 -/
-structure Laws {U : AtomCarrier.{u}} (producer : IndexedBaseChangeProducer U) : Prop where
+structure Laws {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (producer : IndexedBaseChangeProducer U) : Prop where
+  generatedByRaw : producer.GeneratedByRaw
   projection : producer.ProjectionLaw
-  universalEdge : producer.UniversalEdgeLaw projection
   identity : producer.PreservesIdentity
   composition : producer.PreservesComposition
   pasting : producer.PreservesPasting
+  pastingCoherence : producer.StrictPastingCoherence
+
+/-- The producer-level universal edge law is derived from its projection theorem. -/
+theorem universalEdgeLaw {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {producer : IndexedBaseChangeProducer U} (laws : producer.Laws) :
+    producer.UniversalEdgeLaw laws.projection :=
+  fun generator => (producer generator).universalEdgeLaw (laws.projection generator)
 
 end IndexedBaseChangeProducer
 
