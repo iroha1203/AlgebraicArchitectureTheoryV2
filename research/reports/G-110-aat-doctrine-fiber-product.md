@@ -41,7 +41,7 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
-### Cycle 109 — arbitrary finite-carrier zero/successor package rebase
+### Cycle 109 — arbitrary finite-carrier exact-zero and successor-form package rebases
 
 ```yaml
 ledger_type: target_cycle_candidate
@@ -55,17 +55,19 @@ artifacts:
   - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftZero.lean
   - research/lean/ResearchLean/AG/DoctrineFiberProduct/FiniteArbitraryPackageULiftSuccessor.lean
 candidate_scope:
-  - exact universe-zero architecture-object, context-object, and raw context-morphism strict round trips
+  - exact universe-zero architecture-object and context-object strict round trips
+  - exact universe-zero raw context-morphism lift/reflection and restriction preservation
   - arbitrary exact-zero context preorder and actual category equivalence
   - arbitrary exact-zero architectural equation, finite detector, detector-soundness, equation-reading, CoreReading, and AATCorePackage rebase
   - arbitrary successor-universe architectural equation, finite detector, detector-soundness, equation-reading, CoreReading, and AATCorePackage rebase through the Cycle 108 tagged context equivalence
-  - structural coverage of universe zero by the direct construction and every positive universe level by the successor construction
+  - separate exact-zero and symbolic successor-form package constructors
 premise_delta:
   candidate_discharged:
     - exact universe-zero endpoint omitted by Cycle 108
     - arbitrary equation and circuit reading rebase at zero and successor endpoints
-    - arbitrary AATCorePackage assembly at zero and successor endpoints
+    - arbitrary AATCorePackage assembly at the exact-zero and successor-form endpoints
   remaining:
+    - a single exact AATCorePackage finiteModelLiftCarrier.{u} producer usable at an arbitrary symbolic universe parameter u; the separate .{0} and .{u+1} constructors do not supply term-level universe case analysis
     - cross-universe total-hom component graph
     - reflection of every supplied lifted StrongCartesianLift to the original low target package
     - named FiniteModelLift no-lift corollary
@@ -76,7 +78,7 @@ validation:
   - axiom audits: 35 zero declarations and 10 successor declarations, standard axioms only
   - Research aggregate or full build: not run
 claim_boundary:
-  - Lean universe levels are covered by separate zero and successor constructors; no nonexistent term-level universe case split is claimed
+  - the zero and successor-form constructors are separate schemas and do not discharge the fixed single universe-polymorphic FiniteModelLift.{u} signature
   - this cycle does not yet claim a cross-carrier PackageTotalHom, supplied-lift reflection, FiniteModelLift, or G-110 completion
 ```
 

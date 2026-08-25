@@ -9,10 +9,11 @@ transported in both directions while retaining their four carrier types
 literally.  This supplies the exact `u = 0` endpoint omitted by the tagged
 successor-universe construction.
 
-The module constructs only context objects, raw context morphisms, arbitrary
-context preorders, and their category equivalence, then transports arbitrary
-equation systems and their finite detector semantics.  Package assembly,
-total-hom graphs, and strong-lift reflection remain later obligations.
+The module constructs context objects, raw context morphisms, arbitrary context
+preorders and their category equivalence, then transports arbitrary equation
+systems, finite detector semantics, and the complete source package reading.
+Cross-carrier total-hom graphs, supplied strong-lift reflection, and the named
+`FiniteModelLift` corollary remain later obligations.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

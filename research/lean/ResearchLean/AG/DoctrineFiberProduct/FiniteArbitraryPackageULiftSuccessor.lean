@@ -5,9 +5,13 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULiftZero
 
 The tagged context equivalence supplies every positive universe endpoint.  This
 module transports arbitrary architectural equations, finite detector syntax,
-and the complete core package through that equivalence.  Together with the
-exact universe-zero construction, it gives structural zero/successor coverage
-without accepting a package or soundness certificate from the caller.
+and the complete core package through that equivalence.  It accepts the source
+package and derives target soundness from source soundness; no separately
+supplied target package or target soundness certificate is accepted.
+
+The resulting `.{u + 1}` schema and the separate exact-zero construction do
+not constitute one symbolic `.{u}` producer, because Lean universe parameters
+cannot be split at term level.  That fixed-ledger producer remains open.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
