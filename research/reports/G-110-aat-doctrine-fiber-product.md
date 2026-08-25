@@ -173,7 +173,7 @@ result:
       role: discharge-required-on-right-branch
       status: not-applicable
       provenance: globalDisjunctionArtifact selects globalCartesianLift
-      proof_use: rightBranchArtifact_isEmpty
+      proof_use: not-applicable; selected branch exclusion does not consume right-branch checker or qualification data
     - premise: individual H_cart membership
       role: direction-hypothesis-on-right-branch
       status: not-applicable
@@ -218,7 +218,7 @@ result:
       role: discharge-required-on-right-branch
       status: not-applicable
       provenance: cartesianLiftNonexistence_isEmpty / rightBranchArtifact_isEmpty
-      proof_use: CartesianLiftLayer.rightBranchExcluded
+      proof_use: not-applicable; CartesianLiftLayer.rightBranchExcluded records branch consistency without consuming the conditional finiteModelLift field
     - premise: CartesianRegime producer
       role: discharge-required
       status: discharged
