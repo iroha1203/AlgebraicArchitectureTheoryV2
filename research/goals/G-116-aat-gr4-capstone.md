@@ -16,7 +16,7 @@
   ある**(n1007 は source note)。
 - `predecessor`: G-110(完遂済み。MateCoherentRel 正負対と pullback
   square 上の mate exactness = 既決の正例。固定錨は下記 ledger 行)、
-  G-111〜G-115(draft — 完遂後に各 final head を固定して昇格する)。
+  G-111〜G-115(完遂後に各 final head を固定して錨に載せる)。
 - `tracking issue`: 未起票(active 昇格時に起票)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳の設計元、§7 成立条件、§8 達成階梯対応表)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 exchange-failure 義務)、
@@ -143,10 +143,10 @@
 
 | id | 義務 | 担当 |
 |---|---|---|
-| O1 | global / indexed base-change schema の建設(全 `ExtractionInstance` 上の base 作用) | G-111 |
-| O2 | 各固定 carrier 内の全 package に対する cocartesian 保存 lift(indexed 作用への束縛付き) | G-111 |
-| O3 | 実 BC 経路との制限比較(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致) | G-111 |
-| O4 | (D) の full-domain 化 = source-fiber incidence 資格の解除(indexed 版 (d1)–(d6)+proper-extension witness) | G-111 |
+| O1 | indexed base action(base / total / fiber)の建設+identity / composition / pasting API(全 `ExtractionInstance` 上の base 作用) | G-111 |
+| O2 | cocartesian-preserving lifted action+canonical lift compatibility(各固定 carrier 内) | G-111 |
+| O3 | 実 BC 経路との制限比較 C0–C3(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致+三角形 coherence) | G-111 |
+| O4 | (D) の full-domain 化 = source-fiber incidence 資格の解除(indexed 版 (d1)–(d6)+proper-extension witness+具体成分水準の action 非自明性 = identity action との差) | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の arrow 圏同型までの coverage) | G-112 |
 | O6 | coverage 拡張第二段(sector 全域の帰趨決定 — 二枝、負枝は資格条項付き特徴付け) | G-112 |
 | O7 | 全域 lift(左枝の読み = realization 資格外への strong cartesian lift の帰趨決定 — 二枝、n1001 §3.5 の忠実転写) | G-112 |
