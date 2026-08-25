@@ -73,21 +73,24 @@ structure FiberwiseDiagnosticNaturalIsoCompatibility
       (packageComparison i).hom ≫
         fiberReselectedPath (data.map H)
           (mapEdgeReselection data H reselection) path
-  /-- One source coherence proof generates both target coherence proofs. -/
-  coherentAt_pair : ∀ reselection,
+  /-- One source coherence proof generates both target coherence proofs.
+  This is paired forward covariance; it does not by itself assert that the
+  two preservation proofs commute through `packageComparison`. -/
+  coherentAt_forward_pair : ∀ reselection,
     CoherentAt data.toTransportData reselection →
       CoherentAt (data.transported F)
           (mapEdgeReselection data F reselection) ∧
         CoherentAt (data.transported H)
           (mapEdgeReselection data H reselection)
-  /-- Source obstruction vanishing generates vanishing on both compared
-  target routes. -/
-  vanishing_pair : TransportObstructionVanishes data.toTransportData →
+  /-- Source obstruction vanishing generates vanishing on both target routes.
+  This is paired forward covariance, not a cross-route equality. -/
+  vanishing_forward_pair : TransportObstructionVanishes data.toTransportData →
     TransportObstructionVanishes (data.transported F) ∧
       TransportObstructionVanishes (data.transported H)
 
-/-- Construct the full compatibility package from naturality and the existing
-generated covariance theorems. -/
+/-- Construct the naturality package and its paired forward conclusions from
+naturality and the existing generated covariance theorems.  This does not assert
+a cross-route commutation law. -/
 noncomputable def fiberwiseDiagnosticNaturalIsoCompatibility
     {G : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
     {X Y : ExtractionInstance U}
@@ -116,18 +119,17 @@ noncomputable def fiberwiseDiagnosticNaturalIsoCompatibility
     rw [fiberReselectedPath_map, fiberReselectedPath_map]
     exact comparison.hom.naturality
       (fiberReselectedPath data reselection path)
-  coherentAt_pair reselection coherent :=
+  coherentAt_forward_pair reselection coherent :=
     ⟨coherentAt_map data F reselection coherent,
       coherentAt_map data H reselection coherent⟩
-  vanishing_pair vanishes :=
+  vanishing_forward_pair vanishes :=
     ⟨transportObstructionVanishes_map data F vanishes,
       transportObstructionVanishes_map data H vanishes⟩
 
 /-! ## Exact Beck--Chevalley specialization -/
 
-/-- The canonical exact Beck--Chevalley mate generates the complete natural-
-isomorphism diagnostic compatibility package for the actual direct and
-via-base routes. -/
+/-- The canonical exact Beck--Chevalley mate generates the diagnostic naturality
+package for the actual direct and via-base routes. -/
 noncomputable def bcDiagnosticNaturalIsoCompatibility
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (presentation : BCPresentation U)

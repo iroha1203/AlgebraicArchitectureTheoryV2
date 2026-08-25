@@ -40,7 +40,7 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
-### Cycle 104 — natural-isomorphism diagnostic transport and pasted K4 package
+### Cycle 104 — natural-isomorphism diagnostic transport predecessor
 
 ```yaml
 ledger_type: target_cycle_result
@@ -58,9 +58,7 @@ selection:
     - verticalLiteralComponentMates_eq_outerCanonicalMate
     - horizontalPastedBCDiagnosticCompositionCompatibility
     - verticalPastedBCDiagnosticCompositionCompatibility
-    - coreFiberG106RouteHom_eq
-    - transportAlong_comp_coherence
-  proof_obligation: construct the missing natural-isomorphism action on complete fiberwise diagnostic data, apply it to the reviewed horizontal and vertical literal component-mate equations, and join it with actual outer-route d2-d6 factorization and the G-106/G-109 coherence bridge
+  proof_obligation: construct the missing natural-isomorphism action on fiberwise diagnostic data and apply it to the reviewed horizontal and vertical literal component-mate equations, while retaining actual outer-route d2-d6 factorization as the next K4 predecessor
   selection_reason: Cycle 103 isolated the outer-route factorization predecessor; the next material obligation is the component-square-to-outer diagnostic identification, and the absent API must be constructed rather than treated as a stop condition
   expected_result_type: proof-checkpoint
   lean_targets:
@@ -72,10 +70,10 @@ selection:
     - replacing isomorphic mapped packages by literal equality
     - assuming exactness of pasted alignments instead of deriving it
     - recording component-to-outer mate equality without transporting comparator, reselection, path, coherence and vanishing data
-    - mentioning transportAlong_comp_coherence without proof-use in the K4 package
+    - bundling the G-106/G-109 bridge without coupling it to the actual pasted diagnostic equations
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: arbitrary naturally isomorphic core-fiber functors now generate a pointwise comparison of the complete fiberwise diagnostic action; the horizontal and vertical literal component mates are promoted to exact aligned natural isomorphisms by the reviewed outer equations; direction-specific K4 packages join this component-to-outer comparison with both actual outer-route factorizations and the proof-used G-106/G-109 three-arrow bridge
+  proof_obligation_delta: arbitrary naturally isomorphic core-fiber functors now generate pointwise package, edge, comparator, mapped-reselection and path naturality plus paired forward coherence and vanishing; the horizontal and vertical literal component mates are promoted to exact aligned natural isomorphisms by the reviewed outer equations; direction-specific predecessor packages retain this naturality beside both actual outer-route factorizations without claiming the missing cross-route commutative law
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphism.lean
@@ -90,23 +88,26 @@ result:
     - fiberwiseDiagnosticNaturalIsoCompatibility
     - horizontalAlignedLiteralComponentMateIso_eq_outer
     - verticalAlignedLiteralComponentMateIso_eq_outer
-    - HorizontalPastedBCDiagnosticCompatibility
-    - horizontalPastedBCDiagnosticCompatibility
-    - VerticalPastedBCDiagnosticCompatibility
-    - verticalPastedBCDiagnosticCompatibility
+    - HorizontalPastedBCDiagnosticNaturalityPredecessor
+    - horizontalPastedBCDiagnosticNaturalityPredecessor
+    - VerticalPastedBCDiagnosticNaturalityPredecessor
+    - verticalPastedBCDiagnosticNaturalityPredecessor
   claim_mapping:
     theorem_names:
-      - horizontalPastedBCDiagnosticCompatibility
-      - verticalPastedBCDiagnosticCompatibility
+      - horizontalPastedBCDiagnosticNaturalityPredecessor
+      - verticalPastedBCDiagnosticNaturalityPredecessor
     source_labels:
-      - target theorem E K4 candidate: generated horizontal and vertical component-to-outer diagnostic compatibility on ordinary interpretations with southwest source-fiber incidence
+      - target theorem E predecessor: aligned-mate diagnostic naturality and actual outer-route composition packages on ordinary interpretations with southwest source-fiber incidence
     conjuncts:
       - each direction retains both actual outer direct and via-base d2-d6 route-composition packages
       - the aligned literal component mate generates package, edge, comparator, mapped-reselection, reselected-edge and reselected-path compatibility
-      - source coherence and source obstruction vanishing generate both compared target conclusions
+      - source coherence and source obstruction vanishing independently generate both target conclusions; this paired forward covariance is not a cross-route equality
       - the component comparison natural isomorphism equals the aligned outer canonical mate natural isomorphism
-      - each direction package proof-uses the G-106/G-109 route bridge whose proof consumes transportAlong_comp_coherence
     undischarged_assumptions:
+      - equations coupling successive component-square diagnostic maps to the outer direct and via-base diagnostic maps
+      - comparator, mapped-reselection, path, coherence-preservation and vanishing-preservation commutation under those component-to-outer alignments
+      - actual horizontal and vertical specialization and proof-use of the G-106/G-109 bridge retaining transportAlong_comp_coherence
+      - final K4 assembly
       - final A-E target theorem assembly over the accepted artifact spine
       - completion-candidate report and tracking synchronization followed by independent final math-lean review
     acceptance_point: all comparison data are generated from the fixed horizontal or vertical pasted presentation and the accepted mate equations; no target comparator, mapped reselection, coherence proof, vanishing proof or comparison certificate is a caller input
@@ -117,33 +118,44 @@ audits:
       - natural-isomorphism compatibility for endpoint group action, mapped packages, edge isomorphisms, comparators, reselections and complete reselected paths
       - paired coherence and vanishing conclusions generated from the same source witnesses
       - exact horizontal and vertical aligned literal-component comparisons derived from their equality with exact outer canonical mates
-      - K4 direction packages joining component-to-outer compatibility, actual outer-route factorization and the proof-used G-106/G-109 coherence bridge
     remaining:
+      - component-square sequential diagnostic action to outer diagnostic action commutative laws
+      - comparison-relative coherence and vanishing compatibility, beyond paired forward covariance
+      - proof-used specialization of the G-106/G-109 bridge in those commutative laws
+      - final K4 assembly
       - final A-E theorem assembly and completion review
   certificate_provenance:
     discharged:
       - pointwise package comparisons are evaluations of the generated aligned natural isomorphism
       - comparator and mapped-reselection equations are consequences of naturality of the endpoint group action
-      - target coherence and vanishing fields are generated by coherentAt_map and transportObstructionVanishes_map
+      - paired target coherence and vanishing fields are independently generated by coherentAt_map and transportObstructionVanishes_map
       - horizontal and vertical exactness are derived through the Cycle 102 literal mate equalities, not supplied
   proof_use:
     discharged:
       - Cycle 102 literal component-to-outer mate equations construct the aligned comparison isomorphisms
-      - Cycle 103 actual-route d2-d6 packages populate routeComposition
-      - coreFiberG106RouteHom_eq populates g106G109CoherenceBridge and retains transportAlong_comp_coherence in its proof DAG
+      - Cycle 103 actual-route d2-d6 packages populate outerRouteComposition
+    remaining:
+      - the Cycle 82 bridge and transportAlong_comp_coherence are not proof-used by the current aligned diagnostic naturality predecessor
   structure_field_escape:
     discharged:
       - FiberwiseDiagnosticNaturalIsoCompatibility is output data whose fields are constructed by one theorem; it is not an input qualification
-      - HorizontalPastedBCDiagnosticCompatibility and VerticalPastedBCDiagnosticCompatibility accept only ordinary interpretation and source-fiber incidence
+      - the direction-specific predecessor structures accept only ordinary interpretation and source-fiber incidence
   route_integrity:
     discharged:
       - source functors are the normalized outer direct routes selected by the generated paste presentation
-      - target functors are the literal successive component via-base routes, identified with the aligned outer canonical route by the accepted mate equations
+      - target functors are the literal successive component via-base routes, whose aligned mate equals the outer canonical mate
       - both actual outer direct and via-base factorizations remain present in the same direction package
+    remaining:
+      - the retained outer-route composition and aligned-mate naturality fields are not yet coupled by a diagnostic commutative equation
   anti_weakening:
     discharged:
       - mapped packages are related by explicit natural-isomorphism components rather than identified by an invalid equality
       - no square-independent substitute functor or caller-supplied target certificate is used
+    initial_review:
+      - four lanes found that the first K4 claim was a product of uncoupled predecessor certificates
+      - coherentAt_pair and vanishing_pair were renamed as forward pairs because they do not consume the comparison
+      - the detachable generic bridge field was removed instead of being counted as proof-use
+      - the direction structures and report were narrowed from K4 compatibility to naturality predecessor
 validation:
   focused_lean:
     - BCDiagnosticBaseChangeAutomorphism.lean: static check passed; standard axioms only
@@ -153,7 +165,7 @@ validation:
     - ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPastedNaturalIsoCompatibility: passed; standard axioms only
   forbidden_builds:
     - ResearchLean aggregate/full build not run
-next_obligation: assemble the fixed A-E artifact spine into the final Doctrine Fiber Product and Base Change theorem, then perform the completion-candidate audit without weakening the source-fiber-incidence scope
+next_obligation: construct horizontal and vertical commutative laws relating successive component-square diagnostic actions to the outer direct and via-base actions, and make those laws proof-use the actual G-106/G-109 bridge before K4 or final assembly is claimed
 ```
 
 ### Cycle 103 — outer pasted-presentation internal route factorization
