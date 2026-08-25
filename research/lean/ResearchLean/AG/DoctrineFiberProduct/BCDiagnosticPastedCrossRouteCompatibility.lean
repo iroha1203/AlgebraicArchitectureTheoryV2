@@ -6,9 +6,9 @@ import ResearchLean.AG.DoctrineFiberProduct.BCPastingCoherenceRoutes
 
 This module exposes the successive component functors and couples the split
 mate square to their generated diagnostic action.  In the horizontal case the
-actual three-arrow G-106/G-109 route equality is postcomposed with the
-component comparison and a reselected diagnostic path, so the package-level
-coherence is proof-used by a pasted diagnostic equation.
+actual source alignment is normalized through the three-arrow G-106/G-109
+route equality, and that normal form proves the same four-side package square
+containing the outer mate and target alignment.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -155,7 +155,7 @@ theorem horizontalComponentVia_reselection_eq_successive
     coreFiberFunctorPackageAutHom_comp]
   rfl
 
-/-! ## Horizontal G-106 proof-used diagnostic path -/
+/-! ## Horizontal G-106 proof-used package square -/
 
 /-- The actual horizontal source alignment is the G-106-justified three-arrow
 compositor route followed by the generated northwest reindex alignment. -/
