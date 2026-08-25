@@ -40,6 +40,122 @@ covariance へ改訂した。
 
 ## Cycle ledger
 
+### Cycle 104 — natural-isomorphism diagnostic transport and pasted K4 package
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-110-aat-doctrine-fiber-product
+cycle: 104
+goal_blob_sha: 755fb872e4bd87f78441b9043e160cccfd9446d8
+goal_sha256: 29eba152e354d9768ca629ef7ad3616f0f78a160ffb82a42b6d1c6c48883e65a
+base_oid: 5891860b1e8d2b938cb486e31203a21c517123c7
+tracking_issue: 4034
+report_path: research/reports/G-110-aat-doctrine-fiber-product.md
+selection:
+  proof_state_ref: Issue 4034 comment 5404040958
+  proof_dag_predecessors:
+    - horizontalLiteralComponentMates_eq_outerCanonicalMate
+    - verticalLiteralComponentMates_eq_outerCanonicalMate
+    - horizontalPastedBCDiagnosticCompositionCompatibility
+    - verticalPastedBCDiagnosticCompositionCompatibility
+    - coreFiberG106RouteHom_eq
+    - transportAlong_comp_coherence
+  proof_obligation: construct the missing natural-isomorphism action on complete fiberwise diagnostic data, apply it to the reviewed horizontal and vertical literal component-mate equations, and join it with actual outer-route d2-d6 factorization and the G-106/G-109 coherence bridge
+  selection_reason: Cycle 103 isolated the outer-route factorization predecessor; the next material obligation is the component-square-to-outer diagnostic identification, and the absent API must be constructed rather than treated as a stop condition
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphism.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticNaturalIsoCompatibility.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPastedNaturalIsoCompatibility.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+  risks:
+    - replacing isomorphic mapped packages by literal equality
+    - assuming exactness of pasted alignments instead of deriving it
+    - recording component-to-outer mate equality without transporting comparator, reselection, path, coherence and vanishing data
+    - mentioning transportAlong_comp_coherence without proof-use in the K4 package
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: arbitrary naturally isomorphic core-fiber functors now generate a pointwise comparison of the complete fiberwise diagnostic action; the horizontal and vertical literal component mates are promoted to exact aligned natural isomorphisms by the reviewed outer equations; direction-specific K4 packages join this component-to-outer comparison with both actual outer-route factorizations and the proof-used G-106/G-109 three-arrow bridge
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticBaseChangeAutomorphism.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticNaturalIsoCompatibility.lean
+    - ResearchLean/AG/DoctrineFiberProduct/BCDiagnosticPastedNaturalIsoCompatibility.lean
+    - ResearchLean/AG/DoctrineFiberProduct.lean
+    - research-modules.txt
+  evidence:
+    - coreFiberFunctorMapAut_iso_naturality
+    - coreFiberFunctorPackageAutHom_iso_naturality
+    - FiberwiseDiagnosticNaturalIsoCompatibility
+    - fiberwiseDiagnosticNaturalIsoCompatibility
+    - horizontalAlignedLiteralComponentMateIso_eq_outer
+    - verticalAlignedLiteralComponentMateIso_eq_outer
+    - HorizontalPastedBCDiagnosticCompatibility
+    - horizontalPastedBCDiagnosticCompatibility
+    - VerticalPastedBCDiagnosticCompatibility
+    - verticalPastedBCDiagnosticCompatibility
+  claim_mapping:
+    theorem_names:
+      - horizontalPastedBCDiagnosticCompatibility
+      - verticalPastedBCDiagnosticCompatibility
+    source_labels:
+      - target theorem E K4 candidate: generated horizontal and vertical component-to-outer diagnostic compatibility on ordinary interpretations with southwest source-fiber incidence
+    conjuncts:
+      - each direction retains both actual outer direct and via-base d2-d6 route-composition packages
+      - the aligned literal component mate generates package, edge, comparator, mapped-reselection, reselected-edge and reselected-path compatibility
+      - source coherence and source obstruction vanishing generate both compared target conclusions
+      - the component comparison natural isomorphism equals the aligned outer canonical mate natural isomorphism
+      - each direction package proof-uses the G-106/G-109 route bridge whose proof consumes transportAlong_comp_coherence
+    undischarged_assumptions:
+      - final A-E target theorem assembly over the accepted artifact spine
+      - completion-candidate report and tracking synchronization followed by independent final math-lean review
+    acceptance_point: all comparison data are generated from the fixed horizontal or vertical pasted presentation and the accepted mate equations; no target comparator, mapped reselection, coherence proof, vanishing proof or comparison certificate is a caller input
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged:
+      - natural-isomorphism compatibility for endpoint group action, mapped packages, edge isomorphisms, comparators, reselections and complete reselected paths
+      - paired coherence and vanishing conclusions generated from the same source witnesses
+      - exact horizontal and vertical aligned literal-component comparisons derived from their equality with exact outer canonical mates
+      - K4 direction packages joining component-to-outer compatibility, actual outer-route factorization and the proof-used G-106/G-109 coherence bridge
+    remaining:
+      - final A-E theorem assembly and completion review
+  certificate_provenance:
+    discharged:
+      - pointwise package comparisons are evaluations of the generated aligned natural isomorphism
+      - comparator and mapped-reselection equations are consequences of naturality of the endpoint group action
+      - target coherence and vanishing fields are generated by coherentAt_map and transportObstructionVanishes_map
+      - horizontal and vertical exactness are derived through the Cycle 102 literal mate equalities, not supplied
+  proof_use:
+    discharged:
+      - Cycle 102 literal component-to-outer mate equations construct the aligned comparison isomorphisms
+      - Cycle 103 actual-route d2-d6 packages populate routeComposition
+      - coreFiberG106RouteHom_eq populates g106G109CoherenceBridge and retains transportAlong_comp_coherence in its proof DAG
+  structure_field_escape:
+    discharged:
+      - FiberwiseDiagnosticNaturalIsoCompatibility is output data whose fields are constructed by one theorem; it is not an input qualification
+      - HorizontalPastedBCDiagnosticCompatibility and VerticalPastedBCDiagnosticCompatibility accept only ordinary interpretation and source-fiber incidence
+  route_integrity:
+    discharged:
+      - source functors are the normalized outer direct routes selected by the generated paste presentation
+      - target functors are the literal successive component via-base routes, identified with the aligned outer canonical route by the accepted mate equations
+      - both actual outer direct and via-base factorizations remain present in the same direction package
+  anti_weakening:
+    discharged:
+      - mapped packages are related by explicit natural-isomorphism components rather than identified by an invalid equality
+      - no square-independent substitute functor or caller-supplied target certificate is used
+validation:
+  focused_lean:
+    - BCDiagnosticBaseChangeAutomorphism.lean: static check passed; standard axioms only
+    - BCDiagnosticNaturalIsoCompatibility.lean: static check passed; standard axioms only
+    - BCDiagnosticPastedNaturalIsoCompatibility.lean: static check passed; standard axioms only
+  targeted_build:
+    - ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPastedNaturalIsoCompatibility: passed; standard axioms only
+  forbidden_builds:
+    - ResearchLean aggregate/full build not run
+next_obligation: assemble the fixed A-E artifact spine into the final Doctrine Fiber Product and Base Change theorem, then perform the completion-candidate audit without weakening the source-fiber-incidence scope
+```
+
 ### Cycle 103 — outer pasted-presentation internal route factorization
 
 ```yaml
