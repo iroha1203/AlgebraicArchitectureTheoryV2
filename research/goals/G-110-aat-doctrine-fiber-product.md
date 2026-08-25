@@ -4,7 +4,8 @@
 - `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`(mode 裁定済み 2026-08-18、(D)
-  statement 改訂 2026-08-24: (B) は「条件同定+十分性+反例」の
+  statement 改訂 2026-08-24、(B) universe transport 改訂
+  2026-08-25: (B) は「条件同定+十分性+反例」の
   型の決まった二枝 disjunction として単一命題で固定する(下記 (B))。
   `H_cart` には固定条件言語・結論非参照・同型不変性・閉性・非可逆
   入力を含むパラメトリック正例族・checker+非定義的 bridge の資格
@@ -47,8 +48,10 @@
   full-domain 化 = source-fiber incidence 資格の解除もこの項に
   含める — global / indexed base-change schema(全
   `ExtractionInstance` 上の base 作用・全 package の cocartesian
-  保存 lift・実 BC 経路との制限比較)の建設を要する。義務の移管で
-  あり削除ではない — 改訂裁定 2026-08-24)、(ii) refinement 系統
+  保存 lift・任意 `AATCorePackage` の exact symbolic-universe
+  reindexing・実 BC 経路との制限比較)の建設を要する。義務の移管で
+  あり削除ではない — 改訂裁定 2026-08-24 / 2026-08-25)、
+  (ii) refinement 系統
   (`RefinementDoctrineHom` の圏化と refinement base change)、
   (iii) 上段(`GeomRead` / `ObProblem`)への base-change lift(Gr3
   段横断輸送への接続 bridge)、(iv) **IsIso 水準の Beck–Chevalley
@@ -187,9 +190,10 @@
   持つ)、第二段 = sector 全域)、
   full-domain 診断 base change 作用(source-fiber incidence 資格の
   解除 — 全 `ExtractionInstance` 上の base 作用・全 package の
-  cocartesian 保存 lift・実 BC 経路との制限比較を伴う global /
-  indexed base-change schema。一つの pullback square からは決まら
-  ないため claim から外す — Gr4 完遂 gate 第一項へ移管)、
+  cocartesian 保存 lift・任意 `AATCorePackage` の exact
+  symbolic-universe reindexing・実 BC 経路との制限比較を伴う
+  global / indexed base-change schema。一つの pullback square からは
+  決まらないため claim から外す — Gr4 完遂 gate 第一項へ移管)、
   diagnostic conservativity / reflection / orbit exactness の分類
   (full-domain indexed action 上で構造的な十分 class・反射 theorem・
   obstruction-killing finite witness・貼り合わせ閉性を揃える Gr4 完遂
@@ -242,10 +246,22 @@
      (`GlobalCartesianLift.{u}` / `RightBranch.{u}` /
      `DisjunctionArtifact.{u}` / `cartesianRegimeOfDisjunction.{u}`)
      で立てる。右枝の有限反例は universe 0 の `FiniteModel.carrier`
-     上で構成し、任意 universe `u` への移送は
-     **`FiniteModelLift.{u}`**(`ULift` 経由の carrier 持ち上げと
-     非存在証明の移送 theorem)を discharge-required として供給する
-     (暗黙の `u = 0` 限定はしない)。**二層の入力型と量化の
+     上で構成する。**右枝を選択した場合に限り**、その固定有限
+     fixture から named target package を内部生成し、任意 universe
+     `u` にはその named package の canonical lift を生成する
+     **`FiniteModelLift.{u}`**を discharge-required とする。これは
+     任意 `AATCorePackage FiniteModel.carrier` の exact reindexing を
+     要求しない一方、named package の全 component graph、任意の
+     supplied high `StrongCartesianLift` を入力として実消費する low
+     lift reflection、反例の非存在証明の移送を要求する。reflection
+     producer は別の named positive fixture 上でも発火させ、空領域
+     elimination を放電と数えない。左枝を選択した場合、右枝反例と
+     `FiniteModelLift` は completion obligation ではない
+     (`cartesianLiftNonexistence_isEmpty` による枝整合を記録する)。
+     ただし universe-polymorphic signature 自体を弱めず、右枝時の
+     暗黙の `u = 0` 限定はしない。任意 package の exact reindexing は
+     Gr4 完遂 gate 第一項へ移管し、義務を削除しない。
+     **二層の入力型と量化の
      固定**: presentation 層 `CartPresentation U`(底射の有限
      presentation データ)と semantic 層 `CartSemanticInput U`
      (**named structure** — field は `source : ExtInst_U`・
@@ -629,8 +645,10 @@
   (B) の disjunction 確定 artifact(左枝: 無条件存在定理/右枝:
   `H_cart` の定義・資格条項 theorem 群(同型不変性・pullback-stable
   wide class)・十分性定理・非存在反例・checker+非定義的 bridge)
-  と universe-polymorphic signature 一式+`FiniteModelLift.{u}`
-  (反例の universe 移送)、lift 実構成のパラメトリック正例族
+  と universe-polymorphic signature 一式、右枝を選択した場合の
+  `FiniteModelLift.{u}`(固定有限 fixture から内部生成した named target
+  package の canonical lift・exact component graph・supplied-lift
+  reflection・反例の universe 移送)、lift 実構成のパラメトリック正例族
   (非可逆底射を含む)、
   compatible point cone による pointed 化手続きと
   `pointedPullback_isPullback`・pullback reindexing functor と
@@ -691,7 +709,10 @@
   (`checkCart P = true ↔ H_cart (realizableHomOf P)`、`Iff.rfl` 放電禁止)を、
   `H_cart` で右枝を閉じた場合に artifact として含める(code の有限性から semantic 層の一般
   decidability は従わないため、決定可能性は checker+bridge で操作化
-  する。左枝確定時に `H_cart` checker は要求しない)。完遂時の
+  する。左枝確定時に `H_cart` checker は要求しない)。同様に
+  `FiniteModelLift` は右枝を閉じた場合だけ要求し、左枝確定時は
+  `cartesianLiftNonexistence_isEmpty` による枝整合を監査して
+  `not-applicable` とする。完遂時の
   記録は **「有限 presentation 付き(realization 像)底層射上の
   `H_cart`-admissible exact-bottom・diagnostic-covariant subcalculus
   達成」**に
@@ -796,9 +817,18 @@
     pullback・`source_eq` から生成する(`IsPullback` の入力供給は
     放電と数えない。支える結論 = (C) の mate 前提と `π₁`
     membership 導出)。
-  - `FiniteModelLift(反例の universe 移送)`: `discharge-required`。
-    universe 0 の FiniteModel 反例を `ULift` 経由で任意 `u` へ移送し
-    非存在証明を保つ(大域左枝の反証資格)。
+  - `FiniteModelLift(反例の universe 移送)`: **右枝選択時のみ**
+    `discharge-required`。固定有限 fixture から named target package
+    を内部生成し、その package の canonical universe lift、exact
+    component graph、任意の supplied high `StrongCartesianLift` を
+    実消費する low lift reflection、非存在証明の移送を任意 `u` で
+    構成する(大域左枝の反証資格)。反例入力の任意 `targetPackage`、
+    package reindexing certificate、reflection certificate の caller
+    供給は放電と数えない。reflection producer は named positive
+    fixture でも発火させ、empty elimination を排除する。左枝選択時は
+    `cartesianLiftNonexistence_isEmpty` が右枝反例の不在を固定するため
+    本行を `not-applicable` とし、任意 package の exact reindexing は
+    Gr4 完遂 gate 第一項へ移管する。
   - `CartesianRegime producer(cartesianRegimeOfDisjunction :
     DisjunctionArtifact -> ∀ U, CartesianRegime U)`:
     `discharge-required`。左枝 = 大域存在定理、右枝 = 一様 `H_cart`・
@@ -874,13 +904,20 @@
   構成、(C) の negative witness を省いた「正例のみの交換定理」、
   (D) の nonvacuity を恒等初期 defect または identity reselection だけで
   満たす構成、(B) 分岐 1 を強 cartesian より弱い lift
-  概念で立てる構成は完了と数えない。`ambient-boundary` に残せるのは
-  入力幾何だけである。
+  概念で立てる構成は完了と数えない。右枝の `FiniteModelLift` を
+  `CartesianLiftNonexistence.targetPackage` の任意供給、reindexing /
+  reflection certificate の field、または empty elimination で立てる
+  構成も完了と数えない。`ambient-boundary` に残せるのは入力幾何だけで
+  ある。
 - `target route integrity gate`: 許容経路 — pullback・canonical
   mate・診断比較写像は入力と普遍性からのみ生成する。selected point
   cone・cleavage・有限 witness を証明後に target-fitting 選択しない
   (選択は proof obligation 選定時に fixture として固定する —
-  負例 lax fixture の全 raw field も同時に固定する)。(C) の fiber
+  負例 lax fixture の全 raw field も同時に固定する)。右枝の named
+  target package も同じ時点で固定有限 fixture から生成し、canonical
+  universe lift と reflection はその producer の出力だけを消費する。
+  任意 package の exact reindexing を G-110 の completion 証拠へ
+  読み替えず、Gr4 完遂 gate 第一項の未達義務として維持する。(C) の fiber
   functor / compositor 経路は G-109 core pseudofunctor API を消費し、
   G-101 からの再建はしない(経路の一意化)。
   authored comparator / lax datum は base change 前の入力に限り、
@@ -910,8 +947,11 @@
   の反証は `target-refuted`、statement の不足の発見は `goal-defect`
   で停止し、fixed target の変更はいずれも人間の別判断とする(自動
   weakening をしない)。個別分岐: (B) は二枝 disjunction の単一
-  命題であり、どちらの枝の確定も成功である。左枝が反証され(非存在
-  例が出る)かつ資格条項を満たす `H_cart` の同定に至らない場合は
+  命題であり、どちらの枝の確定も成功である。左枝確定時は右枝専用の
+  `FiniteModelLift` を停止理由にしない。右枝確定時に named target
+  package の canonical universe lift・reflection・非存在移送を構成
+  できない場合は `target-blocked` とする。左枝が反証され(非存在例が
+  出る)かつ資格条項を満たす `H_cart` の同定に至らない場合も
   `target-blocked` で停止する。(A) の同型不変な真部分 fiber witness
   が存在し得ない(両射影が常に同型になる)ことが定理として示された
   場合、その退化定理を成果として `target-refuted` を宣言する
