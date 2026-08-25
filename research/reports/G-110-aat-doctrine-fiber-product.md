@@ -56,7 +56,8 @@ selection:
     - doctrinePullback_isPullback
     - globalDisjunctionArtifact
     - coreBeckChevalleyMate_isIso
-    - finiteDiagnosticObjectCollapse_not_mateCoherent_on_orbit
+    - finiteAxisFold_public_not_mateCoherentRel_on_orbit
+    - finiteAxisFold_authoredComparison_orbit_nontrivial
     - qualifiedDiagnosticBaseChangeD1D3
     - finiteDiagnosticCovariance_nonvacuous
     - horizontalPastedBCDiagnosticCrossRouteCompatibility
