@@ -13,16 +13,18 @@
   する(G-113 は本カードの schema 型を再定義しない)。indexed action
   の恒等・合成・pasting-coherence API も本カード(O1 の一部)が供給
   し、G-113 はその演算の上で診断 class の閉性(O17)を証明する。**lift の分界**:
-  本カードの O2 は cocartesian lift 対((b1) 構成+(b2) 保存)で
-  あり、strong cartesian lift(O7)は G-112 の担当である — 両者は別の lift であり、混同は義務の
+  本カードの O2 は cocartesian lifted action((b1) canonical lift
+  compatibility+(b2) 保存)であり、strong cartesian lift(O7)は
+  G-112 の担当である — 両者は別の lift であり、混同は義務の
   二重計上・脱落の両リスクを持つ(G-112 と相互参照)。**新設語彙の
   命名権**: indexed schema 型の命名は本カード専属。本カードの
   statement 改訂は G-113 の draft 差し戻しへ伝播し、あらゆる改訂は
   G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110・
-  G-109)の statement が改訂された場合、本カードは draft へ差し戻して
-  再固定する(伝播規定)。G-101 / G-106 は G-110 の reviewed 錨経由で
-  のみ消費する(F0 で直接 declaration 依存が生じた場合は伝播対象へ
-  含める)。
+  G-109・G-106)の statement が改訂された場合、本カードは draft へ
+  差し戻して再固定する(伝播規定。G-106 は `AdmissibleTransportData`・
+  reselection・coherence / vanishing を statement で直接消費する論理
+  依存)。G-101 は G-110 の reviewed 錨経由でのみ消費する(F0 で直接
+  declaration 依存が生じた場合は伝播対象へ含める)。
 - `predecessor`: G-110(doctrine fiber product と base change。完遂済み =
   `target-theorem-proved`。`research/lean/ResearchLean/AG/
   DoctrineFiberProduct/` 配下、unported。固定錨は下記 ledger 行)、
@@ -37,7 +39,7 @@
   incidence 資格付きの pointed square 上で立った。本カードはこの資格を
   解除する — pointed square に依らず全 `ExtractionInstance` 上で base
   作用を持つ global / indexed base-change schema を建設し、その上で
-  cocartesian lift 対・実 BC 経路との制限比較・無条件 (d1)–(d6)
+  cocartesian lifted action・実 BC 経路との制限比較・無条件 (d1)–(d6)
   診断共変性を固定する。これが Gr4 gate 第一項の schema 面である
   (分類面は G-112)。
 - `core tension`: 既存の schema no-go theorem が確定しているのは
@@ -67,9 +69,9 @@
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
   置き、固定 statement と completion criteria だけで完了判定する。
 - `portfolio constraint`: schema 定義だけ、または (d1)–(d3) だけで完了
-  扱いしない。schema(合成 API 込み)・cocartesian lift 対・制限比較
-  C0–C3・(d1)–(d6)・named finite nonvacuity・proper-extension witness
-  の全面に Lean artifact を要求する。
+  扱いしない。schema(合成 API 込み)・cocartesian lifted action・
+  制限比較 C0–C3・(d1)–(d6)・named finite nonvacuity・
+  proper-extension witness の全面に Lean artifact を要求する。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
   なら `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved` とする。
@@ -100,10 +102,19 @@
      functor・作用の値そのものを含まない(`CoreFiber X ⥤ CoreFiber Y`
      型の族を authored 入力に置くことは作用の値の供給 = premise
      policy 違反)。**indexed action 層** — producer が raw generator
-     から base / package / fiber の各作用(vertexwise core-fiber
-     functor 族と package 総圏上の作用)を生成する。**soundness 層**
-     — projection 整合・cocartesian 性・id / comp law を theorem と
-     して立てる。共変性・可換性の結論相当 certificate を field に
+     から次の型の背骨で作用を生成する: base 作用 = 固定 carrier 内
+     `ExtInst_U` の endofunctor(全 `ExtractionInstance` と全射に
+     作用)、total 作用 = package 総圏の endofunctor で base の上に
+     あるもの(projection square `total ⋙ projection = projection ⋙
+     base` — 等式を既定とし canonical iso への割当は F0)、fiber
+     作用 = 各 instance で total から誘導される CoreFiber functor 族
+     (vertexwise 族は誘導成分であり独立入力ではない)。raw
+     generator は id / comp / paste constructor を持ち、producer は
+     これを恒等・合成・貼り合わせの action へ写す(generated action
+     の合成が schema の量化域で閉じる — G-113 供給 API の基礎)。
+     **soundness 層** — projection 整合・id / comp law を theorem と
+     して立てる(cocartesian 保存は (b) の独立義務であり、ここに
+     重複計上しない)。共変性・可換性の結論相当 certificate を field に
      持たない(G-110 route gate の継承)。well-formedness 述語は
      decoder 全域性・型整合の決定可能条件に限り、結論語彙を含まない
      (G-110 (s4) 様式の継承)。**edge 適合(naturality)は universal
@@ -133,21 +144,25 @@
      — conjunct ごとの別 schema / 別 action の横継ぎは放電と数えない。
      F0 で診断語彙なしに型付け不能と判明した場合は failure policy に
      従う(signature の最終確定は F0 が担う)。
-  2. **(b) cocartesian lift 対(O2 の二命題)**: 各固定 carrier 内で
-     (b1) **構成** — 全 base 射・全 source package に対する strongly
-     cocartesian lift を schema の生成 action から構成する(G-101
-     canonical lift との関係式込み — 等式か canonical iso かは F0 で
-     割当。G-101 定理の再 instantiation 単独は放電と数えない)、
-     (b2) **保存** — 既存の strongly cocartesian total morphism を
-     生成 action が strongly cocartesian に保存する
-     (`map_stronglyCocartesian` 水準)。両者は別命題であり、片方で
-     他方を代替しない。
+  2. **(b) cocartesian lifted action(O2 の二命題)**: 各固定
+     carrier 内で (b1) **canonical lift compatibility** —
+     `total.map (canonicalLift σ P)` と
+     `canonicalLift (base.map σ) (total.obj P)` を canonical
+     comparison で結び、id / comp coherence を証明する(lift の存在
+     は G-109 既証(`coreFiberLift`)であり再記述しない — 新規義務は
+     生成 action と canonical cleavage の整合。G-101 / G-109 定理の
+     再 instantiation 単独は放電と数えない)、(b2) **保存** — 生成
+     action が strongly cocartesian total morphism を strongly
+     cocartesian に保存する(`map_stronglyCocartesian` 水準)。両者は
+     別命題であり、片方で他方を代替しない。
   3. **(c) 制限比較(比較階層 C0–C3)**: indexed 作用の pointed
      pullback square への制限を G-110 の実 BC 二経路と次の4面で比較
      する。(C0) 生成二経路 functor(direct / via-base — presentation
-     から生成され incidence 非依存)との functor 比較、(C1) incidence
-     資格付き ordinary interpretation 上の transported data(package・
-     edge 資格・comparator)の比較、(C2) endpoint 作用・mapped
+     から生成され incidence 非依存)との functor 比較 — 比較対象は
+     `BCPresentation` から producer 出力への canonical evaluation /
+     restriction 経路で固定する(caller 後付けの比較対象選択は禁止)、
+     (C1) incidence 資格付き ordinary interpretation 上の transported
+     data(package・edge 資格・two-cell base・comparator)の比較、(C2) endpoint 作用・mapped
      reselection・edge / path law の比較、(C3) indexed→direct・
      indexed→via・G-110 direct↔via canonical comparison が作る三角形
      の coherence。incidence を要するのは transported data の生成段
@@ -170,9 +185,14 @@
      source coherence / vanishing 成立・generated target 側の
      coherence / vanishing 発火、かつ witness の action は (a) の
      同一 producer から生成する(fixture 専用の後付け action の禁止)。
-     (i)(ii) の少なくとも一方で **action の非自明性**(identity
-     action でないこと)を要求する。資格解除が新しい入力を実際に
-     獲得したことの実在証明であり、(i) だけでは代替できない。
+     (i)(ii) の少なくとも一方で **action の非自明性を同一 producer
+     出力・同一 witness fixture 上の具体成分で**要求する — named
+     total morphism の像の非自明性、named endpoint automorphism
+     `a ≠ 1` の像の非恒等、または named BC fixture への C0 制限が実
+     BC 経路の非自明成分を実消費すること、のいずれかの形(functor
+     全体の不等式 `action ≠ 𝟭` 単独は artifact と数えない。具体形の
+     選定は witness fixture 固定時に行う)。資格解除が新しい入力を
+     実際に獲得したことの実在証明であり、(i) だけでは代替できない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110 / G-109 / G-106 / G-101 の reviewed module は参照のみ。
@@ -183,17 +203,21 @@
 - `target proof artifacts`: indexed schema 型一式(raw generator・
   producer・well-formedness 述語(決定可能条件限定))、universal
   edge law と composition 整合 theorem、indexed action の恒等・合成・
-  pasting-coherence API(G-113 供給面)、cocartesian lift 対 theorem
-  ((b1) 構成+(b2) 保存)、制限比較 theorem 階層 C0–C3、full-domain
+  pasting-coherence API(G-113 供給面)、cocartesian lifted action
+  theorem((b1) canonical lift compatibility+(b2) 保存)、制限比較
+  theorem 階層 C0–C3、full-domain
   (d1)–(d6) theorem 一式と診断比較写像、named finite nonvacuity
   witness、proper-extension witness、report
   `research/reports/G-111-aat-indexed-base-change-schema.md`。
 - `target proof strategy`: F0 schema typing(raw generator・universe
   契約を elaboration の実フィードバック付きで確定し、許容 producer
-  一覧を tracking Issue に fixed head で記録)→ K0 generator →
-  indexed / total action → arbitrary-source transported data → K1
-  cocartesian lift 対 → K2 制限比較 C0–C3 → K3 full-domain (d1)–(d6)
-  → K4 witness 対と閉性・合成 API 監査。既存成果の利用 map:
+  一覧を tracking Issue に fixed head で記録)→ K0 base / total
+  action+projection square → K1 cocartesian 保存+canonical lift
+  comparison → K1.5 `DiagnosticPackageTotalAction` adapter → K2
+  arbitrary-source transported data → K3 制限比較 C0–C3 → K4
+  full-domain (d1)–(d6) → K5 witness 対と閉性・合成 API 監査
+  (transported data の生成は `map_stronglyCocartesian` を要するため
+  (b2) を K2 より先に置く — proof DAG の循環禁止)。既存成果の利用 map:
   `no_universalBCDiagnosticSourceFiberIncidence`(incidence 資格の解除
   が普遍生成では不可能なことを確定する範囲標識 — 要件本体は G-110
   カード正本)、`DiagnosticPackageTotalAction` /
@@ -252,10 +276,11 @@
     audit(module boundary 監査込み)として放電する(支える結論 =
     (a) の schema 資格。proof-use = (d5)(d6) が述語射影で従わないこと
     の監査)。
-  - `cocartesian lift 対`: `discharge-required`。作用整合等式込み
-    (支える結論 = (b1)(b2)。discharge artifact = 構成 theorem+保存
-    theorem+G-101 lift との関係式。結論相当でない理由 = lift は
-    schema の生成 action から構成され、供給されない)。
+  - `cocartesian lifted action`: `discharge-required`(支える結論 =
+    (b1)(b2)。discharge artifact = canonical lift comparison theorem
+    (id / comp coherence 込み)+保存 theorem。結論相当でない理由 =
+    比較射は生成 action と canonical cleavage から構成され、供給され
+    ない)。
   - `制限比較 theorem 階層 C0–C3`: `discharge-required`。C1–C2 は
     incidence 資格付き部分域上(incidence はこの行に限り
     `direction-hypothesis` として消費。支える結論 = (c)。proof-use =
@@ -275,7 +300,7 @@
   時に固定し、証明後の target-fitting 選択をしない。禁止経路 — 結論
   相当データの供給(target 側 diagnostic data の入力化を含む)、
   定義的 bridge、pointed square 族の再ラベル、G-101 定理の再
-  instantiation 単独での (b1) 放電、schema field / law への (b)(c)
+  instantiation 単独での (b) 放電、schema field / law への (b)(c)
   相当等式の供給(`bcDiagnosticDirectFunctor` 系・G-101 lift 由来
   functor の field 型への出現は不可)、conjunct 間の別 action 横継ぎ。
 - `target anti-weakening rule`: 共変性・vanishing 保存・cocartesian
