@@ -21,6 +21,16 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
+- [G-112-aat-exact-bottom-coverage](G-112-aat-exact-bottom-coverage.md)
+- [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
+- [G-114-aat-refinement-base-change](G-114-aat-refinement-base-change.md)
+- [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
+- [G-116-aat-gr4-capstone](G-116-aat-gr4-capstone.md)
+  (以上6枚 = Gr4 完遂 gate 5項を閉じる単責務ラインナップ。義務台帳の
+  正本 = G-116 カード、設計の source note = n1007。昇格は G-111 から
+  一枚ずつ、G-116 は G-111〜G-115 の全帰趨確定後。昇格前の裁定事項:
+  G-112 = 第二段(O6)の量化域、G-115 = `ObProblem` の Lean 指示対象)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
