@@ -37,10 +37,11 @@ tracking Issue に置き、ここには書かない。
 5. 整合性監査(§5)で被覆行列(義務の全域・一意な担当割当)、重複防止の
    判定線5本、語彙正本規則、universe 設計規則、改訂伝播 DAG を固定する。
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
-6. SAKURA 論文の構成裁定の素描(§8): Foundation / Main 二階建て、中心
-   図表 = 達成階梯対応表(G-116 成果物として義務化)、統一 statement
-   candidate、差分表の充填先。**SAKURA 論文は論文B「連合する読み」と
-   同一の論文の現行版であり、旧計画は拘束しない**。
+6. SAKURA 論文の構成裁定の素描(§8): Foundation / Main 二階建て、
+   中心図 = 塔×base change の格子図、主定理群の三層提示、達成階梯
+   対応表(G-116 成果物として義務化)、統一 statement candidate、
+   差分表の充填先。**SAKURA 論文は論文B「連合する読み」と同一の論文の
+   現行版であり、旧計画は拘束しない**。
 
 ## 参照
 
@@ -181,7 +182,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 | gate (ii) | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
-| O11 | `ObProblem` 段への base-change lift(class 構成は変更しない) | gate (iii) | G-115 |
+| O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(class 構成は変更しない。semantic adequacy 条件は §4 G-115) | gate (iii)・n1001 §3.3 | G-115 |
 | O12 | IsIso 水準 exchange-failure の存否決定(sector+refinement / 上段 regime を含む設定) | gate (iv)・(C) 移管文 | G-116 |
 | O13 | `DiagnosticConservative` の定義と構造的生成 class の固定+十分性 theorem | gate (v)・n1005 §4.3 (D) | G-113 |
 | O14 | target obstruction vanishing → source vanishing の反射 theorem(class 上) | gate (v) | G-113 |
@@ -421,13 +422,18 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (G-116 が消費する mate 比較の型)を成果物形式に含める**、(b) Gr3
   接続 bridge — 持ち上げた BC 作用と G-109 の段横断輸送・G-110 の
   G-106 / G-109 coherence bridge との整合 theorem、(c) **`ObProblem`
-  段** — Lean 実査の結果、`ObProblem` の語は research 木・Formal 木・
-  AG 数学本文のいずれにも無く、塔語彙の初出は n1001 §3.3 である。class
-  割当の Lean 指示対象は**起票前の裁定事項**とする: (i) Formal 木の
-  障害 class(`H^1(X, Ob_U)` 系 — 二木 bridge 込みとなり最小でない)、
-  (ii) research 木の orbit / defect 語彙上の最小 class 読み出し
-  interface(推奨 — AG 本文の class との対応注記を義務化する)。裁定
-  後、その interface 上への BC lift の naturality を固定する。class
+  段** — n1001 §3.3 の `ObProblem -> GeomRead` は「構成された cocycle /
+  class の naturality」の段である。したがって O11 が閉じるべき対象は、
+  何らかの class 読み出し interface ではなく、**構成された障害類その
+  ものの base-change naturality** である。`ObProblem` の語は research
+  木・Formal 木・AG 数学本文のいずれにも無いため、Lean 上の表現は起票
+  時に裁定してよい — (i) Formal 木の障害 class(`H^1(X, Ob_U)` 系 —
+  二木 bridge 込みとなり最小でない)、(ii) research 木の orbit /
+  defect 語彙上の最小 class 読み出し interface(推奨)。**ただし完了
+  には、選択した interface が n1001 §3.3 の「構成された cocycle /
+  class」を表すことの adequacy bridge と、その class の base-change
+  naturality への移送を含める**(semantic adequacy 条件)。代理
+  interface 上の naturality だけでは O11 の放電と数えない。class
   構成自体は変更しない(G-110 claim boundary の継承)、(d) 非退化発火
   witness — 非自明 geometry fiber 上の発火(G-108 系 fixture 資産が
   素材)に加え、**`ObProblem` interface 上でも非恒等 class 読み出しが
@@ -443,7 +449,7 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **リスク / dullness 骨格**: lift を base equality 一本で代用する経路、
   離散段(`ExtInst -> Doct`)での vacuous 発火、`ObProblem` interface に
   class 構成の変更を紛れ込ませる経路、定数 class 読み出しでの vacuous
-  naturality。
+  naturality、adequacy bridge を欠く代理 interface での O11 放電。
 - **failure 骨格**: `ObProblem` interface の Lean 建設が型不能なら
   `target-blocked`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
   裁定であり、自動 weakening をしない)。
@@ -562,7 +568,8 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
   昇格順の推奨は依存 DAG に従い G-111 → (G-112 | G-113 | G-114 |
-  G-115 は並走裁定) → G-116。
+  G-115 は並走裁定) → G-116。**`ObProblem` の Lean 指示対象の裁定は
+  G-115 昇格前の gate とする**(semantic adequacy 条件は §4 G-115)。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
   (statement の型・資格条項・witness 形)に限定できる。gate カードは
@@ -622,11 +629,28 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
     (普遍性・左枝 lift・BC exactness と相対 canonicity・診断共変性・
     閉性)、G-112 coverage / 全域分類、G-113 保守性分類、G-116 存否
     決定。
-- **中心図表 = 達成階梯対応表**(G-116 の report 成果物として義務化 —
-  §4 G-116): 各段 Gr0–Gr4 ↔ theorem package ↔ Lean 宣言錨 ↔ 記録正本の
-  所在 ↔ 範囲限定、の5列。Gr0–Gr1 は statement 化段(達成 = 文書固定、
-  n1001 §3.5)、Gr2 = G-101(遡及記載)、Gr3 = G-109 記録、Gr4 = G-116
-  記録。論文はこの表を骨格として階梯の主張を一枚で示す。
+- **中心図 = 塔×base change の格子図**: 横方向が Gr3 の段横断
+  pseudofunctorial coherence、縦方向が Gr4 の base change、各正方形の
+  交換・診断共変性・保守性・exchange-failure の分界が Main の内容に
+  なる。Gr3 と Gr4 が一つの問いに収束する一枚を論文の中心に置く。
+
+  ```text
+  ObProblem_D  →  GeomRead_D  →  CoreRead_D  →  ExtInst_D  →  Doct_D
+       ↓ BC            ↓ BC           ↓ BC           ↓ BC
+  ObProblem_D' →  GeomRead_D' →  CoreRead_D' →  ExtInst_D' →  Doct_D'
+  ```
+
+- **主定理群の三層提示**(カード番号ではなく層で見せる):
+  - **Coherent Reading Tower** — G-106 / G-108 / G-109
+  - **Relative Base-Change Calculus** — G-110 / G-111 / G-114 / G-115
+  - **Boundary and Conservativity Classification** — G-112 / G-113 /
+    G-116
+- **達成階梯対応表**(G-116 の report 成果物として義務化 — §4 G-116):
+  中心図の後ろに置く証拠・範囲監査表。各段 Gr0–Gr4 ↔ theorem package ↔
+  Lean 宣言錨 ↔ 記録正本の所在 ↔ 範囲限定、の5列。Gr0–Gr1 は statement
+  化段(達成 = 文書固定、n1001 §3.5)、Gr2 = G-101(遡及記載)、Gr3 =
+  G-109 記録、Gr4 = G-116 記録。主定理 package と Lean 証拠・範囲限定を
+  対応づける。
 - **統一 statement candidate**: 「固定 carrier 上の doctrine 塔の相対
   base-change 帰趨確定定理(範囲併記付き)」の散文一本を Main の冒頭に
   置く。**O1–O20 の機械的 conjunction を単一 Lean 定理化する案は採ら
