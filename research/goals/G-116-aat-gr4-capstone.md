@@ -152,9 +152,9 @@
 | O2 | cocartesian-preserving lifted action+canonical lift compatibility(各固定 carrier 内) | G-111 |
 | O3 | 実 BC 経路との制限比較 C0–C3(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致+三角形 coherence) | G-111 |
 | O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | G-111 |
-| O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の arrow 圏同型までの coverage) | G-112 |
+| O5 | coverage 拡張第一段(`U.Atom` 有限・source / target 両 endpoint の `Source` 有限の上の arrow 圏同型までの coverage) | G-112 |
 | O6 | coverage 拡張第二段(sector 全域の帰趨決定 — 二枝、負枝は資格条項付き特徴付け) | G-112 |
-| O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
+| O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 — 二枝 | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | G-115 |
@@ -176,8 +176,9 @@
   対応する — 移管義務の消滅なしをここで固定する。
 - n1005 §4.3 (D) の「情報損失の分類」は O13(class 分類)と O16(破れの
   実在 = 情報損失の witness)が担う。
-- **universe 注記**: O1・O2・O6・O7・O12 の universe 契約は F0 typing
-  cycle で Lean の宇宙割当と型突合した上で確定する。symbolic universe で
+- **universe 注記**: O1・O2・O6・O12 の universe 契約は F0 typing
+  cycle で Lean の宇宙割当と型突合した上で確定する(O7 は G-110
+  reviewed 宣言の universe 契約を継承し、fallback 対象外)。symbolic universe で
   型不能と判明した場合は枝条件付き・endpoint 固定の契約へ**再表現**する
   (義務の削除ではない — G-110 (B) の枝条件付き universe 移送契約を
   設計前例とする)。
