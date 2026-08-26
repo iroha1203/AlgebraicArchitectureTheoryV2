@@ -36,7 +36,8 @@ interpretation、endpoint group homomorphism、relation-relative data を
 source reselection を写す K3 (d4) を確定した。K3 (d5)--(d6) は Cycle 14
 で確定し、Cycle 15 は同じ named cell 上で非自明性と (d4)--(d6) の発火を
 固定する diagnostic witness を確定した。Cycle 16--17 は K4 C0--C3 を
-G-110 の実 route へ接続した。現在の proof obligation は K5 である。
+G-110 の実 route へ接続した。Cycle 18 は K5 の分類と正負の有限証拠を
+確定し、現在の proof obligation は K6 の累積完了監査である。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -1330,6 +1331,7 @@ result:
     awaits the mandatory same-head review packet and fresh completion review.
   completion_candidate: yes
   lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseSquareGeometry.lean
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
     - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticAssembly.lean
@@ -1356,23 +1358,153 @@ result:
     - "Cycle 18 PR #4179 corrected head bb541ce8, merge 5257ccd3"
   claim_mapping:
     theorem_names:
+      # (a)-(b): generated raw calculus, comparisons, pasting, and preservation
+      - IndexedBaseHomInput.WellFormed
+      - IndexedBaseHomInput.ofTerm_wellFormed
+      - IndexedBaseHomInput.missing_not_wellFormed
+      - IndexedBaseSquareInput.WellFormed
+      - IndexedBaseSquareInput.ofTerm_wellFormed
+      - IndexedBaseSquareInput.missing_not_wellFormed
+      - ValidatedIndexedBaseHom
+      - ValidatedIndexedBaseSquare
+      - indexedFiberAction
+      - indexedTotalLift
+      - indexedUniversalEdgeLaw
+      - indexedSquareTotalMap
+      - indexedSquareTotalMap_isHomLift
+      - indexedUniversalSquareEdgeLaw
+      - indexedSquareTermAction
+      - indexedSquareTermAction_pasteHorizontal
+      - indexedSquareTermAction_pasteVertical
+      - indexedFiberIdentityComparison
+      - indexedFiberIdentityComparison_hom_fac
+      - indexedFiberCompositionComparison
+      - indexedFiberCompositionComparison_hom_fac
+      - indexedSquareOuterComparison_hom_fac
+      - indexedSquareTermAction_hom_fac
+      - indexedHorizontalPastingCoherence
+      - indexedVerticalPastingCoherence
+      - indexedThreeCellCoherence
+      - indexedSquareTotalMap_isStronglyCocartesian
+      # (c): diagnostic-free diagram category
+      - IndexedBasePath.eval_append
+      - IndexedBaseDiagram.path_append
+      - IndexedBaseDiagram.relation_path
+      - IndexedBaseDiagramHom.edgeSquare
       - IndexedBaseDiagramHom.path_naturality
-      - indexedIdentityComparison
-      - indexedCompositionComparison
-      - indexedHorizontalPastingComparison
-      - indexedVerticalPastingComparison
-      - IndexedDiagnosticInterpretation.transportedInterpretation
-      - indexedCovariantEndpointAction
-      - indexedMappedReselection
-      - indexedCoherentAt_preserved
-      - indexedReselectionOrbitVanishes_preserved
-      - finiteIndexedCovarianceWitness
+      - IndexedBaseDiagramHom.pathSquare
+      - IndexedBaseDiagramHom.horizontalPathSquare
+      - IndexedBaseDiagramHom.twoCell_naturality
+      - IndexedBaseDiagramHom.twoCell_target_relation
+      - IndexedBaseDiagramHom.verticalPathSquare
+      - IndexedBaseDiagramHom.id
+      - IndexedBaseDiagramHom.comp
+      - indexedBaseDiagramCategory
+      # (d1)-(d6): generated target interpretation and covariance
+      - IndexedDiagnosticInterpretation.pathLift_isHomLift
+      - IndexedDiagnosticInterpretation.twoCellBase
+      - IndexedBaseDiagramHom.validatedEdgeSquare
+      - IndexedBaseDiagramHom.transportedPackage
+      - IndexedBaseDiagramHom.transportedEdgeLift
+      - IndexedBaseDiagramHom.transportedEdgeLift_isHomLift
+      - IndexedBaseDiagramHom.transportedEdgeLift_isStronglyCocartesian
+      - IndexedBaseDiagramHom.transportedPathLift_isHomLift
+      - IndexedBaseDiagramHom.transportedTwoCellBase
+      - IndexedBaseDiagramHom.transportedComparator
+      - IndexedBaseDiagramHom.transportedInterpretation
+      - IndexedBaseDiagramHom.endpointAction
+      - IndexedBaseDiagramHom.endpointAction_one
+      - IndexedBaseDiagramHom.endpointAction_mul
+      - IndexedBaseDiagramHom.transportedReselection
+      - IndexedBaseDiagramHom.transportedReselection_apply
+      - IndexedBaseDiagramHom.transportedReselection_one
+      - IndexedBaseDiagramHom.transportedReselection_mul
+      - IndexedDiagnosticInterpretation.reselectedEdgeLift
+      - IndexedDiagnosticInterpretation.reselectedPathLift
+      - IndexedDiagnosticInterpretation.IndexedCoherentAt
+      - IndexedBaseDiagramHom.diagnosticVertexLift_endpointAction_naturality
+      - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedEdge_naturality
+      - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+      - IndexedBaseDiagramHom.indexedCoherentAt_transport
+      - IndexedDiagnosticInterpretation.toAdmissibleTransportData
+      - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
+      - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_transport
+      # (e): G-110 C0-C3 restriction comparison
+      - indexedBCRestrictionSourceDiagram
+      - indexedBCRestrictionTargetDiagram
+      - indexedBCRestrictionDiagramHom
+      - indexedBCRestriction_squareAction_eq_semantic
+      - indexedBCRestriction_squareAction_eq_g110
+      - indexedBCRestrictionDirectFunctor
+      - indexedBCRestrictionViaBaseFunctor
+      - indexedBCRestrictionDirectFunctor_eq_g110
+      - indexedBCRestrictionViaBaseFunctor_eq_g110
+      - indexedBCRestrictionMate
+      - indexedBCRestrictionMate_eq_g110
+      - indexedBCDirect_package_eq_g110
+      - indexedBCViaBase_package_eq_g110
+      - indexedBCDirect_edge_eq_g110
+      - indexedBCViaBase_edge_eq_g110
+      - indexedBCDirect_comparator_eq_g110
+      - indexedBCViaBase_comparator_eq_g110
+      - indexedBCDirect_path_eq_g110
+      - indexedBCViaBase_path_eq_g110
+      - indexedBCDirect_twoCellBase_iff_g110
+      - indexedBCViaBase_twoCellBase_iff_g110
+      - indexedBCDirect_endpointAction_eq_g110
+      - indexedBCViaBase_endpointAction_eq_g110
+      - indexedBCDirect_K3_endpointAction_eq_g110
+      - indexedBCViaBase_K3_endpointAction_eq_g110
+      - indexedBCDirectTransportedReselection_eq_g110
+      - indexedBCViaBaseTransportedReselection_eq_g110
+      - indexedBCDirect_reselectedEdge_eq_g110
+      - indexedBCViaBase_reselectedEdge_eq_g110
+      - indexedBCDirect_reselectedPath_eq_g110
+      - indexedBCViaBase_reselectedPath_eq_g110
       - indexedBCRestrictionDiagnosticCompatibility
+      - indexedBCRestriction_mappedReselection_naturality
+      - indexedBCRestriction_reselectedEdge_naturality
+      - indexedBCRestriction_reselectedPath_naturality
       - indexedBCRestriction_comparison_triangle_app
+      # (f): exact local iff, support producer, positive and negative branches
+      - UniformTargetBaseLiftableAt
       - uniformTargetBaseLiftableAt_iff_epi
+      - IndexedRawSquareFamily.support
+      - IndexedRawSquareFamily.edgeSource_mem_support
+      - IndexedRawSquareFamily.twoSource_mem_support
+      - IndexedRawSquareFamily.supportUniformLiftable_iff_supportEpi
+      - IndexedRawSquareFamily.path_naturality
+      - IndexedRawSquareFamily.targetRelation_of_supportLiftable
       - IndexedRawSquareFamily.produce_of_supportEpi
+      - finiteIdentity_uniformTargetBaseLiftableAt
+      - finiteDuplicate_not_uniformTargetBaseLiftableAt
+      - finiteIdentityRawSquareFamily_supports_vertex
+      - finiteIdentityRawSquareFamily_supportEpi
+      - finiteIdentityRawSquareFamily_supportUniformLiftable
+      - finiteIdentityRawSquareFamily_production
+      - finiteDuplicateIndex_not_epi
+      - finiteNonEpiCoherent_paths_ne
+      - finiteNonEpiCoherent_action_ne_identity
       - finiteNonEpiCoherent_positive
+      - cycle7RawSquareFamily_not_supportEpi
+      - cycle7RawSquareFamily_not_supportUniformLiftable
+      - cycle7RawSquareFamily_no_production
       - cycle7RawSquareFamily_targetPaths_ne
+      - cycle7_finiteValidatedSquares_nonLiftable
+      # (g): one named nontrivial diagnostic witness and all conjuncts
+      - indexedCovariance_participatingAction_nonidentity
+      - indexedCovariance_paths_ne
+      - indexedCovariance_initialRawDefect_ne_one
+      - indexedCovarianceSourceReselection_ne_one
+      - indexedCovariance_generatedAction_image_ne_one
+      - indexedCovariance_generatedAction_componentC_mem
+      - indexedCovariance_identityAction_componentC_not_mem
+      - indexedCovariance_generatedAction_ne_identityAction
+      - indexedCovariance_targetReselection_right_ne_one
+      - indexedCovarianceSourceReselection_coherent
+      - indexedCovariance_target_coherent
+      - indexedCovariance_target_obstruction_vanishes
+      - indexedDiagnosticCovariance_nonvacuous
     source_labels:
       - "G-111 target theorem (a)-(b), O1-O2"
       - "G-111 target theorem (c)-(d), K2-K3"
@@ -1380,12 +1512,29 @@ result:
       - "G-111 target theorem (f), K5 classification"
       - "G-111 target theorem (g), named diagnostic witness"
     conjuncts:
-      - "validated pointwise indexed arrow/square calculus and coherence"
-      - "diagnostic-free diagram morphisms and coherent (d1)-(d6) assembly"
-      - "G-110 restriction components and comparison triangle"
-      - "local iff, support sufficiency, coherent positive, raw negative"
-      - "one connected named nontrivial diagnostic witness"
-    undischarged_assumptions: []
+      - "(a): finite authored arrow/square syntax -> generated base, fiber, total and square actions; projection, identity, composition, path evaluation, horizontal/vertical paste, and 3-cell coherence"
+      - "(b1): generated identity/composition/square comparisons -> canonical coreFiberLift factorization and id/comp/paste coherence"
+      - "(b2): source strongly cocartesian lift -> exact generated indexedSquareTotalMap is strongly cocartesian"
+      - "(c): diagnostic-free IndexedBaseDiagram/Hom -> path naturality, declared two-cell naturality, horizontal/vertical path squares, identity, composition, Category laws"
+      - "(d1): source interpretation -> IndexedBaseDiagramHom.transportedInterpretation with generated package/edge/path/two-cell/comparator and strongness"
+      - "(d2): same pointwise action -> endpointAction with one/mul laws"
+      - "(d3): target relation-relative data -> transportedTwoCellBase and toAdmissibleTransportData"
+      - "(d4): source reselection -> transportedReselection and edge/path naturality"
+      - "(d5): source IndexedCoherentAt -> indexedCoherentAt_transport"
+      - "(d6): source vanishing -> indexedTransportObstructionVanishes_transport"
+      - "(C0): indexed direct/via functors and mate -> the actual G-110 functors and mate"
+      - "(C1): direct/via package, edge, comparator, path, and twoCellBase components -> G-110 components"
+      - "(C2): direct/via endpoint action, mapped reselection, reselected edge/path -> G-110 components"
+      - "(C3): indexed direct, indexed via, and G-110 mate -> comparison_triangle_app"
+      - "(f): local uniform liftability iff Epi; supportwise sufficient producer; non-epi coherent positive; Cycle 7 non-liftable raw negative"
+      - "(g): one named connected cell has distinct paths, nonidentity participating action/raw defect/source reselection, unequal generated/identity images, and actual (d4)-(d6) outputs"
+    remaining_discharge_required: []
+    retained_ambient_and_direction_premises:
+      - "fixed U, ExtInst_U, CoreFiber, and package-total geometry"
+      - "diagnostic-free source/target diagrams, declared relations, and IndexedBaseDiagramHom path naturality"
+      - "ordinary source package, source edge lift/strongness, source comparator, source reselection, source coherence, and source vanishing"
+      - "G-110 BCPresentation and FiberwiseAdmissibleTransportData on the pointed-square restriction"
+      - "K5 SupportEpi on the finite raw-family support"
     acceptance_point: >-
       Completion is accepted only if the standard PR review is Mergeable, the
       same-head final packet has no central unchecked item, and a fresh four-lane
@@ -1407,11 +1556,19 @@ audits:
       status: justified-boundary
       provenance: "PR #4153 reviewed head a1471483, merge 315a2537"
       proof_use: "Cycle 16-17 direct/via and component comparison"
-    - premise: "G-109 / G-101 core lift API"
+    - premise: "G-109 / G-101 canonical core lift and package-total APIs"
       role: ambient-boundary
       status: justified-boundary
-      provenance: "reviewed canonical cleavage and opcartesian APIs"
-      proof_use: "Cycle 4-6 generated actions and comparison laws"
+      provenance: >-
+        Reviewed predecessor declarations coreFiberTransportFunctor,
+        coreFiberLift, coreFiberTransportMap_fac,
+        coreFiberUnitorApp_hom_fac, coreFiberCompositorApp_hom_fac,
+        coreFiberLift_isStronglyCocartesian, packageProjection,
+        PackageTotalHom, and Functor.IsStronglyCocartesian APIs.
+      proof_use: >-
+        indexedFiberAction/indexedTotalLift use the transport/lift producer;
+        identity/composition comparisons use the unitor/compositor factorization;
+        indexedSquareTotalMap_isStronglyCocartesian uses strong comp/of_comp.
     - premise: "Cycle 4-6 pointwise indexed calculus"
       role: discharge-required
       status: discharged
@@ -1422,11 +1579,26 @@ audits:
       status: justified-boundary
       provenance: "Cycle 10 base-only field audit and Cycle 18 non-epi coherent positive"
       proof_use: "declared-relation-relative two-cell realization"
-    - premise: "source diagnostic interpretation"
+    - premise: "source package, edge lift/strongness, and comparator"
       role: direction-hypothesis
       status: justified-boundary
-      provenance: "ordinary authored source package, edge, comparator, reselection, coherence, vanishing"
-      proof_use: "Cycle 11-14 corresponding forward theorems"
+      provenance: "IndexedDiagnosticInterpretation source fields, fixed before target transport"
+      proof_use: "transportedPackage, transportedEdgeLift, transportedComparator, transportedInterpretation"
+    - premise: "source reselection for (d4)"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "IndexedEdgeReselection on the ordinary source interpretation"
+      proof_use: "transportedReselection and diagnosticVertexLift_reselectedEdge/path_naturality"
+    - premise: "source IndexedCoherentAt for (d5)"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "source reselected-path equality at the named declared cell"
+      proof_use: "IndexedBaseDiagramHom.indexedCoherentAt_transport"
+    - premise: "source obstruction vanishing for (d6)"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "source TransportObstructionVanishes derived through toAdmissibleTransportData"
+      proof_use: "IndexedBaseDiagramHom.indexedTransportObstructionVanishes_transport"
     - premise: "diagnostic-free diagram category"
       role: discharge-required
       status: discharged
@@ -1442,11 +1614,26 @@ audits:
       status: discharged
       provenance: "PR #4177-#4178 actual indexed/G-110 comparisons"
       proof_use: "pointed-square component regression"
+    - premise: "G-110 BCPresentation"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "reviewed G-110 pointed pullback-square presentation"
+      proof_use: "indexedBCRestrictionSourceDiagram, TargetDiagram, DiagramHom, direct/via functors, and mate"
+    - premise: "G-110 FiberwiseAdmissibleTransportData"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "ordinary G-110 source diagnostic data on the restricted square"
+      proof_use: "toIndexedInterpretation and all C1-C3 component comparisons"
     - premise: "raw-family classification"
       role: discharge-required
       status: discharged
       provenance: "PR #4179 local iff, producer, positive and negative finite witnesses"
       proof_use: "both local iff directions and all support vertices retained in production"
+    - premise: "finite-family SupportEpi"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "IndexedRawSquareFamily.SupportEpi; exactly the supportwise sufficient branch hypothesis"
+      proof_use: "supportUniformLiftable_iff_supportEpi and produce_of_supportEpi"
     - premise: "named nontrivial witness"
       role: discharge-required
       status: discharged
@@ -1461,7 +1648,18 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "all discharge-required premise families listed above"
+      - "Cycle 4 input well-formedness -> ValidatedIndexedBaseHom/Square constructors"
+      - "G-109/G-101 lift laws -> indexedUniversalEdgeLaw, comparison hom_fac laws, paste coherence, and strong preservation"
+      - "IndexedBaseDiagramHom.naturality -> edgeSquare/path_naturality/pathSquare and horizontal/vertical square laws"
+      - "declared source relation plus hom path naturality -> twoCell_naturality, twoCell_target_relation, transportedTwoCellBase"
+      - "source package/edge/comparator -> transportedInterpretation (d1)"
+      - "endpoint action laws -> d2; transported two-cell and adapter -> d3"
+      - "source reselection -> transportedReselection and d4 naturality"
+      - "source IndexedCoherentAt -> indexedCoherentAt_transport (d5)"
+      - "source vanishing -> indexedTransportObstructionVanishes_transport (d6)"
+      - "BCPresentation and FiberwiseAdmissibleTransportData -> C0-C3 direct/via component equalities and triangle"
+      - "SupportEpi -> support cancellation -> target relation -> produced IndexedBaseDiagramHom"
+      - "finite witness components -> non-epi positive, Cycle 7 negative, and named diagnostic nonvacuity conjunction"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -1469,8 +1667,50 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
+  definition_unfolding:
+    - "UniformTargetBaseLiftableAt i = forall endpoints and parallel right legs, i ≫ left = i ≫ right implies left = right; uniformTargetBaseLiftableAt_iff_epi is the exact local equivalence"
+    - "IndexedRawSquareFamily.square stores actual ValidatedIndexedBaseSquare leaves and has no target-relation field"
+    - "IndexedRawSquareFamily.support is source incidence of generating squares and declared cells; SupportEpi quantifies Epi exactly on that support"
+    - "IndexedBaseDiagramHom.naturality is generating-edge commutativity; path_naturality is generated by path induction"
+    - "IndexedDiagnosticInterpretation.IndexedCoherentAt is equality of the two reselected path lifts at one declared cell"
+    - "transportedTwoCellBase is derived from the target declared relation reached by hom.twoCell_naturality; it is direction-relative and receives no raw-generation credit"
+    - "indexedBCRestrictionDirectFunctor/ViaBaseFunctor and indexedBCRestrictionMate are the C0 constructions; their eq_g110 theorems identify the actual G-110 route"
+  dependency_dag:
+    - "G-101/G-109 core transport, cleavage, package-total, and strong-cocartesian APIs -> Cycles 4-6 raw action/comparisons/preservation"
+    - "Cycles 4-6 + IndexedBaseSquareGeometry -> Cycle 10 IndexedBaseDiagram/Hom and category"
+    - "Cycles 4-6 + Cycle 10 -> Cycle 11 target package/edge/path/two-cell/comparator assembly"
+    - "Cycle 11 -> Cycle 12 transported interpretation and endpoint action -> Cycle 13 mapped reselection -> Cycle 14 coherence/vanishing"
+    - "Cycles 10-14 -> Cycle 15 named diagnostic witness"
+    - "G-110 reviewed DoctrineFiberProduct + Cycles 10-14 -> Cycle 16 C0 -> Cycle 17 C1-C3"
+    - "Cycle 7 validated no-go + Cycle 10 diagram API -> Cycle 18 local iff/support producer/positive/negative classification"
+    - "Cycles 4-18 reviewed heads and merge commits -> Cycle 19 cumulative completion candidate"
+  regression_cases:
+    - "weaker statement, smaller domain, or missing direction -> rejected; observed map covers every fixed (a)-(g) conjunct"
+    - "conclusion premise moved to argument/field -> rejected/checkpoint; observed target diagnostic package/edge/comparator/reselection/coherence/vanishing are outputs, while declared relation remains an explicit direction input"
+    - "certificate accepted without producer -> checkpoint; observed validated constructors, generated transport, support producer, and concrete finite witnesses"
+    - "unused material premise -> checkpoint; observed declaration-level proof-use list above"
+    - "target-fitting or vacuous witness -> rejected; observed nonidentity actions, distinct paths, unequal images, positive and negative instances"
+    - "one-way theorem displayed as equivalence -> rejected; observed only local UniformTargetBaseLiftableAt iff Epi is an iff, while the finite-family branch is stated as supportwise sufficiency"
+    - "unreviewed support/dependency theorem -> checkpoint; observed Cycles 4-18 fixed reviewed heads and merge refs"
+    - "CI green, merge, wrapper, or declaration-name existence alone -> completion forbidden; K6 still requires standard and completion reviews"
+    - "central unchecked item -> checkpoint; current unchecked items are the two same-head review gates and final synchronization"
   validation_refs:
-    - "pending final fixed-head command packet"
+    - "Cycle 4-18 per-file focused elaboration and namespace standard-axiom audits: pass at each recorded reviewed head"
+    - "PR #4180 exact-head CI: 7/7 pass at 497f8b8c384ae5223c85810ccc897bf123faffbd before this correction"
+    - "final corrected-head git scans, artifact hashes, and CI: pending final fixed-head command packet"
+  artifact_blobs_at_base_5257ccd3:
+    - "IndexedBaseSquareGeometry.lean d5be6b08b1a34e63b7935d65954292ecbee5b9da"
+    - "IndexedBaseChangeRaw.lean cb683a4d8e1c64e2d83fcaf721aa7f2fd0294135"
+    - "IndexedBaseDiagram.lean 3688fd608671064262bc58fe0b09bbf2055684cf"
+    - "IndexedDiagnosticAssembly.lean cf729034ddfaeed71b53f661d13ab604ee301084"
+    - "IndexedDiagnosticCovariance.lean 66a4faeee628f540af76a14647b47bbdea32ef6b"
+    - "IndexedDiagnosticReselection.lean c801dc6cf06bbdf02c2d506ed5ef64904e9b38ef"
+    - "IndexedDiagnosticCoherence.lean 3baf2eb43ddc28e04f88b5b677afa2d65ae09790"
+    - "IndexedDiagnosticVanishing.lean 381e7e23b61cdf07875c1b876bc58d271ace7e87"
+    - "IndexedDiagnosticCovarianceWitnesses.lean fc74173cfdb6e8f3b645e56ddb3038d659f19b9a"
+    - "IndexedBCRestrictionComparison.lean 040b4a5ec949aa0f6486b79d0f095eee2a06b7d3"
+    - "IndexedBCDiagnosticCompatibility.lean 2cce21a9427731c992d5a3f5e1de6cecc0853d29"
+    - "IndexedRawFamilyClassification.lean 59126646cf53904e128504c2ac0a2c88f7fb2bf9"
   review_verdict:
     standard_pr_review: pending
     completion_math_a: pending
