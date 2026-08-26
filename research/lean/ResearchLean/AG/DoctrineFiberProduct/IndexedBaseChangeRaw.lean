@@ -74,23 +74,41 @@ Intrinsic arrow typing is the decidable F0 well-formedness condition. A negative
 instance cannot be constructed because malformed source/target data has no term.
 -/
 def WellFormed {U : AtomCarrier.{u}} {source target : ExtractionInstance U}
-    (_term : IndexedBaseHom U source target) : Prop := True
+    (term : IndexedBaseHom U source target) : Prop :=
+  ∃ decoded : source ⟶ target, term.decode = decoded
 
+/-- Arrow well-formedness is decidable by the total decoder. -/
 instance wellFormedDecidable {U : AtomCarrier.{u}}
     {source target : ExtractionInstance U}
     (term : IndexedBaseHom U source target) : Decidable term.WellFormed :=
-  inferInstanceAs (Decidable True)
+  isTrue ⟨term.decode, rfl⟩
 
+/-- Every intrinsically typed arrow term is well formed. -/
 @[simp]
 theorem wellFormed {U : AtomCarrier.{u}}
     {source target : ExtractionInstance U}
-    (term : IndexedBaseHom U source target) : term.WellFormed := trivial
+    (term : IndexedBaseHom U source target) : term.WellFormed :=
+  ⟨term.decode, rfl⟩
 
 end IndexedBaseHom
 
 /-! ## Finite square syntax -/
 
-/-- A decoded commutative square of pointed extraction-instance arrows. -/
+/-- Construction provenance retained by decoded square syntax. -/
+inductive IndexedSquareRoute where
+  /-- One authored square leaf. -/
+  | leaf
+  /-- An identity square. -/
+  | identity
+  /-- Sequential square composition. -/
+  | comp (first second : IndexedSquareRoute)
+  /-- Horizontal square pasting. -/
+  | pasteHorizontal (first second : IndexedSquareRoute)
+  /-- Vertical square pasting. -/
+  | pasteVertical (first second : IndexedSquareRoute)
+  deriving DecidableEq
+
+/-- A decoded commutative square, including its un-erased construction route. -/
 structure IndexedBaseSquare (U : AtomCarrier.{u})
     (northwest northeast southwest southeast : ExtractionInstance U) where
   top : northwest ⟶ northeast
@@ -98,6 +116,7 @@ structure IndexedBaseSquare (U : AtomCarrier.{u})
   right : northeast ⟶ southeast
   bottom : southwest ⟶ southeast
   commutes : left ≫ bottom = top ≫ right
+  route : IndexedSquareRoute
 
 /--
 Finite syntax for commutative squares. `comp` is sequential square composition;
@@ -164,6 +183,7 @@ def identity {U : AtomCarrier.{u}} {source target : ExtractionInstance U}
   right := 𝟙 target
   bottom := hom
   commutes := by simp
+  route := .identity
 
 /-- Vertical composite of two decoded squares. -/
 def verticalComp {U : AtomCarrier.{u}}
@@ -180,6 +200,7 @@ def verticalComp {U : AtomCarrier.{u}}
     commutes := by
       rw [Category.assoc, second.commutes]
       rw [← Category.assoc, ← boundary, first.commutes, Category.assoc]
+    route := .comp first.route second.route
 
 /-- Horizontal composite of two decoded squares. -/
 def horizontalComp {U : AtomCarrier.{u}}
@@ -196,35 +217,11 @@ def horizontalComp {U : AtomCarrier.{u}}
     commutes := by
       rw [← Category.assoc, first.commutes, Category.assoc]
       rw [boundary, second.commutes, ← Category.assoc]
+    route := .pasteHorizontal first.route second.route
 
 end IndexedBaseSquare
 
 namespace IndexedBaseSquareTerm
-
-/--
-Intrinsic square typing is the decidable well-formedness condition. A negative
-instance cannot be constructed because malformed boundary data has no term.
--/
-def WellFormed {U : AtomCarrier.{u}}
-    {northwest northeast southwest southeast : ExtractionInstance U}
-    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
-    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
-    (_term : IndexedBaseSquareTerm U top left right bottom) : Prop := True
-
-instance wellFormedDecidable {U : AtomCarrier.{u}}
-    {northwest northeast southwest southeast : ExtractionInstance U}
-    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
-    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
-    (term : IndexedBaseSquareTerm U top left right bottom) :
-    Decidable term.WellFormed := inferInstanceAs (Decidable True)
-
-@[simp]
-theorem wellFormed {U : AtomCarrier.{u}}
-    {northwest northeast southwest southeast : ExtractionInstance U}
-    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
-    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
-    (term : IndexedBaseSquareTerm U top left right bottom) : term.WellFormed :=
-  trivial
 
 /-- Every finite square term decodes to a commutative boundary. -/
 theorem commutes {U : AtomCarrier.{u}}
@@ -245,6 +242,35 @@ theorem commutes {U : AtomCarrier.{u}}
       rw [Category.assoc, commutes second]
       rw [← Category.assoc, commutes first, Category.assoc]
 
+/--
+Square well-formedness is the actual boundary equation decoded from the term.
+Malformed boundary data is unrepresentable, so this decision is constructively
+positive for every intrinsically typed term.
+-/
+def WellFormed {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (_term : IndexedBaseSquareTerm U top left right bottom) : Prop :=
+  left ≫ bottom = top ≫ right
+
+/-- Square well-formedness is decided by its stored commutativity proof. -/
+instance wellFormedDecidable {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : IndexedBaseSquareTerm U top left right bottom) :
+    Decidable term.WellFormed := isTrue term.commutes
+
+/-- Every intrinsically typed square term is well formed. -/
+@[simp]
+theorem wellFormed {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : IndexedBaseSquareTerm U top left right bottom) : term.WellFormed :=
+  term.commutes
+
 /-- Decode finite square syntax to an actual commutative square. -/
 def decode {U : AtomCarrier.{u}}
     {northwest northeast southwest southeast : ExtractionInstance U}
@@ -257,6 +283,28 @@ def decode {U : AtomCarrier.{u}}
   right := right
   bottom := bottom
   commutes := term.commutes
+  route := match term with
+    | .leaf _ => .leaf
+    | .identity _ => .identity
+    | .comp first second => .comp first.decode.route second.decode.route
+    | .pasteHorizontal first second =>
+        .pasteHorizontal first.decode.route second.decode.route
+    | .pasteVertical first second =>
+        .pasteVertical first.decode.route second.decode.route
+
+/-- Sequential composition and vertical pasting remain distinct after decode. -/
+theorem decode_comp_route_ne_pasteVertical {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top left₁ right₁ middle)
+    (second : IndexedBaseSquareTerm U middle left₂ right₂ bottom) :
+    (decode (.comp first second)).route ≠
+      (decode (.pasteVertical first second)).route := by
+  simp [decode]
 
 end IndexedBaseSquareTerm
 
@@ -274,6 +322,23 @@ noncomputable def indexedTotalLift {U : AtomCarrier.{u}}
     (term : IndexedBaseHom U source target) (package : CoreFiber source) :
     package.1 ⟶ ((indexedFiberAction term).obj package).1 :=
   coreFiberLift term.decode package
+
+/--
+The universal edge law type for a generated lift: every package-total morphism
+in the source fiber commutes with the canonical lift and transported map.
+-/
+def IndexedUniversalEdgeLaw {U : AtomCarrier.{u}}
+    {source target : ExtractionInstance U}
+    (term : IndexedBaseHom U source target) : Prop :=
+  ∀ {P Q : CoreFiber source} (f : P ⟶ Q),
+    indexedTotalLift term P ≫ ((indexedFiberAction term).map f).1 =
+      f.1 ≫ indexedTotalLift term Q
+
+/-- The canonical lift satisfies the fixed universal edge law. -/
+theorem indexedUniversalEdgeLaw {U : AtomCarrier.{u}}
+    {source target : ExtractionInstance U}
+    (term : IndexedBaseHom U source target) : IndexedUniversalEdgeLaw term :=
+  fun f => coreFiberTransportMap_fac term.decode f
 
 /-- The generated total lift lies over the decoded base arrow. -/
 theorem indexedTotalLift_projection {U : AtomCarrier.{u}}
@@ -328,14 +393,184 @@ noncomputable def indexedSquareAction {U : AtomCarrier.{u}}
     eqToIso (congrArg coreFiberTransportFunctor square.commutes.symm) ≪≫
       coreFiberCompositor square.left square.bottom
 
-/-- Decode a square term and generate its canonical comparison. -/
+/--
+Generated action paired with the exact raw construction route. The route field
+is fixed by the index; callers cannot relabel a composition as a vertical paste.
+-/
+structure IndexedSquareTermActionType {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : IndexedBaseSquareTerm U top left right bottom) where
+  comparison :
+    (coreFiberTransportFunctor top ⋙ coreFiberTransportFunctor right) ≅
+      (coreFiberTransportFunctor left ⋙ coreFiberTransportFunctor bottom)
+  route : IndexedSquareRoute
+  route_eq : route = term.decode.route
+
+/-- Decode a square term without erasing its route and generate its comparison. -/
 noncomputable def indexedSquareTermAction {U : AtomCarrier.{u}}
     {northwest northeast southwest southeast : ExtractionInstance U}
     {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
     {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
     (term : IndexedBaseSquareTerm U top left right bottom) :
-    IndexedSquareActionType term.decode :=
-  indexedSquareAction term.decode
+    IndexedSquareTermActionType term where
+  comparison :=
+    (coreFiberCompositor top right).symm ≪≫
+      eqToIso (congrArg coreFiberTransportFunctor term.commutes.symm) ≪≫
+        coreFiberCompositor left bottom
+  route := term.decode.route
+  route_eq := rfl
+
+/-- Generated actions retain the distinction between composition and paste. -/
+theorem indexedSquareTermAction_comp_route_ne_pasteVertical
+    {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top left₁ right₁ middle)
+    (second : IndexedBaseSquareTerm U middle left₂ right₂ bottom) :
+    (indexedSquareTermAction (.comp first second)).route ≠
+      (indexedSquareTermAction (.pasteVertical first second)).route := by
+  simpa [indexedSquareTermAction] using
+    IndexedBaseSquareTerm.decode_comp_route_ne_pasteVertical first second
+
+/-- Exact output type for the componentwise horizontal-pasting route. -/
+abbrev IndexedHorizontalComponentRouteType {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    (top : northwest ⟶ northeast) (left : northwest ⟶ southwest)
+    (right : northeast ⟶ southeast) (bottom : southwest ⟶ southeast) :=
+  (coreFiberTransportFunctor top ⋙ coreFiberTransportFunctor right) ≅
+    (coreFiberTransportFunctor left ⋙
+      coreFiberTransportFunctor bottom)
+
+/--
+The componentwise horizontal route generated from the two square comparisons,
+the pseudofunctor compositors, and functor associators.
+-/
+noncomputable def indexedHorizontalComponentRoute {U : AtomCarrier.{u}}
+    {northwest northMiddle northeast southwest southMiddle southeast :
+      ExtractionInstance U}
+    {top₁ : northwest ⟶ northMiddle} {left : northwest ⟶ southwest}
+    {middle : northMiddle ⟶ southMiddle} {bottom₁ : southwest ⟶ southMiddle}
+    {top₂ : northMiddle ⟶ northeast} {right : northeast ⟶ southeast}
+    {bottom₂ : southMiddle ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top₁ left middle bottom₁)
+    (second : IndexedBaseSquareTerm U top₂ middle right bottom₂) :
+    IndexedHorizontalComponentRouteType (top₁ ≫ top₂) left right
+      (bottom₁ ≫ bottom₂) :=
+  Functor.isoWhiskerRight
+      (coreFiberCompositor top₁ top₂)
+      (coreFiberTransportFunctor right) ≪≫
+    Functor.associator
+        (coreFiberTransportFunctor top₁)
+        (coreFiberTransportFunctor top₂)
+        (coreFiberTransportFunctor right) ≪≫
+      Functor.isoWhiskerLeft
+          (coreFiberTransportFunctor top₁)
+          (indexedSquareTermAction second).comparison ≪≫
+        (Functor.associator
+            (coreFiberTransportFunctor top₁)
+            (coreFiberTransportFunctor middle)
+            (coreFiberTransportFunctor bottom₂)).symm ≪≫
+          Functor.isoWhiskerRight
+              (indexedSquareTermAction first).comparison
+              (coreFiberTransportFunctor bottom₂) ≪≫
+            Functor.associator
+                (coreFiberTransportFunctor left)
+                (coreFiberTransportFunctor bottom₁)
+                (coreFiberTransportFunctor bottom₂) ≪≫
+              Functor.isoWhiskerLeft
+                (coreFiberTransportFunctor left)
+                (coreFiberCompositor bottom₁ bottom₂).symm
+
+/-- Horizontal-pasting coherence is a theorem equality, not an authored field. -/
+abbrev IndexedHorizontalPastingCoherenceType {U : AtomCarrier.{u}}
+    {northwest northMiddle northeast southwest southMiddle southeast :
+      ExtractionInstance U}
+    {top₁ : northwest ⟶ northMiddle} {left : northwest ⟶ southwest}
+    {middle : northMiddle ⟶ southMiddle} {bottom₁ : southwest ⟶ southMiddle}
+    {top₂ : northMiddle ⟶ northeast} {right : northeast ⟶ southeast}
+    {bottom₂ : southMiddle ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top₁ left middle bottom₁)
+    (second : IndexedBaseSquareTerm U top₂ middle right bottom₂)
+    : Prop :=
+  indexedHorizontalComponentRoute first second =
+    (indexedSquareTermAction (.pasteHorizontal first second)).comparison
+
+/-- Exact output type for the componentwise vertical-pasting route. -/
+abbrev IndexedVerticalComponentRouteType {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    (top : northwest ⟶ northeast) (left : northwest ⟶ southwest)
+    (right : northeast ⟶ southeast) (bottom : southwest ⟶ southeast) :=
+  (coreFiberTransportFunctor top ⋙ coreFiberTransportFunctor right) ≅
+    (coreFiberTransportFunctor left ⋙ coreFiberTransportFunctor bottom)
+
+/--
+The componentwise vertical route generated from the two square comparisons,
+the pseudofunctor compositors, and functor associators.
+-/
+noncomputable def indexedVerticalComponentRoute {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top left₁ right₁ middle)
+    (second : IndexedBaseSquareTerm U middle left₂ right₂ bottom) :
+    IndexedVerticalComponentRouteType top (left₁ ≫ left₂)
+      (right₁ ≫ right₂) bottom :=
+  Functor.isoWhiskerLeft
+      (coreFiberTransportFunctor top)
+      (coreFiberCompositor right₁ right₂) ≪≫
+    (Functor.associator
+        (coreFiberTransportFunctor top)
+        (coreFiberTransportFunctor right₁)
+        (coreFiberTransportFunctor right₂)).symm ≪≫
+      Functor.isoWhiskerRight
+          (indexedSquareTermAction first).comparison
+          (coreFiberTransportFunctor right₂) ≪≫
+        Functor.associator
+            (coreFiberTransportFunctor left₁)
+            (coreFiberTransportFunctor middle)
+            (coreFiberTransportFunctor right₂) ≪≫
+          Functor.isoWhiskerLeft
+              (coreFiberTransportFunctor left₁)
+              (indexedSquareTermAction second).comparison ≪≫
+            (Functor.associator
+                (coreFiberTransportFunctor left₁)
+                (coreFiberTransportFunctor left₂)
+                (coreFiberTransportFunctor bottom)).symm ≪≫
+              Functor.isoWhiskerRight
+                (coreFiberCompositor left₁ left₂).symm
+                (coreFiberTransportFunctor bottom)
+
+/-- Vertical-pasting coherence is a theorem equality, distinct from `comp`. -/
+abbrev IndexedVerticalPastingCoherenceType {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : IndexedBaseSquareTerm U top left₁ right₁ middle)
+    (second : IndexedBaseSquareTerm U middle left₂ right₂ bottom)
+    : Prop :=
+  indexedVerticalComponentRoute first second =
+    (indexedSquareTermAction (.pasteVertical first second)).comparison
+
+/--
+The F0 choice for 3-cell coherence is theorem-level equality between two
+already generated comparison routes; it is never supplied as raw syntax.
+-/
+abbrev IndexedThreeCellCoherenceType {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    (square : IndexedBaseSquare U northwest northeast southwest southeast)
+    (first second : IndexedSquareActionType square) : Prop := first = second
 
 end AAT.AG.DoctrineFiberProduct
 
