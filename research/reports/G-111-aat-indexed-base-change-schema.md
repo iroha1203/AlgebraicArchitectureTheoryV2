@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `completion candidate / Cycle 20 K6 proof-use-corrected final packet`
+- proof state: `completion candidate / Cycle 20 K6 declaration-provenance-corrected packet`
 - completion candidate: `yes`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -1308,7 +1308,7 @@ audits:
   next_obligation: "Cycle 20 correct the three relation dependency routes and rerun K6 on a new PR"
 ```
 
-### Cycle 20 — proof-use-corrected cumulative completion candidate
+### Cycle 20 — declaration/proof-use-corrected cumulative completion candidate
 
 ```yaml
 ledger_type: target_cycle_result
@@ -1393,41 +1393,60 @@ result:
   claim_mapping:
     theorem_names:
       # (a)-(b): generated raw calculus, comparisons, pasting, and preservation
+      - IndexedSquareRoute
       - IndexedBaseHom
       - IndexedBaseHom.decode
+      - IndexedBaseHom.decode_leaf
+      - IndexedBaseHom.decode_identity
+      - IndexedBaseHom.decode_comp
       - IndexedBaseHomInput
       - IndexedBaseHomInput.decodeCandidate
       - IndexedBaseHomInput.WellFormed
+      - IndexedBaseHomInput.wellFormedDecidable
       - IndexedBaseHomInput.ofTerm
+      - IndexedBaseHomInput.decodeCandidate_ofTerm
       - IndexedBaseHomInput.ofTerm_wellFormed
       - IndexedBaseHomInput.missing
       - IndexedBaseHomInput.missing_not_wellFormed
       - IndexedBaseHomInput.term
       - IndexedBaseSquare
+      - IndexedBaseSquare.identity
+      - IndexedBaseSquare.verticalComp
+      - IndexedBaseSquare.verticalPaste
+      - IndexedBaseSquare.horizontalComp
       - IndexedBaseSquareTerm
       - IndexedBaseSquareTerm.commutes
       - IndexedBaseSquareTerm.decode
+      - IndexedBaseSquareTerm.decode_comp_route_ne_pasteVertical
       - IndexedBaseSquareInput
       - IndexedBaseSquareInput.decodeCandidate
       - IndexedBaseSquareInput.WellFormed
+      - IndexedBaseSquareInput.wellFormedDecidable
       - IndexedBaseSquareInput.ofTerm
+      - IndexedBaseSquareInput.decodeCandidate_ofTerm
       - IndexedBaseSquareInput.ofTerm_wellFormed
       - IndexedBaseSquareInput.missing
       - IndexedBaseSquareInput.missing_not_wellFormed
       - IndexedBaseSquareInput.term
       - ValidatedIndexedBaseHom
       - ValidatedIndexedBaseHom.ofTerm
+      - ValidatedIndexedBaseHom.valid
+      - ValidatedIndexedBaseHom.decode
       - ValidatedIndexedBaseSquare
       - ValidatedIndexedBaseSquare.ofTerm
       - ValidatedIndexedBaseSquare.valid
       - indexedFiberAction
       - indexedTotalLift
       - indexedTotalLift_projection
+      - indexedTotalLift_isStronglyCocartesian
+      - IndexedUniversalEdgeLaw
       - indexedUniversalEdgeLaw
       - indexedSquareTotalMap
       - indexedSquareTotalMap_isHomLift
+      - IndexedUniversalSquareEdgeLaw
       - indexedUniversalSquareEdgeLaw
       - indexedSquareTermAction
+      - indexedSquareOuterComparison
       - indexedSquareTermAction_pasteHorizontal
       - indexedSquareTermAction_pasteVertical
       - indexedFiberIdentityComparison
@@ -1436,8 +1455,15 @@ result:
       - indexedFiberCompositionComparison_hom_fac
       - indexedSquareOuterComparison_hom_fac
       - indexedSquareTermAction_hom_fac
+      - IndexedHorizontalComponentRouteType
+      - indexedHorizontalComponentRoute
+      - IndexedHorizontalPastingCoherenceType
       - indexedHorizontalPastingCoherence
+      - IndexedVerticalComponentRouteType
+      - indexedVerticalComponentRoute
+      - IndexedVerticalPastingCoherenceType
       - indexedVerticalPastingCoherence
+      - IndexedThreeCellCoherenceType
       - indexedThreeCellCoherence
       - indexedSquareTotalMap_isStronglyCocartesian
       # (c): diagnostic-free diagram category
@@ -1446,31 +1472,64 @@ result:
       - IndexedBaseTwoShape
       - IndexedBaseDiagram
       - IndexedBaseDiagramHom
+      - IndexedBasePath.squareRoute
+      - IndexedBasePath.append
+      - IndexedBasePath.append_nil
+      - IndexedBasePath.append_assoc
+      - IndexedBasePath.eval
       - IndexedBasePath.eval_append
+      - IndexedBaseDiagram.path
       - IndexedBaseDiagram.path_append
       - IndexedBaseDiagram.relation_path
       - IndexedBaseDiagramHom.edgeSquare
       - IndexedBaseDiagramHom.path_naturality
       - IndexedBaseDiagramHom.pathSquare
       - IndexedBaseDiagramHom.horizontalPathSquare
+      - IndexedBaseDiagramHom.horizontalPathSquare_top
+      - IndexedBaseDiagramHom.horizontalPathSquare_bottom
+      - IndexedBaseDiagramHom.horizontalPathSquare_left
+      - IndexedBaseDiagramHom.horizontalPathSquare_right
+      - IndexedBaseDiagramHom.horizontalPathSquare_route
+      - IndexedBaseDiagramHom.twoCell_left_naturality
+      - IndexedBaseDiagramHom.twoCell_right_naturality
       - IndexedBaseDiagramHom.twoCell_naturality
       - IndexedBaseDiagramHom.twoCell_target_relation
       - IndexedBaseDiagramHom.verticalPathSquare
+      - IndexedBaseDiagramHom.verticalPathSquare_left
+      - IndexedBaseDiagramHom.verticalPathSquare_right
+      - IndexedBaseDiagramHom.verticalPathSquare_route
       - IndexedBaseDiagramHom.id
+      - IndexedBaseDiagramHom.id_app
       - IndexedBaseDiagramHom.comp
+      - IndexedBaseDiagramHom.comp_app
+      - IndexedBaseDiagramHom.ext
       - indexedBaseDiagramCategory
       # (d1)-(d6): generated target interpretation and covariance
+      - IndexedDiagnosticInterpretation
+      - IndexedDiagnosticInterpretation.fiberPackage
+      - IndexedDiagnosticInterpretation.pathLift
+      - IndexedEdgeReselection
       - IndexedDiagnosticInterpretation.pathLift_isHomLift
       - IndexedDiagnosticInterpretation.twoCellBase
+      - IndexedBaseDiagramHom.vertexIndex
       - IndexedBaseDiagramHom.validatedEdgeSquare
       - IndexedBaseDiagramHom.transportedPackage
+      - IndexedBaseDiagramHom.transportedPackage_vertexBase
       - IndexedBaseDiagramHom.transportedEdgeLift
       - IndexedBaseDiagramHom.transportedEdgeLift_isHomLift
       - IndexedBaseDiagramHom.transportedEdgeLift_isStronglyCocartesian
       - IndexedBaseDiagramHom.transportedPathLift_isHomLift
+      - IndexedBaseDiagramHom.transportedPathLift
       - IndexedBaseDiagramHom.transportedTwoCellBase
       - IndexedBaseDiagramHom.transportedComparator
+      - IndexedBaseDiagramHom.transportedComparator_eq
       - IndexedBaseDiagramHom.transportedInterpretation
+      - IndexedBaseDiagramHom.transportedInterpretation_package
+      - IndexedBaseDiagramHom.transportedInterpretation_edgeLift
+      - IndexedBaseDiagramHom.transportedInterpretation_comparator
+      - IndexedBaseDiagramHom.transportedInterpretation_pathLift
+      - IndexedBaseDiagramHom.transportedInterpretation_twoCellBase
+      - IndexedBaseDiagramHom.transportedInterpretation_edgeStrong
       - IndexedBaseDiagramHom.endpointAction
       - IndexedBaseDiagramHom.endpointAction_one
       - IndexedBaseDiagramHom.endpointAction_mul
@@ -1479,16 +1538,32 @@ result:
       - IndexedBaseDiagramHom.transportedReselection_one
       - IndexedBaseDiagramHom.transportedReselection_mul
       - IndexedDiagnosticInterpretation.reselectedEdgeLift
+      - IndexedDiagnosticInterpretation.reselectedEdgeLift_isHomLift
       - IndexedDiagnosticInterpretation.reselectedPathLift
+      - IndexedDiagnosticInterpretation.reselectedPathLift_isHomLift
       - IndexedDiagnosticInterpretation.IndexedCoherentAt
       - IndexedBaseDiagramHom.diagnosticVertexLift_endpointAction_naturality
+      - IndexedBaseDiagramHom.diagnosticVertexLift
+      - IndexedBaseDiagramHom.diagnosticVertexLift_isStronglyCocartesian
       - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedEdge_naturality
       - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+      - IndexedBaseDiagramHom.diagnosticVertexLift_comparator_naturality
       - IndexedBaseDiagramHom.indexedCoherentAt_transport
+      - IndexedBasePath.toPresentedPath
+      - IndexedBaseTwoShape.toFiniteTransportPresentation
+      - IndexedDiagnosticInterpretation.toAdmissibleLiftData
+      - IndexedDiagnosticInterpretation.toAdmissibleLiftData_pathLift
       - IndexedDiagnosticInterpretation.toAdmissibleTransportData
+      - IndexedDiagnosticInterpretation.toAdmissibleTransportData_reselection_apply
+      - IndexedDiagnosticInterpretation.toAdmissibleTransportData_reselectedPathLift
       - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
       - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_transport
       # (e): G-110 C0-C3 restriction comparison
+      - IndexedBCRestrictionVertex
+      - IndexedBCRestrictionEdge
+      - indexedBCRestrictionEdgeFintype
+      - indexedBCRestrictionShape
+      - indexedBCRestrictionEdge
       - indexedBCRestrictionSourceDiagram
       - indexedBCRestrictionTargetDiagram
       - indexedBCRestrictionDiagramHom
@@ -1500,33 +1575,65 @@ result:
       - indexedBCRestrictionViaBaseFunctor_eq_g110
       - indexedBCRestrictionMate
       - indexedBCRestrictionMate_eq_g110
+      - indexedConstantPath_eq_id
+      - indexedConstantDiagram
+      - indexedConstantDiagramHom
+      - FiberwiseAdmissibleTransportData.toIndexedInterpretation
+      - IndexedDiagnosticInterpretation.constantFiberIncidence
+      - IndexedDiagnosticInterpretation.toFiberwiseOfConstant
+      - indexedConstantTransport_package
+      - indexedConstantTransport_edge
+      - indexedConstantTransport_comparator
+      - indexedConstantTransport_path
+      - indexedConstantTransport_endpointAction
+      - indexedConstantTransport_reselection
+      - indexedConstantTransport_reselectedEdge
+      - indexedConstantTransport_reselectedPath
+      - indexedBCLeftReindexFunctor
+      - indexedBCRightReindexFunctor
+      - indexedBCDirectInterpretation
+      - indexedBCBottomInterpretation
+      - indexedBCBottomFiberwise_eq_map
+      - indexedBCViaBaseInterpretation
       - indexedBCDirect_package_eq_g110
       - indexedBCViaBase_package_eq_g110
       - indexedBCDirect_edge_eq_g110
       - indexedBCViaBase_edge_eq_g110
       - indexedBCDirect_comparator_eq_g110
       - indexedBCViaBase_comparator_eq_g110
+      - indexedBCDirect_comparator_factor
+      - indexedBCViaBase_comparator_factor
       - indexedBCDirect_path_eq_g110
       - indexedBCViaBase_path_eq_g110
       - indexedBCDirect_twoCellBase_iff_g110
       - indexedBCViaBase_twoCellBase_iff_g110
       - indexedBCDirect_endpointAction_eq_g110
       - indexedBCViaBase_endpointAction_eq_g110
+      - indexedBCDirect_endpointAction_comp
+      - indexedBCViaBase_endpointAction_comp
       - indexedBCDirect_K3_endpointAction_eq_g110
       - indexedBCViaBase_K3_endpointAction_eq_g110
       - indexedBCDirectTransportedReselection_eq_g110
       - indexedBCViaBaseTransportedReselection_eq_g110
+      - indexedBCDirectTransportedReselection
+      - indexedBCViaBaseTransportedReselection
       - indexedBCDirect_reselectedEdge_eq_g110
       - indexedBCViaBase_reselectedEdge_eq_g110
       - indexedBCDirect_reselectedPath_eq_g110
       - indexedBCViaBase_reselectedPath_eq_g110
       - indexedBCRestrictionDiagnosticCompatibility
+      - indexedBCRestrictionMate_isIso
+      - indexedBCRestrictionMateIso
+      - indexedBCToDirectIso
+      - g110BCComparisonIso
+      - indexedBCToViaBaseIso
       - indexedBCRestriction_mappedReselection_naturality
       - indexedBCRestriction_reselectedEdge_naturality
       - indexedBCRestriction_reselectedPath_naturality
       - indexedBCRestriction_comparison_triangle_app
       # (f): exact local iff, support producer, positive and negative branches
       - UniformTargetBaseLiftableAt
+      - uniformTargetBaseLiftableAt_iff_indexedTargetBaseCongruenceAt
       - uniformTargetBaseLiftableAt_iff_epi
       - IndexedRawSquareFamily
       - IndexedRawSquareFamily.Supports
@@ -1535,9 +1642,12 @@ result:
       - IndexedRawSquareFamily.twoSource_mem_support
       - IndexedRawSquareFamily.supportUniformLiftable_iff_supportEpi
       - IndexedRawSquareFamily.path_naturality
+      - IndexedRawSquareFamily.targetPath
       - IndexedRawSquareFamily.targetRelation_of_supportLiftable
+      - IndexedRawSquareFamily.targetRelation_of_epi
       - IndexedRawSquareFamily.SupportEpi
       - IndexedRawSquareFamily.SupportUniformLiftable
+      - IndexedRawSquareFamily.supportLiftable_of_supportEpi
       - IndexedRawSquareFamily.toTargetDiagram_of_supportEpi
       - IndexedRawSquareFamily.toDiagramHom_of_supportEpi
       - IndexedRawSquareFamily.SupportEpiProduction
@@ -1549,25 +1659,87 @@ result:
       - finiteIdentityRawSquareFamily_supportUniformLiftable
       - finiteIdentityRawSquareFamily_production
       - finiteDuplicateIndex_not_epi
+      - FiniteNonEpiCoherentVertex
+      - FiniteNonEpiCoherentEdge
+      - finiteNonEpiCoherentEdgeEquiv
+      - finiteNonEpiCoherentEdgeFintype
+      - FiniteNonEpiCoherentCell
+      - finiteNonEpiCoherentBaseShape
+      - finiteNonEpiCoherentLeftPath
+      - finiteNonEpiCoherentRightPath
+      - finiteNonEpiCoherentShape
+      - finiteNonEpiCoherentVertex
+      - finiteNonEpiCoherentCell
+      - finiteNonEpiCoherentLeftEdge
+      - finiteNonEpiCoherentSource
+      - finiteNonEpiCoherentTarget
+      - finiteNonEpiCoherentHom
+      - finiteNonEpiFirstEdge
       - finiteNonEpiCoherent_paths_ne
       - finiteNonEpiCoherent_action_ne_identity
       - finiteNonEpiCoherent_positive
+      - finiteIdentityRawSquareFamily
+      - FiniteIsolatedSupportVertex
+      - finiteIsolatedSupportBaseShape
+      - finiteIsolatedSupportShape
+      - finiteIsolatedSupportSource
+      - finiteIsolatedRawSquareFamily
+      - finiteIsolatedRawSquareFamily_not_supports_isolated
+      - cycle7RawTargetEdge
+      - cycle7RawSquareFamily
       - cycle7RawSquareFamily_not_supportEpi
       - cycle7RawSquareFamily_not_supportUniformLiftable
       - cycle7RawSquareFamily_no_production
       - cycle7RawSquareFamily_targetPaths_ne
       - cycle7_finiteValidatedSquares_nonLiftable
       # (g): one named nontrivial diagnostic witness and all conjuncts
+      - IndexedCovarianceVertex
+      - IndexedCovarianceEdge
+      - IndexedCovarianceCell
+      - indexedCovarianceBaseShape
+      - indexedCovarianceShape
+      - indexedCovarianceSourceVertex
+      - indexedCovarianceTargetVertex
+      - indexedCovarianceLeftEdge
+      - indexedCovarianceRightEdge
+      - indexedCovarianceFace
+      - indexedCovarianceLeftPath
+      - indexedCovarianceRightPath
+      - indexedCovarianceSourcePermutationUpper
+      - indexedCovarianceSourcePermutationTotal
+      - indexedCovarianceSourcePermutationTotal_comp
+      - indexedCovarianceSourcePermutationTotal_refl
+      - indexedCovarianceSourceSwapTotal
+      - indexedCovarianceSourceSwapTotal_square
+      - indexedCovarianceSourceSwap
+      - indexedCovarianceSourceSwap_ne_one
+      - indexedCovarianceDiagram
+      - indexedCovarianceTargetDiagram
+      - indexedCovarianceDiagramHom
+      - indexedCovarianceSource
+      - indexedCovarianceSourceReselection
+      - indexedCovarianceGeneratedAxisZero
+      - indexedCovarianceGeneratedAxisOne
+      - indexedCovarianceIdentityActionPackage
       - indexedCovariance_participatingAction_nonidentity
       - indexedCovariance_paths_ne
       - indexedCovariance_initialRawDefect_ne_one
       - indexedCovarianceSourceReselection_ne_one
+      - indexedCovarianceSourceReselection_right_ne_one
       - indexedCovariance_generatedAction_image_ne_one
       - indexedCovariance_generatedAction_componentC_mem
       - indexedCovariance_identityAction_componentC_not_mem
       - indexedCovariance_generatedAction_ne_identityAction
       - indexedCovariance_targetReselection_right_ne_one
       - indexedCovarianceSourceReselection_coherent
+      - indexedCovariance_source_obstruction_vanishes
+      - indexedCovariance_initialCanonicalComparator_eq_one
+      - indexedCovariance_initialRawDefect_eq_swap
+      - indexedCovariance_diagnosticVertexLift_eq_transport
+      - indexedCovariance_generatedAction_axis_zero
+      - indexedCovariance_generatedPackage_eq_target
+      - indexedCovariance_identityActionPackage_family_eq
+      - indexedCovariance_source_dependsAB_mem
       - indexedCovariance_target_coherent
       - indexedCovariance_target_obstruction_vanishes
       - indexedDiagnosticCovariance_nonvacuous
@@ -1597,9 +1769,11 @@ result:
     remaining_discharge_required: []
     retained_ambient_and_direction_premises:
       - "fixed U, ExtInst_U, CoreFiber, and package-total geometry"
+      - "validated raw-square commutativity, arbitrary source package-total morphism with left-edge IsHomLift, and source strongly-cocartesian witness for (b2)"
       - "diagnostic-free source/target diagrams, declared relations, and IndexedBaseDiagramHom path naturality"
       - "ordinary source package, source edge lift/strongness, source comparator, source reselection, source coherence, and source vanishing"
       - "G-110 BCPresentation and FiberwiseAdmissibleTransportData on the pointed-square restriction"
+      - "DecidableEq U.Atom on the pointed G-110 restriction surface"
       - "K5 SupportEpi on the finite raw-family support"
     acceptance_point: >-
       Completion is accepted only if the standard PR review is Mergeable, the
@@ -1607,6 +1781,17 @@ result:
       completion review returns exactly No major findings.
     port_status: not-applicable
 audits:
+  standard_review_attempt:
+    exact_head: f6ae5f5ace053c50ac51724c3f54bc60ab61f90d
+    result: corrections-required
+    accepted_lanes:
+      - math-a
+      - math-b
+    corrected_findings:
+      - "validation provenance omitted decodeCandidate_ofTerm and ValidatedIndexedBaseHom.decode, and incorrectly presented WellFormed lemmas as constructor proof dependencies"
+      - "the cumulative declaration map omitted material core types, producers, adapters, finite fixtures, and route-supporting theorems"
+      - "the material-premise ledger omitted raw-square commutativity, f/hf, hfStrong, and the C0-C3 DecidableEq instance; d5/d6 provenance wording was too narrow or reversed"
+    correction_policy: "locally correctable report defects were repaired on the same PR; all four standard lanes must restart on the new fixed head"
   premise_delta:
     discharged:
       - "Cycle 4-6 pointwise indexed calculus"
@@ -1640,6 +1825,26 @@ audits:
       status: discharged
       provenance: "PR #4165-#4167 reviewed theorem families"
       proof_use: "diagram edges and later assembly engine"
+    - premise: "authored validated square and its commutativity certificate"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "ValidatedIndexedBaseSquare.term and the commutativity proof retained by each IndexedBaseSquare leaf"
+      proof_use: "term.term.commutes is consumed by square map, universal square law, path naturality, and pasting comparisons"
+    - premise: "validated recursive decoder certificate"
+      role: discharge-required
+      status: discharged
+      provenance: "partial decodeCandidate definitions, positive decodeCandidate_ofTerm theorems, explicit missing negative inputs, and ValidatedIndexedBaseHom/Square.ofTerm"
+      proof_use: "public generated actions consume validated inputs; ValidatedIndexedBaseHom.decode supplies indexedFiberAction/indexedTotalLift"
+    - premise: "arbitrary source package-total morphism f and its left-edge IsHomLift witness"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "O1/O2 quantified f and hf arguments of indexedSquareTotalMap and IndexedUniversalSquareEdgeLaw"
+      proof_use: "installs the source total morphism over the authored square's left edge before the canonical strong-cocartesian factorization"
+    - premise: "source strongly-cocartesian witness for preservation"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "hfStrong argument of indexedSquareTotalMap_isStronglyCocartesian"
+      proof_use: "combined with canonical top/bottom strong lifts and the square law to derive strong cocartesianness of the generated right-edge map"
     - premise: "diagnostic-free diagram / hom input"
       role: conclusion-equivalent-risk
       status: justified-boundary
@@ -1658,13 +1863,13 @@ audits:
     - premise: "source IndexedCoherentAt for (d5)"
       role: direction-hypothesis
       status: justified-boundary
-      provenance: "source reselected-path equality at the named declared cell"
-      proof_use: "IndexedBaseDiagramHom.indexedCoherentAt_transport"
+      provenance: "source reselected-path equality quantified over every declared cell"
+      proof_use: "IndexedBaseDiagramHom.indexedCoherentAt_transport applies coherent cell for each target cell"
     - premise: "source obstruction vanishing for (d6)"
       role: direction-hypothesis
       status: justified-boundary
-      provenance: "source TransportObstructionVanishes derived through toAdmissibleTransportData"
-      proof_use: "IndexedBaseDiagramHom.indexedTransportObstructionVanishes_transport"
+      provenance: "explicit TransportObstructionVanishes source.toAdmissibleTransportData theorem argument"
+      proof_use: "indexedTransportObstructionVanishes_transport converts the argument via the vanishing/coherentizable equivalence, transports the resulting indexed coherence by (d5), then converts back"
     - premise: "diagnostic-free diagram category"
       role: discharge-required
       status: discharged
@@ -1690,6 +1895,11 @@ audits:
       status: justified-boundary
       provenance: "ordinary G-110 source diagnostic data on the restricted square"
       proof_use: "toIndexedInterpretation and all C1-C3 component comparisons"
+    - premise: "DecidableEq U.Atom for the pointed G-110 restriction"
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: "explicit typeclass parameter on the C0-C3 restriction declarations"
+      proof_use: "G-110 typed presentation, selected reindex functors, direct/via interpretations, mate, component comparisons, and comparison triangle"
     - premise: "raw-family classification"
       role: discharge-required
       status: discharged
@@ -1707,6 +1917,7 @@ audits:
       proof_use: "same-cell (d4)-(d6) nonvacuity"
   certificate_provenance:
     discharged:
+      - "typed raw hom/square terms are embedded by ofTerm, certified by decodeCandidate_ofTerm, retained by ValidatedIndexedBaseHom/Square.ofTerm, and decoded to actions through ValidatedIndexedBaseHom.decode"
       - "pointwise actions are generated by G-109/G-101 canonical transport APIs"
       - "target package, edge/path lifts, strongness, comparator, endpoint action, and reselection are generated from one diagram hom and source interpretation"
       - "target twoCellBase is the canonical realization relative to E.relation_path after generated transported-path HomLift factorization; the declared target relation remains a direction premise"
@@ -1715,8 +1926,10 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "Cycle 4 input well-formedness -> ValidatedIndexedBaseHom/Square constructors"
+      - "typed hom/square terms -> IndexedBaseHomInput/IndexedBaseSquareInput.ofTerm -> decodeCandidate_ofTerm -> ValidatedIndexedBaseHom/ValidatedIndexedBaseSquare.ofTerm"
+      - "ValidatedIndexedBaseHom.decode -> indexedFiberAction and indexedTotalLift; WellFormed positive/negative theorems audit decoder compatibility and nonvacuity but are not constructor proof dependencies"
       - "G-109/G-101 lift laws -> indexedUniversalEdgeLaw, comparison hom_fac laws, paste coherence, and strong preservation"
+      - "validated square term.commutes plus arbitrary source total morphism f/hf -> indexedSquareTotalMap, its right-edge IsHomLift theorem, and IndexedUniversalSquareEdgeLaw; hfStrong -> indexedSquareTotalMap_isStronglyCocartesian"
       - "IndexedBaseDiagramHom.naturality -> edgeSquare/path_naturality/pathSquare and horizontal/vertical square laws"
       - "D.relation_path plus hom.path_naturality -> IndexedBaseDiagramHom.twoCell_naturality"
       - "E.relation_path directly -> IndexedBaseDiagramHom.twoCell_target_relation"
@@ -1724,8 +1937,8 @@ audits:
       - "source package/edge/comparator -> transportedInterpretation (d1)"
       - "endpoint action laws -> d2; transported two-cell and adapter -> d3"
       - "source reselection -> transportedReselection and d4 naturality"
-      - "source IndexedCoherentAt -> indexedCoherentAt_transport (d5)"
-      - "source vanishing -> indexedTransportObstructionVanishes_transport (d6)"
+      - "source IndexedCoherentAt quantified over all cells -> indexedCoherentAt_transport uses coherent cell for each cell (d5)"
+      - "explicit source TransportObstructionVanishes argument -> coherentizable reselection/coherence -> indexedCoherentAt_transport -> target vanishing (d6)"
       - "BCPresentation and FiberwiseAdmissibleTransportData -> C0-C3 direct/via component equalities and triangle"
       - "SupportEpi -> support cancellation -> target relation -> produced IndexedBaseDiagramHom"
       - "finite witness components -> non-epi positive, Cycle 7 negative, and named diagnostic nonvacuity conjunction"
@@ -1767,7 +1980,8 @@ audits:
     - "central unchecked item -> checkpoint; current unchecked items are the two same-head review gates and final synchronization"
   validation_refs:
     - "Cycle 4-18 per-file focused elaboration and namespace standard-axiom audits: pass at each recorded reviewed head"
-    - "PR #4180 exact-head CI: 7/7 pass at 497f8b8c384ae5223c85810ccc897bf123faffbd before this correction"
+    - "PR #4181 exact-head CI: 7/7 pass at f6ae5f5ace053c50ac51724c3f54bc60ab61f90d before this declaration/premise correction"
+    - "Cycle 20 345-entry declaration map: focused #check pass before final commit"
     - "final corrected-head git scans, artifact hashes, and CI: pending final fixed-head command packet"
   artifact_blobs_at_base_5257ccd3:
     - "IndexedBaseSquareGeometry.lean d5be6b08b1a34e63b7935d65954292ecbee5b9da"
