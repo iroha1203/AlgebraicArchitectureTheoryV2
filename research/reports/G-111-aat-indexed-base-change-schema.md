@@ -74,16 +74,20 @@ result:
   proposed_result_type: proof-obligation-discharged
   completion_candidate: no
   proof_obligation_delta: >-
-    IndexedBaseHomInput and IndexedBaseSquareInput are partial decoder inputs
-    with decidable candidate-presence predicates and explicit positive/negative
-    instances. Public fiber/total/square producers consume validated inputs.
+    IndexedBaseHomInput and IndexedBaseSquareInput are recursive partial raw
+    syntax. Their decoders fail on missing arrow leaves or missing square
+    commutativity witnesses, yielding decidable positive and negative trees.
+    Validated artifacts retain the successfully decoded typed term and its
+    decoder equation. Public fiber/total/square producers consume those
+    validated artifacts.
     The square action is a definition with no caller-supplied comparison field:
     comp selects the canonical outer route, while horizontal/vertical paste
     recursively select componentwise routes. The comp/pasteVertical equality is
     no longer definitional and is the concrete theorem-level 3-cell obligation.
     IndexedUniversalSquareEdgeLaw quantifies every raw commutative square and
     every package-total morphism lying over its left edge, with its factorization
-    theorem proved by strong cocartesian universality.
+    theorem proved by strong cocartesian universality; a separate public theorem
+    records that the generated morphism lies over the square's right edge.
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean
   evidence:
@@ -99,6 +103,7 @@ result:
     - indexedTotalLift
     - indexedUniversalEdgeLaw
     - indexedSquareTotalMap
+    - indexedSquareTotalMap_isHomLift
     - indexedUniversalSquareEdgeLaw
     - indexedSquareTermAction
     - indexedSquareTermAction_pasteHorizontal
@@ -112,7 +117,7 @@ result:
       - "target theorem stated scope: F0 universe and producer contract"
     conjuncts:
       - "all base arrows and commutative squares -> typed leaf terms -> positive validated inputs"
-      - "malformed decoder candidates -> explicit missing negative instances"
+      - "raw trees with a missing arrow or commutativity leaf -> explicit negative instances"
       - "arrow fiber/total action -> validated input + G-109 canonical producer"
       - "all square/package-total edges -> indexedSquareTotalMap + indexedUniversalSquareEdgeLaw"
       - "horizontal/vertical paste -> recursive componentwise generated comparison"
@@ -125,6 +130,18 @@ result:
       producers. It does not claim K0, later conjuncts, or GOAL completion.
     port_status: unported
 audits:
+  initial_review:
+    exact_head: e621df12e6c8240c9a382372f20b641e4c51d8f1
+    verdict: "4 Reject / 0 Accept"
+    central_findings:
+      - "typed-term Option wrappers did not validate a recursive raw payload"
+      - "public raw/decoded square comparison helpers bypassed validated recursive action"
+      - "square-total output lacked a public right-edge IsHomLift theorem"
+    correction:
+      - "replace whole-term Option wrappers by recursive partial raw trees"
+      - "store decoder success equation and decoded term in validated artifacts"
+      - "make raw outer helpers private and require validated children in public component routes"
+      - "publish indexedSquareTotalMap_isHomLift"
   premise_delta:
     discharged:
       - "decidable decoder compatibility with positive and negative raw instances"
@@ -149,13 +166,14 @@ audits:
   route_integrity: pass
   target_fitting: none-found
   vacuity: >-
-    Raw decoder inputs have concrete positive and negative instances. Every
-    actual arrow and commutative square remains representable through ofTerm.
+    Recursive raw decoder inputs have concrete successful trees and failed
+    trees with missing leaves. Every actual arrow and commutative square remains
+    representable through ofTerm.
     The comp/paste equality is not definitional and remains an explicit K0 law.
   validation_refs:
     - "focused single-file check: pass"
     - "targeted module build: pass"
-    - "namespace audit: 235 declarations, standard axioms only"
+    - "namespace audit after initial-review correction: 288 declarations, standard axioms only"
     - "negative focused refutation: comp/pasteVertical generated comparison equality is not rfl"
     - "diff, Unicode, placeholder, prohibited vocabulary, privacy, import-direction, manifest, and umbrella scans: pass"
   allowable_producers:
@@ -163,6 +181,8 @@ audits:
     - "validated arrow total lift: indexedTotalLift"
     - "validated square-total map: indexedSquareTotalMap"
     - "validated recursive square comparison: indexedSquareTermAction"
+    - "validated outer square comparison: indexedSquareOuterComparison"
+    - "validated child horizontal/vertical component routes"
     - "canonical identity/composition comparisons"
   blocking_findings: []
   next_obligation: "K0 prove identity/composition and horizontal/vertical outer-route coherence"
