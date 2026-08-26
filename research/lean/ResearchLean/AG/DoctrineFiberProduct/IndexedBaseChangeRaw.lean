@@ -1,4 +1,4 @@
-import ResearchLean.AG.CrossStageCoherence.CorePseudofunctor
+import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseSquareGeometry
 
 /-!
 # Raw morphism-indexed base-change syntax
@@ -188,30 +188,6 @@ end ValidatedIndexedBaseHom
 
 /-! ## Finite square syntax -/
 
-/-- Construction provenance retained by decoded square syntax. -/
-inductive IndexedSquareRoute where
-  /-- One authored square leaf. -/
-  | leaf
-  /-- An identity square. -/
-  | identity
-  /-- Sequential square composition. -/
-  | comp (first second : IndexedSquareRoute)
-  /-- Horizontal square pasting. -/
-  | pasteHorizontal (first second : IndexedSquareRoute)
-  /-- Vertical square pasting. -/
-  | pasteVertical (first second : IndexedSquareRoute)
-  deriving DecidableEq
-
-/-- A decoded commutative square, including its un-erased construction route. -/
-structure IndexedBaseSquare (U : AtomCarrier.{u})
-    (northwest northeast southwest southeast : ExtractionInstance U) where
-  top : northwest ⟶ northeast
-  left : northwest ⟶ southwest
-  right : northeast ⟶ southeast
-  bottom : southwest ⟶ southeast
-  commutes : left ≫ bottom = top ≫ right
-  route : IndexedSquareRoute
-
 /--
 Finite syntax for commutative squares. `comp` is sequential square composition;
 the horizontal and vertical paste constructors remain syntactically distinct.
@@ -266,54 +242,6 @@ inductive IndexedBaseSquareTerm (U : AtomCarrier.{u}) :
       (first : IndexedBaseSquareTerm U top left₁ right₁ middle)
       (second : IndexedBaseSquareTerm U middle left₂ right₂ bottom) :
       IndexedBaseSquareTerm U top (left₁ ≫ left₂) (right₁ ≫ right₂) bottom
-
-namespace IndexedBaseSquare
-
-/-- Horizontal identity square on one decoded base arrow. -/
-def identity {U : AtomCarrier.{u}} {source target : ExtractionInstance U}
-    (hom : source ⟶ target) : IndexedBaseSquare U source target source target where
-  top := hom
-  left := 𝟙 source
-  right := 𝟙 target
-  bottom := hom
-  commutes := by simp
-  route := .identity
-
-/-- Vertical composite of two decoded squares. -/
-def verticalComp {U : AtomCarrier.{u}}
-    {northwest northeast middleLeft middleRight southwest southeast :
-      ExtractionInstance U}
-    (first : IndexedBaseSquare U northwest northeast middleLeft middleRight)
-    (second : IndexedBaseSquare U middleLeft middleRight southwest southeast)
-    (boundary : first.bottom = second.top) :
-    IndexedBaseSquare U northwest northeast southwest southeast where
-    top := first.top
-    left := first.left ≫ second.left
-    right := first.right ≫ second.right
-    bottom := second.bottom
-    commutes := by
-      rw [Category.assoc, second.commutes]
-      rw [← Category.assoc, ← boundary, first.commutes, Category.assoc]
-    route := .comp first.route second.route
-
-/-- Horizontal composite of two decoded squares. -/
-def horizontalComp {U : AtomCarrier.{u}}
-    {northwest northMiddle northeast southwest southMiddle southeast :
-      ExtractionInstance U}
-    (first : IndexedBaseSquare U northwest northMiddle southwest southMiddle)
-    (second : IndexedBaseSquare U northMiddle northeast southMiddle southeast)
-    (boundary : first.right = second.left) :
-    IndexedBaseSquare U northwest northeast southwest southeast where
-    top := first.top ≫ second.top
-    left := first.left
-    right := second.right
-    bottom := first.bottom ≫ second.bottom
-    commutes := by
-      rw [← Category.assoc, first.commutes, Category.assoc]
-      rw [boundary, second.commutes, ← Category.assoc]
-    route := .pasteHorizontal first.route second.route
-
-end IndexedBaseSquare
 
 namespace IndexedBaseSquareTerm
 

@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeRaw
+import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseSquareGeometry
 
 /-!
 # Diagnostic-free indexed base diagrams
@@ -209,7 +209,10 @@ theorem path_naturality {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
         _ = D.path (.cons edge tail) ≫ hom.app _ := by
           rfl
 
-/-- The generated square on a path records horizontal edge-square pasting. -/
+/--
+The G-111 F0 square generated from edge naturality along a finite path.
+Its route records the recursive horizontal decomposition of that path.
+-/
 def pathSquare {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
     {i j : G.Vertex} (path : IndexedBasePath G.toIndexedBaseShape i j) :
@@ -220,6 +223,67 @@ def pathSquare {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
   bottom := E.path path
   commutes := hom.path_naturality path
   route := path.squareRoute
+
+/--
+Actually paste the F0 path squares of two consecutive paths horizontally.
+This square intentionally retains a paste route distinct from the direct
+square on the appended path.
+-/
+def horizontalPathSquare {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    {i j k : G.Vertex} (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    IndexedBaseSquare U (D.vertex i) (D.vertex k) (E.vertex i) (E.vertex k) :=
+  IndexedBaseSquare.horizontalComp (hom.pathSquare first) (hom.pathSquare second) rfl
+
+/-- Horizontal F0 pasting has the direct appended path as its top side. -/
+theorem horizontalPathSquare_top {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) {i j k : G.Vertex}
+    (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    (hom.horizontalPathSquare first second).top =
+      (hom.pathSquare (first.append second)).top := by
+  change D.path first ≫ D.path second = D.path (first.append second)
+  exact (D.path_append first second).symm
+
+/-- Horizontal F0 pasting has the direct appended path as its bottom side. -/
+theorem horizontalPathSquare_bottom {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) {i j k : G.Vertex}
+    (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    (hom.horizontalPathSquare first second).bottom =
+      (hom.pathSquare (first.append second)).bottom := by
+  change E.path first ≫ E.path second = E.path (first.append second)
+  exact (E.path_append first second).symm
+
+/-- Horizontal F0 pasting preserves the source vertex index. -/
+theorem horizontalPathSquare_left {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) {i j k : G.Vertex}
+    (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    (hom.horizontalPathSquare first second).left =
+      (hom.pathSquare (first.append second)).left := rfl
+
+/-- Horizontal F0 pasting preserves the target vertex index. -/
+theorem horizontalPathSquare_right {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) {i j k : G.Vertex}
+    (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    (hom.horizontalPathSquare first second).right =
+      (hom.pathSquare (first.append second)).right := rfl
+
+/-- Horizontal F0 pasting retains its construction route. -/
+theorem horizontalPathSquare_route {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) {i j k : G.Vertex}
+    (first : IndexedBasePath G.toIndexedBaseShape i j)
+    (second : IndexedBasePath G.toIndexedBaseShape j k) :
+    (hom.horizontalPathSquare first second).route =
+      .pasteHorizontal first.squareRoute second.squareRoute := rfl
 
 /-- A diagram hom sends the left path of a declared cell to its target path. -/
 theorem twoCell_left_naturality {G : IndexedBaseTwoShape.{u}}
@@ -245,11 +309,25 @@ theorem twoCell_naturality {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
       D.path (G.twoRight cell) ≫ hom.app (G.twoTarget cell) := by
   rw [hom.twoCell_left_naturality cell, D.relation_path cell]
 
+/-- The target diagram's authored F0 relation is respected after vertex indexing. -/
+theorem twoCell_target_relation {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E : IndexedBaseDiagram G U}
+    (hom : IndexedBaseDiagramHom D E) (cell : G.TwoCell) :
+    hom.app (G.twoSource cell) ≫ E.path (G.twoLeft cell) =
+      hom.app (G.twoSource cell) ≫ E.path (G.twoRight cell) := by
+  rw [E.relation_path cell]
+
 /-- Identity morphism of a diagnostic-free indexed base diagram. -/
 def id {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     (D : IndexedBaseDiagram G U) : IndexedBaseDiagramHom D D where
   app := fun vertex => 𝟙 (D.vertex vertex)
   naturality := by simp
+
+/-- The vertex component of the F0 identity hom is the categorical identity. -/
+@[simp]
+theorem id_app {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    (D : IndexedBaseDiagram G U) (vertex : G.Vertex) :
+    (id D).app vertex = 𝟙 (D.vertex vertex) := rfl
 
 /-- Vertical composition of diagnostic-free indexed base-diagram morphisms. -/
 def comp {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
@@ -261,13 +339,47 @@ def comp {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     rw [Category.assoc, second.naturality edge, ← Category.assoc,
       first.naturality edge, Category.assoc]
 
-/-- Vertically paste the generated path squares of two composable diagram homs. -/
+/-- F0 hom composition is computed vertexwise. -/
+@[simp]
+theorem comp_app {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F : IndexedBaseDiagram G U} (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F) (vertex : G.Vertex) :
+    (first.comp second).app vertex = first.app vertex ≫ second.app vertex := rfl
+
+/--
+Vertically paste the G-111 F0 path squares of composable diagram homs while
+retaining vertical-paste provenance separately from sequential composition.
+-/
 def verticalPathSquare {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E F : IndexedBaseDiagram G U} (first : IndexedBaseDiagramHom D E)
     (second : IndexedBaseDiagramHom E F) {i j : G.Vertex}
     (path : IndexedBasePath G.toIndexedBaseShape i j) :
     IndexedBaseSquare U (D.vertex i) (D.vertex j) (F.vertex i) (F.vertex j) :=
-  IndexedBaseSquare.verticalComp (first.pathSquare path) (second.pathSquare path) rfl
+  IndexedBaseSquare.verticalPaste (first.pathSquare path) (second.pathSquare path) rfl
+
+/-- Vertical F0 pasting agrees with composite naturality on its left side. -/
+theorem verticalPathSquare_left {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E F : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E) (second : IndexedBaseDiagramHom E F)
+    {i j : G.Vertex} (path : IndexedBasePath G.toIndexedBaseShape i j) :
+    (verticalPathSquare first second path).left =
+      ((first.comp second).pathSquare path).left := rfl
+
+/-- Vertical F0 pasting agrees with composite naturality on its right side. -/
+theorem verticalPathSquare_right {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E F : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E) (second : IndexedBaseDiagramHom E F)
+    {i j : G.Vertex} (path : IndexedBasePath G.toIndexedBaseShape i j) :
+    (verticalPathSquare first second path).right =
+      ((first.comp second).pathSquare path).right := rfl
+
+/-- Vertical F0 pasting retains its construction route. -/
+theorem verticalPathSquare_route {G : IndexedBaseTwoShape.{u}}
+    {U : AtomCarrier.{u}} {D E F : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E) (second : IndexedBaseDiagramHom E F)
+    {i j : G.Vertex} (path : IndexedBasePath G.toIndexedBaseShape i j) :
+    (verticalPathSquare first second path).route =
+      .pasteVertical path.squareRoute path.squareRoute := rfl
 
 /-- Diagram homs are determined by their vertex indices. -/
 @[ext]
@@ -294,15 +406,17 @@ instance indexedBaseDiagramCategory (G : IndexedBaseTwoShape.{u})
   id_comp := by
     intro D E hom
     ext vertex
-    simp [IndexedBaseDiagramHom.comp, IndexedBaseDiagramHom.id]
+    simp only [IndexedBaseDiagramHom.comp_app, IndexedBaseDiagramHom.id_app,
+      Category.id_comp]
   comp_id := by
     intro D E hom
     ext vertex
-    simp [IndexedBaseDiagramHom.comp, IndexedBaseDiagramHom.id]
+    simp only [IndexedBaseDiagramHom.comp_app, IndexedBaseDiagramHom.id_app,
+      Category.comp_id]
   assoc := by
     intro A B C D first second third
     ext vertex
-    simp [IndexedBaseDiagramHom.comp, Category.assoc]
+    simp only [IndexedBaseDiagramHom.comp_app, Category.assoc]
 
 end AAT.AG.DoctrineFiberProduct
 

@@ -66,6 +66,7 @@ selection:
     input category required by K2-K5 and G-113.
   expected_result_type: proof-obligation-discharged
   lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseSquareGeometry.lean
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
   risks:
     - diagnostic vocabulary enters through an import or structure field
@@ -84,11 +85,13 @@ result:
     geometry. IndexedBaseDiagram assigns only extraction instances, generating
     base arrows, and declared base relations. IndexedBaseDiagramHom assigns
     only vertex indices and generating-edge squares. path_naturality is proved
-    by induction, path append supplies horizontal path pasting, hom composition
-    supplies vertical square pasting, and the Category instance proves the
-    identity, composition, and associativity laws.
+    by induction. horizontalPathSquare and verticalPathSquare invoke the actual
+    provenance-retaining paste operations; their side-comparison theorems connect
+    pasted squares to appended paths and composite homs. The Category instance
+    proves the identity, composition, and associativity laws.
   completion_candidate: no
   lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseSquareGeometry.lean
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
   evidence:
     - IndexedBasePath.eval_append
@@ -97,12 +100,20 @@ result:
     - IndexedBaseDiagramHom.edgeSquare
     - IndexedBaseDiagramHom.path_naturality
     - IndexedBaseDiagramHom.pathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare_top
+    - IndexedBaseDiagramHom.horizontalPathSquare_bottom
+    - IndexedBaseDiagramHom.horizontalPathSquare_route
     - IndexedBaseDiagramHom.twoCell_left_naturality
     - IndexedBaseDiagramHom.twoCell_right_naturality
     - IndexedBaseDiagramHom.twoCell_naturality
+    - IndexedBaseDiagramHom.twoCell_target_relation
     - IndexedBaseDiagramHom.id
     - IndexedBaseDiagramHom.comp
     - IndexedBaseDiagramHom.verticalPathSquare
+    - IndexedBaseDiagramHom.verticalPathSquare_left
+    - IndexedBaseDiagramHom.verticalPathSquare_right
+    - IndexedBaseDiagramHom.verticalPathSquare_route
     - indexedBaseDiagramCategory
   claim_mapping:
     theorem_names:
@@ -117,6 +128,7 @@ result:
       - "diagram vertices, edges, declared relations -> IndexedBaseDiagram"
       - "vertex indices and edge squares -> IndexedBaseDiagramHom / edgeSquare"
       - "path and declared-cell naturality -> generated theorems"
+      - "horizontal and vertical pasting -> actual paste constructions plus side comparison theorems"
       - "identity, composition, category laws -> indexedBaseDiagramCategory"
     undischarged_assumptions:
       - "declared base relations remain the fixed direction hypothesis"
@@ -143,6 +155,7 @@ audits:
     used:
       - "each generating-edge naturality proof in path_naturality"
       - "source declared relation in twoCell_naturality"
+      - "target declared relation in twoCell_target_relation"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -151,8 +164,21 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
+    - "focused lake env lean IndexedBaseSquareGeometry.lean: pass"
+    - "targeted lake build IndexedBaseSquareGeometry: pass"
+    - "focused lake env lean IndexedBaseChangeRaw.lean after geometry split: pass"
     - "focused lake env lean IndexedBaseDiagram.lean: pass"
-    - "namespace axiom audit: 114 declarations, standard axioms only"
+    - "namespace axiom audit: 125 declarations, standard axioms only"
+  initial_review_findings:
+    - "horizontal path-square pasting lacked an actual paste construction"
+    - "vertical path-square provenance used sequential comp instead of pasteVertical"
+    - "IndexedBaseDiagram imported the package-level raw syntax module"
+    - "the target declared relation had no explicit proof-use theorem"
+  correction:
+    - "split IndexedBaseSquareGeometry from IndexedBaseChangeRaw"
+    - "add horizontalPathSquare with top, bottom, left, right, and route theorems"
+    - "use verticalPaste with composite-side and route theorems"
+    - "add twoCell_target_relation"
   blocking_findings: []
   next_obligation: "K2 connect the generated diagram hom action to coherent diagnostic assembly"
 ```
