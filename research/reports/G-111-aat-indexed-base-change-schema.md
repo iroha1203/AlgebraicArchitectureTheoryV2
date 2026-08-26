@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 14 K3 d5-d6 implementation candidate`
+- proof state: `active / Cycle 15 named nontrivial diagnostic witness candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -33,9 +33,10 @@ hom と path-naturality API を、Cycle 11 の K2 はその上の coherent
 diagnostic assembly をそれぞれ確定した。Cycle 12 は生成済み target
 interpretation、endpoint group homomorphism、relation-relative data を
 (d1)--(d3) の定理面へ固定した。Cycle 13 は同じ endpoint action で
-source reselection を写す K3 (d4) を確定した。現在の単一 proof obligation
-は、その reselection の実際の経路等式と独立 obstruction orbit を保存する
-K3 (d5)--(d6) である。
+source reselection を写す K3 (d4) を確定した。K3 (d5)--(d6) は Cycle 14
+で確定し、現在の単一 proof obligation は
+同じ named cell 上で非自明性と (d4)--(d6) の発火を固定する diagnostic
+witness である。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -530,6 +531,8 @@ goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 040927ef0633433f5a730ec4a43c3cb837fed993
 pr: 4175
+reviewed_head: 6fd8c062a0cdeaeb5dad63953e7afa0bf2576ec0
+merge_oid: e71dd442911b50d7e30c2b2d3851ea8d0500f06b
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 13 merged / K3 d5-d6 selected"
@@ -635,6 +638,149 @@ audits:
     - "vanishing namespace axiom audit: 10 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the named nontrivial (d4)-(d6) witness, then K4 C0-C3"
+```
+
+### Cycle 15 — named nontrivial indexed diagnostic witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 15
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: e71dd442911b50d7e30c2b2d3851ea8d0500f06b
+pr: 4176
+reviewed_head: fc541e7511cc8b5d69cf63dda75b99711b253426
+tracking_issue: 4158
+selection:
+  proof_state_ref: "Issue #4158 Cycle 14 merged / named witness selected"
+  proof_dag_predecessors:
+    - "Cycle 13 mapped indexed edge reselection"
+    - "Cycle 14 indexed coherence and obstruction-vanishing preservation"
+    - "G-106 finite adjacent-swap package witness"
+  proof_obligation: >-
+    Construct the separate named diagnostic witness required by target clause
+    (g): one connected declared cell with syntactically distinct boundary
+    paths, nonidentity participating source action, initial raw defect, and
+    source reselection; prove that the generated endpoint action has a
+    nonidentity concrete image and that the same cell fires (d4)-(d6).
+  selection_reason: >-
+    This is the last witness obligation attached directly to K3 and must be
+    fixed before the independent K4 pasting laws are selected.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovarianceWitnesses.lean
+  risks:
+    - source or target nonidentity is asserted without a concrete component
+    - the source reselection does not satisfy the named cell equation
+    - d5 or d6 is quoted on a different interpretation or cell
+    - the witness is misreported as the K5 non-epi coherent positive
+  unchecked:
+    - "K4 C0-C3"
+    - "K5 raw-family classification and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The indexed single disk fixes one named face with left and right generating
+    paths. Identity base edges carry the finite three-axis support package;
+    the authored comparator and right-edge reselection use the adjacent swap
+    constructed on that source package in this cycle. The initial canonical
+    comparator is identity, hence the
+    initial raw defect is the nonidentity swap. Every participating vertex
+    index is the reviewed finite nonidentity Atom transport. Functor naturality
+    proves that the generated endpoint image of the same swap is nonidentity.
+    On the concrete `componentC` family component, the generated transport
+    image contains the component while the canonical identity-action image
+    does not. The source face equation is proved directly, and the Cycle 14
+    transport theorems generate target coherence and independent obstruction
+    vanishing for this same interpretation.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovarianceWitnesses.lean
+  evidence:
+    - indexedCovariance_participatingAction_nonidentity
+    - indexedCovariance_paths_ne
+    - indexedCovariance_initialRawDefect_ne_one
+    - indexedCovarianceSourceReselection_ne_one
+    - indexedCovariance_generatedAction_image_ne_one
+    - indexedCovariance_generatedAction_componentC_mem
+    - indexedCovariance_identityAction_componentC_not_mem
+    - indexedCovariance_generatedAction_ne_identityAction
+    - indexedCovariance_targetReselection_right_ne_one
+    - indexedCovarianceSourceReselection_coherent
+    - indexedCovariance_target_coherent
+    - indexedCovariance_target_obstruction_vanishes
+    - indexedDiagnosticCovariance_nonvacuous
+  claim_mapping:
+    source_labels:
+      - "G-111 target theorem (g)"
+      - "G-111 target proof strategy K3 witness portfolio"
+    conjuncts:
+      - "named connected cell with syntactically distinct paths"
+      - "nonidentity participating Atom action"
+      - "nonidentity initial raw defect and source reselection"
+      - "nonidentity generated endpoint image and mapped reselection"
+      - "generated action and identity action differ on componentC membership"
+      - "same witness fires d5 coherence and d6 obstruction vanishing"
+    undischarged_assumptions:
+      - "none beyond the fixed finite source package and canonical finite transport"
+    acceptance_point: >-
+      The cycle is discharged if fixed-head review confirms concrete
+      nonidentity, same-cell route integrity, source-equation proof, independent
+      obstruction provenance, and separation from the K5 non-epi witness.
+audits:
+  premise_delta:
+    discharged:
+      - "named nontrivial (d4)-(d6) witness"
+    remaining:
+      - "K4 C0-C3"
+      - "K5 classification and witnesses"
+  certificate_provenance:
+    discharged:
+      - "source coherence is a direct package-total path equation"
+      - "target coherence and vanishing are generated by Cycle 14 theorems"
+      - "nonidentity is observed on the adjacent-swap axis component"
+      - "generated-versus-identity action difference is observed on componentC membership"
+    unresolved:
+      - "K4 and K5 outputs"
+  proof_use:
+    used:
+      - "finiteWitnessTransportHom_atomEquiv_ne_refl for the participating action"
+      - "diagnosticVertexLift_endpointAction_naturality for generated nonidentity"
+      - "finiteTransportAtomEquiv_dependsAB for the concrete componentC image"
+      - "indexedCoherentAt_transport for target coherence"
+      - "indexedTransportObstructionVanishes_transport for target vanishing"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  validation_refs:
+    - "focused lake env lean IndexedDiagnosticCovarianceWitnesses.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticCovarianceWitnesses: pass"
+    - "namespace axiom audit: 51 declarations, standard axioms only"
+  initial_review_findings:
+    - >-
+      The first candidate used identity vertex indices, so it did not witness
+      the separately required nonidentity participating action.
+    - >-
+      Nonidentity of the image of a source swap did not compare the generated
+      package image with the canonical identity-action image on a concrete
+      component.
+  correction:
+    - "replace identity indices with the finite nonidentity Atom transport"
+    - "prove generated endpoint nonidentity through vertex-lift naturality"
+    - "separate generated and identity-action package families by componentC membership"
+  final_review:
+    exact_head: fc541e7511cc8b5d69cf63dda75b99711b253426
+    lanes:
+      - "Lean A: No findings"
+      - "Lean B: No findings"
+      - "mathematical target fitting A: No findings"
+      - "mathematical route integrity B: No findings"
+    direct_correction_rerun: "4/4 pass after report provenance and PR-body validation sync"
+  blocking_findings: []
+  next_obligation: "K4 C0-C3 indexed diagnostic pasting coherence"
 ```
 
 ### Cycle 3 — rejected
