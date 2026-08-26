@@ -650,6 +650,7 @@ goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: e71dd442911b50d7e30c2b2d3851ea8d0500f06b
 pr: 4176
+reviewed_head: fc541e7511cc8b5d69cf63dda75b99711b253426
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 14 merged / named witness selected"
@@ -751,11 +752,12 @@ audits:
       - "indexedTransportObstructionVanishes_transport for target vanishing"
     unused: []
   structure_field_escape: none-found
-  route_integrity: candidate
+  route_integrity: pass
   target_fitting: none-found
   vacuity: none-found
   validation_refs:
     - "focused lake env lean IndexedDiagnosticCovarianceWitnesses.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticCovarianceWitnesses: pass"
     - "namespace axiom audit: 51 declarations, standard axioms only"
   initial_review_findings:
     - >-
@@ -769,6 +771,14 @@ audits:
     - "replace identity indices with the finite nonidentity Atom transport"
     - "prove generated endpoint nonidentity through vertex-lift naturality"
     - "separate generated and identity-action package families by componentC membership"
+  final_review:
+    exact_head: fc541e7511cc8b5d69cf63dda75b99711b253426
+    lanes:
+      - "Lean A: No findings"
+      - "Lean B: No findings"
+      - "mathematical target fitting A: No findings"
+      - "mathematical route integrity B: No findings"
+    direct_correction_rerun: "4/4 pass after report provenance and PR-body validation sync"
   blocking_findings: []
   next_obligation: "K4 C0-C3 indexed diagnostic pasting coherence"
 ```
