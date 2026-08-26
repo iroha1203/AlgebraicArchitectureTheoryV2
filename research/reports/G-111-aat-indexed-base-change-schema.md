@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Schema and Full-Domain Diagnostic Covariance Theorem
-- proof state: `active / Cycle 5 K0 soundness + K1(b1) canonical lift compatibility`
+- proof state: `active / Cycle 6 K1(b2) strongly cocartesian preservation`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -139,6 +139,80 @@ audits:
         retain K1(b2) plus K1.5-K5 as the exact remaining obligations.
   rerun:
     exact_head: f90a1e2a4132504e73f0af7c59650942e4652fa8
+    verdict: "4 Accept / 0 Reject; No major findings"
+    blocking_findings: []
+```
+
+### Cycle 6 — square transport preserves strongly cocartesian morphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 6
+goal_blob_sha: 01c3f96149f0e2c1298a8cfd6acc80f16bb52cfa
+goal_sha256: 8383135d79d612accba04c76a3b4f96daa17e69e7fbe72474fed4428d5efd248
+base_oid: 200401e9c2f6ca9adb29bb4e0c946ed49ba32aa8
+tracking_issue: 4158
+pr: 4167
+selection:
+  proof_obligation: >-
+    Discharge K1(b2): for every validated commutative square and every
+    strongly cocartesian total morphism over its left edge, prove that the
+    square-generated total morphism is strongly cocartesian over the right
+    edge. This preservation theorem must use the same Cycle 4 producer and
+    may not be replaced by the strongness of a single canonical lift.
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - restating canonical-lift existence instead of preservation
+    - accepting target strongness as an input certificate
+    - defining a separate action that bypasses indexedSquareTotalMap
+  unchecked:
+    - K1.5-K5 transported-data adapter, restriction, covariance, and witnesses
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta: >-
+    indexedSquareTotalMap_isStronglyCocartesian consumes a strongly
+    cocartesian left-edge total morphism, composes it with the canonical
+    bottom lift, rewrites the resulting strong composite through the universal
+    square-edge law and square commutativity, and cancels the canonical top
+    lift by IsStronglyCocartesian.of_comp. The conclusion is strongness of the
+    exact indexedSquareTotalMap output over the right edge.
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean
+  evidence:
+    - indexedSquareTotalMap_isStronglyCocartesian
+    - indexedUniversalSquareEdgeLaw
+    - indexedSquareTotalMap_isHomLift
+  premise_delta:
+    discharged:
+      - K1(b2) strongly cocartesian preservation
+    remaining:
+      - K1.5-K5 material premises
+  certificate_provenance:
+    discharged:
+      - target strongness is derived from the source direction hypothesis and the generated square map
+    unresolved:
+      - K1.5-K5 theorem and witness certificates
+  proof_use:
+    used:
+      - indexedUniversalSquareEdgeLaw
+      - coreFiberLift_isStronglyCocartesian
+      - Functor.IsStronglyCocartesian.comp
+      - Functor.IsStronglyCocartesian.of_comp
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "focused single-file check: pass"
+    - "targeted module build: pass"
+    - "namespace audit: 296 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "K1.5 construct the morphism-indexed transported-data adapter"
+audits:
+  initial_review:
+    exact_head: 0040adab3b2926f4c206ba5e85d0f3862ed90494
     verdict: "4 Accept / 0 Reject; No major findings"
     blocking_findings: []
 ```
