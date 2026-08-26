@@ -1,6 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.Schema
 import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeRaw
 import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeTwoCellNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCSchema
 import ResearchLean.AG.DoctrineFiberProduct.BCSchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCPastingSchema
