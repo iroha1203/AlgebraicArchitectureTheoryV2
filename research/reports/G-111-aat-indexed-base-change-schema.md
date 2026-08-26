@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 13 K3 d4 implementation candidate`
+- proof state: `active / Cycle 14 K3 d5-d6 implementation candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -32,8 +32,10 @@ Cycle 7 は、等しい source path と二つの independently validated square
 hom と path-naturality API を、Cycle 11 の K2 はその上の coherent
 diagnostic assembly をそれぞれ確定した。Cycle 12 は生成済み target
 interpretation、endpoint group homomorphism、relation-relative data を
-(d1)--(d3) の定理面へ固定した。現在の単一 proof obligation は、同じ
-endpoint action で source reselection を写す K3 (d4) である。
+(d1)--(d3) の定理面へ固定した。Cycle 13 は同じ endpoint action で
+source reselection を写す K3 (d4) を確定した。現在の単一 proof obligation
+は、その reselection の実際の経路等式と独立 obstruction orbit を保存する
+K3 (d5)--(d6) である。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -429,6 +431,9 @@ cycle: 13
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 7995ea0f53687bd958cd57dda2255f4580db7c23
+pr: 4174
+reviewed_head: 8f1f2c11960a5f5e0f8e4dfda065946e6a8e1fc8
+merge_oid: 040927ef0633433f5a730ec4a43c3cb837fed993
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 12 merged / K3 d4 selected"
@@ -513,6 +518,122 @@ audits:
     - "namespace axiom audit: 5 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "K3 (d5) coherence preservation, followed by (d6) vanishing preservation"
+```
+
+### Cycle 14 — indexed coherence and obstruction-vanishing preservation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 14
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 040927ef0633433f5a730ec4a43c3cb837fed993
+tracking_issue: 4158
+selection:
+  proof_state_ref: "Issue #4158 Cycle 13 merged / K3 d5-d6 selected"
+  proof_dag_predecessors:
+    - "Cycle 12 generated target interpretation and endpoint action"
+    - "Cycle 13 mapped indexed edge reselection"
+    - "G-106 independent raw-defect orbit and coherentizability equivalence"
+  proof_obligation: >-
+    Discharge K3 (d5)-(d6) without common-fiber incidence. Prove edge and path
+    naturality for the mapped reselection using the generated square action and
+    canonical vertex lifts; consume source coherence to generate target
+    coherence. Embed the unchanged finite 2-skeleton into the existing
+    independent obstruction presentation, consume source orbit vanishing, and
+    generate target orbit vanishing.
+  selection_reason: >-
+    These are the remaining K3 clauses and the only route from mapped edge
+    coordinates to the actual two-cell equations and independent obstruction.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticVanishing.lean
+  risks:
+    - coherence is renamed rather than expressed as a path equality
+    - source coherence or source vanishing is accepted but not used
+    - all packages are forced into one common source fiber
+    - target coherence, reselection, or vanishing is accepted as input
+    - indexed vanishing is defined to be coherentizability instead of using the independent orbit
+  unchecked:
+    - "nontrivial named (d4)-(d6) witness"
+    - "K4 C0-C3"
+    - "K5 raw-family classification and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    IndexedCoherentAt is the authored package-level equality between the two
+    reselected path lifts. Canonical vertex lifts intertwine source and target
+    reselected edges by indexedUniversalSquareEdgeLaw and endpoint
+    automorphisms by indexedUniversalEdgeLaw; path induction and strongly
+    cocartesian uniqueness transport the source equation to the target.
+    The finite 2-skeleton adapter retains the same vertices, edges, packages,
+    lifts, cells, and comparators and adds no 3-cell. The existing independent
+    raw-defect orbit is converted to coherentizability by the proved G-106
+    equivalence, mapped by d5, and converted back to target orbit vanishing.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticVanishing.lean
+  evidence:
+    - IndexedDiagnosticInterpretation.reselectedEdgeLift
+    - IndexedDiagnosticInterpretation.reselectedPathLift
+    - IndexedDiagnosticInterpretation.IndexedCoherentAt
+    - IndexedBaseDiagramHom.diagnosticVertexLift_endpointAction_naturality
+    - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedEdge_naturality
+    - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+    - IndexedBaseDiagramHom.indexedCoherentAt_transport
+    - IndexedDiagnosticInterpretation.toAdmissibleTransportData
+    - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
+    - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_transport
+  claim_mapping:
+    source_labels:
+      - "G-111 target theorem (d5)-(d6)"
+      - "G-111 target proof strategy K3"
+    conjuncts:
+      - "source coherent reselection -> generated target coherent reselection"
+      - "independent source obstruction-orbit vanishing -> target orbit vanishing"
+    undischarged_assumptions:
+      - "source coherence is the d5 direction hypothesis"
+      - "source obstruction vanishing is the d6 direction hypothesis"
+    acceptance_point: >-
+      The cycle is discharged if fixed-head review confirms the actual path
+      equations, source-hypothesis proof-use, independent orbit provenance,
+      and absence of common-fiber incidence or target certificate inputs.
+audits:
+  premise_delta:
+    discharged:
+      - "K3 (d5) coherence preservation"
+      - "K3 (d6) obstruction-vanishing preservation"
+    remaining:
+      - "nontrivial named (d4)-(d6) witness"
+      - "K4 C0-C3"
+      - "K5 classification and witnesses"
+  certificate_provenance:
+    discharged:
+      - "target coherence is generated from source coherence by vertex-lift naturality"
+      - "target vanishing is generated through the independent raw-defect orbit equivalence"
+    unresolved:
+      - "nontrivial witness and later classification outputs"
+  proof_use:
+    used:
+      - "source IndexedCoherentAt equation in indexedCoherentAt_transport"
+      - "source TransportObstructionVanishes in indexedTransportObstructionVanishes_transport"
+      - "Cycle 13 transportedReselection in both outputs"
+      - "target declared relation to align the two target HomLift bases"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  validation_refs:
+    - "focused lake env lean IndexedDiagnosticCoherence.lean: pass"
+    - "coherence namespace axiom audit: 14 declarations, standard axioms only"
+    - "focused lake env lean IndexedDiagnosticVanishing.lean: pass"
+    - "vanishing namespace axiom audit: 10 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the named nontrivial (d4)-(d6) witness, then K4 C0-C3"
 ```
 
 ### Cycle 3 — rejected
