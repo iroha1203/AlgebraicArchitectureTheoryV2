@@ -663,6 +663,41 @@ theorem indexedUniversalSquareEdgeLaw {U : AtomCarrier.{u}}
     (packageProjection U) top (coreFiberLift top P) term.term.commutes
     (f ≫ coreFiberLift bottom Q)
 
+/-- Square transport preserves every strongly cocartesian total morphism. -/
+theorem indexedSquareTotalMap_isStronglyCocartesian {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : ValidatedIndexedBaseSquare U top left right bottom)
+    (P : CoreFiber northwest) (Q : CoreFiber southwest)
+    (f : P.1 ⟶ Q.1) (hf : (packageProjection U).IsHomLift left f)
+    (hfStrong : (packageProjection U).IsStronglyCocartesian left f) :
+    (packageProjection U).IsStronglyCocartesian right
+      (indexedSquareTotalMap term P Q f hf) := by
+  letI : (packageProjection U).IsHomLift left f := hf
+  letI : (packageProjection U).IsStronglyCocartesian left f := hfStrong
+  letI : (packageProjection U).IsStronglyCocartesian top
+      (coreFiberLift top P) := coreFiberLift_isStronglyCocartesian top P
+  letI : (packageProjection U).IsStronglyCocartesian bottom
+      (coreFiberLift bottom Q) := coreFiberLift_isStronglyCocartesian bottom Q
+  letI : (packageProjection U).IsHomLift right
+      (indexedSquareTotalMap term P Q f hf) :=
+    indexedSquareTotalMap_isHomLift term P Q f hf
+  have sourceComposite : (packageProjection U).IsStronglyCocartesian
+      (left ≫ bottom) (f ≫ coreFiberLift bottom Q) :=
+    CategoryTheory.Functor.IsStronglyCocartesian.comp (packageProjection U)
+  have targetComposite : (packageProjection U).IsStronglyCocartesian
+      (top ≫ right)
+      (coreFiberLift top P ≫ indexedSquareTotalMap term P Q f hf) := by
+    rw [indexedUniversalSquareEdgeLaw term P Q f hf, ← term.term.commutes]
+    exact sourceComposite
+  letI : (packageProjection U).IsStronglyCocartesian (top ≫ right)
+      (coreFiberLift top P ≫ indexedSquareTotalMap term P Q f hf) :=
+    targetComposite
+  exact CategoryTheory.Functor.IsStronglyCocartesian.of_comp
+    (p := packageProjection U) (f := top) (g := right)
+    (φ := coreFiberLift top P) (ψ := indexedSquareTotalMap term P Q f hf)
+
 /-- The generated total lift lies over the decoded base arrow. -/
 theorem indexedTotalLift_projection {U : AtomCarrier.{u}}
     {source target : ExtractionInstance U}
