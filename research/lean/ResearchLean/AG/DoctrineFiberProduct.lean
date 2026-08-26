@@ -9,6 +9,7 @@ import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticCoherence
 import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticVanishing
 import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticCovarianceWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.IndexedBCRestrictionComparison
+import ResearchLean.AG.DoctrineFiberProduct.IndexedBCDiagnosticCompatibility
 import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeTwoCellNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCSchema
