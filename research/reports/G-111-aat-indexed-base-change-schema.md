@@ -795,6 +795,7 @@ goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: aa7aa88db246c487220efb7627dbd323aa671893
 pr: 4177
+reviewed_head: 47625134b3e2e9911c6eead6229fd04d21a5f5dc
 tracking_issue: 4158
 report_path: research/reports/G-111-aat-indexed-base-change-schema.md
 selection:
@@ -898,7 +899,7 @@ audits:
       - "bcLeftAdjunction and bcRightAdjunction in the canonical mate"
     unused: []
   structure_field_escape: none-found
-  route_integrity: cannot-determine
+  route_integrity: pass
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
@@ -907,6 +908,13 @@ audits:
     - "focused lake env lean IndexedBCRestrictionComparison.lean: pass"
     - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedBCRestrictionComparison: pass"
     - "namespace axiom audit: 46 declarations, standard axioms only"
+  final_review:
+    exact_head: 47625134b3e2e9911c6eead6229fd04d21a5f5dc
+    lanes:
+      - "Lean A: No major findings"
+      - "Lean B: No major findings"
+      - "mathematical target fitting A: No major findings"
+      - "mathematical route integrity B: No major findings"
   blocking_findings: []
   next_obligation: "K4 C1 and C2 adapters, then the full C3 component triangle"
 ```
