@@ -469,6 +469,7 @@ result:
   evidence:
     - IndexedEdgeReselection
     - IndexedBaseDiagramHom.transportedReselection
+    - IndexedBaseDiagramHom.transportedReselection_apply
     - IndexedBaseDiagramHom.transportedReselection_one
     - IndexedBaseDiagramHom.transportedReselection_mul
   claim_mapping:
@@ -509,7 +510,7 @@ audits:
   vacuity: none-found
   validation_refs:
     - "focused lake env lean IndexedDiagnosticReselection.lean: pass"
-    - "namespace axiom audit: 4 declarations, standard axioms only"
+    - "namespace axiom audit: 5 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "K3 (d5) coherence preservation, followed by (d6) vanishing preservation"
 ```

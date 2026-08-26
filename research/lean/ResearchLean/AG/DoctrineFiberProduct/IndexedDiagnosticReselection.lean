@@ -34,6 +34,17 @@ noncomputable def transportedReselection
     IndexedEdgeReselection (hom.transportedInterpretation source) :=
   fun i j edge => hom.endpointAction source j (reselection i j edge)
 
+/-- Each `(d4)` target coordinate is the corresponding endpoint-action image. -/
+@[simp]
+theorem transportedReselection_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) (i j : G.Vertex)
+    (edge : G.Edge i j) :
+    hom.transportedReselection source reselection i j edge =
+      hom.endpointAction source j (reselection i j edge) := rfl
+
 /-- `(d4)` sends the identity source reselection to the identity target reselection. -/
 @[simp]
 theorem transportedReselection_one
