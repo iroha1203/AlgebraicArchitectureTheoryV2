@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 11 K2 implementation candidate`
+- proof state: `active / Cycle 12 K3 d1-d3 implementation candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -28,9 +28,12 @@ Cycle 7 は、等しい source path と二つの independently validated square
 
 この改訂は Cycle 7 の反証を消去しない。旧 target は
 `target-refuted` のまま履歴に残り、その有限反例は改訂 target の必須
-負枝へ移る。次の単一 proof obligation は F0:
-diagnostic import を持たない base diagram / hom の Lean signature と
-path-naturality API の型付けである。raw-family classification は
+負枝へ移る。Cycle 10 の F0 は diagnostic import を持たない base diagram /
+hom と path-naturality API を、Cycle 11 の K2 はその上の coherent
+diagnostic assembly をそれぞれ確定した。現在の単一 proof obligation は
+K3 のうち、生成済み target interpretation、endpoint group homomorphism、
+relation-relative data を定理面へ固定する (d1)--(d3) である。
+raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
 (iii) coherent domain の非 epi positive、(iv) Cycle 7 negative に分ける。
@@ -195,6 +198,9 @@ cycle: 11
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 613606daba3fde34e650e5370bf1ae9907c19282
+pr: 4172
+reviewed_head: 198ecbcd55903f16dbb1e1b595a82c8128df07ca
+merge_oid: 27b9f34611476fb9e5012f89a05fb1f1267d9ea2
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 10 merged / K2 selected"
@@ -297,6 +303,117 @@ audits:
     - "namespace axiom audit: 34 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "K3 state and prove (d1)-(d6) over the generated assembly"
+```
+
+### Cycle 12 — target interpretation, endpoint action, and relation-relative data
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 12
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 27b9f34611476fb9e5012f89a05fb1f1267d9ea2
+tracking_issue: 4158
+selection:
+  proof_state_ref: "Issue #4158 Cycle 11 merged / K3 selected"
+  proof_dag_predecessors:
+    - "Cycle 10 diagnostic-free diagram category"
+    - "Cycle 11 coherent indexed diagnostic assembly"
+  proof_obligation: >-
+    Discharge K3 (d1)-(d3): package the generated K2 outputs as the target
+    interpretation, expose the actual endpoint group homomorphism, and state
+    the generated comparator, target relation-relative two-cell equation, and
+    edge qualification on that interpretation.
+  selection_reason: >-
+    These are the first three K3 clauses and form the input surface required
+    by mapped reselection and the later coherence and vanishing clauses.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovariance.lean
+  risks:
+    - the target interpretation is accepted as input rather than generated
+    - endpoint action is exposed only as a function, not a MonoidHom
+    - target relation is misreported as generated from raw squares
+    - d4-d6 are implicitly credited by the d1-d3 packaging
+  unchecked:
+    - "K3 (d4) mapped reselection"
+    - "K3 (d5) coherence preservation"
+    - "K3 (d6) vanishing preservation"
+    - "K4 C0-C3"
+    - "K5 raw-family classification and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    transportedInterpretation constructs the target interpretation directly
+    from the Cycle 11 package, edge-lift, qualification, and comparator
+    outputs. endpointAction exposes the vertexwise MonoidHom and its identity
+    and multiplication laws. The comparator equation, target declared-cell
+    base equation, and strong edge qualification are theorem outputs on the
+    generated interpretation.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovariance.lean
+  evidence:
+    - IndexedBaseDiagramHom.transportedInterpretation
+    - IndexedBaseDiagramHom.transportedInterpretation_package
+    - IndexedBaseDiagramHom.transportedInterpretation_edgeLift
+    - IndexedBaseDiagramHom.endpointAction
+    - IndexedBaseDiagramHom.endpointAction_one
+    - IndexedBaseDiagramHom.endpointAction_mul
+    - IndexedBaseDiagramHom.transportedInterpretation_comparator
+    - IndexedBaseDiagramHom.transportedInterpretation_pathLift
+    - IndexedBaseDiagramHom.transportedInterpretation_twoCellBase
+    - IndexedBaseDiagramHom.transportedInterpretation_edgeStrong
+  claim_mapping:
+    source_labels:
+      - "G-111 target theorem (d1)-(d3)"
+      - "G-111 target proof strategy K3"
+    conjuncts:
+      - "(d1) generated target interpretation -> transportedInterpretation"
+      - "(d2) endpoint group homomorphism -> endpointAction"
+      - "(d3) comparator and relation-relative target data -> theorem family"
+    undischarged_assumptions:
+      - "source diagnostic interpretation remains ordinary input"
+      - "target declared relations remain fixed direction hypotheses"
+    acceptance_point: >-
+      The cycle is discharged if fixed-head review confirms that the target
+      interpretation and endpoint action are generated, d3 proof-uses the K2
+      outputs and target relation, and no d4-d6 claim is smuggled into this
+      layer.
+audits:
+  premise_delta:
+    discharged:
+      - "K3 (d1) generated target diagnostic interpretation"
+      - "K3 (d2) endpoint group homomorphism"
+      - "K3 (d3) relation-relative target theorem surface"
+    remaining:
+      - "K3 (d4)-(d6)"
+      - "K4 C0-C3"
+      - "K5 classification and witnesses"
+  certificate_provenance:
+    discharged:
+      - "target interpretation fields are generated by Cycle 11 outputs"
+      - "endpoint action is coreFiberFunctorPackageAutHom"
+      - "target edge qualification is the transported K2 theorem"
+    direction_hypothesis:
+      - "target declared base relation used by transportedInterpretation_twoCellBase"
+  proof_use:
+    used:
+      - "Cycle 11 transportedPackage and transportedEdgeLift"
+      - "Cycle 11 transportedEdgeLift_isStronglyCocartesian"
+      - "Cycle 11 transportedComparator"
+      - "target interpretation twoCellBase, hence the target declared relation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  validation_refs:
+    - "focused lake env lean IndexedDiagnosticCovariance.lean: pass"
+    - "namespace axiom audit: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "K3 (d4) mapped reselection, followed by (d5)-(d6) preservation"
 ```
 
 ### Cycle 3 — rejected
