@@ -1393,16 +1393,36 @@ result:
   claim_mapping:
     theorem_names:
       # (a)-(b): generated raw calculus, comparisons, pasting, and preservation
+      - IndexedBaseHom
+      - IndexedBaseHom.decode
+      - IndexedBaseHomInput
+      - IndexedBaseHomInput.decodeCandidate
       - IndexedBaseHomInput.WellFormed
+      - IndexedBaseHomInput.ofTerm
       - IndexedBaseHomInput.ofTerm_wellFormed
+      - IndexedBaseHomInput.missing
       - IndexedBaseHomInput.missing_not_wellFormed
+      - IndexedBaseHomInput.term
+      - IndexedBaseSquare
+      - IndexedBaseSquareTerm
+      - IndexedBaseSquareTerm.commutes
+      - IndexedBaseSquareTerm.decode
+      - IndexedBaseSquareInput
+      - IndexedBaseSquareInput.decodeCandidate
       - IndexedBaseSquareInput.WellFormed
+      - IndexedBaseSquareInput.ofTerm
       - IndexedBaseSquareInput.ofTerm_wellFormed
+      - IndexedBaseSquareInput.missing
       - IndexedBaseSquareInput.missing_not_wellFormed
+      - IndexedBaseSquareInput.term
       - ValidatedIndexedBaseHom
+      - ValidatedIndexedBaseHom.ofTerm
       - ValidatedIndexedBaseSquare
+      - ValidatedIndexedBaseSquare.ofTerm
+      - ValidatedIndexedBaseSquare.valid
       - indexedFiberAction
       - indexedTotalLift
+      - indexedTotalLift_projection
       - indexedUniversalEdgeLaw
       - indexedSquareTotalMap
       - indexedSquareTotalMap_isHomLift
@@ -1421,6 +1441,11 @@ result:
       - indexedThreeCellCoherence
       - indexedSquareTotalMap_isStronglyCocartesian
       # (c): diagnostic-free diagram category
+      - IndexedBaseShape
+      - IndexedBasePath
+      - IndexedBaseTwoShape
+      - IndexedBaseDiagram
+      - IndexedBaseDiagramHom
       - IndexedBasePath.eval_append
       - IndexedBaseDiagram.path_append
       - IndexedBaseDiagram.relation_path
@@ -1503,12 +1528,19 @@ result:
       # (f): exact local iff, support producer, positive and negative branches
       - UniformTargetBaseLiftableAt
       - uniformTargetBaseLiftableAt_iff_epi
+      - IndexedRawSquareFamily
+      - IndexedRawSquareFamily.Supports
       - IndexedRawSquareFamily.support
       - IndexedRawSquareFamily.edgeSource_mem_support
       - IndexedRawSquareFamily.twoSource_mem_support
       - IndexedRawSquareFamily.supportUniformLiftable_iff_supportEpi
       - IndexedRawSquareFamily.path_naturality
       - IndexedRawSquareFamily.targetRelation_of_supportLiftable
+      - IndexedRawSquareFamily.SupportEpi
+      - IndexedRawSquareFamily.SupportUniformLiftable
+      - IndexedRawSquareFamily.toTargetDiagram_of_supportEpi
+      - IndexedRawSquareFamily.toDiagramHom_of_supportEpi
+      - IndexedRawSquareFamily.SupportEpiProduction
       - IndexedRawSquareFamily.produce_of_supportEpi
       - finiteIdentity_uniformTargetBaseLiftableAt
       - finiteDuplicate_not_uniformTargetBaseLiftableAt
@@ -1688,7 +1720,7 @@ audits:
       - "IndexedBaseDiagramHom.naturality -> edgeSquare/path_naturality/pathSquare and horizontal/vertical square laws"
       - "D.relation_path plus hom.path_naturality -> IndexedBaseDiagramHom.twoCell_naturality"
       - "E.relation_path directly -> IndexedBaseDiagramHom.twoCell_target_relation"
-      - "transportedPathLift IsHomLift.fac' equations plus E.relation_path -> IndexedBaseDiagramHom.transportedTwoCellBase"
+      - "generating-edge hom.naturality -> validatedEdgeSquare -> transportedEdgeLift/pathLift IsHomLift.fac' equations; with E.relation_path -> IndexedBaseDiagramHom.transportedTwoCellBase"
       - "source package/edge/comparator -> transportedInterpretation (d1)"
       - "endpoint action laws -> d2; transported two-cell and adapter -> d3"
       - "source reselection -> transportedReselection and d4 naturality"
@@ -1712,7 +1744,7 @@ audits:
     - "IndexedDiagnosticInterpretation.IndexedCoherentAt is equality of the two reselected path lifts at one declared cell"
     - "twoCell_naturality combines source D.relation_path with hom.path_naturality; it does not generate the target declared relation"
     - "twoCell_target_relation is the direct accessor theorem for target E.relation_path"
-    - "transportedTwoCellBase rewrites by the generated transportedPathLift IsHomLift.fac' equations and then E.relation_path; it is direction-relative and receives no hom-naturality or raw-generation credit"
+    - "transportedTwoCellBase rewrites by transportedPathLift IsHomLift.fac' equations generated upstream from edge hom.naturality, and then by E.relation_path; it receives no hom.twoCell_naturality or source-to-target relation-generation credit"
     - "indexedBCRestrictionDirectFunctor/ViaBaseFunctor and indexedBCRestrictionMate are the C0 constructions; their eq_g110 theorems identify the actual G-110 route"
   dependency_dag:
     - "G-101/G-109 core transport, cleavage, package-total, and strong-cocartesian APIs -> Cycles 4-6 raw action/comparisons/preservation"
