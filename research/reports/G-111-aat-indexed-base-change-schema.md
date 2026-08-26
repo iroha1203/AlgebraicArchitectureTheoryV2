@@ -1114,7 +1114,8 @@ goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 67d9ae7cac9fa931682259bdad7cd9bd6a654182
 pr: 4179
-reviewed_head: pending
+reviewed_head: 3ccac1e1b196596c9fff74b44812bee158d64724
+corrected_head: bb541ce8fbff0fd90c00713f0eae8e2b33fc0b5a
 tracking_issue: 4158
 report_path: research/reports/G-111-aat-indexed-base-change-schema.md
 selection:
@@ -1247,12 +1248,16 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "focused lake env lean IndexedRawFamilyClassification.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedRawFamilyClassification: pass"
     - "namespace axiom audit: 157 declarations, standard axioms only"
+    - "initial fixed-head review: 4/4 center claims pass with noncentral findings"
+    - "finding-limited direct correction check at bb541ce8: PASS"
+    - "corrected-head CI: 7/7 pass"
   review_verdict:
-    lean_a: pending
-    lean_b: pending
-    math_a: pending
-    math_b: pending
+    lean_a: minor-issues-resolved-direct
+    lean_b: minor-issues-resolved-direct
+    math_a: minor-issues-resolved-direct
+    math_b: minor-issues-resolved-direct
   correction_history:
     - reviewed_head: 3ccac1e1b196596c9fff74b44812bee158d64724
       findings:
