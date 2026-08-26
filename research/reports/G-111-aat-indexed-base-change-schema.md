@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 16 K4 restriction comparison candidate`
+- proof state: `active / Cycle 17 K4 component comparison candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -796,6 +796,7 @@ goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: aa7aa88db246c487220efb7627dbd323aa671893
 pr: 4177
 reviewed_head: 47625134b3e2e9911c6eead6229fd04d21a5f5dc
+merge_oid: 0c1f9ee1f8c96ed175ad4ac4ead5d6d0d5ea3ec4
 tracking_issue: 4158
 report_path: research/reports/G-111-aat-indexed-base-change-schema.md
 selection:
@@ -917,6 +918,191 @@ audits:
       - "mathematical route integrity B: No major findings"
   blocking_findings: []
   next_obligation: "K4 C1 and C2 adapters, then the full C3 component triangle"
+```
+
+### Cycle 17 — indexed diagnostic restriction components and triangle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 17
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 0c1f9ee1f8c96ed175ad4ac4ead5d6d0d5ea3ec4
+pr: 4178
+reviewed_head: 25e73001b5393f5e5a58942841a0088a6e050955
+tracking_issue: 4158
+report_path: research/reports/G-111-aat-indexed-base-change-schema.md
+selection:
+  proof_state_ref: "Issue #4158 Cycle 16 merged / remaining K4 components selected"
+  proof_dag_predecessors:
+    - "Cycle 16 indexed restriction square, direct/via routes, and mate core"
+    - "Cycle 11-14 indexed assembly, reselection, and coherence APIs"
+    - "G-110 reviewed fiberwise diagnostic natural-isomorphism compatibility"
+  proof_obligation: >-
+    Discharge the remaining K4 C1, C2, and full C3 component triangle. Adapt
+    arbitrary indexed 2-skeleton diagnostic data to constant fiber diagrams;
+    compare actual indexed top/bottom assembly with the G-110 fiberwise maps;
+    retain left/right reindexing as external reviewed factors; generate
+    package, edge, two-cell, comparator, endpoint, reselection, and edge/path
+    comparisons; and prove the indexed-to-direct, indexed-to-via, G-110
+    comparison triangle on every package component.
+  selection_reason: >-
+    These are all remaining K4 layers after Cycle 16 fixed the square and mate
+    spine. Closing them leaves K5 as the sole theorem-level obligation family.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCDiagnosticCompatibility.lean
+  risks:
+    - the walking-arrow shape is incorrectly used as diagnostic geometry
+    - a selected reindexing is represented as a covariant indexed base arrow
+    - edge equality is asserted definitionally instead of by lift uniqueness
+    - G-110 compatibility is merely renamed without actual indexed K2 proof-use
+    - the component triangle restates only functor equality and omits the mate
+  unchecked:
+    - "K5 raw-family classification and finite witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    An arbitrary indexed 2-skeleton is interpreted constantly in one core
+    fiber, and fiberwise diagnostic data is converted without changing its
+    package, edge, or comparator. Constant indexed transport agrees with
+    fiberwise transport on packages and comparators definitionally, on edges
+    by strongly-cocartesian uniqueness, and on paths by induction. The direct
+    route applies left reindexing externally and top transport through the
+    indexed assembly; the via route performs actual indexed bottom transport,
+    recovers its constant-fiber datum by the reviewed incidence bridge, and
+    only then applies external right reindexing. Their C1 components are
+    identified with the actual G-110 functors. The indexed mate generates the complete diagnostic
+    natural-isomorphism compatibility package, including mapped reselection and
+    reselected edge/path naturality. The component triangle explicitly uses the
+    G-110 mate between the two Cycle 16 equality sides.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCDiagnosticCompatibility.lean
+  evidence:
+    - indexedConstantDiagram
+    - indexedConstantDiagramHom
+    - FiberwiseAdmissibleTransportData.toIndexedInterpretation
+    - indexedConstantTransport_package
+    - indexedConstantTransport_edge
+    - indexedConstantTransport_comparator
+    - indexedConstantTransport_path
+    - indexedConstantTransport_endpointAction
+    - indexedConstantTransport_reselection
+    - indexedConstantTransport_reselectedEdge
+    - indexedConstantTransport_reselectedPath
+    - IndexedDiagnosticInterpretation.toFiberwiseOfConstant
+    - indexedBCBottomInterpretation
+    - indexedBCBottomFiberwise_eq_map
+    - indexedBCDirectInterpretation
+    - indexedBCViaBaseInterpretation
+    - indexedBCDirect_package_eq_g110
+    - indexedBCViaBase_package_eq_g110
+    - indexedBCDirect_edge_eq_g110
+    - indexedBCViaBase_edge_eq_g110
+    - indexedBCDirect_comparator_eq_g110
+    - indexedBCViaBase_comparator_eq_g110
+    - indexedBCDirect_path_eq_g110
+    - indexedBCViaBase_path_eq_g110
+    - indexedBCDirect_twoCellBase_iff_g110
+    - indexedBCViaBase_twoCellBase_iff_g110
+    - indexedBCDirect_endpointAction_eq_g110
+    - indexedBCViaBase_endpointAction_eq_g110
+    - indexedBCDirect_K3_endpointAction_eq_g110
+    - indexedBCViaBase_K3_endpointAction_eq_g110
+    - indexedBCDirectTransportedReselection_eq_g110
+    - indexedBCViaBaseTransportedReselection_eq_g110
+    - indexedBCDirect_reselectedEdge_eq_g110
+    - indexedBCViaBase_reselectedEdge_eq_g110
+    - indexedBCDirect_reselectedPath_eq_g110
+    - indexedBCViaBase_reselectedPath_eq_g110
+    - indexedBCRestrictionDiagnosticCompatibility
+    - indexedBCRestriction_mappedReselection_naturality
+    - indexedBCRestriction_reselectedEdge_naturality
+    - indexedBCRestriction_reselectedPath_naturality
+    - indexedBCRestriction_comparison_triangle_app
+  claim_mapping:
+    theorem_names:
+      - indexedBCDirect_package_eq_g110
+      - indexedBCDirect_edge_eq_g110
+      - indexedBCDirect_comparator_eq_g110
+      - indexedBCDirect_twoCellBase_iff_g110
+      - indexedBCViaBase_package_eq_g110
+      - indexedBCViaBase_edge_eq_g110
+      - indexedBCViaBase_comparator_eq_g110
+      - indexedBCViaBase_twoCellBase_iff_g110
+      - indexedBCRestrictionDiagnosticCompatibility
+      - indexedBCRestriction_comparison_triangle_app
+    source_labels:
+      - "G-111 target theorem K4 C1"
+      - "G-111 target theorem K4 C2"
+      - "G-111 target theorem K4 C3"
+    conjuncts:
+      - "C1 package, edge, two-cell base, comparator -> staged indexed/G-110 comparison"
+      - "C2 endpoint, mapped reselection, reselected edge/path -> mate naturality package"
+      - "C3 indexed-to-direct, indexed-to-via, G-110 comparison -> package-component triangle"
+    undischarged_assumptions:
+      - "G-110 BCPresentation and reviewed selected reindexing factors"
+      - "source fiberwise diagnostic data on the indexed 2-skeleton"
+    acceptance_point: >-
+      K4 is discharged if fixed-head review confirms actual indexed K2 use,
+      external reindex factor integrity, component coverage, and a genuine
+      mate component triangle without claiming K5.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 C1 package, edge, two-cell base, and comparator compatibility"
+      - "K4 C2 endpoint, reselection, edge, and path compatibility"
+      - "K4 C3 component triangle"
+    remaining:
+      - "K5 raw-family classification and finite witnesses"
+  certificate_provenance:
+    discharged:
+      - "indexed target edges are generated by indexedSquareTotalMap"
+      - "edge comparison uses the universal square-edge law and lift uniqueness"
+      - "cross-route compatibility is generated from the indexed mate"
+      - "component triangle uses the reviewed G-110 mate"
+    unresolved:
+      - "K5 producer and positive/negative finite witnesses"
+  proof_use:
+    used:
+      - "indexed K2 transportedInterpretation on top and bottom factors"
+      - "Cycle 16 direct/via functor and mate equalities"
+      - "G-110 functor composition and natural-isomorphism compatibility"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused lake env lean IndexedBCDiagnosticCompatibility.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedBCDiagnosticCompatibility: pass"
+    - "namespace axiom audit: 56 declarations, standard axioms only"
+    - "corrected fixed-head independent review: 4/4 No major findings"
+    - "corrected fixed-head CI: 7/7 pass"
+  review_verdict:
+    lean_a: no-major-findings
+    lean_b: no-major-findings
+    math_a: no-major-findings
+    math_b: no-major-findings
+  correction_history:
+    - reviewed_head: 7eaae7a8b50cc4c61d63c4af7ccdf245d6d6e5b2
+      findings:
+        - "via route bypassed actual indexed bottom transport"
+        - "two-cell pair did not compare corresponding paths"
+        - "native indexed K3 endpoint, reselection, edge, and path APIs were not connected"
+        - "triangle statement did not name its three canonical isomorphism components"
+      resolution: >-
+        Rebuilt the via route from the actual bottom transported interpretation,
+        replaced paired truths by path equality and equation equivalence, added
+        native K3-to-G-110 component bridges, and stated the triangle through
+        the three named canonical isomorphisms.
+  blocking_findings: []
+  next_obligation: "K5 local epi iff, finite-support producer, non-epi coherent positive, and Cycle 7 negative"
 ```
 
 ### Cycle 3 — rejected
