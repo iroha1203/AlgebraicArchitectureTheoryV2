@@ -969,8 +969,9 @@ result:
     fiberwise transport on packages and comparators definitionally, on edges
     by strongly-cocartesian uniqueness, and on paths by induction. The direct
     route applies left reindexing externally and top transport through the
-    indexed assembly; the via route applies indexed bottom transport before
-    external right reindexing. Their C1 components are identified with the
+    indexed assembly; the via route performs actual indexed bottom transport,
+    recovers its constant-fiber datum by the reviewed incidence bridge, and
+    only then applies external right reindexing. Their C1 components are identified with the
     actual G-110 functors. The indexed mate generates the complete diagnostic
     natural-isomorphism compatibility package, including mapped reselection and
     reselected edge/path naturality. The component triangle explicitly uses the
@@ -986,6 +987,13 @@ result:
     - indexedConstantTransport_edge
     - indexedConstantTransport_comparator
     - indexedConstantTransport_path
+    - indexedConstantTransport_endpointAction
+    - indexedConstantTransport_reselection
+    - indexedConstantTransport_reselectedEdge
+    - indexedConstantTransport_reselectedPath
+    - IndexedDiagnosticInterpretation.toFiberwiseOfConstant
+    - indexedBCBottomInterpretation
+    - indexedBCBottomFiberwise_eq_map
     - indexedBCDirectInterpretation
     - indexedBCViaBaseInterpretation
     - indexedBCDirect_package_eq_g110
@@ -994,10 +1002,20 @@ result:
     - indexedBCViaBase_edge_eq_g110
     - indexedBCDirect_comparator_eq_g110
     - indexedBCViaBase_comparator_eq_g110
-    - indexedBCDirect_twoCellBase_pair
-    - indexedBCViaBase_twoCellBase_pair
+    - indexedBCDirect_path_eq_g110
+    - indexedBCViaBase_path_eq_g110
+    - indexedBCDirect_twoCellBase_iff_g110
+    - indexedBCViaBase_twoCellBase_iff_g110
     - indexedBCDirect_endpointAction_eq_g110
     - indexedBCViaBase_endpointAction_eq_g110
+    - indexedBCDirect_K3_endpointAction_eq_g110
+    - indexedBCViaBase_K3_endpointAction_eq_g110
+    - indexedBCDirectTransportedReselection_eq_g110
+    - indexedBCViaBaseTransportedReselection_eq_g110
+    - indexedBCDirect_reselectedEdge_eq_g110
+    - indexedBCViaBase_reselectedEdge_eq_g110
+    - indexedBCDirect_reselectedPath_eq_g110
+    - indexedBCViaBase_reselectedPath_eq_g110
     - indexedBCRestrictionDiagnosticCompatibility
     - indexedBCRestriction_mappedReselection_naturality
     - indexedBCRestriction_reselectedEdge_naturality
@@ -1008,11 +1026,11 @@ result:
       - indexedBCDirect_package_eq_g110
       - indexedBCDirect_edge_eq_g110
       - indexedBCDirect_comparator_eq_g110
-      - indexedBCDirect_twoCellBase_pair
+      - indexedBCDirect_twoCellBase_iff_g110
       - indexedBCViaBase_package_eq_g110
       - indexedBCViaBase_edge_eq_g110
       - indexedBCViaBase_comparator_eq_g110
-      - indexedBCViaBase_twoCellBase_pair
+      - indexedBCViaBase_twoCellBase_iff_g110
       - indexedBCRestrictionDiagnosticCompatibility
       - indexedBCRestriction_comparison_triangle_app
     source_labels:
@@ -1054,7 +1072,7 @@ audits:
       - "G-110 functor composition and natural-isomorphism compatibility"
     unused: []
   structure_field_escape: none-found
-  route_integrity: cannot-determine
+  route_integrity: pending-fixed-head-rereview
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
@@ -1062,7 +1080,19 @@ audits:
   validation_refs:
     - "focused lake env lean IndexedBCDiagnosticCompatibility.lean: pass"
     - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedBCDiagnosticCompatibility: pass"
-    - "namespace axiom audit: 36 declarations, standard axioms only"
+    - "namespace axiom audit: 56 declarations, standard axioms only"
+  correction_history:
+    - reviewed_head: 7eaae7a8b50cc4c61d63c4af7ccdf245d6d6e5b2
+      findings:
+        - "via route bypassed actual indexed bottom transport"
+        - "two-cell pair did not compare corresponding paths"
+        - "native indexed K3 endpoint, reselection, edge, and path APIs were not connected"
+        - "triangle statement did not name its three canonical isomorphism components"
+      resolution: >-
+        Rebuilt the via route from the actual bottom transported interpretation,
+        replaced paired truths by path equality and equation equivalence, added
+        native K3-to-G-110 component bridges, and stated the triangle through
+        the three named canonical isomorphisms.
   blocking_findings: []
   next_obligation: "K5 local epi iff, finite-support producer, non-epi coherent positive, and Cycle 7 negative"
 ```
