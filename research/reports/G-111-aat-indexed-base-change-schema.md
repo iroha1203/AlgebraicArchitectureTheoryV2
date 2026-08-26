@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / human-approved revision under review; F0 selected after merge`
+- proof state: `active / Cycle 10 F0 implementation candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -39,6 +39,149 @@ fixed-family の偶発的 liftability iff `Epi` は主張しない。nontrivial
 非 epi positive の因果的 diagnostic 発火とは表示しない。
 
 ## Cycle ledger
+
+### Cycle 10 — diagnostic-free indexed base diagram and hom
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 10
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: e28231e28569826a22221e3cdc351bb7cdbbfb46
+tracking_issue: 4158
+selection:
+  proof_state_ref: "Issue #4158 accepted card revision / report F0"
+  proof_dag_predecessors:
+    - "Cycle 4-6 pointwise indexed calculus"
+    - "G-109 CorePseudofunctor base category API"
+  proof_obligation: >-
+    Construct F0: a finite diagnostic-free base 0/1/2-cell shape,
+    IndexedBaseDiagram, and IndexedBaseDiagramHom with vertex indices,
+    generated commutative edge squares, all-path naturality, declared-cell
+    path naturality, identity, composition, and category laws. No package,
+    comparator, defect, reselection, coherence, or vanishing field may occur.
+  selection_reason: >-
+    This is the first unimplemented node in the fixed proof strategy and the
+    input category required by K2-K5 and G-113.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseSquareGeometry.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
+  risks:
+    - diagnostic vocabulary enters through an import or structure field
+    - path naturality is accepted as authored hom data instead of generated
+    - declared target relation is credited as raw-family generation
+    - identity or composition laws close only because hom data is proof-only
+  unchecked:
+    - K2 coherent diagnostic assembly
+    - K3 (d1)-(d6)
+    - K4 C0-C3
+    - K5 raw-family producer and finite witnesses
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    IndexedBaseShape and IndexedBaseTwoShape give the finite authored base
+    geometry. IndexedBaseDiagram assigns only extraction instances, generating
+    base arrows, and declared base relations. IndexedBaseDiagramHom assigns
+    only vertex indices and generating-edge squares. path_naturality is proved
+    by induction. horizontalPathSquare and verticalPathSquare invoke the actual
+    provenance-retaining paste operations; their side-comparison theorems connect
+    pasted squares to appended paths and composite homs. The Category instance
+    proves the identity, composition, and associativity laws.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseSquareGeometry.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
+  evidence:
+    - IndexedBasePath.eval_append
+    - IndexedBaseDiagram.path_append
+    - IndexedBaseDiagram.relation_path
+    - IndexedBaseDiagramHom.edgeSquare
+    - IndexedBaseDiagramHom.path_naturality
+    - IndexedBaseDiagramHom.pathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare_top
+    - IndexedBaseDiagramHom.horizontalPathSquare_bottom
+    - IndexedBaseDiagramHom.horizontalPathSquare_route
+    - IndexedBaseDiagramHom.twoCell_left_naturality
+    - IndexedBaseDiagramHom.twoCell_right_naturality
+    - IndexedBaseDiagramHom.twoCell_naturality
+    - IndexedBaseDiagramHom.twoCell_target_relation
+    - IndexedBaseDiagramHom.id
+    - IndexedBaseDiagramHom.comp
+    - IndexedBaseDiagramHom.verticalPathSquare
+    - IndexedBaseDiagramHom.verticalPathSquare_left
+    - IndexedBaseDiagramHom.verticalPathSquare_right
+    - IndexedBaseDiagramHom.verticalPathSquare_route
+    - indexedBaseDiagramCategory
+  claim_mapping:
+    theorem_names:
+      - IndexedBaseDiagramHom.path_naturality
+      - IndexedBaseDiagramHom.twoCell_naturality
+      - indexedBaseDiagramCategory
+    source_labels:
+      - "G-111 target theorem (c)"
+      - "G-111 target proof strategy F0"
+    conjuncts:
+      - "finite diagnostic-free base geometry -> IndexedBaseShape / IndexedBaseTwoShape"
+      - "diagram vertices, edges, declared relations -> IndexedBaseDiagram"
+      - "vertex indices and edge squares -> IndexedBaseDiagramHom / edgeSquare"
+      - "path and declared-cell naturality -> generated theorems"
+      - "horizontal and vertical pasting -> actual paste constructions plus side comparison theorems"
+      - "identity, composition, category laws -> indexedBaseDiagramCategory"
+    undischarged_assumptions:
+      - "declared base relations remain the fixed direction hypothesis"
+    acceptance_point: >-
+      F0 is discharged if fixed-head review confirms the module is
+      diagnostic-free, path naturality is generated, and the category API has
+      no conclusion-side field escape.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "diagnostic-free diagram category typing and path-naturality API"
+    remaining:
+      - "coherent diagnostic assembly and (d1)-(d6)"
+      - "C0-C3"
+      - "raw-family producer and positive/diagnostic witnesses"
+  certificate_provenance:
+    discharged:
+      - "edge squares are generated from hom.naturality"
+      - "all-path naturality is generated by induction from edge squares"
+    unresolved:
+      - "later target diagnostic certificates"
+  proof_use:
+    used:
+      - "each generating-edge naturality proof in path_naturality"
+      - "source declared relation in twoCell_naturality"
+      - "target declared relation in twoCell_target_relation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused lake env lean IndexedBaseSquareGeometry.lean: pass"
+    - "targeted lake build IndexedBaseSquareGeometry: pass"
+    - "focused lake env lean IndexedBaseChangeRaw.lean after geometry split: pass"
+    - "focused lake env lean IndexedBaseDiagram.lean: pass"
+    - "namespace axiom audit: 125 declarations, standard axioms only"
+  initial_review_findings:
+    - "horizontal path-square pasting lacked an actual paste construction"
+    - "vertical path-square provenance used sequential comp instead of pasteVertical"
+    - "IndexedBaseDiagram imported the package-level raw syntax module"
+    - "the target declared relation had no explicit proof-use theorem"
+  correction:
+    - "split IndexedBaseSquareGeometry from IndexedBaseChangeRaw"
+    - "add horizontalPathSquare with top, bottom, left, right, and route theorems"
+    - "use verticalPaste with composite-side and route theorems"
+    - "add twoCell_target_relation"
+  blocking_findings: []
+  next_obligation: "K2 connect the generated diagram hom action to coherent diagnostic assembly"
+```
 
 ### Cycle 3 — rejected
 
