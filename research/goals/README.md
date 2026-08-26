@@ -18,10 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
-  (Gr4 完遂 gate 第一項前半: pointwise indexed calculus、coherent
-  diagnostic assembly、raw square-family liftability 分類 (a)–(g)。
-  依存先 G-110 は完遂済み)
 
 ## draft（人間の確認待ち）
 
@@ -31,7 +27,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
 - [G-116-aat-gr4-capstone](G-116-aat-gr4-capstone.md)
   (以上5枚 = Gr4 完遂 gate 5項を閉じる単責務ラインナップの後続
-  (第一手 G-111 は active)。義務台帳の正本 = G-116 カード、設計の
+  (第一手 G-111 は完遂済み)。義務台帳の正本 = G-116 カード、設計の
   source note = n1007。昇格は一枚ずつ、G-116 は G-111〜G-115 の全帰趨
   確定後。昇格前の裁定事項: G-112 = 第二段(O6)の量化域、G-115 =
   `ObProblem` の Lean 指示対象)
@@ -51,6 +47,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-108-aat-geometry-reading-transport](G-108-aat-geometry-reading-transport.md)
 - [G-109-aat-cross-stage-coherence](G-109-aat-cross-stage-coherence.md)
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
+- [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
