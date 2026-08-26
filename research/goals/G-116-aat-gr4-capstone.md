@@ -148,7 +148,7 @@
 | O1 | indexed base action(base / total / fiber)の建設+identity / composition / pasting API(全 `ExtractionInstance` 上の base 作用) | G-111 |
 | O2 | cocartesian-preserving lifted action+canonical lift compatibility(各固定 carrier 内) | G-111 |
 | O3 | 実 BC 経路との制限比較 C0–C3(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致+三角形 coherence) | G-111 |
-| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、非 epi coherent nontrivial 正例、有限 non-liftable 負例 | G-111 |
+| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、同一 named 2-cell / connected subdiagram で発火する非 epi coherent 正例、有限 non-liftable 負例 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の arrow 圏同型までの coverage) | G-112 |
 | O6 | coverage 拡張第二段(sector 全域の帰趨決定 — 二枝、負枝は資格条項付き特徴付け) | G-112 |
 | O7 | 全域 lift(左枝の読み = realization 資格外への strong cartesian lift の帰趨決定 — 二枝、n1001 §3.5 の忠実転写) | G-112 |

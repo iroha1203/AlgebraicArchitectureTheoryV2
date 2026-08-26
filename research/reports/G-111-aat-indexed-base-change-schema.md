@@ -31,7 +31,10 @@ Cycle 7 は、等しい source path と二つの independently validated square
 負枝へ移る。次の単一 proof obligation は F0:
 diagnostic import を持たない base diagram / hom の Lean signature と
 path-naturality API の型付けである。非 epi coherent positive と
-nontrivial (d4)–(d6) witness は同一 fixture で構成する。
+nontrivial (d4)–(d6) witness は、構文的に異なる path を持つ同一 named
+2-cell と同じ connected subdiagram で構成する。named cell の source
+vertex index を非 epi とし、participating edge action、defect、
+reselection、(d4)–(d6) の incidence を同じ declaration で固定する。
 
 ## Cycle ledger
 

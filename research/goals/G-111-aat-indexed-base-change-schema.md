@@ -60,7 +60,8 @@
 - `portfolio constraint`: pointwise schema だけ、epi 分類だけ、
   (d1)–(d3)だけでは完了としない。O1–O4、C0–C3、(d1)–(d6)、非 epi
   coherent nontrivial 正例、Cycle 7 負例を全て要求する。非 epi 正例と
-  非自明 finite witness は同一 fixture でなければならない。
+  非自明 finite witness は同一 fixture の同一 named 2-cell / connected
+  subdiagram でなければならない。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、
   反証なら `target-refuted`、全完了条件と final review を満たした場合
   だけ `target-theorem-proved`。
@@ -71,8 +72,8 @@
   vanishing を field で受ける構成、identity action の包み直し、
   arbitrary functor family の供給、pointed square 族への量化域制限、
   paste を comp の定義同値に潰す構成、C0–C3 を `Iff.rfl` 級で済ませる
-  構成、非 epi coherent nontrivial 正例を欠く epi-only な coherent
-  domain、空診断・
+  構成、非 epi vertex を診断発火と無関係な直和成分へ隔離した
+  pseudo-positive、空診断・
   恒等 defect・恒等 reselection だけの witness を弾く。
 - `frontier`: G-113 の保守性分類、係数 base change、`J_A` 枝、
   indexed schema の H² 方向。
@@ -125,16 +126,20 @@
      **全 right legs に一様生成できることと source index が `Epi` で
      あることの必要十分性**を証明する。vertexwise epi な raw family から
      coherent diagram morphism を構成する producer を与える。加えて
-     (i) epi でない index、非自明 declared 2-cell、非恒等 generated
-     action、非恒等 defect / reselection を同時に含み (d4)–(d6) が
-     発火する具体的 coherent diagram morphism の有限正例、(ii) Cycle 7
+     (i) named declared 2-cell `α : p ⇒ q` を一つ固定し、`p` と `q` は
+     構文的に異なる平行 path、`α` の source vertex index は epi でなく、
+     `p` または `q` に現れる少なくとも一つの edge の generated action は
+     非恒等である具体的 coherent diagram morphism の有限正例を与える。
+     同じ `α` とその連結部分図式に非恒等 defect / reselection を置き、
+     その同じ cell の像で (d4)–(d6) を発火させる。(ii) Cycle 7
      の有限 validated non-liftable raw family を保持する。後者は
      arbitrary raw family の自動 assembly を否定する分類の負枝であり、
      (d) の coherent domain の反例ではない。
-  7. **(g) witness portfolio**: (f)(i) と**同一 fixture**で (d4)–(d6)を
-     発火させ、少なくとも一成分で generated action と identity action
-     の具体像が異なることを示す。別の epi fixture に非自明性を移して
-     (f)(i) を自明 relation で放電してはならない。
+  7. **(g) witness portfolio**: (f)(i) の**同一 named cell `α` / 同一
+     connected subdiagram**で (d4)–(d6)を発火させ、`α` の path に参加する
+     少なくとも一つの generated action と identity action の具体像が
+     異なることを示す。孤立した非 epi vertex と別の epi diagnostic
+     component の直和、または別 fixture への非自明性移送を認めない。
 
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。
@@ -199,8 +204,9 @@
     provenance = authored base graph、base path equality、vertex index、
     edge square。proof-use = target two-cell base の canonical
     realization。監査 artifact =
-    diagnostic-free import / field audit と非 epi coherent nontrivial
-    正例。結論相当でない理由 = target base relation を方向仮定として
+    diagnostic-free import / field audit と、named cell の source index
+    が非 epi でその同じ connected subdiagram が発火する正例。
+    結論相当でない理由 = target base relation を方向仮定として
     **明示的に残す**相対定理であり、その relation を生成済みと数えない。
     base path naturality だけを表し、package、
     comparator、defect、reselection、coherence、vanishing を含まない。
@@ -228,10 +234,11 @@
     finite constructions から固定する。proof-use = iff 両方向と
     coherent domain 非退化監査。
   - `named nontrivial witness`: `discharge-required`。discharge
-    artifact = raw-family classification の非 epi coherent 正例と同一の、
-    非恒等 defect / reselection / declared 2-cell と identity action の
-    差を持つ有限 fixture。provenance = concrete finite data。proof-use =
-    (d4)–(d6) の非空虚性。
+    artifact = raw-family classification の非 epi coherent 正例と同一の
+    named cell / connected subdiagram に、構文的に異なる path、非恒等
+    participating action、非恒等 defect / reselection、identity action
+    との差を持つ有限 fixture。provenance = concrete finite data。
+    proof-use = 同じ cell における (d4)–(d6) の非空虚性。
 - `target route integrity gate`: diagnostic-free module は G-101 /
   G-109 と圏論 API のみ import し、diagnostic module が一方向に import
   する。`IndexedBaseDiagram` / `Hom` の定義展開閉包に package、
@@ -241,7 +248,10 @@
   diagnostic interpretation と witness の選定前に固定し、declared
   relation の provenance を report に記録する。raw-family の target
   path equality を target-fitting に後付けして raw-family producer の
-  放電と数えない。
+  放電と数えない。non-epi witness では named cell、source vertex index、
+  participating path edge、defect / reselection、(d4)–(d6) proof の
+  incidence を declaration 引数と proof-use で監査し、直和成分への
+  隔離を禁止する。
 - `target anti-weakening rule`: coherent domain を epi-only に狭めない。
   arbitrary raw family を coherent hom と同一視しない。declared base
   relation からの `twoCellBase` realization を生成成果と表示しない。共変性、

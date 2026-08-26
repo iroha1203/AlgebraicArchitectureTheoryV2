@@ -176,7 +176,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O1 | global / indexed base-change schema の建設(全 `ExtractionInstance` 上の base 作用) | gate (i)・(B) 条項 | G-111 |
 | O2 | 各固定 carrier 内の全 package に対する cocartesian 保存 lift | (B) 条項 | G-111 |
 | O3 | 実 BC 経路との制限比較(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致) | gate (i)・(B) 条項 | G-111 |
-| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、非 epi coherent nontrivial 正例、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
+| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、同一 named 2-cell / connected subdiagram で発火する非 epi coherent 正例、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の同型までの coverage) | gate (i)・frontier | G-112 |
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
 | O7 | 全域作用・分類 = 左枝の読みで「全域 lift の realization 資格外への帰趨決定」(n1001 §3.5 の忠実転写) | gate (i) | G-112 |
@@ -278,8 +278,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   pointed pullback square への制限が G-110 の実 BC 二経路(direct /
   via-base)と C0–C3 で一致する、(f) raw square family の target path
   relation 一様持上げが `Epi` と同値であること、vertexwise-epi
-  producer、非 epi coherent nontrivial 正例、Cycle 7 finite non-liftable
-  負例、(g) (f) の非 epi 正例と同一 fixture の witness。
+  producer、named cell の source index が非 epi でその同じ connected
+  subdiagram が発火する coherent 正例、Cycle 7 finite non-liftable
+  負例、(g) (f) の同じ cell / subdiagram の witness。
 - **錨(ambient-boundary 予定)**:
   `no_universalBCDiagnosticSourceFiberIncidence`
   (`DoctrineFiberProduct/BCDiagnosticSourceFiberNoGoWitnesses.lean` —
@@ -296,7 +297,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **リスク / dullness 骨格**: diagram geometry が
   `AdmissibleTransportData` の wrapper に堕ちる経路、target
   diagnostic data を supplied certificate で受ける経路、coherent
-  domain を epi-only に狭める経路、制限比較の定義展開放電。Cycle 7
+  domain を epi-only に狭める経路、非 epi vertex を別の非発火直和成分へ
+  隔離する経路、制限比較の定義展開放電。Cycle 7
   負例は raw-family 分類の必須負枝として保持する。
 - **failure 骨格**: diagnostic-free diagram / hom の型不能は
   `goal-defect`、coherent domain 上の assembly / (d1)–(d6) の反例、
