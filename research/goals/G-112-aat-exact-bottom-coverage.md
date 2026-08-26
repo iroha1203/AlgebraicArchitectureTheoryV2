@@ -61,8 +61,8 @@
   constructor。左枝の内部構成 `strongCartesianLiftOfTarget` は
   realization 資格なしの semantic-global lift を与える。固定錨は下記
   ledger 行)。
-- `tracking issue`: 未起票(昇格 PR マージ後に起票し、本行を Issue
-  番号へ更新する)
+- `tracking issue`: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)(runtime state、cycle 履歴、fixed head、
+  次 proof obligation の正本)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-112)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (i)・frontier の coverage 二段)
 - `research aim`: G-110 は realization 像(有限 presentation 付き底層
