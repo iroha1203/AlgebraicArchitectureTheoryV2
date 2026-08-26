@@ -37,14 +37,18 @@
   predicate-term head(固定済み syntax から選んだ term)、branch
   artifact head(term を消費する payload)。条件言語そのものの設計を
   F0 以後へ持ち込むことは `goal-defect` とする(F0 で行うのはカード
-  完全列挙の Lean 転写であり、新語彙の発明ではない)。
-  **候補遷移規則**: 資格条項の反例固定・十分性の反例固定 =
-  `candidate-refuted`(再利用可能な refutation artifact を要求し、
-  tracking Issue に記録する)。proof 未完成・反例なし =
-  `target-proof-checkpoint`(候補は破棄しない)。同一 blocker が
-  2 cycle 継続 = `target-blocked`。新候補は事前登録候補列の次項、
-  または人間承認による。proof 結果を見た新述語の発明は target 改訂
-  (人間裁定)であり、証明サイクル内では行わない。
+  constructor 表の Lean 転写であり、新語彙の発明ではない)。
+  **候補遷移規則**: 述語候補列と順序は F0 で事前登録し、
+  predicate-term head は先頭候補の機械的採用とする(K0 以降の証明
+  結果を選定に使わない)。資格条項の反例固定・十分性の反例固定 =
+  候補 refuted — local candidate state として tracking Issue に記録
+  し、再利用可能な refutation artifact を要求する(loop の cycle
+  result は正式語彙 — checkpoint / refuted / blocked — で別途記録
+  する)。proof 未完成・反例なし = `target-proof-checkpoint`(候補は
+  破棄しない)。同一 blocker が2 cycle 継続 = `target-blocked`。次
+  候補への移行は事前登録列の次項、または人間承認による。proof 結果を
+  見た新述語の発明は target 改訂(人間裁定)であり、証明サイクル内
+  では行わない。
 - `predecessor`: G-110(完遂済み。(B) 左枝 = **realization 付き入力上
   の**全域 strong cartesian lift、presentation schema (s1)–(s6)、閉性
   constructor。左枝の内部構成 `strongCartesianLiftOfTarget` は
@@ -67,7 +71,7 @@
 - `core tension`: 設計事実として、(s1) の有限 Source 固定により無限
   Source を端点に持つ semantic 射は原理的に像外であり、第二段の負枝が
   構造的に近い。したがって本カードの数学的重心は負枝の**特徴付け**が
-  安価に堕ちないことにある — 「realization 像の定義の言い換え」述語や
+  本質を欠く言い換えへ退化しないことにある — 「realization 像の定義の言い換え」述語や
   cardinality 反例のみの放電は分類ではない。成立域の特徴付け述語には
   G-110 `H_cart` と同水準の資格条項(下記 (b) の5項)を課す。
 - `rival`: 有限表示対象(finitely presentable objects)と ind-completion
@@ -113,8 +117,8 @@
   独立 frontier としない)、可算 Source への拡張観察、係数 base
   change カードとの接続点。
 
-- `target theorem`: **Exact-Bottom Coverage and Global Lift
-  Classification Theorem**。G-110 の設定の上で:
+- `target theorem`: **Exact-Bottom Coverage Classification and Global
+  Lift Coherence Theorem**。G-110 の設定の上で:
   1. **(a) 第一段 coverage**: `U.Atom` が有限で、source / target 両
      endpoint の `Source` が有限な全 semantic exact-bottom 射
      (`CartSemanticInput`)が、同型まで realization 像に入ることを
@@ -132,23 +136,34 @@
      網羅性は主張しない)。disjunction は carrier 大域一本で立て、
      述語と十分性は carrier に一様とする(per-carrier 分岐は採らない
      — G-110 (B) 様式)。「同型まで」の読みと coverage witness 型は
-     (a) と共有する。**閉じた条件言語(完全列挙)**: 特徴付け述語は
-     G-110 `CartConditionSyntax` 様式の閉じた syntax 型の term として
-     立てる。許容原子式は次の完全列挙に限る — source / target 各
-     endpoint の `Source` の有限性、`Source` の cardinality と有限
-     定数の比較、抽出述語(inclusion / exclusion)の有限性 /
-     cofinite 性、hom 成分写像の有限 support 性、これら authored
-     field 間の等式・有限集合 membership。許容結合子は conjunction
-     のみ。arbitrary `Prop` callback・fixture 値・external constant・
-     coverage helper 述語・presentation code 型・realization 関数・
-     有限 code / 表データの存在量化・「同型な像元の存在」への言及
-     (その Skolem 化を含む)は syntax に持ち込めない。述語は一つの
-     authored template を base carrier で固定し、canonical rebase
+     (a) と共有する。**閉じた条件言語(constructor 完全列挙)**:
+     特徴付け述語は G-110 `CartConditionSyntax` 様式の閉じた syntax
+     型の term として立てる。constructor は次の6つに限る(operand
+     なし・数値定数なし・集合定数なし) —
+     `sourceFinite`(source endpoint の `Source` が有限)、
+     `targetFinite`(target endpoint の `Source` が有限)、
+     `allSourceExtractionsFiniteOrCofinite`(source endpoint の全抽出
+     述語が finite または cofinite — 一つの原子式とし、
+     conjunction-only の下で表現力を確保する)、
+     `allTargetExtractionsFiniteOrCofinite`(target 側同上)、
+     `atomEquivFiniteSupport`(`hom.doctrineHom.atomEquiv` の有限
+     support — `sourceMap` は異型間写像のため support 対象にしない)、
+     `conjunction`(結合子はこれのみ)。評価意味は constructor ごとに
+     `Prop` 水準の `Finite` / finite-or-cofinite 述語で固定する
+     (`Fintype` データ・`Nat.card` は評価意味に用いない。無限型上
+     では単に不成立)。arbitrary `Prop` callback・fixture 値・
+     external constant・任意 `Finset` operand・coverage helper 述語・
+     presentation code 型・realization 関数・有限 code / 表データの
+     存在量化・「同型な像元の存在」への言及(その Skolem 化を含む)
+     は syntax に持ち込めない。F0 の language head はこの表の Lean
+     転写であり(universe parameter と dependent type の表現のみ設計
+     余地)、条件言語の意味の設計ではない。述語は一つの authored
+     template を base carrier で固定し、canonical rebase
      (`rebaseCartCondition` 前例様式)で全 carrier へ移す。branch
      artifact は全 carrier で同一 template の rebase を使うことを
      等式で保証する。syntax・evaluator・rebase の transitive
      dependency audit(依存 helper 経由で結論 / realization を読む
-     経路の禁止)を discharge artifact に含める。原子式・結合子・
+     経路の禁止)を discharge artifact に含める。constructor・結合子・
      量化形の追加は target 改訂扱いとする。述語の ambient 型は量化域
      型と同一とする(部分型上で立てない)。負枝の特徴付け述語には
      資格条項5項を課す — (i) 探索前固定(language head /
@@ -171,17 +186,31 @@
      audit(G-110 左枝 `globalCartesianLift` との制限関係の明示を
      含む)・G-116 範囲併記への記録であり、新規証明成果としては計上
      しない(計上規律)。
-  4. **(d) coverage closure**: (b) で確定した coverage 成立域での
-     id / comp / pullback 閉性を証明する。operand の membership と
-     coverage witness を実消費し、output の membership と witness
+  4. **(d) coverage closure**: branch-independent な coverage regime を
+     固定する — `Holds : CartSemanticInput U → Prop` と、membership
+     から coverage witness を与える producer を持つ構造(G-110
+     `CartesianRegime` / `cartesianRegimeOfDisjunction` 様式)と、
+     (b) の二枝 payload からの regime producer(正枝 = `Holds` 全域、
+     負枝 = 固定述語)を completion artifact とする。閉性はこの
+     regime を index にして立てる: 確定した coverage 成立域での id /
+     comp / pullback 閉性を、operand の membership と coverage
+     witness を実消費し、output の membership と witness
      (presentation と `CartSemanticInputIso`)を構成する producer で
-     立てる — output 側の caller 供給、および membership の閉性と
+     証明する — output 側の caller 供給、および membership の閉性と
      十分性の再適用だけの放電は不可。(b) 資格条項 (iv) の述語閉性と
      は別 artifact とする(流用を計上しない)。
-  5. **(e) global lift coherence**: (c) の生成 lift の id / comp /
-     pullback / pasting coherence を証明する — 合成入力の canonical
-     生成 lift と operand lift の合成との比較 theorem として固定し、
-     合成入力への lift の再生成(存在の再提示)では放電と数えない。
+  5. **(e) global lift coherence**: (c) の semantic-global lift の
+     pseudofunctor coherence に限定して証明する — (i)
+     `strongCartesianLiftOfTarget` から semantic-global cleavage を
+     構成し、(ii) cleavage から semantic-global reindexing functor を
+     構成、(iii) identity の unitor natural iso、(iv) composition の
+     compositor natural iso、(v) triangle coherence、(vi) pentagon
+     coherence を theorem として与える。比較は reindexing functor 間の
+     natural iso 水準で固定し、合成入力への lift の再生成(存在の再
+     提示)では放電と数えない。**O12 との分界**: BC mate の `IsIso`
+     水準 exchange と authored lax square の exchange は主張しない
+     (G-116 / O12 の担当)。pullback / pasting square 水準の要求は本
+     conjunct に含めない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。reviewed module は参照のみ。完了面は (a)–(e) まで。二枝の
@@ -201,20 +230,26 @@
   universe-polymorphic に立てる((c) は reviewed 宣言の universe
   契約を継承する)。
 - `target proof artifacts`: 第一段 coverage theorem(arrow 圏同型
-  水準・構造化 coverage witness)、閉じた条件言語(syntax 型・
-  evaluator・canonical rebase・同一 template 等式・transitive
-  dependency audit)、第二段二枝確定 artifact(正枝 theorem または
-  資格条項付き特徴付け述語+同型閉包外反例+正枝反証)、O7 正本
-  wrapper theorem と proof-use audit、coverage closure producer、
-  global lift coherence theorem 群、特徴付け述語の資格 theorem 群
-  (同型不変性・閉性・像包含・非空発火族)、report
+  水準・構造化 coverage witness)、閉じた条件言語(constructor 表の
+  syntax 型・evaluator・canonical rebase・同一 template 等式・
+  transitive dependency audit)、第二段二枝確定 artifact(正枝
+  theorem または資格条項付き特徴付け述語+同型閉包外反例+正枝
+  反証)、O7 正本 wrapper theorem と proof-use audit、
+  branch-independent coverage regime と二枝 payload からの regime
+  producer、coverage closure producer、semantic-global cleavage /
+  reindexing functor と unitor・compositor・triangle・pentagon
+  coherence theorem 群、特徴付け述語の資格 theorem 群(同型不変性・
+  閉性・像包含・非空発火族)、report
   `research/reports/G-112-aat-exact-bottom-coverage.md`。
-- `target proof strategy`: F0 typing(language head = カード完全列挙
-  の閉じた syntax・evaluator・rebase、(a) の有限性割当と
-  `CartSemanticInputIso` 系 coverage witness 型、二枝 payload 構造、
-  universe 契約を固定)→ K0 第一段 coverage → K1 predicate-term
-  head 固定と第二段帰趨 → K2 O7 正本 wrapper と proof-use audit →
-  K3 coverage closure → K4 global lift coherence → K5 監査。既存成果
+- `target proof strategy`: F0 typing(language head = カード
+  constructor 表の Lean 転写、述語候補列と順序の事前登録(先頭 =
+  `sourceFinite ∧ targetFinite`)、(a) の有限性割当と
+  `CartSemanticInputIso` 系 coverage witness 型、二枝 payload 構造と
+  coverage regime 型、universe 契約を固定)→ K0 第一段 coverage →
+  K1 predicate-term head = 事前登録列の先頭を機械的に採用し第二段
+  帰趨(K0 の証明結果を選定に使わない)→ K2 O7 正本 wrapper と
+  proof-use audit → K3 coverage regime と closure → K4 global lift
+  coherence → K5 監査。既存成果
   の利用 map: `strongCartesianLiftOfTarget` / `GlobalCartesianLift` /
   `CartesianRegime` / `cartesianRegimeOfDisjunction`(semantic-global
   lift と左枝定理の錨)、`cartesianLiftNonexistence_isEmpty`(枝
@@ -270,19 +305,28 @@
     provenance = reviewed predecessor。proof-use = (c) の fixed
     statement と (e) の生成 lift。結論相当でない理由 = reviewed 済み
     定理の昇格・監査であり、新規仮定を置かない。
+  - `branch-independent coverage regime`: `discharge-required`。支える
+    結論 = (d) の index surface。discharge artifact = regime 構造
+    (`Holds` と membership→witness producer)と二枝 payload からの
+    regime producer(正枝 = 全域 `Holds`、負枝 = 固定述語)。
+    provenance = G-110 `CartesianRegime` /
+    `cartesianRegimeOfDisjunction` 様式の転写。proof-use = (d)
+    closure の index と (b) payload の実消費。結論相当でない理由 =
+    二枝確定の再包装であり、新しい coverage を供給しない。
   - `coverage closure`: `discharge-required`。支える結論 = (d)。
     discharge artifact = operand witness を実消費し output witness を
     構成する id / comp / pullback producer((b) 資格条項 (iv) とは別
     artifact)。provenance = 閉性 constructor の成立域版構成。
-    proof-use = (b) の成立域定理と (a)(b) 共有の witness 型を実消費
+    proof-use = coverage regime と (a)(b) 共有の witness 型を実消費
     する。結論相当でない理由 = output 側は構成して証明し、(iv) の
     流用を計上しない。
   - `global lift coherence`: `discharge-required`。支える結論 = (e)。
-    discharge artifact = 生成 lift と operand lift 合成の比較 theorem
-    群(id / comp / pullback / pasting)。provenance = (c) の生成
-    lift と G-110 閉性 constructor。proof-use = 比較の両辺を実構成
-    して結ぶ(再生成の存在提示は不可)。結論相当でない理由 =
-    coherence は証明する。
+    discharge artifact = semantic-global cleavage・reindexing
+    functor・unitor / compositor natural iso・triangle / pentagon
+    coherence theorem 群(BC mate exchange と lax square exchange は
+    域外 — O12)。provenance = (c) の生成 lift。proof-use = 比較の
+    両辺を実構成して結ぶ(再生成の存在提示は不可)。結論相当でない
+    理由 = coherence は証明する。
   - `O6 coverage 反例 raw data`: `conclusion-equivalent-risk`。支える
     結論 = (b) 負枝の排他性(正枝反証)。provenance = proof
     obligation 選定時に固定する authored 有限 data(universe 契約は
