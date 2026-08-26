@@ -1174,12 +1174,21 @@ result:
     - IndexedRawSquareFamily.path_naturality
     - IndexedRawSquareFamily.targetRelation_of_supportLiftable
     - IndexedRawSquareFamily.produce_of_supportEpi
+    - finiteIdentity_uniformTargetBaseLiftableAt
+    - finiteDuplicate_not_uniformTargetBaseLiftableAt
+    - finiteIdentityRawSquareFamily_supports_vertex
+    - finiteIsolatedRawSquareFamily_not_supports_isolated
+    - finiteIdentityRawSquareFamily_supportEpi
+    - finiteIdentityRawSquareFamily_supportUniformLiftable
+    - finiteIdentityRawSquareFamily_production
     - finiteDuplicateIndex_not_epi
     - finiteNonEpiCoherent_paths_ne
     - finiteNonEpiCoherent_action_ne_identity
     - finiteNonEpiCoherent_positive
     - cycle7RawSquareFamily
     - cycle7RawSquareFamily_not_supportEpi
+    - cycle7RawSquareFamily_not_supportUniformLiftable
+    - cycle7RawSquareFamily_no_production
     - cycle7RawSquareFamily_targetPaths_ne
     - cycle7_finiteValidatedSquares_nonLiftable
   claim_mapping:
@@ -1199,8 +1208,11 @@ result:
       - "support-indexed vertexwise epi -> coherent target and diagram hom"
       - "finite coherent non-epi positive with distinct paths and nonidentity action"
       - "finite validated raw-family negative with unequal target paths"
-    undischarged_assumptions:
-      - "Epi at each source vertex occurring in the selected finite raw family"
+    material_premise_classification:
+      direction_hypothesis:
+        - "Epi at each source vertex occurring in the selected finite raw family, as fixed by K5(ii)"
+      undischarged: []
+    undischarged_assumptions: []
     acceptance_point: >-
       K5 is discharged if fixed-head review confirms exact local quantifiers,
       validated-square provenance, complete support incidence, one-way producer
@@ -1235,12 +1247,23 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "focused lake env lean IndexedRawFamilyClassification.lean: pass"
-    - "namespace axiom audit: 120 declarations, standard axioms only"
+    - "namespace axiom audit: 157 declarations, standard axioms only"
   review_verdict:
     lean_a: pending
     lean_b: pending
     math_a: pending
     math_b: pending
+  correction_history:
+    - reviewed_head: 3ccac1e1b196596c9fff74b44812bee158d64724
+      findings:
+        - "new classification predicates lacked explicit concrete positive and negative instances"
+        - "nontrivial total-family/support design choices lacked required Implementation notes"
+        - "SupportEpi was listed as undischarged instead of a fixed-statement direction hypothesis"
+      resolution: >-
+        Added concrete local, support, uniform-support, and production instance
+        pairs; documented the total-family, source-incidence, relation-free, and
+        production-certificate design choices and rejected alternatives; and
+        classified SupportEpi as the K5(ii) direction hypothesis.
   blocking_findings: []
   next_obligation: "K6 cumulative final packet and independent completion review"
 ```

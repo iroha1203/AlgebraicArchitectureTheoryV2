@@ -14,6 +14,21 @@ A separate finite coherent example has a non-epimorphic source index, distinct
 parallel path syntax, and a nonidentity participating target edge.  It is kept
 independent of the Cycle 15 diagnostic witness.  The Cycle 7 validated-square
 counterexample remains the negative branch for arbitrary raw families.
+
+## Implementation notes
+
+`IndexedRawSquareFamily` is total on every generating edge of one fixed finite
+shape because the target statement classifies a selected finite family rather
+than a partial subgraph.  Consequently support is source incidence in that
+owned shape; it does not inspect equality of semantic arrow values.  A partial
+edge-family was rejected because it would add membership data absent from K5
+and obscure which squares the family owns.  The raw structure deliberately has
+no target-relation field: relations are generated from source relations and
+support liftability, preventing the desired conclusion from being supplied as
+input.  `SupportEpiProduction` retains the pointwise local theorem beside the
+generated target and hom so every support premise remains auditable; returning
+only the hom would erase that proof-use.  A fixed-family converse was rejected
+because accidental coherence need not imply epimorphicity.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -421,6 +436,103 @@ theorem finiteNonEpiCoherent_positive :
     finiteNonEpiCoherent_action_ne_identity,
     finiteNonEpiCoherentTarget.relation_path finiteNonEpiCoherentCell⟩
 
+/-! ## Concrete instance pairs for the classification predicates -/
+
+/-- Identity transport is a concrete positive instance of local uniform
+target-base liftability. -/
+theorem finiteIdentity_uniformTargetBaseLiftableAt :
+    UniformTargetBaseLiftableAt (𝟙 finiteFixtureInstance) :=
+  (uniformTargetBaseLiftableAt_iff_epi (𝟙 finiteFixtureInstance)).2
+    (inferInstance : Epi (𝟙 finiteFixtureInstance))
+
+/-- The duplicated finite index is a concrete negative instance of local
+uniform target-base liftability. -/
+theorem finiteDuplicate_not_uniformTargetBaseLiftableAt :
+    ¬ UniformTargetBaseLiftableAt finiteDuplicateIndex := by
+  intro liftable
+  exact finiteDuplicateIndex_not_epi
+    ((uniformTargetBaseLiftableAt_iff_epi finiteDuplicateIndex).1 liftable)
+
+/-- A nonempty identity-index raw family on the coherent two-loop shape. -/
+noncomputable def finiteIdentityRawSquareFamily :
+    IndexedRawSquareFamily finiteNonEpiCoherentSource where
+  targetVertex := finiteNonEpiCoherentSource.vertex
+  index := fun vertex => 𝟙 (finiteNonEpiCoherentSource.vertex vertex)
+  targetEdge := finiteNonEpiCoherentSource.edge
+  square := fun edge => ValidatedIndexedBaseSquare.ofTerm (.leaf (by simp))
+
+/-- The named vertex concretely belongs to the identity family's support. -/
+theorem finiteIdentityRawSquareFamily_supports_vertex :
+    finiteIdentityRawSquareFamily.Supports finiteNonEpiCoherentVertex :=
+  Or.inl ⟨finiteNonEpiCoherentVertex,
+    ⟨finiteNonEpiCoherentLeftEdge⟩⟩
+
+/-- The identity family satisfies epimorphicity at every support vertex. -/
+theorem finiteIdentityRawSquareFamily_supportEpi :
+    finiteIdentityRawSquareFamily.SupportEpi := by
+  intro vertex _supported
+  dsimp [finiteIdentityRawSquareFamily]
+  infer_instance
+
+/-- The identity family satisfies local uniform liftability at every support
+vertex. -/
+theorem finiteIdentityRawSquareFamily_supportUniformLiftable :
+    finiteIdentityRawSquareFamily.SupportUniformLiftable :=
+  finiteIdentityRawSquareFamily.supportLiftable_of_supportEpi
+    finiteIdentityRawSquareFamily_supportEpi
+
+/-- The support-indexed producer fires on a concrete nonempty finite family. -/
+noncomputable def finiteIdentityRawSquareFamily_production :
+    finiteIdentityRawSquareFamily.SupportEpiProduction :=
+  finiteIdentityRawSquareFamily.produce_of_supportEpi
+    finiteIdentityRawSquareFamily_supportEpi
+
+/-- Two vertices with no generating edges or declared cells provide a concrete
+unsupported vertex. -/
+inductive FiniteIsolatedSupportVertex : Type
+  | active
+  | isolated
+  deriving DecidableEq, Fintype
+
+/-- Empty incidence on the two support-test vertices. -/
+noncomputable abbrev finiteIsolatedSupportBaseShape : IndexedBaseShape where
+  Vertex := FiniteIsolatedSupportVertex
+  vertexFintype := inferInstance
+  Edge := fun _ _ => Empty
+  edgeFintype := fun _ _ => inferInstance
+  TwoCell := Empty
+  twoCellFintype := inferInstance
+  twoSource := fun cell => nomatch cell
+  twoTarget := fun cell => nomatch cell
+
+/-- Empty finite two-shape used only for the negative support instance. -/
+noncomputable abbrev finiteIsolatedSupportShape : IndexedBaseTwoShape where
+  toIndexedBaseShape := finiteIsolatedSupportBaseShape
+  twoLeft := fun cell => nomatch cell
+  twoRight := fun cell => nomatch cell
+
+/-- Constant source diagram on the empty-incidence support-test shape. -/
+noncomputable def finiteIsolatedSupportSource :
+    IndexedBaseDiagram finiteIsolatedSupportShape FiniteModel.carrier where
+  vertex := fun _ => finiteFixtureInstance
+  edge := fun edge => nomatch edge
+  relation := fun cell => nomatch cell
+
+/-- Empty-incidence raw family witnessing a vertex outside support. -/
+noncomputable def finiteIsolatedRawSquareFamily :
+    IndexedRawSquareFamily finiteIsolatedSupportSource where
+  targetVertex := finiteIsolatedSupportSource.vertex
+  index := fun vertex => 𝟙 (finiteIsolatedSupportSource.vertex vertex)
+  targetEdge := fun edge => nomatch edge
+  square := fun edge => nomatch edge
+
+/-- The isolated vertex is a concrete negative instance of `Supports`. -/
+theorem finiteIsolatedRawSquareFamily_not_supports_isolated :
+    ¬ finiteIsolatedRawSquareFamily.Supports
+      FiniteIsolatedSupportVertex.isolated := by
+  simp [IndexedRawSquareFamily.Supports, finiteIsolatedSupportShape,
+    finiteIsolatedSupportBaseShape]
+
 /-! ## Preserved negative branch -/
 
 /-- The Cycle 7 target assignment, now placed on the K5 raw-family shape. -/
@@ -458,6 +570,21 @@ theorem cycle7RawSquareFamily_not_supportEpi :
     (supportEpi finiteNonEpiCoherentVertex
       (cycle7RawSquareFamily.edgeSource_mem_support
         finiteNonEpiCoherentLeftEdge))
+
+/-- The Cycle 7 family is also a concrete negative instance of support-wide
+uniform liftability. -/
+theorem cycle7RawSquareFamily_not_supportUniformLiftable :
+    ¬ cycle7RawSquareFamily.SupportUniformLiftable := by
+  intro liftable
+  exact cycle7RawSquareFamily_not_supportEpi
+    (cycle7RawSquareFamily.supportUniformLiftable_iff_supportEpi.1 liftable)
+
+/-- No support-epi production certificate exists for the Cycle 7 family. -/
+theorem cycle7RawSquareFamily_no_production :
+    ¬ Nonempty cycle7RawSquareFamily.SupportEpiProduction := by
+  rintro ⟨production⟩
+  exact cycle7RawSquareFamily_not_supportUniformLiftable
+    production.uniformAtSupport
 
 /-- The same raw family assigns distinct target arrows to its declared
 parallel one-edge paths, so no target relation can be generated without the
