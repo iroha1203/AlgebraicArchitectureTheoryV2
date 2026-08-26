@@ -8,7 +8,8 @@
   O1–O4。義務台帳の正本は G-116、設計の source note は n1007
   §3–§5)。G-110 の finite-presentation BC を、(i) 全 base 射・全可換
   square 上の pointwise indexed calculus、(ii) coherent base diagram
-  morphism 上の incidence-independent diagnostic assembly、(iii) raw
+  morphism 上の declared base relation に相対的な
+  incidence-independent diagnostic assembly、(iii) raw
   square family の持上げ可能性分類へ展開する。G-113 へは本カードが
   定義する `IndexedBaseDiagramHom` とその diagnostic transport API を
   量化域として供給し、G-113 は再定義しない。O2 の cocartesian lift と
@@ -28,8 +29,11 @@
   任意の base 射・可換 square には indexed action と strongly
   cocartesian 保存を与える。一方、複数 square の target path relation
   を組み立てる入力は diagnostic-free な coherent diagram morphism と
-  して明示し、その全域で (d1)–(d6) を生成する。独立な raw square
-  family から relation を一様に持ち上げる追加問題は、epi 条件の必要
+  して明示し、その全域で (d1)–(d6) を証明する。target
+  `twoCellBase` は target diagram の declared base relation の canonical
+  realization であり、raw square family から生成したとは数えない。
+  独立な raw square family から relation を一様に持ち上げる追加問題は、
+  epi 条件の必要
   十分性・正例・負例で分類する。
 - `core tension`: Cycle 7 は、等しい source path と二つの validated
   square だけから target path equality を一様生成できないことを有限
@@ -37,7 +41,8 @@
   diagramwise coherence を raw square family から自動生成する主張を
   否定する。したがって target diagram の relation を診断 data の field
   や caller-supplied certificate に移さず、診断語彙を含まない base
-  diagram geometry として provenance 付きで固定する必要がある。
+  diagram geometry の direction hypothesis として provenance 付きで
+  固定する必要がある。この相対性を diagnostic data の全生成と表示しない。
 - `rival`: indexed category / Grothendieck fibration の一般論。差は、
   doctrine 塔の具体的な pointwise calculus、coherent diagram 上の診断
   assembly、raw-family liftability の epi 分類、G-110 実経路比較を
@@ -54,7 +59,8 @@
   criteria だけで判定し、runtime state は tracking Issue に置く。
 - `portfolio constraint`: pointwise schema だけ、epi 分類だけ、
   (d1)–(d3)だけでは完了としない。O1–O4、C0–C3、(d1)–(d6)、非 epi
-  coherent 正例、Cycle 7 負例、非自明 finite witness を全て要求する。
+  coherent nontrivial 正例、Cycle 7 負例を全て要求する。非 epi 正例と
+  非自明 finite witness は同一 fixture でなければならない。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、
   反証なら `target-refuted`、全完了条件と final review を満たした場合
   だけ `target-theorem-proved`。
@@ -65,7 +71,8 @@
   vanishing を field で受ける構成、identity action の包み直し、
   arbitrary functor family の供給、pointed square 族への量化域制限、
   paste を comp の定義同値に潰す構成、C0–C3 を `Iff.rfl` 級で済ませる
-  構成、非 epi coherent 正例を欠く epi-only な coherent domain、空診断・
+  構成、非 epi coherent nontrivial 正例を欠く epi-only な coherent
+  domain、空診断・
   恒等 defect・恒等 reselection だけの witness を弾く。
 - `frontier`: G-113 の保守性分類、係数 base change、`J_A` 枝、
   indexed schema の H² 方向。
@@ -93,14 +100,20 @@
      horizontal / vertical pasting と category laws を証明する。この
      structure は package、edge lift、comparator、defect、reselection、
      coherence、vanishing を含まない。
-  4. **(d) coherent diagnostic assembly (O4)**: source diagram 上の ordinary
-     diagnostic interpretation と `IndexedBaseDiagramHom D E` から、
-     target package、edge lift と strongly cocartesian 資格、two-cell
-     base、comparator、mapped reselection を生成し、incidence 仮定なし
-     に (d1) interpretation、(d2) endpoint 群準同型、(d3) transported
-     data、(d4) mapped reselection、(d5) coherence 保存、(d6) vanishing
-     保存を証明する。target 側の diagnostic data は全て output であり、
-     input field や certificate として受けない。
+  4. **(d) coherent diagnostic assembly (O4)**: source / target の
+     diagnostic-free diagram と `IndexedBaseDiagramHom D E` を、ordinary
+     source diagnostic interpretation より先に固定する。target
+     `twoCellBase` は hom の path naturality が送る target declared base
+     relationから canonical に実現する **direction hypothesis 由来成分**
+     であり、raw square family から生成した成果とは数えない。その上で
+     target package、edge lift と strongly cocartesian 資格、comparator、
+     mapped reselection を同一 pointwise action から生成し、source-fiber
+     incidence 仮定なしに (d1) interpretation、(d2) endpoint 群準同型、
+     (d3) relation-relative transported data、(d4) mapped reselection、
+     (d5) coherence 保存、(d6) vanishing 保存を証明する。target 側で
+     input に残せるのは diagnostic-free declared base relation と path
+     naturality だけであり、package、edge、comparator、reselection、
+     coherence、vanishing は全て output / theorem とする。
   5. **(e) G-110 制限比較 (O3)**: pointed pullback square 由来の coherent
      diagram morphism に制限し、(C0) generated direct / via-base functor、
      (C1) package・edge・two-cell base・comparator、(C2) endpoint action・
@@ -112,14 +125,16 @@
      **全 right legs に一様生成できることと source index が `Epi` で
      あることの必要十分性**を証明する。vertexwise epi な raw family から
      coherent diagram morphism を構成する producer を与える。加えて
-     (i) epi でない index を含む具体的 coherent diagram morphism の有限
-     正例、(ii) Cycle 7 の有限 validated non-liftable raw family を保持
-     する。後者は arbitrary raw family の自動 assembly を否定する分類の
-     負枝であり、(d) の coherent domain の反例ではない。
-  7. **(g) witness portfolio**: 非恒等 initial raw defect・非恒等 source
-     reselection・非自明 declared 2-cell を同時に持つ named finite
-     coherent diagram で (d4)–(d6) を発火させる。少なくとも一成分で
-     generated action と identity action の具体像が異なることを示す。
+     (i) epi でない index、非自明 declared 2-cell、非恒等 generated
+     action、非恒等 defect / reselection を同時に含み (d4)–(d6) が
+     発火する具体的 coherent diagram morphism の有限正例、(ii) Cycle 7
+     の有限 validated non-liftable raw family を保持する。後者は
+     arbitrary raw family の自動 assembly を否定する分類の負枝であり、
+     (d) の coherent domain の反例ではない。
+  7. **(g) witness portfolio**: (f)(i) と**同一 fixture**で (d4)–(d6)を
+     発火させ、少なくとも一成分で generated action と identity action
+     の具体像が異なることを示す。別の epi fixture に非自明性を移して
+     (f)(i) を自明 relation で放電してはならない。
 
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。
@@ -130,7 +145,7 @@
   cocartesian comparison / preservation theorem、diagnostic-free
   `IndexedBaseDiagram` / `IndexedBaseDiagramHom` と category API、
   coherent assembly と (d1)–(d6)、C0–C3、epi iff theorem、
-  vertexwise-epi producer、非 epi coherent 正例、Cycle 7 負例、
+  vertexwise-epi producer、非 epi coherent nontrivial 正例、Cycle 7 負例、
   named nontrivial witness、report
   `research/reports/G-111-aat-indexed-base-change-schema.md`。
 - `target proof strategy`: F0 diagnostic-free diagram / hom typing →
@@ -151,8 +166,11 @@
   `$math-lean-review` 4査読全 `No major findings`、CI、merge、Issue
   同期を通過した場合だけ完了する。
 - `target premise discharge policy`: 入力として残せるのは
-  diagnostic-free base diagram / hom、source diagnostic interpretation、
-  witness fixture だけ。target package、edge、two-cell base、comparator、
+  diagnostic-free source / target base diagram と hom
+  (declared base relation / path naturality を含む)、source diagnostic
+  interpretation、witness fixture だけ。target `twoCellBase` は declared
+  base relation の canonical realizationとしてのみ許し、raw family
+  からの生成放電に数えない。target package、edge、comparator、
   reselection、coherence / vanishing certificate、action の値は供給不可。
 - `target material premise ledger`:
   - `G-110 reviewed artifact`: `ambient-boundary`。固定錨 =
@@ -164,17 +182,27 @@
     cleavage と opcartesian 普遍性の入力。provenance = 各 reviewed
     predecessor の固定錨。proof-use = O1/O2 の generated action と
     comparison。結論相当でない理由 = 入力幾何の普遍性だけを供給する。
-  - `Cycle 4–6 pointwise indexed calculus`: `ambient-boundary`。
-    PR #4165–#4167 の reviewed artifact。支える結論 = O1/O2 の既放電
-    部分。provenance = 各PRの reviewed head と merge。proof-use =
-    diagram edge action と assembly engine。結論相当でない理由 =
-    diagramwise path relation と診断 assembly を含まない。
+  - `Cycle 4–6 pointwise indexed calculus`: `discharge-required`
+    (reviewed predecessor により放電済み)。discharge artifact =
+    PR #4165 head `329f14756d8281d612409c5a2848099a9c8a190b` /
+    merge `e08c82663ce0f63a173528b06625ca1849a52da2`、PR #4166
+    reviewed head `f90a1e2a4132504e73f0af7c59650942e4652fa8` /
+    merge `200401e9c2f6ca9adb29bb4e0c946ed49ba32aa8`、PR #4167
+    reviewed head `0040adab3b2926f4c206ba5e85d0f3862ed90494` /
+    merge `d552c4b57c12b523cb2f94dc093b892f60abfdd8`。支える結論 =
+    O1/O2。proof-use = diagram edge action と assembly engine。
+    remaining = diagramwise path relation と diagnostic assembly。
   - `diagnostic-free diagram / hom input`:
-    `conclusion-equivalent-risk`。支える結論 = coherent domain の量化域。
+    `conclusion-equivalent-risk`。target boundary に残す
+    direction hypothesis。支える結論 = coherent domain の量化域と
+    target `twoCellBase` の relation-relative realization。
     provenance = authored base graph、base path equality、vertex index、
-    edge square。proof-use = target two-cell base の生成。監査 artifact =
-    diagnostic-free import / field audit と非 epi coherent 正例。
-    結論相当でない理由 = base path naturality だけを表し、package、
+    edge square。proof-use = target two-cell base の canonical
+    realization。監査 artifact =
+    diagnostic-free import / field audit と非 epi coherent nontrivial
+    正例。結論相当でない理由 = target base relation を方向仮定として
+    **明示的に残す**相対定理であり、その relation を生成済みと数えない。
+    base path naturality だけを表し、package、
     comparator、defect、reselection、coherence、vanishing を含まない。
   - `source diagnostic interpretation`: `direction-hypothesis`。
     source package / edge / comparator、(d4) の source reselection、
@@ -187,29 +215,36 @@
     composition / pasting / path naturality theorem。provenance =
     G-101/G-109 API と base category laws。proof-use = K2–K5 全域。
   - `coherent diagnostic assembly と (d1)–(d6)`:
-    `discharge-required`。discharge artifact = target diagnostic data
-    の生成 theorem と6定理。provenance = 同一 diagram hom と generated
-    pointwise action。proof-use = witness と G-113 供給 API。
+    `discharge-required`。discharge artifact = declared relation の
+    `twoCellBase` realization、残る target diagnostic data の生成 theorem、
+    6定理。provenance = 同一 diagram hom と generated pointwise action。
+    proof-use = witness と G-113 供給 API。declared relation の realization
+    は direction hypothesis の使用であり、discharge credit を与えない。
   - `C0–C3`: `discharge-required`。discharge artifact = G-110 の実経路
     との4層比較と三角形 coherence。provenance = canonical restriction。
     proof-use = named pointed-square regression。
   - `raw-family classification`: `discharge-required`。epi iff、
-    vertexwise-epi producer、非 epi coherent 正例、Cycle 7 負例を
+    vertexwise-epi producer、非 epi coherent nontrivial 正例、Cycle 7 負例を
     finite constructions から固定する。proof-use = iff 両方向と
     coherent domain 非退化監査。
   - `named nontrivial witness`: `discharge-required`。discharge
-    artifact = 非恒等 defect / reselection / declared 2-cell と identity
-    action との差を持つ有限 fixture。provenance = concrete finite data。
-    proof-use = (d4)–(d6) の非空虚性。
+    artifact = raw-family classification の非 epi coherent 正例と同一の、
+    非恒等 defect / reselection / declared 2-cell と identity action の
+    差を持つ有限 fixture。provenance = concrete finite data。proof-use =
+    (d4)–(d6) の非空虚性。
 - `target route integrity gate`: diagnostic-free module は G-101 /
   G-109 と圏論 API のみ import し、diagnostic module が一方向に import
   する。`IndexedBaseDiagram` / `Hom` の定義展開閉包に package、
   comparator、defect、reselection、coherence、vanishing を入れない。
   (d5)(d6) の proof term は source 仮定を実消費する。同一 generated
-  action を (a)–(e) で共有する。raw-family の target path equality を
-  caller certificate として coherent hom に後付けしない。
+  action を (a)–(e) で共有する。source / target diagram と hom は
+  diagnostic interpretation と witness の選定前に固定し、declared
+  relation の provenance を report に記録する。raw-family の target
+  path equality を target-fitting に後付けして raw-family producer の
+  放電と数えない。
 - `target anti-weakening rule`: coherent domain を epi-only に狭めない。
-  arbitrary raw family を coherent hom と同一視しない。共変性、
+  arbitrary raw family を coherent hom と同一視しない。declared base
+  relation からの `twoCellBase` realization を生成成果と表示しない。共変性、
   cocartesian 性、coherence、vanishing を theorem argument、typeclass、
   structure field、well-formedness predicate へ移さない。
 - `target failure policy`: diagnostic-free diagram / hom が要求した

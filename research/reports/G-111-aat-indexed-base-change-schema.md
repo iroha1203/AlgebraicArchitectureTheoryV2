@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / revised target fixed; F0 diagnostic-free diagram typing selected`
+- proof state: `active / human-approved revision under review; F0 selected after merge`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -19,7 +19,9 @@ Cycle 7 は、等しい source path と二つの independently validated square
    Cycle 4–6 の reviewed artifact を保持する。
 2. incidence-independent (d1)–(d6) は、診断語彙を含まない
    `IndexedBaseDiagram` / `IndexedBaseDiagramHom` が与える coherent
-   diagram morphism 全域で assembly する。
+   diagram morphism 全域で、declared base relation に相対して assembly
+   する。target `twoCellBase` はこの direction hypothesis の canonical
+   realizationであり、raw family からの生成成果とは数えない。
 3. arbitrary raw square family の自動 assembly は主張せず、一様持上げ
    可能性と `Epi` の必要十分性、vertexwise-epi producer、非 epi
    coherent 正例、Cycle 7 non-liftable 負例として分類する。
@@ -28,7 +30,8 @@ Cycle 7 は、等しい source path と二つの independently validated square
 `target-refuted` のまま履歴に残り、その有限反例は改訂 target の必須
 負枝へ移る。次の単一 proof obligation は F0:
 diagnostic import を持たない base diagram / hom の Lean signature と
-path-naturality API の型付けである。
+path-naturality API の型付けである。非 epi coherent positive と
+nontrivial (d4)–(d6) witness は同一 fixture で構成する。
 
 ## Cycle ledger
 

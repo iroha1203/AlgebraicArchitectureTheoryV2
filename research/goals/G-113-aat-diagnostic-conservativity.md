@@ -48,9 +48,12 @@
   class・破れの witness・貼り合わせ閉性込みで Lean で固定する」点に
   置く。
 - `claim boundary`: 固定した一般 carrier `U`、G-111 の
-  `IndexedBaseDiagramHom` 上で生成された diagnostic transport
+  `IndexedBaseDiagramHom` の declared base relation に相対して生成された
+  diagnostic transport
   について語る(diagram / hom 型と順方向 API は G-111 の宣言を参照
-  のみ)。任意の独立 raw square family は量化域に含めない。係数は
+  のみ)。target base relation / path naturality は G-111 から継承する
+  direction hypothesis であり、保守性の結論相当 certificate ではない。
+  任意の独立 raw square family は量化域に含めない。係数は
   動かさない。終対象・絶対積は導入しない。G-106 系 raw defect /
   reselection 語彙に一本化(`J_A` defect profile 枝は域外)。carrier
   change・係数 base change・段射影方向の effectivity 反射は域外
