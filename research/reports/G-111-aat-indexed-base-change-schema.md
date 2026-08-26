@@ -682,8 +682,9 @@ result:
   proof_obligation_delta: >-
     The indexed single disk fixes one named face with left and right generating
     paths. Identity base edges carry the finite three-axis support package;
-    the authored comparator and right-edge reselection use the reviewed
-    adjacent swap. The initial canonical comparator is identity, hence the
+    the authored comparator and right-edge reselection use the adjacent swap
+    constructed on that source package in this cycle. The initial canonical
+    comparator is identity, hence the
     initial raw defect is the nonidentity swap. Every participating vertex
     index is the reviewed finite nonidentity Atom transport. Functor naturality
     proves that the generated endpoint image of the same swap is nonidentity.
