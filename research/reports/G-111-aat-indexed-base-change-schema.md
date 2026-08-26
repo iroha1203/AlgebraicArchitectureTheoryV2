@@ -3,8 +3,8 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 18 K5 raw-family classification candidate`
-- completion candidate: `no`
+- proof state: `completion candidate / Cycle 19 K6 cumulative final packet`
+- completion candidate: `yes`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
 checkpoint または predecessor evidence として使用しない。
@@ -1271,6 +1271,214 @@ audits:
         classified SupportEpi as the K5(ii) direction hypothesis.
   blocking_findings: []
   next_obligation: "K6 cumulative final packet and independent completion review"
+```
+
+### Cycle 19 — cumulative completion candidate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 19
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 5257ccd3b81c2bad55f5269e8dd84174ed466599
+pr: pending
+reviewed_head: pending
+tracking_issue: 4158
+report_path: research/reports/G-111-aat-indexed-base-change-schema.md
+selection:
+  proof_state_ref: "Issue #4158 Cycle 18 merged / K6 final packet selected"
+  proof_dag_predecessors:
+    - "Cycle 4-6 pointwise indexed calculus"
+    - "Cycle 10 diagnostic-free diagram category"
+    - "Cycle 11-15 coherent diagnostic assembly, covariance, coherence, vanishing, and witness"
+    - "Cycle 16-17 G-110 restriction comparison C0-C3"
+    - "Cycle 18 raw-family liftability classification"
+  proof_obligation: >-
+    Freeze the cumulative K0-K5 declaration map, material-premise ledger,
+    certificate provenance, proof-use, definition unfolding, dependency DAG,
+    regression decisions, validation commands, and artifact synchronization at
+    one final PR head. Pass the standard PR review and then a separate fresh
+    four-lane math-lean-review against the fixed GOAL and final packet.
+  selection_reason: >-
+    Every theorem-level artifact (a)-(g) is merged. The only remaining work is
+    the K6 fail-closed cumulative completion gate required by the fixed GOAL.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "cumulative reviewed declarations from Cycles 4-18; no new Lean declaration"
+  risks:
+    - a cycle checkpoint is promoted without cumulative claim matching
+    - an ambient or direction premise is misreported as discharged
+    - a discharge-required premise lacks generated certificate provenance or proof-use
+    - a one-way theorem is reported as an equivalence
+    - final packet, review, CI, report, or Issue point to different heads
+  unchecked:
+    - "standard fixed-head PR review"
+    - "same-head final packet"
+    - "fresh independent four-lane completion math-lean-review"
+    - "completion verdict, merge, and final Issue synchronization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The cumulative ledger now maps the fixed target's pointwise calculus,
+    diagnostic-free diagram category, coherent diagnostic assembly and
+    (d1)-(d6), nontrivial witness, C0-C3 restriction comparison, and raw-family
+    classification to their merged Lean artifacts and reviews. Every
+    discharge-required premise has a reviewed predecessor or a concrete
+    generated theorem/witness. Ambient and direction hypotheses remain
+    explicitly classified and are not given discharge credit. The candidate
+    awaits the mandatory same-head review packet and fresh completion review.
+  completion_candidate: yes
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeRaw.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticAssembly.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovariance.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticReselection.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCoherence.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticVanishing.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticCovarianceWitnesses.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCRestrictionComparison.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCDiagnosticCompatibility.lean
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedRawFamilyClassification.lean
+  evidence:
+    - "Cycle 4 PR #4165 reviewed head 329f1475, merge e08c8266"
+    - "Cycle 5 PR #4166 reviewed head f90a1e2a, merge 200401e9"
+    - "Cycle 6 PR #4167 reviewed head 0040adab, merge d552c4b5"
+    - "Cycle 10 PR #4171 reviewed head 2791e027, merge 613606da"
+    - "Cycle 11 PR #4172 merge 27b9f346"
+    - "Cycle 12 PR #4173 merge 7995ea0f"
+    - "Cycle 13 PR #4174 merge 040927ef"
+    - "Cycle 14 PR #4175 merge e71dd442"
+    - "Cycle 15 PR #4176 reviewed head fc541e75, merge aa7aa88d"
+    - "Cycle 16 PR #4177 reviewed head 47625134, merge 0c1f9ee1"
+    - "Cycle 17 PR #4178 corrected reviewed head 25e73001, merge 67d9ae7c"
+    - "Cycle 18 PR #4179 corrected head bb541ce8, merge 5257ccd3"
+  claim_mapping:
+    theorem_names:
+      - IndexedBaseDiagramHom.path_naturality
+      - indexedIdentityComparison
+      - indexedCompositionComparison
+      - indexedHorizontalPastingComparison
+      - indexedVerticalPastingComparison
+      - IndexedDiagnosticInterpretation.transportedInterpretation
+      - indexedCovariantEndpointAction
+      - indexedMappedReselection
+      - indexedCoherentAt_preserved
+      - indexedReselectionOrbitVanishes_preserved
+      - finiteIndexedCovarianceWitness
+      - indexedBCRestrictionDiagnosticCompatibility
+      - indexedBCRestriction_comparison_triangle_app
+      - uniformTargetBaseLiftableAt_iff_epi
+      - IndexedRawSquareFamily.produce_of_supportEpi
+      - finiteNonEpiCoherent_positive
+      - cycle7RawSquareFamily_targetPaths_ne
+    source_labels:
+      - "G-111 target theorem (a)-(b), O1-O2"
+      - "G-111 target theorem (c)-(d), K2-K3"
+      - "G-111 target theorem (e), K4 C0-C3"
+      - "G-111 target theorem (f), K5 classification"
+      - "G-111 target theorem (g), named diagnostic witness"
+    conjuncts:
+      - "validated pointwise indexed arrow/square calculus and coherence"
+      - "diagnostic-free diagram morphisms and coherent (d1)-(d6) assembly"
+      - "G-110 restriction components and comparison triangle"
+      - "local iff, support sufficiency, coherent positive, raw negative"
+      - "one connected named nontrivial diagnostic witness"
+    undischarged_assumptions: []
+    acceptance_point: >-
+      Completion is accepted only if the standard PR review is Mergeable, the
+      same-head final packet has no central unchecked item, and a fresh four-lane
+      completion review returns exactly No major findings.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Cycle 4-6 pointwise indexed calculus"
+      - "diagnostic-free diagram category"
+      - "coherent diagnostic assembly and (d1)-(d6)"
+      - "C0-C3 restriction comparison"
+      - "raw-family classification"
+      - "named nontrivial witness"
+    remaining: []
+  material_premises:
+    - premise: "G-110 reviewed artifact"
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: "PR #4153 reviewed head a1471483, merge 315a2537"
+      proof_use: "Cycle 16-17 direct/via and component comparison"
+    - premise: "G-109 / G-101 core lift API"
+      role: ambient-boundary
+      status: justified-boundary
+      provenance: "reviewed canonical cleavage and opcartesian APIs"
+      proof_use: "Cycle 4-6 generated actions and comparison laws"
+    - premise: "Cycle 4-6 pointwise indexed calculus"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4165-#4167 reviewed theorem families"
+      proof_use: "diagram edges and later assembly engine"
+    - premise: "diagnostic-free diagram / hom input"
+      role: conclusion-equivalent-risk
+      status: justified-boundary
+      provenance: "Cycle 10 base-only field audit and Cycle 18 non-epi coherent positive"
+      proof_use: "declared-relation-relative two-cell realization"
+    - premise: "source diagnostic interpretation"
+      role: direction-hypothesis
+      status: justified-boundary
+      provenance: "ordinary authored source package, edge, comparator, reselection, coherence, vanishing"
+      proof_use: "Cycle 11-14 corresponding forward theorems"
+    - premise: "diagnostic-free diagram category"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4171 finite shape, path, square-pasting, and Category API"
+      proof_use: "Cycle 11-18 diagramwise constructions"
+    - premise: "coherent diagnostic assembly and (d1)-(d6)"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4172-#4175 generated theorem families"
+      proof_use: "Cycle 15 witness and Cycle 17 G-110 adapters"
+    - premise: "C0-C3"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4177-#4178 actual indexed/G-110 comparisons"
+      proof_use: "pointed-square component regression"
+    - premise: "raw-family classification"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4179 local iff, producer, positive and negative finite witnesses"
+      proof_use: "both local iff directions and all support vertices retained in production"
+    - premise: "named nontrivial witness"
+      role: discharge-required
+      status: discharged
+      provenance: "PR #4176 connected finite witness"
+      proof_use: "same-cell (d4)-(d6) nonvacuity"
+  certificate_provenance:
+    discharged:
+      - "pointwise actions are generated by G-109/G-101 canonical transport APIs"
+      - "target diagnostic data is generated from one diagram hom and source interpretation"
+      - "K4 comparisons use actual indexed top/bottom transport and the reviewed G-110 mate"
+      - "raw target relations are generated from validated squares, source relations, and support cancellation"
+    unresolved: []
+  proof_use:
+    used:
+      - "all discharge-required premise families listed above"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "pending final fixed-head command packet"
+  review_verdict:
+    standard_pr_review: pending
+    completion_math_a: pending
+    completion_math_b: pending
+    completion_lean_a: pending
+    completion_lean_b: pending
+  blocking_findings: []
+  next_obligation: "same-head standard review, final packet, fresh completion review, merge, and Issue sync"
 ```
 
 ### Cycle 3 — rejected
