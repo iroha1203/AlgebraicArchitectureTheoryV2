@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Schema and Full-Domain Diagnostic Covariance Theorem
-- proof state: `goal-defect / Cycle 7 K1.5 two-cell base-congruence no-go`
+- proof state: `target-refuted / Cycle 7 K1.5 validated two-cell counterexample`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -240,21 +240,25 @@ selection:
     - silently cancelling a non-epimorphic vertex transport index
     - restricting the full ExtInst_U domain to epimorphic indices
 result:
-  proposed_result_type: goal-defect
+  proposed_result_type: target-refuted
   completion_candidate: no
   proof_obligation_delta: >-
-    Edgewise K1.5 data are constructible from the existing generated action:
-    indexedFiberAction gives vertex packages, indexedSquareTotalMap gives edge
-    maps, Cycle 6 supplies their strongly cocartesian qualifications, and the
-    endpoint core fiber functor supplies the comparator. The remaining
-    twoCellBase field is not generated. Pasting the validated edge squares
-    transports a source equality only to index ≫ left = index ≫ right. Turning
-    this into left = right requires cancellation at the vertex index. The new
-    theorem indexedTargetBaseCongruenceAt_iff_epi proves that the required law
-    is exactly Epi index. A finite one-source to two-source validated index is
-    not epi: identity and a constant target endomorphism are distinct but
-    become equal after precomposition. Therefore the current F0 producer
-    cannot construct the full-domain K1.5/K2 artifact.
+    Pasting validated edge squares transports a source equality only to an
+    equality after precomposition by the vertex index. The generic theorem
+    indexedTargetBaseCongruenceAt_iff_epi identifies unrestricted cancellation
+    with Epi. More decisively, the target-scoped witness duplicates every
+    source of the reviewed finite doctrine by a Boolean tag. The false-tag
+    inclusion is a valid ExtInst arrow. Target identity and constant-tag
+    endomorphisms are distinct but agree after that inclusion. They form two
+    actual ValidatedIndexedBaseSquare leaves over the same source identity
+    edge. finiteTwoLoopPresentation and finiteTwoLoopSourceData provide one
+    finite two-loop presentation with an admissible source two-cell whose path
+    bases are equal. IndexedValidatedTwoCellBaseGeneration states the exact
+    full-domain bridge from an equal source-path pair plus its two validated
+    squares to the target path-base equality, and
+    finiteValidatedSquares_refute_twoCellBaseGeneration proves its negation.
+    Thus the fixed full-domain K1.5/K2 target twoCellBase conjunct has a
+    concrete counterexample.
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeTwoCellNoGo.lean
   evidence:
@@ -263,10 +267,23 @@ result:
     - finiteTwoSourceIdentity_ne_constant
     - finiteOneToTwoIndex_not_epi
     - finiteOneToTwo_no_targetBaseCongruence
+    - indexedTargetBaseCongruenceAt_identity
+    - finiteDuplicateIndex_comp_identity_eq_constant
+    - finiteDuplicateIdentity_ne_constant
+    - finiteDuplicateIdentitySquare
+    - finiteDuplicateConstantSquare
+    - finiteTwoLoopPresentation
+    - finiteTwoLoopSourceData
+    - finiteTwoLoopValidatedSquare
+    - IndexedValidatedTwoCellBaseGeneration
+    - finiteValidatedSquares_refute_twoCellBaseGeneration
   premise_delta:
     discharged: []
-    partial_route:
-      - K1.5 vertex packages, edge maps, edge strongness, and endpoint comparator are generated
+    candidate_route_only:
+      - >-
+        Existing APIs suggest component mappings for vertex packages, edge
+        maps, edge strongness, and endpoint comparators; no assembled adapter
+        is constructed or discharged in this cycle.
     remaining:
       - K1.5 target twoCellBase generation and complete transported-data adapter
       - K2 arbitrary-source target transported data
@@ -277,13 +294,14 @@ result:
     rejected_inputs:
       - caller-supplied target twoCellBase
       - caller-supplied global base action or base-congruence certificate
-    required_signature_repair: >-
-      The raw producer must itself generate a composition- and
-      equality-congruent global base action, for example an ExtInst_U
-      endofunctor together with its indexed natural transport. Merely adding
-      that action or target twoCellBase to adapter input violates the target
-      route-integrity gate. Requiring every index to be epi removes the finite
-      witness but weakens the fixed full-domain meaning.
+    rejected_repairs:
+      - >-
+        Requiring every index to be epi removes the finite witness but weakens
+        the fixed full ExtInst_U domain.
+      - >-
+        Replacing arbitrary validated right-edge squares by images of a global
+        endofunctor changes the fixed all-square meaning; it is a possible new
+        target, not a same-semantics signature repair.
   proof_use:
     used:
       - CategoryTheory.epi_iff_forall_injective
@@ -298,15 +316,39 @@ result:
   validation_refs:
     - "focused single-file check: pass"
     - "targeted module build: pass"
-    - "namespace audit: 12 declarations, standard axioms only"
+    - "namespace audit: 31 declarations, standard axioms only"
   blocking_findings: []
   stop_condition: >-
-    goal-defect: the fixed full-domain semantics can be represented by a
-    repaired signature whose producer generates a global base action, but the
-    current F0 signature does not contain the data needed to generate K1.5
-    twoCellBase. Fixed-target revision is reserved to the human owner.
+    target-refuted: one admissible finite source two-cell and two actual F0
+    validated square leaves have equal source path bases but distinct target
+    path bases. Epi restriction or globally generated right edges would change
+    the fixed target. Any replacement target is reserved to the human owner.
 audits:
   initial_review:
+    exact_head: 377145efb4956445414a8283c88e38e7b38713d4
+    verdict: "0 Accept / 4 Reject"
+    central_findings:
+      - >-
+        The first artifact proved only a generic non-epi cancellation
+        obstruction and did not connect it to finite admissible source data,
+        actual F0 validated squares, or the K1.5/K2 target bridge.
+      - >-
+        The goal-defect classification assumed without proof that a global
+        base action preserved the same all-square semantics; if the fixed
+        bridge is refuted, the failure policy instead requires target-refuted.
+      - >-
+        Component API mappings were described as constructible without an
+        assembled Lean adapter.
+    correction:
+      - >-
+        Add a satisfying identity-index instance, a duplicated-source finite
+        doctrine, two explicit validated square leaves, a one-vertex/two-loop
+        presentation with admissible source data, and the exact target
+        twoCellBase generation law plus its refutation.
+      - >-
+        Reclassify the stop as target-refuted and mark component mappings as an
+        unassembled candidate route rather than discharged output.
+  rerun:
     exact_head: pending
     verdict: pending
     blocking_findings: []
