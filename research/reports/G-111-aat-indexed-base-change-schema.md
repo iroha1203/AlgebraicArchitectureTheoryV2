@@ -650,7 +650,7 @@ cycle: 15
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: e71dd442911b50d7e30c2b2d3851ea8d0500f06b
-pr: pending
+pr: 4176
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 14 merged / named witness selected"
