@@ -49,6 +49,7 @@ goal_blob_sha: 01c3f96149f0e2c1298a8cfd6acc80f16bb52cfa
 goal_sha256: 8383135d79d612accba04c76a3b4f96daa17e69e7fbe72474fed4428d5efd248
 base_oid: e08c82663ce0f63a173528b06625ca1849a52da2
 tracking_issue: 4158
+pr: 4166
 selection:
   proof_obligation: >-
     Discharge the (a)-soundness/K0 coherence API and the linked K1(b1)
@@ -136,7 +137,10 @@ audits:
         Split the claim mapping between (a)-soundness/K0 and K1(b1), mark
         K1(b1) discharged by the same evidence without duplicate credit, and
         retain K1(b2) plus K1.5-K5 as the exact remaining obligations.
-  rerun_status: pending
+  rerun:
+    exact_head: f90a1e2a4132504e73f0af7c59650942e4652fa8
+    verdict: "4 Accept / 0 Reject; No major findings"
+    blocking_findings: []
 ```
 
 ### Cycle 4 — validated raw input と term-indexed generated action
