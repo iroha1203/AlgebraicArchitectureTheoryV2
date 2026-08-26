@@ -1,13 +1,42 @@
-# G-111 — indexed base-change schema と full-domain 診断共変性
+# G-111 — indexed base-change calculus と coherent diagnostic assembly
 
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
-- target theorem: Indexed Base-Change Schema and Full-Domain Diagnostic Covariance Theorem
-- proof state: `target-refuted / Cycle 7 K1.5 validated two-cell counterexample`
+- target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
+- proof state: `active / human-approved revision under review; F0 selected after merge`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
 checkpoint または predecessor evidence として使用しない。
+
+## 2026-08-26 human-approved target revision
+
+Cycle 7 は、等しい source path と二つの independently validated square
+だけから target path equality を一様生成する旧 K1.5 conjunct を有限反例
+で否定した。人間裁定により、Gr4 の責務を次の三面へ分離した。
+
+1. 全 base 射・全可換 square 上の pointwise indexed calculus(O1–O2)は
+   Cycle 4–6 の reviewed artifact を保持する。
+2. incidence-independent (d1)–(d6) は、診断語彙を含まない
+   `IndexedBaseDiagram` / `IndexedBaseDiagramHom` が与える coherent
+   diagram morphism 全域で、declared base relation に相対して assembly
+   する。target `twoCellBase` はこの direction hypothesis の canonical
+   realizationであり、raw family からの生成成果とは数えない。
+3. arbitrary raw square family の自動 assembly は主張せず、一様持上げ
+   可能性と `Epi` の必要十分性、vertexwise-epi producer、非 epi
+   coherent 正例、Cycle 7 non-liftable 負例として分類する。
+
+この改訂は Cycle 7 の反証を消去しない。旧 target は
+`target-refuted` のまま履歴に残り、その有限反例は改訂 target の必須
+負枝へ移る。次の単一 proof obligation は F0:
+diagnostic import を持たない base diagram / hom の Lean signature と
+path-naturality API の型付けである。raw-family classification は
+(i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
+(ii) finite family support 上の vertexwise-epi sufficiency producer、
+(iii) coherent domain の非 epi positive、(iv) Cycle 7 negative に分ける。
+fixed-family の偶発的 liftability iff `Epi` は主張しない。nontrivial
+(d4)–(d6) witness は別の named cell / connected subdiagram で構成し、
+非 epi positive の因果的 diagnostic 発火とは表示しない。
 
 ## Cycle ledger
 

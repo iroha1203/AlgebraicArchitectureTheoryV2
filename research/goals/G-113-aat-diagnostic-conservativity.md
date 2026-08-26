@@ -6,8 +6,10 @@
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第五項の担当カード(担当義務 =
   O13–O18・O20。義務台帳の正本は G-116 カード、設計の source note は
-  n1007 §3–§5)。G-111(順方向 = 共変・経路整合)に対する逆方向カード
-  であり、G-111 の schema 型を再定義せず量化域として消費する(n1007
+  n1007 §3–§5)。G-111(順方向 = coherent diagnostic assembly・経路整合)
+  に対する逆方向カードであり、G-111 の
+  `IndexedBaseDiagramHom` 上の diagnostic transport API を再定義せず
+  量化域として消費する(n1007
   §5 判定線1)。依存は G-111。**新設語彙の命名権**:
   `DiagnosticConservative` の命名は本カード専属。G-111 の statement
   改訂は本カードの draft 差し戻しへ伝播し、本カードの改訂は G-116 の
@@ -17,7 +19,7 @@
 - `predecessor`: G-110(完遂済み。無条件 forward covariance
   (`transportObstructionVanishes_map` 系)と
   `no_bcDiagnosticQualifiedVanishingCounterexample`。固定錨は下記
-  ledger 行)、G-111(indexed schema — 昇格順で先行)、G-106
+  ledger 行)、G-111(coherent diagnostic assembly — 昇格順で先行)、G-106
   (reselection orbit 語彙)、G-109(core pseudofunctor API —
   `CoreFiber` を型に含む seed を消費する)。
 - `tracking issue`: 未起票(active 昇格時に起票)
@@ -45,8 +47,13 @@
   (defect cochain・reselection orbit)水準の保守性を、構造的生成
   class・破れの witness・貼り合わせ閉性込みで Lean で固定する」点に
   置く。
-- `claim boundary`: 固定した一般 carrier `U`、G-111 の full-domain
-  indexed action 上で語る(schema 型は G-111 の宣言を参照のみ)。係数は
+- `claim boundary`: 固定した一般 carrier `U`、G-111 の
+  `IndexedBaseDiagramHom` の declared base relation に相対して生成された
+  diagnostic transport
+  について語る(diagram / hom 型と順方向 API は G-111 の宣言を参照
+  のみ)。target base relation / path naturality は G-111 から継承する
+  direction hypothesis であり、保守性の結論相当 certificate ではない。
+  任意の独立 raw square family は量化域に含めない。係数は
   動かさない。終対象・絶対積は導入しない。G-106 系 raw defect /
   reselection 語彙に一本化(`J_A` defect profile 枝は域外)。carrier
   change・係数 base change・段射影方向の effectivity 反射は域外
@@ -76,9 +83,10 @@
   まま)、係数 base change カードとの接続点。
 
 - `target theorem`: **Diagnostic Conservativity Classification
-  Theorem**。G-111 の indexed schema の上で:
-  1. **(a) `DiagnosticConservative` の定義**: full-domain indexed
-     action 上の述語として新設定義する(Lean に既存宣言は無い —
+  Theorem**。G-111 の coherent diagnostic transport の上で:
+  1. **(a) `DiagnosticConservative` の定義**:
+     `IndexedBaseDiagramHom` が生成する diagnostic transport 上の述語
+     として新設定義する(Lean に既存宣言は無い —
      本カードの建設義務)。
   2. **(b) 生成 class と十分性**: `DiagnosticConservative` を構造的に
      生成する class を探索前固定の構造条件で定義し(結論参照の禁止 —
@@ -120,10 +128,11 @@
   theorem(O17)、`Full` + `Faithful` 決定 artifact(O18)、report
   `research/reports/G-113-aat-diagnostic-conservativity.md`。
 - `target proof strategy`: F0 typing(`DiagnosticConservative` と生成
-  class の signature、G-111 schema 型への接続)→ K0 定義と生成 class →
+  class の signature、G-111 diagram-hom API への接続)→ K0 定義と生成 class →
   K1 十分性と反射 → K2 orbit 検出と O20 → K3 witness 対(class 外の
   破れ+class 内の実発火)→ K4 閉性と (i) 決定。既存成果の利用 map:
-  G-111 indexed schema(量化域)、`InReselectionOrbit`(orbit 語彙)、
+  G-111 coherent diagnostic transport(量化域)、
+  `InReselectionOrbit`(orbit 語彙)、
   `CoreFiberFunctorDefectCochain` 系(fiberwise 作用の seed 型)。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
@@ -134,7 +143,8 @@
   Issue 同期と final review packet 作成、独立 `$math-lean-review`
   4査読全 `No major findings`)を通過すること(正本 =
   target-goal-contract.md)。
-- `target premise discharge policy`: 入力(indexed action・witness
+- `target premise discharge policy`: 入力
+  (`IndexedBaseDiagramHom`・source diagnostic interpretation・witness
   fixture)だけを残せる。保守性・反射・検出の結論相当データの供給は
   放電と数えない。
 - `target material premise ledger`:
@@ -142,8 +152,10 @@
     しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
     `a1471483`、merge `315a2537`)(支える結論 = 順方向無条件性との
     分界と (f) の対照。結論相当でない理由 = 既証明の環境)。
-  - `G-111 indexed schema`: `ambient-boundary`(完遂後に final head を
-    固定して昇格する — 昇格条件。schema 型の再定義禁止。支える結論 =
+  - `G-111 coherent diagnostic assembly`: `ambient-boundary`
+    (完遂後に final head を固定して昇格する — 昇格条件。
+    `IndexedBaseDiagram` / `IndexedBaseDiagramHom` と順方向 API の
+    再定義禁止。支える結論 =
     全 conjunct の量化域)。
   - `G-106 InReselectionOrbit 系`: `ambient-boundary`(固定錨は G-110
     カード ledger の G-106 錨を継承。proof-use = orbit 検出 (d) の
@@ -173,7 +185,7 @@
   argument、typeclass、structure field、certificate field へ移して成功
   扱いしない。`ambient-boundary` に残せるのは入力幾何だけである。
 - `target failure policy`: fail-closed を原則とする。(c)(d)(e) の反証は
-  `target-refuted`。(f) が原理的に不能(保守性が full-domain で無条件
+  `target-refuted`。(f) が原理的に不能(保守性が coherent domain で無条件
   成立し class 制限が空虚)と定理化された場合も、その定理を成果として
   `target-refuted` とする。(i) は決定がどちらでも成功。(a) の型不能・
   statement 不足は `goal-defect`。**生成 class 候補が十分性で落ちた

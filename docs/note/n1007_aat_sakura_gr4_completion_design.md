@@ -149,8 +149,9 @@ monte 由来)と系譜を共有する — 衝突ではなく敬意の系譜と�
 正本は G-110 カード program context。本節は番号の整列のみを行う。
 
 - **gate (i)**: 全 semantic exact-bottom への coverage 拡張と全域作用・
-  分類+(D) 診断 base change の full-domain 化(source-fiber incidence
-  資格の解除 = global / indexed base-change schema の建設)。
+  分類+(D) 診断 base change の coherent diagram morphism 全域化
+  (source-fiber incidence に依らない diagnostic assembly と raw
+  square-family liftability の分類)。
 - **gate (ii)**: refinement 系統(`RefinementDoctrineHom` の圏化と
   refinement base change)。
 - **gate (iii)**: 上段(`GeomRead` / `ObProblem`)への base-change lift
@@ -175,7 +176,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O1 | global / indexed base-change schema の建設(全 `ExtractionInstance` 上の base 作用) | gate (i)・(B) 条項 | G-111 |
 | O2 | 各固定 carrier 内の全 package に対する cocartesian 保存 lift | (B) 条項 | G-111 |
 | O3 | 実 BC 経路との制限比較(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致) | gate (i)・(B) 条項 | G-111 |
-| O4 | (D) の full-domain 化 = source-fiber incidence 資格の解除(indexed 版 (d1)–(d6)) | gate (i)・(D) 移管文 | G-111 |
+| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の同型までの coverage) | gate (i)・frontier | G-112 |
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
 | O7 | 全域作用・分類 = 左枝の読みで「全域 lift の realization 資格外への帰趨決定」(n1001 §3.5 の忠実転写) | gate (i) | G-112 |
@@ -261,21 +262,25 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 
 ### G-111(仮 slug: `G-111-aat-indexed-base-change-schema`)
 
-- **責務**: O1–O4。indexed / global base-change schema の建設と (D) の
-  full-domain 化。
-- **claim 骨格**: (a) 全 `ExtractionInstance` 上の base 作用を持つ
-  indexed schema の定義(authored data は base 作用の生成データのみ —
-  結論相当の certificate field 禁止は G-110 route gate を継承)、
+- **責務**: O1–O4。pointwise indexed calculus、coherent diagnostic
+  assembly、raw square-family liftability 分類。
+- **claim 骨格**: (a) 全 `ExtractionInstance`・全 base 射・全可換 square
+  上の pointwise indexed calculus(authored data は base 射・square の
+  finite syntax のみ)、
   (b) 各固定 carrier 内の全 package に対する cocartesian 保存 lift、
-  (c) 制限比較 theorem — **incidence 資格付き部分域上で**、indexed 作用の
+  (c) diagnostic import を持たない `IndexedBaseDiagram` と
+  `IndexedBaseDiagramHom` の category / path-naturality API、
+  (d) coherent diagram morphism の declared base relation を
+  direction hypothesis として明示し、source diagnostic interpretation
+  から残る target diagnostic data を生成する incidence-independent
+  (d1)–(d6)、(e) 制限比較 theorem — **incidence 資格付き部分域上で**、
+  indexed 作用の
   pointed pullback square への制限が G-110 の実 BC 二経路(direct /
-  via-base)と一致する(現行二経路の型は incidence を引数に取るため、
-  資格なし全域での一致は型に載らない — 資格の解除は (d) の新経路が担い、
-  この分界を statement で固定する)、(d) incidence 資格なしの
-  full-domain (d1)–(d6)(interpretation・endpoint 準同型・transported
-  data・mapped reselection・coherence 保存・vanishing 保存)、
-  (e) named finite nonvacuity(G-110 witness の indexed 昇格 — 初期
-  defect 非恒等+reselection 非恒等)。
+  via-base)と C0–C3 で一致する、(f) raw square family の target path
+  relation の local uniform 持上げが `Epi` と同値であること、finite
+  family support 上の vertexwise-epi sufficiency producer、coherent
+  domain が epi-only でないことの正例、Cycle 7 finite non-liftable
+  負例、(g) 独立の named nontrivial diagnostic witness。
 - **錨(ambient-boundary 予定)**:
   `no_universalBCDiagnosticSourceFiberIncidence`
   (`DoctrineFiberProduct/BCDiagnosticSourceFiberNoGoWitnesses.lean` —
@@ -286,19 +291,19 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   `CoreFiberFunctorDefectCochain` 系
   (`BCDiagnosticBaseChangeAutomorphism.lean` — 全域側の既存 seed 型:
   vertexwise core-fiber functor 族)、G-101 opcartesian 輸送。
-- **供給契約**: G-113 の量化域(full-domain indexed action)、G-112 の
-  作用面の基盤、G-116 の記録。**G-113 は G-111 の schema 型を再定義
-  しない**(語彙正本規則、§5)。
-- **リスク / dullness 骨格**: schema が pointed square 族の再包装に堕ちる
-  経路(no-go theorem が排除した普遍生成の逆流)、base 作用を supplied
-  certificate で受ける経路、制限比較 (c) の定義展開放電。**edge 適合
-  データの資格**: full-domain の coherence 保存は現行の単一 functor 関手
-  性証明では成立せず、vertexwise 族の edge 適合(naturality)データを
-  要する — これを authored 生成データと結論相当 certificate のどちらに
-  分類するかの資格条項を F0 前に固定する。universe 義務は F0 で型突合
-  してから台帳固定(§3 universe 注記)。
-- **failure 骨格**: schema の型不能は `goal-defect`、(d) の反例構成は
-  中心 conjunct 反証 = `target-refuted`(fail-closed、改訂は人間裁定)。
+- **供給契約**: G-113 の量化域
+  (`IndexedBaseDiagramHom` 上の diagnostic transport)、G-112 の作用面
+  の基盤、G-116 の記録。G-113 は diagram / hom 型を再定義しない。
+- **リスク / dullness 骨格**: diagram geometry が
+  `AdmissibleTransportData` の wrapper に堕ちる経路、target
+  diagnostic data を supplied certificate で受ける経路、coherent
+  domain を epi-only に狭める経路、local uniform iff と fixed-family
+  偶発的 liftability を混同する経路、制限比較の定義展開放電。Cycle 7
+  負例は raw-family 分類の必須負枝として保持する。
+- **failure 骨格**: diagnostic-free diagram / hom の型不能は
+  `goal-defect`、coherent domain 上の assembly / (d1)–(d6) の反例、
+  または epi iff の反証は `target-refuted`。declared base relation の
+  `twoCellBase` realization は生成成果に数えない。
 
 ### G-112(仮 slug: `G-112-aat-exact-bottom-coverage`)
 
@@ -344,8 +349,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 
 - **責務**: O13–O18・O20。診断保守性・反射・orbit exactness の分類。
 - **claim 骨格**: (a) **`DiagnosticConservative` の新設定義**(Lean 不在を
-  実査確認済み — G-111 の full-domain indexed action 上の述語として本
-  カードが建設する)、(b) 構造的生成 class の固定と十分性 theorem
+  実査確認済み — G-111 の `IndexedBaseDiagramHom` が生成する
+  diagnostic transport 上の述語として本カードが建設する)、
+  (b) 構造的生成 class の固定と十分性 theorem
   (class は探索前固定の構造条件で立て、結論参照を禁じる — G-110
   `H_cart` 資格条項の様式)、(c) 反射 theorem — class 上で target
   obstruction vanishing → source vanishing(**非自明性の根拠**: (d2)
@@ -363,7 +369,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   の恒等・水平・垂直貼り合わせ閉性、(i) 生成診断部分圏上の `Full` +
   `Faithful` 十分条件候補の statement 固定と、生成 class との関係(含意・
   同値・反例)の決定。
-- **錨**: G-111 indexed schema(依存 — 量化域)、`InReselectionOrbit`
+- **錨**: G-111 coherent diagnostic transport(依存 — 量化域)、
+  `InReselectionOrbit`
   (`TransportCoherence/FinitePresentation.lean`)、
   `CoreFiberFunctorDefectCochain` 系
   (`BCDiagnosticBaseChangeAutomorphism.lean`)。
@@ -375,8 +382,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   G-109 effectivity 反射(域外)と別物** — この分界を statement に明記
   する(§5 判定線)。
 - **failure 骨格**: (c)(d)(e) の反証は `target-refuted`(fail-closed)。
-  (f) が原理的に不能(保守性が full-domain で無条件成立し class 制限が
-  空虚)と定理化された場合も、その定理を成果として `target-refuted` と
+  (f) が原理的に不能(保守性が coherent relative domain で無条件成立し
+  class 制限が空虚)と定理化された場合も、その定理を成果として
+  `target-refuted` と
   する。(i) は決定がどちらでも成功。
 
 ### G-114(仮 slug: `G-114-aat-refinement-base-change`)
@@ -497,9 +505,10 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 
 **重複防止の判定線(5本)**:
 
-1. **G-111 / G-113**: G-111 = indexed 作用の存在と順方向性質(共変・
-   経路整合)、G-113 = 同じ作用の逆方向性質(保守・反射・検出)。
-   G-113 は G-111 の schema 型を再定義せず量化域として消費する。
+1. **G-111 / G-113**: G-111 = pointwise indexed calculus と coherent
+   diagram morphism 上の順方向 diagnostic assembly、G-113 = 同じ
+   transport の逆方向性質(保守・反射・検出)。G-113 は G-111 の
+   diagram / hom 型と順方向 API を再定義せず量化域として消費する。
 2. **G-111 / G-112**: G-111 = 診断・輸送側(cocartesian 保存 lift =
    O2 を含む)、G-112 = cartesian lift・coverage 側。**cocartesian
    (O2)と strong cartesian(O7)は別の lift であり、混同は義務の
@@ -522,7 +531,8 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 新しい宣言として建てる。錨に書けるのは、現行 head に実在する宣言名だけで
 ある。除去済みの宣言や「旧〜」のような経緯付きの参照はカードに書かず、
 経緯は tracking Issue に置く。新しい語彙を定義する権利はカード一枚に
-専属させる — indexed schema 型 = G-111、`DiagnosticConservative` =
+専属させる — `IndexedBaseDiagram` / `IndexedBaseDiagramHom` =
+G-111、`DiagnosticConservative` =
 G-113、refinement 圏 = G-114、`ObProblem` interface = G-115。命名が
 重複・分散していないかは batch レビューで検査する。
 
@@ -605,8 +615,10 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
-   O6 / O7 / O12・G-113 (i)・G-114 (b) の確定枝、§3 域外リスト
-   (carrier change 含む)、達成階梯対応表(§8)を含む。
+   O6 / O7 / O12・G-113 (i)・G-114 (b) の確定枝、任意の独立 raw
+   square family が自動的には coherent diagnostic assembly をなさない
+   G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
+   達成階梯対応表(§8)を含む。
 
 達成記録をもって Gr 階梯(Gr0–Gr4)は閉じる。以降の隊列(係数 base
 change 方向)は n1005 §5 の後続 draft 候補に従い、次の海域の命名は §1 の
@@ -626,7 +638,8 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
   保守性の分類」。
 - **構成 = Foundation / Main 二階建て**(n1006 §6 と同型):
   - Foundation(構成が主で失敗しえない層): G-101 圏・輸送 schema、
-    G-106 障害語彙、G-108 塔上層、G-111 indexed schema、G-114 圏化、
+    G-106 障害語彙、G-108 塔上層、G-111 coherent indexed calculus、
+    G-114 圏化、
     G-115 上段 interface。
   - Main(失敗しうる主張の層): G-109 障害合成と gluing、G-110 (A)–(E)
     (普遍性・左枝 lift・BC exactness と相対 canonicity・診断共変性・
