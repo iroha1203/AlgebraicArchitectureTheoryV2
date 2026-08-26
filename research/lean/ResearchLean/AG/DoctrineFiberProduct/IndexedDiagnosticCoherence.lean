@@ -19,6 +19,7 @@ universe u
 open CategoryTheory
 open AtomFoundation CrossStageCoherence TransportCoherence
 
+/-- The underlying fiber morphism of the generated endpoint action. -/
 private theorem mappedPackageFiberAut_hom
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
     (F : CategoryTheory.Functor (CoreFiber X) (CoreFiber Y))
@@ -36,6 +37,7 @@ private theorem mappedPackageFiberAut_hom
     ((F.mapAut P) ((packageFiberAutCoreFiberEquiv P) automorphism))
   exact congrArg Iso.hom equality
 
+/-- Forgetting the fiber tag recovers the package-total automorphism morphism. -/
 private theorem packageFiberAutCoreFiberEquiv_hom_value
     {U : AtomCarrier.{u}} {X : ExtractionInstance U}
     (P : CoreFiber X) (automorphism : PackageFiberAut P.1) :
@@ -44,6 +46,7 @@ private theorem packageFiberAutCoreFiberEquiv_hom_value
   rcases P with ⟨P, rfl⟩
   rfl
 
+/-- Package-total composition in the ambient category is associative. -/
 private theorem packageTotalHom_comp_assoc
     {U : AtomCarrier.{u}} {P Q R S : AATCorePackage U}
     (first : PackageTotalHom P Q) (second : PackageTotalHom Q R)

@@ -23,6 +23,7 @@ open CategoryTheory
 open AtomFoundation CrossStageCoherence
 open TransportCoherence
 
+/-- A strong lift is strong over its actual projected base morphism. -/
 private theorem stronglyCocartesian_map_of_strongLift
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
     {P Q : AATCorePackage U} (base : X ⟶ Y)
