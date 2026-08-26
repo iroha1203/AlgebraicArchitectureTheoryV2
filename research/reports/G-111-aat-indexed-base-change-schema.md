@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Schema and Full-Domain Diagnostic Covariance Theorem
-- proof state: `active / Cycle 6 K1(b2) strongly cocartesian preservation`
+- proof state: `goal-defect / Cycle 7 K1.5 two-cell base-congruence no-go`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -214,6 +214,101 @@ audits:
   initial_review:
     exact_head: 0040adab3b2926f4c206ba5e85d0f3862ed90494
     verdict: "4 Accept / 0 Reject; No major findings"
+    blocking_findings: []
+```
+
+### Cycle 7 — K1.5 two-cell base-congruence no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 7
+goal_blob_sha: 01c3f96149f0e2c1298a8cfd6acc80f16bb52cfa
+goal_sha256: 8383135d79d612accba04c76a3b4f96daa17e69e7fbe72474fed4428d5efd248
+base_oid: d552c4b57c12b523cb2f94dc093b892f60abfdd8
+tracking_issue: 4158
+selection:
+  proof_obligation: >-
+    Construct K1.5, the morphism-indexed adapter from the Cycle 4 generated
+    action to the G-110 DiagnosticPackageTotalAction interface, and then use
+    that same output in K2. In particular, determine whether source two-cell
+    base equalities generate the target twoCellBase field without accepting
+    target diagnostic data or a target equality certificate from the caller.
+  expected_result_type: proof-obligation-discharged-or-formal-stop
+  risks:
+    - supplying target twoCellBase as authored adapter input
+    - silently cancelling a non-epimorphic vertex transport index
+    - restricting the full ExtInst_U domain to epimorphic indices
+result:
+  proposed_result_type: goal-defect
+  completion_candidate: no
+  proof_obligation_delta: >-
+    Edgewise K1.5 data are constructible from the existing generated action:
+    indexedFiberAction gives vertex packages, indexedSquareTotalMap gives edge
+    maps, Cycle 6 supplies their strongly cocartesian qualifications, and the
+    endpoint core fiber functor supplies the comparator. The remaining
+    twoCellBase field is not generated. Pasting the validated edge squares
+    transports a source equality only to index ≫ left = index ≫ right. Turning
+    this into left = right requires cancellation at the vertex index. The new
+    theorem indexedTargetBaseCongruenceAt_iff_epi proves that the required law
+    is exactly Epi index. A finite one-source to two-source validated index is
+    not epi: identity and a constant target endomorphism are distinct but
+    become equal after precomposition. Therefore the current F0 producer
+    cannot construct the full-domain K1.5/K2 artifact.
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBaseChangeTwoCellNoGo.lean
+  evidence:
+    - indexedTargetBaseCongruenceAt_iff_epi
+    - finiteOneToTwo_comp_identity_eq_constant
+    - finiteTwoSourceIdentity_ne_constant
+    - finiteOneToTwoIndex_not_epi
+    - finiteOneToTwo_no_targetBaseCongruence
+  premise_delta:
+    discharged: []
+    partial_route:
+      - K1.5 vertex packages, edge maps, edge strongness, and endpoint comparator are generated
+    remaining:
+      - K1.5 target twoCellBase generation and complete transported-data adapter
+      - K2 arbitrary-source target transported data
+      - K3 C0-C3 restriction comparison
+      - K4 d1-d6 full-domain covariance
+      - K5 named nonvacuity and proper-extension witnesses
+  certificate_provenance:
+    rejected_inputs:
+      - caller-supplied target twoCellBase
+      - caller-supplied global base action or base-congruence certificate
+    required_signature_repair: >-
+      The raw producer must itself generate a composition- and
+      equality-congruent global base action, for example an ExtInst_U
+      endofunctor together with its indexed natural transport. Merely adding
+      that action or target twoCellBase to adapter input violates the target
+      route-integrity gate. Requiring every index to be epi removes the finite
+      witness but weakens the fixed full-domain meaning.
+  proof_use:
+    used:
+      - CategoryTheory.epi_iff_forall_injective
+      - cancel_epi
+      - ExtInstHom.ext
+      - ExactDoctrineHom.ext
+      - typedPresentationToSemantic
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "focused single-file check: pass"
+    - "targeted module build: pass"
+    - "namespace audit: 12 declarations, standard axioms only"
+  blocking_findings: []
+  stop_condition: >-
+    goal-defect: the fixed full-domain semantics can be represented by a
+    repaired signature whose producer generates a global base action, but the
+    current F0 signature does not contain the data needed to generate K1.5
+    twoCellBase. Fixed-target revision is reserved to the human owner.
+audits:
+  initial_review:
+    exact_head: pending
+    verdict: pending
     blocking_findings: []
 ```
 
