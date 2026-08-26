@@ -177,9 +177,9 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O2 | 各固定 carrier 内の全 package に対する cocartesian 保存 lift | (B) 条項 | G-111 |
 | O3 | 実 BC 経路との制限比較(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致) | gate (i)・(B) 条項 | G-111 |
 | O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
-| O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の同型までの coverage) | gate (i)・frontier | G-112 |
+| O5 | coverage 拡張第一段(`U.Atom` 有限・source / target 両 endpoint の `Source` 有限の上の同型までの coverage) | gate (i)・frontier | G-112 |
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
-| O7 | 全域作用・分類 = 左枝の読みで「全域 lift の realization 資格外への帰趨決定」(n1001 §3.5 の忠実転写) | gate (i) | G-112 |
+| O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 | gate (ii) | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
@@ -201,11 +201,12 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
   対応する — 移管義務の消滅なしをここで固定する。
 - n1005 §4.3 (D) の「情報損失の分類」は O13(class 分類)と O16(破れの
   実在 = 情報損失の witness)が担う。
-- **universe 注記**: O1・O2・O6・O7・O12 の universe 契約は F0 typing
-  cycle で Lean の宇宙割当と型突合した上で確定する。symbolic universe で
-  型不能と判明した場合は枝条件付き・endpoint 固定の契約へ**再表現**する
-  (義務の削除ではない — G-110 (B) の枝条件付き universe 移送契約を設計
-  前例とする)。
+- **universe 注記**: O1・O2・O6・O12 の universe 契約は F0 typing
+  cycle で Lean の宇宙割当と型突合した上で確定する(O7 は G-110
+  reviewed 宣言の universe 契約を継承し、fallback 対象外)。symbolic
+  universe で型不能と判明した場合は枝条件付き・endpoint 固定の契約へ
+  **再表現**する(義務の削除ではない — G-110 (B) の枝条件付き
+  universe 移送契約を設計前例とする)。
 
 **域外リスト(Gr4 に含めない隣接義務 — capstone 範囲併記の正本)**:
 
@@ -311,28 +312,36 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **claim 骨格**: (a) 第一段 coverage theorem — 有限 carrier・有限
   Source 上の全 semantic exact-bottom 射が同型まで realization 像に入る
   (G-110 frontier の第一段)、(b) 第二段 = sector 全域の帰趨決定 —
-  全域 coverage theorem または「成立域の特徴付け+像外反例」の**二枝
-  disjunction 単一命題**(G-110 (B) の分岐固定様式)。**設計事実**:
+  全域 coverage theorem または「成立域の特徴付け+同型閉包外反例」の
+  **二枝 disjunction 単一命題**(G-110 (B) の分岐固定様式)。**設計事実**:
   (s1) の有限 Source 固定により、無限 Source を端点に持つ semantic 射は
   原理的に像外であり、負枝が構造的に近い。したがって負枝は cardinality
   反例だけでは放電と数えず、**成立域の特徴付け述語に G-110 `H_cart` と
   同水準の資格条項**(探索前固定の条件言語・結論非参照・同型不変性・
   閉性)を課す — 「realization 像の定義の言い換え」述語は資格違反と
-  する。正枝の量化域(有限 Source 制限の有無)は起票時の裁定事項、
-  (c) 全域 lift の帰趨 — G-110 左枝(全域 strong cartesian lift)の
-  realization 資格外への拡張成立、または成立域の特徴付け+反例。
-  **計上規律**: O6 正枝確定時に O7 が左枝定理の同型輸送の系として従う
-  場合、独立放電と数えず系として記録する、(d) 拡張域での id / comp /
-  pullback / pasting 閉性。
+  する。正枝の量化域は sector 全域で裁定済み(2026-08-26、有限
+  Source 制限なし・両枝一致)、
+  (c) semantic-global strong cartesian lift の正枝確定 — 実装実査
+  (2026-08-26)により、G-110 reviewed 内部宣言
+  `strongCartesianLiftOfTarget` が realization 資格なしの任意
+  semantic 入力に lift を構成済み。義務は Gr4 正本 wrapper・
+  proof-use audit・記録であり、新規証明成果に数えない(計上規律)、
+  (d) coverage 成立域での anchor 相対 id / comp / pullback 閉性と、
+  (e) semantic-global cleavage / reindexing functor の unitor・
+  compositor・triangle・pentagon coherence(pullback / pasting square
+  水準は含めず、BC mate / lax square exchange は O12)。
 - **universe 予告**: 反例枝の witness は per-universe 固定または枝条件
   付き endpoint 契約で立てる(無限 carrier 反例は有限 fixture の内部
   生成 lift による universe 移送が使えず、cross-universe reindexing は
   域外のため — §3 universe 注記の適用第一号)。
-- **錨**: `GlobalCartesianLift` / `CartesianRegime` /
+- **錨**: `strongCartesianLiftOfTarget`(`CartesianTarget.lean` —
+  semantic-global lift)、`GlobalCartesianLift` / `CartesianRegime` /
   `cartesianRegimeOfDisjunction`
   (`DoctrineFiberProduct/CartesianRegimeSchema.lean`・
   `CartesianBranchArtifact.lean`)、`cartesianLiftNonexistence_isEmpty`
-  (`CartesianBranch.lean`)、presentation 閉性 constructor 4種、
+  (`CartesianBranch.lean`)、`CartConditionSyntax` /
+  `rebaseCartCondition` / `CartSemanticInputIso`(条件言語と coverage
+  witness の設計前例)、presentation 閉性 constructor 4種、
   `FiniteModel`(witness 計算)。
 - **供給契約**: G-116 の範囲併記(coverage 到達段と確定枝の記録)。
   G-112 の分類結果は G-113 / G-114 / G-115 の量化域を変更しない(各
@@ -342,8 +351,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   排除)、cardinality 反例のみの放電、第一段 coverage の単一 fixture
   列挙代替。
 - **failure 骨格**: (a) の反例は中心 conjunct 反証 = `target-refuted`。
-  (b)(c) は二枝 disjunction なのでどちらの枝も成功、両枝とも閉じない
-  場合は `target-blocked`。
+  (b) は二枝 disjunction なのでどちらの枝も成功、両枝とも閉じない
+  場合は `target-blocked`((c) は reviewed predecessor discharge —
+  実装実査 2026-08-26)。
 
 ### G-113(仮 slug: `G-113-aat-diagnostic-conservativity`)
 
@@ -541,7 +551,8 @@ Lean で型が立つことを確かめてから台帳に固定する(確かめ�
 typing cycle)。symbolic universe で原理的に型が立たない要求は、その
 ままの形では台帳に置かず、枝条件付き・endpoint 固定の契約に直して
 立てる(G-110 (B) の universe 移送契約が設計前例)。適用対象は §3 の
-universe 注記が先に指名している(O1・O2・O6・O7・O12)— 台帳の固定が
+universe 注記が先に指名している(O1・O2・O6・O12。O7 は G-110
+reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の固定が
 型の確認より先に走る事故をここで防ぐ。
 
 **依存 DAG と伝播規定**:
@@ -601,9 +612,10 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 枝で確定しても帰趨確定である(n1001 §3.5「相対的視点の全操作が閉じる」の
 このノートでの読み)。ただし記録の書き方は、全域で成立したと読める形を
 避け、確定した枝を全て併記する(G-110 completion criteria の慎重条項の
-継承)。**裁定事項**: O6・O7・O12 がすべて反例枝で確定した場合に、記録の
+継承)。**裁定事項**: O6・O12 がともに反例枝で確定した場合に、記録の
 見出し語を「Gr4 達成」とするか「帰趨決定+成立域限定」とするかは、枝が
-出揃った時点でユーザーが裁定する。
+出揃った時点でユーザーが裁定する(O7 は semantic-global 正枝で確定済み
+— 実装実査 2026-08-26、反例枝を持たない)。
 
 成立条件:
 
@@ -615,7 +627,8 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
-   O6 / O7 / O12・G-113 (i)・G-114 (b) の確定枝、任意の独立 raw
+   O6 / O12・G-113 (i)・G-114 (b) の確定枝と O7 の semantic-global
+   正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
    G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
    達成階梯対応表(§8)を含む。
