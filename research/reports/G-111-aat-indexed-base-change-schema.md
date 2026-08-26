@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 17 K4 component comparison candidate`
+- proof state: `active / Cycle 18 K5 raw-family classification candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -35,9 +35,8 @@ interpretation、endpoint group homomorphism、relation-relative data を
 (d1)--(d3) の定理面へ固定した。Cycle 13 は同じ endpoint action で
 source reselection を写す K3 (d4) を確定した。K3 (d5)--(d6) は Cycle 14
 で確定し、Cycle 15 は同じ named cell 上で非自明性と (d4)--(d6) の発火を
-固定する diagnostic witness を確定した。現在の proof obligation は K4
-C0--C3 であり、Cycle 16 はまず walking-arrow restriction による C0 と
-C3 の mate-level core を G-110 の実 route へ接続する。
+固定する diagnostic witness を確定した。Cycle 16--17 は K4 C0--C3 を
+G-110 の実 route へ接続した。現在の proof obligation は K5 である。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -1103,6 +1102,175 @@ audits:
         the three named canonical isomorphisms.
   blocking_findings: []
   next_obligation: "K5 local epi iff, finite-support producer, non-epi coherent positive, and Cycle 7 negative"
+```
+
+### Cycle 18 — finite raw-family liftability classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 18
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 67d9ae7cac9fa931682259bdad7cd9bd6a654182
+pr: 4179
+reviewed_head: 3ccac1e1b196596c9fff74b44812bee158d64724
+corrected_head: bb541ce8fbff0fd90c00713f0eae8e2b33fc0b5a
+tracking_issue: 4158
+report_path: research/reports/G-111-aat-indexed-base-change-schema.md
+selection:
+  proof_state_ref: "Issue #4158 Cycle 17 merged / K5 selected"
+  proof_dag_predecessors:
+    - "Cycle 7 finite validated two-square non-liftability witness"
+    - "Cycle 10 diagnostic-free IndexedBaseDiagram and IndexedBaseDiagramHom"
+    - "Cycle 17 completed K4 component compatibility"
+  proof_obligation: >-
+    Define uniform target-base liftability at one vertex and prove it equivalent
+    to epimorphicity. Define one finite raw square family and its incidence
+    support. Prove that epimorphicity at every support vertex generates the
+    target declared relations and a coherent IndexedBaseDiagramHom. Supply a
+    coherent finite positive with a non-epi participating index, distinct
+    parallel path syntax, and a nonidentity participating target action. Retain
+    Cycle 7 as an actual raw-family negative branch.
+  selection_reason: >-
+    K4 is merged, so this is the sole remaining theorem-level obligation family
+    before the K6 cumulative completion packet.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedRawFamilyClassification.lean
+  risks:
+    - fixed-family accidental coherence is overstated as epi necessity
+    - support omits an owned generating-square or declared-cell source
+    - square commutativity is supplied as a bare equality instead of validated input
+    - the non-epi positive is credited with diagnostic firing
+    - the Cycle 7 negative is only renamed and not connected to the new raw-family surface
+  unchecked:
+    - "K6 cumulative final packet and independent completion review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    UniformTargetBaseLiftableAt keeps the endpoint and both target legs
+    universally quantified and is equivalent to Epi. IndexedRawSquareFamily
+    owns target vertices, vertex indices, target generating edges, and actual
+    ValidatedIndexedBaseSquare inputs. Its finite support is exactly the source
+    incidence of owned generating edges or declared cells. SupportEpi produces
+    the pointwise uniform theorem, all target declared relations, the coherent
+    target diagram, and an IndexedBaseDiagramHom. No converse is asserted for
+    one fixed family. A one-vertex two-loop coherent positive combines a
+    non-epi index, syntactically distinct paths, and a nonidentity target base
+    action without any diagnostic-firing claim. The Cycle 7 identity/constant
+    squares are additionally assembled into the new raw-family type; their
+    support hypothesis fails and their target paths remain unequal.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedRawFamilyClassification.lean
+  evidence:
+    - UniformTargetBaseLiftableAt
+    - uniformTargetBaseLiftableAt_iff_epi
+    - IndexedRawSquareFamily
+    - IndexedRawSquareFamily.support
+    - IndexedRawSquareFamily.edgeSource_mem_support
+    - IndexedRawSquareFamily.twoSource_mem_support
+    - IndexedRawSquareFamily.supportUniformLiftable_iff_supportEpi
+    - IndexedRawSquareFamily.path_naturality
+    - IndexedRawSquareFamily.targetRelation_of_supportLiftable
+    - IndexedRawSquareFamily.produce_of_supportEpi
+    - finiteIdentity_uniformTargetBaseLiftableAt
+    - finiteDuplicate_not_uniformTargetBaseLiftableAt
+    - finiteIdentityRawSquareFamily_supports_vertex
+    - finiteIsolatedRawSquareFamily_not_supports_isolated
+    - finiteIdentityRawSquareFamily_supportEpi
+    - finiteIdentityRawSquareFamily_supportUniformLiftable
+    - finiteIdentityRawSquareFamily_production
+    - finiteDuplicateIndex_not_epi
+    - finiteNonEpiCoherent_paths_ne
+    - finiteNonEpiCoherent_action_ne_identity
+    - finiteNonEpiCoherent_positive
+    - cycle7RawSquareFamily
+    - cycle7RawSquareFamily_not_supportEpi
+    - cycle7RawSquareFamily_not_supportUniformLiftable
+    - cycle7RawSquareFamily_no_production
+    - cycle7RawSquareFamily_targetPaths_ne
+    - cycle7_finiteValidatedSquares_nonLiftable
+  claim_mapping:
+    theorem_names:
+      - uniformTargetBaseLiftableAt_iff_epi
+      - IndexedRawSquareFamily.produce_of_supportEpi
+      - finiteNonEpiCoherent_positive
+      - cycle7RawSquareFamily_not_supportEpi
+      - cycle7RawSquareFamily_targetPaths_ne
+    source_labels:
+      - "G-111 target theorem K5(i)"
+      - "G-111 target theorem K5(ii)"
+      - "G-111 target theorem K5(iii)"
+      - "G-111 target theorem K5(iv)"
+    conjuncts:
+      - "uniform local liftability at one index iff Epi"
+      - "support-indexed vertexwise epi -> coherent target and diagram hom"
+      - "finite coherent non-epi positive with distinct paths and nonidentity action"
+      - "finite validated raw-family negative with unequal target paths"
+    material_premise_classification:
+      direction_hypothesis:
+        - "Epi at each source vertex occurring in the selected finite raw family, as fixed by K5(ii)"
+      undischarged: []
+    undischarged_assumptions: []
+    acceptance_point: >-
+      K5 is discharged if fixed-head review confirms exact local quantifiers,
+      validated-square provenance, complete support incidence, one-way producer
+      scope, honest positive witness separation, and a direct Cycle 7 bridge.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K5 local uniform liftability iff epimorphicity"
+      - "K5 support-indexed sufficient producer"
+      - "K5 finite coherent non-epi positive"
+      - "K5 finite non-liftable raw-family negative"
+    remaining:
+      - "K6 cumulative final packet and independent completion review"
+  certificate_provenance:
+    discharged:
+      - "raw generating squares are ValidatedIndexedBaseSquare values"
+      - "target relations are generated by source relation, pasted square laws, and support liftability"
+      - "diagram morphism naturality is generated from validated square terms"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 7 indexedTargetBaseCongruenceAt_iff_epi"
+      - "Cycle 7 finite identity/constant validated squares"
+      - "Cycle 10 path evaluation and IndexedBaseDiagramHom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused lake env lean IndexedRawFamilyClassification.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedRawFamilyClassification: pass"
+    - "namespace axiom audit: 157 declarations, standard axioms only"
+    - "initial fixed-head review: 4/4 center claims pass with noncentral findings"
+    - "finding-limited direct correction check at bb541ce8: PASS"
+    - "corrected-head CI: 7/7 pass"
+  review_verdict:
+    lean_a: minor-issues-resolved-direct
+    lean_b: minor-issues-resolved-direct
+    math_a: minor-issues-resolved-direct
+    math_b: minor-issues-resolved-direct
+  correction_history:
+    - reviewed_head: 3ccac1e1b196596c9fff74b44812bee158d64724
+      findings:
+        - "new classification predicates lacked explicit concrete positive and negative instances"
+        - "nontrivial total-family/support design choices lacked required Implementation notes"
+        - "SupportEpi was listed as undischarged instead of a fixed-statement direction hypothesis"
+      resolution: >-
+        Added concrete local, support, uniform-support, and production instance
+        pairs; documented the total-family, source-incidence, relation-free, and
+        production-certificate design choices and rejected alternatives; and
+        classified SupportEpi as the K5(ii) direction hypothesis.
+  blocking_findings: []
+  next_obligation: "K6 cumulative final packet and independent completion review"
 ```
 
 ### Cycle 3 — rejected
