@@ -529,6 +529,7 @@ cycle: 14
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 040927ef0633433f5a730ec4a43c3cb837fed993
+pr: 4175
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 13 merged / K3 d5-d6 selected"
