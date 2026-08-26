@@ -18,22 +18,38 @@
   (G-110)の statement が改訂された場合、本カードは draft へ差し戻し
   て再固定する(伝播規定)。report は coverage 到達段と確定枝を
   G-116 の範囲併記へ突合可能な形で記録する(供給契約)。
+  **O7 の位置付け(実装実査 2026-08-26)**: G-110 reviewed 内部宣言
+  `strongCartesianLiftOfTarget`(CartesianTarget.lean)は、
+  realization 資格なしの任意 `CartSemanticInput` と任意 target
+  package に対して strong cartesian lift を既に構成している(G-110
+  固定 statement `globalCartesianLift` はその realization 制限)。
+  したがって O7 は未決の帰趨決定ではなく、この reviewed 定理の
+  semantic-global fixed statement への昇格・proof-use audit・記録を
+  義務とする(下記 (c))。
   **O6 量化域(人間裁定済み 2026-08-26)**: 第二段の二枝 disjunction
   は**有限 Source 制限なしの sector 全域**で量化し、両枝の量化域は
-  一致させる(排他性様式の保護 — (b)(c) の双方に適用)。負枝の特徴
-  付け述語はこの裁定では固定しない — (b) の条件言語規律の範囲で F0
-  で確定し、fixed head として tracking Issue に記録して資格条項5項の
-  審査にかける。有限 Source 条件は述語の第一候補として記録するに
-  留める。述語の変更は資格条項審査の finding だけを事由として許す
-  (finding の引用を tracking Issue に記録する)。十分性証明の失敗は
-  変更事由にしない — その場合は候補の破棄と新候補の起草として全履歴
-  を記録する。変更ごとに述語の fixed head を更新し、資格 theorem
-  群・十分性・反例・閉性を更新後述語で全て再放電する。「探索前
-  固定」は当該 fixed head の証明サイクル開始前の固定と読み、同一
-  head の証明結果を見た差し替えを禁ずる。
+  一致させる(排他性様式の保護)。負枝の特徴付け述語はこの裁定では
+  固定しない — (b) の閉じた条件言語から選ぶ term として固定し、資格
+  条項5項の審査にかける。有限 Source 条件は述語の第一候補として記録
+  するに留める。
+  **head 分離**: (b) は3つの fixed head を分けて tracking Issue に
+  記録する — language head(closed syntax・evaluator・rebase)、
+  predicate-term head(固定済み syntax から選んだ term)、branch
+  artifact head(term を消費する payload)。条件言語そのものの設計を
+  F0 以後へ持ち込むことは `goal-defect` とする(F0 で行うのはカード
+  完全列挙の Lean 転写であり、新語彙の発明ではない)。
+  **候補遷移規則**: 資格条項の反例固定・十分性の反例固定 =
+  `candidate-refuted`(再利用可能な refutation artifact を要求し、
+  tracking Issue に記録する)。proof 未完成・反例なし =
+  `target-proof-checkpoint`(候補は破棄しない)。同一 blocker が
+  2 cycle 継続 = `target-blocked`。新候補は事前登録候補列の次項、
+  または人間承認による。proof 結果を見た新述語の発明は target 改訂
+  (人間裁定)であり、証明サイクル内では行わない。
 - `predecessor`: G-110(完遂済み。(B) 左枝 = **realization 付き入力上
   の**全域 strong cartesian lift、presentation schema (s1)–(s6)、閉性
-  constructor。固定錨は下記 ledger 行)。
+  constructor。左枝の内部構成 `strongCartesianLiftOfTarget` は
+  realization 資格なしの semantic-global lift を与える。固定錨は下記
+  ledger 行)。
 - `tracking issue`: 未起票(昇格 PR マージ後に起票し、本行を Issue
   番号へ更新する)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-112)、
@@ -41,10 +57,13 @@
 - `research aim`: G-110 は realization 像(有限 presentation 付き底層
   射)上の subcalculus を立てた。本カードは像と sector 全域の間を分類
   する — (第一段)有限 carrier・有限 Source 上では全 semantic
-  exact-bottom 射が同型まで像に入ることを証明し、(第二段)sector 全域については成立か、
-  成立域の特徴付けと反例かを決定する。あわせて G-110 左枝(全域
-  lift)の realization 資格外への帰趨を決定する。「相対的視点の全操作
-  が閉じる」(n1001 §3.5)の coverage 面の忠実な転写である。
+  exact-bottom 射が同型まで像に入ることを証明し、(第二段)sector
+  全域については成立か、成立域の特徴付けと反例かを決定する。あわせて
+  G-110 reviewed 内部定理が与える semantic-global strong cartesian
+  lift(realization 資格なし)を Gr4 正本の fixed statement へ昇格・
+  監査・記録し、coverage 成立域の閉性と生成 lift の coherence を証明
+  する。「相対的視点の全操作が閉じる」(n1001 §3.5)の coverage 面の
+  忠実な転写である。
 - `core tension`: 設計事実として、(s1) の有限 Source 固定により無限
   Source を端点に持つ semantic 射は原理的に像外であり、第二段の負枝が
   構造的に近い。したがって本カードの数学的重心は負枝の**特徴付け**が
@@ -53,12 +72,12 @@
   G-110 `H_cart` と同水準の資格条項(下記 (b) の5項)を課す。
 - `rival`: 有限表示対象(finitely presentable objects)と ind-completion
   の一般論。差は「具体 doctrine 圏での coverage の実証明と、資格条項
-  付きの成立域特徴付け・全域 lift の帰趨決定を Lean で固定する」点に
-  置く。
+  付きの成立域特徴付け・semantic-global lift の正本化を Lean で固定
+  する」点に置く。
 - `claim boundary`: 固定した一般 carrier `U`、G-110 の presentation /
   semantic 二層の上で語る。係数は動かさない。終対象・絶対積は導入
-  しない。第一段は有限 carrier・有限 Source に限定。第二段・全域 lift
-  の量化は semantic 層の exact-bottom 射(realization 資格なし)に
+  しない。第一段は有限 carrier・有限 Source に限定。第二段と O7 の
+  量化は semantic 層の exact-bottom 射(realization 資格なし)に
   及ぶが、carrier change・係数 base change・derived 系は域外(G-116
   カードの域外リストを継承)。診断側(G-111 / G-113)の量化域は変更
   しない。
@@ -67,24 +86,28 @@
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
   置き、固定 statement と completion criteria だけで完了判定する。
 - `portfolio constraint`: 第一段 coverage だけで完了扱いしない。第二段の
-  帰趨決定・全域 lift の帰趨・拡張域閉性の全面に Lean artifact を要求
-  する。負枝で確定する場合は資格条項を満たす特徴付け述語と同型閉包外
-  反例の対を要求する。
+  帰趨決定・O7 正本 wrapper と proof-use audit・coverage closure・
+  global lift coherence の全面に Lean artifact を要求する。負枝で確定
+  する場合は資格条項を満たす特徴付け述語と同型閉包外反例の対を要求
+  する。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
   なら `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved` とする。
 - `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
   proof obligation delta で評価する。
 - `dullness filter`: 次を弾く。第二段負枝を「有限 presentation を持つ
-  射」という像の定義の言い換え述語で立てる構成、無限 Source による
-  cardinality 反例のみの放電、**「同型まで」を端点別同型(可換等式
-  なし)で読んで射自体を実現せずに coverage を放電する構成**、第一段
-  coverage を単一 fixture の列挙で代替する構成、拡張域閉性が恒等成分で
-  vacuous に立つ構成、O6 正枝確定時に O7 を左枝定理の同型輸送の系で
-  独立放電と数える構成(系として記録する — 計上規律)、**特徴付け
-  述語を「同型まで恒等射」等の退化 class で立てる構成**(下記 (b) の
-  資格条項 (v) 像包含が排除。言い換え述語の排除は (b) の条件言語
-  規律が担う)。
+  射」という像の定義の言い換え述語(Skolem 化を含む)で立てる構成、
+  無限 Source による cardinality 反例のみの放電、**「同型まで」を
+  端点別同型(square 可換性なし)で読んで射自体を実現せずに coverage
+  を放電する構成**、第一段 coverage を単一 fixture の列挙で代替する
+  構成、(c) の正本 wrapper を新規証明成果として計上する構成
+  (reviewed predecessor discharge として記録する — 計上規律)、
+  (d) を membership の閉性と十分性の再適用だけで放電する構成
+  (coverage witness の実消費・構成なし)、(e) を合成入力への lift の
+  再生成(存在の再提示)だけで放電する構成、閉性が恒等成分で vacuous
+  に立つ構成、**特徴付け述語を「同型まで恒等射」等の退化 class で
+  立てる構成**(下記 (b) の資格条項 (v) 像包含が排除。言い換え述語の
+  排除は (b) の閉じた条件言語が担う)。
 - `frontier`: 第二段の特徴付け述語の最簡化・decider 化(G-107
   decider 前例との比較観察 — 必要性は (b) の外延一致から従うため
   独立 frontier としない)、可算 Source への拡張観察、係数 base
@@ -92,11 +115,15 @@
 
 - `target theorem`: **Exact-Bottom Coverage and Global Lift
   Classification Theorem**。G-110 の設定の上で:
-  1. **(a) 第一段 coverage**: 有限 carrier・有限 Source 上の全 semantic
-     exact-bottom 射が同型まで realization 像に入ることを証明する。
-     **「同型まで」は arrow 圏の同型で読む** — 端点の semantic 同型対
-     と可換等式(`toSemanticCart P ≫ i_target = i_source ≫ f` 型)を
-     同時に要求し、端点別同型では放電と数えない。
+  1. **(a) 第一段 coverage**: `U.Atom` が有限で、source / target 両
+     endpoint の `Source` が有限な全 semantic exact-bottom 射
+     (`CartSemanticInput`)が、同型まで realization 像に入ることを
+     証明する。**「同型まで」は arrow 圏の同型で読む** — coverage
+     witness は「presentation と、その `toSemanticCart` 像から入力への
+     `CartSemanticInputIso`(端点同型対+square 可換性)」の対の
+     構造化 witness で立て、端点別同型では放電と数えない。`Finite` /
+     `Fintype` の割当と `DecidableEq U.Atom` の置き場は F0 の型突合で
+     確定し fixed head に記録する。
   2. **(b) 第二段の帰趨決定**: sector 全域(有限 Source 制限なし —
      program context の O6 量化域裁定)について、「全域 coverage
      theorem」または「成立域の特徴付け+同型閉包外反例」の**二枝
@@ -104,72 +131,96 @@
      排他性は反例が供給 — 反例が正枝を反証することを同時に証明する。
      網羅性は主張しない)。disjunction は carrier 大域一本で立て、
      述語と十分性は carrier に一様とする(per-carrier 分岐は採らない
-     — G-110 (B) 様式)。「同型まで」の読みは (a) の arrow 圏同型で
-     (b)(c) と (v) にも統一する。**条件言語規律**: 述語の許容原子式
-     は semantic 入力(端点 instance と semantic 射)の構造データ上の
-     条件に限る(例: Source の有限性・cardinality、抽出述語の有限性、
-     射成分の有限 support 性)。presentation code 型・realization
-     関数・有限 code / 表データの存在量化・「同型な像元の存在」への
-     言及(その Skolem 化を含む)は原子式として禁止し、確定した条件
-     言語への以後の原子式・量化形の追加は target 改訂扱いとする
-     (G-110 `H_cart` の条件言語固定規律の転写)。述語の ambient 型は
-     量化域型と同一とする(部分型上で立てない)。負枝の特徴付け述語
-     には資格条項5項を課す — (i) 探索前固定の条件言語(上記規律と
-     program context の fixed-head 手続き)、(ii) 結論(coverage /
-     lift)非参照、(iii) 同型不変性、(iv) id / comp / pullback 閉性
-     (pasting は (d) の square 水準で扱う)、(v) **像包含と非空
-     発火** — 述語は realization 像を(同型まで)包含し、非恒等・
-     非可逆成分と相異なる非同型 instance を含むパラメトリック正例族で
-     strict 像の外(同型閉包の内でよい)にも非空に発火する(退化
-     class は像包含が、言い換え述語は条件言語規律が排除する)。特徴
-     付けは十分性 theorem(述語 → coverage)を要求する。適法な述語は
-     像包含・同型不変性・十分性から coverage 成立域と外延一致するため、
-     必要性(coverage → 述語)は独立成果に数えない。
-  3. **(c) 全域 lift の帰趨**: G-110 左枝(realization 付き入力上の
-     全域 strong cartesian lift)の realization 資格外への拡張に
-     ついて、成立 theorem または「成立域の特徴付け+反例」の二枝
-     disjunction 単一命題を証明する(様式は (b) と同一: 排他性は反例が
-     供給、網羅性は主張しない。両枝の量化域一致・条件言語規律・特徴
-     付け述語の資格条項も (b) と同一に適用する)。**計上規律**: O6
-     正枝確定時に本 conjunct が左枝定理の系として従う場合は系として
-     記録する(独立放電と数えない)。O6 負枝確定時に本 conjunct の
-     十分性が (b) の十分性と左枝定理の系として従う場合も系として記録
-     し、本 conjunct の独立実質は反例(lift 不在証明)側に置く。
-  4. **(d) 拡張域閉性**: 確定した成立域での id / comp / pullback /
-     pasting 閉性を証明する。中身は成立域上の coverage / lift 証拠の
-     合成・引き戻し・貼り合わせ整合(G-110 presentation 閉性
-     constructor の拡張域版)であり、(b) 資格条項 (iv) の述語閉性とは
-     別 artifact とする(流用を計上しない)。成立域 membership は
-     direction hypothesis として消費してよいが、合成後 membership との
-     整合は証明する。
+     — G-110 (B) 様式)。「同型まで」の読みと coverage witness 型は
+     (a) と共有する。**閉じた条件言語(完全列挙)**: 特徴付け述語は
+     G-110 `CartConditionSyntax` 様式の閉じた syntax 型の term として
+     立てる。許容原子式は次の完全列挙に限る — source / target 各
+     endpoint の `Source` の有限性、`Source` の cardinality と有限
+     定数の比較、抽出述語(inclusion / exclusion)の有限性 /
+     cofinite 性、hom 成分写像の有限 support 性、これら authored
+     field 間の等式・有限集合 membership。許容結合子は conjunction
+     のみ。arbitrary `Prop` callback・fixture 値・external constant・
+     coverage helper 述語・presentation code 型・realization 関数・
+     有限 code / 表データの存在量化・「同型な像元の存在」への言及
+     (その Skolem 化を含む)は syntax に持ち込めない。述語は一つの
+     authored template を base carrier で固定し、canonical rebase
+     (`rebaseCartCondition` 前例様式)で全 carrier へ移す。branch
+     artifact は全 carrier で同一 template の rebase を使うことを
+     等式で保証する。syntax・evaluator・rebase の transitive
+     dependency audit(依存 helper 経由で結論 / realization を読む
+     経路の禁止)を discharge artifact に含める。原子式・結合子・
+     量化形の追加は target 改訂扱いとする。述語の ambient 型は量化域
+     型と同一とする(部分型上で立てない)。負枝の特徴付け述語には
+     資格条項5項を課す — (i) 探索前固定(language head /
+     predicate-term head の手続き)、(ii) 結論(coverage / lift)非
+     参照、(iii) 同型不変性、(iv) id / comp / pullback 閉性、(v)
+     **像包含と非空発火** — 述語は realization 像を(同型まで)包含
+     し、非恒等・非可逆成分と相異なる非同型 instance を含む
+     パラメトリック正例族で strict 像の外(同型閉包の内でよい)にも
+     非空に発火する(正例族は固定 base carrier 上に置き、template
+     のみ全 carrier へ rebase する — G-110 前例)。特徴付けは十分性
+     theorem(述語 → coverage)を要求する。適法な述語は像包含・同型
+     不変性・十分性から coverage 成立域と外延一致するため、必要性
+     (coverage → 述語)は独立成果に数えない。
+  3. **(c) O7 semantic-global strong cartesian lift**: 任意の
+     `CartSemanticInput`(realization 資格なし)と任意の target
+     package に対する strong cartesian lift の存在を Gr4 正本の fixed
+     statement として固定し、G-110 reviewed 宣言
+     `strongCartesianLiftOfTarget` による reviewed predecessor
+     discharge として放電する。義務は正本 wrapper theorem・proof-use
+     audit(G-110 左枝 `globalCartesianLift` との制限関係の明示を
+     含む)・G-116 範囲併記への記録であり、新規証明成果としては計上
+     しない(計上規律)。
+  4. **(d) coverage closure**: (b) で確定した coverage 成立域での
+     id / comp / pullback 閉性を証明する。operand の membership と
+     coverage witness を実消費し、output の membership と witness
+     (presentation と `CartSemanticInputIso`)を構成する producer で
+     立てる — output 側の caller 供給、および membership の閉性と
+     十分性の再適用だけの放電は不可。(b) 資格条項 (iv) の述語閉性と
+     は別 artifact とする(流用を計上しない)。
+  5. **(e) global lift coherence**: (c) の生成 lift の id / comp /
+     pullback / pasting coherence を証明する — 合成入力の canonical
+     生成 lift と operand lift の合成との比較 theorem として固定し、
+     合成入力への lift の再生成(存在の再提示)では放電と数えない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
-  module。reviewed module は参照のみ。完了面は (a)–(d) まで。二枝の
+  module。reviewed module は参照のみ。完了面は (a)–(e) まで。二枝の
   payload は G-110 `DisjunctionArtifact` 様式の構造化 artifact で立て、
-  payload の caller 供給を放電と数えない。反例枝の witness は
-  per-universe 固定(= 各 universe における witness 族の構成であり、
-  単一 universe への固定ではない)または枝条件付き endpoint 契約で
-  立てる(無限 carrier 反例は有限 fixture の内部生成 lift による
-  universe 移送が使えず、cross-universe reindexing は域外のため —
-  G-116 カード台帳注記の universe 規律の適用第一号)。endpoint 契約の
-  選択は F0 で symbolic universe の型不能を記録した場合に限り
-  (G-116 台帳注記の前提条件を継承)、endpoint 固定の許容範囲は反例
-  fixture の居住 universe のみとする。特徴付け述語・十分性・資格
-  theorem 群・(d) の閉性は universe-polymorphic に立てる。
+  payload の caller 供給を放電と数えない。universe 契約は二段階で固定
+  する — (1) O6 の反例 fixture は per-universe 固定(= 各 universe に
+  おける witness 族の構成であり、単一 universe への固定ではない)の
+  symbolic contract を先に試み、具体的 Lean universe constraint と
+  して型不能を固定・記録できた場合に限り、事前許可済みの枝条件付き
+  endpoint 契約へ移る(無限 carrier 反例は有限 fixture の内部生成
+  lift による universe 移送が使えず、cross-universe reindexing は域外
+  のため — G-116 カード台帳注記の universe 規律の適用第一号)。
+  endpoint 固定の許容範囲は反例 fixture の居住 universe のみとする。
+  (2) endpoint 契約も型不能の場合、または特徴付け述語・十分性・閉性
+  まで endpoint 固定へ弱める必要が出た場合は `goal-defect` とする。
+  特徴付け述語・十分性・資格 theorem 群・(d)(e) は
+  universe-polymorphic に立てる((c) は reviewed 宣言の universe
+  契約を継承する)。
 - `target proof artifacts`: 第一段 coverage theorem(arrow 圏同型
-  水準)、第二段二枝確定 artifact(正枝 theorem または資格条項付き
-  特徴付け述語+同型閉包外反例+正枝反証)、全域 lift 帰趨 artifact、
-  拡張域閉性 theorem、特徴付け述語の資格 theorem 群(同型不変性・
-  閉性・像包含・非空発火族)、report
+  水準・構造化 coverage witness)、閉じた条件言語(syntax 型・
+  evaluator・canonical rebase・同一 template 等式・transitive
+  dependency audit)、第二段二枝確定 artifact(正枝 theorem または
+  資格条項付き特徴付け述語+同型閉包外反例+正枝反証)、O7 正本
+  wrapper theorem と proof-use audit、coverage closure producer、
+  global lift coherence theorem 群、特徴付け述語の資格 theorem 群
+  (同型不変性・閉性・像包含・非空発火族)、report
   `research/reports/G-112-aat-exact-bottom-coverage.md`。
-- `target proof strategy`: F0 typing(特徴付け述語の条件言語 —
-  有限 Source 条件を第一候補として資格審査 — と二枝 payload 構造・
-  universe 契約を固定)→
-  K0 第一段 coverage → K1 第二段帰趨 → K2 全域 lift 帰趨 → K3 閉性と
-  監査。既存成果の利用 map: `GlobalCartesianLift` / `CartesianRegime` /
-  `cartesianRegimeOfDisjunction`(左枝定理の錨)、
-  `cartesianLiftNonexistence_isEmpty`(枝整合)、presentation 閉性
-  constructor 4種、`FiniteModel`(witness 計算)。
+- `target proof strategy`: F0 typing(language head = カード完全列挙
+  の閉じた syntax・evaluator・rebase、(a) の有限性割当と
+  `CartSemanticInputIso` 系 coverage witness 型、二枝 payload 構造、
+  universe 契約を固定)→ K0 第一段 coverage → K1 predicate-term
+  head 固定と第二段帰趨 → K2 O7 正本 wrapper と proof-use audit →
+  K3 coverage closure → K4 global lift coherence → K5 監査。既存成果
+  の利用 map: `strongCartesianLiftOfTarget` / `GlobalCartesianLift` /
+  `CartesianRegime` / `cartesianRegimeOfDisjunction`(semantic-global
+  lift と左枝定理の錨)、`cartesianLiftNonexistence_isEmpty`(枝
+  整合)、`CartConditionSyntax` / `rebaseCartCondition`(条件言語の
+  設計前例)、`CartSemanticInputIso`(coverage witness 型)、
+  presentation 閉性 constructor 4種、`FiniteModel`(witness 計算)。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
@@ -187,61 +238,92 @@
     しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
     `a1471483`、merge `315a2537`)。G-101 / G-106 / G-109 と
     `FiniteModel` 系 witness 基盤の固定錨は G-110 カード ledger の錨を
-    継承する。支える結論 = 全 conjunct の設定と左枝定理。proof-use =
-    (a)–(d) の設定・左枝錨の同型輸送・witness 計算。結論相当でない
-    理由 = 入力幾何と既証明の環境であり、本カードの coverage / 帰趨
-    は供給しない。
+    継承する。支える結論 = 全 conjunct の設定・左枝定理・
+    `strongCartesianLiftOfTarget`。proof-use = (a)–(e) の設定・(c) の
+    discharge・witness 計算。結論相当でない理由 = 入力幾何と既証明の
+    環境であり、本カードの coverage 結論は供給しない。
+  - `閉じた条件言語(syntax / evaluator / rebase)`:
+    `discharge-required`。支える結論 = (b) 資格条項 (i)(ii)。
+    discharge artifact = カードの完全列挙と一致する閉じた syntax 型・
+    evaluator・canonical rebase・全 carrier 同一 template 等式・
+    transitive dependency audit。provenance = カード列挙の Lean 転写
+    (language head)。proof-use = predicate-term と branch artifact
+    が消費する。結論相当でない理由 = 条件の表現手段であり coverage
+    結論を含まない。
   - `第一段 coverage theorem`: `discharge-required`。支える結論 =
-    (a)。discharge artifact = arrow 圏同型水準の coverage 証明。
-    provenance = 構成した presentation と同型対・可換等式の生成証明。
-    proof-use = (a) の放電と (b) 像包含審査の参照点。結論相当でない
-    理由 = 同型対と可換等式は構成して証明する。
+    (a)。discharge artifact = 構造化 coverage witness(presentation
+    +`CartSemanticInputIso`)の構成証明。provenance = 生成した
+    presentation と同型対・square 可換性の証明。proof-use = (a) の
+    放電と (b) 像包含審査の参照点。結論相当でない理由 = witness は
+    構成して証明する。
   - `第二段二枝確定`: `discharge-required`。支える結論 = (b)。
     discharge artifact = 正枝 theorem、または資格5項を満たす特徴付け
-    述語+十分性+同型閉包外反例+正枝反証。provenance = (b) の条件
-    言語規律内で F0 固定した述語と、生成した十分性証明・反例。
-    proof-use = 反例は payload の実消費で結ぶ。結論相当でない理由 =
-    条件言語規律が結論参照を排除し、十分性・反例は証明する。
-  - `全域 lift 帰趨`: `discharge-required`。支える結論 = (c)。
-    discharge artifact = 成立 theorem、または特徴付け+反例+正枝反証
-    (様式・資格は (b) と同一)。provenance = G-110 左枝錨と生成した
-    lift 構成 / lift 不在証明。proof-use = (c) の計上規律(正枝時・
-    負枝時の系記録)に従って結ぶ。結論相当でない理由 = lift 存在の
-    caller 供給を認めない。
-  - `拡張域閉性`: `discharge-required`。支える結論 = (d)。discharge
-    artifact = 成立域上の合成・引き戻し・貼り合わせ整合 theorem
-    ((b) 資格条項 (iv) とは別 artifact)。provenance = 閉性
-    constructor の拡張域版構成。proof-use = (b)(c) の成立域定理を実
-    消費する。結論相当でない理由 = 閉性は証明し、(iv) の流用を計上
-    しない。
-  - `反例 / witness fixture`: `conclusion-equivalent-risk`。支える
-    結論 = (b)(c) の排他性と資格条項 (v) の発火族。provenance =
-    proof obligation 選定時に固定する authored 有限 data。proof-use =
-    正枝反証と (v) の非空発火で実消費する。監査 artifact = 選定時
-    固定の記録(証明後の target-fitting 選択の禁止)と非退化条項
-    (非恒等・非可逆成分、相異なる非同型 instance)。結論相当でない
-    理由 = fixture は入力幾何であり、反証・発火の証明は生成する。
+    述語+十分性+同型閉包外反例+正枝反証。provenance =
+    predicate-term head で固定した term と、生成した十分性証明・
+    反例。proof-use = 反例は payload の実消費で結ぶ。結論相当でない
+    理由 = 閉じた条件言語が結論参照を排除し、十分性・反例は証明する。
+  - `O7 semantic-global strong cartesian lift`: `discharge-required`
+    (reviewed predecessor により放電済み)。支える結論 = (c)。
+    discharge artifact = G-110 reviewed 宣言
+    `strongCartesianLiftOfTarget`(CartesianTarget.lean、上記 G-110
+    固定錨)+本カードの正本 wrapper theorem と proof-use audit。
+    provenance = reviewed predecessor。proof-use = (c) の fixed
+    statement と (e) の生成 lift。結論相当でない理由 = reviewed 済み
+    定理の昇格・監査であり、新規仮定を置かない。
+  - `coverage closure`: `discharge-required`。支える結論 = (d)。
+    discharge artifact = operand witness を実消費し output witness を
+    構成する id / comp / pullback producer((b) 資格条項 (iv) とは別
+    artifact)。provenance = 閉性 constructor の成立域版構成。
+    proof-use = (b) の成立域定理と (a)(b) 共有の witness 型を実消費
+    する。結論相当でない理由 = output 側は構成して証明し、(iv) の
+    流用を計上しない。
+  - `global lift coherence`: `discharge-required`。支える結論 = (e)。
+    discharge artifact = 生成 lift と operand lift 合成の比較 theorem
+    群(id / comp / pullback / pasting)。provenance = (c) の生成
+    lift と G-110 閉性 constructor。proof-use = 比較の両辺を実構成
+    して結ぶ(再生成の存在提示は不可)。結論相当でない理由 =
+    coherence は証明する。
+  - `O6 coverage 反例 raw data`: `conclusion-equivalent-risk`。支える
+    結論 = (b) 負枝の排他性(正枝反証)。provenance = proof
+    obligation 選定時に固定する authored 有限 data(universe 契約は
+    boundary の二段階規則に従う)。proof-use = 同型閉包外性と正枝
+    反証の証明で実消費する。監査 artifact = 選定時固定の記録(証明後
+    の target-fitting 選択の禁止)。結論相当でない理由 = raw data は
+    入力幾何であり、反証の証明は生成する。
+  - `資格条項 (v) 非退化正例族`: `direction-hypothesis`。支える結論 =
+    (b) 資格条項 (v) の非空発火。provenance = 固定 base carrier 上の
+    authored パラメトリック族(非恒等・非可逆成分、相異なる非同型
+    instance)。proof-use = (v) の発火と非退化の証明で実消費する。
+    結論相当でない理由 = 族は入力幾何であり、発火と非退化の証明は
+    生成する。
   - `成立域 membership 証拠`: `direction-hypothesis`。支える結論 =
-    (d)。provenance = (b)(c) で確定した成立域の述語成立証明。
-    proof-use = 閉性 theorem の仮定として実消費する。結論相当でない
-    理由 = membership は入力仮定だが、合成後 membership との整合は
-    証明する。
-- `target route integrity gate`: 特徴付け述語は探索前固定の条件言語で
-  立て、fixture 値・checker 出力・target 結果由来の定数を持ち込ま
-  ない。反例 fixture は proof obligation 選定時に固定する。二枝
-  payload は構造化 artifact で立て、caller 供給を認めない。禁止経路 —
-  像の定義の言い換え、cardinality のみの放電、端点別同型 coverage、
-  証明後の target-fitting 選択。
+    (d)。provenance = (b) で確定した成立域の operand membership
+    (`H f`・`H g`)と operand coverage witness。proof-use = closure
+    producer の operand 仮定として実消費する。結論相当でない理由 =
+    operand 側の入力仮定であり、output membership と output witness
+    は構成して証明する(caller 供給禁止)。
+- `target route integrity gate`: 特徴付け述語は language head で固定
+  した閉じた syntax の term として立て、fixture 値・checker 出力・
+  target 結果由来の定数を持ち込まない。反例 fixture は proof
+  obligation 選定時に固定する。二枝 payload は構造化 artifact で
+  立て、caller 供給を認めない。禁止経路 — 像の定義の言い換え
+  (Skolem 化を含む)、cardinality のみの放電、端点別同型 coverage、
+  証明後の target-fitting 選択、(e) の lift 再生成による放電。
 - `target anti-weakening rule`: coverage・lift 存在・成立域所属を
   theorem argument、typeclass、structure field、certificate field、
-  opaque class membership へ移して成功扱いしない。特徴付け述語と
-  結論の**定義的同値**(定義展開・Skolem 化で結論に一致する述語)・
-  単一 fixture 等式型を禁じる — 適法述語の外延一致((b) 末尾)は
-  違反ではなく、必要性は独立成果に数えない。`ambient-boundary` に
-  残せるのは入力幾何だけである。
+  opaque class membership へ移して成功扱いしない((d) の operand
+  membership は ledger の direction-hypothesis 行として明示的に許可
+  し、output membership・output witness の供給は禁止する)。特徴付け
+  述語と結論の**定義的同値**(定義展開・Skolem 化で結論に一致する
+  述語)・単一 fixture 等式型を禁じる — 適法述語の外延一致((b)
+  末尾)は違反ではなく、必要性は独立成果に数えない。
+  `ambient-boundary` に残せるのは入力幾何だけである。
 - `target failure policy`: fail-closed を原則とする。(a) の反例は中心
-  conjunct 反証 = `target-refuted`。(d) の反例(成立域上の閉性の
-  反証)も `target-refuted`。(b)(c) は二枝 disjunction であり
-  どちらの枝の確定も成功、両枝とも閉じない場合は `target-blocked`。
-  F0 での型不能・statement 不足は `goal-defect`。witness の停滞は
+  conjunct 反証 = `target-refuted`。(d)(e) の反例(成立域上の閉性 /
+  coherence の反証)も `target-refuted`。(b) は二枝 disjunction で
+  ありどちらの枝の確定も成功、両枝とも閉じない場合は
+  `target-blocked`。(c) の wrapper が fixed statement で型不能、
+  または reviewed 宣言との不一致が判明した場合は人間裁定へ差し戻す。
+  述語候補の遷移は program context の候補遷移規則に従う。F0 での型
+  不能・statement 不足は `goal-defect`。witness の停滞は
   `target-blocked`。fixed target の変更は人間の別判断とする。

@@ -151,7 +151,7 @@
 | O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の arrow 圏同型までの coverage) | G-112 |
 | O6 | coverage 拡張第二段(sector 全域の帰趨決定 — 二枝、負枝は資格条項付き特徴付け) | G-112 |
-| O7 | 全域 lift(左枝の読み = realization 資格外への strong cartesian lift の帰趨決定 — 二枝、n1001 §3.5 の忠実転写) | G-112 |
+| O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 — 二枝 | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | G-115 |

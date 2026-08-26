@@ -179,7 +179,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の同型までの coverage) | gate (i)・frontier | G-112 |
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
-| O7 | 全域作用・分類 = 左枝の読みで「全域 lift の realization 資格外への帰趨決定」(n1001 §3.5 の忠実転写) | gate (i) | G-112 |
+| O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 | gate (ii) | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
@@ -319,20 +319,25 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   同水準の資格条項**(探索前固定の条件言語・結論非参照・同型不変性・
   閉性)を課す — 「realization 像の定義の言い換え」述語は資格違反と
   する。正枝の量化域(有限 Source 制限の有無)は起票時の裁定事項、
-  (c) 全域 lift の帰趨 — G-110 左枝(全域 strong cartesian lift)の
-  realization 資格外への拡張成立、または成立域の特徴付け+反例。
-  **計上規律**: O6 正枝確定時に O7 が左枝定理の同型輸送の系として従う
-  場合、独立放電と数えず系として記録する、(d) 拡張域での id / comp /
-  pullback / pasting 閉性。
+  (c) semantic-global strong cartesian lift の正枝確定 — 実装実査
+  (2026-08-26)により、G-110 reviewed 内部宣言
+  `strongCartesianLiftOfTarget` が realization 資格なしの任意
+  semantic 入力に lift を構成済み。義務は Gr4 正本 wrapper・
+  proof-use audit・記録であり、新規証明成果に数えない(計上規律)、
+  (d) coverage 成立域での id / comp / pullback 閉性と、生成 lift の
+  id / comp / pullback / pasting coherence。
 - **universe 予告**: 反例枝の witness は per-universe 固定または枝条件
   付き endpoint 契約で立てる(無限 carrier 反例は有限 fixture の内部
   生成 lift による universe 移送が使えず、cross-universe reindexing は
   域外のため — §3 universe 注記の適用第一号)。
-- **錨**: `GlobalCartesianLift` / `CartesianRegime` /
+- **錨**: `strongCartesianLiftOfTarget`(`CartesianTarget.lean` —
+  semantic-global lift)、`GlobalCartesianLift` / `CartesianRegime` /
   `cartesianRegimeOfDisjunction`
   (`DoctrineFiberProduct/CartesianRegimeSchema.lean`・
   `CartesianBranchArtifact.lean`)、`cartesianLiftNonexistence_isEmpty`
-  (`CartesianBranch.lean`)、presentation 閉性 constructor 4種、
+  (`CartesianBranch.lean`)、`CartConditionSyntax` /
+  `rebaseCartCondition` / `CartSemanticInputIso`(条件言語と coverage
+  witness の設計前例)、presentation 閉性 constructor 4種、
   `FiniteModel`(witness 計算)。
 - **供給契約**: G-116 の範囲併記(coverage 到達段と確定枝の記録)。
   G-112 の分類結果は G-113 / G-114 / G-115 の量化域を変更しない(各
@@ -342,8 +347,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   排除)、cardinality 反例のみの放電、第一段 coverage の単一 fixture
   列挙代替。
 - **failure 骨格**: (a) の反例は中心 conjunct 反証 = `target-refuted`。
-  (b)(c) は二枝 disjunction なのでどちらの枝も成功、両枝とも閉じない
-  場合は `target-blocked`。
+  (b) は二枝 disjunction なのでどちらの枝も成功、両枝とも閉じない
+  場合は `target-blocked`((c) は reviewed predecessor discharge —
+  実装実査 2026-08-26)。
 
 ### G-113(仮 slug: `G-113-aat-diagnostic-conservativity`)
 

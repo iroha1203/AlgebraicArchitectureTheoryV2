@@ -19,10 +19,10 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-112-aat-exact-bottom-coverage](G-112-aat-exact-bottom-coverage.md)
-  (Gr4 完遂 gate 第一項後半: 第一段 coverage、第二段帰趨と全域 lift
-  帰趨の二枝 disjunction、拡張域閉性 (a)–(d)。O6 量化域 = sector
-  全域(裁定済み)。依存先 G-110 は完遂済み、G-111 とは lift の分界
-  (O2 / O7)を相互明記)
+  (Gr4 完遂 gate 第一項後半: 第一段 coverage、第二段帰趨の二枝
+  disjunction、O7 semantic-global lift の正本化、coverage closure と
+  lift coherence (a)–(e)。O6 量化域 = sector 全域(裁定済み)。依存先
+  G-110 は完遂済み、G-111 とは lift の分界(O2 / O7)を相互明記)
 
 ## draft（人間の確認待ち）
 
