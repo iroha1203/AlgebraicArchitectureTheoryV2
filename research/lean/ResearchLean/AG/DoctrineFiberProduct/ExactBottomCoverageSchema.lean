@@ -1,4 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.CartesianBranchArtifact
+import ResearchLean.AG.DoctrineFiberProduct.PointedDoctrinePullback
 
 /-!
 # Exact-bottom coverage schema
@@ -16,6 +17,11 @@ open CategoryTheory
 open AtomFoundation
 
 universe u v
+
+local instance finiteExactBottomAtomDecidableEq :
+    DecidableEq FiniteModel.carrier.Atom := by
+  change DecidableEq FiniteModel.FiniteAtom
+  infer_instance
 
 /-! ## Closed condition language -/
 
@@ -188,6 +194,82 @@ structure AnchoredCoverageWitness {U : AtomCarrier.{u}}
   targetAnchor : CoveredObjectWitness input.target
   arrow : CoverageWitnessOver input sourceAnchor targetAnchor
 
+/-- Bundle one semantic exact-bottom arrow from its typed endpoints. -/
+def cartSemanticInputOfHom {U : AtomCarrier.{u}}
+    {source target : ExtractionInstance U} (hom : source ⟶ target) :
+    CartSemanticInput U :=
+  ⟨source, target, hom⟩
+
+/-- Two covered arrows whose middle object uses one shared anchor. -/
+structure SharedAnchorComposablePair {U : AtomCarrier.{u}}
+    [DecidableEq U.Atom] where
+  source : ExtractionInstance U
+  middle : ExtractionInstance U
+  target : ExtractionInstance U
+  sourceAnchor : CoveredObjectWitness source
+  middleAnchor : CoveredObjectWitness middle
+  targetAnchor : CoveredObjectWitness target
+  first : source ⟶ middle
+  second : middle ⟶ target
+  firstArrow : CoverageWitnessOver (cartSemanticInputOfHom first)
+    sourceAnchor middleAnchor
+  secondArrow : CoverageWitnessOver (cartSemanticInputOfHom second)
+    middleAnchor targetAnchor
+
+namespace SharedAnchorComposablePair
+
+def firstInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (pair : SharedAnchorComposablePair (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom pair.first
+
+def secondInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (pair : SharedAnchorComposablePair (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom pair.second
+
+def compositeInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (pair : SharedAnchorComposablePair (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom (pair.first ≫ pair.second)
+
+end SharedAnchorComposablePair
+
+/-- A covered cospan whose two legs use one shared base anchor. -/
+structure SharedBaseAnchorCospan {U : AtomCarrier.{u}}
+    [DecidableEq U.Atom] where
+  left : ExtractionInstance U
+  right : ExtractionInstance U
+  base : ExtractionInstance U
+  leftAnchor : CoveredObjectWitness left
+  rightAnchor : CoveredObjectWitness right
+  baseAnchor : CoveredObjectWitness base
+  first : left ⟶ base
+  second : right ⟶ base
+  firstArrow : CoverageWitnessOver (cartSemanticInputOfHom first)
+    leftAnchor baseAnchor
+  secondArrow : CoverageWitnessOver (cartSemanticInputOfHom second)
+    rightAnchor baseAnchor
+
+namespace SharedBaseAnchorCospan
+
+def firstInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom cospan.first
+
+def secondInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom cospan.second
+
+def pullbackFstInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom
+    (pointedPullbackFst cospan.first cospan.second)
+
+def pullbackSndInput {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)) : CartSemanticInput U :=
+  cartSemanticInputOfHom
+    (pointedPullbackSnd cospan.first cospan.second)
+
+end SharedBaseAnchorCospan
+
 /--
 The first-stage theorem type.  `Finite` records the mathematical hypotheses;
 `DecidableEq U.Atom` is the finite-code interface instance and is not used by
@@ -200,41 +282,158 @@ def FiniteEndpointCoverage : Prop :=
     [Finite input.target.doctrine.Source],
     Nonempty (AnchoredCoverageWitness input)
 
-/-! ## Branch and regime output types -/
+/-! ## Qualification and candidate selection -/
+
+/-- Strict realization, without closing the image under semantic isomorphism. -/
+def StrictCartRealizationImage {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : CartSemanticInput U) : Prop :=
+  ∃ presentation : CartPresentation U,
+    toSemanticCart presentation = input
 
 /--
-A carrier-local regime is either global or governed by one closed syntax term.
-There is no arbitrary `Prop` field: membership is derived below.
+Authored positive-family geometry.  It stores only parameters, endpoints, and
+arrows; firing, realization status, nonisomorphism, and noninvertibility are
+theorem outputs below.
 -/
-inductive ExactBottomCoverageRegime (U : AtomCarrier.{u})
-    [DecidableEq U.Atom]
-  | global (cover : ∀ input : CartSemanticInput U,
-      Nonempty (AnchoredCoverageWitness input))
-  | characterized (term : ExactBottomConditionSyntax U)
-      (cover : ∀ input : CartSemanticInput U,
-        evalExactBottomCondition term input →
-          Nonempty (AnchoredCoverageWitness input))
+structure ExactBottomPositiveFamilyRaw where
+  Parameter : Type
+  distinguished : Parameter
+  source : Parameter → ExtractionInstance FiniteModel.carrier
+  target : Parameter → ExtractionInstance FiniteModel.carrier
+  hom : ∀ parameter, source parameter ⟶ target parameter
 
-namespace ExactBottomCoverageRegime
+namespace ExactBottomPositiveFamilyRaw
 
-/-- Membership is total in the global branch and syntax evaluation otherwise. -/
-def Holds {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (regime : ExactBottomCoverageRegime U)
-    (input : CartSemanticInput U) : Prop :=
-  match regime with
-  | .global _ => True
-  | .characterized term _ => evalExactBottomCondition term input
+def input (family : ExactBottomPositiveFamilyRaw)
+    (parameter : family.Parameter) :
+    CartSemanticInput FiniteModel.carrier :=
+  cartSemanticInputOfHom (family.hom parameter)
 
-/-- Every regime produces coverage for each member. -/
-theorem covers {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (regime : ExactBottomCoverageRegime U)
-    (input : CartSemanticInput U) (membership : regime.Holds input) :
-    Nonempty (AnchoredCoverageWitness input) := by
-  cases regime with
-  | global cover => exact cover input
-  | characterized _ cover => exact cover input membership
+end ExactBottomPositiveFamilyRaw
 
-end ExactBottomCoverageRegime
+/--
+All five qualifications attached to one authored base-carrier term.  Every
+field is a theorem output about that same term; no qualification certificate
+can be paired with a different candidate.
+-/
+structure ExactBottomConditionQualification
+    (template : ExactBottomConditionSyntax FiniteModel.carrier) : Type (u + 1) where
+  isomorphic_invariant : ∀ (U : AtomCarrier.{u})
+    (first second : CartSemanticInput U),
+    CartSemanticInputIso first second →
+      (evalExactBottomCondition (rebaseExactBottomCondition template) first ↔
+        evalExactBottomCondition (rebaseExactBottomCondition template) second)
+  identity_mem : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
+    (object : ExtractionInstance U) (_anchor : CoveredObjectWitness object),
+    evalExactBottomCondition (rebaseExactBottomCondition template)
+      (cartSemanticInputOfHom (𝟙 object))
+  comp_mem : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
+    (pair : SharedAnchorComposablePair (U := U)),
+    evalExactBottomCondition (rebaseExactBottomCondition template)
+        pair.firstInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        pair.secondInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        pair.compositeInput
+  pullback_fst_mem : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)),
+    evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.firstInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.secondInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.pullbackFstInput
+  pullback_snd_mem : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
+    (cospan : SharedBaseAnchorCospan (U := U)),
+    evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.firstInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.secondInput →
+      evalExactBottomCondition (rebaseExactBottomCondition template)
+        cospan.pullbackSndInput
+  realization_image_mem : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
+    (presentation : CartPresentation U),
+    evalExactBottomCondition (rebaseExactBottomCondition template)
+      (toSemanticCart presentation)
+  positiveFamily : ExactBottomPositiveFamilyRaw
+  positive_fires : ∀ parameter : positiveFamily.Parameter,
+    evalExactBottomCondition template (positiveFamily.input parameter)
+  positive_strictly_outside :
+    ∃ parameter : positiveFamily.Parameter,
+      ¬ StrictCartRealizationImage (positiveFamily.input parameter)
+  positive_nonisomorphic_pair :
+    ∃ first second : positiveFamily.Parameter, first ≠ second ∧
+      ¬ Nonempty (CartSemanticInputIso
+        (positiveFamily.input first) (positiveFamily.input second))
+  positive_noninvertible :
+    ∃ parameter : positiveFamily.Parameter,
+      ¬ IsIso (positiveFamily.hom parameter)
+
+/-- The term stored at one pre-registered candidate index. -/
+def exactBottomCandidateTerm
+    (index : Fin exactBottomConditionCandidates.length) :
+    ExactBottomConditionSyntax FiniteModel.carrier :=
+  exactBottomConditionCandidates.get index
+
+/--
+A reusable refutation fixes which of the two required candidate gates failed:
+qualification itself, or semantic sufficiency at a concrete input.
+-/
+inductive ExactBottomCandidateRefutation
+    (template : ExactBottomConditionSyntax FiniteModel.carrier) : Type (u + 1)
+  | qualification
+      (refutes : ¬ Nonempty (ExactBottomConditionQualification.{u} template))
+  | insufficient {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+      (input : CartSemanticInput U)
+      (fires : evalExactBottomCondition
+        (rebaseExactBottomCondition template) input)
+      (notCovered : ¬ Nonempty (AnchoredCoverageWitness input))
+
+/--
+The current candidate together with refutations of every earlier registered
+candidate.  The current term is therefore selected only by its fixed list
+index, never by a post-proof authored predicate.
+-/
+structure ExactBottomCandidateSelection : Type (u + 1) where
+  index : Fin exactBottomConditionCandidates.length
+  priorRefutations : ∀ prior : Fin index.val,
+    ExactBottomCandidateRefutation.{u}
+      (exactBottomCandidateTerm
+        ⟨prior.val, Nat.lt_trans prior.isLt index.isLt⟩)
+
+namespace ExactBottomCandidateSelection
+
+/-- The selected authored term. -/
+def template (selection : ExactBottomCandidateSelection.{u}) :
+    ExactBottomConditionSyntax FiniteModel.carrier :=
+  exactBottomCandidateTerm selection.index
+
+/-- The unique initial state, selecting the card-fixed first candidate. -/
+def initial : ExactBottomCandidateSelection.{u} where
+  index := ⟨0, by decide⟩
+  priorRefutations := fun prior => Fin.elim0 prior
+
+/-- Move mechanically to the next registered term after fixing a refutation. -/
+def next (selection : ExactBottomCandidateSelection.{u})
+    (hasNext : selection.index.val + 1 < exactBottomConditionCandidates.length)
+    (refutation : ExactBottomCandidateRefutation.{u} selection.template) :
+    ExactBottomCandidateSelection.{u} where
+  index := ⟨selection.index.val + 1, hasNext⟩
+  priorRefutations := by
+    intro prior
+    by_cases hprior : prior.val < selection.index.val
+    · exact selection.priorRefutations ⟨prior.val, hprior⟩
+    · have heq : prior.val = selection.index.val :=
+        Nat.eq_of_lt_succ_of_not_lt prior.isLt hprior
+      have hfin :
+          (⟨prior.val, Nat.lt_trans prior.isLt hasNext⟩ :
+            Fin exactBottomConditionCandidates.length) = selection.index :=
+        Fin.ext heq
+      simpa [template, exactBottomCandidateTerm, hfin] using refutation
+
+end ExactBottomCandidateSelection
+
+/-! ## Branch and regime output types -/
 
 /-- The positive branch: every semantic exact-bottom arrow is covered. -/
 structure GlobalExactBottomCoverage : Type (u + 1) where
@@ -249,12 +448,12 @@ and a semantic arrow outside the covered locus.  Qualification proofs are
 separate theorem fields so no presentation or raw fixture stores coverage.
 -/
 structure CharacterizedExactBottomCoverage : Type (u + 1) where
-  template : ExactBottomConditionSyntax FiniteModel.carrier
-  template_is_fixed_head :
-    template = exactBottomFirstCandidate FiniteModel.carrier
+  selection : ExactBottomCandidateSelection.{u}
+  qualification : ExactBottomConditionQualification.{u} selection.template
   sufficient : ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom]
     (input : CartSemanticInput U),
-    evalExactBottomCondition (rebaseExactBottomCondition template) input →
+    evalExactBottomCondition
+        (rebaseExactBottomCondition selection.template) input →
       Nonempty (AnchoredCoverageWitness input)
   counterexampleCarrier : AtomCarrier.{u}
   counterexampleDecidableEq : DecidableEq counterexampleCarrier.Atom
@@ -268,17 +467,45 @@ inductive ExactBottomCoverageDisjunction : Type (u + 1)
   | global (proof : GlobalExactBottomCoverage.{u})
   | characterized (proof : CharacterizedExactBottomCoverage.{u})
 
+/--
+A per-carrier view contains only the named branch artifact.  Its constructor
+cannot accept a coverage producer independently of that artifact.
+-/
+structure ExactBottomCoverageRegime (U : AtomCarrier.{u})
+    [DecidableEq U.Atom] where
+  artifact : ExactBottomCoverageDisjunction.{u}
+
+namespace ExactBottomCoverageRegime
+
+/-- Membership is derived from the named branch artifact. -/
+def Holds {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (regime : ExactBottomCoverageRegime U)
+    (input : CartSemanticInput U) : Prop :=
+  match regime.artifact with
+  | .global _ => True
+  | .characterized proof =>
+      evalExactBottomCondition
+        (rebaseExactBottomCondition proof.selection.template) input
+
+/-- Every regime uses the coverage producer stored in its named branch artifact. -/
+theorem covers {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (regime : ExactBottomCoverageRegime U)
+    (input : CartSemanticInput U) (membership : regime.Holds input) :
+    Nonempty (AnchoredCoverageWitness input) := by
+  rcases regime with ⟨artifact⟩
+  cases artifact with
+  | global proof => exact proof.cover U input
+  | characterized proof =>
+      exact proof.sufficient U input (by simpa [Holds] using membership)
+
+end ExactBottomCoverageRegime
+
 /-- Produce the branch-independent regime by consuming the branch payload. -/
 def exactBottomCoverageRegimeOfDisjunction
     (artifact : ExactBottomCoverageDisjunction.{u}) :
     ∀ (U : AtomCarrier.{u}) [DecidableEq U.Atom],
-      ExactBottomCoverageRegime U := by
-  intro U _
-  cases artifact with
-  | global proof => exact .global (proof.cover U)
-  | characterized proof =>
-      exact .characterized (rebaseExactBottomCondition proof.template)
-        (proof.sufficient U)
+      ExactBottomCoverageRegime U :=
+  fun _ _ => ⟨artifact⟩
 
 end AAT.AG.DoctrineFiberProduct
 
