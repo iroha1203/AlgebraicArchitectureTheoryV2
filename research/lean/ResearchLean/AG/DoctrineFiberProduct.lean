@@ -4,6 +4,7 @@ import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeRaw
 import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseDiagram
 import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticAssembly
 import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticCovariance
+import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticReselection
 import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.IndexedBaseChangeTwoCellNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCSchema

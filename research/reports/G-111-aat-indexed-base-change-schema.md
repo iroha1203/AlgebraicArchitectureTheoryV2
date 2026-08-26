@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 12 K3 d1-d3 implementation candidate`
+- proof state: `active / Cycle 13 K3 d4 implementation candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -30,9 +30,10 @@ Cycle 7 は、等しい source path と二つの independently validated square
 `target-refuted` のまま履歴に残り、その有限反例は改訂 target の必須
 負枝へ移る。Cycle 10 の F0 は diagnostic import を持たない base diagram /
 hom と path-naturality API を、Cycle 11 の K2 はその上の coherent
-diagnostic assembly をそれぞれ確定した。現在の単一 proof obligation は
-K3 のうち、生成済み target interpretation、endpoint group homomorphism、
-relation-relative data を定理面へ固定する (d1)--(d3) である。
+diagnostic assembly をそれぞれ確定した。Cycle 12 は生成済み target
+interpretation、endpoint group homomorphism、relation-relative data を
+(d1)--(d3) の定理面へ固定した。現在の単一 proof obligation は、同じ
+endpoint action で source reselection を写す K3 (d4) である。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -314,6 +315,9 @@ cycle: 12
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 27b9f34611476fb9e5012f89a05fb1f1267d9ea2
+pr: 4173
+reviewed_head: 372fecd3c93b7eb62bde19e98d05d78d456f8132
+merge_oid: 7995ea0f53687bd958cd57dda2255f4580db7c23
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 11 merged / K3 selected"
@@ -414,6 +418,101 @@ audits:
     - "namespace axiom audit: 12 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "K3 (d4) mapped reselection, followed by (d5)-(d6) preservation"
+```
+
+### Cycle 13 — mapped indexed edge reselection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 13
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: 7995ea0f53687bd958cd57dda2255f4580db7c23
+tracking_issue: 4158
+selection:
+  proof_state_ref: "Issue #4158 Cycle 12 merged / K3 d4 selected"
+  proof_dag_predecessors:
+    - "Cycle 11 coherent indexed diagnostic assembly"
+    - "Cycle 12 generated target interpretation and endpoint action"
+  proof_obligation: >-
+    Discharge K3 (d4): define edgewise source reselection over an arbitrary
+    indexed diagnostic interpretation and map it pointwise through the same
+    generated endpoint MonoidHom used by d2 and the target comparator.
+  selection_reason: >-
+    Mapped reselection is the next open K3 clause and the explicit coordinate
+    required before coherence and vanishing preservation can be stated.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticReselection.lean
+  risks:
+    - target reselection is accepted as a theorem argument or structure field
+    - a second action unrelated to endpointAction is introduced
+    - a common-source-fiber incidence premise is added
+    - d5 or d6 is credited from group laws alone
+  unchecked:
+    - "K3 (d5) coherence preservation"
+    - "K3 (d6) vanishing preservation"
+    - "K4 C0-C3"
+    - "K5 raw-family classification and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    IndexedEdgeReselection is ordinary source-side edgewise automorphism data.
+    transportedReselection generates the target coordinate by applying the d2
+    endpointAction at every edge target. The identity and multiplication laws
+    are inherited from that actual MonoidHom. No package incidence equality,
+    target reselection field, coherence, or vanishing certificate is added.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticReselection.lean
+  evidence:
+    - IndexedEdgeReselection
+    - IndexedBaseDiagramHom.transportedReselection
+    - IndexedBaseDiagramHom.transportedReselection_apply
+    - IndexedBaseDiagramHom.transportedReselection_one
+    - IndexedBaseDiagramHom.transportedReselection_mul
+  claim_mapping:
+    source_labels:
+      - "G-111 target theorem (d4)"
+      - "G-111 target proof strategy K3"
+    conjuncts:
+      - "ordinary source edge reselection -> IndexedEdgeReselection"
+      - "generated target reselection -> transportedReselection"
+      - "same endpoint action and group laws -> one/mul theorems"
+    undischarged_assumptions:
+      - "source edge reselection is ordinary source-side input"
+    acceptance_point: >-
+      The cycle is discharged if fixed-head review confirms that every target
+      coordinate is generated by the d2 endpointAction, the group laws are
+      proof outputs, and no incidence premise or d5-d6 conclusion is added.
+audits:
+  premise_delta:
+    discharged:
+      - "K3 (d4) mapped reselection"
+    remaining:
+      - "K3 (d5)-(d6)"
+      - "K4 C0-C3"
+      - "K5 classification and witnesses"
+  certificate_provenance:
+    discharged:
+      - "each target edge coordinate is endpointAction applied to source reselection"
+    unresolved:
+      - "path coherence and vanishing preservation"
+  proof_use:
+    used:
+      - "Cycle 12 endpointAction at every target vertex"
+      - "source reselection at every indexed edge"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  validation_refs:
+    - "focused lake env lean IndexedDiagnosticReselection.lean: pass"
+    - "namespace axiom audit: 5 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "K3 (d5) coherence preservation, followed by (d6) vanishing preservation"
 ```
 
 ### Cycle 3 — rejected
