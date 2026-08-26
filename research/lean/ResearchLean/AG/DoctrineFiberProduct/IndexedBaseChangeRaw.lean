@@ -695,6 +695,26 @@ noncomputable def indexedFiberCompositionComparison {U : AtomCarrier.{u}}
       indexedFiberAction first ⋙ indexedFiberAction second :=
   coreFiberCompositor first.decode second.decode
 
+/-- The generated identity comparison contracts the generated identity lift. -/
+theorem indexedFiberIdentityComparison_hom_fac {U : AtomCarrier.{u}}
+    (object : ExtractionInstance U) (P : CoreFiber object) :
+    indexedTotalLift (.ofTerm (.identity object)) P ≫
+        ((indexedFiberIdentityComparison object).hom.app P).1 = 𝟙 P.1 := by
+  simpa [indexedTotalLift, indexedFiberIdentityComparison] using
+    coreFiberUnitorApp_hom_fac object P
+
+/-- The generated composition comparison identifies composite and iterated lifts. -/
+theorem indexedFiberCompositionComparison_hom_fac {U : AtomCarrier.{u}}
+    {source middle target : ExtractionInstance U}
+    (first : ValidatedIndexedBaseHom U source middle)
+    (second : ValidatedIndexedBaseHom U middle target)
+    (P : CoreFiber source) :
+    indexedTotalLift (.ofTerm (.comp first.term second.term)) P ≫
+        ((indexedFiberCompositionComparison first second).hom.app P).1 =
+      coreFiberIteratedLift first.decode second.decode P := by
+  simpa [indexedTotalLift, indexedFiberCompositionComparison] using
+    coreFiberCompositorApp_hom_fac first.decode second.decode P
+
 /-- The outer-boundary comparison associated with any square term. -/
 private noncomputable def indexedSquareOuterComparisonAux {U : AtomCarrier.{u}}
     {northwest northeast southwest southeast : ExtractionInstance U}
@@ -766,6 +786,229 @@ noncomputable def indexedSquareOuterComparison {U : AtomCarrier.{u}}
     (coreFiberTransportFunctor top ⋙ coreFiberTransportFunctor right) ≅
       (coreFiberTransportFunctor left ⋙ coreFiberTransportFunctor bottom) :=
   indexedSquareOuterComparisonAux term.term
+
+/-- The outer square comparison identifies the two canonical iterated lifts. -/
+theorem indexedSquareOuterComparison_hom_fac {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : ValidatedIndexedBaseSquare U top left right bottom)
+    (P : CoreFiber northwest) :
+    coreFiberIteratedLift top right P ≫
+      ((indexedSquareOuterComparison term).hom.app P).1 =
+      coreFiberIteratedLift left bottom P := by
+  dsimp [indexedSquareOuterComparison, indexedSquareOuterComparisonAux,
+    coreFiberCompositor, coreFiberTransportEqCast]
+  have fiber_comp {A B C : CoreFiber southeast} (f : A ⟶ B) (g : B ⟶ C) :
+      (f ≫ g).1 = f.1 ≫ g.1 := rfl
+  simp only [fiber_comp]
+  have cast_fac :
+      coreFiberLift (top ≫ right) P ≫
+          ((eqToHom (congrArg coreFiberTransportFunctor
+            term.term.commutes.symm)).app P).1 =
+        coreFiberLift (left ≫ bottom) P := by
+    have eq_cast {source target : northwest ⟶ southeast}
+        (h : source = target) :
+        ((eqToHom (congrArg coreFiberTransportFunctor h)).app P).1 =
+          (coreFiberTransportEqCast h P).1 := by
+      cases h
+      rfl
+    rw [eq_cast]
+    exact coreFiberLift_eqCast_fac term.term.commutes.symm P
+  have compositor_cancel_assoc
+      {Z : AATCorePackage U}
+      (tail : (coreFiberTransportObj (top ≫ right) P).1 ⟶ Z) :
+      (coreFiberCompositorApp top right P).hom.1 ≫
+          ((coreFiberCompositorApp top right P).inv.1 ≫ tail) = tail := by
+    exact ((Functor.Fiber.fiberInclusion).mapIso
+      (coreFiberCompositorApp top right P)).hom_inv_id_assoc tail
+  change coreFiberIteratedLift top right P ≫
+      (coreFiberCompositorApp top right P).inv.1 ≫
+        ((eqToHom (congrArg coreFiberTransportFunctor
+          term.term.commutes.symm)).app P).1 ≫
+          (coreFiberCompositorApp left bottom P).hom.1 =
+    coreFiberIteratedLift left bottom P
+  calc
+    _ = (coreFiberLift (top ≫ right) P ≫
+          (coreFiberCompositorApp top right P).hom.1) ≫
+          (coreFiberCompositorApp top right P).inv.1 ≫
+          ((eqToHom (congrArg coreFiberTransportFunctor
+            term.term.commutes.symm)).app P).1 ≫
+            (coreFiberCompositorApp left bottom P).hom.1 := by
+      rw [coreFiberCompositorApp_hom_fac]
+    _ = coreFiberLift (top ≫ right) P ≫
+          ((eqToHom (congrArg coreFiberTransportFunctor
+            term.term.commutes.symm)).app P).1 ≫
+            (coreFiberCompositorApp left bottom P).hom.1 := by
+      simp only [Category.assoc, compositor_cancel_assoc]
+    _ = coreFiberLift (left ≫ bottom) P ≫
+          (coreFiberCompositorApp left bottom P).hom.1 := by
+      rw [← Category.assoc, cast_fac]
+    _ = _ := coreFiberCompositorApp_hom_fac left bottom P
+
+/-- The inverse compositor contracts an iterated lift to the composite lift. -/
+private theorem coreFiberCompositorApp_inv_fac {U : AtomCarrier.{u}}
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target)
+    (P : CoreFiber source) :
+    coreFiberIteratedLift first second P ≫
+        (coreFiberCompositorApp first second P).inv.1 =
+      coreFiberLift (first ≫ second) P := by
+  calc
+    _ = (coreFiberLift (first ≫ second) P ≫
+          (coreFiberCompositorApp first second P).hom.1) ≫
+        (coreFiberCompositorApp first second P).inv.1 := by
+      rw [coreFiberCompositorApp_hom_fac]
+    _ = _ := by
+      rw [Category.assoc]
+      have cancel :
+          (coreFiberCompositorApp first second P).hom.1 ≫
+              (coreFiberCompositorApp first second P).inv.1 = 𝟙 _ := by
+        exact congrArg Subtype.val
+          (Iso.hom_inv_id (coreFiberCompositorApp first second P))
+      rw [cancel]
+      exact Category.comp_id (coreFiberLift (first ≫ second) P)
+
+/-- Naturality of canonical lifts, in the public functor-map notation. -/
+@[reassoc]
+private theorem coreFiberTransportFunctor_map_fac {U : AtomCarrier.{u}}
+    {source target : ExtractionInstance U} (base : source ⟶ target)
+    {P Q : CoreFiber source} (f : P ⟶ Q) :
+    coreFiberLift base P ≫ ((coreFiberTransportFunctor base).map f).1 =
+      f.1 ≫ coreFiberLift base Q := by
+  exact coreFiberTransportMap_fac base f
+
+/-- Compositor factorization, in the public natural-isomorphism notation. -/
+@[reassoc]
+private theorem coreFiberCompositor_hom_fac {U : AtomCarrier.{u}}
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target)
+    (P : CoreFiber source) :
+    coreFiberLift (first ≫ second) P ≫
+        ((coreFiberCompositor first second).hom.app P).1 =
+      coreFiberIteratedLift first second P :=
+  coreFiberCompositorApp_hom_fac first second P
+
+/-- Inverse compositor factorization, in natural-isomorphism notation. -/
+@[reassoc]
+private theorem coreFiberCompositor_inv_fac {U : AtomCarrier.{u}}
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target)
+    (P : CoreFiber source) :
+    coreFiberIteratedLift first second P ≫
+        ((coreFiberCompositor first second).inv.app P).1 =
+      coreFiberLift (first ≫ second) P :=
+  coreFiberCompositorApp_inv_fac first second P
+
+/-- Forgetting a composite fiber morphism gives the composite total morphism. -/
+private theorem coreFiber_hom_comp_val {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} {A B C : CoreFiber X}
+    (f : A ⟶ B) (g : B ⟶ C) : (f ≫ g).1 = f.1 ≫ g.1 := rfl
+
+/-- Every recursively generated square comparison identifies its iterated lifts. -/
+private theorem indexedSquareTermActionAux_hom_fac {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : IndexedBaseSquareTerm U top left right bottom)
+    (P : CoreFiber northwest) :
+    coreFiberIteratedLift top right P ≫
+      ((indexedSquareTermActionAux term).hom.app P).1 =
+      coreFiberIteratedLift left bottom P := by
+  induction term with
+  | leaf equality =>
+      simpa [indexedSquareTermAction, indexedSquareTermActionAux] using
+        indexedSquareOuterComparison_hom_fac
+          (ValidatedIndexedBaseSquare.ofTerm (.leaf equality)) P
+  | identity hom =>
+      simpa [indexedSquareTermAction, indexedSquareTermActionAux] using
+        indexedSquareOuterComparison_hom_fac
+          (ValidatedIndexedBaseSquare.ofTerm (.identity hom)) P
+  | comp first second first_ih second_ih =>
+      simpa [indexedSquareTermAction, indexedSquareTermActionAux] using
+        indexedSquareOuterComparison_hom_fac
+          (ValidatedIndexedBaseSquare.ofTerm (.comp first second)) P
+  | pasteHorizontal first second first_ih second_ih =>
+      rename_i nw nm ne sw sm se t₁ l m b₁ t₂ r b₂
+      dsimp [coreFiberIteratedLift] at first_ih second_ih
+      simp [indexedSquareTermActionAux, coreFiberIteratedLift,
+        coreFiber_hom_comp_val]
+      rw [coreFiberTransportFunctor_map_fac_assoc]
+      rw [coreFiberCompositor_hom_fac_assoc]
+      dsimp [coreFiberIteratedLift]
+      simp only [Category.assoc]
+      rw [reassoc_of% (second_ih _)]
+      rw [coreFiberTransportFunctor_map_fac_assoc]
+      rw [reassoc_of% (first_ih P)]
+      calc
+        _ = coreFiberLift l P ≫
+              (coreFiberIteratedLift b₁ b₂
+                ((coreFiberTransportFunctor l).obj P) ≫
+                ((coreFiberCompositor b₁ b₂).inv.app
+                  ((coreFiberTransportFunctor l).obj P)).1) := by
+              simp only [coreFiberIteratedLift, Category.assoc]
+        _ = _ := by rw [coreFiberCompositor_inv_fac]
+
+  | pasteVertical first second first_ih second_ih =>
+      rename_i nw ne ml mr sw se t l₁ r₁ m l₂ r₂ b
+      dsimp [coreFiberIteratedLift] at first_ih second_ih
+      simp [indexedSquareTermActionAux, coreFiberIteratedLift,
+        coreFiber_hom_comp_val]
+      rw [coreFiberCompositor_hom_fac_assoc]
+      dsimp [coreFiberIteratedLift]
+      simp only [Category.assoc]
+      rw [coreFiberTransportFunctor_map_fac_assoc]
+      rw [reassoc_of% (first_ih P)]
+      rw [reassoc_of% (second_ih _)]
+      rw [coreFiberTransportFunctor_map_fac]
+      calc
+        _ = (coreFiberIteratedLift l₁ l₂ P ≫
+              ((coreFiberCompositor l₁ l₂).inv.app P).1) ≫
+              coreFiberLift b
+                ((coreFiberTransportFunctor (l₁ ≫ l₂)).obj P) := by
+              simp only [coreFiberIteratedLift, Category.assoc]
+        _ = _ := by rw [coreFiberCompositor_inv_fac]
+
+/-- Every validated recursive square action identifies its canonical iterated lifts. -/
+theorem indexedSquareTermAction_hom_fac {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (term : ValidatedIndexedBaseSquare U top left right bottom)
+    (P : CoreFiber northwest) :
+    coreFiberIteratedLift top right P ≫
+      ((indexedSquareTermAction term).hom.app P).1 =
+      coreFiberIteratedLift left bottom P :=
+  indexedSquareTermActionAux_hom_fac term.term P
+
+/-- Two generated square comparisons with the same lift factorization coincide. -/
+private theorem indexedSquareComparison_ext {U : AtomCarrier.{u}}
+    {northwest northeast southwest southeast : ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left : northwest ⟶ southwest}
+    {right : northeast ⟶ southeast} {bottom : southwest ⟶ southeast}
+    (first second :
+      (coreFiberTransportFunctor top ⋙ coreFiberTransportFunctor right) ≅
+        (coreFiberTransportFunctor left ⋙ coreFiberTransportFunctor bottom))
+    (first_fac : ∀ P : CoreFiber northwest,
+      coreFiberIteratedLift top right P ≫ (first.hom.app P).1 =
+        coreFiberIteratedLift left bottom P)
+    (second_fac : ∀ P : CoreFiber northwest,
+      coreFiberIteratedLift top right P ≫ (second.hom.app P).1 =
+        coreFiberIteratedLift left bottom P) :
+    first = second := by
+  apply Iso.ext
+  apply NatTrans.ext
+  funext P
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  letI : (packageProjection U).IsStronglyCocartesian (top ≫ right)
+      (coreFiberIteratedLift top right P) :=
+    coreFiberIteratedLift_isStronglyCocartesian top right P
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (top ≫ right)
+    (coreFiberIteratedLift top right P) (𝟙 southeast)
+  change coreFiberIteratedLift top right P ≫ (first.hom.app P).1 =
+    coreFiberIteratedLift top right P ≫ (second.hom.app P).1
+  rw [first_fac, second_fac]
 
 /-- Exact output type for the componentwise horizontal-pasting route. -/
 abbrev IndexedHorizontalComponentRouteType {U : AtomCarrier.{u}}
@@ -844,6 +1087,25 @@ abbrev IndexedHorizontalPastingCoherenceType {U : AtomCarrier.{u}}
     indexedSquareOuterComparison
       (.ofTerm (.pasteHorizontal first.term second.term))
 
+/-- Horizontal pasting agrees with the generated outer-boundary comparison. -/
+theorem indexedHorizontalPastingCoherence {U : AtomCarrier.{u}}
+    {northwest northMiddle northeast southwest southMiddle southeast :
+      ExtractionInstance U}
+    {top₁ : northwest ⟶ northMiddle} {left : northwest ⟶ southwest}
+    {middle : northMiddle ⟶ southMiddle} {bottom₁ : southwest ⟶ southMiddle}
+    {top₂ : northMiddle ⟶ northeast} {right : northeast ⟶ southeast}
+    {bottom₂ : southMiddle ⟶ southeast}
+    (first : ValidatedIndexedBaseSquare U top₁ left middle bottom₁)
+    (second : ValidatedIndexedBaseSquare U top₂ middle right bottom₂) :
+    IndexedHorizontalPastingCoherenceType first second := by
+  apply indexedSquareComparison_ext
+  · intro P
+    rw [← indexedSquareTermAction_pasteHorizontal first second]
+    exact indexedSquareTermAction_hom_fac
+      (.ofTerm (.pasteHorizontal first.term second.term)) P
+  · exact indexedSquareOuterComparison_hom_fac
+      (.ofTerm (.pasteHorizontal first.term second.term))
+
 /-- Exact output type for the componentwise vertical-pasting route. -/
 abbrev IndexedVerticalComponentRouteType {U : AtomCarrier.{u}}
     {northwest northeast southwest southeast : ExtractionInstance U}
@@ -920,6 +1182,25 @@ abbrev IndexedVerticalPastingCoherenceType {U : AtomCarrier.{u}}
     indexedSquareOuterComparison
       (.ofTerm (.pasteVertical first.term second.term))
 
+/-- Vertical pasting agrees with the generated outer-boundary comparison. -/
+theorem indexedVerticalPastingCoherence {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : ValidatedIndexedBaseSquare U top left₁ right₁ middle)
+    (second : ValidatedIndexedBaseSquare U middle left₂ right₂ bottom) :
+    IndexedVerticalPastingCoherenceType first second := by
+  apply indexedSquareComparison_ext
+  · intro P
+    rw [← indexedSquareTermAction_pasteVertical first second]
+    exact indexedSquareTermAction_hom_fac
+      (.ofTerm (.pasteVertical first.term second.term)) P
+  · exact indexedSquareOuterComparison_hom_fac
+      (.ofTerm (.pasteVertical first.term second.term))
+
 /--
 The F0 choice for 3-cell coherence is theorem-level equality between two
 already generated comparison routes; it is never supplied as raw syntax.
@@ -935,6 +1216,23 @@ abbrev IndexedThreeCellCoherenceType {U : AtomCarrier.{u}}
     (second : ValidatedIndexedBaseSquare U middle left₂ right₂ bottom) : Prop :=
   indexedSquareTermAction (.ofTerm (.comp first.term second.term)) =
     indexedSquareTermAction (.ofTerm (.pasteVertical first.term second.term))
+
+/-- Sequential composition and vertical pasting generate the same 3-cell route. -/
+theorem indexedThreeCellCoherence {U : AtomCarrier.{u}}
+    {northwest northeast middleLeft middleRight southwest southeast :
+      ExtractionInstance U}
+    {top : northwest ⟶ northeast} {left₁ : northwest ⟶ middleLeft}
+    {right₁ : northeast ⟶ middleRight} {middle : middleLeft ⟶ middleRight}
+    {left₂ : middleLeft ⟶ southwest} {right₂ : middleRight ⟶ southeast}
+    {bottom : southwest ⟶ southeast}
+    (first : ValidatedIndexedBaseSquare U top left₁ right₁ middle)
+    (second : ValidatedIndexedBaseSquare U middle left₂ right₂ bottom) :
+    IndexedThreeCellCoherenceType first second := by
+  apply indexedSquareComparison_ext
+  · exact indexedSquareTermAction_hom_fac
+      (.ofTerm (.comp first.term second.term))
+  · exact indexedSquareTermAction_hom_fac
+      (.ofTerm (.pasteVertical first.term second.term))
 
 end AAT.AG.DoctrineFiberProduct
 
