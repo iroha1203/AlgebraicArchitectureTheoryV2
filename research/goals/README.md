@@ -27,8 +27,10 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   (Gr4 完遂 gate 第五項: `DiagnosticConservative` の新設、生成
   class の十分性・反射・orbit 検出・O20 分類、class 外 / 内 witness
   対、貼り合わせ閉性、`Full` + `Faithful` 関係決定 (a)–(i)。生成
-  class = 閉じた条件言語の term(候補列 F0 事前登録、先頭 =
-  `vertexwiseSourceMapInjective`)。依存先 G-111 は完遂済み)
+  class = 閉じた条件言語の term(候補列はカード固定の全 normal form
+  3項、先頭 = `vertexwiseSourceMapInjective`)。依存先 G-111 は完遂
+  済み。execution gate: loop 起動は G-112 完遂後 — カード program
+  context を正とする)
 
 ## draft（人間の確認待ち）
 
