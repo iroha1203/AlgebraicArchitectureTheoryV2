@@ -1,0 +1,173 @@
+# G-112-aat-exact-bottom-coverage — exact-bottom coverage と全域分類
+
+- 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
+- tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
+- target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
+- proof state: `active / F0 typing proposed`
+- completion candidate: `no`
+
+この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
+target statement と completion criteria は GOAL カードを正本とし、SCORE は
+使わない。
+
+## Fixed heads
+
+- fixed GOAL blob SHA: `17cad4df309049633617878373246300c1ad24aa`
+- fixed GOAL SHA-256:
+  `c7025c26418f88509b959326f61fcc576ddc1f1bc877dd2384833483848ac097`
+- base OID: `19a0cb3963373f7e948a3eae16fe80d8d6c55bf6`
+- language head:
+  `ExactBottomConditionSyntax` / `evalExactBottomCondition` /
+  `rebaseExactBottomCondition`
+- predicate-term head: `exactBottomFirstCandidate` =
+  `sourceFinite ∧ targetFinite`
+- candidate sequence: `exactBottomConditionCandidates`。4 atomic condition の
+  非空 conjunction class 15項を proof 前に固定し、先頭を fixed head とする。
+  候補反証後はこの列の次項だけへ移る。
+- anchored witness head: `CoveredObjectWitness` /
+  `CoverageWitnessOver` / `AnchoredCoverageWitness`
+- branch head: `GlobalExactBottomCoverage` /
+  `CharacterizedExactBottomCoverage` /
+  `ExactBottomCoverageDisjunction`
+- regime head: `ExactBottomCoverageRegime` /
+  `exactBottomCoverageRegimeOfDisjunction`
+- finite placement: carrier Atom、source endpoint Source、target endpoint
+  Source は `Finite`。`DecidableEq U.Atom` は finite-code interface にだけ
+  置き、条件 evaluator は要求しない。
+- universe contract: language、rebase、regime、十分性は universe-polymorphic。
+  負枝反例 payload は universe ごとに carrier と arrow を同じ universe に
+  居住させる symbolic contract を採用した。endpoint 固定への移行はまだ不要。
+
+## Qualification correspondence
+
+| G-112(b) 資格 | F0 surface | 現在状態 |
+| --- | --- | --- |
+| (i) 探索前固定 | `exactBottomConditionCandidates_head` | 型固定済み、PR review 前 |
+| (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | 型固定済み、transitive audit は PR review 対象 |
+| (iii) 同型不変性 | 後続 K1 theorem | 未証明 |
+| (iv) anchor 相対 id / comp / pullback 閉性 | `AnchoredCoverageWitness` と regime producer surface | producer は未構成 |
+| (v) 像包含と非空発火 | 後続 K1 theorem / raw family | 未構成 |
+
+## Cycle ledger
+
+### Cycle 1 — F0 type surface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-112-aat-exact-bottom-coverage
+cycle: 1
+goal_blob_sha: 17cad4df309049633617878373246300c1ad24aa
+base_oid: 19a0cb3963373f7e948a3eae16fe80d8d6c55bf6
+tracking_issue: 4184
+report_path: research/reports/G-112-aat-exact-bottom-coverage.md
+selection:
+  proof_state_ref: "Issue #4184: active / F0 typing pending"
+  proof_dag_predecessors:
+    - "G-110 PR #4153 / merge 315a2537"
+    - CartSemanticInputIso
+    - CartPresentationBetween
+    - strongCartesianLiftOfTarget
+  proof_obligation: >-
+    Fix the F0 language, ordered first predicate term, anchored arrow-category
+    witness, two-branch payload, regime producer, finite-instance placement,
+    and symbolic universe contract without constructing a coverage branch.
+  selection_reason: >-
+    F0 is the unique next obligation in Issue #4184 and fixes every type needed
+    by K0--K4 before any proof result can influence predicate selection.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean
+  risks:
+    - endpoint isomorphisms could fail to enforce an arrow-category square
+    - the closed language could acquire a callback or realization dependency
+    - a coverage theorem could escape into a payload input rather than be produced
+    - universe-polymorphic qualification could be weakened to one endpoint
+  unchecked:
+    - fixed-head standard PR review
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    ExactBottomConditionSyntax has exactly the five fixed constructors;
+    evalExactBottomCondition reads only endpoint Source finiteness and extraction
+    sets; canonical rebase and the fifteen-entry pre-proof candidate sequence are fixed;
+    CoverageWitnessOver requires one CartPresentationBetween and one
+    CartSemanticInputIso whose endpoint isomorphisms equal the shared anchors;
+    branch and regime output types are fixed without constructing either branch.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean
+  evidence:
+    - exactBottomConditionCandidates_head
+    - rebase_exactBottomFirstCandidate
+    - evaluator unfolding theorem group
+    - CoverageWitnessOver
+    - FiniteEndpointCoverage
+    - ExactBottomCoverageDisjunction
+    - exactBottomCoverageRegimeOfDisjunction
+  claim_mapping:
+    theorem_names:
+      - exactBottomConditionCandidates_head
+      - rebase_exactBottomFirstCandidate
+      - FiniteEndpointCoverage
+    source_labels:
+      - "target theorem (a) witness shape"
+      - "target theorem (b) closed language and fixed head"
+      - "target theorem (d) regime surface"
+    conjuncts:
+      - "F0 typing -> ExactBottomCoverageSchema"
+    undischarged_assumptions:
+      - first-stage coverage construction
+      - second-stage branch decision and all five qualification theorems
+      - O7 wrapper and proof-use audit
+      - coverage closure producers
+      - semantic-global coherence package
+    acceptance_point: >-
+      This cycle fixes only the pre-proof type surface named by F0; no coverage
+      existence, sufficient predicate, counterexample, closure, or coherence
+      result is claimed.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "closed language type and evaluator / ExactBottomConditionSyntax"
+      - "anchored witness type / CoverageWitnessOver"
+      - "branch and regime output types / ExactBottomCoverageDisjunction"
+    remaining:
+      - "first-stage coverage theorem / K0"
+      - "second-stage two-branch decision / K1"
+      - "O7 fixed theorem and proof-use / K2"
+      - "coverage closure / K3"
+      - "global lift coherence / K4"
+  certificate_provenance:
+    discharged:
+      - "condition language provenance / fixed GOAL constructor table"
+      - "anchor square provenance / CartPresentationBetween plus CartSemanticInputIso"
+    unresolved:
+      - "coverage witnesses are types only; constructors remain K0/K1 obligations"
+  proof_use:
+    used:
+      - CartSemanticInput
+      - CartPresentationBetween
+      - CartSemanticInputIso
+    unused:
+      - strongCartesianLiftOfTarget
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean / exit 0 / standard axioms only"
+    - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.ExactBottomCoverageSchema / exit 0 / targeted module only"
+    - "all reported declarations #print axioms / standard axioms only: propext, Classical.choice, Quot.sound where applicable"
+  blocking_findings: []
+  next_obligation: "K0 first-stage finite-endpoint anchored coverage construction"
+```
+
+## Current proof state
+
+F0 の type surface を実装し、focused elaboration と standard-axiom audit は
+通過した。正式受理は fixed-head PR review 後に確定する。全 completion
+criteria のうち K0--K4 と K5 final audit は未完であり、現在は
+`target-proof-checkpoint` 候補である。
