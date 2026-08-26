@@ -215,8 +215,10 @@
     provenance = authored base graph、base path equality、vertex index、
     edge square。proof-use = target two-cell base の canonical
     realization。監査 artifact =
-    diagnostic-free import / field audit と、named cell の source index
-    が非 epi でその同じ connected subdiagram が発火する正例。
+    diagnostic-free import / field audit と、source index が非 epi、
+    parallel path が構文的に異なり、participating action が非恒等である
+    named coherent positive。diagnostic 発火は独立な
+    `named nontrivial witness` の監査 artifact だけで要求する。
     結論相当でない理由 = target base relation を方向仮定として
     **明示的に残す**相対定理であり、その relation を生成済みと数えない。
     base path naturality だけを表し、package、
