@@ -132,8 +132,10 @@
      すべて反例枝で確定した場合の記録の見出し語は、枝が出揃った時点の
      ユーザー裁定とする。
   3. **範囲併記**: coverage の到達段(第一段 / 第二段)、O6 / O7 /
-     O12・G-113 (i)・G-114 (b) の確定枝、量化域からの除外成分、下記
-     域外リストを併記する。
+     O12・G-113 (i)・G-114 (b) の確定枝、量化域からの除外成分、
+     **任意の独立 raw square family は自動的には coherent diagnostic
+     assembly をなさないという G-111 の分類負枝**、下記域外リストを
+     併記する。
   4. **達成階梯対応表**: 各段 Gr0–Gr4 ↔ theorem package ↔ Lean 宣言錨 ↔
      記録正本の所在 ↔ 範囲限定、の5列を report 成果物として作成する。
      Gr0–Gr1 は statement 化段(達成 = 文書固定、n1001 §3.5)、Gr2 =
@@ -146,7 +148,7 @@
 | O1 | indexed base action(base / total / fiber)の建設+identity / composition / pasting API(全 `ExtractionInstance` 上の base 作用) | G-111 |
 | O2 | cocartesian-preserving lifted action+canonical lift compatibility(各固定 carrier 内) | G-111 |
 | O3 | 実 BC 経路との制限比較 C0–C3(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致+三角形 coherence) | G-111 |
-| O4 | (D) の full-domain 化 = source-fiber incidence 資格の解除(indexed 版 (d1)–(d6)+proper-extension witness+具体成分水準の action 非自明性 = identity action との差) | G-111 |
+| O4 | coherent indexed base-diagram morphism 全域での incidence-independent diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、非 epi coherent 正例、有限 non-liftable 負例、nontrivial witness | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の arrow 圏同型までの coverage) | G-112 |
 | O6 | coverage 拡張第二段(sector 全域の帰趨決定 — 二枝、負枝は資格条項付き特徴付け) | G-112 |
 | O7 | 全域 lift(左枝の読み = realization 資格外への strong cartesian lift の帰趨決定 — 二枝、n1001 §3.5 の忠実転写) | G-112 |

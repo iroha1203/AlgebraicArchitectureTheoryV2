@@ -19,8 +19,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
-  (Gr4 完遂 gate 第一項前半: indexed base-change schema と full-domain
-  診断共変性 (a)–(e)。依存先 G-110 は完遂済み)
+  (Gr4 完遂 gate 第一項前半: pointwise indexed calculus、coherent
+  diagnostic assembly、raw square-family liftability 分類 (a)–(g)。
+  依存先 G-110 は完遂済み)
 
 ## draft（人間の確認待ち）
 
