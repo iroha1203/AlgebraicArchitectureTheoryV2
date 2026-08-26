@@ -1113,7 +1113,7 @@ cycle: 18
 goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
 goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: 67d9ae7cac9fa931682259bdad7cd9bd6a654182
-pr: pending
+pr: 4179
 reviewed_head: pending
 tracking_issue: 4158
 report_path: research/reports/G-111-aat-indexed-base-change-schema.md
