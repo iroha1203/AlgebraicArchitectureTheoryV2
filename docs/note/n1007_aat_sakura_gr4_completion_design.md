@@ -312,8 +312,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **claim 骨格**: (a) 第一段 coverage theorem — 有限 carrier・有限
   Source 上の全 semantic exact-bottom 射が同型まで realization 像に入る
   (G-110 frontier の第一段)、(b) 第二段 = sector 全域の帰趨決定 —
-  全域 coverage theorem または「成立域の特徴付け+像外反例」の**二枝
-  disjunction 単一命題**(G-110 (B) の分岐固定様式)。**設計事実**:
+  全域 coverage theorem または「成立域の特徴付け+同型閉包外反例」の
+  **二枝 disjunction 単一命題**(G-110 (B) の分岐固定様式)。**設計事実**:
   (s1) の有限 Source 固定により、無限 Source を端点に持つ semantic 射は
   原理的に像外であり、負枝が構造的に近い。したがって負枝は cardinality
   反例だけでは放電と数えず、**成立域の特徴付け述語に G-110 `H_cart` と
