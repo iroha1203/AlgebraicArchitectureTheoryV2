@@ -59,9 +59,10 @@
   criteria だけで判定し、runtime state は tracking Issue に置く。
 - `portfolio constraint`: pointwise schema だけ、epi 分類だけ、
   (d1)–(d3)だけでは完了としない。O1–O4、C0–C3、(d1)–(d6)、非 epi
-  coherent nontrivial 正例、Cycle 7 負例を全て要求する。非 epi 正例と
-  非自明 finite witness は同一 fixture の同一 named 2-cell / connected
-  subdiagram でなければならない。
+  coherent positive、Cycle 7 負例、非自明 diagnostic witness を全て
+  要求する。非 epi positive は coherent domain が epi-only でないこと
+  だけを支え、非 epi 性が diagnostic 発火の原因であるとは主張しない。
+  diagnostic witness は別義務であり、両者を相互代替しない。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、
   反証なら `target-refuted`、全完了条件と final review を満たした場合
   だけ `target-theorem-proved`。
@@ -72,8 +73,8 @@
   vanishing を field で受ける構成、identity action の包み直し、
   arbitrary functor family の供給、pointed square 族への量化域制限、
   paste を comp の定義同値に潰す構成、C0–C3 を `Iff.rfl` 級で済ませる
-  構成、非 epi vertex を診断発火と無関係な直和成分へ隔離した
-  pseudo-positive、空診断・
+  構成、非 epi positive を空 graph / identity action だけで満たす構成、
+  空診断・
   恒等 defect・恒等 reselection だけの witness を弾く。
 - `frontier`: G-113 の保守性分類、係数 base change、`J_A` 枝、
   indexed schema の H² 方向。
@@ -121,25 +122,34 @@
      reselection・edge/path law、(C3) indexed→direct・indexed→via・
      G-110 comparison の三角形を成分等式、または指定した canonical
      iso と coherence 等式で比較する。
-  6. **(f) raw square-family liftability classification**: 等しい source
-     path と可換 square の raw family から target path equality を
-     **全 right legs に一様生成できることと source index が `Epi` で
-     あることの必要十分性**を証明する。vertexwise epi な raw family から
-     coherent diagram morphism を構成する producer を与える。加えて
-     (i) named declared 2-cell `α : p ⇒ q` を一つ固定し、`p` と `q` は
-     構文的に異なる平行 path、`α` の source vertex index は epi でなく、
-     `p` または `q` に現れる少なくとも一つの edge の generated action は
-     非恒等である具体的 coherent diagram morphism の有限正例を与える。
-     同じ `α` とその連結部分図式に非恒等 defect / reselection を置き、
-     その同じ cell の像で (d4)–(d6) を発火させる。(ii) Cycle 7
-     の有限 validated non-liftable raw family を保持する。後者は
-     arbitrary raw family の自動 assembly を否定する分類の負枝であり、
-     (d) の coherent domain の反例ではない。
-  7. **(g) witness portfolio**: (f)(i) の**同一 named cell `α` / 同一
-     connected subdiagram**で (d4)–(d6)を発火させ、`α` の path に参加する
-     少なくとも一つの generated action と identity action の具体像が
-     異なることを示す。孤立した非 epi vertex と別の epi diagnostic
-     component の直和、または別 fixture への非自明性移送を認めない。
+  6. **(f) raw square-family liftability classification**:
+     **量化順を二層に固定する。** 第一に一つの index `i` について
+     `UniformTargetBaseLiftableAt i` を「全 endpoint と全 right legs
+     `left right` に対し、`i ≫ left = i ≫ right` なら
+     `left = right`」と定義し、
+     `UniformTargetBaseLiftableAt i ↔ Epi i` を証明する。これは既存
+     `IndexedTargetBaseCongruenceAt i` の正確な scope であり、固定有限
+     family の偶発的 liftability との同値ではない。第二に有限 raw
+     family `F` の support を「`F` の generating square または declared
+     cell の source として実際に現れる vertex」と定義し、
+     `∀ v ∈ support F, Epi (index v)` から coherent diagram morphism を
+     構成する vertexwise-epi producer を与える。この family theorem は
+     十分性であり、未使用 vertex を含む global necessity は主張しない。
+     加えて (i) source vertex index が epi でない named declared 2-cell
+     と、構文的に異なる平行 path、少なくとも一つの非恒等 participating
+     action を持つ finite coherent positive を与え、coherent domain が
+     epi-only でないことを示す。この witness は non-epi 性と diagnostic
+     発火の因果性を主張しない。(ii) Cycle 7 の有限 validated
+     non-liftable raw family を保持する。後者は arbitrary raw family の
+     自動 assembly を否定する分類の負枝であり、(d) の coherent domain
+     の反例ではない。
+  7. **(g) diagnostic witness portfolio**: (f)(i) とは別に、named
+     declared 2-cell `β : p ⇒ q` とその connected subdiagram を固定する。
+     `p/q` は構文的に異なり、participating action・initial raw defect・
+     source reselection は非恒等で、その同じ cell の像で (d4)–(d6) を
+     発火させる。少なくとも一成分で generated action と identity action
+     の具体像が異なることを示す。`β` の source index は epi / non-epi
+     のどちらでもよく、(f)(i) の代替証拠には数えない。
 
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。
@@ -149,8 +159,9 @@
 - `target proof artifacts`: pointwise raw syntax と action API、
   cocartesian comparison / preservation theorem、diagnostic-free
   `IndexedBaseDiagram` / `IndexedBaseDiagramHom` と category API、
-  coherent assembly と (d1)–(d6)、C0–C3、epi iff theorem、
-  vertexwise-epi producer、非 epi coherent nontrivial 正例、Cycle 7 負例、
+  coherent assembly と (d1)–(d6)、C0–C3、local uniform-liftability
+  iff epi theorem、support-indexed vertexwise-epi producer、非 epi
+  coherent positive、Cycle 7 負例、
   named nontrivial witness、report
   `research/reports/G-111-aat-indexed-base-change-schema.md`。
 - `target proof strategy`: F0 diagnostic-free diagram / hom typing →
@@ -229,16 +240,19 @@
   - `C0–C3`: `discharge-required`。discharge artifact = G-110 の実経路
     との4層比較と三角形 coherence。provenance = canonical restriction。
     proof-use = named pointed-square regression。
-  - `raw-family classification`: `discharge-required`。epi iff、
-    vertexwise-epi producer、非 epi coherent nontrivial 正例、Cycle 7 負例を
-    finite constructions から固定する。proof-use = iff 両方向と
-    coherent domain 非退化監査。
+  - `raw-family classification`: `discharge-required`。discharge
+    artifact = `UniformTargetBaseLiftableAt i ↔ Epi i` の local theorem、
+    finite family support 定義、support-indexed vertexwise-epi
+    sufficiency producer、非 epi coherent positive、Cycle 7 負例。
+    fixed-family liftability iff や未使用 vertex を含む global necessity
+    は主張しない。proof-use = local iff 両方向、producer の各 support
+    vertex、coherent domain が epi-only でないことの有限正例。
   - `named nontrivial witness`: `discharge-required`。discharge
-    artifact = raw-family classification の非 epi coherent 正例と同一の
-    named cell / connected subdiagram に、構文的に異なる path、非恒等
-    participating action、非恒等 defect / reselection、identity action
-    との差を持つ有限 fixture。provenance = concrete finite data。
-    proof-use = 同じ cell における (d4)–(d6) の非空虚性。
+    artifact = named cell / connected subdiagram に、構文的に異なる
+    path、非恒等 participating action、非恒等 defect / reselection、
+    identity action との差を持つ有限 fixture。provenance = concrete
+    finite data。proof-use = 同じ cell における (d4)–(d6) の非空虚性。
+    non-epi positive とは別義務であり、相互に credit を移さない。
 - `target route integrity gate`: diagnostic-free module は G-101 /
   G-109 と圏論 API のみ import し、diagnostic module が一方向に import
   する。`IndexedBaseDiagram` / `Hom` の定義展開閉包に package、
@@ -248,10 +262,11 @@
   diagnostic interpretation と witness の選定前に固定し、declared
   relation の provenance を report に記録する。raw-family の target
   path equality を target-fitting に後付けして raw-family producer の
-  放電と数えない。non-epi witness では named cell、source vertex index、
-  participating path edge、defect / reselection、(d4)–(d6) proof の
-  incidence を declaration 引数と proof-use で監査し、直和成分への
-  隔離を禁止する。
+  放電と数えない。raw-family classification は local uniform iff と
+  support-indexed family sufficiency の量化順を signature で分離する。
+  diagnostic witness では named cell、participating path edge、defect /
+  reselection、(d4)–(d6) proof の incidence を declaration 引数と
+  proof-use で監査する。
 - `target anti-weakening rule`: coherent domain を epi-only に狭めない。
   arbitrary raw family を coherent hom と同一視しない。declared base
   relation からの `twoCellBase` realization を生成成果と表示しない。共変性、

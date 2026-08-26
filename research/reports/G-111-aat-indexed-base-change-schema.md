@@ -30,11 +30,13 @@ Cycle 7 は、等しい source path と二つの independently validated square
 `target-refuted` のまま履歴に残り、その有限反例は改訂 target の必須
 負枝へ移る。次の単一 proof obligation は F0:
 diagnostic import を持たない base diagram / hom の Lean signature と
-path-naturality API の型付けである。非 epi coherent positive と
-nontrivial (d4)–(d6) witness は、構文的に異なる path を持つ同一 named
-2-cell と同じ connected subdiagram で構成する。named cell の source
-vertex index を非 epi とし、participating edge action、defect、
-reselection、(d4)–(d6) の incidence を同じ declaration で固定する。
+path-naturality API の型付けである。raw-family classification は
+(i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
+(ii) finite family support 上の vertexwise-epi sufficiency producer、
+(iii) coherent domain の非 epi positive、(iv) Cycle 7 negative に分ける。
+fixed-family の偶発的 liftability iff `Epi` は主張しない。nontrivial
+(d4)–(d6) witness は別の named cell / connected subdiagram で構成し、
+非 epi positive の因果的 diagnostic 発火とは表示しない。
 
 ## Cycle ledger
 

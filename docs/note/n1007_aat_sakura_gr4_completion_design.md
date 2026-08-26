@@ -176,7 +176,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O1 | global / indexed base-change schema の建設(全 `ExtractionInstance` 上の base 作用) | gate (i)・(B) 条項 | G-111 |
 | O2 | 各固定 carrier 内の全 package に対する cocartesian 保存 lift | (B) 条項 | G-111 |
 | O3 | 実 BC 経路との制限比較(incidence 資格付き部分域上で G-110 の direct / via-base 経路と一致) | gate (i)・(B) 条項 | G-111 |
-| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、raw square family の一様自動持上げ条件(`Epi` iff)、同一 named 2-cell / connected subdiagram で発火する非 epi coherent 正例、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
+| O4 | declared base relation を持つ coherent indexed base-diagram morphism 全域での incidence-independent relative diagnostic assembly と (d1)–(d6)、一頂点の全 right legs に対する uniform liftability iff `Epi`、finite-family support 上の vertexwise-epi sufficiency producer、coherent domain の非 epi 正例、独立の nontrivial diagnostic witness、有限 non-liftable 負例 | gate (i)・(D) 移管文 | G-111 |
 | O5 | coverage 拡張第一段(有限 carrier・有限 Source 上の同型までの coverage) | gate (i)・frontier | G-112 |
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
 | O7 | 全域作用・分類 = 左枝の読みで「全域 lift の realization 資格外への帰趨決定」(n1001 §3.5 の忠実転写) | gate (i) | G-112 |
@@ -277,10 +277,10 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   indexed 作用の
   pointed pullback square への制限が G-110 の実 BC 二経路(direct /
   via-base)と C0–C3 で一致する、(f) raw square family の target path
-  relation 一様持上げが `Epi` と同値であること、vertexwise-epi
-  producer、named cell の source index が非 epi でその同じ connected
-  subdiagram が発火する coherent 正例、Cycle 7 finite non-liftable
-  負例、(g) (f) の同じ cell / subdiagram の witness。
+  relation の local uniform 持上げが `Epi` と同値であること、finite
+  family support 上の vertexwise-epi sufficiency producer、coherent
+  domain が epi-only でないことの正例、Cycle 7 finite non-liftable
+  負例、(g) 独立の named nontrivial diagnostic witness。
 - **錨(ambient-boundary 予定)**:
   `no_universalBCDiagnosticSourceFiberIncidence`
   (`DoctrineFiberProduct/BCDiagnosticSourceFiberNoGoWitnesses.lean` —
@@ -297,8 +297,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **リスク / dullness 骨格**: diagram geometry が
   `AdmissibleTransportData` の wrapper に堕ちる経路、target
   diagnostic data を supplied certificate で受ける経路、coherent
-  domain を epi-only に狭める経路、非 epi vertex を別の非発火直和成分へ
-  隔離する経路、制限比較の定義展開放電。Cycle 7
+  domain を epi-only に狭める経路、local uniform iff と fixed-family
+  偶発的 liftability を混同する経路、制限比較の定義展開放電。Cycle 7
   負例は raw-family 分類の必須負枝として保持する。
 - **failure 骨格**: diagnostic-free diagram / hom の型不能は
   `goal-defect`、coherent domain 上の assembly / (d1)–(d6) の反例、
@@ -615,8 +615,10 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
-   O6 / O7 / O12・G-113 (i)・G-114 (b) の確定枝、§3 域外リスト
-   (carrier change 含む)、達成階梯対応表(§8)を含む。
+   O6 / O7 / O12・G-113 (i)・G-114 (b) の確定枝、任意の独立 raw
+   square family が自動的には coherent diagnostic assembly をなさない
+   G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
+   達成階梯対応表(§8)を含む。
 
 達成記録をもって Gr 階梯(Gr0–Gr4)は閉じる。以降の隊列(係数 base
 change 方向)は n1005 §5 の後続 draft 候補に従い、次の海域の命名は §1 の
