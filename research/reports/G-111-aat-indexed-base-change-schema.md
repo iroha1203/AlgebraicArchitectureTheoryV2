@@ -153,6 +153,7 @@ goal_blob_sha: 01c3f96149f0e2c1298a8cfd6acc80f16bb52cfa
 goal_sha256: 8383135d79d612accba04c76a3b4f96daa17e69e7fbe72474fed4428d5efd248
 base_oid: 200401e9c2f6ca9adb29bb4e0c946ed49ba32aa8
 tracking_issue: 4158
+pr: 4167
 selection:
   proof_obligation: >-
     Discharge K1(b2): for every validated commutative square and every
@@ -210,7 +211,10 @@ result:
   blocking_findings: []
   next_obligation: "K1.5 construct the morphism-indexed transported-data adapter"
 audits:
-  review_status: pending
+  initial_review:
+    exact_head: 0040adab3b2926f4c206ba5e85d0f3862ed90494
+    verdict: "4 Accept / 0 Reject; No major findings"
+    blocking_findings: []
 ```
 
 ### Cycle 4 — validated raw input と term-indexed generated action
