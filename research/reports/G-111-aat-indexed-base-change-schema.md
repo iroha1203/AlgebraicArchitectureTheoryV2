@@ -349,8 +349,8 @@ audits:
         Reclassify the stop as target-refuted and mark component mappings as an
         unassembled candidate route rather than discharged output.
   rerun:
-    exact_head: pending
-    verdict: pending
+    exact_head: c1b50f467f8734543d7270d17e88ca5bba293a83
+    verdict: "4 Accept / 0 Reject; No major findings"
     blocking_findings: []
 ```
 
