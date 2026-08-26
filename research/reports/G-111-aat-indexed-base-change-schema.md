@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `active / Cycle 15 named nontrivial diagnostic witness candidate`
+- proof state: `active / Cycle 16 K4 restriction comparison candidate`
 - completion candidate: `no`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
@@ -34,9 +34,10 @@ diagnostic assembly をそれぞれ確定した。Cycle 12 は生成済み targe
 interpretation、endpoint group homomorphism、relation-relative data を
 (d1)--(d3) の定理面へ固定した。Cycle 13 は同じ endpoint action で
 source reselection を写す K3 (d4) を確定した。K3 (d5)--(d6) は Cycle 14
-で確定し、現在の単一 proof obligation は
-同じ named cell 上で非自明性と (d4)--(d6) の発火を固定する diagnostic
-witness である。
+で確定し、Cycle 15 は同じ named cell 上で非自明性と (d4)--(d6) の発火を
+固定する diagnostic witness を確定した。現在の proof obligation は K4
+C0--C3 であり、Cycle 16 はまず walking-arrow restriction による C0 と
+C3 の mate-level core を G-110 の実 route へ接続する。
 raw-family classification は
 (i) 一頂点・全 right legs の local uniform liftability iff `Epi`、
 (ii) finite family support 上の vertexwise-epi sufficiency producer、
@@ -651,6 +652,7 @@ goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
 base_oid: e71dd442911b50d7e30c2b2d3851ea8d0500f06b
 pr: 4176
 reviewed_head: fc541e7511cc8b5d69cf63dda75b99711b253426
+merge_oid: aa7aa88db246c487220efb7627dbd323aa671893
 tracking_issue: 4158
 selection:
   proof_state_ref: "Issue #4158 Cycle 14 merged / named witness selected"
@@ -781,6 +783,131 @@ audits:
     direct_correction_rerun: "4/4 pass after report provenance and PR-body validation sync"
   blocking_findings: []
   next_obligation: "K4 C0-C3 indexed diagnostic pasting coherence"
+```
+
+### Cycle 16 — indexed BC restriction comparison and mate core
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-111-aat-indexed-base-change-schema
+cycle: 16
+goal_blob_sha: 6541ee426482d09b8be4c91b2a268a6a7c3f9a0b
+goal_sha256: cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4
+base_oid: aa7aa88db246c487220efb7627dbd323aa671893
+tracking_issue: 4158
+report_path: research/reports/G-111-aat-indexed-base-change-schema.md
+selection:
+  proof_state_ref: "Issue #4158 Cycle 15 merged / K4 C0-C3 selected"
+  proof_dag_predecessors:
+    - "Cycle 10 diagnostic-free indexed base diagram and hom"
+    - "Cycle 11 coherent indexed diagnostic assembly"
+    - "G-110 reviewed covariant square comparison and Beck--Chevalley mate"
+  proof_obligation: >-
+    Establish the K4 restriction spine without inventing a southwest-to-
+    northeast base arrow. Represent a pointed BC square as a walking-arrow
+    IndexedBaseDiagramHom from its left column to its right column; prove that
+    the generated indexed covariant square is the reviewed G-110 comparison,
+    that its direct and via-base routes are the actual G-110 routes, and that
+    taking the canonical mate recovers the actual G-110 Beck--Chevalley mate.
+  selection_reason: >-
+    This supplies C0 and the mate-level core of C3 before package, edge,
+    two-cell, comparator, endpoint, reselection, and component-triangle
+    adapters are compared.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCRestrictionComparison.lean
+  risks:
+    - a fictitious southwest-to-northeast base arrow is introduced
+    - the indexed square is merely renamed instead of identified with G-110
+    - the mate has different direct or via-base routes
+    - the cycle is reported as all of K4 rather than C0 and the mate core
+  unchecked:
+    - "K4 C1 package, edge, two-cell, and comparator compatibility"
+    - "K4 C2 endpoint, reselection, edge, and path compatibility"
+    - "K4 C3 component-level triangle"
+    - "K5 raw-family classification and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The two-vertex walking-arrow source and target diagrams retain the left and
+    right columns of the pointed square. The diagram-hom components are its top
+    and bottom arrows, and the unique naturality equation consumes the authored
+    square commutativity. The resulting indexed square action is identified
+    with bcCoreTransportSquareIso through its semantic provenance theorem.
+    The selected reindex-and-top and bottom-and-reindex routes are the actual
+    G-110 direct and via-base functors, and the canonical mate is identified
+    with coreBeckChevalleyMate.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/IndexedBCRestrictionComparison.lean
+  evidence:
+    - indexedBCRestrictionSourceDiagram
+    - indexedBCRestrictionTargetDiagram
+    - indexedBCRestrictionDiagramHom
+    - indexedBCRestriction_squareAction_eq_semantic
+    - indexedBCRestriction_squareAction_eq_g110
+    - indexedBCRestrictionDirectFunctor
+    - indexedBCRestrictionViaBaseFunctor
+    - indexedBCRestrictionDirectFunctor_eq_g110
+    - indexedBCRestrictionViaBaseFunctor_eq_g110
+    - indexedBCRestrictionMate
+    - indexedBCRestrictionMate_eq_g110
+  claim_mapping:
+    theorem_names:
+      - indexedBCRestriction_squareAction_eq_g110
+      - indexedBCRestrictionDirectFunctor_eq_g110
+      - indexedBCRestrictionViaBaseFunctor_eq_g110
+      - indexedBCRestrictionMate_eq_g110
+    source_labels:
+      - "G-111 target theorem K4 C0"
+      - "G-111 target theorem K4 C3 mate-level core"
+    conjuncts:
+      - "pointed BC square -> walking-arrow IndexedBaseDiagramHom"
+      - "indexed covariant square action -> reviewed G-110 square comparison"
+      - "indexed restriction routes -> actual G-110 direct and via-base routes"
+      - "canonical mate -> actual G-110 Beck--Chevalley mate"
+    undischarged_assumptions:
+      - "G-110 pointed BC presentation and its reviewed semantic provenance"
+    acceptance_point: >-
+      The cycle is discharged if fixed-head review confirms that the walking-
+      arrow morphism uses the authored square equation, the square and mate are
+      the actual G-110 constructions, and no C1, C2, or full-C3 claim is made.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 C0 indexed restriction square comparison"
+      - "K4 C3 mate-level core"
+    remaining:
+      - "K4 C1 package, edge, two-cell, and comparator compatibility"
+      - "K4 C2 endpoint, reselection, edge, and path compatibility"
+      - "K4 C3 component-level triangle"
+      - "K5 raw-family classification and witnesses"
+  certificate_provenance:
+    discharged:
+      - "square action is generated from IndexedBaseDiagramHom naturality"
+      - "G-110 identification uses the reviewed semantic provenance theorem"
+      - "the mate is generated by the canonical adjunction mate equivalence"
+    unresolved:
+      - "diagnostic component-level adapters and triangle"
+  proof_use:
+    used:
+      - "the authored BC square commutativity in diagram-hom naturality"
+      - "bcProvenanceCoreTransportSquareIso_eq_semantic in the G-110 comparison"
+      - "bcLeftAdjunction and bcRightAdjunction in the canonical mate"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: cannot-determine
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused lake env lean IndexedBCRestrictionComparison.lean: pass"
+    - "targeted lake build ResearchLean.AG.DoctrineFiberProduct.IndexedBCRestrictionComparison: pass"
+    - "namespace axiom audit: 46 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "K4 C1 and C2 adapters, then the full C3 component triangle"
 ```
 
 ### Cycle 3 — rejected
