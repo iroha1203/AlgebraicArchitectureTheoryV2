@@ -3,11 +3,54 @@
 - 一次仕様: [`research/goals/G-111-aat-indexed-base-change-schema.md`](../goals/G-111-aat-indexed-base-change-schema.md)
 - tracking Issue: [#4158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158)
 - target theorem: Indexed Base-Change Calculus and Coherent Diagnostic Assembly Classification Theorem
-- proof state: `completion candidate / Cycle 20 K6 declaration-provenance-corrected packet`
-- completion candidate: `yes`
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 旧カードに対する PR #4161 / #4162 は棄却済みであり、改訂後 target の
 checkpoint または predecessor evidence として使用しない。
+
+## Completion judgment(final、2026-08-26)
+
+- fixed GOAL blob SHA: `6541ee426482d09b8be4c91b2a268a6a7c3f9a0b`
+- fixed GOAL SHA-256:
+  `cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4`
+- final head: `87278945e24f48fba5b9b8154e6979800bde0cd6`
+- 完了 PR: [#4181](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181)
+  (merge `8850a5b4d2c03458f1f1f5af6bf2017d79ad1567`)
+- standard PR review: fixed head で `Mergeable`
+  ([PR #4181 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423215464))
+- same-head final packet:
+  [PR #4181 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423250471)
+- formal completion review: 独立4 lane(Math A / Math B / Lean A /
+  Lean B)全て `No major findings`
+- formal completion ledger: 全 completion gate pass・root recheck pass
+  ([PR #4181 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423321232))
+- exact-head CI: 7/7 success
+- 公理監査: 各 module の focused Lean check で standard axioms のみ
+  pass、345件の宣言 map elaboration pass(Research aggregate / full
+  build は hard rule に従い未実行)
+- 固定 target (a)–(g)(担当義務 O1–O4): 全放電。discharge-required
+  の material premise は全て discharged。direction hypothesis
+  (declared base relation、source 側診断データ、finite-family
+  `SupportEpi` 等)と ambient 前提(G-110 / G-109 / G-101 reviewed
+  API、`DecidableEq U.Atom`)は明示分類のままで、放電クレジットを
+  与えない
+- remaining known mathematical proof obligations: `[]`
+- unchecked completion gates: なし
+
+正式判定は `target-theorem-proved`。達成の記録は次のとおり限定する。
+target `twoCellBase` は declared base relation(direction hypothesis)
+の canonical realization であり、raw family からの生成成果に数えない。
+(d1)–(d6) は source 側仮定相対の順方向定理であり、coherent domain は
+epi-only でない(非 epi 正例)が、arbitrary raw square family の自動
+assembly は主張しない(Cycle 7 負例が分類の必須負枝)。Gr4 達成の記録
+は行わない — 本カードの担当は O1–O4(Gr4 完遂 gate 第一項前半)で
+あり、coverage 分類・diagnostic conservativity / reflection・
+refinement 系統・上段 lift・IsIso 水準 exchange-failure 存否決定は
+G-112〜G-116 に残る。
+
+tracking Issue 側の完了記録は
+[#4158 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158#issuecomment-5423329411)。
 
 ## 2026-08-26 human-approved target revision
 

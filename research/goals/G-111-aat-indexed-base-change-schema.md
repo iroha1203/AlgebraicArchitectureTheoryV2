@@ -1,7 +1,64 @@
 # G-111-aat-indexed-base-change-schema — indexed base-change calculus と coherent diagnostic assembly の分類
 
 - `id`: `G-111-aat-indexed-base-change-schema`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Indexed Base-Change
+  Calculus and Coherent Diagnostic Assembly Classification Theorem の
+  固定 target (a)–(g)(担当義務 O1–O4)を全放電
+  ($target-theorem-loop Cycle 1–20、2026-08-26)。主要成果:
+  (a) 全 `ExtractionInstance`・全 base 射・全可換 square を量化する
+  diagnostic-free raw syntax(validated decoder 付き)と generated
+  action、identity / composition・水平垂直 pasting・projection
+  compatibility・path evaluation coherence、
+  (b) canonical cleavage `coreFiberLift` との comparison(id / comp /
+  paste coherence)+`indexedSquareTotalMap_isStronglyCocartesian`
+  による strongly cocartesian 保存、
+  (c) 診断語彙を含まない `IndexedBaseDiagram` /
+  `IndexedBaseDiagramHom` と category API(path naturality は
+  generating edge square から帰納生成)、
+  (d) coherent diagram morphism 全域・source-fiber incidence 仮定
+  なしの (d1)–(d6)(生成 target interpretation・endpoint
+  `MonoidHom`・relation-relative data・mapped reselection・
+  coherence 保存・vanishing 保存)、
+  (e) G-110 実経路との C0–C3 制限比較(walking-arrow 化、direct /
+  via-base functor と Beck–Chevalley mate の同定、成分三角形)、
+  (f) 二層 raw-family 分類 — `uniformTargetBaseLiftableAt_iff_epi` の
+  local iff、support-indexed vertexwise-epi sufficiency producer、
+  非 epi coherent 正例、Cycle 7 non-liftable 負例、
+  (g) named nontrivial diagnostic witness(非恒等 participating
+  action・initial raw defect・source reselection、identity action と
+  の具体成分差、同一 cell での (d4)–(d6) 発火)。
+  standard PR review は fixed head で `Mergeable`
+  ([PR #4181 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423215464))、
+  same-head final packet
+  ([PR #4181 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423250471))、
+  独立 formal completion review(`$math-lean-review`)は4 lane 全て
+  `No major findings`、formal completion ledger は全 completion gate
+  pass・root recheck pass
+  ([PR #4181 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181#issuecomment-5423321232))、
+  exact-head CI 7/7。tracking Issue の完了記録は
+  [#4158 完了記録コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4158#issuecomment-5423329411)
+  で固定。fixed GOAL blob SHA `6541ee42`(SHA-256
+  `cd372006a408707a262c24b81b590760ffb50ccc76f46f8ed80845cd60b7b3e4`)、
+  final head `87278945`、完了 PR
+  [#4181](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4181)
+  (merge `8850a5b4`)。実装 PR 系列と cycle 履歴は tracking Issue
+  #4158 を正本とする。公理監査は各 module の focused Lean check で
+  standard axioms のみ pass、345件の宣言 map elaboration pass
+  (Research aggregate / full build は hard rule に従い未実行)。
+  **達成の記録の限定**: target `twoCellBase` は declared base
+  relation(direction hypothesis)の canonical realization であり、
+  raw family からの生成成果に数えない。(d1)–(d6) は source 側仮定
+  (package・reselection・coherence・vanishing)相対の順方向定理。
+  coherent domain は epi-only でない(非 epi 正例)が、arbitrary raw
+  square family の自動 assembly は主張しない(Cycle 7 負例が分類の
+  必須負枝)。**Gr4 達成の記録は本カードでは行わない** — 担当は
+  O1–O4(Gr4 完遂 gate 第一項前半)のみで、coverage 分類・
+  diagnostic conservativity / reflection・refinement 系統・上段
+  lift・IsIso 水準 exchange-failure 存否決定は G-112〜G-116 に残る
+  (program context)。`Formal/AG` への移植は未実施
+  (porting status: `unported`)。
+- `completed at`: `2026-08-26 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第一項前半の担当カード(担当義務 =
