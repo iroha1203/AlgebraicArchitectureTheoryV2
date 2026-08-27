@@ -1,5 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.FiniteEndpointCoverage
-import ResearchLean.AG.DoctrineFiberProduct.CartesianTargetWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
 
 /-!
 # Exact-bottom coverage classification
@@ -757,7 +757,7 @@ theorem exactBottomNat_not_finite : ¬ Finite Nat := by
   letI : Fintype Nat := Fintype.ofFinite Nat
   exact Fintype.false (α := Nat) inferInstance
 
-/-- The selected grid source contains an injective copy of `Nat`. -/
+/-- The selected plane source contains an injective copy of `Nat`. -/
 theorem exactBottomULiftNatPlane_not_finite :
     ¬ Finite (ULift.{u} (Nat × Nat)) := by
   intro hfinite
@@ -1019,25 +1019,25 @@ theorem exactBottomSummandIdentityInput_not_covered :
   exactBottom_not_covered_of_target_bad exactBottomSummandIdentityInput
     exactBottomSummandOne_not_allExtractions
 
-/-- The finite-to-grid fixture is not covered. -/
+/-- The finite-to-plane fixture is not covered. -/
 theorem exactBottomFiniteToPlaneInput_not_covered :
     ¬ Nonempty (AnchoredCoverageWitness exactBottomFiniteToPlaneInput) := by
   apply exactBottom_not_covered_of_target_infinite
   exact exactBottomULiftNatPlane_not_finite
 
-/-- The grid-to-finite fixture is not covered. -/
+/-- The plane-to-finite fixture is not covered. -/
 theorem exactBottomPlaneToFiniteInput_not_covered :
     ¬ Nonempty (AnchoredCoverageWitness exactBottomPlaneToFiniteInput) := by
   apply exactBottom_not_covered_of_source_infinite
   exact exactBottomULiftNatPlane_not_finite
 
-/-- The grid identity fixture is not covered. -/
+/-- The plane identity fixture is not covered. -/
 theorem exactBottomPlaneIdentityInput_not_covered :
     ¬ Nonempty (AnchoredCoverageWitness exactBottomPlaneIdentityInput) := by
   apply exactBottom_not_covered_of_source_infinite
   exact exactBottomULiftNatPlane_not_finite
 
-/-- The finite-to-mixed-three fixture is not covered. -/
+/-- The finite-to-mixed-four fixture is not covered. -/
 theorem exactBottomFiniteToMixedFourInput_not_covered :
     ¬ Nonempty (AnchoredCoverageWitness exactBottomFiniteToMixedFourInput) :=
   exactBottom_not_covered_of_target_bad exactBottomFiniteToMixedFourInput

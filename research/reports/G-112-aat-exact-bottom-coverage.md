@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-proof-checkpoint / F0 and K0 accepted / K1 provenance unresolvable from current history`
+- proof state: `target-proof-checkpoint / F0 and K0 accepted / K1 proof-obligation-discharged proposed after human provenance ruling`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -205,8 +205,16 @@ audits:
 
 F0 の type surface を実装し、focused elaboration、standard-axiom audit、
 修正後の新規4 lane 正式レビュー、exact-head CI 7/7 を通過した。F0 は
-`target-proof-checkpoint` として受理する。全 completion criteria のうち
-K0--K4 と K5 final audit は未完である。
+`target-proof-checkpoint` として受理する。K0 は Cycle 2 で受理済みであり、全
+completion criteria のうち K1--K4 と K5 final audit は未完である。
+
+2026-08-27 の人間裁定により、反復修正で raw data と proof の履歴上の順序が
+変わることを許容し、最終 branch に固定された proof-free checkpoint と raw
+structure が conclusion-side field を持たないことの監査を K1 provenance の
+受理証拠とする。過去の proof route が repository history に存在することだけでは
+target-fitting と判定しない。この裁定は固定 target、statement、material premise、
+proof-use、structure-field escape、route integrity、nonvacuity の各 gate を変更しない。
+K1 はこの contract に基づく fixed-head 再監査待ちである。
 
 ### Cycle 2 — K0 finite-endpoint anchored coverage
 
@@ -482,16 +490,14 @@ attempts:
       nondegeneracy from two newly authored nonidentity arrows
     result: "focused elaboration and standard-axiom audit passed"
 result:
-  status: target-proof-checkpoint
+  status: proof-obligation-discharged
   reason: >-
     The Lean package constructs all required K1 statements, refutations,
-    qualification fields and the carrier-global branch.  Nevertheless, two
-    independent Cycle 4 lanes found that every V3 refutation still selects
-    among obstruction routes already proved before checkpoint 2f682235, and
-    that the positive-family data was selected to match already-known
-    cardinality and noninjectivity proofs.  Because the repository now contains
-    those proofs before every possible new checkpoint, further fixture
-    substitution cannot restore proof-obligation-selection-time provenance.
+    qualification fields and the carrier-global branch.  The 2026-08-27 human
+    ruling accepts iterative repair reordering and qualifies the final-branch
+    proof-free checkpoint plus the absence of conclusion-side fields in the raw
+    structures as provenance evidence.  The remaining statement, premise,
+    proof-use, field-escape, route-integrity and nonvacuity gates remain active.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean
@@ -526,39 +532,40 @@ result:
       provenance: "two newly authored nonidentity arrows in proof-free commit 2f682235"
       proof_use: "all firing and nondegeneracy fields are separate theorem outputs"
   structure_field_escape: none-found
-  route_integrity: "proof construction passes; authored-data chronology fails"
-  target_fitting: "cannot be excluded from repository-wide history"
+  route_integrity: "pass under the 2026-08-27 human provenance ruling"
+  target_fitting: "none-found under the 2026-08-27 human provenance ruling"
   vacuity: none-found
   one_way_as_equivalence: none-found
   definition_unfolding: pass
   dependency_dag: pass
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean / exit 0 / 99 declarations / standard axioms only"
-  blocking_findings:
-    - "O6 raw data was selected after V1/V2 had already established the exhaustive K1 obstruction routes"
-    - "qualification raw family was selected after its cardinality/noninjectivity proof pattern was known"
-  next_obligation: "human ruling or explicit GOAL revision is required before K1 can be reselected; K2--K5 remain unstarted"
+  blocking_findings: []
+  next_obligation: "fixed-head K1 re-review under the human provenance ruling, then K2 O7 wrapper"
 ```
 
 V3 は V1/V2 の反例 index grouping を変更し、有限 bad endpoint を candidate 0、1、
 5--8、10 に実使用する。positive family は既存 realized arrow を再利用せず、raw
-endpoint と constant source map から二つの非恒等射を構成する。しかし Cycle 4 の
-formal review は、literal data の新規性ではなく、選定時に既知だった proof route を
-使って data を設計したことを中心 finding とした。数学B・Lean Bが `Reject`、数学A・
-Lean Aが中心findingなし（非中心docstring/import findingあり）であり、統合判定は
-`Needs changes` である。
+endpoint と constant source map から二つの非恒等射を構成する。最初の Cycle 4
+formal review では、選定時に既知だった proof route を使って data を設計したことを
+中心 finding とした。数学B・Lean Bが `Reject`、数学A・Lean Aが中心findingなし
+（非中心docstring/import findingあり）で、当時の統合判定は `Needs changes` だった。
+2026-08-27 の人間裁定はその provenance 解釈を置換した。既知の非中心 finding を修正し、
+同裁定を明示した最終 head から K1 を再監査する。
 
-## Stop packet — target-proof-checkpoint
+## Historical stop packet — superseded by the 2026-08-27 human ruling
 
-- accepted obligations: F0、K0。
-- unaccepted obligation: K1。Lean theorem package は focused check、99 declaration
+- historical accepted obligations: F0、K0。
+- historically unaccepted obligation: K1。Lean theorem package は focused check、99 declaration
   standard-axiom audit、targeted module build、PR #4193 CI 7/7 を通過したが、O6 と
   qualification raw family の `conclusion-equivalent-risk` provenance は未放電。
 - review verdict: PR #4190、#4191、#4192、#4193 はいずれも merge しない。#4193 の
   中心 finding は、既知 proof route から独立した選定時記録を現在の repository history
   から生成できないこと。
-- remaining obligations: K2 O7 wrapper、K3 closure producer、K4 global lift coherence、
+- historical remaining obligations: K2 O7 wrapper、K3 closure producer、K4 global lift coherence、
   K5 final audit。K1未受理のため開始しない。
-- stop reason: `target-proof-checkpoint`。有用な K1 proof package は PR #4193 に固定
-  されたが、固定 GOAL の provenance gate を現在の履歴から放電できない。追加の fixture
-  置換では解消せず、人間による provenance 裁定または GOAL の明示改訂が必要。
+- historical stop reason: `target-proof-checkpoint`。K1 proof package は PR #4193 に
+  固定されたが、当時は provenance gate を現在の履歴から放電できないと判定した。
+- superseding ruling: 2026-08-27、人間が反復修正による順序変更を許容し、最終 branch の
+  proof-free checkpoint と raw structure field audit を provenance 証拠として受理した。
+  このため historical stop は現行の停止条件ではない。
