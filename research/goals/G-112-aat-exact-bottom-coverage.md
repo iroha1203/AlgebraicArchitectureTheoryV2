@@ -1,7 +1,82 @@
 # G-112-aat-exact-bottom-coverage — exact-bottom coverage と全域分類
 
 - `id`: `G-112-aat-exact-bottom-coverage`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Exact-Bottom Coverage
+  Classification and Global Lift Coherence Theorem の固定 target
+  (a)–(e)(担当義務 O5–O7)を全放電($target-theorem-loop Cycle
+  1–8、2026-08-27)。主要成果:
+  (a) 有限 carrier・有限両 endpoint `Source` の全 semantic
+  exact-bottom 射の arrow 圏同型水準 anchored coverage
+  (`FiniteEndpointCoverage`。witness = object anchor 対+
+  `CartPresentationBetween`+`CartSemanticInputIso` の可換 square)、
+  (b) 負枝で確定 — 閉じた条件言語(5 constructor の
+  `ExactBottomConditionSyntax`・evaluator・canonical rebase)と事前
+  登録15候補列の上で、candidate 0–10 の typed refutation を経て
+  index 11 `endpointFiniteTargetCofiniteTerm` =
+  `(sourceFinite ∧ targetFinite) ∧
+  allTargetExtractionsFiniteOrCofinite` を採用。資格条項5項
+  (`endpointFiniteTargetCofiniteQualification`)・十分性
+  (`endpointFiniteTargetCofiniteCoverage`)・同型閉包外反例+正枝
+  反証(`characterizedExactBottomCoverage`)・二枝 disjunction
+  (`exactBottomCoverageDisjunction`)、
+  (c) O7 = 任意 `CartSemanticInput`・任意 target package への
+  semantic-global strong cartesian lift の正本 wrapper
+  (`exact_bottom_semantic_global_strong_cartesian_lift`)と G-110
+  左枝 `globalCartesianLift` への制限関係 — reviewed predecessor
+  discharge(新規証明成果に計上しない)、
+  (d) branch-independent regime(`ExactBottomCoverageRegime` /
+  `exactBottomCoverageRegimeOfDisjunction`)上の anchor 相対
+  closure — covered-object identity・共有 anchor 合成・共有 base
+  anchor 両脚 pullback(`exact_bottom_identity_closure` /
+  `exact_bottom_composition_closure` /
+  `exact_bottom_pullback_closure`)、
+  (e) semantic-global cleavage・reindexing functor・compositor /
+  unitor natural iso・unit triangle・triangle・pentagon coherence
+  theorem 群。
+  standard exact-head PR gate は `Mergeable`・4 lane
+  `No major findings`
+  ([PR #4197 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434267456))、
+  same-head final packet
+  ([PR #4197 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434280215))、
+  独立 final math-lean-review は数学 A/B・Lean A/B 全て
+  `No major findings`、completion ledger は全 gate pass・残
+  obligation / blocker / unchecked central claim なし
+  ([PR #4197 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434324939))、
+  exact-head CI 7/7。tracking Issue の完了記録は
+  [#4184 完了記録コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184#issuecomment-5434327304)
+  で固定。fixed GOAL blob SHA `17cad4df`(SHA-256
+  `c7025c26418f88509b959326f61fcc576ddc1f1bc877dd2384833483848ac097`)、
+  final head `bf882573`、完了 PR
+  [#4197](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197)
+  (merge `e9f891b8`)。実装 PR 系列と cycle 履歴は tracking Issue
+  #4184 を正本とする。公理監査は6 target module の focused Lean
+  check で standard axioms のみ pass(289/19/99/2/41/34 宣言)、
+  6 module targeted dependency build pass(Research aggregate /
+  full build は hard rule に従い未実行)。K1 は 2026-08-27 の人間
+  裁定 — 反復修正による履歴順序変更を許容し、最終 branch の
+  proof-free checkpoint(`2f682235`)と raw structure の
+  conclusion-side field 不在監査を provenance 証拠として受理(固定
+  target・statement・material premise・proof-use・structure-field
+  escape・route integrity・nonvacuity の各 gate は不変)— の下で
+  受理。
+  **達成の記録の限定**: (b) は負枝確定であり、coverage 成立域は
+  selected term の外延である(像包含・同型不変性・十分性による外延
+  一致。必要性は独立成果に数えない)。sector 全域 coverage は同型
+  閉包外反例により反証し、二枝の網羅性は主張しない。(c) は
+  reviewed predecessor discharge で新規計上なし。BC mate `IsIso`
+  水準 exchange と authored lax square exchange は域外(O12 =
+  G-116 担当)。carrier change・係数 base change・derived 系は
+  域外。診断側(G-111 / G-113)の量化域は変更しない。universe
+  契約は負枝反例 payload のみ per-universe symbolic contract
+  (endpoint 契約への移行は不要だった)、他は
+  universe-polymorphic。**Gr4 達成の記録は本カードでは行わない** —
+  担当は O5–O7(Gr4 完遂 gate 第一項後半)のみで、診断保守性 /
+  反射・refinement 系統・上段 lift・IsIso 水準 exchange-failure
+  存否決定・capstone 記録は G-113〜G-116 に残る(program
+  context)。`Formal/AG` への移植は未実施(porting status:
+  `unported`)。
+- `completed at`: `2026-08-27 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第一項後半の担当カード(担当義務 =

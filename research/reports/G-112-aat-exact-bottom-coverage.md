@@ -3,12 +3,76 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-proof-checkpoint / F0--K4 accepted / K5 final audit pending`
-- completion candidate: `yes`
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
 target statement と completion criteria は GOAL カードを正本とし、SCORE は
 使わない。
+
+## Completion judgment(final、2026-08-27)
+
+- fixed GOAL blob SHA: `17cad4df309049633617878373246300c1ad24aa`
+- fixed GOAL SHA-256:
+  `c7025c26418f88509b959326f61fcc576ddc1f1bc877dd2384833483848ac097`
+- final head: `bf882573945a45780b022bc811754f8444846c53`
+- 完了 PR: [#4197](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197)
+  (merge `e9f891b8b0d763c6c29cb2d8b6e723b43a6bb9bb`)
+- standard exact-head PR gate: `Mergeable`、4 lane `No major findings`
+  ([PR #4197 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434267456))
+- same-head final packet:
+  [PR #4197 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434280215)
+- formal completion review: 独立4 lane(Math A / Math B / Lean A /
+  Lean B)全て `No major findings`
+- formal completion ledger: 全 completion gate pass・残 obligation /
+  blocker / unchecked central claim なし
+  ([PR #4197 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4197#issuecomment-5434324939))
+- exact-head CI: 7/7 success
+- 公理監査: 6 target module の focused Lean check で standard axioms
+  のみ pass(289/19/99/2/41/34 宣言)、6 module targeted dependency
+  build pass(Research aggregate / full build は hard rule に従い
+  未実行)
+- 固定 target (a)–(e)(担当義務 O5–O7): 全放電 — K0 第一段
+  anchored coverage、K1 資格条項付き carrier-global 二枝確定
+  (負枝)、K2 O7 semantic-global wrapper と reviewed predecessor
+  proof-use、K3 anchor 相対 identity / composition / 両脚 pullback
+  closure、K4 semantic-global cleavage・reindexing・compositor /
+  unitor・triangle・pentagon、K5 exact-head completion packet と
+  fresh final 4 lane audit
+- material premise: `discharge-required` は全て discharged。
+  direction hypothesis((d) の operand membership と operand
+  anchored witness)と `conclusion-equivalent-risk`(O6 反例 raw
+  data・資格 (v) raw family data — proof-free commit `2f682235` に
+  固定、structure-field escape audit `none-found`)は明示分類の
+  ままで、放電クレジットを与えない
+- K1 provenance: 2026-08-27 の人間裁定 — 反復修正による履歴順序
+  変更を許容し、最終 branch の proof-free checkpoint と raw
+  structure の conclusion-side field 不在監査を provenance 証拠と
+  して受理(固定 target・statement・material premise・proof-use・
+  structure-field escape・route integrity・nonvacuity の各 gate は
+  不変)
+- remaining known mathematical proof obligations: `[]`
+- unchecked completion gates: なし
+
+正式判定は `target-theorem-proved`。達成の記録は次のとおり限定する。
+(b) は負枝確定であり、coverage 成立域は selected term
+`endpointFiniteTargetCofiniteTerm`(candidate index 11)の外延で
+ある(像包含・同型不変性・十分性による外延一致。必要性は独立成果に
+数えない)。sector 全域 coverage は同型閉包外反例により反証し、
+二枝の網羅性は主張しない。(c) は G-110 reviewed 宣言
+`strongCartesianLiftOfTarget` の reviewed predecessor discharge で
+あり、新規証明成果に計上しない。BC mate `IsIso` 水準 exchange と
+authored lax square exchange は域外(O12 = G-116 担当)。carrier
+change・係数 base change・derived 系は域外。診断側(G-111 /
+G-113)の量化域は変更しない。universe 契約は負枝反例 payload のみ
+per-universe symbolic contract(endpoint 契約への移行は不要
+だった)、他は universe-polymorphic。Gr4 達成の記録は行わない —
+本カードの担当は O5–O7(Gr4 完遂 gate 第一項後半)であり、診断
+保守性 / 反射・refinement 系統・上段 lift・IsIso 水準
+exchange-failure 存否決定・capstone 記録は G-113〜G-116 に残る。
+
+tracking Issue 側の完了記録は
+[#4184 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184#issuecomment-5434327304)。
 
 ## Fixed heads
 
