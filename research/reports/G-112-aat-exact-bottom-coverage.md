@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `active / F0 accepted / K0 implementation review pending`
+- proof state: `active / F0 and K0 accepted / K1 implementation review pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -52,9 +52,9 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 | --- | --- | --- |
 | (i) 探索前固定 | `ExactBottomCandidateSelection.initial/next` | 型固定・正式査読済み |
 | (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | transitive audit 通過 |
-| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | theorem output は未構成 |
-| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | theorem output は未構成 |
-| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | raw data と theorem output は未構成 |
+| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | K1 theorem output 構成済み・正式査読待ち |
+| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | K1 theorem output 構成済み・正式査読待ち |
+| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | K1 raw family と theorem output 構成済み・正式査読待ち |
 
 ## Review round 1 corrections
 
@@ -309,12 +309,155 @@ result:
   dependency_dag: pass
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteEndpointCoverage.lean / exit 0 / 19 declarations / standard axioms only"
-  blocking_findings:
-    - "standard PR review pending"
+  blocking_findings: []
   next_obligation: "K1 carrier-global coverage disjunction and selected-candidate qualification"
 ```
 
 K0 theorem body は carrier と両 endpoint の有限性を実使用し、semantic hom の
 全 field を code-level presentation と arrow square に移す。単一 fixture、端点別
-iso、realization premise、caller-supplied anchor は使用しない。正式受理は
-fixed-head PR review 後に確定する。
+iso、realization premise、caller-supplied anchor は使用しない。PR #4189 の
+初回4 lane 指摘を修正後、fresh 4 lane はすべて `No major findings`、exact head
+`e1371b4bc4b92a8c47e73f425e697b46adef3abf` の CI は 7/7 通過した。merge
+`329d8783a765683a86fbf60c0c933225440458ed` により K0 を受理した。
+
+### Cycle 3 — K1 carrier-global classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-112-aat-exact-bottom-coverage
+cycle: 3
+goal_blob_sha: 17cad4df309049633617878373246300c1ad24aa
+base_oid: 329d8783a765683a86fbf60c0c933225440458ed
+selection:
+  proof_state_ref: "Cycles 1--2 accepted; K1 is the next fixed obligation"
+  selector_input: "the pre-registered exactBottomConditionCandidates list"
+  raw_fixture_checkpoint: 074d4a43
+  raw_fixture_artifact: research/fixtures/G-112-k1-o6-raw-data-v2.md
+  selected_index: 11
+  selected_term: "(sourceFinite and targetFinite) and allTargetExtractionsFiniteOrCofinite"
+  unchecked: "fresh formal review and exact-head CI"
+  discovery_gap: "none"
+attempts:
+  - route: "construct typed sufficiency for candidate 11 and concrete insufficiency refutations for indices 0--10"
+    result: "focused elaboration and standard-axiom audit passed"
+result:
+  status: proof-obligation-discharged
+  reason: >-
+    Every covered object necessarily has finite Source and finite/cofinite
+    extractions.  Conversely, a finite-source exact arrow with finite target
+    Source and finite/cofinite target extractions admits canonical finite
+    exception-table endpoint codes, a typed presentation, shared anchors, and
+    an arrow-category square.  Eleven concrete semantic arrows refute every
+    earlier registered candidate.  Candidate 11 is invariant under semantic
+    input isomorphism, closed under the four anchor-relative operations,
+    contains the strict realization image, and fires on a nondegenerate raw
+    three-member family containing a strict-image outsider, a nonisomorphic
+    pair, and a noninvertible arrow.  An infinite-grid-source identity supplies
+    the per-universe uncovered arrow for the carrier-global characterized branch.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean
+  theorem_names:
+    - endpointFiniteTargetCofiniteCoverage
+    - coveredObjectWitness_necessary
+    - endpointFiniteTargetCofiniteSelection
+    - endpointFiniteTargetCofiniteQualification
+    - characterizedExactBottomCoverage
+    - exactBottomCoverageDisjunction
+  candidate_refutations:
+    count: 11
+    range: "exactBottomCandidateRefutation0--exactBottomCandidateRefutation10"
+    provenance: "each stores a firing semantic input and a proof that no AnchoredCoverageWitness exists"
+  qualification:
+    isomorphic_invariant: discharged
+    identity_mem: discharged
+    comp_mem: discharged
+    pullback_fst_mem: discharged
+    pullback_snd_mem: discharged
+    realization_image_mem: discharged
+    positive_fires: discharged
+    positive_strictly_outside: discharged
+    positive_nonisomorphic_pair: discharged
+    positive_noninvertible: discharged
+  premise_discharge:
+    - name: "selected candidate membership"
+      role: direction-hypothesis
+      status: consumed
+      provenance: "eval_endpointFiniteTargetCofiniteTerm_iff"
+      proof_use: "constructs both endpoint codes, anchors, typed presentation, and commuting square"
+    - name: "prior candidate order"
+      role: fixed-selection-input
+      status: consumed
+      provenance: "exactBottomConditionCandidates fixed in F0"
+      proof_use: "all indices below 11 receive typed ExactBottomCandidateRefutation values"
+    - name: "counterexample carrier"
+      role: authored-negative-fixture
+      status: consumed
+      provenance: "ExactBottomGridCarrier at every universe"
+      proof_use: "infinite source contradicts the finite Source forced by every object anchor"
+  certificate_provenance:
+    - certificate: "candidate sufficiency coverage witness"
+      source: "finiteCofiniteInstanceCodeOf plus endpointFiniteTargetCofinitePresentation"
+    - certificate: "qualification"
+      source: "theorem fields constructed from semantic isomorphisms, anchors, cospans, presentations, and raw positive-family geometry"
+    - certificate: "negative branch"
+      source: "fixed selection, qualification, sufficiency theorem, and authored uncovered semantic arrow"
+    - certificate: "O6 raw-data chronology"
+      source: "commit 074d4a43 fixes a new product carrier, endpoint doctrines, arrows, candidate assignment, final counterexample, and three-member positive family before their Lean proof"
+  proof_use:
+    required:
+      - ExactBottomCandidateSelection
+      - ExactBottomConditionQualification
+      - CharacterizedExactBottomCoverage
+      - ExactBottomCoverageDisjunction
+    used:
+      - ExactBottomCandidateSelection
+      - ExactBottomConditionQualification
+      - CharacterizedExactBottomCoverage
+      - ExactBottomCoverageDisjunction
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  definition_unfolding: pass
+  dependency_dag: pass
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean / exit 0 / 90 declarations / standard axioms only"
+  blocking_findings:
+    - "standard PR review pending"
+  next_obligation: "K2 O7 semantic-global strong cartesian lift wrapper and proof-use audit"
+```
+
+K1 は fixed candidate list の第12項を、先行11項の具体的 refutation とともに
+選ぶ。負枝の counterexample は universe ごとに構成され、述語 template、十分性、
+qualification は universe-polymorphic のままである。K2--K4 と K5 final audit は
+未完であり、G-112 全体の completion candidate ではない。
+
+## K1 review correction
+
+PR #4190 の初回4 lane は O6 raw counterexample の時系列 provenance を中心 finding
+とした。initial head `7f6b6317...` は proof と ledger を追加したが raw-data-only
+artifact を持たず、GOAL が要求する選定時固定を監査できないため受理しない。
+PR #4191 は commit `779bd010` で旧 proof と同じ Nat/even fixture を raw artifact として
+先に並べ直した。しかし repository 全履歴では `7f6b6317...` の既知 proof がその
+checkpoint より先行するため、fresh 4 lane は chronology laundering と判定した。この
+attempt も受理しない。
+
+最後の許容 rerun は、旧 proof に存在しない V2 data を commit `074d4a43` で先に固定
+した。[`research/fixtures/G-112-k1-o6-raw-data-v2.md`](../fixtures/G-112-k1-o6-raw-data-v2.md)
+は Atom を `ULift (Nat × Bool)`、bad predicate を Boolean left slice、無限 Source を
+`ULift (Nat × Fin 2)`、mixed Source を `Fin 3` とし、candidate assignment の全 raw
+arrow を作り直す。qualification family も `Fin 3` parameter、three-to-one realized
+arrow、`Vocabulary := Fin 3` の二つの decorated identity へ変更した。artifact は data
+だけを記録し、発火・非coverage・qualification certificate を含まない。後続 Lean
+proof はこの固定 data から全 proposition を生成し、旧 Nat/even・Bool family を使用
+しない。
+
+非中心 finding に対しては、全新規 public declarationへ docstring と module-level
+Implementation notes を追加した。presentation proof の code projection と extraction
+comparison には `finiteCofiniteInstanceCodeOf_doctrine`、
+`finiteCofiniteInstanceCodeOf_point`、`finiteCofiniteExtractionCode_eq_of_mem_range`、
+`finiteCofiniteDoctrineCodeOf_extraction` の API を用い、下流で新規 code 定義を直接
+展開しない。V2 proof commit の fixed head に対して、最後の fresh 4 lane を実行する。
