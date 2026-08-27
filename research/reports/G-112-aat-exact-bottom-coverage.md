@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `active / F0 and K0 accepted / K1 Cycle 4 implementation review pending`
+- proof state: `target-proof-checkpoint / F0 and K0 accepted / K1 provenance unresolvable from current history`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -473,8 +473,8 @@ selection:
   raw_fixture_artifact: research/fixtures/G-112-k1-o6-raw-data-v3.md
   selected_index: 11
   selected_term: "(sourceFinite and targetFinite) and allTargetExtractionsFiniteOrCofinite"
-  unchecked: "fresh Cycle 4 formal review and exact-head CI"
-  discovery_gap: "none"
+  unchecked: "none; Cycle 4 formal review and exact-head CI completed"
+  discovery_gap: "repository-wide proof-before-selection provenance is unavailable"
 attempts:
   - route: >-
       retain the carrier-uniform candidate-11 construction, but derive prior
@@ -482,15 +482,16 @@ attempts:
       nondegeneracy from two newly authored nonidentity arrows
     result: "focused elaboration and standard-axiom audit passed"
 result:
-  status: proof-obligation-discharged
+  status: target-proof-checkpoint
   reason: >-
-    Candidate indices 0, 6 and 7 now use a finite summand-bad identity;
-    indices 1, 5, 8 and 10 use a finite all-to-mixed-four arrow; only indices
-    2--4 and 9 use the necessary infinite-plane obstructions.  The positive
-    family consists of two new constant nonidentity exact arrows with source
-    cardinalities two and three and vocabularies Fin 5 and Fin 7.  Its strict
-    outsider, nonisomorphic pair and noninvertible member are proved directly,
-    without the predecessor selective arrows used in rejected cycles.
+    The Lean package constructs all required K1 statements, refutations,
+    qualification fields and the carrier-global branch.  Nevertheless, two
+    independent Cycle 4 lanes found that every V3 refutation still selects
+    among obstruction routes already proved before checkpoint 2f682235, and
+    that the positive-family data was selected to match already-known
+    cardinality and noninjectivity proofs.  Because the repository now contains
+    those proofs before every possible new checkpoint, further fixture
+    substitution cannot restore proof-obligation-selection-time provenance.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean
@@ -525,8 +526,8 @@ result:
       provenance: "two newly authored nonidentity arrows in proof-free commit 2f682235"
       proof_use: "all firing and nondegeneracy fields are separate theorem outputs"
   structure_field_escape: none-found
-  route_integrity: pass
-  target_fitting: none-found
+  route_integrity: "proof construction passes; authored-data chronology fails"
+  target_fitting: "cannot be excluded from repository-wide history"
   vacuity: none-found
   one_way_as_equivalence: none-found
   definition_unfolding: pass
@@ -534,11 +535,30 @@ result:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean / exit 0 / 99 declarations / standard axioms only"
   blocking_findings:
-    - "Cycle 4 standard PR review pending"
-  next_obligation: "K2 O7 semantic-global strong cartesian lift wrapper and proof-use audit"
+    - "O6 raw data was selected after V1/V2 had already established the exhaustive K1 obstruction routes"
+    - "qualification raw family was selected after its cardinality/noninjectivity proof pattern was known"
+  next_obligation: "human ruling or explicit GOAL revision is required before K1 can be reselected; K2--K5 remain unstarted"
 ```
 
 V3 は V1/V2 の反例 index grouping を変更し、有限 bad endpoint を candidate 0、1、
 5--8、10 に実使用する。positive family は既存 realized arrow を再利用せず、raw
-endpoint と constant source map から二つの非恒等射を構成する。Cycle 4 の formal
-review に合格するまで K1 は受理しない。
+endpoint と constant source map から二つの非恒等射を構成する。しかし Cycle 4 の
+formal review は、literal data の新規性ではなく、選定時に既知だった proof route を
+使って data を設計したことを中心 finding とした。数学B・Lean Bが `Reject`、数学A・
+Lean Aが中心findingなし（非中心docstring/import findingあり）であり、統合判定は
+`Needs changes` である。
+
+## Stop packet — target-proof-checkpoint
+
+- accepted obligations: F0、K0。
+- unaccepted obligation: K1。Lean theorem package は focused check、99 declaration
+  standard-axiom audit、targeted module build、PR #4193 CI 7/7 を通過したが、O6 と
+  qualification raw family の `conclusion-equivalent-risk` provenance は未放電。
+- review verdict: PR #4190、#4191、#4192、#4193 はいずれも merge しない。#4193 の
+  中心 finding は、既知 proof route から独立した選定時記録を現在の repository history
+  から生成できないこと。
+- remaining obligations: K2 O7 wrapper、K3 closure producer、K4 global lift coherence、
+  K5 final audit。K1未受理のため開始しない。
+- stop reason: `target-proof-checkpoint`。有用な K1 proof package は PR #4193 に固定
+  されたが、固定 GOAL の provenance gate を現在の履歴から放電できない。追加の fixture
+  置換では解消せず、人間による provenance 裁定または GOAL の明示改訂が必要。
