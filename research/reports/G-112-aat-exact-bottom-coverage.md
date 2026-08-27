@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-proof-checkpoint / F0 and K0 accepted / K1 status-sync re-review pending`
+- proof state: `target-proof-checkpoint / F0, K0, and K1 accepted / K2 proof-obligation-discharged proposed`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -52,9 +52,9 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 | --- | --- | --- |
 | (i) 探索前固定 | `ExactBottomCandidateSelection.initial/next` | 型固定・正式査読済み |
 | (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | transitive audit 通過 |
-| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | K1 theorem output 構成済み・status-sync 再査読待ち |
-| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | K1 theorem output 構成済み・status-sync 再査読待ち |
-| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | K1 raw family と theorem output 構成済み・status-sync 再査読待ち |
+| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | K1 theorem output 構成済み・正式査読済み |
+| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | K1 theorem output 構成済み・正式査読済み |
+| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | K1 raw family と theorem output 構成済み・正式査読済み |
 
 ## Review round 1 corrections
 
@@ -214,9 +214,9 @@ structure が conclusion-side field を持たないことの監査を K1 provena
 受理証拠とする。過去の proof route が repository history に存在することだけでは
 target-fitting と判定しない。この裁定は固定 target、statement、material premise、
 proof-use、structure-field escape、route integrity、nonvacuity の各 gate を変更しない。
-K1 はこの contract に基づく fixed-head 4 lane 再監査で中心 finding なしと判定
-された。監査状態の非中心 drift 一件を修正し、status 変更を含むため新しい
-fixed head の4 laneで再確認する。
+K1 はこの contract に基づく fixed-head 4 lane 再監査を通過し、PR #4193
+(merge `9e85f70d`) で受理された。K2 は G-110 reviewed predecessor の
+semantic-global theorem を正本 wrapper と制限関係へ固定する。
 
 ### Cycle 2 — K0 finite-endpoint anchored coverage
 
@@ -557,6 +557,81 @@ formal review では、選定時に既知だった proof route を使って data
 `No major findings`、数学 A/B と Lean B は中心 finding なし・同一の非中心 ledger-state
 drift 一件を報告した。status 変更を含むため直接対応は資格外となり、残存していた
 qualification 表の pending 表示も含めて新しい fixed head の4 laneで再確認する。
+
+### Cycle 5 — K2 O7 semantic-global wrapper
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-112-aat-exact-bottom-coverage
+cycle: 5
+goal_blob_sha: 17cad4df309049633617878373246300c1ad24aa
+base_oid: 9e85f70df25eedae54914fbfbc235e56118420f6
+selection:
+  proof_state_ref: "K1 accepted by PR #4193; K2 is the next fixed obligation"
+  proof_dag_predecessors:
+    - "G-110 reviewed strongCartesianLiftOfTarget in CartesianTarget.lean"
+  proof_obligation: "fix the O7 semantic-global wrapper and its restriction relation to G-110 globalCartesianLift"
+  selection_reason: "the reviewed predecessor already has the unrestricted semantic statement required by G-112(c)"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLift.lean
+  risks:
+    - "wrapper must not add realization, finiteness, or caller-supplied lift premises"
+    - "proof term must materially consume strongCartesianLiftOfTarget"
+    - "G-110 globalCartesianLift must be recorded as the RealizableHom restriction, not conflated with the semantic-global statement"
+  unchecked:
+    - "fixed-head standard PR review and CI"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "adds the fixed semantic-global O7 wrapper and proves the realization-qualified G-110 branch from it"
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLift.lean
+  evidence:
+    - exactBottomSemanticGlobalStrongCartesianLift
+    - globalCartesianLift_of_exactBottomSemanticGlobalStrongCartesianLift
+  claim_mapping:
+    theorem_names:
+      - exactBottomSemanticGlobalStrongCartesianLift
+      - globalCartesianLift_of_exactBottomSemanticGlobalStrongCartesianLift
+    source_labels:
+      - "G-112 target theorem (c)"
+      - "G-112 material premise ledger: O7 semantic-global strong cartesian lift"
+    conjuncts:
+      - "arbitrary CartSemanticInput and arbitrary target CoreFiber package -> HasStrongCartesianLift"
+      - "restriction along RealizableHom -> GlobalCartesianLift"
+    undischarged_assumptions: []
+    acceptance_point: "reviewed predecessor discharge with no new mathematical credit"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "O7 semantic-global lift / strongCartesianLiftOfTarget"
+    remaining:
+      - "K3 coverage closure"
+      - "K4 global lift coherence"
+      - "K5 final audit"
+  certificate_provenance:
+    discharged:
+      - "lift witness / reviewed G-110 strongCartesianLiftOfTarget"
+    unresolved: []
+  proof_use:
+    used:
+      - "strongCartesianLiftOfTarget / exactBottomSemanticGlobalStrongCartesianLift proof body"
+      - "exactBottomSemanticGlobalStrongCartesianLift / realization-qualified restriction theorem"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLift.lean / exit 0 / 2 declarations / standard axioms only"
+    - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.ExactBottomGlobalLift / exit 0 / targeted module only"
+  blocking_findings: []
+  next_obligation: "fixed-head K2 standard review, then K3 coverage regime and closure producers"
+```
 
 ## Historical stop packet — superseded by the 2026-08-27 human ruling
 
