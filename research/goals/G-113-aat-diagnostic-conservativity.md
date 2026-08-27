@@ -29,10 +29,15 @@
   (F0 で行うのは、カード constructor 表とカード固定の候補列の Lean
   転写・機械的登録であり、新語彙・新候補の発明ではない)。
   **候補列(カード固定)**: class-term 候補列は条件言語の全 normal
-  form(conjunction の冪等・可換を法として3項)を順序付きで尽くす —
+  form(conjunction の**結合・可換・冪等(ACI)**を法として3項)を
+  順序付きで尽くす —
   第1 = `vertexwiseSourceMapInjective`、第2 =
   `vertexwiseSourceMapInjective ∧ edgewiseSquarePullback`、第3 =
-  `edgewiseSquarePullback`。O20-term = 第1候補の by-value 登録。
+  `edgewiseSquarePullback`。この「3項で尽くす」根拠は language head
+  の正規化 completeness artifact(全 term がこの3項のいずれかと外延
+  同値 — 下記 ledger)で放電する。O20-term =
+  `vertexwiseSourceMapInjective` の by-value 登録(**1項固定・候補
+  遷移なし**)。
   (i) candidate 列 = `vertexwiseSourceMapBijective` の1項((i) 参照)。
   候補列への追加・変更は target 改訂扱いとする。
   **候補遷移規則(三層状態、G-112 様式)**: 各 head は候補列先頭の
@@ -48,12 +53,14 @@
   する((c) は (b) の corollary であり独立の遷移トリガーではない)—
   **候補の反証は固定 target の反証ではない**(`target-refuted`
   は candidate の取り方に依存しない、固定 target statement 自体への
-  反例・不能定理化に限る)。(e) の O20-term は資格条項の反例固定で
-  のみ candidate refuted とする — 固定 term 上の cochain 反射の破れは
+  反例・不能定理化に限る)。(e) の O20-term は1項固定であり候補遷移
+  を持たない — 固定 term の資格条項の反例固定は O20-term の選定不能 =
+  `goal-defect`(人間裁定へ差し戻し)とし、candidate transition と
+  しては扱わない。固定 term 上の cochain 反射の破れは
   反例枝の確定(成功)であり、遷移トリガーではない。
   **head 別無効化表(候補遷移時)**: class-term 遷移 →
   (b)(c)(d)(f)(g)(h)(i) を新 term で再放電((e) は by-value 固定の
-  O20-term に従い追従しない)。O20-term 遷移 → (e) のみ再放電。
+  O20-term に従い追従しない)。
   (i) candidate 遷移 → (i) のみ再放電。条件言語(constructor 表)の
   変更 → target 改訂(人間裁定)であり全 artifact を無効化する。
   witness の再選定は遷移後の proof obligation 選定として行い、証明後
@@ -200,22 +207,32 @@
      無条件性から従わない — を statement 側に一文固定し、逆方向の
      非含意そのものは (f) の class 外 witness が実在証明として固定
      する(この紐付けを statement に明記する)。
-  4. **(d) orbit 検出 theorem**: 固定量化形 — class hom の生成
-     transport について、source の**非恒等** reselection の mapped
-     reselection(G-111 (d4) 様式)が非恒等であることを class 上で
-     証明する(非恒等性の保存 = kernel 自明形)。mapped reselection
-     map の全域単射性・全射性、cochain 値水準の反射((e) の担当)、
-     `InReselectionOrbit` membership の target → source 反射は主張
-     しない。
+  4. **(d) orbit 検出 theorem**: 固定量化形 — **orbit 元の水準**で
+     立てる: class hom の生成 transport について、source の raw-defect
+     orbit 元(`rawDefectCochain` at reselection)が source の基準
+     cochain と異なるなら、mapped orbit 元(transported data の
+     `rawDefectCochain` at mapped reselection — G-111 (d3)(d4) 様式)
+     も target の対応する基準 cochain と異なることを class 上で証明
+     する。**基準 = `initialRawDefectCochain`**(identity cochain との
+     関係は (c) の vanishing 反射の担当 — O14 / O15 の分界)。この
+     単一基準との相異の保存は cochain transport map の全域単射性
+     ((e) O20 正枝の担当)より真に弱い形であり、全域単射性・
+     reselection 水準の単射性・`InReselectionOrbit` membership の
+     target → source 反射は主張しない。
   5. **(e) pointwise raw-defect reflection の分類(O20)**: cochain 値
      水準の反射が成立するか否かを、(c)(d) の vanishing / orbit 水準と
      は別 statement として、固定 O20-term の class 上で二枝分類する
      (どちらの枝の確定も成功)。term は (b) と同一の条件言語から
-     選び、O20-term head はカード固定の第1候補
+     選び、O20-term head はカード固定の
      `vertexwiseSourceMapInjective` を**名指しで**(by-value)登録
-     する — (b) の候補遷移が O20 の選定を動かさないため。正枝 =
-     固定 term の class 上の cochain 反射 theorem。反例枝 = 固定
-     term の **class membership を満たし**、非恒等 defect・非恒等
+     する(1項固定・候補遷移なし — (b) の候補遷移が O20 の選定を
+     動かさないため)。**正枝の固定式** =
+     固定 term の class 上で、cochain transport map の単射性
+     (`map c₁ = map c₂ → c₁ = c₂` — 任意 cochain 値の反射。(d) の
+     単一基準相異保存より真に強い形 — O15 / O20 の分界)。反例枝 =
+     固定
+     term の **class membership を満たし**、`map c₁ = map c₂` かつ
+     `c₁ ≠ c₂` の cochain 対と、非恒等 defect・非恒等
      reselection の非退化条件を満たす witness で、正枝を反証する
      ことを同時に証明する(排他性は反例が供給 — G-110 (B) 様式。
      class 外 witness による代替は放電と数えない — (f) との分界)。
@@ -266,7 +283,8 @@
   は行わない)。
 - `target proof artifacts`: `DiagnosticConservative` 定義、閉じた条件
   言語(constructor 表の syntax 型・evaluator・transitive dependency
-  audit)、iso witness 型と生成 class の資格 theorem 群(結論非参照・
+  audit・Mono 排除補題・正規化 completeness theorem)、iso witness
+  型と生成 class の資格 theorem 群(結論非参照・
   同型不変性)、十分性
   theorem、反射 theorem(O14)、orbit 検出 theorem(O15)、cochain 値
   反射の分類 artifact(O20、反例枝は非退化条件付き)、class 外破れ
@@ -334,14 +352,19 @@
     あり、保守性・反射・検出の結論を供給しない — claim boundary の
     宣言と対応する行)。
   - `閉じた条件言語(syntax / evaluator)`: `discharge-required`
-    (支える結論 = (b) 資格条項 (i)(ii)。discharge artifact = カードの
+    (支える結論 = (b) 資格条項 (i)(ii) と failure policy の消尽
+    規則。discharge artifact = カードの
     完全列挙と一致する閉じた syntax 型・evaluator・transitive
     dependency audit(依存 helper 経由で diagnostic 結論を読む経路の
     禁止)・Mono 排除補題(`Mono` ↔ `sourceMap` 単射 — constructor
-    非採用の根拠固定)。provenance = カード列挙の Lean 転写
+    非採用の根拠固定)・**正規化 completeness theorem**(`normalize`
+    関数で全 term をカード固定の3 normal form のいずれかへ写し、
+    `eval t ↔ eval (normalize t)` の評価同値を証明する — 消尽 =
+    言語内不能の根拠)。provenance = カード列挙の Lean 転写
     (language head)。
-    proof-use = class-term と O20-term が消費する。結論相当でない
-    理由 = 条件の表現手段であり保守性の結論を含まない)。
+    proof-use = class-term と O20-term が消費し、消尽時の
+    `target-refuted` 判定が正規化 theorem を実消費する。結論相当で
+    ない理由 = 条件の表現手段であり保守性の結論を含まない)。
   - `DiagnosticConservative 定義と生成 class`: `discharge-required`
     (支える結論 = (a)(b)。discharge artifact = 定義+iso witness 型+
     資格 theorem 群(結論非参照・同型不変性 — (iv)(v) は (h)(g) の
@@ -351,9 +374,10 @@
     構造条件のみで立ち、保守性は十分性 theorem が結ぶ)。
   - `反射・orbit 検出・O20 分類`: `discharge-required`(支える結論 =
     (c)(d)(e)。discharge artifact = (c) の corollary named theorem
-    ((b) の instantiation+(f) 紐付け文)、(d) の非恒等性保存
-    theorem(kernel 自明形)、
-    (e) の二枝確定 artifact(正枝 theorem、または membership+非退化
+    ((b) の instantiation+(f) 紐付け文)、(d) の orbit 元の基準
+    相異保存 theorem(基準 = `initialRawDefectCochain`)、
+    (e) の二枝確定 artifact(正枝 = cochain transport map 単射性
+    theorem、または membership+cochain 対+非退化
     +正枝反証の witness)。provenance = 固定 class-term / O20-term と
     G-111 順方向 transport API。proof-use = source 側仮定と class
     membership を実消費する。
@@ -409,11 +433,15 @@
   する(固定 target の反証ではない。(c) は (b) の corollary であり
   独立の反証トリガーを持たない)。**候補列の消尽の扱い(量化範囲の
   固定)**: 候補列は条件言語の全 normal form を尽くすため、全3項が
-  反例固定で尽きた場合は、その反証群を成果として「条件言語内に
+  反例固定で尽きた場合は、その反証群と language head の正規化
+  completeness theorem(全 term が3項のいずれかと外延同値)を合成
+  した成果として「条件言語内に
   (b)(d) を成立させる term が存在しない」target-level 不能 =
   `target-refuted` とする。反証によらず(停滞・blocked のまま)尽き
   た場合は `target-blocked`。新 term(constructor 追加)の発明は
-  target 改訂(人間裁定)とする。candidate の取り方に依存しない不能
+  target 改訂(人間裁定)とする。O20-term(1項固定)の資格条項の
+  反例固定は選定不能 = `goal-defect` とする(program context の
+  規則)。candidate の取り方に依存しない不能
   の定理化 — (f) が原理的に
   不能(保守性が coherent domain で無条件成立し class 制限が空虚)、
   または条件言語の全 term 上で十分性 (b) もしくは orbit 検出 (d) が
