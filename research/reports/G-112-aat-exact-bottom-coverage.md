@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `active / F0 accepted / K0 pending`
+- proof state: `active / F0 accepted / K0 implementation review pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -207,3 +207,113 @@ F0 の type surface を実装し、focused elaboration、standard-axiom audit、
 修正後の新規4 lane 正式レビュー、exact-head CI 7/7 を通過した。F0 は
 `target-proof-checkpoint` として受理する。全 completion criteria のうち
 K0--K4 と K5 final audit は未完である。
+
+### Cycle 2 — K0 finite-endpoint anchored coverage
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-112-aat-exact-bottom-coverage
+cycle: 2
+goal_blob_sha: 17cad4df309049633617878373246300c1ad24aa
+base_oid: bbbdd80f66a5ff2f71312bd9aa068447dcbc0c33
+selection:
+  proof_state_ref: "Cycle 1 accepted F0; K0 is the next fixed obligation"
+  selector_input: "GOAL K0 and FiniteEndpointCoverage"
+  unchecked: "construct canonical finite endpoint codes, one typed arrow presentation, and the shared-anchor arrow square"
+  evidence_refs:
+    - research/goals/G-112-aat-exact-bottom-coverage.md
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/Schema.lean
+  discovery_gap: "none"
+  selected_delta: "prove FiniteEndpointCoverage without realization or caller-supplied anchor premises"
+attempts:
+  - route: "tabulate each finite-source doctrine and conjugate the semantic hom across the canonical endpoint enumerations"
+    result: "focused elaboration passed; formal PR review pending"
+result:
+  status: proof-obligation-discharged
+  reason: >-
+    finiteSourceEquiv enumerates every finite Source by Fin (Nat.card Source);
+    finiteAtomPredicateCode tabulates every Atom predicate because the carrier is finite;
+    finiteDoctrineCodeOf preserves normalization and all four extraction fields;
+    finiteInstanceCodeOfIso gives the shared endpoint anchors; and
+    finiteCartPresentationBetweenOf conjugates the original exact morphism and
+    proves the arrow-category square used by finiteEndpointCoverage.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/FiniteEndpointCoverage.lean
+  theorem_names:
+    - finiteSourceEquiv
+    - finiteAtomPredicateCode_holds_iff
+    - finiteDoctrineCodeOf_extracts_iff
+    - finiteDoctrineCodeOfIso
+    - finiteInstanceCodeOfIso
+    - finiteCartPresentationBetweenOf
+    - finiteCartPresentationBetweenOf_hom_comm
+    - finiteEndpointCoverage
+  premise_discharge:
+    - name: "finite carrier Atom"
+      role: ambient-boundary
+      status: retained
+      provenance: "FiniteEndpointCoverage / GOAL (a)"
+      proof_use: "constructs the complete Atom truth tables and finite permutation table"
+    - name: "finite source endpoint Source"
+      role: direction-hypothesis
+      status: discharged
+      provenance: "FiniteEndpointCoverage / GOAL (a)"
+      proof_use: "finiteSourceEquiv constructs the source endpoint code and anchor"
+    - name: "finite target endpoint Source"
+      role: direction-hypothesis
+      status: discharged
+      provenance: "FiniteEndpointCoverage / GOAL (a)"
+      proof_use: "finiteSourceEquiv constructs the target endpoint code and anchor"
+    - name: "DecidableEq U.Atom"
+      role: ambient-interface
+      status: retained
+      provenance: "F0 finite-code interface placement"
+      proof_use: "FiniteInstanceCode decoder and finite Atom tables"
+    - name: "semantic exact-bottom hom"
+      role: authored-input
+      status: consumed
+      provenance: "CartSemanticInput.hom"
+      proof_use: "sourceMap, atomEquiv, normalize_eq, extraction_iff, and source_eq all construct the typed presentation and square"
+  certificate_provenance:
+    - certificate: "source/target CoveredObjectWitness"
+      source: "finiteInstanceCodeOf plus finiteInstanceCodeOfIso"
+    - certificate: "CoverageWitnessOver.presentation"
+      source: "finiteCartPresentationBetweenOf"
+    - certificate: "CoverageWitnessOver.square"
+      source: "finiteCartPresentationBetweenOf_hom_comm with the same endpoint anchor isomorphisms"
+  proof_use:
+    required:
+      - FiniteEndpointCoverage
+      - CartPresentationBetween
+      - CartSemanticInputIso
+      - ExactDoctrineHom.normalize_eq
+      - ExactDoctrineHom.extraction_iff
+      - ExtInstHom.source_eq
+    used:
+      - FiniteEndpointCoverage
+      - CartPresentationBetween
+      - CartSemanticInputIso
+      - ExactDoctrineHom.normalize_eq
+      - ExactDoctrineHom.extraction_iff
+      - ExtInstHom.source_eq
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  definition_unfolding: pass
+  dependency_dag: pass
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/FiniteEndpointCoverage.lean / exit 0 / 19 declarations / standard axioms only"
+  blocking_findings:
+    - "standard PR review pending"
+  next_obligation: "K1 carrier-global coverage disjunction and selected-candidate qualification"
+```
+
+K0 theorem body は carrier と両 endpoint の有限性を実使用し、semantic hom の
+全 field を code-level presentation と arrow square に移す。単一 fixture、端点別
+iso、realization premise、caller-supplied anchor は使用しない。正式受理は
+fixed-head PR review 後に確定する。
