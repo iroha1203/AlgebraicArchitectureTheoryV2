@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-completion-candidate / F0--K4 accepted / K5 final audit pending`
+- proof state: `target-proof-checkpoint / F0--K4 accepted / K5 final audit pending`
 - completion candidate: `yes`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -842,7 +842,7 @@ selection:
     - "PR #4196 / K4 semantic-global reindexing coherence"
   proof_obligation: "publish the exact-head completion packet and run a fresh four-lane final math-lean-review"
   selection_reason: "the fixed order reaches K5 only after every theorem-producing obligation is accepted"
-  expected_result_type: target-theorem-proved
+  expected_result_type: proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean
     - ResearchLean/AG/DoctrineFiberProduct/FiniteEndpointCoverage.lean
@@ -859,7 +859,7 @@ selection:
     - "completion packet with command hashes and full premise ledger"
     - "fresh final mathematics A-B and Lean A-B review"
 result:
-  proposed_result_type: target-theorem-proved
+  proposed_result_type: proof-checkpoint
   proof_obligation_delta: "no new theorem claim; final exact-head integration and adversarial audit only"
   completion_candidate: yes
   lean_artifacts:
