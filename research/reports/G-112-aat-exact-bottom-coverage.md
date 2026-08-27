@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `active / F0 typing proposed`
+- proof state: `active / F0 accepted / K0 pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -50,8 +50,8 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 
 | G-112(b) 資格 | F0 surface | 現在状態 |
 | --- | --- | --- |
-| (i) 探索前固定 | `ExactBottomCandidateSelection.initial/next` | 型固定済み、PR review 前 |
-| (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | 型固定済み、transitive audit は PR review 対象 |
+| (i) 探索前固定 | `ExactBottomCandidateSelection.initial/next` | 型固定・正式査読済み |
+| (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | transitive audit 通過 |
 | (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | theorem output は未構成 |
 | (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | theorem output は未構成 |
 | (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | raw data と theorem output は未構成 |
