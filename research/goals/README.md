@@ -23,16 +23,23 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   disjunction、O7 semantic-global lift の正本化、coverage closure と
   lift coherence (a)–(e)。O6 量化域 = sector 全域(裁定済み)。依存先
   G-110 は完遂済み、G-111 とは lift の分界(O2 / O7)を相互明記)
+- [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
+  (Gr4 完遂 gate 第五項: `DiagnosticConservative` の新設、生成
+  class の十分性・反射・orbit 検出・O20 分類、class 外 / 内 witness
+  対、貼り合わせ閉性、`Full` + `Faithful` 関係決定 (a)–(i)。生成
+  class = 閉じた条件言語の term(候補列はカード固定の全 normal form
+  3項、先頭 = `vertexwiseSourceMapInjective`)。依存先 G-111 は完遂
+  済み。execution gate: loop 起動は G-112 完遂後 — カード program
+  context を正とする)
 
 ## draft（人間の確認待ち）
 
-- [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
 - [G-114-aat-refinement-base-change](G-114-aat-refinement-base-change.md)
 - [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
 - [G-116-aat-gr4-capstone](G-116-aat-gr4-capstone.md)
-  (以上4枚 = Gr4 完遂 gate 5項を閉じる単責務ラインナップの後続
-  (第一手 G-111 は完遂済み、第二手 G-112 は active)。義務台帳の
-  正本 = G-116 カード、設計の source note = n1007。昇格は一枚ずつ、
+  (以上3枚 = Gr4 完遂 gate 5項を閉じる単責務ラインナップの後続
+  (第一手 G-111 は完遂済み、第二手 G-112・第三手 G-113 は active)。
+  義務台帳の正本 = G-116 カード、設計の source note = n1007。昇格は一枚ずつ、
   G-116 は G-111〜G-115 の全帰趨確定後。昇格前の裁定事項: G-115 =
   `ObProblem` の Lean 指示対象)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
