@@ -82,8 +82,8 @@
   ledger 行)、G-106
   (reselection orbit 語彙)、G-109(core pseudofunctor API —
   `CoreFiber` を型に含む seed を消費する)。
-- `tracking issue`: 未起票(昇格 PR マージ後に起票し、本行を Issue
-  番号へ更新する)
+- `tracking issue`: [#4198](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4198)(runtime state、cycle 履歴、fixed head、
+  次 proof obligation の正本)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-113、§5 判定線1・3)、
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 (D) の独立 gate 文)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (v)・(D) 移管文)
