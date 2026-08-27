@@ -19,8 +19,13 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 - language head:
   `ExactBottomConditionSyntax` / `evalExactBottomCondition` /
   `rebaseExactBottomCondition`
-- predicate-term head: `exactBottomFirstCandidate` =
+- initial predicate-term head: `exactBottomFirstCandidate` =
   `sourceFinite ∧ targetFinite`
+- accepted selected term: candidate index 11,
+  `endpointFiniteTargetCofiniteTerm` =
+  `(sourceFinite ∧ targetFinite) ∧ allTargetExtractionsFiniteOrCofinite`。
+  `endpointFiniteTargetCofiniteSelection` が prior refutation 0--10 と同じ
+  selected term を保持する。
 - candidate sequence: `exactBottomConditionCandidates`。4 atomic condition の
   非空 conjunction class 15項を proof 前に固定し、先頭を fixed head とする。
   `ExactBottomCandidateSelection.initial/next` が prior refutation を保持し、
@@ -867,10 +872,12 @@ result:
       - finiteEndpointCoverage
       - exactBottomCoverageDisjunction
       - exact_bottom_semantic_global_strong_cartesian_lift
+      - exactBottomCoverageRegimeOfDisjunction
       - exact_bottom_identity_closure
       - exact_bottom_composition_closure
       - exact_bottom_pullback_closure
       - exact_bottom_semantic_global_cartesian_cleavage
+      - exact_bottom_semantic_global_reindex_functor
       - exact_bottom_semantic_global_compositor
       - exact_bottom_semantic_global_unitor
       - exact_bottom_semantic_global_triangle
