@@ -70,7 +70,8 @@ PR #4188 初回4 lane は `Major revisions`。数学A/B・Lean Aが共通して�
    coverage producer を直接受ける constructor を除去した。
 
 型と def 本体を変更した中心修正なので、修正後は新規4 lane の正式レビューを
-再実行する。
+再実行した。数学2 lane・Lean 2 lane はすべて `No major findings`。
+exact head `2e2e039fd51d1bdd3219457ea3cf6ec330aed3f1` の CI は 7/7 通過した。
 
 ## Cycle ledger
 
@@ -194,14 +195,15 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean / exit 0 / standard axioms only"
     - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.ExactBottomCoverageSchema / exit 0 / targeted module only"
     - "all reported declarations #print axioms / standard axioms only: propext, Classical.choice, Quot.sound where applicable"
-  blocking_findings:
-    - "initial review findings corrected; fresh four-lane rerun pending"
+    - "exact head 2e2e039fd51d1bdd3219457ea3cf6ec330aed3f1 / fresh mathematics A-B and Lean A-B review / No major findings"
+    - "exact head 2e2e039fd51d1bdd3219457ea3cf6ec330aed3f1 / CI 7 of 7 passed"
+  blocking_findings: []
   next_obligation: "K0 first-stage finite-endpoint anchored coverage construction"
 ```
 
 ## Current proof state
 
-F0 の type surface を実装し、focused elaboration と standard-axiom audit は
-通過した。正式受理は fixed-head PR review 後に確定する。全 completion
-criteria のうち K0--K4 と K5 final audit は未完であり、現在は
-`target-proof-checkpoint` 候補である。
+F0 の type surface を実装し、focused elaboration、standard-axiom audit、
+修正後の新規4 lane 正式レビュー、exact-head CI 7/7 を通過した。F0 は
+`target-proof-checkpoint` として受理する。全 completion criteria のうち
+K0--K4 と K5 final audit は未完である。
