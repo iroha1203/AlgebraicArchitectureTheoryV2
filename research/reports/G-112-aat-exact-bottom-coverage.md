@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-proof-checkpoint / F0, K0, and K1 accepted / K2 next`
+- proof state: `target-proof-checkpoint / F0 and K0 accepted / K1 status-sync re-review pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -52,9 +52,9 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 | --- | --- | --- |
 | (i) 探索前固定 | `ExactBottomCandidateSelection.initial/next` | 型固定・正式査読済み |
 | (ii) coverage 非参照 | 5 constructor と evaluator unfolding theorem 群 | transitive audit 通過 |
-| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | K1 theorem output 構成済み・正式査読待ち |
-| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | K1 theorem output 構成済み・正式査読待ち |
-| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | K1 raw family と theorem output 構成済み・正式査読待ち |
+| (iii) 同型不変性 | `ExactBottomConditionQualification.isomorphic_invariant` | K1 theorem output 構成済み・status-sync 再査読待ち |
+| (iv) anchor 相対 id / comp / pullback 閉性 | 同 qualification の4 closure field | K1 theorem output 構成済み・status-sync 再査読待ち |
+| (v) 像包含と非空発火 | 同 qualification の image / raw family theorem field | K1 raw family と theorem output 構成済み・status-sync 再査読待ち |
 
 ## Review round 1 corrections
 
@@ -215,7 +215,8 @@ structure が conclusion-side field を持たないことの監査を K1 provena
 target-fitting と判定しない。この裁定は固定 target、statement、material premise、
 proof-use、structure-field escape、route integrity、nonvacuity の各 gate を変更しない。
 K1 はこの contract に基づく fixed-head 4 lane 再監査で中心 finding なしと判定
-された。監査状態の非中心 drift 一件を修正し、直接対応で確認する。
+された。監査状態の非中心 drift 一件を修正し、status 変更を含むため新しい
+fixed head の4 laneで再確認する。
 
 ### Cycle 2 — K0 finite-endpoint anchored coverage
 
@@ -482,7 +483,7 @@ selection:
   raw_fixture_artifact: research/fixtures/G-112-k1-o6-raw-data-v3.md
   selected_index: 11
   selected_term: "(sourceFinite and targetFinite) and allTargetExtractionsFiniteOrCofinite"
-  unchecked: "none; human-ruling formal review completed at d6f7e624, with the sole noncentral ledger-state drift corrected by direct response"
+  unchecked: "status-sync formal re-review at the current fixed head"
   discovery_gap: "repository-wide proof-before-selection provenance is unavailable"
 attempts:
   - route: >-
@@ -542,7 +543,7 @@ result:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean / exit 0 / 99 declarations / standard axioms only"
   blocking_findings: []
-  next_obligation: "K2 O7 semantic-global wrapper and proof-use audit"
+  next_obligation: "complete the status-sync formal re-review, then K2 O7 semantic-global wrapper and proof-use audit"
 ```
 
 V3 は V1/V2 の反例 index grouping を変更し、有限 bad endpoint を candidate 0、1、
@@ -554,7 +555,8 @@ formal review では、選定時に既知だった proof route を使って data
 2026-08-27 の人間裁定はその provenance 解釈を置換した。既知の非中心 finding を修正し、
 同裁定を明示した head `d6f7e624` から K1 を再監査した。Lean A は
 `No major findings`、数学 A/B と Lean B は中心 finding なし・同一の非中心 ledger-state
-drift 一件を報告した。この一件を本 commit で同期し、直接対応で確認する。
+drift 一件を報告した。status 変更を含むため直接対応は資格外となり、残存していた
+qualification 表の pending 表示も含めて新しい fixed head の4 laneで再確認する。
 
 ## Historical stop packet — superseded by the 2026-08-27 human ruling
 
