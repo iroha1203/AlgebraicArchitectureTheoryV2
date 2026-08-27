@@ -864,7 +864,8 @@ result:
     - "fixed GOAL statement and material-premise ledger"
   claim_mapping:
     theorem_names:
-      - exactBottomCoverageClassification
+      - finiteEndpointCoverage
+      - exactBottomCoverageDisjunction
       - exact_bottom_semantic_global_strong_cartesian_lift
       - exact_bottom_identity_closure
       - exact_bottom_composition_closure
