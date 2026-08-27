@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-112-aat-exact-bottom-coverage.md`](../goals/G-112-aat-exact-bottom-coverage.md)
 - tracking Issue: [#4184](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4184)
 - target theorem: Exact-Bottom Coverage Classification and Global Lift Coherence Theorem
-- proof state: `target-proof-checkpoint / F0, K0, and K1 accepted / K2 proof-obligation-discharged proposed`
+- proof state: `target-proof-checkpoint / F0--K2 accepted / K3 proof-obligation-discharged proposed`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -206,7 +206,7 @@ audits:
 F0 の type surface を実装し、focused elaboration、standard-axiom audit、
 修正後の新規4 lane 正式レビュー、exact-head CI 7/7 を通過した。F0 は
 `target-proof-checkpoint` として受理する。K0 は Cycle 2 で受理済みであり、全
-completion criteria のうち K2--K4 と K5 final audit は未完である。
+completion criteria のうち K3--K4 と K5 final audit は未完である。
 
 2026-08-27 の人間裁定により、反復修正で raw data と proof の履歴上の順序が
 変わることを許容し、最終 branch に固定された proof-free checkpoint と raw
@@ -216,7 +216,10 @@ target-fitting と判定しない。この裁定は固定 target、statement、m
 proof-use、structure-field escape、route integrity、nonvacuity の各 gate を変更しない。
 K1 はこの contract に基づく fixed-head 4 lane 再監査を通過し、PR #4193
 (merge `9e85f70d`) で受理された。K2 は G-110 reviewed predecessor の
-semantic-global theorem を正本 wrapper と制限関係へ固定する。
+semantic-global theorem を正本 wrapper と制限関係へ固定し、PR #4194
+(merge `35acdcde`) の4 lane と CI 7/7 を通過して受理された。K3 は named
+branch regime の membership と operand の anchored presentation/square を消費し、
+identity、composition、共有 pullback anchor と両 projection witness を構成する。
 
 ### Cycle 2 — K0 finite-endpoint anchored coverage
 
@@ -630,6 +633,89 @@ audits:
     - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.ExactBottomGlobalLift / exit 0 / targeted module only"
   blocking_findings: []
   next_obligation: "fixed-head K2 standard review, then K3 coverage regime and closure producers"
+```
+
+### Cycle 6 — K3 branch-independent anchored closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-112-aat-exact-bottom-coverage
+cycle: 6
+goal_blob_sha: 17cad4df309049633617878373246300c1ad24aa
+base_oid: 35acdcdeffa3987ed6e2162da2f63be2d01d513d
+selection:
+  proof_state_ref: "K2 accepted by PR #4194; K3 is the next fixed obligation"
+  proof_dag_predecessors:
+    - "K1 ExactBottomCoverageRegime and fixed branch qualification"
+    - "G-110 typed identity, composition, and semantic pullback producers"
+  proof_obligation: "construct branch-independent anchor-relative identity, composition, and two-leg pullback closure"
+  selection_reason: "the fixed order requires K3 before semantic-global coherence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClosure.lean
+  risks:
+    - "output coverage witness must not be obtained only by membership closure followed by regime.covers"
+    - "composition must consume both operand presentations and commuting squares"
+    - "pullback must construct one shared pullback anchor and both projection witnesses"
+  unchecked:
+    - "fixed-head standard PR review and CI"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "adds direct anchored witness producers for identity, composition, and both pullback projections"
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClosure.lean
+  evidence:
+    - exact_bottom_identity_closure
+    - exact_bottom_composition_closure
+    - exact_bottom_pullback_closure
+  claim_mapping:
+    theorem_names:
+      - exact_bottom_identity_closure
+      - exact_bottom_composition_closure
+      - exact_bottom_transported_code_pullback_is_pullback
+      - exact_bottom_pullback_object_iso
+      - exact_bottom_pullback_closure
+    source_labels:
+      - "G-112 target theorem (d)"
+    conjuncts:
+      - "covered object anchor -> identity membership and anchored identity witness"
+      - "two memberships plus shared-anchor operand witnesses -> composite membership and anchored composite witness"
+      - "two memberships plus shared-base operand witnesses -> one pullback object anchor and both projection memberships/witnesses"
+    undischarged_assumptions: []
+    acceptance_point: "direct typed-presentation construction; no regime.covers reuse"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K3 identity closure"
+      - "K3 composition closure"
+      - "K3 two-leg pullback closure"
+    remaining:
+      - "K4 global lift coherence"
+      - "K5 final audit"
+  certificate_provenance:
+    discharged:
+      - "identity witness / idTypedPresentation from the supplied object anchor"
+      - "composition witness / compPresentation from both operand CoverageWitnessOver values"
+      - "pullback witness / pullbackPresentation_isPullback transported by all three anchors and compared with pointedPullback_isPullback"
+    unresolved: []
+  proof_use:
+    used:
+      - "both input membership proofs / branch qualification membership producers"
+      - "both operand presentations and commuting squares / composite and pullback witness construction"
+      - "both pullback legs / shared generated object anchor and projection squares"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClosure.lean / exit 0 / 41 declarations / standard axioms only"
+  blocking_findings: []
+  next_obligation: "fixed-head K3 standard review, then K4 semantic-global cleavage and coherence"
 ```
 
 ## Historical stop packet — superseded by the 2026-08-27 human ruling
