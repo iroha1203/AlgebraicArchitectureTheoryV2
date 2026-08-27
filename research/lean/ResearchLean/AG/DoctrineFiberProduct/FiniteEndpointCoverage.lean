@@ -32,6 +32,7 @@ noncomputable def finiteAtomPredicateCode {U : AtomCarrier.{u}}
     { defaultValue := false
       exceptions := Finset.univ.filter predicate }
 
+/-- The finite truth table denotes exactly its authored predicate. -/
 @[simp]
 theorem finiteAtomPredicateCode_holds_iff {U : AtomCarrier.{u}}
     [Finite U.Atom] [DecidableEq U.Atom] (predicate : U.Atom → Prop)
@@ -50,6 +51,7 @@ def normalizedExtractionPredicate {U : AtomCarrier.{u}}
     doctrine.resolutionAllows doctrine.resolution source atom ∧
     doctrine.sourceSemantics source atom
 
+/-- Reading the raw conjunction at a normalized source is semantic extraction. -/
 @[simp]
 theorem normalizedExtractionPredicate_normalize_iff
     {U : AtomCarrier.{u}} (doctrine : ExtractionDoctrine U)
@@ -72,6 +74,7 @@ noncomputable def finiteDoctrineCodeOf {U : AtomCarrier.{u}}
       (normalizedExtractionPredicate doctrine
         (finiteSourceEquiv doctrine.Source source))
 
+/-- The source enumeration conjugates the authored normalization table. -/
 @[simp]
 theorem finiteDoctrineCodeOf_normalize {U : AtomCarrier.{u}}
     [Finite U.Atom] [DecidableEq U.Atom]
@@ -82,6 +85,7 @@ theorem finiteDoctrineCodeOf_normalize {U : AtomCarrier.{u}}
       doctrine.normalize (finiteSourceEquiv doctrine.Source source) := by
   simp [finiteDoctrineCodeOf]
 
+/-- Decoded extraction is extensionally the original four-field conjunction. -/
 @[simp]
 theorem finiteDoctrineCodeOf_extracts_iff {U : AtomCarrier.{u}}
     [Finite U.Atom] [DecidableEq U.Atom]
@@ -178,6 +182,7 @@ noncomputable def finiteAtomPermutationCodeOf {U : AtomCarrier.{u}}
   letI := Fintype.ofFinite U.Atom
   exact AtomPermutationCode.ofPerm Finset.univ equiv (by simp) (by simp)
 
+/-- The complete finite permutation table decodes to the original permutation. -/
 @[simp]
 theorem finiteAtomPermutationCodeOf_toEquiv {U : AtomCarrier.{u}}
     [Finite U.Atom] [DecidableEq U.Atom] (equiv : Equiv.Perm U.Atom) :

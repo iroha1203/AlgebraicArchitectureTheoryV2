@@ -234,7 +234,8 @@ result:
   reason: >-
     finiteSourceEquiv enumerates every finite Source by Fin (Nat.card Source);
     finiteAtomPredicateCode tabulates every Atom predicate because the carrier is finite;
-    finiteDoctrineCodeOf preserves normalization and all four extraction fields;
+    finiteDoctrineCodeOf preserves normalization and the extensional extraction
+    relation formed by the conjunction of all four admission fields;
     finiteInstanceCodeOfIso gives the shared endpoint anchors; and
     finiteCartPresentationBetweenOf conjugates the original exact morphism and
     proves the arrow-category square used by finiteEndpointCoverage.
@@ -258,12 +259,12 @@ result:
       proof_use: "constructs the complete Atom truth tables and finite permutation table"
     - name: "finite source endpoint Source"
       role: direction-hypothesis
-      status: discharged
+      status: retained
       provenance: "FiniteEndpointCoverage / GOAL (a)"
       proof_use: "finiteSourceEquiv constructs the source endpoint code and anchor"
     - name: "finite target endpoint Source"
       role: direction-hypothesis
-      status: discharged
+      status: retained
       provenance: "FiniteEndpointCoverage / GOAL (a)"
       proof_use: "finiteSourceEquiv constructs the target endpoint code and anchor"
     - name: "DecidableEq U.Atom"
