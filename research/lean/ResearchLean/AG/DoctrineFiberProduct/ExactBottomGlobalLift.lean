@@ -25,7 +25,7 @@ universe u
 G-112(c): every semantic exact-bottom arrow admits a strong cartesian lift to
 every package in its target fiber, without a realization premise.
 -/
-theorem exactBottomSemanticGlobalStrongCartesianLift
+theorem exact_bottom_semantic_global_strong_cartesian_lift
     {U : AtomCarrier.{u}} (input : CartSemanticInput U)
     (targetPackage : CoreFiber input.target) :
     HasStrongCartesianLift input targetPackage := by
@@ -35,10 +35,10 @@ theorem exactBottomSemanticGlobalStrongCartesianLift
 The G-110 realization-qualified global branch is the restriction of the G-112
 semantic-global wrapper to `RealizableHom` inputs.
 -/
-theorem globalCartesianLift_of_exactBottomSemanticGlobalStrongCartesianLift :
+theorem global_cartesian_lift_of_exact_bottom_semantic_global_strong_cartesian_lift :
     GlobalCartesianLift.{u} := by
   intro U _ input targetPackage
-  exact exactBottomSemanticGlobalStrongCartesianLift
+  exact exact_bottom_semantic_global_strong_cartesian_lift
     input.semantic targetPackage
 
 end AAT.AG.DoctrineFiberProduct

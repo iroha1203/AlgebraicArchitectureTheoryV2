@@ -206,7 +206,7 @@ audits:
 F0 の type surface を実装し、focused elaboration、standard-axiom audit、
 修正後の新規4 lane 正式レビュー、exact-head CI 7/7 を通過した。F0 は
 `target-proof-checkpoint` として受理する。K0 は Cycle 2 で受理済みであり、全
-completion criteria のうち K1--K4 と K5 final audit は未完である。
+completion criteria のうち K2--K4 と K5 final audit は未完である。
 
 2026-08-27 の人間裁定により、反復修正で raw data と proof の履歴上の順序が
 変わることを許容し、最終 branch に固定された proof-free checkpoint と raw
@@ -543,7 +543,7 @@ result:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean / exit 0 / 99 declarations / standard axioms only"
   blocking_findings: []
-  next_obligation: "complete the status-sync formal re-review, then K2 O7 semantic-global wrapper and proof-use audit"
+  next_obligation: "K2 O7 semantic-global wrapper and proof-use audit, recorded in Cycle 5"
 ```
 
 V3 は V1/V2 の反例 index grouping を変更し、有限 bad endpoint を candidate 0、1、
@@ -553,10 +553,9 @@ formal review では、選定時に既知だった proof route を使って data
 中心 finding とした。数学B・Lean Bが `Reject`、数学A・Lean Aが中心findingなし
 （非中心docstring/import findingあり）で、当時の統合判定は `Needs changes` だった。
 2026-08-27 の人間裁定はその provenance 解釈を置換した。既知の非中心 finding を修正し、
-同裁定を明示した head `d6f7e624` から K1 を再監査した。Lean A は
-`No major findings`、数学 A/B と Lean B は中心 finding なし・同一の非中心 ledger-state
-drift 一件を報告した。status 変更を含むため直接対応は資格外となり、残存していた
-qualification 表の pending 表示も含めて新しい fixed head の4 laneで再確認する。
+同裁定を明示した head `d6f7e624` から K1 を再監査した。非中心 ledger-state drift を
+同期した head `7c1262b1` の再査読は4 laneすべて `No major findings` となり、
+PR #4193 で K1 を受理した。
 
 ### Cycle 5 — K2 O7 semantic-global wrapper
 
@@ -588,12 +587,12 @@ result:
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLift.lean
   evidence:
-    - exactBottomSemanticGlobalStrongCartesianLift
-    - globalCartesianLift_of_exactBottomSemanticGlobalStrongCartesianLift
+    - exact_bottom_semantic_global_strong_cartesian_lift
+    - global_cartesian_lift_of_exact_bottom_semantic_global_strong_cartesian_lift
   claim_mapping:
     theorem_names:
-      - exactBottomSemanticGlobalStrongCartesianLift
-      - globalCartesianLift_of_exactBottomSemanticGlobalStrongCartesianLift
+      - exact_bottom_semantic_global_strong_cartesian_lift
+      - global_cartesian_lift_of_exact_bottom_semantic_global_strong_cartesian_lift
     source_labels:
       - "G-112 target theorem (c)"
       - "G-112 material premise ledger: O7 semantic-global strong cartesian lift"
@@ -617,8 +616,8 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "strongCartesianLiftOfTarget / exactBottomSemanticGlobalStrongCartesianLift proof body"
-      - "exactBottomSemanticGlobalStrongCartesianLift / realization-qualified restriction theorem"
+      - "strongCartesianLiftOfTarget / exact_bottom_semantic_global_strong_cartesian_lift proof body"
+      - "exact_bottom_semantic_global_strong_cartesian_lift / realization-qualified restriction theorem"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
