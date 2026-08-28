@@ -3405,3 +3405,284 @@ audits:
     orbit membership, coherence iff, and obstruction iff, with named forward
     and arbitrary-target inverse declarations that consume the pasted route.
 ```
+
+### Cycle 26 initial candidate — rejected by independent review
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 26
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 102d2f14a6e60848304ac59f3509cc154b26acfe
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 25 primitive path-square producer accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_route
+    - indexedDiagnosticTransportEquivalence_functor
+    - indexedDiagnosticTransportEquivalence_inverse
+    - indexedDiagnosticTransportPush_isEquivalence
+    - indexedDiagnosticEndpointEquivalence_apply
+    - indexedDiagnosticReselectionEquivalence_apply
+    - inverseTransportedReselection_transportedReselection
+    - transportedReselection_inverseTransportedReselection
+    - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+    - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+    - indexedDiagnosticInReselectionOrbit_iff
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+    - indexedCoherentAt_transport_iff
+    - indexedCoherentAt_inverseTransport_iff
+    - indexedTransportObstructionVanishes_iff
+  proof_obligation: >-
+    Generate one square-indexed compatibility package whose base sides and
+    route are the actual G-111 horizontal paste, whose forward and inverse path
+    fields consume the Cycle 25 component-to-paste-to-append proof chain, and
+    whose remaining fields expose the full G-113 (a)--(g) exactness surface for
+    the same indexed hom and generated inverse.  No downstream certificate may
+    be accepted from the caller.
+  selection_reason: >-
+    Raw-defect cochains, orbit membership, coherence, and obstruction vanishing
+    are global over the fixed indexed shape and do not carry an independent
+    horizontal operation.  A generated package indexed by the authored pasted
+    square is therefore the natural Gr4 interface: the square-specific fields
+    fix the underlying path equations and route, while the globally quantified
+    fields fix every forward and arbitrary-target inverse exactness map governed
+    by those path values.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+  risks:
+    - aggregating unrelated propositions without the square-specific proof-use chain
+    - accepting equivalence, inverse, coherence, obstruction, or orbit fields from the caller
+    - omitting arbitrary target endpoint, reselection, cochain, orbit, or coherence values
+    - losing the G-112 inverse functor or G-111 horizontal-paste provenance
+    - claiming a new horizontal operation on indexed homs
+result:
+  proposed_result_type: rejected-candidate
+  proof_obligation_delta: >-
+    The rejected `IndexedDiagnosticHorizontalPastingExactness` proposition
+    records the four base-side equalities and pasteHorizontal route, the G-111
+    push/G-112 reindex equivalence at every vertex, forward and inverse endpoint
+    and reselection exactness, the two horizontally pasted path equations,
+    forward and inverse raw-defect cochain equations, both orbit iff routes,
+    both coherence iff routes, and obstruction iff.  Its sole producer fills
+    every field from existing theorem bodies; callers supply only the fixed hom,
+    generated source interpretation, and two consecutive paths.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+  evidence:
+    - IndexedDiagnosticHorizontalPastingExactness
+    - indexedDiagnosticHorizontalPastingExactness
+    - IndexedDiagnosticHorizontalPastingExactness.baseSides
+    - IndexedDiagnosticHorizontalPastingExactness.route
+    - IndexedDiagnosticHorizontalPastingExactness.fiberFunctor
+    - IndexedDiagnosticHorizontalPastingExactness.fiberInverse
+    - IndexedDiagnosticHorizontalPastingExactness.fiberIsEquivalence
+    - IndexedDiagnosticHorizontalPastingExactness.endpointForward
+    - IndexedDiagnosticHorizontalPastingExactness.endpointSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.endpointInverse
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionForward
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionTargetRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.pathForward
+    - IndexedDiagnosticHorizontalPastingExactness.pathInverse
+    - IndexedDiagnosticHorizontalPastingExactness.cochainForward
+    - IndexedDiagnosticHorizontalPastingExactness.cochainInverse
+    - IndexedDiagnosticHorizontalPastingExactness.cochainSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.cochainTargetRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.orbitForward
+    - IndexedDiagnosticHorizontalPastingExactness.orbitInverse
+    - IndexedDiagnosticHorizontalPastingExactness.coherenceForward
+    - IndexedDiagnosticHorizontalPastingExactness.coherenceInverse
+    - IndexedDiagnosticHorizontalPastingExactness.obstruction
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticHorizontalPastingExactness
+    source_labels:
+      - "target theorem (h): path-square naturality for (a)--(g)"
+      - "target theorem (h): square-level horizontal-pasting compatibility for (a)--(g)"
+    conjuncts:
+      - "G-111 pasted base square and route"
+      - "G-111 push / G-112 reindex fiber equivalence"
+      - "forward and arbitrary-target inverse endpoint/reselection routes"
+      - "forward and arbitrary-target inverse pasted path equations"
+      - "forward and inverse raw-defect cochain equations"
+      - "forward and inverse orbit and coherence iff routes"
+      - "obstruction vanishing iff"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      Rejected. The downstream fields did not depend on either pasted path or
+      the Cycle 25 square equations, so this was aggregation rather than a
+      commuting theorem. No part of conjunct (h) is discharged by this
+      candidate.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    claimed_before_review:
+      - "K4 downstream path-square compatibility for (d)--(g)"
+      - "K4 downstream square-level horizontal-pasting compatibility for (d)--(g)"
+      - "K4 whole (a)--(g) square-indexed exactness package"
+    actually_discharged: []
+    remaining:
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    claimed_before_review:
+      - "base sides and route / Cycle 25 G-111 horizontal-paste theorems"
+      - "fiber equivalence / G-111 push and G-112 semantic-global reindex"
+      - "endpoint and reselection / explicit G-113 equivalences and generated inverse"
+      - "cochain and orbit / pointwise endpoint equivalence and raw-defect equations"
+      - "coherence and obstruction / forward reflection plus generated inverse witnesses"
+    actually_discharged: []
+    unresolved:
+      - "finite non-IsIso nondegenerate witness and base-IsIso corollary"
+  proof_use:
+    claimed_before_review:
+      - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_route
+      - indexedDiagnosticTransportEquivalence_functor
+      - indexedDiagnosticTransportEquivalence_inverse
+      - indexedDiagnosticTransportPush_isEquivalence
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticReselectionEquivalence_apply
+      - inverseTransportedReselection_transportedReselection
+      - transportedReselection_inverseTransportedReselection
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+      - indexedCoherentAt_transport_iff
+      - indexedCoherentAt_inverseTransport_iff
+      - indexedTransportObstructionVanishes_iff
+    actually_used: []
+  structure_field_escape: "rejected: downstream fields escaped the pasted-square route"
+  route_integrity: "rejected: downstream fields did not consume the pasted route"
+  target_fitting: "rejected: aggregation did not fit the commuting target"
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PathSquareDownstreamCompatibility / exit 0 / selected Cycle 26 module only"
+    - "28 declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings:
+    - >-
+      Both independent mathematics lanes found that cochain, orbit,
+      coherence, and obstruction fields were invariant under replacement of
+      the selected paths and merely repackaged existing global exactness.
+  next_obligation: >-
+    Replace the rejected aggregate with a cellwise commuting cube whose two
+    path faces are proved through actual horizontal pasting and whose defect,
+    cochain, orbit, coherence, and obstruction proofs consume that route.
+```
+
+### Cycle 26 corrected candidate — cellwise pasting cube and downstream derivation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 26
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 102d2f14a6e60848304ac59f3509cc154b26acfe
+tracking_issue: 4204
+selection:
+  rejected_head: 90bbfe242bd19d490bb55fdc5c35304786fc4fd8
+  review_verdict: "two mathematics lanes: Major; two Lean lanes: no static finding"
+  proof_obligation: >-
+    For every authored two-cell, use the recursively generated horizontal
+    paste on each of its two paths as the path faces of a transport cube;
+    derive its comparator and raw-defect faces, then derive global cochain,
+    orbit, coherence, and obstruction exactness from those cubes.
+  anti_weakening: >-
+    The corrected theorem is indexed by authored two-cells and their actual
+    left/right paths. It introduces no horizontal operation on diagram homs
+    and accepts no compatibility, coherence, orbit, or vanishing certificate.
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+  evidence:
+    - indexedDiagnosticPathSquare_via_horizontalRoute
+    - indexedDiagnosticPathSquare_inverse_via_horizontalRoute
+    - indexedCoherentAt_transport_via_horizontalPasting
+    - endpointAction_canonicalTwoCellComparator_via_horizontalPasting
+    - IndexedDiagnosticTwoCellPastingCube
+    - indexedDiagnosticTwoCellPastingCube
+    - indexedDiagnosticDefectCochain_via_horizontalPasting
+    - indexedDiagnosticDefectCochain_inverse_via_horizontalPasting
+    - indexedDiagnosticOrbit_via_horizontalPasting
+    - indexedDiagnosticCoherence_via_horizontalPasting
+    - indexedDiagnosticObstruction_via_horizontalPasting
+    - IndexedDiagnosticPastingDownstreamExactness
+    - indexedDiagnosticPastingDownstreamExactness
+  claim_mapping:
+    source_labels:
+      - "target theorem (h): path-square naturality for (d)--(g)"
+      - "target theorem (h): square-level horizontal-pasting compatibility"
+    discharged:
+      - >-
+        each authored left/right path square is obtained by the Cycle 25
+        horizontal component-to-paste-to-append theorem
+      - >-
+        coherence preservation uses those two horizontally generated faces
+        in its theorem body
+      - >-
+        canonical-comparator and raw-defect faces are derived from that
+        coherence proof
+      - >-
+        cochain equality is the pointwise family of defect faces
+      - >-
+        orbit, coherence iff, and obstruction iff consume the new cochain
+        theorem rather than independent global exactness declarations
+    undischarged_obligations:
+      - "target conjunct (i): arbitrary-base and base-IsIso named theorems"
+      - "target conjunct (i): finite nonidentity non-IsIso nondegeneracy witness"
+audits:
+  premise_delta:
+    added: []
+    removed:
+      - "the rejected unrelated-path package parameters"
+  proof_use:
+    forward_downstream_route:
+      - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+      - indexedDiagnosticPathSquare_via_horizontalRoute
+      - indexedCoherentAt_transport_via_horizontalPasting
+      - endpointAction_canonicalTwoCellComparator_via_horizontalPasting
+      - indexedDiagnosticTwoCellPastingCube
+      - indexedDiagnosticDefectCochain_via_horizontalPasting
+      - indexedDiagnosticOrbit_via_horizontalPasting
+      - indexedDiagnosticCoherence_via_horizontalPasting
+      - indexedDiagnosticObstruction_via_horizontalPasting
+    inverse_path_route:
+      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+      - indexedDiagnosticPathSquare_inverse_via_horizontalRoute
+    inverse_cochain_route:
+      - indexedDiagnosticDefectCochain_via_horizontalPasting
+      - indexedDiagnosticDefectCochain_inverse_via_horizontalPasting
+      - transportedReselection_inverseTransportedReselection
+  structure_field_escape: none-found
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "32 declarations under namespace / #assert_standard_axioms_only / pass"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PathSquareDownstreamCompatibility / exit 0 / selected module only"
+    - "13 public declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: >-
+    Run focused module validation and fresh four-lane review on the corrected
+    exact head. If accepted, continue to conjunct (i).
+```
