@@ -40,7 +40,7 @@ selection:
     quasi-inverse, unit/counit, endpoint, cochain, and orbit construction
     depends on the two functors having the same carrier, hom, vertex, and
     opposite variance without adding a new premise.
-  expected_result_type: proof-obligation-discharged
+  expected_result_type: target-proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DiagnosticConservativity/TransportAlignment.lean
   risks:
@@ -1286,7 +1286,7 @@ audits:
     the reviewed G-111/G-112 coherence package.
 ```
 
-### Cycle 11 — identity and vertical-composition mate coherence
+### Cycle 11 — fiber-equivalence unitor/compositor mate checkpoint
 
 ```yaml
 ledger_type: target_cycle_result
@@ -1303,37 +1303,37 @@ selection:
     - coreFiberCompositor
     - exact_bottom_semantic_global_unitor
     - exact_bottom_semantic_global_compositor
-    - exact_bottom_semantic_global_triangle
-    - exact_bottom_semantic_global_pentagon
     - semanticGlobalTransportReindexAdjunction
   proof_obligation: >-
     Prove that the G-111 canonical identity unitor and vertical compositor
     have exactly the G-112 semantic-global unitor and compositor as conjugate
     mates under the generated G-113 adjunctions, at arbitrary semantic arrows
-    and every indexed vertex.
+    and every indexed vertex.  This is the (a)-level producer checkpoint; it
+    does not discharge downstream (b)--(g) commuting or route-level triangle,
+    pentagon, square, or pasting compatibility.
   selection_reason: >-
-    This is the identity and vertical-composition portion of target conjunct
-    (h).  Equality of only the forward functors would omit the inverse
-    reindexing coherence; conjugate-mate equality fixes both sides of each
-    equivalence and connects the actual triangle and pentagon routes.
-  expected_result_type: proof-obligation-discharged
+    Equality of only the forward functors would omit inverse reindexing
+    coherence.  The conjugate-mate equalities fix the unitor/compositor
+    producer needed before the endpoint, reselection, cochain, orbit, and
+    route-level obligations of target conjunct (h) can be proved.
+  expected_result_type: target-proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DiagnosticConservativity/TransportCoherence.lean
   risks:
     - caller-supplied output coherence
     - finite-code-only specialization
     - definitional equality in place of vertical-composition coherence
-    - claiming path-square or horizontal-pasting compatibility in this cycle
+    - promoting this (a)-level checkpoint to full (a)--(g) coherence
 result:
-  proposed_result_type: proof-obligation-discharged
+  proposed_result_type: target-proof-checkpoint
   proof_obligation_delta: >-
     The identity mate equality is derived by factoring the generated unit
     through G-112 reindexing and the G-111 unitor triangle.  The composition
     mate equality is derived through the direct unit, direct reindex map,
     G-111 compositor factorization, both generated counits, and the literal
-    two-step G-112 cartesian lift.  Indexed specializations and named triangle
-    and pentagon compatibility packages expose the same equations without
-    accepting any coherence result from the caller.
+    two-step G-112 cartesian lift.  Indexed specializations expose exactly
+    this fiber-equivalence producer without accepting any coherence result
+    from the caller.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/TransportCoherence.lean
@@ -1342,44 +1342,42 @@ result:
     - semanticGlobalTransportEquivalence_compositor_conjugate
     - indexedDiagnosticTransportEquivalence_id_conjugate
     - indexedDiagnosticTransportEquivalence_comp_conjugate
-    - semanticGlobalTransportEquivalence_triangle_compatibility
-    - semanticGlobalTransportEquivalence_pentagon_compatibility
   claim_mapping:
     theorem_names:
       - semanticGlobalTransportEquivalence_unitor_conjugate
       - semanticGlobalTransportEquivalence_compositor_conjugate
       - indexedDiagnosticTransportEquivalence_id_conjugate
       - indexedDiagnosticTransportEquivalence_comp_conjugate
-      - semanticGlobalTransportEquivalence_triangle_compatibility
-      - semanticGlobalTransportEquivalence_pentagon_compatibility
     source_labels:
-      - "target theorem (h): identity and vertical composition coherence"
+      - "target theorem (h): (a)-level identity and composition producer checkpoint"
       - "G-111 canonical unitor and compositor"
-      - "G-112 semantic-global unitor, compositor, triangle, and pentagon"
+      - "G-112 semantic-global unitor and compositor"
       - "G-113 generated adjunction and equivalence"
     conjuncts:
       - "identity mate coherence -> semanticGlobalTransportEquivalence_unitor_conjugate"
       - "vertical-composition mate coherence -> semanticGlobalTransportEquivalence_compositor_conjugate"
       - "indexed identity and composition -> indexedDiagnosticTransportEquivalence_id_conjugate / comp_conjugate"
-      - "triangle and pentagon routes -> named compatibility packages"
     undischarged_assumptions: []
     undischarged_obligations:
-      - path-square and horizontal-pasting compatibility
+      - "(b)--(g) identity and vertical-composition commuting"
+      - cross-system triangle and pentagon route compatibility
+      - path-square and horizontal-pasting compatibility for (a)--(g)
       - finite non-IsIso nondegenerate witness firing
       - base IsIso relation
     acceptance_point: >-
-      This cycle discharges only the identity and vertical-composition portion
-      of conjunct (h).  Square-level compatibility remains explicit, and no
-      claim is made for conjunct (i).
+      This cycle fixes only the (a)-level identity/composition mate producer.
+      It is a target-proof checkpoint: downstream (b)--(g), cross-system
+      triangle/pentagon routes, square/pasting, and conjunct (i) all remain.
     port_status: not-applicable
 audits:
   premise_delta:
     discharged:
-      - "K4 identity equivalence mate coherence"
-      - "K4 vertical-composition equivalence mate coherence"
-      - "K4 triangle and pentagon route compatibility for those mates"
+      - "K4 (a)-level identity unitor mate producer"
+      - "K4 (a)-level vertical-composition compositor mate producer"
     remaining:
-      - "K4 path-square and horizontal-pasting compatibility"
+      - "K4 (b)--(g) identity and vertical-composition commuting"
+      - "K4 cross-system triangle and pentagon route compatibility"
+      - "K4 path-square and horizontal-pasting compatibility for (a)--(g)"
       - "target conjunct (i) decomposition and base-IsIso relation"
   certificate_provenance:
     discharged:
@@ -1387,6 +1385,7 @@ audits:
       - "inverse coherence / G-112 semantic-global cartesian unitor and compositor"
       - "mate equality / G-113 generated unit and counit factor laws"
     unresolved:
+      - "downstream and route-level coherence"
       - "square-level compatibility, decomposition, and finite-witness exactness"
   proof_use:
     used:
@@ -1396,22 +1395,19 @@ audits:
       - coreFiberUnitorApp_hom_fac
       - coreFiberCompositorApp_hom_fac
       - coreFiberTransportMap_fac
-      - exact_bottom_semantic_global_left_unit_triangle
-      - exact_bottom_semantic_global_right_unit_triangle
-      - exact_bottom_semantic_global_pentagon
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: "pass for the pairwise mate producer; downstream routes remain"
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
+  goal_or_report_reinterpretation: "none after restoring downstream obligations"
   validation_refs:
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/TransportCoherence.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 6 declarations clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 4 declarations clean"
   blocking_findings: []
   next_obligation: >-
-    Prove path-square and horizontal-pasting compatibility at square level,
-    reusing the G-111 generated square action and pasting theorems without
-    introducing a new hom-level horizontal operation.
+    Prove identity and vertical-composition commuting for the downstream
+    endpoint, reselection, coherence, obstruction, cochain, and orbit surfaces,
+    then prove the actual cross-system triangle and pentagon route equations.
 ```
