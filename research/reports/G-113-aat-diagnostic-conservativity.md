@@ -116,7 +116,8 @@ identity / sufficiency theoremを必要とし、負例は固定 target (f) O16 �
 K3 の建設義務である。空 interpretation、単一objectへの縮退、結論供給 fieldで
 先行 pairを作ることは GOAL の dullness filter / anti-weakening に反する。
 したがって §1.4 の「片方が作れない理由」を K1/K3 の exact obligationへ接続して
-記録し、この cycle は引き続き `proof-checkpoint` とする。
+記録する。これは Cycle 1 F0 通過後も G-113 全体が `target-proof-checkpoint` にある理由であり、
+Cycle 2 K0 の `proof-obligation-discharged` 判定とは独立である。
 
 ## Cycle ledger
 
