@@ -2715,9 +2715,13 @@ result:
     - ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean
   evidence:
     - indexedDiagnosticPentagonG111LeftDefectCochainEquivalence
+    - indexedDiagnosticPentagonG111LeftDefectCochainEquivalence_apply
     - indexedDiagnosticPentagonG111RightDefectCochainEquivalence
+    - indexedDiagnosticPentagonG111RightDefectCochainEquivalence_apply
     - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_apply
     - indexedDiagnosticPentagonMateRightDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_apply
     - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_eq_g111
     - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_eq_g111
     - indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
@@ -2767,6 +2771,7 @@ audits:
       - indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
       - indexedDiagnosticPentagonMateEndpointEquivalence_eq
       - MulEquiv.piCongrRight
+      - "four named pointwise cochain-application theorems"
     unused: []
   structure_field_escape: none-found
   route_integrity: "pass for all-coordinate raw-defect cochain whole pentagon actions"
@@ -2777,7 +2782,7 @@ audits:
   validation_refs:
     - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonDownstreamCompatibility / exit 0 / selected dependency module only"
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 7 declarations clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 11 declarations clean"
   blocking_findings: []
   next_obligation: >-
     Prove arbitrary-target orbit membership compatibility through the explicit

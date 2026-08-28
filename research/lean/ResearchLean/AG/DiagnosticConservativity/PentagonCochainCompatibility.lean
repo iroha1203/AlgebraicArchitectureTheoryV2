@@ -43,6 +43,24 @@ noncomputable def indexedDiagnosticPentagonG111LeftDefectCochainEquivalence
     indexedDiagnosticPentagonG111LeftEndpointEquivalence
       first second third source (G.twoTarget cell)
 
+/-- The left G-111 whole-pentagon cochain action is pointwise the
+corresponding endpoint action. -/
+theorem indexedDiagnosticPentagonG111LeftDefectCochainEquivalence_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D)
+    (cochain : DefectCochain
+      (((first.comp second).comp third).transportedInterpretation source).toAdmissibleTransportData)
+    (cell : G.TwoCell) :
+    indexedDiagnosticPentagonG111LeftDefectCochainEquivalence
+        first second third source cochain cell =
+      indexedDiagnosticPentagonG111LeftEndpointEquivalence
+        first second third source (G.twoTarget cell) (cochain cell) := by
+  rfl
+
 /-- Apply the cast-bearing right whole G-111 pentagon endpoint action at every
 raw-defect cochain coordinate. -/
 noncomputable def indexedDiagnosticPentagonG111RightDefectCochainEquivalence
@@ -61,6 +79,24 @@ noncomputable def indexedDiagnosticPentagonG111RightDefectCochainEquivalence
   MulEquiv.piCongrRight fun cell =>
     indexedDiagnosticPentagonG111RightEndpointEquivalence
       first second third source (G.twoTarget cell)
+
+/-- The right G-111 whole-pentagon cochain action is pointwise the
+cast-bearing endpoint action. -/
+theorem indexedDiagnosticPentagonG111RightDefectCochainEquivalence_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D)
+    (cochain : DefectCochain
+      (((first.comp second).comp third).transportedInterpretation source).toAdmissibleTransportData)
+    (cell : G.TwoCell) :
+    indexedDiagnosticPentagonG111RightDefectCochainEquivalence
+        first second third source cochain cell =
+      indexedDiagnosticPentagonG111RightEndpointEquivalence
+        first second third source (G.twoTarget cell) (cochain cell) := by
+  rfl
 
 /-- Apply the inverse-mate left whole G-112 pentagon endpoint action at every
 raw-defect cochain coordinate. -/
@@ -81,6 +117,24 @@ noncomputable def indexedDiagnosticPentagonMateLeftDefectCochainEquivalence
     indexedDiagnosticPentagonMateLeftEndpointEquivalence
       first second third source (G.twoTarget cell)
 
+/-- The left G-112-mate whole-pentagon cochain action is pointwise its
+independently generated endpoint action. -/
+theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D)
+    (cochain : DefectCochain
+      (((first.comp second).comp third).transportedInterpretation source).toAdmissibleTransportData)
+    (cell : G.TwoCell) :
+    indexedDiagnosticPentagonMateLeftDefectCochainEquivalence
+        first second third source cochain cell =
+      indexedDiagnosticPentagonMateLeftEndpointEquivalence
+        first second third source (G.twoTarget cell) (cochain cell) := by
+  rfl
+
 /-- Apply the inverse-mate right whole G-112 pentagon endpoint action at every
 raw-defect cochain coordinate. -/
 noncomputable def indexedDiagnosticPentagonMateRightDefectCochainEquivalence
@@ -100,6 +154,24 @@ noncomputable def indexedDiagnosticPentagonMateRightDefectCochainEquivalence
     indexedDiagnosticPentagonMateRightEndpointEquivalence
       first second third source (G.twoTarget cell)
 
+/-- The right G-112-mate whole-pentagon cochain action is pointwise its
+cast-bearing endpoint action. -/
+theorem indexedDiagnosticPentagonMateRightDefectCochainEquivalence_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D)
+    (cochain : DefectCochain
+      (((first.comp second).comp third).transportedInterpretation source).toAdmissibleTransportData)
+    (cell : G.TwoCell) :
+    indexedDiagnosticPentagonMateRightDefectCochainEquivalence
+        first second third source cochain cell =
+      indexedDiagnosticPentagonMateRightEndpointEquivalence
+        first second third source (G.twoTarget cell) (cochain cell) := by
+  rfl
+
 /-- The left whole G-112-mate and G-111 cochain actions agree at every
 two-cell coordinate. -/
 theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_eq_g111
@@ -116,10 +188,8 @@ theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_eq_g111
   apply MulEquiv.ext
   intro cochain
   funext cell
-  change indexedDiagnosticPentagonMateLeftEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell) =
-    indexedDiagnosticPentagonG111LeftEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell)
+  rw [indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_apply,
+    indexedDiagnosticPentagonG111LeftDefectCochainEquivalence_apply]
   rw [indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111]
 
 /-- The right whole G-112-mate and G-111 cochain actions agree at every
@@ -138,10 +208,8 @@ theorem indexedDiagnosticPentagonMateRightDefectCochainEquivalence_eq_g111
   apply MulEquiv.ext
   intro cochain
   funext cell
-  change indexedDiagnosticPentagonMateRightEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell) =
-    indexedDiagnosticPentagonG111RightEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell)
+  rw [indexedDiagnosticPentagonMateRightDefectCochainEquivalence_apply,
+    indexedDiagnosticPentagonG111RightDefectCochainEquivalence_apply]
   rw [indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111]
 
 /-- The two whole G-112-mate cochain actions satisfy the pentagon equation on
@@ -160,10 +228,8 @@ theorem indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
   apply MulEquiv.ext
   intro cochain
   funext cell
-  change indexedDiagnosticPentagonMateLeftEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell) =
-    indexedDiagnosticPentagonMateRightEndpointEquivalence
-      first second third source (G.twoTarget cell) (cochain cell)
+  rw [indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_apply,
+    indexedDiagnosticPentagonMateRightDefectCochainEquivalence_apply]
   rw [indexedDiagnosticPentagonMateEndpointEquivalence_eq]
 
 end IndexedBaseDiagramHom
