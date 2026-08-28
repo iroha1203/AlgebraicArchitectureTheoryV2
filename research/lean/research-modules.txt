@@ -252,6 +252,7 @@ ResearchLean.AG.DoctrineFiberProduct.IndexedRawFamilyClassification	ResearchLean
 ResearchLean.AG.DoctrineFiberProduct.Schema	ResearchLean/AG/DoctrineFiberProduct/Schema.lean
 ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses	ResearchLean/AG/DoctrineFiberProduct/SchemaWitnesses.lean
 ResearchLean.AG.DiagnosticConservativity.TransportAlignment	ResearchLean/AG/DiagnosticConservativity/TransportAlignment.lean
+ResearchLean.AG.DiagnosticConservativity.AmbidextrousLift	ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean
 ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
 ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
 ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean
