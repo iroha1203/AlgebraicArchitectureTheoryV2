@@ -7,6 +7,18 @@ The endpoint equivalences assemble pointwise into an explicit equivalence of
 raw-defect cochains.  Its forward and inverse maps commute with the generated
 reselection transports, so equality and inequality of arbitrary cochains are
 reflected in both directions.
+
+## Implementation notes
+
+The cochain equivalence is the dependent product of the endpoint equivalences,
+because the automorphism group varies with the target vertex of each two-cell.
+The auxiliary canonicalized interpretation changes only the authored
+comparators and is used to derive canonical-comparator naturality from
+generated coherence and strongly cocartesian uniqueness.  We reject taking
+that naturality or source coherence as an input, since either would move the
+commuting conclusion into a caller-supplied premise.  We also reject the older
+pointwise cochain homomorphism as the principal definition because it does not
+provide the inverse required by conjunct `(f)`.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -171,6 +183,10 @@ theorem endpointAction_canonicalTwoCellComparator
           (hom.transportedReselection source reselection)] at fac
         exact fac)
 
+/--
+The explicit conjunct `(f)` cochain equivalence, generated pointwise from the
+Cycle 5 endpoint equivalences and requiring no additional exactness premise.
+-/
 noncomputable def indexedDiagnosticDefectCochainEquivalence
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
@@ -192,6 +208,28 @@ theorem indexedDiagnosticDefectCochainEquivalence_apply
       indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell)
         (cochain cell) := rfl
 
+/-- Endpoint equivalence transports the fixed ordered raw defect on one two-cell. -/
+theorem indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) (cell : G.TwoCell) :
+    indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell)
+        (rawTwoCellDefect source.toAdmissibleTransportData reselection cell) =
+      rawTwoCellDefect
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection) cell := by
+  rw [indexedDiagnosticEndpointEquivalence_apply]
+  unfold rawTwoCellDefect
+  rw [map_mul, map_inv]
+  rw [hom.endpointAction_canonicalTwoCellComparator source reselection cell]
+  rfl
+
+/--
+The forward conjunct `(f)` equivalence commutes with `rawDefectCochain`; its
+premises are exactly the fixed indexed hom, generated interpretation, and the
+cochain coordinate supplied by a source reselection.
+-/
 theorem indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
@@ -203,13 +241,8 @@ theorem indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
         (hom.transportedInterpretation source).toAdmissibleTransportData
         (hom.transportedReselection source reselection) := by
   funext cell
-  change indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell)
-      (rawTwoCellDefect source.toAdmissibleTransportData reselection cell) = _
-  rw [indexedDiagnosticEndpointEquivalence_apply]
-  unfold rawDefectCochain rawTwoCellDefect
-  rw [map_mul, map_inv]
-  rw [hom.endpointAction_canonicalTwoCellComparator source reselection cell]
-  rfl
+  exact hom.indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
+    source reselection cell
 
 /-- The inverse cochain equivalence commutes with inverse reselection transport. -/
 theorem indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain

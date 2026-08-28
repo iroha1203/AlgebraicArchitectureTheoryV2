@@ -1095,6 +1095,7 @@ result:
     - IndexedBaseDiagramHom.endpointAction_canonicalTwoCellComparator
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply
+    - IndexedBaseDiagramHom.indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
@@ -1119,7 +1120,8 @@ result:
       - "forward commutation -> indexedDiagnosticDefectCochainEquivalence_rawDefectCochain"
       - "inverse commutation -> indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain"
       - "arbitrary equality/inequality reflection -> four apply/symm iff theorems"
-    undischarged_assumptions:
+    undischarged_assumptions: []
+    undischarged_obligations:
       - orbit membership inverse direction
       - identity / composition / square / pasting coherence
       - finite non-IsIso nondegenerate witness firing
@@ -1152,6 +1154,7 @@ audits:
       - indexedCoherentAt_transport
       - canonicalTwoCellComparator_fac
       - endpointAction_canonicalTwoCellComparator
+      - indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
       - transportedReselection_inverseTransportedReselection
     unused: []
   structure_field_escape: none-found
@@ -1162,7 +1165,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 15 declarations clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 16 declarations clean"
   blocking_findings: []
   next_obligation: >-
     Prove source/target InReselectionOrbit membership iff by transporting the
