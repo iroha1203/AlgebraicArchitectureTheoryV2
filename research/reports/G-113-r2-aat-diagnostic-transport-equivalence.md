@@ -40,7 +40,7 @@ selection:
     quasi-inverse, unit/counit, endpoint, cochain, and orbit construction
     depends on the two functors having the same carrier, hom, vertex, and
     opposite variance without adding a new premise.
-  expected_result_type: target-proof-checkpoint
+  expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/DiagnosticConservativity/TransportAlignment.lean
   risks:
@@ -1316,7 +1316,7 @@ selection:
     coherence.  The conjugate-mate equalities fix the unitor/compositor
     producer needed before the endpoint, reselection, cochain, orbit, and
     route-level obligations of target conjunct (h) can be proved.
-  expected_result_type: target-proof-checkpoint
+  expected_result_type: proof-obligation-discharged
   lean_targets:
     - ResearchLean/AG/DiagnosticConservativity/TransportCoherence.lean
   risks:
@@ -1325,7 +1325,7 @@ selection:
     - definitional equality in place of vertical-composition coherence
     - promoting this (a)-level checkpoint to full (a)--(g) coherence
 result:
-  proposed_result_type: target-proof-checkpoint
+  proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: >-
     The identity mate equality is derived by factoring the generated unit
     through G-112 reindexing and the G-111 unitor triangle.  The composition
