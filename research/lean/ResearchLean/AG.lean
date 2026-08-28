@@ -14,6 +14,7 @@ import ResearchLean.AG.AtomFoundation.Transport
 import ResearchLean.AG.AtomFoundation.TransportLaws
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
+import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
