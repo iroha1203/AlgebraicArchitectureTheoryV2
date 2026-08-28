@@ -680,3 +680,128 @@ audits:
     Construct reselection forward/inverse transport, both inverse laws,
     preservation of the base reselection, and mapped-reselection round trips.
 ```
+
+### Cycle 6 — diagnostic reselection exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 6
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 78152aa63d3e1883f1f5209ffe416f7d4d4f5eb8
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjuncts (a)--(b) discharged / reselection exactness next"
+  proof_dag_predecessors:
+    - indexedDiagnosticEndpointEquivalence
+    - indexedDiagnosticEndpointEquivalence_apply
+    - IndexedBaseDiagramHom.transportedReselection
+    - IndexedBaseDiagramHom.transportedReselection_one
+  proof_obligation: >-
+    Assemble the endpoint equivalences at every indexed edge coordinate into
+    explicit forward and inverse reselection transport, prove both inverse
+    laws, preserve the base reselection, and expose the mapped-reselection
+    round trips as named theorems.
+  selection_reason: >-
+    This is target conjunct (c), immediately downstream of the Cycle 5 endpoint
+    equivalence.  The dependent product of those endpoint equivalences supplies
+    one coherent inverse rather than pointwise choices from the older
+    surjectivity theorem.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/ReselectionExactness.lean
+  risks:
+    - choosing inverse endpoint preimages independently instead of using the equivalence
+    - defining a forward map different from revision-1 transportedReselection
+    - proving only the target-side round trip
+    - omitting preservation of the identity/base reselection
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The dependent product of the Cycle 5 endpoint MulEquiv at every source,
+    target, and edge coordinate is now an explicit reselection MulEquiv.  Its
+    forward function is definitionally the revision-1 transportedReselection;
+    its inverse acts pointwise through the endpoint inverse.  Both source and
+    target round trips and preservation of the identity/base reselection are
+    fixed as named declarations.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/ReselectionExactness.lean
+  evidence:
+    - indexedDiagnosticReselectionEquivalence
+    - indexedDiagnosticReselectionEquivalence_apply
+    - IndexedBaseDiagramHom.inverseTransportedReselection
+    - IndexedBaseDiagramHom.inverseTransportedReselection_apply
+    - IndexedBaseDiagramHom.inverseTransportedReselection_transportedReselection
+    - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
+    - IndexedBaseDiagramHom.indexedDiagnosticReselectionEquivalence_one
+    - IndexedBaseDiagramHom.inverseTransportedReselection_one
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticReselectionEquivalence
+      - indexedDiagnosticReselectionEquivalence_apply
+      - inverseTransportedReselection
+      - inverseTransportedReselection_transportedReselection
+      - transportedReselection_inverseTransportedReselection
+      - indexedDiagnosticReselectionEquivalence_one
+      - inverseTransportedReselection_one
+    source_labels:
+      - "target theorem (c): reselection exactness"
+      - "revision-1 transportedReselection forward agreement"
+      - "Cycle 5 endpoint equivalence"
+    conjuncts:
+      - "forward/inverse transport -> reselection MulEquiv and its symm"
+      - "left/right inverse -> named source/target round-trip theorems"
+      - "base reselection preservation -> forward and inverse identity theorems"
+    undischarged_assumptions:
+      - coherence / vanishing inverse direction
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (c) only.  It does not claim
+      coherence, obstruction, cochain, orbit, decomposition, or finite-witness
+      exactness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K2 reselection forward/inverse maps and both round trips"
+      - "K2 identity/base reselection preservation"
+    remaining:
+      - "K3--K4 coherence, obstruction, cochain, orbit, decomposition, and witness obligations"
+  certificate_provenance:
+    discharged:
+      - "reselection inverse / dependent product of Cycle 5 endpoint inverses"
+      - "forward map / reviewed revision-1 transportedReselection by definitional equality"
+    unresolved:
+      - "coherence, cochain, orbit, and later exactness equivalences"
+  proof_use:
+    used:
+      - indexedDiagnosticEndpointEquivalence
+      - MulEquiv.piCongrRight
+      - IndexedBaseDiagramHom.transportedReselection
+      - MulEquiv.symm_apply_apply
+      - MulEquiv.apply_symm_apply
+      - map_one
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/ReselectionExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 8 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Prove source diagnostic coherence iff transported target diagnostic
+    coherence, consuming G-111 preservation in the forward direction and the
+    generated reselection inverse plus naturality in the reverse direction.
+```
