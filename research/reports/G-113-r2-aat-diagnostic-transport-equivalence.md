@@ -3238,3 +3238,170 @@ audits:
     the endpoint through orbit layers, preserving the existing square-level
     operations rather than inventing a new hom composition.
 ```
+
+### Cycle 25 — path-square and horizontal-pasting compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 25
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: a258009fc6069e7e246a0e99c2641da97e8b7c93
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 24 arbitrary-hom whole-unit downstream routes accepted"
+  proof_dag_predecessors:
+    - IndexedBaseDiagramHom.pathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare
+    - IndexedBaseDiagramHom.horizontalPathSquare_top
+    - IndexedBaseDiagramHom.horizontalPathSquare_bottom
+    - IndexedBaseDiagramHom.horizontalPathSquare_left
+    - IndexedBaseDiagramHom.horizontalPathSquare_right
+    - IndexedBaseDiagramHom.horizontalPathSquare_route
+    - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+    - indexedDiagnosticReselectionEquivalence
+    - inverseTransportedReselection
+    - transportedReselection_inverseTransportedReselection
+  proof_obligation: >-
+    Construct the primitive path-square producer for every indexed hom and
+    finite path: make the canonical vertex lifts and explicit reselection
+    equivalence commute in both the source-to-target and arbitrary-target
+    inverse directions.  For consecutive paths, identify the two component
+    commuting squares with the actual G-111 horizontal paste and with the
+    direct square on the appended path.  Do not introduce a horizontal
+    composition operation on indexed homs or claim downstream proposition
+    compatibility before its declarations exist.
+  selection_reason: >-
+    G-111 already places horizontal composition at square level.  The
+    reselected path-lift square is the common primitive used by the later
+    cochain, coherence, obstruction, and orbit layers.  The honest next step is
+    to expose that primitive for the explicit forward and inverse G-113
+    reselection equivalences and prove the real append/paste proof-use chain;
+    downstream proposition compatibility remains a later K4 obligation.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareCompatibility.lean
+  risks:
+    - fabricating a horizontal indexed-hom operation
+    - proving only the base-square equation without total diagnostic lifts
+    - proving only source-to-target naturality and omitting arbitrary target data
+    - replacing the authored horizontal-paste route by path append alone
+    - accepting square commutativity or inverse transport from the caller
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    Reselected path evaluation is proved to preserve append.  The explicit
+    G-113 reselection equivalence makes every total-lift path square commute;
+    its generated inverse gives the converse square for every target
+    reselection.  Applying the two component equations proves horizontal
+    pasting in both directions.  Separate equalities identify the pasted
+    source and target sides with the appended-path sides.  The final forward
+    and inverse appended-path theorems consume those pasted equations and both
+    side identifications rather than aliasing direct path naturality.  All four
+    base sides agree with the direct G-111 path square, and the distinct
+    pasteHorizontal route is retained.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareCompatibility.lean
+  evidence:
+    - IndexedDiagnosticInterpretation.reselectedPathLift_append
+    - indexedDiagnosticPathSquare_commutes
+    - indexedDiagnosticPathSquare_inverse_commutes
+    - indexedDiagnosticPathSquare_base_commutes
+    - indexedDiagnosticHorizontalPathPasting_commutes
+    - indexedDiagnosticHorizontalPathPasting_inverse_commutes
+    - indexedDiagnosticHorizontalPathPasting_target_eq_append
+    - indexedDiagnosticHorizontalPathPasting_source_eq_append
+    - indexedDiagnosticHorizontalPathPasting_inverse_target_eq_append
+    - indexedDiagnosticHorizontalPathPasting_inverse_source_eq_append
+    - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_route
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticPathSquare_commutes
+      - indexedDiagnosticPathSquare_inverse_commutes
+      - indexedDiagnosticHorizontalPathPasting_commutes
+      - indexedDiagnosticHorizontalPathPasting_inverse_commutes
+      - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_route
+    source_labels:
+      - "target theorem (h): path-square producer for (a)--(c)"
+      - "target theorem (h): square-level horizontal-pasting producer for (a)--(c)"
+    conjuncts:
+      - "arbitrary source reselection / forward endpoint equivalence"
+      - "arbitrary target reselection / inverse endpoint equivalence"
+      - "component-square horizontal paste / direct appended-path square"
+      - "G-111 base sides and pasteHorizontal provenance"
+      - "primitive input required by the later cochain and proposition layers"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - path-square and horizontal-pasting compatibility declarations for (d)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle is the path-square and square-level horizontal-pasting
+      producer checkpoint at the canonical-lift, endpoint-action, and
+      reselection layers.  It does not claim compatibility for cochains,
+      orbit membership, coherence, or obstruction vanishing, and therefore
+      does not close conjunct (h) or conjunct (i).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 forward and inverse path-square producer at the reselection layer"
+      - "K4 square-level horizontal-pasting producer at the reselection layer"
+      - "K4 appended-path and authored paste-route alignment"
+    remaining:
+      - "K4 downstream path-square and horizontal-pasting compatibility for (d)--(g)"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "base squares / G-111 pathSquare and horizontalPathSquare"
+      - "forward endpoint and reselection actions / explicit G-113 equivalences"
+      - "inverse endpoint and reselection actions / generated G-112-backed inverse transport"
+      - "total commutativity / canonical vertex lifts and path induction"
+      - "horizontal route / authored pasteHorizontal provenance"
+    unresolved:
+      - "downstream cochain, orbit, coherence, and obstruction path-square declarations"
+      - "finite non-IsIso nondegenerate witness and base-IsIso corollary"
+  proof_use:
+    used:
+      - IndexedBaseDiagramHom.pathSquare
+      - IndexedBaseDiagramHom.horizontalPathSquare
+      - IndexedBaseDiagramHom.horizontalPathSquare_top
+      - IndexedBaseDiagramHom.horizontalPathSquare_bottom
+      - IndexedBaseDiagramHom.horizontalPathSquare_left
+      - IndexedBaseDiagramHom.horizontalPathSquare_right
+      - IndexedBaseDiagramHom.horizontalPathSquare_route
+      - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+      - indexedDiagnosticReselectionEquivalence_apply
+      - transportedReselection_inverseTransportedReselection
+      - indexedDiagnosticHorizontalPathPasting_commutes
+      - indexedDiagnosticHorizontalPathPasting_inverse_commutes
+      - indexedDiagnosticHorizontalPathPasting_target_eq_append
+      - indexedDiagnosticHorizontalPathPasting_source_eq_append
+      - indexedDiagnosticHorizontalPathPasting_inverse_target_eq_append
+      - indexedDiagnosticHorizontalPathPasting_inverse_source_eq_append
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for forward/inverse total squares, appended-path sides, all four base sides, and pasteHorizontal provenance"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PathSquareCompatibility.lean / exit 0"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PathSquareCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PathSquareCompatibility / exit 0 / selected Cycle 25 module only"
+    - "14 declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: >-
+    Lift the Cycle 25 producer through the raw-defect cochain equivalence,
+    orbit membership, coherence iff, and obstruction iff, with named forward
+    and arbitrary-target inverse declarations that consume the pasted route.
+```
