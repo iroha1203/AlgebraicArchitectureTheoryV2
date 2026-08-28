@@ -4,7 +4,7 @@
 - tracking Issue: [#4204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204)
 - target theorem: Indexed Diagnostic Transport Equivalence and Orbit Exactness Theorem
 - proof state: `target-proof-checkpoint`
-- completion candidate: `no`
+- completion candidate: `yes`
 
 この report は revision 2 の固定 GOAL に対する proof obligation delta と
 Lean 証拠索引を記録する。target statement と completion criteria は GOAL
@@ -942,11 +942,13 @@ selection:
     - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
     - IndexedBaseDiagramHom.indexedCoherentAt_transport_iff
     - IndexedBaseDiagramHom.indexedCoherentAt_inverseTransport_iff
+    - diagnosticConservative_all
+    - no_diagnosticConservativityCounterexample
   proof_obligation: >-
     Prove obstruction vanishing iff for every indexed diagram hom by consuming
-    the Cycle 7 coherence equivalences and Cycle 6 inverse reselection.  Derive
-    all-hom DiagnosticConservative and no-counterexample named declarations
-    from the resulting revision-2 equivalence without class conditions.
+    the Cycle 7 coherence equivalences and Cycle 6 inverse reselection.  Retain
+    the reviewed all-hom DiagnosticConservative and no-counterexample named
+    declarations without class conditions.
   selection_reason: >-
     This is target conjunct (e).  Opening vanishing as coherentizability makes
     the proof consume the newly established coherence exactness rather than
@@ -967,29 +969,28 @@ result:
     to coherentizability; the source-to-target witness uses Cycle 7 mapped
     coherence, while the target-to-source witness uses Cycle 6 inverse
     reselection through Cycle 7 arbitrary-target coherence.  The reviewed
-    named revision-2 all-hom DiagnosticConservative and no-counterexample
-    corollaries are derived directly from that equivalence with no class
-    condition.  The revision-1 declarations remain historical evidence only.
+    revision-1 all-hom DiagnosticConservative and no-counterexample declarations
+    remain imported with no class condition.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
   evidence:
     - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_iff
-    - diagnosticConservative_all_via_transportEquivalence
-    - no_diagnosticConservativityCounterexample_via_transportEquivalence
+    - diagnosticConservative_all
+    - no_diagnosticConservativityCounterexample
   claim_mapping:
     theorem_names:
       - indexedTransportObstructionVanishes_iff
-      - diagnosticConservative_all_via_transportEquivalence
-      - no_diagnosticConservativityCounterexample_via_transportEquivalence
+      - diagnosticConservative_all
+      - no_diagnosticConservativityCounterexample
     source_labels:
       - "target theorem (e): obstruction exactness"
-      - "revision-2 corollaries derived from obstruction exactness"
+      - "reviewed revision-1 all-hom conservativity corollaries"
       - "Cycles 6--7 inverse reselection and coherence exactness"
     conjuncts:
       - "vanishing iff -> indexedTransportObstructionVanishes_iff"
-      - "vanishing iff reverse -> diagnosticConservative_all_via_transportEquivalence"
-      - "revision-2 conservativity -> no_diagnosticConservativityCounterexample_via_transportEquivalence"
+      - "all-hom reflection -> diagnosticConservative_all"
+      - "no target-vanishing/source-nonvanishing pair -> no_diagnosticConservativityCounterexample"
     undischarged_assumptions:
       - raw-defect cochain equivalence
       - orbit membership inverse direction
@@ -1032,13 +1033,19 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 3 declarations clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 1 declaration clean"
   blocking_findings: []
   next_obligation: >-
     Construct raw-defect cochain transport as an explicit equivalence with
     forward and inverse commutation, then derive equality and inequality
     reflection for arbitrary cochain values.
 ```
+
+この Cycle 8 台帳は当時の selection と result をそのまま保存する。そこで参照した
+revision-1 corollaries は Cycle 28 の二回目の標準査読で revision-2 固定 target の
+completion evidence として棄却された。現行の `(e)` は Cycle 28 claim mapping と
+review history に記録した、`indexedTransportObstructionVanishes_iff` から直接導く
+revision-2 corollaries だけを completion evidence とする。
 
 ### Cycle 9 — raw-defect cochain exactness
 
@@ -4158,7 +4165,7 @@ audits:
     order: >-
       G-111/G-112/G-110 reviewed APIs -> alignment/ambidextrous bridge ->
       adjunction/equivalence -> endpoint/reselection ->
-      coherence/obstruction/cochain/orbit -> identity/composition and
+      cochain -> coherence/obstruction/orbit -> identity/composition and
       whole-route coherence -> authored-cell horizontal pasting -> finite
       arbitrary-base nondegeneracy
     reverse_import_into_Formal: none-found
@@ -4200,18 +4207,26 @@ audits:
       the reverse direction of indexedTransportObstructionVanishes_iff and
       derives the named no-counterexample theorem from that revision-2
       conservativity corollary.
+    rerun_2_exact_head: e555e64363055c269291afcf7321a23e3e66ade2
+    rerun_2_verdict: Minor issues
+    rerun_2_noncentral_finding: >-
+      the Cycle 7 historical selection had been rewritten with later cochain
+      declarations rather than preserving its original revision-1 route
+    direct_confirmation_head: 76e586118578cb615bc52f09718e9e2ab65277ad
+    direct_confirmation: pass
+    standard_review_integrated_verdict: No major findings
   implementation_PRs:
     revision_2_fixing: "PR 4205 / merge 77e841e0a00e9a57387a11395d440da2bb83a602"
     theorem_cycles: "PRs 4206--4232 / Cycles 1--27 / all merged after exact-head review and CI"
     final_accepted_cycle_head: "PR 4232 head c3436bb6cdc7990e077e542e100aabab825eb7b9 / merge d16895e237a615dc14e672aaf770454da3ee85e4"
+    completion_candidate: "PR 4233 head 76e586118578cb615bc52f09718e9e2ab65277ad / merge 7083db0da217c775cec2bff8b76bca1ebbe5b5c3 / CI 7 of 7"
   blocking_findings: []
   unchecked:
-    - Cycle 28 exact-head standard four-lane PR review
-    - Cycle 28 exact-head CI and merge
-    - same-merge-head final completion packet
-    - fresh independent final math-lean-review mathematics A/B and Lean A/B
+    - final report/Issue synchronization PR review and merge; exact-head CI is 7 of 7
+    - corrected-schema same-merge-head final packet
+    - fresh independent final math-lean-review mathematics A/B and Lean A/B on the synchronized exact head
   next_obligation: >-
-    Commit and open the Cycle 28 completion-candidate PR; run standard review,
-    correct every finding, require CI green, merge, then run the independent
-    final completion review on the merged exact head.
+    Merge the report/Issue synchronization after standard review, post
+    the corrected-schema packet on that exact merge head, and run the fresh
+    independent final completion review.
 ```
