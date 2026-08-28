@@ -1764,17 +1764,18 @@ result:
     - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_apply
     - indexedDiagnosticCompositionInReselectionOrbit_mate_compositor_iff
   claim_mapping:
-    theorem_names:
+    definitions:
       - indexedDiagnosticCompositionEndpointCompositorEquivalence
       - indexedDiagnosticCompositionMateEndpointCompositorEquivalence
-      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_eq_g111
-      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
       - indexedDiagnosticCompositionReselectionCompositorEquivalence
       - indexedDiagnosticCompositionMateReselectionCompositorEquivalence
-      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_eq_g111
-      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
       - indexedDiagnosticCompositionDefectCochainCompositorEquivalence
       - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence
+    theorem_names:
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_eq_g111
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_eq_g111
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
       - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_eq_g111
       - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_apply
       - indexedDiagnosticCompositionInReselectionOrbit_mate_compositor_iff
