@@ -254,6 +254,7 @@ ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses	ResearchLean/AG/DoctrineFib
 ResearchLean.AG.DiagnosticConservativity.TransportAlignment	ResearchLean/AG/DiagnosticConservativity/TransportAlignment.lean
 ResearchLean.AG.DiagnosticConservativity.AmbidextrousLift	ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean
 ResearchLean.AG.DiagnosticConservativity.TransportAdjunction	ResearchLean/AG/DiagnosticConservativity/TransportAdjunction.lean
+ResearchLean.AG.DiagnosticConservativity.TransportEquivalence	ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
 ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
 ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
 ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean

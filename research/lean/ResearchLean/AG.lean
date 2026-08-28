@@ -17,6 +17,7 @@ import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
 import ResearchLean.AG.DiagnosticConservativity.AmbidextrousLift
 import ResearchLean.AG.DiagnosticConservativity.TransportAdjunction
+import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective

@@ -422,3 +422,140 @@ audits:
     explicit vertexwise equivalence, then derive Full, Faithful, and
     EssentiallySurjective without caller-supplied categorical instances.
 ```
+
+### Cycle 4 — explicit vertexwise equivalence and categorical producers
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 4
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 77b0ede34e82fb39e362254484a4487142485672
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycles 1--3 discharged / explicit equivalence next"
+  proof_dag_predecessors:
+    - semanticGlobalTransportReindexAdjunction
+    - semanticGlobalTransportReindexUnit_app_isIso
+    - semanticGlobalTransportReindexCounit_app_isIso
+    - indexedDiagnosticTransportUnitIso
+    - indexedDiagnosticTransportCounitIso
+    - Adjunction.toEquivalence
+  proof_obligation: >-
+    Package the arbitrary-base and indexed-vertex adjunctions with their
+    generated invertible unit and counit as explicit equivalences.  Fix named
+    IsEquivalence, Full, Faithful, and EssentiallySurjective producers, plus
+    an arbitrary-hom preimage theorem, equality reflection theorem, and the
+    explicit target-object iso supplied by the generated counit.
+  selection_reason: >-
+    This is exactly the remaining K0/K1 part of target conjunct (a).  Cycle 3
+    generated all inputs internally, so the explicit equivalence and its
+    categorical consequences can now be derived without accepting any of
+    them as premises.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
+  risks:
+    - deriving only typeclass instances without the required named producers
+    - losing definitional alignment with the F0 indexed push/reindex functors
+    - claiming essential surjectivity without an explicit arbitrary-target iso
+    - accepting IsEquivalence, Full, Faithful, or EssSurj from a caller
+  unchecked:
+    - fixed-head standard PR review
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The general Cycle 3 adjunction is upgraded by Adjunction.toEquivalence
+    using its internally proved unit/counit component isomorphisms.  The
+    indexed equivalence has definitionally the exact F0 push and reindex
+    functors.  Named IsEquivalence, Full, Faithful, and EssSurj producers are
+    derived from that explicit equivalence, while separate theorems expose
+    arbitrary-hom preimages, equality reflection, and the counit object iso
+    for every arbitrary target package.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
+  evidence:
+    - semanticGlobalTransportEquivalence
+    - indexedDiagnosticTransportEquivalence
+    - indexedDiagnosticTransportPush_isEquivalence
+    - indexedDiagnosticTransportPush_full
+    - indexedDiagnosticTransportPush_faithful
+    - indexedDiagnosticTransportPush_essentiallySurjective
+    - indexedDiagnosticTransportObjectIso
+    - indexedDiagnosticTransportHom_preimage
+    - indexedDiagnosticTransportHom_eq_of_map_eq
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticTransportEquivalence
+      - indexedDiagnosticTransportPush_isEquivalence
+      - indexedDiagnosticTransportPush_full
+      - indexedDiagnosticTransportPush_faithful
+      - indexedDiagnosticTransportPush_essentiallySurjective
+      - indexedDiagnosticTransportObjectIso
+      - indexedDiagnosticTransportHom_preimage
+      - indexedDiagnosticTransportHom_eq_of_map_eq
+    source_labels:
+      - "target theorem (a): vertexwise transport equivalence"
+      - "K0 Full/Faithful producers"
+      - "K1 EssentiallySurjective and explicit equivalence producers"
+    conjuncts:
+      - "explicit equivalence -> indexedDiagnosticTransportEquivalence"
+      - "IsEquivalence/Full/Faithful/EssSurj -> named indexed push theorems"
+      - "Full proof-use -> indexedDiagnosticTransportHom_preimage"
+      - "Faithful proof-use -> indexedDiagnosticTransportHom_eq_of_map_eq"
+      - "arbitrary-target object iso -> indexedDiagnosticTransportObjectIso"
+    undischarged_assumptions:
+      - endpoint / reselection inverse maps
+      - coherence / vanishing inverse direction
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (a) only.  It does not claim the
+      endpoint, reselection, coherence, obstruction, cochain, orbit,
+      decomposition, or finite-witness conjuncts.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K0 arbitrary-hom Full and Faithful producers"
+      - "K1 explicit equivalence, IsEquivalence, EssSurj, and object iso producers"
+    remaining:
+      - "K2--K4 exactness, coherence, decomposition, and witness obligations"
+  certificate_provenance:
+    discharged:
+      - "equivalence / Adjunction.toEquivalence on Cycle 3 generated data"
+      - "Full/Faithful/EssSurj / explicit equivalence functor instance"
+      - "object iso / generated indexed counit natural isomorphism component"
+    unresolved:
+      - "diagnostic endpoint, reselection, cochain, orbit, and coherence equivalences"
+  proof_use:
+    used:
+      - semanticGlobalTransportReindexAdjunction
+      - semanticGlobalTransportReindexUnit_app_isIso
+      - semanticGlobalTransportReindexCounit_app_isIso
+      - Adjunction.toEquivalence
+      - indexedDiagnosticTransportCounitIso
+      - Functor.Full.map_surjective
+      - Functor.Faithful.map_injective
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 14 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Construct the diagnostic endpoint equivalence with forward-map agreement
+    to the revision-1 endpoint action, then derive injectivity and surjectivity.
+```
