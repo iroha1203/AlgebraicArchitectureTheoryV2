@@ -32,6 +32,7 @@ import ResearchLean.AG.DiagnosticConservativity.CompositionPropositionCompatibil
 import ResearchLean.AG.DiagnosticConservativity.TrianglePentagonCompatibility
 import ResearchLean.AG.DiagnosticConservativity.WholeRouteCompatibility
 import ResearchLean.AG.DiagnosticConservativity.WholeUnitCompatibility
+import ResearchLean.AG.DiagnosticConservativity.WholePentagonCompatibility
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
