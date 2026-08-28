@@ -92,15 +92,42 @@ theorem diagnosticClassTermCandidates_head :
       some .vertexwiseSourceMapInjective :=
   rfl
 
+/-- The second registered class term is the conjunction of both structural atoms. -/
+theorem diagnosticClassTermCandidates_second :
+    diagnosticClassTermCandidates.tail.head? =
+      some (.conjunction .vertexwiseSourceMapInjective
+        .edgewiseSquarePullback) :=
+  rfl
+
+/-- The third registered class term is edge-square pullback alone. -/
+theorem diagnosticClassTermCandidates_third :
+    diagnosticClassTermCandidates.tail.tail.head? =
+      some .edgewiseSquarePullback :=
+  rfl
+
 /-- The fixed O20 term, independent of every class-candidate transition. -/
 def pointwiseReflectionTerm : DiagnosticClassTerm :=
   .vertexwiseSourceMapInjective
+
+/-- O20 consumes the injectivity term by value, independently of the candidate list. -/
+theorem pointwiseReflectionTerm_eq :
+    pointwiseReflectionTerm = .vertexwiseSourceMapInjective :=
+  rfl
 
 /-- The sole G-113(i) candidate, stated without `Full` or `Faithful` in its definition. -/
 def VertexwiseSourceMapBijective
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E) : Prop :=
   ∀ vertex : G.Vertex, Function.Bijective (hom.app vertex).doctrineHom.sourceMap
+
+/-- The bijectivity candidate exposes exactly its vertexwise `sourceMap` meaning. -/
+theorem vertexwiseSourceMapBijective_iff
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E) :
+    VertexwiseSourceMapBijective hom ↔
+      ∀ vertex : G.Vertex,
+        Function.Bijective (hom.app vertex).doctrineHom.sourceMap :=
+  Iff.rfl
 
 /-- Membership in the generated class is evaluation of one pre-registered term. -/
 def GeneratedDiagnosticClass
@@ -109,16 +136,20 @@ def GeneratedDiagnosticClass
     (hom : IndexedBaseDiagramHom D E) : Prop :=
   term.eval hom
 
+/-- Generated class membership is exactly evaluation of the selected structural term. -/
+theorem generatedDiagnosticClass_iff
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (term : DiagnosticClassTerm)
+    (hom : IndexedBaseDiagramHom D E) :
+    GeneratedDiagnosticClass term hom ↔ term.eval hom :=
+  Iff.rfl
+
 /-! ## Diagram-isomorphism witness head -/
 
-/-- A diagram isomorphism presented by natural diagram homs and both inverse laws. -/
-structure IndexedBaseDiagramIso
+/-- The existing category isomorphism between two G-111 indexed base diagrams. -/
+abbrev IndexedBaseDiagramIso
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
-    (D E : IndexedBaseDiagram G U) where
-  hom : IndexedBaseDiagramHom D E
-  inv : IndexedBaseDiagramHom E D
-  hom_inv : hom.comp inv = IndexedBaseDiagramHom.id D
-  inv_hom : inv.comp hom = IndexedBaseDiagramHom.id E
+    (D E : IndexedBaseDiagram G U) := D ≅ E
 
 /--
 Isomorphisms of the source and target diagrams together with the forward and
