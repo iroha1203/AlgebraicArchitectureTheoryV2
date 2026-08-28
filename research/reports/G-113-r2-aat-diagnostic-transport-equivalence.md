@@ -2528,3 +2528,139 @@ audits:
     semantic-global/core-fiber layer to downstream layers (b)--(g), with the
     actual route maps and their premises visible in theorem bodies.
 ```
+
+### Cycle 20 — downstream whole-pentagon endpoint and reselection actions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 20
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: d2255eabaef7fcff704e0eb55adc8c0d181ef335
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 19 whole pentagon mate equations accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+    - coreFiberPentagonRouteIso_eq
+    - packageFiberAutMulEquivOfCoreFiberIso
+  proof_obligation: >-
+    Propagate the accepted left/right whole pentagon mate equations to endpoint
+    automorphisms and every indexed edge-reselection coordinate.  Construct the
+    G-111 and inverse-mate G-112 actions independently, identify each pair, and
+    prove equality of the two downstream pentagon routes.
+  selection_reason: >-
+    Endpoint actions are the first non-functorial diagnostic output, and edge
+    reselections are their dependent product over all coordinates.  Closing
+    these layers first exposes the exact whole-route action needed for later
+    cochain, orbit, coherence, and obstruction propagation.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean
+  risks:
+    - replacing the whole pentagon by one binary compositor
+    - defining the G-112-mate action as an alias of the G-111 action
+    - dropping the right-route associativity casts
+    - comparing only a selected reselection coordinate
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Four endpoint equivalences independently apply the left/right whole G-111
+    routes and the inverse mates of the left/right whole G-112 routes.  Both
+    mate actions are proved equal to their G-111 counterparts, and the G-111
+    whole pentagon gives equality of the two endpoint paths.  Four dependent
+    product equivalences apply the same actions at every reselection coordinate;
+    their two mate/G-111 identifications and left/right equality follow
+    pointwise from the endpoint theorems.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean
+  evidence:
+    - indexedDiagnosticPentagonG111LeftEndpointEquivalence
+    - indexedDiagnosticPentagonG111RightEndpointEquivalence
+    - indexedDiagnosticPentagonMateLeftEndpointEquivalence
+    - indexedDiagnosticPentagonMateRightEndpointEquivalence
+    - indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
+    - indexedDiagnosticPentagonG111EndpointEquivalence_eq
+    - indexedDiagnosticPentagonMateEndpointEquivalence_eq
+    - indexedDiagnosticPentagonG111LeftReselectionEquivalence
+    - indexedDiagnosticPentagonG111RightReselectionEquivalence
+    - indexedDiagnosticPentagonMateLeftReselectionEquivalence
+    - indexedDiagnosticPentagonMateRightReselectionEquivalence
+    - indexedDiagnosticPentagonMateLeftReselectionEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateRightReselectionEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateReselectionEquivalence_eq
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateEndpointEquivalence_eq
+      - indexedDiagnosticPentagonMateLeftReselectionEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateRightReselectionEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateReselectionEquivalence_eq
+    source_labels:
+      - "target theorem (h): whole pentagon compatibility at endpoint layer (b)"
+      - "target theorem (h): whole pentagon compatibility at reselection layer (c)"
+      - "Cycle 19 indexed whole-route mate equations"
+    conjuncts:
+      - "G-112 left/right whole-route inverse mates -> exact G-111 endpoint actions"
+      - "G-112 left/right whole-route inverse mates -> exact G-111 reselection actions"
+      - "whole pentagon -> equality of both downstream paths"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole unit/triangle downstream propagation beyond the existing binary identity layer"
+      - "whole pentagon propagation to coherence, obstruction, cochain, and orbit layers (d)--(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes the actual three-arrow whole-pentagon action on
+      endpoint automorphisms and all reselection coordinates.  It does not
+      claim proposition, cochain/orbit, square/pasting, or conjunct (i)
+      completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole pentagon endpoint action compatibility"
+      - "K4 whole pentagon reselection action compatibility"
+    remaining:
+      - "K4 triangle and pentagon propagation through remaining downstream layers"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "G-111 actions / actual whole left/right route components"
+      - "G-112 actions / inverse mates of actual whole left/right routes"
+      - "cross-system equality / Cycle 19 indexed whole-route conjugacy"
+      - "left/right equality / reviewed G-111 whole pentagon"
+    unresolved:
+      - "coherence, obstruction, cochain, and orbit whole-route action"
+      - "square/pasting routes and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+      - coreFiberPentagonRouteIso_eq
+      - packageFiberAutMulEquivOfCoreFiberIso
+      - MulEquiv.piCongrRight
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for endpoint and all-coordinate reselection whole pentagon actions"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.WholePentagonCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 15 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Apply the accepted whole-pentagon endpoint action to all raw-defect cochain
+    coordinates and arbitrary orbit targets, then transport coherence and
+    obstruction propositions through the same explicit left/right routes.
+```
