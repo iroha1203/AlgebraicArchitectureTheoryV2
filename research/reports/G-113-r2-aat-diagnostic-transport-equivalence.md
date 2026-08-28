@@ -883,10 +883,13 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "K3 coherence forward and reverse directions"
-      - "K3 arbitrary-target coherence through generated inverse"
+      - "K2 coherence forward and reverse directions"
+      - "K2 arbitrary-target coherence through generated inverse"
     remaining:
-      - "K3 obstruction and K4 cochain, orbit, decomposition, and witness obligations"
+      - "K2 obstruction vanishing iff"
+      - "K3 raw-defect cochain equivalence and orbit membership iff"
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
   certificate_provenance:
     discharged:
       - "forward coherence / G-111 indexedCoherentAt_transport"
@@ -915,4 +918,122 @@ audits:
     Prove obstruction vanishing iff for every indexed hom and retain
     DiagnosticConservative and no-counterexample as named all-hom corollaries
     without class conditions.
+```
+
+### Cycle 8 — diagnostic obstruction exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 8
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 29e33abf17fc3014022a0a369f584929ceda625c
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjuncts (a)--(d) discharged / obstruction exactness next"
+  proof_dag_predecessors:
+    - transportObstructionVanishes_iff_coherentizable
+    - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
+    - IndexedBaseDiagramHom.indexedCoherentAt_transport_iff
+    - IndexedBaseDiagramHom.indexedCoherentAt_inverseTransport_iff
+    - diagnosticConservative_all
+    - no_diagnosticConservativityCounterexample
+  proof_obligation: >-
+    Prove obstruction vanishing iff for every indexed diagram hom by consuming
+    the Cycle 7 coherence equivalences and Cycle 6 inverse reselection.  Retain
+    the reviewed all-hom DiagnosticConservative and no-counterexample named
+    declarations without class conditions.
+  selection_reason: >-
+    This is target conjunct (e).  Opening vanishing as coherentizability makes
+    the proof consume the newly established coherence exactness rather than
+    merely restating the older one-way preservation and reflection theorems.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
+  risks:
+    - proving only one vanishing direction
+    - using a caller-supplied coherent reselection or inverse preimage
+    - failing to consume Cycle 7 coherence exactness
+    - adding a diagnostic class condition
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Source and transported obstruction vanishing are now equivalent for every
+    indexed hom and generated source interpretation.  Both sides are reduced
+    to coherentizability; the source-to-target witness uses Cycle 7 mapped
+    coherence, while the target-to-source witness uses Cycle 6 inverse
+    reselection through Cycle 7 arbitrary-target coherence.  The reviewed
+    revision-1 all-hom DiagnosticConservative and no-counterexample declarations
+    remain imported with no class condition.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
+  evidence:
+    - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_iff
+    - diagnosticConservative_all
+    - no_diagnosticConservativityCounterexample
+  claim_mapping:
+    theorem_names:
+      - indexedTransportObstructionVanishes_iff
+      - diagnosticConservative_all
+      - no_diagnosticConservativityCounterexample
+    source_labels:
+      - "target theorem (e): obstruction exactness"
+      - "reviewed revision-1 all-hom conservativity corollaries"
+      - "Cycles 6--7 inverse reselection and coherence exactness"
+    conjuncts:
+      - "vanishing iff -> indexedTransportObstructionVanishes_iff"
+      - "all-hom reflection -> diagnosticConservative_all"
+      - "no target-vanishing/source-nonvanishing pair -> no_diagnosticConservativityCounterexample"
+    undischarged_assumptions:
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (e) only.  It does not claim
+      cochain, orbit, decomposition, or finite-witness exactness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K2 obstruction vanishing forward and reverse directions"
+      - "K2 all-hom DiagnosticConservative and no-counterexample corollaries"
+    remaining:
+      - "K3 raw-defect cochain equivalence and orbit membership iff"
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "vanishing witnesses / coherentizability equivalence"
+      - "forward witness / Cycle 7 mapped coherence iff"
+      - "reverse witness / Cycle 6 inverse through Cycle 7 arbitrary-target iff"
+    unresolved:
+      - "cochain, orbit, decomposition, and finite-witness exactness"
+  proof_use:
+    used:
+      - transportObstructionVanishes_iff_coherentizable
+      - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
+      - IndexedBaseDiagramHom.indexedCoherentAt_transport_iff
+      - IndexedBaseDiagramHom.indexedCoherentAt_inverseTransport_iff
+      - IndexedBaseDiagramHom.inverseTransportedReselection
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 1 declaration clean"
+  blocking_findings: []
+  next_obligation: >-
+    Construct raw-defect cochain transport as an explicit equivalence with
+    forward and inverse commutation, then derive equality and inequality
+    reflection for arbitrary cochain values.
 ```

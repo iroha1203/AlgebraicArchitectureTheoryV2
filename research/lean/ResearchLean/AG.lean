@@ -21,6 +21,7 @@ import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 import ResearchLean.AG.DiagnosticConservativity.EndpointExactness
 import ResearchLean.AG.DiagnosticConservativity.ReselectionExactness
 import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
+import ResearchLean.AG.DiagnosticConservativity.ObstructionExactness
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
