@@ -1037,3 +1037,138 @@ audits:
     forward and inverse commutation, then derive equality and inequality
     reflection for arbitrary cochain values.
 ```
+
+### Cycle 9 — raw-defect cochain exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 9
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: a803b8fb9acb58a0bc27c769e6901f1b2c8de68e
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjuncts (a)--(e) discharged / raw-defect cochain exactness next"
+  proof_dag_predecessors:
+    - IndexedBaseDiagramHom.indexedDiagnosticEndpointEquivalence
+    - IndexedBaseDiagramHom.indexedDiagnosticReselectionEquivalence
+    - IndexedBaseDiagramHom.inverseTransportedReselection
+    - IndexedBaseDiagramHom.indexedCoherentAt_transport
+    - canonicalTwoCellComparator_fac
+    - rawDefectCochain
+  proof_obligation: >-
+    Construct raw-defect cochain transport as an explicit equivalence, prove
+    that its forward and inverse maps commute with rawDefectCochain under the
+    generated forward and inverse reselections, and reflect equality and
+    inequality of arbitrary cochains in both directions.
+  selection_reason: >-
+    This is target conjunct (f) and the first K3 obligation.  It is also the
+    exact input needed to transport full reselection-orbit membership in the
+    next cycle; vanishing iff alone does not provide this cochain-level data.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean
+  risks:
+    - using the endpoint equivalence only on vanishing values
+    - proving only forward raw-defect commutation
+    - assuming canonical-comparator naturality instead of deriving it
+    - reflecting inequality only against one distinguished cochain
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The Cycle 5 endpoint equivalences now assemble pointwise into an explicit
+    multiplicative equivalence between the complete source and transported
+    defect-cochain types.  Canonical-comparator naturality is derived from the
+    existing generated coherence transport and the strongly cocartesian
+    uniqueness property.  This proves forward rawDefectCochain commutation;
+    applying the equivalence inverse together with the Cycle 6 reselection
+    round trip proves inverse commutation.  Injectivity of both orientations
+    then reflects and preserves equality and inequality for arbitrary source
+    and target cochains.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean
+  evidence:
+    - IndexedBaseDiagramHom.endpointAction_canonicalTwoCellComparator
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply
+    - IndexedBaseDiagramHom.indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply_ne_iff
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_apply_eq_iff
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_apply_ne_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
+      - indexedDiagnosticDefectCochainEquivalence_apply_ne_iff
+      - indexedDiagnosticDefectCochainEquivalence_symm_apply_eq_iff
+      - indexedDiagnosticDefectCochainEquivalence_symm_apply_ne_iff
+    source_labels:
+      - "target theorem (f): raw-defect cochain exactness"
+      - "Cycle 5 endpoint equivalence"
+      - "Cycle 6 forward/inverse reselection round trips"
+    conjuncts:
+      - "explicit cochain equivalence -> indexedDiagnosticDefectCochainEquivalence"
+      - "forward commutation -> indexedDiagnosticDefectCochainEquivalence_rawDefectCochain"
+      - "inverse commutation -> indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain"
+      - "arbitrary equality/inequality reflection -> four apply/symm iff theorems"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (f) only.  It does not identify one
+      distinguished raw cochain with an entire reselection orbit and does not
+      claim target conjunct (g).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K3 explicit raw-defect cochain equivalence"
+      - "K3 forward and inverse rawDefectCochain commutation"
+      - "K3 arbitrary cochain equality and inequality reflection in both orientations"
+    remaining:
+      - "K3 orbit membership iff"
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "cochain equivalence / dependent product of Cycle 5 endpoint equivalences"
+      - "canonical comparator image / canonical coherence plus G-111 generated coherence transport"
+      - "inverse raw cochain / Cycle 6 inverse reselection and equivalence round trips"
+    unresolved:
+      - "orbit, transport-coherence, decomposition, and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticEndpointEquivalence
+      - indexedCoherentAt_transport
+      - canonicalTwoCellComparator_fac
+      - endpointAction_canonicalTwoCellComparator
+      - indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
+      - transportedReselection_inverseTransportedReselection
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 16 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Prove source/target InReselectionOrbit membership iff by transporting the
+    entire existential orbit witness through the Cycle 6 reselection and Cycle
+    9 cochain equivalences.
+```
