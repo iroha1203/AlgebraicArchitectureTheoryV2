@@ -27,9 +27,11 @@
   `da95789a5dbaca926554d461f89cc2c7273ac934`、および
   `diagnosticConservative_all` / `no_diagnosticConservativityCounterexample`
   は revision 1 の `target-refuted` 証拠として保存する。revision 2 は
-  revision 1 の穴埋めではなく、情報損失を分類する読みを、G-111 と G-112
-  の ambidextrous transport が与える診断同値性の定理へ置き換えた新しい
-  固定 target である。completion は revision 2 を最初から再監査し、
+  revision 1 の穴埋めではなく、obstruction が非零から零へ消える枝の反証と
+  G-110 の package-projection 固有 ambidextrous theorem を新しい出発点として、
+  G-111 / G-112 の診断同値性を問う固定 target である。revision 1 単独から
+  injectivity、Full / Faithful、cochain / orbit equivalence が従うとは数えない。
+  completion は revision 2 を最初から再監査し、
   revision 1 の class syntax、candidate head、normalization artifact、
   finite fixture を revision 2 の義務放電として数えない。
 - `predecessor`: G-111(完遂済み。PR #4181 exact head
@@ -41,7 +43,11 @@
   `e9f891b8b0d763c6c29cb2d8b6e723b43a6bb9bb`。
   `strongCartesianLiftOfTarget`、semantic-global cleavage / reindexing
   functor と coherence)、G-113 revision 1 の reviewed reflection package、
-  G-110 の realized-arrow unit / counit iso、G-106 の raw defect /
+  G-110 の arbitrary-target
+  `strongCartesianLiftOfTarget_isStronglyCocartesian` と realized-arrow unit /
+  counit iso(PR #4153 exact head
+  `a1471483aca30c3d9d6e942deb38688401a8fed0`、merge
+  `315a2537cea51e1f8ea131351f4de9ef22b21145`)、G-106 の raw defect /
   reselection orbit 語彙、G-109 の core pseudofunctor API。
 - `tracking issue`: [#4204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204)
   (revision 2 の runtime state、cycle 履歴、fixed head、次 proof obligation の
@@ -143,12 +149,16 @@
      hom 演算を捏造せず、その square-level commuting theorem を固定する。
   9. **(i) categorical decomposition and nondegeneracy (O16・O18)**:
      `Full` / `Faithful` / `EssentiallySurjective` の各 producer が入力 data
-     から生成される proof-use route を固定し、base component の `IsIso` と
-     fiber transport equivalence の関係を決定する。さらに、非恒等かつ
-     `¬ IsIso` の有限 base component を持ちながら fiber transport / diagnostic
-     equivalence が発火し、非恒等 defect と非恒等 reselection が往復で失われ
-     ない有限 witness を構成する。これは revision 1 の不可能な「診断を消す
-     class 外 witness」に代わる、同値性の非退化性 witness である。
+     から生成される proof-use route を固定する。base `IsIso` との関係は次の
+     二定理で固定する。(i1) 任意の indexed hom / vertex で base component の
+     `IsIso` を仮定せず fiber transport equivalence が成立し、従って
+     `IsIso` base から同じ equivalence を得る named corollary を持つ。
+     (i2) converse「fiber transport equivalence なら base component は
+     `IsIso`」を、非恒等かつ `¬ IsIso` の有限 base component 上で fiber /
+     diagnostic equivalence が発火する named witness theorem により反証する。
+     同じ witness 上で非恒等 defect と非恒等 reselection が往復で失われない
+     ことも証明する。これは revision 1 の不可能な「診断を消す class 外
+     witness」に代わる、同値性の非退化性 witness である。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DiagnosticConservativity/` 配下の revision 2
   新 module。G-111、G-112、G-113 revision 1 の reviewed modules は参照のみ。
@@ -164,6 +174,9 @@
   - endpoint / reselection / raw-defect cochain equivalence、coherence iff、
     vanishing iff、orbit membership iff の Lean declarations。
   - identity / composition / path-square / horizontal-pasting coherence package。
+  - 全 indexed hom / vertex 上の base-`IsIso` 非依存 equivalence theorem、
+    `IsIso` base からの named corollary、fiber equivalence が base `IsIso` を
+    反射しないことを示す finite named counterexample theorem。
   - 非恒等 `¬ IsIso` base component、非恒等 defect、非恒等 reselection を持つ
     finite nondegenerate witness と、その全 conjunct の producer theorem。
   - revision 2 report
@@ -172,10 +185,12 @@
 - `target proof strategy`: F0 = G-111 / G-112 の type・universe・variance を
   突合し、push / reindex alignment の exact Lean statement を固定する。K0 =
   revision 1 の endomorphism reflection を arbitrary fiber hom へ一般化し、
-  Full / Faithful producer を構成する。K1 = G-112 の arbitrary-target
-  ambidextrous lift と G-110 の realized-arrow unit / counit 前例を使い、一般
-  indexed domain の essential surjectivity、unit / counit、equivalence を構成
-  する。K2 = endpoint / reselection equivalence、coherence iff、vanishing iff。
+  Full / Faithful producer を構成する。K1 = G-112 の arbitrary-target strongly
+  cartesian lift と、G-110
+  `strongCartesianLiftOfTarget_isStronglyCocartesian` を実消費し、realized-arrow
+  unit / counit は構成前例に限定して、一般 indexed domain の essential
+  surjectivity、unit / counit、equivalence を構成する。K2 = endpoint /
+  reselection equivalence、coherence iff、vanishing iff。
   K3 = raw-defect cochain equivalence と orbit membership iff。K4 = identity /
   composition / square / pasting coherence と finite nondegenerate witness。
   G-110 の realized-arrow theorem は構成前例であり、一般 indexed conclusion
@@ -212,6 +227,13 @@
     PR #4203 exact head / merge(上記)。支える結論 = 全 hom の vanishing 反射と
     endpoint surjectivity。結論相当でない理由 = explicit fiber / reselection /
     cochain equivalence と orbit membership iff を主張しない。
+  - `G-110 arbitrary-target lift cocartesianness`: `discharge-required`。固定錨 =
+    PR #4153 exact head / merge(上記)の
+    `strongCartesianLiftOfTarget_isStronglyCocartesian`。支える結論 = (a)(i) の
+    counit / essential surjectivity。discharge artifact = reviewed predecessor
+    theorem を一般 indexed hom の selected lift に適用する named bridge。
+    proof-use = G-112 の cartesian lift と同じ射について cocartesian uniqueness
+    を実消費する。realized-arrow unit / counit の一般域への外挿は不可。
   - `push / reindex type and variance alignment`: `discharge-required`。支える
     結論 = (a)。artifact = 同じ hom / target data から両 functor を組む typed
     comparison と外延一致 theorem。provenance = G-111 / G-112 producer data。
@@ -219,8 +241,9 @@
     artifact = arbitrary fiber hom に対する preimage / equality reflection theorem。
     proof-use = unit / counit または lift uniqueness を実消費する。
   - `EssentiallySurjective producer`: `discharge-required`。支える結論 = (a)(i)。
-    artifact = arbitrary target object からの strongly cartesian lift と object iso。
-    proof-use = G-112 の arbitrary-target theorem を実消費する。
+    artifact = arbitrary target object からの strongly cartesian lift、同じ lift の
+    G-110 cocartesianness bridge、object iso。proof-use = G-112 の arbitrary-target
+    theorem と上記 G-110 reviewed theorem の双方を実消費する。
   - `unit / counit and triangle identities`: `discharge-required`。支える結論 =
     (a)。artifact = natural isomorphisms と左右 triangle。caller-supplied iso 不可。
   - `endpoint and reselection inverse maps`: `discharge-required`。支える結論 =
@@ -240,6 +263,11 @@
   - `finite witness firing`: `discharge-required`。支える結論 = (i)。artifact =
     raw fixture から `¬ IsIso`、非恒等 defect / reselection、往復保存を別々に
     証明する named theorems。
+  - `base IsIso relation`: `discharge-required`。支える結論 = (i1)(i2)。
+    artifact = 全 hom / vertex の base-`IsIso` 非依存 equivalence theorem、
+    `IsIso` base corollary、同一 finite witness による converse 反証 theorem。
+    proof-use = universal equivalence producer と finite witness firing を実消費し、
+    relation の caller-supplied decision を受け取らない。
   - `revision 1 class syntax / candidate head`: `not-applicable`。歴史 artifact。
     revision 2 の premise、route、completion evidence として使用しない。
 - `target anti-weakening rule`: (a)–(i) の結論相当性質を theorem argument、

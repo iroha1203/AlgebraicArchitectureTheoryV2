@@ -31,9 +31,10 @@ tracking Issue に置き、ここには書かない。
 4. 6枚の設計は §4 で固定する — 6枚共通の定型項目ブロック、各カードの
    責務(担当義務)、target theorem 骨格、錨(実在・実型を突合済みの
    reviewed 宣言)、供給契約、リスク、failure 骨格。**Lean 実査の要点:
-   `DiagnosticConservative` と `ObProblem` 段は Lean に不在であり、
-   G-113 / G-115 の新設建設義務である(`ObProblem` は AG 数学本文にも
-   語が無く、class の Lean 指示対象は起票前の裁定事項)**。
+   `DiagnosticConservative` は G-113 revision 1 で定義・全 hom 証明済み。
+   `ObProblem` 段は Lean に不在であり、G-115 の新設建設義務である
+   (`ObProblem` は AG 数学本文にも語が無く、class の Lean 指示対象は
+   起票前の裁定事項)**。
 5. 整合性監査(§5)で被覆行列(義務の全域・一意な担当割当)、重複防止の
    判定線5本、語彙正本規則、universe 設計規則、改訂伝播 DAG を固定する。
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
@@ -190,18 +191,33 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | gate (v) | G-113 |
 | O16 | 非恒等 `¬ IsIso` base component、非恒等 defect / reselection を持ち、診断同値性が非退化発火する有限 witness | gate (v) | G-113 |
 | O17 | 診断輸送 equivalence の identity・垂直合成・path-square・水平貼り合わせ coherence | gate (v) | G-113 |
-| O18 | `Full` / `Faithful` / `EssentiallySurjective` producer と explicit equivalence、base `IsIso` との関係決定 | gate (v) | G-113 |
+| O18 | `Full` / `Faithful` / `EssentiallySurjective` producer と explicit equivalence。全 hom / vertex で base `IsIso` 非依存、`IsIso` base corollary、finite `¬ IsIso` witness による converse 反証 | gate (v) | G-113 |
 | O19 | Gr4 達成の範囲併記記録(義務台帳との突合+達成階梯対応表込み) | program context | G-116 |
 | O20 | raw-defect cochain transport の explicit equivalence と `rawDefectCochain` commuting、pointwise iff | (D) 移管文 | G-113 |
 
 **台帳注記**:
 
+**G-113 revision 1 義務 disposition(参照用履歴。正本は G-116)**:
+
+| id | revision 1 義務 | disposition |
+|---|---|---|
+| O13-r1 | `DiagnosticConservative` と構造的生成 class・十分性 | G-113 revision 1 全体の `target-refuted` 後、人間承認 revision 2 により superseded。class syntax / normalization は歴史 artifact であり revision 2 completion には数えない |
+| O14-r1 | class 上の target vanishing → source vanishing | `diagnosticConservative_all` により全 hom へ強化済み。revision 2 O14 の iff の一方向として保持 |
+| O15-r1 | source reselection orbit の検出 | revision 1 では未完。人間承認 revision 2 の reselection / membership iff に superseded |
+| O16-r1 | class 外で非零 obstruction が零へ消える witness | `no_diagnosticConservativityCounterexample` により refuted。これが revision 1 の target-level 停止理由 |
+| O17-r1 | 診断 class の恒等・水平・垂直貼り合わせ閉性 | revision 1 では未完。人間承認 revision 2 の equivalence coherence に superseded |
+| O18-r1 | 生成 class と `Full` + `Faithful` 候補の関係決定 | revision 1 では未完。人間承認 revision 2 の一般 categorical decomposition に superseded |
+| O20-r1 | class 相対の pointwise raw-defect reflection 分類 | revision 1 では未完。人間承認 revision 2 の explicit cochain equivalence に superseded |
+
 - G-110 (D) の gate 第五項移管3項は O20(raw-defect cochain
   equivalence)・O15(reselection orbit exactness)・O14(vanishing iff)に
   対応する — 移管義務の消滅なしをここで固定する。
-- n1005 §4.3 (D) の「情報損失の分類」は G-113 revision 1 の反証により
-  「情報損失なし」の定理へ帰趨した。O13 が輸送 equivalence、O16 が
-  非 `IsIso` base 上でもその equivalence が非退化発火する witness を担う。
+- n1005 §4.3 (D) の「情報損失の分類」のうち、obstruction が非零から零へ
+  消える枝は G-113 revision 1 の no-counterexample theorem で反証された。
+  一般の injectivity、Full / Faithful、cochain / orbit equivalence はそこから
+  は従わず、G-110 の package-projection 固有 ambidextrous theorem を追加根拠
+  とする revision 2 の新しい未証明 target である。O13 が輸送 equivalence、
+  O16 が非 `IsIso` base 上での非退化発火を担う。
 - **universe 注記**: O1・O2・O6・O12 の universe 契約は F0 typing
   cycle で Lean の宇宙割当と型突合した上で確定する(O7 は G-110
   reviewed 宣言の universe 契約を継承し、fallback 対象外)。symbolic
@@ -371,12 +387,14 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   corollary、(f) raw-defect cochain equivalence と `rawDefectCochain` commuting、
   (g) `InReselectionOrbit` membership iff、(h) identity・vertical composition・
   path-square・horizontal-pasting coherence、(i) `Full` / `Faithful` /
-  `EssentiallySurjective` producer と base `IsIso` との関係決定、および非恒等
+  `EssentiallySurjective` producer、全 hom / vertex の base-`IsIso` 非依存
+  equivalence と `IsIso` base corollary、および converse を反証する非恒等
   `¬ IsIso` base component・非恒等 defect / reselection を持つ有限非退化
   発火 witness。
 - **錨**: G-111 coherent diagnostic transport と
   `indexedFiberAction`、G-112 `strongCartesianLiftOfTarget` と
-  semantic-global reindexing、G-113 revision 1
+  semantic-global reindexing、G-110
+  `strongCartesianLiftOfTarget_isStronglyCocartesian`、G-113 revision 1
   `diagnosticConservative_all` / endpoint surjectivity、
   `InReselectionOrbit`(`TransportCoherence/FinitePresentation.lean`)、
   `CoreFiberFunctorDefectCochain` 系
@@ -623,12 +641,14 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 1. G-111〜G-115 が担当義務(O1–O11・O13–O18・O20)の帰趨を
    `target-theorem-proved` で確定している(二枝 disjunction 義務は
    どちらの枝でも成功 — G-114 (b) の退化定理も帰趨確定である)。義務は
-   移管でのみ動かし、削除しない(G-110 の移管規律の継続)。
+   移管または人間承認 revision でのみ動かし、旧義務の disposition を
+   履歴台帳から削除しない(G-110 の移管規律の継続)。
 2. G-116 が O12 の存否をどちらかの枝で確定している。
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
-   O6 / O12・G-113 の transport equivalence / base `IsIso` 関係決定・
+   O6 / O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
+   converse 反証・
    G-114 (b) の確定枝と O7 の semantic-global
    正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
