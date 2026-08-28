@@ -2789,3 +2789,128 @@ audits:
     whole-pentagon cochain maps, then transport coherence and obstruction
     witnesses through the same left/right reselection routes.
 ```
+
+### Cycle 22 — arbitrary-target whole-pentagon orbit witness transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 22
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: e042561bfbe297b95bc8e0a2902adfd76f80bb1a
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 21 whole-pentagon cochain actions accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateRightDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
+    - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+    - indexedDiagnosticInReselectionOrbit_iff
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+  proof_obligation: >-
+    Prove that both explicit whole-pentagon cochain comparisons carry direct
+    three-arrow transport to successive transport, then transport the complete
+    existential reselection witness for every cochain at the direct target.
+  selection_reason: >-
+    Cycle 21 fixed equality of the two whole-route cochain maps but deliberately
+    did not infer orbit compatibility from that value equality.  Arbitrary-target
+    witness transport is the remaining witness-sensitive layer needed to close
+    whole-pentagon propagation through conjunct (g).
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean
+  risks:
+    - claiming orbit compatibility from cochain-map equality alone
+    - proving only the image of a selected source cochain
+    - replacing the three-arrow route by one binary compositor
+    - erasing the right-route pentagon comparison
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The left whole-pentagon application theorem consumes the two actual binary
+    compositors, their vertical composite, right whiskering, automorphism-map
+    composition, and natural-isomorphism compatibility to identify direct
+    three-arrow cochain transport with three successive transports.  The right
+    theorem is derived through the proved left/right whole-pentagon equality.
+    Two arbitrary-target iff theorems then pull any direct cochain back through
+    the generated composite equivalence, use the three reviewed orbit iff
+    theorems, and rewrite by the whole-route application equation.  Thus both
+    directions transport an actual reselection witness.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean
+  evidence:
+    - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_apply
+    - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_transport_apply
+    - indexedDiagnosticPentagonInReselectionOrbit_mate_left_iff
+    - indexedDiagnosticPentagonInReselectionOrbit_mate_right_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_apply
+      - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_transport_apply
+      - indexedDiagnosticPentagonInReselectionOrbit_mate_left_iff
+      - indexedDiagnosticPentagonInReselectionOrbit_mate_right_iff
+    source_labels:
+      - "target theorem (h): whole pentagon compatibility at cochain layer (f)"
+      - "target theorem (h): whole pentagon compatibility at orbit layer (g)"
+      - "target theorem (g): arbitrary-target orbit membership iff"
+    conjuncts:
+      - "left/right whole route -> exact application to three successive transports"
+      - "arbitrary direct-target cochain -> left/right orbit membership iff"
+      - "both iff directions -> generated reselection witnesses"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole unit/triangle downstream propagation beyond the existing binary identity layer"
+      - "whole pentagon propagation to coherence and obstruction layers (d)(e)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes witness-sensitive whole-pentagon compatibility for every
+      cochain at the direct target.  It does not claim proposition, square/pasting,
+      or conjunct (i) completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole-pentagon arbitrary-target orbit witness compatibility"
+    remaining:
+      - "K4 triangle and pentagon propagation through coherence/obstruction propositions"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "left application equation / actual binary compositors and right whiskering"
+      - "right application equation / reviewed whole-pentagon cochain equality"
+      - "orbit witnesses / generated inverse composite and three reviewed orbit equivalences"
+    unresolved:
+      - "coherence and obstruction whole-route witnesses"
+      - "square/pasting routes and finite-witness exactness"
+  proof_use:
+    used:
+      - packageFiberAutMulEquivOfCoreFiberIso_trans
+      - coreFiberFunctorPackageAutHom_iso_naturality
+      - coreFiberFunctorPackageAutHom_comp
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+      - indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for whole-pentagon application and arbitrary-target orbit witnesses"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonCochainCompatibility / exit 0 / selected dependency module only"
+    - "lake build ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticNaturalIsoTransport / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 4 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Transport coherence and obstruction propositions through the explicit
+    left/right whole-pentagon reselection and cochain routes.
+```
