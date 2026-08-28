@@ -270,3 +270,155 @@ audits:
     indexedDiagnosticTransportPush ⊣ indexedDiagnosticTransportReindex and
     prove every component is an isomorphism without realized-arrow premises.
 ```
+
+### Cycle 3 — general indexed unit/counit package
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 3
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: d0dc7ae1fe7474b66e65e3f02257e8a7698ffd4f
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycles 1--2 discharged / general unit-counit next"
+  proof_dag_predecessors:
+    - indexedDiagnosticTransportPush
+    - indexedDiagnosticTransportReindex
+    - exact_bottom_semantic_global_selected_lift
+    - exact_bottom_semantic_global_reindex_map_fac
+    - exact_bottom_semantic_global_selected_lift_isStronglyCocartesian
+    - coreFiberLift_isStronglyCocartesian
+    - coreFiberLift_isStronglyCartesian_support
+    - Adjunction.mkOfHomEquiv
+  proof_obligation: >-
+    Generate, for every indexed diagram hom and vertex, the adjunction between
+    the G-111 push and G-112 semantic-global reindexing, expose its unit and
+    counit natural transformations, and prove every unit and counit component
+    invertible without a realized-arrow, finiteness, DecidableEq, or caller-
+    supplied equivalence premise.
+  selection_reason: >-
+    Cycle 2 supplies the missing cocartesianness of the general selected lift.
+    The universal properties can now generate both transpose directions and
+    hence the adjunction; cartesian and cocartesian cancellation then prove
+    componentwise invertibility.  This is the next fixed K1 obligation before
+    packaging the vertexwise equivalence and deriving Full, Faithful, and
+    EssentiallySurjective.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/TransportAdjunction.lean
+  risks:
+    - importing the realized-arrow adjunction as if it applied to arbitrary homs
+    - accepting unit, counit, adjunction, or component isomorphisms from a caller
+    - using the wrong selected lift or a different base arrow than the F0 spine
+    - proving only objectwise arrows without naturality or generated triangles
+  unchecked:
+    - fixed-head standard PR review
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    For every semantic base arrow, the two transpose maps are now generated
+    directly from the canonical cocartesian lift and G-112 selected cartesian
+    lift, proved mutually inverse and natural, and packaged by
+    Adjunction.mkOfHomEquiv.  The resulting unit and counit satisfy both
+    generated triangle identities.  Every component is proved invertible;
+    the counit proof materially consumes the Cycle 2 selected-lift
+    cocartesianness bridge.  Thin indexed declarations specialize the entire
+    package to the exact F0 push and reindex functors at each vertex.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/TransportAdjunction.lean
+  evidence:
+    - semanticGlobalTransportReindexAdjunction
+    - semanticGlobalTransportReindexUnit
+    - semanticGlobalTransportReindexCounit
+    - semanticGlobalTransportReindex_left_triangle
+    - semanticGlobalTransportReindex_right_triangle
+    - semanticGlobalTransportReindexUnit_app_isIso
+    - semanticGlobalTransportReindexCounit_app_isIso
+    - semanticGlobalTransportReindexUnitIso
+    - semanticGlobalTransportReindexCounitIso
+    - indexedDiagnosticTransportAdjunction
+    - indexedDiagnosticTransportUnit
+    - indexedDiagnosticTransportCounit
+    - indexedDiagnosticTransportUnit_app_isIso
+    - indexedDiagnosticTransportCounit_app_isIso
+    - indexedDiagnosticTransportUnitIso
+    - indexedDiagnosticTransportCounitIso
+  claim_mapping:
+    theorem_names:
+      - semanticGlobalTransportReindexAdjunction
+      - semanticGlobalTransportReindexUnit_app_isIso
+      - semanticGlobalTransportReindexCounit_app_isIso
+      - indexedDiagnosticTransportAdjunction
+      - indexedDiagnosticTransportUnitIso
+      - indexedDiagnosticTransportCounitIso
+    source_labels:
+      - "target theorem (a)(i): generated unit/counit natural isomorphisms"
+      - "material premise: Cycle 2 general selected-lift cocartesianness"
+      - "F0 indexed push/reindex spine"
+    conjuncts:
+      - "general adjunction and triangles -> semanticGlobalTransportReindexAdjunction"
+      - "general component isomorphisms -> semanticGlobalTransportReindexUnit_app_isIso / semanticGlobalTransportReindexCounit_app_isIso"
+      - "indexed unit/counit natural isomorphisms -> indexedDiagnosticTransportUnitIso / indexedDiagnosticTransportCounitIso"
+    undischarged_assumptions:
+      - Full and Faithful producers
+      - EssentiallySurjective producer and explicit vertexwise equivalence
+      - endpoint / reselection inverse maps
+      - coherence / vanishing inverse direction
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle constructs the caller-free general adjunction, triangles, and
+      invertible unit/counit, with indexed specializations.  It does not yet
+      package the explicit vertexwise equivalence or derive Full, Faithful,
+      and EssentiallySurjective.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "general unit/counit natural transformations and triangle identities"
+      - "all general and indexed unit/counit component IsIso obligations"
+    remaining:
+      - "K0 Full/Faithful and remaining K1 equivalence/EssentiallySurjective producers"
+      - "K2--K4 exactness, coherence, decomposition, and witness obligations"
+  certificate_provenance:
+    discharged:
+      - "adjunction / generated by universal-property hom equivalence"
+      - "unit and counit / generated by the adjunction"
+      - "unit IsIso / cartesian cancellation"
+      - "counit IsIso / cocartesian cancellation using the Cycle 2 bridge"
+    unresolved:
+      - "explicit vertexwise equivalence and downstream categorical instances"
+  proof_use:
+    used:
+      - coreFiberLift_isStronglyCocartesian
+      - coreFiberLift_isStronglyCartesian_support
+      - exact_bottom_semantic_global_selected_lift
+      - exact_bottom_semantic_global_reindex_map_fac
+      - exact_bottom_semantic_global_selected_lift_isStronglyCocartesian
+      - CategoryTheory.Functor.IsStronglyCartesian.map
+      - CategoryTheory.Functor.IsStronglyCocartesian.map
+      - Adjunction.mkOfHomEquiv
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/TransportAdjunction.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 34 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Package the generated adjunction with invertible unit and counit as the
+    explicit vertexwise equivalence, then derive Full, Faithful, and
+    EssentiallySurjective without caller-supplied categorical instances.
+```
