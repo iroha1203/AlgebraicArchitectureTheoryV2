@@ -3838,3 +3838,345 @@ audits:
     Run focused validation and standard PR review. If accepted, assemble the
     exact-head G-113 completion packet and run final math-lean-review.
 ```
+
+### Cycle 28 — exact-head completion candidate integration
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 28
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+goal_sha256: beb27f46da767f0fef80eed45b502698c28f1651c6325fe19041944d84436e47
+base_oid: d16895e237a615dc14e672aaf770454da3ee85e4
+tracking_issue: 4204
+selection:
+  proof_state_ref: "Cycles 1--27 accepted; fixed theorem obligations (a)--(i) have named producers"
+  proof_obligation: >-
+    Integrate the complete declaration map and material-premise proof-use
+    routes at one exact head, repair the focused-check manifest, and submit
+    that packet to standard exact-head review before the separate final
+    completion review.
+  selection_reason: >-
+    Cycle 27 removed the last mathematical obligation.  Completion still
+    requires whole-target integration, exact-head static evidence, PR review,
+    CI, merge, and a fresh independent four-lane math-lean-review.
+  expected_result_type: proof-checkpoint
+  anti_weakening: >-
+    The fixed revision-2 GOAL, its general indexed-hom quantification, and all
+    (a)--(i) conclusions remain unchanged.  Revision-1 artifacts and the
+    rejected Cycle-26 aggregate are not completion evidence.
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: yes
+  proof_obligation_delta: >-
+    No new mathematical claim.  All accepted revision-2 producers are placed
+    in one declaration, provenance, and proof-use packet; the previously
+    unregistered TransportCoherence focused-check route is registered.
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/TransportAlignment.lean
+    - ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean
+    - ResearchLean/AG/DiagnosticConservativity/TransportAdjunction.lean
+    - ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
+    - ResearchLean/AG/DiagnosticConservativity/EndpointExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/ReselectionExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean
+    - ResearchLean/AG/DiagnosticConservativity/TransportCoherence.lean
+    - ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/IdentityPropositionCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/CompositionPropositionCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/TrianglePentagonCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/WholeUnitCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/WholePentagonCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PentagonPropositionCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/UnitDownstreamCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/BaseIsoIndependence.lean
+  claim_mapping:
+    a_vertexwise_transport_equivalence:
+      alignment:
+        - indexedDiagnosticTransportPush
+        - indexedDiagnosticTransportReindex
+        - indexedDiagnosticTransport_vertexIndex_decode
+        - indexedDiagnosticTransportPush_eq_indexedFiberAction
+        - indexedDiagnosticTransportReindex_eq_semanticGlobal
+      ambidextrous_bridge:
+        - exact_bottom_semantic_global_selected_lift_isStronglyCocartesian
+        - indexedDiagnosticTransportSelectedLift_isStronglyCocartesian
+      quasi_inverse_and_triangles:
+        - semanticGlobalTransportReindexAdjunction
+        - indexedDiagnosticTransportAdjunction
+        - indexedDiagnosticTransportUnitIso
+        - indexedDiagnosticTransportCounitIso
+        - semanticGlobalTransportReindex_left_triangle
+        - semanticGlobalTransportReindex_right_triangle
+      categorical_producers:
+        - indexedDiagnosticTransportEquivalence
+        - indexedDiagnosticTransportPush_full
+        - indexedDiagnosticTransportPush_faithful
+        - indexedDiagnosticTransportPush_essentiallySurjective
+        - indexedDiagnosticTransportPush_isEquivalence
+        - indexedDiagnosticTransportObjectIso
+        - indexedDiagnosticTransportHom_preimage
+        - indexedDiagnosticTransportHom_eq_of_map_eq
+    b_endpoint_exactness:
+      - indexedDiagnosticEndpointEquivalence
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticEndpointAction_injective
+      - indexedDiagnosticEndpointAction_surjective
+    c_reselection_exactness:
+      - indexedDiagnosticReselectionEquivalence
+      - indexedDiagnosticReselectionEquivalence_apply
+      - inverseTransportedReselection
+      - inverseTransportedReselection_transportedReselection
+      - transportedReselection_inverseTransportedReselection
+      - indexedDiagnosticReselectionEquivalence_one
+      - inverseTransportedReselection_one
+    d_coherence_exactness:
+      - indexedCoherentAt_transport_iff
+      - indexedCoherentAt_inverseTransport_iff
+      - indexedCoherentAt_transport_via_horizontalPasting
+      - indexedDiagnosticCoherence_via_horizontalPasting
+    e_obstruction_exactness:
+      - indexedTransportObstructionVanishes_iff
+      - diagnosticConservative_all
+      - no_diagnosticConservativityCounterexample
+      - indexedDiagnosticObstruction_via_horizontalPasting
+    f_raw_defect_cochain_exactness:
+      - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
+      - indexedDiagnosticDefectCochainEquivalence_apply_ne_iff
+      - indexedDiagnosticDefectCochain_via_horizontalPasting
+      - indexedDiagnosticDefectCochain_inverse_via_horizontalPasting
+    g_orbit_exactness:
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+      - indexedDiagnosticOrbit_via_horizontalPasting
+    h_transport_coherence:
+      fiber_identity_and_composition:
+        - semanticGlobalTransportEquivalence_unitor_conjugate
+        - semanticGlobalTransportEquivalence_compositor_conjugate
+        - indexedDiagnosticTransportEquivalence_id_conjugate
+        - indexedDiagnosticTransportEquivalence_comp_conjugate
+      downstream_identity_and_composition:
+        - indexedDiagnosticIdentityInReselectionOrbit_mate_unitor_iff
+        - indexedDiagnosticIdentityCoherentAt_mate_unitor_iff
+        - indexedDiagnosticIdentityTransportObstructionVanishes_mate_unitor_iff
+        - indexedDiagnosticCompositionInReselectionOrbit_mate_compositor_iff
+        - indexedDiagnosticCompositionCoherentAt_mate_compositor_iff
+        - indexedDiagnosticCompositionTransportObstructionVanishes_mate_compositor_iff
+      whole_unit_and_pentagon:
+        - indexedDiagnosticTransportEquivalence_leftUnitTriangle
+        - indexedDiagnosticTransportEquivalence_rightUnitTriangle
+        - indexedDiagnosticTransportEquivalence_pentagon
+        - indexedDiagnosticTransportEquivalence_leftUnitRouteIso_conjugate
+        - indexedDiagnosticTransportEquivalence_rightUnitRouteIso_conjugate
+        - indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+        - indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+        - indexedDiagnosticUnitTransportObstructionVanishes_mate_iff
+        - indexedDiagnosticPentagonTransportObstructionVanishes_mate_iff
+      path_square_and_horizontal_pasting:
+        - indexedDiagnosticPathSquare_commutes
+        - indexedDiagnosticPathSquare_inverse_commutes
+        - indexedDiagnosticHorizontalPathPasting_commutes
+        - indexedDiagnosticHorizontalPathPasting_inverse_commutes
+        - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+        - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+        - indexedDiagnosticPathSquare_via_horizontalRoute
+        - indexedDiagnosticPathSquare_inverse_via_horizontalRoute
+        - indexedDiagnosticTwoCellPastingCube
+        - indexedDiagnosticPastingDownstreamExactness
+    i_categorical_decomposition_and_nondegeneracy:
+      arbitrary_base_and_corollary:
+        - indexedDiagnosticTransport_isEquivalence_arbitraryBase
+        - indexedDiagnosticTransport_isEquivalence_of_baseIsIso
+      finite_base_component:
+        - finiteNonIsoDiagnosticDiagramHom_not_isIso
+        - finiteNonIsoDiagnosticDiagramHom_identifies_distinct_cells
+      same_witness_nonidentity:
+        - finiteNonIsoDiagnosticTargetSwap_ne_one
+        - finiteNonIsoDiagnosticSourceSwap_ne_one
+        - finiteNonIsoDiagnosticSourceReselection_ne_one
+        - finiteNonIsoDiagnostic_transportedReselection_ne_one
+        - finiteNonIsoDiagnostic_sourceReselectionRawDefect_ne_one
+        - finiteNonIsoDiagnostic_transportedSourceReselectionRawDefect_ne_one
+      same_witness_round_trips:
+        - finiteNonIsoDiagnostic_sourceReselection_roundTrip
+        - finiteNonIsoDiagnostic_targetReselection_roundTrip
+        - finiteNonIsoDiagnostic_sourceDefect_roundTrip
+        - finiteNonIsoDiagnostic_targetDefect_roundTrip
+      final_witness_theorems:
+        - finiteNonIsoDiagnostic_converse_refutation
+        - finiteNonIsoDiagnostic_sameWitness_nondegeneracy
+    undischarged_assumptions: []
+    undischarged_obligations: []
+    acceptance_point: >-
+      This is a completion candidate only.  Standard exact-head PR review,
+      CI, merge, and the separate fresh final four-lane completion review are
+      still required before target-theorem-proved.
+audits:
+  target_material_premise_ledger:
+    ambient_inputs_no_discharge_credit:
+      G_111_indexed_action: >-
+        anchored at PR 4181; consumed by alignment, forward diagnostic action,
+        path-square, and horizontal-pasting routes
+      G_112_semantic_global_reindexing: >-
+        anchored at PR 4197; consumed by selected cartesian lifts, reindexing,
+        unitor, compositor, triangles, and pentagon
+      revision_1_reflection: >-
+        anchored at PR 4203 and retained only as the named conservative
+        corollaries; no revision-1 class, candidate, or finite fixture enters
+        the revision-2 construction
+    discharge_required:
+      G_110_lift_cocartesianness:
+        status: discharged
+        route: >-
+          strongCartesianLiftOfTarget_isStronglyCocartesian ->
+          exact_bottom_semantic_global_selected_lift_isStronglyCocartesian ->
+          indexedDiagnosticTransportSelectedLift_isStronglyCocartesian
+      push_reindex_alignment:
+        status: discharged
+        route: >-
+          indexedDiagnosticTransport_vertexIndex_decode plus push/reindex
+          equality theorems on the same hom component and target data
+      Full_and_Faithful_producers:
+        status: discharged
+        route: >-
+          unit/counit adjunction -> indexedDiagnosticTransportEquivalence ->
+          indexedDiagnosticTransportHom_preimage and
+          indexedDiagnosticTransportHom_eq_of_map_eq
+      EssentiallySurjective_producer:
+        status: discharged
+        route: >-
+          G-112 arbitrary-target selected lift plus the G-110 cocartesian
+          bridge -> indexedDiagnosticTransportObjectIso ->
+          indexedDiagnosticTransportPush_essentiallySurjective
+      unit_counit_triangles:
+        status: discharged
+        route: >-
+          selected cartesian/cocartesian uniqueness -> general adjunction,
+          natural unit/counit isomorphisms, and both triangle theorems
+      endpoint_reselection_inverses:
+        status: discharged
+        route: >-
+          explicit endpoint MulEquiv -> pointwise reselection MulEquiv ->
+          named left/right inverse and identity theorems
+      coherence_vanishing_inverse:
+        status: discharged
+        route: >-
+          inverseTransportedReselection and both round trips -> coherence iff ->
+          obstruction vanishing iff and global corollaries
+      raw_defect_cochain_equivalence:
+        status: discharged
+        route: >-
+          endpoint equivalence plus canonical-comparator/raw-defect naturality ->
+          explicit pointwise cochain equivalence and both commuting directions
+      orbit_membership_inverse:
+        status: discharged
+        route: >-
+          reselection inverse plus cochain inverse -> source/target membership iff
+      identity_composition_square_pasting:
+        status: discharged
+        route: >-
+          G-111 and G-112 unitor/compositor/triangle/pentagon routes, authored
+          pathSquare, recursively generated horizontalPathSquare, and the
+          cellwise two-cell pasting cube -> downstream (d)--(g)
+      finite_witness_firing:
+        status: discharged
+        route: >-
+          pre-existing G-110 finite four-axis fixture and its reindexing factor
+          graph -> nonidentity source swap; the same swap on both reselection
+          edges -> identity comparator and nonidentity raw defect; explicit
+          equivalences -> four named round trips
+      base_IsIso_relation:
+        status: discharged
+        route: >-
+          arbitrary-base equivalence theorem -> IsIso corollary without using
+          the instance; finite component collapsing distinct source cells ->
+          not-IsIso converse refutation
+    conclusion_equivalent_risk:
+      finite_raw_data:
+        status: accepted_raw_only
+        evidence: >-
+          the fixture stores the base component and the pre-existing four-axis
+          object/swap only; not-IsIso, nonidentity, equivalence, defect, and
+          preservation are proved by separate declarations and are not fields
+  proof_use:
+    all_material_producers_used: yes
+    caller_supplied_equivalence_or_exactness: none-found
+    selected_lift_route: >-
+      the same G-112 selected strongly cartesian lift is converted by the G-110
+      reviewed cocartesianness theorem and used in the unit/counit construction
+    downstream_route: >-
+      endpoint -> reselection -> coherence/obstruction and cochain -> orbit;
+      identity/composition/whole-unit/whole-pentagon/path-square theorems then
+      consume those exactness maps rather than independent certificates
+    finite_route: >-
+      G-110 source object and target axis swap -> selected reindex mapIso ->
+      factor-graph nonidentity -> same-reselection raw defect -> transported
+      nonidentity and four round trips
+  structure_field_escape: none-found
+  typeclass_escape: none-found
+  certificate_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  rejected_routes:
+    - >-
+      Cycle 26 initial unrelated-path aggregate is excluded; the accepted route
+      is the corrected authored-cell pasting cube and downstream derivation
+    - >-
+      Cycle 27 identity reselection and equivalence-inverse source selection are
+      excluded; the accepted witness uses one G-110-derived nonidentity
+      reselection for both source and transported facts
+  dependency_DAG:
+    pass: yes
+    order: >-
+      G-111/G-112/G-110 reviewed APIs -> alignment/ambidextrous bridge ->
+      adjunction/equivalence -> endpoint/reselection ->
+      coherence/obstruction/cochain/orbit -> identity/composition and
+      whole-route coherence -> authored-cell horizontal pasting -> finite
+      arbitrary-base nondegeneracy
+    reverse_import_into_Formal: none-found
+  validation_refs:
+    - >-
+      exact base d16895e237a615dc14e672aaf770454da3ee85e4 / all 27
+      DiagnosticConservativity source files checked individually through
+      check_research_modules.sh --focused / exit 0
+    - >-
+      each focused file contains #assert_standard_axioms_only and all 27 checks
+      reported standard axioms only
+    - >-
+      TransportCoherence added to research-modules.txt after the integration
+      audit found it imported by ResearchLean/AG.lean but absent from the
+      focused-check manifest
+    - "placeholder, hidden/BiDi Unicode, privacy, and import-direction scans / clean"
+    - "git diff --check / clean"
+    - "Research aggregate/full build / not run by hard rule"
+  implementation_PRs:
+    revision_2_fixing: "PR 4205 / merge 77e841e0a00e9a57387a11395d440da2bb83a602"
+    theorem_cycles: "PRs 4206--4232 / Cycles 1--27 / all merged after exact-head review and CI"
+    final_accepted_cycle_head: "PR 4232 head c3436bb6cdc7990e077e542e100aabab825eb7b9 / merge d16895e237a615dc14e672aaf770454da3ee85e4"
+  blocking_findings: []
+  unchecked:
+    - Cycle 28 exact-head standard four-lane PR review
+    - Cycle 28 exact-head CI and merge
+    - same-merge-head final completion packet
+    - fresh independent final math-lean-review mathematics A/B and Lean A/B
+  next_obligation: >-
+    Commit and open the Cycle 28 completion-candidate PR; run standard review,
+    correct every finding, require CI green, merge, then run the independent
+    final completion review on the merged exact head.
+```
