@@ -883,10 +883,13 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "K3 coherence forward and reverse directions"
-      - "K3 arbitrary-target coherence through generated inverse"
+      - "K2 coherence forward and reverse directions"
+      - "K2 arbitrary-target coherence through generated inverse"
     remaining:
-      - "K3 obstruction and K4 cochain, orbit, decomposition, and witness obligations"
+      - "K2 obstruction vanishing iff"
+      - "K3 raw-defect cochain equivalence and orbit membership iff"
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
   certificate_provenance:
     discharged:
       - "forward coherence / G-111 indexedCoherentAt_transport"
