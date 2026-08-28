@@ -3071,3 +3071,170 @@ audits:
     path-square and horizontal-pasting compatibility package, according to the
     shortest live proof-DAG route.
 ```
+
+### Cycle 24 — arbitrary-hom whole-unit downstream compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 24
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: c9e648878e86d26857b94a15ee5f89e700e085bd
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 23 whole-pentagon proposition routes accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticTransportEquivalence_leftUnitRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_rightUnitRouteIso_conjugate
+    - coreFiberLeftUnitRouteIso
+    - coreFiberRightUnitRouteIso
+    - coreFiberFunctorPackageAutHom_iso_naturality
+    - indexedDiagnosticReselectionEquivalence
+    - indexedDiagnosticDefectCochainEquivalence
+    - indexedDiagnosticInReselectionOrbit_iff
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+    - indexedCoherentAt_inverseTransport_iff
+    - transportObstructionVanishes_iff_coherentizable
+  proof_obligation: >-
+    For every indexed hom, propagate the whole source- and target-unit routes
+    from endpoint automorphisms through reselections, raw-defect cochains,
+    arbitrary-target orbit membership, coherence, and obstruction witnesses.
+    The two routes must be independently generated from the G-111 whole route
+    and the inverse mate of the G-112 whole route.
+  selection_reason: >-
+    Identity compatibility only treats the special hom `id D`.  Cycle 18
+    proved whole-unit mate equations for an arbitrary hom but did not let
+    those route cells act on the downstream exactness package.  This is the
+    remaining unit/triangle part of conjunct (h), separate from the already
+    accepted pentagon package.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/UnitDownstreamCompatibility.lean
+  risks:
+    - replacing arbitrary hom by the identity hom
+    - using categorical id_comp or comp_id as a substitute for the whole routes
+    - proving only endpoint equality without arbitrary-target witness transport
+    - dropping either the source-unit or target-unit triangle
+    - accepting coherence, vanishing, or compatibility equations from the caller
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The source- and target-unit G-111 endpoint equivalences are constructed
+    from their actual whole-route NatIso components.  Independent G-112
+    inverse-mate endpoint equivalences are identified with them using the two
+    Cycle 18 conjugacy theorems.  Naturality gives application equations from
+    direct identity-composite transport to transport along the arbitrary hom.
+    Pointwise lifts provide reselection and cochain equations.  Generated
+    inverse images and round trips cover arbitrary direct targets, yielding
+    two orbit iff theorems and two coherence iff theorems.  The obstruction
+    equivalence uses the source-unit comparator for one witness direction and
+    the inverse target-unit comparator for the other.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/UnitDownstreamCompatibility.lean
+  evidence:
+    - indexedDiagnosticLeftUnitMateEndpointEquivalence_eq_g111
+    - indexedDiagnosticRightUnitMateEndpointEquivalence_eq_g111
+    - indexedDiagnosticLeftUnitMateEndpointEquivalence_transport_apply
+    - indexedDiagnosticRightUnitMateEndpointEquivalence_transport_apply
+    - indexedDiagnosticLeftUnitMateReselectionEquivalence_transport_apply
+    - indexedDiagnosticRightUnitMateReselectionEquivalence_transport_apply
+    - indexedDiagnosticLeftUnitMateDefectCochainEquivalence_eq_g111
+    - indexedDiagnosticRightUnitMateDefectCochainEquivalence_eq_g111
+    - indexedDiagnosticLeftUnitMateDefectCochainEquivalence_transport_apply
+    - indexedDiagnosticRightUnitMateDefectCochainEquivalence_transport_apply
+    - indexedDiagnosticLeftUnitInReselectionOrbit_mate_iff
+    - indexedDiagnosticRightUnitInReselectionOrbit_mate_iff
+    - indexedDiagnosticLeftUnitCoherentAt_mate_iff
+    - indexedDiagnosticRightUnitCoherentAt_mate_iff
+    - indexedDiagnosticLeftUnitTransportObstructionVanishes_mate_iff
+    - indexedDiagnosticRightUnitTransportObstructionVanishes_mate_iff
+    - indexedDiagnosticUnitTransportObstructionVanishes_mate_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticLeftUnitMateEndpointEquivalence_transport_apply
+      - indexedDiagnosticRightUnitMateEndpointEquivalence_transport_apply
+      - indexedDiagnosticLeftUnitMateReselectionEquivalence_transport_apply
+      - indexedDiagnosticRightUnitMateReselectionEquivalence_transport_apply
+      - indexedDiagnosticLeftUnitMateDefectCochainEquivalence_eq_g111
+      - indexedDiagnosticRightUnitMateDefectCochainEquivalence_eq_g111
+      - indexedDiagnosticLeftUnitMateDefectCochainEquivalence_transport_apply
+      - indexedDiagnosticRightUnitMateDefectCochainEquivalence_transport_apply
+      - indexedDiagnosticLeftUnitInReselectionOrbit_mate_iff
+      - indexedDiagnosticRightUnitInReselectionOrbit_mate_iff
+      - indexedDiagnosticLeftUnitCoherentAt_mate_iff
+      - indexedDiagnosticRightUnitCoherentAt_mate_iff
+      - indexedDiagnosticLeftUnitTransportObstructionVanishes_mate_iff
+      - indexedDiagnosticRightUnitTransportObstructionVanishes_mate_iff
+      - indexedDiagnosticUnitTransportObstructionVanishes_mate_iff
+    source_labels:
+      - "target theorem (h): arbitrary-hom whole source-unit compatibility"
+      - "target theorem (h): arbitrary-hom whole target-unit compatibility"
+      - "target theorem (b)--(g): downstream exactness objects and propositions"
+    conjuncts:
+      - "direct source-unit composite transport -> original-hom transport"
+      - "direct target-unit composite transport -> original-hom transport"
+      - "arbitrary target cochain/reselection -> orbit and coherence iff"
+      - "source-unit forward and target-unit inverse witnesses -> obstruction iff"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes the arbitrary-hom whole-unit propagation through
+      layers (b)--(g).  It does not claim square/pasting or conjunct (i)
+      completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole source-unit downstream exactness for arbitrary indexed homs"
+      - "K4 whole target-unit downstream exactness for arbitrary indexed homs"
+      - "K4 whole-unit orbit, coherence, and obstruction witness transport"
+    remaining:
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "endpoint comparators / actual G-111 whole route and G-112 inverse mate"
+      - "reselection and cochain actions / every indexed coordinate"
+      - "orbit witnesses / generated source inverse and reviewed orbit equivalences"
+      - "coherence witnesses / generated inverse transport and round trips"
+      - "obstruction witnesses / source-unit forward and target-unit inverse routes"
+    unresolved:
+      - "square/pasting routes and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticTransportEquivalence_leftUnitRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_rightUnitRouteIso_conjugate
+      - coreFiberLeftUnitRouteIso
+      - coreFiberRightUnitRouteIso
+      - coreFiberFunctorPackageAutHom_iso_naturality
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticReselectionEquivalence
+      - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+      - indexedCoherentAt_inverseTransport_iff
+      - transportObstructionVanishes_iff_coherentizable
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for source/target whole-unit endpoint, reselection, cochain, orbit, coherence, and obstruction routes"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.WholeUnitCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/UnitDownstreamCompatibility.lean / exit 0"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/UnitDownstreamCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.UnitDownstreamCompatibility / exit 0 / selected Cycle 24 module only"
+    - "33 declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: >-
+    Build the path-square and horizontal-pasting compatibility package for
+    the endpoint through orbit layers, preserving the existing square-level
+    operations rather than inventing a new hom composition.
+```
