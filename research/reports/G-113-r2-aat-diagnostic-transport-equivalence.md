@@ -143,6 +143,7 @@ audits:
     EssentiallySurjective without caller-supplied equivalence data.
 ```
 
+
 ### Cycle 2 — K1 semantic-global ambidextrous bridge
 
 実装前 selection:
@@ -558,4 +559,124 @@ audits:
   next_obligation: >-
     Construct the diagnostic endpoint equivalence with forward-map agreement
     to the revision-1 endpoint action, then derive injectivity and surjectivity.
+```
+
+### Cycle 5 — diagnostic endpoint exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 5
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 273cf142a01210149e56a90d5f5cbc276c97df63
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjunct (a) discharged / endpoint exactness next"
+  proof_dag_predecessors:
+    - indexedDiagnosticTransportEquivalence
+    - Equivalence.fullyFaithfulFunctor
+    - Functor.FullyFaithful.autMulEquivOfFullyFaithful
+    - packageFiberAutCoreFiberEquiv
+    - IndexedBaseDiagramHom.endpointAction
+  proof_obligation: >-
+    Construct an explicit multiplicative equivalence on each diagnostic
+    endpoint automorphism group from the Cycle 4 vertexwise equivalence, prove
+    its forward map is exactly the revision-1 endpointAction, and derive named
+    injectivity and surjectivity theorems from that same equivalence.
+  selection_reason: >-
+    This is target conjunct (b) and the first remaining K2 obligation.  The
+    fully faithful forward functor of the explicit vertexwise equivalence gives
+    the required automorphism-group inverse without reusing only the older
+    one-way surjectivity theorem.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/EndpointExactness.lean
+  risks:
+    - defining a new forward endpoint map instead of agreeing with endpointAction
+    - using revision-1 surjectivity without producing an inverse from Cycle 4
+    - restricting to a selected endpoint object or realized base arrow
+    - accepting endpoint bijectivity as a premise
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Every core-fiber equivalence now induces a package-automorphism MulEquiv by
+    transporting the fully faithful Aut equivalence through the reviewed
+    package/CoreFiber identification.  At an indexed diagnostic vertex this
+    specializes to an explicit endpoint equivalence whose forward function is
+    definitionally the revision-1 endpointAction.  Injectivity and surjectivity
+    are derived from the equivalence; the inverse is not imported from the
+    older reflection-only theorem.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/EndpointExactness.lean
+  evidence:
+    - coreFiberEquivalencePackageAutMulEquiv
+    - coreFiberEquivalencePackageAutMulEquiv_apply
+    - indexedDiagnosticEndpointEquivalence
+    - indexedDiagnosticEndpointEquivalence_apply
+    - indexedDiagnosticEndpointAction_injective
+    - indexedDiagnosticEndpointAction_surjective
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticEndpointEquivalence
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticEndpointAction_injective
+      - indexedDiagnosticEndpointAction_surjective
+    source_labels:
+      - "target theorem (b): endpoint exactness"
+      - "revision-1 endpointAction forward agreement"
+      - "Cycle 4 explicit vertexwise equivalence"
+    conjuncts:
+      - "endpoint equivalence -> indexedDiagnosticEndpointEquivalence"
+      - "forward agreement -> indexedDiagnosticEndpointEquivalence_apply"
+      - "injective/surjective corollaries -> named endpointAction theorems"
+    undischarged_assumptions:
+      - reselection inverse maps
+      - coherence / vanishing inverse direction
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (b) only.  It does not claim
+      reselection, coherence, obstruction, cochain, orbit, decomposition, or
+      witness exactness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K2 endpoint equivalence, forward agreement, injectivity, surjectivity"
+    remaining:
+      - "K2 reselection and K3--K4 obligations"
+  certificate_provenance:
+    discharged:
+      - "endpoint inverse / Cycle 4 fully faithful automorphism equivalence"
+      - "forward map / reviewed revision-1 endpointAction by definitional equality"
+    unresolved:
+      - "reselection and later exactness equivalences"
+  proof_use:
+    used:
+      - indexedDiagnosticTransportEquivalence
+      - Equivalence.fullyFaithfulFunctor
+      - Functor.FullyFaithful.autMulEquivOfFullyFaithful
+      - packageFiberAutCoreFiberEquiv
+      - IndexedBaseDiagramHom.endpointAction
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/EndpointExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 6 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Construct reselection forward/inverse transport, both inverse laws,
+    preservation of the base reselection, and mapped-reselection round trips.
 ```
