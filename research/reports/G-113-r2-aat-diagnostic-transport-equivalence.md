@@ -1564,6 +1564,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
+    - "./check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean / exit 0"
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean / exit 0"
     - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 20 declarations clean"
   blocking_findings: []
