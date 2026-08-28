@@ -2664,3 +2664,123 @@ audits:
     coordinates and arbitrary orbit targets, then transport coherence and
     obstruction propositions through the same explicit left/right routes.
 ```
+
+### Cycle 21 — downstream whole-pentagon raw-defect cochain actions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 21
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 9f613a75dde000f468533a4358a42b80dccf4b26
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 20 endpoint/reselection pentagon accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticPentagonG111LeftEndpointEquivalence
+    - indexedDiagnosticPentagonG111RightEndpointEquivalence
+    - indexedDiagnosticPentagonMateLeftEndpointEquivalence
+    - indexedDiagnosticPentagonMateRightEndpointEquivalence
+    - indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateEndpointEquivalence_eq
+  proof_obligation: >-
+    Apply all four independently generated whole-pentagon endpoint actions at
+    every two-cell target of the raw-defect cochain space, identify the two
+    cross-system pairs, and prove equality of the left/right mate routes.
+  selection_reason: >-
+    Raw-defect cochains are the value layer consumed by orbit exactness.  Their
+    complete dependent-product action must be fixed before witness-sensitive
+    orbit, coherence, and obstruction propositions can be transported without
+    replacing their witnesses by a selected image.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean
+  risks:
+    - mapping only a selected two-cell coordinate
+    - defining the mate cochain action as the G-111 action
+    - claiming orbit compatibility from cochain-map equality alone
+    - dropping the right-route associativity casts inherited by the endpoint map
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Four cochain MulEquivs apply the corresponding Cycle 20 endpoint action at
+    every two-cell target.  The left and right inverse-mate G-112 actions are
+    each proved equal to the independently generated G-111 action pointwise,
+    and the Cycle 20 endpoint pentagon proves equality of the two mate cochain
+    routes on the complete dependent product.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean
+  evidence:
+    - indexedDiagnosticPentagonG111LeftDefectCochainEquivalence
+    - indexedDiagnosticPentagonG111RightDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateRightDefectCochainEquivalence
+    - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_eq_g111
+    - indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateDefectCochainEquivalence_eq
+    source_labels:
+      - "target theorem (h): whole pentagon compatibility at raw-defect cochain layer (f)"
+      - "Cycle 20 independently generated endpoint actions"
+    conjuncts:
+      - "left whole-route actions -> exact cross-system cochain equality"
+      - "right whole-route actions -> exact cross-system cochain equality"
+      - "whole pentagon -> equality on every cochain value"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole unit/triangle downstream propagation beyond the existing binary identity layer"
+      - "whole pentagon propagation to coherence, obstruction, and orbit layers (d)(e)(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes the actual whole-pentagon action on the complete
+      raw-defect cochain space.  It does not claim orbit, proposition,
+      square/pasting, or conjunct (i) completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole pentagon raw-defect cochain action compatibility"
+    remaining:
+      - "K4 triangle and pentagon propagation through proposition/orbit layers"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "four cochain actions / dependent products of the Cycle 20 actual endpoint actions"
+      - "cross-system equality / Cycle 20 mate-to-G-111 endpoint theorems"
+      - "left/right equality / Cycle 20 endpoint pentagon"
+    unresolved:
+      - "orbit witness transport and proposition-level whole routes"
+      - "square/pasting routes and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
+      - indexedDiagnosticPentagonMateEndpointEquivalence_eq
+      - MulEquiv.piCongrRight
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for all-coordinate raw-defect cochain whole pentagon actions"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonDownstreamCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonCochainCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 7 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Prove arbitrary-target orbit membership compatibility through the explicit
+    whole-pentagon cochain maps, then transport coherence and obstruction
+    witnesses through the same left/right reselection routes.
+```
