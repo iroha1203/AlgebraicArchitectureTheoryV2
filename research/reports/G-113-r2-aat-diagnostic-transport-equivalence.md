@@ -142,3 +142,131 @@ audits:
     unit/counit isomorphisms, then derive Full, Faithful, and
     EssentiallySurjective without caller-supplied equivalence data.
 ```
+
+### Cycle 2 — K1 semantic-global ambidextrous bridge
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 2
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 67d3d647afd5fe211ec83554d044080357f9435a
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 1 F0 discharged / K1 bridge next"
+  proof_dag_predecessors:
+    - exact_bottom_semantic_global_selected_lift
+    - strongCartesianLiftOfTarget
+    - strongCartesianLiftOfTarget_isStronglyCocartesian
+    - CategoryTheory.Functor.IsStronglyCartesian.domainIsoOfBaseIso
+    - CategoryTheory.Functor.IsStronglyCocartesian.comp
+  proof_obligation: >-
+    Construct a caller-free theorem that every G-112 semantic-global selected
+    cartesian lift is strongly cocartesian, by comparing it over the identity
+    base isomorphism with the explicit G-110 arbitrary-target lift and actually
+    consuming the reviewed G-110 cocartesianness theorem.
+  selection_reason: >-
+    This is the first remaining discharge-required premise after F0 and the
+    exact prerequisite for generating the target-side counit isomorphism in
+    the general indexed domain.  It removes the realized-arrow restriction
+    without yet claiming a unit, counit, or equivalence.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean
+  risks:
+    - selected and explicit lifts could be identified definitionally instead of by uniqueness
+    - G-110 realized-arrow unit/counit could be extrapolated to the general domain
+    - cocartesianness could be accepted as a theorem argument or field
+    - the comparison iso could be target-fitted or use the wrong base arrow
+  unchecked:
+    - focused Lean elaboration and axiom audit
+    - fixed-head standard PR review
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Every G-112 semantic-global selected cartesian lift is now proved strongly
+    cocartesian for an arbitrary base hom and target-fiber object.  The proof
+    compares the selected lift with `strongCartesianLiftOfTarget` through the
+    cartesian universal-property domain iso, equips that iso with
+    cocartesianness over the identity, consumes the reviewed G-110 theorem on
+    the explicit lift, and composes the two cocartesian arrows.  A named
+    indexed-vertex specialization connects the result to the F0 spine.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean
+  evidence:
+    - exact_bottom_semantic_global_selected_lift_isStronglyCocartesian
+    - indexedDiagnosticTransportSelectedLift_isStronglyCocartesian
+  claim_mapping:
+    theorem_names:
+      - exact_bottom_semantic_global_selected_lift_isStronglyCocartesian
+      - indexedDiagnosticTransportSelectedLift_isStronglyCocartesian
+    source_labels:
+      - "target proof strategy K1"
+      - "material premise: G-110 arbitrary-target lift cocartesianness"
+      - "target theorem (a)(i): counit / essential-surjectivity bridge"
+    conjuncts:
+      - "general selected lift cocartesianness -> exact_bottom_semantic_global_selected_lift_isStronglyCocartesian"
+      - "F0 indexed specialization -> indexedDiagnosticTransportSelectedLift_isStronglyCocartesian"
+    undischarged_assumptions:
+      - Full and Faithful producers
+      - EssentiallySurjective object-iso producer
+      - unit / counit and triangle identities
+      - endpoint / reselection inverse maps
+      - coherence / vanishing inverse direction
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle proves only the general selected-lift cocartesianness bridge
+      required by K1.  It does not construct a unit, counit, functor
+      equivalence, or essential-surjectivity witness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - >-
+        G-110 arbitrary-target lift cocartesianness / reviewed theorem applied
+        to the same arbitrary hom and target package, then transported to the
+        G-112 selected lift by cartesian uniqueness
+    remaining:
+      - "K0 Full/Faithful and the remaining K1--K4 obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "selected lift / G-112 caller-free semantic-global producer"
+      - "explicit lift / G-110 strongCartesianLiftOfTarget"
+      - "comparison iso / cartesian universal property over Iso.refl"
+      - "explicit cocartesianness / reviewed strongCartesianLiftOfTarget_isStronglyCocartesian"
+    unresolved:
+      - "unit/counit natural transformations and their component isomorphisms"
+  proof_use:
+    used:
+      - exact_bottom_semantic_global_selected_lift
+      - strongCartesianLiftOfTarget
+      - strongCartesianLiftOfTarget_isStronglyCocartesian
+      - CategoryTheory.Functor.IsStronglyCartesian.domainIsoOfBaseIso
+      - CategoryTheory.Functor.IsStronglyCartesian.fac
+      - CategoryTheory.Functor.IsStronglyCocartesian.of_iso
+      - CategoryTheory.Functor.IsStronglyCocartesian.comp
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/AmbidextrousLift.lean / exit 0"
+    - "#print axioms on both declarations / standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 2 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Generate general unit and counit natural transformations for
+    indexedDiagnosticTransportPush ⊣ indexedDiagnosticTransportReindex and
+    prove every component is an isomorphism without realized-arrow premises.
+```
