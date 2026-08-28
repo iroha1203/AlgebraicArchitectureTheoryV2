@@ -386,7 +386,7 @@ audits:
       - "general unit/counit natural transformations and triangle identities"
       - "all general and indexed unit/counit component IsIso obligations"
     remaining:
-      - "K0 equivalence packaging and Full/Faithful/EssentiallySurjective producers"
+      - "K0 Full/Faithful and remaining K1 equivalence/EssentiallySurjective producers"
       - "K2--K4 exactness, coherence, decomposition, and witness obligations"
   certificate_provenance:
     discharged:
