@@ -1849,3 +1849,126 @@ audits:
     Prove vertical-composition compatibility for coherence and obstruction,
     then establish cross-system triangle and pentagon route equations.
 ```
+
+### Cycle 15 — proposition-level vertical-composition compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 15
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 8baf17fe2268974f22dc85e3a6c71ab665a91a1d
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 14 downstream data-level composition complete"
+  proof_dag_predecessors:
+    - indexedDiagnosticCompositionMateReselectionCompositorEquivalence
+    - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
+    - indexedDiagnosticReselectionEquivalence
+    - indexedCoherentAt_inverseTransport_iff
+    - indexedCoherentAt_iff_adaptedCoherentAt
+    - transportObstructionVanishes_iff_coherentizable
+  proof_obligation: >-
+    Prove that successive inverse reselection through the Cycle 14 G-112-mate
+    comparator equals direct-composite inverse reselection, derive coherence
+    iff for every direct-target reselection, and transport coherentizability
+    witnesses in both directions through the same comparator.  This covers the
+    vertical-composition part of layers (d) and (e).
+  selection_reason: >-
+    Proposition-level composition must consume the actual cross-system
+    reselection comparator rather than merely compose the existing all-hom
+    proposition equivalences.  Identifying the two inverse routes first gives
+    the exact arbitrary-target coherence statement and a generated witness map
+    for obstruction vanishing in both directions.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/CompositionPropositionCompatibility.lean
+  risks:
+    - bypassing the G-112-mate comparator with an abstract proposition iff
+    - proving coherence only for a transported source reselection
+    - accepting a caller-supplied inverse or coherentizability witness
+    - transporting obstruction witnesses in only one direction
+    - claiming triangle, pentagon, square, or pasting compatibility
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    For every direct-target reselection, generated inverse transport along the
+    direct composite equals successive generated inverse transport after the
+    G-112-mate comparator.  Factoring both coherence propositions through this
+    common source reselection gives an arbitrary-target iff.  Expanding
+    obstruction vanishing to coherentizability, the forward direction maps a
+    direct witness through the comparator, while the reverse direction pulls
+    an arbitrary successive witness back through the comparator equivalence;
+    both directions consume the new coherence iff.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/CompositionPropositionCompatibility.lean
+  evidence:
+    - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_inverse
+    - indexedDiagnosticCompositionCoherentAt_mate_compositor_iff
+    - indexedDiagnosticCompositionTransportObstructionVanishes_mate_compositor_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_inverse
+      - indexedDiagnosticCompositionCoherentAt_mate_compositor_iff
+      - indexedDiagnosticCompositionTransportObstructionVanishes_mate_compositor_iff
+    source_labels:
+      - "target theorem (h): vertical-composition compatibility for (d) and (e)"
+      - "Cycle 14 G-111/G-112-mate reselection compositor equation"
+      - "Cycles 6--8 generated inverse, coherence, and obstruction exactness"
+    conjuncts:
+      - "(d) coherence composition -> arbitrary direct-target iff through the G-112 mate"
+      - "(e) obstruction composition -> coherentizability witnesses transported through the mate in both directions"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - cross-system triangle and pentagon route compatibility
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      Together with Cycle 14, this cycle completes vertical-composition
+      compatibility for downstream layers (b)--(g).  It does not claim the
+      triangle/pentagon routes, square/pasting compatibility, or conjunct (i).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 (d) arbitrary-target coherence vertical-composition compatibility"
+      - "K4 (e) obstruction-vanishing vertical-composition compatibility"
+    remaining:
+      - "K4 triangle, pentagon, square, and pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "reselection comparator / Cycle 14 G-112-mate construction"
+      - "inverse route / generated composite and successive reselection equivalences"
+      - "coherence / Cycles 6--7 inverse-transport iff"
+      - "obstruction witnesses / explicit comparator forward and inverse maps"
+    unresolved:
+      - "triangle, pentagon, and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
+      - MulEquiv.apply_symm_apply
+      - MulEquiv.symm_apply_apply
+      - indexedCoherentAt_inverseTransport_iff
+      - indexedCoherentAt_iff_adaptedCoherentAt
+      - transportObstructionVanishes_iff_coherentizable
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for vertical composition of (d) and (e)"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.CompositionCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/CompositionPropositionCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 3 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Establish the actual cross-system triangle and pentagon route equations,
+    then propagate compatibility through path squares and horizontal pasting.
+```
