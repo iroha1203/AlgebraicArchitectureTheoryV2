@@ -12,7 +12,10 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 
 ## Fixed heads
 
-- fixed GOAL blob SHA: `fd6956ae3f29c64fc9102dd6dff37a590908c179`
+- reviewed fixed statement blob SHA (tracking Issue link insertion前):
+  `fd6956ae3f29c64fc9102dd6dff37a590908c179`
+- current GOAL blob SHA (数学statement同一、tracking Issue link同期後):
+  `89d47851711f9335bf42d312c8522db01c7718ba`
 - fixed GOAL SHA-256:
   `c4ff9c3ffbb0a12e4ddc412895cdd343422b679331b2d3cd5d0a4835e6f6aa61`
 - base OID: `0a31b61f3b161ce857524716e57d4fef6cca8275`
@@ -99,7 +102,7 @@ base_oid: 0a31b61f3b161ce857524716e57d4fef6cca8275
 tracking_issue: 4198
 report_path: research/reports/G-113-aat-diagnostic-conservativity.md
 selection:
-  proof_state_ref: "Issue #4198: active / execution gate discharged / F0 typing pending"
+  proof_state_ref: "Issue #4198: active / F0 proof-checkpoint review / next K0"
   proof_dag_predecessors:
     - "G-111 PR #4181 / merge 8850a5b4"
     - IndexedBaseDiagramHom
