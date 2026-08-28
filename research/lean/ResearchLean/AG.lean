@@ -25,6 +25,7 @@ import ResearchLean.AG.DiagnosticConservativity.ObstructionExactness
 import ResearchLean.AG.DiagnosticConservativity.CochainExactness
 import ResearchLean.AG.DiagnosticConservativity.OrbitExactness
 import ResearchLean.AG.DiagnosticConservativity.TransportCoherence
+import ResearchLean.AG.DiagnosticConservativity.IdentityCompatibility
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective

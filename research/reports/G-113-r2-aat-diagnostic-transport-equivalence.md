@@ -1411,3 +1411,165 @@ audits:
     endpoint, reselection, coherence, obstruction, cochain, and orbit surfaces,
     then prove the actual cross-system triangle and pentagon route equations.
 ```
+
+### Cycle 12 — downstream identity-unitor compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 12
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: cffbf01d139b34d635dd83e1205f9206c9f54b8d
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 11 pairwise mate producer complete"
+  proof_dag_predecessors:
+    - coreFiberUnitor
+    - exact_bottom_semantic_global_unitor
+    - indexedDiagnosticTransportEquivalence_id_conjugate
+    - coreFiberFunctorPackageAutHom_iso_naturality
+    - indexedDiagnosticEndpointEquivalence
+    - indexedDiagnosticReselectionEquivalence
+    - indexedDiagnosticDefectCochainEquivalence
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+  proof_obligation: >-
+    Generate both the G-111 and G-112-mate identity-unitor comparisons on
+    endpoint automorphisms, prove them equal by consuming the Cycle 11 mate
+    theorem, lift that cross-system equality to edge reselections and
+    raw-defect cochains, and express arbitrary-target orbit membership through
+    the G-112-mate comparison.  This covers only the identity part of layers
+    (b), (c), (f), and (g).
+  selection_reason: >-
+    The Cycle 11 fiber-level unitor mate must be propagated through the
+    diagnostic constructions before composition and route-level coherence can
+    be checked.  Endpoint naturality is the common engine, while the
+    reselection, cochain, and orbit results retain their complete indexed and
+    existential content.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean
+  risks:
+    - treating identity transport as definitional equality
+    - proving only selected endpoint elements or cochains
+    - replacing orbit membership by equality to one chosen baseline
+    - claiming vertical-composition or route-level coherence from identity laws
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The canonical G-111 unitor induces one endpoint automorphism-group
+    equivalence.  Independently, pulling the G-112 semantic-global unitor back
+    through the generated adjunction mate equivalence induces a second.  The
+    Cycle 11 conjugate-mate theorem proves these comparisons equal.  Naturality
+    identifies them with the generated inverse identity transport.  Pointwise
+    lifts propagate the cross-system equality through every reselection and
+    raw-defect cochain coordinate, and the arbitrary-target orbit iff follows
+    through the G-112-mate cochain comparison and Cycle 10 inverse route.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean
+  evidence:
+    - indexedDiagnosticIdentityEndpointUnitorEquivalence_apply_transport
+    - indexedDiagnosticIdentityEndpointUnitorEquivalence_eq_symm
+    - indexedDiagnosticIdentityReselectionUnitorEquivalence_apply_transport
+    - indexedDiagnosticIdentityDefectCochainUnitorEquivalence_apply_transport
+    - indexedDiagnosticIdentityInReselectionOrbit_unitor_iff
+    - indexedDiagnosticIdentityMateEndpointUnitorEquivalence_eq_unitor
+    - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_eq_unitor
+    - indexedDiagnosticIdentityMateDefectCochainUnitorEquivalence_eq_unitor
+    - indexedDiagnosticIdentityInReselectionOrbit_mate_unitor_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticIdentityEndpointUnitorEquivalence
+      - indexedDiagnosticIdentityEndpointUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityEndpointUnitorEquivalence_eq_symm
+      - indexedDiagnosticIdentityReselectionUnitorEquivalence
+      - indexedDiagnosticIdentityReselectionUnitorEquivalence_eq_symm
+      - indexedDiagnosticIdentityReselectionUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityDefectCochainUnitorEquivalence
+      - indexedDiagnosticIdentityDefectCochainUnitorEquivalence_eq_symm
+      - indexedDiagnosticIdentityDefectCochainUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityInReselectionOrbit_unitor_iff
+      - indexedDiagnosticIdentityMateEndpointUnitorEquivalence
+      - indexedDiagnosticIdentityMateEndpointUnitorEquivalence_eq_unitor
+      - indexedDiagnosticIdentityMateEndpointUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_eq_unitor
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityMateDefectCochainUnitorEquivalence
+      - indexedDiagnosticIdentityMateDefectCochainUnitorEquivalence_eq_unitor
+      - indexedDiagnosticIdentityMateDefectCochainUnitorEquivalence_apply_transport
+      - indexedDiagnosticIdentityInReselectionOrbit_mate_unitor_iff
+    source_labels:
+      - "target theorem (h): identity compatibility for (b), (c), (f), and (g)"
+      - "G-111 canonical core-fiber unitor"
+      - "G-112 semantic-global unitor and Cycle 11 conjugate-mate equality"
+      - "Cycles 5, 6, 9, and 10 generated equivalences and orbit iff"
+    conjuncts:
+      - "(b) endpoint identity unitor -> G-111/G-112-mate comparison equality and inverse law"
+      - "(c) reselection identity unitor -> pointwise cross-system equality and inverse law"
+      - "(f) raw-defect cochain identity unitor -> pointwise cross-system equality and inverse law"
+      - "(g) orbit identity unitor -> arbitrary-target membership iff through the G-112 mate"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "identity compatibility for layers (d) and (e)"
+      - "vertical-composition commuting for layers (b)--(g)"
+      - cross-system triangle and pentagon route compatibility
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle discharges only identity compatibility for (b), (c), (f), and
+      (g).  It does not claim identity compatibility for coherence or
+      obstruction witnesses, any vertical-composition law, the cross-system
+      triangle/pentagon, square/pasting compatibility, or conjunct (i).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 (b) endpoint identity-unitor compatibility"
+      - "K4 (c) reselection identity-unitor compatibility"
+      - "K4 (f) raw-defect cochain identity-unitor compatibility"
+      - "K4 (g) orbit identity-unitor compatibility"
+    remaining:
+      - "K4 identity compatibility for (d) and (e)"
+      - "K4 vertical composition, triangle, pentagon, square, and pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "endpoint comparison / G-111 coreFiberUnitor"
+      - "endpoint mate comparison / G-112 exact_bottom_semantic_global_unitor"
+      - "cross-system endpoint equality / Cycle 11 indexed conjugate-mate theorem"
+      - "endpoint equation / naturality of generated endpoint action"
+      - "reselection and cochain comparisons / pointwise cross-system endpoint equality"
+      - "orbit iff / G-112-mate cochain comparison and Cycle 10 inverse route"
+    unresolved:
+      - "coherence and obstruction identity comparisons"
+      - "composition and route-level coherence"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticTransportEquivalence_id_conjugate
+      - exact_bottom_semantic_global_unitor
+      - coreFiberFunctorPackageAutHom_iso_naturality
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticReselectionEquivalence_apply
+      - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for identity compatibility of (b), (c), (f), and (g)"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "./check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean / exit 0"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 20 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Construct identity compatibility for the coherence and obstruction
+    surfaces, then propagate the canonical compositor through downstream
+    layers (b)--(g).
+```

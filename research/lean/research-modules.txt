@@ -261,6 +261,7 @@ ResearchLean.AG.DiagnosticConservativity.CoherenceExactness	ResearchLean/AG/Diag
 ResearchLean.AG.DiagnosticConservativity.ObstructionExactness	ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
 ResearchLean.AG.DiagnosticConservativity.CochainExactness	ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean
 ResearchLean.AG.DiagnosticConservativity.OrbitExactness	ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean
+ResearchLean.AG.DiagnosticConservativity.IdentityCompatibility	ResearchLean/AG/DiagnosticConservativity/IdentityCompatibility.lean
 ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
 ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
 ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean
