@@ -2290,3 +2290,122 @@ audits:
     laws to identify the conjugate of each whole G-111 route with the packaged
     G-112 route, then propagate the accepted equations downstream.
 ```
+
+### Cycle 18 — whole source/target unit mate equations
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 18
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: e353101bbc5e465da67521dbbdd3802dd90e4af0
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 17 whole-route NatIso/cast surface accepted"
+  proof_dag_predecessors:
+    - coreFiberLeftUnitRouteIso_eq_cast
+    - coreFiberRightUnitRouteIso_eq_cast
+    - semanticGlobalTransportEquivalence_eqCast_conjugate
+    - semanticGlobalLeftUnitRouteIso_eq_cast
+    - semanticGlobalRightUnitRouteIso_eq_cast
+  proof_obligation: >-
+    Prove that conjugating each whole G-111 source/target unit route through the
+    generated G-113 adjunction yields the corresponding whole G-112 unit route,
+    then expose both equations at every indexed vertex.
+  selection_reason: >-
+    Both unit routes factor canonically through equality casts.  The Cycle 17
+    cast conjugacy therefore gives a short proof that consumes both actual
+    predecessor triangle laws without re-expanding adjunction units/counits.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/WholeUnitCompatibility.lean
+  risks:
+    - reversing the adjunction order in conjugateIsoEquiv
+    - using id_comp/comp_id in the wrong direction on reindexing
+    - bypassing one predecessor whole-route triangle
+    - restating only the generatorwise Cycle 16 route
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The source- and target-unit whole G-111 NatIso routes are first rewritten to
+    their covariant equality casts.  Generated cast conjugacy reverses each
+    equality on the G-112 side, and the corresponding G-112 whole-route triangle
+    identifies that cast with the actual unit route.  Two indexed theorems fix
+    the same whole-route equalities at every vertex.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/WholeUnitCompatibility.lean
+  evidence:
+    - semanticGlobalTransportEquivalence_leftUnitRouteIso_conjugate
+    - semanticGlobalTransportEquivalence_rightUnitRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_leftUnitRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_rightUnitRouteIso_conjugate
+  claim_mapping:
+    theorem_names:
+      - semanticGlobalTransportEquivalence_leftUnitRouteIso_conjugate
+      - semanticGlobalTransportEquivalence_rightUnitRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_leftUnitRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_rightUnitRouteIso_conjugate
+    source_labels:
+      - "target theorem (h): whole source/target unit compatibility at layer (a)"
+      - "Cycle 17 G-111/G-112 whole-route triangle and cast packages"
+      - "Cycle 17 generated contravariant equality-cast conjugacy"
+    conjuncts:
+      - "source unit -> conjugate whole G-111 route equals whole G-112 route"
+      - "target unit -> conjugate whole G-111 route equals whole G-112 route"
+      - "indexed unit routes -> both equalities at every vertex"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole left/right pentagon cross-system mate alignment"
+      - "triangle/pentagon propagation from layer (a) to downstream layers (b)--(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes whole-route cross-system compatibility for both unit
+      sides at layer (a).  It does not claim the whole pentagon mate, downstream,
+      square/pasting, or conjunct (i) obligations.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole source-unit cross-system mate equality"
+      - "K4 whole target-unit cross-system mate equality"
+    remaining:
+      - "K4 whole pentagon mate and downstream triangle/pentagon propagation"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "G-111 whole unit routes / Cycle 17 reviewed NatIso packages"
+      - "cast comparison / generated adjunction conjugacy"
+      - "G-112 whole unit routes / Cycle 17 reviewed NatIso packages"
+    unresolved:
+      - "whole pentagon conjugacy"
+      - "downstream route action and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - coreFiberLeftUnitRouteIso_eq_cast
+      - coreFiberRightUnitRouteIso_eq_cast
+      - semanticGlobalTransportEquivalence_eqCast_conjugate
+      - semanticGlobalLeftUnitRouteIso_eq_cast
+      - semanticGlobalRightUnitRouteIso_eq_cast
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for both whole unit mate equations"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.WholeRouteCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/WholeUnitCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 4 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Identify the conjugate of one packaged G-111 pentagon route with the
+    corresponding packaged G-112 route using mate composition/whiskering and
+    associator laws; derive the other side from both whole pentagon equations.
+```
