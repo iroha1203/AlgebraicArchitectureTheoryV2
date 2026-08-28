@@ -1972,3 +1972,151 @@ audits:
     Establish the actual cross-system triangle and pentagon route equations,
     then propagate compatibility through path squares and horizontal pasting.
 ```
+
+### Cycle 16 — conjugate-mate unit and three-arrow route producers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 16
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 20ac08ec30d37a677d16fd5114f231636952f404
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 15 downstream vertical composition accepted"
+  proof_dag_predecessors:
+    - semanticGlobalTransportEquivalence_unitor_conjugate
+    - semanticGlobalTransportEquivalence_compositor_conjugate
+    - exact_bottom_semantic_global_left_unit_triangle
+    - exact_bottom_semantic_global_right_unit_triangle
+    - exact_bottom_semantic_global_pentagon
+  proof_obligation: >-
+    Form the two unit routes and the two three-arrow routes from the actual
+    conjugate mates of the G-111 unitor and compositor cells, identify every
+    composite with the corresponding native G-112 route, and fix separate
+    source-unit, target-unit, and pentagon equations at arbitrary semantic
+    arrows and at every indexed vertex.
+  selection_reason: >-
+    The route equations must consume the cross-system mate producers rather
+    than package the independent G-111 and G-112 coherence propositions.  The
+    arbitrary semantic-arrow construction is the strongest reusable producer;
+    indexed declarations then expose the exact G-113 quantification surface.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/TrianglePentagonCompatibility.lean
+  risks:
+    - confusing pseudofunctor unit triangles with adjunction zig-zag identities
+    - replacing actual composite routes by a conjunction wrapper
+    - using only one side of the pentagon
+    - omitting the associativity cast from the right three-arrow route
+    - overclaiming downstream (b)--(g) compatibility
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Four named routes now compose the Cycle 11 conjugate mates of the actual
+    G-111 unitor/compositor generators in the precise contravariant order.
+    The right three-arrow route includes the native reindex associativity cast.
+    Separate identification theorems rewrite all generators to the G-112
+    native routes; the two unit equations and the pentagon then consume the
+    corresponding G-112 coherence theorems.  Three indexed declarations fix
+    the same laws at every vertex.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/TrianglePentagonCompatibility.lean
+  evidence:
+    - semanticGlobalTransportEquivalence_leftUnitMateRoute_eq_g112
+    - semanticGlobalTransportEquivalence_rightUnitMateRoute_eq_g112
+    - semanticGlobalTransportEquivalence_leftUnitTriangle
+    - semanticGlobalTransportEquivalence_rightUnitTriangle
+    - semanticGlobalTransportEquivalence_pentagonLeftMateRoute_eq_g112
+    - semanticGlobalTransportEquivalence_pentagonRightMateRoute_eq_g112
+    - semanticGlobalTransportEquivalence_pentagon
+    - indexedDiagnosticTransportEquivalence_leftUnitTriangle
+    - indexedDiagnosticTransportEquivalence_rightUnitTriangle
+    - indexedDiagnosticTransportEquivalence_pentagon
+  claim_mapping:
+    definitions:
+      - semanticGlobalTransportEquivalence_leftUnitMateRoute
+      - semanticGlobalTransportEquivalence_rightUnitMateRoute
+      - semanticGlobalTransportEquivalence_pentagonLeftMateRoute
+      - semanticGlobalTransportEquivalence_pentagonRightMateRoute
+    theorem_names:
+      - semanticGlobalTransportEquivalence_leftUnitMateRoute_eq_g112
+      - semanticGlobalTransportEquivalence_rightUnitMateRoute_eq_g112
+      - semanticGlobalTransportEquivalence_leftUnitTriangle
+      - semanticGlobalTransportEquivalence_rightUnitTriangle
+      - semanticGlobalTransportEquivalence_pentagonLeftMateRoute_eq_g112
+      - semanticGlobalTransportEquivalence_pentagonRightMateRoute_eq_g112
+      - semanticGlobalTransportEquivalence_pentagon
+      - indexedDiagnosticTransportEquivalence_leftUnitTriangle
+      - indexedDiagnosticTransportEquivalence_rightUnitTriangle
+      - indexedDiagnosticTransportEquivalence_pentagon
+    source_labels:
+      - "target theorem (h): triangle and pentagon compatibility producer at layer (a)"
+      - "G-111 actual unitor and compositor cells"
+      - "Cycle 11 generated conjugate-mate equalities"
+      - "G-112 native unit routes, three-arrow routes, and coherence equations"
+    conjuncts:
+      - "(a) source-unit route -> conjugate unitor then conjugate compositor equals native cast"
+      - "(a) target-unit route -> mapped conjugate unitor then conjugate compositor equals native cast"
+      - "(a) pentagon -> both actual two-compositor mate routes agree, including associativity cast"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole-route NatIso mate and G-111 equality-cast alignment beyond the generatorwise mate composites"
+      - "triangle/pentagon propagation from layer (a) to downstream layers (b)--(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle fixes the generatorwise conjugate-mate composite routes and
+      their triangle/pentagon equations at layer (a).  It does not claim that
+      the whole G-111 route NatIso and its equality casts have yet been mated
+      as a single cell, nor any downstream, square/pasting, or conjunct (i)
+      obligation.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 layer-(a) conjugate-mate composite source-unit route"
+      - "K4 layer-(a) conjugate-mate composite target-unit route"
+      - "K4 layer-(a) conjugate-mate composite three-arrow routes"
+    remaining:
+      - "K4 whole-route/cast mate alignment and downstream triangle/pentagon propagation"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "unit cells / G-111 unitor through Cycle 11 conjugacy"
+      - "composition cells / G-111 compositor through Cycle 11 conjugacy"
+      - "native route equations / G-112 cartesian triangle and pentagon"
+    unresolved:
+      - "whole G-111 route NatIso and equality-cast conjugacy"
+      - "downstream route action and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - semanticGlobalTransportEquivalence_unitor_conjugate
+      - semanticGlobalTransportEquivalence_compositor_conjugate
+      - exact_bottom_semantic_global_left_unit_triangle
+      - exact_bottom_semantic_global_right_unit_triangle
+      - exact_bottom_semantic_global_pentagon
+    unused:
+      - coreFiberCompositor_left_unit
+      - coreFiberCompositor_right_unit
+      - coreFiberCompositor_assoc
+  structure_field_escape: none-found
+  route_integrity: "pass for generatorwise conjugate-mate composite routes; whole-route mate remains explicit"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/TrianglePentagonCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 14 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Promote the actual G-111 component routes and equality casts to natural
+    isomorphisms, mate each whole route to the native G-112 route, then lift
+    the resulting equations to the downstream diagnostic equivalences.
+```
