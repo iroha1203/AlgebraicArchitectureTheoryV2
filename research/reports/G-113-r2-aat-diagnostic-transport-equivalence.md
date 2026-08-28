@@ -3526,23 +3526,25 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged:
+    claimed_before_review:
       - "K4 downstream path-square compatibility for (d)--(g)"
       - "K4 downstream square-level horizontal-pasting compatibility for (d)--(g)"
       - "K4 whole (a)--(g) square-indexed exactness package"
+    actually_discharged: []
     remaining:
       - "target conjunct (i) decomposition and base-IsIso relation"
   certificate_provenance:
-    discharged:
+    claimed_before_review:
       - "base sides and route / Cycle 25 G-111 horizontal-paste theorems"
       - "fiber equivalence / G-111 push and G-112 semantic-global reindex"
       - "endpoint and reselection / explicit G-113 equivalences and generated inverse"
       - "cochain and orbit / pointwise endpoint equivalence and raw-defect equations"
       - "coherence and obstruction / forward reflection plus generated inverse witnesses"
+    actually_discharged: []
     unresolved:
       - "finite non-IsIso nondegenerate witness and base-IsIso corollary"
   proof_use:
-    used:
+    claimed_before_review:
       - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
       - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
       - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
@@ -3561,10 +3563,10 @@ audits:
       - indexedCoherentAt_transport_iff
       - indexedCoherentAt_inverseTransport_iff
       - indexedTransportObstructionVanishes_iff
-    unused: []
-  structure_field_escape: none-found
-  route_integrity: "pass for the generated square-indexed (a)--(g) package and both arbitrary-target inverse routes"
-  target_fitting: none-found
+    actually_used: []
+  structure_field_escape: "rejected: downstream fields escaped the pasted-square route"
+  route_integrity: "rejected: downstream fields did not consume the pasted route"
+  target_fitting: "rejected: aggregation did not fit the commuting target"
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
@@ -3652,9 +3654,8 @@ audits:
     removed:
       - "the rejected unrelated-path package parameters"
   proof_use:
-    route:
+    forward_downstream_route:
       - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
-      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
       - indexedDiagnosticPathSquare_via_horizontalRoute
       - indexedCoherentAt_transport_via_horizontalPasting
       - endpointAction_canonicalTwoCellComparator_via_horizontalPasting
@@ -3663,6 +3664,13 @@ audits:
       - indexedDiagnosticOrbit_via_horizontalPasting
       - indexedDiagnosticCoherence_via_horizontalPasting
       - indexedDiagnosticObstruction_via_horizontalPasting
+    inverse_path_route:
+      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+      - indexedDiagnosticPathSquare_inverse_via_horizontalRoute
+    inverse_cochain_route:
+      - indexedDiagnosticDefectCochain_via_horizontalPasting
+      - indexedDiagnosticDefectCochain_inverse_via_horizontalPasting
+      - transportedReselection_inverseTransportedReselection
   structure_field_escape: none-found
   target_fitting: none-found
   vacuity: none-found

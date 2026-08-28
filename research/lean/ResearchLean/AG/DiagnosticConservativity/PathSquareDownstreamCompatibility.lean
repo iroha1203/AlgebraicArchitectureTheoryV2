@@ -8,6 +8,13 @@ recursively by horizontal pasting, so they form the two path faces of the
 diagnostic transport cube. This module records those faces together with the
 comparator and raw-defect faces, and then derives cochain, orbit, coherence,
 and obstruction exactness from the cube.
+
+The two `Prop` structures below are theorem bundles, not predicates imposed on
+input data. Their producers work for every indexed hom and interpretation, so
+a negative instance cannot exist logically. The rejected predecessor instead
+bundled path-independent global theorems beside a pasted square; the present
+bundles require the authored two-cell cube and derive every downstream field
+through its defect face.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
