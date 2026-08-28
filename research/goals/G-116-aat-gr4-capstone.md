@@ -123,8 +123,11 @@
   **さらに、達成記録(O19)を completion の必須義務とする**:
   1. **義務台帳の突合**: 下記「Gr4 完遂義務台帳」の O1–O11・O13–O18・
      O20 を先行カード(G-111〜G-115)の fixed head・review 錨と突合
-     し、O12 を本カードの確定で充足する。**義務は移管でのみ動かし、
-     削除しない**(台帳改訂の規律)。
+     し、O12 を本カードの確定で充足する。**義務は移管、または人間承認
+     revision でのみ動かす。revision 時は旧義務の disposition を下記履歴
+     台帳に残し、削除しない**。O19 は現行義務の fixed head に加え、履歴
+     台帳の refuted / strengthened / superseded disposition も突合する
+     (台帳改訂の規律)。
   2. **解釈規約**: Gr4 達成とは gate 全項の帰趨が定理で確定している
      ことをいう(正枝である必要はない — 二枝 disjunction 義務は
      どちらの枝の確定も帰趨確定)。ただし記録の表現は exact-bottom
@@ -133,7 +136,9 @@
      ユーザー裁定とする(O7 は semantic-global 正枝で確定済み —
      実装実査 2026-08-26、反例枝を持たない)。
   3. **範囲併記**: coverage の到達段(第一段 / 第二段)、O6 /
-     O12・G-113 (i)・G-114 (b) の確定枝、O7 の semantic-global 正枝
+     O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
+     converse 反証・
+     G-114 (b) の確定枝、O7 の semantic-global 正枝
      fixed statement(`strongCartesianLiftOfTarget` の reviewed 宣言・
      wrapper・proof-use audit の記録)、量化域からの除外成分、
      **任意の独立 raw square family は自動的には coherent diagnostic
@@ -160,22 +165,38 @@
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | G-115 |
 | O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(semantic adequacy 条件込み) | G-115 |
 | O12 | IsIso 水準 exchange-failure の存否決定(sector+refinement / 上段 regime を含む設定 — 二枝) | G-116 |
-| O13 | `DiagnosticConservative` の定義と構造的生成 class の固定+十分性 theorem | G-113 |
-| O14 | target obstruction vanishing → source vanishing の反射 theorem(class 上) | G-113 |
-| O15 | source reselection orbit の検出 theorem | G-113 |
-| O16 | class 外で非零 obstruction が消える有限 witness(保守性の破れの実在) | G-113 |
-| O17 | 診断 class の恒等・水平・垂直貼り合わせ閉性 | G-113 |
-| O18 | 生成診断部分圏上の `Full` + `Faithful` 十分条件候補の statement 固定と生成 class との関係決定 | G-113 |
+| O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
+| O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
+| O15 | reselection equivalence と `InReselectionOrbit` membership iff | G-113 |
+| O16 | 非恒等 `¬ IsIso` base component、非恒等 defect / reselection を持ち、診断同値性が非退化発火する有限 witness | G-113 |
+| O17 | 診断輸送 equivalence の identity・垂直合成・path-square・水平貼り合わせ coherence | G-113 |
+| O18 | `Full` / `Faithful` / `EssentiallySurjective` producer と explicit equivalence。全 hom / vertex で base `IsIso` 非依存、`IsIso` base corollary、finite `¬ IsIso` witness による converse 反証 | G-113 |
 | O19 | Gr4 達成の範囲併記記録(義務台帳との突合+達成階梯対応表込み) | G-116 |
-| O20 | pointwise raw-defect reflection の分類(cochain 値水準 — O14 とは別 statement) | G-113 |
+| O20 | raw-defect cochain transport の explicit equivalence と `rawDefectCochain` commuting、pointwise iff | G-113 |
 
 **台帳注記**:
 
-- G-110 (D) の gate 第五項移管3項は O20(pointwise raw-defect
-  reflection)・O15(source orbit の検出)・O14(vanishing 反射)に
+**G-113 revision 1 義務 disposition(履歴台帳)**:
+
+| id | revision 1 義務 | disposition |
+|---|---|---|
+| O13-r1 | `DiagnosticConservative` と構造的生成 class・十分性 | class syntax、normalization completeness、生成 class は proved。class 上の十分性は `diagnosticConservative_all` により全 hom theorem へ strengthened。revision 1 全体は O16-r1 により `target-refuted`、現行 O13 は人間承認 revision 2 で置換。これら歴史 artifact は revision 2 completion には数えない |
+| O14-r1 | class 上の target vanishing → source vanishing | `diagnosticConservative_all` により全 hom へ強化済み。revision 2 O14 の iff の一方向として保持 |
+| O15-r1 | source reselection orbit の検出 | revision 1 では未完。人間承認 revision 2 の reselection / membership iff に superseded |
+| O16-r1 | class 外で非零 obstruction が零へ消える witness | `no_diagnosticConservativityCounterexample` により refuted。これが revision 1 の target-level 停止理由 |
+| O17-r1 | 診断 class の恒等・水平・垂直貼り合わせ閉性 | revision 1 では未完。人間承認 revision 2 の equivalence coherence に superseded |
+| O18-r1 | 生成 class と `Full` + `Faithful` 候補の関係決定 | revision 1 では未完。人間承認 revision 2 の一般 categorical decomposition に superseded |
+| O20-r1 | class 相対の pointwise raw-defect reflection 分類 | revision 1 では未完。人間承認 revision 2 の explicit cochain equivalence に superseded |
+
+- G-110 (D) の gate 第五項移管3項は O20(raw-defect cochain
+  equivalence)・O15(reselection orbit exactness)・O14(vanishing iff)に
   対応する — 移管義務の消滅なしをここで固定する。
-- n1005 §4.3 (D) の「情報損失の分類」は O13(class 分類)と O16(破れの
-  実在 = 情報損失の witness)が担う。
+- n1005 §4.3 (D) の「情報損失の分類」のうち、obstruction が非零から零へ
+  消える枝は revision 1 の no-counterexample theorem で反証された。一般の
+  injectivity、Full / Faithful、cochain / orbit equivalence はそこからは従わず、
+  G-110 の package-projection 固有 ambidextrous theorem を追加根拠とする
+  revision 2 の新しい未証明 target である。O13 が輸送 equivalence、O16 が
+  非 `IsIso` base 上での非退化発火を担う。
 - **universe 注記**: O1・O2・O6・O12 の universe 契約は F0 typing
   cycle で Lean の宇宙割当と型突合した上で確定する(O7 は G-110
   reviewed 宣言の universe 契約を継承し、fallback 対象外)。symbolic universe で
@@ -190,7 +211,7 @@
   量化とは別物)
 - (D) の `J_A` defect profile 枝(係数 base change カードとの接続点)
 - G-109 (G) の core 押し出し `p` に沿う effectivity の保存・反射
-  (O14 / O20 の診断反射とは方向が異なる別物)
+  (O14 / O20 の診断 exactness とは方向が異なる別物)
 - derived fiber product・bifibration 一般論・係数 base change(ℚ→R)・
   `ObProblem` 段の class 構成の変更・nerve / cover 接続
 - 候補8(係数忠実性)・候補13(comonadicity)の引き受け先裁定(係数

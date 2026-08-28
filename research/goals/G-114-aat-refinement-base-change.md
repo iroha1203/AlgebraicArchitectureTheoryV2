@@ -68,7 +68,7 @@
   特徴付けを欠く形)、**G-110 既決 mate 正例の再包装による regime
   正枝放電**。
 - `frontier`: refinement 圏の 2-cell(refinement 間の変形)の観察、
-  refinement と診断保守性(G-113)の相互作用の観察、係数 base change
+  refinement と indexed 診断輸送 exactness(G-113)の相互作用の観察、係数 base change
   カードとの接続点。
 
 - `target theorem`: **Refinement Category and Refinement Base-Change

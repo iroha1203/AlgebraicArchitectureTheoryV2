@@ -1,453 +1,295 @@
-# G-113-aat-diagnostic-conservativity — 診断保守性・反射・orbit exactness の分類
+# G-113-aat-diagnostic-conservativity — indexed 診断輸送の同値性と orbit exactness
 
 - `id`: `G-113-aat-diagnostic-conservativity`
+- `revision`: `2`
+- `revision approved`: `2026-08-28`
 - `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第五項の担当カード(担当義務 =
-  O13–O18・O20。義務台帳の正本は G-116 カード、設計の source note は
-  n1007 §3–§5)。G-111(完遂済み — 順方向 = coherent diagnostic
-  assembly・経路整合)に対する逆方向カードであり、G-111 の
-  `IndexedBaseDiagramHom` 上の diagnostic transport API を再定義せず
-  量化域として消費する(n1007
-  §5 判定線1)。依存は G-111。**新設語彙の命名権**:
-  `DiagnosticConservative` の命名は本カード専属。本カードの改訂は
-  G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-111 /
-  G-110 / G-109 / G-106)の statement が改訂された場合、本カードは
-  draft へ差し戻して再固定する(伝播規定)。report は (c)(d)(e) の
-  class 限定の範囲を G-116 の範囲併記へ突合可能な形で記録する
-  (供給契約)。
-  **execution gate(隊列運用)**: 本カードの `$target-theorem-loop`
-  起動は G-112 の完遂(`target-theorem-proved` 受理)後に限る(並走
-  しない)。loop はサイクル先頭の goal-defect 検査でこの gate を検査
-  し、G-112 完遂前の起動は `goal-defect` として停止する。
-  **head 分離**: F0 は次の fixed head を分けて tracking Issue に記録
-  する — language head(閉じた syntax・evaluator)、class-term head
-  ((b) の生成 class term)、O20-term head((e) の固定 term)、
-  (i) candidate head(`Full` + `Faithful` 候補 statement)。条件言語
-  そのものの設計を F0 以後へ持ち込むことは `goal-defect` とする
-  (F0 で行うのは、カード constructor 表とカード固定の候補列の Lean
-  転写・機械的登録であり、新語彙・新候補の発明ではない)。
-  **候補列(カード固定)**: class-term 候補列は条件言語の全 normal
-  form(conjunction の**結合・可換・冪等(ACI)**を法として3項)を
-  順序付きで尽くす —
-  第1 = `vertexwiseSourceMapInjective`、第2 =
-  `vertexwiseSourceMapInjective ∧ edgewiseSquarePullback`、第3 =
-  `edgewiseSquarePullback`。この「3項で尽くす」根拠は language head
-  の正規化 completeness artifact(全 term がこの3項のいずれかと外延
-  同値 — 下記 ledger)で放電する。O20-term =
-  `vertexwiseSourceMapInjective` の by-value 登録(**1項固定・候補
-  遷移なし**)。
-  (i) candidate 列 = `vertexwiseSourceMapBijective` の1項((i) 参照)。
-  候補列への追加・変更は target 改訂扱いとする。
-  **候補遷移規則(三層状態、G-112 様式)**: 各 head は候補列先頭の
-  機械的採用とする(K 段の証明結果を選定に使わない)。状態は三層で
-  記録する — candidate state(tracking Issue の local state)、cycle
-  result(loop 契約の正式語彙 = `proof-obligation-discharged` /
-  `blocker-fixed` / `proof-checkpoint` / `rejected`)、GOAL state
-  (`target-proof-checkpoint` / `target-refuted` / `target-blocked`)。
-  資格条項の反例固定・十分性 (b) の反例固定・candidate class 上の
-  (d) の反例固定 = candidate state を refuted とし、再利用可能な
-  refutation artifact を固定して cycle result = `blocker-fixed`、
-  GOAL state = `target-proof-checkpoint`、次 = 候補列の次項と
-  する((c) は (b) の corollary であり独立の遷移トリガーではない)—
-  **候補の反証は固定 target の反証ではない**(`target-refuted`
-  は candidate の取り方に依存しない、固定 target statement 自体への
-  反例・不能定理化に限る)。(e) の O20-term は1項固定であり候補遷移
-  を持たない — 固定 term の資格条項の反例固定は O20-term の選定不能 =
-  `goal-defect`(人間裁定へ差し戻し)とし、candidate transition と
-  しては扱わない。固定 term 上の cochain 反射の破れは
-  反例枝の確定(成功)であり、遷移トリガーではない。
-  **head 別無効化表(候補遷移時)**: class-term 遷移 →
-  (b)(c)(d)(f)(g)(h)(i) を新 term で再放電((e) は by-value 固定の
-  O20-term に従い追従しない)。
-  (i) candidate 遷移 → (i) のみ再放電。条件言語(constructor 表)の
-  変更 → target 改訂(人間裁定)であり全 artifact を無効化する。
-  witness の再選定は遷移後の proof obligation 選定として行い、証明後
-  の target-fitting 選択には当たらない。完了時の audit は class-term
-  indexed な conjunct((b)(c)(d)(f)(g)(h)(i))が同一の final
-  class-term に対して立ち、(e) が固定 O20-term に対して独立に立つ
-  ことを確認する。proof
-  未完成・反例なし = cycle result `proof-checkpoint`(候補は破棄
-  しない)。
-  同一 blocker が2 cycle 継続 = `target-blocked`。次候補への移行は
-  候補列の次項、または人間承認による。proof 結果を見た新 term の
-  発明は target 改訂(人間裁定)であり、証明サイクル内では行わない。
-- `predecessor`: G-110(完遂済み。無条件 forward covariance
-  (`transportObstructionVanishes_map` 系)と
-  `no_bcDiagnosticQualifiedVanishingCounterexample`。固定錨は下記
-  ledger 行)、G-111(完遂済み `target-theorem-proved`。coherent
-  diagnostic assembly (d1)–(d6)・`IndexedBaseDiagram` /
-  `IndexedBaseDiagramHom`・pointwise indexed calculus。固定錨は下記
-  ledger 行)、G-106
-  (reselection orbit 語彙)、G-109(core pseudofunctor API —
-  `CoreFiber` を型に含む seed を消費する)。
-- `tracking issue`: [#4198](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4198)(runtime state、cycle 履歴、fixed head、
-  次 proof obligation の正本)
-- `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-113、§5 判定線1・3)、
-  [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 (D) の独立 gate 文)、
-  [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (v)・(D) 移管文)
-- `research aim`: G-110 / G-111 で診断は base change に沿って順方向に
-  無条件に運ばれる。本カードは逆方向を分類する — どの base 作用が診断を
-  **保守**するか(target で消えたら source でも消えている)、どの作用が
-  reselection orbit を検出するか、そして保守性が破れる作用の実在。
-  `DiagnosticConservative` を定義し、それを構造的に生成する class を
-  固定し、反射・検出・破れ・閉性を定理化する。「診断が base change で
-  何を失うか」の分類であり、Gr4 gate 第五項の全体である。
-- `core tension`: 順方向の無条件性(G-110 で証明済み)は逆方向を含意
-  しない — source 非零かつ target 零は forward covariance と両立する
-  ため、逆方向の非含意そのものは (f) の class 外 witness が実在証明と
-  して供給する。ここに保守性が class の理論になる根拠がある。最大
-  リスクは二つ。class を「conservative と同値」の述語で立てる結論の
-  埋め込み、および class が空・退化でも反射・検出が vacuous に立つ
-  こと(class 内の非自明成員の実在義務で防ぐ)。また本カードの反射
-  (O14・O20)は G-109 の段射影 `p` に沿う effectivity 反射(域外)と
-  方向が異なる別物であり、この分界を statement に明記する(n1007 §5
-  判定線3)。
-- `rival`: conservative functor・descent の一般論。差は「診断障害
-  (defect cochain・reselection orbit)水準の保守性を、構造的生成
-  class・破れの witness・貼り合わせ閉性込みで Lean で固定する」点に
-  置く。
+  O13–O18・O20。義務台帳の正本は G-116、設計の source note は n1007
+  §3–§5)。G-111 が構成した covariant indexed diagnostic action と、
+  G-112 が構成した contravariant semantic-global cartesian reindexing を
+  同一の `IndexedBaseDiagramHom` 上で突合し、両者の同値性、診断値の
+  反射、reselection orbit exactness を一枚の theorem package として
+  固定する。diagram / hom / diagnostic interpretation の型は G-111、
+  semantic-global cleavage / reindexing の型は G-112 の reviewed API を
+  参照し、本カードで再定義しない。新設語彙の命名権は
+  `IndexedDiagnosticTransportEquivalence` に置き、既存の
+  `DiagnosticConservative` はその系として保持する。本カードの改訂は
+  G-116 の達成記録要件へ伝播する。
+- `revision provenance`: revision 1 の固定 target(blob
+  `89d47851711f9335bf42d312c8522db01c7718ba`)は、全 hom 上の
+  `DiagnosticConservative` と endpoint action の全射性を Lean で証明した
+  ことにより、O16 が要求した「class 外で診断が消える作用」と両立しない
+  と確定した。PR #4203 の exact head
+  `9966fb6ca4516b3601460079c288fa46f70f30dc`、merge
+  `da95789a5dbaca926554d461f89cc2c7273ac934`、および
+  `diagnosticConservative_all` / `no_diagnosticConservativityCounterexample`
+  は revision 1 の `target-refuted` 証拠として保存する。revision 2 は
+  revision 1 の穴埋めではなく、obstruction が非零から零へ消える枝の反証と
+  G-110 の package-projection 固有 ambidextrous theorem を新しい出発点として、
+  G-111 / G-112 の診断同値性を問う固定 target である。revision 1 単独から
+  injectivity、Full / Faithful、cochain / orbit equivalence が従うとは数えない。
+  completion は revision 2 を最初から再監査し、
+  revision 1 の class syntax、candidate head、normalization artifact、
+  finite fixture を revision 2 の義務放電として数えない。
+- `predecessor`: G-111(完遂済み。PR #4181 exact head
+  `87278945e24f48fba5b9b8154e6979800bde0cd6`、merge
+  `8850a5b4d2c03458f1f1f5af6bf2017d79ad1567`。`indexedFiberAction`、
+  coherent diagnostic assembly、identity / composition / path-square /
+  horizontal-pasting API)、G-112(完遂済み。PR #4197 exact head
+  `bf882573945a45780b022bc811754f8444846c53`、merge
+  `e9f891b8b0d763c6c29cb2d8b6e723b43a6bb9bb`。
+  `strongCartesianLiftOfTarget`、semantic-global cleavage / reindexing
+  functor と coherence)、G-113 revision 1 の reviewed reflection package、
+  G-110 の arbitrary-target
+  `strongCartesianLiftOfTarget_isStronglyCocartesian` と realized-arrow unit /
+  counit iso(PR #4153 exact head
+  `a1471483aca30c3d9d6e942deb38688401a8fed0`、merge
+  `315a2537cea51e1f8ea131351f4de9ef22b21145`)、G-106 の raw defect /
+  reselection orbit 語彙、G-109 の core pseudofunctor API。
+- `tracking issue`: [#4204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204)
+  (revision 2 の runtime state、cycle 履歴、fixed head、次 proof obligation の
+  正本)。[#4198](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4198)
+  は revision 1 の `target-refuted` 履歴として保持し、本 revision の runtime
+  state を追記しない。
+- `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)
+  (§3 義務台帳、§4 G-113、§5 判定線1・3)、
+  [G-116 カード](G-116-aat-gr4-capstone.md)(O13–O18・O20 の正本)、
+  [revision 1 report](../reports/G-113-aat-diagnostic-conservativity.md)
+  (revision 1 の refutation candidate / proof ledger。最終 `target-refuted` の
+  資格は上記 PR #4203 の exact / merge anchor、Lean 宣言、Issue #4198 に置く)。
+- `research aim`: indexed base change に沿う診断輸送を、単なる順方向の
+  保存や消滅反射としてではなく、G-111 の covariant action と G-112 の
+  contravariant reindexing が作る同値として捉える。その同値が endpoint、
+  reselection、coherence、raw-defect cochain、orbit membership の各水準を
+  exact に運ぶことを示し、Gr4 の indexed diagnostic geometry を閉じる。
+- `core tension`: G-111 と G-112 は向きと構成原理が異なる。前者は
+  coherent base-diagram hom から fiber action と診断輸送を組み、後者は
+  arbitrary target に対する strongly cartesian lift から reindexing を組む。
+  両 API の型が並ぶだけでは quasi-inverse、unit / counit、diagnostic
+  naturality は得られない。最大のリスクは、同値性を typeclass / structure
+  field として入力し直すこと、G-110 の realized finite-code sector だけで
+  全 indexed domain を代表させること、vanishing iff だけで orbit / cochain
+  exactness を完了扱いすることである。
+- `rival`: conservative functor、Grothendieck fibration / bifibration、
+  Beck–Chevalley と local system の一般論。差は、AAT の生成診断に対して
+  covariant action と semantic-global cartesian reindexing の明示的な
+  quasi-inverse、raw-defect と reselection orbit の exactness、coherence
+  までを Lean の同一 package に固定する点に置く。
 - `claim boundary`: 固定した一般 carrier `U`、G-111 の
-  `IndexedBaseDiagramHom` の declared base relation に相対して生成された
-  diagnostic transport
-  について語る(diagram / hom 型と順方向 API は G-111 の宣言を参照
-  のみ)。target base relation / path naturality は G-111 から継承する
-  direction hypothesis であり、保守性の結論相当 certificate ではない。
-  任意の独立 raw square family は量化域に含めない。係数は
-  動かさない。終対象・絶対積は導入しない。G-106 系 raw defect /
-  reselection 語彙に一本化(`J_A` defect profile 枝は域外)。carrier
-  change・係数 base change・段射影方向の effectivity 反射は域外
-  (G-116 カードの域外リストを継承)。
-- `capability categories`: classification、conservativity、reflection、
-  counterexample、closure。
-- `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
-  置き、固定 statement と completion criteria だけで完了判定する。
-- `portfolio constraint`: 生成 class と十分性だけで完了扱いしない。
-  反射・orbit 検出・cochain 値反射(O20)・class 外の破れ witness・
-  class 内の非自明発火 witness・閉性の全面に Lean artifact を要求する。
-- `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
-  なら `target-refuted`、全完了条件と final review を満たした場合だけ
+  `IndexedBaseDiagramHom` とその declared base relation に相対して生成された
+  diagnostic interpretation を量化域とする。係数は動かさない。任意の独立
+  raw square family、carrier change、G-109 の段射影 `p` に沿う effectivity
+  反射、`J_A` defect profile、終対象・絶対積は域外。G-112 の
+  semantic-global lift は同じ indexed hom の target data から生成する。
+  G-111 の domain 外の診断 interpretation を本カードで追加しない。
+- `capability categories`: equivalence、reflection、orbit-exactness、
+  coherence、nonvacuity。
+- `threshold policy`: SCORE は使わない。runtime state は revision 2 の
+  tracking Issue に置き、固定 statement と completion criteria だけで
+  完了判定する。
+- `portfolio constraint`: fiber functor の同値だけで完了扱いしない。
+  endpoint、reselection、coherence、vanishing、raw-defect cochain、orbit
+  membership、identity / composition / pasting coherence、有限非退化 witness
+  の全 artifact を要求する。
+- `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、固定
+  target の反例なら `target-refuted`、同じ blocker が二 cycle 続けば
+  `target-blocked`、全 completion criteria と final review を満たした場合だけ
   `target-theorem-proved` とする。
-- `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
-  proof obligation delta で評価する。
-- `dullness filter`: 次を弾く。class を結論(conservative)と同値な
-  述語または単一 fixture 等式型で立てる構成、反射を全成分可逆の
-  fixture だけで発火させる構成、class 外 witness を空診断図式で満たす
-  構成、class 内 witness を恒等 defect・恒等 reselection で満たす
-  構成、**O20 の反例枝を自明成分の退化 cochain 設定で満たす構成**、
-  閉性が恒等成分で vacuous に立つ構成、**(i) の候補を生成 class の
-  条件の構文的再ラベルで立てて関係決定を自明化する構成**、G-110 の
-  forward covariance の再証明を成果と数える構成。
-- `frontier`: 生成 class の必要十分化(最大 class theorem)、`p` 方向
-  effectivity 反射との合成観察(域外との接続点)、`J_A` 枝(域外の
-  まま)、係数 base change カードとの接続点。
+- `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は proof
+  obligation delta で評価する。
+- `dullness filter`: 恒等 hom だけの witness、`IsEquivalence` / `Full` /
+  `Faithful` を theorem premise・typeclass・structure field として供給する
+  構成、G-110 の realized finite-code sector だけに量化域を縮める構成、
+  vanishing iff だけを exactness 全体と呼ぶ構成、arbitrary target diagnostic
+  interpretation を G-111 の生成域外から持ち込む構成、revision 1 の class /
+  candidate syntax を再導入して同値性を条件化する構成を弾く。
+- `frontier`: 係数 base change 下の transport equivalence、段射影 `p` の
+  effectivity との合成、derived / higher fiber への拡張、一般 bifibration
+  としての抽象化。
 
-- `target theorem`: **Diagnostic Conservativity Classification
-  Theorem**。G-111 の coherent diagnostic transport の上で:
-  1. **(a) `DiagnosticConservative` の定義**:
-     `IndexedBaseDiagramHom` 上の述語として新設定義する(Lean に
-     既存宣言は無い — 本カードの建設義務)。量化形は
-     **per-interpretation 形**で固定する — 当該 hom 上の全 source
-     diagnostic interpretation について、生成 target transport の
-     obstruction vanishing が成立するならその interpretation の
-     source vanishing が成立する。interpretation を含意の外側で全量化
-     する集約形(「全 interpretation で target 消滅」を前件に取る形)
-     は不可 — 前件の vacuous 化により保守性が無内容に成立するため。
-  2. **(b) 生成 class と十分性**: `DiagnosticConservative` を構造的に
-     生成する class を、**閉じた条件言語(constructor 完全列挙)**の
-     term で定義し、class membership → conservative の十分性 theorem を
-     証明する。constructor は次の3つに限る(operand なし・数値定数
-     なし・集合定数なし)—
-     `vertexwiseSourceMapInjective`(全 vertex の transport index の
-     `sourceMap` が単射)、
-     `edgewiseSquarePullback`(全 generating edge の生成 edge square が
-     `ExtInst_U` の pullback square)、
-     `conjunction`(結合子はこれのみ)。評価意味は constructor ごとに
-     `Prop` 水準で固定する(`Function.Injective` / `IsPullback` 系。
-     決定手続き・cardinality 比較は用いない)。categorical `Mono`
-     constructor は採用しない(`atomEquiv` が常に可逆である
-     `ExtInst_U` では `sourceMap` 単射の外延的言い換えとなる見込みで、
-     独立候補にならないため)。この見込みは K0 で **Mono 排除補題**
-     (`ExtInst_U` の射について `Mono` ↔ `sourceMap` 単射)として証明
-     し fixed head に記録する — 排除の根拠固定。補題が反証された場合
-     は constructor 追加の target 改訂(人間裁定)へ差し戻す。
-     diagnostic 語彙(defect / reselection / coherence / vanishing /
-     conservativity)・生成 transport の値・fixture 値・arbitrary
-     `Prop` callback・external constant・存在量化(Skolem 化を含む)は
-     syntax に持ち込めない — この禁止は syntax の constructor /
-     operand 水準の規則であり、constructor の固定評価意味
-     (`IsPullback` の `Prop` 内容)には適用しない。constructor・
-     結合子・量化形の追加は target
-     改訂扱いとする。term の評価対象は hom(`IndexedBaseDiagramHom`)
-     とし(`DiagnosticConservative` は同じ hom 上の per-interpretation
-     全量化述語 — (a) の量化形固定が型を接続する)、
-     constructor が carrier / shape / diagram parameter を含まない
-     ことで全量化域に一様とする(per-carrier / per-shape 分岐なし。
-     rebase 装置は不要 — 構文が parameter を含まないため)。class には
-     資格条項5項を課す — (i) 探索前固定(language head / class-term
-     head の手続き)、(ii) 結論非参照(syntax の排除で担保し、
-     transitive dependency audit を discharge artifact に含める)、
-     (iii) 同型不変性(iso の読みは **diagram 圏の同型** — vertex
-     成分 iso が全 generating edge と可換(naturality)である diagram
-     iso の対+両 hom との可換 square からなる witness 型で F0 が型
-     固定する。naturality を欠く成分別同型の読みは採らない —
-     `edgewiseSquarePullback` が保存されないため)、(iv) 閉性
-     ((h) の conjunct が担い、別 artifact に計上しない)、(v) 非空
-     発火((g) の conjunct が担う — 非恒等 defect・非恒等
-     reselection・非可逆成分を含む class 成員上の実発火)。
-  3. **(c) 反射 theorem**: class 上で target obstruction vanishing →
-     source vanishing の instantiated 形を named theorem に固定する
-     (O14)。**(c) は (b) の corollary である** — (a) の
-     per-interpretation 量化形の下で class membership と (b) の十分性
-     から従うことを明記し、独立の candidate 反証トリガーには数えない
-     (O13 / O14 は obligation として分けるが、証明上は (b) の
-     instantiation)。非自明性の根拠 — (d2) endpoint 群
-     準同型は一般に非単射であり、逆方向は G-110 / G-111 の順方向
-     無条件性から従わない — を statement 側に一文固定し、逆方向の
-     非含意そのものは (f) の class 外 witness が実在証明として固定
-     する(この紐付けを statement に明記する)。
-  4. **(d) orbit 検出 theorem**: 固定量化形 — **orbit 元の水準**で
-     立てる: class hom の生成 transport について、source の raw-defect
-     orbit 元(`rawDefectCochain` at reselection)が source の基準
-     cochain と異なるなら、mapped orbit 元(transported data の
-     `rawDefectCochain` at mapped reselection — G-111 (d3)(d4) 様式)
-     も target の対応する基準 cochain と異なることを class 上で証明
-     する。**基準 = `initialRawDefectCochain`**(identity cochain との
-     関係は (c) の vanishing 反射の担当 — O14 / O15 の分界)。この
-     単一基準との相異の保存は cochain transport map の全域単射性
-     ((e) O20 正枝の担当)より真に弱い形であり、全域単射性・
-     reselection 水準の単射性・`InReselectionOrbit` membership の
-     target → source 反射は主張しない。
-  5. **(e) pointwise raw-defect reflection の分類(O20)**: cochain 値
-     水準の反射が成立するか否かを、(c)(d) の vanishing / orbit 水準と
-     は別 statement として、固定 O20-term の class 上で二枝分類する
-     (どちらの枝の確定も成功)。term は (b) と同一の条件言語から
-     選び、O20-term head はカード固定の
-     `vertexwiseSourceMapInjective` を**名指しで**(by-value)登録
-     する(1項固定・候補遷移なし — (b) の候補遷移が O20 の選定を
-     動かさないため)。**正枝の固定式** =
-     固定 term の class 上で、cochain transport map の単射性
-     (`map c₁ = map c₂ → c₁ = c₂` — 任意 cochain 値の反射。(d) の
-     単一基準相異保存より真に強い形 — O15 / O20 の分界)。反例枝 =
-     固定
-     term の **class membership を満たし**、`map c₁ = map c₂` かつ
-     `c₁ ≠ c₂` の cochain 対と、非恒等 defect・非恒等
-     reselection の非退化条件を満たす witness で、正枝を反証する
-     ことを同時に証明する(排他性は反例が供給 — G-110 (B) 様式。
-     class 外 witness による代替は放電と数えない — (f) との分界)。
-  6. **(f) class 外 witness**: class に入らない作用で非零 obstruction が
-     消える有限 witness を構成する(保守性の破れの実在 = class 制限の
-     非空虚性、かつ (c) の逆方向非含意の実在証明)。
-  7. **(g) class 内 named nonvacuity witness**: 非恒等 defect・非恒等
-     reselection・非可逆成分を含む class 成員上で反射・検出が実発火
-     する有限 witness を構成する。非可逆成分は hom の vertex 成分の
-     `sourceMap`(単射・非全射)で実現する — `atomEquiv` は常に可逆で
-     あり実現部位にならない。
-  8. **(h) 閉性**: 二部構成で結論型を固定する(G-111 API では hom を
-     返す演算は identity / 垂直合成のみで、水平貼り合わせ
-     (`horizontalPathSquare`)は square 水準の演算のため)。
-     **(h1) hom 水準閉性**: class の恒等・垂直合成閉性を producer で
-     証明する — operand の class membership を実消費し、output の
-     membership を構成する(output 側の caller 供給、および
-     membership 定義の展開だけの放電は不可)。**(h2) square 水準の
-     水平安定性**: class hom が生成する path square の水平貼り合わせ
-     について、square 水準 constructor の評価条件
-     (`edgewiseSquarePullback` の `IsPullback`)が保たれることを証明
-     する(vertex 水準 constructor は
-     `horizontalPathSquare_left` / `_right` の保存により影響を受け
-     ないことの確認を含む)。hom を返す水平演算の新設は行わない。
-  9. **(i) `Full` + `Faithful` 候補の決定**: 対象は vertex ごとの
-     生成 fiber transport functor(`indexedFiberAction` 系、
-     `CoreFiber` 間)とし、`Full` + `Faithful` はこの functor に
-     ついて読む。候補 statement は**カードで固定する** — 候補列は
-     `vertexwiseSourceMapBijective`(全 vertex の transport index の
-     `sourceMap` が全単射)の1項とし、F0 は Lean 転写と登録のみを
-     行う((i) candidate head)。候補列への追加は target 改訂扱い。
-     義務 = この候補の Full+Faithful への十分性 theorem と、生成
-     class との関係の決定。「決定」= class → 候補、候補 → class の
-     含意それぞれについて証明または反例で帰趨を確定すること(一方向
-     のみの確定は完了と数えない。帰趨の組はどれでも成功)。候補は
-     生成 class の条件と構文的に異なり(全単射 ≠ 単射)、
-     Full+Faithful 自体の言い換え・定義展開ではない(関係決定の
-     自明化の排除)。
+- `target theorem`: **Indexed Diagnostic Transport Equivalence and Orbit
+  Exactness Theorem**。G-111 / G-112 の reviewed setting の上で、次を同一
+  package として証明する。
+  1. **(a) vertexwise transport equivalence (O13)**: 各
+     `IndexedBaseDiagramHom` と各 vertex について、G-111 の
+     `indexedFiberAction` と、G-112 の semantic-global reindexing から同じ
+     hom / target data に対して得る functor を、向きを揃えた明示的な
+     quasi-inverse として組む。unit / counit natural isomorphism と triangle
+     identity を構成し、`Full`、`Faithful`、`EssentiallySurjective`、
+     `IsEquivalence` および明示的 equivalence を named declarations に固定
+     する。これらを premise として受け取らない。
+  2. **(b) endpoint exactness (O13)**: diagnostic endpoint action を明示的
+     equivalence として構成し、その forward map が revision 1 の endpoint
+     action と外延一致することを証明する。injective / surjective はこの
+     equivalence の系とする。
+  3. **(c) reselection exactness (O15)**: reselection の forward transport
+     と inverse transport を構成し、左右逆、基準 reselection の保存、
+     mapped reselection の往復を証明する。
+  4. **(d) coherence exactness**: source diagnostic coherence と transported
+     target diagnostic coherence の iff を証明する。順方向は G-111 の
+     coherence preservation を消費し、逆方向は (a)–(c) の inverse transport
+     と自然性から導く。
+  5. **(e) obstruction exactness (O14)**: obstruction vanishing の iff を
+     証明する。`DiagnosticConservative` と
+     `no_diagnosticConservativityCounterexample` はその系として全 hom 上に
+     named declarations を保持し、class 条件を課さない。
+  6. **(f) raw-defect cochain exactness (O20)**: cochain transport を明示的
+     equivalence として構成し、forward / inverse の双方が
+     `rawDefectCochain` と可換することを証明する。従って任意 cochain 値の
+     等値と相異を双方向に反射する。
+  7. **(g) orbit exactness (O15)**: `InReselectionOrbit` membership の iff を
+     source / target 間で証明する。単一の基準 cochain との相異保存だけでは
+     この義務を放電したと数えない。
+  8. **(h) transport coherence (O17)**: identity、vertical composition、
+     path-square naturality、horizontal pasting に対し、(a)–(g) の
+     equivalence が G-111 / G-112 の unitor・compositor・triangle・pentagon
+     と可換することを証明する。水平演算が square 水準である場合は新しい
+     hom 演算を捏造せず、その square-level commuting theorem を固定する。
+  9. **(i) categorical decomposition and nondegeneracy (O16・O18)**:
+     `Full` / `Faithful` / `EssentiallySurjective` の各 producer が入力 data
+     から生成される proof-use route を固定する。base `IsIso` との関係は次の
+     二定理で固定する。(i1) 任意の indexed hom / vertex で base component の
+     `IsIso` を仮定せず fiber transport equivalence が成立し、従って
+     `IsIso` base から同じ equivalence を得る named corollary を持つ。
+     (i2) converse「fiber transport equivalence なら base component は
+     `IsIso`」を、非恒等かつ `¬ IsIso` の有限 base component 上で fiber /
+     diagnostic equivalence が発火する named witness theorem により反証する。
+     同じ witness 上で非恒等 defect と非恒等 reselection が往復で失われない
+     ことも証明する。これは revision 1 の不可能な「診断を消す class 外
+     witness」に代わる、同値性の非退化性 witness である。
 - `target theorem boundary`: Lean 置き場所は
-  `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
-  module。G-111 / G-110 / G-109 / G-106 の reviewed module は参照
-  のみ。完了面は (a)–(i) まで。順方向共変性(G-111)・coverage
-  (G-112)・段射影方向の effectivity 反射(域外)は主張しない。
-  universe 契約は F0 の型突合で確定し fixed head に記録する。(f)(g) の
-  witness は有限 fixture であり per-universe 構成を原則とする。
-  per-universe 構成が具体的 Lean universe constraint として型不能と
-  固定・記録された場合は `goal-defect` とする(endpoint 固定への弱化
-  は行わない)。
-- `target proof artifacts`: `DiagnosticConservative` 定義、閉じた条件
-  言語(constructor 表の syntax 型・evaluator・transitive dependency
-  audit・Mono 排除補題・正規化 completeness theorem)、iso witness
-  型と生成 class の資格 theorem 群(結論非参照・
-  同型不変性)、十分性
-  theorem、反射 theorem(O14)、orbit 検出 theorem(O15)、cochain 値
-  反射の分類 artifact(O20、反例枝は非退化条件付き)、class 外破れ
-  witness(O16)、class 内 named nonvacuity witness、貼り合わせ閉性
-  theorem(O17、(h1) producer+(h2) 水平安定性)、`Full` +
-  `Faithful` 決定 artifact(O18)、report
-  `research/reports/G-113-aat-diagnostic-conservativity.md`。
-- `target proof strategy`: F0 typing(language head = カード
-  constructor 表の Lean 転写、カード固定の候補列の機械的登録
-  (class-term 3項・O20-term = 第1候補 by-value・(i) candidate =
-  `vertexwiseSourceMapBijective`)、iso
-  witness 型、`DiagnosticConservative` と生成
-  class の signature、G-111 diagram-hom API への接続、universe 契約)→
-  K0 定義と生成 class と Mono 排除補題 →
-  K1 十分性と反射 corollary → K2 orbit 検出と O20 → K3 witness 対
-  (class 外の
-  破れ+class 内の実発火)→ K4 閉性(h1 / h2)と (i) 決定。既存成果の利用 map:
-  G-111 coherent diagnostic transport(量化域 —
-  `IndexedBaseDiagram.lean` / `IndexedDiagnosticAssembly.lean` /
-  `IndexedDiagnosticReselection.lean` / `IndexedDiagnosticVanishing.lean`)、
-  `InReselectionOrbit`(orbit 語彙)、
-  `CoreFiberFunctorDefectCochain` 系(fiberwise 作用の seed 型)。
-- `target theorem completion criteria`: 全 artifact が sorry なしで
-  `ResearchLean` に受理され、axiom / placeholder audit が clean で
-  あること。下記 ledger の `discharge-required` を放電し、audit で
-  provenance、proof-use、structure-field escape、route integrity を監査
-  すること。二段 review gate(各実装 PR の標準 fixed-head
-  `$review-pr`、completion candidate での Lean / report / tracking
-  Issue 同期と final review packet 作成、独立 `$math-lean-review`
-  4査読全 `No major findings`)と CI・merge・最終 Issue 同期を通過
-  した場合だけ完了する(正本 = target-goal-contract.md)。完了時は
-  class-term indexed な conjunct((b)(c)(d)(f)(g)(h)(i))が同一の
-  final class-term に対して立ち、(e) が固定 O20-term に対して立つ
-  ことを audit で確認する。
-- `target premise discharge policy`: 入力
-  (`IndexedBaseDiagramHom`・source diagnostic interpretation・witness
-  fixture)だけを残せる。保守性・反射・検出の結論相当データの供給は
-  放電と数えない。
+  `research/lean/ResearchLean/AG/DiagnosticConservativity/` 配下の revision 2
+  新 module。G-111、G-112、G-113 revision 1 の reviewed modules は参照のみ。
+  revision 1 の class syntax / normalization declarations は削除せず歴史成果と
+  して残すが、revision 2 main spine に import / premise として不要なら接続
+  しない。量化は一般 carrier、一般 indexed hom、G-111 が生成する全
+  diagnostic interpretation に対して行う。有限 witness だけを `Fin` 等で
+  固定してよい。
+- `target proof artifacts`:
+  - vertexwise quasi-inverse、unit / counit natural iso、triangle identity、
+    `Full` / `Faithful` / `EssentiallySurjective` / explicit equivalence の Lean
+    declarations。
+  - endpoint / reselection / raw-defect cochain equivalence、coherence iff、
+    vanishing iff、orbit membership iff の Lean declarations。
+  - identity / composition / path-square / horizontal-pasting coherence package。
+  - 全 indexed hom / vertex 上の base-`IsIso` 非依存 equivalence theorem、
+    `IsIso` base からの named corollary、fiber equivalence が base `IsIso` を
+    反射しないことを示す finite named counterexample theorem。
+  - 非恒等 `¬ IsIso` base component、非恒等 defect、非恒等 reselection を持つ
+    finite nondegenerate witness と、その全 conjunct の producer theorem。
+  - revision 2 report
+    `research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md`。revision 1
+    report は上書きしない。
+- `target proof strategy`: F0 = G-111 / G-112 の type・universe・variance を
+  突合し、push / reindex alignment の exact Lean statement を固定する。K0 =
+  revision 1 の endomorphism reflection を arbitrary fiber hom へ一般化し、
+  Full / Faithful producer を構成する。K1 = G-112 の arbitrary-target strongly
+  cartesian lift と、G-110
+  `strongCartesianLiftOfTarget_isStronglyCocartesian` を実消費し、realized-arrow
+  unit / counit は構成前例に限定して、一般 indexed domain の essential
+  surjectivity、unit / counit、equivalence を構成する。K2 = endpoint /
+  reselection equivalence、coherence iff、vanishing iff。
+  K3 = raw-defect cochain equivalence と orbit membership iff。K4 = identity /
+  composition / square / pasting coherence と finite nondegenerate witness。
+  G-110 の realized-arrow theorem は構成前例であり、一般 indexed conclusion
+  の代替にはしない。
+- `target theorem completion criteria`: (a)–(i) の全 artifact が sorry なしで
+  `ResearchLean` に受理され、対象全 declarations の `#print axioms`、placeholder、
+  hidden / BiDi Unicode、privacy、import direction が clean であること。下記
+  ledger の全 `discharge-required` を入力 data からの theorem / construction、
+  reviewed predecessor theorem、または finite witness で放電すること。
+  statement の量化・方向・結論強度、certificate provenance、material premise
+  proof-use、structure-field escape、route integrity、nonvacuity、dependency DAG
+  を監査すること。各実装 PR の exact fixed head を標準 `$review-pr` に渡し、
+  report / tracking Issue を同期すること。completion candidate では同一 fixed
+  GOAL に対する final review packet を作成し、別の独立
+  `$math-lean-review` 数学2本・Lean2本がすべて正確に
+  `No major findings` であること。CI green、merge、定理名の存在、revision 1
+  artifact の再利用だけでは completion としない。
+- `target premise discharge policy`: carrier、indexed diagram / hom、declared
+  base relation、G-111 が生成する diagnostic interpretation だけを入力境界に
+  残す。同値性、Full / Faithful / EssentialSurjective、unit / counit、反射、
+  orbit exactness、cochain map の injectivity / surjectivity、coherence を theorem
+  argument、typeclass、structure / certificate field として供給してはならず、
+  completion までに producer theorem で放電する。
 - `target material premise ledger`:
-  - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
-    しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
-    `a1471483`、merge `315a2537`)(支える結論 = 順方向無条件性との
-    分界と (f) の対照。proof-use = (c) の非自明性根拠の参照と (f) の
-    対照。結論相当でない理由 = 既証明の環境)。
-  - `G-111 reviewed artifact`: `ambient-boundary`。参照のみ、改変
-    しない。固定錨: 完了 PR #4181(final head `87278945`、merge
-    `8850a5b4`、fixed GOAL blob `6541ee42`)。供給 =
-    `IndexedBaseDiagram` / `IndexedBaseDiagramHom`・coherent
-    diagnostic assembly (d1)–(d6)・pointwise indexed calculus。
-    順方向 API の再定義禁止。支える結論 = 全 conjunct の量化域。
-    proof-use = 量化域と順方向 transport API の消費。結論相当でない
-    理由 = 順方向定理と入力幾何であり、逆方向(保守・反射・検出)の
-    結論を供給しない。
-  - `G-106 InReselectionOrbit 系`: `ambient-boundary`(固定錨は G-110
-    カード ledger の G-106 錨を継承。proof-use = orbit 検出 (d) の
-    語彙)。
-  - `G-109 core pseudofunctor API(CoreFiber)`: `ambient-boundary`
-    (固定錨は G-110 カード ledger の G-109 錨を継承。proof-use =
-    fiberwise seed 型の消費)。
-  - `G-111 継承 direction hypothesis(declared base relation / path
-    naturality)`: `direction-hypothesis`(支える結論 = 全 conjunct の
-    量化域の入力仮定。provenance = G-111 reviewed の diagnostic-free
-    diagram / hom 入力。proof-use = 生成 diagnostic transport の方向
-    仮定として実消費する。結論相当でない理由 = 入力幾何の方向仮定で
-    あり、保守性・反射・検出の結論を供給しない — claim boundary の
-    宣言と対応する行)。
-  - `閉じた条件言語(syntax / evaluator)`: `discharge-required`
-    (支える結論 = (b) 資格条項 (i)(ii) と failure policy の消尽
-    規則。discharge artifact = カードの
-    完全列挙と一致する閉じた syntax 型・evaluator・transitive
-    dependency audit(依存 helper 経由で diagnostic 結論を読む経路の
-    禁止)・Mono 排除補題(`Mono` ↔ `sourceMap` 単射 — constructor
-    非採用の根拠固定)・**正規化 completeness theorem**(`normalize`
-    関数で全 term をカード固定の3 normal form のいずれかへ写し、
-    `eval t ↔ eval (normalize t)` の評価同値を証明する — 消尽 =
-    言語内不能の根拠)。provenance = カード列挙の Lean 転写
-    (language head)。
-    proof-use = class-term と O20-term が消費し、消尽時の
-    `target-refuted` 判定が正規化 theorem を実消費する。結論相当で
-    ない理由 = 条件の表現手段であり保守性の結論を含まない)。
-  - `DiagnosticConservative 定義と生成 class`: `discharge-required`
-    (支える結論 = (a)(b)。discharge artifact = 定義+iso witness 型+
-    資格 theorem 群(結論非参照・同型不変性 — (iv)(v) は (h)(g) の
-    行が担い二重計上しない)+十分性。provenance = language head の
-    term(class-term head)。proof-use = (c)–(h) の class index。
-    結論相当でない理由 = class は閉じた条件言語の
-    構造条件のみで立ち、保守性は十分性 theorem が結ぶ)。
-  - `反射・orbit 検出・O20 分類`: `discharge-required`(支える結論 =
-    (c)(d)(e)。discharge artifact = (c) の corollary named theorem
-    ((b) の instantiation+(f) 紐付け文)、(d) の orbit 元の基準
-    相異保存 theorem(基準 = `initialRawDefectCochain`)、
-    (e) の二枝確定 artifact(正枝 = cochain transport map 単射性
-    theorem、または membership+cochain 対+非退化
-    +正枝反証の witness)。provenance = 固定 class-term / O20-term と
-    G-111 順方向 transport API。proof-use = source 側仮定と class
-    membership を実消費する。
-    結論相当でない理由 = 反射・検出・分類は全て証明で生成し、
-    certificate 供給を認めない)。
-  - `witness raw data((f)(g))`: `conclusion-equivalent-risk`
-    (支える結論 = (f)(g) の入力。provenance = proof obligation 選定時
-    に固定する authored raw 幾何のみ — shape・diagram・hom・source
-    diagnostic interpretation の有限 data。class membership / 非
-    membership・保守性の破れ・発火・非退化・非可逆性を field に
-    持たせない。proof-use = (f)(g) の証明で実消費する。監査
-    artifact = structure-field escape audit と選定時固定の記録
-    (証明後の target-fitting 選択の禁止)。結論相当でない理由 =
-    raw 幾何のみで、破れ・発火は theorem として生成する)。
-  - `witness firing / nondegeneracy theorem`: `discharge-required`
-    (支える結論 = (f)(g)。discharge artifact = (f) の非零 obstruction
-    の target 消滅と class 非 membership、(g) の class membership・
-    反射 / 検出の実発火・非恒等 defect / reselection・非可逆成分の
-    生成 theorem 群。provenance = witness raw data と固定 term。
-    結論相当でない理由 = 全て証明で生成し、certificate 供給を認め
-    ない)。
-  - `貼り合わせ閉性`: `discharge-required`(支える結論 = (h)。
-    discharge artifact = (h1) 恒等・垂直合成の producer theorem —
-    operand の class membership を実消費し output の membership を
-    構成する(output の caller 供給不可)— と (h2) 生成 path square
-    の水平貼り合わせ安定性 theorem。provenance = class-term の
-    評価意味と G-111 pasting API(`horizontalPathSquare` 系)。
-    proof-use = (h) の放電。結論相当で
-    ない理由 = 閉性・安定性は証明で生成する)。
-  - `Full + Faithful 決定`: `discharge-required`(支える結論 = (i)。
-    discharge artifact = カード固定候補 `vertexwiseSourceMapBijective`
-    の十分性 theorem+両含意それぞれの証明または反例。provenance =
-    (i) candidate head(カード固定列の転写)と生成 fiber
-    transport functor。proof-use = 生成 class との関係決定。結論相当
-    でない理由 = 帰趨の組はどれでも成功する分類であり、結論を仮定
-    しない)。
-- `target route integrity gate`: 生成 class は language head で固定
-  した閉じた syntax の term として立て、fixture 値・checker 出力・
-  結論由来の条件を持ち込まない。witness fixture は
-  proof obligation 選定時に固定する。term 候補・(i) 候補の証明後の
-  target-fitting 差し替えをしない(遷移はカード固定候補列の次項、
-  または人間承認に限る)。禁止経路 — 結論の埋め込み(class = conservative
-  同値述語)、可逆 fixture のみの反射発火、候補の構文的再ラベル、
-  証明後の target-fitting 選択。
-- `target anti-weakening rule`: 保守性・反射・検出・閉性・発火を
-  theorem argument、typeclass、structure field、certificate field、
-  opaque class membership へ移して成功扱いしない。class term・(i)
-  候補と結論の**定義的同値**(定義展開・Skolem 化で結論に一致する
-  形)を禁じる。`ambient-boundary` に残せるのは入力幾何だけである。
-- `target failure policy`: fail-closed を原則とする。資格条項・十分
-  性 (b)・candidate class 上の (d) の反例固定は candidate 相対の反証
-  であり、候補遷移規則に従って candidate refuted → 候補列の次項と
-  する(固定 target の反証ではない。(c) は (b) の corollary であり
-  独立の反証トリガーを持たない)。**候補列の消尽の扱い(量化範囲の
-  固定)**: 候補列は条件言語の全 normal form を尽くすため、全3項が
-  反例固定で尽きた場合は、その反証群と language head の正規化
-  completeness theorem(全 term が3項のいずれかと外延同値)を合成
-  した成果として「条件言語内に
-  (b)(d) を成立させる term が存在しない」target-level 不能 =
-  `target-refuted` とする。反証によらず(停滞・blocked のまま)尽き
-  た場合は `target-blocked`。新 term(constructor 追加)の発明は
-  target 改訂(人間裁定)とする。O20-term(1項固定)の資格条項の
-  反例固定は選定不能 = `goal-defect` とする(program context の
-  規則)。candidate の取り方に依存しない不能
-  の定理化 — (f) が原理的に
-  不能(保守性が coherent domain で無条件成立し class 制限が空虚)、
-  または条件言語の全 term 上で十分性 (b) もしくは orbit 検出 (d) が
-  不能 — も、その定理を成果として
-  `target-refuted` とする。(e) は二枝分類でありどちらの枝の確定も
-  成功、両枝とも閉じない場合は `target-blocked`。(i) は帰趨の組が
-  どれでも成功。(a) の型不能・statement 不足、および条件言語の F0 以後の
-  設計持ち込みは `goal-defect`。witness の停滞は `target-blocked`。
-  fixed target の変更は人間の別判断とする。
+  - `G-111 reviewed indexed diagnostic action`: `ambient-boundary`。固定錨 =
+    PR #4181 exact head / merge(上記)。支える結論 = covariant action と forward
+    diagnostic naturality。結論相当でない理由 = inverse、essential surjectivity、
+    iff、orbit exactness は G-111 単独からは与えられない。
+  - `G-112 reviewed semantic-global reindexing`: `ambient-boundary`。固定錨 =
+    PR #4197 exact head / merge(上記)。支える結論 = arbitrary-target strongly
+    cartesian lift と contravariant reindexing。結論相当でない理由 = G-111 の
+    action との alignment と diagnostic naturality は未構成である。
+  - `G-113 revision 1 reflection package`: `ambient-boundary`。固定錨 =
+    PR #4203 exact head / merge(上記)。支える結論 = 全 hom の vanishing 反射と
+    endpoint surjectivity。結論相当でない理由 = explicit fiber / reselection /
+    cochain equivalence と orbit membership iff を主張しない。
+  - `G-110 arbitrary-target lift cocartesianness`: `discharge-required`。固定錨 =
+    PR #4153 exact head / merge(上記)の
+    `strongCartesianLiftOfTarget_isStronglyCocartesian`。支える結論 = (a)(i) の
+    counit / essential surjectivity。discharge artifact = reviewed predecessor
+    theorem を一般 indexed hom の selected lift に適用する named bridge。
+    proof-use = G-112 の cartesian lift と同じ射について cocartesian uniqueness
+    を実消費する。realized-arrow unit / counit の一般域への外挿は不可。
+  - `push / reindex type and variance alignment`: `discharge-required`。支える
+    結論 = (a)。artifact = 同じ hom / target data から両 functor を組む typed
+    comparison と外延一致 theorem。provenance = G-111 / G-112 producer data。
+  - `Full and Faithful producers`: `discharge-required`。支える結論 = (a)(i)。
+    artifact = arbitrary fiber hom に対する preimage / equality reflection theorem。
+    proof-use = unit / counit または lift uniqueness を実消費する。
+  - `EssentiallySurjective producer`: `discharge-required`。支える結論 = (a)(i)。
+    artifact = arbitrary target object からの strongly cartesian lift、同じ lift の
+    G-110 cocartesianness bridge、object iso。proof-use = G-112 の arbitrary-target
+    theorem と上記 G-110 reviewed theorem の双方を実消費する。
+  - `unit / counit and triangle identities`: `discharge-required`。支える結論 =
+    (a)。artifact = natural isomorphisms と左右 triangle。caller-supplied iso 不可。
+  - `endpoint and reselection inverse maps`: `discharge-required`。支える結論 =
+    (b)(c)。artifact = forward / inverse producer と左右逆 theorem。
+  - `coherence and vanishing inverse direction`: `discharge-required`。支える
+    結論 = (d)(e)。artifact = inverse transport から導く named iff theorems。
+  - `raw-defect cochain equivalence`: `discharge-required`。支える結論 = (f)。
+    artifact = explicit equivalence と `rawDefectCochain` commuting theorems。
+  - `orbit membership inverse direction`: `discharge-required`。支える結論 =
+    (g)。artifact = reselection / cochain inverse を実消費する membership iff。
+  - `identity / composition / square / pasting coherence`: `discharge-required`。
+    支える結論 = (h)。artifact = G-111 / G-112 coherence API と可換する theorem
+    package。output coherence の caller 供給不可。
+  - `finite non-IsIso nondegenerate witness raw data`: `conclusion-equivalent-risk`。
+    支える結論 = (i)。base component、defect、reselection の値だけを fixture
+    data として許し、`¬ IsIso`、非恒等性、equivalence、保存を field にしない。
+  - `finite witness firing`: `discharge-required`。支える結論 = (i)。artifact =
+    raw fixture から `¬ IsIso`、非恒等 defect / reselection、往復保存を別々に
+    証明する named theorems。
+  - `base IsIso relation`: `discharge-required`。支える結論 = (i1)(i2)。
+    artifact = 全 hom / vertex の base-`IsIso` 非依存 equivalence theorem、
+    `IsIso` base corollary、同一 finite witness による converse 反証 theorem。
+    proof-use = universal equivalence producer と finite witness firing を実消費し、
+    relation の caller-supplied decision を受け取らない。
+  - `revision 1 class syntax / candidate head`: `not-applicable`。歴史 artifact。
+    revision 2 の premise、route、completion evidence として使用しない。
+- `target anti-weakening rule`: (a)–(i) の結論相当性質を theorem argument、
+  typeclass、structure / certificate field、opaque membership、revision 1 class
+  conditionへ移さない。量化域を恒等 hom、IsIso base、realized finite-code
+  sector、単一 fixture に縮めない。片方向 map、injective / surjective の片方、
+  vanishing iff だけを explicit equivalence / orbit exactness と読み替えない。
+- `target route integrity gate`: push / reindex comparison、unit / counit、inverse
+  endpoint / reselection / cochain map、finite witness の各 route について、どの
+  G-111 / G-112 入力 data、universal property、lift uniqueness、reviewed theorem、
+  raw finite fixture から生成されたかを declaration map と proof-use audit に
+  固定する。target-fitting selection、空型 / singleton / identity への退化、
+  conclusion-side law の field 埋め込み、G-110 realized sector から一般域への
+  無根拠な外挿を `rejected` とする。
+- `target failure policy`: revision 2 の universal equivalence、raw-defect
+  commuting、orbit membership iff のいずれかに concrete counterexample または
+  不可能定理を固定した場合は `target-refuted`。type / universe / variance の
+  不一致により statement 自体が定式化不能、または固定 target の改訂が必要な
+  場合は `goal defect` として止め、人間承認なしに class 条件や弱い反射定理へ
+  fallback しない。有用な package は得たが未放電 premise / coverage / review
+  gap が残る場合は `target-proof-checkpoint`。同じ blocker が二 cycle 続けば
+  `target-blocked`、二 cycle 連続で受理可能な proof DAG / premise / blocker delta
+  がなければ `proof stagnation` とする。tracking Issue は人間の明示指示なしに
+  close しない。

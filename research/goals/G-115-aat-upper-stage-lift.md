@@ -76,7 +76,7 @@
   立てる構成**(上段 lift の実消費を欠く形)、G-109 pseudofunctor
   theorem の再証明を成果と数える構成。
 - `frontier`: `ObProblem` 段の class naturality の一般化(class 構成を
-  動かす方向 — 域外のまま観察のみ)、上段診断と G-113 保守性の相互
+  動かす方向 — 域外のまま観察のみ)、上段診断と G-113 transport exactness の相互
   作用、無限段の塔。
 
 - `target theorem`: **Upper-Stage Base-Change Lift Theorem**。
