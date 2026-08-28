@@ -2928,3 +2928,146 @@ audits:
     Transport coherence and obstruction propositions through the explicit
     left/right whole-pentagon reselection and cochain routes.
 ```
+
+### Cycle 23 — whole-pentagon coherence and obstruction witness transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 23
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 6dc41283b9478f50ef5212ef6651d79dea02e1ac
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 22 whole-pentagon orbit witnesses accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticPentagonMateLeftReselectionEquivalence
+    - indexedDiagnosticPentagonMateRightReselectionEquivalence
+    - indexedDiagnosticPentagonMateReselectionEquivalence_eq
+    - indexedDiagnosticPentagonG111LeftEndpointEquivalence_apply
+    - coreFiberPentagonLeftRouteIso_app_trans
+    - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+    - indexedCoherentAt_inverseTransport_iff
+    - transportObstructionVanishes_iff_coherentizable
+  proof_obligation: >-
+    Prove left/right whole-pentagon endpoint and reselection application laws,
+    identify the generated three-stage inverse reselection routes on every
+    direct target, and use those routes to transport coherence and obstruction
+    witnesses through layers (d) and (e).
+  selection_reason: >-
+    Cycle 22 closed the cochain and orbit layers.  The remaining proposition
+    layer must retain the same whole-pentagon comparators rather than infer its
+    result only from the general all-hom exactness theorem.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonPropositionCompatibility.lean
+  risks:
+    - replacing comparator proof-use by the all-hom proposition iff
+    - restricting arbitrary direct-target reselections to a selected image
+    - erasing the right route or its associativity cast
+    - accepting coherentizability or a compatibility equation from the caller
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The endpoint application theorem consumes the two actual compositors,
+    their vertical composite, right whiskering, naturality, and automorphism
+    composition.  Its left/right lifts act at every reselection coordinate.
+    Generated inverse images and round trips identify both three-stage inverse
+    routes with direct-composite inverse transport for every direct-target
+    reselection.  Two coherence iff theorems then use the left and cast-bearing
+    right comparators explicitly.  The obstruction theorem constructs its
+    forward coherentizability witness through the left comparator and its
+    reverse witness through the inverse right comparator.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PentagonPropositionCompatibility.lean
+  evidence:
+    - indexedDiagnosticPentagonMateLeftEndpointEquivalence_transport_apply
+    - indexedDiagnosticPentagonMateRightEndpointEquivalence_transport_apply
+    - indexedDiagnosticPentagonMateLeftReselectionEquivalence_transport_apply
+    - indexedDiagnosticPentagonMateRightReselectionEquivalence_transport_apply
+    - indexedDiagnosticPentagonMateLeftReselectionEquivalence_inverse
+    - indexedDiagnosticPentagonMateRightReselectionEquivalence_inverse
+    - indexedDiagnosticPentagonCoherentAt_mate_left_iff
+    - indexedDiagnosticPentagonCoherentAt_mate_right_iff
+    - indexedDiagnosticPentagonTransportObstructionVanishes_mate_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticPentagonMateLeftEndpointEquivalence_transport_apply
+      - indexedDiagnosticPentagonMateRightEndpointEquivalence_transport_apply
+      - indexedDiagnosticPentagonMateLeftReselectionEquivalence_transport_apply
+      - indexedDiagnosticPentagonMateRightReselectionEquivalence_transport_apply
+      - indexedDiagnosticPentagonMateLeftReselectionEquivalence_inverse
+      - indexedDiagnosticPentagonMateRightReselectionEquivalence_inverse
+      - indexedDiagnosticPentagonCoherentAt_mate_left_iff
+      - indexedDiagnosticPentagonCoherentAt_mate_right_iff
+      - indexedDiagnosticPentagonTransportObstructionVanishes_mate_iff
+    source_labels:
+      - "target theorem (h): whole-pentagon compatibility at endpoint/reselection layers (b)(c)"
+      - "target theorem (h): whole-pentagon compatibility at coherence layer (d)"
+      - "target theorem (h): whole-pentagon compatibility at obstruction layer (e)"
+    conjuncts:
+      - "left/right direct transport -> three successive endpoint/reselection transports"
+      - "arbitrary direct-target reselection -> left/right coherence iff"
+      - "left forward and right inverse coherentizability witnesses -> obstruction vanishing iff"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "whole unit/triangle downstream propagation beyond the existing binary identity/composition layers"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes whole-pentagon propagation through coherence and
+      obstruction propositions using explicit left/right witness routes.  It
+      does not claim unit/triangle, square/pasting, or conjunct (i) completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole-pentagon coherence exactness for arbitrary direct-target reselections"
+      - "K4 whole-pentagon obstruction witness transport in both directions"
+    remaining:
+      - "K4 whole unit/triangle downstream proposition propagation"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "endpoint/reselection application / actual whole left and cast-bearing right routes"
+      - "inverse reselections / generated inverse equivalences and round trips"
+      - "coherence witnesses / three reviewed inverse-transport iff steps"
+      - "obstruction witnesses / left forward comparator and inverse right comparator"
+    unresolved:
+      - "whole unit/triangle proposition routes"
+      - "square/pasting routes and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticPentagonG111LeftEndpointEquivalence_apply
+      - coreFiberPentagonLeftRouteIso_app_trans
+      - packageFiberAutMulEquivOfCoreFiberIso_trans
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+      - coreFiberFunctorPackageAutHom_iso_naturality
+      - coreFiberFunctorPackageAutHom_comp
+      - indexedDiagnosticPentagonMateEndpointEquivalence_eq
+      - indexedDiagnosticPentagonMateReselectionEquivalence_eq
+      - indexedCoherentAt_inverseTransport_iff
+      - transportObstructionVanishes_iff_coherentizable
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for left/right endpoint, reselection, coherence, and obstruction witness routes"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.CompositionPropositionCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonPropositionCompatibility.lean / exit 0"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PentagonPropositionCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonPropositionCompatibility / exit 0 / selected Cycle 23 module only"
+    - "9 declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: >-
+    Complete the remaining unit/triangle proposition routes or begin the
+    path-square and horizontal-pasting compatibility package, according to the
+    shortest live proof-DAG route.
+```

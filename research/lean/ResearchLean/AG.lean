@@ -36,6 +36,7 @@ import ResearchLean.AG.DiagnosticConservativity.WholePentagonCompatibility
 import ResearchLean.AG.DiagnosticConservativity.PentagonDownstreamCompatibility
 import ResearchLean.AG.DiagnosticConservativity.PentagonCochainCompatibility
 import ResearchLean.AG.DiagnosticConservativity.PentagonOrbitCompatibility
+import ResearchLean.AG.DiagnosticConservativity.PentagonPropositionCompatibility
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
