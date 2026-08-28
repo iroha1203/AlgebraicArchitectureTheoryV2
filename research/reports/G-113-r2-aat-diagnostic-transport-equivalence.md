@@ -1694,3 +1694,157 @@ audits:
     Propagate the canonical compositor through downstream layers (b)--(g),
     beginning with endpoint and reselection composition laws.
 ```
+
+### Cycle 14 — downstream vertical-composition compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 14
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 13c700e9b11a411f49abf3e5801fe0e43b6c4cd8
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 13 completes downstream identity compatibility"
+  proof_dag_predecessors:
+    - coreFiberCompositor
+    - exact_bottom_semantic_global_compositor
+    - indexedDiagnosticTransportEquivalence_comp_conjugate
+    - coreFiberFunctorPackageAutHom_iso_naturality
+    - coreFiberFunctorPackageAutHom_comp
+    - indexedDiagnosticEndpointEquivalence
+    - indexedDiagnosticReselectionEquivalence
+    - indexedDiagnosticDefectCochainEquivalence
+    - indexedDiagnosticInReselectionOrbit_iff
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+  proof_obligation: >-
+    Generate the G-111 and G-112-mate vertical-composition comparisons on
+    endpoint automorphisms, prove them equal using the Cycle 11 mate theorem,
+    lift that cross-system equality to every reselection and raw-defect
+    cochain coordinate, and prove arbitrary direct-target orbit membership iff
+    through the G-112-mate compositor.  This covers the composition part of
+    layers (b), (c), (f), and (g).
+  selection_reason: >-
+    Endpoint composition naturality is the common producer for the downstream
+    multiplicative data.  Naming the independent G-111 comparisons and their
+    equality with the G-112 mate at all three data levels makes both
+    predecessor routes visible before proposition-valued coherence and
+    obstruction composition are addressed.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean
+  risks:
+    - treating transportedInterpretation composition as definitional equality
+    - using only the G-111 route without consuming the G-112 compositor
+    - proving a pointwise endpoint equality without lifting cross-system equality
+    - replacing orbit membership by comparison with one selected baseline
+    - claiming coherence or obstruction composition from data-level equations
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The G-111 core-fiber compositor and the inverse mate of the G-112
+    semantic-global compositor independently generate endpoint automorphism
+    equivalences from direct to successive transport.  Cycle 11 identifies
+    them, and functoriality plus isomorphism naturality proves the compositor
+    equation on every endpoint automorphism.  Pointwise constructions lift
+    both routes and their equality to all reselection and raw-defect cochain
+    coordinates.  Factoring an arbitrary direct-target cochain through the
+    generated direct equivalence and applying the two orbit iff theorems proves
+    orbit membership exactly through the G-112-mate compositor.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean
+  evidence:
+    - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_eq_g111
+    - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+    - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_eq_g111
+    - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
+    - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_eq_g111
+    - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_apply
+    - indexedDiagnosticCompositionInReselectionOrbit_mate_compositor_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticCompositionEndpointCompositorEquivalence
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_eq_g111
+      - indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
+      - indexedDiagnosticCompositionReselectionCompositorEquivalence
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_eq_g111
+      - indexedDiagnosticCompositionMateReselectionCompositorEquivalence_apply
+      - indexedDiagnosticCompositionDefectCochainCompositorEquivalence
+      - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence
+      - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_eq_g111
+      - indexedDiagnosticCompositionMateDefectCochainCompositorEquivalence_apply
+      - indexedDiagnosticCompositionInReselectionOrbit_mate_compositor_iff
+    source_labels:
+      - "target theorem (h): vertical-composition compatibility for (b), (c), (f), and (g)"
+      - "G-111 canonical core-fiber compositor"
+      - "G-112 semantic-global compositor and Cycle 11 conjugate-mate equality"
+      - "Cycles 5, 6, 9, and 10 generated equivalences and orbit iff"
+    conjuncts:
+      - "(b) endpoint composition -> G-111/G-112-mate comparison equality and compositor equation"
+      - "(c) reselection composition -> pointwise cross-system equality and compositor equation"
+      - "(f) raw-defect cochain composition -> pointwise cross-system equality and compositor equation"
+      - "(g) orbit composition -> arbitrary direct-target membership iff through the G-112 mate"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "vertical-composition compatibility for layers (d) and (e)"
+      - cross-system triangle and pentagon route compatibility
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle discharges only vertical-composition compatibility for (b),
+      (c), (f), and (g).  It does not claim composition compatibility for
+      coherence or obstruction, triangle/pentagon routes, square/pasting
+      compatibility, or conjunct (i).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 (b) endpoint vertical-composition compatibility"
+      - "K4 (c) reselection vertical-composition compatibility"
+      - "K4 (f) raw-defect cochain vertical-composition compatibility"
+      - "K4 (g) orbit vertical-composition compatibility"
+    remaining:
+      - "K4 vertical-composition compatibility for (d) and (e)"
+      - "K4 triangle, pentagon, square, and pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "G-111 endpoint comparison / coreFiberCompositor"
+      - "G-112 endpoint mate comparison / exact_bottom_semantic_global_compositor"
+      - "cross-system endpoint equality / Cycle 11 indexed conjugate-mate theorem"
+      - "endpoint equation / generated endpoint action, functor composition, and isomorphism naturality"
+      - "reselection and cochain comparisons / pointwise cross-system endpoint equality"
+      - "orbit iff / generated direct inverse and two reviewed orbit equivalences"
+    unresolved:
+      - "coherence and obstruction vertical-composition compatibility"
+      - "triangle, pentagon, and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticTransportEquivalence_comp_conjugate
+      - exact_bottom_semantic_global_compositor
+      - coreFiberFunctorPackageAutHom_iso_naturality
+      - coreFiberFunctorPackageAutHom_comp
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for vertical composition of (b), (c), (f), and (g)"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 13 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Prove vertical-composition compatibility for coherence and obstruction,
+    then establish cross-system triangle and pentagon route equations.
+```
