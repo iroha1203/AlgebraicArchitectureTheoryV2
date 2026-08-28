@@ -58,7 +58,8 @@
   (§3 義務台帳、§4 G-113、§5 判定線1・3)、
   [G-116 カード](G-116-aat-gr4-capstone.md)(O13–O18・O20 の正本)、
   [revision 1 report](../reports/G-113-aat-diagnostic-conservativity.md)
-  (`target-refuted` の歴史証拠)。
+  (revision 1 の refutation candidate / proof ledger。最終 `target-refuted` の
+  資格は上記 PR #4203 の exact / merge anchor、Lean 宣言、Issue #4198 に置く)。
 - `research aim`: indexed base change に沿う診断輸送を、単なる順方向の
   保存や消滅反射としてではなく、G-111 の covariant action と G-112 の
   contravariant reindexing が作る同値として捉える。その同値が endpoint、

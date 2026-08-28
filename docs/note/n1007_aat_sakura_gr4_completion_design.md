@@ -201,7 +201,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 
 | id | revision 1 義務 | disposition |
 |---|---|---|
-| O13-r1 | `DiagnosticConservative` と構造的生成 class・十分性 | G-113 revision 1 全体の `target-refuted` 後、人間承認 revision 2 により superseded。class syntax / normalization は歴史 artifact であり revision 2 completion には数えない |
+| O13-r1 | `DiagnosticConservative` と構造的生成 class・十分性 | class syntax、normalization completeness、生成 class は proved。class 上の十分性は `diagnosticConservative_all` により全 hom theorem へ strengthened。revision 1 全体は O16-r1 により `target-refuted`、現行 O13 は人間承認 revision 2 で置換。これら歴史 artifact は revision 2 completion には数えない |
 | O14-r1 | class 上の target vanishing → source vanishing | `diagnosticConservative_all` により全 hom へ強化済み。revision 2 O14 の iff の一方向として保持 |
 | O15-r1 | source reselection orbit の検出 | revision 1 では未完。人間承認 revision 2 の reselection / membership iff に superseded |
 | O16-r1 | class 外で非零 obstruction が零へ消える witness | `no_diagnosticConservativityCounterexample` により refuted。これが revision 1 の target-level 停止理由 |
