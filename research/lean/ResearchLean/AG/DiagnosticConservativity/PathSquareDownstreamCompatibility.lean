@@ -3,17 +3,11 @@ import ResearchLean.AG.DiagnosticConservativity.PathSquareCompatibility
 /-!
 # G-113 revision 2 downstream path-square compatibility
 
-The G-111 horizontal operation is a paste of consecutive path squares, not an
-operation on indexed diagram homs.  Cycle 25 fixed the corresponding forward
-and inverse commuting equations at the total-lift and reselection layers.
-
-This module assembles the whole G-113 exactness surface over that actual pasted
-square.  The package is generated from the fixed indexed hom and source
-interpretation: it contains no caller-supplied equivalence, inverse,
-commutativity, coherence, vanishing, or orbit certificate.  Its path fields
-consume the component-to-paste-to-append chain, and its remaining fields expose
-the exact fiber, endpoint, reselection, raw-defect cochain, orbit, coherence,
-and obstruction maps governed by those same path values.
+Every authored two-cell has two finite paths. Their path squares are generated
+recursively by horizontal pasting, so they form the two path faces of the
+diagnostic transport cube. This module records those faces together with the
+comparator and raw-defect faces, and then derives cochain, orbit, coherence,
+and obstruction exactness from the cube.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -27,203 +21,438 @@ open TransportCoherence
 
 namespace IndexedBaseDiagramHom
 
-/--
-The generated G-113 `(a)`--`(g)` exactness package over one authored G-111
-horizontal path-square paste.
+private theorem packageTotalHom_comp_assoc'
+    {U : AtomCarrier.{u}} {P Q R S : AATCorePackage U}
+    (first : PackageTotalHom P Q) (second : PackageTotalHom Q R)
+    (third : PackageTotalHom R S) :
+    first.comp (second.comp third) = (first.comp second).comp third := by
+  let packageCategory : Category (AATCorePackage U) := inferInstance
+  exact (@Category.assoc (AATCorePackage U) packageCategory
+    P Q R S first second third).symm
 
-The two paths only select the square whose compatibility is being recorded.
-All downstream fields remain quantified over arbitrary source and target
-values, because cochains and the proposition layers are global over the fixed
-indexed shape rather than carrying a separate horizontal operation.
--/
-structure IndexedDiagnosticHorizontalPastingExactness
+/-- A nonempty indexed path is its first edge pasted horizontally with its tail. -/
+theorem indexedDiagnosticPathSquare_via_horizontalRoute
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
-    (source : IndexedDiagnosticInterpretation D) {i j k : G.Vertex}
-    (first : IndexedBasePath G.toIndexedBaseShape i j)
-    (second : IndexedBasePath G.toIndexedBaseShape j k) : Prop where
-  /-- The pasted base square and the direct appended-path square have the same sides. -/
-  baseSides :
-    (hom.horizontalPathSquare first second).top =
-        (hom.pathSquare (first.append second)).top ∧
-      (hom.horizontalPathSquare first second).bottom =
-        (hom.pathSquare (first.append second)).bottom ∧
-      (hom.horizontalPathSquare first second).left =
-        (hom.pathSquare (first.append second)).left ∧
-      (hom.horizontalPathSquare first second).right =
-        (hom.pathSquare (first.append second)).right
-  /-- The square keeps its authored horizontal-paste provenance. -/
-  route :
-    (hom.horizontalPathSquare first second).route =
-      .pasteHorizontal first.squareRoute second.squareRoute
-  /-- `(a)`: the forward functor of the explicit equivalence is the G-111 push. -/
-  fiberFunctor : ∀ vertex,
-    (indexedDiagnosticTransportEquivalence hom vertex).functor =
-      indexedDiagnosticTransportPush hom vertex
-  /-- `(a)`: the inverse functor of the explicit equivalence is the G-112 reindexing. -/
-  fiberInverse : ∀ vertex,
-    (indexedDiagnosticTransportEquivalence hom vertex).inverse =
-      indexedDiagnosticTransportReindex hom vertex
-  /-- `(a)`: the generated push is an equivalence at every vertex. -/
-  fiberIsEquivalence : ∀ vertex,
-    (indexedDiagnosticTransportPush hom vertex).IsEquivalence
-  /-- `(b)`: the endpoint equivalence forward map is the generated endpoint action. -/
-  endpointForward : ∀ vertex
-      (automorphism : PackageFiberAut (source.package vertex)),
-    indexedDiagnosticEndpointEquivalence hom source vertex automorphism =
-      hom.endpointAction source vertex automorphism
-  /-- `(b)`: every source endpoint value is recovered after a forward round trip. -/
-  endpointSourceRoundTrip : ∀ vertex
-      (automorphism : PackageFiberAut (source.package vertex)),
-    (indexedDiagnosticEndpointEquivalence hom source vertex).symm
-        (indexedDiagnosticEndpointEquivalence hom source vertex automorphism) =
-      automorphism
-  /-- `(b)`: every target endpoint value is recovered from the generated inverse. -/
-  endpointInverse : ∀ vertex
-      (targetAutomorphism : PackageFiberAut
-        ((hom.transportedInterpretation source).package vertex)),
-    indexedDiagnosticEndpointEquivalence hom source vertex
-        ((indexedDiagnosticEndpointEquivalence hom source vertex).symm
-          targetAutomorphism) = targetAutomorphism
-  /-- `(c)`: the reselection equivalence forward map is the G-111 transport. -/
-  reselectionForward : ∀ reselection : IndexedEdgeReselection source,
-    indexedDiagnosticReselectionEquivalence hom source reselection =
-      hom.transportedReselection source reselection
-  /-- `(c)`: forward then inverse reselection transport is the identity. -/
-  reselectionSourceRoundTrip : ∀ reselection : IndexedEdgeReselection source,
-    hom.inverseTransportedReselection source
-        (hom.transportedReselection source reselection) = reselection
-  /-- `(c)`: inverse then forward reselection transport is the identity. -/
-  reselectionTargetRoundTrip : ∀ targetReselection : IndexedEdgeReselection
-      (hom.transportedInterpretation source),
-    hom.transportedReselection source
-        (hom.inverseTransportedReselection source targetReselection) =
-      targetReselection
-  /-- The forward appended-path square is obtained through horizontal pasting. -/
-  pathForward : ∀ reselection : IndexedEdgeReselection source,
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) {i j : G.Vertex}
+    (path : IndexedBasePath G.toIndexedBaseShape i j) :
     (hom.diagnosticVertexLift source i).comp
+        ((hom.transportedInterpretation source).reselectedPathLift
+          (indexedDiagnosticReselectionEquivalence hom source reselection) path) =
+      (source.reselectedPathLift reselection path).comp
+        (hom.diagnosticVertexLift source j) := by
+  cases path with
+  | nil _ =>
+      exact hom.indexedDiagnosticPathSquare_commutes source reselection (.nil _)
+  | @cons _ middle target edge tail =>
+      simpa only [IndexedBasePath.append,
+        IndexedDiagnosticInterpretation.reselectedPathLift] using
+        hom.indexedDiagnosticHorizontalPathPasting_eq_pathSquare source reselection
+          (.cons edge (.nil middle)) tail
+
+/-- The inverse path square is generated by the same recursive horizontal route. -/
+theorem indexedDiagnosticPathSquare_inverse_via_horizontalRoute
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (targetReselection : IndexedEdgeReselection
+      (hom.transportedInterpretation source)) {i j : G.Vertex}
+    (path : IndexedBasePath G.toIndexedBaseShape i j) :
+    (hom.diagnosticVertexLift source i).comp
+        ((hom.transportedInterpretation source).reselectedPathLift
+          targetReselection path) =
+      (source.reselectedPathLift
+        (hom.inverseTransportedReselection source targetReselection) path).comp
+          (hom.diagnosticVertexLift source j) := by
+  cases path with
+  | nil _ =>
+      exact hom.indexedDiagnosticPathSquare_inverse_commutes source
+        targetReselection (.nil _)
+  | @cons _ middle target edge tail =>
+      simpa only [IndexedBasePath.append,
+        IndexedDiagnosticInterpretation.reselectedPathLift] using
+        hom.indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare source
+          targetReselection (.cons edge (.nil middle)) tail
+
+/-- Coherence preservation with both path faces supplied by horizontal pasting. -/
+theorem indexedCoherentAt_transport_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source)
+    (coherent : source.IndexedCoherentAt reselection) :
+    (hom.transportedInterpretation source).IndexedCoherentAt
+      (hom.transportedReselection source reselection) := by
+  intro cell
+  let vertexLift := hom.diagnosticVertexLift source (G.twoSource cell)
+  let targetLeft :=
+    ((hom.transportedInterpretation source).reselectedPathLift
+      (hom.transportedReselection source reselection) (G.twoLeft cell)).comp
+        (PackageFiberAut.hom
+          ((hom.transportedInterpretation source).comparator cell))
+  let targetRight :=
+    (hom.transportedInterpretation source).reselectedPathLift
+      (hom.transportedReselection source reselection) (G.twoRight cell)
+  letI : (packageProjection U).IsStronglyCocartesian
+      (hom.app (G.twoSource cell)) vertexLift :=
+    hom.diagnosticVertexLift_isStronglyCocartesian source _
+  letI : (packageProjection U).IsHomLift
+      (E.path (G.twoLeft cell))
+      ((hom.transportedInterpretation source).reselectedPathLift
+        (hom.transportedReselection source reselection) (G.twoLeft cell)) :=
+    (hom.transportedInterpretation source).reselectedPathLift_isHomLift _ _
+  letI : (packageProjection U).IsHomLift
+      (𝟙 (E.vertex (G.twoTarget cell)))
+      (PackageFiberAut.hom
+        ((hom.transportedInterpretation source).comparator cell)) := by
+    apply CategoryTheory.IsHomLift.of_commsq
+      (packageProjection U) (𝟙 (E.vertex (G.twoTarget cell)))
+      (PackageFiberAut.hom
+        ((hom.transportedInterpretation source).comparator cell))
+      ((hom.transportedInterpretation source).vertexBase (G.twoTarget cell))
+      ((hom.transportedInterpretation source).vertexBase (G.twoTarget cell))
+    rw [packageProjection_map, PackageFiberAut.hom_base_eq, Category.comp_id]
+    exact Category.id_comp _
+  letI : (packageProjection U).IsHomLift
+      (E.path (G.twoLeft cell)) targetLeft := by
+    have composite : (packageProjection U).IsHomLift
+        (E.path (G.twoLeft cell) ≫ 𝟙 (E.vertex (G.twoTarget cell)))
+        targetLeft := CategoryTheory.IsHomLift.comp
+          (packageProjection U) (E.path (G.twoLeft cell))
+          (𝟙 (E.vertex (G.twoTarget cell)))
+          ((hom.transportedInterpretation source).reselectedPathLift
+            (hom.transportedReselection source reselection) (G.twoLeft cell))
+          (PackageFiberAut.hom
+            ((hom.transportedInterpretation source).comparator cell))
+    simpa using composite
+  letI : (packageProjection U).IsHomLift
+      (E.path (G.twoLeft cell)) targetRight := by
+    rw [E.relation_path cell]
+    exact (hom.transportedInterpretation source).reselectedPathLift_isHomLift _ _
+  apply CategoryTheory.Functor.IsStronglyCocartesian.ext
+    (packageProjection U) (hom.app (G.twoSource cell)) vertexLift
+    (E.path (G.twoLeft cell))
+  dsimp only [vertexLift, targetLeft, targetRight]
+  calc
+    _ = ((hom.diagnosticVertexLift source (G.twoSource cell)).comp
+          ((hom.transportedInterpretation source).reselectedPathLift
+            (hom.transportedReselection source reselection)
+            (G.twoLeft cell))).comp
+          (PackageFiberAut.hom
+            ((hom.transportedInterpretation source).comparator cell)) :=
+        packageTotalHom_comp_assoc' _ _ _
+    _ = ((source.reselectedPathLift reselection (G.twoLeft cell)).comp
+          (hom.diagnosticVertexLift source (G.twoTarget cell))).comp
+          (PackageFiberAut.hom
+            ((hom.transportedInterpretation source).comparator cell)) := by
+        have face := hom.indexedDiagnosticPathSquare_via_horizontalRoute source
+          reselection (G.twoLeft cell)
+        rw [indexedDiagnosticReselectionEquivalence_apply] at face
+        rw [face]
+    _ = (source.reselectedPathLift reselection (G.twoLeft cell)).comp
+          ((hom.diagnosticVertexLift source (G.twoTarget cell)).comp
+            (PackageFiberAut.hom
+              ((hom.transportedInterpretation source).comparator cell))) :=
+        (packageTotalHom_comp_assoc' _ _ _).symm
+    _ = (source.reselectedPathLift reselection (G.twoLeft cell)).comp
+          ((PackageFiberAut.hom (source.comparator cell)).comp
+            (hom.diagnosticVertexLift source (G.twoTarget cell))) := by
+        rw [hom.diagnosticVertexLift_comparator_naturality source cell]
+    _ = ((source.reselectedPathLift reselection (G.twoLeft cell)).comp
+          (PackageFiberAut.hom (source.comparator cell))).comp
+            (hom.diagnosticVertexLift source (G.twoTarget cell)) :=
+        packageTotalHom_comp_assoc' _ _ _
+    _ = (source.reselectedPathLift reselection (G.twoRight cell)).comp
+          (hom.diagnosticVertexLift source (G.twoTarget cell)) := by
+        rw [coherent cell]
+    _ = _ := by
+      have face := hom.indexedDiagnosticPathSquare_via_horizontalRoute source
+        reselection (G.twoRight cell)
+      rw [indexedDiagnosticReselectionEquivalence_apply] at face
+      exact face.symm
+
+/-- Canonical comparator transport obtained from the horizontal-pasting proof. -/
+theorem endpointAction_canonicalTwoCellComparator_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) (cell : G.TwoCell) :
+    hom.endpointAction source (G.twoTarget cell)
+        (canonicalTwoCellComparator source.toAdmissibleTransportData
+          reselection cell) =
+      canonicalTwoCellComparator
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection) cell := by
+  let canonicalized := canonicalizedDiagnosticInterpretation source reselection
+  let targetLeft :=
+    TransportCoherence.reselectedPathLift
+      (hom.transportedInterpretation source).toAdmissibleTransportData.lift
+      (hom.transportedReselection source reselection)
+      (G.twoLeft cell).toPresentedPath
+  letI : (packageProjection U).IsStronglyCocartesian
+      targetLeft.base targetLeft :=
+    TransportCoherence.reselectedPathLift_isStronglyCocartesian
+      (hom.transportedInterpretation source).toAdmissibleTransportData.lift
+      (hom.transportedReselection source reselection)
+      (G.twoLeft cell).toPresentedPath
+  apply PackageFiberAut.ext_of_strong_fac targetLeft
+  have transportedCoherent :=
+    hom.indexedCoherentAt_transport_via_horizontalPasting canonicalized
+      reselection (canonicalizedDiagnosticInterpretation_coherent source reselection)
+  calc
+    targetLeft.comp
+        (PackageFiberAut.hom
+          (hom.endpointAction source (G.twoTarget cell)
+            (canonicalTwoCellComparator source.toAdmissibleTransportData
+              reselection cell))) =
+      (hom.transportedInterpretation source).reselectedPathLift
+        (hom.transportedReselection source reselection)
+        (G.twoRight cell) := by
+          have mapped := transportedCoherent cell
+          dsimp only [canonicalized] at mapped
+          rw [transportedCanonicalized_reselectedPathLift,
+            transportedCanonicalized_reselectedPathLift] at mapped
+          dsimp only [targetLeft]
+          rw [(hom.transportedInterpretation source).toAdmissibleTransportData_reselectedPathLift
+            (hom.transportedReselection source reselection)]
+          simpa only [transportedInterpretation_comparator,
+            endpointAction_canonicalizedDiagnosticInterpretation,
+            canonicalizedDiagnosticInterpretation_comparator] using mapped
+    _ = targetLeft.comp
+        (PackageFiberAut.hom
+          (canonicalTwoCellComparator
+            (hom.transportedInterpretation source).toAdmissibleTransportData
+            (hom.transportedReselection source reselection) cell)) := by
+      dsimp only [targetLeft]
+      have fac := (canonicalTwoCellComparator_fac
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection) cell).symm
+      rw [(hom.transportedInterpretation source).toAdmissibleTransportData_reselectedPathLift
+        (hom.transportedReselection source reselection)] at fac
+      exact fac
+
+/--
+The four commuting faces of diagnostic transport at one authored two-cell.
+The two path faces use the actual horizontal-pasting theorem; the comparator
+face then determines the raw-defect face.
+-/
+structure IndexedDiagnosticTwoCellPastingCube
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) (cell : G.TwoCell) : Prop where
+  leftRoute :
+    (hom.pathSquare (G.twoLeft cell)).route = (G.twoLeft cell).squareRoute
+  rightRoute :
+    (hom.pathSquare (G.twoRight cell)).route = (G.twoRight cell).squareRoute
+  leftFace :
+    (hom.diagnosticVertexLift source (G.twoSource cell)).comp
         ((hom.transportedInterpretation source).reselectedPathLift
           (indexedDiagnosticReselectionEquivalence hom source reselection)
-          (first.append second)) =
-      (source.reselectedPathLift reselection (first.append second)).comp
-        (hom.diagnosticVertexLift source k)
-  /-- The arbitrary-target appended-path square is obtained through inverse pasting. -/
-  pathInverse : ∀ targetReselection : IndexedEdgeReselection
-      (hom.transportedInterpretation source),
-    (hom.diagnosticVertexLift source i).comp
+          (G.twoLeft cell)) =
+      (source.reselectedPathLift reselection (G.twoLeft cell)).comp
+        (hom.diagnosticVertexLift source (G.twoTarget cell))
+  rightFace :
+    (hom.diagnosticVertexLift source (G.twoSource cell)).comp
         ((hom.transportedInterpretation source).reselectedPathLift
-          targetReselection (first.append second)) =
-      (source.reselectedPathLift
-        (hom.inverseTransportedReselection source targetReselection)
-        (first.append second)).comp (hom.diagnosticVertexLift source k)
-  /-- `(f)`: raw-defect cochains commute with forward transport. -/
-  cochainForward : ∀ reselection : IndexedEdgeReselection source,
+          (indexedDiagnosticReselectionEquivalence hom source reselection)
+          (G.twoRight cell)) =
+      (source.reselectedPathLift reselection (G.twoRight cell)).comp
+        (hom.diagnosticVertexLift source (G.twoTarget cell))
+  comparatorFace :
+    hom.endpointAction source (G.twoTarget cell)
+        (canonicalTwoCellComparator source.toAdmissibleTransportData
+          reselection cell) =
+      canonicalTwoCellComparator
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection) cell
+  defectFace :
+    indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell)
+        (rawTwoCellDefect source.toAdmissibleTransportData reselection cell) =
+      rawTwoCellDefect
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection) cell
+
+/-- Generate the complete forward two-cell cube from horizontal path pasting. -/
+theorem indexedDiagnosticTwoCellPastingCube
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) (cell : G.TwoCell) :
+    IndexedDiagnosticTwoCellPastingCube hom source reselection cell where
+  leftRoute := rfl
+  rightRoute := rfl
+  leftFace := hom.indexedDiagnosticPathSquare_via_horizontalRoute source
+    reselection (G.twoLeft cell)
+  rightFace := hom.indexedDiagnosticPathSquare_via_horizontalRoute source
+    reselection (G.twoRight cell)
+  comparatorFace :=
+    hom.endpointAction_canonicalTwoCellComparator_via_horizontalPasting source
+      reselection cell
+  defectFace := by
+    rw [indexedDiagnosticEndpointEquivalence_apply]
+    unfold rawTwoCellDefect
+    rw [map_mul, map_inv]
+    rw [hom.endpointAction_canonicalTwoCellComparator_via_horizontalPasting
+      source reselection cell]
+    rfl
+
+/-- Raw-defect cochain transport is derived cellwise from the pasting cubes. -/
+theorem indexedDiagnosticDefectCochain_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) :
     indexedDiagnosticDefectCochainEquivalence hom source
         (rawDefectCochain source.toAdmissibleTransportData reselection) =
       rawDefectCochain
         (hom.transportedInterpretation source).toAdmissibleTransportData
-        (hom.transportedReselection source reselection)
-  /-- `(f)`: raw-defect cochains commute with generated inverse transport. -/
-  cochainInverse : ∀ targetReselection : IndexedEdgeReselection
-      (hom.transportedInterpretation source),
+        (hom.transportedReselection source reselection) := by
+  funext cell
+  exact (hom.indexedDiagnosticTwoCellPastingCube source reselection cell).defectFace
+
+/-- Inverse cochain transport follows from the forward cubes and the round trip. -/
+theorem indexedDiagnosticDefectCochain_inverse_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (targetReselection : IndexedEdgeReselection
+      (hom.transportedInterpretation source)) :
     (indexedDiagnosticDefectCochainEquivalence hom source).symm
         (rawDefectCochain
           (hom.transportedInterpretation source).toAdmissibleTransportData
           targetReselection) =
       rawDefectCochain source.toAdmissibleTransportData
-        (hom.inverseTransportedReselection source targetReselection)
-  /-- `(f)`: every source cochain is recovered after a forward round trip. -/
-  cochainSourceRoundTrip : ∀ cochain : DefectCochain
-      source.toAdmissibleTransportData,
-    (indexedDiagnosticDefectCochainEquivalence hom source).symm
-        (indexedDiagnosticDefectCochainEquivalence hom source cochain) = cochain
-  /-- `(f)`: every target cochain is recovered after an inverse round trip. -/
-  cochainTargetRoundTrip : ∀ targetCochain : DefectCochain
-      (hom.transportedInterpretation source).toAdmissibleTransportData,
+        (hom.inverseTransportedReselection source targetReselection) := by
+  apply (indexedDiagnosticDefectCochainEquivalence hom source).injective
+  rw [(indexedDiagnosticDefectCochainEquivalence hom source).apply_symm_apply]
+  rw [hom.indexedDiagnosticDefectCochain_via_horizontalPasting source]
+  rw [hom.transportedReselection_inverseTransportedReselection]
+
+/-- Orbit exactness factors through the horizontal-pasting cochain theorem. -/
+theorem indexedDiagnosticOrbit_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (cochain : DefectCochain source.toAdmissibleTransportData) :
+    InReselectionOrbit source.toAdmissibleTransportData cochain ↔
+      InReselectionOrbit
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (indexedDiagnosticDefectCochainEquivalence hom source cochain) := by
+  constructor
+  · rintro ⟨reselection, equality⟩
+    refine ⟨hom.transportedReselection source reselection, ?_⟩
+    rw [← hom.indexedDiagnosticDefectCochain_via_horizontalPasting source]
+    exact congrArg (indexedDiagnosticDefectCochainEquivalence hom source) equality
+  · rintro ⟨targetReselection, equality⟩
+    refine ⟨hom.inverseTransportedReselection source targetReselection, ?_⟩
+    rw [← hom.indexedDiagnosticDefectCochain_inverse_via_horizontalPasting source]
+    rw [equality]
+    exact (indexedDiagnosticDefectCochainEquivalence hom source).symm_apply_apply
+      cochain
+
+/-- Coherence exactness factors through raw-cochain identity and the cubes. -/
+theorem indexedDiagnosticCoherence_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D)
+    (reselection : IndexedEdgeReselection source) :
+    source.IndexedCoherentAt reselection ↔
+      (hom.transportedInterpretation source).IndexedCoherentAt
+        (hom.transportedReselection source reselection) := by
+  rw [source.indexedCoherentAt_iff_adaptedCoherentAt,
+    (hom.transportedInterpretation source).indexedCoherentAt_iff_adaptedCoherentAt,
+    coherentAt_iff_rawDefectCochain_eq_identity,
+    coherentAt_iff_rawDefectCochain_eq_identity]
+  have mapIdentity :
+      indexedDiagnosticDefectCochainEquivalence hom source
+          (identityDefectCochain source.toAdmissibleTransportData) =
+        identityDefectCochain
+          (hom.transportedInterpretation source).toAdmissibleTransportData := by
+    funext cell
+    exact map_one (indexedDiagnosticEndpointEquivalence hom source
+      (G.twoTarget cell))
+  constructor
+  · intro equality
+    have mapped := congrArg
+      (indexedDiagnosticDefectCochainEquivalence hom source) equality
+    rw [hom.indexedDiagnosticDefectCochain_via_horizontalPasting source] at mapped
+    rw [mapIdentity] at mapped
+    exact mapped
+  · intro equality
+    have mapped := congrArg
+      (indexedDiagnosticDefectCochainEquivalence hom source).symm equality
+    rw [hom.indexedDiagnosticDefectCochain_inverse_via_horizontalPasting source]
+      at mapped
+    have symmMapIdentity := congrArg
+      (indexedDiagnosticDefectCochainEquivalence hom source).symm mapIdentity
+    rw [(indexedDiagnosticDefectCochainEquivalence hom source).symm_apply_apply]
+      at symmMapIdentity
+    rw [← symmMapIdentity] at mapped
+    simpa only [hom.inverseTransportedReselection_transportedReselection source]
+      using mapped
+
+/-- Obstruction exactness is the orbit theorem at the identity cochain. -/
+theorem indexedDiagnosticObstruction_via_horizontalPasting
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D) :
+    TransportObstructionVanishes source.toAdmissibleTransportData ↔
+      TransportObstructionVanishes
+        (hom.transportedInterpretation source).toAdmissibleTransportData := by
+  unfold TransportObstructionVanishes
+  have orbit := hom.indexedDiagnosticOrbit_via_horizontalPasting source
+    (identityDefectCochain source.toAdmissibleTransportData)
+  have mapIdentity :
+      indexedDiagnosticDefectCochainEquivalence hom source
+          (identityDefectCochain source.toAdmissibleTransportData) =
+        identityDefectCochain
+          (hom.transportedInterpretation source).toAdmissibleTransportData := by
+    funext cell
+    exact map_one (indexedDiagnosticEndpointEquivalence hom source
+      (G.twoTarget cell))
+  rw [mapIdentity] at orbit
+  exact orbit
+
+/-- The downstream part of G-113(h), with every field derived from the cube. -/
+structure IndexedDiagnosticPastingDownstreamExactness
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D) : Prop where
+  twoCellCube : ∀ reselection cell,
+    IndexedDiagnosticTwoCellPastingCube hom source reselection cell
+  cochain : ∀ reselection,
     indexedDiagnosticDefectCochainEquivalence hom source
-        ((indexedDiagnosticDefectCochainEquivalence hom source).symm
-          targetCochain) = targetCochain
-  /-- `(g)`: forward cochain transport preserves and reflects orbit membership. -/
-  orbitForward : ∀ cochain : DefectCochain source.toAdmissibleTransportData,
+        (rawDefectCochain source.toAdmissibleTransportData reselection) =
+      rawDefectCochain
+        (hom.transportedInterpretation source).toAdmissibleTransportData
+        (hom.transportedReselection source reselection)
+  orbit : ∀ cochain : DefectCochain source.toAdmissibleTransportData,
     InReselectionOrbit source.toAdmissibleTransportData cochain ↔
       InReselectionOrbit
         (hom.transportedInterpretation source).toAdmissibleTransportData
         (indexedDiagnosticDefectCochainEquivalence hom source cochain)
-  /-- `(g)`: arbitrary target orbit membership is reflected by the inverse. -/
-  orbitInverse : ∀ targetCochain : DefectCochain
-      (hom.transportedInterpretation source).toAdmissibleTransportData,
-    InReselectionOrbit
-        (hom.transportedInterpretation source).toAdmissibleTransportData
-        targetCochain ↔
-      InReselectionOrbit source.toAdmissibleTransportData
-        ((indexedDiagnosticDefectCochainEquivalence hom source).symm
-          targetCochain)
-  /-- `(d)`: forward reselection transport preserves and reflects coherence. -/
-  coherenceForward : ∀ reselection : IndexedEdgeReselection source,
+  coherence : ∀ reselection : IndexedEdgeReselection source,
     source.IndexedCoherentAt reselection ↔
       (hom.transportedInterpretation source).IndexedCoherentAt
         (hom.transportedReselection source reselection)
-  /-- `(d)`: arbitrary target coherence is reflected by generated inverse transport. -/
-  coherenceInverse : ∀ targetReselection : IndexedEdgeReselection
-      (hom.transportedInterpretation source),
-    (hom.transportedInterpretation source).IndexedCoherentAt targetReselection ↔
-      source.IndexedCoherentAt
-        (hom.inverseTransportedReselection source targetReselection)
-  /-- `(e)`: obstruction vanishing is preserved and reflected. -/
   obstruction :
     TransportObstructionVanishes source.toAdmissibleTransportData ↔
       TransportObstructionVanishes
         (hom.transportedInterpretation source).toAdmissibleTransportData
 
-/--
-Generate the whole horizontal-pasting exactness package from the G-111 square,
-the G-112-backed inverse transport, and the already proved G-113 equivalences.
--/
-noncomputable def indexedDiagnosticHorizontalPastingExactness
+/-- Generate the downstream exactness package through the cellwise pasting route. -/
+theorem indexedDiagnosticPastingDownstreamExactness
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
-    (source : IndexedDiagnosticInterpretation D) {i j k : G.Vertex}
-    (first : IndexedBasePath G.toIndexedBaseShape i j)
-    (second : IndexedBasePath G.toIndexedBaseShape j k) :
-    IndexedDiagnosticHorizontalPastingExactness hom source first second where
-  baseSides := hom.indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
-    first second
-  route := hom.indexedDiagnosticHorizontalPathPasting_route first second
-  fiberFunctor := indexedDiagnosticTransportEquivalence_functor hom
-  fiberInverse := indexedDiagnosticTransportEquivalence_inverse hom
-  fiberIsEquivalence := indexedDiagnosticTransportPush_isEquivalence hom
-  endpointForward := indexedDiagnosticEndpointEquivalence_apply hom source
-  endpointSourceRoundTrip := fun vertex automorphism =>
-    (indexedDiagnosticEndpointEquivalence hom source vertex).symm_apply_apply
-      automorphism
-  endpointInverse := fun vertex targetAutomorphism =>
-    (indexedDiagnosticEndpointEquivalence hom source vertex).apply_symm_apply
-      targetAutomorphism
-  reselectionForward := hom.indexedDiagnosticReselectionEquivalence_apply source
-  reselectionSourceRoundTrip :=
-    hom.inverseTransportedReselection_transportedReselection source
-  reselectionTargetRoundTrip :=
-    hom.transportedReselection_inverseTransportedReselection source
-  pathForward := fun reselection =>
-    hom.indexedDiagnosticHorizontalPathPasting_eq_pathSquare source reselection
-      first second
-  pathInverse := fun targetReselection =>
-    hom.indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare source
-      targetReselection first second
-  cochainForward :=
-    hom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain source
-  cochainInverse :=
-    hom.indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain source
-  cochainSourceRoundTrip := fun cochain =>
-    (indexedDiagnosticDefectCochainEquivalence hom source).symm_apply_apply cochain
-  cochainTargetRoundTrip := fun targetCochain =>
-    (indexedDiagnosticDefectCochainEquivalence hom source).apply_symm_apply
-      targetCochain
-  orbitForward := hom.indexedDiagnosticInReselectionOrbit_iff source
-  orbitInverse := hom.indexedDiagnosticInReselectionOrbit_symm_iff source
-  coherenceForward := hom.indexedCoherentAt_transport_iff source
-  coherenceInverse := hom.indexedCoherentAt_inverseTransport_iff source
-  obstruction := hom.indexedTransportObstructionVanishes_iff source
+    (source : IndexedDiagnosticInterpretation D) :
+    IndexedDiagnosticPastingDownstreamExactness hom source where
+  twoCellCube := hom.indexedDiagnosticTwoCellPastingCube source
+  cochain := hom.indexedDiagnosticDefectCochain_via_horizontalPasting source
+  orbit := hom.indexedDiagnosticOrbit_via_horizontalPasting source
+  coherence := hom.indexedDiagnosticCoherence_via_horizontalPasting source
+  obstruction := hom.indexedDiagnosticObstruction_via_horizontalPasting source
 
 end IndexedBaseDiagramHom
 
