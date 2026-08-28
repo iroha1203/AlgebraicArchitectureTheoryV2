@@ -82,6 +82,22 @@ noncomputable def coreFiberPentagonLeftRouteIso
     Functor.isoWhiskerRight (coreFiberCompositor first second)
       (coreFiberTransportFunctor third)
 
+/-- API characterization of the G-113(h) left whole-pentagon isomorphism at
+one package.  Its inputs are the three ambient base arrows and a source
+package; no pentagon equation is supplied by the caller. -/
+theorem coreFiberPentagonLeftRouteIso_app_trans
+    {U : AtomCarrier.{u}}
+    {firstObject secondObject thirdObject fourthObject : ExtractionInstance U}
+    (first : firstObject ⟶ secondObject)
+    (second : secondObject ⟶ thirdObject)
+    (third : thirdObject ⟶ fourthObject)
+    (sourcePackage : CoreFiber firstObject) :
+    (coreFiberPentagonLeftRouteIso first second third).app sourcePackage =
+      (coreFiberCompositor (first ≫ second) third).app sourcePackage ≪≫
+        (Functor.isoWhiskerRight (coreFiberCompositor first second)
+          (coreFiberTransportFunctor third)).app sourcePackage := by
+  rfl
+
 /-- The whole right-associated G-111 three-arrow route.
 G-113(h) infrastructure definition generated from the G-111 associativity cast and compositors. -/
 noncomputable def coreFiberPentagonRightRouteIso
