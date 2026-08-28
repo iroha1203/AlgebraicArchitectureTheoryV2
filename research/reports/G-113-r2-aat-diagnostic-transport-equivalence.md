@@ -865,7 +865,7 @@ result:
     source_labels:
       - "target theorem (d): coherence exactness"
       - "G-111 indexed coherence preservation"
-      - "Cycle 2 cartesian reflection and Cycle 6 reselection inverse"
+      - "reviewed revision-1 cartesian reflection and Cycle 6 reselection inverse"
     conjuncts:
       - "source coherence iff mapped target coherence -> indexedCoherentAt_transport_iff"
       - "arbitrary target coherence iff inverse-source coherence -> indexedCoherentAt_inverseTransport_iff"
