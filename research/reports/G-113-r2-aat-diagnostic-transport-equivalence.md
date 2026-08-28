@@ -1172,3 +1172,116 @@ audits:
     entire existential orbit witness through the Cycle 6 reselection and Cycle
     9 cochain equivalences.
 ```
+
+### Cycle 10 — reselection-orbit exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 10
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: df1d3de9f2f23c6d58aebce6b065974fcb77155d
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjuncts (a)--(f) discharged / orbit membership exactness next"
+  proof_dag_predecessors:
+    - IndexedBaseDiagramHom.transportedReselection
+    - IndexedBaseDiagramHom.inverseTransportedReselection
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+    - InReselectionOrbit
+  proof_obligation: >-
+    Prove source/target InReselectionOrbit membership iff by transporting the
+    complete existential reselection witness, both for mapped source cochains
+    and for arbitrary target cochains through the generated inverse.
+  selection_reason: >-
+    This is target conjunct (g) and the remaining K3 obligation.  Cycle 9
+    supplies exact cochain transport, but equality or inequality preservation
+    alone does not transport the existential orbit image required by the GOAL.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean
+  risks:
+    - preserving only inequality from one baseline cochain
+    - mapping only a selected orbit witness rather than proving iff
+    - omitting arbitrary target cochains
+    - accepting a caller-supplied inverse reselection or preimage
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Every source orbit witness is transported by the Cycle 6 forward
+    reselection and Cycle 9 forward raw-cochain commutation.  Conversely, every
+    target orbit witness is reflected by the generated Cycle 6 inverse and
+    Cycle 9 inverse raw-cochain commutation.  A second named iff starts from an
+    arbitrary target cochain, so target membership is not restricted to a
+    cochain already presented as a forward image.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean
+  evidence:
+    - IndexedBaseDiagramHom.indexedDiagnosticInReselectionOrbit_iff
+    - IndexedBaseDiagramHom.indexedDiagnosticInReselectionOrbit_symm_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+    source_labels:
+      - "target theorem (g): orbit exactness"
+      - "Cycle 6 reselection equivalence and inverse"
+      - "Cycle 9 cochain equivalence and forward/inverse raw commutation"
+    conjuncts:
+      - "mapped source cochain orbit iff -> indexedDiagnosticInReselectionOrbit_iff"
+      - "arbitrary target cochain orbit iff -> indexedDiagnosticInReselectionOrbit_symm_iff"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (g) only.  It transports the full
+      existential orbit image and does not claim the K4 coherence or conjunct
+      (i) finite-witness/decomposition obligations.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K3 mapped-source InReselectionOrbit membership iff"
+      - "K3 arbitrary-target InReselectionOrbit membership iff"
+    remaining:
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "forward orbit witness / Cycle 6 transportedReselection"
+      - "reverse orbit witness / Cycle 6 inverseTransportedReselection"
+      - "cochain equations / Cycle 9 forward and inverse raw commutation"
+    unresolved:
+      - "transport-coherence, decomposition, and finite-witness exactness"
+  proof_use:
+    used:
+      - transportedReselection
+      - inverseTransportedReselection
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence.apply_symm_apply
+      - indexedDiagnosticDefectCochainEquivalence.symm_apply_apply
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 2 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Audit and complete conjunct (h): identity, vertical composition, path-square,
+    and horizontal-pasting compatibility of the accumulated equivalences with
+    the reviewed G-111/G-112 coherence package.
+```
