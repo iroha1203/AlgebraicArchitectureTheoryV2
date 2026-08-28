@@ -257,6 +257,7 @@ ResearchLean.AG.DiagnosticConservativity.TransportAdjunction	ResearchLean/AG/Dia
 ResearchLean.AG.DiagnosticConservativity.TransportEquivalence	ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
 ResearchLean.AG.DiagnosticConservativity.EndpointExactness	ResearchLean/AG/DiagnosticConservativity/EndpointExactness.lean
 ResearchLean.AG.DiagnosticConservativity.ReselectionExactness	ResearchLean/AG/DiagnosticConservativity/ReselectionExactness.lean
+ResearchLean.AG.DiagnosticConservativity.CoherenceExactness	ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
 ResearchLean.AG.GeometryTransport	ResearchLean/AG/GeometryTransport.lean
 ResearchLean.AG.GeometryTransport.Basic	ResearchLean/AG/GeometryTransport/Basic.lean
 ResearchLean.AG.GeometryTransport.Categories	ResearchLean/AG/GeometryTransport/Categories.lean
