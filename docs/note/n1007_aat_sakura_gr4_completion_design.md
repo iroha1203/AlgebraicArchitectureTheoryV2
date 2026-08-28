@@ -159,7 +159,7 @@ monte 由来)と系譜を共有する — 衝突ではなく敬意の系譜と�
 - **gate (iv)**: IsIso 水準の Beck–Chevalley exchange-failure の存否決定
   (存否は未決定の問い。本 sector と refinement / 上段 regime を含む
   設定で決定する)。
-- **gate (v)**: 診断保守性・反射・orbit exactness の分類。
+- **gate (v)**: indexed 診断輸送の同値性・反射・orbit exactness。
 
 ## §3 義務台帳 — Gr4 完遂義務の全数拾い出し
 
@@ -185,22 +185,23 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
 | O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(class 構成は変更しない。semantic adequacy 条件は §4 G-115) | gate (iii)・n1001 §3.3 | G-115 |
 | O12 | IsIso 水準 exchange-failure の存否決定(sector+refinement / 上段 regime を含む設定) | gate (iv)・(C) 移管文 | G-116 |
-| O13 | `DiagnosticConservative` の定義と構造的生成 class の固定+十分性 theorem | gate (v)・n1005 §4.3 (D) | G-113 |
-| O14 | target obstruction vanishing → source vanishing の反射 theorem(class 上) | gate (v) | G-113 |
-| O15 | source reselection orbit の検出 theorem | gate (v) | G-113 |
-| O16 | class 外で非零 obstruction が消える有限 witness(保守性の破れの実在) | gate (v) | G-113 |
-| O17 | 診断 class の恒等・水平・垂直貼り合わせ閉性 | gate (v) | G-113 |
-| O18 | 生成診断部分圏上の `Full` + `Faithful` 十分条件候補の statement 固定と生成 class との関係決定 | gate (v) | G-113 |
+| O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
+| O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | gate (v) | G-113 |
+| O15 | reselection equivalence と `InReselectionOrbit` membership iff | gate (v) | G-113 |
+| O16 | 非恒等 `¬ IsIso` base component、非恒等 defect / reselection を持ち、診断同値性が非退化発火する有限 witness | gate (v) | G-113 |
+| O17 | 診断輸送 equivalence の identity・垂直合成・path-square・水平貼り合わせ coherence | gate (v) | G-113 |
+| O18 | `Full` / `Faithful` / `EssentiallySurjective` producer と explicit equivalence、base `IsIso` との関係決定 | gate (v) | G-113 |
 | O19 | Gr4 達成の範囲併記記録(義務台帳との突合+達成階梯対応表込み) | program context | G-116 |
-| O20 | pointwise raw-defect reflection の分類(cochain 値水準の反射 — O14 の orbit / vanishing 水準とは別 statement) | (D) 移管文 | G-113 |
+| O20 | raw-defect cochain transport の explicit equivalence と `rawDefectCochain` commuting、pointwise iff | (D) 移管文 | G-113 |
 
 **台帳注記**:
 
-- G-110 (D) の gate 第五項移管3項は O20(pointwise raw-defect
-  reflection)・O15(source orbit の検出)・O14(vanishing 反射)に
+- G-110 (D) の gate 第五項移管3項は O20(raw-defect cochain
+  equivalence)・O15(reselection orbit exactness)・O14(vanishing iff)に
   対応する — 移管義務の消滅なしをここで固定する。
-- n1005 §4.3 (D) の「情報損失の分類」は O13(class 分類)と O16(破れの
-  実在 = 情報損失の witness)が担う。
+- n1005 §4.3 (D) の「情報損失の分類」は G-113 revision 1 の反証により
+  「情報損失なし」の定理へ帰趨した。O13 が輸送 equivalence、O16 が
+  非 `IsIso` base 上でもその equivalence が非退化発火する witness を担う。
 - **universe 注記**: O1・O2・O6・O12 の universe 契約は F0 typing
   cycle で Lean の宇宙割当と型突合した上で確定する(O7 は G-110
   reviewed 宣言の universe 契約を継承し、fallback 対象外)。symbolic
@@ -220,9 +221,9 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 - (D) の `J_A` defect profile 枝(G-104 / G-107 語彙への拡張。係数 base
   change カードとの接続点 — G-110 frontier のまま)。
 - G-109 (G) の core 押し出し `p` に沿う effectivity の保存・反射
-  (G-109 frontier のまま。**O14 / O20 の診断反射とは別物** — O14 / O20
-  は indexed BC 作用の target → source 方向、こちらは段射影 `p` の押し
-  出し方向)。
+  (G-109 frontier のまま。**O14 / O20 の診断 exactness とは別物** —
+  O14 / O20 は indexed BC 輸送の双方向、こちらは段射影 `p` の押し出し
+  方向)。
 - derived fiber product・bifibration 一般論・係数 base change(ℚ→R)・
   `ObProblem` 段の class 構成の変更・nerve / cover 接続(G-110 claim
   boundary の除外を継承)。
@@ -343,10 +344,11 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   `rebaseCartCondition` / `CartSemanticInputIso`(条件言語と coverage
   witness の設計前例)、presentation 閉性 constructor 4種、
   `FiniteModel`(witness 計算)。
-- **供給契約**: G-116 の範囲併記(coverage 到達段と確定枝の記録)。
-  G-112 の分類結果は G-113 / G-114 / G-115 の量化域を変更しない(各
-  カードは G-110 固定の realization 付き入力上で立つ — 並走可能性、§5
-  依存 DAG)。
+- **供給契約**: G-113 の contravariant semantic-global reindexing と
+  arbitrary-target strongly cartesian lift、G-116 の範囲併記(coverage
+  到達段と確定枝の記録)。G-112 の coverage 分類結果は G-114 / G-115 の
+  量化域を変更しない。G-113 revision 2 は coverage branch ではなく
+  semantic-global 正枝 O7 を実質的 predecessor として消費する。
 - **リスク / dullness 骨格**: (b) 負枝の言い換え述語(上記資格条項で
   排除)、cardinality 反例のみの放電、第一段 coverage の単一 fixture
   列挙代替。
@@ -357,45 +359,41 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 
 ### G-113(仮 slug: `G-113-aat-diagnostic-conservativity`)
 
-- **責務**: O13–O18・O20。診断保守性・反射・orbit exactness の分類。
-- **claim 骨格**: (a) **`DiagnosticConservative` の新設定義**(Lean 不在を
-  実査確認済み — G-111 の `IndexedBaseDiagramHom` が生成する
-  diagnostic transport 上の述語として本カードが建設する)、
-  (b) 構造的生成 class の固定と十分性 theorem
-  (class は探索前固定の構造条件で立て、結論参照を禁じる — G-110
-  `H_cart` 資格条項の様式)、(c) 反射 theorem — class 上で target
-  obstruction vanishing → source vanishing(**非自明性の根拠**: (d2)
-  endpoint 群準同型は一般に非単射であり、G-110 の無条件 forward
-  covariance からは逆向きが従わない — この根拠を statement 側に一文
-  固定する)、(d) orbit 検出 theorem — source reselection orbit の非自明
-  性が target で検出される、(e) **pointwise raw-defect reflection の分類
-  (O20)** — cochain 値水準の反射が成立する class の固定または反例
-  (O14 の orbit / vanishing 水準とは別 statement として立てる)、
-  (f) class 外 witness — class に入らない作用で非零 obstruction が消える
-  有限 witness(保守性の破れの実在 = class 制限の非空虚性)、(g) **class
-  内 named nonvacuity witness** — 非恒等 defect・非恒等 reselection・非
-  可逆成分を含む class 成員上で反射・検出が実発火する有限 witness(class
-  が空・退化でも (b)(c)(d) が vacuous に立つ経路の排除)、(h) 診断 class
-  の恒等・水平・垂直貼り合わせ閉性、(i) 生成診断部分圏上の `Full` +
-  `Faithful` 十分条件候補の statement 固定と、生成 class との関係(含意・
-  同値・反例)の決定。
-- **錨**: G-111 coherent diagnostic transport(依存 — 量化域)、
-  `InReselectionOrbit`
-  (`TransportCoherence/FinitePresentation.lean`)、
+- **責務**: O13–O18・O20。G-111 / G-112 の indexed 診断輸送の同値性、
+  反射、orbit exactness。revision 1 の class 分類 target は、全 hom 上の
+  `DiagnosticConservative` と no-killing theorem により `target-refuted` と
+  なった。revision 2 はその結果を欠損ではなく Gr4 の構造として読む。
+- **claim 骨格**: (a) G-111 `indexedFiberAction` と G-112 semantic-global
+  reindexing の vertexwise quasi-inverse、unit / counit、triangle、explicit
+  equivalence、(b) endpoint equivalence と revision 1 endpoint action との
+  外延一致、(c) reselection equivalence、(d) diagnostic coherence iff、
+  (e) obstruction vanishing iff と `DiagnosticConservative` / no-killing
+  corollary、(f) raw-defect cochain equivalence と `rawDefectCochain` commuting、
+  (g) `InReselectionOrbit` membership iff、(h) identity・vertical composition・
+  path-square・horizontal-pasting coherence、(i) `Full` / `Faithful` /
+  `EssentiallySurjective` producer と base `IsIso` との関係決定、および非恒等
+  `¬ IsIso` base component・非恒等 defect / reselection を持つ有限非退化
+  発火 witness。
+- **錨**: G-111 coherent diagnostic transport と
+  `indexedFiberAction`、G-112 `strongCartesianLiftOfTarget` と
+  semantic-global reindexing、G-113 revision 1
+  `diagnosticConservative_all` / endpoint surjectivity、
+  `InReselectionOrbit`(`TransportCoherence/FinitePresentation.lean`)、
   `CoreFiberFunctorDefectCochain` 系
   (`BCDiagnosticBaseChangeAutomorphism.lean`)。
-- **供給契約**: G-116 の記録。`DiagnosticConservative` の命名は本カード
-  専属(§5 語彙正本規則)。
-- **リスク / dullness 骨格**: 反射 (c) を可逆 fixture(全成分同型)だけで
-  発火させる経路、class を「conservative と同値」の述語で立てる経路
-  (結論の埋め込み)、(f) を空診断図式で満たす経路。**O14 / O20 の反射は
-  G-109 effectivity 反射(域外)と別物** — この分界を statement に明記
-  する(§5 判定線)。
-- **failure 骨格**: (c)(d)(e) の反証は `target-refuted`(fail-closed)。
-  (f) が原理的に不能(保守性が coherent relative domain で無条件成立し
-  class 制限が空虚)と定理化された場合も、その定理を成果として
-  `target-refuted` と
-  する。(i) は決定がどちらでも成功。
+- **供給契約**: G-116 の記録。新設 package 名
+  `IndexedDiagnosticTransportEquivalence` は本カード専属。
+  `DiagnosticConservative` は revision 1 の既存語彙を系として保持する。
+- **リスク / dullness 骨格**: `IsEquivalence` / `Full` / `Faithful` を
+  supplied premise や structure field として受ける経路、G-110 の realized
+  finite-code equivalence だけで一般 indexed domain を放電する経路、
+  vanishing iff だけで cochain / orbit exactness を完了扱いする経路、恒等
+  hom だけの witness、revision 1 class / candidate syntax への fallback。
+  **O14 / O20 の exactness は G-109 effectivity 反射(域外)と別物**。
+- **failure 骨格**: universal equivalence、raw-defect commuting、orbit
+  membership iff の反例固定は `target-refuted`(fail-closed)。type / universe /
+  variance の不一致で statement 改訂が必要なら `goal defect` とし、class
+  条件付き反射へ弱めない。
 
 ### G-114(仮 slug: `G-114-aat-refinement-base-change`)
 
@@ -515,16 +513,17 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 
 **重複防止の判定線(5本)**:
 
-1. **G-111 / G-113**: G-111 = pointwise indexed calculus と coherent
-   diagram morphism 上の順方向 diagnostic assembly、G-113 = 同じ
-   transport の逆方向性質(保守・反射・検出)。G-113 は G-111 の
-   diagram / hom 型と順方向 API を再定義せず量化域として消費する。
+1. **G-111・G-112 / G-113**: G-111 = pointwise indexed calculus と
+   coherent diagram morphism 上の covariant diagnostic assembly、G-112 =
+   semantic-global cartesian reindexing、G-113 = 両者の explicit equivalence
+   と診断 exactness。G-113 は両カードの diagram / hom / lift API を再定義
+   せず量化域と構成原理として消費する。
 2. **G-111 / G-112**: G-111 = 診断・輸送側(cocartesian 保存 lift =
    O2 を含む)、G-112 = cartesian lift・coverage 側。**cocartesian
    (O2)と strong cartesian(O7)は別の lift であり、混同は義務の
    二重計上・脱落の両リスクを持つ** — カード本文で相互参照する。
-3. **G-113 の反射 / G-109 effectivity 反射**: 前者 = indexed BC 作用の
-   target → source 方向(O14・O20)、後者 = 段射影 `p` の押し出し方向
+3. **G-113 の診断 exactness / G-109 effectivity 反射**: 前者 = indexed
+   BC 輸送の双方向(O14・O20)、後者 = 段射影 `p` の押し出し方向
    (域外・G-109 frontier のまま)。G-113 statement に分界を明記する。
 4. **G-115 / G-116**: G-115 は regime 型(上段の BC 構造)を建設するが
    IsIso を主張しない。存否決定は G-116 専属(G-110 が `¬IsIso` を負例
@@ -542,8 +541,9 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 ある。除去済みの宣言や「旧〜」のような経緯付きの参照はカードに書かず、
 経緯は tracking Issue に置く。新しい語彙を定義する権利はカード一枚に
 専属させる — `IndexedBaseDiagram` / `IndexedBaseDiagramHom` =
-G-111、`DiagnosticConservative` =
-G-113、refinement 圏 = G-114、`ObProblem` interface = G-115。命名が
+G-111、`IndexedDiagnosticTransportEquivalence` = G-113
+(`DiagnosticConservative` は revision 1 の既存語彙)、refinement 圏 =
+G-114、`ObProblem` interface = G-115。命名が
 重複・分散していないかは batch レビューで検査する。
 
 **universe 設計規則(全カード共通)**: universe をまたぐ義務は、先に
@@ -558,21 +558,22 @@ reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の�
 **依存 DAG と伝播規定**:
 
 ```
-G-110 ──→ G-111 ──→ G-113
-G-110 ──→ G-112(G-111 への参照は観察のみ)
+G-110 ──→ G-111 ──┐
+G-110 ──→ G-112 ──┴→ G-113
 G-110 ──────→ G-114 ──┐
 G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 ```
 
 - G-114 / G-115 は6枚の中ではどのカードにも依存せず、G-111 系と並走
   可能である(外部依存は G-114 = G-110、G-115 = G-110 に加え G-109 /
-  G-108 の reviewed artifact)。G-112 の分類結果は他カードの量化域を
-  変更しない(G-110 固定の realization 付き入力上で立つ)。
-- G-112 の G-111 依存はカード起票レビューで観察参照へ降格した(上図
-  はこの降格を反映済み)。依存分界の正本は各カードの program context
-  とする。
+  G-108 の reviewed artifact)。G-112 の coverage 分類結果は G-114 /
+  G-115 の量化域を変更しない(G-110 固定の realization 付き入力上で立つ)。
+- G-112 の G-111 依存はカード起票レビューで観察参照へ降格した。
+  G-113 revision 2 は G-111 の covariant action と G-112 の
+  semantic-global reindexing の双方へ実質的に依存する。依存分界の正本は
+  各カードの program context とする。
 - 上流の statement 改訂時、依存する下流 draft は差し戻して再固定する
-  (G-109 の伝播規定と同型)。G-111 改訂 → G-113 へ、G-108 /
+  (G-109 の伝播規定と同型)。G-111 / G-112 改訂 → G-113 へ、G-108 /
   G-109 / G-110 の改訂 → 参照カードへ、**G-111〜G-115 のいずれの改訂も
   G-116 へ伝播する**(達成記録の突合対象と範囲併記の内容が動くため)。
 - G-116 は全カードの帰趨確定後にのみ昇格する(達成記録の突合が義務の
@@ -591,8 +592,8 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
   共通定型ブロックの複写一致・per-card 固有項目の充足。全体整合の検査は
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
-  昇格順の推奨は依存 DAG に従い G-111 → (G-112 | G-113 | G-114 |
-  G-115 は並走裁定) → G-116。**`ObProblem` の Lean 指示対象の裁定は
+  昇格順の推奨は依存 DAG に従い G-111 → G-112 → G-113
+  (G-114 / G-115 は並走裁定) → G-116。**`ObProblem` の Lean 指示対象の裁定は
   G-115 昇格前の gate とする**(semantic adequacy 条件は §4 G-115)。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
@@ -627,7 +628,8 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
-   O6 / O12・G-113 (i)・G-114 (b) の確定枝と O7 の semantic-global
+   O6 / O12・G-113 の transport equivalence / base `IsIso` 関係決定・
+   G-114 (b) の確定枝と O7 の semantic-global
    正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
    G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
@@ -647,8 +649,8 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
 - **問い(candidate、複数提示)**: (案1)「ソフトウェア意味論の底は
   どこまで相対化できるか — 底の取り替えの全操作(引き戻し・交換・診断
   輸送・貼り合わせ)は、どの範囲で定理として閉じるか」。(案2)「診断は
-  base change に対して何を保存し、何を保存しないか — 保存の共変性と
-  保守性の分類」。
+  base change に対してどのように同値に輸送されるか — 共変作用、cartesian
+  reindexing、orbit exactness の統合」。
 - **構成 = Foundation / Main 二階建て**(n1006 §6 と同型):
   - Foundation(構成が主で失敗しえない層): G-101 圏・輸送 schema、
     G-106 障害語彙、G-108 塔上層、G-111 coherent indexed calculus、
@@ -656,11 +658,11 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
     G-115 上段 interface。
   - Main(失敗しうる主張の層): G-109 障害合成と gluing、G-110 (A)–(E)
     (普遍性・左枝 lift・BC exactness と相対 canonicity・診断共変性・
-    閉性)、G-112 coverage / 全域分類、G-113 保守性分類、G-116 存否
+    閉性)、G-112 coverage / 全域分類、G-113 診断輸送同値性、G-116 存否
     決定。
 - **中心図 = 塔×base change の格子図**: 横方向が Gr3 の段横断
   pseudofunctorial coherence、縦方向が Gr4 の base change、各正方形の
-  交換・診断共変性・保守性・exchange-failure の分界が Main の内容に
+  交換・診断共変性・輸送同値性・exchange-failure の分界が Main の内容に
   なる。Gr3 と Gr4 が一つの問いに収束する一枚を論文の中心に置く。
 
   ```text
@@ -672,7 +674,7 @@ Gr 系列(G-106 / G-108 / G-109 / G-110+後続6枚)の成果を束ねる論文�
 - **主定理群の三層提示**(カード番号ではなく層で見せる):
   - **Coherent Reading Tower** — G-106 / G-108 / G-109
   - **Relative Base-Change Calculus** — G-110 / G-111 / G-114 / G-115
-  - **Boundary and Conservativity Classification** — G-112 / G-113 /
+  - **Coverage and Diagnostic Transport Exactness** — G-112 / G-113 /
     G-116
 - **達成階梯対応表**(G-116 の report 成果物として義務化 — §4 G-116):
   中心図の後ろに置く証拠・範囲監査表。各段 Gr0–Gr4 ↔ theorem package ↔

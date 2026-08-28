@@ -19,13 +19,12 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 - [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
-  (Gr4 完遂 gate 第五項: `DiagnosticConservative` の新設、生成
-  class の十分性・反射・orbit 検出・O20 分類、class 外 / 内 witness
-  対、貼り合わせ閉性、`Full` + `Faithful` 関係決定 (a)–(i)。生成
-  class = 閉じた条件言語の term(候補列はカード固定の全 normal form
-  3項、先頭 = `vertexwiseSourceMapInjective`)。依存先 G-111 は完遂
-  済み。execution gate: loop 起動は G-112 完遂後 — カード program
-  context を正とする)
+  (revision 2、Gr4 完遂 gate 第五項: G-111 `indexedFiberAction` と G-112
+  semantic-global reindexing の explicit equivalence、endpoint / reselection /
+  raw-defect cochain / orbit exactness、identity・composition・pasting coherence、
+  `Full` / `Faithful` / `EssentiallySurjective` decomposition、非 `IsIso` base
+  上の有限非退化 witness (a)–(i)。revision 1 の class 分類 target は
+  `target-refuted` の歴史証拠として保持。依存先 G-111 / G-112 は完遂済み)
 
 ## draft（人間の確認待ち）
 
