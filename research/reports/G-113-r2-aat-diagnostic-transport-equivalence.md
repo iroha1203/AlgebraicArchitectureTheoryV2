@@ -1003,7 +1003,7 @@ audits:
     remaining:
       - "K3 raw-defect cochain equivalence and orbit membership iff"
       - "K4 identity, composition, square, pasting, and finite-witness obligations"
-      - "target conjunct (h) decomposition and base-IsIso relation"
+      - "target conjunct (i) decomposition and base-IsIso relation"
   certificate_provenance:
     discharged:
       - "vanishing witnesses / coherentizability equivalence"
