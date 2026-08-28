@@ -998,10 +998,12 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "K3 obstruction vanishing forward and reverse directions"
-      - "K3 all-hom DiagnosticConservative and no-counterexample corollaries"
+      - "K2 obstruction vanishing forward and reverse directions"
+      - "K2 all-hom DiagnosticConservative and no-counterexample corollaries"
     remaining:
-      - "K4 cochain, orbit, decomposition, witness, and base-IsIso obligations"
+      - "K3 raw-defect cochain equivalence and orbit membership iff"
+      - "K4 identity, composition, square, pasting, and finite-witness obligations"
+      - "target conjunct (h) decomposition and base-IsIso relation"
   certificate_provenance:
     discharged:
       - "vanishing witnesses / coherentizability equivalence"
