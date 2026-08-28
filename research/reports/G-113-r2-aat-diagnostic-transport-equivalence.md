@@ -805,3 +805,114 @@ audits:
     coherence, consuming G-111 preservation in the forward direction and the
     generated reselection inverse plus naturality in the reverse direction.
 ```
+
+### Cycle 7 — diagnostic coherence exactness
+
+実装前 selection:
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 7
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 4b3ba5cc87c3e43587a1d0ad053abd84ef60785b
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: conjuncts (a)--(c) discharged / coherence exactness next"
+  proof_dag_predecessors:
+    - IndexedBaseDiagramHom.indexedCoherentAt_transport
+    - IndexedBaseDiagramHom.indexedCoherentAt_reflect
+    - IndexedBaseDiagramHom.inverseTransportedReselection
+    - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
+  proof_obligation: >-
+    Prove coherence iff for every source reselection and its transported image,
+    and for every arbitrary target reselection and its generated inverse.
+    Consume G-111 preservation forward and the generated inverse, cartesian
+    reflection, naturality, and target round trip in the reverse route.
+  selection_reason: >-
+    This is target conjunct (d), immediately downstream of the Cycle 6
+    reselection equivalence.  Giving both source-indexed and target-indexed iff
+    forms prevents the reverse direction from applying only to a selected
+    image representative.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
+  risks:
+    - restating only G-111 forward coherence preservation
+    - restricting the reverse theorem to a supplied source preimage
+    - failing to consume the Cycle 6 target round trip
+    - accepting coherence reflection as a premise
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Source coherence is now iff transported coherence at every source
+    reselection, combining the reviewed preservation and cartesian-reflection
+    theorems.  Every arbitrary target reselection also has a coherence iff with
+    its Cycle 6 inverse; both directions explicitly normalize through the
+    target-side reselection round trip.  No coherence certificate or inverse
+    preimage is caller supplied.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
+  evidence:
+    - IndexedBaseDiagramHom.indexedCoherentAt_transport_iff
+    - IndexedBaseDiagramHom.indexedCoherentAt_inverseTransport_iff
+  claim_mapping:
+    theorem_names:
+      - indexedCoherentAt_transport_iff
+      - indexedCoherentAt_inverseTransport_iff
+    source_labels:
+      - "target theorem (d): coherence exactness"
+      - "G-111 indexed coherence preservation"
+      - "Cycle 2 cartesian reflection and Cycle 6 reselection inverse"
+    conjuncts:
+      - "source coherence iff mapped target coherence -> indexedCoherentAt_transport_iff"
+      - "arbitrary target coherence iff inverse-source coherence -> indexedCoherentAt_inverseTransport_iff"
+    undischarged_assumptions:
+      - obstruction vanishing iff and global named corollaries
+      - raw-defect cochain equivalence
+      - orbit membership inverse direction
+      - identity / composition / square / pasting coherence
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle completes target conjunct (d) only.  It does not claim
+      obstruction, cochain, orbit, decomposition, or finite-witness exactness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K3 coherence forward and reverse directions"
+      - "K3 arbitrary-target coherence through generated inverse"
+    remaining:
+      - "K3 obstruction and K4 cochain, orbit, decomposition, and witness obligations"
+  certificate_provenance:
+    discharged:
+      - "forward coherence / G-111 indexedCoherentAt_transport"
+      - "reverse coherence / cartesian reflection on Cycle 6 inverse reselection"
+      - "target representative equality / Cycle 6 target round trip"
+    unresolved:
+      - "vanishing, cochain, orbit, and later exactness equivalences"
+  proof_use:
+    used:
+      - IndexedBaseDiagramHom.indexedCoherentAt_transport
+      - IndexedBaseDiagramHom.indexedCoherentAt_reflect
+      - IndexedBaseDiagramHom.inverseTransportedReselection
+      - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 2 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Prove obstruction vanishing iff for every indexed hom and retain
+    DiagnosticConservative and no-counterexample as named all-hom corollaries
+    without class conditions.
+```
