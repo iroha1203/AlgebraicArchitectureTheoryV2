@@ -1,4 +1,5 @@
 import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticConservativitySchema
 
 /-!
 # G-113 revision 2 diagnostic obstruction exactness
@@ -6,8 +7,9 @@ import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
 Obstruction vanishing is coherentizability.  The Cycle 7 coherence equivalence,
 together with the Cycle 6 inverse reselection, therefore identifies source and
 transported obstruction vanishing for every indexed diagram hom.  The existing
-all-hom conservativity and no-counterexample declarations remain available from
-the reviewed revision-1 reflection package imported by the coherence layer.
+revision-1 declarations remain historical evidence in their original module;
+the named corollaries below are derived directly from the revision-2 vanishing
+equivalence.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -54,6 +56,26 @@ theorem indexedTransportObstructionVanishes_iff
           targetReselection).1 targetIndexed)⟩
 
 end IndexedBaseDiagramHom
+
+/-- Revision-2 diagnostic conservativity, derived from obstruction exactness. -/
+theorem diagnosticConservative_all_via_transportEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E) :
+    DiagnosticConservative hom := by
+  intro source targetVanishes
+  exact (hom.indexedTransportObstructionVanishes_iff source).2 targetVanishes
+
+/-- Revision-2 obstruction exactness excludes every diagnostic counterexample. -/
+theorem no_diagnosticConservativityCounterexample_via_transportEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E) :
+    ¬ ∃ source : IndexedDiagnosticInterpretation D,
+      TransportObstructionVanishes
+          (hom.transportedInterpretation source).toAdmissibleTransportData ∧
+        ¬ TransportObstructionVanishes source.toAdmissibleTransportData := by
+  rintro ⟨source, targetVanishes, sourceDoesNotVanish⟩
+  exact sourceDoesNotVanish
+    (diagnosticConservative_all_via_transportEquivalence hom source targetVanishes)
 
 end AAT.AG.DoctrineFiberProduct
 

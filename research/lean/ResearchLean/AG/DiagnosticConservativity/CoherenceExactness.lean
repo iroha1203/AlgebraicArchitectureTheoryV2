@@ -1,13 +1,12 @@
-import ResearchLean.AG.DiagnosticConservativity.ReselectionExactness
-import ResearchLean.AG.DoctrineFiberProduct.DiagnosticConservativityReflection
+import ResearchLean.AG.DiagnosticConservativity.CochainExactness
 
 /-!
 # G-113 revision 2 diagnostic coherence exactness
 
-G-111 coherence preservation and the cartesian reflection theorem give the
-coherence equivalence on every mapped reselection.  The Cycle 6 inverse then
-extends the same iff to every target reselection, with its target round trip
-used explicitly in both directions.
+The generated raw-defect cochain equivalence reflects the identity cochain,
+so coherence reflects without importing the revision-1 reflection theorem.
+The Cycle 6 inverse then extends the same iff to every target reselection,
+with its target round trip used explicitly in both directions.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -28,9 +27,23 @@ theorem indexedCoherentAt_transport_iff
     (reselection : IndexedEdgeReselection source) :
     source.IndexedCoherentAt reselection ↔
       (hom.transportedInterpretation source).IndexedCoherentAt
-        (hom.transportedReselection source reselection) :=
-  ⟨hom.indexedCoherentAt_transport source reselection,
-    hom.indexedCoherentAt_reflect source reselection⟩
+        (hom.transportedReselection source reselection) := by
+  rw [source.indexedCoherentAt_iff_adaptedCoherentAt,
+    (hom.transportedInterpretation source).indexedCoherentAt_iff_adaptedCoherentAt,
+    coherentAt_iff_rawDefectCochain_eq_identity,
+    coherentAt_iff_rawDefectCochain_eq_identity]
+  constructor
+  · intro sourceDefect
+    rw [← hom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      source reselection]
+    rw [sourceDefect,
+      hom.indexedDiagnosticDefectCochainEquivalence_identity source]
+  · intro targetDefect
+    apply (indexedDiagnosticDefectCochainEquivalence hom source).injective
+    rw [hom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      source reselection]
+    rw [targetDefect,
+      hom.indexedDiagnosticDefectCochainEquivalence_identity source]
 
 /-- Every target reselection is coherent exactly when its generated inverse is coherent. -/
 theorem indexedCoherentAt_inverseTransport_iff
@@ -44,13 +57,13 @@ theorem indexedCoherentAt_inverseTransport_iff
         (hom.inverseTransportedReselection source targetReselection) := by
   constructor
   · intro targetCoherent
-    apply hom.indexedCoherentAt_reflect source
-      (hom.inverseTransportedReselection source targetReselection)
+    apply (hom.indexedCoherentAt_transport_iff source
+      (hom.inverseTransportedReselection source targetReselection)).2
     simpa only [hom.transportedReselection_inverseTransportedReselection]
       using targetCoherent
   · intro sourceCoherent
-    have transported := hom.indexedCoherentAt_transport source
-      (hom.inverseTransportedReselection source targetReselection)
+    have transported := (hom.indexedCoherentAt_transport_iff source
+      (hom.inverseTransportedReselection source targetReselection)).1
       sourceCoherent
     simpa only [hom.transportedReselection_inverseTransportedReselection]
       using transported
