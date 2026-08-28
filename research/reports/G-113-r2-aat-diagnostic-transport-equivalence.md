@@ -4222,11 +4222,11 @@ audits:
     completion_candidate: "PR 4233 head 76e586118578cb615bc52f09718e9e2ab65277ad / merge 7083db0da217c775cec2bff8b76bca1ebbe5b5c3 / CI 7 of 7"
   blocking_findings: []
   unchecked:
-    - final report/Issue synchronization PR review, CI, and merge
+    - final report/Issue synchronization PR review and merge; exact-head CI is 7 of 7
     - corrected-schema same-merge-head final packet
     - fresh independent final math-lean-review mathematics A/B and Lean A/B on the synchronized exact head
   next_obligation: >-
-    Merge the report/Issue synchronization after standard review and CI, post
+    Merge the report/Issue synchronization after standard review, post
     the corrected-schema packet on that exact merge head, and run the fresh
     independent final completion review.
 ```
