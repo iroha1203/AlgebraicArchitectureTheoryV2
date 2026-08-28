@@ -2120,3 +2120,173 @@ audits:
     isomorphisms, mate each whole route to the native G-112 route, then lift
     the resulting equations to the downstream diagnostic equivalences.
 ```
+
+### Cycle 17 — whole-route natural-isomorphism and equality-cast surface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 17
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: cfa14ed304fd06f3126f1956e7ab45da9f078770
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 16 generatorwise mate routes accepted"
+  proof_dag_predecessors:
+    - coreFiberCompositor_left_unit
+    - coreFiberCompositor_right_unit
+    - coreFiberCompositor_assoc
+    - exact_bottom_semantic_global_left_unit_triangle
+    - exact_bottom_semantic_global_right_unit_triangle
+    - exact_bottom_semantic_global_pentagon
+    - semanticGlobalTransportReindexAdjunction
+  proof_obligation: >-
+    Promote the reviewed G-111 and G-112 unit and pentagon component routes to
+    natural isomorphisms, identify every hom component with the original route,
+    promote equality transport on both sides, prove its contravariant conjugacy,
+    and lift all six predecessor triangle/pentagon equations to whole-route
+    natural-isomorphism equalities.
+  selection_reason: >-
+    Cycle 16 fixed generatorwise mate composites but could not yet state the
+    mate of a whole route.  Natural-isomorphism packaging and the reversed
+    equality-cast conjugacy are the missing typed producers, especially for the
+    right pentagon associativity route.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean
+  risks:
+    - packages whose hom components do not equal the reviewed actual routes
+    - wrong left/right unitor normalization
+    - loss of the right-pentagon associativity cast
+    - using equality transport in the covariant rather than contravariant direction
+    - declaring whole-route conjugacy before proving it
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    Ten natural-isomorphism definitions now package equality casts and all four
+    unit/pentagon routes on both the G-111 and G-112 sides.  Ten component
+    theorems identify them with the exact reviewed component routes.  Equality
+    transport conjugacy is proved with reversed equality on reindexing.  Six
+    whole-route equations consume the actual G-111 and G-112 triangle/pentagon
+    theorems by natural-transformation extensionality.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean
+  evidence:
+    - coreFiberTransportEqCastIso_hom_app
+    - coreFiberLeftUnitRouteIso_hom_app
+    - coreFiberRightUnitRouteIso_hom_app
+    - coreFiberPentagonLeftRouteIso_hom_app
+    - coreFiberPentagonRightRouteIso_hom_app
+    - semanticGlobalReindexEqCastIso_hom_app
+    - semanticGlobalTransportEquivalence_eqCast_conjugate
+    - semanticGlobalLeftUnitRouteIso_hom_app
+    - semanticGlobalRightUnitRouteIso_hom_app
+    - semanticGlobalPentagonLeftRouteIso_hom_app
+    - semanticGlobalPentagonRightRouteIso_hom_app
+    - coreFiberLeftUnitRouteIso_eq_cast
+    - coreFiberRightUnitRouteIso_eq_cast
+    - coreFiberPentagonRouteIso_eq
+    - semanticGlobalLeftUnitRouteIso_eq_cast
+    - semanticGlobalRightUnitRouteIso_eq_cast
+    - semanticGlobalPentagonRouteIso_eq
+  claim_mapping:
+    definitions:
+      - coreFiberTransportEqCastIso
+      - coreFiberLeftUnitRouteIso
+      - coreFiberRightUnitRouteIso
+      - coreFiberPentagonLeftRouteIso
+      - coreFiberPentagonRightRouteIso
+      - semanticGlobalReindexEqCastIso
+      - semanticGlobalLeftUnitRouteIso
+      - semanticGlobalRightUnitRouteIso
+      - semanticGlobalPentagonLeftRouteIso
+      - semanticGlobalPentagonRightRouteIso
+    theorem_names:
+      - coreFiberLeftUnitRouteIso_hom_app
+      - coreFiberRightUnitRouteIso_hom_app
+      - coreFiberPentagonLeftRouteIso_hom_app
+      - coreFiberPentagonRightRouteIso_hom_app
+      - coreFiberTransportEqCastIso_hom_app
+      - semanticGlobalReindexEqCastIso_hom_app
+      - semanticGlobalTransportEquivalence_eqCast_conjugate
+      - semanticGlobalLeftUnitRouteIso_hom_app
+      - semanticGlobalRightUnitRouteIso_hom_app
+      - semanticGlobalPentagonLeftRouteIso_hom_app
+      - semanticGlobalPentagonRightRouteIso_hom_app
+      - coreFiberLeftUnitRouteIso_eq_cast
+      - coreFiberRightUnitRouteIso_eq_cast
+      - coreFiberPentagonRouteIso_eq
+      - semanticGlobalLeftUnitRouteIso_eq_cast
+      - semanticGlobalRightUnitRouteIso_eq_cast
+      - semanticGlobalPentagonRouteIso_eq
+    source_labels:
+      - "target theorem (h): whole-route triangle/pentagon typing and coherence at layer (a)"
+      - "G-111 actual component routes and coherence equations"
+      - "G-112 actual component routes and coherence equations"
+      - "generated G-113 adjunction conjugacy for equality casts"
+    conjuncts:
+      - "G-111 unit/pentagon routes -> exact whole-route NatIso components and equations"
+      - "G-112 unit/pentagon routes -> exact whole-route NatIso components and equations"
+      - "base-arrow equality transport -> mate reverses equality for contravariant reindexing"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "mate each packaged whole G-111 unit/pentagon route to the corresponding packaged G-112 route"
+      - "triangle/pentagon propagation from layer (a) to downstream layers (b)--(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle supplies the whole-route natural-isomorphism and cast surface,
+      including both predecessor coherence equations.  It does not yet claim
+      equality between the conjugate of each whole G-111 route and its packaged
+      G-112 route, nor downstream, square/pasting, or conjunct (i) completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole-route G-111/G-112 NatIso packaging"
+      - "K4 component identity with all reviewed actual routes"
+      - "K4 equality-cast contravariant conjugacy"
+      - "K4 predecessor unit/pentagon laws at whole-route NatIso level"
+    remaining:
+      - "K4 whole-route cross-system mate equalities and downstream propagation"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "G-111 route packages / actual unitor, compositor, associator cast"
+      - "G-112 route packages / actual unitor, compositor, reindex equality cast"
+      - "whole-route laws / reviewed component equations plus NatIso extensionality"
+      - "equality-cast mate / generated adjunction, reduced to reflexive equality"
+    unresolved:
+      - "whole-route cross-system conjugacy"
+      - "downstream route action and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - coreFiberCompositor_left_unit
+      - coreFiberCompositor_right_unit
+      - coreFiberCompositor_assoc
+      - exact_bottom_semantic_global_left_unit_triangle
+      - exact_bottom_semantic_global_right_unit_triangle
+      - exact_bottom_semantic_global_pentagon
+      - conjugateIsoEquiv
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for whole-route packaging, casts, and predecessor equations"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake build ResearchLean.AG.DiagnosticConservativity.TrianglePentagonCompatibility / exit 0 / selected dependency module only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 27 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Use conjugateEquiv composition, whiskering, associator, and equality-cast
+    laws to identify the conjugate of each whole G-111 route with the packaged
+    G-112 route, then propagate the accepted equations downstream.
+```
