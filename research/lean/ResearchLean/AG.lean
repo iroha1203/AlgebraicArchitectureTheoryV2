@@ -40,6 +40,7 @@ import ResearchLean.AG.DiagnosticConservativity.PentagonPropositionCompatibility
 import ResearchLean.AG.DiagnosticConservativity.UnitDownstreamCompatibility
 import ResearchLean.AG.DiagnosticConservativity.PathSquareCompatibility
 import ResearchLean.AG.DiagnosticConservativity.PathSquareDownstreamCompatibility
+import ResearchLean.AG.DiagnosticConservativity.BaseIsoIndependence
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
