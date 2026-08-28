@@ -23,6 +23,7 @@ import ResearchLean.AG.DiagnosticConservativity.ReselectionExactness
 import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
 import ResearchLean.AG.DiagnosticConservativity.ObstructionExactness
 import ResearchLean.AG.DiagnosticConservativity.CochainExactness
+import ResearchLean.AG.DiagnosticConservativity.OrbitExactness
 import ResearchLean.AG.GeometryTransport
 import ResearchLean.AG.CanonicalResolution.Admissible
 import ResearchLean.AG.CanonicalResolution.Effective
