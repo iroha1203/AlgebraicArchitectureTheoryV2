@@ -3,7 +3,7 @@
 - 一次仕様: [`research/goals/G-113-aat-diagnostic-conservativity.md`](../goals/G-113-aat-diagnostic-conservativity.md)
 - tracking Issue: [#4198](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4198)
 - target theorem: Diagnostic Conservativity Classification Theorem
-- proof state: `active / K0 implementation candidate / next K1`
+- proof state: `active / target-refutation candidate / review pending`
 - completion candidate: `no`
 
 この report は固定 GOAL の証拠索引と proof obligation delta を記録する。
@@ -110,14 +110,19 @@ probe に injectivity certificate や結論 field は無い。
   量化域が非空である具体的 inhabitant。fixture field に vanishing や
   conservativity は無い。
 
-`DiagnosticConservative` 自体の正負 pair は未放電である。非退化な正例は K1 の
-identity / sufficiency theoremを必要とし、負例は固定 target (f) O16 の
-「generated target obstruction vanishing かつ source nonvanishing」そのもので
-K3 の建設義務である。空 interpretation、単一objectへの縮退、結論供給 fieldで
-先行 pairを作ることは GOAL の dullness filter / anti-weakening に反する。
-したがって §1.4 の「片方が作れない理由」を K1/K3 の exact obligationへ接続して
-記録する。これは Cycle 1 F0 通過後も G-113 全体が `target-proof-checkpoint` にある理由であり、
-Cycle 2 K0 の `proof-obligation-discharged` 判定とは独立である。
+Cycle 3 の `DiagnosticConservativityReflection.lean` は、canonical package transport
+が strongly cocartesian であるだけでなく strongly cartesian でもあることを
+実消費し、任意 endpoint automorphism の source 側への反射と endpoint action の
+全射性を証明した。target reselection を pointwise に反射し、cartesian 一意性で
+coherence を source へ戻すため、`DiagnosticConservative hom` は class 条件なしで
+任意の `IndexedBaseDiagramHom hom` に成立する。
+
+したがって `DiagnosticConservative` の負例 pair は単に未構成なのではない。
+`no_diagnosticConservativityCounterexample` が、target obstruction vanishing かつ
+source nonvanishing となる interpretation の存在を全 hom について否定する。
+これは固定 target (f) O16 の class 外 witness を原理的に不能にし、GOAL の
+failure policy が明記する candidate 非依存の `target-refuted` 条件に一致する。
+K2--K4 を続けて target の残りを部分放電しても、この conjunct は成立しない。
 
 ## Cycle ledger
 
@@ -394,4 +399,118 @@ audits:
       7a7c953af98eff85802c5f16385ef1831ff248ef1c0c63a6108a8a77ccfaba3c
   blocking_findings: []
   next_obligation: K1 conservativity sufficiency and O14 reflection
+```
+
+### Cycle 3 — K1 unconditional reflection and fixed-target refutation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 3
+goal_blob_sha: 89d47851711f9335bf42d312c8522db01c7718ba
+base_oid: 8d67e60317adac99d2a3910eb3f2f299eeb26aca
+tracking_issue: 4198
+report_path: research/reports/G-113-aat-diagnostic-conservativity.md
+selection:
+  proof_state_ref: "Issue #4198: active / K0 merged proof-obligation-discharged / next K1"
+  proof_dag_predecessors:
+    - indexedTotalLift_isStronglyCocartesian
+    - transportAlongHom_isStronglyCartesian
+    - IndexedBaseDiagramHom.diagnosticVertexLift_comparator_naturality
+    - IndexedBaseDiagramHom.diagnosticVertexLift_reselectedPath_naturality
+    - transportObstructionVanishes_iff_coherentizable
+  proof_obligation: >-
+    Prove K1 conservativity sufficiency and O14 reflection without weakening the
+    fixed class term, then determine whether the fixed O16 counterexample can
+    still exist.
+  selection_reason: >-
+    K1 is the unique next obligation after merged K0 and directly precedes the
+    fixed target's class-exterior nonconservativity witness.
+  expected_result_type: proof-obligation-discharged-or-target-refuted
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativityReflection.lean
+  risks:
+    - reflection could assume endpoint-action surjectivity instead of proving it
+    - coherence could be transported only forward
+    - the impossibility result could be restricted to the selected class
+result:
+  proposed_result_type: target-refuted
+  proof_obligation_delta: >-
+    Canonical indexed package lifts are strongly cartesian as well as strongly
+    cocartesian. Cartesian factorization reflects every transported endpoint
+    automorphism; cocartesian uniqueness proves that mapping it returns the
+    original automorphism. Reflected reselections therefore map pointwise to
+    the target reselection, and cartesian uniqueness reflects indexed coherence.
+    Consequently DiagnosticConservative holds for every indexed diagram hom,
+    independent of all three class terms. The target-vanishing/source-
+    nonvanishing counterexample required by fixed conjunct (f) is impossible.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativityReflection.lean
+  evidence:
+    - indexedTotalLift_isStronglyCartesian
+    - coreFiberTransportReflectMap_fac
+    - coreFiberTransportMapAut_reflect
+    - IndexedBaseDiagramHom.endpointAction_reflectedEndpointAut
+    - IndexedBaseDiagramHom.endpointAction_surjective
+    - IndexedBaseDiagramHom.indexedCoherentAt_reflect
+    - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_reflect
+    - diagnosticConservative_all
+    - no_diagnosticConservativityCounterexample
+  claim_mapping:
+    theorem_names:
+      - diagnosticConservative_all
+      - no_diagnosticConservativityCounterexample
+    source_labels:
+      - "target theorem (b)(c): sufficiency and O14 reflection"
+      - "target theorem (f): class-exterior O16 counterexample"
+      - "target failure policy: unconditional conservativity makes (f) impossible"
+    conjuncts:
+      - "all hom -> DiagnosticConservative"
+      - "all hom -> no target-vanishing/source-nonvanishing witness"
+    undischarged_assumptions:
+      - orbit detection and O20 classification
+      - class-inside finite nonvacuity witness
+      - closure and Full+Faithful decision
+    acceptance_point: >-
+      This is a fixed-target refutation candidate, not target theorem completion.
+      It becomes the formal stop after fixed-head review, exact-head CI, merge,
+      and tracking-Issue synchronization confirm the unconditional theorem and
+      its contradiction with conjunct (f).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K1 conservativity sufficiency / stronger unconditional theorem"
+      - "O14 vanishing reflection / indexedTransportObstructionVanishes_reflect"
+      - "fixed (f) feasibility / formally refuted"
+    remaining:
+      - "K2--K4 obligations are not pursued after fixed-target refutation"
+  certificate_provenance:
+    discharged:
+      - "reflected maps are constructed by the cartesian universal property"
+      - "endpoint recovery is proved by cocartesian uniqueness"
+      - "coherence reflection consumes target coherence in the theorem body"
+    unresolved: []
+  proof_use:
+    used:
+      - "strongly cartesian canonical transport / reflected endpoint maps"
+      - "strongly cocartesian uniqueness / endpoint-action surjectivity"
+      - "target coherent reselection / source coherence reflection"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: >-
+    The theorem quantifies over every source interpretation and every diagram
+    hom; it does not use class membership or a conclusion-bearing certificate.
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativityReflection.lean
+      / exit 0 / axiom audit: 15 declarations, standard axioms only
+  blocking_findings: []
+  next_obligation: fixed-head review and target-refuted closeout
 ```
