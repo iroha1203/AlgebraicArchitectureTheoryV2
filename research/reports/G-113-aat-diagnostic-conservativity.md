@@ -23,6 +23,8 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
 - O20-term head: `pointwiseReflectionTerm` =
   `vertexwiseSourceMapInjective`。候補遷移を持たない。
 - (i) candidate head: `VertexwiseSourceMapBijective` の1項。
+  `FullFaithfulCandidate` / `fullFaithfulCandidateRegistry` が独立 singleton
+  registry として機械登録し、2項目が無いことまで API 化する。
 - conservativity head: `DiagnosticConservative`。source interpretation を
   含意の外側で全量化する per-interpretation 形。
 - iso witness head: `IndexedBaseDiagramIso` /
@@ -64,14 +66,25 @@ K0 に残す language obligation は Mono 排除と ACI normalization completene
 
 ## Prop instance-pair status
 
-Lean 品質基準 §1.4 の正負 instance-pair は未構成なので、この cycle は
-受理点ではなく `proof-checkpoint` とする。`DiagnosticConservative` の負例は
-固定 target (f) O16 の class 外消失 witnessそのものであり、生成 class 上の
-非空な正例は K1 の十分性と K3 (g) の実発火を合成して得る。空 interpretation、
-singleton、結論供給 fieldによる先行 pairは GOAL の dullness filter / anti-weakening
-に反するため採らない。`DiagnosticClassTerm.eval`、
-`GeneratedDiagnosticClass`、`VertexwiseSourceMapBijective` の構造的な正負例も、
-同じ instance-pair obligationとして次 cycle以後に固定する。
+`DiagnosticConservativitySchemaWitnesses.lean` は、既存 G-111 の2頂点・2平行辺・
+非自明 carrier を持つ named shape 上で次を固定する。
+
+- identity hom: injectivity / pullback / conjunction / generated class /
+  `VertexwiseSourceMapBijective` / 登録済み (i) candidate の正例。
+- finite constant hom: injectivity / conjunction / generated class /
+  `VertexwiseSourceMapBijective` / 登録済み (i) candidate の負例。
+- `finiteNonPullbackSquare`: pullback atom / generated pullback class の負例。
+- `indexedCovarianceSource`: `DiagnosticConservative` の source interpretation
+  量化域が非空である具体的 inhabitant。fixture field に vanishing や
+  conservativity は無い。
+
+`DiagnosticConservative` 自体の正負 pair は未放電である。非退化な正例は K1 の
+identity / sufficiency theoremを必要とし、負例は固定 target (f) O16 の
+「generated target obstruction vanishing かつ source nonvanishing」そのもので
+K3 の建設義務である。空 interpretation、単一objectへの縮退、結論供給 fieldで
+先行 pairを作ることは GOAL の dullness filter / anti-weakening に反する。
+したがって §1.4 の「片方が作れない理由」を K1/K3 の exact obligationへ接続して
+記録し、この cycle は引き続き `proof-checkpoint` とする。
 
 ## Cycle ledger
 
@@ -104,6 +117,7 @@ selection:
   expected_result_type: proof-checkpoint
   lean_targets:
     - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchemaWitnesses.lean
   risks:
     - DiagnosticConservative could accidentally use an aggregate antecedent
     - the closed language could acquire diagnostic data or an arbitrary callback
@@ -123,18 +137,28 @@ result:
     sequence, independent by-value O20 term, sole bijectivity candidate,
     diagram-isomorphism witness, GeneratedDiagnosticClass, and the
     per-interpretation DiagnosticConservative predicate are now fixed at every
-    universe u without any theorem-result input.  The required positive and
-    negative instances are not yet constructed, so this is a statement-only
-    checkpoint rather than an accepted proof-obligation discharge.
+    universe u without any theorem-result input.  Structural positive/negative
+    controls for eval, generated membership, and the fixed (i) predicate fire
+    on named nonempty fixtures.  DiagnosticConservative itself remains without
+    a positive/negative pair because those are K1 and K3/O16 results, so this is
+    a proof checkpoint rather than target-proof completion.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchema.lean
+    - ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchemaWitnesses.lean
   evidence:
     - DiagnosticClassTerm
     - DiagnosticClassTerm.eval
     - diagnosticClassTermCandidates_head
+    - mem_diagnosticClassTermCandidates_iff
     - pointwiseReflectionTerm
     - VertexwiseSourceMapBijective
+    - fullFaithfulCandidateRegistry_head
+    - fullFaithfulCandidateRegistry_second
+    - diagnosticSchemaIdentity_eval_conjunction
+    - diagnosticSchemaCollapse_not_eval_injective
+    - diagnosticSchemaNonPullback_not_eval_pullback
+    - diagnosticSchemaInterpretation_nonempty
     - IndexedBaseDiagramIso
     - IndexedBaseDiagramHomIsoWitness
     - diagnosticConservative_iff
@@ -160,9 +184,10 @@ result:
       - closure and Full+Faithful decision
     acceptance_point: >-
       This cycle is not an acceptance point.  It fixes the pre-proof type
-      surface named by F0, while positive/negative instances and every
-      conservativity, reflection, detection, witness, closure, or Full+Faithful
-      result remain unaccepted.
+      surface named by F0 and structural controls for its condition predicates.
+      DiagnosticConservative's pair and every conservativity, reflection,
+      detection, target witness, closure, or Full+Faithful result remain
+      unaccepted.
     port_status: not-applicable
 audits:
   premise_delta:
@@ -174,7 +199,7 @@ audits:
       - "F0 per-interpretation conservativity statement / DiagnosticConservative"
     remaining:
       - "all discharge-required rows / F0 fixes signatures only"
-      - "positive and negative instance pairs / Lean quality standard section 1.4"
+      - "DiagnosticConservative positive/negative pair / K1 and K3 O16"
   certificate_provenance:
     discharged:
       - "fixed heads are literal GOAL-card translations and consume no certificate"
@@ -187,25 +212,34 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  vacuity: cannot-determine
+  vacuity: >-
+    structural predicates have positive/negative controls; DiagnosticConservative
+    has a nonempty interpretation domain but its truth-value pair remains K1/K3
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - >-
       cd research/lean && lake env lean
       ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchema.lean
-      / exit 0 / axiom audit: 60 declarations, standard axioms only
+      / exit 0 / axiom audit: 83 declarations, standard axioms only
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/DiagnosticConservativitySchemaWitnesses.lean
+      / exit 0 / axiom audit: 26 declarations, standard axioms only
     - >-
       cd research/lean && lake build
       ResearchLean.AG.DoctrineFiberProduct.DiagnosticConservativitySchema
       / exit 0 / targeted module only
     - >-
-      target #print axioms audit / all 19 reported declarations use only
+      target #print axioms audit / all 26 reported declarations use only
       propext, Classical.choice, Quot.sound or no axioms
     - >-
-      source SHA-256
-      696f4bdb32115526e37edc18008f056f63a72ee8bf3c33129289428a838384c5
+      schema SHA-256
+      238eab17378a62cb75dbfe5f53a3522484704a0dc91c5d785b5e11c16995ccd3
+    - >-
+      witness SHA-256
+      96dca57c4279f5311a57fa29429ec93382b210c33e4644ee58114116eec7a090
   blocking_findings:
-    - "F0 predicates are statement-only until positive/negative instance pairs are fixed"
-  next_obligation: F0 instance pairs, then K0 normalization, Mono exclusion, and qualification
+    - "DiagnosticConservative pair is intentionally not an F0 result; exact producers are K1 and K3 O16"
+  next_obligation: K0 normalization, Mono exclusion, and qualification
 ```
