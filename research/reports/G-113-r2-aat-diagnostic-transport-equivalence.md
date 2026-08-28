@@ -3405,3 +3405,178 @@ audits:
     orbit membership, coherence iff, and obstruction iff, with named forward
     and arbitrary-target inverse declarations that consume the pasted route.
 ```
+
+### Cycle 26 — generated downstream horizontal-pasting exactness package
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 26
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 102d2f14a6e60848304ac59f3509cc154b26acfe
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 25 primitive path-square producer accepted"
+  proof_dag_predecessors:
+    - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+    - indexedDiagnosticHorizontalPathPasting_route
+    - indexedDiagnosticTransportEquivalence_functor
+    - indexedDiagnosticTransportEquivalence_inverse
+    - indexedDiagnosticTransportPush_isEquivalence
+    - indexedDiagnosticEndpointEquivalence_apply
+    - indexedDiagnosticReselectionEquivalence_apply
+    - inverseTransportedReselection_transportedReselection
+    - transportedReselection_inverseTransportedReselection
+    - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+    - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+    - indexedDiagnosticInReselectionOrbit_iff
+    - indexedDiagnosticInReselectionOrbit_symm_iff
+    - indexedCoherentAt_transport_iff
+    - indexedCoherentAt_inverseTransport_iff
+    - indexedTransportObstructionVanishes_iff
+  proof_obligation: >-
+    Generate one square-indexed compatibility package whose base sides and
+    route are the actual G-111 horizontal paste, whose forward and inverse path
+    fields consume the Cycle 25 component-to-paste-to-append proof chain, and
+    whose remaining fields expose the full G-113 (a)--(g) exactness surface for
+    the same indexed hom and generated inverse.  No downstream certificate may
+    be accepted from the caller.
+  selection_reason: >-
+    Raw-defect cochains, orbit membership, coherence, and obstruction vanishing
+    are global over the fixed indexed shape and do not carry an independent
+    horizontal operation.  A generated package indexed by the authored pasted
+    square is therefore the natural Gr4 interface: the square-specific fields
+    fix the underlying path equations and route, while the globally quantified
+    fields fix every forward and arbitrary-target inverse exactness map governed
+    by those path values.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+  risks:
+    - aggregating unrelated propositions without the square-specific proof-use chain
+    - accepting equivalence, inverse, coherence, obstruction, or orbit fields from the caller
+    - omitting arbitrary target endpoint, reselection, cochain, orbit, or coherence values
+    - losing the G-112 inverse functor or G-111 horizontal-paste provenance
+    - claiming a new horizontal operation on indexed homs
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The generated `IndexedDiagnosticHorizontalPastingExactness` proposition
+    records the four base-side equalities and pasteHorizontal route, the G-111
+    push/G-112 reindex equivalence at every vertex, forward and inverse endpoint
+    and reselection exactness, the two horizontally pasted path equations,
+    forward and inverse raw-defect cochain equations, both orbit iff routes,
+    both coherence iff routes, and obstruction iff.  Its sole producer fills
+    every field from existing theorem bodies; callers supply only the fixed hom,
+    generated source interpretation, and two consecutive paths.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean
+  evidence:
+    - IndexedDiagnosticHorizontalPastingExactness
+    - indexedDiagnosticHorizontalPastingExactness
+    - IndexedDiagnosticHorizontalPastingExactness.baseSides
+    - IndexedDiagnosticHorizontalPastingExactness.route
+    - IndexedDiagnosticHorizontalPastingExactness.fiberFunctor
+    - IndexedDiagnosticHorizontalPastingExactness.fiberInverse
+    - IndexedDiagnosticHorizontalPastingExactness.fiberIsEquivalence
+    - IndexedDiagnosticHorizontalPastingExactness.endpointForward
+    - IndexedDiagnosticHorizontalPastingExactness.endpointSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.endpointInverse
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionForward
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.reselectionTargetRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.pathForward
+    - IndexedDiagnosticHorizontalPastingExactness.pathInverse
+    - IndexedDiagnosticHorizontalPastingExactness.cochainForward
+    - IndexedDiagnosticHorizontalPastingExactness.cochainInverse
+    - IndexedDiagnosticHorizontalPastingExactness.cochainSourceRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.cochainTargetRoundTrip
+    - IndexedDiagnosticHorizontalPastingExactness.orbitForward
+    - IndexedDiagnosticHorizontalPastingExactness.orbitInverse
+    - IndexedDiagnosticHorizontalPastingExactness.coherenceForward
+    - IndexedDiagnosticHorizontalPastingExactness.coherenceInverse
+    - IndexedDiagnosticHorizontalPastingExactness.obstruction
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticHorizontalPastingExactness
+    source_labels:
+      - "target theorem (h): path-square naturality for (a)--(g)"
+      - "target theorem (h): square-level horizontal-pasting compatibility for (a)--(g)"
+    conjuncts:
+      - "G-111 pasted base square and route"
+      - "G-111 push / G-112 reindex fiber equivalence"
+      - "forward and arbitrary-target inverse endpoint/reselection routes"
+      - "forward and arbitrary-target inverse pasted path equations"
+      - "forward and inverse raw-defect cochain equations"
+      - "forward and inverse orbit and coherence iff routes"
+      - "obstruction vanishing iff"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      Together with the accepted identity, vertical-composition, unit,
+      triangle, and pentagon modules, this generated package closes the
+      path-square and horizontal-pasting part of conjunct (h).  It does not
+      claim conjunct (i) or G-113 completion.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 downstream path-square compatibility for (d)--(g)"
+      - "K4 downstream square-level horizontal-pasting compatibility for (d)--(g)"
+      - "K4 whole (a)--(g) square-indexed exactness package"
+    remaining:
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "base sides and route / Cycle 25 G-111 horizontal-paste theorems"
+      - "fiber equivalence / G-111 push and G-112 semantic-global reindex"
+      - "endpoint and reselection / explicit G-113 equivalences and generated inverse"
+      - "cochain and orbit / pointwise endpoint equivalence and raw-defect equations"
+      - "coherence and obstruction / forward reflection plus generated inverse witnesses"
+    unresolved:
+      - "finite non-IsIso nondegenerate witness and base-IsIso corollary"
+  proof_use:
+    used:
+      - indexedDiagnosticHorizontalPathPasting_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_inverse_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_base_eq_pathSquare
+      - indexedDiagnosticHorizontalPathPasting_route
+      - indexedDiagnosticTransportEquivalence_functor
+      - indexedDiagnosticTransportEquivalence_inverse
+      - indexedDiagnosticTransportPush_isEquivalence
+      - indexedDiagnosticEndpointEquivalence_apply
+      - indexedDiagnosticReselectionEquivalence_apply
+      - inverseTransportedReselection_transportedReselection
+      - transportedReselection_inverseTransportedReselection
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
+      - indexedDiagnosticInReselectionOrbit_iff
+      - indexedDiagnosticInReselectionOrbit_symm_iff
+      - indexedCoherentAt_transport_iff
+      - indexedCoherentAt_inverseTransport_iff
+      - indexedTransportObstructionVanishes_iff
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for the generated square-indexed (a)--(g) package and both arbitrary-target inverse routes"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PathSquareDownstreamCompatibility.lean / exit 0"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PathSquareDownstreamCompatibility / exit 0 / selected Cycle 26 module only"
+    - "28 declarations / individual #print axioms / propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: >-
+    Complete conjunct (i): fix the named arbitrary-base and base-IsIso
+    equivalence theorems, then construct the finite nonidentity non-IsIso base
+    component whose diagnostic equivalence preserves a nonidentity defect and
+    a nonidentity reselection through both round trips.
+```
