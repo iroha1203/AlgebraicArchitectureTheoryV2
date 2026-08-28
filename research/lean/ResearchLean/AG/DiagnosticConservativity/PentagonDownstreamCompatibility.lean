@@ -1,0 +1,352 @@
+import ResearchLean.AG.DiagnosticConservativity.WholePentagonCompatibility
+import ResearchLean.AG.DiagnosticConservativity.CompositionCompatibility
+
+/-!
+# G-113 revision 2 downstream whole-pentagon compatibility
+
+The two whole G-111 pentagon routes act on endpoint automorphisms and edge
+reselections.  Independently, the inverse mates of the two whole G-112 routes
+act on the same downstream data.  This module identifies each mate action with
+its G-111 action and then proves that the left and right downstream routes
+agree.
+
+The constructions retain all three indexed homs and the actual whole-route
+natural isomorphisms.  They do not replace the pentagon by a binary compositor
+comparison or accept a downstream compatibility equation as an input.
+-/
+
+namespace AAT.AG.DoctrineFiberProduct
+
+universe u
+
+open CategoryTheory
+open AtomFoundation
+open CrossStageCoherence
+open TransportCoherence
+
+namespace IndexedBaseDiagramHom
+
+/-! ## Endpoint automorphisms -/
+
+/-- The whole left G-111 pentagon route acting on endpoint automorphisms. -/
+noncomputable def indexedDiagnosticPentagonG111LeftEndpointEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    PackageFiberAut
+        ((((first.comp second).comp third).transportedInterpretation source).package
+          vertex) ≃*
+      PackageFiberAut
+        ((third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))).package vertex) :=
+  packageFiberAutMulEquivOfCoreFiberIso
+    ((coreFiberPentagonLeftRouteIso
+      (first.app vertex) (second.app vertex) (third.app vertex)).app
+        (source.fiberPackage vertex))
+
+/-- The whole right G-111 pentagon route acting on endpoint automorphisms,
+including its associativity cast. -/
+noncomputable def indexedDiagnosticPentagonG111RightEndpointEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    PackageFiberAut
+        ((((first.comp second).comp third).transportedInterpretation source).package
+          vertex) ≃*
+      PackageFiberAut
+        ((third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))).package vertex) :=
+  packageFiberAutMulEquivOfCoreFiberIso
+    ((coreFiberPentagonRightRouteIso
+      (first.app vertex) (second.app vertex) (third.app vertex)).app
+        (source.fiberPackage vertex))
+
+/-- Pull the whole left G-112 pentagon route back through the generated
+three-arrow adjunction mate and let it act on endpoint automorphisms. -/
+noncomputable def indexedDiagnosticPentagonMateLeftEndpointEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    PackageFiberAut
+        ((((first.comp second).comp third).transportedInterpretation source).package
+          vertex) ≃*
+      PackageFiberAut
+        ((third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))).package vertex) :=
+  packageFiberAutMulEquivOfCoreFiberIso
+    (((conjugateIsoEquiv
+      (((indexedDiagnosticTransportAdjunction first vertex).comp
+        (indexedDiagnosticTransportAdjunction second vertex)).comp
+          (indexedDiagnosticTransportAdjunction third vertex))
+      (indexedDiagnosticTransportAdjunction
+        ((first.comp second).comp third) vertex)).symm
+      (semanticGlobalPentagonLeftRouteIso
+        (first.app vertex) (second.app vertex) (third.app vertex))).app
+          (source.fiberPackage vertex))
+
+/-- Pull the cast-bearing whole right G-112 pentagon route back through the
+generated three-arrow adjunction mate. -/
+noncomputable def indexedDiagnosticPentagonMateRightEndpointEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    PackageFiberAut
+        ((((first.comp second).comp third).transportedInterpretation source).package
+          vertex) ≃*
+      PackageFiberAut
+        ((third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))).package vertex) :=
+  packageFiberAutMulEquivOfCoreFiberIso
+    (((conjugateIsoEquiv
+      (((indexedDiagnosticTransportAdjunction first vertex).comp
+        (indexedDiagnosticTransportAdjunction second vertex)).comp
+          (indexedDiagnosticTransportAdjunction third vertex))
+      (indexedDiagnosticTransportAdjunction
+        ((first.comp second).comp third) vertex)).symm
+      (semanticGlobalPentagonRightRouteIso
+        (first.app vertex) (second.app vertex) (third.app vertex))).app
+          (source.fiberPackage vertex))
+
+/-- The left whole G-112-mate endpoint action is the independently generated
+whole G-111 left action. -/
+theorem indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    indexedDiagnosticPentagonMateLeftEndpointEquivalence
+        first second third source vertex =
+      indexedDiagnosticPentagonG111LeftEndpointEquivalence
+        first second third source vertex := by
+  unfold indexedDiagnosticPentagonMateLeftEndpointEquivalence
+  rw [← indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+    first second third vertex]
+  simp only [Equiv.symm_apply_apply]
+  rfl
+
+/-- The right whole G-112-mate endpoint action is the independently generated
+whole G-111 right action, including both associativity casts. -/
+theorem indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    indexedDiagnosticPentagonMateRightEndpointEquivalence
+        first second third source vertex =
+      indexedDiagnosticPentagonG111RightEndpointEquivalence
+        first second third source vertex := by
+  unfold indexedDiagnosticPentagonMateRightEndpointEquivalence
+  rw [← indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+    first second third vertex]
+  simp only [Equiv.symm_apply_apply]
+  rfl
+
+/-- The two independently generated G-111 whole pentagon endpoint actions
+agree. -/
+theorem indexedDiagnosticPentagonG111EndpointEquivalence_eq
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    indexedDiagnosticPentagonG111LeftEndpointEquivalence
+        first second third source vertex =
+      indexedDiagnosticPentagonG111RightEndpointEquivalence
+        first second third source vertex := by
+  unfold indexedDiagnosticPentagonG111LeftEndpointEquivalence
+  unfold indexedDiagnosticPentagonG111RightEndpointEquivalence
+  rw [coreFiberPentagonRouteIso_eq]
+
+/-- The two whole G-112-mate endpoint actions satisfy the pentagon equation. -/
+theorem indexedDiagnosticPentagonMateEndpointEquivalence_eq
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex) :
+    indexedDiagnosticPentagonMateLeftEndpointEquivalence
+        first second third source vertex =
+      indexedDiagnosticPentagonMateRightEndpointEquivalence
+        first second third source vertex := by
+  rw [indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111,
+    indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111]
+  exact indexedDiagnosticPentagonG111EndpointEquivalence_eq
+    first second third source vertex
+
+/-! ## Edge reselections -/
+
+/-- Apply the left whole G-111 pentagon endpoint action at every reselection
+coordinate. -/
+noncomputable def indexedDiagnosticPentagonG111LeftReselectionEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    IndexedEdgeReselection
+        (((first.comp second).comp third).transportedInterpretation source) ≃*
+      IndexedEdgeReselection
+        (third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))) :=
+  MulEquiv.piCongrRight fun _i =>
+    MulEquiv.piCongrRight fun j =>
+      MulEquiv.piCongrRight fun _edge =>
+        indexedDiagnosticPentagonG111LeftEndpointEquivalence
+          first second third source j
+
+/-- Apply the right whole G-111 pentagon endpoint action at every reselection
+coordinate. -/
+noncomputable def indexedDiagnosticPentagonG111RightReselectionEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    IndexedEdgeReselection
+        (((first.comp second).comp third).transportedInterpretation source) ≃*
+      IndexedEdgeReselection
+        (third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))) :=
+  MulEquiv.piCongrRight fun _i =>
+    MulEquiv.piCongrRight fun j =>
+      MulEquiv.piCongrRight fun _edge =>
+        indexedDiagnosticPentagonG111RightEndpointEquivalence
+          first second third source j
+
+/-- Apply the left whole G-112-mate endpoint action at every reselection
+coordinate. -/
+noncomputable def indexedDiagnosticPentagonMateLeftReselectionEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    IndexedEdgeReselection
+        (((first.comp second).comp third).transportedInterpretation source) ≃*
+      IndexedEdgeReselection
+        (third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))) :=
+  MulEquiv.piCongrRight fun _i =>
+    MulEquiv.piCongrRight fun j =>
+      MulEquiv.piCongrRight fun _edge =>
+        indexedDiagnosticPentagonMateLeftEndpointEquivalence
+          first second third source j
+
+/-- Apply the right whole G-112-mate endpoint action at every reselection
+coordinate. -/
+noncomputable def indexedDiagnosticPentagonMateRightReselectionEquivalence
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    IndexedEdgeReselection
+        (((first.comp second).comp third).transportedInterpretation source) ≃*
+      IndexedEdgeReselection
+        (third.transportedInterpretation
+          (second.transportedInterpretation
+            (first.transportedInterpretation source))) :=
+  MulEquiv.piCongrRight fun _i =>
+    MulEquiv.piCongrRight fun j =>
+      MulEquiv.piCongrRight fun _edge =>
+        indexedDiagnosticPentagonMateRightEndpointEquivalence
+          first second third source j
+
+/-- The left whole G-112-mate and G-111 reselection actions agree. -/
+theorem indexedDiagnosticPentagonMateLeftReselectionEquivalence_eq_g111
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    indexedDiagnosticPentagonMateLeftReselectionEquivalence
+        first second third source =
+      indexedDiagnosticPentagonG111LeftReselectionEquivalence
+        first second third source := by
+  apply MulEquiv.ext
+  intro reselection
+  funext i j edge
+  change indexedDiagnosticPentagonMateLeftEndpointEquivalence
+      first second third source j (reselection i j edge) =
+    indexedDiagnosticPentagonG111LeftEndpointEquivalence
+      first second third source j (reselection i j edge)
+  rw [indexedDiagnosticPentagonMateLeftEndpointEquivalence_eq_g111]
+
+/-- The right whole G-112-mate and G-111 reselection actions agree. -/
+theorem indexedDiagnosticPentagonMateRightReselectionEquivalence_eq_g111
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    indexedDiagnosticPentagonMateRightReselectionEquivalence
+        first second third source =
+      indexedDiagnosticPentagonG111RightReselectionEquivalence
+        first second third source := by
+  apply MulEquiv.ext
+  intro reselection
+  funext i j edge
+  change indexedDiagnosticPentagonMateRightEndpointEquivalence
+      first second third source j (reselection i j edge) =
+    indexedDiagnosticPentagonG111RightEndpointEquivalence
+      first second third source j (reselection i j edge)
+  rw [indexedDiagnosticPentagonMateRightEndpointEquivalence_eq_g111]
+
+/-- The two whole G-112-mate reselection actions satisfy the pentagon
+equation at every edge coordinate. -/
+theorem indexedDiagnosticPentagonMateReselectionEquivalence_eq
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F H : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (third : IndexedBaseDiagramHom F H)
+    (source : IndexedDiagnosticInterpretation D) :
+    indexedDiagnosticPentagonMateLeftReselectionEquivalence
+        first second third source =
+      indexedDiagnosticPentagonMateRightReselectionEquivalence
+        first second third source := by
+  apply MulEquiv.ext
+  intro reselection
+  funext i j edge
+  change indexedDiagnosticPentagonMateLeftEndpointEquivalence
+      first second third source j (reselection i j edge) =
+    indexedDiagnosticPentagonMateRightEndpointEquivalence
+      first second third source j (reselection i j edge)
+  rw [indexedDiagnosticPentagonMateEndpointEquivalence_eq]
+
+end IndexedBaseDiagramHom
+
+end AAT.AG.DoctrineFiberProduct
+
+#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
