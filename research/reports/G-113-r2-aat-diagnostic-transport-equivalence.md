@@ -944,13 +944,11 @@ selection:
     - IndexedDiagnosticInterpretation.indexedCoherentAt_iff_adaptedCoherentAt
     - IndexedBaseDiagramHom.indexedCoherentAt_transport_iff
     - IndexedBaseDiagramHom.indexedCoherentAt_inverseTransport_iff
-    - diagnosticConservative_all
-    - no_diagnosticConservativityCounterexample
   proof_obligation: >-
     Prove obstruction vanishing iff for every indexed diagram hom by consuming
-    the Cycle 7 coherence equivalences and Cycle 6 inverse reselection.  Retain
-    the reviewed all-hom DiagnosticConservative and no-counterexample named
-    declarations without class conditions.
+    the Cycle 7 coherence equivalences and Cycle 6 inverse reselection.  Derive
+    all-hom DiagnosticConservative and no-counterexample named declarations
+    from the resulting revision-2 equivalence without class conditions.
   selection_reason: >-
     This is target conjunct (e).  Opening vanishing as coherentizability makes
     the proof consume the newly established coherence exactness rather than
@@ -971,28 +969,29 @@ result:
     to coherentizability; the source-to-target witness uses Cycle 7 mapped
     coherence, while the target-to-source witness uses Cycle 6 inverse
     reselection through Cycle 7 arbitrary-target coherence.  The reviewed
-    revision-1 all-hom DiagnosticConservative and no-counterexample declarations
-    remain imported with no class condition.
+    named revision-2 all-hom DiagnosticConservative and no-counterexample
+    corollaries are derived directly from that equivalence with no class
+    condition.  The revision-1 declarations remain historical evidence only.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean
   evidence:
     - IndexedBaseDiagramHom.indexedTransportObstructionVanishes_iff
-    - diagnosticConservative_all
-    - no_diagnosticConservativityCounterexample
+    - diagnosticConservative_all_via_transportEquivalence
+    - no_diagnosticConservativityCounterexample_via_transportEquivalence
   claim_mapping:
     theorem_names:
       - indexedTransportObstructionVanishes_iff
-      - diagnosticConservative_all
-      - no_diagnosticConservativityCounterexample
+      - diagnosticConservative_all_via_transportEquivalence
+      - no_diagnosticConservativityCounterexample_via_transportEquivalence
     source_labels:
       - "target theorem (e): obstruction exactness"
-      - "reviewed revision-1 all-hom conservativity corollaries"
+      - "revision-2 corollaries derived from obstruction exactness"
       - "Cycles 6--7 inverse reselection and coherence exactness"
     conjuncts:
       - "vanishing iff -> indexedTransportObstructionVanishes_iff"
-      - "all-hom reflection -> diagnosticConservative_all"
-      - "no target-vanishing/source-nonvanishing pair -> no_diagnosticConservativityCounterexample"
+      - "vanishing iff reverse -> diagnosticConservative_all_via_transportEquivalence"
+      - "revision-2 conservativity -> no_diagnosticConservativityCounterexample_via_transportEquivalence"
     undischarged_assumptions:
       - raw-defect cochain equivalence
       - orbit membership inverse direction
@@ -1035,7 +1034,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/ObstructionExactness.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 1 declaration clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 3 declarations clean"
   blocking_findings: []
   next_obligation: >-
     Construct raw-defect cochain transport as an explicit equivalence with
@@ -3957,8 +3956,8 @@ result:
       - indexedDiagnosticCoherence_via_horizontalPasting
     e_obstruction_exactness:
       - indexedTransportObstructionVanishes_iff
-      - diagnosticConservative_all
-      - no_diagnosticConservativityCounterexample
+      - diagnosticConservative_all_via_transportEquivalence
+      - no_diagnosticConservativityCounterexample_via_transportEquivalence
       - indexedDiagnosticObstruction_via_horizontalPasting
     f_raw_defect_cochain_exactness:
       - indexedDiagnosticDefectCochainEquivalence
@@ -4045,9 +4044,10 @@ audits:
         anchored at PR 4197; consumed by selected cartesian lifts, reindexing,
         unitor, compositor, triangles, and pentagon
       revision_1_reflection: >-
-        anchored at PR 4203 and retained only as the named conservative
-        corollaries; no revision-1 class, candidate, or finite fixture enters
-        the revision-2 construction
+        anchored at PR 4203 and retained as historical evidence only; the
+        revision-2 named conservative corollaries are derived directly from
+        indexedTransportObstructionVanishes_iff, and no revision-1 class,
+        candidate, theorem body, or finite fixture enters their proof route
     discharge_required:
       G_110_lift_cocartesianness:
         status: discharged
@@ -4191,6 +4191,17 @@ audits:
       naturality before CoherenceExactness.  Coherence reflection consumes
       those revision-2 equivalences and the target reselection round trip, and
       no longer imports or calls the revision-1 reflection theorem.
+    rerun_1_exact_head: d7b9d88ed63d4ceb5bed543f281d17743d5568ab
+    rerun_1_verdict: Major revisions
+    rerun_1_central_finding: >-
+      conjunct (e) still mapped its named all-hom corollaries to revision-1
+      declarations whose theorem bodies use the historical reflection route
+    rerun_1_correction: >-
+      ObstructionExactness no longer imports the revision-1 reflection module.
+      It now derives diagnosticConservative_all_via_transportEquivalence from
+      the reverse direction of indexedTransportObstructionVanishes_iff and
+      derives the named no-counterexample theorem from that revision-2
+      conservativity corollary.
   implementation_PRs:
     revision_2_fixing: "PR 4205 / merge 77e841e0a00e9a57387a11395d440da2bb83a602"
     theorem_cycles: "PRs 4206--4232 / Cycles 1--27 / all merged after exact-head review and CI"
