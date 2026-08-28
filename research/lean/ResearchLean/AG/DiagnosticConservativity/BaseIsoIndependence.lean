@@ -256,6 +256,7 @@ theorem finiteNonIsoDiagnosticSourceReselection_ne_one :
       indexedCovarianceTargetVertex) indexedCovarianceRightEdge
   exact finiteNonIsoDiagnosticSourceSwap_ne_one rightEquality
 
+/-- The named source reselection evaluates to the raw swap on the left edge. -/
 @[simp]
 theorem finiteNonIsoDiagnosticSourceReselection_left :
     finiteNonIsoDiagnosticSourceReselection indexedCovarianceSourceVertex
@@ -263,6 +264,7 @@ theorem finiteNonIsoDiagnosticSourceReselection_left :
         finiteNonIsoDiagnosticSourceSwap := by
   rfl
 
+/-- The named source reselection evaluates to the raw swap on the right edge. -/
 @[simp]
 theorem finiteNonIsoDiagnosticSourceReselection_right :
     finiteNonIsoDiagnosticSourceReselection indexedCovarianceSourceVertex
