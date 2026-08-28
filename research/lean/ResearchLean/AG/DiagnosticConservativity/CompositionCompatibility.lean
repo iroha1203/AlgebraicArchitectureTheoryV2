@@ -1,4 +1,5 @@
-import ResearchLean.AG.DiagnosticConservativity.IdentityPropositionCompatibility
+import ResearchLean.AG.DiagnosticConservativity.TransportCoherence
+import ResearchLean.AG.DiagnosticConservativity.OrbitExactness
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPastingCoherence
 
 /-!
@@ -9,6 +10,17 @@ compositor independently compare direct and successive diagnostic transport.
 This module identifies those comparisons by the Cycle 11 mate theorem and
 lifts the resulting endpoint equation to reselections, raw-defect cochains,
 and arbitrary-target orbit membership.
+
+## Implementation notes
+
+The G-112 compositor points from successive reindexing to direct reindexing.
+The inverse of `conjugateIsoEquiv` therefore pulls it back to the required
+direct-to-successive comparison of the left adjoints.  The construction does
+not identify direct and successive transported interpretations by definitional
+equality: their explicit compositor acts on endpoint automorphisms.  The
+reselection and cochain comparisons are dependent products of that endpoint
+action over every coordinate; a comparison at a selected coordinate would not
+provide the full indexed compatibility required here.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
