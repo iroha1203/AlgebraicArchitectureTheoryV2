@@ -822,16 +822,14 @@ selection:
   proof_state_ref: "Issue #4204: conjuncts (a)--(c) discharged / coherence exactness next"
   proof_dag_predecessors:
     - IndexedBaseDiagramHom.indexedCoherentAt_transport
-    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
-    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_identity
-    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+    - IndexedBaseDiagramHom.indexedCoherentAt_reflect
     - IndexedBaseDiagramHom.inverseTransportedReselection
     - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
   proof_obligation: >-
     Prove coherence iff for every source reselection and its transported image,
     and for every arbitrary target reselection and its generated inverse.
-    Consume the generated endpoint/reselection inverses, raw-defect naturality,
-    identity-cochain reflection, and target round trip in the reverse route.
+    Consume G-111 preservation forward and the generated inverse, cartesian
+    reflection, naturality, and target round trip in the reverse route.
   selection_reason: >-
     This is target conjunct (d), immediately downstream of the Cycle 6
     reselection equivalence.  Giving both source-indexed and target-indexed iff
@@ -849,12 +847,11 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: >-
     Source coherence is now iff transported coherence at every source
-    reselection because the generated cochain equivalence commutes with raw
-    defects and sends the independent identity cochain to identity.  Every
-    arbitrary target reselection also has a coherence iff with its Cycle 6
-    inverse; both directions explicitly normalize through the target-side
-    reselection round trip.  No revision-1 reflection theorem, coherence
-    certificate, or inverse preimage is used in this reverse route.
+    reselection, combining the reviewed preservation and cartesian-reflection
+    theorems.  Every arbitrary target reselection also has a coherence iff with
+    its Cycle 6 inverse; both directions explicitly normalize through the
+    target-side reselection round trip.  No coherence certificate or inverse
+    preimage is caller supplied.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
@@ -868,7 +865,7 @@ result:
     source_labels:
       - "target theorem (d): coherence exactness"
       - "G-111 indexed coherence preservation"
-      - "revision-2 raw-defect naturality, identity reflection, and Cycle 6 reselection inverse"
+      - "reviewed revision-1 cartesian reflection and Cycle 6 reselection inverse"
     conjuncts:
       - "source coherence iff mapped target coherence -> indexedCoherentAt_transport_iff"
       - "arbitrary target coherence iff inverse-source coherence -> indexedCoherentAt_inverseTransport_iff"
@@ -886,26 +883,21 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "K2 coherence forward and reverse directions"
-      - "K2 arbitrary-target coherence through generated inverse"
+      - "K3 coherence forward and reverse directions"
+      - "K3 arbitrary-target coherence through generated inverse"
     remaining:
-      - "K2 obstruction vanishing iff"
-      - "K3 raw-defect cochain equivalence and orbit membership iff"
-      - "K4 identity, composition, square, pasting, and finite-witness obligations"
-      - "target conjunct (i) decomposition and base-IsIso relation"
+      - "K3 obstruction and K4 cochain, orbit, decomposition, and witness obligations"
   certificate_provenance:
     discharged:
       - "forward coherence / G-111 indexedCoherentAt_transport"
-      - "reverse coherence / generated raw-defect cochain equivalence and identity-cochain image"
+      - "reverse coherence / cartesian reflection on Cycle 6 inverse reselection"
       - "target representative equality / Cycle 6 target round trip"
     unresolved:
       - "vanishing, cochain, orbit, and later exactness equivalences"
   proof_use:
     used:
-      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
-      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_identity
-      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
-      - coherentAt_iff_rawDefectCochain_eq_identity
+      - IndexedBaseDiagramHom.indexedCoherentAt_transport
+      - IndexedBaseDiagramHom.indexedCoherentAt_reflect
       - IndexedBaseDiagramHom.inverseTransportedReselection
       - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
     unused: []
@@ -924,6 +916,12 @@ audits:
     DiagnosticConservative and no-counterexample as named all-hom corollaries
     without class conditions.
 ```
+
+この Cycle 7 台帳は当時の selection と result をそのまま保存する。そこで使われた
+revision-1 reflection route は Cycle 28 の最初の標準査読で revision-2 固定 target の
+completion evidence として棄却された。現行の `(d)` は Cycle 28 review history に記録した
+raw-defect cochain equivalence、identity image、injectivityによる修正版だけを completion
+evidence とする。
 
 ### Cycle 8 — diagnostic obstruction exactness
 
