@@ -1573,3 +1573,124 @@ audits:
     surfaces, then propagate the canonical compositor through downstream
     layers (b)--(g).
 ```
+
+### Cycle 13 — coherence and obstruction identity compatibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 13
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 6e419471d9b6a37597e632f9b16535d26dbf6ed7
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 12 identity compatibility for (b), (c), (f), and (g) complete"
+  proof_dag_predecessors:
+    - indexedDiagnosticIdentityMateReselectionUnitorEquivalence
+    - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_apply_transport
+    - indexedCoherentAt_inverseTransport_iff
+    - indexedCoherentAt_iff_adaptedCoherentAt
+    - transportObstructionVanishes_iff_coherentizable
+  proof_obligation: >-
+    Identify the G-112-mate reselection comparison with generated inverse
+    identity transport, prove arbitrary-target diagnostic coherence iff through
+    that comparison, and construct both directions of obstruction vanishing by
+    transporting coherentizability witnesses through the same mate route.
+    This covers only identity compatibility for layers (d) and (e).
+  selection_reason: >-
+    Cycle 12 supplies the cross-system reselection comparison required to state
+    coherence compatibility without caller-provided output data.  Obstruction
+    vanishing is coherentizability, so its identity law must transport the
+    existential reselection witness rather than merely restate the earlier
+    all-hom iff.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/IdentityPropositionCompatibility.lean
+  risks:
+    - rewriting only the existing obstruction iff without using the mate route
+    - proving coherence only for mapped source reselections
+    - accepting a target coherence or vanishing certificate from the caller
+    - claiming vertical-composition or route-level coherence from identity laws
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The Cycle 12 G-112-mate reselection comparison is proved equal to the
+    generated inverse identity transport.  Therefore every arbitrary target
+    reselection is coherent exactly when its mate comparison is source
+    coherent.  Expanding obstruction vanishing to coherentizability, the
+    forward direction transports a source witness and recovers it through the
+    mate round trip, while the reverse direction applies the mate comparison
+    directly to an arbitrary target witness.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/IdentityPropositionCompatibility.lean
+  evidence:
+    - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_apply_eq_inverseTransport
+    - indexedDiagnosticIdentityCoherentAt_mate_unitor_iff
+    - indexedDiagnosticIdentityTransportObstructionVanishes_mate_unitor_iff
+  claim_mapping:
+    theorem_names:
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_apply_eq_inverseTransport
+      - indexedDiagnosticIdentityCoherentAt_mate_unitor_iff
+      - indexedDiagnosticIdentityTransportObstructionVanishes_mate_unitor_iff
+    source_labels:
+      - "target theorem (h): identity compatibility for (d) and (e)"
+      - "Cycle 12 G-111/G-112-mate reselection equality"
+      - "Cycles 7 and 8 coherence and obstruction exactness"
+    conjuncts:
+      - "(d) coherence identity unitor -> arbitrary-target coherence iff through the G-112 mate"
+      - "(e) obstruction identity unitor -> coherentizability witnesses transported in both directions"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "vertical-composition commuting for layers (b)--(g)"
+      - cross-system triangle and pentagon route compatibility
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      Together with Cycle 12, this cycle completes the identity part of (h) for
+      downstream layers (b)--(g).  It does not claim any vertical-composition
+      law, triangle/pentagon route, square/pasting compatibility, or conjunct
+      (i).
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 (d) arbitrary-target coherence identity-unitor compatibility"
+      - "K4 (e) obstruction-vanishing identity-unitor compatibility"
+    remaining:
+      - "K4 vertical composition, triangle, pentagon, square, and pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "reselection comparison / Cycle 12 G-112-mate construction"
+      - "coherence inverse route / Cycle 7 generated inverse transport"
+      - "obstruction witnesses / explicit forward transport and mate comparison"
+    unresolved:
+      - "composition and route-level coherence"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_eq_unitor
+      - indexedDiagnosticIdentityReselectionUnitorEquivalence_eq_symm
+      - indexedCoherentAt_inverseTransport_iff
+      - indexedDiagnosticIdentityMateReselectionUnitorEquivalence_apply_transport
+      - indexedCoherentAt_iff_adaptedCoherentAt
+      - transportObstructionVanishes_iff_coherentizable
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for identity compatibility of (d) and (e)"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "./check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/IdentityPropositionCompatibility.lean / exit 0"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/IdentityPropositionCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 3 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Propagate the canonical compositor through downstream layers (b)--(g),
+    beginning with endpoint and reselection composition laws.
+```
