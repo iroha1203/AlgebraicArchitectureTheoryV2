@@ -53,6 +53,24 @@ noncomputable def indexedDiagnosticCompositionEndpointCompositorEquivalence
     ((coreFiberCompositor (first.app vertex) (second.app vertex)).app
       (source.fiberPackage vertex))
 
+/-- Pointwise API for the G-113(h) binary endpoint compositor used by the
+whole-pentagon route.  The indexed homs and generated interpretation are
+ambient inputs; no compositor compatibility equation is caller-supplied. -/
+theorem indexedDiagnosticCompositionEndpointCompositorEquivalence_apply
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E F : IndexedBaseDiagram G U}
+    (first : IndexedBaseDiagramHom D E)
+    (second : IndexedBaseDiagramHom E F)
+    (source : IndexedDiagnosticInterpretation D) (vertex : G.Vertex)
+    (automorphism : PackageFiberAut
+      (((first.comp second).transportedInterpretation source).package vertex)) :
+    indexedDiagnosticCompositionEndpointCompositorEquivalence
+        first second source vertex automorphism =
+      packageFiberAutMulEquivOfCoreFiberIso
+        ((coreFiberCompositor (first.app vertex) (second.app vertex)).app
+          (source.fiberPackage vertex)) automorphism := by
+  rfl
+
 /-- Pull the G-112 semantic-global compositor back through the generated
 G-113 mate equivalence and let the resulting fiber isomorphism act on endpoint
 automorphisms. -/

@@ -30,8 +30,10 @@ open TransportCoherence
 
 namespace IndexedBaseDiagramHom
 
-/-- The left whole-pentagon cochain comparison sends direct three-arrow
-transport of every source cochain to its successive three-step transport. -/
+/-- Cycle 22 API lemma for G-113(h), at cochain layer (f): the left
+whole-pentagon comparison sends direct three-arrow transport of every source
+cochain to successive transport.  The three indexed homs, interpretation, and
+cochain are ambient inputs; no compositor or compatibility equation is assumed. -/
 theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_apply
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E F H : IndexedBaseDiagram G U}
@@ -61,19 +63,8 @@ theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_appl
     indexedDiagnosticEndpointEquivalence_apply,
     indexedDiagnosticEndpointEquivalence_apply,
     indexedDiagnosticEndpointEquivalence_apply]
-  unfold indexedDiagnosticPentagonG111LeftEndpointEquivalence
-  unfold coreFiberPentagonLeftRouteIso
-  change packageFiberAutMulEquivOfCoreFiberIso
-      ((coreFiberCompositor
-          (first.app (G.twoTarget cell) ≫ second.app (G.twoTarget cell))
-          (third.app (G.twoTarget cell))).app
-            (source.fiberPackage (G.twoTarget cell)) ≪≫
-        (CategoryTheory.Functor.isoWhiskerRight
-          (coreFiberCompositor
-            (first.app (G.twoTarget cell)) (second.app (G.twoTarget cell)))
-          (coreFiberTransportFunctor
-            (third.app (G.twoTarget cell)))).app
-              (source.fiberPackage (G.twoTarget cell))) _ = _
+  rw [indexedDiagnosticPentagonG111LeftEndpointEquivalence_apply]
+  rw [coreFiberPentagonLeftRouteIso_app_trans]
   rw [packageFiberAutMulEquivOfCoreFiberIso_trans]
   have firstStage :=
     indexedDiagnosticCompositionMateEndpointCompositorEquivalence_apply
@@ -83,7 +74,7 @@ theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_appl
   rw [indexedDiagnosticEndpointEquivalence_apply,
     indexedDiagnosticEndpointEquivalence_apply,
     indexedDiagnosticEndpointEquivalence_apply] at firstStage
-  unfold indexedDiagnosticCompositionEndpointCompositorEquivalence at firstStage
+  rw [indexedDiagnosticCompositionEndpointCompositorEquivalence_apply] at firstStage
   simp only [IndexedBaseDiagramHom.comp_app] at firstStage
   have mappedFirstStage := congrArg
     (packageFiberAutMulEquivOfCoreFiberIso
@@ -187,8 +178,10 @@ theorem indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_appl
           coreFiberTransportFunctor (second.app (G.twoTarget cell))).obj
             (source.fiberPackage (G.twoTarget cell)))) pairComp
 
-/-- The right whole-pentagon cochain comparison has the same generated
-three-step application equation. -/
+/-- Cycle 22 API lemma for G-113(h), at cochain layer (f): the right
+whole-pentagon comparison has the same generated three-step application
+equation.  The three indexed homs, interpretation, and cochain are ambient
+inputs; no pentagon equation is assumed by the caller. -/
 theorem indexedDiagnosticPentagonMateRightDefectCochainEquivalence_transport_apply
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E F H : IndexedBaseDiagram G U}
@@ -212,8 +205,10 @@ theorem indexedDiagnosticPentagonMateRightDefectCochainEquivalence_transport_app
   exact indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_apply
     first second third source cochain
 
-/-- Arbitrary direct three-arrow target orbit membership is invariant under
-the generated left whole-pentagon comparison to successive transport. -/
+/-- Cycle 22 main theorem for G-113(h), at orbit layer (g): arbitrary direct
+three-arrow target orbit membership is invariant under the generated left
+whole-pentagon comparison.  It reuses the G-113(g) arbitrary-target exactness
+theorems; the caller supplies no orbit witness or compatibility equation. -/
 theorem indexedDiagnosticPentagonInReselectionOrbit_mate_left_iff
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E F H : IndexedBaseDiagram G U}
@@ -279,8 +274,10 @@ theorem indexedDiagnosticPentagonInReselectionOrbit_mate_left_iff
           (indexedDiagnosticDefectCochainEquivalence first source sourceCochain))
     _ ↔ _ := by rw [← pentagonEquation]
 
-/-- The right whole-pentagon comparison transports the same arbitrary-target
-orbit witnesses as the left route. -/
+/-- Cycle 22 main theorem for G-113(h), at orbit layer (g): the right
+whole-pentagon comparison transports the same arbitrary-target orbit witnesses
+as the left route.  It reuses the G-113(g) arbitrary-target exactness theorems;
+the caller supplies no orbit witness or pentagon equation. -/
 theorem indexedDiagnosticPentagonInReselectionOrbit_mate_right_iff
     {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
     {D E F H : IndexedBaseDiagram G U}

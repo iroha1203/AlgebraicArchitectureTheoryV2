@@ -2841,7 +2841,13 @@ result:
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean
+    - ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean
   evidence:
+    - coreFiberPentagonLeftRouteIso_app_trans
+    - indexedDiagnosticCompositionEndpointCompositorEquivalence_apply
+    - indexedDiagnosticPentagonG111LeftEndpointEquivalence_apply
     - indexedDiagnosticPentagonMateLeftDefectCochainEquivalence_transport_apply
     - indexedDiagnosticPentagonMateRightDefectCochainEquivalence_transport_apply
     - indexedDiagnosticPentagonInReselectionOrbit_mate_left_iff
@@ -2890,6 +2896,9 @@ audits:
       - "square/pasting routes and finite-witness exactness"
   proof_use:
     used:
+      - coreFiberPentagonLeftRouteIso_app_trans
+      - indexedDiagnosticCompositionEndpointCompositorEquivalence_apply
+      - indexedDiagnosticPentagonG111LeftEndpointEquivalence_apply
       - packageFiberAutMulEquivOfCoreFiberIso_trans
       - coreFiberFunctorPackageAutHom_iso_naturality
       - coreFiberFunctorPackageAutHom_comp
@@ -2905,10 +2914,15 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/WholeRouteCompatibility.lean / exit 0 / 28 declarations standard axioms only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/CompositionCompatibility.lean / exit 0 / 14 declarations standard axioms only"
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonDownstreamCompatibility.lean / exit 0 / 16 declarations standard axioms only"
     - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonCochainCompatibility / exit 0 / selected dependency module only"
     - "lake build ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticNaturalIsoTransport / exit 0 / selected dependency module only"
+    - "lake build ResearchLean.AG.DiagnosticConservativity.PentagonOrbitCompatibility / exit 0 / selected Cycle 22 module only"
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 4 declarations clean"
+    - "check_research_modules.sh --focused ResearchLean/AG/DiagnosticConservativity/PentagonOrbitCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 7 Cycle 22 declarations standard axioms only"
   blocking_findings: []
   next_obligation: >-
     Transport coherence and obstruction propositions through the explicit
