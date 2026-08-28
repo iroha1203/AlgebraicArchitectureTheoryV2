@@ -2409,3 +2409,122 @@ audits:
     corresponding packaged G-112 route using mate composition/whiskering and
     associator laws; derive the other side from both whole pentagon equations.
 ```
+
+### Cycle 19 — whole left/right pentagon mate equations
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-113-aat-diagnostic-conservativity
+cycle: 19
+goal_blob_sha: d490685ece406d5b17ccc63b3d35ff990bc34c5d
+base_oid: 400c865bb2ffa3922da1a79b63b7f8d135d2640f
+tracking_issue: 4204
+report_path: research/reports/G-113-r2-aat-diagnostic-transport-equivalence.md
+selection:
+  proof_state_ref: "Issue #4204: Cycle 18 whole-unit mate equations accepted"
+  proof_dag_predecessors:
+    - semanticGlobalTransportEquivalence_compositor_conjugate
+    - conjugateEquiv_comp
+    - conjugateEquiv_whiskerRight
+    - coreFiberPentagonRouteIso_eq
+    - semanticGlobalPentagonRouteIso_eq
+  proof_obligation: >-
+    Prove that conjugating each whole G-111 left/right pentagon route through
+    the generated G-113 adjunction yields the corresponding whole G-112 route,
+    retaining the actual associativity casts, then expose both equations at
+    every indexed vertex.
+  selection_reason: >-
+    The left route is generated directly by mate compatibility with vertical
+    composition and right whiskering plus the two accepted compositor mates.
+    The two predecessor whole pentagon equations then derive the right route
+    without normalizing away either associativity cast.
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DiagnosticConservativity/WholePentagonCompatibility.lean
+  risks:
+    - proving only the generatorwise Cycle 16 comparison
+    - erasing the right-route associativity casts by simplification
+    - assuming a pentagon comparison instead of deriving it
+    - reversing the order of vertical mate composition
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: >-
+    The conjugate of the whole G-111 left pentagon route is computed from
+    conjugateEquiv_comp and conjugateEquiv_whiskerRight, then rewritten by the
+    two generated binary compositor conjugacies to the whole G-112 left route.
+    Rewriting through the reviewed G-111 and G-112 whole pentagon equations
+    derives the right-route mate equation while preserving its equality casts.
+    Two indexed theorems specialize both exact whole-route equations vertexwise.
+  completion_candidate: no
+  lean_artifacts:
+    - ResearchLean/AG/DiagnosticConservativity/WholePentagonCompatibility.lean
+  evidence:
+    - semanticGlobalTransportEquivalence_pentagonLeftRouteIso_conjugate
+    - semanticGlobalTransportEquivalence_pentagonRightRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+    - indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+  claim_mapping:
+    theorem_names:
+      - semanticGlobalTransportEquivalence_pentagonLeftRouteIso_conjugate
+      - semanticGlobalTransportEquivalence_pentagonRightRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_pentagonLeftRouteIso_conjugate
+      - indexedDiagnosticTransportEquivalence_pentagonRightRouteIso_conjugate
+    source_labels:
+      - "target theorem (h): whole left/right pentagon compatibility at layer (a)"
+      - "Cycle 11 generated binary compositor conjugacies"
+      - "Cycle 17 G-111/G-112 whole-route pentagon equations"
+    conjuncts:
+      - "left pentagon -> conjugate whole G-111 route equals whole G-112 route"
+      - "right pentagon -> conjugate whole G-111 route equals whole G-112 route"
+      - "indexed pentagon routes -> both equalities at every vertex"
+    undischarged_assumptions: []
+    undischarged_obligations:
+      - "triangle/pentagon propagation from layer (a) to downstream layers (b)--(g)"
+      - path-square and horizontal-pasting compatibility for (a)--(g)
+      - finite non-IsIso nondegenerate witness firing
+      - base IsIso relation
+    acceptance_point: >-
+      This cycle closes whole-route cross-system compatibility for both
+      pentagon sides at layer (a).  It does not claim downstream propagation,
+      square/pasting, or conjunct (i) obligations.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "K4 whole left-pentagon cross-system mate equality"
+      - "K4 whole right-pentagon cross-system mate equality"
+    remaining:
+      - "K4 downstream triangle/pentagon propagation"
+      - "K4 path-square and horizontal-pasting obligations"
+      - "target conjunct (i) decomposition and base-IsIso relation"
+  certificate_provenance:
+    discharged:
+      - "left route / generated mate laws and accepted compositor conjugacies"
+      - "right route / both reviewed predecessor whole pentagon equations"
+      - "indexed routes / vertexwise specialization of the whole equations"
+    unresolved:
+      - "downstream route action and square/pasting routes"
+      - "decomposition and finite-witness exactness"
+  proof_use:
+    used:
+      - conjugateEquiv_comp
+      - conjugateEquiv_whiskerRight
+      - semanticGlobalTransportEquivalence_compositor_conjugate
+      - coreFiberPentagonRouteIso_eq
+      - semanticGlobalPentagonRouteIso_eq
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "pass for both whole pentagon mate equations"
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DiagnosticConservativity/WholePentagonCompatibility.lean / exit 0"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 4 declarations clean"
+  blocking_findings: []
+  next_obligation: >-
+    Propagate the accepted whole triangle and pentagon mate equations from the
+    semantic-global/core-fiber layer to downstream layers (b)--(g), with the
+    actual route maps and their premises visible in theorem bodies.
+```
