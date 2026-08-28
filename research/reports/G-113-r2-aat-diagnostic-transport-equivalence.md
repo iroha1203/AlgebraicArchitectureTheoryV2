@@ -822,14 +822,16 @@ selection:
   proof_state_ref: "Issue #4204: conjuncts (a)--(c) discharged / coherence exactness next"
   proof_dag_predecessors:
     - IndexedBaseDiagramHom.indexedCoherentAt_transport
-    - IndexedBaseDiagramHom.indexedCoherentAt_reflect
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_identity
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
     - IndexedBaseDiagramHom.inverseTransportedReselection
     - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
   proof_obligation: >-
     Prove coherence iff for every source reselection and its transported image,
     and for every arbitrary target reselection and its generated inverse.
-    Consume G-111 preservation forward and the generated inverse, cartesian
-    reflection, naturality, and target round trip in the reverse route.
+    Consume the generated endpoint/reselection inverses, raw-defect naturality,
+    identity-cochain reflection, and target round trip in the reverse route.
   selection_reason: >-
     This is target conjunct (d), immediately downstream of the Cycle 6
     reselection equivalence.  Giving both source-indexed and target-indexed iff
@@ -847,11 +849,12 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: >-
     Source coherence is now iff transported coherence at every source
-    reselection, combining the reviewed preservation and cartesian-reflection
-    theorems.  Every arbitrary target reselection also has a coherence iff with
-    its Cycle 6 inverse; both directions explicitly normalize through the
-    target-side reselection round trip.  No coherence certificate or inverse
-    preimage is caller supplied.
+    reselection because the generated cochain equivalence commutes with raw
+    defects and sends the independent identity cochain to identity.  Every
+    arbitrary target reselection also has a coherence iff with its Cycle 6
+    inverse; both directions explicitly normalize through the target-side
+    reselection round trip.  No revision-1 reflection theorem, coherence
+    certificate, or inverse preimage is used in this reverse route.
   completion_candidate: no
   lean_artifacts:
     - ResearchLean/AG/DiagnosticConservativity/CoherenceExactness.lean
@@ -865,7 +868,7 @@ result:
     source_labels:
       - "target theorem (d): coherence exactness"
       - "G-111 indexed coherence preservation"
-      - "reviewed revision-1 cartesian reflection and Cycle 6 reselection inverse"
+      - "revision-2 raw-defect naturality, identity reflection, and Cycle 6 reselection inverse"
     conjuncts:
       - "source coherence iff mapped target coherence -> indexedCoherentAt_transport_iff"
       - "arbitrary target coherence iff inverse-source coherence -> indexedCoherentAt_inverseTransport_iff"
@@ -893,14 +896,16 @@ audits:
   certificate_provenance:
     discharged:
       - "forward coherence / G-111 indexedCoherentAt_transport"
-      - "reverse coherence / cartesian reflection on Cycle 6 inverse reselection"
+      - "reverse coherence / generated raw-defect cochain equivalence and identity-cochain image"
       - "target representative equality / Cycle 6 target round trip"
     unresolved:
       - "vanishing, cochain, orbit, and later exactness equivalences"
   proof_use:
     used:
-      - IndexedBaseDiagramHom.indexedCoherentAt_transport
-      - IndexedBaseDiagramHom.indexedCoherentAt_reflect
+      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
+      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_identity
+      - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
+      - coherentAt_iff_rawDefectCochain_eq_identity
       - IndexedBaseDiagramHom.inverseTransportedReselection
       - IndexedBaseDiagramHom.transportedReselection_inverseTransportedReselection
     unused: []
@@ -1095,6 +1100,7 @@ result:
     - IndexedBaseDiagramHom.endpointAction_canonicalTwoCellComparator
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_apply
+    - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_identity
     - IndexedBaseDiagramHom.indexedDiagnosticEndpointEquivalence_rawTwoCellDefect
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
     - IndexedBaseDiagramHom.indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
@@ -1105,6 +1111,7 @@ result:
   claim_mapping:
     theorem_names:
       - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticDefectCochainEquivalence_identity
       - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
       - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
       - indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
@@ -1144,6 +1151,7 @@ audits:
   certificate_provenance:
     discharged:
       - "cochain equivalence / dependent product of Cycle 5 endpoint equivalences"
+      - "identity image / pointwise endpoint-equivalence map_one"
       - "canonical comparator image / canonical coherence plus G-111 generated coherence transport"
       - "inverse raw cochain / Cycle 6 inverse reselection and equivalence round trips"
     unresolved:
@@ -1165,7 +1173,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/DiagnosticConservativity/CochainExactness.lean / exit 0"
-    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 16 declarations clean"
+    - "#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct / 17 declarations clean"
   blocking_findings: []
   next_obligation: >-
     Prove source/target InReselectionOrbit membership iff by transporting the
@@ -3941,6 +3949,8 @@ result:
       - indexedDiagnosticReselectionEquivalence_one
       - inverseTransportedReselection_one
     d_coherence_exactness:
+      - indexedDiagnosticDefectCochainEquivalence_identity
+      - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
       - indexedCoherentAt_transport_iff
       - indexedCoherentAt_inverseTransport_iff
       - indexedCoherentAt_transport_via_horizontalPasting
@@ -3952,6 +3962,7 @@ result:
       - indexedDiagnosticObstruction_via_horizontalPasting
     f_raw_defect_cochain_exactness:
       - indexedDiagnosticDefectCochainEquivalence
+      - indexedDiagnosticDefectCochainEquivalence_identity
       - indexedDiagnosticDefectCochainEquivalence_rawDefectCochain
       - indexedDiagnosticDefectCochainEquivalence_symm_rawDefectCochain
       - indexedDiagnosticDefectCochainEquivalence_apply_eq_iff
@@ -4074,8 +4085,10 @@ audits:
       coherence_vanishing_inverse:
         status: discharged
         route: >-
-          inverseTransportedReselection and both round trips -> coherence iff ->
-          obstruction vanishing iff and global corollaries
+          endpoint/reselection equivalences -> canonical-comparator and raw-defect
+          naturality -> raw-defect cochain and identity-cochain transport ->
+          coherence reflection; inverseTransportedReselection plus target round
+          trip -> arbitrary-target coherence iff -> obstruction vanishing iff
       raw_defect_cochain_equivalence:
         status: discharged
         route: >-
@@ -4118,7 +4131,8 @@ audits:
       the same G-112 selected strongly cartesian lift is converted by the G-110
       reviewed cocartesianness theorem and used in the unit/counit construction
     downstream_route: >-
-      endpoint -> reselection -> coherence/obstruction and cochain -> orbit;
+      endpoint -> reselection -> raw-defect/identity cochain naturality ->
+      coherence/obstruction and cochain -> orbit;
       identity/composition/whole-unit/whole-pentagon/path-square theorems then
       consume those exactness maps rather than independent certificates
     finite_route: >-
@@ -4165,6 +4179,18 @@ audits:
     - "placeholder, hidden/BiDi Unicode, privacy, and import-direction scans / clean"
     - "git diff --check / clean"
     - "Research aggregate/full build / not run by hard rule"
+  review_history:
+    initial_exact_head: 34c75e22432b70d3f963ca6cef360a68c7fc92e7
+    initial_verdict: Major revisions
+    central_finding: >-
+      the first packet used the revision-1 indexedCoherentAt_reflect theorem in
+      conjunct (d), contrary to the fixed revision-2 inverse proof-use route
+    correction: >-
+      CochainExactness now depends only on reselection exactness and indexed
+      vanishing vocabulary; it generates raw-defect and identity-cochain
+      naturality before CoherenceExactness.  Coherence reflection consumes
+      those revision-2 equivalences and the target reselection round trip, and
+      no longer imports or calls the revision-1 reflection theorem.
   implementation_PRs:
     revision_2_fixing: "PR 4205 / merge 77e841e0a00e9a57387a11395d440da2bb83a602"
     theorem_cycles: "PRs 4206--4232 / Cycles 1--27 / all merged after exact-head review and CI"

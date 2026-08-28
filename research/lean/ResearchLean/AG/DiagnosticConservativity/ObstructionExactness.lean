@@ -1,4 +1,5 @@
 import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticConservativityReflection
 
 /-!
 # G-113 revision 2 diagnostic obstruction exactness

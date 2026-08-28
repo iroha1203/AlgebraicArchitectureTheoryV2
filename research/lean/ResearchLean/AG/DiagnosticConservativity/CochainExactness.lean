@@ -1,4 +1,5 @@
-import ResearchLean.AG.DiagnosticConservativity.ObstructionExactness
+import ResearchLean.AG.DiagnosticConservativity.ReselectionExactness
+import ResearchLean.AG.DoctrineFiberProduct.IndexedDiagnosticVanishing
 
 /-!
 # G-113 revision 2 raw-defect cochain exactness
@@ -207,6 +208,20 @@ theorem indexedDiagnosticDefectCochainEquivalence_apply
     indexedDiagnosticDefectCochainEquivalence hom source cochain cell =
       indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell)
         (cochain cell) := rfl
+
+/-- The pointwise cochain equivalence sends the independent identity cochain to identity. -/
+@[simp]
+theorem indexedDiagnosticDefectCochainEquivalence_identity
+    {G : IndexedBaseTwoShape.{u}} {U : AtomCarrier.{u}}
+    {D E : IndexedBaseDiagram G U} (hom : IndexedBaseDiagramHom D E)
+    (source : IndexedDiagnosticInterpretation D) :
+    indexedDiagnosticDefectCochainEquivalence hom source
+        (identityDefectCochain source.toAdmissibleTransportData) =
+      identityDefectCochain
+        (hom.transportedInterpretation source).toAdmissibleTransportData := by
+  funext cell
+  change indexedDiagnosticEndpointEquivalence hom source (G.twoTarget cell) 1 = 1
+  exact map_one _
 
 /-- Endpoint equivalence transports the fixed ordered raw defect on one two-cell. -/
 theorem indexedDiagnosticEndpointEquivalence_rawTwoCellDefect

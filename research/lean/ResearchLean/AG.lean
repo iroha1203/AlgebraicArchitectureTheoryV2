@@ -20,9 +20,9 @@ import ResearchLean.AG.DiagnosticConservativity.TransportAdjunction
 import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 import ResearchLean.AG.DiagnosticConservativity.EndpointExactness
 import ResearchLean.AG.DiagnosticConservativity.ReselectionExactness
+import ResearchLean.AG.DiagnosticConservativity.CochainExactness
 import ResearchLean.AG.DiagnosticConservativity.CoherenceExactness
 import ResearchLean.AG.DiagnosticConservativity.ObstructionExactness
-import ResearchLean.AG.DiagnosticConservativity.CochainExactness
 import ResearchLean.AG.DiagnosticConservativity.OrbitExactness
 import ResearchLean.AG.DiagnosticConservativity.TransportCoherence
 import ResearchLean.AG.DiagnosticConservativity.IdentityCompatibility
