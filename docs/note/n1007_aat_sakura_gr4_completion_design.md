@@ -435,7 +435,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
   G-110 (A) fiber product 構成・`pointedPullback_isPullback`
   (`DoctrineFiberProduct/PointedDoctrinePullback.lean`)、presentation
-  閉性 constructor。
+  閉性 constructor、G-112 semantic-global cleavage / reindexing
+  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)。
 - **供給契約**: **G-116 gate (iv) の refinement regime 型**(mate が
   定義される装置、または退化定理という帰趨)。G-116 は regime を新設
   建設できないため、この供給は成果物形式の義務である。

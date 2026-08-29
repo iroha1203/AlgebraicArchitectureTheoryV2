@@ -124,7 +124,7 @@
   カードとの接続点。
 
 - `target theorem`: **Refinement Category and Refinement Base-Change
-  Theorem**。G-101 / G-110 の設定の上で:
+  Theorem**。G-101 / G-110 / G-112 の設定の上で:
   1. **(a) refinement 圏の構成**: `RefinementDoctrineHom` を射とする圏
      構造(恒等・合成・結合律)を証明し、**`Doct_U` からの比較
      functor `Doct_U ⥤ Refin_U`**(exact hom を refinement として
@@ -297,8 +297,13 @@
     named theorems と選定時固定の記録。正枝で確定した場合は
     completion で `not-applicable` と判定する — G-113 様式)。
   - `非退化 witness`: `discharge-required`(支える結論 = (c))。
-- `target route integrity gate`: 比較 functor・BC 比較射・regime は
-  refinement 射の定義と G-110 普遍性からのみ生成する。witness fixture
+- `target route integrity gate`: 生成 route は役割別に固定する —
+  (r1) 比較 functor・pulled square・refinement 側 reverse transport は
+  `RefinementDoctrineHom` の定義と G-110 普遍性からのみ生成する。
+  (r2) canonical mate 比較の exact 側 reindexing は G-112 reviewed
+  API(semantic-global cleavage / reindexing)を proof-use 消費して
+  生成する(G-110 内部宣言からの再建はしない — 経路の一意化)。
+  witness fixture
   と資格 (v) 正例族は proof obligation 選定時に固定する(証明後の
   target-fitting 選択の禁止)。二枝 payload は構造化
   artifact で立て、caller 供給を認めない。禁止経路 — regime の
