@@ -76,6 +76,26 @@ theorem finitePointedExtractionRefinement_not_strict_image :
   simpa [PointedRefinementHom.ofExact, finitePointedExtractionRefinement,
     doctrineToRefinement] using congrArg PointedRefinementHom.doctrineHom heq
 
+/-! ## K2 signature-vacuity witness -/
+
+/--
+The accepted F0 regime signature is automatically inhabited when its two target
+package fibers are empty.  This exposes the exact vacuity mechanism relevant to
+the K2 necessity direction; it is evidence for a GOAL defect, not a branch
+producer.
+-/
+theorem regimeAvailable_of_empty_target_fibers
+    (C : RefinementBCConfiguration U)
+    (baseEmpty : IsEmpty (CoreFiber C.DOne))
+    (pullbackEmpty : IsEmpty (CoreFiber C.pullback)) :
+    RegimeAvailable C := by
+  letI : IsEmpty (CoreFiber C.DOne) := baseEmpty
+  letI : IsEmpty (CoreFiber C.pullback) := pullbackEmpty
+  exact ⟨{
+    baseCleavage := ⟨fun target => isEmptyElim target⟩
+    pulledCleavage := ⟨fun target => isEmptyElim target⟩
+  }⟩
+
 /--
 The strict finite refinement over the identity cospan.  Every refined source is
 in the compatible locus because the second endpoint is the target itself.
