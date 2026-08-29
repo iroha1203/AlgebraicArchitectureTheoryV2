@@ -148,6 +148,35 @@ theorem pulled_square_commutes (C : RefinementBCConfiguration U) :
   · rfl
   · rfl
 
+/-! ## K1 unconditional forward stability of the generated square -/
+
+/-- The generated horizontal pullback leg preserves extraction unconditionally. -/
+theorem pulledRefinement_extraction_forward (C : RefinementBCConfiguration U)
+    (source : C.pulled.doctrine.Source) (atom : U.Atom)
+    (extracted : C.pulled.doctrine.extracts source atom) :
+    C.pullback.doctrine.extracts
+      (C.pulledRefinement.doctrineHom.sourceMap source)
+      (C.pulledRefinement.doctrineHom.atomMap atom) :=
+  C.pulledRefinement.doctrineHom.extraction_forward source atom extracted
+
+/-- The generated exact projection `fst'` preserves extraction. -/
+theorem pulledFst_extraction_forward (C : RefinementBCConfiguration U)
+    (source : C.pulled.doctrine.Source) (atom : U.Atom)
+    (extracted : C.pulled.doctrine.extracts source atom) :
+    C.DOnePrime.doctrine.extracts
+      (C.pulledFst.doctrineHom.sourceMap source)
+      (C.pulledFst.doctrineHom.atomEquiv atom) :=
+  (C.pulledFst.doctrineHom.extraction_iff source atom).mpr extracted
+
+/-- The generated exact projection `fst` preserves extraction. -/
+theorem pullbackFst_extraction_forward (C : RefinementBCConfiguration U)
+    (source : C.pullback.doctrine.Source) (atom : U.Atom)
+    (extracted : C.pullback.doctrine.extracts source atom) :
+    C.DOne.doctrine.extracts
+      (C.pullbackFst.doctrineHom.sourceMap source)
+      (C.pullbackFst.doctrineHom.atomEquiv atom) :=
+  (C.pullbackFst.doctrineHom.extraction_iff source atom).mpr extracted
+
 end RefinementBCConfiguration
 
 /-! ## Configuration isomorphism head -/

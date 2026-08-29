@@ -672,3 +672,82 @@ audits:
     Construct K1's mixed pulled object together with both forward-preserving
     projections and the commuting pulled square.
 ```
+
+### Cycle 7 — K1 unconditional pulled-square stability
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-114-aat-refinement-base-change
+cycle: 7
+goal_blob_sha: 429183c6b8c93e9ca5c7886bab887beec76ddff5
+base_oid: 363f79a5bf0542b6e5cb9d19d63cacfa80402316
+tracking_issue: 4239
+report_path: research/reports/G-114-aat-refinement-base-change.md
+selection:
+  proof_state_ref: "K0 fixed at 663e28cb"
+  proof_obligation: >-
+    Generate P', the pulled refinement f*, both exact vertical projections, and
+    their commuting square from raw configuration data, with explicit forward
+    extraction preservation for all three generated legs.
+  selection_reason: >-
+    The target fixes pulled-square existence outside the K2 regime
+    disjunction; every construction must therefore consume only exact cospan
+    data and the authored refinement's forward field.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    pulledDoctrine, pulled, pulledRefinement, pulledFst, and pullbackFst are
+    generated definitions.  pulled_square_commutes proves the fixed four-leg
+    square, while named K1 theorems expose unconditional extraction preservation
+    by f*, fst', and fst.
+  completion_candidate: no
+  evidence:
+    - RefinementBCConfiguration.pulledDoctrine
+    - RefinementBCConfiguration.pulled
+    - RefinementBCConfiguration.pulledRefinement
+    - RefinementBCConfiguration.pulledFst
+    - RefinementBCConfiguration.pullbackFst
+    - RefinementBCConfiguration.pulled_square_commutes
+    - RefinementBCConfiguration.pulledRefinement_extraction_forward
+    - RefinementBCConfiguration.pulledFst_extraction_forward
+    - RefinementBCConfiguration.pullbackFst_extraction_forward
+  undischarged_assumptions:
+    - K2 regime equivalence
+    - K3 branch witness and completion audit
+audits:
+  premise_delta:
+    discharged:
+      - "K1 mixed pulled object and pulled refinement generation"
+      - "K1 fixed-square commutativity"
+      - "K1 unconditional forward preservation for horizontal and both vertical legs"
+    remaining:
+      - "K2--K3 target payloads"
+  certificate_provenance:
+    discharged:
+      - "all K1 objects and legs are generated from RefinementBCConfiguration"
+      - "horizontal preservation uses only refinement.extraction_forward"
+      - "vertical preservation uses exact extraction_iff"
+    unresolved: []
+  proof_use:
+    used:
+      - RefinementDoctrineHom.extraction_forward
+      - ExactDoctrineHom.extraction_iff
+      - pointedPullbackFst
+    unused: []
+  structure_field_escape: none-found-at-candidate-head
+  route_integrity: focused-static-check-passed
+  target_fitting: none-found
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean;
+      exit 0; module-wide standard-axiom audit reports 342 declarations
+  blocking_findings: []
+  next_obligation: >-
+    Decide K2 at the fixed predicate: prove the all-configuration positive
+    regime or the qualified extensional negative classification with a concrete
+    non-regime configuration.
+```
