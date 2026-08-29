@@ -49,7 +49,7 @@ The report synchronization was reviewed at fixed head
 `b2cf0cc24be2936994439e424f81cf38bd2c4b7e`, passed 7/7 CI, and merged as
 `0191ec95ac878f633adb95d172ca34bb0f26d8ef` in PR #4244. The tracking Issue
 was synchronized at
-<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239#issuecomment-5461688348>.
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239#issuecomment-5461729044>.
 
 ## Final completion judgment
 
@@ -57,7 +57,7 @@ A fresh four-lane completion review, using four newly instantiated independent
 review agents on fixed merged main head
 `0191ec95ac878f633adb95d172ca34bb0f26d8ef`, returned no major findings in
 Math A, Math B, Lean A, or Lean B. The final audit is recorded at
-<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461712457>.
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461728330>.
 
 All revision-3 clauses (a)--(f) are proved in Lean. The material-premise,
 certificate-provenance, proof-use, structure-field, exact-image, route-integrity,
