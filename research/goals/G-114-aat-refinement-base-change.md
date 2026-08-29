@@ -107,6 +107,9 @@
 - `portfolio constraint`: 圏化だけで完了扱いしない。二枝の帰趨確定・
   regime 型(正枝時)または資格条項付き成立域特徴付け+非退化 witness
   (退化枝時)・非退化 witness の全面に Lean artifact を要求する。
+  非退化 witness は下層非自明性に加え package fiber 可居住・reverse
+  transport 実構成・mate component 発火まで((c) の全成分)を要求
+  する。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
   なら `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved` とする。
@@ -118,7 +121,9 @@
   構成、比較 functor を逆方向(反射を要求する向き)で仮定する構成、
   **退化枝を単一反例の存在命題だけで「退化定理」と呼ぶ構成**(成立域
   特徴付けを欠く形。言い換え述語の排除は (b) の閉じた条件言語が
-  担う)、**G-110 既決 mate 正例の再包装による regime 正枝放電**。
+  担う)、**G-110 既決 mate 正例の再包装による regime 正枝放電**、
+  **package fiber が空のため regime / mate が空虚に存在する構成**
+  (空圏上の自然変換 — (c) の発火要件が排除)。
 - `frontier`: refinement 圏の 2-cell(refinement 間の変形)の観察、
   refinement と indexed 診断輸送 exactness(G-113)の相互作用の観察、係数 base change
   カードとの接続点。
@@ -161,7 +166,39 @@
      `finiteExtractionRefinement_no_exact_upper_lift`(package 水準
      upper lift 障害)が素材である。pulled square の存在自体が失敗
      する場合はその反例も負枝 payload として適法とする(mate 水準の
-     判定に先行する)。**閉じた条件言語(constructor 完全列挙)**:
+     判定に先行する)。**regime signature と量化の固定(数学的
+     statement 水準)**: 命名骨格を `RefinementBCConfiguration U`
+     (claim boundary の配置型)、`RefinementBCRegime C`(配置 `C`
+     上の regime 型)、`RegimeAvailable C :=
+     Nonempty (RefinementBCRegime C)` で固定する。square は4頂点
+     `P' / P / D₁' / D₁`・4脚で固定する — 水平脚 = refinement
+     (`f : D₁' → D₁` と pulled `f* : P' → P`)、垂直脚 = exact 射影
+     (`fst' : P' → D₁'`、`fst : P → D₁`)、可換 `fst ∘ f* =
+     f ∘ fst'`(exact 脚は比較 functor で `Refin_U` に埋めて読む)。
+     `RefinementBCRegime C` の内容: (i) exact 垂直脚に沿った
+     reindexing = G-112 reviewed API の proof-use 消費(route (r2) —
+     新設しない。fiber は `packageProjection` の package fiber =
+     G-110 / G-112 の reviewed 設定)、(ii) refinement 水平脚に沿った
+     reverse transport `R_f : Fiber(D₁) → Fiber(D₁')`・
+     `R_{f*} : Fiber(P) → Fiber(P')` — 裸の functor ではなく、
+     refinement 上の cartesian universal property(over-`f` 射の一意
+     分解)から生成される functor(functor 法則は一意性から導く)、
+     (iii) 随伴相当の水準 = relative hom equivalence
+     (`Hom_{over f}(q, p) ≃ Hom(q, R_f p)` の自然同値)まで — unit /
+     counit 型の大域 adjunction は要求しない(refinement は lax の
+     ため)、(iv) canonical mate 比較射 = 合成 functor
+     `reindex_{fst'} ∘ R_f` と `R_{f*} ∘ reindex_{fst}`(いずれも
+     `Fiber(D₁) → Fiber(P')`)の間の、universal property が生成する
+     comparison natural transformation とその naturality。`IsIso` は
+     field にも法則にも持たせない(O12 分界)。**量化**: 正枝 = 固定
+     `U` 上の全適格 configuration `∀ C, RegimeAvailable C`。退化枝 =
+     `∀ C, pulledLocusExtractionReflecting C ↔ RegimeAvailable C`
+     (外延一致)+具体配置 `C₀` の `¬ RegimeAvailable C₀`。
+     **signature の独立性**: `RefinementBCConfiguration` /
+     `RefinementBCRegime` の field に `Holds`・特徴付け述語の証拠・
+     その定義的同値 certificate を持たせない — 必要性 theorem を
+     field projection で放電する経路を禁止する(条件言語からの
+     独立)。**閉じた条件言語(constructor 完全列挙)**:
      特徴付け述語は G-110 `CartConditionSyntax` 様式の閉じた syntax
      型の term として立てる。constructor は次の1つに限る(operand
      なし・数値定数なし・集合定数なし・結合子なし) —
@@ -208,15 +245,24 @@
      (G-112 (iv) の相対化前例)。資格条項 (v) の正例族 raw data は
      幾何のみ(authored 配置成分)とし、述語成立・strict 像外性・
      非可逆性・mate 不能を field に持たせない — 発火と非退化は
-     theorem として生成する(ledger の資格 (v) 分離2行)。特徴付けは
+     theorem として生成する(ledger の資格 (v) 分離2行)。発火
+     theorem には正例族 member 上の関連 package fiber の可居住(具体
+     package)を含める — 空 fiber 上の空虚な資格発火を排除する。
+     特徴付けは
      十分性 theorem(述語 → 上記判定内容の regime 成立)と必要性
      theorem(regime 成立 → 述語)の両方向を要求し、成立域との外延
      一致まで固定する — G-112 と異なり必要性は像包含・同型不変性から
      従わないため、独立の証明義務とする。必要性の反例固定 = 候補
      refuted(三層状態規則に従う)。
-  3. **(c) 非退化 witness**: 恒等でない refinement 射の pullback が非
-     自明に立つ有限 fixture を構成する(正枝時。退化枝の場合は (b) の
-     非退化反例がこれを兼ねる)。
+  3. **(c) 非退化 witness**: 有限 fixture 上で次の全成分を要求する —
+     非恒等 refinement 射・非自明 pulled square(下層)、mate の両
+     route に必要な関連 package fiber(`CoreFiber` 系)の具体 package
+     による可居住性、その package 上での reverse transport の object /
+     action の実構成、canonical mate の少なくとも1 component の型付き
+     発火(空圏上の自然変換の排除)。component の非同型・非恒等は
+     要求しない(O12 側の義務)。正枝時の義務であり、退化枝の場合は
+     (b) の非退化反例がこれを兼ねる(no-go 素材は package 水準で既に
+     非空)。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module(refinement 圏の宣言は本カードの命名権)。
@@ -233,7 +279,8 @@
   /退化枝: 資格条項付き成立域特徴付け+資格 theorem 群(同型不変性
   ・閉性・像包含・発火・非退化)+十分性・必要性(外延一致)+非退化
   反例)、非退化
-  witness、report
+  witness((c) の全成分: 下層非自明性+package fiber 可居住+reverse
+  transport 実構成+mate component 発火)、report
   `research/reports/G-114-aat-refinement-base-change.md`。
 - `target proof strategy`: F0 typing(圏 instance と比較 functor の
   signature、二枝 payload 構造、regime 型の候補 signature、条件言語の
@@ -254,9 +301,10 @@
   Issue 同期と final review packet 作成、独立 `$math-lean-review`
   4査読全 `No major findings`)を通過すること(正本 =
   target-goal-contract.md)。
-- `target premise discharge policy`: 入力(refinement 射・fixture)だけ
-  を残せる。pullback 安定性・regime・退化の結論相当データの供給は放電
-  と数えない。
+- `target premise discharge policy`: 入力(refinement BC
+  configuration raw data — 下記 ledger 行の許可 field — と witness
+  fixture)だけを残せる。pullback 安定性・regime・退化の結論相当
+  データの供給は放電と数えない。
 - `target material premise ledger`:
   - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
     しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
@@ -272,6 +320,12 @@
     `bf882573`、merge `e9f891b8`)(支える結論 = (b) mate 比較の
     exact 側。結論相当でない理由 = refinement 側 reverse transport と
     mate 比較は未構成)。
+  - `refinement BC configuration raw data`: `ambient-boundary`。入力
+    資格。許可 field = exact cospan、pointed refinement 脚の source /
+    atom map と forward 法則、基点整合のみ。pulled object・pulled
+    leg・exact 化・reverse transport・regime・mate・条件 membership を
+    入力 field に持たせない(すべて生成側に置く — configuration head
+    の型固定はこの許可列挙の転写とする)。
   - `refinement 圏構造と比較 functor`: `discharge-required`(支える
     結論 = (a)。discharge artifact = 圏 instance+結合律+functor
     law。結論相当でない理由 = 構成して証明する)。
@@ -296,7 +350,13 @@
     data から述語成立・strict 像外性・非可逆性を別々に生成する
     named theorems と選定時固定の記録。正枝で確定した場合は
     completion で `not-applicable` と判定する — G-113 様式)。
-  - `非退化 witness`: `discharge-required`(支える結論 = (c))。
+  - `非退化 witness`: `discharge-required`(支える結論 = (c)。
+    discharge artifact = 下層非自明性・package fiber 可居住・reverse
+    transport 実構成・mate component 発火を別々に証明する named
+    theorems。provenance = raw 配置 data と G-110 / G-112 reviewed
+    API のみ。proof-use = mate component は (b) regime 装置の実消費で
+    結ぶ。structure-field escape audit を含む — 可居住性・発火を
+    fixture field に持たせない)。
 - `target route integrity gate`: 生成 route は役割別に固定する —
   (r1) 比較 functor・pulled square・refinement 側 reverse transport は
   `RefinementDoctrineHom` の定義と G-110 普遍性からのみ生成する。
@@ -312,8 +372,10 @@
   target 結果由来の定数の持ち込み。
 - `target anti-weakening rule`: pullback 安定性・mate 定義可能性・退化
   を theorem argument、typeclass、structure field、certificate field へ
-  移して成功扱いしない。`ambient-boundary` に残せるのは入力幾何だけで
-  ある。
+  移して成功扱いしない。条件 membership・fiber 可居住性・mate 発火を
+  regime / configuration / fixture の field へ移して必要性・非退化を
+  field projection で放電しない。`ambient-boundary` に残せるのは入力
+  幾何だけである。
 - `target failure policy`: fail-closed を原則とする。(b) は二枝
   disjunction でありどちらの枝の確定も成功(退化枝も帰趨確定として
   G-116 カードの成立条件を満たす)。両枝とも閉じない場合は
