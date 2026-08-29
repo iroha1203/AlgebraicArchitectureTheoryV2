@@ -88,7 +88,7 @@
        RefinementPackageTotalCategory U`
      を構成する。さらにG-108 exact morphismを
      `PointedRefinementHom.ofExact`経由で送るfaithful functor
-     `exactGeometryToRefinementGeometry : GeometryTotalCategory U ⥤
+     `exactGeometryToRefinementGeometry : GeomReadCategory U ⥤
        RefinementGeometryCategory U`
      を構成し、geometry fields、identity、composition、projection squareの可換を
      証明する。exact morphismの単なる別名や、無関係なexact lower legを追加する
@@ -96,20 +96,28 @@
 
   2. **(b) G-114 route上のfinite upper problemとactual solution**:
      `UpperRefinementBCProblem ctx` はfinite presentation `P`、root、全vertexへの
-     directed `P.Path root i`、common source two-layer geometry dataを持つ。source
-     core diagramをG-114の二core routeで送ったbase / pulled route core diagramsと、
+     directed `P.Path root i`、およびactual functor
+     `sourceFiberDiagram : P ⥤ CoreFiber ctx.targetPoint`を持つ。common source
+     two-layer geometry dataの各geometry package / edgeのcore projectionが、この
+     fiber diagramのobject / morphismの忘却像と一致するdependent equationsを持つ。
+     従って全source edgeのlower projectionは型としてfiber-verticalに固定される。
+     source fiber diagramをG-114の二core routeで送ったbase / pulled route core diagramsと、
      それらを射影とする二つのG-109-qualified `TwoLayerTransportData`を持つ。
      各route geometry diagramからsource geometry diagramへのlegは
      `RefinementGeometryHom` familyとし、base legのlower射影はG-112 exact selected
      liftとG-114 base refinement liftの合成、pulled legのlower射影はG-114 pulled
-     refinement liftとG-112 exact selected liftの合成に固定する。各route内のedge
-     naturalityはG-112 / G-114のmap-factor lawsへ戻す。全係数identity条件を完全
-     signatureに含める。raw problemはroute間component、route間naturality、
+     refinement liftとG-112 exact selected liftの合成に固定する。各route内の
+     **full geometry naturality** はdirection-hypothesisとしてraw problemに明記し、
+     その`RefinementPackageHom`射影がG-112 / G-114のmap-factor lawsと一致することを
+     別theoremで証明する。core lawsだけからcoefficient / support / axis / observable
+     comparisonの一致を生成しない。全係数identity条件を完全signatureに含める。
+     raw problemはroute間component、route間naturality、
      comparator equation、`IsIso`、orbit lawを持たない。
 
      `UpperRefinementBCSolution problem` はvertexごとのvertical
      `GeometryTotalHom` componentを持ち、そのbaseが
-     `ctx.mate.app`、coefficient homがidentityであることを要求する。各componentを
+     `(ctx.mate.app (sourceFiberDiagram.obj i)).1`、coefficient homがidentityである
+     ことを要求する。各componentを
      `exactGeometryToRefinementGeometry`でbridge categoryへ送り、
      `ηᵢ ≫ pulledLegᵢ = baseLegᵢ` というgeometry-level factorization triangle、
      route間edge naturality、G-109 authored comparator intertwining、nil / append /
@@ -120,7 +128,10 @@
      `upperDecisionSolution`をtheorem artifactとして構成する。fixtureはgenuinely lax
      active refinement(exact comparison image外)、root-connected、nonidentity
      refinement / strong edge、nonidentity comparator / raw cochain、係数成分identityを
-     持つ。solution componentの`IsIso`または否定は本カードで証明しない。
+     持つ。少なくとも一つのactual solution componentがidentity / equality transportと
+     異なることをsupport / axis / observable componentの具体評価で証明し、既決core
+     mateと既知の可逆twistの合成だけから従うfixtureは独立発火と数えない。ただし
+     solution componentの`IsIso`または否定は本カードで証明しない。
 
      別に、nonempty geometry endpointsとindividual refinement-geometry legsを持つが
      route間solutionを持たないnamed problemを構成し、全active contextへのupper
@@ -129,11 +140,17 @@
      certificateをproblem fieldに持たせない。
 
   3. **(c) actual paired orbit intertwining**:
-     任意のactual solutionについて、base / pulled upper reselectionsがsolution
+     `CoefficientTrivialUpperEdgeReselection` を、既存 `UpperEdgeReselection` と
+     全edge automorphismのcoefficient hom = identityの証明から定義し、そのwitnessで
+     生成される `InCoefficientTrivialUpperReselectionOrbit` を既存actual
+     `InUpperReselectionOrbit` のsuborbitとして定義する。このsuborbitのextentや
+     membership iff自体は成果に数えない。
+
+     任意のactual solutionについて、base / pulled coefficient-trivial upper reselectionsがsolution
      components、factorization triangle、authored comparatorとintertwineし、かつ
      coefficient componentがidentityであるpaired relationを定義する。identity、
      vertical composition、path concatenationでの閉性、`upperRawDefectCochain`の
-     componentwise intertwining、actual `InUpperReselectionOrbit` membershipのpaired
+     componentwise intertwining、actual coefficient-trivial suborbit membershipのpaired
      preservationを証明する。proof bodyはleg triangle、edge equation、comparator
      equationを別々に実消費し、core-only transportで閉じない。
 
@@ -145,8 +162,10 @@
      `UpperStageExchangeExact solution : Prop` を全vertical geometry componentsの
      `IsIso` と定義する。これを仮定した場合だけ、coefficient-trivial reselectionの
      componentwise conjugation / inverse、両側inverse law、solution comparator
-     equationを実消費するraw-cochain commuting、actual orbit direct-image equality /
-     equivalenceを証明する。`upperDecisionSolution`についてこのpredicateも否定も
+     equationを実消費するraw-cochain commuting、coefficient-trivial actual suborbitの
+     direct-image equality / equivalenceを証明する。既存full
+     `InUpperReselectionOrbit`との一致は主張しない。`upperDecisionSolution`について
+     このpredicateも否定も
      証明せず、G-116 O12がactual component計算で決定する。
 
 - `target theorem scope`: Lean置き場所は
@@ -156,8 +175,9 @@
 - `target proof artifacts`: `RefinementGeometryHom` / category / projection、exact
   faithful embeddingとprojection square、`UpperRefinementBCProblem` /
   `UpperRefinementBCSolution`、named `upperDecisionProblem` / solution、named
-  non-liftable problem、coefficient-trivial paired reselection relation / cochain /
-  actual orbit theorem、nonidentity intertwined firing、`UpperStageExchangeExact`
+  non-liftable problem、`CoefficientTrivialUpperEdgeReselection` / restricted actual
+  suborbit、paired relation / cochain theorem、nonidentity intertwined firing、
+  `UpperStageExchangeExact`
   conditional conjugation/orbit equivalence、report
   `research/reports/G-115-aat-upper-stage-lift.md`。
 - `target proof strategy`: F0で`RefinementPackageHom.upper`からgeometry index mapsを
@@ -179,9 +199,9 @@
 | G-108 geometry contract | ambient | exact geometry fieldsの語彙とlaws。lax lower homは含まないため、そのままroute legに使わない |
 | G-109 two-layer / orbit data | ambient | strong edges、authored comparator、actual cochain / orbitの語彙。route間equationsは含まない |
 | `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
-| raw upper problemのindividual legs | direction-hypothesis | bridge hom familyとroute内naturality。route間solutionを含まず、O10放電とは数えない |
-| named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。certificate payload不可 |
-| paired cochain / orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する |
+| source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。route間solutionを含まず、O10放電とは数えない。naturalityのcore射影だけを既存factor lawsで証明する |
+| named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
+| paired cochain / restricted orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する。既存full orbitとの一致は主張しない |
 | conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
 
 **受入禁止**

@@ -204,8 +204,8 @@
      その外側の forward-only / inactive 分類が揃って初めて帰趨確定と
      数える。
      G-115 については geometry-refinement category / projection / exact embedding、
-     actual `upperDecisionSolution`、solutionを持たないnamed problem、paired orbit
-     intertwining、`UpperStageExchangeExact` 条件付きconjugation、chosen-solution-relative
+     actual `upperDecisionSolution`、solutionを持たないnamed problem、coefficient-trivial
+     actual suborbitのpaired intertwining、`UpperStageExchangeExact` 条件付きconjugation、chosen-solution-relative
      というexactnessの読みを突合する。
   3. **範囲併記**: coverage の到達段(第一段 / 第二段)、O6 /
      O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
@@ -236,7 +236,7 @@
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
 | O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、G-114 two-route finite upper problem / actual solution、named decision solutionとnamed non-liftable problem | G-115 |
-| O11 | actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・paired orbit preservation、`UpperStageExchangeExact` 条件付きconjugation・raw-cochain commuting・actual orbit equivalence | G-115 |
+| O11 | actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・restricted actual suborbit preservation、`UpperStageExchangeExact` 条件付きconjugation・raw-cochain commuting・restricted suborbit equivalence | G-115 |
 | O12 | `Gr4ExchangeContext` の actual mate-bearing sector / active refinement / G-115 `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
@@ -254,7 +254,7 @@
 | id | revision 1 義務 | disposition |
 |---|---|---|
 | O10-r1 | 任意の `ActiveRefinementBCContext` と任意の `TwoLayerTransportData` に対する global `GeomRead` BC lift、actual lifted natural transformation、Gr3 bridge、upper regime 型 | contextとtransport dataのsemantic connection、およびgenuinely lax `RefinementPackageHom` 上のgeometry homが無く `goal-defect`。意味未確定の旧claimはrefutedとせずsuperseded。人間承認revision 2は欠落していた`RefinementGeometryHom` categoryと、bridge上のnamed finite decision problem / solutionへ置換する。全active contextへのsolutionは主張しない |
-| O11-r1 | proxy `ObProblem` interface、双方向 adequacy、構成された class の base-change naturality、非恒等発火 | proxy interfaceとmembership iffは定義的再包装であり、非可逆mateはfull automorphism / orbit mapを誘導しないためsuperseded。revision 2 O11はactual solution上のpaired intertwiningを無条件部分とし、componentwise `IsIso` の場合だけconjugation orbit equivalenceを与える。IsIso存否はG-116専属 |
+| O11-r1 | proxy `ObProblem` interface、双方向 adequacy、構成された class の base-change naturality、非恒等発火 | proxy interfaceとmembership iffは定義的再包装であり、非可逆mateはfull automorphism / orbit mapを誘導しないためsuperseded。revision 2 O11はfixed-coefficient scopeに合わせたcoefficient-trivial actual suborbitのpaired intertwiningを無条件部分とし、componentwise `IsIso` の場合だけrestricted suborbitのconjugation equivalenceを与える。IsIso存否はG-116専属 |
 
 **G-113 revision 1 義務 disposition(履歴台帳)**:
 
