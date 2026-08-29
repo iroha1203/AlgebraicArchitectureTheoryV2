@@ -12,7 +12,8 @@
   `5462251699`、formal completion ledger は `5462274138`、同 PR は
   fixed head `8f7ad8bf6ad9f42be41d8252931e95517c6e0188`、CI 7/7 で merge
   `3d26d993d8fe36f74f73426731e05af0c051aa5a`。G-115 の upper-stage
-  lift と G-116 の exchange invertibility は後続 target のままである。
+  lift と G-116 の exchange-failure 存否・branch decision は後続 target
+  のままである。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)

@@ -72,7 +72,7 @@ and proof-use route, certificate provenance, structure-field escape,
 exact-image compatibility, direction coverage, definition unfolding,
 dependency anchors, all three support strata, the public-projection mate route,
 axioms, scans, and artifact synchronization. G-115 upper-stage lift and G-116
-exchange invertibility remain separate downstream targets.
+exchange-failure existence / branch decision remain separate downstream targets.
 
 ## Final completion process
 
@@ -87,8 +87,8 @@ artifact synchronization.
 
 The merged theorem evidence and this evidence index supply all revision-3
 clauses (a)--(f) and record no remaining mathematical obligation. G-115
-upper-stage lift and G-116 exchange invertibility remain outside this target's
-scope. The durable status is `target-theorem-proved`; the schema-complete final
+upper-stage lift and G-116 exchange-failure existence / branch decision remain
+outside this target's scope. The durable status is `target-theorem-proved`; the schema-complete final
 packet, fresh four-lane completion review, formal ledger, CI, and merge passed.
 
 ## Exact declaration map
