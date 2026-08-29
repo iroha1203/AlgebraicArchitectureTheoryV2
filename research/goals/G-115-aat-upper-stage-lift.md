@@ -1,7 +1,7 @@
 # G-115-aat-upper-stage-lift — 上段への base-change lift と Gr3 接続
 
 - `id`: `G-115-aat-upper-stage-lift`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項の担当カード(担当義務 =
@@ -13,8 +13,8 @@
   **供給契約**: 本カードの成果物は G-116 gate (iv) の上段 regime 型を
   供給する — G-116 は regime を新設建設しないため、この供給は成果物
   形式の義務である。
-- `predecessor`: G-114 revision 3(完遂後の fixed reviewed head。
-  active refinement context・base/pulled mate の唯一の供給元)、
+- `predecessor`: G-114 revision 3(完遂済み。active refinement
+  context・base/pulled mate の唯一の供給元。固定錨は下記 ledger 行)、
   G-110(完遂済み。pointed pullback・reindexing
   functor。固定錨は下記 ledger 行)、G-109(core pseudofunctor
   package と段横断輸送。完遂済み。
@@ -23,7 +23,8 @@
   `research/lean/ResearchLean/AG/GeometryTransport/` 配下、unported。
   固定錨は下記 ledger 行に直接記載)、G-106(完遂済み。(c) の指示対象
   = orbit / defect 語彙。固定錨は下記 ledger 行)。
-- `tracking issue`: 未起票(active 昇格時に起票)
+- `tracking issue`: 未起票(昇格 PR マージ後に起票し、カード同期 PR で
+  本行を更新する)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-115)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔 — `ObProblem` 段の定義)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (iii))、
@@ -157,8 +158,9 @@
 - `target material premise ledger`:
   - `G-114 active refinement context`: `ambient-boundary`。G-114 の
     reviewed theorem が actual target package と fixed condition から
-    local regime を生成して構成した値のみを受け取る。proof-use = (a)
-    の上段 mate の入力。
+    local regime を生成して構成した値のみを受け取る。**固定錨:
+    完了 PR #4246(fixed head `8f7ad8bf`、merge `3d26d993`)**。
+    proof-use = (a) の上段 mate の入力。
     forward-only / inactive configuration を regime fixture で active
     にする経路は禁止。
   - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
