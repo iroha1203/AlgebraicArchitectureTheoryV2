@@ -60,6 +60,8 @@ The report synchronization was reviewed at fixed head
 - formal four-lane completion review: 4/4 `No major findings`
 - formal completion ledger:
   <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246#issuecomment-5462274138>
+- tracking Issue formal-verdict synchronization:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239#issuecomment-5462295404>
 - final completion PR: #4246, CI 7/7 successful
 - merge commit: `3d26d993d8fe36f74f73426731e05af0c051aa5a`
 - verdict: `target-theorem-proved`
@@ -492,6 +494,7 @@ axiom in the target artifacts. `git diff --check` is clean.
 - fresh four-lane completion review: 4/4 `No major findings`
 - formal completion ledger: satisfied at `5462274138`
 - candidate PR merge: satisfied at `3d26d993d8fe36f74f73426731e05af0c051aa5a`
-- tracking Issue final synchronization: performed after this status-sync merge
+- tracking Issue formal-verdict synchronization: satisfied at `5462295404`
+- status-sync merge-hash synchronization: post-merge action for PR #4247
 - remaining mathematical obligations: none
 - current status: `target-theorem-proved`
