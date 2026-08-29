@@ -262,7 +262,7 @@ The lower arrow is the authored lax refinement itself; it is not reconstructed
 from the exact base of `PackageTotalHom`.  The upper package change remains
 exact and is required to use the Atom equivalence canonically derived from the
 refinement.  Thus this type can be inhabited by a genuinely non-exact
-refinement whenever the selected package families admit the required upper
+refinement whenever the selected package families support the required upper
 change.
 -/
 structure RefinementOverHom
