@@ -70,18 +70,29 @@ merge, and post-merge Issue synchronization all pass.
 
 ## Exact declaration map
 
+This map is exact and complete for the target-facing declarations that realize
+clauses (a)--(f). It is not a flat enumeration of every private helper reached
+by recursive definition unfolding. Material predecessor declarations that
+carry a route, certificate, or witness across source files are fixed separately
+in the source-anchor subsection below; ordinary definitional helpers remain
+auditable through their containing file blob and the recorded proof-use route.
+
 ### (a) Categories and refinement package fibration
 
-- unpointed refinement category: `RefinementObject`, `RefinementCategory`,
+- unpointed refinement category: `RefinementDoctrineObject`,
+  `RefinementDoctrineCategory`, `RefinementObject`, `RefinementCategory`,
   `refinementDoctrineCategory`, `refinementHomId`, `refinementHomComp`
 - exact comparison: `exactToRefinement`, `doctrineToRefinement`
 - pointed wrapper and category: `PointedRefinementObject`,
   `PointedRefinementHom`, `PointedRefinementIso`,
   `PointedRefinementCategory`, `pointedRefinementCategory`,
+  `PointedRefinementHom.ext`,
   `PointedRefinementHom.id`, `PointedRefinementHom.comp`,
   `PointedRefinementHom.ofExact`, `exactPointedToRefinement`
 - total category: `RefinementPackageObject`,
   `RefinementPackageTotalCategory`, `RefinementPackageHom`,
+  `RefinementPackageHom.ext`, `RefinementPackageHom.id`,
+  `RefinementPackageHom.comp`,
   `refinementPackageTotalCategory`
 - projection and comparison square: `refinementPackageProjection`,
   `exactPackageToRefinement`, `exact_refinement_projection_square`
@@ -98,8 +109,8 @@ stores no lift, cleavage, mate, reflection condition, or availability witness.
 
 - raw input: `RefinementBCConfiguration`
 - generated source index: `RefinementBCConfiguration.CompatibleSource`
-- canonical repointing: `sourcePointAt`, `targetPointAt`, `secondPointAt`,
-  `bottomPointAt`, `fstAt`, `sndAt`, `baseRefinementAt`
+- canonical repointing: `sourceOneAt`, `bottomSourceAt`, `sourcePointAt`, `targetPointAt`,
+  `secondPointAt`, `bottomPointAt`, `fstAt`, `sndAt`, `baseRefinementAt`
 - generated pullback data: `pointedConfigurationAt`, `pullbackSourceAt`,
   `pullbackTargetAt`, `pulledRefinementAt`
 - square: `RefinementBCConfiguration.pulled_square_commutes_at`
@@ -123,7 +134,15 @@ its exact image with `pulledRefinementAt`.
   `selectedTransportDataOfRealizedReflection`
 - complete source-package authoring:
   `SelectedRefinementTransport.SelectedTransportData`,
+  `SelectedRefinementTransport.inverseFamilyListFinite`,
+  `SelectedRefinementTransport.inverseBaseObject`,
+  `SelectedRefinementTransport.inverseBaseObject_eq`,
+  `SelectedRefinementTransport.inverseCoreReading`,
   `SelectedRefinementTransport.inverseCorePackage`,
+  `SelectedRefinementTransport.inverseCorePackage_point`,
+  `SelectedRefinementTransport.inverseCoreEquationForward`,
+  `SelectedRefinementTransport.inverseCoreEquationForward_equationMap_heq`,
+  `SelectedRefinementTransport.inverseCoreEquationForward_detectorCode`,
   `inverseCorePackageForwardUpper`, `inverseCorePackageBackwardUpper`,
   `inverseCorePackageForward_comp_backward`,
   `inverseCorePackageBackward_comp_forward`
@@ -257,20 +276,23 @@ naturality, mate naturality, and natural transformation are respectively
 to that file's `pulled_square_commutes`; the public bridge does not hide either
 dependency.
 
-### Transitive source provenance required by the target proofs
+### Material transitive source anchors required by the target proofs
 
-The exact declaration map includes the following predecessor sources, not only
-the revision-3 wrapper files:
+The dependency DAG fixes the following material predecessor sources in addition
+to the complete target-facing declaration map. This is a route/certificate
+anchor list, not a claim that every recursively unfolded private helper is a
+separate target declaration:
 
 - `RefinementBaseChangeSchema.lean` (blob
   `3bd95eeecc39c5d7697177807eba6482b00f3d3c`):
   `LegacyRefinementBCConfiguration`, `pulledRefinement`,
-  `pulled_square_commutes`, `LegacyRefinementCartesianLift`,
+  `pullback`, `pulledDoctrine`, `pulledSource`, `pulled`, `pulledFst`,
+  `pullbackFst`, `pulled_square_commutes`, `LegacyRefinementCartesianLift`,
   `LegacyRefinementCartesianCleavage`, `LegacyRefinementBCRegime`,
   `exact_bottom_semantic_global_refinementExactCartesianLift`, both reverse
   functors and hom equivalences, `LegacyRefinementBCConfiguration.mateLowerPath`,
   `LegacyRefinementBCRegime.mateCandidate`, `mateRouteBetween`, `mateRoute`,
-  `mateRouteBetween_fac`, `mateRoute_fac`,
+  `mateRouteBetween_fac`, `mateRoute_fac`, and consumption of
   `exact_bottom_semantic_global_reindex_map_fac`,
   `LegacyRefinementCartesianCleavage.reverseMap_fac`,
   `homEquiv_natural_source`, `homEquiv_natural_target`, `mateRoute_natural`,
@@ -296,7 +318,8 @@ the revision-3 wrapper files:
   `2fbe4ec329f7e1fb6a6c874d1bbbe4c427261dca`) and
   `CrossStageCoherence/CorePseudofunctor.lean` (blob
   `7cb15b7676b80ea9b5888303beedad447da25b1e`): `transportAlong`,
-  `coreFiberTransportObject`, and `coreFiberTransportObj`, the reviewed
+  `coreFiberBaseHom`, `coreFiberTransportObject`,
+  `coreFiberTransportObject_point`, and `coreFiberTransportObj`, the reviewed
   G-101/G-109 covariant transport route consumed by pulled-support transfer.
 - `RefinementCategory.lean` (blob
   `98963218a91afb4aef14c5af5002fe92b1c44268`): the clause-(a)
@@ -307,7 +330,8 @@ the revision-3 wrapper files:
 - `ExactBottomGlobalLiftCoherence.lean` (blob
   `1a9139bd2247fdabe81d543a3c3078d94330e9f2`):
   `exact_bottom_semantic_global_reindex_functor`,
-  `exact_bottom_semantic_global_selected_lift`, and its factor/coherence laws,
+  `exact_bottom_semantic_global_selected_lift`,
+  `exact_bottom_semantic_global_reindex_map_fac`, and its factor/coherence laws,
   consumed by `Supply.lean` and the canonical mate routes.
 - `PointedDoctrinePullback.lean` (blob
   `b9fa39c2547d8cec0da4a79724241be2f7987db6`):
@@ -316,12 +340,25 @@ the revision-3 wrapper files:
   `pointedPullback`. These declarations supply the revision-3 generated
   pullback objects and unconditional square in clause (b); `pointedPullbackSnd`
   is not a proof dependency of this target.
+- `DoctrinePullback.lean` (blob
+  `a9b0e7345d623fa0c3120100c89a967bf471224c`):
+  `DoctrinePullbackSource`, `doctrinePullback`,
+  `doctrinePullback_extracts_iff`, and `doctrinePullbackFst`, consumed by the
+  pointed pullback construction and its first projection. This closes the
+  material generated-pullback route below `PointedDoctrinePullback.lean`.
 
-Witness-local source, repointing, and obstruction constructors in
+Target-local source, repointing, package-authoring helpers, category laws, and
+obstruction constructors in the fixed target artifact blobs—including
+`sourceOneAt`, `bottomSourceAt`, the `SelectedTransport` inverse-package
+construction chain, and the category `ext`/identity/composition laws—are
+definition-level support for the target-facing declarations above. They are
+covered by their artifact blobs and proof-use routes, rather than misclassified
+as additional theorem-package outputs. Witness-local constructors in
 `Witnesses.lean`, together with `PointedRefinementHom`,
 `PointedRefinementIso`, `selectedTransportDataOfRealizedReflection`,
 `exactPointedToRefinement_map_eqToHom`, and
-`refinementBCMateAt_app_type`, are part of the exhaustive proof-provenance map.
+`refinementBCMateAt_app_type`, are part of the fixed material proof-provenance
+set.
 
 ## Material-premise and proof-use audit
 
@@ -337,12 +374,15 @@ Witness-local source, repointing, and obstruction constructors in
 | refinement projection | `discharge-required` | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`; `exactVerticalComparison_isHomLift`; relative-factor uniqueness via `IsStronglyCartesian.ext` | `discharged` |
 | fixed condition | `direction-hypothesis` | implication input only | family equality, authored package, both cleavages | `justified-boundary` |
 | package transport completeness | `discharge-required` | `SelectedTransport.lean` | two-sided upper inverses and strong cartesianness | `discharged` |
+| exact-image compatibility | `discharge-required` | `pulledExactComparisonAt`, `pulledRefinementAt_mem_exactComparisonImage` | identify the generated mixed refinement with the exact comparison image on the exact stratum | `discharged` |
 | condition-to-regime producer | `discharge-required` | `refinementCleavageOfRealizedReflection`, `refinementBCRegimeOfCondition` | construct the base and pulled cartesian cleavages from the fixed condition | `discharged` |
 | regime-to-condition producer | `discharge-required` | `realizedReflectionOfRefinementCleavage`, `configurationConditionOfRegime` | use each actual target lift to recover all-Atom reflection | `discharged` |
 | pulled-support transfer theorem | `discharge-required` | `pulledSupportTransfer`, `pulledRealizedReflection` | consume the pulled package, exact projection, and `coreFiberTransportObj` to construct base support and the pulled condition | `discharged` |
 | active forward-only witness | `discharge-required` | finite `activeForwardOnlyConfiguration` and its actual package | evaluate the extraction mismatch and derive `activeForwardOnly_no_regime` | `discharged` |
 | active reverse witness | `discharge-required` | `activeReverseConfiguration` and independently constructed `activeReverseTargetPackage` | exercise the condition/regime outside the exact image, nonidentity pulled/lift edges, and both mate routes | `discharged` |
 | inactive regression | `discharge-required` | `inactiveInfiniteConfiguration`, target-fiber emptiness, and inactivity theorems | prove `inactiveInfinite_not_active` and `inactiveInfinite_not_activeRegimeAvailable` | `discharged` |
+| canonical mate bridge | `discharge-required` | `LegacyBridge.lean`, `RefinementBaseChangeSchema.lean`, and G-112 exact reindexing | map exact vertical factors through the public projection, apply strong-cartesian uniqueness, and derive route naturality and the mate | `discharged` |
+| caller-supplied selected-family equality / package equivalence / regime / mate | `conclusion-equivalent-risk` | absent from raw configuration and producer signatures; generated by `RealizedSupport`, `SelectedTransport`, `Regime`, and `Mate` declarations | never consumed as an opaque input by the direction that constructs it | `discharged` |
 
 No theorem assumes a regime, cleavage, mate, selected-family equality, or
 package equivalence as an opaque fixture in the direction that constructs it.
