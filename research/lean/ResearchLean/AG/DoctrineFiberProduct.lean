@@ -214,6 +214,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftObstruction
 import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULift
 import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULiftZero
 import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULiftSuccessor
+import ResearchLean.AG.DoctrineFiberProduct.RefinementGeometry
 
 /-!
 # Doctrine fiber-product schema
