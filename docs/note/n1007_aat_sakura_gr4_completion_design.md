@@ -182,10 +182,10 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O6 | coverage 拡張第二段(sector 全域 — 成立か、成立域の特徴付けと反例かの決定) | gate (i)・frontier | G-112 |
 | O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
-| O9 | refinement base change の帰趨決定と refinement 側 regime 型の建設 | gate (ii) | G-114 |
+| O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
 | O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(class 構成は変更しない。semantic adequacy 条件は §4 G-115) | gate (iii)・n1001 §3.3 | G-115 |
-| O12 | IsIso 水準 exchange-failure の存否決定(sector+refinement / 上段 regime を含む設定) | gate (iv)・(C) 移管文 | G-116 |
+| O12 | actual mate-bearing sector / active refinement / active upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | gate (v) | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | gate (v) | G-113 |
@@ -416,42 +416,67 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 ### G-114(仮 slug: `G-114-aat-refinement-base-change`)
 
 - **責務**: O8–O9。refinement 系統。
-- **claim 骨格**: (a) refinement 圏の構成 — `RefinementDoctrineHom`
+- **claim 骨格**: (a) `ExtractionDoctrine` の既存 exact category instance
+  と衝突しない `RefinementObject` wrapper 上の refinement 圏の構成 —
+  `RefinementDoctrineHom`
   (`AtomFoundation/Doctrine.lean` に実在確認済み)を射とする圏構造
   (恒等・合成・結合律)と、**`Doct_U` からの比較 functor
   `Doct_U ⥤ Refin_U`**(exact hom を refinement として埋める方向。逆
   方向は `RefinementDoctrineHom` が `extraction_forward` のみを持ち
   `finiteExtractionRefinement_not_reflecting` が反射不能を定理化済みの
-  ため型に載らない — 方向をこの形で固定する)、(b) refinement base
-  change の帰趨決定 — **二枝 disjunction 単一命題**: 「(A) の fiber
-  product が refinement 射を pullback で安定に持ち上げ、refinement に
-  沿った BC 比較射と **mate 比較が定義される regime 型(reindexing・
-  随伴相当の装置)**が建設できる」または「refinement pullback / regime
-  の退化定理」。refinement 射は lax であり G-101 opcartesian 輸送の適用
-  外のため、正枝を無条件には主張しない、(c) 非退化 witness(恒等でない
-  refinement 射の pullback が非自明に立つ有限 fixture —
-  `finiteExtractionRefinement` 系が素材)。
+  ため型に載らない — 方向をこの形で固定する)。pullback 配置は exact
+  cospan `s₁ ⟶ b ⟵ s₂` と refinement `s₁' ⟶ s₁` に固定する、
+  (b) `ExtractionInstance` / `AATCorePackage` の既存 category instance
+  と衝突しない wrapper object 上で、pointed refinement を底射とする
+  category、complete upper-reading morphism を total 射とする refinement
+  package projection、exact
+  package projection からの comparison square、cartesian
+  factorization / uniqueness の構成、(c) raw refinement 全域での
+  canonical forward mixed-pullback square と commutativity、
+  (d) **realized-support 分類**:
+  `Nonempty (RefinementBCRegime C) ↔
+  ConfigurationRealizedLocusExtractionReflecting C`。局所の固定条件は
+  pointed refinement 上で定義し、actual package が
+  存在する compatible source 上の全 Atom に対する extraction reflection
+  だけを述べ、lift / mate / regime を含まない、(e) active forward-only
+  witness、exact
+  comparison image 外の active reverse witness、inactive empty-fiber
+  regression の三例、(f) actual target package と、fixed condition が
+  生成した local regime から
+  `ActiveRefinementBCContext` と canonical mate を供給する。
+  active reverse witness の非恒等 observable は、refinement を射影する
+  cartesian lift edge の upper Atom equivalence に置く。canonical mate は
+  同一 fiber 内の垂直 coherence なので、その Atom action の非恒等性は
+  要求せず、両経路から実際に構成・package 上で評価されることを要求する。
+  これにより Gr4 では水平 refinement transport が非恒等性を、垂直 mate
+  が経路 coherence を担う。
 - **錨**: `RefinementDoctrineHom` / `finiteExtractionRefinement` 系
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
   G-110 (A) fiber product 構成・`pointedPullback_isPullback`
   (`DoctrineFiberProduct/PointedDoctrinePullback.lean`)、presentation
   閉性 constructor、G-112 semantic-global cleavage / reindexing
-  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)。
-- **供給契約**: **G-116 gate (iv) の refinement regime 型**(mate が
-  定義される装置、または退化定理という帰趨)。G-116 は regime を新設
-  建設できないため、この供給は成果物形式の義務である。
-- **リスク / dullness 骨格**: 圏化が「hom の再ラベル」に堕ちる経路
-  (合成の非自明性 witness を要求)、refinement pullback が恒等成分で
-  vacuous に立つ経路。
-- **failure 骨格**: (b) は二枝 disjunction なのでどちらの枝も成功
-  (退化定理も帰趨確定として §7 条件1を満たす)。両枝とも閉じない場合は
-  `target-blocked`。
+  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)、
+  G-101/G-109 `coreFiberTransportObj`(pulled support を exact projection
+  に沿って base support へ送る共変 route。G-101 fixed reviewed head
+  `db47ee9e`、merge `dd5e02b5`、G-109 fixed reviewed head `b5ca4630`)。
+- **供給契約**: G-115 と G-116 に
+  **`ActiveRefinementBCContext` と canonical base / pulled mate** を
+  供給する。forward-only / inactive refinement は O12 の mate 量化域に
+  入れず、O19 の domain-classification で帰趨を記録する。
+- **リスク / dullness 骨格**: 圏化が「hom の再ラベル」に堕ちる経路、
+  empty package fiber を reverse 成功例に数える経路、固定条件に lift
+  相当データを混ぜる経路、exact comparison image だけで正例を閉じる
+  経路。
+- **failure 骨格**: 固定条件から package transport を構成できなければ
+  exact counterexample 付き `target-refuted`。条件を述べる semantic
+  primitive が不足する場合は `goal-defect`。自動 weakening はしない。
 
 ### G-115(仮 slug: `G-115-aat-upper-stage-lift`)
 
 - **責務**: O10–O11。上段への base-change lift と Gr3 接続 bridge。
 - **claim 骨格**: (a) `GeomRead` 段 lift — pointed pullback square の BC
-  構造(引き戻し・canonical mate)を geometry 段 fiber へ持ち上げ、
+  構造を G-114 `ActiveRefinementBCContext` から受け取り、その
+  canonical mate を再構成せず geometry 段 fiber へ持ち上げ、
   G-109 pseudofunctor package(compositor / unitor・pseudonatural
   compatibility)と両立する形で段射影と可換にする。**上段 regime 型
   (G-116 が消費する mate 比較の型)を成果物形式に含める**、(b) Gr3
@@ -478,15 +503,16 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (`CrossStageCoherence/CorePseudofunctor.lean`)、G-108
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
   (`GeometryTransport/`)、G-110 pullback reindexing functor・
-  `pointedPullback_isPullback`。
-- **供給契約**: G-116 gate (iv) の上段 regime 型。`ObProblem` interface
-  の命名は本カード専属。
+  `pointedPullback_isPullback`、G-114
+  `ActiveRefinementBCContext` / canonical mate。
+- **供給契約**: G-116 gate (iv) の active upper-stage regime 型。
+  `ObProblem` interface の命名は本カード専属。
 - **リスク / dullness 骨格**: lift を base equality 一本で代用する経路、
   離散段(`ExtInst -> Doct`)での vacuous 発火、`ObProblem` interface に
   class 構成の変更を紛れ込ませる経路、定数 class 読み出しでの vacuous
   naturality、adequacy bridge を欠く代理 interface での O11 放電。
 - **failure 骨格**: `ObProblem` interface の Lean 建設が型不能なら
-  `target-blocked`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
+  `goal-defect`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
   裁定であり、自動 weakening をしない)。
 
 ### G-116(仮 slug: `G-116-aat-gr4-capstone`)
@@ -494,21 +520,34 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **責務**: O12(target theorem)・O19(completion criteria+report
   義務)。capstone。
 - **target theorem 骨格(O12 のみ)**: IsIso 水準 Beck–Chevalley
-  exchange-failure の存否決定 — **「全同型定理」または「¬IsIso の具体
-  反例」の二枝 disjunction 単一命題**(G-110 (B) 様式: 排他性は反例が
-  供給、網羅性は主張しない)。量化域 = G-110 sector+G-114 が供給する
-  refinement regime 型+G-115 が供給する上段 regime 型(**capstone は
-  単責務規律上 regime を新設建設しない** — 供給された成果物形式から
-  組めない場合は起票前に gate (iv) の regime の意味の裁定へ差し戻す)。
+  exchange-failure の存否決定。draft では補集合二枝の disjunction
+  theorem を置かない。各 summand の mate 構造または具体 component 評価
+  による branch-selection evidence を先に固定し、active 昇格時の人間承認
+  revision で **全 `Gr4ExchangeContext` 上の universal `IsIso` theorem**
+  または **GOAL に named context/component を固定した `¬IsIso` evaluation
+  theorem** の一方だけを fixed target にする。`Classical.em`、
+  `not_forall`、choice、`P ∨ ¬ P` の包装は O12 の放電と数えない。
+  量化域 `Gr4ExchangeContext` は
+  mate を伴う G-110 sector、G-114 `ActiveRefinementBCContext`、
+  G-115 active upper-stage regime の tagged sum とする(**capstone は
+  regime / mate を新設しない**)。
   **量化域は authored datum 付き lax square を含める** — G-110 sector の
   pullback square 上の mate 同型は証明済みの正例(TargetTheorem の
-  canonical mate exactness)であり、存否の未決部分は lax square と新
-  regime 側にある。負例枝 witness の居住域をそこに限定し、既決正例の
+  canonical mate exactness)であり、存否の未決部分は lax square と
+  active refinement / upper-stage 側にある。forward-only / inactive
+  refinement は O12 の外で O19 に記録する。負例枝 witness の居住域を
+  actual mate-bearing context に限定し、既決正例の
   再包装(pullback-only)による正枝放電を dullness で排除する。上段
   regime の第二 universe(`GeomReadCategory` は二 universe)は端点固定と
   し、方式は F0 で確定する。
+- **draft 改訂注記**: 旧 draft の universal `IsIso` / existential
+  `¬IsIso` 補集合 disjunction は、古典排中律と `not_forall` だけで閉じて
+  exchange の数学を消費しないため棄却した。O12 の義務は削除せず、
+  branch-selection evidence と単一 branch-specific theorem に強化した。
 - **completion criteria+report 義務(O19)**: §7 の成立条件に従う
-  Gr4 達成の範囲併記記録。**達成階梯対応表**(§8 — Gr0–Gr4 ↔ theorem
+  Gr4 達成の範囲併記記録。raw forward / realized reverse / active mate /
+  exchange の四層と forward-only / inactive の disposition を含める。
+  **達成階梯対応表**(§8 — Gr0–Gr4 ↔ theorem
   package ↔ Lean 宣言錨 ↔ 記録正本の所在 ↔ 範囲限定、の5列。Gr2 =
   G-101 の遡及記載を含む)を report 成果物として義務化する。
 - **錨**: G-111〜G-115 の final reviewed head(完遂後に固定)、G-110
@@ -516,18 +555,20 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   分界 — 本カードの存否決定はその未決部分の決定である)。
 - **供給契約**: なし(終端)。
 - **リスク / dullness 骨格**: 既決正例の再包装・退化 square(成分恒等・
-  診断恒零)・vacuous な新 regime による「全同型」枝の放電、達成記録が
+  診断恒零)・empty-fiber context による「全同型」枝の放電、達成記録が
   義務台帳との突合を欠いて宣言だけで立つ経路。
-- **failure 骨格**: 両枝とも閉じない場合は `target-blocked` であり
-  **Gr4 は未達のまま**(記録だけ先行させない)。先行カードに帰趨未確定
-  がある間は昇格しない(§5 依存 DAG)。
+- **failure 骨格**: branch-selection evidence を固定できない間は draft
+  のままで O12 未放電、**Gr4 は未達のまま**(記録だけ先行させない)。
+  先行カードに帰趨未確定がある間も昇格しない(§5 依存 DAG)。active
+  昇格後は採択された一方の fixed theoremだけを停止規律で扱う。
 
 ## §5 整合性監査 — ラインナップ全体
 
 **被覆行列**: O1–O20 の各義務はちょうど一枚のカードが担当する(§3 の
 担当列 — 義務からカードへの全域・一意な担当割当)。重複なし・漏れなし。
 gate との対応 — gate (i) = O1–O7(G-111+G-112)、gate (ii) = O8–O9
-(G-114)、gate (iii) = O10–O11(G-115)、gate (iv) = O12(G-116)、
+(G-114: forward / realized reverse / active mate の層別)、gate (iii) =
+O10–O11(G-115)、gate (iv) = O12(G-116 の actual mate-bearing domain)、
 gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 
 **重複防止の判定線(5本)**:
@@ -579,16 +620,18 @@ reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の�
 ```
 G-110 ──→ G-111 ──┐
 G-110 ──→ G-112 ──┴→ G-113
-G-110 / G-112 ──→ G-114 ──┐
-G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
+G-101 / G-109 / G-110 / G-112 ──→ G-114 ──→ G-115 ──→ G-116(存否決定+達成記録)
+G-110 / G-109 / G-108 ─────────────────┘
 ```
 
-- G-115 は6枚の中ではどのカードにも依存せず、G-111 系と並走可能で
-  ある(外部依存 = G-110 に加え G-109 / G-108 の reviewed
-  artifact)。G-114 の依存は G-110 と G-112 — G-114 (b) の mate 比較
+- G-115 は G-114 の `ActiveRefinementBCContext` と canonical mate に
+  依存し、さらに G-110 / G-109 / G-108 の reviewed artifact を使う。
+  G-114 の依存は G-101 / G-109 / G-110 / G-112 — G-114 の mate 比較
   は exact 側で G-112 の semantic-global reindexing を proof-use 消費
-  する(G-110 内部宣言からの再建はしない — 経路の一意化。G-114 昇格
-  レビューで依存辺を追加)。G-112 の coverage 分類結果は G-114 /
+  する(G-110 内部宣言からの再建はしない — 経路の一意化)。pulled
+  support → base support は G-109 の reviewed `coreFiberTransportObj`
+  を G-101 の canonical covariant package transport とともに proof-use
+  する。G-112 の coverage 分類結果は G-114 /
   G-115 の量化域を変更しない(G-110 固定の realization 付き入力上で立つ)。
 - G-112 の G-111 依存はカード起票レビューで観察参照へ降格した。
   G-113 revision 2 は G-111 の covariant action と G-112 の
@@ -596,8 +639,10 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
   各カードの program context を正とする。
 - 上流の statement 改訂時、依存する下流 draft は差し戻して再固定する
   (G-109 の伝播規定と同型)。G-111 改訂 → G-113 へ、G-112 改訂 →
-  G-113 / G-114 へ、G-108 /
-  G-109 / G-110 の改訂 → 参照カードへ、**G-111〜G-115 のいずれの改訂も
+  G-113 / G-114 へ、G-101 改訂 → G-114 へ、G-114 改訂 →
+  G-115 / G-116 へ、G-108 /
+  G-109 / G-110 の改訂 → 参照カードへ(G-109 改訂は G-114 の support
+  transfer にも伝播)、**G-111〜G-115 のいずれの改訂も
   G-116 へ伝播する**(達成記録の突合対象と範囲併記の内容が動くため)。
 - G-116 は全カードの帰趨確定後にのみ昇格する(達成記録の突合が義務の
   ため)。
@@ -616,7 +661,7 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
   昇格順の推奨は依存 DAG に従い G-111 → G-112 → G-113
-  (G-115 は並走裁定、G-114 は G-112 完遂後)→ G-116。**`ObProblem` の Lean 指示対象の裁定は
+  → G-114 → G-115 → G-116。**`ObProblem` の Lean 指示対象の裁定は
   G-115 昇格前の gate とする**(semantic adequacy 条件は §4 G-115)。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
@@ -632,29 +677,33 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 ## §7 Gr4 達成記録の成立条件 — Gr 系列の完了
 
 **解釈規約**: Gr4 達成とは、gate 全項の帰趨が定理で確定していることを
-いう。成立(正枝)である必要はない — 二枝 disjunction の義務は、どちらの
-枝で確定しても帰趨確定である(n1001 §3.5「相対的視点の全操作が閉じる」の
-このノートでの読み)。ただし記録の書き方は、全域で成立したと読める形を
-避け、確定した枝を全て併記する(G-110 completion criteria の慎重条項の
-継承)。**裁定事項**: O6・O12 がともに反例枝で確定した場合に、記録の
-見出し語を「Gr4 達成」とするか「帰趨決定+成立域限定」とするかは、枝が
+いう。O6 の二枝義務はどちらの枝で確定しても帰趨確定である。O12 は
+補集合 disjunction ではなく、active 昇格時に fixed target とした universal
+theorem または named-failure theorem の証明で確定する(n1001 §3.5
+「相対的視点の全操作が閉じる」のこのノートでの読み)。ただし記録の
+書き方は、全域で成立したと読める形を避け、確定した branch と domain を
+併記する(G-110 completion criteria の慎重条項の継承)。**裁定事項**:
+O6 が反例枝、O12 が named-failure theorem で確定した場合に、記録の
+見出し語を「Gr4 達成」とするか「帰趨決定+成立域限定」とするかは、成果が
 出揃った時点でユーザーが裁定する(O7 は semantic-global 正枝で確定済み
 — 実装実査 2026-08-26、反例枝を持たない)。
 
 成立条件:
 
 1. G-111〜G-115 が担当義務(O1–O11・O13–O18・O20)の帰趨を
-   `target-theorem-proved` で確定している(二枝 disjunction 義務は
-   どちらの枝でも成功 — G-114 (b) の退化定理も帰趨確定である)。義務は
+   `target-theorem-proved` で確定している。G-114 は raw forward、
+   realized reverse、active mate、forward-only / inactive disposition
+   の全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。
-2. G-116 が O12 の存否をどちらかの枝で確定している。
+2. G-116 が active 昇格時に固定した universal `IsIso` theorem または
+   named `¬IsIso` evaluation theorem を証明して O12 を確定している。
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
    O6 / O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
    converse 反証・
-   G-114 (b) の確定枝と O7 の semantic-global
+   G-114 の support-stratified classification と O7 の semantic-global
    正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
    G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
