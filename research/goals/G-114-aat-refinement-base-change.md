@@ -1,385 +1,307 @@
-# G-114-aat-refinement-base-change — refinement 圏化と refinement base change
+# G-114 — AAT Refinement Category and Realized-Support Base Change
 
 - `id`: `G-114-aat-refinement-base-change`
 - `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `program context`: Gr4 完遂 gate 第二項の担当カード(担当義務 =
-  O8–O9。義務台帳の正本は G-116 カード、設計の source note は n1007
-  §3–§5)。依存は G-110 と G-112(いずれも完遂済み。n1007 §5 DAG の
-  依存辺と一致)。G-112 の semantic-global reindexing は (b) mate 比較
-  の exact 側で proof-use 消費する依存であり、再証明はしない(下記
-  ledger 行)。**供給契約**:
-  本カードの成果物は G-116 gate (iv) の refinement regime 型
-  (または退化定理という帰趨)を供給する — G-116 は regime を新設建設
-  しないため、この供給は成果物形式の義務である(退化枝で確定した場合の
-  G-116 側の扱いは G-116 カードの量化域規律に従う)。regime は mate
-  比較射を定義水準(comparison morphism)で供給し、その `IsIso` 水準の
-  同型性・破れを structure field / certificate として持たせない —
-  `IsIso` 存否決定は O12(G-116)の専属責務であり、本カードはこれを
-  先取りしない(分界固定)。**新設語彙の
-  命名権**: refinement 圏の命名は本カード専属。本カードの改訂は
-  G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110 /
-  G-101 / G-112)の statement が改訂された場合、本カードは draft へ
-  差し戻して再固定する(伝播規定)。
-  **head 分離**: F0 は4つの fixed head を分けて tracking Issue に記録
-  する — configuration head(square 配置(pointed refinement 脚の
-  基点整合 field・配置同型 witness 型を含む)の型固定、regime 型候補
-  signature、(a) の圏 instance・比較 functor の signature、universe
-  parameter 割当)、language head(閉じた条件言語の syntax・
-  evaluator・canonical rebase・正規化 completeness theorem の
-  statement。universe parameter と dependent type の表現のみ設計余地
-  であり、条件言語の意味の設計ではない)、predicate-term head
-  (カード固定候補の機械的採用)、branch artifact head(二枝
-  payload)。条件言語そのものの設計を F0 以後へ持ち込むことは
-  `goal-defect` とする(F0 で行うのはカード constructor 表の Lean
-  転写であり、新語彙の発明ではない)。
-  **候補遷移規則(三層状態)**: 退化枝の特徴付け述語候補は下記 (b) で
-  カード固定し(1項固定 — G-113 O20-term 様式)、predicate-term head
-  はその機械的採用とする(K0 以降の証明結果を選定に使わない)。状態は
-  三層で記録する — candidate state(tracking Issue の local state)、
-  cycle result(loop 契約の正式語彙 = `proof-obligation-discharged` /
-  `blocker-fixed` / `proof-checkpoint` / `rejected`)、GOAL state
-  (`target-proof-checkpoint` / `target-refuted` / `target-blocked`)。
-  資格条項の反例固定・十分性の反例固定 = candidate state を refuted
-  とし、再利用可能な refutation artifact を固定して cycle result =
-  `blocker-fixed`、GOAL state = `target-proof-checkpoint` とする —
-  **候補の反証は固定 target の反証ではない**。候補の反証消尽(遷移先
-  なし)は退化枝が条件言語内で立たないことの記録であり、単独では
-  GOAL state を変えない((b) は二枝 disjunction — 正枝の帰趨と合わせ
-  て判定し、両枝とも閉じない場合のみ `target-blocked`)。proof 未完成
-  ・反例なし = cycle result `proof-checkpoint`(候補は破棄しない)、
-  同一 blocker の2 cycle 継続 = `target-blocked`(loop 契約の正本
-  規則)。proof 結果を見た新述語の発明は target 改訂(人間裁定)で
-  あり、証明サイクル内では行わない。
-- `predecessor`: G-110(完遂済み。(A) fiber product・pointed 化・
-  presentation 閉性。固定錨は下記 ledger 行)、G-101
-  (完遂済み。`RefinementDoctrineHom` の定義元。
-  `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported。
-  固定錨は下記 ledger 行)、G-112(完遂済み。semantic-global
-  cleavage / reindexing — (b) mate 比較の exact 側錨。参照のみ、
-  固定錨は下記 ledger 行)。
 - `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
-  (runtime state、cycle 履歴、fixed head、次 proof obligation の
-  記録先。F0 記録事項は program context の fixed head 4種を含む)
-- `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-114)、
-  [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (ii)・frontier の refinement 圏化)
-- `research aim`: exact hom の圏 `Doct_U` の外にいる refinement 射
-  (`RefinementDoctrineHom` — 抽出の保存のみで反射を要求しない緩い射)
-  を圏として立て、G-110 の fiber product がこの緩い射をどう扱えるかを
-  決定する。refinement base change が成立するなら Gr4 の相対性は緩い
-  射まで届き、退化するならその成立域の特徴付けと退化 witness が記録に
-  なる。
-- `core tension`: refinement 射は lax であり、G-101 opcartesian 輸送も
-  G-110 の cartesian lift 理論も適用外である — refinement base change
-  の成立は開いた問いであり、正枝を無条件には主張できない(だから二枝
-  disjunction で立てる)。また比較 functor の方向は構造的に固定されて
-  いる — `RefinementDoctrineHom` は `extraction_forward`(順方向保存)
-  のみを field に持ち、逆方向の埋め込みは抽出の反射を要求するため型に
-  載らない(反射不能の witness 定理が strict 性を実証する)。方向を
-  誤ると F0 で型が立たない。
-- `rival`: lax / oplax morphism と 2-categorical limit の一般論。差は
-  「具体 doctrine 圏の refinement 射で成立・退化のどちらかを Lean で
-  決定する(資格条項付きの成立域特徴付け込み)」点に置く。
-- `claim boundary`: 固定した一般 carrier `U`、`RefinementDoctrineHom`
-  (既存 reviewed 宣言 — 再定義しない)と G-110 fiber product の上で
-  語る。係数は動かさない。終対象・絶対積は導入しない。**square の形を
-  固定する**: (A) の exact cospan の pullback `P = D₁ ×_B D₂` に対し、
-  refinement 射は引き戻される脚として与える(`f : D₁' → D₁` を pull
-  して `P' → P` を得る配置)。exact 脚の refinement 置換は主張しない
-  (配置の型可能性は F0 で確認し、配置の変更は改訂扱い)。**配置の
-  refinement 脚は基点整合を持つ pointed 水準で立てる** —
-  `ExtInstHom.source_eq` 様式の基点整合 field を
-  `RefinementDoctrineHom` に重ねた pointed refinement 射(本カード
-  命名権内の wrapper 型。doctrine 水準の `RefinementDoctrineHom` は
-  再定義しない)。基点対は cospan の基点整合と合成して compatible
-  locus の非空を強制し、pulled `P'` の基点は caller 供給なしに内部
-  生成する(`pointedPullback` 様式)。資格条項 (iii) の配置同型は
-  成分ごとの同型(cospan 頂点 = `ExtInst_U` の iso、refinement 端点 =
-  pointed refinement iso)と全成分の可換 square で読む(witness 型は
-  configuration head で固定し、意味は本行で固定する)。carrier
-  change・係数 base change・derived 系は域外(G-116 カードの域外
-  リストを継承)。refinement 射の意味論の変更・強化はしない。
-- `capability categories`: categorification、base-change、
-  regime-construction、counterexample。
-- `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
-  置き、固定 statement と completion criteria だけで完了判定する。
-- `portfolio constraint`: 圏化だけで完了扱いしない。二枝の帰趨確定・
-  regime 型(正枝時)または資格条項付き成立域特徴付け+非退化 witness
-  (退化枝時)・非退化 witness の全面に Lean artifact を要求する。
-  非退化 witness は下層非自明性に加え package fiber 可居住・reverse
-  transport 実構成・mate component 発火まで((c) の全成分)を要求
-  する。
-- `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証
-  なら `target-refuted`、全完了条件と final review を満たした場合だけ
-  `target-theorem-proved` とする。
-- `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
-  proof obligation delta で評価する。
-- `dullness filter`: 次を弾く。圏化が hom の再ラベルに堕ちる構成
-  (合成の非自明性 witness を要求する)、refinement pullback が恒等
-  成分で vacuous に立つ構成、regime 型を supplied certificate で受ける
-  構成、比較 functor を逆方向(反射を要求する向き)で仮定する構成、
-  **退化枝を単一反例の存在命題だけで「退化定理」と呼ぶ構成**(成立域
-  特徴付けを欠く形。言い換え述語の排除は (b) の閉じた条件言語が
-  担う)、**G-110 既決 mate 正例の再包装による regime 正枝放電**、
-  **package fiber が空のため regime / mate が空虚に存在する構成**
-  (空圏上の自然変換 — (c) の発火要件が排除)。
-- `frontier`: refinement 圏の 2-cell(refinement 間の変形)の観察、
-  refinement と indexed 診断輸送 exactness(G-113)の相互作用の観察、係数 base change
-  カードとの接続点。
+- `predecessors`: G-110, G-112
+- `successors`: G-115, G-116
+- `revision`: 2
+- `source note`: [n1007](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)
 
-- `target theorem`: **Refinement Category and Refinement Base-Change
-  Theorem**。G-101 / G-110 / G-112 の設定の上で:
-  1. **(a) refinement 圏の構成**: `RefinementDoctrineHom` を射とする圏
-     構造(恒等・合成・結合律)を証明し、**`Doct_U` からの比較
-     functor `Doct_U ⥤ Refin_U`**(exact hom を refinement として
-     埋める方向)を構成する。逆方向の埋め込みは `extraction_forward`
-     のみの field 構成上型に載らず(strict 性の witness =
-     `finiteExtractionRefinement_not_reflecting`)、主張しない —
-     方向をこの形で固定する。
-  2. **(b) refinement base change の帰趨決定**: **二枝 disjunction
-     単一命題**として、「claim boundary の固定配置で fiber product が
-     refinement 射を pullback で安定に持ち上げ、refinement に沿った
-     BC 比較射と mate 比較が定義される **regime 型**(reindexing・
-     随伴相当の装置)が建設できる」または「**退化の分類** — 資格条項
-     付きの成立域特徴付け(G-112 (b) と同一の資格5項: 探索前固定の
-     条件言語・結論非参照・同型不変性・閉性・像包含と非空発火)+
-     mate / reverse transport 水準の非退化反例(非恒等 refinement
-     射・非自明 fiber product 上)」のどちらかを証明する(排他性は
-     反例側が供給、網羅性は主張しない)。**帰趨決定の判定内容の
-     固定**: pulled square の構成(`P'` の生成、refinement 射
-     `f* : P' → P`、両射影の forward 保存)は
-     `RefinementDoctrineHom` の forward field のみから無条件に立つ
-     見込みであり、その存在自体は帰趨決定の対象としない — 無条件に
-     立つ場合は正枝 payload の前段 theorem として計上する。二枝の
-     分岐点は regime の失敗可能成分に固定する: refinement 脚に沿った
-     reverse transport(`f*` に沿った cartesian lift 相当)が構成でき、
-     exact 側の reviewed reindexing(G-110 普遍性と G-112
-     semantic-global reindexing)に対する canonical mate 比較射が
-     comparison morphism(natural transformation)水準で**定義**できる
-     こと。**O12 分界**: 分岐点は定義可能性までであり、mate の
-     `IsIso` 水準の同型性・破れは主張しない(O12 = G-116 の専属責務。
-     本カードの regime が供給する mate から O12 の `IsIso` は従わ
-     ない)。負枝の非退化反例は
-     この mate / reverse transport の定義不能(要求普遍性を満たす構成
-     の非存在)の反例であり、
-     `finiteExtractionRefinement_no_exact_upper_lift`(package 水準
-     upper lift 障害)が素材である。pulled square の存在自体が失敗
-     する場合はその反例も負枝 payload として適法とする(mate 水準の
-     判定に先行する)。**regime signature と量化の固定(数学的
-     statement 水準)**: 命名骨格を `RefinementBCConfiguration U`
-     (claim boundary の配置型)、`RefinementBCRegime C`(配置 `C`
-     上の regime 型)、`RegimeAvailable C :=
-     Nonempty (RefinementBCRegime C)` で固定する。square は4頂点
-     `P' / P / D₁' / D₁`・4脚で固定する — 水平脚 = refinement
-     (`f : D₁' → D₁` と pulled `f* : P' → P`)、垂直脚 = exact 射影
-     (`fst' : P' → D₁'`、`fst : P → D₁`)、可換 `fst ∘ f* =
-     f ∘ fst'`(exact 脚は比較 functor で `Refin_U` に埋めて読む)。
-     `RefinementBCRegime C` の内容: (i) exact 垂直脚に沿った
-     reindexing = G-112 reviewed API の proof-use 消費(route (r2) —
-     新設しない。fiber は `packageProjection` の package fiber =
-     G-110 / G-112 の reviewed 設定)、(ii) refinement 水平脚に沿った
-     reverse transport `R_f : Fiber(D₁) → Fiber(D₁')`・
-     `R_{f*} : Fiber(P) → Fiber(P')` — 裸の functor ではなく、
-     refinement 上の cartesian universal property(over-`f` 射の一意
-     分解)から生成される functor(functor 法則は一意性から導く)、
-     (iii) 随伴相当の水準 = relative hom equivalence
-     (`Hom_{over f}(q, p) ≃ Hom(q, R_f p)` の自然同値)まで — unit /
-     counit 型の大域 adjunction は要求しない(refinement は lax の
-     ため)、(iv) canonical mate 比較射 = 合成 functor
-     `reindex_{fst'} ∘ R_f` と `R_{f*} ∘ reindex_{fst}`(いずれも
-     `Fiber(D₁) → Fiber(P')`)の間の、universal property が生成する
-     comparison natural transformation とその naturality。`IsIso` は
-     field にも法則にも持たせない(O12 分界)。**量化**: 正枝 = 固定
-     `U` 上の全適格 configuration `∀ C, RegimeAvailable C`。退化枝 =
-     `∀ C, pulledLocusExtractionReflecting C ↔ RegimeAvailable C`
-     (外延一致)+具体配置 `C₀` の `¬ RegimeAvailable C₀`。
-     **signature の独立性**: `RefinementBCConfiguration` /
-     `RefinementBCRegime` の field に `Holds`・特徴付け述語の証拠・
-     その定義的同値 certificate を持たせない — 必要性 theorem を
-     field projection で放電する経路を禁止する(条件言語からの
-     独立)。**閉じた条件言語(constructor 完全列挙)**:
-     特徴付け述語は G-110 `CartConditionSyntax` 様式の閉じた syntax
-     型の term として立てる。constructor は次の1つに限る(operand
-     なし・数値定数なし・集合定数なし・結合子なし) —
-     `pulledLocusExtractionReflecting`(引き戻し配置の compatible
-     locus に属する source — cospan 可換性を満たす相方を持つ source —
-     に制限した refinement 射の抽出反射)。**採用しない constructor
-     の排除注記**: (排除1) 全域抽出反射 — 全域反射を加えた
-     refinement 射は `ExactDoctrineHom` と外延一致する
-     (`atomMap_bijective` から `Equiv.ofBijective` で往復、`ext` は
-     `sourceMap` / atom 成分で決定)ため、比較 functor の strict 像の
-     言い換え述語となり資格 (v) の strict 像外非空発火を満たさない。
-     (排除2) `sourceMap` の単射性・全射性等の構造条件 — exact hom に
-     含意されないため、資格 (v) の像包含(適格な term は比較 functor
-     像の配置を同型まで包含する)を term に含めた時点で満たさない。
-     (排除3) normalize 固定点上の制限反射 — `normalize` は無法則
-     (冪等性の公理なし)であり、固定点集合が空の doctrine 上で
-     vacuous に発火する一方、normalize が恒等の fixture 全域では
-     全域反射(排除1)と外延一致するため、資格 (v) をどの配置族でも
-     安定に満たさない。評価意味は `Prop` 水準で固定し、arbitrary
-     `Prop` callback・fixture 値・external constant・lift / regime /
-     mate への言及(その Skolem 化を含む)は syntax に持ち込めない。
-     述語の ambient 型は (b) の量化域型(claim boundary で意味を固定
-     し configuration head で Lean 転写する配置型)と同一とする。
-     述語は一つの authored template を base carrier で固定し、
-     canonical rebase(`rebaseCartCondition` 前例様式 — operand なし
-     constructor のため rebase は canonical)で全 carrier へ移す。
-     正規化 completeness theorem(normalize+eval 同値)を language
-     head に計上する。syntax・evaluator・rebase の transitive
-     dependency audit(依存 helper 経由で lift / regime を読む経路の
-     禁止)を discharge artifact に含める。constructor・結合子・
-     量化形の追加は target 改訂扱いとする。**候補(カード固定・
-     1項)**: `pulledLocusExtractionReflecting`(唯一の正規形 —
-     遷移先なし。資格・十分性の反例固定 = 候補 refuted であり、
-     program context の三層状態規則に従う)。**資格条項 (iv) の閉性の
-     読み(三操作の定義)**: 配置に相対化して読む — (id) 恒等脚:
-     同一 cospan 上の恒等 refinement 脚の配置で述語が成立する、
-     (comp) 脚合成: 同一 cospan 上で外脚 `f` の配置が述語を満たし、
-     内脚 `g` が合成脚配置の compatible locus(`g` の像が `f` の
-     locus に入る source の全体)上で反射するとき、合成脚配置
-     `(cospan, f ∘ g)` で述語が成立する、(pulled-leg) 引き戻し脚:
-     配置 `(cospan, f)` で述語が成立するとき、引き戻した脚
-     `f* : P' → P` を(`fst ≫ σ₁`, `σ₂`)を cospan とする誘導配置の
-     脚とみなしても述語が成立する。wide class の閉性は要求しない
-     (G-112 (iv) の相対化前例)。資格条項 (v) の正例族 raw data は
-     幾何のみ(authored 配置成分)とし、述語成立・strict 像外性・
-     非可逆性・mate 不能を field に持たせない — 発火と非退化は
-     theorem として生成する(ledger の資格 (v) 分離2行)。発火
-     theorem には正例族 member 上の関連 package fiber の可居住(具体
-     package)を含める — 空 fiber 上の空虚な資格発火を排除する。
-     特徴付けは
-     十分性 theorem(述語 → 上記判定内容の regime 成立)と必要性
-     theorem(regime 成立 → 述語)の両方向を要求し、成立域との外延
-     一致まで固定する — G-112 と異なり必要性は像包含・同型不変性から
-     従わないため、独立の証明義務とする。必要性の反例固定 = 候補
-     refuted(三層状態規則に従う)。
-  3. **(c) 非退化 witness**: 有限 fixture 上で次の全成分を要求する —
-     非恒等 refinement 射・非自明 pulled square(下層)、mate の両
-     route に必要な関連 package fiber(`CoreFiber` 系)の具体 package
-     による可居住性、その package 上での reverse transport の object /
-     action の実構成、canonical mate の少なくとも1 component の型付き
-     発火(空圏上の自然変換の排除)。component の非同型・非恒等は
-     要求しない(O12 側の義務)。正枝時の義務であり、退化枝の場合は
-     (b) の非退化反例がこれを兼ねる(no-go 素材は package 水準で既に
-     非空)。
-- `target theorem boundary`: Lean 置き場所は
-  `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
-  module(refinement 圏の宣言は本カードの命名権)。
-  `RefinementDoctrineHom` と AtomFoundation の reviewed module は参照
-  のみ。完了面は (a)–(c) まで。二枝の payload は G-110
-  `DisjunctionArtifact` 様式の構造化 artifact で立て、payload の
-  caller 供給を放電と数えない。refinement 射の圏の 2-cell 構造・
-  refinement 診断は主張しない。
-- `target proof artifacts`: refinement 圏の instance 一式と結合律
-  theorem、比較 functor `Doct_U ⥤ Refin_U` と functor law、閉じた
-  条件言語(constructor 表の Lean 転写・evaluator・rebase・正規化
-  completeness theorem)、二枝確定 artifact(正枝: pulled square
-  存在 theorem+BC 比較射+mate / reverse transport 水準の regime 型
-  /退化枝: 資格条項付き成立域特徴付け+資格 theorem 群(同型不変性
-  ・閉性・像包含・発火・非退化)+十分性・必要性(外延一致)+非退化
-  反例)、非退化
-  witness((c) の全成分: 下層非自明性+package fiber 可居住+reverse
-  transport 実構成+mate component 発火)、report
-  `research/reports/G-114-aat-refinement-base-change.md`。
-- `target proof strategy`: F0 typing(圏 instance と比較 functor の
-  signature、二枝 payload 構造、regime 型の候補 signature、条件言語の
-  Lean 転写と fixed head 4種の記録)→ K0 圏化と
-  比較 functor → K1 pulled square の存在と安定性 → K2 帰趨確定
-  (mate / reverse transport 水準の regime 建設または退化分類)→
-  K3 witness と監査。既存成果の利用 map:
-  `RefinementDoctrineHom`(射の定義)、`finiteExtractionRefinement`
-  系(witness 素材と strict 性の実証)、G-110 (A) fiber product・
-  `pointedPullback_isPullback`・presentation 閉性 constructor、
-  G-112 semantic-global reindexing(mate 比較の exact 側錨)。
-- `target theorem completion criteria`: 全 artifact が sorry なしで
-  `ResearchLean` に受理され、axiom / placeholder audit が clean で
-  あること。下記 ledger の `discharge-required` を放電し、audit で
-  provenance、proof-use、structure-field escape、route integrity を監査
-  すること。二段 review gate(各実装 PR の標準 fixed-head
-  `$review-pr`、completion candidate での Lean / report / tracking
-  Issue 同期と final review packet 作成、独立 `$math-lean-review`
-  4査読全 `No major findings`)を通過すること(正本 =
-  target-goal-contract.md)。
-- `target premise discharge policy`: 入力(refinement BC
-  configuration raw data — 下記 ledger 行の許可 field — と witness
-  fixture)だけを残せる。pullback 安定性・regime・退化の結論相当
-  データの供給は放電と数えない。
-- `target material premise ledger`:
-  - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
-    しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
-    `a1471483`、merge `315a2537`)(支える結論 = fiber product と
-    pointed 化の設定。結論相当でない理由 = 既証明の環境)。
-  - `RefinementDoctrineHom / finiteExtractionRefinement 系`:
-    `ambient-boundary`。参照のみ、改変しない(G-101 の reviewed
-    artifact — 固定錨: AtomFoundation = PR #3889(fixed head
-    `db47ee9e`、merge `dd5e02b5`)。proof-use = 射の定義と strict 性
-    witness)。
-  - `G-112 reviewed semantic-global reindexing`: `ambient-boundary`。
-    参照のみ、改変しない。固定錨: 完了 PR #4197(exact head
-    `bf882573`、merge `e9f891b8`)(支える結論 = (b) mate 比較の
-    exact 側。結論相当でない理由 = refinement 側 reverse transport と
-    mate 比較は未構成)。
-  - `refinement BC configuration raw data`: `ambient-boundary`。入力
-    資格。許可 field = exact cospan、pointed refinement 脚の source /
-    atom map と forward 法則、基点整合のみ。pulled object・pulled
-    leg・exact 化・reverse transport・regime・mate・条件 membership を
-    入力 field に持たせない(すべて生成側に置く — configuration head
-    の型固定はこの許可列挙の転写とする)。
-  - `refinement 圏構造と比較 functor`: `discharge-required`(支える
-    結論 = (a)。discharge artifact = 圏 instance+結合律+functor
-    law。結論相当でない理由 = 構成して証明する)。
-  - `二枝の帰趨確定`: `discharge-required`(支える結論 = (b)。
-    discharge artifact = 正枝は pulled square 存在 theorem+mate /
-    reverse transport 水準の regime 型、退化枝は資格条項付き特徴付け
-    +十分性・必要性(外延一致)+mate / reverse transport 水準の
-    非退化反例。proof-use =
-    反例は payload の実消費で結ぶ)。
-  - `条件言語 syntax / evaluator / rebase / 正規化 completeness`:
-    `discharge-required`(無条件 — F0 の language head 義務であり、
-    どちらの枝で確定しても放電する。支える結論 = (b)。discharge
-    artifact = カード constructor 表の Lean 転写+正規化 completeness
-    theorem+transitive dependency audit)。
-  - `資格 (v) 正例族 raw data`: `conclusion-equivalent-risk`(支える
-    結論 = (b) 退化枝の資格。幾何 data のみを fixture data として
-    許し、述語成立・strict 像外性・非可逆性・mate 不能を field に
-    しない。正枝で確定した場合は completion で `not-applicable` と
-    判定する — G-113 様式)。
-  - `資格 (v) firing / nondegeneracy theorem`: `discharge-required`
-    (支える結論 = (b) 退化枝の資格。discharge artifact = raw 配置
-    data から述語成立・strict 像外性・非可逆性を別々に生成する
-    named theorems と選定時固定の記録。正枝で確定した場合は
-    completion で `not-applicable` と判定する — G-113 様式)。
-  - `非退化 witness`: `discharge-required`(支える結論 = (c)。
-    discharge artifact = 下層非自明性・package fiber 可居住・reverse
-    transport 実構成・mate component 発火を別々に証明する named
-    theorems。provenance = raw 配置 data と G-110 / G-112 reviewed
-    API のみ。proof-use = mate component は (b) regime 装置の実消費で
-    結ぶ。structure-field escape audit を含む — 可居住性・発火を
-    fixture field に持たせない)。
-- `target route integrity gate`: 生成 route は役割別に固定する —
-  (r1) 比較 functor・pulled square・refinement 側 reverse transport は
-  `RefinementDoctrineHom` の定義と G-110 普遍性からのみ生成する。
-  (r2) canonical mate 比較の exact 側 reindexing は G-112 reviewed
-  API(semantic-global cleavage / reindexing)を proof-use 消費して
-  生成する(G-110 内部宣言からの再建はしない — 経路の一意化)。
-  witness fixture
-  と資格 (v) 正例族は proof obligation 選定時に固定する(証明後の
-  target-fitting 選択の禁止)。二枝 payload は構造化
-  artifact で立て、caller 供給を認めない。禁止経路 — regime の
-  certificate 供給、逆方向埋め込みの仮定、恒等成分での vacuous 発火、
-  既決 mate 正例の再包装、特徴付け述語への fixture 値・checker 出力・
-  target 結果由来の定数の持ち込み。
-- `target anti-weakening rule`: pullback 安定性・mate 定義可能性・退化
-  を theorem argument、typeclass、structure field、certificate field へ
-  移して成功扱いしない。条件 membership・fiber 可居住性・mate 発火を
-  regime / configuration / fixture の field へ移して必要性・非退化を
-  field projection で放電しない。`ambient-boundary` に残せるのは入力
-  幾何だけである。
-- `target failure policy`: fail-closed を原則とする。(b) は二枝
-  disjunction でありどちらの枝の確定も成功(退化枝も帰趨確定として
-  G-116 カードの成立条件を満たす)。両枝とも閉じない場合は
-  `target-blocked`。F0 での型不能・statement 不足(圏化・配置型・
-  二枝 payload・regime 型候補 signature を含む)は `goal-defect`。
-  witness の停滞は `target-blocked`。fixed target の
-  変更は人間の別判断とする。
+## Program context
+
+G-112 established exact-bottom base change: an exact cospan has a selected pullback,
+exact reindexing, and strong cartesian lifts. G-114 asks how this behaves under a
+pointed endpoint refinement. Every refinement has a canonical forward pulled
+square. Reverse package transport is stronger and exists exactly on the realized
+part of the refinement.
+
+This is the first Gr4 stratification:
+
+1. every refinement belongs to the doctrine-lax, forward layer;
+2. a refinement satisfying realized-locus extraction reflection belongs to the
+   package-reverse layer;
+3. an actual target package promotes a point to the active mate-bearing context
+   consumed by G-115;
+4. G-116 decides exchange only where the relevant mate is defined.
+
+An empty package fiber is inactive. It can test total definitions, but it is
+neither the positive nor the negative nonvacuity witness.
+
+## Research aim
+
+Construct the category of exact-bottom pointed refinement configurations, prove
+that exact reindexing is functorial under refinement, and classify reverse
+cartesian base change by the single geometric condition
+`RealizedLocusExtractionReflecting`.
+
+## Rival
+
+> Every pointed refinement of an exact cospan admits reverse package transport and
+> a cartesian base-change cleavage.
+
+This is false. A strict refinement may extract a target atom while omitting its
+chosen source. G-114 retains the forward square and classifies that configuration
+as forward-only; it does not add the desired cleavage as input data.
+
+## Claim boundary
+
+### Raw configuration
+
+`RefinementBCConfiguration` contains only an exact cospan
+`s₁ ⟶ b ⟵ s₂`, a pointed refinement `ρ : s₁ ⟶ s₁'`, and the marked point
+required by the existing refinement interface. It contains no package, regime,
+reverse lift, mate, or hypothesis implying the conclusion.
+
+### Compatible sources and repointing
+
+For `C : RefinementBCConfiguration`, `CompatibleSource C` contains a source
+and chosen point satisfying the AAT bottom equations. For
+`p : CompatibleSource C`, define canonically `C.repoint p`, `C.baseAt p`,
+`C.pullbackAt p`, `C.refinementAt p`, and `C.pulledRefinementAt p`.
+These are generated, not independent fixtures.
+
+### Realized support
+
+```lean
+def RealizedAt (C : RefinementBCConfiguration) (p : CompatibleSource C) : Prop :=
+  Nonempty (CoreFiber (C.baseAt p).target)
+```
+
+The exact spelling may follow G-112, but the predicate must mean existence of an
+actual package over the target base atom. It may not be a configuration field.
+
+### Fixed geometric condition
+
+`RealizedLocusExtractionReflecting C` has exactly one mathematical constructor:
+
+> for every compatible source `p`, if `C.baseAt p` is realized and the target
+> atom is extracted by the refinement target, then its chosen source atom is
+> extracted by the refinement source.
+
+Forward extraction is already supplied by refinement preservation. The condition
+adds only reverse extraction on package-realized targets. Its statement mentions
+no lift, cleavage, mate, equivalence, `IsIso`, or regime availability.
+
+### Regime and active context
+
+`RefinementBCRegimeAt C p` consists of the base and pulled reverse cartesian
+cleavages. `RefinementBCRegime C` is their dependent family. Exact reindexing,
+comparison maps, and mates are derived from G-112 and the cleavages, not fields.
+
+```lean
+def Active (C : RefinementBCConfiguration) : Prop :=
+  Nonempty (Sigma fun p : CompatibleSource C => CoreFiber (C.baseAt p).target)
+
+def ActiveRegimeAvailable (C : RefinementBCConfiguration) : Prop :=
+  Active C ∧ Nonempty (RefinementBCRegime C)
+```
+
+`ActiveRefinementBCContext` packages a configuration, compatible source, actual
+target package, and the local regime produced by the classification theorem. It is
+the sole G-114 interface supplied to G-115 and the refinement component of G-116.
+
+## Target theorem
+
+Prove **Refinement Category and Realized-Support Base-Change Stratification** with
+all clauses below.
+
+### (a) Refinement category
+
+1. Define identity and composition of pointed refinements.
+2. Prove category laws and compatibility with repointing.
+3. Show that exact comparison refinements embed functorially.
+
+### (b) Unconditional forward base change
+
+For every raw configuration and compatible source, construct the pulled refinement
+square, prove commutativity, identity and composition laws, and compatibility with
+the G-112 exact-comparison image. No package-support hypothesis is allowed here.
+
+### (c) Realized-support classification
+
+For every raw configuration `C`, prove
+
+```lean
+Nonempty (RefinementBCRegime C) ↔ RealizedLocusExtractionReflecting C
+```
+
+The forward proof must recover extraction reflection from an actual package and
+the cartesian lift. The reverse proof must construct base and pulled cleavages and
+include the support-transfer lemma
+
+```lean
+RealizedAt (C.pullbackAt p) → RealizedAt (C.baseAt p)
+```
+
+derived from exact projection and package transport. Thus a pulled realized point
+cannot evade the fixed condition at the base. Reverse transport must be two-sided
+and cartesian, not merely a map: transport all package structure along the atom
+equivalence forced by local extraction reflection and prove its universal property.
+
+### (d) Condition qualification
+
+Prove that `RealizedLocusExtractionReflecting` is invariant under configuration
+isomorphism, holds for identities, is closed under composition, is preserved by
+pulled refinement, holds on the exact-comparison image, and is strictly broader
+than that image by the active positive witness in clause (e). No equivalent
+condition may be substituted without revising this GOAL from scratch.
+
+### (e) Support-stratified nonvacuity
+
+Provide three independent examples.
+
+1. **Active forward-only witness.** A finite strict refinement with a nonempty
+   target package fiber, nonidentity/nontrivial pulled square, failure of the fixed
+   condition, and hence no regime.
+2. **Active reverse witness.** A nonidentity strict refinement outside the exact
+   comparison image, with a nonempty target package fiber, nontrivial pulled
+   square, the fixed condition, a constructed regime, and a concrete mate that
+   evaluates nontrivially.
+3. **Inactive regression witness.** The known infinite configuration with empty
+   target fibers. Prove it inactive and prove that total regime construction there
+   cannot discharge either active witness obligation.
+
+The first two witnesses must be distinct and must not derive support from a regime
+fixture.
+
+### (f) Gr4 supply theorem
+
+Export a theorem constructing `ActiveRefinementBCContext` from a compatible
+source, actual target package, and the fixed condition. Export the canonical base
+and pulled mates from this context. G-115 and G-116 must import these declarations
+rather than reconstructing reverse transport.
+
+## Target theorem boundary
+
+The target proves support-stratified base change for pointed endpoint refinements
+of G-112 exact cospans. It does not assert reverse transport for every refinement.
+It does not decide invertibility of upper-stage or Gr4 exchange mates; those are
+G-115 and G-116 responsibilities. The carrier `U`, coefficient data, law
+universe, site, and cover are fixed; carrier change, coefficient base change,
+derived fiber products, and new cover topologies are excluded. The theorem is not
+finite-only, but the active forward-only witness is finite; all other universe
+parameters must elaborate in the existing G-112 universe discipline. Lean
+artifacts live under `ResearchLean/AAT/AG/RefinementBaseChange/`; accepted Lean
+declarations are static evidence until premise, provenance, proof-use, nonvacuity,
+review, CI, merge, and ledger gates also pass.
+
+## Target proof artifacts
+
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Configuration.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Category.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Pullback.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/RealizedSupport.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Regime.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Classification.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Witnesses.lean`
+- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange.lean`
+- `research/reports/G-114-aat-refinement-base-change.md`
+
+Existing names may be retained when their mathematical roles are unchanged. The
+completion packet must give the exact final declaration map.
+
+## Target proof strategy
+
+1. Reuse G-112 exact cospans, selected pullbacks, reindexing, and strong lifts.
+2. Define refinement composition and prove forward pullback functoriality.
+3. At a realized source, use extraction reflection to identify chosen atoms,
+   transport the complete package along that equivalence, and prove cartesianness.
+4. Transport pulled support through exact projection and construct the pulled lift.
+5. Assemble the local constructions into the global regime.
+6. Recover the fixed condition from a regime using an actual target package.
+7. Prove closure and all three witnesses independently.
+
+If step 3 fails because atom equivalence does not transport all package structure,
+revision 2 is mathematically refuted; the missing transport must not be added as a
+configuration field.
+
+## Target premise discharge policy
+
+Every material premise must be a raw input above, a reviewed G-112/refinement
+theorem, a declaration proved in the required artifacts, or witness-local data
+constructed by its witness theorem. No completion theorem may assume the fixed
+condition, regime, cleavage, mate, or package-equivalence conclusion as an opaque
+fixture. The main classification is an equivalence: each direction constructs the
+other side.
+
+## Target material premise ledger
+
+| premise | supports | role | provenance / discharge artifact | required proof-use | why not conclusion-equivalent |
+| --- | --- | --- | --- | --- | --- |
+| exact cospan | clauses (a)–(c) | `ambient-boundary` | fixed reviewed G-112 declaration; exact-head citation required | selected pullback and exact reindexing | it supplies the base square, not refinement reverse transport |
+| pointed refinement | clauses (a)–(e) | `ambient-boundary` | raw G-114 configuration field | forward square and extraction preservation | it has only forward extraction |
+| compatible source | clauses (b)–(f) | `ambient-boundary` | generated source index with bottom equations | repointing and local base selection | it contains no package-level lift |
+| target package | clauses (c), (e), (f) | `direction-hypothesis` | active-context input or concrete witness constructed in `Witnesses.lean` | support firing, converse extraction, and mate evaluation | an object of the fiber is not a cleavage or mate |
+| fixed condition | reverse implication of (c), clauses (d), (f) | `discharge-required` | one-constructor predicate proved for the positive family; no certificate field | atom equivalence and package transport | it concerns extraction of atoms, not cartesian universality |
+| local regime | forward implication of (c), clause (f) | `discharge-required` | constructed by `Classification.lean`; no caller-supplied fixture | reverse extraction and canonical mate | it is the constructed opposite side of the stated equivalence |
+| active forward-only witness | clause (e1) | `discharge-required` | explicit finite fixture and evaluation theorem | decide failure of the fixed condition and derive no regime | the fixture carries no no-regime certificate |
+| active reverse witness | clauses (d6), (e2) | `discharge-required` | explicit strict-image-external fixture and independently constructed package | exercise condition, regime, nontrivial mate | the fixture carries no condition/regime certificate |
+| inactive regression | clause (e3) | `discharge-required` | existing empty-fiber fixture plus new inactivity theorem | demonstrate exclusion from active success | emptiness tests scope and supplies no active conclusion |
+
+The final report must cite the declaration body consuming every premise. None is
+conclusion-equivalent: extraction reflection concerns atom selection, whereas a
+regime contains cartesian package-level structure.
+
+## Target anti-weakening rule
+
+- The raw configuration contains no regime or package witness.
+- The fixed condition has one constructor and no categorical conclusion.
+- The theorem is an `↔`, not only the easy implication.
+- Forward base change remains unconditional.
+- Reverse base change is not claimed outside realized support.
+- Empty fibers are inactive and cannot count as either firing witness.
+- The positive witness lies outside the exact-comparison image.
+- The negative witness is finite, active, and has a nontrivial pulled square.
+- No clause reduces to `IsIso` of a supplied inverse or mate.
+
+## Target route integrity gate
+
+The completion report must trace:
+
+1. raw configuration → compatible source → repointed base → forward pulled square;
+2. fixed condition + actual package → atom equivalence → package transport →
+   cartesian cleavage → mate;
+3. regime + actual package → lifted source → reverse extraction;
+4. pulled support → exact projection → base support → pulled cleavage;
+5. positive/negative fixtures → fixed-condition decision → active stratum;
+6. active context → the exact G-115 and G-116 imported declarations.
+
+Presence without proof-body use does not discharge an obligation.
+
+## Target theorem completion criteria
+
+G-114 is complete only when clauses (a)–(f) are proved in Lean; the focused target
+and required dependency DAG pass; no ResearchLean aggregate/full build is run; all
+standard-axiom, placeholder, import-direction, Unicode, and diff scans pass; the
+report records the final declaration map, premise ledger, certificate provenance,
+proof-use routes, structure-field escape audit, and witness outputs; the report and
+tracking Issue are synchronized; the standard fixed-head PR review and a fresh
+completion-candidate `math-lean-review` return no major findings; PR CI is green
+and merged; the final review packet is fixed; and `target-theorem-proved` is
+recorded only then.
+
+## Target failure policy
+
+- A counterexample to any fixed clause gives `target-refuted` with an exact
+  fixture and evaluation theorem.
+- A missing semantic primitive required to state the condition or transport
+  package structure gives `goal-defect`; do not weaken the target.
+- An external dependency gives `target-blocked` only after the loop's prescribed
+  repeated evidence.
+- A revised GOAL is audited from scratch; revision-1 checkpoints are not
+  revision-2 completion evidence.
+
+## Revision history
+
+Revision 1 asked for a global reverse regime over every refinement. A finite strict
+witness showed extraction nonreflection, while an infinite empty-fiber fixture made
+regime existence vacuous. The implementation branch correctly recorded that target
+as `goal-defect`; it did not prove the claimed classification.
+
+Revision 2 keeps the category and unconditional forward square, fixes one
+realized-support geometric condition, separates active from inactive fibers, and
+makes the resulting mate-bearing context the explicit supply contract for the rest
+of Gr4.

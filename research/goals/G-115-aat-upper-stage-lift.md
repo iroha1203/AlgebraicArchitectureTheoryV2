@@ -6,8 +6,10 @@
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項の担当カード(担当義務 =
   O10–O11。義務台帳の正本は G-116 カード、設計の source note は n1007
-  §3–§5)。6枚の中ではどのカードにも依存せず G-111 系と並走可能
-  (外部依存は G-110 に加え G-109 / G-108 の reviewed artifact)。
+  §3–§5)。G-114 revision 2 が供給する
+  `ActiveRefinementBCContext` に依存する。上段 lift は任意の raw
+  refinement ではなく、実際の target package と canonical mate を持つ
+  active context 上でのみ構成する。
   **供給契約**: 本カードの成果物は G-116 gate (iv) の上段 regime 型を
   供給する — G-116 は regime を新設建設しないため、この供給は成果物
   形式の義務である。**新設語彙の命名権**: `ObProblem` interface の
@@ -16,7 +18,9 @@
   が改訂された場合、本カードは draft へ差し戻して再固定する(伝播
   規定)。**昇格前 gate: `ObProblem` の Lean 指示対象の裁定**
   (semantic adequacy 条件は target theorem (c))。
-- `predecessor`: G-110(完遂済み。pointed pullback・reindexing
+- `predecessor`: G-114 revision 2(完遂後の fixed reviewed head。
+  active refinement context・base/pulled mate の唯一の供給元)、
+  G-110(完遂済み。pointed pullback・reindexing
   functor。固定錨は下記 ledger 行)、G-109(core pseudofunctor
   package と段横断輸送。完遂済み。
   `research/lean/ResearchLean/AG/CrossStageCoherence/` 配下、
@@ -28,8 +32,10 @@
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔 — `ObProblem` 段の定義)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (iii))、
   [G-109 カード](G-109-aat-cross-stage-coherence.md)(pseudofunctor 塔)
-- `research aim`: G-110 の base change は塔の底(`Doct_U` /
-  `ExtInst_U`)で立った。本カードはそれを塔の上段へ持ち上げる —
+- `research aim`: G-110 の exact base change と G-114 の
+  realized-support refinement base change は塔の底(`Doct_U` /
+  `ExtInst_U`)で立つ。本カードは G-114 の active context をそのまま
+  塔の上段へ持ち上げる —
   `GeomRead` 段では G-109 の pseudofunctor 塔と両立する BC lift を、
   `ObProblem` 段では構成された障害類そのものの base-change naturality
   を固定する。これで Gr3(段横断整合)と Gr4(base change)が同じ塔の
@@ -49,8 +55,10 @@
   restriction 一般論。差は「AAT の具体塔の上で、診断障害類の
   naturality まで込みで Lean 固定する」点に置く。
 - `claim boundary`: 固定した一般 carrier `U`、G-108 / G-109 で建設済み
-  の塔の段(`GeomRead` 段・core 段)と G-110 の pointed pullback
-  square の上で語る。係数は動かさない。終対象・絶対積は導入しない。
+  の塔の段(`GeomRead` 段・core 段)と G-114 の
+  `ActiveRefinementBCContext` の上で語る。係数は動かさない。
+  終対象・絶対積は導入しない。forward-only / inactive refinement は
+  上段 mate の定義域に含めない。
   `ObProblem` 段の class 構成自体は変更しない(読み出しと naturality
   のみ)。carrier change・係数 base change・段射影 `p` 方向の
   effectivity 反射・nerve / cover 接続は域外(G-116 カードの域外
@@ -80,16 +88,17 @@
   作用、無限段の塔。
 
 - `target theorem`: **Upper-Stage Base-Change Lift Theorem**。
-  G-108 / G-109 / G-110 の設定の上で:
+  G-108 / G-109 / G-110 と、G-114 が供給する任意の
+  `ActiveRefinementBCContext` の上で:
   1. **(a) `GeomRead` 段 lift**: pointed pullback square の BC 構造
      (引き戻し・canonical mate)を geometry 段 fiber へ持ち上げ、
      G-109 pseudofunctor package と両立する形で段射影と可換にする。
      **可換の水準を固定する** — 可換は指定 canonical 2-cell による
      pseudonatural 可換(compositor / unitor との coherence 等式込み)
      とし、等式で立てる成分は F0 で列挙する(square ごとの ad hoc な
-     iso 選択による「iso までの可換」は放電と数えない)。**上段
-     regime 型(G-116 が消費する mate 比較の型)を成果物形式に
-     含める**。
+     iso 選択による「iso までの可換」は放電と数えない)。
+     **G-114 の canonical mate を再構成せず proof-use し、上段 active
+     regime 型(G-116 が消費する mate 比較の型)を成果物形式に含める**。
   2. **(b) Gr3 接続 bridge**: 持ち上げた BC 作用と G-109 の段横断
      輸送・G-110 の G-106 / G-109 coherence bridge との整合 theorem を
      証明する。
@@ -132,7 +141,8 @@
   `CoreFiber` / `coreFiberTransportFunctor`(G-109 pseudofunctor)、
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
   (G-108)、G-110 pullback reindexing functor・
-  `pointedPullback_isPullback`。
+  `pointedPullback_isPullback`、G-114
+  `ActiveRefinementBCContext` / canonical base・pulled mate。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
@@ -146,6 +156,11 @@
   fixture)だけを残せる。lift・naturality・adequacy の結論相当データの
   供給は放電と数えない。
 - `target material premise ledger`:
+  - `G-114 active refinement context`: `ambient-boundary`。G-114 の
+    reviewed theorem が actual target package と local regime から構成
+    した値のみを受け取る。proof-use = (a) の上段 mate の入力。
+    forward-only / inactive configuration を regime fixture で active
+    にする経路は禁止。
   - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
     しない。固定錨: DoctrineFiberProduct = 完了 PR #4153(final head
     `a1471483`、merge `315a2537`)(支える結論 = pointed square と
@@ -170,7 +185,8 @@
   - `両段の非退化発火 witness`: `discharge-required`(支える結論 =
     (d))。
 - `target route integrity gate`: lift・mate・naturality は G-109 /
-  G-110 の普遍性と reviewed API からのみ生成する(G-101 からの再建は
+  G-110 の普遍性、G-114 の canonical mate、reviewed API からのみ
+  生成する(G-101 からの再建や G-114 reverse transport の再構成は
   しない)。`ObProblem` interface の指示対象は昇格前に裁定・固定し、
   証明後の差し替えをしない。witness fixture は proof obligation 選定
   時に固定する。禁止経路 — base equality による lift 代用、adequacy
