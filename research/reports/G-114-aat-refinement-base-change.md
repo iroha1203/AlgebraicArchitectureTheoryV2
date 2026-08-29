@@ -48,10 +48,13 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
   `RefinementBCConditionQualification`、十分性、必要性、具体的
   `¬ RegimeAvailable` を dependent に保持する。
 - regime/O12 分界:
-  `RefinementBCRegime` は base / pulled reverse functor、relative hom
-  equivalence、factorization equation、G-112 reviewed exact-side reindexing を
-  実消費する `mate` natural transformation を持つ。`IsIso`、
-  condition membership、regime availability certificate は field にない。
+  `RefinementOverHom` は lax lower refinement を固定し、上部だけを
+  `SignedExactCoreReadingHom` とする。`RefinementCartesianLift` の factor / triangle /
+  uniqueness から `reverseFunctor`、relative `homEquiv`、両変数 naturality を生成する。
+  `RefinementBCRegime` の field は base / pulled cleavage と、G-112 exact selected lift
+  の二経路を結ぶ一意な `mateRoute` だけであり、`mate` natural transformation は
+  pulled cleavage の一意 factor として定義する。`IsIso`、condition membership、
+  regime availability certificate は field にない。
 - structural controls:
   `finiteRefinementIdentity_eval` が正例、
   `finiteRefinementConfiguration_not_eval` が G-101 reviewed
@@ -181,8 +184,10 @@ audits:
       - "G-112 exact_bottom_semantic_global_reindex_functor / mate signature"
       - "G-101 finiteExtractionRefinement_not_reflecting / evaluator negative control"
     unused: []
-  structure_field_escape: none-found
-  route_integrity: pass
+  structure_field_escape: >-
+    review-fail: the first mate was an unconstrained NatTrans field and the first
+    relative lift field contained an exact lower-base certificate
+  route_integrity: fail-at-reviewed-head-cf4a88a4
   target_fitting: none-found
   vacuity: >-
     evaluator has identity positive and compatible-locus strict negative controls;
@@ -210,8 +215,116 @@ audits:
       20 reported declarations use only propext, Classical.choice, and Quot.sound
       where needed; output sha256
       c0b9adfcbe45985980d5f16a0e3e0cd74f1488f0700ec72acd07b746f3783409
+  blocking_findings:
+    - >-
+      Fixed-head review at cf4a88a4 rejected the first relative-hom surface because
+      its exact PackageTotalHom base forced every inhabited regime into the strict
+      comparison image; the same review rejected the unconstrained mate field and
+      the unlinked negative-counterexample nondegeneracy payload.
+  next_obligation: >-
+    Correct the F0 head without changing the fixed GOAL, then rerun the standard
+    four-lane fixed-head review.
+```
+
+### Cycle 2 — F0 universal-surface correction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-114-aat-refinement-base-change
+cycle: 2
+goal_blob_sha: 429183c6b8c93e9ca5c7886bab887beec76ddff5
+base_oid: 363f79a5bf0542b6e5cb9d19d63cacfa80402316
+tracking_issue: 4239
+report_path: research/reports/G-114-aat-refinement-base-change.md
+selection:
+  proof_state_ref: "PR #4241 review Reject at cf4a88a4"
+  proof_obligation: >-
+    Replace the exact-base collapse by a genuinely lax relative hom, generate
+    reverse functors and hom equivalences from cartesian uniqueness, characterize
+    the mate by the two exact selected-lift routes, and bind negative-branch
+    nondegeneracy to its actual counterexample.
+  selection_reason: >-
+    Four independent review lanes reproduced the same central mismatch and a
+    focused Lean refutation proved both first-head branch payloads empty on the
+    fixed finite control.  The finding concerns the implementation translation,
+    not the fixed GOAL: the lower refinement can remain lax while the upper package
+    change carries the exact data used by the card-fixed no-upper-lift obstruction.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    RefinementOverHom now stores a SignedExactCoreReadingHom over the authored
+    PointedRefinementHom without manufacturing an exact lower arrow.
+    RefinementCartesianLift stores only domain, lift, factor, triangle, and
+    uniqueness.  precomp/postcomp laws generate reverseMap, functor laws,
+    reverseFunctor, relative hom equivalence, and its source/target naturality.
+    RefinementBCRegime stores two such cleavages and the uniquely characterized
+    exact-square mate route; the mate natural transformation is the pulled
+    cleavage factor, not a supplied comparison field.  The negative counterexample
+    now carries strict-image externality, noninvertibility, all four inhabited
+    route fibers, pulled-leg nonexactness, and nonavailability on the same object.
+  completion_candidate: no
+  evidence:
+    - RefinementOverHom
+    - RefinementOverHom.vertical_upper_atomEquiv_id
+    - RefinementOverHom.precomp
+    - RefinementOverHom.postcomp
+    - RefinementCartesianLift
+    - RefinementCartesianCleavage.reverseMap_fac
+    - RefinementCartesianCleavage.reverseMap_id
+    - RefinementCartesianCleavage.reverseMap_comp
+    - RefinementCartesianCleavage.reverseFunctor
+    - RefinementCartesianCleavage.homEquiv
+    - RefinementCartesianCleavage.homEquiv_natural_source
+    - RefinementCartesianCleavage.homEquiv_natural_target
+    - RefinementBCRegime.mateRoute_fac
+    - RefinementBCRegime.mateRoute_unique
+    - RefinementBCRegime.mate
+  undischarged_assumptions:
+    - construction of the base and pulled cleavages
+    - construction and uniqueness of the exact-square mate route
+    - K0--K3 theorem payloads and final completion audit
+audits:
+  premise_delta:
+    discharged:
+      - "F0 lax lower / exact upper relative hom head"
+      - "F0 cartesian factor and uniqueness head"
+      - "generated reverse functor and relative hom equivalence laws"
+      - "canonical mate route equation and uniqueness head"
+      - "negative counterexample nondegeneracy linkage"
+    remaining:
+      - "all target discharge-required producer theorems beyond F0 typing"
+  certificate_provenance:
+    discharged:
+      - "reverse maps and hom equivalences are definitions generated by lift uniqueness"
+      - "mate component is the generated pulled factor of the uniquely characterized route"
+    unresolved:
+      - "producer of the two refinement cleavages and exact-square route"
+  proof_use:
+    used:
+      - "PackageTotalHom upper identity/associativity for relative composition laws"
+      - "Functor.IsHomLift.fac' for vertical Atom-identity transport"
+      - "G-112 selected exact lifts in the mate-route characterization equation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pending-fixed-head-rereview
+  target_fitting: none-found
+  vacuity: >-
+    the finite evaluator controls remain nonempty; branch construction and mate
+    firing remain later obligations and are not claimed in this checkpoint
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean;
+      exit 0; module-wide standard-axiom audit reports 294 declarations
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchemaWitnesses.lean;
+      exit 0; module-wide standard-axiom audit reports 8 declarations
   blocking_findings: []
   next_obligation: >-
-    K0: audit the constructed category laws and comparison functor as the accepted
-    (a) spine, including the strict finite nonreflection witness.
+    Rerun the four-lane fixed-head review on the corrected exact head.  Only an
+    accepted head may advance to K0; a remaining signature mismatch is fail-closed.
 ```
