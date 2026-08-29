@@ -82,7 +82,7 @@ The exact embedding is separately constructed through
 exact package morphism and the four computational geometry fields. No exact
 lower morphism is added to the lax hom structure.
 
-## Cycle 2 — K1 G-114 composite route base
+## Cycle 2 — K1a G-114 composite package-route base
 
 ```yaml
 ledger_type: target_cycle_result
@@ -93,17 +93,17 @@ base_oid: e2c4e3d773b928860f08608f4b126a00ed2f4497
 tracking_issue: 4250
 report_path: research/reports/G-115-aat-upper-stage-lift.md
 selection:
-  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md target proof strategy K1
+  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md target proof strategy K1 package-route sub-obligation
   proof_dag_predecessors: [G-112 exact selected lifts, G-114 active context and canonical mate, Cycle 1 refinement-geometry bridge]
-  proof_obligation: Fix the two actual G-112/G-114 composite lower legs in RefinementPackageHom and derive mate verticality and the complete-upper factorization equation without selecting geometry transport data.
+  proof_obligation: Fix the package bases of the two actual G-112/G-114 composite legs and derive mate verticality and the complete-upper factorization equation without selecting geometry transport data. This is K1a, not the whole K1 geometry obligation.
   selection_reason: The later geometry legs must project to these routes; their lower provenance and upper mate equation must be available before finite problem fixtures are constructed.
   expected_result_type: proof-obligation-discharged
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCRoutes.lean]
   risks: [dependent CoreFiber endpoint transport, replacement of a lax leg by an exact leg, conflation of lower factor laws with the upper equation]
-  unchecked: [finite source fiber diagram, full geometry naturality hypotheses, named decision and negative problems, paired orbit and conditional exchange interface]
+  unchecked: [individual refinement-geometry legs and projection factor laws and geometry-level triangle, finite source fiber diagram, full geometry naturality hypotheses, named decision and negative problems, paired orbit and conditional exchange interface]
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: The two actual composite package legs and the G-114 mate upper triangle are fixed; geometry data and route-between solution equations remain.
+  proof_obligation_delta: The package-route sub-obligation is discharged; individual RefinementGeometryHom legs, their projection factor laws, and the geometry-level triangle remain in K1b.
   completion_candidate: no
   lean_artifacts: [refinementPackageHomOfOver, ActiveRefinementBCContext.baseCompositeLeg, ActiveRefinementBCContext.pulledCompositeLeg, ActiveRefinementBCContext.refinementMateAtTarget]
   evidence: [ActiveRefinementBCContext.baseCompositeLeg_base, ActiveRefinementBCContext.pulledCompositeLeg_base, ActiveRefinementBCContext.refinementMate_isHomLift, ActiveRefinementBCContext.refinementMate_upper_triangle, standard-axiom audit]
@@ -111,13 +111,13 @@ result:
     theorem_names: [ActiveRefinementBCContext.baseCompositeLeg_base, ActiveRefinementBCContext.pulledCompositeLeg_base, ActiveRefinementBCContext.refinementMate_isHomLift, ActiveRefinementBCContext.refinementMate_upper_triangle]
     source_labels: [target theorem clause (b), target proof strategy K1]
     conjuncts: [G-112 then G-114 base composite, G-114 then G-112 pulled composite, exact vertical mate embedding, universal-property upper factorization]
-    undischarged_assumptions: [source fiber diagram and individual geometry legs, named decision and negative problems, paired cochain and restricted orbit theorem, conditional orbit equivalence]
-    acceptance_point: The package projection routes are definitions using the reviewed G-112 and G-114 morphisms, while the upper equation consumes the G-114 hom-equivalence factor law and mate-route factor law.
+    undischarged_assumptions: [source fiber diagram and individual geometry legs and projection factor laws and geometry-level triangle, named decision and negative problems, paired cochain and restricted orbit theorem, conditional orbit equivalence]
+    acceptance_point: The K1a package routes are definitions using the reviewed G-112 and G-114 morphisms, while the upper equation consumes the G-114 hom-equivalence factor law and mate-route factor law. This does not discharge the K1 geometry-level triangle.
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: [G-114 composite lower route definitions and objectwise upper mate factorization]
-    remaining: [target theorem clause (b) finite problems and solutions, clauses (c)--(d)]
+    discharged: [K1a G-114 composite package-route definitions and objectwise upper mate factorization]
+    remaining: [K1b individual refinement-geometry legs and projection factor laws and geometry-level triangle, target theorem clause (b) finite problems and solutions, clauses (c)--(d)]
   certificate_provenance:
     discharged: [mate is ctx.mateAtTarget; exact legs are exact_bottom_semantic_global_selected_lift; lax legs are ctx.legacyRegime cleavage outputs generated from ctx.condition]
     unresolved: [named decision and negative witnesses, paired reselection witnesses]
@@ -132,7 +132,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCRoutes.lean — exit 0; axiom audit 8 declarations standard axioms only; source SHA-256 ea3ca8e28aea2ce61988b217d25740a78eacf18dd50f94c0c745b36bbfe2f01a]
   blocking_findings: []
-  next_obligation: K2 construct the finite UpperRefinementBCProblem signature and named decision and negative problems over these fixed route bases.
+  next_obligation: K1b type the individual RefinementGeometryHom legs over these package bases, prove their projection factor laws, and construct the geometry-level factorization triangle before starting K2 finite problems.
 ```
 
 The dependent endpoint equalities carried by `CoreFiber` are retained when a
@@ -140,4 +140,5 @@ relative G-114 hom is read as a refinement-package hom.  The base and pulled
 legs therefore use the authored lax refinements themselves.  The mate theorem
 does not infer lower data from its complete upper map: the two lower composite
 laws, the mate's vertical projection, and the complete-upper factorization are
-separate declarations.
+separate declarations. They are the package-route base for K1, not a substitute
+for the still-unproved refinement-geometry legs or geometry-level triangle.
