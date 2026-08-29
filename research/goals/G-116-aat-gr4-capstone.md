@@ -256,6 +256,12 @@
 | O10-r1 | 任意の `ActiveRefinementBCContext` と任意の `TwoLayerTransportData` に対する global `GeomRead` BC lift、actual lifted natural transformation、Gr3 bridge、upper regime 型 | contextとtransport dataのsemantic connection、およびgenuinely lax `RefinementPackageHom` 上のgeometry homが無く `goal-defect`。意味未確定の旧claimはrefutedとせずsuperseded。人間承認revision 2は欠落していた`RefinementGeometryHom` categoryと、bridge上のnamed finite decision problem / solutionへ置換する。全active contextへのsolutionは主張しない |
 | O11-r1 | proxy `ObProblem` interface、双方向 adequacy、構成された class の base-change naturality、非恒等発火 | proxy interfaceとmembership iffは定義的再包装であり、非可逆mateはfull automorphism / orbit mapを誘導しないためsuperseded。revision 2 O11はfixed-coefficient scopeに合わせたcoefficient-trivial actual suborbitのpaired intertwiningを無条件部分とし、componentwise `IsIso` の場合だけrestricted suborbitのconjugation equivalenceを与える。IsIso存否はG-116専属 |
 
+**G-116 O12 upper-domain disposition(履歴台帳)**:
+
+| id | 旧義務 | disposition |
+|---|---|---|
+| O12-r1 | actual mate-bearing sector / active refinement / active upper-stage regime上でexchange-failureの存否を決定する | O10-r1のglobal upper liftが`goal-defect`となり、全active upper-stage solution域は供給できなかった。人間承認revision 2はG-115がcaller-freeに構成する単一のnamed `upperDecisionSolution`をupper summandへ供給し、現O12はそのchosen-solution-relativeな`UpperStageExchangeExact`を決定する。全active upper-stage solutionsの分類は主張せず、G-115 frontierの全active contextでのliftability classificationへ残す。O19はこの量化域縮小と旧義務のsuperseded dispositionを範囲併記する |
+
 **G-113 revision 1 義務 disposition(履歴台帳)**:
 
 | id | revision 1 義務 | disposition |

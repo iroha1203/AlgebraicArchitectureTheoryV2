@@ -209,11 +209,13 @@
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。route間solutionを含まず、O10放電とは数えない。naturalityのcore射影だけを既存factor lawsで証明する |
 | named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
 | paired cochain / restricted orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する。既存full orbitとの一致は主張しない |
+| `UpperStageExchangeExact solution` | direction-hypothesis | (d)のconditional interfaceでのみ仮定し、componentwise `IsIso` をconjugation / inverse / cochain / restricted-suborbit各定理で実消費する。predicateの成立証明またはO12放電とは数えない |
 | conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
 
 - `target anti-weakening rule`: 結論相当のgeometry bridge、route間solution、
-  non-liftability、paired intertwining、exchange exactnessを theorem argument、typeclass、
-  structure / certificate field、opaque membershipへ移して成功扱いしない。
+  non-liftability、paired intertwiningを theorem argument、typeclass、structure /
+  certificate field、opaque membershipへ移して成功扱いしない。exchange exactnessは
+  (d)の明記したdirection-hypothesis以外へ移さず、その仮定をpredicate成立またはO12放電と数えない。
   direction-hypothesisの各fieldはroute内naturalityだけを担い、route間結論を含めない。
 - `target route integrity gate`: selected lift、finite presentation、named decision / negative
   fixture、coefficient-trivial reselectionの出所を、入力data、G-112 / G-114 reviewed theorem、
