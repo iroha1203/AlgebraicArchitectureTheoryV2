@@ -34,7 +34,7 @@ tracking Issue に置き、ここには書かない。
    `DiagnosticConservative` は G-113 revision 1 で定義・全 hom 証明済み。
    `ObProblem` 段は Lean に不在であり、G-115 の新設建設義務である
    (`ObProblem` は AG 数学本文にも語が無く、class の Lean 指示対象は
-   起票前の裁定事項)**。
+   G-115 カード (c) で固定する)**。
 5. 整合性監査(§5)で被覆行列(義務の全域・一意な担当割当)、重複防止の
    判定線5本、語彙正本規則、universe 設計規則、改訂伝播 DAG を固定する。
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
@@ -486,13 +486,14 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   class の naturality」の段である。したがって O11 が閉じるべき対象は、
   何らかの class 読み出し interface ではなく、**構成された障害類その
   ものの base-change naturality** である。`ObProblem` の語は research
-  木・Formal 木・AG 数学本文のいずれにも無いため、Lean 上の表現は起票
-  時に裁定してよい — (i) Formal 木の障害 class(`H^1(X, Ob_U)` 系 —
-  二木 bridge 込みとなり最小でない)、(ii) research 木の orbit /
-  defect 語彙上の最小 class 読み出し interface(推奨)。**ただし完了
-  には、選択した interface が n1001 §3.3 の「構成された cocycle /
-  class」を表すことの adequacy bridge と、その class の base-change
-  naturality への移送を含める**(semantic adequacy 条件)。代理
+  木・Formal 木・AG 数学本文のいずれにも無い。Lean 上の指示対象は
+  G-106 の `rawDefectCochain` とその reselection orbit
+  (`InReselectionOrbit`)の類に固定し、上段接続点は G-109 の
+  `InUpperReselectionOrbit` とする(正本 = G-115 カード (c))。
+  interface はその上の最小 class 読み出しとして新設する。**ただし完了
+  には、interface がこの指示対象を表すことの adequacy bridge と、その
+  class の base-change naturality への移送を含める**(semantic
+  adequacy 条件)。代理
   interface 上の naturality だけでは O11 の放電と数えない。class
   構成自体は変更しない(G-110 claim boundary の継承)、(d) 非退化発火
   witness — 非自明 geometry fiber 上の発火(G-108 系 fixture 資産が
@@ -503,7 +504,10 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (`CrossStageCoherence/CorePseudofunctor.lean`)、G-108
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
   (`GeometryTransport/`)、G-110 pullback reindexing functor・
-  `pointedPullback_isPullback`、G-114
+  `pointedPullback_isPullback`、G-106 `rawDefectCochain` /
+  `InReselectionOrbit`(`TransportCoherence/FinitePresentation.lean` —
+  (c) の指示対象)、G-109 `InUpperReselectionOrbit`
+  (`CrossStageCoherence/UpperObstruction.lean`)、G-114
   `ActiveRefinementBCContext` / canonical mate。
 - **供給契約**: G-116 gate (iv) の active upper-stage regime 型。
   `ObProblem` interface の命名は本カード専属。
@@ -621,11 +625,12 @@ reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の�
 G-110 ──→ G-111 ──┐
 G-110 ──→ G-112 ──┴→ G-113
 G-101 / G-109 / G-110 / G-112 ──→ G-114 ──→ G-115 ──→ G-116(存否決定+達成記録)
-G-110 / G-109 / G-108 ─────────────────┘
+G-110 / G-109 / G-108 / G-106 ─────────┘
 ```
 
 - G-115 は G-114 の `ActiveRefinementBCContext` と canonical mate に
-  依存し、さらに G-110 / G-109 / G-108 の reviewed artifact を使う。
+  依存し、さらに G-110 / G-109 / G-108 の reviewed artifact と G-106 の
+  orbit / defect 語彙((c) の指示対象)を使う。
   G-114 の依存は G-101 / G-109 / G-110 / G-112 — G-114 の mate 比較
   は exact 側で G-112 の semantic-global reindexing を proof-use 消費
   する(G-110 内部宣言からの再建はしない — 経路の一意化)。pulled
@@ -640,7 +645,7 @@ G-110 / G-109 / G-108 ─────────────────┘
 - 上流の statement 改訂時、依存する下流 draft は差し戻して再固定する
   (G-109 の伝播規定と同型)。G-111 改訂 → G-113 へ、G-112 改訂 →
   G-113 / G-114 へ、G-101 改訂 → G-114 へ、G-114 改訂 →
-  G-115 / G-116 へ、G-108 /
+  G-115 / G-116 へ、G-106 / G-108 /
   G-109 / G-110 の改訂 → 参照カードへ(G-109 改訂は G-114 の support
   transfer にも伝播)、**G-111〜G-115 のいずれの改訂も
   G-116 へ伝播する**(達成記録の突合対象と範囲併記の内容が動くため)。
@@ -661,8 +666,8 @@ G-110 / G-109 / G-108 ─────────────────┘
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
   昇格順の推奨は依存 DAG に従い G-111 → G-112 → G-113
-  → G-114 → G-115 → G-116。**`ObProblem` の Lean 指示対象の裁定は
-  G-115 昇格前の gate とする**(semantic adequacy 条件は §4 G-115)。
+  → G-114 → G-115 → G-116。**`ObProblem` の Lean 指示対象は G-115
+  カード (c) で固定する**(semantic adequacy 条件は §4 G-115)。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
   (statement の型・資格条項・witness 形)に限定できる。gate カードは
