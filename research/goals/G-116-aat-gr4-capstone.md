@@ -55,8 +55,10 @@
 - `capability categories`: exchange-law、decision、counterexample、
   unification。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に
-  置き、固定 statement と completion criteria だけで完了判定する。
-- `portfolio constraint`: どちらの枝で確定する場合も、**量化域の各成分
+  置く。本カードは draft の間に branch-selection evidence を作り、active
+  昇格時の人間承認 revision で一方の branch-specific statement を固定する。
+  固定後は statement と completion criteria だけで完了判定する。
+- `portfolio constraint`: 採択 branch を固定する前に、**量化域の各成分
   (sector の lax square 域・active refinement・active upper stage)
   ごとに**非退化発火 witness を要求する。空 fiber による空虚性は
   放電と数えない。lax 成分の
@@ -77,9 +79,26 @@
   生むかの帰属)、係数 base change カードへの接続点、SAKURA 論文
   (n1007 §8)の Main 素材化。
 
-- `target theorem`: **Beck–Chevalley Exchange Exactness Decision
-  Theorem**(O12)。G-110〜G-115 の設定の上で、**「全同型定理」または
-  「¬IsIso の具体反例」の二枝 disjunction 単一命題**を証明する:
+- `target theorem`: **Beck–Chevalley Exchange Branch Selection and
+  Exactness Contract**(O12)。この draft は補集合二枝の disjunction theorem
+  を主張しない。G-110〜G-115 の設定の上で branch-selection evidence を
+  作り、active 昇格時に次のどちらか一方だけを fixed target として採択する:
+  1. **Universal Exchange Exactness Theorem**: 全
+     `c : Gr4ExchangeContext` について canonical `mate c` が `IsIso`。
+     proof body は tagged sum の各成分で mate の構成と比較式を実使用し、
+     成分別非退化 witness 上でも発火しなければならない。
+  2. **Named Exchange Failure Theorem**: active 昇格する GOAL に concrete
+     `cFail : Gr4ExchangeContext` と評価対象 component を固定し、その
+     `¬ IsIso (mate cFail)` を mate component の具体計算から証明する。
+     `cFail` や非同型 certificate を theorem argument / caller-supplied
+     payload として受け取ってはならない。
+
+  `Classical.em`、`not_forall`、choice による branch selection、または
+  `P ∨ ¬ P` の包装は O12 の放電と数えない。branch が fixed target に
+  採択されるまで G-116 は active に昇格せず、O12 は未放電のままである。
+  採択後、他方の branch は theorem の conjunct でも disjunct でもない。
+
+  共通する量化域と実質条件は次のとおり:
   - `Gr4ExchangeContext` を、mate を伴う G-110 sector、G-114
     `ActiveRefinementBCContext`、G-115 active upper-stage regime の
     tagged sum として定義する。量化域はこの型に固定し、**authored
@@ -88,34 +107,44 @@
     証明済みの正例であり、存否の未決部分は lax square と active
     refinement / upper-stage context 側にある。負例枝 witness の居住域を
     そこに限定する。
-  - **成分別の実質**: 全同型枝で確定する場合、量化域の各成分ごとに
-    非退化発火 witness を要求する。inactive / forward-only refinement
+  - **成分別の実質**: universal branch では量化域の各成分ごとに
+    非退化発火 witness を要求する。named-failure branch でも failure
+    context が属する成分以外を含む全成分の domain 非空虚性を別途記録する。
+    inactive / forward-only refinement
     は mate が未定義なので O12 の反例でも正例でもなく、O19 の
     domain-classification 行で記録する。lax 成分が既決 mate+可逆 twist
     の系で従う場合は系として
     記録する(portfolio constraint の計上規律)。
-  - 排他性は反例が供給し、網羅性(両枝の少なくとも一方が成立)は主張
-    しない(両枝とも閉じない場合は `target-blocked`)。二枝の payload
-    は G-110 `DisjunctionArtifact` 様式の構造化 artifact で立て、
-    payload の caller 供給を放電と数えない。
+  - branch-selection evidence は、universal branch なら各 summand の
+    structural `IsIso` producer、named-failure branch なら事前固定した
+    finite/contextual evaluation とする。単なる論理的二分や構造化
+    disjunction payload は evidence ではない。
   - 上段 regime の第二 universe(`GeomReadCategory` は二 universe)は
     端点固定とし、方式は F0 で確定する。
+- `draft revision note`: 旧 draft は universal `IsIso` と existential
+  `¬IsIso` を一つの補集合 disjunction にしていた。この形は古典排中律と
+  `not_forall` だけで閉じ、exchange の数学を使用しないため棄却した。
+  O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
+  active 昇格時の単一 branch-specific theorem に強化して保持する。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110〜G-115 の reviewed module は参照のみ。regime の新設
   建設はしない(供給契約から組めない場合は昇格前に gate (iv) の
   regime の意味の裁定へ差し戻す)。完了面は O12 の決定+O19 の記録
   まで。
-- `target proof artifacts`: 二枝 disjunction 確定 artifact(全同型
-  theorem または ¬IsIso witness、構造化 payload)、量化域の regime
+- `target proof artifacts`: active 昇格前の branch-selection evidence、
+  昇格 revision で固定された universal `IsIso` theorem または named
+  `¬IsIso` evaluation theorem、量化域の regime
   組成 artifact(G-114 / G-115 成果物の消費と O19 除外記録)、active
   成分ごとの非退化 witness、report
   `research/reports/G-116-aat-gr4-capstone.md`(**達成階梯対応表**を
   含む — 下記 completion criteria)。
-- `target proof strategy`: F0 typing(regime 合成の signature・payload
-  構造・第二 universe の端点固定)→ K0 量化域の組成と除外記録 →
-  K1 lax square 域の mate 挙動の探索(twist 系判定を含む)→ K2 枝の
-  確定(全同型証明または反例構成)→ K3 台帳突合と達成記録。既存成果の
+- `target proof strategy`: draft F0 typing(regime 合成の signature・
+  第二 universe の端点固定)→ K0 量化域の組成と除外記録 → K1 各 summand
+  の mate 挙動を具体探索(twist 系判定を含む)→ branch-selection evidence
+  を固定 → 人間承認の active revision で universal theorem または named
+  failure theorem の一方を fixed target 化 → K2 その theorem を証明 →
+  K3 台帳突合と達成記録。既存成果の
   利用 map: G-110 `MateCoherentRel` 正負対と TargetTheorem の mate
   exactness(既決正例の分界)、G-114
   `ActiveRefinementBCContext`、G-115 active upper-stage regime。
@@ -137,10 +166,11 @@
      台帳の refuted / strengthened / superseded disposition も突合する
      (台帳改訂の規律)。
   2. **解釈規約**: Gr4 達成とは gate 全項の帰趨が定理で確定している
-     ことをいう(正枝である必要はない — 二枝 disjunction 義務は
-     どちらの枝の確定も帰趨確定)。ただし記録の表現は exact-bottom
-     全域の分類と読める形を避け、確定枝を全て併記する。O6・O12 が
-     ともに反例枝で確定した場合の記録の見出し語は、枝が出揃った時点の
+     ことをいう。O12 は active 昇格時に固定された universal theorem
+     または named failure theorem の証明でのみ確定する。ただし記録の
+     表現は exact-bottom 全域の分類と読める形を避け、確定した branch と
+     domain を併記する。O6 が反例枝、O12 が named-failure theorem で
+    確定した場合の記録の見出し語は、成果が出揃った時点の
      ユーザー裁定とする(O7 は semantic-global 正枝で確定済み —
      実装実査 2026-08-26、反例枝を持たない)。
      G-114 については、raw refinement 全域の forward square、realized
@@ -177,7 +207,7 @@
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | G-115 |
 | O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(semantic adequacy 条件込み) | G-115 |
-| O12 | IsIso 水準 exchange-failure の存否決定(`Gr4ExchangeContext` の actual mate-bearing sector / active refinement / active upper stage — 二枝) | G-116 |
+| O12 | `Gr4ExchangeContext` の actual mate-bearing sector / active refinement / active upper stage 上で、active 昇格時に固定した universal `IsIso` theorem または named `¬IsIso` evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | G-113 |
@@ -248,9 +278,11 @@
     O12 の設定。discharge artifact = G-114 / G-115 の active
     mate-bearing 成果物と G-110 sector のみから組む tagged sum。
     inactive / forward-only の除外は O19 に記録し、新設 mate は不可)。
-  - `二枝 disjunction 確定`: `discharge-required`(支える結論 = O12。
-    discharge artifact = 構造化 payload の全同型 theorem または
-    ¬IsIso witness)。
+  - `branch selection と branch-specific theorem`: `discharge-required`
+    (支える結論 = O12。draft artifact = mate の構造または具体評価を使う
+    branch-selection evidence。completion artifact = active revision で固定
+    された universal `IsIso` theorem または named `¬IsIso` evaluation
+    theorem。excluded-middle disjunction は不可)。
   - `active 成分別の非退化 witness`: `discharge-required`
     (支える結論 = 決定の実質。empty component は O19 の
     domain-classification にのみ記録し、この行を放電しない。twist 系の
@@ -262,16 +294,19 @@
   active refinement / upper-stage 域に限定し、既決域や inactive 域に
   置かない。witness fixture は proof obligation 選定時に固定する。禁止
   経路 — regime の新設建設、既決正例の再包装、twist 系の独立計上、
-  台帳突合を欠く達成宣言、payload の caller 供給。
+  台帳突合を欠く達成宣言、payload の caller 供給、`Classical.em` /
+  `not_forall` / choice だけによる branch selection、補集合二枝の包装。
 - `target anti-weakening rule`: mate の同型性・破れ・regime の組成
   可能性を theorem argument、typeclass、structure field、certificate
   field へ移して成功扱いしない。`ambient-boundary` に残せるのは入力
   幾何と、先行カードの reviewed 成果(環境扱い — 語彙正本規則)だけで
   ある。
-- `target failure policy`: fail-closed を原則とする。両枝とも閉じない
-  場合は `target-blocked` であり、**Gr4 は未達のまま**(達成記録だけ
-  先行させない)。量化域が供給契約から組めない場合は昇格前に gate
+- `target failure policy`: fail-closed を原則とする。branch-selection
+  evidence を固定できない間は draft のままで O12 は未放電、**Gr4 は
+  未達のまま**であり、達成記録だけを先行させない。量化域が供給契約
+  から組めない場合は昇格前に gate
   (iv) の regime の意味の裁定へ差し戻す(`goal-defect` 扱い)。**F0 で
   組成の型不能が判明した場合も `goal-defect` で停止する**(自動
-  weakening をしない)。witness の停滞は `target-blocked`。fixed
-  target の変更は人間の別判断とする。
+  weakening をしない)。active 昇格後は採択された fixed theorem だけを
+  target-theorem-loop の停止規律で扱う。fixed target の変更は人間の
+  別判断とする。

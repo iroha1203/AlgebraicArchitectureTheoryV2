@@ -185,7 +185,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
 | O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
 | O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(class 構成は変更しない。semantic adequacy 条件は §4 G-115) | gate (iii)・n1001 §3.3 | G-115 |
-| O12 | IsIso 水準 exchange-failure の存否決定(actual mate-bearing sector / active refinement / active upper stage の `Gr4ExchangeContext`) | gate (iv)・(C) 移管文 | G-116 |
+| O12 | actual mate-bearing sector / active refinement / active upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | gate (v) | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | gate (v) | G-113 |
@@ -520,9 +520,14 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **責務**: O12(target theorem)・O19(completion criteria+report
   義務)。capstone。
 - **target theorem 骨格(O12 のみ)**: IsIso 水準 Beck–Chevalley
-  exchange-failure の存否決定 — **「全同型定理」または「¬IsIso の具体
-  反例」の二枝 disjunction 単一命題**(G-110 (B) 様式: 排他性は反例が
-  供給、網羅性は主張しない)。量化域 `Gr4ExchangeContext` は
+  exchange-failure の存否決定。draft では補集合二枝の disjunction
+  theorem を置かない。各 summand の mate 構造または具体 component 評価
+  による branch-selection evidence を先に固定し、active 昇格時の人間承認
+  revision で **全 `Gr4ExchangeContext` 上の universal `IsIso` theorem**
+  または **GOAL に named context/component を固定した `¬IsIso` evaluation
+  theorem** の一方だけを fixed target にする。`Classical.em`、
+  `not_forall`、choice、`P ∨ ¬ P` の包装は O12 の放電と数えない。
+  量化域 `Gr4ExchangeContext` は
   mate を伴う G-110 sector、G-114 `ActiveRefinementBCContext`、
   G-115 active upper-stage regime の tagged sum とする(**capstone は
   regime / mate を新設しない**)。
@@ -535,6 +540,10 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   再包装(pullback-only)による正枝放電を dullness で排除する。上段
   regime の第二 universe(`GeomReadCategory` は二 universe)は端点固定と
   し、方式は F0 で確定する。
+- **draft 改訂注記**: 旧 draft の universal `IsIso` / existential
+  `¬IsIso` 補集合 disjunction は、古典排中律と `not_forall` だけで閉じて
+  exchange の数学を消費しないため棄却した。O12 の義務は削除せず、
+  branch-selection evidence と単一 branch-specific theorem に強化した。
 - **completion criteria+report 義務(O19)**: §7 の成立条件に従う
   Gr4 達成の範囲併記記録。raw forward / realized reverse / active mate /
   exchange の四層と forward-only / inactive の disposition を含める。
@@ -548,9 +557,10 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **リスク / dullness 骨格**: 既決正例の再包装・退化 square(成分恒等・
   診断恒零)・empty-fiber context による「全同型」枝の放電、達成記録が
   義務台帳との突合を欠いて宣言だけで立つ経路。
-- **failure 骨格**: 両枝とも閉じない場合は `target-blocked` であり
-  **Gr4 は未達のまま**(記録だけ先行させない)。先行カードに帰趨未確定
-  がある間は昇格しない(§5 依存 DAG)。
+- **failure 骨格**: branch-selection evidence を固定できない間は draft
+  のままで O12 未放電、**Gr4 は未達のまま**(記録だけ先行させない)。
+  先行カードに帰趨未確定がある間も昇格しない(§5 依存 DAG)。active
+  昇格後は採択された一方の fixed theoremだけを停止規律で扱う。
 
 ## §5 整合性監査 — ラインナップ全体
 
@@ -667,12 +677,14 @@ G-110 / G-109 / G-108 ─────────────────┘
 ## §7 Gr4 達成記録の成立条件 — Gr 系列の完了
 
 **解釈規約**: Gr4 達成とは、gate 全項の帰趨が定理で確定していることを
-いう。成立(正枝)である必要はない — 二枝 disjunction の義務は、どちらの
-枝で確定しても帰趨確定である(n1001 §3.5「相対的視点の全操作が閉じる」の
-このノートでの読み)。ただし記録の書き方は、全域で成立したと読める形を
-避け、確定した枝を全て併記する(G-110 completion criteria の慎重条項の
-継承)。**裁定事項**: O6・O12 がともに反例枝で確定した場合に、記録の
-見出し語を「Gr4 達成」とするか「帰趨決定+成立域限定」とするかは、枝が
+いう。O6 の二枝義務はどちらの枝で確定しても帰趨確定である。O12 は
+補集合 disjunction ではなく、active 昇格時に fixed target とした universal
+theorem または named-failure theorem の証明で確定する(n1001 §3.5
+「相対的視点の全操作が閉じる」のこのノートでの読み)。ただし記録の
+書き方は、全域で成立したと読める形を避け、確定した branch と domain を
+併記する(G-110 completion criteria の慎重条項の継承)。**裁定事項**:
+O6 が反例枝、O12 が named-failure theorem で確定した場合に、記録の
+見出し語を「Gr4 達成」とするか「帰趨決定+成立域限定」とするかは、成果が
 出揃った時点でユーザーが裁定する(O7 は semantic-global 正枝で確定済み
 — 実装実査 2026-08-26、反例枝を持たない)。
 
@@ -684,7 +696,8 @@ G-110 / G-109 / G-108 ─────────────────┘
    の全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。
-2. G-116 が O12 の存否をどちらかの枝で確定している。
+2. G-116 が active 昇格時に固定した universal `IsIso` theorem または
+   named `¬IsIso` evaluation theorem を証明して O12 を確定している。
 3. G-116 が達成記録(O19)を完了している — 突合対象は O1–O11・
    O13–O18・O20(先行カードの fixed head・review 錨と突合)+O12
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、

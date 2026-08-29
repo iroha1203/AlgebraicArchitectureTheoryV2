@@ -25,6 +25,14 @@ package fiber-product/cartesian machinery, and G-112 final reviewed head
 `bf882573` for exact-bottom pullback and reindexing. They are referenced, not
 modified.
 
+The exact side of each comparison is fixed to G-112
+`exact_bottom_semantic_global_cartesian_cleavage` and
+`exact_bottom_semantic_global_reindex_functor`, with
+`exact_bottom_semantic_global_selected_lift` supplying the selected component;
+their underlying lift construction proof-uses the reviewed G-110
+`strongCartesianLiftOfTarget`. These declarations may not be replaced by an
+ad hoc reconstruction in G-114.
+
 This is the first Gr4 stratification:
 
 1. every refinement belongs to the doctrine-lax, forward layer;
@@ -363,7 +371,7 @@ other side.
 
 | premise | supports | role | provenance / discharge artifact | required proof-use | why not conclusion-equivalent |
 | --- | --- | --- | --- | --- | --- |
-| exact cospan | clauses (a)–(c) | `ambient-boundary` | fixed reviewed G-112 declaration; exact-head citation required | selected pullback and exact reindexing | it supplies the base square, not refinement reverse transport |
+| exact cospan and semantic-global exact reindexing | clauses (a)–(c), (f) | `ambient-boundary` | fixed reviewed G-112 head `bf882573`: `exact_bottom_semantic_global_cartesian_cleavage`, `exact_bottom_semantic_global_reindex_functor`, and `exact_bottom_semantic_global_selected_lift`; underlying reviewed G-110 lift is `strongCartesianLiftOfTarget` | selected pullback, exact-side reindexing, selected components, and comparison-square mate generation | it supplies the exact base square and one comparison route, not refinement reverse transport |
 | G-101/G-109 covariant core transport | clause (c), pulled-support branch | `ambient-boundary` | fixed reviewed G-101 head `db47ee9e` / merge `dd5e02b5` and G-109 head `b5ca4630`; exact-head citations required | exact projection followed by `coreFiberTransportObj` | it transports an existing package covariantly and supplies no refinement cleavage |
 | unpointed refinement | clauses (a)–(e) | `ambient-boundary` | raw G-114 configuration field | repointing, forward square, and extraction preservation | it has only forward extraction |
 | compatible source | clauses (b)–(f) | `ambient-boundary` | generated source index with bottom equations | repointing and local base selection | it contains no package-level lift |
