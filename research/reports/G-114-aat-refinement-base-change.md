@@ -246,7 +246,12 @@ the public lift's `IsStronglyCartesian.ext`.
 | refinement projection | `discharge-required` | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`; `exactVerticalComparison_isHomLift`; relative-factor uniqueness via `IsStronglyCartesian.ext` | `discharged` |
 | fixed condition | `direction-hypothesis` | implication input only | family equality, authored package, both cleavages | `justified-boundary` |
 | package transport completeness | `discharge-required` | `SelectedTransport.lean` | two-sided upper inverses and strong cartesianness | `discharged` |
-| active nonvacuity | `discharge-required` | witness-local packages and Atom computations | positive/negative strata and mate firing | `discharged` |
+| condition-to-regime producer | `discharge-required` | `refinementCleavageOfRealizedReflection`, `refinementBCRegimeOfCondition` | construct the base and pulled cartesian cleavages from the fixed condition | `discharged` |
+| regime-to-condition producer | `discharge-required` | `realizedReflectionOfRefinementCleavage`, `configurationConditionOfRegime` | use each actual target lift to recover all-Atom reflection | `discharged` |
+| pulled-support transfer theorem | `discharge-required` | `pulledSupportTransfer`, `pulledRealizedReflection` | consume the pulled package, exact projection, and `coreFiberTransportObj` to construct base support and the pulled condition | `discharged` |
+| active forward-only witness | `discharge-required` | finite `activeForwardOnlyConfiguration` and its actual package | evaluate the extraction mismatch and derive `activeForwardOnly_no_regime` | `discharged` |
+| active reverse witness | `discharge-required` | `activeReverseConfiguration` and independently constructed `activeReverseTargetPackage` | exercise the condition/regime outside the exact image, nonidentity pulled/lift edges, and both mate routes | `discharged` |
+| inactive regression | `discharge-required` | `inactiveInfiniteConfiguration`, target-fiber emptiness, and inactivity theorems | prove `inactiveInfinite_not_active` and `inactiveInfinite_not_activeRegimeAvailable` | `discharged` |
 
 No theorem assumes a regime, cleavage, mate, selected-family equality, or
 package equivalence as an opaque fixture in the direction that constructs it.
