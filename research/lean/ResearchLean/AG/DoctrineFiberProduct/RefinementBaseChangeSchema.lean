@@ -39,7 +39,7 @@ The G-114 square input: an exact pointed cospan and a pointed refinement of its
 first endpoint.  The two pullback objects, the pulled leg, reverse transport,
 and mate data are deliberately absent.
 -/
-structure RefinementBCConfiguration (U : AtomCarrier.{u}) where
+structure LegacyRefinementBCConfiguration (U : AtomCarrier.{u}) where
   /-- Refined first endpoint. -/
   DOnePrime : ExtractionInstance U
   /-- Original first endpoint. -/
@@ -55,21 +55,21 @@ structure RefinementBCConfiguration (U : AtomCarrier.{u}) where
   /-- Pointed refinement replacing the first endpoint. -/
   refinement : PointedRefinementHom DOnePrime DOne
 
-namespace RefinementBCConfiguration
+namespace LegacyRefinementBCConfiguration
 
 /-- The generated exact pullback `P`. -/
-def pullback (C : RefinementBCConfiguration U) : ExtractionInstance U :=
+def pullback (C : LegacyRefinementBCConfiguration U) : ExtractionInstance U :=
   pointedPullback C.sigmaOne C.sigmaTwo
 
 /-- Sources of the generated mixed pullback `P'`. -/
-abbrev PulledSource (C : RefinementBCConfiguration U) :=
+abbrev PulledSource (C : LegacyRefinementBCConfiguration U) :=
   {pair : C.DOnePrime.doctrine.Source × C.DTwo.doctrine.Source //
     C.sigmaOne.doctrineHom.sourceMap
         (C.refinement.doctrineHom.sourceMap pair.1) =
       C.sigmaTwo.doctrineHom.sourceMap pair.2}
 
 /-- The mixed pullback doctrine generated from forward refinement preservation. -/
-def pulledDoctrine (C : RefinementBCConfiguration U) : ExtractionDoctrine U where
+def pulledDoctrine (C : LegacyRefinementBCConfiguration U) : ExtractionDoctrine U where
   Source := C.PulledSource
   Vocabulary := C.DOnePrime.doctrine.Vocabulary
   SemanticReading := C.DOnePrime.doctrine.SemanticReading
@@ -92,17 +92,17 @@ def pulledDoctrine (C : RefinementBCConfiguration U) : ExtractionDoctrine U wher
         ← C.sigmaTwo.doctrineHom.normalize_eq, source.property]⟩
 
 /-- The selected mixed-pullback source is generated from pointed input data. -/
-def pulledSource (C : RefinementBCConfiguration U) : C.PulledSource :=
+def pulledSource (C : LegacyRefinementBCConfiguration U) : C.PulledSource :=
   ⟨(C.DOnePrime.source, C.DTwo.source), by
     rw [C.refinement.source_eq, C.sigmaOne.source_eq, C.sigmaTwo.source_eq]⟩
 
 /-- The generated pointed mixed pullback `P'`. -/
-def pulled (C : RefinementBCConfiguration U) : ExtractionInstance U where
+def pulled (C : LegacyRefinementBCConfiguration U) : ExtractionInstance U where
   doctrine := C.pulledDoctrine
   source := C.pulledSource
 
 /-- The exact vertical projection `fst' : P' ⟶ D₁'`. -/
-def pulledFst (C : RefinementBCConfiguration U) : C.pulled ⟶ C.DOnePrime where
+def pulledFst (C : LegacyRefinementBCConfiguration U) : C.pulled ⟶ C.DOnePrime where
   doctrineHom :=
     { sourceMap := fun source => source.val.1
       atomEquiv := Equiv.refl U.Atom
@@ -111,11 +111,11 @@ def pulledFst (C : RefinementBCConfiguration U) : C.pulled ⟶ C.DOnePrime where
   source_eq := rfl
 
 /-- The exact vertical projection `fst : P ⟶ D₁`. -/
-def pullbackFst (C : RefinementBCConfiguration U) : C.pullback ⟶ C.DOne :=
+def pullbackFst (C : LegacyRefinementBCConfiguration U) : C.pullback ⟶ C.DOne :=
   pointedPullbackFst C.sigmaOne C.sigmaTwo
 
 /-- The pulled horizontal refinement `f* : P' → P`. -/
-def pulledRefinement (C : RefinementBCConfiguration U) :
+def pulledRefinement (C : LegacyRefinementBCConfiguration U) :
     PointedRefinementHom C.pulled C.pullback where
   doctrineHom :=
     { sourceMap := fun source =>
@@ -140,7 +140,7 @@ def pulledRefinement (C : RefinementBCConfiguration U) :
     · rfl
 
 /-- The generated square commutes in the pointed refinement direction. -/
-theorem pulled_square_commutes (C : RefinementBCConfiguration U) :
+theorem pulled_square_commutes (C : LegacyRefinementBCConfiguration U) :
     C.pulledRefinement.comp (PointedRefinementHom.ofExact C.pullbackFst) =
       (PointedRefinementHom.ofExact C.pulledFst).comp C.refinement := by
   apply PointedRefinementHom.ext
@@ -151,7 +151,7 @@ theorem pulled_square_commutes (C : RefinementBCConfiguration U) :
 /-! ## K1 unconditional forward stability of the generated square -/
 
 /-- The generated horizontal pullback leg preserves extraction unconditionally. -/
-theorem pulledRefinement_extraction_forward (C : RefinementBCConfiguration U)
+theorem pulledRefinement_extraction_forward (C : LegacyRefinementBCConfiguration U)
     (source : C.pulled.doctrine.Source) (atom : U.Atom)
     (extracted : C.pulled.doctrine.extracts source atom) :
     C.pullback.doctrine.extracts
@@ -160,7 +160,7 @@ theorem pulledRefinement_extraction_forward (C : RefinementBCConfiguration U)
   C.pulledRefinement.doctrineHom.extraction_forward source atom extracted
 
 /-- The generated exact projection `fst'` preserves extraction. -/
-theorem pulledFst_extraction_forward (C : RefinementBCConfiguration U)
+theorem pulledFst_extraction_forward (C : LegacyRefinementBCConfiguration U)
     (source : C.pulled.doctrine.Source) (atom : U.Atom)
     (extracted : C.pulled.doctrine.extracts source atom) :
     C.DOnePrime.doctrine.extracts
@@ -169,7 +169,7 @@ theorem pulledFst_extraction_forward (C : RefinementBCConfiguration U)
   (C.pulledFst.doctrineHom.extraction_iff source atom).mpr extracted
 
 /-- The generated exact projection `fst` preserves extraction. -/
-theorem pullbackFst_extraction_forward (C : RefinementBCConfiguration U)
+theorem pullbackFst_extraction_forward (C : LegacyRefinementBCConfiguration U)
     (source : C.pullback.doctrine.Source) (atom : U.Atom)
     (extracted : C.pullback.doctrine.extracts source atom) :
     C.DOne.doctrine.extracts
@@ -177,7 +177,7 @@ theorem pullbackFst_extraction_forward (C : RefinementBCConfiguration U)
       (C.pullbackFst.doctrineHom.atomEquiv atom) :=
   (C.pullbackFst.doctrineHom.extraction_iff source atom).mpr extracted
 
-end RefinementBCConfiguration
+end LegacyRefinementBCConfiguration
 
 /-! ## Configuration isomorphism head -/
 
@@ -186,8 +186,8 @@ Componentwise configuration isomorphism, including both cospan squares and the
 pointed refinement square.  The refinement endpoint uses the dedicated pointed
 refinement isomorphism rather than silently requiring exactness.
 -/
-structure RefinementBCConfigurationIso
-    (C C' : RefinementBCConfiguration U) where
+structure LegacyRefinementBCConfigurationIso
+    (C C' : LegacyRefinementBCConfiguration U) where
   /-- Isomorphism of the refined endpoint. -/
   DOnePrimeIso : PointedRefinementIso C.DOnePrime C'.DOnePrime
   /-- Exact isomorphism of the original first endpoint. -/
@@ -214,7 +214,7 @@ inductive RefinementBCConditionSyntax (U : AtomCarrier.{u})
   | pulledLocusExtractionReflecting
 
 /-- Sources of the refined endpoint that occur in the compatible pullback locus. -/
-def InPulledLocus (C : RefinementBCConfiguration U)
+def InPulledLocus (C : LegacyRefinementBCConfiguration U)
     (source : C.DOnePrime.doctrine.Source) : Prop :=
   ∃ second : C.DTwo.doctrine.Source,
     C.sigmaOne.doctrineHom.sourceMap
@@ -222,7 +222,7 @@ def InPulledLocus (C : RefinementBCConfiguration U)
       C.sigmaTwo.doctrineHom.sourceMap second
 
 /-- Extraction reflection restricted to the generated compatible locus. -/
-def PulledLocusExtractionReflecting (C : RefinementBCConfiguration U) : Prop :=
+def PulledLocusExtractionReflecting (C : LegacyRefinementBCConfiguration U) : Prop :=
   ∀ (source : C.DOnePrime.doctrine.Source), InPulledLocus C source →
     ∀ atom : U.Atom,
       C.DOne.doctrine.extracts
@@ -232,7 +232,7 @@ def PulledLocusExtractionReflecting (C : RefinementBCConfiguration U) : Prop :=
 
 /-- Evaluate the closed language without reading a regime, lift, mate, or certificate. -/
 def evalRefinementBCCondition :
-    RefinementBCConditionSyntax U → RefinementBCConfiguration U → Prop
+    RefinementBCConditionSyntax U → LegacyRefinementBCConfiguration U → Prop
   | .pulledLocusExtractionReflecting, C =>
       PulledLocusExtractionReflecting C
 
@@ -250,7 +250,7 @@ def normalizeRefinementBCCondition :
 /-- Normalization is complete for the closed evaluator. -/
 theorem normalizeRefinementBCCondition_eval_iff
     (term : RefinementBCConditionSyntax U)
-    (C : RefinementBCConfiguration U) :
+    (C : LegacyRefinementBCConfiguration U) :
     evalRefinementBCCondition (normalizeRefinementBCCondition term) C ↔
       evalRefinementBCCondition term C := by
   cases term
@@ -277,7 +277,7 @@ theorem refinementBCConditionCandidates_second :
 
 /-- The evaluator exposes exactly compatible-locus extraction reflection. -/
 theorem eval_pulledLocusExtractionReflecting_iff
-    (C : RefinementBCConfiguration U) :
+    (C : LegacyRefinementBCConfiguration U) :
     evalRefinementBCCondition pulledLocusExtractionReflectingTerm C ↔
       PulledLocusExtractionReflecting C :=
   Iff.rfl
@@ -455,7 +455,7 @@ Factorization and uniqueness are stated in the fixed relative hom surface.  No
 reverse functor, hom equivalence, or mate is supplied here; all three are
 generated below from this universal data.
 -/
-structure RefinementCartesianLift
+structure LegacyRefinementCartesianLift
     {X Y : ExtractionInstance U} (f : PointedRefinementHom X Y)
     (target : CoreFiber Y) where
   /-- Domain package of the selected cartesian lift. -/
@@ -475,23 +475,23 @@ structure RefinementCartesianLift
       vertical = factor candidate
 
 /-- A caller-free selection of a cartesian refinement lift at every target package. -/
-structure RefinementCartesianCleavage
+structure LegacyRefinementCartesianCleavage
     {X Y : ExtractionInstance U} (f : PointedRefinementHom X Y) where
   /-- The only choice: one universal lift at each target package. -/
-  lift : ∀ target : CoreFiber Y, RefinementCartesianLift f target
+  lift : ∀ target : CoreFiber Y, LegacyRefinementCartesianLift f target
 
-namespace RefinementCartesianCleavage
+namespace LegacyRefinementCartesianCleavage
 
 /-- Reverse transport on objects, generated by the selected lift domains. -/
 def reverseObject
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f) (target : CoreFiber Y) : CoreFiber X :=
+    (cleavage : LegacyRefinementCartesianCleavage f) (target : CoreFiber Y) : CoreFiber X :=
   (cleavage.lift target).domain
 
 /-- Reverse transport on arrows, generated as the unique factor of postcomposition. -/
 noncomputable def reverseMap
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     {first second : CoreFiber Y} (vertical : first ⟶ second) :
     cleavage.reverseObject first ⟶ cleavage.reverseObject second :=
   (cleavage.lift second).factor
@@ -500,7 +500,7 @@ noncomputable def reverseMap
 /-- The generated reverse map has its defining cartesian factor triangle. -/
 theorem reverseMap_fac
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     {first second : CoreFiber Y} (vertical : first ⟶ second) :
     RefinementOverHom.precomp (cleavage.reverseMap vertical)
         (cleavage.lift second).hom =
@@ -510,7 +510,7 @@ theorem reverseMap_fac
 /-- Generated reverse transport preserves identities by universal uniqueness. -/
 theorem reverseMap_id
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f) (target : CoreFiber Y) :
+    (cleavage : LegacyRefinementCartesianCleavage f) (target : CoreFiber Y) :
     cleavage.reverseMap (𝟙 target) = 𝟙 (cleavage.reverseObject target) := by
   symm
   apply (cleavage.lift target).factor_unique
@@ -519,7 +519,7 @@ theorem reverseMap_id
 /-- Generated reverse transport preserves composition by universal uniqueness. -/
 theorem reverseMap_comp
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     {first second third : CoreFiber Y}
     (left : first ⟶ second) (right : second ⟶ third) :
     cleavage.reverseMap (left ≫ right) =
@@ -533,7 +533,7 @@ theorem reverseMap_comp
 /-- The contravariant reverse functor generated from refinement cartesian uniqueness. -/
 noncomputable def reverseFunctor
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f) : CoreFiber Y ⥤ CoreFiber X where
+    (cleavage : LegacyRefinementCartesianCleavage f) : CoreFiber Y ⥤ CoreFiber X where
   obj := cleavage.reverseObject
   map := cleavage.reverseMap
   map_id := cleavage.reverseMap_id
@@ -542,7 +542,7 @@ noncomputable def reverseFunctor
 /-- Relative hom equivalence generated by the selected cartesian lift. -/
 noncomputable def homEquiv
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     (source : CoreFiber X) (target : CoreFiber Y) :
     RefinementOverHom f source target ≃
       (source ⟶ cleavage.reverseFunctor.obj target) where
@@ -557,7 +557,7 @@ noncomputable def homEquiv
 /-- The generated hom equivalence has the literal factorization equation. -/
 theorem homEquiv_fac
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     (source : CoreFiber X) (target : CoreFiber Y)
     (hom : RefinementOverHom f source target) :
     RefinementOverHom.precomp (cleavage.homEquiv source target hom)
@@ -567,7 +567,7 @@ theorem homEquiv_fac
 /-- Source-variable naturality of the generated relative hom equivalence. -/
 theorem homEquiv_natural_source
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     {first second : CoreFiber X} (vertical : first ⟶ second)
     (target : CoreFiber Y) (hom : RefinementOverHom f second target) :
     cleavage.homEquiv first target
@@ -580,7 +580,7 @@ theorem homEquiv_natural_source
 /-- Target-variable naturality of the generated relative hom equivalence. -/
 theorem homEquiv_natural_target
     {X Y : ExtractionInstance U} {f : PointedRefinementHom X Y}
-    (cleavage : RefinementCartesianCleavage f)
+    (cleavage : LegacyRefinementCartesianCleavage f)
     (source : CoreFiber X) {first second : CoreFiber Y}
     (hom : RefinementOverHom f source first) (vertical : first ⟶ second) :
     cleavage.homEquiv source second
@@ -595,7 +595,7 @@ theorem homEquiv_natural_target
   rw [reverseMap_fac,
     RefinementOverHom.precomp_postcomp, homEquiv_fac]
 
-end RefinementCartesianCleavage
+end LegacyRefinementCartesianCleavage
 
 /--
 The G-112 exact selected lift, read with its cartesian universal property
@@ -792,51 +792,51 @@ The G-114 regime signature.  Its only reverse-transport inputs are two
 cartesian cleavages.  Reverse functors, their actions, and relative hom
 equivalences are definitions generated from factorization uniqueness.
 -/
-structure RefinementBCRegime (C : RefinementBCConfiguration U) where
+structure LegacyRefinementBCRegime (C : LegacyRefinementBCConfiguration U) where
   /-- Universal refinement cleavage over the authored horizontal leg. -/
-  baseCleavage : RefinementCartesianCleavage C.refinement
+  baseCleavage : LegacyRefinementCartesianCleavage C.refinement
   /-- Universal refinement cleavage over the generated pulled leg. -/
-  pulledCleavage : RefinementCartesianCleavage C.pulledRefinement
+  pulledCleavage : LegacyRefinementCartesianCleavage C.pulledRefinement
 
 /-- Reverse transport along the authored refinement, generated by its cleavage. -/
-noncomputable def RefinementBCRegime.reverseBase
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C) :
+noncomputable def LegacyRefinementBCRegime.reverseBase
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C) :
     CoreFiber C.DOne ⥤ CoreFiber C.DOnePrime :=
   regime.baseCleavage.reverseFunctor
 
 /-- Reverse transport along the pulled refinement, generated by its cleavage. -/
-noncomputable def RefinementBCRegime.reversePullback
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C) :
+noncomputable def LegacyRefinementBCRegime.reversePullback
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C) :
     CoreFiber C.pullback ⥤ CoreFiber C.pulled :=
   regime.pulledCleavage.reverseFunctor
 
 /-- The generated universal lift over the authored refinement. -/
-def RefinementBCRegime.baseLift
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+def LegacyRefinementBCRegime.baseLift
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (target : CoreFiber C.DOne) :=
   (regime.baseCleavage.lift target).hom
 
 /-- The generated universal lift over the pulled refinement. -/
-def RefinementBCRegime.pulledLift
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+def LegacyRefinementBCRegime.pulledLift
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (target : CoreFiber C.pullback) :=
   (regime.pulledCleavage.lift target).hom
 
 /-- The relative hom equivalence generated by the base cleavage. -/
-noncomputable def RefinementBCRegime.baseHomEquiv
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+noncomputable def LegacyRefinementBCRegime.baseHomEquiv
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (source : CoreFiber C.DOnePrime) (target : CoreFiber C.DOne) :=
   regime.baseCleavage.homEquiv source target
 
 /-- The relative hom equivalence generated by the pulled cleavage. -/
-noncomputable def RefinementBCRegime.pulledHomEquiv
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+noncomputable def LegacyRefinementBCRegime.pulledHomEquiv
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (source : CoreFiber C.pulled) (target : CoreFiber C.pullback) :=
   regime.pulledCleavage.homEquiv source target
 
 /-- The lower refinement carried by the explicit two-step mate candidate. -/
-def RefinementBCConfiguration.mateLowerPath
-    (C : RefinementBCConfiguration U) :
+def LegacyRefinementBCConfiguration.mateLowerPath
+    (C : LegacyRefinementBCConfiguration U) :
     PointedRefinementHom C.pulled C.DOne :=
   (PointedRefinementHom.ofExact C.pulledFst).comp C.refinement
 
@@ -844,8 +844,8 @@ def RefinementBCConfiguration.mateLowerPath
 The explicit path around the pulled side, before factoring through the G-112
 selected lift over `pullbackFst`.
 -/
-noncomputable def RefinementBCRegime.mateCandidate
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+noncomputable def LegacyRefinementBCRegime.mateCandidate
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     {source target : CoreFiber C.DOne} (vertical : source ⟶ target) :
     RefinementOverHom C.mateLowerPath
       ((exact_bottom_semantic_global_reindex_functor C.pulledFst).obj
@@ -869,13 +869,13 @@ noncomputable def RefinementBCRegime.mateCandidate
       exact_bottom_semantic_global_selected_lift_upperInverse C.pulledFst
       (regime.baseCleavage.reverseFunctor.obj source)
     rw [inverseData.selected_atomEquiv_apply]
-    simp [RefinementBCConfiguration.mateLowerPath,
+    simp [LegacyRefinementBCConfiguration.mateLowerPath,
       PointedRefinementHom.comp, refinementHomComp,
       PointedRefinementHom.ofExact, exactToRefinement]
 
 /-- The mixed route generated by the exact-refinement cartesian factor. -/
-noncomputable def RefinementBCRegime.mateRouteBetween
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+noncomputable def LegacyRefinementBCRegime.mateRouteBetween
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     {source target : CoreFiber C.DOne} (vertical : source ⟶ target) :
     RefinementOverHom C.pulledRefinement
       ((exact_bottom_semantic_global_reindex_functor C.pulledFst).obj
@@ -886,14 +886,14 @@ noncomputable def RefinementBCRegime.mateRouteBetween
     C.pulledRefinement C.pulled_square_commutes (regime.mateCandidate vertical)
 
 /-- The objectwise mixed route is the generated identity-vertical factor. -/
-noncomputable def RefinementBCRegime.mateRoute
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+noncomputable def LegacyRefinementBCRegime.mateRoute
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (target : CoreFiber C.DOne) :=
   regime.mateRouteBetween (𝟙 target)
 
 /-- Every generated mixed route has its defining exact-lift triangle. -/
-theorem RefinementBCRegime.mateRouteBetween_fac
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+theorem LegacyRefinementBCRegime.mateRouteBetween_fac
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     {source target : CoreFiber C.DOne} (vertical : source ⟶ target) :
     (regime.mateRouteBetween vertical).upper.comp
         (exact_bottom_semantic_global_selected_lift
@@ -903,23 +903,23 @@ theorem RefinementBCRegime.mateRouteBetween_fac
     C.pullbackFst target).factor_fac _ _ _ _
 
 /-- The generated mixed route has the exact two-path factor graph. -/
-theorem RefinementBCRegime.mateRoute_fac
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+theorem LegacyRefinementBCRegime.mateRoute_fac
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     (target : CoreFiber C.DOne) :
     (regime.mateRoute target).upper.comp
         (exact_bottom_semantic_global_selected_lift C.pullbackFst target).hom.upper =
       (exact_bottom_semantic_global_selected_lift C.pulledFst
           (regime.baseCleavage.reverseFunctor.obj target)).hom.upper.comp
         (regime.baseCleavage.lift target).hom.upper := by
-  rw [RefinementBCRegime.mateRoute, regime.mateRouteBetween_fac]
+  rw [LegacyRefinementBCRegime.mateRoute, regime.mateRouteBetween_fac]
   exact PackageTotalHom.upper_comp_id _
 
 /--
 Route naturality generated by the caller-free mixed cartesian factorization,
 the two G-112 reindex graphs, and the base refinement factor graph.
 -/
-theorem RefinementBCRegime.mateRoute_natural
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+theorem LegacyRefinementBCRegime.mateRoute_natural
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     {source target : CoreFiber C.DOne} (vertical : source ⟶ target) :
     RefinementOverHom.precomp
         ((exact_bottom_semantic_global_reindex_functor C.pulledFst).map
@@ -988,8 +988,8 @@ theorem RefinementBCRegime.mateRoute_natural
   exact hfirst.trans hsecond.symm
 
 /-- Naturality of the generated mate components, derived before assembly. -/
-theorem RefinementBCRegime.mate_naturality
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C)
+theorem LegacyRefinementBCRegime.mate_naturality
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C)
     {source target : CoreFiber C.DOne} (vertical : source ⟶ target) :
     (exact_bottom_semantic_global_reindex_functor C.pulledFst).map
           (regime.reverseBase.map vertical) ≫
@@ -1018,8 +1018,8 @@ Its component is not supplied as regime data: it is the unique factor of the
 square route through `pulledLift`.  Its naturality is derived from route
 naturality and the two generated hom-equivalence naturality laws.
 -/
-noncomputable def RefinementBCRegime.mate
-    {C : RefinementBCConfiguration U} (regime : RefinementBCRegime C) :
+noncomputable def LegacyRefinementBCRegime.mate
+    {C : LegacyRefinementBCConfiguration U} (regime : LegacyRefinementBCRegime C) :
     regime.reverseBase ⋙
         exact_bottom_semantic_global_reindex_functor C.pulledFst ⟶
       exact_bottom_semantic_global_reindex_functor C.pullbackFst ⋙
@@ -1028,18 +1028,18 @@ noncomputable def RefinementBCRegime.mate
   naturality _ _ vertical := regime.mate_naturality vertical
 
 /-- Availability of the regime is existence of the fixed regime structure. -/
-def RegimeAvailable (C : RefinementBCConfiguration U) : Prop :=
-  Nonempty (RefinementBCRegime C)
+def RegimeAvailable (C : LegacyRefinementBCConfiguration U) : Prop :=
+  Nonempty (LegacyRefinementBCRegime C)
 
 /-! ## Qualification and branch heads -/
 
 /-- A configuration whose refinement belongs to the exact comparison image. -/
-def StrictRefinementImage (C : RefinementBCConfiguration U) : Prop :=
+def StrictRefinementImage (C : LegacyRefinementBCConfiguration U) : Prop :=
   ∃ exact : C.DOnePrime ⟶ C.DOne,
     PointedRefinementHom.ofExact exact = C.refinement
 
 /-- The authored pointed refinement has no two-sided pointed refinement inverse. -/
-def NoninvertiblePointedRefinement (C : RefinementBCConfiguration U) : Prop :=
+def NoninvertiblePointedRefinement (C : LegacyRefinementBCConfiguration U) : Prop :=
   ¬ Nonempty (PointedRefinementIso C.DOnePrime C.DOne)
 
 /-- Raw exact cospan used to form an identity-refinement configuration. -/
@@ -1057,7 +1057,7 @@ structure RefinementBCIdentityData (U : AtomCarrier.{u}) where
 
 /-- The identity-refinement configuration generated from one exact cospan. -/
 def RefinementBCIdentityData.configuration
-    (data : RefinementBCIdentityData U) : RefinementBCConfiguration U where
+    (data : RefinementBCIdentityData U) : LegacyRefinementBCConfiguration U where
   DOnePrime := data.DOne
   DOne := data.DOne
   DTwo := data.DTwo
@@ -1089,7 +1089,7 @@ structure RefinementBCCompositionData (U : AtomCarrier.{u}) where
 
 /-- The configuration of the outer leg `f`. -/
 def RefinementBCCompositionData.outerConfiguration
-    (data : RefinementBCCompositionData U) : RefinementBCConfiguration U where
+    (data : RefinementBCCompositionData U) : LegacyRefinementBCConfiguration U where
   DOnePrime := data.DOnePrime
   DOne := data.DOne
   DTwo := data.DTwo
@@ -1100,7 +1100,7 @@ def RefinementBCCompositionData.outerConfiguration
 
 /-- The configuration of the composite leg `f ∘ g`. -/
 def RefinementBCCompositionData.compositeConfiguration
-    (data : RefinementBCCompositionData U) : RefinementBCConfiguration U where
+    (data : RefinementBCCompositionData U) : LegacyRefinementBCConfiguration U where
   DOnePrime := data.DOneDoublePrime
   DOne := data.DOne
   DTwo := data.DTwo
@@ -1124,8 +1124,8 @@ def InnerReflectingOnCompositeLocus
           data.DOneDoublePrime.doctrine.extracts source atom
 
 /-- The induced configuration whose horizontal leg is the generated `f*`. -/
-def pulledLegConfiguration (C : RefinementBCConfiguration U) :
-    RefinementBCConfiguration U where
+def pulledLegConfiguration (C : LegacyRefinementBCConfiguration U) :
+    LegacyRefinementBCConfiguration U where
   DOnePrime := C.pulled
   DOne := C.pullback
   DTwo := C.DTwo
@@ -1141,7 +1141,7 @@ structure RefinementBCPositiveFamilyRaw (U : AtomCarrier.{u}) where
   /-- A named member prevents empty-family qualification. -/
   distinguished : Parameter
   /-- Raw configuration at each parameter. -/
-  configuration : Parameter → RefinementBCConfiguration U
+  configuration : Parameter → LegacyRefinementBCConfiguration U
 
 /--
 The five qualifications for the unique fixed term.  Closure is stated for
@@ -1151,8 +1151,8 @@ generated square.  All fields are theorem outputs, never raw fixture data.
 structure RefinementBCConditionQualification
     (term : RefinementBCConditionSyntax U) : Type (u + 1) where
   /-- Evaluation is invariant under the fixed componentwise configuration isomorphism. -/
-  isomorphic_invariant : ∀ (first second : RefinementBCConfiguration U),
-    RefinementBCConfigurationIso first second →
+  isomorphic_invariant : ∀ (first second : LegacyRefinementBCConfiguration U),
+    LegacyRefinementBCConfigurationIso first second →
       (evalRefinementBCCondition term first ↔
         evalRefinementBCCondition term second)
   /-- The fixed condition contains every identity refinement. -/
@@ -1164,11 +1164,11 @@ structure RefinementBCConditionQualification
       InnerReflectingOnCompositeLocus data →
         evalRefinementBCCondition term data.compositeConfiguration
   /-- The fixed condition is closed under passage to the generated pulled leg. -/
-  pulled_leg_mem : ∀ C : RefinementBCConfiguration U,
+  pulled_leg_mem : ∀ C : LegacyRefinementBCConfiguration U,
     evalRefinementBCCondition term C →
       evalRefinementBCCondition term (pulledLegConfiguration C)
   /-- Every exact-comparison-image configuration is included. -/
-  comparison_image_mem : ∀ (C : RefinementBCConfiguration U),
+  comparison_image_mem : ∀ (C : LegacyRefinementBCConfiguration U),
     StrictRefinementImage C → evalRefinementBCCondition term C
   /-- Authored raw positive family. -/
   positiveFamily : RefinementBCPositiveFamilyRaw U
@@ -1192,7 +1192,7 @@ structure RefinementBCConditionQualification
 /-- Positive branch: every admissible raw configuration has a regime. -/
 structure GlobalRefinementBaseChange (U : AtomCarrier.{u}) : Type (u + 2) where
   /-- Caller-free carrier-wide regime production. -/
-  regime : ∀ C : RefinementBCConfiguration U, RefinementBCRegime C
+  regime : ∀ C : LegacyRefinementBCConfiguration U, LegacyRefinementBCRegime C
 
 /--
 Negative branch: the unique fixed condition exactly characterizes regime
@@ -1204,15 +1204,15 @@ structure CharacterizedRefinementBaseChange (U : AtomCarrier.{u}) : Type (u + 2)
     RefinementBCConditionQualification
       (pulledLocusExtractionReflectingTerm (U := U))
   /-- Sufficiency of compatible-locus extraction reflection. -/
-  sufficient : ∀ C : RefinementBCConfiguration U,
+  sufficient : ∀ C : LegacyRefinementBCConfiguration U,
     evalRefinementBCCondition pulledLocusExtractionReflectingTerm C →
       RegimeAvailable C
   /-- Independent necessity of compatible-locus extraction reflection. -/
-  necessary : ∀ C : RefinementBCConfiguration U,
+  necessary : ∀ C : LegacyRefinementBCConfiguration U,
     RegimeAvailable C →
       evalRefinementBCCondition pulledLocusExtractionReflectingTerm C
   /-- Concrete non-regime configuration. -/
-  counterexample : RefinementBCConfiguration U
+  counterexample : LegacyRefinementBCConfiguration U
   /-- The counterexample is outside the exact comparison image. -/
   counterexample_strictly_outside : ¬ StrictRefinementImage counterexample
   /-- The counterexample refinement is not invertible. -/

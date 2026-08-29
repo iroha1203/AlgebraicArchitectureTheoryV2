@@ -85,7 +85,7 @@ the K2 necessity direction; it is evidence for a GOAL defect, not a branch
 producer.
 -/
 theorem regimeAvailable_of_empty_target_fibers
-    (C : RefinementBCConfiguration U)
+    (C : LegacyRefinementBCConfiguration U)
     (baseEmpty : IsEmpty (CoreFiber C.DOne))
     (pullbackEmpty : IsEmpty (CoreFiber C.pullback)) :
     RegimeAvailable C := by
@@ -101,7 +101,7 @@ The strict finite refinement over the identity cospan.  Every refined source is
 in the compatible locus because the second endpoint is the target itself.
 -/
 noncomputable def finiteRefinementConfiguration :
-    RefinementBCConfiguration FiniteModel.carrier where
+    LegacyRefinementBCConfiguration FiniteModel.carrier where
   DOnePrime := packagePoint refinementSourcePackage
   DOne := refinementTargetPoint
   DTwo := refinementTargetPoint

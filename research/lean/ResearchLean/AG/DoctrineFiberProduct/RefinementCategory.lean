@@ -155,6 +155,182 @@ structure PointedRefinementIso (X Y : ExtractionInstance U) where
   /-- Backward followed by forward is the identity refinement. -/
   inv_hom_id : inv.comp hom = PointedRefinementHom.id Y
 
+/-! ## Public wrapper categories required by G-114 revision 3 -/
+
+/-- Public G-114 name for the unpointed refinement wrapper. -/
+abbrev RefinementObject (U : AtomCarrier.{u}) := RefinementDoctrineObject U
+
+/-- Public G-114 name for the unpointed refinement category. -/
+abbrev RefinementCategory (U : AtomCarrier.{u}) :=
+  RefinementDoctrineCategory U
+
+/-- A pointed extraction instance read in the refinement category. -/
+structure PointedRefinementObject (U : AtomCarrier.{u}) where
+  /-- The underlying pointed extraction doctrine. -/
+  pointed : ExtractionInstance U
+
+/-- The category of pointed refinements. -/
+abbrev PointedRefinementCategory (U : AtomCarrier.{u}) :=
+  PointedRefinementObject U
+
+instance pointedRefinementCategory (U : AtomCarrier.{u}) :
+    Category.{u} (PointedRefinementCategory U) where
+  Hom X Y := PointedRefinementHom X.pointed Y.pointed
+  id X := PointedRefinementHom.id X.pointed
+  comp f g := f.comp g
+  id_comp := by
+    intro X Y f
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+  comp_id := by
+    intro X Y f
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+  assoc := by
+    intro W X Y Z f g h
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+
+/-- Exact pointed maps embed functorially into pointed refinements. -/
+def exactPointedToRefinement (U : AtomCarrier.{u}) :
+    ExtractionInstance U ⥤ PointedRefinementCategory U where
+  obj X := ⟨X⟩
+  map f := PointedRefinementHom.ofExact f
+  map_id _ := rfl
+  map_comp f g := by
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+
+/-- A core package read as an object of the refinement package total category. -/
+structure RefinementPackageObject (U : AtomCarrier.{u}) where
+  /-- The underlying complete core package. -/
+  package : AATCorePackage U
+
+/-- The total category whose lower arrows are pointed refinements. -/
+abbrev RefinementPackageTotalCategory (U : AtomCarrier.{u}) :=
+  RefinementPackageObject U
+
+/--
+A complete package morphism over a pointed refinement.  No cartesian witness,
+cleavage, mate, or reflection certificate is stored here.
+-/
+structure RefinementPackageHom {U : AtomCarrier.{u}}
+    (P Q : RefinementPackageObject U) where
+  /-- The lower pointed refinement. -/
+  base : PointedRefinementHom (packagePoint P.package) (packagePoint Q.package)
+  /-- The complete upper reading morphism. -/
+  upper : SignedExactCoreReadingHom P.package Q.package
+  /-- Upper and lower maps use the same primitive Atom equivalence. -/
+  atomEquiv_eq : upper.atomEquiv = base.doctrineHom.atomEquiv
+
+namespace RefinementPackageHom
+
+@[ext]
+theorem ext {U : AtomCarrier.{u}} {P Q : RefinementPackageObject U}
+    {f g : RefinementPackageHom P Q}
+    (hbase : f.base = g.base) (hupper : f.upper = g.upper) : f = g := by
+  cases f
+  cases g
+  cases hbase
+  cases hupper
+  rfl
+
+/-- Identity complete package morphism over the identity refinement. -/
+def id {U : AtomCarrier.{u}} (P : RefinementPackageObject U) :
+    RefinementPackageHom P P where
+  base := PointedRefinementHom.id (packagePoint P.package)
+  upper := SignedExactCoreReadingHom.refl P.package
+  atomEquiv_eq := by
+    apply Equiv.ext
+    intro atom
+    rfl
+
+/-- Composition of complete package morphisms over pointed refinements. -/
+def comp {U : AtomCarrier.{u}} {P Q R : RefinementPackageObject U}
+    (f : RefinementPackageHom P Q) (g : RefinementPackageHom Q R) :
+    RefinementPackageHom P R where
+  base := f.base.comp g.base
+  upper := f.upper.comp g.upper
+  atomEquiv_eq := by
+    apply Equiv.ext
+    intro atom
+    change g.upper.atomEquiv (f.upper.atomEquiv atom) =
+      g.base.doctrineHom.atomEquiv (f.base.doctrineHom.atomEquiv atom)
+    rw [f.atomEquiv_eq, g.atomEquiv_eq]
+
+end RefinementPackageHom
+
+instance refinementPackageTotalCategory (U : AtomCarrier.{u}) :
+    Category.{u + 1} (RefinementPackageTotalCategory U) where
+  Hom P Q := RefinementPackageHom P Q
+  id P := RefinementPackageHom.id P
+  comp f g := f.comp g
+  id_comp := by
+    intro P Q f
+    apply RefinementPackageHom.ext
+    · apply PointedRefinementHom.ext
+      apply RefinementDoctrineHom.ext <;> rfl
+    · change (SignedExactCoreReadingHom.refl P.package).comp f.upper = f.upper
+      exact PackageTotalHom.upper_id_comp f.upper
+  comp_id := by
+    intro P Q f
+    apply RefinementPackageHom.ext
+    · apply PointedRefinementHom.ext
+      apply RefinementDoctrineHom.ext <;> rfl
+    · change f.upper.comp (SignedExactCoreReadingHom.refl Q.package) = f.upper
+      exact PackageTotalHom.upper_comp_id f.upper
+  assoc := by
+    intro P Q R S f g h
+    apply RefinementPackageHom.ext
+    · rfl
+    · exact PackageTotalHom.upper_comp_assoc f.upper g.upper h.upper
+
+/-- The explicit G-114 refinement package projection. -/
+def refinementPackageProjection (U : AtomCarrier.{u}) :
+    RefinementPackageTotalCategory U ⥤ PointedRefinementCategory U where
+  obj P := ⟨packagePoint P.package⟩
+  map f := f.base
+  map_id X := by
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+  map_comp f g := by
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+
+/-- Exact package morphisms embed into the refinement total category. -/
+def exactPackageToRefinement (U : AtomCarrier.{u}) :
+    PackageTotalCategory U ⥤ RefinementPackageTotalCategory U where
+  obj P := ⟨P⟩
+  map f := {
+    base := PointedRefinementHom.ofExact f.base
+    upper := f.upper
+    atomEquiv_eq := by
+      apply Equiv.ext
+      intro atom
+      exact congrFun (congrArg Equiv.toFun f.atomEquiv_eq) atom
+  }
+  map_id X := by
+    apply RefinementPackageHom.ext
+    · apply PointedRefinementHom.ext
+      apply RefinementDoctrineHom.ext <;> rfl
+    · rfl
+  map_comp f g := by
+    apply RefinementPackageHom.ext
+    · apply PointedRefinementHom.ext
+      apply RefinementDoctrineHom.ext <;> rfl
+    · rfl
+
+/-- The exact and refinement projections form a strictly commuting square. -/
+theorem exact_refinement_projection_square (U : AtomCarrier.{u}) :
+    exactPackageToRefinement U ⋙ refinementPackageProjection U =
+      packageProjection U ⋙ exactPointedToRefinement U := by
+  apply CategoryTheory.Functor.ext
+  · intro X Y f
+    apply PointedRefinementHom.ext
+    apply RefinementDoctrineHom.ext <;> rfl
+  · intro X
+    rfl
+
 end AAT.AG.DoctrineFiberProduct
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
