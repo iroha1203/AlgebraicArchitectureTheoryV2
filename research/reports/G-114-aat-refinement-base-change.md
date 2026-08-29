@@ -309,6 +309,11 @@ the revision-3 wrapper files:
   `exact_bottom_semantic_global_reindex_functor`,
   `exact_bottom_semantic_global_selected_lift`, and its factor/coherence laws,
   consumed by `Supply.lean` and the canonical mate routes.
+- `PointedDoctrinePullback.lean` (blob
+  `b9fa39c2547d8cec0da4a79724241be2f7987db6`):
+  `pointedPullbackSource`, `pointedPullback`, `pointedPullbackFst`, and
+  `pointedPullbackSnd`, consumed directly by the legacy schema and hence by the
+  revision-3 generated pullback objects and unconditional square in clause (b).
 
 Witness-local source, repointing, and obstruction constructors in
 `Witnesses.lean`, together with `PointedRefinementHom`,
