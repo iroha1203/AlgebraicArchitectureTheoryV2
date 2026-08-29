@@ -48,10 +48,12 @@
   「具体 doctrine 塔の refinement / 上段 regime 込みの設定で、存否
   未決だった exchange-failure に決定を与え、階梯全体の達成を検証可能な
   台帳突合として記録する」点に置く。
-- `claim boundary`: 固定した一般 carrier `U` の上で語る。係数は動かさ
-  ない。終対象・絶対積は導入しない。量化域は、mate を伴う G-110
-  sector、G-114 の `ActiveRefinementBCContext`、G-115 の actual
-  `UpperLiftSolution` からなる `Gr4ExchangeContext` とする。本カードは
+- `claim boundary`: 各 summand の carrier は context とともに dependent sumへ
+  包装し、その summand 内では固定する。carrier間の射やcarrier changeは語らない。
+  係数は各context内で固定し、終対象・絶対積は導入しない。量化域は、carrierを
+  内包する mate-bearing G-110 sector、G-114 `ActiveRefinementBCContext`、
+  G-115 が構成した named actual `UpperLiftSolution` からなる
+  非index型 `Gr4ExchangeContext` とする。本カードは
   upper solutionを新設しない。G-114 の forward-only / inactive refinement と
   G-115 の non-liftable raw problem は O12 の外に置くが、O19 でその
   帰趨と理由を記録する。
@@ -108,10 +110,12 @@
   採択後、他方の branch は theorem の conjunct でも disjunct でもない。
 
   共通する量化域と実質条件は次のとおり:
-  - `Gr4ExchangeContext` を、mate を伴う G-110 sector、G-114
-    `ActiveRefinementBCContext`、G-115 が theorem artifactとして構成した named
-    actual `UpperLiftSolution` の tagged sumとして定義する。任意 caller-supplied
-    solutionを payload として量化域へ追加しない。量化域は
+  - `Gr4ExchangeContext` を、`Σ U,` mateを伴うG-110 sector、`Σ U,`
+    G-114 `ActiveRefinementBCContext U`、および G-115 theorem artifacts
+    `upperLaxSolution` / `upperExactSolution` をconstructorに持つ
+    `G115NamedUpperContext` の tagged sumとして定義する。各named solutionの
+    concrete carrierはそのconstructorが隠蔽し、任意 `U` へtransportしない。
+    任意 caller-supplied solutionを payload として量化域へ追加しない。量化域は
     この型に固定し、**authored
     datum 付き lax square を含める**。
   - 既決 / 未決の分界: G-110 sector の pullback square 上の mate 同型は
@@ -144,7 +148,9 @@
   theorem artifactとして固定した `upperLaxSolution` / `upperExactSolution`だけを
   含み、chosen solution相対の `UpperStageExchangeExact` を判定する。
   `upperLaxSolution` は named-failure branch-selection evidenceとなる。
-  non-liftable problemは O19 の domain-classificationに残す。
+  G-115 が完遂した時点で universal branch は棄却され、active 昇格 revision は
+  この named failure branchだけを固定する。G-115 完遂前は証拠未確定なので本カードを
+  draftに保つ。non-liftable problemは O19 の domain-classificationに残す。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110〜G-115 の reviewed module は参照のみ。regime の新設

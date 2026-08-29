@@ -1,4 +1,4 @@
-# G-115-aat-upper-stage-lift — 上段 lift の非存在と最大 transport contract
+# G-115-aat-upper-stage-lift — 上段 lift の非存在と relational transport contract
 
 - `id`: `G-115-aat-upper-stage-lift`
 - `status`: `active`
@@ -7,7 +7,7 @@
 - `program context`: Gr4 完遂 gate 第三項(O10–O11)。義務台帳は G-116、
   source note は n1007 §3–§5。G-114 revision 3 の canonical core mate が
   geometry 段へ一様に持ち上がるという旧 target を、actual AAT data 上の
-  no-go theorem と、持ち上がる問題に対する最大 transport contractへ改訂する。
+  no-go theorem と、持ち上がる問題に対する relational transport contractへ改訂する。
   本カードは G-116 に named nonexact upper solution を供給し、upper summand の
   exchange-failure branch-selection evidence とする。
 - `predecessor`: G-114 revision 3(完遂済み。active refinement context、二つの
@@ -27,7 +27,7 @@
   fixed active context 上の named geometry obstructionで証明する。次に actual
   solution がある問題について、非可逆 solution が full automorphism orbit の
   map を一般に誘導しないことを named counterexample で証明し、paired
-  intertwining が無条件に残る最大の主張であることを固定する。最後に actual
+  intertwining が非可逆時にも残る正しい主張であることを固定する。最後に actual
   natural iso solution 上では conjugation が raw cochain と actual orbit の
   非退化な同値を与えることを示す。
 - `core tension`: G-114 reverse refinement は cartesian reindexing に由来する
@@ -72,7 +72,7 @@
     **refuted** と確定し、solution-relative な最大 contractと exact / nonexact
     witnessを残す。旧 target と同じ強さだとは主張しない。
 
-- `target theorem`: **Upper-Stage Lift No-Go and Maximal Transport Theorem**。
+- `target theorem`: **Upper-Stage Lift No-Go and Relational Transport Theorem**。
   G-114 の `ctx : ActiveRefinementBCContext` を使って次を構成・証明する。
 
   1. **(a) raw problem と actual solution**:
@@ -84,9 +84,12 @@
      - `D` を G-114 の二 core route functorで送った base / pulled core diagram。
      - 各 route core diagramを射影とする二つの G-109-qualified
        `TwoLayerTransportData P U`。各 route geometry diagramから
-       `sourceData` への component familyを、G-114 の selected cartesian lift legへ
-       射影する actual `GeometryTotalHom` として持ち、各 route内の edge
-       naturalityを満たす。これは二つの reverse routeを個別に realizationする
+       `sourceData` への component familyを actual `GeometryTotalHom` として持つ。
+       base route legのcore射影は G-112 exact selected lift と G-114 base
+       refinement selected liftの合成、pulled route legのcore射影は G-114 pulled
+       refinement selected lift と G-112 exact selected liftの合成に固定し、各
+       route内のedge naturalityは両段のmap-factor lawを実消費して証明する。
+       これは二つの reverse routeを個別に realizationする
        direction hypothesisであり、route間の mate componentを含まない。全三
        geometry diagramの係数を同じ objectへ同定し、全 raw edgeの coefficient
        homはidentityとする。
@@ -97,11 +100,14 @@
      solutionを混同しない。
 
      `UpperLiftSolution problem` は、各 vertex の `GeometryTotalHom` が
-     `ctx.mate.app (D.package i)` へ射影すること、各 edge の mate naturality、
-     G-109 authored comparatorを含む two-cell intertwining、nil / append / pasting
-     coherenceを持つ actual finite upper mateとする。comparator intertwining を
-     edge naturalityの系とはせず、solution の独立 equation として完全 signatureに
-     列挙する。`UpperLiftable problem := Nonempty (UpperLiftSolution problem)` は
+     `ctx.mate.app (D.package i)` へ射影すること、base reverse geometry legが
+     「mate componentの後に pulled reverse geometry leg」を通る合成と等しい
+     (`ηᵢ ≫ pulledLegᵢ = baseLegᵢ`)
+     geometry-level factorization triangle、各 edge の mate naturality、G-109
+     authored comparatorを含む two-cell intertwining、nil / append / pasting
+     coherenceを持つ actual finite upper mateとする。factorization triangleと
+     comparator intertwiningをedge naturalityの系とはせず、solution の独立
+     equationsとして完全 signatureに列挙する。`UpperLiftable problem := Nonempty (UpperLiftSolution problem)` は
      domain predicateに過ぎず、その abbreviationや constructor / projectionを
      O10 の成果と数えない。
 
@@ -122,7 +128,7 @@
      `¬ Nonempty (∀ ctx, (p : UpperLiftProblem ctx) → UpperLiftSolution p)` を証明する。
      これが revision 1 global upper lift の fixed refutationである。
 
-  3. **(c) nonexact solution と maximal relational contract (O11 negative branch)**:
+  3. **(c) nonexact solution と relational contract (O11 negative branch)**:
      別の named `upperLaxProblem` と actual `upperLaxSolution` を構成する。
      solution は root-connected、nonidentity edge / mate component / authored
      comparator / raw cochainを持ち、少なくとも一つの mate componentは
@@ -135,11 +141,15 @@
      `InUpperReselectionOrbit` membershipがpairedに保存されることを証明する。
 
      さらに `upperLaxProblem` の固定 base reselection `rBad` を構成し、これと
-     intertwineする pulled reselectionが存在しないことを証明する。従って全 base
-     reselectionを送る relation-selector、full automorphism map、actual orbit間の
-     `Set.MapsTo` はこの solutionに存在しない。単なる「一般の射から群準同型は
-     作れない」という外部一般論ではなく、AAT の `CompositeFiberAut` と actual
-     upper cochainを用いた有限計算で示す。
+     intertwineする pulled reselectionが存在しないことを証明する。
+     `SolutionCompatibleOrbitTransport solution` を、全 base reselectionに
+     intertwining partnerを選ぶ total selector、そのselectorから誘導される cochain
+     map、`upperRawDefectCochain` commuting、その特定mapについての `Set.MapsTo` を
+     一体化した structureとして定義し、`¬ Nonempty
+     (SolutionCompatibleOrbitTransport upperLaxSolution)` を証明する。bareな群準同型、
+     bareな関数、bareな `Set.MapsTo` の非存在は主張しない。単なる「一般の射から
+     群準同型は作れない」という外部一般論ではなく、AAT の
+     `CompositeFiberAut` と actual upper cochainを用いた有限計算で示す。
 
   4. **(d) exact solution と actual orbit equivalence**:
      第三の named `upperExactProblem` と `upperExactSolution` を構成する。全 mate
@@ -160,7 +170,8 @@
   build は禁止し、direct dependency DAG と focused file checkだけを使う。
 - `target proof artifacts`: `UpperLiftProblem`、`UpperLiftSolution`、
   `UpperLiftable`、named `upperNoLiftProblem` / `not_upperLiftable` / no-uniform-section、
-  named `upperLaxSolution` / non-`IsIso` / `rBad` / no-selector、paired reselection・
+  named `upperLaxSolution` / non-`IsIso` / `rBad` /
+  `SolutionCompatibleOrbitTransport` no-go、paired reselection・
   raw-cochain・actual orbit theorem、named `upperExactSolution` / nonidentity firing /
   conjugation orbit equivalence、`UpperStageExchangeExact`、report
   `research/reports/G-115-aat-upper-stage-lift.md`。
@@ -183,10 +194,10 @@
 | G-114 active context / mate | ambient | PR #4246 fixed head `8f7ad8bf`、merge `3d26d993`。共通sourceの二routeとcore mateに使用。geometry liftは含まない |
 | G-109 routewise data | ambient | reviewed raw two-layer problem。strong edge、two-cell、authored comparatorの語彙。route間comparator equationは含まない |
 | raw `UpperLiftProblem` | direction-hypothesis | common source geometry diagram、二functor image、各reverse legの個別geometry realization、fixed coefficientだけ。route間solution dataを持たず、個別legの存在はO10放電と数えない |
-| `UpperLiftSolution` | conditional-domain | paired / exact theoremのactual input。solution existenceをO10放電とは数えない。comparator equationを明示する |
+| `UpperLiftSolution` | conditional-domain | paired / exact theoremのactual input。solution existenceをO10放電とは数えない。geometry-level leg factorization triangleとcomparator equationを独立に明示する |
 | named no-lift fixture / no uniform section | discharge-required | vertical geometry obstructionを具体評価し、旧global liftをrefuteする |
 | named nonexact solution / no-selector | discharge-required | non-`IsIso` componentとunmatched actual automorphismを具体評価する |
-| paired cochain / orbit theorem | discharge-required | solutionのedge equationとauthored comparator equationをproof bodyで別々に実消費する |
+| paired cochain / orbit theorem | discharge-required | solutionのleg triangle、edge equation、authored comparator equationをproof bodyで別々に実消費する。bare `Set.MapsTo` 不存在は主張しない |
 | named exact solution / orbit equivalence | discharge-required | nonidentity cochain上でconjugationとinverseを実計算する |
 
 **受入禁止**
