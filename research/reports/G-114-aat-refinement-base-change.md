@@ -49,11 +49,12 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
   upper-lift 不存在を dependent に保持し、そこから
   `¬ RegimeAvailable` を生成する。
 - regime/O12 分界:
-  `RefinementOverHom` は lax lower refinement を固定し、上部だけを
-  `SignedExactCoreReadingHom` とする。`RefinementCartesianLift` の factor / triangle /
+  `RefinementOverHom` は lax lower refinement を固定し、上部を
+  `SignedExactCoreReadingHom` としつつ、selected source 上で lower source-map に沿う
+  extraction reflection を要求する。`RefinementCartesianLift` の factor / triangle /
   uniqueness から `reverseFunctor`、relative `homEquiv`、両変数 naturality を生成する。
   `RefinementBCRegime` の field は base / pulled cleavage と、G-112 exact selected lift
-  の二経路を結ぶ一意な `mateRoute` とその pre/postcomposition law であり、
+  の二経路を結ぶ `mateRoute` と汎用 factor-graph uniqueness であり、
   `mate` natural transformation は pulled cleavage の一意 factor と、生成済み
   hom-equivalence naturality から定義する。`IsIso`、condition membership、
   regime availability certificate は field にない。
@@ -397,8 +398,8 @@ audits:
       - "cartesian hom-equivalence source and target naturality in mate_naturality"
       - "base cleavage selected lift in counterexample_not_available"
     unused: []
-  structure_field_escape: none-found-at-candidate-head
-  route_integrity: pending-final-fixed-head-rereview
+  structure_field_escape: fail-at-reviewed-head-2e8804d1
+  route_integrity: fail-at-reviewed-head-2e8804d1
   target_fitting: none-found
   validation_refs:
     - >-
@@ -409,8 +410,92 @@ audits:
       cd research/lean && lake env lean
       ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchemaWitnesses.lean;
       exit 0; module-wide standard-axiom audit reports 8 declarations
+  blocking_findings:
+    - >-
+      Final fixed-head rerun at 2e8804d1 returned one accept and three rejects.
+      The lower copy plus equality did not constrain the upper package change
+      through the refinement source map, and mateRoute_natural was equivalent,
+      through homEquiv, to supplying the final NatTrans naturality law.
+  next_obligation: >-
+    Mark this review batch rejected and begin the next proof cycle.  Replace the
+    name-only lower copy by a selected-source extraction law, and generate route
+    naturality from a generalized exact-route factor uniqueness principle.
+```
+
+### Cycle 4 — source-sensitive lift and generated route naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-114-aat-refinement-base-change
+cycle: 4
+goal_blob_sha: 429183c6b8c93e9ca5c7886bab887beec76ddff5
+base_oid: 363f79a5bf0542b6e5cb9d19d63cacfa80402316
+tracking_issue: 4239
+report_path: research/reports/G-114-aat-refinement-base-change.md
+selection:
+  proof_state_ref: "PR #4241 fixed-head rerun-2 at 2e8804d1: one accept / three reject"
+  proof_obligation: >-
+    Bind each relative upper package change to the authored refinement's full
+    source map at the selected package point, and derive route naturality by
+    comparing two generalized exact-lift factor graphs.
+  selection_reason: >-
+    The rejected batch showed that retaining a propositionally fixed lower arrow
+    was not enough: the upper surface must consume a law involving the lower
+    source map.  It also showed that route naturality itself cannot be regime
+    input.  The fixed GOAL already calls for exact-side universal-property proof
+    use, so a mixed-source/target factor uniqueness law is the correct apparatus.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    RefinementOverHom.selected_extraction_iff now requires the exact upper package
+    change to reflect extraction along lower.sourceMap at the selected point.
+    RefinementBCRegime no longer stores route naturality.  Instead it stores a
+    generalized mateRoute_factor_unique cancellation principle.  The theorem
+    mateRoute_natural proves both pre/postcomposition candidates have the same
+    graph using the G-112 exact reindex-map factor law and the generated base
+    reverse-map factor law, then invokes uniqueness.  NatTrans naturality remains
+    a second generated theorem through pulled homEquiv naturality.
+  completion_candidate: no
+  evidence:
+    - RefinementOverHom.selected_extraction_iff
+    - RefinementBCRegime.mateRoute_factor_unique
+    - RefinementBCRegime.mateRoute_natural
+    - RefinementBCRegime.mate_naturality
+  undischarged_assumptions:
+    - producers for selected_extraction_iff in the base and pulled lifts
+    - producer for generalized mateRoute_factor_unique
+    - K0--K3 theorem payloads and final completion audit
+audits:
+  premise_delta:
+    discharged:
+      - "F0 source-map-sensitive relative upper-lift law"
+      - "F0 route naturality generated from factor graphs and uniqueness"
+    remaining:
+      - "all target discharge-required producer theorems beyond F0 typing"
+  certificate_provenance:
+    discharged:
+      - "no mate component or naturality equation is a regime field"
+    unresolved:
+      - "construction of cleavages, route, and generalized route uniqueness"
+  proof_use:
+    used:
+      - exact_bottom_semantic_global_reindex_map_fac
+      - RefinementCartesianCleavage.reverseMap_fac
+      - RefinementCartesianCleavage.homEquiv_natural_source
+      - RefinementCartesianCleavage.homEquiv_natural_target
+    unused: []
+  structure_field_escape: none-found-at-candidate-head
+  route_integrity: pending-new-cycle-review
+  target_fitting: none-found
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean;
+      exit 0; module-wide standard-axiom audit reports 300 declarations
   blocking_findings: []
   next_obligation: >-
-    Run the final permitted four-lane fixed-head review.  All lanes must accept
-    before K0; a central rejection exhausts the bounded F0 review budget.
+    Review the new-cycle fixed head independently before advancing to K0.
 ```
