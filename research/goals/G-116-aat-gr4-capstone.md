@@ -8,7 +8,8 @@
   担当カード = **Gr4 capstone**(設計の source note は n1007 §3–§8)。
   依存は G-111〜G-115 の全カード — 存否決定の量化域は G-114 / G-115 が
   供給する active mate-bearing context から組む。G-115 からは exact
-  `ActiveUpperStageRegime` とそこから生成された actual lifted mate を
+  `ActiveUpperStageRegime` とそこから生成された finite lifted mate
+  component family を
   消費し、達成記録は全カードの
   帰趨確定を突合する。
   したがって**昇格は G-111〜G-115 の全帰趨確定後にのみ行う**。上流の
@@ -49,10 +50,11 @@
   台帳突合として記録する」点に置く。
 - `claim boundary`: 固定した一般 carrier `U` の上で語る。係数は動かさ
   ない。終対象・絶対積は導入しない。量化域は、mate を伴う G-110
-  sector、G-114 の `ActiveRefinementBCContext`、G-115 の active
-  `ActiveUpperStageRegime` とそこから生成された actual lifted mate から
+  sector、G-114 の `ActiveRefinementBCContext`、G-115 の
+  `ActiveUpperStageRegime` から
   なる `Gr4ExchangeContext` とする。本カードは regime、lift、mate を
-  新設しない。G-114 の forward-only / inactive refinement と G-115 の
+  新設しない。upper diagram / mate family は regime から G-115 の定義で
+  導出し、context field / caller payload にしない。G-114 の forward-only / inactive refinement と G-115 の
   upper-incompatible fiberwise input は O12 の外に置くが、O19 でその
   帰趨と理由を記録する。
   下記域外リストの全項目は主張しない。達成記録は
@@ -65,7 +67,7 @@
   昇格時の人間承認 revision で一方の branch-specific statement を固定する。
   固定後は statement と completion criteria だけで完了判定する。
 - `portfolio constraint`: 採択 branch を固定する前に、**量化域の各成分
-  (sector の lax square 域・active refinement・active upper stage)
+  (sector の lax square 域・active refinement・compatible finite upper stage)
   ごとに**非退化発火 witness を要求する。空 fiber による空虚性は
   放電と数えない。lax 成分の
   IsIso が既決 mate+可逆 twist の系として従う場合は独立放電と数えず
@@ -90,12 +92,15 @@
   を主張しない。G-110〜G-115 の設定の上で branch-selection evidence を
   作り、active 昇格時に次のどちらか一方だけを fixed target として採択する:
   1. **Universal Exchange Exactness Theorem**: 全
-     `c : Gr4ExchangeContext` について canonical `mate c` が `IsIso`。
-     proof body は tagged sum の各成分で mate の構成と比較式を実使用し、
+     `c : Gr4ExchangeContext` について `ExchangeExact c`。
+     `ExchangeExact` は G-110 / G-114 summand では actual canonical mate の
+     `IsIso`、G-115 upper summand では有限問題の全 vertex component に
+     `IsIso` を要求する `UpperStageExchangeExact` として casewise に定義
+     する。proof body は tagged sum の各成分で mate の構成と比較式を実使用し、
      成分別非退化 witness 上でも発火しなければならない。
   2. **Named Exchange Failure Theorem**: active 昇格する GOAL に concrete
      `cFail : Gr4ExchangeContext` と評価対象 component を固定し、その
-     `¬ IsIso (mate cFail)` を mate component の具体計算から証明する。
+     `¬ ExchangeExact cFail` を mate component の具体計算から証明する。
      `cFail` や非同型 certificate を theorem argument / caller-supplied
      payload として受け取ってはならない。
 
@@ -106,8 +111,9 @@
 
   共通する量化域と実質条件は次のとおり:
   - `Gr4ExchangeContext` を、mate を伴う G-110 sector、G-114
-    `ActiveRefinementBCContext`、G-115 `ActiveUpperStageRegime` とそこから
-    生成された actual lifted mate の tagged sum として定義する。量化域は
+    `ActiveRefinementBCContext`、G-115 `ActiveUpperStageRegime` の tagged sum
+    として定義する。G-115 summand の `FiniteUpperBCDiagram` / lifted mate
+    component family は regime から一意に導出し、field に持たせない。量化域は
     この型に固定し、**authored
     datum 付き lax square を含める**。
   - 既決 / 未決の分界: G-110 sector の pullback square 上の mate 同型は
@@ -134,11 +140,14 @@
   O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
   active 昇格時の単一 branch-specific theorem に強化して保持する。
 - `G-115 revision 2 propagation`: G-115 は universal upper lift ではなく、
-  fiberwise finite problem に対する exact regime classification と actual
-  lifted mate、upper obstruction orbit の forward naturality を供給する。
-  O12 の upper summand は compatible regime の actual mate だけを含み、
-  `IsIso` 時の orbit equivalence は O12 の branch 判定から得る corollary
-  として扱う。incompatible input は O19 の domain-classification に残す。
+  G-109-qualified fiberwise finite problem に対する exact regime
+  classification、finite lifted mate component family、upper obstruction
+  orbit の forward naturality を供給する。O12 の upper summand は
+  compatible regime から生成した family だけを含み、全 component の
+  `IsIso` を `UpperStageExchangeExact` として判定する。positive branch では
+  G-115 の conditional orbit equivalence が発火し、negative branch では
+  failure component を固定する。incompatible input は O19 の
+  domain-classification に残す。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110〜G-115 の reviewed module は参照のみ。regime の新設
@@ -146,9 +155,10 @@
   regime の意味の裁定へ差し戻す)。完了面は O12 の決定+O19 の記録
   まで。
 - `target proof artifacts`: active 昇格前の branch-selection evidence、
-  昇格 revision で固定された universal `IsIso` theorem または named
-  `¬IsIso` evaluation theorem、量化域の regime
-  組成 artifact(G-114 / G-115 の exact regime と generated mate の消費、
+  昇格 revision で固定された universal `ExchangeExact` theorem または
+  named `¬ ExchangeExact` evaluation theorem、量化域の regime
+  組成 artifact(G-114 / G-115 の exact regime と generated finite mate
+  family の消費、
   および O19 除外記録)、active
   成分ごとの非退化 witness、report
   `research/reports/G-116-aat-gr4-capstone.md`(**達成階梯対応表**を
@@ -161,8 +171,9 @@
   K3 台帳突合と達成記録。既存成果の
   利用 map: G-110 `MateCoherentRel` 正負対と TargetTheorem の mate
   exactness(既決正例の分界)、G-114
-  `ActiveRefinementBCContext`、G-115 `ActiveUpperStageRegime` / generated
-  lifted mate / conditional orbit-equivalence interface。
+  `ActiveRefinementBCContext`、G-115 `ActiveUpperStageRegime` /
+  `FiniteUpperBCDiagram` / `UpperStageExchangeExact` / conditional
+  orbit-equivalence interface。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
@@ -193,8 +204,9 @@
      その外側の forward-only / inactive 分類が揃って初めて帰趨確定と
      数える。
      G-115 については fiberwise input の compatible / incompatible exact
-     分類、compatible regime 上の actual lifted mate と forward orbit
-     naturality、`IsIso` 条件付き orbit equivalence を突合する。
+     分類、compatible regime 上の finite lifted mate family と forward orbit
+     naturality、`UpperStageExchangeExact` 条件付き orbit equivalence を
+     突合する。
   3. **範囲併記**: coverage の到達段(第一段 / 第二段)、O6 /
      O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
      converse 反証・
@@ -223,9 +235,9 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | target pointed fiber 内の finite problem に対する exact upper-stage regime classification、生成された `GeomRead` BC action / actual lifted mate、Gr3 接続 bridge | G-115 |
-| O11 | actual upper obstruction orbit の adequacy、raw-cochain commuting、lifted geometry action に沿う forward naturality、`IsIso` 条件付き orbit equivalence interface | G-115 |
-| O12 | `Gr4ExchangeContext` の actual mate-bearing sector / active refinement / active upper stage 上で、active 昇格時に固定した universal `IsIso` theorem または named `¬IsIso` evaluation theoremを証明する | G-116 |
+| O10 | target pointed fiber 内の G-109-qualified finite problem に対する exact upper-stage regime classification、生成された finite `GeomRead` BC diagram / lifted mate component family、Gr3 接続 bridge | G-115 |
+| O11 | actual upper obstruction orbit 上の reselection map、raw-cochain commuting、lifted finite geometry action に沿う forward naturality、`UpperStageExchangeExact` 条件付き orbit equivalence interface | G-115 |
+| O12 | `Gr4ExchangeContext` の actual mate-bearing sector / active refinement / compatible finite upper stage 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | G-113 |
@@ -236,6 +248,13 @@
 | O20 | raw-defect cochain transport の explicit equivalence と `rawDefectCochain` commuting、pointwise iff | G-113 |
 
 **台帳注記**:
+
+**G-115 revision 1 義務 disposition(履歴台帳)**:
+
+| id | revision 1 義務 | disposition |
+|---|---|---|
+| O10-r1 | 任意の `ActiveRefinementBCContext` と任意の `TwoLayerTransportData` に対する global `GeomRead` BC lift、actual lifted natural transformation、Gr3 bridge、upper regime 型 | context と transport data の semantic connection、G-114 mate を指定 geometry target へ持ち上げる資格、global functor domain が statement に無く `goal-defect`。revision 2 は root-anchored G-109-qualified finite problem、route-target compatibility、finite component familyへ exact に再表現し、lift・mate・Gr3 義務を削除せず O10 に保持 |
+| O11-r1 | proxy `ObProblem` interface、双方向 adequacy、構成された class の base-change naturality、非恒等発火 | proxy interface と membership iff は actual upper orbit の定義的再包装で数学的成果にならないため superseded。revision 2 O11 は actual `InUpperReselectionOrbit` 上の reselection map、raw-cochain commuting、`Set.MapsTo`、nonconstant firing を直接要求する。conditional orbit equivalence interface は G-115 が構成し、G-116 は `UpperStageExchangeExact` の存否だけを決定する |
 
 **G-113 revision 1 義務 disposition(履歴台帳)**:
 
@@ -292,18 +311,20 @@
   - `G-111〜G-115 の完遂成果`: `ambient-boundary`(各カード完遂後に
     final head を固定して昇格する — 昇格条件。台帳突合の対象。支える
     結論 = 量化域の組成と O19。G-115 は exact compatible regime、generated
-    actual mate、conditional orbit-equivalence interface を供給し、
+    finite actual mate component family、`UpperStageExchangeExact` predicate、
+    conditional orbit-equivalence interface を供給し、
     incompatible input は O19 の分類対象とする)。
   - `Gr4ExchangeContext の組成`: `discharge-required`(支える結論 =
     O12 の設定。discharge artifact = G-114 / G-115 の active
-    mate-bearing 成果物、G-115 の `ActiveUpperStageRegime` / generated mate、
+    mate-bearing 成果物、G-115 の `ActiveUpperStageRegime` / generated finite
+    mate family、
     G-110 sector のみから組む tagged sum。inactive / forward-only /
     upper-incompatible の除外は O19 に記録し、新設 mate は不可)。
   - `branch selection と branch-specific theorem`: `discharge-required`
     (支える結論 = O12。draft artifact = mate の構造または具体評価を使う
     branch-selection evidence。completion artifact = active revision で固定
-    された universal `IsIso` theorem または named `¬IsIso` evaluation
-    theorem。excluded-middle disjunction は不可)。
+    された universal `ExchangeExact` theorem または named
+    `¬ ExchangeExact` evaluation theorem。excluded-middle disjunction は不可)。
   - `active 成分別の非退化 witness`: `discharge-required`
     (支える結論 = 決定の実質。empty component は O19 の
     domain-classification にのみ記録し、この行を放電しない。twist 系の
@@ -318,7 +339,7 @@
   経路 — regime の新設建設、既決正例の再包装、twist 系の独立計上、
   台帳突合を欠く達成宣言、payload の caller 供給、`Classical.em` /
   `not_forall` / choice だけによる branch selection、補集合二枝の包装。
-- `target anti-weakening rule`: mate の同型性・破れ・regime の組成
+- `target anti-weakening rule`: `ExchangeExact`・その破れ・regime の組成
   可能性を theorem argument、typeclass、structure field、certificate
   field へ移して成功扱いしない。`ambient-boundary` に残せるのは入力
   幾何と、先行カードの reviewed 成果(環境扱い — 語彙正本規則)だけで

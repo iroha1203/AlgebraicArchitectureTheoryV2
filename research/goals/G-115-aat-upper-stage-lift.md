@@ -25,7 +25,7 @@
   固定錨は下記 ledger 行に直接記載)、G-106(完遂済み。(c) の指示対象
   = orbit / defect 語彙。固定錨は下記 ledger 行)。
 - `tracking issue`: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-115)、
+- `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 は revision 1 の設計元。proxy interface 部分は下記 revision 2 disposition で superseded)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔 — `ObProblem` 段の定義)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (iii))、
   [G-109 カード](G-109-aat-cross-stage-coherence.md)(pseudofunctor 塔)
@@ -36,30 +36,41 @@
   特徴付け、その regime 上で `GeomRead` 段の BC action、G-109 の Gr3
   pseudofunctor coherence、構成済み upper raw-defect orbit の forward
   naturality を同じ格子図として固定する。これにより Gr3 の縦輸送と
-  Gr4 の水平 base change を接続し、G-116 の `IsIso` 存否決定へ actual
-  lifted mate を供給する。
+  Gr4 の水平 base change を接続し、G-116 の componentwise exchange
+  exactness の存否決定へ actual lifted mate family を供給する。
 - `core tension`: 上段作用は全 active refinement context に自動ではない。
-  G-114 の `mateAtTarget` は `CoreFiber` の射である一方、G-108 は任意の
-  package morphism の geometry lift に `HGeom` が必要かつ十分であり、
+  G-114 の `mateAtTarget` は `CoreFiber` の射である一方、G-108 の
+  `HGeom` は指定 target への geometry lift に必要であり、canonical
+  `pushGeometryPackage` target への lift には十分であるに留まる。
   `GeometryTransport.FiniteWitnesses.not_hGeom` /
   `no_geometryLift_to_any_target` がその条件を無条件には生成できないことを
   固定している。したがって `HGeom` を regime field に入れて universal
   lift と呼ぶのではなく、fiberwise finite problem 上の
+  `UpperRouteTargetCompatible`、componentwise `HGeom`、field-level
+  `UpperEdgeComponentCompatible` からなる
   `UpperRealizationCompatible` を exact domain 条件として necessity /
-  sufficiency の両方向で特徴付ける。`ObProblem` は代理 interface を新設
-  せず、`InUpperReselectionOrbit` が定める actual orbit set を class
-  object として読む。もう一つの安価経路は底段の再包装であり、O11 の
+  sufficiency の両方向で特徴付ける。前者は各 mate component の source と
+  指定 pulled-route target の間の `CoverageTransport`、`OverlapTransport`、
+  coefficient hom、`raw_eq` だけを持つ `UpperRouteNonRealizationData` の
+  inhabitationとする。`UpperEdgeComponentCompatible` は各 finite edge で
+  coverage / overlap / coefficient / raw と support / axis / observable の
+  comparison map が二 route に沿って一致する field-level 等式だけを述べる。
+  完成済み `GeomReadHom`、`GeometryTotalHom` の等式、finite-diagram
+  naturality 自体は premise にしない。`ObProblem` は代理 interface を新設せず、
+  `InUpperReselectionOrbit` が定める actual orbit setを直接使う。もう一つの安価経路は底段の再包装であり、O11 の
   proof term に lifted geometry action の実消費を要求して防ぐ。
 - `rival`: fibred 2-category の change of base・pseudofunctor の
   restriction 一般論。差は「AAT の具体塔の上で、診断障害類の
   naturality まで込みで Lean 固定する」点に置く。
 - `claim boundary`: 固定した一般 carrier `U`、G-108 / G-109 で建設済み
   の塔の段(`GeomRead` 段・core 段)、G-114 の
-  `ActiveRefinementBCContext`、その target pointed fiber 内の finite
-  `FiberwiseTwoLayerTransportData` の上で語る。係数は動かさない。
+  `ActiveRefinementBCContext`、その target pointed fiber 内に根付き、
+  G-109 の local strong qualification / two-cell equality / authored
+  comparator を備えた finite `FiberwiseTwoLayerTransportData` の上で語る。
+  係数は動かさない。
   終対象・絶対積は導入しない。forward-only / inactive refinement は
   上段 mate の定義域に含めない。
-  orbit の同値性は G-116 で lifted mate の `IsIso` が得られた場合の
+  orbit の同値性は G-116 で `UpperStageExchangeExact` が得られた場合の
   corollary に限り、G-115 では forward naturality を無条件主張とする。
   class 構成自体は変更しない。carrier change・係数 base change・段射影 `p` 方向の
   effectivity 反射・nerve / cover 接続は域外(G-116 カードの域外
@@ -80,17 +91,18 @@
 - `reward rubric`: `not-applicable (target-theorem mode)`。各 cycle は
   proof obligation delta で評価する。
 - `dullness filter`: 次を弾く。lift を base equality 一本で代用する
-  構成、`UpperRealizationCompatible` を lift / naturality field の包装に
+  構成、`UpperRealizationCompatible` を geometry hom / naturality field の包装に
   する構成、`ActiveUpperStageRegime` を caller-supplied lift certificate
-  にする構成、離散段(`ExtInst -> Doct`)での vacuous 発火、orbit membership
-  Prop だけを class object と呼ぶ構成、定数 orbit での vacuous
+  にする構成、G-109 local strong qualification / comparator を BC 結論として
+  後付けする構成、離散段(`ExtInst -> Doct`)での vacuous 発火、orbit set の
+  extent と定義的 membership iff だけを O11 の成果と数える構成、定数 orbit での vacuous
   naturality、**O11 の naturality を底段 (d1)–(d6) の restatement、
   または底段への pushforward 移送と既証明の底段 cochain 輸送
   (G-106 transition / G-113 O20 系)で立てる構成**(上段 lift の
   実消費を欠く形、pushforward で消える upper 成分に主張を持たない
   形)、G-109 pseudofunctor theorem の再証明、`Classical.em` だけによる
   regime 正負 witness の包装を成果と数える構成。
-- `frontier`: lifted mate が `IsIso` の場合の orbit equivalence の帰趨
+- `frontier`: `UpperStageExchangeExact` の場合の orbit equivalence の帰趨
   (G-116 が決定)、上段診断と G-113 transport exactness の相互作用、
   fiberwise 制限を越える indexed family、無限段の塔。
 
@@ -107,41 +119,71 @@
   G-114 が供給する `ActiveRefinementBCContext` の上で:
   1. **(a) fiberwise input と exact upper-stage regime**: target pointed
      fiber `X := ctx.configuration.targetPointAt ctx.source` 内の finite
-     presentationを、各 vertex が `GeomFiber X` の object、各 edge が
-     fiber 内の射となる `FiberwiseTwoLayerTransportData` として構成し、
-     既存 `TwoLayerTransportData` / `TwoLayerLiftData` への comparison を
-     証明する。この raw input は lift、mate、naturality、cochain law、
-     非退化 certificate を field に持たない。G-114 の二つの canonical
-     core route と `ctx.mate` をこの finite problem の全 vertex / edgeへ
-     評価し、各 generated route component に対する G-108 realization
-     supply を述べる `UpperRealizationCompatible ctx data : Prop` を定義
-     する。次の両方向を証明する:
-     `UpperRealizationCompatible ctx data` から lifted geometry BC diagram
-     を構成でき、任意のそのような diagram から同じ compatibility を
-     回収できる。`ActiveUpperStageRegime` は compatible な raw input の
-     subtype とし、lift / mate / coherence を field に持たせない。
-  2. **(b) lifted mate と Gr3 接続**: `ActiveUpperStageRegime` 上で G-114
-     の base route / pulled route に対応する geometry 段 functorと、
-     `ctx.mate` から生成される actual lifted natural transformation を
-     構成する。段射影との可換は `IsHomLift` 水準の等式とし、G-109 の
-     compositor / unitor との pseudonatural coherence を証明する。
+     problem を `FiberwiseTwoLayerTransportData ctx` として固定する。この
+     structure は既存 `TwoLayerTransportData P U` を raw authored data として
+     持ち、各 vertex の geometry package が `GeomFiber X` にあること、
+     distinguished root vertex の underlying `CoreFiber X` object が
+     `ctx.targetPackage` と一致することを持つ。既存 data の
+     `edgeGeometryStrong` / `edgeCoreStrong`、`twoCellBase`、comparator は
+     G-109 obstruction problem の admissibility / authored datum として
+     保持し、上段 BC lift の結論には数えない。`toTwoLayerTransportData` は
+     この raw datum への definitional projection とし、任意 fiber morphism
+     から strong qualification を生成するとは主張しない。
+
+     G-114 の二つの canonical core route と `ctx.mate` を underlying core
+     finite diagram の全 vertex / edgeへ評価し、G-108 canonical transport
+     で base / pulled geometry route object と edge map を独立に生成する。
+     `UpperRouteNonRealizationData ctx data i` は各 vertex の mate component
+     source と指定 pulled-route target の間の `CoverageTransport`、
+     `OverlapTransport`、coefficient hom、`raw_eq` だけを持つ。
+     `UpperRouteTargetCompatible ctx data : Prop` は全 vertex でこの structure
+     が inhabited であることを述べる。これと各 mate component の `HGeom`
+     supply、および各 edge における low-level component map の commuting を
+     全 field ごとに列挙する `UpperEdgeComponentCompatible ctx data` を合わせた
+     `UpperRealizationCompatible ctx data : Prop` を exact 条件とする。
+     geometry hom、`GeometryTotalHom` の edge naturality、coherence、orbit lawはこの predicate の
+     field に持たせない。次の両方向を証明する:
+     `UpperRealizationCompatible ctx data` から finite lifted BC diagram を
+     構成でき、任意のそのような diagram から同じ low-level compatibility
+     を回収できる。`ActiveUpperStageRegime` は compatible な raw input の
+     subtype とし、diagram / mate / coherence を field に持たせない。
+  2. **(b) finite lifted mate と Gr3 接続**: `ActiveUpperStageRegime` 上で
+     G-114 の base route / pulled route に対応する geometry object family、
+     edge map、path evaluatorと、`ctx.mate` の各 component から生成される
+     actual lifted mate component family を構成する。成果物は未定義の
+     global domain 上の `Functor` / `NatTrans` とは呼ばず、有限 presentation
+     上の `FiniteUpperBCDiagram` とする。各 component の段射影との可換は
+     `IsHomLift` 水準の等式、各 edge に対する mate naturality、nil / append
+     path law、G-109 compositor / unitor に対応する coherence を証明する。
+     diagram から base route / pulled route 側の
+     `baseUpperData regime` / `pulledUpperData regime :
+     TwoLayerTransportData P U` を構成し、その local strong qualification、
+     two-cell equality、comparator の provenance を元の raw dataと G-108 /
+     G-109 の生成 theorem へ戻す。
      「BC lift 後に Gr3 transport」と「Gr3 transport 後に BC lift」は
-     独立に生成された二経路として比較し、一方を他方の定義にしない。
-     この lifted mate を G-116 が消費する成果物として公開する。
+     finite path / two-cell ごとに独立生成した二経路として比較し、一方を
+     他方の定義にしない。root component は root equality で transport
+     した後に G-114 `ctx.mateAtTarget` へ射影されることを証明する。
+     `UpperStageExchangeExact regime : Prop` は全 vertex の lifted mate
+     component が `IsIso` であることと定義し、G-116 が消費する。
   3. **(c) actual obstruction-orbit naturality**: 新しい proxy class は
-     導入せず、`upperObstructionOrbit data : Set (UpperDefectCochain data)`
-     を `InUpperReselectionOrbit data` の extent として定義する。membership
-     iff により actual G-109 orbit との双方向 adequacy を固定する。
-     (b) の lifted geometry functorから automorphism、upper cochain、edge
-     reselection の map を構成し、`upperRawDefectCochain` commuting と
-     `Set.MapsTo` による orbit の forward naturality を証明する。proof
+     導入せず、任意の既存 data に対する
+     `upperObstructionOrbit data : Set (UpperDefectCochain data)` を
+     `InUpperReselectionOrbit data` の extent として定義する。この
+     definitional repackaging 自体は成果に数えない。(b) の finite lifted
+     geometry diagramから `baseUpperData regime` の automorphism / upper
+     cochain / edge reselection を `pulledUpperData regime` 側へ送る map を
+     構成し、`upperRawDefectCochain` commuting と `Set.MapsTo` による二つの
+     actual orbit 間の forward naturality を証明する。proof
      term は lifted geometry action を実消費し、core pushforward だけで
-     閉じない。さらに lifted mate が `IsIso` の場合に限り、direct image
-     equality / orbit equivalence を与える corollary を構成し、G-116へ
-     渡す。無条件の orbit equivalence は主張しない。
+     閉じない。さらに `UpperStageExchangeExact regime` の場合に限り、
+     inverse reselection map と両側 inverse lawを構成して direct image
+     equality / orbit equivalence を与える。無条件の orbit equivalence は
+     主張しない。
   4. **(d) regime 正負と非退化発火 witness**: 非恒等 G-114 active
-     refinement 上で `UpperRealizationCompatible` を満たす nontrivial
-     fiberwise problem と、active core context / nonempty geometry inputを
+     refinement 上で、root が `ctx.targetPackage` に一致し、nonidentity
+     fiber isomorphism edge を含む `UpperRealizationCompatible` な
+     nontrivial fiberwise problem と、active core context / nonempty geometry inputを
      持ちながら compatibility を満たさない named problem を構成する。
      負例は G-108 `not_hGeom` / `no_geometryLift_to_any_target` の量化対象を
      G-114 generated route に実際に接続し、単なる任意 package hom の負例
@@ -155,19 +197,26 @@
   まで。law universe・site / cover は前提カードの固定を継承して動かさ
   ない。受理 Lean 宣言は premise / review / merge gate 通過までは
   static evidence に留まる。class 構成の変更・`p` 方向 effectivity・
-  lifted mate の無条件 `IsIso` / orbit equivalence(G-116)は主張しない。
-- `target proof artifacts`: `FiberwiseTwoLayerTransportData` と既存語彙への
-  comparison、`UpperRealizationCompatible`、exact liftability iff、
-  `ActiveUpperStageRegime`、生成された二つの geometry route functorと
-  lifted mate、Gr3 pseudonatural coherence、`upperObstructionOrbit` と
-  adequacy iff、cochain / reselection map、raw-cochain commuting、orbit
-  forward naturality、`IsIso` conditional orbit equivalence、regime 正負
+  `UpperStageExchangeExact` / orbit equivalence の無条件成立(G-116)は
+  主張しない。
+- `target proof artifacts`: G-109-qualified raw datum と root anchor を持つ
+  `FiberwiseTwoLayerTransportData`、definitional
+  `toTwoLayerTransportData`、`UpperRouteNonRealizationData`、
+  `UpperRouteTargetCompatible` / `HGeom` /
+  `UpperEdgeComponentCompatible` からなる
+  `UpperRealizationCompatible`、exact liftability iff、
+  `ActiveUpperStageRegime`、`FiniteUpperBCDiagram` と
+  `baseUpperData` / `pulledUpperData`、lifted mate component family、edge /
+  path / Gr3 coherence、二つの actual orbit 間の cochain / reselection
+  map、raw-cochain commuting、orbit forward naturality、
+  `UpperStageExchangeExact` conditional orbit equivalence、regime 正負
   witnessと非恒等発火 theorem、report
   `research/reports/G-115-aat-upper-stage-lift.md`。
-- `target proof strategy`: F0 typing(fiberwise input、compatibility、regime、
-  two geometry routes、lifted mate、orbit map の signature と等式成分の
+- `target proof strategy`: F0 typing(G-109-qualified fiberwise input、root
+  anchor、route-target compatibility、regime、finite geometry routes、lifted
+  mate component、orbit map の signature と等式成分の
   列挙)→ K0 fiberwise input と exact regime classification → K1 geometry
-  route / lifted mate と Gr3 bridge → K2 orbit object / adequacy / raw-cochain
+  route / lifted mate と Gr3 bridge → K2 orbit map / raw-cochain
   commuting → K3 forward naturality と conditional equivalence → K4 正負
   witness と監査。既存成果の利用 map:
   `CoreFiber` / `coreFiberTransportFunctor`(G-109 pseudofunctor)、
@@ -187,11 +236,13 @@
   4査読全 `No major findings`)を通過すること(正本 =
   target-goal-contract.md)。
 - `target premise discharge policy`: 入力である
-  `ActiveRefinementBCContext` と raw `FiberwiseTwoLayerTransportData`、
-  および sufficiency 方向だけに使う `UpperRealizationCompatible` を
+  `ActiveRefinementBCContext` と、G-109 admissibility / authored comparator /
+  root anchor を含む raw `FiberwiseTwoLayerTransportData`、および
+  sufficiency 方向だけに使う `UpperRealizationCompatible` を
   残せる。compatibility は `direction-hypothesis` であり、全 input への
   無条件供給や discharge 済み premise として扱わない。lift・mate・
-  coherence・cochain law・naturality・非退化性の結論相当データの供給は
+  finite BC diagram・lifted mate・coherence・cochain law・naturality・
+  非退化性の結論相当データの供給は
   放電と数えない。
 - `target material premise ledger`:
   - `G-114 active refinement context`: `ambient-boundary`。G-114 の
@@ -224,13 +275,29 @@
     generated route への接続・exact regime・naturality を含まない)。
   - `G-106 TransportCoherence`: `ambient-boundary`。参照のみ、改変
     しない。**固定錨: PR #4004–#4009(fixed head `d7b1d488`、merge
-    `ae1ba0ea`)**(proof-use = (c) の指示対象と adequacy bridge の
+    `ae1ba0ea`)**(proof-use = (c) の raw cochain / orbit 指示対象の
     同定先。結論相当でない理由 = raw cochain / orbit 語彙のみで
     geometry action に沿う naturality を
     含まない)。
-  - `fiberwise input と既存 transport data への comparison`:
-    `discharge-required`(支える結論 = (a)。raw input が target pointed
-    fiber の内在射だけを持ち、lift 結論を field に持たないことを含む)。
+  - `G-109-qualified fiberwise input`: `ambient-boundary`(支える結論 =
+    actual upper obstruction problem の入力。raw `TwoLayerTransportData` の
+    local strong qualification / two-cell equality / authored comparator、
+    全 vertex の target-fiber 条件、root / `ctx.targetPackage` equality を
+    入力として許す。これらは G-109 admissibility と問題データであり、
+    upper BC diagram / mate / naturality の結論を含まない)。
+  - `FiberwiseTwoLayerTransportData` と projection / root comparison:
+    `discharge-required`(支える結論 = (a) の型付け。discharge artifact =
+    完全 signature、definitional `toTwoLayerTransportData`、root component の
+    `ctx.mateAtTarget` comparison)。
+  - `UpperRouteNonRealizationData` / `UpperRouteTargetCompatible`:
+    `direction-hypothesis`(支える結論 = (a) の指定 target への sufficiency。
+    `CoverageTransport`、`OverlapTransport`、coefficient hom、`raw_eq` だけを
+    持ち、`GeomReadHom` / finite-diagram naturality は不可)。
+  - `UpperEdgeComponentCompatible`: `direction-hypothesis`(支える結論 =
+    (a)(b) の edge naturality sufficiency。各 raw edgeについて coverage /
+    overlap / coefficient / raw / support / axis / observable comparison map の
+    commuting 等式を完全列挙する。assembled `GeomReadHom` や
+    `GeometryTotalHom` の等式、mate naturalityそのものは field にしない)。
   - `UpperRealizationCompatible`: `direction-hypothesis`(支える結論 =
     (a) の sufficiency 方向。discharge artifact ではない。necessity theorem
     と incompatibility witness により exact domain 条件であることを別に
@@ -238,43 +305,53 @@
   - `exact upper-stage regime classification`: `discharge-required`
     (支える結論 = (a)。discharge artifact = liftability iff と、raw input+
     compatibility proof の subtype だけからなる `ActiveUpperStageRegime`。
-    lift / mate / coherence field は不可)。
-  - `geometry route・lifted mate・Gr3 接続`: `discharge-required`(支える
-    結論 = (b)。discharge artifact = G-114 の二 route / mate から生成した
-    functor・natural transformation・`IsHomLift` 等式・pseudonatural
-    coherence・独立二経路の Gr3 bridge。caller 供給不可)。
-  - `actual upper obstruction orbit と adequacy`: `discharge-required`
-    (支える結論 = (c)。discharge artifact =
-    `upperObstructionOrbit` と `InUpperReselectionOrbit` membership iff。
-    proxy class / opaque membership への差し替え不可)。
+    finite diagram / mate / coherence field は不可)。
+  - `finite geometry route・lifted mate・Gr3 接続`:
+    `discharge-required`(支える結論 = (b)。discharge artifact = G-114 の二
+    route / mate から生成した object / edge / path family、二つの qualified
+    `TwoLayerTransportData`、lifted component、`IsHomLift` 等式、edge
+    naturality、path coherence、独立二経路の Gr3
+    bridge。global `Functor` / `NatTrans` の無根拠な昇格と caller 供給は不可)。
+  - `actual upper obstruction orbit`: `ambient-boundary`(支える結論 = (c) の
+    指示対象。`InUpperReselectionOrbit` の extent は定義的読み替えに限り、
+    それ自体を adequacy / discharge artifact と数えない)。
   - `raw cochain commuting と orbit forward naturality`:
     `discharge-required`(支える結論 = (c)。proof-use = (b) の lifted
     geometry action の実消費。core pushforward だけでは放電しない)。
-  - `IsIso conditional orbit equivalence`: `discharge-required`(支える
-    結論 = (c) の条件付き corollary。`IsIso` 自体は仮定であり G-115 の
-    無条件結論ではない。G-116 がその存否を決定する)。
+  - `exchange-exact conditional orbit equivalence`: `discharge-required`
+    (支える結論 = (c) の条件付き corollary。仮定は全 vertex component の
+    `IsIso` を述べる `UpperStageExchangeExact` であり、inverse reselection
+    map と inverse law の構成を要求する。G-116 がその存否を決定する)。
   - `regime 正負と非退化発火 witness`: `discharge-required`(支える結論 =
     (d)。正例・負例とも raw fixture と性質を別宣言にし、負例では G-108
     witness を G-114 generated route へ接続する。正例では geometry action
     と raw cochain / orbit movement を別々に発火させる)。
 - `target route integrity gate`: fiberwise problem は G-114 target pointed
   fiber 内で型付けし、lift・mate・naturality は G-108 の geometry
-  transport 判定、G-109 の pseudofunctor 普遍性、G-114 の canonical
-  mate から生成する。G-114 `ctx.mate` の proof-use と、G-108 `HGeom`
-  必要十分性の両方を theorem body で確認する。orbit の指示対象は (c) の
+  transport 判定、G-109 の local strong qualifications / path machinery、
+  G-114 の canonical mate から生成する。G-114 `ctx.mate` / root での
+  `ctx.mateAtTarget` の proof-use、G-108 `HGeom`、specified pulled target への
+  `UpperRouteNonRealizationData`、raw edge field commuting の proof-useを
+  theorem bodyで確認する。orbit の指示対象は (c) の
   actual `InUpperReselectionOrbit` に固定する。witness fixture は F0 typing
   cycle で固定し、proof body で使用しない受け渡しは実消費と数えない。
-  禁止経路 — 任意 `ctx` と任意 `TwoLayerTransportData` の無根拠な結合、
-  base equality による lift 代用、lift / mate の regime field 化、core
-  pushforward だけによる naturality、proxy class、片方向 adequacy の同値
-  読み替え、空型 / 恒等への退化、class 構成の変更、`IsIso` の無条件化。
+  禁止経路 — root anchor のない任意 `ctx` と任意
+  `TwoLayerTransportData` の結合、任意 fiber morphism からの strong
+  qualification 捏造、base equality による lift 代用、diagram / mate の
+  regime field 化、core pushforward だけによる naturality、proxy class、
+  orbit extent / membership iff だけによる O11 放電、空型 / 恒等への退化、
+  class 構成の変更、componentwise `IsIso` の無条件化。
 - `target anti-weakening rule`: revision 1 の universal upper lift へ戻さず、
   かつ単なる「compatible なら lift」を exact classification と呼ばない。
-  `UpperRealizationCompatible` は G-108 realization supply のみを述べ、
-  lift・mate・coherence・naturalityを field に持たない。
+  `UpperRealizationCompatible` は G-108 realization supply、指定 target の
+  non-realization component data、raw field-level edge commuting のみを述べ、
+  geometry hom・mate・assembled edge naturality・coherence を field に
+  持たない。
   `ActiveUpperStageRegime` は raw input と compatibility proof の subtype に
-  限る。生成される lift・actual mate・Gr3 coherence・orbit map・cochain
-  law・naturality・adequacy・witness 非退化性を theorem argument、
+  限る。raw input の G-109 local qualifications / comparator は admissibility
+  であって BC 結論に数えない。生成される finite diagram・actual mate
+  component・Gr3 coherence・orbit map・cochain
+  law・naturality・orbit equivalence・witness 非退化性を theorem argument、
   typeclass、structure field、certificate fieldへ移して成功扱いしない。
 - `target failure policy`: fail-closed を原則とする。target pointed fiber
   内の `FiberwiseTwoLayerTransportData`、G-114 generated route に対する
@@ -284,6 +361,6 @@
   counterexample は `target-refuted` とする。G-115 の positive / negative
   named witness が既存有限素材から構成不能と確定した場合も
   `target-refuted` とし、単なる探索停滞は停止規律に従い
-  `target-blocked` とする。lifted mate の `IsIso` 存否は G-116 の義務で
-  あり、G-115 の failure ではない。fixed target の変更は人間の別判断と
+  `target-blocked` とする。componentwise `UpperStageExchangeExact` の
+  存否は G-116 の義務であり、G-115 の failure ではない。fixed target の変更は人間の別判断と
   する。
