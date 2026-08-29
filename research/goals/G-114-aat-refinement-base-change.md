@@ -59,9 +59,9 @@
   固定錨は下記 ledger 行)、G-112(完遂済み。semantic-global
   cleavage / reindexing — (b) mate 比較の exact 側錨。参照のみ、
   固定錨は下記 ledger 行)。
-- `tracking issue`: 未起票(昇格 PR マージ後に起票し、カード同期 PR で
-  本行を更新する。F0 記録事項は program context の fixed head 4種を
-  含む)
+- `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
+  (runtime state、cycle 履歴、fixed head、次 proof obligation の
+  記録先。F0 記録事項は program context の fixed head 4種を含む)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-114)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (ii)・frontier の refinement 圏化)
 - `research aim`: exact hom の圏 `Doct_U` の外にいる refinement 射
