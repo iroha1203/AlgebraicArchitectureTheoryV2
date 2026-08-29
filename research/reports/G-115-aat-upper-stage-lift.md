@@ -207,3 +207,67 @@ comparisons in addition to the full package equality. Coverage, overlap, and
 the remaining proposition-valued laws are eliminated by the existing
 extensionality theorem. This helper is not an actual solution and does not turn
 the later route-between triangle into a raw-problem hypothesis.
+
+## Cycle 4 — K2a finite raw upper-problem interface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 4
+goal_blob_sha: b307ba6dfe0c098a85160292c86999b63c8f19c1
+base_oid: ebf948e91c0bacb46f7e14e8bb374215cad0717e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md target theorem clause (b), target proof strategy K2 raw-problem sub-obligation
+  proof_dag_predecessors: [G-109 TwoLayerTransportData, Cycle 3 indexed refinement-geometry legs]
+  proof_obligation: Define the finite raw UpperRefinementBCProblem with a root-connected free-path presentation, an actual source CoreFiber functor, source/base/pulled qualified G-109 data, fixed coefficient identities, and route-internal full geometry naturality. Exclude every route-between solution field.
+  selection_reason: Named positive and negative artifacts must share one exact raw-problem contract whose source edges are fiber-vertical and whose route provenance is definitionally tied to the G-112/G-114 functors.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCProblem.lean]
+  risks: [arbitrary object family mistaken for an actual functor, quotienting away authored parallel paths, dependent core and coefficient casts, route-between conclusion stored in raw data, edge-only naturality not extended to paths]
+  unchecked: [G-112/G-114 factor-graph reconstruction of the projected naturality equation, actual UpperRefinementBCSolution, named decision and non-liftable problems, paired orbit and conditional exchange interface]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The K2a raw-problem type is constructed. Actual solution and named positive/negative inhabitants remain K2b.
+  completion_candidate: no
+  lean_artifacts: [PresentedPathCategory, FixedCoefficientTwoLayerTransportOver, ActiveRefinementBCContext.baseCoreDiagram, ActiveRefinementBCContext.pulledCoreDiagram, UpperRefinementBCProblemData, UpperRefinementBCProblem]
+  evidence: [FixedCoefficientTwoLayerTransportOver.edge_projection, UpperRefinementBCProblemData.base_naturality_projection, UpperRefinementBCProblemData.pulled_naturality_projection, UpperRefinementBCProblemData.base_path_naturality, UpperRefinementBCProblemData.pulled_path_naturality, standard-axiom audit]
+  claim_mapping:
+    theorem_names: [FixedCoefficientTwoLayerTransportOver.edge_projection, UpperRefinementBCProblemData.base_naturality_projection, UpperRefinementBCProblemData.pulled_naturality_projection, UpperRefinementBCProblemData.base_path_naturality, UpperRefinementBCProblemData.pulled_path_naturality]
+    source_labels: [target theorem clause (b), target proof strategy K2]
+    conjuncts: [finite free-path category, root reachability, actual source CoreFiber functor, three fixed-coefficient qualified G-109 data sets, actual route diagrams, generator and path geometry naturality, separate package projection]
+    undischarged_assumptions: [actual solution components and route-between equations, named decision and non-liftable problems, paired cochain and restricted orbit theorem, conditional orbit equivalence]
+    acceptance_point: Source/base/pulled object cores are definitionally the objects of actual CoreFiber diagrams. Geometry edge projection is an equality with the diagram map; route naturality is the only conclusion-like direction hypothesis and is internal to each route.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [K2a finite raw problem interface, source fiber-vertical diagram, G-109 qualification packaging, coefficient identity signature, route-internal path naturality]
+    remaining: [projected predecessor factor-graph comparison, K2b named positive and negative artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [base and pulled core diagrams are functor composites of sourceFiberDiagram with reviewed G-114 reverse functors and G-112 reindex functors]
+    unresolved: [named decision and negative witnesses, paired reselection witnesses]
+  proof_use:
+    used: [PresentedPath.append laws, actual CoreFiber functor maps, G-109 TwoLayerTransportData, K1b actual-route legs, exact geometry embedding, route generator naturality]
+    unused: [G-114 mate component, G-109 route-between comparator equation and cochain]
+  structure_field_escape: none-found — raw data contains only source/base/pulled route-internal fields; no route-between component, triangle, route-between edge or comparator equation, IsIso, orbit law, or non-liftability certificate
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: not-applicable — this cycle fixes a raw type and does not claim a named inhabitant
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCProblem.lean — exit 0; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; axiom audit 85 declarations standard axioms only; source SHA-256 6483f02181ed7649c8dfd6148b53fd9df8a803000f34534bcf1c46955e6bbe9a]
+  blocking_findings: []
+  next_obligation: K2b reconstruct the package projection factor graphs from the G-112 reindex-map and G-114 reverse-map laws, define UpperRefinementBCSolution, and construct named decision and non-liftable artifacts without changing the raw problem.
+```
+
+The free path category does not quotient declared parallel paths: G-109's
+authored comparators still compare two distinct path evaluations. The actual
+source functor fixes every edge in one `CoreFiber`, while the base and pulled
+core diagrams are derived by functor composition rather than supplied again.
+
+Generator-level full geometry naturality is the permitted direction
+hypothesis. The two path theorems extend it by identity, composition, and the
+exact geometry embedding. Applying the refinement-geometry projection yields
+separate package equations; this cycle does not call those equations an actual
+route-between solution.
