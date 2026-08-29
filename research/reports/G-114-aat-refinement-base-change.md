@@ -306,9 +306,17 @@ separate target declaration:
 - `AtomFoundation/RefinementObstruction.lean` (blob
   `77a9e2225e710b61bb76204a4ab4f63ff8dd852c`):
   `refinementAtomEquiv`, `refinementAtomMap`,
-  `finiteExtractionRefinement`, `refinementTargetPoint`,
-  `refinementTargetPackage`, and the component-C obstruction theorems consumed
-  by the active forward-only witness.
+  `refinementAtomMap_componentA`, `refinementAtomMap_componentC`,
+  `refinementTargetDoctrine`, `finiteExtractionRefinement`,
+  `finiteExtractionRefinement_not_reflecting`, `refinementTargetPoint`,
+  `refinementTargetPackage`, `refinementTargetPackage_point`, and the
+  component-C membership/transport obstruction theorems consumed directly by
+  the active forward-only and active reverse witnesses.
+- `Formal/AG/Examples/FiniteModel.lean` (blob
+  `fed5bd46524a071ef3f2d61c375d87a15e0c5b09`):
+  `FiniteModel.componentC_not_extracted_withoutComponentC`, consumed directly
+  by `activeForwardOnly_pulled_extraction_difference` to evaluate the pulled
+  extraction mismatch.
 - `ExactBottomCoverageClassification.lean` (blob
   `760ed9c70de06405a6f40c7c79d6f9ff9a212d6c`):
   `ExactBottomSumCarrier`, `exactBottomFirstSummand_not_finite`,
