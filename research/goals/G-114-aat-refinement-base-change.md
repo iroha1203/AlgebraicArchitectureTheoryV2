@@ -113,9 +113,12 @@ its refinement analogue explicitly:
    `packageProjection`.
 
 No cartesian lift, cleavage, factorization, mate, or reflection certificate is
-stored in these category or morphism structures. A refinement cartesian lift and
-its factorization/uniqueness are defined relative to
-`refinementPackageProjection`.
+stored in these category or morphism structures. A refinement cartesian lift uses
+the existing `CategoryTheory.Functor.IsCartesian` /
+`IsStronglyCartesian` interface relative to
+`refinementPackageProjection`. G-114 must also construct, rather than assume,
+the authored-source package and complete upper-reading hom from a target package
+and selected-family equality.
 
 ### Regime and active context
 
