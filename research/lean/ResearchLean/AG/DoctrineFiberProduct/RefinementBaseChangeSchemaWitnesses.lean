@@ -18,6 +18,27 @@ open CategoryTheory
 open AtomFoundation
 open CrossStageCoherence
 
+/-! ## K0 strictness of the exact-to-refinement comparison -/
+
+/-- The finite strict refinement is not in the image of the comparison functor. -/
+theorem finiteExtractionRefinement_not_in_comparison_image :
+    ¬ ∃ exact : ExactDoctrineHom FiniteModel.extractionDoctrine
+        refinementTargetDoctrine,
+      (doctrineToRefinement FiniteModel.carrier).map exact =
+        finiteExtractionRefinement := by
+  rintro ⟨exact, heq⟩
+  have hsourceMap := congrArg RefinementDoctrineHom.sourceMap heq
+  have hatomMap := congrArg RefinementDoctrineHom.atomMap heq
+  have obstruction := finiteExtractionRefinement_not_reflecting
+  have htarget : refinementTargetDoctrine.extracts
+      (exact.sourceMap FiniteModel.ExtractionSource.withoutComponentC)
+      (exact.atomEquiv FiniteModel.FiniteAtom.componentC) := by
+    simpa [doctrineToRefinement, exactToRefinement] using obstruction.1
+  have hsource := (exact.extraction_iff
+    FiniteModel.ExtractionSource.withoutComponentC
+    FiniteModel.FiniteAtom.componentC).mpr htarget
+  exact obstruction.2 hsource
+
 /-! ## Identity positive control -/
 
 /-- Identity-cospan raw data used by the positive evaluator control. -/
@@ -44,6 +65,16 @@ noncomputable def finitePointedExtractionRefinement :
       refinementTargetPoint where
   doctrineHom := finiteExtractionRefinement
   source_eq := rfl
+
+/-- The pointed finite refinement is likewise outside the exact comparison image. -/
+theorem finitePointedExtractionRefinement_not_strict_image :
+    ¬ ∃ exact : packagePoint refinementSourcePackage ⟶ refinementTargetPoint,
+      PointedRefinementHom.ofExact exact = finitePointedExtractionRefinement := by
+  rintro ⟨exact, heq⟩
+  apply finiteExtractionRefinement_not_in_comparison_image
+  refine ⟨exact.doctrineHom, ?_⟩
+  simpa [PointedRefinementHom.ofExact, finitePointedExtractionRefinement,
+    doctrineToRefinement] using congrArg PointedRefinementHom.doctrineHom heq
 
 /--
 The strict finite refinement over the identity cospan.  Every refined source is

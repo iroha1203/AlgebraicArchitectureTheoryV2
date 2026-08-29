@@ -581,7 +581,7 @@ audits:
       - RefinementCartesianCleavage.reverseMap_fac
     unused: []
   structure_field_escape: none-found-at-candidate-head
-  route_integrity: pending-rerun-1
+  route_integrity: accepted-at-reviewed-head-bedb5b9f
   target_fitting: none-found
   validation_refs:
     - >-
@@ -594,6 +594,81 @@ audits:
       exit 0; module-wide standard-axiom audit reports 8 declarations
   blocking_findings: []
   next_obligation: >-
-    Run the first corrected-head rerun for this review cycle; all four lanes must
-    accept before K0.
+    F0 was accepted 4/4 at fixed head bedb5b9f.  Proceed to K0 without changing
+    the accepted regime or caller-free factorization interfaces.
+```
+
+### Cycle 6 — K0 category and strict comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-114-aat-refinement-base-change
+cycle: 6
+goal_blob_sha: 429183c6b8c93e9ca5c7886bab887beec76ddff5
+base_oid: 363f79a5bf0542b6e5cb9d19d63cacfa80402316
+tracking_issue: 4239
+report_path: research/reports/G-114-aat-refinement-base-change.md
+selection:
+  proof_state_ref: "F0 accepted 4/4 at fixed head bedb5b9f"
+  proof_obligation: >-
+    Fix the refinement category, exact-to-refinement comparison functor, and a
+    finite strict refinement outside its image before constructing K1.
+  selection_reason: >-
+    The category and comparison laws are already kernel-checked in the schema;
+    the finite extraction doctrine supplies a concrete nonreflection witness
+    that can separate refinement morphisms from exact morphisms.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementCategory.lean
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchemaWitnesses.lean
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    RefinementDoctrineHom and PointedRefinementHom carry category instances;
+    doctrineToRefinement is a functor.  The finite strict refinement and its
+    pointed form are proved not to lie in the corresponding exact comparison
+    images by applying exact extraction reflection to the finite missing-source
+    witness.
+  completion_candidate: no
+  evidence:
+    - RefinementDoctrineHom.instCategory
+    - PointedRefinementHom.instCategory
+    - doctrineToRefinement
+    - finiteExtractionRefinement_not_in_comparison_image
+    - finitePointedExtractionRefinement_not_strict_image
+  undischarged_assumptions:
+    - K1 pulled square existence and forward-preserving projections
+    - K2 regime equivalence
+    - K3 Beck--Chevalley comparison
+audits:
+  premise_delta:
+    discharged:
+      - "K0 category laws and exact-to-refinement functor laws"
+      - "K0 finite strict refinement outside the comparison image"
+    remaining:
+      - "K1--K3 target payloads"
+  certificate_provenance:
+    discharged:
+      - "strictness is generated from finiteExtractionRefinement_not_reflecting"
+      - "comparison preimage is an actual ExactDoctrineHom"
+    unresolved: []
+  proof_use:
+    used:
+      - finiteExtractionRefinement_not_reflecting
+      - ExactDoctrineHom.extraction_iff
+      - RefinementDoctrineHom.sourceMap
+      - RefinementDoctrineHom.atomMap
+    unused: []
+  structure_field_escape: none-found-at-candidate-head
+  route_integrity: focused-static-check-passed
+  target_fitting: none-found
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchemaWitnesses.lean;
+      exit 0; module-wide standard-axiom audit reports 11 declarations
+  blocking_findings: []
+  next_obligation: >-
+    Construct K1's mixed pulled object together with both forward-preserving
+    projections and the commuting pulled square.
 ```
