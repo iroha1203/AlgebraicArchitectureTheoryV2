@@ -435,7 +435,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
   G-110 (A) fiber product 構成・`pointedPullback_isPullback`
   (`DoctrineFiberProduct/PointedDoctrinePullback.lean`)、presentation
-  閉性 constructor。
+  閉性 constructor、G-112 semantic-global cleavage / reindexing
+  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)。
 - **供給契約**: **G-116 gate (iv) の refinement regime 型**(mate が
   定義される装置、または退化定理という帰趨)。G-116 は regime を新設
   建設できないため、この供給は成果物形式の義務である。
@@ -578,20 +579,24 @@ reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の�
 ```
 G-110 ──→ G-111 ──┐
 G-110 ──→ G-112 ──┴→ G-113
-G-110 ──────→ G-114 ──┐
+G-110 / G-112 ──→ G-114 ──┐
 G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
 ```
 
-- G-114 / G-115 は6枚の中ではどのカードにも依存せず、G-111 系と並走
-  可能である(外部依存は G-114 = G-110、G-115 = G-110 に加え G-109 /
-  G-108 の reviewed artifact)。G-112 の coverage 分類結果は G-114 /
+- G-115 は6枚の中ではどのカードにも依存せず、G-111 系と並走可能で
+  ある(外部依存 = G-110 に加え G-109 / G-108 の reviewed
+  artifact)。G-114 の依存は G-110 と G-112 — G-114 (b) の mate 比較
+  は exact 側で G-112 の semantic-global reindexing を proof-use 消費
+  する(G-110 内部宣言からの再建はしない — 経路の一意化。G-114 昇格
+  レビューで依存辺を追加)。G-112 の coverage 分類結果は G-114 /
   G-115 の量化域を変更しない(G-110 固定の realization 付き入力上で立つ)。
 - G-112 の G-111 依存はカード起票レビューで観察参照へ降格した。
   G-113 revision 2 は G-111 の covariant action と G-112 の
-  semantic-global reindexing の双方へ実質的に依存する。依存分界の正本は
-  各カードの program context とする。
+  semantic-global reindexing の双方へ実質的に依存する。依存分界は
+  各カードの program context を正とする。
 - 上流の statement 改訂時、依存する下流 draft は差し戻して再固定する
-  (G-109 の伝播規定と同型)。G-111 / G-112 改訂 → G-113 へ、G-108 /
+  (G-109 の伝播規定と同型)。G-111 改訂 → G-113 へ、G-112 改訂 →
+  G-113 / G-114 へ、G-108 /
   G-109 / G-110 の改訂 → 参照カードへ、**G-111〜G-115 のいずれの改訂も
   G-116 へ伝播する**(達成記録の突合対象と範囲併記の内容が動くため)。
 - G-116 は全カードの帰趨確定後にのみ昇格する(達成記録の突合が義務の
@@ -611,7 +616,7 @@ G-110 / G-109 / G-108 → G-115 ─┴→ G-116(存否決定+達成記録)
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
   昇格順の推奨は依存 DAG に従い G-111 → G-112 → G-113
-  (G-114 / G-115 は並走裁定) → G-116。**`ObProblem` の Lean 指示対象の裁定は
+  (G-115 は並走裁定、G-114 は G-112 完遂後)→ G-116。**`ObProblem` の Lean 指示対象の裁定は
   G-115 昇格前の gate とする**(semantic adequacy 条件は §4 G-115)。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
