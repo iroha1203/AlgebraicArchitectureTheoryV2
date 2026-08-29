@@ -52,17 +52,17 @@ The report synchronization was reviewed at fixed head
 
 ## Final completion candidate
 
-The final completion cycle fixes a schema-complete
-`target_theorem_final_review` packet and a formal
-`target_theorem_completion` ledger in the fixed-head PR comments. That review
-audits clauses (a)--(f), every material-premise role and proof-use route,
-certificate provenance, structure-field escape, exact-image compatibility,
-direction coverage, definition unfolding, dependency anchors, the three
-support strata, the public-projection mate route, axioms, scans, and artifact
-synchronization.
+The final completion cycle will fix a schema-complete
+`target_theorem_final_review` packet and, after a successful fresh review, a
+formal `target_theorem_completion` ledger in the fixed-head PR comments. The
+review must audit clauses (a)--(f), every material-premise role and proof-use
+route, certificate provenance, structure-field escape, exact-image
+compatibility, direction coverage, definition unfolding, dependency anchors,
+the three support strata, the public-projection mate route, axioms, scans, and
+artifact synchronization.
 
-The theorem implementation supplies all revision-3 clauses (a)--(f), and the
-candidate ledger records no remaining mathematical obligation. G-115
+The merged theorem evidence and this evidence index supply all revision-3
+clauses (a)--(f) and record no remaining mathematical obligation. G-115
 upper-stage lift and G-116 exchange invertibility remain outside this target's
 scope. The durable status remains `target-proof-checkpoint` until the
 schema-complete final packet, fresh four-lane completion review, formal ledger,
@@ -234,18 +234,19 @@ the public lift's `IsStronglyCartesian.ext`.
 
 ## Material-premise and proof-use audit
 
-| premise | provenance | actual proof-use | status |
-| --- | --- | --- | --- |
-| exact cospan and pullbacks | raw `RefinementBCConfiguration`; G-112 generated pointed pullback | repointing, forward square, exact route functors | discharged |
-| G-112 exact reindexing | reviewed `exact_bottom_semantic_global_reindex_functor`, `exact_bottom_semantic_global_selected_lift` | both sides of `refinementBCMateAt`, route factor graph, actual target reindexing | discharged |
-| G-101/G-109 covariant transport | reviewed `coreFiberTransportObj` | `pulledSupportTransfer`, active target repointing | discharged |
-| unpointed refinement | raw configuration field | repointing, forward square, extraction preservation | discharged |
-| compatible source | generated `CompatibleSource` | every local point, pullback, condition, and witness | discharged |
-| target package | implication input or witness-local construction | selected-family equality, converse, lifts, mate evaluation | discharged |
-| refinement projection | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`; `exactVerticalComparison_isHomLift`; relative-factor uniqueness via `IsStronglyCartesian.ext` | discharged |
-| fixed condition | implication input only | family equality, authored package, both cleavages | discharged |
-| package transport completeness | `SelectedTransport.lean` | two-sided upper inverses and strong cartesianness | discharged |
-| active nonvacuity | witness-local packages and Atom computations | positive/negative strata and mate firing | discharged |
+| premise | role | provenance | actual proof-use | status |
+| --- | --- | --- | --- | --- |
+| exact cospan and pullbacks | `ambient-boundary` | raw `RefinementBCConfiguration`; G-112 generated pointed pullback | repointing, forward square, exact route functors | `justified-boundary` |
+| G-112 exact reindexing | `ambient-boundary` | reviewed `exact_bottom_semantic_global_reindex_functor`, `exact_bottom_semantic_global_selected_lift` | both sides of `refinementBCMateAt`, route factor graph, actual target reindexing | `justified-boundary` |
+| G-101/G-109 covariant transport | `ambient-boundary` | reviewed `coreFiberTransportObj` | `pulledSupportTransfer`, active target repointing | `justified-boundary` |
+| unpointed refinement | `ambient-boundary` | raw configuration field | repointing, forward square, extraction preservation | `justified-boundary` |
+| compatible source | `ambient-boundary` | generated `CompatibleSource` | every local point, pullback, condition, and witness | `justified-boundary` |
+| target package | `direction-hypothesis` | implication input or witness-local construction | selected-family equality, converse, lifts, mate evaluation | `justified-boundary` |
+| local regime in the converse | `direction-hypothesis` | input only to the regime-to-condition direction | actual base lift and its projection equation recover reflection | `justified-boundary` |
+| refinement projection | `discharge-required` | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`; `exactVerticalComparison_isHomLift`; relative-factor uniqueness via `IsStronglyCartesian.ext` | `discharged` |
+| fixed condition | `direction-hypothesis` | implication input only | family equality, authored package, both cleavages | `justified-boundary` |
+| package transport completeness | `discharge-required` | `SelectedTransport.lean` | two-sided upper inverses and strong cartesianness | `discharged` |
+| active nonvacuity | `discharge-required` | witness-local packages and Atom computations | positive/negative strata and mate firing | `discharged` |
 
 No theorem assumes a regime, cleavage, mate, selected-family equality, or
 package equivalence as an opaque fixture in the direction that constructs it.
