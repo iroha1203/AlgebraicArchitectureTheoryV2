@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.RefinementCategory
 import ResearchLean.AG.GeometryTransport.Categories
+import ResearchLean.AG.GeometryTransport.FiniteWitnesses
 
 /-!
 # Geometry transport over lax refinement morphisms
@@ -92,38 +93,47 @@ def refinementEquationCoordinateMap {U : AtomCarrier.{u}}
 structure RefinementCoverageTransport {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : RefinementGeometryBaseHom G H) : Prop where
+  /-- Required support is preserved by the upper Atom equivalence. -/
   requiredSupport : ∀ atom,
     G.geometry.requirements.requiredSupport atom →
       H.geometry.requirements.requiredSupport (f.upper.atomEquiv atom)
+  /-- Required equation coordinates are preserved by upper reindexing. -/
   requiredEquationCoordinate : ∀ coordinate,
     G.geometry.requirements.requiredEquationCoordinate coordinate →
       H.geometry.requirements.requiredEquationCoordinate
         (refinementRequiredCoordinateMap f coordinate)
+  /-- Selected violation witnesses are preserved by upper reindexing. -/
   selectedViolationWitness : ∀ coordinate,
     G.geometry.requirements.selectedViolationWitness coordinate →
       H.geometry.requirements.selectedViolationWitness
         (refinementEquationCoordinateMap f coordinate)
+  /-- Required axes are preserved by the upper axis map. -/
   requiredAxis : ∀ axis,
     G.geometry.requirements.requiredAxis axis →
       H.geometry.requirements.requiredAxis (f.upper.axisMap axis)
+  /-- Visible support remains visible on the forward context. -/
   supportVisibleOn : ∀ W atom,
     G.geometry.requirements.supportVisibleOn W atom →
       H.geometry.requirements.supportVisibleOn
         (refinementGeometryContextMap f W) (f.upper.atomEquiv atom)
+  /-- Visible required coordinates remain visible on the forward context. -/
   equationCoordinateVisibleOn : ∀ W coordinate,
     G.geometry.requirements.equationCoordinateVisibleOn W coordinate →
       H.geometry.requirements.equationCoordinateVisibleOn
         (refinementGeometryContextMap f W)
         (refinementRequiredCoordinateMap f coordinate)
+  /-- Visible violation witnesses remain visible on the forward context. -/
   violationWitnessVisibleOn : ∀ W coordinate,
     G.geometry.requirements.violationWitnessVisibleOn W coordinate →
       H.geometry.requirements.violationWitnessVisibleOn
         (refinementGeometryContextMap f W)
         (refinementEquationCoordinateMap f coordinate)
+  /-- Readable axes remain readable on the forward context. -/
   axisReadableOn : ∀ W axis,
     G.geometry.requirements.axisReadableOn W axis →
       H.geometry.requirements.axisReadableOn
         (refinementGeometryContextMap f W) (f.upper.axisMap axis)
+  /-- Visible context incidences remain visible after upper transport. -/
   boundaryVisibleOn : ∀ W V,
     G.geometry.requirements.boundaryVisibleOn W V →
       H.geometry.requirements.boundaryVisibleOn
@@ -180,12 +190,25 @@ def comp {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     T.boundaryVisibleOn (refinementGeometryContextMap f W)
       (refinementGeometryContextMap f V) (F.boundaryVisibleOn W V h)
 
+/-- The lax coverage certificate has a concrete negative instance inherited
+from the reviewed G-108 finite coverage fixture. -/
+theorem no_transport_to_emptyTarget :
+    ¬ RefinementCoverageTransport
+      GeometryTransport.NegativeGeometryWitness.package
+      GeometryTransport.NegativeGeometryWitness.emptyCoverageTarget
+      ((exactPackageToRefinement FiniteModel.carrier).map
+        GeometryTransport.NegativeGeometryWitness.coreHom) := by
+  intro T
+  have htarget := T.requiredSupport FiniteModel.FiniteAtom.componentA rfl
+  exact htarget
+
 end RefinementCoverageTransport
 
 /-- Selected-overlap comparison over a lax refinement. -/
 structure RefinementOverlapTransport {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (f : RefinementGeometryBaseHom G H) where
+  /-- The selected overlap comparison on every target context triple. -/
   overlapIso : ∀ base left right,
     refinementGeometryContextForward f
         ⟨G.geometry.overlap.overlap
@@ -217,10 +240,12 @@ def comp {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
 
 end RefinementOverlapTransport
 
+/-- Coverage preservation proofs over a fixed refinement are unique. -/
 instance refinementCoverageTransportSubsingleton {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) (f : RefinementGeometryBaseHom G H) :
     Subsingleton (RefinementCoverageTransport G H f) := ⟨fun _ _ => by rfl⟩
 
+/-- Overlap comparisons over a fixed refinement are unique in the context preorder. -/
 instance refinementOverlapTransportSubsingleton {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) (f : RefinementGeometryBaseHom G H) :
     Subsingleton (RefinementOverlapTransport G H f) := by
@@ -335,36 +360,49 @@ theorem refinementRawTransport_comp {U : AtomCarrier.{u}}
 structure RefinementGeomReadHom {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
     (baseHom : RefinementGeometryBaseHom G H) where
+  /-- Coverage preservation indexed by the complete upper reading. -/
   coverage : RefinementCoverageTransport G H baseHom
+  /-- Selected-overlap preservation indexed by the complete upper reading. -/
   overlap : RefinementOverlapTransport G H baseHom
+  /-- Coefficient-ring transport. -/
   coefficientHom : G.Coefficient →+* H.Coefficient
+  /-- Compatibility of the target raw system with upper reindexing and coefficients. -/
   raw_eq : H.raw = refinementRawTransport baseHom coefficientHom
+  /-- Support comparison on every source context. -/
   supportComp : ∀ W : G.site.category,
     W.ctx.Support → (refinementGeometryContextForward baseHom W).ctx.Support
+  /-- Axis comparison on every source context. -/
   axisComp : ∀ W : G.site.category,
     W.ctx.Axis → (refinementGeometryContextForward baseHom W).ctx.Axis
+  /-- Observable comparison on every source context. -/
   observableComp : ∀ W : G.site.category,
     W.ctx.Observable → (refinementGeometryContextForward baseHom W).ctx.Observable
+  /-- The support comparison preserves the selected support reading. -/
   supportReads : ∀ (W : G.site.category) support atom,
     W.ctx.minimal.supportReads support atom →
       (refinementGeometryContextForward baseHom W).ctx.minimal.supportReads
         (supportComp W support) (baseHom.upper.atomEquiv atom)
+  /-- The axis comparison preserves the selected axis reading. -/
   axisReads : ∀ (W : G.site.category) axis,
     W.ctx.minimal.axisReads axis →
       (refinementGeometryContextForward baseHom W).ctx.minimal.axisReads
         (axisComp W axis)
+  /-- The observable comparison preserves the selected observable reading. -/
   observableReads : ∀ (W : G.site.category) observable,
     W.ctx.minimal.observableReads observable →
       (refinementGeometryContextForward baseHom W).ctx.minimal.observableReads
         (observableComp W observable)
+  /-- Support comparison is natural in context restriction. -/
   support_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) support,
     (refinementTargetContextMorphism (f := baseHom) w).supportMap
         (supportComp W support) =
       supportComp V ((refinementSourceContextMorphism w).supportMap support)
+  /-- Axis comparison is natural in context restriction. -/
   axis_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) axis,
     (refinementTargetContextMorphism (f := baseHom) w).axisMap
         (axisComp W axis) =
       axisComp V ((refinementSourceContextMorphism w).axisMap axis)
+  /-- Observable comparison is natural in context restriction. -/
   observable_naturality : ∀ {W V : G.site.category} (w : W ⟶ V) observable,
     (refinementTargetContextMorphism (f := baseHom) w).observableRestrict
         (observableComp V observable) =
@@ -461,7 +499,9 @@ end RefinementGeomReadHom
 /-- A geometry morphism whose lower projection is an actual lax refinement. -/
 structure RefinementGeometryHom {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
+  /-- The actual lax lower refinement together with its complete upper reading. -/
   base : RefinementGeometryBaseHom G H
+  /-- Geometry transport indexed by the complete upper reading of `base`. -/
   geometry : RefinementGeomReadHom G H base
 
 namespace RefinementGeometryHom
@@ -507,12 +547,14 @@ end RefinementGeometryHom
 The wrapper separates this category instance from the exact G-108 category
 instance while retaining exactly the same mathematical object data. -/
 structure RefinementGeometryObject (U : AtomCarrier.{u}) where
+  /-- The unchanged G-108 geometry package data. -/
   geometry : GeometryPackage.{u, v} U
 
 /-- Geometry packages with lax refinement-geometry morphisms. -/
 abbrev RefinementGeometryCategory (U : AtomCarrier.{u}) :=
   RefinementGeometryObject.{u, v} U
 
+/-- The category structure generated by identity and composition of lax geometry homs. -/
 noncomputable instance refinementGeometryCategory (U : AtomCarrier.{u}) :
     Category (RefinementGeometryCategory.{u, v} U) where
   Hom G H := RefinementGeometryHom G.geometry H.geometry
