@@ -45,7 +45,7 @@
   ない場合は本カードで新設せず、gate (iv) の regime の意味の裁定へ
   差し戻す(単責務規律)。
 - `rival`: Beck–Chevalley 条件の古典理論(成立条件の一般論)。差は
-  「具体 doctrine 塔の refinement / 上段 regime 込みの設定で、存否
+  「具体 doctrine 塔の refinement / geometry-refinement bridge 込みの設定で、存否
   未決だった exchange-failure に決定を与え、階梯全体の達成を検証可能な
   台帳突合として記録する」点に置く。
 - `claim boundary`: 各 summand の carrier は context とともに dependent sumへ
@@ -134,7 +134,7 @@
     structural `IsIso` producer、named-failure branch なら事前固定した
     finite/contextual evaluation とする。単なる論理的二分や構造化
     disjunction payload は evidence ではない。
-  - 上段 regime の第二 universe(`GeomReadCategory` は二 universe)は
+  - `RefinementGeometryCategory` の第二 universe(`GeomReadCategory` は二 universe)は
     端点固定とし、方式は F0 で確定する。
 - `draft revision note`: 旧 draft は universal `IsIso` と existential
   `¬IsIso` を一つの補集合 disjunction にしていた。この形は古典排中律と
@@ -157,7 +157,7 @@
   昇格 revision で固定された universal `ExchangeExact` theorem または
   named `¬ ExchangeExact` evaluation theorem、量化域の regime
   組成 artifact(G-114 context / G-115 named actual upper decision solution
-  family の消費、
+  の成分族の消費、
   および O19 除外記録)、active
   成分ごとの非退化 witness、report
   `research/reports/G-116-aat-gr4-capstone.md`(**達成階梯対応表**を

@@ -39,7 +39,7 @@
 - `rival`: fibred 2-categoryのchange of baseとpseudonatural lift。差は、AATの
   `RefinementPackageHom` とgeometry reading dataに即したlax geometry categoryを
   構成し、actual upper cochain/orbitまで同じtyped routeで接続する点に置く。
-- `claim scope`: fixed carrierごとに構成する。G-115のupper problemでは係数objectを
+- `claim boundary`: fixed carrierごとに構成する。G-115のupper problemでは係数objectを
   一つに固定し、全route legs、mate components、raw edges、comparators、reselectionの
   coefficient homをidentityに制限する。一般 `RefinementGeometryHom` の圏自体は通常の
   coefficient homを許す。carrier / coefficient base change、site / coverの変更、
@@ -97,7 +97,8 @@
   2. **(b) G-114 route上のfinite upper problemとactual solution**:
      `UpperRefinementBCProblem ctx` はfinite presentation `P`、root、全vertexへの
      directed `P.Path root i`、およびactual functor
-     `sourceFiberDiagram : P ⥤ CoreFiber ctx.targetPoint`を持つ。common source
+     `sourceFiberDiagram : P ⥤ CoreFiber
+     (ctx.configuration.targetPointAt ctx.source)`を持つ。common source
      two-layer geometry dataの各geometry package / edgeのcore projectionが、この
      fiber diagramのobject / morphismの忘却像と一致するdependent equationsを持つ。
      従って全source edgeのlower projectionは型としてfiber-verticalに固定される。
@@ -168,7 +169,7 @@
      このpredicateも否定も
      証明せず、G-116 O12がactual component計算で決定する。
 
-- `target theorem scope`: Lean置き場所は
+- `target theorem boundary`: Lean置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新module。
   G-108 / G-109 / G-112 / G-114 reviewed modulesは参照のみ。Research aggregate /
   full buildは禁止し、direct dependency DAGとfocused file checkだけを使う。
@@ -186,23 +187,38 @@
   negative problems、K3 paired cochain theoremとconditional conjugation、K4 premise /
   proof-use / axiom / nonvacuity監査。
 - `target theorem completion criteria`: 全artifactがsorryなしでResearchLeanに受理され、
-  axiom / placeholder auditがcleanであること。material premise ledgerを放電し、
+  axiom / placeholder auditがcleanであること。material premise / hypothesis dischargeと
+  certificate provenance / proof-use / structure-field escapeを監査する。
   G-114 lower lax arrows、bridge projection、leg triangle、G-109 comparator、actual cochainの
-  proof-useを監査する。各実装PRのfixed-head `$review-pr` とcompletion candidateの独立
+  proof-useを監査し、report / tracking Issueを同期する。各実装PRのfixed-head
+  `$review-pr` とcompletion candidateのfinal review packetに対する独立
   `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ完了とする。
+- `target premise discharge policy`: `ambient-boundary`はreview済みpredecessorの入力data、
+  `direction-hypothesis`はroute内naturalityに限って残す。`discharge-required`は入力からの
+  Lean construction、具体finite witness、またはreview済みpredecessor theoremで放電する。
+  caller-supplied argument / field / certificateだけでは放電と数えず、provenanceとproof-useを監査する。
 
 **Target material premise ledger**
 
 | premise | class | provenance / proof-use / discharge |
 |---|---|---|
-| G-114 active context / mate | ambient | PR #4246 fixed head `8f7ad8bf`、merge `3d26d993`。二lax route、composite lower legs、core mateに使用。geometry bridgeは含まない |
-| G-108 geometry contract | ambient | exact geometry fieldsの語彙とlaws。lax lower homは含まないため、そのままroute legに使わない |
-| G-109 two-layer / orbit data | ambient | strong edges、authored comparator、actual cochain / orbitの語彙。route間equationsは含まない |
+| G-114 active context / mate | ambient-boundary | PR #4246 fixed head `8f7ad8bf`、merge `3d26d993`。二lax route、composite lower legs、core mateに使用。geometry bridgeは含まない |
+| G-108 geometry contract | ambient-boundary | exact geometry fieldsの語彙とlaws。lax lower homは含まないため、そのままroute legに使わない |
+| G-109 two-layer / orbit data | ambient-boundary | strong edges、authored comparator、actual cochain / orbitの語彙。route間equationsは含まない |
 | `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。route間solutionを含まず、O10放電とは数えない。naturalityのcore射影だけを既存factor lawsで証明する |
 | named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
 | paired cochain / restricted orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する。既存full orbitとの一致は主張しない |
 | conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
+
+- `target anti-weakening rule`: 結論相当のgeometry bridge、route間solution、
+  non-liftability、paired intertwining、exchange exactnessを theorem argument、typeclass、
+  structure / certificate field、opaque membershipへ移して成功扱いしない。
+  direction-hypothesisの各fieldはroute内naturalityだけを担い、route間結論を含めない。
+- `target route integrity gate`: selected lift、finite presentation、named decision / negative
+  fixture、coefficient-trivial reselectionの出所を、入力data、G-112 / G-114 reviewed theorem、
+  または具体finite constructionに固定する。target-fitting selection、結論側lawのfield化、
+  empty / identity-only退化、片方向theoremの同値扱いを受理しない。
 
 **受入禁止**
 
@@ -216,16 +232,16 @@
 - extent / membership iff、empty / discrete / identity-only fixture、solution projection、
   core-only theoremだけでO10 / O11を放電する。
 
-**停止条件**
+- `target failure policy`:
 
-- `goal-defect`: `RefinementPackageHom.upper`だけではG-108 geometry index mapsを
-  functorially定義できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
-- `target-refuted`: category laws、named actual solution、named non-liftable problem、
-  paired/cochain theoremのいずれかに反例がある。
-- `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
-  exact declarationと最小dependency DAGをIssueに固定した場合。
-- `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
-  4査読を完了した場合だけ。
+  - `goal-defect`: `RefinementPackageHom.upper`だけではG-108 geometry index mapsを
+    functorially定義できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
+  - `target-refuted`: category laws、named actual solution、named non-liftable problem、
+    paired/cochain theoremのいずれかに反例がある。
+  - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
+    exact declarationと最小dependency DAGをIssueに固定した場合。
+  - `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
+    4査読を完了した場合だけ。
 
 - `stop reason`: なし(active)。
 - `next action`: F0で`RefinementGeometryHom`のcoverage/context mapsを
