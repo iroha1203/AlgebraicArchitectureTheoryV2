@@ -29,8 +29,6 @@ structure ActiveRefinementBCContext (U : AtomCarrier.{u}) where
   /-- The fixed realized-support condition at this selected refinement. -/
   condition : RealizedLocusExtractionReflecting
     (configuration.baseRefinementAt source)
-  /-- Local base/pulled regime generated from the fixed condition. -/
-  regime : RefinementBCRegimeAt configuration source
 
 /-- Construct the active context; the caller supplies no cleavage or regime. -/
 noncomputable def activeRefinementBCContextOfCondition
@@ -42,14 +40,17 @@ noncomputable def activeRefinementBCContextOfCondition
   source := p
   targetPackage := target
   condition := condition
-  regime := {
-    baseCleavage := refinementCleavageOfRealizedReflection
-      (C.baseRefinementAt p) condition
-    pulledCleavage := refinementCleavageOfRealizedReflection
-      (C.pulledRefinementAt p) (pulledRealizedReflection C p condition)
-  }
 
 namespace ActiveRefinementBCContext
+
+/-- The unique exported regime is derived from the fixed condition. -/
+noncomputable def regime (ctx : ActiveRefinementBCContext U) :
+    RefinementBCRegimeAt ctx.configuration ctx.source where
+  baseCleavage := refinementCleavageOfRealizedReflection
+    (ctx.configuration.baseRefinementAt ctx.source) ctx.condition
+  pulledCleavage := refinementCleavageOfRealizedReflection
+    (ctx.configuration.pulledRefinementAt ctx.source)
+      (pulledRealizedReflection ctx.configuration ctx.source ctx.condition)
 
 /-- The regime-generated base refinement lift at the actual target package. -/
 noncomputable def baseLift (ctx : ActiveRefinementBCContext U) :
@@ -77,6 +78,22 @@ noncomputable def legacyRegime (ctx : ActiveRefinementBCContext U) :
       (ctx.configuration.pointedConfigurationAt ctx.source) :=
   legacyRefinementBCRegimeOfConditionAt
     ctx.configuration ctx.source ctx.condition
+
+/-- The mate route and public base lift select the same complete upper edge. -/
+theorem legacyRegime_baseLift_upper_eq (ctx : ActiveRefinementBCContext U) :
+    HEq ((ctx.legacyRegime).baseCleavage.lift ctx.targetPackage).hom.upper
+      ctx.baseLift.hom.upper := by
+  exact legacyRefinementLift_upper_coherence
+    (ctx.configuration.baseRefinementAt ctx.source) ctx.condition ctx.targetPackage
+
+/-- The mate route and public pulled lift select the same complete upper edge. -/
+theorem legacyRegime_pulledLift_upper_eq (ctx : ActiveRefinementBCContext U) :
+    HEq ((ctx.legacyRegime).pulledCleavage.lift ctx.pullbackTargetPackage).hom.upper
+      ctx.pulledLift.hom.upper := by
+  exact legacyRefinementLift_upper_coherence
+    (ctx.configuration.pulledRefinementAt ctx.source)
+    (pulledRealizedReflection ctx.configuration ctx.source ctx.condition)
+    ctx.pullbackTargetPackage
 
 /-- Canonical G-112/refinement base-change mate derived from the context. -/
 noncomputable def mate (ctx : ActiveRefinementBCContext U) :

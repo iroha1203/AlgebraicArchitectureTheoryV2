@@ -100,6 +100,58 @@ def RefinementExactComparisonImage {U : AtomCarrier.{u}}
   ∃ exact : ExactDoctrineHom C.sOnePrime C.sOne,
     exactToRefinement exact = C.refinement
 
+/--
+On the exact-comparison stratum, the generated mixed horizontal refinement is
+itself the comparison of an exact pointed map.  Thus the unconditional mixed
+pullback construction restricts to the G-112 exact square rather than merely
+sharing its objects.
+-/
+noncomputable def pulledExactComparisonAt
+    {U : AtomCarrier.{u}} (C : RefinementBCConfiguration U)
+    (p : C.CompatibleSource) (image : RefinementExactComparisonImage C) :
+    C.pullbackSourceAt p ⟶ C.pullbackTargetAt p := by
+  let exact := Classical.choose image
+  have hexact : exactToRefinement exact = C.refinement :=
+    Classical.choose_spec image
+  let pulled := C.pulledRefinementAt p
+  refine {
+    doctrineHom := {
+      sourceMap := pulled.doctrineHom.sourceMap
+      atomEquiv := pulled.doctrineHom.atomEquiv
+      normalize_eq := pulled.doctrineHom.normalize_eq
+      extraction_iff := ?_
+    }
+    source_eq := pulled.source_eq
+  }
+  intro source atom
+  constructor
+  · exact pulled.doctrineHom.extraction_forward source atom
+  · intro htarget
+    have hsourceMap := congrArg RefinementDoctrineHom.sourceMap hexact
+    have hatomMap := congrArg RefinementDoctrineHom.atomMap hexact
+    change exact.sourceMap = C.refinement.sourceMap at hsourceMap
+    change (fun atom => exact.atomEquiv atom) = C.refinement.atomMap at hatomMap
+    have htarget' : C.sOne.extracts
+        (exact.sourceMap source.val.1) (exact.atomEquiv atom) := by
+      change C.sOne.extracts
+        (C.refinement.sourceMap source.val.1)
+        (C.refinement.atomMap atom) at htarget
+      rw [congrFun hsourceMap source.val.1,
+        congrFun hatomMap atom]
+      exact htarget
+    exact (exact.extraction_iff source.val.1 atom).mpr htarget'
+
+/-- Exact comparison is preserved by the generated mixed horizontal edge. -/
+theorem pulledRefinementAt_mem_exactComparisonImage
+    {U : AtomCarrier.{u}} (C : RefinementBCConfiguration U)
+    (p : C.CompatibleSource) (image : RefinementExactComparisonImage C) :
+    PointedRefinementHom.ofExact (pulledExactComparisonAt C p image) =
+      C.pulledRefinementAt p := by
+  apply PointedRefinementHom.ext
+  apply RefinementDoctrineHom.ext
+  · rfl
+  · rfl
+
 /-- The derived configuration predicate holds throughout the exact image. -/
 theorem configurationRealizedReflection_of_exactImage
     {U : AtomCarrier.{u}} (C : RefinementBCConfiguration U)

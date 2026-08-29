@@ -222,6 +222,17 @@ noncomputable def activeReverseRegime :
     RefinementBCRegime activeReverseConfiguration :=
   refinementBCRegimeOfCondition activeReverseConfiguration activeReverse_condition
 
+/-- The generated mixed square has a genuinely nonidentity horizontal edge. -/
+theorem activeReverse_pulledRefinement_atom_nonidentity :
+    (activeReverseConfiguration.pulledRefinementAt activeReverseSource).doctrineHom.atomMap
+        FiniteModel.FiniteAtom.componentA ≠
+      FiniteModel.FiniteAtom.componentA := by
+  intro heq
+  change refinementAtomMap FiniteModel.FiniteAtom.componentA =
+    FiniteModel.FiniteAtom.componentA at heq
+  rw [refinementAtomMap_componentA] at heq
+  exact FiniteModel.FiniteAtom.noConfusion heq
+
 /-- The selected target point at the reverse witness. -/
 noncomputable def activeReverseTargetPoint : ExtractionInstance FiniteModel.carrier :=
   activeReverseConfiguration.targetPointAt activeReverseSource
@@ -249,6 +260,11 @@ noncomputable def activeReverseTargetPackage : CoreFiber activeReverseTargetPoin
 /-- The selected reverse configuration is active. -/
 theorem activeReverse_active : Active activeReverseConfiguration := by
   exact ⟨⟨activeReverseSource, activeReverseTargetPackage⟩⟩
+
+/-- The active reverse fixture supplies both support and the generated regime. -/
+theorem activeReverse_activeRegimeAvailable :
+    ActiveRegimeAvailable activeReverseConfiguration :=
+  ⟨activeReverse_active, ⟨activeReverseRegime⟩⟩
 
 /-- The underlying strict refinement remains outside the exact comparison image. -/
 theorem activeReverse_outside_exact_image :

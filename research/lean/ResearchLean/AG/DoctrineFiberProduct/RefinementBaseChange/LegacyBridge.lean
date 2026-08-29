@@ -16,6 +16,49 @@ open CategoryTheory
 open AtomFoundation
 open CrossStageCoherence
 
+@[simp]
+theorem exactPointedToRefinement_map_eqToHom
+    {U : AtomCarrier.{u}} {X Y : ExtractionInstance U} (h : X = Y) :
+    (exactPointedToRefinement U).map (eqToHom h) =
+      (eqToHom (congrArg (fun Z => PointedRefinementObject.mk Z) h) :
+        PointedRefinementObject.mk X ⟶ PointedRefinementObject.mk Y) := by
+  subst h
+  rfl
+
+/--
+An exact vertical fiber map remains vertical after the exact-to-refinement total
+comparison.  The proof explicitly transports the exact fiber equation through
+the commuting projection square.
+-/
+theorem exactVerticalComparison_isHomLift
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    {source target : CoreFiber X} (vertical : source ⟶ target) :
+    (refinementPackageProjection U).IsHomLift
+      (PointedRefinementHom.id X)
+      ((exactPackageToRefinement U).map vertical.1) := by
+  let hsource := congrArg (fun Z => PointedRefinementObject.mk Z) source.2
+  let htarget := congrArg (fun Z => PointedRefinementObject.mk Z) target.2
+  apply CategoryTheory.IsHomLift.of_fac'
+    (refinementPackageProjection U) (PointedRefinementHom.id X)
+      ((exactPackageToRefinement U).map vertical.1) hsource htarget
+  have hcomparison :
+      (refinementPackageProjection U).map
+          ((exactPackageToRefinement U).map vertical.1) =
+        (exactPointedToRefinement U).map
+          ((packageProjection U).map vertical.1) := by
+    simpa using CategoryTheory.Functor.congr_hom
+      (exact_refinement_projection_square U) vertical.1
+  letI : (packageProjection U).IsHomLift (𝟙 X) vertical.1 := vertical.2
+  have hexact := CategoryTheory.IsHomLift.fac'
+    (packageProjection U) (𝟙 X) vertical.1
+  rw [hcomparison, hexact]
+  simp only [CategoryTheory.Functor.map_comp,
+    CategoryTheory.Functor.map_id,
+    exactPointedToRefinement_map_eqToHom]
+  change eqToHom hsource ≫ PointedRefinementHom.id X ≫
+      eqToHom htarget.symm = _
+  rfl
+
 /-- The selected-family lift satisfies the earlier explicit factor interface. -/
 noncomputable def legacyRefinementLiftOfRealizedReflection
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
@@ -64,40 +107,63 @@ noncomputable def legacyRefinementLiftOfRealizedReflection
     · apply Equiv.ext
       intro atom
       rfl
+  have factor_triangle : ∀ {source : CoreFiber X}
+      (candidate : RefinementOverHom r source ⟨Q, rfl⟩),
+      RefinementOverHom.precomp (factor candidate) hom = candidate := by
+    intro source candidate
+    apply RefinementOverHom.ext
+    change (candidate.upper.comp backward).comp forward = candidate.upper
+    rw [PackageTotalHom.upper_comp_assoc,
+      SelectedRefinementTransport.inverseCorePackageBackward_comp_forward,
+      PackageTotalHom.upper_comp_id]
   exact {
     domain := domain
     hom := hom
     factor := factor
-    factor_fac := by
-      intro source candidate
-      apply RefinementOverHom.ext
-      change (candidate.upper.comp backward).comp forward = candidate.upper
-      rw [PackageTotalHom.upper_comp_assoc,
-        SelectedRefinementTransport.inverseCorePackageBackward_comp_forward,
-        PackageTotalHom.upper_comp_id]
+    factor_fac := factor_triangle
     factor_unique := by
       intro source candidate vertical hfac
-      apply CategoryTheory.Functor.Fiber.hom_ext
-      apply PackageTotalHom.ext
-      · letI : (packageProjection U).IsHomLift (𝟙 X) vertical.1 := vertical.2
-        let generated := factor candidate
+      let generated := factor candidate
+      let actual := refinementLiftOfRealizedReflection r condition ⟨Q, rfl⟩
+      letI : (refinementPackageProjection U).IsHomLift
+          (PointedRefinementHom.id X)
+          ((exactPackageToRefinement U).map vertical.1) :=
+        exactVerticalComparison_isHomLift vertical
+      letI : (refinementPackageProjection U).IsHomLift
+          (PointedRefinementHom.id X)
+          ((exactPackageToRefinement U).map generated.1) :=
+        exactVerticalComparison_isHomLift generated
+      letI := actual.isStronglyCartesian
+      have hbase : vertical.1.base = generated.1.base := by
+        letI : (packageProjection U).IsHomLift (𝟙 X) vertical.1 := vertical.2
         letI : (packageProjection U).IsHomLift (𝟙 X) generated.1 := generated.2
         exact (CategoryTheory.IsHomLift.fac'
           (packageProjection U) (𝟙 X) vertical.1).trans
             (CategoryTheory.IsHomLift.fac'
               (packageProjection U) (𝟙 X) generated.1).symm
-      · have hupper := congrArg RefinementOverHom.upper hfac
-        change vertical.1.upper.comp forward = candidate.upper at hupper
-        change vertical.1.upper = candidate.upper.comp backward
-        calc
-          vertical.1.upper = vertical.1.upper.comp
-              (SignedExactCoreReadingHom.refl P) :=
-            (PackageTotalHom.upper_comp_id _).symm
-          _ = vertical.1.upper.comp (forward.comp backward) := by
-            rw [SelectedRefinementTransport.inverseCorePackageForward_comp_backward]
-          _ = (vertical.1.upper.comp forward).comp backward := by
-            rw [PackageTotalHom.upper_comp_assoc]
-          _ = candidate.upper.comp backward := by rw [hupper]
+      have hcomp :
+          (exactPackageToRefinement U).map vertical.1 ≫ actual.hom =
+            (exactPackageToRefinement U).map generated.1 ≫ actual.hom := by
+        apply RefinementPackageHom.ext
+        · change
+            (PointedRefinementHom.ofExact vertical.1.base).comp r =
+              (PointedRefinementHom.ofExact generated.1.base).comp r
+          exact congrArg (fun base => (PointedRefinementHom.ofExact base).comp r) hbase
+        · have hvertical := congrArg RefinementOverHom.upper hfac
+          have hgenerated := congrArg RefinementOverHom.upper (factor_triangle candidate)
+          simpa [actual, hom, generated, RefinementOverHom.precomp,
+            RefinementPackageHom.comp] using hvertical.trans hgenerated.symm
+      have hcomparison :
+          (exactPackageToRefinement U).map vertical.1 =
+            (exactPackageToRefinement U).map generated.1 := by
+        apply CategoryTheory.Functor.IsStronglyCartesian.ext
+          (refinementPackageProjection U) r actual.hom
+          (PointedRefinementHom.id X)
+        exact hcomp
+      apply CategoryTheory.Functor.Fiber.hom_ext
+      apply PackageTotalHom.ext
+      · exact hbase
+      · exact congrArg RefinementPackageHom.upper hcomparison
   }
 
 /-- Objectwise legacy cleavage generated from the fixed condition. -/
@@ -107,6 +173,30 @@ noncomputable def legacyRefinementCleavageOfRealizedReflection
     (condition : RealizedLocusExtractionReflecting r) :
     LegacyRefinementCartesianCleavage r where
   lift target := legacyRefinementLiftOfRealizedReflection r condition target
+
+/-- The relative bridge selects the same authored package as the public lift. -/
+theorem legacyRefinementLift_domain_coherence
+    {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (target : CoreFiber Y) :
+    (legacyRefinementLiftOfRealizedReflection r condition target).domain.1 =
+      (refinementLiftOfRealizedReflection r condition target).domain := by
+  rcases target with ⟨Q, hQ⟩
+  subst Y
+  rfl
+
+/-- The relative bridge uses the public lift's complete upper edge. -/
+theorem legacyRefinementLift_upper_coherence
+    {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (target : CoreFiber Y) :
+    HEq (legacyRefinementLiftOfRealizedReflection r condition target).hom.upper
+      (refinementLiftOfRealizedReflection r condition target).hom.upper := by
+  rcases target with ⟨Q, hQ⟩
+  subst Y
+  rfl
 
 end AAT.AG.DoctrineFiberProduct
 

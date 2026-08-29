@@ -58,11 +58,16 @@ stores no lift, cleavage, mate, reflection condition, or availability witness.
 - generated pullback data: `pointedConfigurationAt`, `pullbackSourceAt`,
   `pullbackTargetAt`, `pulledRefinementAt`
 - square: `RefinementBCConfiguration.pulled_square_commutes_at`
+- exact-image restriction: `pulledExactComparisonAt`,
+  `pulledRefinementAt_mem_exactComparisonImage`
 
 The raw structure has exactly four unpointed doctrines, two exact cospan legs,
 and one unpointed refinement. A source, package, condition, lift, regime, or
 mate is not a field. The mixed pullback is formed directly from the refined
-endpoint and exact second leg by the generated pointed configuration.
+endpoint and exact second leg by the generated pointed configuration. On the
+exact-comparison stratum, `pulledExactComparisonAt` reconstructs extraction
+reflection for the mixed horizontal edge and the comparison theorem identifies
+its exact image with `pulledRefinementAt`.
 
 ### (c) Realized-support classification
 
@@ -98,6 +103,7 @@ contravariant reindexing for this implication.
 
 - identity and exact image: `realizedReflection_id`,
   `realizedReflection_ofExact`, `RefinementExactComparisonImage`,
+  `pulledExactComparisonAt`, `pulledRefinementAt_mem_exactComparisonImage`,
   `configurationRealizedReflection_of_exactImage`
 - pointed isomorphisms: `realizedReflection_ofIsoHom`,
   `realizedReflection_ofIsoInv`
@@ -117,9 +123,11 @@ the inner condition.
   `activeForwardOnly_nontriviality`, `activeForwardOnly_not_condition`,
   `activeForwardOnly_no_regime`
 - active reverse: `activeReverseConfiguration`, `activeReverse_active`,
+  `activeReverse_activeRegimeAvailable`,
   `activeReverse_condition`, `activeReverseRegime`,
   `activeReverse_outside_exact_image`, `activeReverseTargetPackage`,
-  `activeReverseLift`, `activeReverseLift_atom_nonidentity`
+  `activeReverse_pulledRefinement_atom_nonidentity`, `activeReverseLift`,
+  `activeReverseLift_atom_nonidentity`
 - active mate firing: `activeReverseContext`,
   `activeReverseBaseMatePackage`, `activeReversePulledMatePackage`,
   `activeReverseMateComponent`
@@ -134,6 +142,9 @@ refinement but restricts compatible sources geometrically to the reflecting
 `all` source. It is outside the exact comparison image. Its generated lift sends
 `componentA` to `componentB`; the proof derives the projection equation from
 `IsHomLift.fac'` and `RefinementPackageHom.atomEquiv_eq`.
+The generated pulled horizontal edge also sends `componentA` to `componentB`,
+so nontriviality is exhibited on the pulled square itself, independently of the
+lift-edge observable.
 
 The inactive witness uses `ExactBottomSumCarrier` and the non-list-finite first
 summand to refute every target package. Consequently it cannot satisfy either
@@ -142,12 +153,17 @@ active witness obligation even though total definitions remain meaningful.
 ### (f) Gr4 supply
 
 - active context: `ActiveRefinementBCContext`,
-  `activeRefinementBCContextOfCondition`
+  `activeRefinementBCContextOfCondition`, `ActiveRefinementBCContext.regime`
 - actual lifts: `ActiveRefinementBCContext.baseLift`,
   `pullbackTargetPackage`, `pulledLift`
 - canonical mate construction: `legacyRefinementLiftOfRealizedReflection`,
   `legacyRefinementCleavageOfRealizedReflection`,
   `legacyRefinementBCRegimeOfConditionAt`, `refinementBCMateAt`
+- comparison and lift coherence: `exactVerticalComparison_isHomLift`,
+  `legacyRefinementLift_domain_coherence`,
+  `legacyRefinementLift_upper_coherence`,
+  `ActiveRefinementBCContext.legacyRegime_baseLift_upper_eq`,
+  `ActiveRefinementBCContext.legacyRegime_pulledLift_upper_eq`
 - exact exported type and evaluation: `ActiveRefinementBCContext.legacyRegime`,
   `mate`, `baseMatePackage`, `pulledMatePackage`, `mateAtTarget`
 
@@ -164,6 +180,14 @@ functors and their selected components are G-112 declarations. The component is
 the unique pulled relative factor; naturality is proved before assembly. No
 `IsIso` claim is made.
 
+`ActiveRefinementBCContext` stores only the configuration, compatible source,
+actual target package, and fixed condition. Its regime is a derived definition,
+so no alternate cleavage can enter through a structure field. The relative mate
+bridge selects the same authored domains and complete upper edges as the public
+base and pulled lifts. Its uniqueness proof maps exact vertical factors through
+`exactPackageToRefinement`, uses `exact_refinement_projection_square`, and invokes
+the public lift's `IsStronglyCartesian.ext`.
+
 ## Material-premise and proof-use audit
 
 | premise | provenance | actual proof-use | status |
@@ -174,7 +198,7 @@ the unique pulled relative factor; naturality is proved before assembly. No
 | unpointed refinement | raw configuration field | repointing, forward square, extraction preservation | discharged |
 | compatible source | generated `CompatibleSource` | every local point, pullback, condition, and witness | discharged |
 | target package | implication input or witness-local construction | selected-family equality, converse, lifts, mate evaluation | discharged |
-| refinement projection | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`, projection equations | discharged |
+| refinement projection | `refinementPackageProjection` and strict comparison square | actual `IsStronglyCartesian`; `exactVerticalComparison_isHomLift`; relative-factor uniqueness via `IsStronglyCartesian.ext` | discharged |
 | fixed condition | implication input only | family equality, authored package, both cleavages | discharged |
 | package transport completeness | `SelectedTransport.lean` | two-sided upper inverses and strong cartesianness | discharged |
 | active nonvacuity | witness-local packages and Atom computations | positive/negative strata and mate firing | discharged |
@@ -194,8 +218,11 @@ The two main classification statements are genuine equivalences.
    `pulledFst`;
 5. mate right route: G-112 reindexing along `pullbackFst`, then refinement
    reverse on the pulled leg;
-6. mate component: exact/refinement square factorization and pulled universal
-   uniqueness.
+6. mate bridge: exact vertical factor → `exactPackageToRefinement` →
+   `exact_refinement_projection_square` → public
+   `refinementPackageProjection` strong-cartesian uniqueness;
+7. mate component: the coherent base/pulled lifts → G-112 comparison routes
+   → pulled relative universal factor and naturality.
 
 The legacy bridge is limited to reusing the already verified relative-factor
 and mate derivation. It receives revision-3 authored packages and proves the
@@ -208,6 +235,7 @@ Focused commands from `research/lean`:
 
 ```text
 lake build ResearchLean.AG.DoctrineFiberProduct.RefinementBaseChange.LegacyBridge
+lake build ResearchLean.AG.DoctrineFiberProduct.RefinementBaseChange.Qualification
 lake build ResearchLean.AG.DoctrineFiberProduct.RefinementBaseChange.Mate
 lake build ResearchLean.AG.DoctrineFiberProduct.RefinementBaseChange.Supply
 lake build ResearchLean.AG.DoctrineFiberProduct.RefinementBaseChange.Witnesses
