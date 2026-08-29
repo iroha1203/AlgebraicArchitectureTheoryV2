@@ -5,8 +5,8 @@
 - implementation PR: [#4241](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241)
 - final completion PR: [#4246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246)
 - GOAL revision: 3
-- proof state: `target-proof-checkpoint`
-- completion candidate: `yes` (schema-complete final review cycle in progress)
+- proof state: `target-theorem-proved`
+- completion candidate: `finalized` (formal math-lean-review: No major findings)
 
 This report is the evidence index for the revision-3 fixed target. Static Lean
 acceptance is recorded separately from target fit, premise provenance, proof-use,
@@ -50,12 +50,36 @@ The report synchronization was reviewed at fixed head
 `b2cf0cc24be2936994439e424f81cf38bd2c4b7e`, passed 7/7 CI, and merged as
 `0191ec95ac878f633adb95d172ca34bb0f26d8ef` in PR #4244.
 
-## Final completion candidate
+## Completion judgment (final, 2026-08-29)
 
-The final completion cycle will fix a schema-complete
+- final candidate head: `8f7ad8bf6ad9f42be41d8252931e95517c6e0188`
+- schema-complete final packet:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246#issuecomment-5462251699>
+- standard fixed-head review audit:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246#issuecomment-5462183540>
+- formal four-lane completion review: 4/4 `No major findings`
+- formal completion ledger:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246#issuecomment-5462274138>
+- tracking Issue formal-verdict synchronization:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239#issuecomment-5462295404>
+- final completion PR: #4246, CI 7/7 successful
+- merge commit: `3d26d993d8fe36f74f73426731e05af0c051aa5a`
+- verdict: `target-theorem-proved`
+- remaining proof obligations: none
+
+The final packet and ledger audit clauses (a)--(f), every material-premise role
+and proof-use route, certificate provenance, structure-field escape,
+exact-image compatibility, direction coverage, definition unfolding,
+dependency anchors, all three support strata, the public-projection mate route,
+axioms, scans, and artifact synchronization. G-115 upper-stage lift and G-116
+exchange-failure existence / branch decision remain separate downstream targets.
+
+## Final completion process
+
+The final completion cycle fixed a schema-complete
 `target_theorem_final_review` packet and, after a successful fresh review, a
 formal `target_theorem_completion` ledger in the fixed-head PR comments. The
-review must audit clauses (a)--(f), every material-premise role and proof-use
+review audited clauses (a)--(f), every material-premise role and proof-use
 route, certificate provenance, structure-field escape, exact-image
 compatibility, direction coverage, definition unfolding, dependency anchors,
 the three support strata, the public-projection mate route, axioms, scans, and
@@ -63,10 +87,9 @@ artifact synchronization.
 
 The merged theorem evidence and this evidence index supply all revision-3
 clauses (a)--(f) and record no remaining mathematical obligation. G-115
-upper-stage lift and G-116 exchange invertibility remain outside this target's
-scope. The durable status remains `target-proof-checkpoint` until the
-schema-complete final packet, fresh four-lane completion review, formal ledger,
-merge, and post-merge Issue synchronization all pass.
+upper-stage lift and G-116 exchange-failure existence / branch decision remain
+outside this target's scope. The durable status is `target-theorem-proved`; the schema-complete final
+packet, fresh four-lane completion review, formal ledger, CI, and merge passed.
 
 ## Exact declaration map
 
@@ -467,8 +490,11 @@ axiom in the target artifacts. `git diff --check` is clean.
   while Math B judged the mathematical packet eligible subject to that sync
 - report synchronization: PR #4244 merged at
   `0191ec95ac878f633adb95d172ca34bb0f26d8ef`, CI 7/7 successful
-- schema-complete final packet: required on the fixed candidate head
-- fresh four-lane completion review and formal completion ledger: pending
-- candidate PR merge and tracking Issue synchronization: pending
+- schema-complete final packet: satisfied at `5462251699`
+- fresh four-lane completion review: 4/4 `No major findings`
+- formal completion ledger: satisfied at `5462274138`
+- candidate PR merge: satisfied at `3d26d993d8fe36f74f73426731e05af0c051aa5a`
+- tracking Issue formal-verdict synchronization: satisfied at `5462295404`
+- status-sync merge-hash synchronization: post-merge action for PR #4247
 - remaining mathematical obligations: none
-- current status: `target-proof-checkpoint`
+- current status: `target-theorem-proved`

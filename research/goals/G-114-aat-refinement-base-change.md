@@ -1,7 +1,19 @@
 # G-114 — AAT Refinement Category and Realized-Support Base Change
 
 - `id`: `G-114-aat-refinement-base-change`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Revision 3 の固定 target
+  clauses (a)–(f) を全放電（2026-08-29）。refinement / pointed /
+  package category と projection、無条件 forward mixed-pullback square、
+  realized-support 上の local/global base-change 同値、exact-image を真に
+  拡張する active reverse witness、finite active forward-only witness、
+  inactive infinite regression、public strong-cartesian lift から生成される
+  canonical mate を Lean で構成した。最終 packet は PR #4246
+  `5462251699`、formal completion ledger は `5462274138`、同 PR は
+  fixed head `8f7ad8bf6ad9f42be41d8252931e95517c6e0188`、CI 7/7 で merge
+  `3d26d993d8fe36f74f73426731e05af0c051aa5a`。G-115 の upper-stage
+  lift と G-116 の exchange-failure 存否・branch decision は後続 target
+  のままである。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
