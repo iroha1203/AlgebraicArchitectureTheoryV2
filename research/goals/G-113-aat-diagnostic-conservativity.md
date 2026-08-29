@@ -3,7 +3,89 @@
 - `id`: `G-113-aat-diagnostic-conservativity`
 - `revision`: `2`
 - `revision approved`: `2026-08-28`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`(revision 2)。Indexed
+  Diagnostic Transport Equivalence and Orbit Exactness Theorem の固定
+  target (a)–(i)(担当義務 O13–O18・O20)を全放電
+  ($target-theorem-loop Cycle 1–28、2026-08-28)。主要成果:
+  (a) push / reindex の typed alignment
+  (`indexedDiagnosticTransport_vertexIndex_decode` と push / reindex の
+  外延一致定理)、G-110 reviewed cocartesianness の selected-lift bridge
+  (`indexedDiagnosticTransportSelectedLift_isStronglyCocartesian`)、
+  universal property から構成した unit / counit natural iso と左右
+  triangle(`indexedDiagnosticTransportAdjunction`)、explicit
+  equivalence(`indexedDiagnosticTransportEquivalence`)と `Full` /
+  `Faithful` / `EssentiallySurjective` / `IsEquivalence` の producer
+  (premise 供給なし)、
+  (b) endpoint 明示 equivalence
+  (`indexedDiagnosticEndpointEquivalence`)と revision 1 endpoint
+  action との外延一致 — injective / surjective はその系、
+  (c) reselection forward / inverse transport
+  (`indexedDiagnosticReselectionEquivalence` /
+  `inverseTransportedReselection`)の左右逆・基準 reselection 保存・
+  mapped reselection 往復、
+  (d) coherence iff(`indexedCoherentAt_transport_iff` /
+  `indexedCoherentAt_inverseTransport_iff`)、
+  (e) obstruction vanishing iff
+  (`indexedTransportObstructionVanishes_iff`)と class 条件なしの全 hom
+  系(`diagnosticConservative_all_via_transportEquivalence` /
+  `no_diagnosticConservativityCounterexample_via_transportEquivalence`)、
+  (f) raw-defect cochain 明示 equivalence
+  (`indexedDiagnosticDefectCochainEquivalence`)と `rawDefectCochain`
+  との両方向可換・cochain 値の eq / ne 双方向反射、
+  (g) orbit membership iff(`indexedDiagnosticInReselectionOrbit_iff` と
+  逆方向)、
+  (h) identity / composition / whole-unit / whole-pentagon /
+  path-square / horizontal-pasting の transport coherence package
+  (square 水準は `indexedDiagnosticTwoCellPastingCube` 等の commuting
+  theorem で固定、downstream (d)–(g) への伝播込み)、
+  (i) 全 hom / vertex の base-`IsIso` 非依存 equivalence
+  (`indexedDiagnosticTransport_isEquivalence_arbitraryBase`)と `IsIso`
+  base corollary、非恒等 `¬ IsIso` 有限 base component 上の converse
+  反証(`finiteNonIsoDiagnostic_converse_refutation`)と同一 witness の
+  非退化性(`finiteNonIsoDiagnostic_sameWitness_nondegeneracy`。非恒等
+  defect / reselection の往復保存4本)。
+  Lean artifact は `DiagnosticConservativity` 配下の revision 2 新設
+  27 module。standard exact-head PR gate は `Mergeable`
+  ([PR #4233 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4233#issuecomment-5453692797)、
+  [PR #4234 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453887137))、
+  same-merge-head final packet は
+  [PR #4234 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453953468)、
+  独立 final math-lean-review は数学 A/B・Lean A/B 全て
+  `No major findings`、completion ledger は全 gate pass・残 obligation /
+  blocker / unchecked central claim なし・root recheck pass
+  ([PR #4234 コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5454070326))、
+  exact-head CI は PR #4233・#4234 とも 7/7。tracking Issue の完了記録は
+  [#4204 完了記録コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204#issuecomment-5454074795)
+  で固定(Issue #4204 は user policy で OPEN 維持)。fixed GOAL blob SHA
+  `d490685ece406d5b17ccc63b3d35ff990bc34c5d`(SHA-256
+  `beb27f46da767f0fef80eed45b502698c28f1651c6325fe19041944d84436e47`)、
+  完了 PR
+  [#4233](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4233)
+  (head `76e58611`、merge `7083db0d`)+report / Issue 同期 PR
+  [#4234](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234)
+  (head `cb1aefb4`、merge `f737a470`、exact final tree `fe63d929`)。
+  実装 PR 系列(#4205–#4232)と cycle 履歴は tracking Issue #4204 を
+  正本とする。公理監査は `DiagnosticConservativity` 全27 source module の
+  focused Lean check で standard axioms のみ pass(focused hash
+  `63ba0894` 再現。Research aggregate / full build は hard rule に従い
+  未実行)。Cycle 28 completion packet は独立レビューで revision 1
+  reflection 経路の混入2件((d)(e) の proof-use)を是正した後に受理
+  (是正履歴は report の review_history)。
+  **達成の記録の限定**: 量化域は claim boundary の通り固定一般 carrier
+  `U`、G-111 `IndexedBaseDiagramHom`、G-111 生成 diagnostic
+  interpretation に限る。係数は動かさない。carrier change・独立 raw
+  square family・G-109 段射影 `p` 沿い effectivity 反射・`J_A` defect
+  profile・終対象/絶対積は域外。(i2) により fiber transport equivalence
+  は base `IsIso` を反射しない(equivalence 成立域は `IsIso` base より
+  真に広い)。revision 1 の class syntax / candidate head /
+  normalization artifact は歴史証拠のみで completion credit を持たない
+  (語彙参照のみ)。**Gr4 達成の記録は本カードでは行わない** — 担当は
+  O13–O18・O20 のみで、refinement 系統・上段 lift・IsIso 水準
+  exchange-failure 存否決定・capstone 記録は G-114〜G-116 に残る
+  (program context)。`Formal/AG` への移植は未実施(porting status:
+  `unported`)。
+- `completed at`: `2026-08-28 JST`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第五項の担当カード(担当義務 =
