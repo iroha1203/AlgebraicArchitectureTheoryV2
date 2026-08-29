@@ -416,7 +416,9 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 ### G-114(仮 slug: `G-114-aat-refinement-base-change`)
 
 - **責務**: O8–O9。refinement 系統。
-- **claim 骨格**: (a) refinement 圏の構成 — `RefinementDoctrineHom`
+- **claim 骨格**: (a) `ExtractionDoctrine` の既存 exact category instance
+  と衝突しない `RefinementObject` wrapper 上の refinement 圏の構成 —
+  `RefinementDoctrineHom`
   (`AtomFoundation/Doctrine.lean` に実在確認済み)を射とする圏構造
   (恒等・合成・結合律)と、**`Doct_U` からの比較 functor
   `Doct_U ⥤ Refin_U`**(exact hom を refinement として埋める方向。逆
@@ -430,15 +432,17 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   package projection、exact
   package projection からの comparison square、cartesian
   factorization / uniqueness の構成、(c) raw refinement 全域での
-  canonical forward pulled square と identity / composition、
+  canonical forward mixed-pullback square と commutativity、
   (d) **realized-support 分類**:
   `Nonempty (RefinementBCRegime C) ↔
-  RealizedLocusExtractionReflecting C`。固定条件は actual package が
+  ConfigurationRealizedLocusExtractionReflecting C`。局所の固定条件は
+  pointed refinement 上で定義し、actual package が
   存在する compatible source 上の全 Atom に対する extraction reflection
   だけを述べ、lift / mate / regime を含まない、(e) active forward-only
   witness、exact
   comparison image 外の active reverse witness、inactive empty-fiber
-  regression の三例、(f) actual target package と local regime から
+  regression の三例、(f) actual target package と、fixed condition が
+  生成した local regime から
   `ActiveRefinementBCContext` と canonical mate を供給する。
 - **錨**: `RefinementDoctrineHom` / `finiteExtractionRefinement` 系
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
@@ -447,7 +451,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   閉性 constructor、G-112 semantic-global cleavage / reindexing
   (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)、
   G-101/G-109 `coreFiberTransportObj`(pulled support を exact projection
-  に沿って base support へ送る共変 route)。
+  に沿って base support へ送る共変 route。G-109 fixed reviewed head
+  `b5ca4630`)。
 - **供給契約**: G-115 と G-116 に
   **`ActiveRefinementBCContext` と canonical base / pulled mate** を
   供給する。forward-only / inactive refinement は O12 の mate 量化域に
@@ -501,7 +506,7 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   class 構成の変更を紛れ込ませる経路、定数 class 読み出しでの vacuous
   naturality、adequacy bridge を欠く代理 interface での O11 放電。
 - **failure 骨格**: `ObProblem` interface の Lean 建設が型不能なら
-  `target-blocked`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
+  `goal-defect`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
   裁定であり、自動 weakening をしない)。
 
 ### G-116(仮 slug: `G-116-aat-gr4-capstone`)
@@ -599,16 +604,17 @@ reviewed 宣言の universe 契約を継承し fallback 対象外)— 台帳の�
 ```
 G-110 ──→ G-111 ──┐
 G-110 ──→ G-112 ──┴→ G-113
-G-110 / G-112 ──→ G-114 ──→ G-115 ──→ G-116(存否決定+達成記録)
-G-110 / G-109 / G-108 ──────────┘
+G-101 / G-109 / G-110 / G-112 ──→ G-114 ──→ G-115 ──→ G-116(存否決定+達成記録)
+G-110 / G-109 / G-108 ─────────────────┘
 ```
 
 - G-115 は G-114 の `ActiveRefinementBCContext` と canonical mate に
   依存し、さらに G-110 / G-109 / G-108 の reviewed artifact を使う。
-  G-114 の依存は G-110 と G-112 — G-114 の mate 比較
+  G-114 の依存は G-101 / G-109 / G-110 / G-112 — G-114 の mate 比較
   は exact 側で G-112 の semantic-global reindexing を proof-use 消費
-  する(G-110 内部宣言からの再建はしない — 経路の一意化。G-114 昇格
-  レビューで依存辺を追加)。G-112 の coverage 分類結果は G-114 /
+  する(G-110 内部宣言からの再建はしない — 経路の一意化)。pulled
+  support → base support は G-109 の reviewed `coreFiberTransportObj`
+  を proof-use する。G-112 の coverage 分類結果は G-114 /
   G-115 の量化域を変更しない(G-110 固定の realization 付き入力上で立つ)。
 - G-112 の G-111 依存はカード起票レビューで観察参照へ降格した。
   G-113 revision 2 は G-111 の covariant action と G-112 の
@@ -616,8 +622,10 @@ G-110 / G-109 / G-108 ──────────┘
   各カードの program context を正とする。
 - 上流の statement 改訂時、依存する下流 draft は差し戻して再固定する
   (G-109 の伝播規定と同型)。G-111 改訂 → G-113 へ、G-112 改訂 →
-  G-113 / G-114 へ、G-114 改訂 → G-115 / G-116 へ、G-108 /
-  G-109 / G-110 の改訂 → 参照カードへ、**G-111〜G-115 のいずれの改訂も
+  G-113 / G-114 へ、G-101 改訂 → G-114 へ、G-114 改訂 →
+  G-115 / G-116 へ、G-108 /
+  G-109 / G-110 の改訂 → 参照カードへ(G-109 改訂は G-114 の support
+  transfer にも伝播)、**G-111〜G-115 のいずれの改訂も
   G-116 へ伝播する**(達成記録の突合対象と範囲併記の内容が動くため)。
 - G-116 は全カードの帰趨確定後にのみ昇格する(達成記録の突合が義務の
   ため)。

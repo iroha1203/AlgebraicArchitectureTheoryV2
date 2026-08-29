@@ -18,6 +18,11 @@ pointed endpoint refinement. Every refinement has a canonical forward pulled
 square. Reverse package transport is stronger and exists exactly on the realized
 part of the refinement.
 
+Dependency anchors are G-109 final reviewed head `b5ca4630` for covariant
+`coreFiberTransportObj`, G-110 final reviewed head `a1471483` for package
+fiber-product/cartesian machinery, and G-112 final reviewed head `bf882573` for
+exact-bottom pullback and reindexing. They are referenced, not modified.
+
 This is the first Gr4 stratification:
 
 1. every refinement belongs to the doctrine-lax, forward layer;
@@ -32,8 +37,9 @@ neither the positive nor the negative nonvacuity witness.
 
 ## Research aim
 
-Construct the category of exact-bottom pointed refinement configurations, prove
-that exact reindexing is functorial under refinement, and classify reverse
+Construct the unpointed refinement category, its pointed/package fibrational
+realization over exact-bottom configurations, prove the canonical forward
+refinement square, and classify reverse
 cartesian base change by the single geometric condition
 `RealizedLocusExtractionReflecting`.
 
@@ -51,9 +57,9 @@ as forward-only; it does not add the desired cleavage as input data.
 ### Raw configuration
 
 `RefinementBCConfiguration` contains only an exact cospan
-`s₁ ⟶ b ⟵ s₂`, a pointed refinement `ρ : s₁' ⟶ s₁`, and the marked point
-required by the existing refinement interface. It contains no package, regime,
-reverse lift, mate, or hypothesis implying the conclusion.
+`s₁ ⟶ b ⟵ s₂` and an unpointed
+`RefinementDoctrineHom ρ : s₁' ⟶ s₁`. It contains no marked source, package,
+regime, reverse lift, mate, or hypothesis implying the conclusion.
 
 ### Compatible sources and repointing
 
@@ -80,15 +86,30 @@ actual package over the target base atom. It may not be a configuration field.
 
 ### Fixed geometric condition
 
-`RealizedLocusExtractionReflecting C` has exactly one mathematical constructor:
+For a generated pointed refinement `r : X' ⟶ X`, define
+`RealizedLocusExtractionReflecting r` with exactly one mathematical constructor:
 
-> for every compatible source `p`, if `C.targetPointAt p` is realized, then
-> for every `a : U.Atom`, extraction of `ρ.atomMap a` by `s₁` at
-> `ρ.sourceMap p.x'` implies extraction of `a` by `s₁'` at `p.x'`.
+> if `CoreFiber X` is inhabited, then for every `a : U.Atom`, extraction
+> of `r.atomMap a` by `X.doctrine` at `X.source` implies extraction of
+> `a` by `X'.doctrine` at `X'.source`.
 
 Forward extraction is already supplied by refinement preservation. The condition
 adds only reverse extraction on package-realized targets. Its statement mentions
 no lift, cleavage, mate, equivalence, `IsIso`, or regime availability.
+
+The configuration predicate is the derived all-compatible-source statement:
+
+```lean
+def ConfigurationRealizedLocusExtractionReflecting
+    (C : RefinementBCConfiguration) : Prop :=
+  ∀ p : CompatibleSource C,
+    RealizedLocusExtractionReflecting (C.baseRefinementAt p)
+```
+
+This separation fixes the closure domain. Identity and composition are statements
+about composable pointed refinement morphisms. Pulled-leg preservation compares
+`C.baseRefinementAt p` with `C.pulledRefinementAt p`. No composition operation
+on raw cospan configurations is asserted.
 
 ### Refinement package fibration
 
@@ -147,28 +168,50 @@ all clauses below.
 
 ### (a) Refinement category and package fibration
 
-1. Define identity and composition of pointed refinements.
-2. Prove category laws and compatibility with repointing.
-3. Show that exact comparison refinements embed functorially.
-4. Construct `RefinementPackageTotalCategory`,
+1. Construct `RefinementObject U`, a wrapper around `ExtractionDoctrine U`,
+   and the unpointed `RefinementCategory U` whose morphisms are
+   `RefinementDoctrineHom`; prove its category laws. The wrapper is mandatory
+   so the existing exact category instance is not shadowed.
+2. Construct the unpointed exact-to-refinement functor
+   `DoctrineCategory U ⥤ RefinementCategory U`.
+3. Define identity and composition of pointed refinements on the wrapper category,
+   prove its category laws, and prove compatibility with repointing.
+4. Show that exact pointed morphisms embed functorially.
+5. Construct `RefinementPackageTotalCategory`,
    `refinementPackageProjection`, and their category/functor laws.
-5. Construct the exact-to-refinement base and total comparison functors and prove
+6. Construct the exact-to-refinement base and total comparison functors and prove
    the projection square commutes.
-6. Define refinement cartesian lifts, their factorization/uniqueness, and the
+7. Define refinement cartesian lifts, their factorization/uniqueness, and the
    cleavage interface relative to this projection.
 
 ### (b) Unconditional forward base change
 
-For every raw configuration and compatible source, construct the pulled refinement
-square, prove commutativity, identity and composition laws, and compatibility with
-the G-112 exact-comparison image. No package-support hypothesis is allowed here.
+For every raw configuration and compatible source, construct the mixed pulled
+doctrine directly from the refined endpoint and the exact second leg, its exact
+vertical projection, and the pulled refinement. Prove the square commutes and is
+compatible with the G-112 exact-comparison image. No exact composite
+`s₁' ⟶ b` and no package-support hypothesis may be assumed here.
 
 ### (c) Realized-support classification
 
-For every raw configuration `C`, prove
+First prove the local pointed-refinement theorem
 
 ```lean
-Nonempty (RefinementBCRegime C) ↔ RealizedLocusExtractionReflecting C
+Nonempty (RefinementCartesianCleavage r) ↔
+  RealizedLocusExtractionReflecting r
+```
+
+The condition-to-cleavage direction must export the objectwise producer that,
+for every actual target package, constructs the authored-source package, complete
+upper hom, and strongly cartesian lift. This producer is the support transport
+used in composition closure.
+
+Then, for every raw configuration `C`, assemble base and pulled local results
+and prove
+
+```lean
+Nonempty (RefinementBCRegime C) ↔
+  ConfigurationRealizedLocusExtractionReflecting C
 ```
 
 The forward proof must recover extraction reflection from an actual package and
@@ -188,23 +231,36 @@ complete upper-reading level, and cartesian—not merely a package map.
 
 ### (d) Condition qualification
 
-Prove that `RealizedLocusExtractionReflecting` is invariant under configuration
-isomorphism, holds for identities, is closed under composition, is preserved by
-pulled refinement, holds on the exact-comparison image, and is strictly broader
-than that image by the active positive witness in clause (e). No equivalent
-condition may be substituted without revising this GOAL from scratch.
+Prove that `RealizedLocusExtractionReflecting` is invariant under pointed
+refinement isomorphism, holds for identity pointed refinements, and is closed under
+composition of pointed refinements. Prove separately that the derived
+configuration predicate is preserved from each base refinement to its pulled
+refinement, holds on the exact-comparison image, and is strictly broader than that
+image by the active positive witness in clause (e). No equivalent condition may be
+substituted without revising this GOAL from scratch.
+
+For composition `X₀ ⟶ X₁ ⟶ X₂`, target support over `X₂` must be transported
+to an actual package over `X₁` by the outer condition's authored-source package
+producer before applying the inner condition. This generated package is proof data,
+not an additional closure hypothesis.
 
 ### (e) Support-stratified nonvacuity
 
 Provide three independent examples.
 
 1. **Active forward-only witness.** A finite strict refinement with a nonempty
-   target package fiber, nonidentity/nontrivial pulled square, failure of the fixed
-   condition, and hence no regime.
+   target package fiber, failure of the fixed condition, and hence no regime.
+   Nontriviality is the typed conjunction that the base source/target doctrines
+   are unequal, the pulled source/target doctrines are unequal, and the condition
+   failure supplies an explicit Atom whose selected-source extraction differs.
 2. **Active reverse witness.** A nonidentity strict refinement outside the exact
    comparison image, with a nonempty target package fiber, nontrivial pulled
-   square, the fixed condition, a constructed regime, and a concrete mate that
-   evaluates nontrivially.
+   square, the fixed condition, and a constructed regime. Fix a target package
+   `Q` and Atom `a₀`; the exported mate component is required to satisfy the
+   concrete observable
+   `(mate.app Q).upper.atomEquiv a₀ ≠ a₀` (up to the final wrapper projections).
+   The witness must therefore use a genuinely nonidentity Atom equivalence, not
+   merely unequal doctrine wrappers.
 3. **Inactive regression witness.** Construct an explicit infinite configuration
    (the `ExactBottomSumCarrier` / non-list-finite selected-family pattern is the
    fixed starting point) with empty target fibers. Prove it inactive and prove that
@@ -257,8 +313,9 @@ completion packet must give the exact final declaration map.
 ## Target proof strategy
 
 1. Reuse G-112 exact cospans, selected pullbacks, reindexing, and strong lifts.
-2. Define pointed refinement composition and the refinement package total
-   category/projection. Prove the exact-to-refinement comparison square.
+2. Define the unpointed refinement category/comparison functor, then pointed
+   refinement composition and the refinement package total category/projection.
+   Prove the exact-to-refinement comparison square.
 3. Prove forward pullback functoriality for `s₁' ⟶ s₁`.
 4. At a realized source, use the all-Atom reflection plus forward preservation to
    prove selected-family equality. Build a source package over the authored
@@ -292,7 +349,7 @@ other side.
 | premise | supports | role | provenance / discharge artifact | required proof-use | why not conclusion-equivalent |
 | --- | --- | --- | --- | --- | --- |
 | exact cospan | clauses (a)–(c) | `ambient-boundary` | fixed reviewed G-112 declaration; exact-head citation required | selected pullback and exact reindexing | it supplies the base square, not refinement reverse transport |
-| pointed refinement | clauses (a)–(e) | `ambient-boundary` | raw G-114 configuration field | forward square and extraction preservation | it has only forward extraction |
+| unpointed refinement | clauses (a)–(e) | `ambient-boundary` | raw G-114 configuration field | repointing, forward square, and extraction preservation | it has only forward extraction |
 | compatible source | clauses (b)–(f) | `ambient-boundary` | generated source index with bottom equations | repointing and local base selection | it contains no package-level lift |
 | target package | clauses (c), (e), (f) | `direction-hypothesis` | active-context input or concrete witness constructed in `Witnesses.lean` | support firing, converse extraction, and mate evaluation | an object of the fiber is not a cleavage or mate |
 | refinement package projection | clauses (a), (c), (f) | `discharge-required` | explicit categories, functor, exact comparison square, and laws in `Categories.lean` / `Projection.lean` | ambient for both cartesian factorization directions and mate generation | it defines the arena, not existence of a lift |

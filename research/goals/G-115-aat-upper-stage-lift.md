@@ -157,8 +157,9 @@
   供給は放電と数えない。
 - `target material premise ledger`:
   - `G-114 active refinement context`: `ambient-boundary`。G-114 の
-    reviewed theorem が actual target package と local regime から構成
-    した値のみを受け取る。proof-use = (a) の上段 mate の入力。
+    reviewed theorem が actual target package と fixed condition から
+    local regime を生成して構成した値のみを受け取る。proof-use = (a)
+    の上段 mate の入力。
     forward-only / inactive configuration を regime fixture で active
     にする経路は禁止。
   - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ、改変
