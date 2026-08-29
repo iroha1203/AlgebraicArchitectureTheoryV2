@@ -1,7 +1,11 @@
 # G-114 — AAT Refinement Category and Realized-Support Base Change
 
 - `id`: `G-114-aat-refinement-base-change`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved` (revision 3, 2026-08-29).
+  Clauses (a)--(f), the material-premise and proof-use obligations, the three
+  support strata, and the Gr4 active-context mate supply are discharged. G-115
+  upper-stage lift and G-116 exchange invertibility remain successor targets.
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
