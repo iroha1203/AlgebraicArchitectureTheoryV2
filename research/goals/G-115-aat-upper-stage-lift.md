@@ -23,7 +23,7 @@
   `research/lean/ResearchLean/AG/GeometryTransport/` 配下、unported。
   固定錨は下記 ledger 行に直接記載)、G-106(完遂済み。(c) の指示対象
   = orbit / defect 語彙。固定錨は下記 ledger 行)。
-- `tracking issue`: 未起票(昇格後に起票)
+- `tracking issue`: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-115)、
   [docs/note/n1001_atom_is_all_you_need_discussion.md](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔 — `ObProblem` 段の定義)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (iii))、
