@@ -18,6 +18,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+- [G-114-aat-refinement-base-change](G-114-aat-refinement-base-change.md)
+  (Gr4 完遂 gate 第二項 = O8–O9。`$target-theorem-loop` 対象)
 
 ## draft（人間の確認待ち）
 
@@ -47,8 +49,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
 - [G-112-aat-exact-bottom-coverage](G-112-aat-exact-bottom-coverage.md)
 - [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
-- [G-114-aat-refinement-base-change](G-114-aat-refinement-base-change.md)
-  (Gr4 完遂 gate 第二項 = O8–O9、revision 3 `target-theorem-proved`)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
