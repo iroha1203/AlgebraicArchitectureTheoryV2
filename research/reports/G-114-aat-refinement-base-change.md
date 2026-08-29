@@ -50,11 +50,12 @@ target statement と completion criteria は GOAL カードを正本とし、SCO
   `¬ RegimeAvailable` を生成する。
 - regime/O12 分界:
   `RefinementOverHom` は lax lower refinement を固定し、上部を
-  `SignedExactCoreReadingHom` としつつ、selected source 上で lower source-map に沿う
-  extraction reflection を要求する。`RefinementCartesianLift` の factor / triangle /
+  `SignedExactCoreReadingHom` とする。selected source 上の extraction reflection は
+  upper の family equality、fiber point equality、lower source equalityから定理として
+  生成する。`RefinementCartesianLift` の factor / triangle /
   uniqueness から `reverseFunctor`、relative `homEquiv`、両変数 naturality を生成する。
-  `RefinementBCRegime` の field は base / pulled cleavage と、G-112 exact selected lift
-  の二経路を結ぶ `mateRoute` と汎用 factor-graph uniqueness であり、
+  `RefinementBCRegime` の field は base / pulled cleavage の2つだけである。G-112 exact
+  selected lift の canonical upper inverse から mixed factor / triangle / uniqueness を生成し、
   `mate` natural transformation は pulled cleavage の一意 factor と、生成済み
   hom-equivalence naturality から定義する。`IsIso`、condition membership、
   regime availability certificate は field にない。
@@ -487,15 +488,112 @@ audits:
       - RefinementCartesianCleavage.homEquiv_natural_source
       - RefinementCartesianCleavage.homEquiv_natural_target
     unused: []
-  structure_field_escape: none-found-at-candidate-head
-  route_integrity: pending-new-cycle-review
+  structure_field_escape: fail-at-reviewed-head-a1530f2d
+  route_integrity: fail-at-reviewed-head-a1530f2d
   target_fitting: none-found
   validation_refs:
     - >-
       cd research/lean && lake env lean
       ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean;
       exit 0; module-wide standard-axiom audit reports 300 declarations
+  blocking_findings:
+    - >-
+      The four-lane initial review at a1530f2d rejected unanimously.  The stored
+      selected_extraction_iff did not mention upper and could encode the negative
+      obstruction from lower nonreflection alone.  The supplied generalized
+      mateRoute_factor_unique was not generated from the reviewed exact apparatus.
+  next_obligation: >-
+    Remove both fields.  Generate selected reflection from upper.extraction_eq,
+    and generate the mixed exact cartesian factor from the G-112 selected lift's
+    canonical two-sided upper inverse before rerunning this cycle.
+```
+
+### Cycle 5 — caller-free exact/refinement factorization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-114-aat-refinement-base-change
+cycle: 5
+goal_blob_sha: 429183c6b8c93e9ca5c7886bab887beec76ddff5
+base_oid: 363f79a5bf0542b6e5cb9d19d63cacfa80402316
+tracking_issue: 4239
+report_path: research/reports/G-114-aat-refinement-base-change.md
+selection:
+  proof_state_ref: "PR #4241 new-cycle initial review at a1530f2d: four reject"
+  proof_obligation: >-
+    Make the upper/lower selected-point link a theorem from package exactness,
+    and construct every mixed route factor and uniqueness theorem caller-free
+    from the explicit inverse behind the reviewed G-112 selected lift.
+  selection_reason: >-
+    Both rejected fields were conclusion-equivalent risks.  G-110 already
+    constructs a two-sided upper inverse for the canonical exact lift, and G-112
+    selected lifts are canonically vertically isomorphic to it.  Transporting
+    that inverse supplies the required factorization without regime input.
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: >-
+    RefinementOverHom.selected_extraction_iff is now a theorem whose body uses
+    upper.extraction_eq, both CoreFiber point equalities, lower.source_eq, and
+    atomEquiv_eq.  ExactSelectedLiftUpperInverse is constructed caller-free by
+    comparing the arbitrary G-112 selected lift to strongCartesianLiftOfTarget
+    and transporting the existing inverseCorePackageBackwardUpper.  Its two-sided
+    cancellation generates RefinementExactCartesianLift factor/fac/unique.
+    mateCandidate is explicit; mateRoute, its graph, route naturality, mate
+    components, and NatTrans naturality are all definitions or theorems.
+    RefinementBCRegime now stores only baseCleavage and pulledCleavage.
+  completion_candidate: no
+  evidence:
+    - RefinementOverHom.selected_extraction_iff
+    - ExactSelectedLiftUpperInverse
+    - exact_bottom_semantic_global_selected_lift_upperInverse
+    - exact_bottom_semantic_global_refinementExactCartesianLift
+    - RefinementBCRegime.mateCandidate
+    - RefinementBCRegime.mateRouteBetween
+    - RefinementBCRegime.mateRoute_natural
+    - RefinementBCRegime.mate_naturality
+  undischarged_assumptions:
+    - construction of base and pulled refinement cleavages
+    - K0--K3 theorem payloads and final completion audit
+audits:
+  premise_delta:
+    discharged:
+      - "F0 selected-point upper/lower link generated from actual package exactness"
+      - "F0 mixed exact/refinement factorization generated from reviewed inverse data"
+      - "F0 mate route and both levels of naturality generated without regime law fields"
+    remaining:
+      - "all target discharge-required producer theorems beyond F0 typing"
+  certificate_provenance:
+    discharged:
+      - "mixed factor/fac/unique comes from G-110 inverse construction and G-112 selected lift"
+      - "regime has no mate route, cancellation, component, or naturality field"
+    unresolved:
+      - "producers for the two refinement cleavages"
+  proof_use:
+    used:
+      - inverseCorePackageBackwardUpper
+      - inverseCorePackageForward_comp_backward
+      - inverseCorePackageBackward_comp_forward
+      - StrongCartesianLift.domainIso_hom_fac
+      - exact_bottom_semantic_global_reindex_map_fac
+      - RefinementCartesianCleavage.reverseMap_fac
+    unused: []
+  structure_field_escape: none-found-at-candidate-head
+  route_integrity: pending-rerun-1
+  target_fitting: none-found
+  validation_refs:
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchema.lean;
+      exit 0; module-wide standard-axiom audit reports 339 declarations
+    - >-
+      cd research/lean && lake env lean
+      ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChangeSchemaWitnesses.lean;
+      exit 0; module-wide standard-axiom audit reports 8 declarations
   blocking_findings: []
   next_obligation: >-
-    Review the new-cycle fixed head independently before advancing to K0.
+    Run the first corrected-head rerun for this review cycle; all four lanes must
+    accept before K0.
 ```
