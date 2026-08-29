@@ -337,10 +337,23 @@ separate target declaration:
   by the revision-3 `Categories.lean` wrapper.
 - `ExactBottomGlobalLiftCoherence.lean` (blob
   `1a9139bd2247fdabe81d543a3c3078d94330e9f2`):
+  `exact_bottom_semantic_global_cartesian_cleavage`,
   `exact_bottom_semantic_global_reindex_functor`,
   `exact_bottom_semantic_global_selected_lift`,
   `exact_bottom_semantic_global_reindex_map_fac`, and its factor/coherence laws,
   consumed by `Supply.lean` and the canonical mate routes.
+- `ExactBottomGlobalLift.lean` (blob
+  `a505b0a2e7919df7f94f107c8cf7dbe9be277761`):
+  `exact_bottom_semantic_global_strong_cartesian_lift`, the reviewed G-112
+  caller-free wrapper used by the semantic-global cleavage.
+- `CartesianTarget.lean` (blob
+  `195ef6e1b0f48914b6e444021c5037c5d2579f57`):
+  `strongCartesianLiftOfTarget`, the reviewed G-110 strong-cartesian lift
+  constructed by the G-112 wrapper.
+- `ExactBottomCoverageSchema.lean` (blob
+  `89c07fccb9a8547188135d69c3caf264a0fbd7de`):
+  `cartSemanticInputOfHom`, which converts each exact pointed morphism into the
+  semantic input consumed by the G-112 cleavage/lift chain.
 - `PointedDoctrinePullback.lean` (blob
   `b9fa39c2547d8cec0da4a79724241be2f7987db6`):
   `pointedPullback` and `pointedPullbackFst`, consumed directly by the legacy
@@ -373,7 +386,7 @@ set.
 | premise | role | provenance | actual proof-use | status |
 | --- | --- | --- | --- | --- |
 | exact cospan and pullbacks | `ambient-boundary` | raw `RefinementBCConfiguration`; G-112 generated pointed pullback | repointing, forward square, exact route functors | `justified-boundary` |
-| G-112 exact reindexing | `ambient-boundary` | reviewed `exact_bottom_semantic_global_reindex_functor`, `exact_bottom_semantic_global_selected_lift` | both sides of `refinementBCMateAt`, route factor graph, actual target reindexing | `justified-boundary` |
+| G-112 exact reindexing | `ambient-boundary` | reviewed `cartSemanticInputOfHom` → G-110 `strongCartesianLiftOfTarget` → `exact_bottom_semantic_global_strong_cartesian_lift` → `exact_bottom_semantic_global_cartesian_cleavage` → `exact_bottom_semantic_global_reindex_functor` / `exact_bottom_semantic_global_selected_lift` | selected pullback, both sides of `refinementBCMateAt`, route factor graph, actual target reindexing | `justified-boundary` |
 | G-101/G-109 covariant transport | `ambient-boundary` | reviewed `transportAlong` → `coreFiberTransportObject` → `coreFiberTransportObj` | `pulledSupportTransfer`, active target repointing | `justified-boundary` |
 | unpointed refinement | `ambient-boundary` | raw configuration field | repointing, forward square, extraction preservation | `justified-boundary` |
 | compatible source | `ambient-boundary` | generated `CompatibleSource` | every local point, pullback, condition, and witness | `justified-boundary` |
