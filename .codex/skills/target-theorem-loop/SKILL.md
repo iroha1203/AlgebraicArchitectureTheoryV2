@@ -82,7 +82,6 @@ rootは4本の結果を貼るだけで終えず、final packet、unchecked、Lea
 ## 停止条件
 
 - `target-theorem-proved`: 上のCompletionを満たす。
-- `target-proof-checkpoint`: 有用なproof packageは固定したが、未放電・弱化risk・coverage gap・最終査読不合格が残る。
 - `target-refuted`: 現target statementへの反例または必要仮定不足を固定した。
 - `target-blocked`: 同じblockerが二cycle連続で解消しない。
 - `goal defect`: GOAL契約の欠陥または正本改訂が必要である。
