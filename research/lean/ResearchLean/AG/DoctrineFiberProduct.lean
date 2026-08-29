@@ -217,6 +217,7 @@ import ResearchLean.AG.DoctrineFiberProduct.FiniteArbitraryPackageULiftSuccessor
 import ResearchLean.AG.DoctrineFiberProduct.RefinementGeometry
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCRoutes
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCGeometry
+import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCProblem
 
 /-!
 # Doctrine fiber-product schema
