@@ -5,7 +5,7 @@
 - implementation PR: [#4241](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241)
 - GOAL revision: 3
 - proof state: `target-proof-checkpoint`
-- completion candidate: `yes`
+- completion candidate: `yes` (implementation merged; completion-ledger synchronization in progress)
 
 This report is the evidence index for the revision-3 fixed target. Static Lean
 acceptance is recorded separately from target fit, premise provenance, proof-use,
@@ -23,6 +23,31 @@ nonvacuity, fixed-head review, CI, and merge.
 The implementation does not edit the G-101, G-109, G-110, or G-112 reviewed
 anchors. The earlier revision-1 schema remains as a compatibility layer under
 `Legacy*` names; all revision-3 public heads below are distinct.
+
+## Merged implementation snapshot
+
+- final implementation head: `597fed0265576eb690ecb895130cfa2b9f74ea93`
+- merged implementation PR: #4241
+- merge commit: `c6cd0d4f12184114de96f99ba01ff1c200b26669`
+- merge time: `2026-08-29T09:48:51Z`
+- PR CI: 7/7 successful
+- standard fixed-head review audit:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461635523>
+- same-merge-head completion packet:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461644033>
+
+The first fresh completion-candidate review found no mathematical or Lean
+finding in clauses (a)--(f), premise provenance, proof-use, witness
+nonvacuity, the public-projection mate route, or the standard-axiom audit.
+Three lanes withheld `target-theorem-proved` solely because this report and
+tracking Issue had not yet been synchronized to the merged snapshot; the
+remaining Math B lane judged the mathematical packet eligible while retaining
+the same final ledger-sync requirement.
+The fixed-head lane dispositions and integrated finding are recorded at
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461674160>.
+This ledger update resolves the report side of that gate. After it is merged
+and the tracking Issue is synchronized, the fixed merged snapshot receives the
+required formal rerun before the final proof-state transition is recorded.
 
 ## Exact declaration map
 
@@ -256,9 +281,14 @@ axiom in the target artifacts. `git diff --check` is clean.
 - material-premise provenance and proof-use: recorded above
 - structure-field escape audit: no conclusion-equivalent field found
 - three independent nonvacuity witnesses: satisfied
-- final fixed-head four-lane mathematical/Lean review: pending
-- CI at final reviewed head: pending
-- merge and Issue synchronization: pending
+- standard fixed-head four-lane mathematical/Lean review: satisfied
+- implementation PR CI: 7/7 successful
+- implementation merge: satisfied at `c6cd0d4f12184114de96f99ba01ff1c200b26669`
+- first fresh completion review: theorem content passed in all four lanes;
+  three lanes withheld completion solely for report / Issue synchronization,
+  while Math B judged the mathematical packet eligible subject to that sync
+- report synchronization to the merged snapshot: this ledger update
+- tracking Issue synchronization and fresh completion-review rerun: pending
 
-Until the last three gates pass, the correct status remains
+Until the last synchronization and rerun gates pass, the correct status remains
 `target-proof-checkpoint`, not `target-theorem-proved`.
