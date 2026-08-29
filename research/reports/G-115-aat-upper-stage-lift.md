@@ -271,3 +271,69 @@ hypothesis. The two path theorems extend it by identity, composition, and the
 exact geometry embedding. Applying the refinement-geometry projection yields
 separate package equations; this cycle does not call those equations an actual
 route-between solution.
+
+## Cycle 5 — K2b1 factor graphs and actual-solution contract
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 5
+goal_blob_sha: b307ba6dfe0c098a85160292c86999b63c8f19c1
+base_oid: 420ce1fc6cc066409b6cca660f816590537fcb48
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md target theorem clause (b), K2 actual-solution sub-obligation
+  proof_dag_predecessors: [Cycle 4 finite raw problem, G-112 reindex-map factor graph, G-114 reverse-map factor graph]
+  proof_obligation: Reconstruct both full RefinementPackageHom route-naturality projections from predecessor factor laws, define UpperRefinementBCSolution without changing the raw problem, and derive nil/path/append/authored-two-cell equations.
+  selection_reason: The actual solution contract must expose route-between geometry data while independently checking that the raw route projections retain the G-112/G-114 lower provenance.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCSolution.lean]
+  risks: [upper-only factor graph, raw-field escape, caller-supplied solution counted as O10 discharge, comparator treated as canonical, authored raw defect forced to vanish, dependent endpoint casts]
+  unchecked: [named upperDecisionProblem and upperDecisionSolution, concrete nonidentity component evaluation, named non-liftable problem, paired orbit and conditional exchange interface]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Full package factor graphs and the actual solution signature are fixed. Named positive and negative inhabitants remain K2b2 and are not claimed here.
+  completion_candidate: no
+  lean_artifacts: [refinementPackageHomOfOver_precomp, refinementPackageHomOfOver_postcomp, ActiveRefinementBCContext.baseCompositeLegAt_naturality, ActiveRefinementBCContext.pulledCompositeLegAt_naturality, UpperRefinementBCSolution]
+  evidence: [UpperRefinementBCProblemData.base_naturality_factor_graph, UpperRefinementBCProblemData.pulled_naturality_factor_graph, UpperRefinementBCSolution.nil_naturality, UpperRefinementBCSolution.path_naturality, UpperRefinementBCSolution.append_naturality, UpperRefinementBCSolution.authored_twoCell_pasting, standard-axiom audit]
+  claim_mapping:
+    theorem_names: [ActiveRefinementBCContext.baseCompositeLegAt_naturality, ActiveRefinementBCContext.pulledCompositeLegAt_naturality, UpperRefinementBCProblemData.base_naturality_factor_graph, UpperRefinementBCProblemData.pulled_naturality_factor_graph, UpperRefinementBCSolution.path_naturality, UpperRefinementBCSolution.append_naturality, UpperRefinementBCSolution.authored_twoCell_pasting]
+    source_labels: [target theorem clause (b), target proof strategy K2]
+    conjuncts: [full package projection factor graph, vertical component signature, actual mate base, coefficient identity, geometry triangle, route-between edge naturality, authored comparator intertwining, nil/path/append/two-cell equations]
+    undischarged_assumptions: [actual named solution inhabitant, named non-liftability proof, concrete nonidentity support-axis-observable evaluation, paired reselection and exchange artifacts]
+    acceptance_point: Generic route theorems consume the named G-112 and G-114 factor laws directly. Edge corollaries use only the three edge_base equations and derived core diagrams, never the raw geometry-naturality fields.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [projected predecessor factor-graph comparison, actual solution type, nil/path/append equations, authored left-path two-cell pasting]
+    remaining: [K2b2 named decision and non-liftable artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [route factor equations derive from exact_bottom_semantic_global_reindex_map_fac and LegacyRefinementCartesianCleavage.reverseMap_fac]
+    unresolved: [named solution and negative witnesses, paired reselection witnesses]
+  proof_use:
+    used: [G-112 reindex-map factor law, G-114 base and pulled reverse-map factor laws, exact vertical HomLift equations, route edge projections, solution edge naturality, solution comparator intertwining]
+    unused: [raw base_naturality and pulled_naturality in factor-graph proofs, G-109 canonical comparator, orbit membership]
+  structure_field_escape: none-found — route-between fields occur only in UpperRefinementBCSolution; the raw UpperRefinementBCProblemData is unchanged
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: not-applicable — this checkpoint fixes a solution contract and does not claim a named inhabitant
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCSolution.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCSolution — exit 0; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; axiom audit 28 declarations standard axioms only; source SHA-256 dd95c2e0b890650a00b7a63b90b4669bc54f1aa7048dfd0e1b8e0c25709ff52d]
+  blocking_findings: []
+  next_obligation: K2b2 construct upperDecisionContext, upperDecisionProblem, upperDecisionSolution, a concrete nonidentity component firing, and a separate named non-liftable problem without adding certificates to the raw problem.
+```
+
+The base and pulled generic naturality proofs are full package equalities. Each
+one composes a G-112 reindex-map factor graph with the corresponding G-114
+reverse-map factor graph through explicit exact-vertical pre/postcomposition
+bridges. The problem-level corollaries then rewrite only the actual diagram
+edge projections.
+
+`UpperRefinementBCSolution` contains the route-between data that were excluded
+from the raw problem: actual vertical components, their mate and coefficient
+projections, full geometry triangles, edge naturality, and authored-comparator
+intertwining. The authored two-cell theorem pastes the left path with the
+authored comparator; it does not identify the authored comparator with the
+canonical comparator or force the raw defect to vanish.

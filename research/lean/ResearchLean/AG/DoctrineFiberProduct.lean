@@ -218,6 +218,7 @@ import ResearchLean.AG.DoctrineFiberProduct.RefinementGeometry
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCRoutes
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCGeometry
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCProblem
+import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCSolution
 
 /-!
 # Doctrine fiber-product schema
