@@ -108,8 +108,8 @@
   まで。
 - `target proof artifacts`: 二枝 disjunction 確定 artifact(全同型
   theorem または ¬IsIso witness、構造化 payload)、量化域の regime
-  組成 artifact(G-114 / G-115 成果物の消費と除外記録)、成分別の非
-  退化 witness(または空虚性記録)、report
+  組成 artifact(G-114 / G-115 成果物の消費と O19 除外記録)、active
+  成分ごとの非退化 witness、report
   `research/reports/G-116-aat-gr4-capstone.md`(**達成階梯対応表**を
   含む — 下記 completion criteria)。
 - `target proof strategy`: F0 typing(regime 合成の signature・payload
@@ -251,8 +251,10 @@
   - `二枝 disjunction 確定`: `discharge-required`(支える結論 = O12。
     discharge artifact = 構造化 payload の全同型 theorem または
     ¬IsIso witness)。
-  - `成分別の非退化 witness / 空虚性記録`: `discharge-required`
-    (支える結論 = 決定の実質。twist 系の計上規律を含む)。
+  - `active 成分別の非退化 witness`: `discharge-required`
+    (支える結論 = 決定の実質。empty component は O19 の
+    domain-classification にのみ記録し、この行を放電しない。twist 系の
+    計上規律を含む)。
   - `達成記録(台帳突合・範囲併記・達成階梯対応表)`:
     `discharge-required`(completion criteria 1–4)。
 - `target route integrity gate`: 量化域は供給された actual

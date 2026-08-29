@@ -422,22 +422,32 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   `Doct_U ⥤ Refin_U`**(exact hom を refinement として埋める方向。逆
   方向は `RefinementDoctrineHom` が `extraction_forward` のみを持ち
   `finiteExtractionRefinement_not_reflecting` が反射不能を定理化済みの
-  ため型に載らない — 方向をこの形で固定する)、(b) raw refinement
-  全域での canonical forward pulled square と identity / composition、
-  (c) **realized-support 分類**:
+  ため型に載らない — 方向をこの形で固定する)。pullback 配置は exact
+  cospan `s₁ ⟶ b ⟵ s₂` と refinement `s₁' ⟶ s₁` に固定する、
+  (b) `ExtractionInstance` / `AATCorePackage` の既存 category instance
+  と衝突しない wrapper object 上で、pointed refinement を底射とする
+  category、complete upper-reading morphism を total 射とする refinement
+  package projection、exact
+  package projection からの comparison square、cartesian
+  factorization / uniqueness の構成、(c) raw refinement 全域での
+  canonical forward pulled square と identity / composition、
+  (d) **realized-support 分類**:
   `Nonempty (RefinementBCRegime C) ↔
   RealizedLocusExtractionReflecting C`。固定条件は actual package が
-  存在する target atom 上での extraction reflection だけを述べ、lift /
-  mate / regime を含まない、(d) active forward-only witness、exact
+  存在する compatible source 上の全 Atom に対する extraction reflection
+  だけを述べ、lift / mate / regime を含まない、(e) active forward-only
+  witness、exact
   comparison image 外の active reverse witness、inactive empty-fiber
-  regression の三例、(e) actual target package と local regime から
+  regression の三例、(f) actual target package と local regime から
   `ActiveRefinementBCContext` と canonical mate を供給する。
 - **錨**: `RefinementDoctrineHom` / `finiteExtractionRefinement` 系
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
   G-110 (A) fiber product 構成・`pointedPullback_isPullback`
   (`DoctrineFiberProduct/PointedDoctrinePullback.lean`)、presentation
   閉性 constructor、G-112 semantic-global cleavage / reindexing
-  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)。
+  (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)、
+  G-101/G-109 `coreFiberTransportObj`(pulled support を exact projection
+  に沿って base support へ送る共変 route)。
 - **供給契約**: G-115 と G-116 に
   **`ActiveRefinementBCContext` と canonical base / pulled mate** を
   供給する。forward-only / inactive refinement は O12 の mate 量化域に

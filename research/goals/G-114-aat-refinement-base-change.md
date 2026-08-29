@@ -5,7 +5,7 @@
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
-- `predecessors`: G-110, G-112
+- `predecessors`: G-101, G-109, G-110, G-112
 - `successors`: G-115, G-116
 - `revision`: 2
 - `source note`: [n1007](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)
@@ -51,23 +51,28 @@ as forward-only; it does not add the desired cleavage as input data.
 ### Raw configuration
 
 `RefinementBCConfiguration` contains only an exact cospan
-`s₁ ⟶ b ⟵ s₂`, a pointed refinement `ρ : s₁ ⟶ s₁'`, and the marked point
+`s₁ ⟶ b ⟵ s₂`, a pointed refinement `ρ : s₁' ⟶ s₁`, and the marked point
 required by the existing refinement interface. It contains no package, regime,
 reverse lift, mate, or hypothesis implying the conclusion.
 
 ### Compatible sources and repointing
 
-For `C : RefinementBCConfiguration`, `CompatibleSource C` contains a source
-and chosen point satisfying the AAT bottom equations. For
-`p : CompatibleSource C`, define canonically `C.repoint p`, `C.baseAt p`,
-`C.pullbackAt p`, `C.refinementAt p`, and `C.pulledRefinementAt p`.
-These are generated, not independent fixtures.
+For `C : RefinementBCConfiguration`, `CompatibleSource C` contains
+`x' : s₁'.Source` and `x₂ : s₂.Source` with the bottom equation
+`f.sourceMap (ρ.sourceMap x') = g.sourceMap x₂`. For
+`p : CompatibleSource C`, canonically repoint `s₁'` at `x'`, `s₁` at
+`ρ.sourceMap x'`, `s₂` at `x₂`, and `b` at their common image. Define
+`C.sourcePointAt p`, `C.targetPointAt p`,
+`C.pullbackSourceAt p`, `C.pullbackTargetAt p`,
+`C.baseRefinementAt p`, and `C.pulledRefinementAt p`. The two pullbacks and
+the pulled refinement are generated from this repointed diagram; they are not
+independent fixtures.
 
 ### Realized support
 
 ```lean
 def RealizedAt (C : RefinementBCConfiguration) (p : CompatibleSource C) : Prop :=
-  Nonempty (CoreFiber (C.baseAt p).target)
+  Nonempty (CoreFiber (C.targetPointAt p))
 ```
 
 The exact spelling may follow G-112, but the predicate must mean existence of an
@@ -77,23 +82,52 @@ actual package over the target base atom. It may not be a configuration field.
 
 `RealizedLocusExtractionReflecting C` has exactly one mathematical constructor:
 
-> for every compatible source `p`, if `C.baseAt p` is realized and the target
-> atom is extracted by the refinement target, then its chosen source atom is
-> extracted by the refinement source.
+> for every compatible source `p`, if `C.targetPointAt p` is realized, then
+> for every `a : U.Atom`, extraction of `ρ.atomMap a` by `s₁` at
+> `ρ.sourceMap p.x'` implies extraction of `a` by `s₁'` at `p.x'`.
 
 Forward extraction is already supplied by refinement preservation. The condition
 adds only reverse extraction on package-realized targets. Its statement mentions
 no lift, cleavage, mate, equivalence, `IsIso`, or regime availability.
 
+### Refinement package fibration
+
+The cartesian language is not borrowed from the exact
+`packageProjection : PackageTotalCategory U ⥤ ExtractionInstance U`. G-114 must construct
+its refinement analogue explicitly:
+
+1. `PointedRefinementObject U`, a wrapper around `ExtractionInstance U`, and
+   `PointedRefinementCategory U` on that wrapper; using a wrapper is mandatory
+   so the existing exact category instance on `ExtractionInstance U` is not
+   shadowed. Its morphisms are `RefinementDoctrineHom` plus selected-source
+   compatibility;
+2. `RefinementPackageObject U`, a wrapper around `AATCorePackage U`, and
+   `RefinementPackageTotalCategory U` on that wrapper; its morphisms contain a
+   pointed refinement base map and a complete
+   `SignedExactCoreReadingHom` upper map using the same Atom equivalence;
+3. `refinementPackageProjection :
+   RefinementPackageTotalCategory U ⥤ PointedRefinementCategory U`;
+4. identity, composition, and projection laws;
+5. exact-to-refinement comparison functors on both base and total categories,
+   with a commuting comparison square to the reviewed exact
+   `packageProjection`.
+
+No cartesian lift, cleavage, factorization, mate, or reflection certificate is
+stored in these category or morphism structures. A refinement cartesian lift and
+its factorization/uniqueness are defined relative to
+`refinementPackageProjection`.
+
 ### Regime and active context
 
-`RefinementBCRegimeAt C p` consists of the base and pulled reverse cartesian
-cleavages. `RefinementBCRegime C` is their dependent family. Exact reindexing,
-comparison maps, and mates are derived from G-112 and the cleavages, not fields.
+`RefinementBCRegimeAt C p` consists of the base and pulled cartesian cleavages
+for `refinementPackageProjection` along `C.baseRefinementAt p` and
+`C.pulledRefinementAt p`. `RefinementBCRegime C` is their dependent family.
+Exact reindexing, comparison maps, and mates are derived from G-112, the exact /
+refinement projection comparison, and the two cleavages; they are not fields.
 
 ```lean
 def Active (C : RefinementBCConfiguration) : Prop :=
-  Nonempty (Sigma fun p : CompatibleSource C => CoreFiber (C.baseAt p).target)
+  Nonempty (Sigma fun p : CompatibleSource C => CoreFiber (C.targetPointAt p))
 
 def ActiveRegimeAvailable (C : RefinementBCConfiguration) : Prop :=
   Active C ∧ Nonempty (RefinementBCRegime C)
@@ -108,11 +142,17 @@ the sole G-114 interface supplied to G-115 and the refinement component of G-116
 Prove **Refinement Category and Realized-Support Base-Change Stratification** with
 all clauses below.
 
-### (a) Refinement category
+### (a) Refinement category and package fibration
 
 1. Define identity and composition of pointed refinements.
 2. Prove category laws and compatibility with repointing.
 3. Show that exact comparison refinements embed functorially.
+4. Construct `RefinementPackageTotalCategory`,
+   `refinementPackageProjection`, and their category/functor laws.
+5. Construct the exact-to-refinement base and total comparison functors and prove
+   the projection square commutes.
+6. Define refinement cartesian lifts, their factorization/uniqueness, and the
+   cleavage interface relative to this projection.
 
 ### (b) Unconditional forward base change
 
@@ -133,13 +173,15 @@ the cartesian lift. The reverse proof must construct base and pulled cleavages a
 include the support-transfer lemma
 
 ```lean
-RealizedAt (C.pullbackAt p) → RealizedAt (C.baseAt p)
+Nonempty (CoreFiber (C.pullbackTargetAt p)) →
+  Nonempty (CoreFiber (C.targetPointAt p))
 ```
 
-derived from exact projection and package transport. Thus a pulled realized point
-cannot evade the fixed condition at the base. Reverse transport must be two-sided
-and cartesian, not merely a map: transport all package structure along the atom
-equivalence forced by local extraction reflection and prove its universal property.
+derived from the exact projection and the G-101/G-109 covariant
+`coreFiberTransportObj` route, not from contravariant G-112 reindexing. Thus a
+pulled realized point cannot evade the fixed condition at the base. Reverse
+transport must be a lift for `refinementPackageProjection`, two-sided at the
+complete upper-reading level, and cartesian—not merely a package map.
 
 ### (d) Condition qualification
 
@@ -160,9 +202,11 @@ Provide three independent examples.
    comparison image, with a nonempty target package fiber, nontrivial pulled
    square, the fixed condition, a constructed regime, and a concrete mate that
    evaluates nontrivially.
-3. **Inactive regression witness.** The known infinite configuration with empty
-   target fibers. Prove it inactive and prove that total regime construction there
-   cannot discharge either active witness obligation.
+3. **Inactive regression witness.** Construct an explicit infinite configuration
+   (the `ExactBottomSumCarrier` / non-list-finite selected-family pattern is the
+   fixed starting point) with empty target fibers. Prove it inactive and prove that
+   total regime construction there cannot discharge either active witness
+   obligation.
 
 The first two witnesses must be distinct and must not derive support from a regime
 fixture.
@@ -170,9 +214,11 @@ fixture.
 ### (f) Gr4 supply theorem
 
 Export a theorem constructing `ActiveRefinementBCContext` from a compatible
-source, actual target package, and the fixed condition. Export the canonical base
-and pulled mates from this context. G-115 and G-116 must import these declarations
-rather than reconstructing reverse transport.
+source, actual target package, and the fixed condition. Export the exact type of
+the canonical base and pulled mates: their source/target functors are generated by
+the exact `packageProjection` reindexing, the refinement projection cleavages,
+and the commuting comparison square. G-115 and G-116 must import these
+declarations rather than reconstructing reverse transport.
 
 ## Target theorem boundary
 
@@ -184,20 +230,22 @@ universe, site, and cover are fixed; carrier change, coefficient base change,
 derived fiber products, and new cover topologies are excluded. The theorem is not
 finite-only, but the active forward-only witness is finite; all other universe
 parameters must elaborate in the existing G-112 universe discipline. Lean
-artifacts live under `ResearchLean/AAT/AG/RefinementBaseChange/`; accepted Lean
+artifacts live under
+`ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/`; accepted Lean
 declarations are static evidence until premise, provenance, proof-use, nonvacuity,
 review, CI, merge, and ledger gates also pass.
 
 ## Target proof artifacts
 
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Configuration.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Category.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Pullback.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/RealizedSupport.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Regime.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Classification.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange/Witnesses.lean`
-- `research/lean/ResearchLean/AAT/AG/RefinementBaseChange.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Configuration.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Categories.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Projection.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Pullback.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/RealizedSupport.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Regime.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Classification.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Witnesses.lean`
+- `research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange.lean`
 - `research/reports/G-114-aat-refinement-base-change.md`
 
 Existing names may be retained when their mathematical roles are unchanged. The
@@ -206,21 +254,30 @@ completion packet must give the exact final declaration map.
 ## Target proof strategy
 
 1. Reuse G-112 exact cospans, selected pullbacks, reindexing, and strong lifts.
-2. Define refinement composition and prove forward pullback functoriality.
-3. At a realized source, use extraction reflection to identify chosen atoms,
-   transport the complete package along that equivalence, and prove cartesianness.
-4. Transport pulled support through exact projection and construct the pulled lift.
-5. Assemble the local constructions into the global regime.
-6. Recover the fixed condition from a regime using an actual target package.
-7. Prove closure and all three witnesses independently.
+2. Define pointed refinement composition and the refinement package total
+   category/projection. Prove the exact-to-refinement comparison square.
+3. Prove forward pullback functoriality for `s₁' ⟶ s₁`.
+4. At a realized source, use the all-Atom reflection plus forward preservation to
+   prove selected-family equality. Build a source package over the authored
+   `s₁'` doctrine, transport all remaining upper-reading structure along
+   `ρ.atomEquiv`, and prove the refinement-projection cartesian universal
+   property.
+5. Transport pulled support covariantly through exact projection using
+   `coreFiberTransportObj`, then construct the pulled lift.
+6. Assemble local constructions into the global regime and derive the mates via
+   the comparison square and universal uniqueness.
+7. Recover all-Atom reflection from a regime using an actual target package.
+8. Prove closure and all three witnesses independently.
 
-If step 3 fails because atom equivalence does not transport all package structure,
+If step 4 fails because atom equivalence and selected-family equality do not
+transport all package structure over the authored source doctrine, or if the new
+projection cannot support the stated cartesian universal property,
 revision 2 is mathematically refuted; the missing transport must not be added as a
 configuration field.
 
 ## Target premise discharge policy
 
-Every material premise must be a raw input above, a reviewed G-112/refinement
+Every material premise must be a raw input above, a reviewed G-101/G-109/G-112
 theorem, a declaration proved in the required artifacts, or witness-local data
 constructed by its witness theorem. No completion theorem may assume the fixed
 condition, regime, cleavage, mate, or package-equivalence conclusion as an opaque
@@ -235,11 +292,14 @@ other side.
 | pointed refinement | clauses (a)–(e) | `ambient-boundary` | raw G-114 configuration field | forward square and extraction preservation | it has only forward extraction |
 | compatible source | clauses (b)–(f) | `ambient-boundary` | generated source index with bottom equations | repointing and local base selection | it contains no package-level lift |
 | target package | clauses (c), (e), (f) | `direction-hypothesis` | active-context input or concrete witness constructed in `Witnesses.lean` | support firing, converse extraction, and mate evaluation | an object of the fiber is not a cleavage or mate |
-| fixed condition | reverse implication of (c), clauses (d), (f) | `discharge-required` | one-constructor predicate proved for the positive family; no certificate field | atom equivalence and package transport | it concerns extraction of atoms, not cartesian universality |
-| local regime | forward implication of (c), clause (f) | `discharge-required` | constructed by `Classification.lean`; no caller-supplied fixture | reverse extraction and canonical mate | it is the constructed opposite side of the stated equivalence |
+| refinement package projection | clauses (a), (c), (f) | `discharge-required` | explicit categories, functor, exact comparison square, and laws in `Categories.lean` / `Projection.lean` | ambient for both cartesian factorization directions and mate generation | it defines the arena, not existence of a lift |
+| fixed condition | condition-to-regime direction of (c), clauses (d), (f) | `direction-hypothesis` | one-constructor all-Atom predicate; each theorem must receive it only as the stated implication input | selected-family equality and construction of the opposite regime | it concerns extraction of atoms, not cartesian universality |
+| local regime | regime-to-condition direction of (c), clause (f) | `direction-hypothesis` | received only as the stated implication input; condition-to-regime producer is separately proved | actual target lift, reverse extraction, and canonical mate | it is one side of the equivalence, not a hidden premise of its own producer |
+| condition-to-regime producer | reverse implication of (c) | `discharge-required` | theorem body in `Classification.lean`; no caller-supplied cleavage | construct both base and pulled cartesian cleavages | it is the theorem to prove |
+| regime-to-condition producer | forward implication of (c) | `discharge-required` | theorem body in `Classification.lean`; no caller-supplied reflection | derive all-Atom reflection from each realized target | it is the theorem to prove |
 | active forward-only witness | clause (e1) | `discharge-required` | explicit finite fixture and evaluation theorem | decide failure of the fixed condition and derive no regime | the fixture carries no no-regime certificate |
 | active reverse witness | clauses (d6), (e2) | `discharge-required` | explicit strict-image-external fixture and independently constructed package | exercise condition, regime, nontrivial mate | the fixture carries no condition/regime certificate |
-| inactive regression | clause (e3) | `discharge-required` | existing empty-fiber fixture plus new inactivity theorem | demonstrate exclusion from active success | emptiness tests scope and supplies no active conclusion |
+| inactive regression | clause (e3) | `discharge-required` | explicit `ExactBottomSumCarrier`-based fixture, fiber-emptiness proof, and inactivity theorem in `Witnesses.lean` | demonstrate exclusion from active success | emptiness tests scope and supplies no active conclusion |
 
 The final report must cite the declaration body consuming every premise. None is
 conclusion-equivalent: extraction reflection concerns atom selection, whereas a
@@ -262,12 +322,14 @@ regime contains cartesian package-level structure.
 The completion report must trace:
 
 1. raw configuration → compatible source → repointed base → forward pulled square;
-2. fixed condition + actual package → atom equivalence → package transport →
-   cartesian cleavage → mate;
-3. regime + actual package → lifted source → reverse extraction;
-4. pulled support → exact projection → base support → pulled cleavage;
-5. positive/negative fixtures → fixed-condition decision → active stratum;
-6. active context → the exact G-115 and G-116 imported declarations.
+2. pointed refinement → refinement package projection → exact comparison square;
+3. fixed all-Atom condition + actual package → selected-family equality →
+   authored-source package → refinement cartesian cleavage → mate;
+4. regime + actual package → lifted source → all-Atom reverse extraction;
+5. pulled support → exact projection → covariant `coreFiberTransportObj` →
+   base support → pulled cleavage;
+6. positive/negative fixtures → fixed-condition decision → active stratum;
+7. active context → the exact G-115 and G-116 imported declarations.
 
 Presence without proof-body use does not discharge an obligation.
 
