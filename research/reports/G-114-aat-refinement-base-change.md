@@ -38,10 +38,11 @@ anchors. The earlier revision-1 schema remains as a compatibility layer under
 
 The first fresh completion-candidate review found no mathematical or Lean
 finding in clauses (a)--(f), premise provenance, proof-use, witness
-nonvacuity, the public-projection mate route, or the standard-axiom audit. Two
-lanes withheld `target-theorem-proved` solely because this report and tracking
-Issue had not yet been synchronized to the merged snapshot; the other two
-lanes found no major findings and judged the mathematical packet eligible.
+nonvacuity, the public-projection mate route, or the standard-axiom audit.
+Three lanes withheld `target-theorem-proved` solely because this report and
+tracking Issue had not yet been synchronized to the merged snapshot; the
+remaining Math B lane judged the mathematical packet eligible while retaining
+the same final ledger-sync requirement.
 The fixed-head lane dispositions and integrated finding are recorded at
 <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461674160>.
 This ledger update resolves the report side of that gate. After it is merged
@@ -283,8 +284,9 @@ axiom in the target artifacts. `git diff --check` is clean.
 - standard fixed-head four-lane mathematical/Lean review: satisfied
 - implementation PR CI: 7/7 successful
 - implementation merge: satisfied at `c6cd0d4f12184114de96f99ba01ff1c200b26669`
-- first fresh completion review: theorem content passed in all four lanes; two
-  lanes withheld completion solely for report / Issue synchronization
+- first fresh completion review: theorem content passed in all four lanes;
+  three lanes withheld completion solely for report / Issue synchronization,
+  while Math B judged the mathematical packet eligible subject to that sync
 - report synchronization to the merged snapshot: this ledger update
 - tracking Issue synchronization and fresh completion-review rerun: pending
 
