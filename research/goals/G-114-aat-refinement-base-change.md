@@ -1,7 +1,7 @@
 # G-114-aat-refinement-base-change — refinement 圏化と refinement base change
 
 - `id`: `G-114-aat-refinement-base-change`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第二項の担当カード(担当義務 =
@@ -15,11 +15,37 @@
   G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110 /
   G-101)の statement が改訂された場合、本カードは draft へ差し戻して
   再固定する(伝播規定)。
+  **head 分離**: F0 は4つの fixed head を分けて tracking Issue に記録
+  する — configuration head(square 配置の型固定と regime 型候補
+  signature。pointed 水準と doctrine 水準 refinement の interface・
+  universe parameter 割当を含む)、language head(閉じた条件言語の
+  syntax・evaluator・canonical rebase・正規化 completeness theorem)、
+  predicate-term head(事前登録候補列からの機械的採用)、branch
+  artifact head(二枝 payload)。条件言語そのものの設計を F0 以後へ
+  持ち込むことは `goal-defect` とする(F0 で行うのはカード
+  constructor 表の Lean 転写であり、新語彙の発明ではない)。
+  **候補遷移規則(三層状態)**: 退化枝の特徴付け述語候補列は下記 (b)
+  でカード固定し、predicate-term head は先頭候補の機械的採用とする
+  (K0 以降の証明結果を選定に使わない)。状態は三層で記録する —
+  candidate state(tracking Issue の local state)、cycle result
+  (loop 契約の正式語彙 = `proof-obligation-discharged` /
+  `blocker-fixed` / `proof-checkpoint` / `rejected`)、GOAL state
+  (`target-proof-checkpoint` / `target-refuted` / `target-blocked`)。
+  資格条項の反例固定・十分性の反例固定 = candidate state を refuted
+  とし、再利用可能な refutation artifact を固定して cycle result =
+  `blocker-fixed`、次 = 事前登録列の次候補とする — **候補の反証は固定
+  target の反証ではない**。候補列の全反証消尽は退化枝が条件言語内で
+  立たないことの記録であり、単独では GOAL state を変えない((b) は
+  二枝 disjunction — 正枝の帰趨と合わせて判定し、両枝とも閉じない
+  場合のみ `target-blocked`)。proof 結果を見た新述語の発明は target
+  改訂(人間裁定)であり、証明サイクル内では行わない。
 - `predecessor`: G-110(完遂済み。(A) fiber product・pointed 化・
   presentation 閉性。固定錨は下記 ledger 行)、G-101
-  (`RefinementDoctrineHom` の定義元。
-  `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported)。
-- `tracking issue`: 未起票(active 昇格時に起票)
+  (完遂済み。`RefinementDoctrineHom` の定義元。
+  `research/lean/ResearchLean/AG/AtomFoundation/` 配下、unported。
+  固定錨は下記 ledger 行)。
+- `tracking issue`: 未起票(昇格 PR マージ後に起票し、カード同期 PR で
+  本行を更新する。F0 記録事項 = program context の fixed head 4種)
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)(§3 義務台帳、§4 G-114)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (ii)・frontier の refinement 圏化)
 - `research aim`: exact hom の圏 `Doct_U` の外にいる refinement 射
@@ -65,8 +91,8 @@
   成分で vacuous に立つ構成、regime 型を supplied certificate で受ける
   構成、比較 functor を逆方向(反射を要求する向き)で仮定する構成、
   **退化枝を単一反例の存在命題だけで「退化定理」と呼ぶ構成**(成立域
-  特徴付けを欠く形)、**G-110 既決 mate 正例の再包装による regime
-  正枝放電**。
+  特徴付けを欠く形。言い換え述語の排除は (b) の閉じた条件言語が
+  担う)、**G-110 既決 mate 正例の再包装による regime 正枝放電**。
 - `frontier`: refinement 圏の 2-cell(refinement 間の変形)の観察、
   refinement と indexed 診断輸送 exactness(G-113)の相互作用の観察、係数 base change
   カードとの接続点。
@@ -89,7 +115,45 @@
      条件言語・結論非参照・同型不変性・閉性・像包含と非空発火)+
      持ち上げ不能の非退化反例(非恒等 refinement 射・非自明 fiber
      product 上)」のどちらかを証明する(排他性は反例側が供給、網羅性
-     は主張しない)。
+     は主張しない)。**閉じた条件言語(constructor 完全列挙)**:
+     特徴付け述語は G-110 `CartConditionSyntax` 様式の閉じた syntax
+     型の term として立てる。constructor は次の3つに限る(operand
+     なし・数値定数なし・集合定数なし) —
+     `pulledLocusExtractionReflecting`(引き戻し配置の compatible
+     locus に属する source — cospan 可換性を満たす相方を持つ source —
+     に制限した refinement 射の抽出反射)、
+     `normalizedExtractionReflecting`(normalize 固定点 source 上に
+     制限した抽出反射)、`conjunction`(結合子はこれのみ、法は
+     ACI)。**全域抽出反射の constructor は採用しない** — 全域反射を
+     加えた refinement 射は `ExactDoctrineHom` と外延一致する
+     (`atomMap_bijective` から `Equiv.ofBijective` で往復、`ext` は
+     `sourceMap` / atom 成分で決定)ため、比較 functor の strict 像の
+     言い換え述語となり資格 (v) の strict 像外非空発火を満たさない。
+     `sourceMap` の単射性・全射性等の構造条件も採用しない — exact
+     hom に含意されないため、資格 (v) の像包含(適格な term は比較
+     functor 像の配置を同型まで包含する)を term に含めた時点で
+     満たさない。評価意味は constructor ごとに `Prop` 水準で固定し、
+     arbitrary `Prop` callback・fixture 値・external constant・lift /
+     regime / mate への言及(その Skolem 化を含む)は syntax に持ち
+     込めない。述語の ambient 型は (b) の量化域型(configuration
+     head で固定する配置型)と同一とする。述語は一つの authored
+     template を base carrier で固定し、canonical rebase
+     (`rebaseCartCondition` 前例様式 — operand なし constructor の
+     ため rebase は canonical)で全 carrier へ移す。正規化
+     completeness theorem(normalize+eval 同値)を language head に
+     計上する。syntax・evaluator・rebase の transitive dependency
+     audit(依存 helper 経由で lift / regime を読む経路の禁止)を
+     discharge artifact に含める。constructor・結合子・量化形の追加は
+     target 改訂扱いとする。**候補列(カード固定 — ACI 正規形の完全
+     列挙、事前登録順)**: (1) `pulledLocusExtractionReflecting`、
+     (2) `pulledLocusExtractionReflecting ∧
+     normalizedExtractionReflecting`、(3)
+     `normalizedExtractionReflecting`。資格条項 (iv) の閉性は配置に
+     相対化した id / comp / pulled-leg 閉性で読む。資格条項 (v) の
+     正例族 raw data は幾何のみ(authored 配置成分)とし、述語成立・
+     strict 像外性・非可逆性・lift 不能を field に持たせない — 発火と
+     非退化は theorem として生成する(ledger の分離行)。特徴付けは
+     十分性 theorem(述語 → regime 成立)を要求する。
   3. **(c) 非退化 witness**: 恒等でない refinement 射の pullback が非
      自明に立つ有限 fixture を構成する(正枝時。退化枝の場合は (b) の
      非退化反例がこれを兼ねる)。
@@ -108,7 +172,8 @@
   witness、report
   `research/reports/G-114-aat-refinement-base-change.md`。
 - `target proof strategy`: F0 typing(圏 instance と比較 functor の
-  signature、二枝 payload 構造、regime 型の候補 signature)→ K0 圏化と
+  signature、二枝 payload 構造、regime 型の候補 signature、条件言語の
+  Lean 転写と fixed head 4種の記録)→ K0 圏化と
   比較 functor → K1 pullback 安定性の判定 → K2 帰趨確定(regime 建設
   または退化分類)→ K3 witness と監査。既存成果の利用 map:
   `RefinementDoctrineHom`(射の定義)、`finiteExtractionRefinement`
@@ -133,8 +198,9 @@
     pointed 化の設定。結論相当でない理由 = 既証明の環境)。
   - `RefinementDoctrineHom / finiteExtractionRefinement 系`:
     `ambient-boundary`。参照のみ、改変しない(G-101 の reviewed
-    artifact — 固定錨は G-110 カード ledger の G-101 錨を継承。
-    proof-use = 射の定義と strict 性 witness)。
+    artifact — 固定錨: AtomFoundation = PR #3889(fixed head
+    `db47ee9e`、merge `dd5e02b5`)。proof-use = 射の定義と strict 性
+    witness)。
   - `refinement 圏構造と比較 functor`: `discharge-required`(支える
     結論 = (a)。discharge artifact = 圏 instance+結合律+functor
     law。結論相当でない理由 = 構成して証明する)。
@@ -142,6 +208,15 @@
     discharge artifact = 正枝は安定性 theorem+regime 型、退化枝は
     資格条項付き特徴付け+十分性+非退化反例。proof-use = 反例は
     payload の実消費で結ぶ)。
+  - `条件言語 syntax / evaluator / rebase / 正規化 completeness`:
+    `discharge-required`(退化枝で確定する場合。支える結論 = (b)
+    退化枝。discharge artifact = カード constructor 表の Lean 転写+
+    正規化 completeness theorem+transitive dependency audit)。
+  - `資格 (v) 正例族 raw data`: `conclusion-equivalent-risk`(退化枝で
+    確定する場合。支える結論 = (b) 退化枝の資格。幾何 data のみを
+    fixture data として許し、述語成立・strict 像外性・非可逆性・
+    lift 不能を field にしない — 発火と非退化は theorem として生成
+    する)。
   - `非退化 witness`: `discharge-required`(支える結論 = (c))。
 - `target route integrity gate`: 比較 functor・BC 比較射・regime は
   refinement 射の定義と G-110 普遍性からのみ生成する。witness fixture
