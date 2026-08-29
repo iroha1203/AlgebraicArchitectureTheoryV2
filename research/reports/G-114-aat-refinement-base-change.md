@@ -266,16 +266,21 @@ the revision-3 wrapper files:
   `3bd95eeecc39c5d7697177807eba6482b00f3d3c`):
   `LegacyRefinementBCConfiguration`, `pulledRefinement`,
   `pulled_square_commutes`, `LegacyRefinementCartesianLift`,
-  `LegacyRefinementCartesianCleavage`, `LegacyRefinementBCRegime`, both reverse
-  functors and hom equivalences, and the complete mate route and naturality
-  declarations listed above.
+  `LegacyRefinementCartesianCleavage`, `LegacyRefinementBCRegime`,
+  `exact_bottom_semantic_global_refinementExactCartesianLift`, both reverse
+  functors and hom equivalences, `LegacyRefinementBCConfiguration.mateLowerPath`,
+  `LegacyRefinementBCRegime.mateCandidate`, `mateRouteBetween`, `mateRoute`,
+  `mateRouteBetween_fac`, `mateRoute_fac`,
+  `exact_bottom_semantic_global_reindex_map_fac`,
+  `LegacyRefinementCartesianCleavage.reverseMap_fac`,
+  `homEquiv_natural_source`, `homEquiv_natural_target`, `mateRoute_natural`,
+  `mate_naturality`, and `LegacyRefinementBCRegime.mate`.
 - `RefinementBaseChangeSchemaWitnesses.lean` (blob
   `3dce3d91b651eccaa0c6fef6b4708f3f823b9592`):
-  `finiteExtractionRefinement_not_in_comparison_image`,
-  `finitePointedExtractionRefinement`,
-  `finitePointedExtractionRefinement_not_strict_image`,
-  `finiteRefinementConfiguration`, both finite refinement fiber packages, and
-  the source-locus and non-evaluation witness theorems.
+  `finiteExtractionRefinement_not_in_comparison_image`, the declaration from
+  this imported legacy witness surface that the revision-3 strict-breadth proof
+  actually consumes. The remaining declarations in that imported file are not
+  proof dependencies of the revision-3 target.
 - `AtomFoundation/RefinementObstruction.lean` (blob
   `77a9e2225e710b61bb76204a4ab4f63ff8dd852c`):
   `refinementAtomEquiv`, `refinementAtomMap`,
@@ -284,15 +289,26 @@ the revision-3 wrapper files:
   by the active forward-only witness.
 - `ExactBottomCoverageClassification.lean` (blob
   `760ed9c70de06405a6f40c7c79d6f9ff9a212d6c`):
-  `ExactBottomSumCarrier`, its first-summand non-finiteness theorems, and the
-  exact-bottom doctrines, instances, and homs used by the inactive infinite
-  regression.
+  `ExactBottomSumCarrier`, `exactBottomFirstSummand_not_finite`,
+  `exactBottomSummandOneDoctrine`, and `exactBottomSummandOneInstance`, exactly
+  the source declarations used by the inactive infinite regression.
 - `AtomFoundation/Transport.lean` (blob
   `2fbe4ec329f7e1fb6a6c874d1bbbe4c427261dca`) and
   `CrossStageCoherence/CorePseudofunctor.lean` (blob
   `7cb15b7676b80ea9b5888303beedad447da25b1e`): `transportAlong`,
   `coreFiberTransportObject`, and `coreFiberTransportObj`, the reviewed
   G-101/G-109 covariant transport route consumed by pulled-support transfer.
+- `RefinementCategory.lean` (blob
+  `98963218a91afb4aef14c5af5002fe92b1c44268`): the clause-(a)
+  `RefinementObject`, refinement and pointed categories, package total
+  category, `refinementPackageProjection`, `exactPackageToRefinement`, and
+  `exact_refinement_projection_square` implementations re-exported and checked
+  by the revision-3 `Categories.lean` wrapper.
+- `ExactBottomGlobalLiftCoherence.lean` (blob
+  `1a9139bd2247fdabe81d543a3c3078d94330e9f2`):
+  `exact_bottom_semantic_global_reindex_functor`,
+  `exact_bottom_semantic_global_selected_lift`, and its factor/coherence laws,
+  consumed by `Supply.lean` and the canonical mate routes.
 
 Witness-local source, repointing, and obstruction constructors in
 `Witnesses.lean`, together with `PointedRefinementHom`,
