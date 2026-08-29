@@ -76,6 +76,7 @@ merge, and post-merge Issue synchronization all pass.
   `refinementDoctrineCategory`, `refinementHomId`, `refinementHomComp`
 - exact comparison: `exactToRefinement`, `doctrineToRefinement`
 - pointed wrapper and category: `PointedRefinementObject`,
+  `PointedRefinementHom`, `PointedRefinementIso`,
   `PointedRefinementCategory`, `pointedRefinementCategory`,
   `PointedRefinementHom.id`, `PointedRefinementHom.comp`,
   `PointedRefinementHom.ofExact`, `exactPointedToRefinement`
@@ -117,7 +118,9 @@ its exact image with `pulledRefinementAt`.
 
 - condition: `RealizedLocusExtractionReflecting`, `RealizedAt`,
   `ConfigurationRealizedLocusExtractionReflecting`
-- selected-family equality: `selected_family_eq_of_realized_reflection`
+- selected-family equality and transport producer:
+  `selected_family_eq_of_realized_reflection`,
+  `selectedTransportDataOfRealizedReflection`
 - complete source-package authoring:
   `SelectedRefinementTransport.SelectedTransportData`,
   `SelectedRefinementTransport.inverseCorePackage`,
@@ -130,7 +133,8 @@ its exact image with `pulledRefinementAt`.
   `refinementCartesianCleavage_iff_realizedReflection`
 - support transfer: `pulledSupportTransfer`, `pulledRealizedReflection`
 - configuration regime and iff: `RefinementBCRegimeAt`,
-  `RefinementBCRegime`, `refinementBCRegimeOfCondition`,
+  `RefinementBCRegime`, `Active`, `ActiveRegimeAvailable`,
+  `refinementBCRegimeOfCondition`,
   `configurationConditionOfRegime`,
   `refinementBCRegime_iff_configurationCondition`
 
@@ -163,20 +167,28 @@ the inner condition.
 ### (e) Three support strata
 
 - active forward-only: `activeForwardOnlyConfiguration`,
+  `activeForwardOnlySource`,
   `activeForwardOnly_active`, `activeForwardOnly_extraction_difference`,
+  `activeForwardOnly_base_doctrines_ne`,
+  `activeForwardOnly_pulled_extraction_difference`,
+  `activeForwardOnly_pulled_doctrines_ne`,
   `activeForwardOnly_nontriviality`, `activeForwardOnly_not_condition`,
   `activeForwardOnly_no_regime`
-- active reverse: `activeReverseConfiguration`, `activeReverse_active`,
+- active reverse: `activeReverseSecondDoctrine`, `activeReverseSecondLeg`,
+  `activeReverseConfiguration`, `activeReverseSource`,
+  `activeReverseSource_eq_all`, `activeReverse_active`,
   `activeReverse_activeRegimeAvailable`,
   `activeReverse_condition`, `activeReverseRegime`,
-  `activeReverse_outside_exact_image`, `activeReverseTargetPackage`,
+  `activeReverse_outside_exact_image`, `activeReverseTargetPoint`,
+  `activeReverseTargetRepoint`, `activeReverseTargetPackage`,
   `activeReverse_pulledRefinement_atom_nonidentity`, `activeReverseLift`,
   `activeReverseLift_atom_nonidentity`
 - active mate firing: `activeReverseContext`,
   `activeReverseBaseMatePackage`, `activeReversePulledMatePackage`,
   `activeReverseMateComponent`
 - inactive infinite regression: `inactiveInfiniteConfiguration`,
-  `inactiveInfinite_target_empty`, `inactiveInfinite_not_active`,
+  `inactiveInfiniteSource`, `inactiveInfinite_target_empty`,
+  `inactiveInfinite_not_active`,
   `inactiveInfinite_not_activeRegimeAvailable`
 
 `activeForwardOnly_nontriviality` is the required typed conjunction: unequal
@@ -202,8 +214,10 @@ active witness obligation even though total definitions remain meaningful.
   `pullbackTargetPackage`, `pulledLift`
 - canonical mate construction: `legacyRefinementLiftOfRealizedReflection`,
   `legacyRefinementCleavageOfRealizedReflection`,
-  `legacyRefinementBCRegimeOfConditionAt`, `refinementBCMateAt`
+  `legacyRefinementBCRegimeOfConditionAt`, `refinementBCMateAt`,
+  `refinementBCMateAt_app_type`
 - comparison and lift coherence: `exactVerticalComparison_isHomLift`,
+  `exactPointedToRefinement_map_eqToHom`,
   `legacyRefinementLift_domain_coherence`,
   `legacyRefinementLift_upper_coherence`,
   `ActiveRefinementBCContext.legacyRegime_baseLift_upper_eq`,
@@ -232,13 +246,67 @@ base and pulled lifts. Its uniqueness proof maps exact vertical factors through
 `exactPackageToRefinement`, uses `exact_refinement_projection_square`, and invokes
 the public lift's `IsStronglyCartesian.ext`.
 
+The revision-3 `Mate.lean` declaration is the public assembly wrapper. Its
+canonical reverse functors, hom equivalences, relative-factor route, route
+naturality, mate naturality, and natural transformation are respectively
+`LegacyRefinementBCRegime.reverseBase`, `reversePullback`, `baseHomEquiv`,
+`pulledHomEquiv`, `mateRouteBetween`, `mateRoute`,
+`mateRouteBetween_fac`, `mateRoute_fac`, `mateRoute_natural`,
+`mate_naturality`, and `LegacyRefinementBCRegime.mate` in
+`RefinementBaseChangeSchema.lean`. The unconditional square similarly reduces
+to that file's `pulled_square_commutes`; the public bridge does not hide either
+dependency.
+
+### Transitive source provenance required by the target proofs
+
+The exact declaration map includes the following predecessor sources, not only
+the revision-3 wrapper files:
+
+- `RefinementBaseChangeSchema.lean` (blob
+  `3bd95eeecc39c5d7697177807eba6482b00f3d3c`):
+  `LegacyRefinementBCConfiguration`, `pulledRefinement`,
+  `pulled_square_commutes`, `LegacyRefinementCartesianLift`,
+  `LegacyRefinementCartesianCleavage`, `LegacyRefinementBCRegime`, both reverse
+  functors and hom equivalences, and the complete mate route and naturality
+  declarations listed above.
+- `RefinementBaseChangeSchemaWitnesses.lean` (blob
+  `3dce3d91b651eccaa0c6fef6b4708f3f823b9592`):
+  `finiteExtractionRefinement_not_in_comparison_image`,
+  `finitePointedExtractionRefinement`,
+  `finitePointedExtractionRefinement_not_strict_image`,
+  `finiteRefinementConfiguration`, both finite refinement fiber packages, and
+  the source-locus and non-evaluation witness theorems.
+- `AtomFoundation/RefinementObstruction.lean` (blob
+  `77a9e2225e710b61bb76204a4ab4f63ff8dd852c`):
+  `refinementAtomEquiv`, `refinementAtomMap`,
+  `finiteExtractionRefinement`, `refinementTargetPoint`,
+  `refinementTargetPackage`, and the component-C obstruction theorems consumed
+  by the active forward-only witness.
+- `ExactBottomCoverageClassification.lean` (blob
+  `760ed9c70de06405a6f40c7c79d6f9ff9a212d6c`):
+  `ExactBottomSumCarrier`, its first-summand non-finiteness theorems, and the
+  exact-bottom doctrines, instances, and homs used by the inactive infinite
+  regression.
+- `AtomFoundation/Transport.lean` (blob
+  `2fbe4ec329f7e1fb6a6c874d1bbbe4c427261dca`) and
+  `CrossStageCoherence/CorePseudofunctor.lean` (blob
+  `7cb15b7676b80ea9b5888303beedad447da25b1e`): `transportAlong`,
+  `coreFiberTransportObject`, and `coreFiberTransportObj`, the reviewed
+  G-101/G-109 covariant transport route consumed by pulled-support transfer.
+
+Witness-local source, repointing, and obstruction constructors in
+`Witnesses.lean`, together with `PointedRefinementHom`,
+`PointedRefinementIso`, `selectedTransportDataOfRealizedReflection`,
+`exactPointedToRefinement_map_eqToHom`, and
+`refinementBCMateAt_app_type`, are part of the exhaustive proof-provenance map.
+
 ## Material-premise and proof-use audit
 
 | premise | role | provenance | actual proof-use | status |
 | --- | --- | --- | --- | --- |
 | exact cospan and pullbacks | `ambient-boundary` | raw `RefinementBCConfiguration`; G-112 generated pointed pullback | repointing, forward square, exact route functors | `justified-boundary` |
 | G-112 exact reindexing | `ambient-boundary` | reviewed `exact_bottom_semantic_global_reindex_functor`, `exact_bottom_semantic_global_selected_lift` | both sides of `refinementBCMateAt`, route factor graph, actual target reindexing | `justified-boundary` |
-| G-101/G-109 covariant transport | `ambient-boundary` | reviewed `coreFiberTransportObj` | `pulledSupportTransfer`, active target repointing | `justified-boundary` |
+| G-101/G-109 covariant transport | `ambient-boundary` | reviewed `transportAlong` → `coreFiberTransportObject` → `coreFiberTransportObj` | `pulledSupportTransfer`, active target repointing | `justified-boundary` |
 | unpointed refinement | `ambient-boundary` | raw configuration field | repointing, forward square, extraction preservation | `justified-boundary` |
 | compatible source | `ambient-boundary` | generated `CompatibleSource` | every local point, pullback, condition, and witness | `justified-boundary` |
 | target package | `direction-hypothesis` | implication input or witness-local construction | selected-family equality, converse, lifts, mate evaluation | `justified-boundary` |
@@ -273,6 +341,8 @@ The two main classification statements are genuine equivalences.
    `refinementPackageProjection` strong-cartesian uniqueness;
 7. mate component: the coherent base/pulled lifts → G-112 comparison routes
    → pulled relative universal factor and naturality.
+8. active witness provenance: exact-bottom and finite obstruction constructors
+   → witness-local repointing and packages → the three public witness strata.
 
 The legacy bridge is limited to reusing the already verified relative-factor
 and mate derivation. It receives revision-3 authored packages and proves the
