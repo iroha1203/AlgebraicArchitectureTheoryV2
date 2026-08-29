@@ -42,6 +42,8 @@ nonvacuity, the public-projection mate route, or the standard-axiom audit. Two
 lanes withheld `target-theorem-proved` solely because this report and tracking
 Issue had not yet been synchronized to the merged snapshot; the other two
 lanes found no major findings and judged the mathematical packet eligible.
+The fixed-head lane dispositions and integrated finding are recorded at
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461674160>.
 This ledger update resolves the report side of that gate. After it is merged
 and the tracking Issue is synchronized, the fixed merged snapshot receives the
 required formal rerun before the final proof-state transition is recorded.
