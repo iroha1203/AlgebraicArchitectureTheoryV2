@@ -6,14 +6,18 @@
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第二項の担当カード(担当義務 =
   O8–O9。義務台帳の正本は G-116 カード、設計の source note は n1007
-  §3–§5)。主依存は G-110(n1007 §5 DAG)。(b) の mate 比較の exact
-  側錨として、完遂済みの G-112 reviewed semantic-global reindexing を
-  参照のみで消費する(下記 ledger 行 — DAG 上の新設建設依存ではない)。
-  **供給契約**:
+  §3–§5)。依存は G-110 と G-112(いずれも完遂済み。n1007 §5 DAG の
+  依存辺と一致)。G-112 の semantic-global reindexing は (b) mate 比較
+  の exact 側で proof-use 消費する依存であり、再証明はしない(下記
+  ledger 行)。**供給契約**:
   本カードの成果物は G-116 gate (iv) の refinement regime 型
   (または退化定理という帰趨)を供給する — G-116 は regime を新設建設
   しないため、この供給は成果物形式の義務である(退化枝で確定した場合の
-  G-116 側の扱いは G-116 カードの量化域規律に従う)。**新設語彙の
+  G-116 側の扱いは G-116 カードの量化域規律に従う)。regime は mate
+  比較射を定義水準(comparison morphism)で供給し、その `IsIso` 水準の
+  同型性・破れを structure field / certificate として持たせない —
+  `IsIso` 存否決定は O12(G-116)の専属責務であり、本カードはこれを
+  先取りしない(分界固定)。**新設語彙の
   命名権**: refinement 圏の命名は本カード専属。本カードの改訂は
   G-116 の達成記録要件へ伝播する。依存する reviewed カード(G-110 /
   G-101 / G-112)の statement が改訂された場合、本カードは draft へ
@@ -144,11 +148,16 @@
      見込みであり、その存在自体は帰趨決定の対象としない — 無条件に
      立つ場合は正枝 payload の前段 theorem として計上する。二枝の
      分岐点は regime の失敗可能成分に固定する: refinement 脚に沿った
-     reverse transport(`f*` に沿った cartesian lift 相当)と、exact
-     側の reviewed reindexing(G-110 普遍性と G-112 semantic-global
-     reindexing — 参照のみ)に対する canonical mate 比較が natural
-     iso 水準で定義されること。負枝の非退化反例は
-     この mate / reverse transport 水準の反例であり、
+     reverse transport(`f*` に沿った cartesian lift 相当)が構成でき、
+     exact 側の reviewed reindexing(G-110 普遍性と G-112
+     semantic-global reindexing)に対する canonical mate 比較射が
+     comparison morphism(natural transformation)水準で**定義**できる
+     こと。**O12 分界**: 分岐点は定義可能性までであり、mate の
+     `IsIso` 水準の同型性・破れは主張しない(O12 = G-116 の専属責務。
+     本カードの regime が供給する mate から O12 の `IsIso` は従わ
+     ない)。負枝の非退化反例は
+     この mate / reverse transport の定義不能(要求普遍性を満たす構成
+     の非存在)の反例であり、
      `finiteExtractionRefinement_no_exact_upper_lift`(package 水準
      upper lift 障害)が素材である。pulled square の存在自体が失敗
      する場合はその反例も負枝 payload として適法とする(mate 水準の
@@ -200,7 +209,11 @@
      幾何のみ(authored 配置成分)とし、述語成立・strict 像外性・
      非可逆性・mate 不能を field に持たせない — 発火と非退化は
      theorem として生成する(ledger の資格 (v) 分離2行)。特徴付けは
-     十分性 theorem(述語 → 上記判定内容の regime 成立)を要求する。
+     十分性 theorem(述語 → 上記判定内容の regime 成立)と必要性
+     theorem(regime 成立 → 述語)の両方向を要求し、成立域との外延
+     一致まで固定する — G-112 と異なり必要性は像包含・同型不変性から
+     従わないため、独立の証明義務とする。必要性の反例固定 = 候補
+     refuted(三層状態規則に従う)。
   3. **(c) 非退化 witness**: 恒等でない refinement 射の pullback が非
      自明に立つ有限 fixture を構成する(正枝時。退化枝の場合は (b) の
      非退化反例がこれを兼ねる)。
@@ -218,7 +231,8 @@
   completeness theorem)、二枝確定 artifact(正枝: pulled square
   存在 theorem+BC 比較射+mate / reverse transport 水準の regime 型
   /退化枝: 資格条項付き成立域特徴付け+資格 theorem 群(同型不変性
-  ・閉性・像包含・発火・非退化)+十分性+非退化反例)、非退化
+  ・閉性・像包含・発火・非退化)+十分性・必要性(外延一致)+非退化
+  反例)、非退化
   witness、report
   `research/reports/G-114-aat-refinement-base-change.md`。
 - `target proof strategy`: F0 typing(圏 instance と比較 functor の
@@ -264,7 +278,8 @@
   - `二枝の帰趨確定`: `discharge-required`(支える結論 = (b)。
     discharge artifact = 正枝は pulled square 存在 theorem+mate /
     reverse transport 水準の regime 型、退化枝は資格条項付き特徴付け
-    +十分性+mate / reverse transport 水準の非退化反例。proof-use =
+    +十分性・必要性(外延一致)+mate / reverse transport 水準の
+    非退化反例。proof-use =
     反例は payload の実消費で結ぶ)。
   - `条件言語 syntax / evaluator / rebase / 正規化 completeness`:
     `discharge-required`(無条件 — F0 の language head 義務であり、
