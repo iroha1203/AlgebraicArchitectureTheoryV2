@@ -142,3 +142,68 @@ does not infer lower data from its complete upper map: the two lower composite
 laws, the mate's vertical projection, and the complete-upper factorization are
 separate declarations. They are the package-route base for K1, not a substitute
 for the still-unproved refinement-geometry legs or geometry-level triangle.
+
+## Cycle 3 — K1b indexed refinement-geometry legs
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 3
+goal_blob_sha: b307ba6dfe0c098a85160292c86999b63c8f19c1
+base_oid: 93dbf67f1896212a6cc351f089dc9424927c7090
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md target theorem clause (b), target proof strategy K1
+  proof_dag_predecessors: [Cycle 1 refinement-geometry bridge, Cycle 2 K1a composite package routes]
+  proof_obligation: Index the two actual composite routes by every target package, type individual RefinementGeometryHom legs over those routes with a definitionally fixed coefficient ring, prove their projection and lower factor laws, and expose the exact computational criterion used later to construct the geometry-level triangle. Do not store a route-between component or triangle in raw leg data.
+  selection_reason: A finite source diagram requires one route pair per vertex. The former K1a definitions were the specialization at ctx.targetPackage and could not by themselves type a vertex family.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCGeometry.lean]
+  risks: [single-target route mistaken for a finite family, dependent coefficient casts, unrelated exact lower arrow, package upper equality mistaken for full geometry equality, route-between conclusion moved into direction data]
+  unchecked: [finite presentation and source fiber diagram, route-internal edge naturality and its projection laws, actual vertical geometry components and triangles, named decision and negative problems, paired orbit and conditional exchange interface]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: K1b route indexing, individual leg typing, coefficient identity, projection and lower factor laws, and the solution-side triangle extensionality criterion are discharged. Actual geometry components and triangle inhabitants remain part of the K2 solution construction.
+  completion_candidate: no
+  lean_artifacts: [FixedCoefficientGeometryAt, ActiveRefinementBCContext.retarget, ActiveRefinementBCContext.baseCompositeLegAt, ActiveRefinementBCContext.pulledCompositeLegAt, ActiveRefinementBCGeometryLegData, ActiveRefinementBCGeometryLegData.baseLeg, ActiveRefinementBCGeometryLegData.pulledLeg, RefinementGeometryHom.exact_comp_eq]
+  evidence: [ActiveRefinementBCContext.compositeLegAt_upper_triangle, ActiveRefinementBCGeometryLegData.baseLeg_projection, ActiveRefinementBCGeometryLegData.pulledLeg_projection, ActiveRefinementBCGeometryLegData.baseLeg_lower_factor, ActiveRefinementBCGeometryLegData.pulledLeg_lower_factor, ActiveRefinementBCGeometryLegData.baseLeg_coefficient_id, ActiveRefinementBCGeometryLegData.pulledLeg_coefficient_id, standard-axiom audit]
+  claim_mapping:
+    theorem_names: [ActiveRefinementBCGeometryLegData.baseLeg_projection, ActiveRefinementBCGeometryLegData.pulledLeg_projection, ActiveRefinementBCGeometryLegData.baseLeg_lower_factor, ActiveRefinementBCGeometryLegData.pulledLeg_lower_factor, RefinementGeometryHom.exact_comp_eq]
+    source_labels: [target theorem clause (b), target proof strategy K1]
+    conjuncts: [all-target package indexing, individual actual-route geometry legs, coefficient identity, separate lower factor laws, non-core-only triangle criterion]
+    undischarged_assumptions: [finite source diagram and route-internal naturality, named actual solution and non-liftable problem, paired cochain and restricted orbit theorem, conditional orbit equivalence]
+    acceptance_point: Geometry transport remains the allowed route-internal direction hypothesis, but its base is definitionally the reviewed actual composite route and its coefficient morphism is fixed to identity. The triangle helper requires full package equality and coefficient/support/axis/observable comparisons rather than inferring geometry equality from the upper route law.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [K1b per-target route family and individual refinement-geometry leg interface, projection and lower route factor laws, geometry triangle assembly criterion]
+    remaining: [target theorem clause (b) finite problems and named positive and negative artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [route family is ctx.retarget applied to the reviewed G-112 and G-114 constructions; geometry data is explicitly classified as direction-hypothesis]
+    unresolved: [named decision and negative witnesses, paired reselection witnesses]
+  proof_use:
+    used: [Cycle 2 package routes, RefinementPackageHom base as the geometry-contract index, refinementGeometryProjection, exactGeometryToRefinementGeometry, RefinementGeomReadHom extensionality]
+    unused: [actual geometry mate component, G-109 comparator and cochain]
+  structure_field_escape: none-found — leg data contains only route-internal geometry direction data and coefficient identity; no route-between component, triangle, edge equation, comparator equation, IsIso, or non-liftability certificate
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: not-applicable — this cycle types the required nonempty per-vertex interface and does not claim a named solution
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCGeometry.lean — exit 0; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; axiom audit 49 declarations standard axioms only; source SHA-256 8cc44533649b1db6da278181c84ba2756d5d297a27e48f23693f5b2eecb6381d]
+  blocking_findings: []
+  next_obligation: K2 define the finite UpperRefinementBCProblem source fiber diagram, per-route qualified geometry data and route-internal naturality, then construct the named decision solution and named non-liftable problem without placing route-between conclusions in the raw problem.
+```
+
+`retarget` changes only the chosen target package; the configuration, compatible
+source, and realized-support condition are unchanged. Thus the two package
+routes are generated by the same reviewed G-112/G-114 constructions at every
+vertex. The geometry contracts occur over those routes as dependent indices,
+so a caller cannot satisfy the interface with an unrelated exact lower arrow.
+
+The triangle helper deliberately exposes four computational geometry
+comparisons in addition to the full package equality. Coverage, overlap, and
+the remaining proposition-valued laws are eliminated by the existing
+extensionality theorem. This helper is not an actual solution and does not turn
+the later route-between triangle into a raw-problem hypothesis.
