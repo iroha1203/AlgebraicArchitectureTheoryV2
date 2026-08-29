@@ -130,7 +130,7 @@ audits:
   vacuity: not-applicable — this cycle fixes actual routes and does not claim a geometry solution
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCRoutes.lean — exit 0; axiom audit 8 declarations standard axioms only; source SHA-256 ea3ca8e28aea2ce61988b217d25740a78eacf18dd50f94c0c745b36bbfe2f01a]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperRefinementBCRoutes.lean — exit 0; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; axiom audit 8 declarations standard axioms only; source SHA-256 ea3ca8e28aea2ce61988b217d25740a78eacf18dd50f94c0c745b36bbfe2f01a]
   blocking_findings: []
   next_obligation: K1b type the individual RefinementGeometryHom legs over these package bases, prove their projection factor laws, and construct the geometry-level factorization triangle before starting K2 finite problems.
 ```
