@@ -1,229 +1,213 @@
-# G-115-aat-upper-stage-lift — 上段 lift の非存在と relational transport contract
+# G-115-aat-upper-stage-lift — geometry-refinement bridge と上段 BC contract
 
 - `id`: `G-115-aat-upper-stage-lift`
 - `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項(O10–O11)。義務台帳は G-116、
-  source note は n1007 §3–§5。G-114 revision 3 の canonical core mate が
-  geometry 段へ一様に持ち上がるという旧 target を、actual AAT data 上の
-  no-go theorem と、持ち上がる問題に対する relational transport contractへ改訂する。
-  本カードは G-116 に named nonexact upper solution を供給し、upper summand の
-  exchange-failure branch-selection evidence とする。
-- `predecessor`: G-114 revision 3(完遂済み。active refinement context、二つの
-  core route、canonical core mate)、G-109(完遂済み。two-layer transport、
-  authored comparator、upper raw-defect cochain、reselection orbit)、
-  G-108(完遂済み。geometry の共変 transport)、G-110(完遂済み。pointed
-  pullback と reindexing)、G-106(完遂済み。defect / orbit 語彙)。
+  source note は n1007 §3–§5。G-114 revision 3 の reverse route は genuinely
+  lax な `RefinementPackageHom` 上にあるが、G-108 `GeometryTotalHom` は exact
+  `PackageTotalHom` 上にしかない。本カードはこの型の断絶を
+  `RefinementGeometryHom` として埋め、G-114 canonical core mateを初めて
+  geometry 段の有限 BC problemとして型付けする。
+- `predecessor`: G-114 revision 3(完遂済み。active refinement context、二 core
+  route、canonical core mate)、G-109(完遂済み。two-layer transport、authored
+  comparator、upper raw-defect cochain、reselection orbit)、G-108(完遂済み。
+  exact geometry transport)、G-112(完遂済み。exact selected lift / reindexing)、
+  G-110、G-106。
 - `tracking issue`: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - `source note`: [n1007](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)
-  (§3 義務台帳、§4 の global upper lift は下記 disposition で refuted)、
+  (§3 義務台帳、§4 の旧 global upper lift は下記 disposition で superseded)、
   [n1001](../../docs/note/n1001_atom_is_all_you_need_discussion.md)(§3.3 塔)、
   [G-109](G-109-aat-cross-stage-coherence.md)、
-  [G-110](G-110-aat-doctrine-fiber-product.md)、
   [G-114](G-114-aat-refinement-base-change.md)。
-- `research aim`: まず、G-114 の core mate と G-109-qualified routewise geometry
-  data だけから上段 mate を全問題へ選ぶ uniform producer が存在しないことを、
-  fixed active context 上の named geometry obstructionで証明する。次に actual
-  solution がある問題について、非可逆 solution が full automorphism orbit の
-  map を一般に誘導しないことを named counterexample で証明し、paired
-  intertwining が非可逆時にも残る正しい主張であることを固定する。最後に actual
-  natural iso solution 上では conjugation が raw cochain と actual orbit の
-  非退化な同値を与えることを示す。
-- `core tension`: G-114 reverse refinement は cartesian reindexing に由来する
-  反変作用だが、G-108 geometry transport は package hom に沿う共変作用である。
-  従って target geometry から reverse-route geometry object を自動生成する射は
-  ない。また core mate の geometry lift は存在・一意とも保証されず、一般の
-  `η : G ⟶ H` は `Aut G → Aut H` を誘導しない。さらに G-109 の authored
-  comparator は route ごとの独立入力なので、edge naturality だけでは raw-defect
-  cochain の比較も従わない。この三点を premise で覆い隠さず、非存在・lax・exact
-  の三 fixture で分離する。
-- `rival`: fibred 2-category の lift obstruction と pseudonatural transformation。
-  差は、抽象的な「lift があるなら」だけで終えず、AAT の actual active refinement、
-  geometry package、authored comparator、upper orbit において uniform section の
-  非存在と full-orbit transport の破れを有限 witnessで確定する点に置く。
-- `claim scope`: 固定 carrier `U`、固定係数、G-114 active context、その target
-  core fiber 内の finite directed root-connected presentation、二つの routewise
-  `TwoLayerTransportData` の上で語る。carrier / 係数 base change、site / cover の
-  変更、無限 diagram、component lift の canonical selection、全 solution 間の
-  choice-independence は主張しない。
-- `capability categories`: base-change、no-go、tower-lift、relational-naturality、
-  counterexample。
-- `threshold policy`: SCORE は使わない。runtime state は tracking Issue に置き、
-  fixed statement と completion criteria だけで完了判定する。
+- `research aim`: (1) complete upper readingは保つがlower arrowはlax refinementである
+  geometry morphismを定義し、圏構造、refinement packageへの射影、G-108 exact
+  geometry morphismからのembeddingを構成する。(2) このbridge上でG-114の二
+  reverse routeの個別geometry legsと、その間のactual finite upper mateを構成する
+  named decision problemを固定する。(3) 非可逆時にも意味を持つpaired upper-orbit
+  intertwiningを証明し、componentwise `IsIso` の場合だけconjugation orbit同値へ
+  昇格する。actual solutionの `IsIso` / `¬ IsIso` 評価はG-116 O12へ残す。
+- `core tension`: `RefinementPackageHom` のlower fieldは
+  `PointedRefinementHom`、`GeometryTotalHom.base` はexact `PackageTotalHom`であり、
+  G-114 active witnessはexact comparison imageの外にある。coercionや`.upper`だけの
+  一致ではroute provenanceを失う。新しいhomはlower lax refinementを実fieldに持ち、
+  context/support/axis/observable transportをそのcomplete upper readingから定義し、
+  lowerとupperのAtom equivalence一致を保持しなければならない。またG-109 authored
+  comparatorはrouteごとの独立入力なので、上段solutionはedge naturalityとは別に
+  comparator intertwiningを持つ必要がある。
+- `rival`: fibred 2-categoryのchange of baseとpseudonatural lift。差は、AATの
+  `RefinementPackageHom` とgeometry reading dataに即したlax geometry categoryを
+  構成し、actual upper cochain/orbitまで同じtyped routeで接続する点に置く。
+- `claim scope`: fixed carrierごとに構成する。G-115のupper problemでは係数objectを
+  一つに固定し、全route legs、mate components、raw edges、comparators、reselectionの
+  coefficient homをidentityに制限する。一般 `RefinementGeometryHom` の圏自体は通常の
+  coefficient homを許す。carrier / coefficient base change、site / coverの変更、
+  infinite diagram、全active contextへのupper solution、solutionのcanonicality、
+  `IsIso` 存否決定は主張しない。
+- `capability categories`: refinement-category、geometry-bridge、base-change、
+  tower-lift、relational-naturality。
+- `threshold policy`: SCORE は使わない。runtime stateはtracking Issueに置く。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、停滞なら
-  `target-blocked`、反証なら `target-refuted`、全完了条件と final review を
-  満たした場合だけ `target-theorem-proved` とする。
+  `target-blocked`、反証なら `target-refuted`、全完了条件とfinal reviewを満たした
+  場合だけ `target-theorem-proved` とする。
 - `reward rubric`: `not-applicable (target-theorem mode)`。
-- `frontier`: liftable problems の intrinsic classification、canonical selection、
-  refinement geometry cleavage、係数 base change、無限 diagram。
+- `frontier`: 全active contextでのliftability classification、canonical cleavage、
+  solution choice-independence、carrier / coefficient base change、無限diagram。
 
 - `revision disposition`:
   - revision 1 の arbitrary `ActiveRefinementBCContext` / arbitrary
-    `TwoLayerTransportData` からの global `GeomRead` lift は、両者の semantic
-    connection と reverse geometry primitive を欠くため `goal-defect` となった
-    (Issue #4250 comment `5462812441`)。
-  - revision 2 の regime 初稿は G-108 の共変 push を G-114 の反変 route に使用し、
-    非可逆 mate から full orbit map を要求したため棄却した。
-  - revision 2 の coherence-obstruction 案は component liftsを caller supply にし、
-    canonical upper BC の存在問題を解かないまま Gr4 O10 と数えていた。また独立
-    authored comparator を障害に含めず raw-cochain theoremが偽だったため棄却した。
-  - 現 revision 2 は人間承認の negative branch として、旧 universal liftを
-    **refuted** と確定し、solution-relative な最大 contractと exact / nonexact
-    witnessを残す。旧 target と同じ強さだとは主張しない。
+    `TwoLayerTransportData` からのglobal `GeomRead` liftはsemantic connectionと
+    geometry-over-refinement homを欠き `goal-defect` となった(Issue #4250 comment
+    `5462812441`)。意味未確定だった旧claimをrefutedとは呼ばず、supersededと記録する。
+  - revision 2 regime初稿はG-108の共変exact pushをG-114の反変lax routeに使用し、
+    非可逆mateからfull orbit mapを要求したため棄却した。
+  - revision 2 coherence/no-go案はlax refinement legをexact `GeometryTotalHom` として
+    記述して型付かなかった。またG-115内で`¬ IsIso`を評価してO12を先取りしたため
+    棄却する。
+  - 現revision 2は欠落primitiveそのものをfixed targetとし、G-116へは評価前のactual
+    `upperDecisionSolution`だけを供給する。
 
-- `target theorem`: **Upper-Stage Lift No-Go and Relational Transport Theorem**。
-  G-114 の `ctx : ActiveRefinementBCContext` を使って次を構成・証明する。
+- `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
+  Naturality Theorem**。次を構成・証明する。
 
-  1. **(a) raw problem と actual solution**:
-     `UpperLiftProblem ctx` は次だけを持つ。
-     - finite presentation `P`、root、全 vertex への directed `P.Path root i`。
-     - G-114 mate の domain fiber内の共通 source two-layer geometry diagram
-       `sourceData`。その core diagramを `D` とし、root objectは
-       `ctx.targetPackage` と一致する。
-     - `D` を G-114 の二 core route functorで送った base / pulled core diagram。
-     - 各 route core diagramを射影とする二つの G-109-qualified
-       `TwoLayerTransportData P U`。各 route geometry diagramから
-       `sourceData` への component familyを actual `GeometryTotalHom` として持つ。
-       base route legのcore射影は G-112 exact selected lift と G-114 base
-       refinement selected liftの合成、pulled route legのcore射影は G-114 pulled
-       refinement selected lift と G-112 exact selected liftの合成に固定し、各
-       route内のedge naturalityは両段のmap-factor lawを実消費して証明する。
-       これは二つの reverse routeを個別に realizationする
-       direction hypothesisであり、route間の mate componentを含まない。全三
-       geometry diagramの係数を同じ objectへ同定し、全 raw edgeの coefficient
-       homはidentityとする。
+  1. **(a) geometry-over-refinement category**:
+     同じ `GeometryPackage U` をobjectとし、morphism
+     `RefinementGeometryHom G H` が次を持つcategory
+     `RefinementGeometryCategory U` を定義する。
+     - `base : RefinementPackageHom ⟨G.core⟩ ⟨H.core⟩`。
+     - coverage、overlap、coefficient hom、raw equality、support / axis /
+       observable comparisonとreading preservation / naturality。index mapは
+       `base.upper : SignedExactCoreReadingHom G.core H.core` から定義し、存在しない
+       exact lower `ExtInstHom` を補わない。
+     - geometry comparisonが使うAtom mapと`base.base.doctrineHom.atomEquiv`の一致。
 
-     raw problem は**route間**の geometry component lift、route間 edge
-     naturality、route間 comparator compatibility、`IsIso`、reselection / orbit
-     lawを持たない。個々の reverse legのrealizationと、二route間comparison
-     solutionを混同しない。
+     identity / composition / associativityを証明し、lower lax refinementを忘れる
+     functor
+     `refinementGeometryProjection : RefinementGeometryCategory U ⥤
+       RefinementPackageTotalCategory U`
+     を構成する。さらにG-108 exact morphismを
+     `PointedRefinementHom.ofExact`経由で送るfaithful functor
+     `exactGeometryToRefinementGeometry : GeometryTotalCategory U ⥤
+       RefinementGeometryCategory U`
+     を構成し、geometry fields、identity、composition、projection squareの可換を
+     証明する。exact morphismの単なる別名や、無関係なexact lower legを追加する
+     構成は禁止する。
 
-     `UpperLiftSolution problem` は、各 vertex の `GeometryTotalHom` が
-     `ctx.mate.app (D.package i)` へ射影すること、base reverse geometry legが
-     「mate componentの後に pulled reverse geometry leg」を通る合成と等しい
-     (`ηᵢ ≫ pulledLegᵢ = baseLegᵢ`)
-     geometry-level factorization triangle、各 edge の mate naturality、G-109
-     authored comparatorを含む two-cell intertwining、nil / append / pasting
-     coherenceを持つ actual finite upper mateとする。factorization triangleと
-     comparator intertwiningをedge naturalityの系とはせず、solution の独立
-     equationsとして完全 signatureに列挙する。`UpperLiftable problem := Nonempty (UpperLiftSolution problem)` は
-     domain predicateに過ぎず、その abbreviationや constructor / projectionを
-     O10 の成果と数えない。
+  2. **(b) G-114 route上のfinite upper problemとactual solution**:
+     `UpperRefinementBCProblem ctx` はfinite presentation `P`、root、全vertexへの
+     directed `P.Path root i`、common source two-layer geometry dataを持つ。source
+     core diagramをG-114の二core routeで送ったbase / pulled route core diagramsと、
+     それらを射影とする二つのG-109-qualified `TwoLayerTransportData`を持つ。
+     各route geometry diagramからsource geometry diagramへのlegは
+     `RefinementGeometryHom` familyとし、base legのlower射影はG-112 exact selected
+     liftとG-114 base refinement liftの合成、pulled legのlower射影はG-114 pulled
+     refinement liftとG-112 exact selected liftの合成に固定する。各route内のedge
+     naturalityはG-112 / G-114のmap-factor lawsへ戻す。全係数identity条件を完全
+     signatureに含める。raw problemはroute間component、route間naturality、
+     comparator equation、`IsIso`、orbit lawを持たない。
 
-  2. **(b) uniform lift no-go (O10 negative branch)**:
-     callerから不成立証明を受け取らず、named
-     `upperNoLiftContext : ActiveRefinementBCContext` と
-     `upperNoLiftProblem : UpperLiftProblem upperNoLiftContext` を構成する。
-     fixture は fixed coefficient、nonempty geometry、directed root-connected、
-     nonidentity active refinement / strong edgeと、個別にはrealizedされた二つの
-     reverse geometry legsを持つ。root component
-     の source / target geometry は同じ fixed coefficient上に置き、support / axis /
-     observable の明示計算から、その core mateを射影とする
-     `GeometryTotalHom` が存在しないことを証明する。G-108 の向きが異なる固定
-     `not_hGeom` fixture を名前だけ再利用しない。
+     `UpperRefinementBCSolution problem` はvertexごとのvertical
+     `GeometryTotalHom` componentを持ち、そのbaseが
+     `ctx.mate.app`、coefficient homがidentityであることを要求する。各componentを
+     `exactGeometryToRefinementGeometry`でbridge categoryへ送り、
+     `ηᵢ ≫ pulledLegᵢ = baseLegᵢ` というgeometry-level factorization triangle、
+     route間edge naturality、G-109 authored comparator intertwining、nil / append /
+     two-cell pastingを独立equationsとして持つ。
 
-     これから `¬ UpperLiftable upperNoLiftProblem` と、全 active context / raw
-     problemへ solutionを返す dependent section の非存在
-     `¬ Nonempty (∀ ctx, (p : UpperLiftProblem ctx) → UpperLiftSolution p)` を証明する。
-     これが revision 1 global upper lift の fixed refutationである。
+     caller-supplied solutionをO10放電と数えない。named
+     `upperDecisionContext`、`upperDecisionProblem`、
+     `upperDecisionSolution`をtheorem artifactとして構成する。fixtureはgenuinely lax
+     active refinement(exact comparison image外)、root-connected、nonidentity
+     refinement / strong edge、nonidentity comparator / raw cochain、係数成分identityを
+     持つ。solution componentの`IsIso`または否定は本カードで証明しない。
 
-  3. **(c) nonexact solution と relational contract (O11 negative branch)**:
-     別の named `upperLaxProblem` と actual `upperLaxSolution` を構成する。
-     solution は root-connected、nonidentity edge / mate component / authored
-     comparator / raw cochainを持ち、少なくとも一つの mate componentは
-     `¬ IsIso` と具体評価する。
+     別に、nonempty geometry endpointsとindividual refinement-geometry legsを持つが
+     route間solutionを持たないnamed problemを構成し、全active contextへのupper
+     solutionを主張していないことをactual negative witnessで固定する。この負例は
+     `UpperRefinementBCSolution`の不在をsupport / axis / observableの具体評価で証明し、
+     certificateをproblem fieldに持たせない。
 
-     solution に対し、base / pulled upper reselectionsが各 mate componentおよび
-     authored comparatorと intertwineする paired relationを定義する。relationが
-     identity、vertical composition、path concatenationで閉じ、relationを満たす
-     pairについて `upperRawDefectCochain` が componentwise intertwineし、actual
-     `InUpperReselectionOrbit` membershipがpairedに保存されることを証明する。
+  3. **(c) actual paired orbit intertwining**:
+     任意のactual solutionについて、base / pulled upper reselectionsがsolution
+     components、factorization triangle、authored comparatorとintertwineし、かつ
+     coefficient componentがidentityであるpaired relationを定義する。identity、
+     vertical composition、path concatenationでの閉性、`upperRawDefectCochain`の
+     componentwise intertwining、actual `InUpperReselectionOrbit` membershipのpaired
+     preservationを証明する。proof bodyはleg triangle、edge equation、comparator
+     equationを別々に実消費し、core-only transportで閉じない。
 
-     さらに `upperLaxProblem` の固定 base reselection `rBad` を構成し、これと
-     intertwineする pulled reselectionが存在しないことを証明する。
-     `SolutionCompatibleOrbitTransport solution` を、全 base reselectionに
-     intertwining partnerを選ぶ total selector、そのselectorから誘導される cochain
-     map、`upperRawDefectCochain` commuting、その特定mapについての `Set.MapsTo` を
-     一体化した structureとして定義し、`¬ Nonempty
-     (SolutionCompatibleOrbitTransport upperLaxSolution)` を証明する。bareな群準同型、
-     bareな関数、bareな `Set.MapsTo` の非存在は主張しない。単なる「一般の射から
-     群準同型は作れない」という外部一般論ではなく、AAT の
-     `CompositeFiberAut` と actual upper cochainを用いた有限計算で示す。
+     `upperDecisionSolution` 上でnonidentity comparator / cochain / coefficient-trivial
+     reselectionを持つnamed intertwined pairを構成し、relationとcochain theoremを
+     非退化発火させる。full orbit map、selector、`Set.MapsTo`は無条件に主張しない。
 
-  4. **(d) exact solution と actual orbit equivalence**:
-     第三の named `upperExactProblem` と `upperExactSolution` を構成する。全 mate
-     componentsは `IsIso`、少なくとも一つは identityでなく、route edge、authored
-     comparator、raw cochain、reselectionも非恒等とする。componentwise
-     conjugation / inverse conjugation、両側 inverse law、solution の comparator
-     equationを実消費する `upperRawDefectCochain` commuting、actual orbit の
-     direct-image equality / equivalenceを証明する。
+  4. **(d) exchange-exactness conditional interface**:
+     `UpperStageExchangeExact solution : Prop` を全vertical geometry componentsの
+     `IsIso` と定義する。これを仮定した場合だけ、coefficient-trivial reselectionの
+     componentwise conjugation / inverse、両側inverse law、solution comparator
+     equationを実消費するraw-cochain commuting、actual orbit direct-image equality /
+     equivalenceを証明する。`upperDecisionSolution`についてこのpredicateも否定も
+     証明せず、G-116 O12がactual component計算で決定する。
 
-     `UpperStageExchangeExact solution : Prop` は全 component の `IsIso` と定義する。
-     exactness は**選ばれた actual solution相対**であり、canonical core mateの
-     choice-independent propertyとは呼ばない。`upperLaxSolution` はその否定、
-     `upperExactSolution` はその肯定を供給する。
-
-- `target theorem scope`: Lean 置き場所は
-  `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。
-  G-108〜G-110、G-114 の reviewed module は参照のみ。Research aggregate / full
-  build は禁止し、direct dependency DAG と focused file checkだけを使う。
-- `target proof artifacts`: `UpperLiftProblem`、`UpperLiftSolution`、
-  `UpperLiftable`、named `upperNoLiftProblem` / `not_upperLiftable` / no-uniform-section、
-  named `upperLaxSolution` / non-`IsIso` / `rBad` /
-  `SolutionCompatibleOrbitTransport` no-go、paired reselection・
-  raw-cochain・actual orbit theorem、named `upperExactSolution` / nonidentity firing /
-  conjugation orbit equivalence、`UpperStageExchangeExact`、report
+- `target theorem scope`: Lean置き場所は
+  `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新module。
+  G-108 / G-109 / G-112 / G-114 reviewed modulesは参照のみ。Research aggregate /
+  full buildは禁止し、direct dependency DAGとfocused file checkだけを使う。
+- `target proof artifacts`: `RefinementGeometryHom` / category / projection、exact
+  faithful embeddingとprojection square、`UpperRefinementBCProblem` /
+  `UpperRefinementBCSolution`、named `upperDecisionProblem` / solution、named
+  non-liftable problem、coefficient-trivial paired reselection relation / cochain /
+  actual orbit theorem、nonidentity intertwined firing、`UpperStageExchangeExact`
+  conditional conjugation/orbit equivalence、report
   `research/reports/G-115-aat-upper-stage-lift.md`。
-- `target proof strategy`: F0 で共通 source core diagram、二 functor image、二
-  routewise G-109 data、solution equationsの完全signatureを固定する。K0 vertical
-  geometry no-lift fixtureとuniform section反証、K1 nonexact solutionと unmatched
-  automorphism、K2 paired cochain theorem、K3 exact solutionとconjugation equivalence、
-  K4 declaration map・premise・proof-use・axiom・nonvacuity監査。
-- `target theorem completion criteria`: 全 artifact が sorry なしで ResearchLeanに
-  受理され、axiom / placeholder auditがcleanであること。material premise ledgerを
-  放電し、三 fixtureの値と相互非同一性、G-114 mate / G-109 comparator / actual
-  cochainのproof-useを監査すること。各実装PRのfixed-head `$review-pr` とcompletion
-  candidateの独立 `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ
-  完了とする。
+- `target proof strategy`: F0で`RefinementPackageHom.upper`からgeometry index mapsを
+  定義しhom/category/projection/exact embeddingをfocused checkする。K0 category lawsと
+  exact comparison、K1 G-114 composite legs / factorization triangle、K2 named decision /
+  negative problems、K3 paired cochain theoremとconditional conjugation、K4 premise /
+  proof-use / axiom / nonvacuity監査。
+- `target theorem completion criteria`: 全artifactがsorryなしでResearchLeanに受理され、
+  axiom / placeholder auditがcleanであること。material premise ledgerを放電し、
+  G-114 lower lax arrows、bridge projection、leg triangle、G-109 comparator、actual cochainの
+  proof-useを監査する。各実装PRのfixed-head `$review-pr` とcompletion candidateの独立
+  `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ完了とする。
 
 **Target material premise ledger**
 
 | premise | class | provenance / proof-use / discharge |
 |---|---|---|
-| G-114 active context / mate | ambient | PR #4246 fixed head `8f7ad8bf`、merge `3d26d993`。共通sourceの二routeとcore mateに使用。geometry liftは含まない |
-| G-109 routewise data | ambient | reviewed raw two-layer problem。strong edge、two-cell、authored comparatorの語彙。route間comparator equationは含まない |
-| raw `UpperLiftProblem` | direction-hypothesis | common source geometry diagram、二functor image、各reverse legの個別geometry realization、fixed coefficientだけ。route間solution dataを持たず、個別legの存在はO10放電と数えない |
-| `UpperLiftSolution` | conditional-domain | paired / exact theoremのactual input。solution existenceをO10放電とは数えない。geometry-level leg factorization triangleとcomparator equationを独立に明示する |
-| named no-lift fixture / no uniform section | discharge-required | vertical geometry obstructionを具体評価し、旧global liftをrefuteする |
-| named nonexact solution / no-selector | discharge-required | non-`IsIso` componentとunmatched actual automorphismを具体評価する |
-| paired cochain / orbit theorem | discharge-required | solutionのleg triangle、edge equation、authored comparator equationをproof bodyで別々に実消費する。bare `Set.MapsTo` 不存在は主張しない |
-| named exact solution / orbit equivalence | discharge-required | nonidentity cochain上でconjugationとinverseを実計算する |
+| G-114 active context / mate | ambient | PR #4246 fixed head `8f7ad8bf`、merge `3d26d993`。二lax route、composite lower legs、core mateに使用。geometry bridgeは含まない |
+| G-108 geometry contract | ambient | exact geometry fieldsの語彙とlaws。lax lower homは含まないため、そのままroute legに使わない |
+| G-109 two-layer / orbit data | ambient | strong edges、authored comparator、actual cochain / orbitの語彙。route間equationsは含まない |
+| `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
+| raw upper problemのindividual legs | direction-hypothesis | bridge hom familyとroute内naturality。route間solutionを含まず、O10放電とは数えない |
+| named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。certificate payload不可 |
+| paired cochain / orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する |
+| conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
 
 **受入禁止**
 
-- geometry component lift、edge naturality、comparator equation、`IsIso`、no-lift証明、
-  unmatched automorphismを raw problem の field に入れる。
-- `UpperLiftable` の展開、solution constructor / projection、empty / discrete / identity-only
-  fixtureだけで O10 / O11 を放電する。
-- G-108 の共変 push を G-114 reverse routeの生成と呼ぶ、またはG-108の非vertical
-  negative fixtureをG-114 vertical mateと同一視する。
-- 非可逆 solutionからfull orbit mapを仮定する。exact solution相対の結論をcanonical
-  core mateのchoice-independent exactnessと記録する。
-- authored comparator equationをedge naturalityから自動生成する。
+- lax refinement legを`GeometryTotalHom` / `PackageTotalHom`へcoerceする、`.upper`だけを
+  合わせてlower provenanceを捨てる、無関係なexact lower legを追加する。
+- raw problemにroute間component、triangle、edge/comparator equation、`IsIso`、
+  non-liftability certificateを入れる。
+- coefficient typeの一致だけで「係数固定」とし、legs / components / edges /
+  comparators / reselectionsのcoefficient homをidentityにしない。
+- `upperDecisionSolution`の`IsIso` / `¬ IsIso`をG-115で決め、O12を先取りする。
+- extent / membership iff、empty / discrete / identity-only fixture、solution projection、
+  core-only theoremだけでO10 / O11を放電する。
 
 **停止条件**
 
-- `goal-defect`: 共通 source diagramと二route image、またはsolutionのedge/comparator
-  equationsが既存signatureで型付かない。
-- `target-refuted`: named no-lift、nonexact no-selector、exact nontrivialのいずれかが
-  構成不能、またはpaired/cochain/conjugation theoremに反例がある。
+- `goal-defect`: `RefinementPackageHom.upper`だけではG-108 geometry index mapsを
+  functorially定義できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
+- `target-refuted`: category laws、named actual solution、named non-liftable problem、
+  paired/cochain theoremのいずれかに反例がある。
 - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
   exact declarationと最小dependency DAGをIssueに固定した場合。
-- `target-theorem-proved`: 全artifact、三fixture、監査、PR merge、台帳同期、final
+- `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
   4査読を完了した場合だけ。
 
 - `stop reason`: なし(active)。
-- `next action`: F0 で `UpperLiftProblem` / `UpperLiftSolution` のLean signatureを
-  固定し、named vertical no-lift fixture、nonexact unmatched automorphism、exact
-  solutionの三候補を既存finite witnessから探索する。
+- `next action`: F0で`RefinementGeometryHom`のcoverage/context mapsを
+  `RefinementPackageHom.upper`から定義できるかをLean signatureで固定し、category
+  compositionとexact embeddingをfocused checkする。
