@@ -3,12 +3,85 @@
 - 一次仕様: [`research/goals/G-113-aat-diagnostic-conservativity.md`](../goals/G-113-aat-diagnostic-conservativity.md)
 - tracking Issue: [#4204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204)
 - target theorem: Indexed Diagnostic Transport Equivalence and Orbit Exactness Theorem
-- proof state: `target-proof-checkpoint`
-- completion candidate: `yes`
+- proof state: `target-theorem-proved`
+- completion candidate: `yes (formal math-lean-review: No major findings)`
 
 この report は revision 2 の固定 GOAL に対する proof obligation delta と
 Lean 証拠索引を記録する。target statement と completion criteria は GOAL
 カードを正本とし、revision 1 report は上書きしない。
+
+## Completion judgment(final、2026-08-28)
+
+- fixed GOAL blob SHA: `d490685ece406d5b17ccc63b3d35ff990bc34c5d`
+- fixed GOAL SHA-256:
+  `beb27f46da767f0fef80eed45b502698c28f1651c6325fe19041944d84436e47`
+- 完了 PR: [#4233](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4233)
+  (head `76e586118578cb615bc52f09718e9e2ab65277ad`、merge
+  `7083db0da217c775cec2bff8b76bca1ebbe5b5c3`)
+- report / Issue 同期 PR:
+  [#4234](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234)
+  (head `cb1aefb41ba1ce4c65d4bc55efcbf478566eca6d`、merge
+  `f737a470f4879e5cb727057b01798fdd8174fc20`、exact final tree
+  `fe63d9298cdfdfe874ec0218d1c9e5943f93f368`)
+- standard exact-head PR gate: `Mergeable`
+  ([PR #4233 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4233#issuecomment-5453692797)、
+  [PR #4234 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453887137))
+- corrected-schema same-merge-head final packet:
+  [PR #4234 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453953468)
+  (exact command correction:
+  [comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453961987)、
+  focused / static / CI evidence:
+  [comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453932119)、
+  policy scan:
+  [comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453976846)
+  /
+  [comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5453979664))
+- formal completion review: 独立4 lane(Math A / Math B / Lean A /
+  Lean B)全て `No major findings`
+- formal completion ledger: 全 completion gate pass・残 obligation /
+  blocker / unchecked central claim なし・root recheck pass
+  ([PR #4234 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4234#issuecomment-5454070326))
+- tracking Issue 完了記録:
+  [#4204 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4204#issuecomment-5454074795)
+  (Issue #4204 は user policy で OPEN 維持)
+- exact-head CI: PR #4233・#4234 とも 7/7 success
+- 公理監査: `DiagnosticConservativity` 全27 source module の focused
+  Lean check(`check_research_modules.sh --focused`)で standard axioms
+  のみ pass、focused hash `63ba0894` 再現(Research aggregate / full
+  build は hard rule に従い未実行)
+- 固定 target (a)–(i)(担当義務 O13–O18・O20): 全放電 — Cycle 1–4 =
+  F0 push / reindex alignment・ambidextrous bridge・unit / counit
+  package・explicit vertexwise equivalence と categorical producer、
+  Cycle 5–8 = endpoint / reselection / coherence / obstruction
+  exactness、Cycle 9–10 = raw-defect cochain・orbit exactness、Cycle
+  11–25 = identity / composition / whole-unit / whole-pentagon /
+  path-square / horizontal-pasting coherence と downstream 伝播、Cycle
+  26(corrected)= cellwise pasting cube と downstream 導出、Cycle 27 =
+  base-IsIso independence と finite nondegeneracy、Cycle 28 =
+  exact-head completion packet
+- material premise: `discharge-required` は全て discharged(G-110
+  cocartesianness bridge、push / reindex alignment、Full / Faithful /
+  EssentiallySurjective producer、unit / counit triangle、endpoint /
+  reselection inverse、coherence / vanishing inverse、raw-defect
+  cochain equivalence、orbit inverse、identity / composition / square /
+  pasting coherence、finite witness firing、base IsIso relation)。
+  `ambient-boundary`(G-111 / G-112 / revision 1 reflection package)は
+  放電クレジットなしの入力分類のままで、revision 1 は語彙参照のみ
+  (theorem body の completion credit なし)。
+  `conclusion-equivalent-risk`(finite raw data)は raw fixture のみで
+  受理(結論事実は全て別宣言で証明、structure-field escape
+  `none-found`)
+- Cycle 28 review history: 初回 packet(head `34c75e22`)= Major
+  revisions(conjunct (d) が revision 1 `indexedCoherentAt_reflect` を
+  proof-use)→是正、再走1(head `d7b9d88e`)= Major revisions
+  (conjunct (e) の named corollary が revision 1 reflection 経路の宣言に
+  対応付け)→是正、再走2(head `e555e643`)= Minor issues(Cycle 7
+  履歴の原経路復元)→直接確認 pass(head `76e58611`)、統合判定
+  `No major findings`
+- revision 1(`target-refuted`)の記録は
+  [revision 1 report](G-113-aat-diagnostic-conservativity.md) と Issue
+  #4198 を正本とし、本 completion judgment は revision 2 のみを対象と
+  する
 
 ## Cycle ledger
 

@@ -18,13 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
-  (revision 2、Gr4 完遂 gate 第五項: G-111 `indexedFiberAction` と G-112
-  semantic-global reindexing の explicit equivalence、endpoint / reselection /
-  raw-defect cochain / orbit exactness、identity・composition・pasting coherence、
-  `Full` / `Faithful` / `EssentiallySurjective` decomposition、非 `IsIso` base
-  上の有限非退化 witness (a)–(i)。revision 1 の class 分類 target は
-  `target-refuted` の歴史証拠として保持。依存先 G-111 / G-112 は完遂済み)
 
 ## draft（人間の確認待ち）
 
@@ -32,8 +25,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
 - [G-116-aat-gr4-capstone](G-116-aat-gr4-capstone.md)
   (以上3枚 = Gr4 完遂 gate 5項を閉じる単責務ラインナップの後続
-  (第一手 G-111・第二手 G-112 は完遂済み、第三手 G-113 は
-  active)。
+  (第一手 G-111・第二手 G-112・第三手 G-113 は完遂済み)。
   義務台帳の正本 = G-116 カード、設計の source note = n1007。昇格は一枚ずつ、
   G-116 は G-111〜G-115 の全帰趨確定後。昇格前の裁定事項: G-115 =
   `ObProblem` の Lean 指示対象)
@@ -55,6 +47,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-110-aat-doctrine-fiber-product](G-110-aat-doctrine-fiber-product.md)
 - [G-111-aat-indexed-base-change-schema](G-111-aat-indexed-base-change-schema.md)
 - [G-112-aat-exact-bottom-coverage](G-112-aat-exact-bottom-coverage.md)
+- [G-113-aat-diagnostic-conservativity](G-113-aat-diagnostic-conservativity.md)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
