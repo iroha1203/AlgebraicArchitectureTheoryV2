@@ -444,6 +444,12 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   regression の三例、(f) actual target package と、fixed condition が
   生成した local regime から
   `ActiveRefinementBCContext` と canonical mate を供給する。
+  active reverse witness の非恒等 observable は、refinement を射影する
+  cartesian lift edge の upper Atom equivalence に置く。canonical mate は
+  同一 fiber 内の垂直 coherence なので、その Atom action の非恒等性は
+  要求せず、両経路から実際に構成・package 上で評価されることを要求する。
+  これにより Gr4 では水平 refinement transport が非恒等性を、垂直 mate
+  が経路 coherence を担う。
 - **錨**: `RefinementDoctrineHom` / `finiteExtractionRefinement` 系
   (`AtomFoundation/Doctrine.lean`・`RefinementObstruction.lean`)、
   G-110 (A) fiber product 構成・`pointedPullback_isPullback`
@@ -451,8 +457,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   閉性 constructor、G-112 semantic-global cleavage / reindexing
   (mate 比較の exact 側 — §5 依存 DAG の G-112 → G-114 辺)、
   G-101/G-109 `coreFiberTransportObj`(pulled support を exact projection
-  に沿って base support へ送る共変 route。G-109 fixed reviewed head
-  `b5ca4630`)。
+  に沿って base support へ送る共変 route。G-101 fixed reviewed head
+  `db47ee9e`、merge `dd5e02b5`、G-109 fixed reviewed head `b5ca4630`)。
 - **供給契約**: G-115 と G-116 に
   **`ActiveRefinementBCContext` と canonical base / pulled mate** を
   供給する。forward-only / inactive refinement は O12 の mate 量化域に
@@ -614,7 +620,8 @@ G-110 / G-109 / G-108 ─────────────────┘
   は exact 側で G-112 の semantic-global reindexing を proof-use 消費
   する(G-110 内部宣言からの再建はしない — 経路の一意化)。pulled
   support → base support は G-109 の reviewed `coreFiberTransportObj`
-  を proof-use する。G-112 の coverage 分類結果は G-114 /
+  を G-101 の canonical covariant package transport とともに proof-use
+  する。G-112 の coverage 分類結果は G-114 /
   G-115 の量化域を変更しない(G-110 固定の realization 付き入力上で立つ)。
 - G-112 の G-111 依存はカード起票レビューで観察参照へ降格した。
   G-113 revision 2 は G-111 の covariant action と G-112 の

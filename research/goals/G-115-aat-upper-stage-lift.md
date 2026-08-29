@@ -6,7 +6,7 @@
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項の担当カード(担当義務 =
   O10–O11。義務台帳の正本は G-116 カード、設計の source note は n1007
-  §3–§5)。G-114 revision 2 が供給する
+  §3–§5)。G-114 revision 3 が供給する
   `ActiveRefinementBCContext` に依存する。上段 lift は任意の raw
   refinement ではなく、実際の target package と canonical mate を持つ
   active context 上でのみ構成する。
@@ -18,7 +18,7 @@
   が改訂された場合、本カードは draft へ差し戻して再固定する(伝播
   規定)。**昇格前 gate: `ObProblem` の Lean 指示対象の裁定**
   (semantic adequacy 条件は target theorem (c))。
-- `predecessor`: G-114 revision 2(完遂後の fixed reviewed head。
+- `predecessor`: G-114 revision 3(完遂後の fixed reviewed head。
   active refinement context・base/pulled mate の唯一の供給元)、
   G-110(完遂済み。pointed pullback・reindexing
   functor。固定錨は下記 ledger 行)、G-109(core pseudofunctor
