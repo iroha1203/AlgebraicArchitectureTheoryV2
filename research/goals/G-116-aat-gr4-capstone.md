@@ -25,8 +25,8 @@
   [docs/note/n1005_aat_semantic_geometry_route_after_g107.md](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 exchange-failure 義務)、
   [G-110 カード](G-110-aat-doctrine-fiber-product.md)(gate (iv)・(C) 移管文)
 - `research aim`: 二つ。(1) G-110 が未決定の問いとして残した IsIso
-  水準の Beck–Chevalley exchange-failure の存否を、実際に canonical
-  mate が定義された refinement / 上段 context で決定する。(2) Gr4
+  水準の Beck–Chevalley exchange-failure の存否を、actual authored
+  comparison / refinement mate / 上段solutionが定義されたcontextで決定する。(2) Gr4
   完遂義務の台帳(下記 O1–O20)を
   先行カードの成果と突合し、Gr4 達成を範囲併記付きで記録する。
 - `core tension`: 存否決定の核心は既決と未決の分界にある — G-110
@@ -51,7 +51,7 @@
 - `claim boundary`: 各 summand の carrier は context とともに dependent sumへ
   包装し、その summand 内では固定する。carrier間の射やcarrier changeは語らない。
   係数は各context内で固定し、終対象・絶対積は導入しない。量化域は、carrierを
-  内包する mate-bearing G-110 sector、G-114 `ActiveRefinementBCContext`、
+  内包するG-110 `AuthoredBCDatumSquare`、G-114 `ActiveRefinementBCContext`、
   G-115 が構成した actual `UpperRefinementBCSolution` からなる
   非index型 `Gr4ExchangeContext` とする。本カードは
   upper solutionを新設しない。G-114 の forward-only / inactive refinement と
@@ -93,8 +93,10 @@
   作り、active 昇格時に次のどちらか一方だけを fixed target として採択する:
   1. **Universal Exchange Exactness Theorem**: 全
      `c : Gr4ExchangeContext` について `ExchangeExact c`。
-     `ExchangeExact` は G-110 / G-114 summand では actual canonical mate の
-     `IsIso`、G-115 upper summand では選ばれた actual solution の全 vertex
+     `ExchangeExact` はG-110 summandでは
+     `generatedAuthoredDiagnosticObjectCollapseComparison input`の`IsIso`、
+     G-114 summandではactual canonical refinement mateの`IsIso`、
+     G-115 upper summandでは選ばれたactual solutionの全vertex
      component に `IsIso` を要求する `UpperStageExchangeExact` として casewise に定義
      する。proof body は tagged sum の各成分で mate の構成と比較式を実使用し、
      成分別非退化 witness 上でも発火しなければならない。
@@ -110,7 +112,7 @@
   採択後、他方の branch は theorem の conjunct でも disjunct でもない。
 
   共通する量化域と実質条件は次のとおり:
-  - `Gr4ExchangeContext` を、`Σ U,` mateを伴うG-110 sector、`Σ U,`
+  - `Gr4ExchangeContext` を、`Σ U, AuthoredBCDatumSquare U`、`Σ U,`
     G-114 `ActiveRefinementBCContext U`、および G-115 theorem artifact
     `upperDecisionSolution` をconstructorに持つ `G115NamedUpperContext` の
     tagged sumとして定義する。named solutionの concrete carrierはそのconstructorが
@@ -118,8 +120,10 @@
     任意 caller-supplied solutionを payload として量化域へ追加しない。量化域は
     この型に固定し、**authored
     datum 付き lax square を含める**。
-  - 既決 / 未決の分界: G-110 sector の pullback square 上の mate 同型は
-    証明済みの正例であり、存否の未決部分は lax square と active
+  - 既決 / 未決の分界: G-110のcomparator-free
+    `authoredSupportCanonicalMate`の同型性は証明済みの正例であり、G-110 summandで
+    判定するのはauthored datumを実消費する
+    `generatedAuthoredDiagnosticObjectCollapseComparison`である。存否の未決部分はこのlax squareとactive
     refinement / upper-stage context 側にある。負例枝 witness の居住域を
     そこに限定する。
   - **成分別の実質**: universal branch では量化域の各成分ごとに
@@ -168,8 +172,9 @@
   を固定 → 人間承認の active revision で universal theorem または named
   failure theorem の一方を fixed target 化 → K2 その theorem を証明 →
   K3 台帳突合と達成記録。既存成果の
-  利用 map: G-110 `MateCoherentRel` 正負対と TargetTheorem の mate
-  exactness(既決正例の分界)、G-114
+  利用 map: G-110 `generatedAuthoredDiagnosticObjectCollapseComparison`、
+  `MateCoherentRel`正負対、TargetTheoremのcanonical mate
+  exactness(比較対象と既決正例の分界)、G-114
   `ActiveRefinementBCContext`、G-115 `RefinementGeometryHom` /
   `UpperRefinementBCSolution` / `upperDecisionSolution` /
   `UpperStageExchangeExact` / conditional
@@ -237,7 +242,7 @@
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
 | O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、G-114 two-route finite upper problem / actual solution、named decision solutionとnamed non-liftable problem | G-115 |
 | O11 | actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・restricted actual suborbit preservation、`UpperStageExchangeExact` 条件付きconjugation・raw-cochain commuting・restricted suborbit equivalence | G-115 |
-| O12 | `Gr4ExchangeContext` の actual mate-bearing sector / active refinement / G-115 `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
+| O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | G-113 |
@@ -308,12 +313,12 @@
   放電と数えない。達成記録は先行カードの reviewed 成果の突合であり、
   未完遂義務の宣言的充足を認めない。
 - `target material premise ledger`:
-  - `G-110 reviewed artifact(MateCoherentRel 正負対・mate
-    exactness)`: `ambient-boundary`。参照のみ、改変しない。固定錨:
+  - `G-110 reviewed artifact(generated authored comparison・MateCoherentRel正負対・
+    canonical mate exactness)`: `ambient-boundary`。参照のみ、改変しない。固定錨:
     DoctrineFiberProduct = 完了 PR #4153(final head `a1471483`、
-    merge `315a2537`)(支える結論 = 既決正例の分界。結論相当でない
-    理由 = 既証明の環境であり、本カードの未決部分の決定はここから
-    従わない)。
+    merge `315a2537`)(支える結論 = G-110 authored inputと判定対象comparison、
+    canonical mateという既決正例の分界。結論相当でない理由 = generated
+    authored comparisonの`IsIso`または否定は既証明artifactからは従わない)。
   - `G-111〜G-115 の完遂成果`: `ambient-boundary`(各カード完遂後に
     final head を固定して昇格する — 昇格条件。台帳突合の対象。支える
     結論 = 量化域の組成と O19。G-115 は geometry-refinement bridge、named
@@ -322,7 +327,8 @@
     供給する。non-liftable problemはO19の分類対象とする)。
   - `Gr4ExchangeContext の組成`: `discharge-required`(支える結論 =
     O12 の設定。discharge artifact = G-114 / G-115 の active
-    mate-bearing 成果物、G-115 の `upperDecisionSolution`、G-110 sectorのみから
+    mate-bearing 成果物、G-115 の `upperDecisionSolution`、G-110
+    `AuthoredBCDatumSquare`のみから
     組むtagged sum。inactive / forward-only / non-liftable
     problemの除外は O19 に記録し、新設 mate は不可)。
   - `branch selection と branch-specific theorem`: `discharge-required`
