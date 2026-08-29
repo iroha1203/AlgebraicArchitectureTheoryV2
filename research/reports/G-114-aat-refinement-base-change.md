@@ -4,8 +4,8 @@
 - tracking Issue: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
 - implementation PR: [#4241](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241)
 - GOAL revision: 3
-- proof state: `target-proof-checkpoint`
-- completion candidate: `yes` (implementation merged; completion-ledger synchronization in progress)
+- proof state: `target-theorem-proved`
+- completion candidate: `finalized`
 
 This report is the evidence index for the revision-3 fixed target. Static Lean
 acceptance is recorded separately from target fit, premise provenance, proof-use,
@@ -45,9 +45,26 @@ remaining Math B lane judged the mathematical packet eligible while retaining
 the same final ledger-sync requirement.
 The fixed-head lane dispositions and integrated finding are recorded at
 <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461674160>.
-This ledger update resolves the report side of that gate. After it is merged
-and the tracking Issue is synchronized, the fixed merged snapshot receives the
-required formal rerun before the final proof-state transition is recorded.
+The report synchronization was reviewed at fixed head
+`b2cf0cc24be2936994439e424f81cf38bd2c4b7e`, passed 7/7 CI, and merged as
+`0191ec95ac878f633adb95d172ca34bb0f26d8ef` in PR #4244. The tracking Issue
+was synchronized at
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239#issuecomment-5461688348>.
+
+## Final completion judgment
+
+A fresh four-lane completion review, using four newly instantiated independent
+review agents on fixed merged main head
+`0191ec95ac878f633adb95d172ca34bb0f26d8ef`, returned no major findings in
+Math A, Math B, Lean A, or Lean B. The final audit is recorded at
+<https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241#issuecomment-5461712457>.
+
+All revision-3 clauses (a)--(f) are proved in Lean. The material-premise,
+certificate-provenance, proof-use, structure-field, exact-image, route-integrity,
+and nonvacuity audits are discharged. The implementation and report-sync PRs
+both passed 7/7 CI and are merged. Remaining G-114 mathematical obligations:
+none. G-115 upper-stage lift and G-116 exchange invertibility remain outside
+this target's scope. The final status is `target-theorem-proved`.
 
 ## Exact declaration map
 
@@ -287,8 +304,10 @@ axiom in the target artifacts. `git diff --check` is clean.
 - first fresh completion review: theorem content passed in all four lanes;
   three lanes withheld completion solely for report / Issue synchronization,
   while Math B judged the mathematical packet eligible subject to that sync
-- report synchronization to the merged snapshot: this ledger update
-- tracking Issue synchronization and fresh completion-review rerun: pending
-
-Until the last synchronization and rerun gates pass, the correct status remains
-`target-proof-checkpoint`, not `target-theorem-proved`.
+- report synchronization: PR #4244 merged at
+  `0191ec95ac878f633adb95d172ca34bb0f26d8ef`, CI 7/7 successful
+- tracking Issue synchronization: satisfied
+- fresh completion-review rerun on `0191ec95ac878f633adb95d172ca34bb0f26d8ef`:
+  Math A/B and Lean A/B all no major findings
+- remaining mathematical obligations: none
+- final status: `target-theorem-proved`
