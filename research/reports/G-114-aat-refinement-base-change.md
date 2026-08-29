@@ -3,6 +3,7 @@
 - primary specification: [`research/goals/G-114-aat-refinement-base-change.md`](../goals/G-114-aat-refinement-base-change.md)
 - tracking Issue: [#4239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4239)
 - implementation PR: [#4241](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4241)
+- final completion PR: [#4246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4246)
 - GOAL revision: 3
 - proof state: `target-theorem-proved`
 - completion candidate: `finalized`
