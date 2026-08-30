@@ -2298,20 +2298,20 @@ selection:
   expected_result_type: target-proof-checkpoint
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCochains.lean]
   risks: [repackaging pathLift_append without consuming route legs, treating the source and generated routes as definitionally equal, storing a cochain in the compatible input, claiming canonical-comparator compatibility from path factorization alone, claiming the global mate equation before the two-level Cartesian uniqueness proof]
-  unchecked: [canonical-comparator pullback compatibility, route raw-cochain image equations, global canonical upper-mate equation, endpoint comparison isomorphisms, solution equivalence, named positive and negative artifacts, clauses (c)--(d)]
+  unchecked: [finite compositor/unitor compatibility beyond the path-factor prerequisite, canonical-comparator pullback compatibility, route raw-cochain image equations, global canonical upper-mate equation, endpoint comparison isomorphisms, solution equivalence, named positive and negative artifacts, clauses (c)--(d)]
 result:
   proposed_result_type: target-proof-checkpoint
   proof_obligation_delta: The base and pulled generator factor laws now extend independently to every presented path. Their nil specializations give the literal two-sided unit factorization, and their append specializations expose both finite stages and use each path factor law separately. The source, base, and pulled fixed-coefficient transports are forgotten to three actual G-109 TwoLayerTransportData values, from which the three identity-reselection upper raw-defect cochains are derived by upperRawDefectCochain. No cochain or path equation is added to the compatible input.
   completion_candidate: no
-  lean_artifacts: [generatedBaseRouteData, generatedPulledRouteData, compatibleSourceRouteData, generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, generatedBaseRoutePath_nil_fac, generatedPulledRoutePath_nil_fac, generatedBaseRoutePath_append_fac, generatedPulledRoutePath_append_fac, compatibleSourceRawDefectCochain, generatedBaseRouteRawDefectCochain, generatedPulledRouteRawDefectCochain, generatedBaseRouteRawDefectCochain_apply, generatedPulledRouteRawDefectCochain_apply]
-  evidence: [focused Lean check, 14-declaration namespace standard-axiom audit, targeted module construction, module registration, source hash, literal scans]
+  lean_artifacts: [generatedBaseRouteData, generatedPulledRouteData, compatibleSourceRouteData, generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, generatedBaseRoutePath_nil_fac, generatedPulledRoutePath_nil_fac, generatedBaseRoutePath_append_fac, generatedPulledRoutePath_append_fac, compatibleSourceRawDefectCochain, generatedBaseRouteRawDefectCochain, generatedPulledRouteRawDefectCochain, compatibleSourceRawDefectCochain_apply, generatedBaseRouteRawDefectCochain_apply, generatedPulledRouteRawDefectCochain_apply]
+  evidence: [focused Lean check, 15-declaration namespace standard-axiom audit, targeted module construction, module registration, source hash, literal scans]
   source_sha256:
-    UpperGeometryCompatibleRouteCochains.lean: 1272e6cc99d3e76c2b057fd3670ac570266cfeb2b5d2ad76c30a1b28c0157259
+    UpperGeometryCompatibleRouteCochains.lean: ddc59ec7f4ca6637bfa4bfa1e83841b1957150dd4bf9f6fd264efd51d0d1e36f
   claim_mapping:
-    theorem_names: [generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, generatedBaseRoutePath_nil_fac, generatedPulledRoutePath_nil_fac, generatedBaseRoutePath_append_fac, generatedPulledRoutePath_append_fac, generatedBaseRouteRawDefectCochain_apply, generatedPulledRouteRawDefectCochain_apply]
+    theorem_names: [generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, generatedBaseRoutePath_nil_fac, generatedPulledRoutePath_nil_fac, generatedBaseRoutePath_append_fac, generatedPulledRoutePath_append_fac, compatibleSourceRawDefectCochain_apply, generatedBaseRouteRawDefectCochain_apply, generatedPulledRouteRawDefectCochain_apply]
     source_labels: [revision 4 finite path normalization, target theorem clause (b)]
     conjuncts: [base all-path factor law, pulled all-path factor law, two literal unit factorizations, two two-stage append factorizations, three transport-derived raw cochains]
-    undischarged_assumptions: [canonical-comparator compatibility and cochain image laws, global mate equation, endpoint comparison isomorphisms and solution equivalence]
+    undischarged_assumptions: [finite compositor/unitor compatibility beyond the path-factor prerequisite, canonical-comparator compatibility and cochain image laws, global mate equation, endpoint comparison isomorphisms and solution equivalence]
     acceptance_point: Each all-path theorem is an induction from the corresponding generated edge factor law. Each append theorem consumes the first and second path factor laws separately. Each raw cochain is evaluated by the G-109 upperRawTwoCellDefect definition on its own actual route transport; no authored comparator is identified with the canonical comparator.
     port_status: not-applicable
 audits:
@@ -2319,10 +2319,10 @@ audits:
     ambient_boundary: [single source fixed-coefficient transport, two Cycle 39 generated fixed-coefficient transports, Cycle 35 route edge factor laws, G-109 path-lift and upper-obstruction APIs]
     direction_hypothesis: []
     discharged: [base and pulled all-path factorization, empty-path unit factorization on both routes, two-stage append factorization on both routes, source/base/pulled initial raw-cochain construction]
-    remaining: [canonical-comparator pullback compatibility, route cochain image laws, global canonical-mate equation, endpoint geometry isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+    remaining: [finite compositor/unitor compatibility beyond the path-factor prerequisite, canonical-comparator pullback compatibility, route cochain image laws, global canonical-mate equation, endpoint geometry isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
   certificate_provenance:
     discharged: [path equations are derived by induction from theorem-generated edge factors; cochains are outputs of the G-109 upper obstruction API applied to actual transports]
-    unresolved: [two-level Cartesian uniqueness for canonical comparator pullback and the global mate equation, endpoint inverse uniqueness, solution transports]
+    unresolved: [finite compositor/unitor compatibility, two-level Cartesian uniqueness for canonical comparator pullback and the global mate equation, endpoint inverse uniqueness, solution transports]
   proof_use:
     used: [generatedBaseRouteTransport, generatedPulledRouteTransport, sourceTransport.toTwoLayerTransportData, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, Category.assoc, Category.id_comp, Category.comp_id, upperRawDefectCochain, upperRawTwoCellDefect]
     unused: [the generated group homomorphisms and canonical comparator are reserved for the successor cochain image theorem; the pointwise mate and comparator factor laws are reserved for the global equation]
@@ -2333,7 +2333,7 @@ audits:
   vacuity: all finite paths are covered; named nonidentity cochain firing remains downstream
   one_way_as_equivalence: no comparator, endpoint, or solution equivalence is claimed
   goal_or_report_reinterpretation: none-found
-  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteCochains` constructed the direct module DAG and passed; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCochains.lean` => exit 0 and 14 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteCochains` constructed the direct module DAG and passed; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCochains.lean` => exit 0 and 15 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
   blocking_findings: []
-  next_obligation: Use the all-path unit/composition factor laws in the two-level Cartesian uniqueness proof identifying each generated canonical comparator with the pullback of the source canonical comparator, derive both raw-cochain image equations, and prove the global canonical upper-mate comparator equation.
+  next_obligation: Use the all-path unit/composition factor laws to prove the remaining finite compositor/unitor compatibility and the two-level Cartesian uniqueness theorem identifying each generated canonical comparator with the pullback of the source canonical comparator, then derive both raw-cochain image equations and prove the global canonical upper-mate comparator equation.
 ```

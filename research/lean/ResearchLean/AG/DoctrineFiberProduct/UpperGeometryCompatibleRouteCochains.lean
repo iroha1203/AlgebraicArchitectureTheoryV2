@@ -1,7 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteCoefficientNormalization
 
 /-!
-# Finite cochains and the global mate equation on compatible routes
+# Finite path factors and raw cochains on compatible routes
 
 The two route transports constructed from the certificate-free compatible
 input are now consumed as actual G-109 transport data.  Path factorization is
@@ -329,6 +329,15 @@ noncomputable def generatedPulledRouteRawDefectCochain
     (input : UpperGeometryCompatibleProblemInputData ctx P k) :
     UpperDefectCochain input.generatedPulledRouteData :=
   upperRawDefectCochain input.generatedPulledRouteData 1
+
+/-- Evaluation of the source cochain is the authored route's G-109 raw defect. -/
+@[simp] theorem compatibleSourceRawDefectCochain_apply
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (cell : P.TwoCell) :
+    input.compatibleSourceRawDefectCochain cell =
+      upperRawTwoCellDefect input.compatibleSourceRouteData 1 cell := rfl
 
 /-- Evaluation of the generated base cochain is the actual G-109 raw defect. -/
 @[simp] theorem generatedBaseRouteRawDefectCochain_apply
