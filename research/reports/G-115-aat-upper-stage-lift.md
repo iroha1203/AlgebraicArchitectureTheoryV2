@@ -2045,3 +2045,61 @@ audits:
   blocking_findings: []
   next_obligation: Prove that both generated complete route edges retain coefficient identity and derive the G-109 cocartesian qualifications needed to assemble actual FixedCoefficientTwoLayerTransportOver values and their route cochains.
 ```
+
+## Cycle 36 — canonical mate naturality on generated compatible routes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 36
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 1edb23e4f07ef660d1fafb2a967bd503cf5bbe3a
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 35 merged both complete generated route geometry edges and their literal factor graphs through the same authored source edge
+  proof_dag_predecessors: [generatedBaseRouteCoreIsoAt, generatedPulledRouteCoreIsoAt, generatedBaseRouteCoreDiagram, generatedPulledRouteCoreDiagram, generatedBaseRouteGeometryEdge, generatedPulledRouteGeometryEdge, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, UpperGeometryCleavage.upperGeometryMate, UpperGeometryCleavage.generatedRouteCoreMate, ActiveRefinementBCContext.mate]
+  proof_obligation: Conjugate the actual G-114 canonical mate onto the two generated compatible core diagrams, identify it with the theorem-generated exact core mate, prove path naturality, and lift that equation to complete geometry naturality along every generated route edge without accepting a route transport or naturality certificate.
+  selection_reason: Coefficient equality for the generated endpoints is propositional rather than definitional, so packaging the route edges as fixed-coefficient G-109 transports requires a separate normalization step. The mate equation itself is already determined by the reviewed route comparisons and Cycle 35 factor graphs and can be discharged independently without weakening or assuming that downstream qualification.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleMateNaturality.lean]
+  risks: [replacing the actual G-114 mate by an unrelated pointwise map, proving only core naturality while claiming complete geometry naturality, accepting route naturality as an argument, using coefficient or cocartesian qualifications not yet proved, collapsing the two route diagrams]
+  unchecked: [generated endpoint coefficient normalization, G-109 edge cocartesian qualifications, actual FixedCoefficientTwoLayerTransportOver route values, finite compositor/unitor and two-cell compatibility, derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: The actual G-114 natural transformation component is conjugated through the two generated route-core endpoint isomorphisms and proved equal to the existing generated exact core mate after refinement embedding. Naturality of the G-114 mate therefore gives path naturality on the generated diagrams. The Cycle 35 geometry edge factor graphs and the pointwise mate triangles then lift the core equation by strong-cartesian uniqueness to a complete geometry naturality theorem for every authored edge.
+  completion_candidate: no
+  lean_artifacts: [generatedCompatibleUpperGeometryMateAt, generatedCompatibleUpperGeometryMateAt_base, generatedCompatibleUpperGeometryMateAt_triangle, generatedCompatibleConjugateCoreMateAt, generatedCompatibleConjugateCoreMateAt_toRefinement, generatedCompatibleConjugateCoreMateAt_eq_generated, generatedCompatibleConjugateCoreMateAt_naturality, generatedCompatibleRouteCoreMateAt_naturality, generatedCompatibleUpperGeometryMateAt_edge_naturality]
+  evidence: [focused Lean check, 9-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleMateNaturality.lean: 8e54b0c80ceaa875eb65b02d174459f999d9f9223aabe5f2a523f21e633faa89
+  claim_mapping:
+    theorem_names: [generatedCompatibleUpperGeometryMateAt_base, generatedCompatibleUpperGeometryMateAt_triangle, generatedCompatibleConjugateCoreMateAt_toRefinement, generatedCompatibleConjugateCoreMateAt_eq_generated, generatedCompatibleConjugateCoreMateAt_naturality, generatedCompatibleRouteCoreMateAt_naturality, generatedCompatibleUpperGeometryMateAt_edge_naturality]
+    source_labels: [revision 4 canonical-mate compatibility, target theorem clause (b)]
+    conjuncts: [actual G-114 mate conjugation, equality with the generated exact core mate, path naturality on both generated route diagrams, complete geometry edge naturality]
+    undischarged_assumptions: [endpoint coefficient normalization, G-109 cocartesian qualifications, fixed-coefficient route packaging, finite compositor/unitor and two-cell coherence, derived cochains and global equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: The conjugated map contains ctx.mate.app literally. Its equality with the generated route mate is proved through the exact-package refinement embedding. Complete geometry naturality is proved from that core naturality, both Cycle 35 factor graphs, both pointwise route triangles, and strong-cartesian uniqueness; no route naturality equation is supplied by the caller.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 34 generated core diagrams and endpoint isomorphisms, Cycle 35 generated geometry edges and factor graphs, completed G-114 canonical mate and G-115-local pointwise upper geometry mate]
+    direction_hypothesis: []
+    discharged: [G-114 mate conjugation, refinement-level identification, exact-core identification, path naturality, complete geometry edge naturality]
+    remaining: [coefficient normalization, G-109 cocartesian qualifications, fixed-coefficient route construction, finite path and two-cell coherence, derived cochains and global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [core naturality comes from ctx.mate.naturality and theorem-generated endpoint isomorphisms; exact-core identification comes from refinement faithfulness; geometry naturality comes from Cycle 35 factor laws, generated mate triangles, and IsStronglyCartesian.ext]
+    unresolved: [coefficient equality transport, edge cocartesianness, cochain laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [ctx.mate.app, ctx.mate.naturality, generatedBaseRouteCoreIsoAt, generatedPulledRouteCoreIsoAt, UpperGeometryCleavage.transportedG114RefinementMate_eq_generated, UpperGeometryCleavage.generatedRouteCoreMate_toRefinement, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, IsStronglyCartesian.ext]
+    unused: [root and rootPath; source coefficient identities and comparator fields remain reserved for fixed-coefficient route packaging and cochain construction]
+  structure_field_escape: no conjugated mate, route naturality, coefficient normalization, edge qualification, route transport, cochain, comparison, or solution is stored in the input or accepted as a theorem argument
+  route_integrity: the mate is transported between two separately generated core diagrams, and complete naturality uses each route's own edge and literal leg factorization
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: the theorem is universally quantified over every presented path or edge; named downstream fixtures remain pending
+  one_way_as_equivalence: a pointwise mate and its naturality are proved; no mate invertibility, endpoint isomorphism, or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteGeometryEdges` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleMateNaturality.lean` => exit 0 and 9 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Normalize the propositionally fixed generated endpoint coefficients and determine whether the existing G-109 APIs derive strong cocartesianness of the two cartesian-pulled route edges; package actual fixed-coefficient route transports if they do, or record the exact missing public preservation primitive after exhausting the relevant interfaces.
+```
