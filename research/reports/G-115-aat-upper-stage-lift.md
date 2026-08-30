@@ -2001,7 +2001,7 @@ report_path: research/reports/G-115-aat-upper-stage-lift.md
 selection:
   proof_state_ref: Cycle 34 merged both exact route core diagrams and their authored source-edge factor graphs
   proof_dag_predecessors: [generatedBaseRouteCoreDiagram, generatedPulledRouteCoreDiagram, generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, exactGeometryHomOfRefinement]
-  proof_obligation: Pull each authored source geometry edge back through the corresponding literal strongly Cartesian route leg over the exact Cycle 34 core edge, prove the lower projection, exactify the complete geometry factor, and retain the literal source-edge factor graph.
+  proof_obligation: Pull the authored source geometry edge independently through both literal strongly Cartesian route legs over the corresponding exact Cycle 34 core edges, prove the lower projections, exactify the complete geometry factors, and retain both literal source-edge factor graphs.
   selection_reason: G-109 route transports require actual GeometryTotalHom edge lifts. The complete geometry pullback must be generated before its coefficient identity and cocartesian qualifications can be audited.
   expected_result_type: target-proof-checkpoint
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteGeometryEdges.lean]
@@ -2009,7 +2009,7 @@ selection:
   unchecked: [coefficient identity and G-109 cocartesian qualifications, route transport path and two-cell laws, derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: Both authored source geometry edges are independently pulled back through their theorem-generated strongly Cartesian route legs. Each universal refinement factor is proved to lie over the exact Cycle 34 core edge, exactified to a complete GeometryTotalHom, and shown to satisfy full literal route-leg naturality against the same sourceTransport.edgeLift.
+  proof_obligation_delta: The same authored source geometry edge is independently pulled back through both theorem-generated strongly Cartesian route legs. Each universal refinement factor is proved to lie over its corresponding exact Cycle 34 core edge, exactified to a complete GeometryTotalHom, and shown to satisfy full literal route-leg naturality against that shared sourceTransport.edgeLift.
   completion_candidate: no
   lean_artifacts: [generatedBaseRouteRefinementGeometryEdge, generatedBaseRouteRefinementGeometryEdge_base, generatedBaseRouteGeometryEdge, generatedBaseRouteGeometryEdge_base, generatedBaseRouteGeometryEdge_toRefinement, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteRefinementGeometryEdge, generatedPulledRouteRefinementGeometryEdge_base, generatedPulledRouteGeometryEdge, generatedPulledRouteGeometryEdge_base, generatedPulledRouteGeometryEdge_toRefinement, generatedPulledRouteGeometryEdge_fac]
   evidence: [focused Lean check, 12-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
