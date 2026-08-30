@@ -1537,8 +1537,8 @@ result:
   evidence: [three focused Lean checks, targeted direct-module build, namespace standard-axiom audits, source hashes, literal scans]
   source_sha256:
     UpperGeometryCleavageNaturality.lean: 34d61065049243c6ee49676b3a2c6315225362ece635a6f7beee8d090419f13d
-    UpperGeometryCartesian.lean: 140860b023377cff9725ee77db56f9f8ef4ac1089a57cade8a584095fa9c2019
-    UpperGeometryFiniteCartesianNaturality.lean: 34f5181634cc6652907f9715f403117b7d169d20ddd0f1e8bdde0f1ace4bd67a
+    UpperGeometryCartesian.lean: bf2fd6e25cdeba75edf30e97307bb727cadb9868288711557f0d6d640494a0fb
+    UpperGeometryFiniteCartesianNaturality.lean: 83a640f50d80d7d0761270f5feb5ab084aecef1b7530211579f336ea44ab4b8e
   claim_mapping:
     theorem_names: [generatedExactGeometryHom_isStronglyCartesian, generatedRefinementGeometryHom_isStronglyCartesian, baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian, generatedBaseGeometryEdgeUnconditional_fac, generatedPulledGeometryEdgeUnconditional_fac, generatedUpperGeometryMateAt_edge_naturality_unconditional]
     source_labels: [target theorem clause (b), G-115-local geometry cleavage and finite naturality boundary]
@@ -1556,7 +1556,7 @@ audits:
     discharged: [context inverse cancellation comes from generated equation equivalences; carrier cancellation and reading reflection come from G-115 deconjugation transports; factor uniqueness is proved by complete geometry contract extensionality]
     unresolved: [downstream comparator and reselection witnesses]
   proof_use:
-    used: [generatedExactSupportComp_heq, generatedRefinementSupportComp_heq, generated exact and refinement reading iff laws, rawReindexUpper_comp, IsStronglyCartesian.mk, IsStronglyCartesian.comp, Cycle 25 universal geometry edge factorization]
+    used: [generated exact and refinement reading iff laws, generated exact and refinement carrier HEq laws, generated exact and refinement carrier inverse laws, generated exact and refinement carrier injectivity laws, generated exact and refinement carrier naturality laws, rawReindexUpper_comp, IsStronglyCartesian.mk, IsStronglyCartesian.comp, Cycle 25 universal geometry edge factorization]
     unused: []
   structure_field_escape: no Cartesian certificate, factor, uniqueness equation, edge factor law, or mate naturality equation is stored in problem data or accepted from a caller
   route_integrity: both unconditional finite edges still factor the literal generated baseRouteGeometryHom and pulledRouteGeometryHom through the actual sourceTransport edge, and the mate square uses both full geometry triangles
@@ -1565,7 +1565,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: both primitive Cartesian proofs include existence and uniqueness; no unsupported equivalence is claimed
   goal_or_report_reinterpretation: none-found
-  validation_refs: [three check_research_modules.sh --focused invocations => exit 0 with 58, 16, and 7 declarations standard axioms only; lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryFiniteCartesianNaturality => exit 0 with 4077 jobs and standard-axiom audits]
+  validation_refs: [three check_research_modules.sh --focused invocations => exit 0 with 58, 16, and 9 declarations standard axioms only; lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryFiniteCartesianNaturality => exit 0 with 4077 jobs and standard-axiom audits]
   blocking_findings: []
   next_obligation: Prove the authored comparator intertwining against the now-unconditional finite generated geometry mate, then continue to the solution-space and named-fixture obligations.
 ```

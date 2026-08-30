@@ -19,6 +19,24 @@ namespace UpperGeometryCleavage
 
 set_option maxHeartbeats 3000000
 
+/-- Public decomposition of the literal generated base-first geometry route. -/
+theorem baseRouteGeometryHom_eq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    baseRouteGeometryHom ctx target =
+      RefinementGeometryHom.comp
+        ((exactGeometryToRefinementGeometry U).map
+          (baseRouteExactGeometryHom ctx target))
+        (baseRefinementGeometryHom ctx target) := rfl
+
+/-- Public decomposition of the literal generated pulled-first geometry route. -/
+theorem pulledRouteGeometryHom_eq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    pulledRouteGeometryHom ctx target =
+      RefinementGeometryHom.comp
+        (pulledRefinementGeometryHom ctx target)
+        ((exactGeometryToRefinementGeometry U).map
+          (pullbackTargetGeometryHom ctx target)) := rfl
+
 /-- The literal generated base-first geometry route is strongly Cartesian. -/
 theorem baseRouteGeometryHom_isStronglyCartesian
     (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
@@ -28,7 +46,7 @@ theorem baseRouteGeometryHom_isStronglyCartesian
         (baseRouteGeometryHom ctx target).base)
       (show (⟨baseRouteGeometry ctx target⟩ : RefinementGeometryCategory U) ⟶
           ⟨target.geometry⟩ from baseRouteGeometryHom ctx target) := by
-  unfold baseRouteGeometryHom
+  rw [baseRouteGeometryHom_eq]
   letI hexact : (refinementGeometryProjection U).IsStronglyCartesian
       (((exactGeometryToRefinementGeometry U).map
         (baseRouteExactGeometryHom ctx target)).base)
@@ -73,7 +91,7 @@ theorem pulledRouteGeometryHom_isStronglyCartesian
         (pulledRouteGeometryHom ctx target).base)
       (show (⟨pulledRouteGeometry ctx target⟩ : RefinementGeometryCategory U) ⟶
           ⟨target.geometry⟩ from pulledRouteGeometryHom ctx target) := by
-  unfold pulledRouteGeometryHom
+  rw [pulledRouteGeometryHom_eq]
   letI hrefinement : (refinementGeometryProjection U).IsStronglyCartesian
       (show RefinementPackageHom ⟨(pulledRouteGeometry ctx target).core⟩
           ⟨(pullbackTargetGeometry ctx target).core⟩ from
