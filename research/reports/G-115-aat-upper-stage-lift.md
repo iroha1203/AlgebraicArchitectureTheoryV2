@@ -1036,3 +1036,57 @@ audits:
 
 Cycle 17 proves the G-115 mate comparison square without reopening any
 completed predecessor GOAL.
+
+## Cycle 18 — reversible generated route mate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 18
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: 821765d31f200e2a25d90175c528facb9c96acf3
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 17 identified the generated core mate with the conjugated G-114 mate
+  proof_obligation: Supply the missing G-115-local reversible core API needed to attach the explicit geometry transport, without changing completed G-112 or G-114 declarations.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateIso.lean]
+  unchecked: [geometry-level upperGeometryMate and triangle, geometry-level comparison naturality, named positive and negative problems, clauses (c)--(d), final target assembly]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The universally generated forward and inverse route comparisons are proved mutually inverse as complete refinement-package morphisms; the inverse is separately packaged as an exact vertical core-fiber morphism, exact embedding recovers the complete inverse comparison, and the two exact core mates form a generated isomorphism.
+  completion_candidate: no
+  lean_artifacts: [routeSourceBase_comp_forward, generatedRouteRefinementMateIso, generatedRouteCoreMateInverse, generatedRouteCoreMateInverse_toRefinement, generatedRouteCoreMateIso]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateIso.lean: 804a80c30e371bfa75ec89826e21f67e0a02fd3b7295c30d2e8535bda1d58069
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a geometry-mate construction input]
+    conjuncts: [both endpoint cancellation laws, complete refinement-package mate iso, exact inverse core mate, exact-embedding recovery, exact core-fiber mate iso]
+    undischarged_assumptions: [explicit support/axis/observable transport for the geometry mate, geometry triangle, downstream named contracts]
+    acceptance_point: Reversibility is derived from both route factor triangles and strong-cartesian extensionality; it is not accepted as a caller certificate and does not decide IsIso for the later decision solution component.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 17 generated mate identification, both generated route cartesianness and factor triangles]
+    direction_hypothesis: []
+    discharged: [both refinement-package inverse identities, exact inverse verticality, full exact-embedding recovery, generated core mate isomorphism]
+    remaining: [geometry-component construction and triangle, finite-presentation comparison and downstream artifacts]
+  certificate_provenance:
+    discharged: [inverse identities come from IsStronglyCartesian.ext after proved lower cancellation and route triangles; exact inverse uses the same complete upper map and actual endpoint equality; exact iso identities are reflected through the faithful exact-to-refinement embedding]
+    unresolved: [geometry realization comparisons and downstream solution-space equivalence]
+  proof_use:
+    used: [generatedRouteRefinementMate_fac, generatedRouteRefinementMateInverse_fac, IsStronglyCartesian.ext, IsHomLift.fac', exactPackageToRefinement_map_injective]
+    unused: []
+  structure_field_escape: no inverse identity, exact inverse, or core isomorphism is supplied by a caller
+  route_integrity: both directions connect the literal baseRouteGeometry and pulledRouteGeometry and project to the actual common mixed-pullback endpoint
+  predecessor_integrity: completed G-112 and G-114 declarations and GOALs are unchanged; the missing reversible API is created in G-115
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateIso.lean => exit 0 and 5 declarations standard axioms only; git diff --check => exit 0; placeholder and hidden/BiDi scans => no matches]
+  blocking_findings: []
+  next_obligation: Construct the explicit geometry comparison from the base-route forward realization maps and pulled-route backward realization maps, identify its core with generatedRouteCoreMate, and prove upperGeometryMate_triangle.
+```
+
+Cycle 18 adds the missing reversible construction inside the active G-115
+surface. Completed predecessor GOALs remain immutable inputs.
