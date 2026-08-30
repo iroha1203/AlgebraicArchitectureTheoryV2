@@ -344,6 +344,105 @@ theorem generatedRouteRefinementMate_fac
     (routeSourceForward_fac ctx target).symm
     (baseRouteGeometryHom ctx target).base
 
+/-- The generated comparison lies over the exact endpoint transport used in
+the G-114 mate direction. -/
+theorem generatedRouteRefinementMate_isHomLift
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    (refinementPackageProjection U).IsHomLift
+      (routeSourceForward ctx target)
+      (generatedRouteRefinementMate ctx target) := by
+  letI := baseRouteGeometryBase_isStronglyCartesian ctx target
+  letI := pulledRouteGeometryBase_isStronglyCartesian ctx target
+  unfold generatedRouteRefinementMate
+  infer_instance
+
+/-- The lower refinement of the generated comparison is exactly the authored
+endpoint transport. -/
+theorem generatedRouteRefinementMate_base
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    (generatedRouteRefinementMate ctx target).base =
+      routeSourceForward ctx target := by
+  letI : (refinementPackageProjection U).IsHomLift
+      (routeSourceForward ctx target)
+      (generatedRouteRefinementMate ctx target) :=
+    generatedRouteRefinementMate_isHomLift ctx target
+  exact (CategoryTheory.IsHomLift.eq_of_isHomLift
+    (refinementPackageProjection U)
+    (routeSourceForward ctx target)
+    (generatedRouteRefinementMate ctx target)).symm
+
+/-- The universal route comparison packaged as an exact vertical morphism in
+the common mixed-pullback core fiber. -/
+noncomputable def generatedRouteCoreMate
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    baseRouteCoreFiber ctx target ⟶ pulledRouteCoreFiber ctx target := by
+  let comparison := generatedRouteRefinementMate ctx target
+  let total : PackageTotalHom
+      (baseRouteGeometry ctx target).core
+      (pulledRouteGeometry ctx target).core := {
+    base := eqToHom ((baseRouteGeometry_packagePoint_eq ctx target).trans
+      (pulledRouteGeometry_packagePoint_eq ctx target).symm)
+    upper := comparison.upper
+    atomEquiv_eq := by
+      rw [comparison.atomEquiv_eq]
+      letI : (refinementPackageProjection U).IsHomLift
+          (routeSourceForward ctx target) comparison :=
+        generatedRouteRefinementMate_isHomLift ctx target
+      have hfac := CategoryTheory.IsHomLift.fac'
+        (refinementPackageProjection U) (routeSourceForward ctx target) comparison
+      have hatom := congrArg (fun hom => hom.doctrineHom.atomEquiv) hfac
+      apply Equiv.ext
+      intro atom
+      have hatom' := congrFun (congrArg Equiv.toFun hatom) atom
+      simpa [routeSourceForward, ExtInstHom.eqToHom_atomEquiv] using hatom'
+  }
+  refine ⟨total, ?_⟩
+  apply CategoryTheory.IsHomLift.of_fac'
+    (packageProjection U)
+    (𝟙 (ctx.configuration.pullbackSourceAt ctx.source)) total
+    (baseRouteGeometry_packagePoint_eq ctx target)
+    (pulledRouteGeometry_packagePoint_eq ctx target)
+  change
+    eqToHom ((baseRouteGeometry_packagePoint_eq ctx target).trans
+      (pulledRouteGeometry_packagePoint_eq ctx target).symm) ≫
+        eqToHom (pulledRouteGeometry_packagePoint_eq ctx target) =
+      eqToHom (baseRouteGeometry_packagePoint_eq ctx target) ≫ 𝟙 _
+  simp
+
+/-- Exact embedding recovers the generated lax-package comparison without
+discarding either its lower transport or its complete upper map. -/
+theorem generatedRouteCoreMate_toRefinement
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx) :
+    (exactPackageToRefinement U).map (generatedRouteCoreMate ctx target).1 =
+      generatedRouteRefinementMate ctx target := by
+  apply RefinementPackageHom.ext
+  · change (routeSourceForward ctx target) =
+      (generatedRouteRefinementMate ctx target).base
+    exact (generatedRouteRefinementMate_base ctx target).symm
+  · rfl
+
+/-- Any comparison over the same endpoint transport and satisfying the same
+route triangle is the universally generated comparison. -/
+theorem generatedRouteRefinementMate_unique
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (candidate : RefinementPackageHom
+      ⟨(baseRouteGeometry ctx target).core⟩
+      ⟨(pulledRouteGeometry ctx target).core⟩)
+    [hcandidate : (refinementPackageProjection U).IsHomLift
+      (routeSourceForward ctx target) candidate]
+    (hfac : candidate.comp (pulledRouteGeometryHom ctx target).base =
+      (baseRouteGeometryHom ctx target).base) :
+    candidate = generatedRouteRefinementMate ctx target := by
+  letI := baseRouteGeometryBase_isStronglyCartesian ctx target
+  letI := pulledRouteGeometryBase_isStronglyCartesian ctx target
+  exact CategoryTheory.Functor.IsStronglyCartesian.map_uniq
+    (refinementPackageProjection U)
+    (pulledRouteGeometryHom ctx target).base.base
+    (pulledRouteGeometryHom ctx target).base
+    (routeSourceForward_fac ctx target).symm
+    (baseRouteGeometryHom ctx target).base
+    candidate hfac
+
 end UpperGeometryCleavage
 
 end AAT.AG.DoctrineFiberProduct
