@@ -224,7 +224,8 @@ theorem generatedPulledRouteRefinementGeometryEdge_isStronglyCartesian
     (φ := (exactGeometryToRefinementGeometry U).map
       (input.generatedPulledRouteGeometryEdge edge)) (ψ := targetLeg)
 
-/-- The generated base-route refinement geometry edge is an isomorphism. -/
+/-- The base-route refinement edge is an isomorphism: its Cartesian
+qualification above lies over the Cycle 37 generated core-edge isomorphism. -/
 theorem generatedBaseRouteRefinementGeometryEdge_isIso
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -258,7 +259,8 @@ theorem generatedBaseRouteRefinementGeometryEdge_isIso
     (f := (input.generatedBaseRouteRefinementGeometryEdge edge).base)
     (input.generatedBaseRouteRefinementGeometryEdge edge)
 
-/-- The generated pulled-route refinement geometry edge is an isomorphism. -/
+/-- The pulled-route refinement edge is an isomorphism: its independent
+Cartesian cancellation lies over the pulled Cycle 37 core-edge isomorphism. -/
 theorem generatedPulledRouteRefinementGeometryEdge_isIso
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -292,7 +294,8 @@ theorem generatedPulledRouteRefinementGeometryEdge_isIso
     (f := (input.generatedPulledRouteRefinementGeometryEdge edge).base)
     (input.generatedPulledRouteRefinementGeometryEdge edge)
 
-/-- The complete generated base-route geometry edge is an isomorphism. -/
+/-- Exactifying the actual base-route refinement inverse gives the inverse of
+the complete generated base-route geometry edge. -/
 theorem generatedBaseRouteGeometryEdge_isIso
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -313,7 +316,8 @@ theorem generatedBaseRouteGeometryEdge_isIso
     (input.generatedBaseRouteRefinementGeometryEdge edge)
     (input.generatedBaseRouteRefinementGeometryEdge_base edge)
 
-/-- The complete generated pulled-route geometry edge is an isomorphism. -/
+/-- Exactifying the actual pulled-route refinement inverse gives the inverse
+of the complete generated pulled-route geometry edge. -/
 theorem generatedPulledRouteGeometryEdge_isIso
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
