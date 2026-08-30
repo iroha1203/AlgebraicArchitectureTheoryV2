@@ -9,7 +9,8 @@
   lax な `RefinementPackageHom` 上にあるが、G-108 `GeometryTotalHom` は exact
   `PackageTotalHom` 上にしかない。本カードはこの型の断絶を
   `RefinementGeometryHom` として埋め、G-114 canonical core mateを初めて
-  geometry 段の有限 BC problemとして型付けする。
+  geometry 段の有限 BC problemとして型付けする。G-112 / G-114の完了済みAPIは
+  変更せず、後続で初めて必要になるgeometry-compatible cleavageは本カードで構成する。
 - `predecessor`: G-114 revision 3(完遂済み。active refinement context、二 core
   route、canonical core mate)、G-109(完遂済み。two-layer transport、authored
   comparator、upper raw-defect cochain、reselection orbit)、G-108(完遂済み。
@@ -24,7 +25,8 @@
 - `research aim`: (1) complete upper readingは保つがlower arrowはlax refinementである
   geometry morphismを定義し、圏構造、refinement packageへの射影、G-108 exact
   geometry morphismからのembeddingを構成する。(2) このbridge上でG-114の二
-  reverse routeの個別geometry legsと、その間のactual finite upper mateを構成する
+  reverse routeに対し、G-115内でgeometry-compatibleなexact/refinement cleavageと
+  その間のfinite upper mateを構成し、G-114 canonical core mateとの生成比較を証明する
   named decision problemを固定する。(3) 非可逆時にも意味を持つpaired upper-orbit
   intertwiningを証明し、componentwise `IsIso` の場合だけconjugation orbit同値へ
   昇格する。actual solutionの `IsIso` / `¬ IsIso` 評価はG-116 O12へ残す。
@@ -35,7 +37,10 @@
   context/support/axis/observable transportをそのcomplete upper readingから定義し、
   lowerとupperのAtom equivalence一致を保持しなければならない。またG-109 authored
   comparatorはrouteごとの独立入力なので、上段solutionはedge naturalityとは別に
-  comparator intertwiningを持つ必要がある。
+  comparator intertwiningを持つ必要がある。さらにG-112のselected strong liftは
+  core-level universal propertyだけを公開し、local Support / Axis / Observableの
+  realization transportを持たない。これはG-112の欠陥ではなく後続geometry段の
+  新しい義務なので、完了済みGOALを遡及変更せずG-115-local cleavageとして補う。
 - `rival`: fibred 2-categoryのchange of baseとpseudonatural lift。差は、AATの
   `RefinementPackageHom` とgeometry reading dataに即したlax geometry categoryを
   構成し、actual upper cochain/orbitまで同じtyped routeで接続する点に置く。
@@ -65,8 +70,15 @@
   - revision 2 coherence/no-go案はlax refinement legをexact `GeometryTotalHom` として
     記述して型付かなかった。またG-115内で`¬ IsIso`を評価してO12を先取りしたため
     棄却する。
-  - 現revision 2は欠落primitiveそのものをfixed targetとし、G-116へは評価前のactual
-    `upperDecisionSolution`だけを供給する。
+  - revision 2は欠落primitiveそのものをfixed targetとし、G-116へは評価前のactual
+    `upperDecisionSolution`だけを供給する方針だったが、次項のK2b2 blockerにより
+    revision 3へsupersedeされた。
+  - revision 2のK2b2では、G-112のopaque selected lift上にgeneric `HGeom`を自動生成
+    できないことが判明した。これはG-112を変更する理由ではない。revision 3は
+    G-112 / G-114を不変の比較対象として保持し、明示的なcanonical strong liftと
+    realized-refinement liftからgeometry-compatible cleavageをG-115内に構成する。
+    G-114 mateとの接続はliteral endpoint equalityではなく、両universal propertyから
+    生成される比較squareで固定する。caller-supplied realization fieldは追加しない。
 
 - `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
   Naturality Theorem**。次を構成・証明する。
@@ -95,6 +107,24 @@
      構成は禁止する。
 
   2. **(b) G-114 route上のfinite upper problemとactual solution**:
+     まずG-115-localな `UpperGeometryCleavage` を構成する。exact側は既存の明示的
+     `strongCartesianLiftOfTarget`、refinement側はrealized-locus conditionから生成される
+     explicit inverse-package liftを用い、target geometry packageからsource geometry
+     package、係数identityのgeometry hom、map-factor lawを構成する。Support / Axis /
+     Observable comparisonとreading preservation / naturalityは各明示transportから証明し、
+     `HGeom`やcompleted geometry liftを入力fieldにしない。このcleavageから二つの
+     geometry-compatible reverse routeと `upperGeometryMate` を生成する。
+
+     `upperGeometryMate` のcore projectionとG-114 `ctx.mate`の間には、exact/refinement
+     cleavageのuniversal uniquenessからcomponentwise comparison isoと可換squareを
+     構成する。さらに、このcore comparisonの各endpointに、上で生成したgeometry
+     transportを載せたgeometry-level comparisonを構成する。このcomparisonはfinite
+     presentation上で自然で、両route leg、edge、G-109 authored comparatorと可換し、
+     coefficient homを保つ。endpointを等しいとcastして同一視せず、geometry comparison、
+     そのcore projection、両lift factor graph、mate equationを別々に実消費する。
+     comparison dataはproblem入力ではなくtheorem artifactであり、G-114 actual routeから
+     切り離された別fixtureを受理しない。
+
      `UpperRefinementBCProblem ctx` はfinite presentation `P`、root、全vertexへの
      directed `P.Path root i`、およびactual functor
      `sourceFiberDiagram : P ⥤ CoreFiber
@@ -115,15 +145,24 @@
      raw problemはroute間component、route間naturality、
      comparator equation、`IsIso`、orbit lawを持たない。
 
-     `UpperRefinementBCSolution problem` はvertexごとのvertical
-     `GeometryTotalHom` componentを持ち、そのbaseが
-     `(ctx.mate.app (sourceFiberDiagram.obj i)).1`、coefficient homがidentityである
-     ことを要求する。各componentを
+     revision 2で構成済みのcore-selected `UpperRefinementBCProblem` /
+     `UpperRefinementBCSolution` contractはG-114 routeの比較対象として保持する。
+     named O10 artifactには `GeometryCompatibleUpperRefinementBCProblem` と
+     `GeometryCompatibleUpperRefinementBCSolution` を構成する。solutionはvertexごとの
+     vertical `GeometryTotalHom` componentを持ち、そのbaseがG-115-local
+     `upperGeometryMate` component、coefficient homがidentityであることを要求する。
+     各componentを
      `exactGeometryToRefinementGeometry`でbridge categoryへ送り、
      `ηᵢ ≫ pulledLegᵢ = baseLegᵢ` というgeometry-level factorization triangle、
      route間edge naturality、G-109 authored comparator intertwining、nil / append /
      two-cell pastingを独立equationsとして持つ。
 
+     geometry-compatible contractをO10以降の主contractとする。上記geometry-level
+     comparisonから、各solutionのtriangle、edge naturality、authored comparator
+     intertwiningを保ってcore-selected companion solutionへ送るtransportと、その逆向き
+     transportを構成し、両側inverseを証明する。従って両contractのsolution spaceは
+     generated equivalenceで結ばれ、比較squareを単に参照するだけではO10放電と数えない。
+     named core-selected companion problem / solutionもこのtransportから構成する。
      caller-supplied solutionをO10放電と数えない。named
      `upperDecisionContext`、`upperDecisionProblem`、
      `upperDecisionSolution`をtheorem artifactとして構成する。fixtureはgenuinely lax
@@ -135,10 +174,12 @@
      solution componentの`IsIso`または否定は本カードで証明しない。
 
      別に、nonempty geometry endpointsとindividual refinement-geometry legsを持つが
-     route間solutionを持たないnamed problemを構成し、全active contextへのupper
-     solutionを主張していないことをactual negative witnessで固定する。この負例は
-     `UpperRefinementBCSolution`の不在をsupport / axis / observableの具体評価で証明し、
-     certificateをproblem fieldに持たせない。
+     route間solutionを持たないnamed geometry-compatible problemを構成し、全active
+     contextへのupper solutionを主張していないことをactual negative witnessで固定する。
+     この負例は `GeometryCompatibleUpperRefinementBCSolution` の不在をsupport / axis /
+     observableの具体評価で証明する。comparison equivalenceで生成したcore-selected
+     companionについても `UpperRefinementBCSolution` の不在を導き、どちらか一方だけの
+     no-goを成果に数えない。certificateをproblem fieldに持たせない。
 
   3. **(c) actual paired orbit intertwining**:
      `CoefficientTrivialUpperEdgeReselection` を、既存 `UpperEdgeReselection` と
@@ -147,20 +188,28 @@
      `InUpperReselectionOrbit` のsuborbitとして定義する。このsuborbitのextentや
      membership iff自体は成果に数えない。
 
-     任意のactual solutionについて、base / pulled coefficient-trivial upper reselectionsがsolution
+     任意のgeometry-compatible actual solutionについて、base / pulled
+     coefficient-trivial upper reselectionsがsolution
      components、factorization triangle、authored comparatorとintertwineし、かつ
      coefficient componentがidentityであるpaired relationを定義する。identity、
      vertical composition、path concatenationでの閉性、`upperRawDefectCochain`の
      componentwise intertwining、actual coefficient-trivial suborbit membershipのpaired
-     preservationを証明する。proof bodyはleg triangle、edge equation、comparator
-     equationを別々に実消費し、core-only transportで閉じない。
+     preservationを証明する。geometry-level comparisonからcoefficient-trivial
+     reselectionのforward / backward transportを生成し、各edge automorphism、coefficient
+     identity、solution intertwiningを保ち、実際に比較するrestricted reselection space上で
+     両側inverseを証明する。このreselection transportを通じてcore-selected companionの
+     cochain / paired relationへtransportし、componentwise cochainとsuborbit membershipの
+     一致を導く。proof bodyはleg triangle、edge equation、comparator equation、comparison
+     naturality / comparator compatibility、reselection transportを別々に実消費し、core-only
+     transportで閉じない。
 
      `upperDecisionSolution` 上でnonidentity comparator / cochain / coefficient-trivial
      reselectionを持つnamed intertwined pairを構成し、relationとcochain theoremを
      非退化発火させる。full orbit map、selector、`Set.MapsTo`は無条件に主張しない。
 
   4. **(d) exchange-exactness conditional interface**:
-     `UpperStageExchangeExact solution : Prop` を全vertical geometry componentsの
+     geometry-compatible solutionに対し `UpperStageExchangeExact solution : Prop` を
+     全vertical geometry componentsの
      `IsIso` と定義する。これを仮定した場合だけ、coefficient-trivial reselectionの
      componentwise conjugation / inverse、両側inverse law、solution comparator
      equationを実消費するraw-cochain commuting、coefficient-trivial actual suborbitの
@@ -171,11 +220,15 @@
 
 - `target theorem boundary`: Lean置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新module。
-  G-108 / G-109 / G-112 / G-114 reviewed modulesは参照のみ。Research aggregate /
+  G-108 / G-109 / G-112 / G-114 reviewed modulesは参照のみで変更しない。
+  G-115-local cleavageはそれらのpublic constructors / universal propertiesから構成する。
+  Research aggregate /
   full buildは禁止し、direct dependency DAGとfocused file checkだけを使う。
 - `target proof artifacts`: `RefinementGeometryHom` / category / projection、exact
-  faithful embeddingとprojection square、`UpperRefinementBCProblem` /
-  `UpperRefinementBCSolution`、named `upperDecisionProblem` / solution、named
+  faithful embeddingとprojection square、`UpperGeometryCleavage`、
+  `upperGeometryMate`、G-114 mateへのgeometry-level comparisonとsolution-space equivalence、`UpperRefinementBCProblem` /
+  `UpperRefinementBCSolution`、`GeometryCompatibleUpperRefinementBCProblem` /
+  `GeometryCompatibleUpperRefinementBCSolution`、named `upperDecisionProblem` / solution、named
   non-liftable problem、`CoefficientTrivialUpperEdgeReselection` / restricted actual
   suborbit、paired relation / cochain theorem、nonidentity intertwined firing、
   `UpperStageExchangeExact`
@@ -183,14 +236,16 @@
   `research/reports/G-115-aat-upper-stage-lift.md`。
 - `target proof strategy`: F0で`RefinementPackageHom.upper`からgeometry index mapsを
   定義しhom/category/projection/exact embeddingをfocused checkする。K0 category lawsと
-  exact comparison、K1 G-114 composite legs / factorization triangle、K2 named decision /
-  negative problems、K3 paired cochain theoremとconditional conjugation、K4 premise /
-  proof-use / axiom / nonvacuity監査。
+  exact comparison、K1 G-114 composite legs / factorization triangle、K2a raw problemと
+  K2b1 core-selected solution contract、K2b2a G-115-local geometry cleavage / mate comparison、
+  K2b2b named decision / negative problems、K3 paired cochain theoremとconditional
+  conjugation、K4 premise / proof-use / axiom / nonvacuity監査。
 - `target theorem completion criteria`: 全artifactがsorryなしでResearchLeanに受理され、
   axiom / placeholder auditがcleanであること。material premise / hypothesis dischargeと
   certificate provenance / proof-use / structure-field escapeを監査する。
   G-114 lower lax arrows、bridge projection、leg triangle、G-109 comparator、actual cochainの
-  proof-useを監査し、report / tracking Issueを同期する。各実装PRのfixed-head
+  proof-useに加え、G-115-local cleavageのinput generation、G-114 mate comparison、
+  predecessor不変性を監査し、report / tracking Issueを同期する。各実装PRのfixed-head
   `$review-pr` とcompletion candidateのfinal review packetに対する独立
   `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ完了とする。
 - `target premise discharge policy`: `ambient-boundary`はreview済みpredecessorの入力data、
@@ -206,9 +261,10 @@
 | G-108 geometry contract | ambient-boundary | exact geometry fieldsの語彙とlaws。lax lower homは含まないため、そのままroute legに使わない |
 | G-109 two-layer / orbit data | ambient-boundary | strong edges、authored comparator、actual cochain / orbitの語彙。route間equationsは含まない |
 | `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
+| G-115-local geometry cleavage / mate comparison | discharge-required | G-112 / G-114を変更せず、明示exact strong liftとrealized-refinement inverse liftからgeometry packages / homs / map lawsを生成する。G-114 actual mateとのcore comparisonにgeometry transportを載せ、presentation naturality、leg / edge / authored-comparator compatibility、solution-space equivalenceを証明する。caller-supplied `HGeom`やcomparison certificateを受け取らない |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。route間solutionを含まず、O10放電とは数えない。naturalityのcore射影だけを既存factor lawsで証明する |
-| named decision / negative problems | discharge-required | active genuinely-lax route上でactual solutionとactual non-liftabilityを別々に構成する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
-| paired cochain / restricted orbit theorem | discharge-required | leg triangle、edge equation、comparator equation、coefficient identityを実消費する。既存full orbitとの一致は主張しない |
+| named decision / negative problems | discharge-required | active genuinely-lax routeから生成したG-115-local geometry-compatible route上でactual solutionとactual non-liftabilityを別々に構成し、G-114 mate comparisonを実消費する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
+| paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費する。geometry comparisonからcoefficient-trivial reselectionの双方向transportとrestricted space上の両側inverseを生成し、そのedgewise compatibilityからcore-selected companion cochain / paired relation / suborbit membershipとの一致を導く。既存full orbitとの一致は主張しない |
 | `UpperStageExchangeExact solution` | direction-hypothesis | (d)のconditional interfaceでのみ仮定し、componentwise `IsIso` をconjugation / inverse / cochain / restricted-suborbit各定理で実消費する。predicateの成立証明またはO12放電とは数えない |
 | conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
 
@@ -217,9 +273,16 @@
   certificate field、opaque membershipへ移して成功扱いしない。exchange exactnessは
   (d)の明記したdirection-hypothesis以外へ移さず、その仮定をpredicate成立またはO12放電と数えない。
   direction-hypothesisの各fieldはroute内naturalityだけを担い、route間結論を含めない。
-- `target route integrity gate`: selected lift、finite presentation、named decision / negative
+  G-115-local cleavageをG-112/G-114 routeと無関係なparallel fixtureにせず、生成された
+  geometry-level comparisonのpresentation naturality、leg / edge / authored-comparator
+  compatibilityをsolution-space equivalence、restricted reselection spaceの双方向transport、
+  cochain / paired relationの一致で実消費する。存在量化されたsuborbit membershipの一致だけを
+  reselection witnessの対応とみなさない。
+  core squareへの単なる参照や過去GOALのdefinition変更を放電扱いしない。
+- `target route integrity gate`: G-115-local cleavage、selected lift、finite presentation、named decision / negative
   fixture、coefficient-trivial reselectionの出所を、入力data、G-112 / G-114 reviewed theorem、
-  または具体finite constructionに固定する。target-fitting selection、結論側lawのfield化、
+  明示的canonical lift、または具体finite constructionに固定する。G-114とのcomparisonを
+  欠くparallel route、target-fitting selection、結論側lawのfield化、
   empty / identity-only退化、片方向theoremの同値扱いを受理しない。
 
 **受入禁止**
@@ -236,8 +299,9 @@
 
 - `target failure policy`:
 
-  - `goal-defect`: `RefinementPackageHom.upper`だけではG-108 geometry index mapsを
-    functorially定義できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
+  - `goal-defect`: 明示exact/refinement liftのpublic transport dataからもG-115-local
+    geometry cleavage、G-114へのgeometry-level comparison、またはsolution / cochain
+    transportを構成できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
   - `target-refuted`: category laws、named actual solution、named non-liftable problem、
     paired/cochain theoremのいずれかに反例がある。
   - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
@@ -245,7 +309,9 @@
   - `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
     4査読を完了した場合だけ。
 
-- `stop reason`: なし(active)。
-- `next action`: F0で`RefinementGeometryHom`のcoverage/context mapsを
-  `RefinementPackageHom.upper`から定義できるかをLean signatureで固定し、category
-  compositionとexact embeddingをfocused checkする。
+- `stop reason`: なし(active)。revision 2 K2b2のgoal-defect判定は、完了済みG-112の
+  遡及変更を前提にしていたため撤回する。
+- `next action`: K2b2aでG-112 / G-114を変更せず、明示exact/refinement liftから
+  `UpperGeometryCleavage`、`upperGeometryMate`、G-114 mateへのgeometry-level comparisonと
+  solution-space equivalenceのLean signatureを固定する。その後K2b2 named
+  positive/negative artifactへ戻る。
