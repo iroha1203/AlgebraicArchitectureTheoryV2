@@ -2385,7 +2385,7 @@ audits:
     used: [generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, upperCanonicalTwoCellComparator_fac, generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, refinementPackageProjection Cartesian uniqueness, refinementGeometryProjection Cartesian uniqueness, CompositeFiberAut.ext_of_strong_fac]
     unused: [authored comparator values and raw cochains are reserved for the successor image equations; the pointwise upper mate is reserved for the global mate equation]
   structure_field_escape: no comparator compatibility or route equation is stored in the input or accepted as an argument
-  route_integrity: base and pulled proofs use distinct route data, legs, group homomorphisms, and Cartesian qualifications
+  route_integrity: base and pulled proofs use distinct route data, legs, pointwise composite-fiber pullbacks, and Cartesian qualifications
   predecessor_integrity: the fixed GOAL and completed G-109, G-112, and G-114 declarations are unchanged
   target_fitting: none-found
   vacuity: both theorems quantify over every declared two-cell; named nonidentity firing remains downstream
