@@ -59,6 +59,153 @@ theorem compatibleSourceRoutePathNil_unitor_base
   exact congrArg GeometryTotalHom.base
     (input.compatibleSourceRoutePathNil_unitor i)
 
+/-- The genuine unitor normalization on a generated base endpoint is exactly
+the pulled-back source group identity. -/
+theorem generatedBaseRouteUnitor_eq_pullback_one
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    geomFiberLift
+          (𝟙 (packagePoint (input.generatedBaseRouteGeometryAt i).core))
+          (geomFiberMk (input.generatedBaseRouteGeometryAt i)) ≫
+        (geomFiberUnitorApp
+          (packagePoint (input.generatedBaseRouteGeometryAt i).core)
+          (geomFiberMk (input.generatedBaseRouteGeometryAt i))).hom.1 =
+      CompositeFiberAut.hom
+        (input.generatedBaseCompositeFiberAutAt i
+          (1 : CompositeFiberAut (input.sourceGeometry i).package)) := by
+  rw [geomFiberUnitorApp_hom_fac,
+    input.generatedBaseCompositeFiberAutAt_one]
+  rfl
+
+/-- The pulled generated endpoint has the independent unitor/map-one
+normalization. -/
+theorem generatedPulledRouteUnitor_eq_pullback_one
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    geomFiberLift
+          (𝟙 (packagePoint (input.generatedPulledRouteGeometryAt i).core))
+          (geomFiberMk (input.generatedPulledRouteGeometryAt i)) ≫
+        (geomFiberUnitorApp
+          (packagePoint (input.generatedPulledRouteGeometryAt i).core)
+          (geomFiberMk (input.generatedPulledRouteGeometryAt i))).hom.1 =
+      CompositeFiberAut.hom
+        (input.generatedPulledCompositeFiberAutAt i
+          (1 : CompositeFiberAut (input.sourceGeometry i).package)) := by
+  rw [geomFiberUnitorApp_hom_fac,
+    input.generatedPulledCompositeFiberAutAt_one]
+  rfl
+
+/-- Base-route compatibility between the genuine generated and source
+unitors, through the route-specific empty-path factorization. -/
+theorem generatedBaseRouteUnitor_compatibility
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    RefinementGeometryHom.comp
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.generatedBaseRouteGeometryAt i).core))
+                (geomFiberMk (input.generatedBaseRouteGeometryAt i)) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.generatedBaseRouteGeometryAt i).core)
+                (geomFiberMk (input.generatedBaseRouteGeometryAt i))).hom.1))
+        (input.generatedBaseRouteLegAt i) =
+      RefinementGeometryHom.comp (input.generatedBaseRouteLegAt i)
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.sourceGeometry i).package.core))
+                (geomFiberMk (input.sourceGeometry i).package) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.sourceGeometry i).package.core)
+                (geomFiberMk (input.sourceGeometry i).package)).hom.1)) := by
+  rw [geomFiberUnitorApp_hom_fac,
+    input.compatibleSourceRoutePathNil_unitor]
+  exact input.generatedBaseRoutePath_nil_fac i
+
+/-- Pulled-route compatibility between the two genuine unitor normalizations. -/
+theorem generatedPulledRouteUnitor_compatibility
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    RefinementGeometryHom.comp
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.generatedPulledRouteGeometryAt i).core))
+                (geomFiberMk (input.generatedPulledRouteGeometryAt i)) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.generatedPulledRouteGeometryAt i).core)
+                (geomFiberMk (input.generatedPulledRouteGeometryAt i))).hom.1))
+        (input.generatedPulledRouteLegAt i) =
+      RefinementGeometryHom.comp (input.generatedPulledRouteLegAt i)
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.sourceGeometry i).package.core))
+                (geomFiberMk (input.sourceGeometry i).package) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.sourceGeometry i).package.core)
+                (geomFiberMk (input.sourceGeometry i).package)).hom.1)) := by
+  rw [geomFiberUnitorApp_hom_fac,
+    input.compatibleSourceRoutePathNil_unitor]
+  exact input.generatedPulledRoutePath_nil_fac i
+
+/-- Package-level projection of base-route unitor compatibility. -/
+theorem generatedBaseRouteUnitor_compatibility_base
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    (RefinementGeometryHom.comp
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.generatedBaseRouteGeometryAt i).core))
+                (geomFiberMk (input.generatedBaseRouteGeometryAt i)) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.generatedBaseRouteGeometryAt i).core)
+                (geomFiberMk (input.generatedBaseRouteGeometryAt i))).hom.1))
+        (input.generatedBaseRouteLegAt i)).base =
+      (RefinementGeometryHom.comp (input.generatedBaseRouteLegAt i)
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.sourceGeometry i).package.core))
+                (geomFiberMk (input.sourceGeometry i).package) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.sourceGeometry i).package.core)
+                (geomFiberMk (input.sourceGeometry i).package)).hom.1))).base := by
+  exact congrArg RefinementGeometryHom.base
+    (input.generatedBaseRouteUnitor_compatibility i)
+
+/-- Package-level projection of pulled-route unitor compatibility. -/
+theorem generatedPulledRouteUnitor_compatibility_base
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex) :
+    (RefinementGeometryHom.comp
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.generatedPulledRouteGeometryAt i).core))
+                (geomFiberMk (input.generatedPulledRouteGeometryAt i)) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.generatedPulledRouteGeometryAt i).core)
+                (geomFiberMk (input.generatedPulledRouteGeometryAt i))).hom.1))
+        (input.generatedPulledRouteLegAt i)).base =
+      (RefinementGeometryHom.comp (input.generatedPulledRouteLegAt i)
+        ((exactGeometryToRefinementGeometry U).map
+          (geomFiberLift
+                (𝟙 (packagePoint (input.sourceGeometry i).package.core))
+                (geomFiberMk (input.sourceGeometry i).package) ≫
+              (geomFiberUnitorApp
+                (packagePoint (input.sourceGeometry i).package.core)
+                (geomFiberMk (input.sourceGeometry i).package)).hom.1))).base := by
+  exact congrArg RefinementGeometryHom.base
+    (input.generatedPulledRouteUnitor_compatibility i)
+
 /-- The generated base-route pseudofunctor compositor normalization is the
 Cartesian pullback of the source normalization. -/
 theorem generatedBaseRoutePseudofunctorComparator_eq_pullback
