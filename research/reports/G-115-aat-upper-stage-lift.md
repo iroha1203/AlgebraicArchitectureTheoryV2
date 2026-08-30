@@ -1090,3 +1090,57 @@ audits:
 
 Cycle 18 adds the missing reversible construction inside the active G-115
 surface. Completed predecessor GOALs remain immutable inputs.
+
+## Cycle 19 — explicit backward realization of the pulled route
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 19
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: b9909f60c3af9546f4e58e1bd440e7a6e6c4f3e9
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 18 merged the reversible exact core mate API
+  proof_obligation: Generate the pulled route's backward upper realization from its two literal cleavage legs, prove both cancellations, and expose the generated core mate as base-forward followed by pulled-backward transport.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateRealization.lean]
+  unchecked: [Support/Axis/Observable backward components, geometry-level upperGeometryMate and triangle, finite-presentation comparison, named problems, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The selected realized-refinement transport data of the actual pulled route is exposed; its backward upper map is composed with the exact pullback backward upper; both composite cancellation laws are proved from the two constituent inverse laws; the generated exact core mate upper is identified with the literal base-route forward upper followed by this backward realization.
+  completion_candidate: no
+  lean_artifacts: [pulledRouteTransportData, pulledRouteBackwardUpper, pulledRouteGeometryHom_upper_eq, pulledRouteBackwardUpper_comp_forward, pulledRouteForward_comp_backwardUpper, generatedRouteCoreMate_upper_eq_explicit]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateRealization.lean: cfcb20c7693f9aba436a5892a64e3f7d94265adee50245684138ed068af47cf7
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a explicit geometry-mate realization]
+    conjuncts: [actual pulled selected transport data, literal backward composite, backward-forward cancellation, forward-backward cancellation, generated mate upper factorization]
+    undischarged_assumptions: [carrier-level backward comparisons and their reading/naturality laws, complete geometry triangle, downstream artifacts]
+    acceptance_point: The backward map is generated from the exact and realized-refinement inverse cleavages already constructed in G-115; no caller-supplied inverse or geometry certificate is accepted.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 18 core mate iso, generated exact and realized-refinement forward/backward inverse laws]
+    direction_hypothesis: []
+    discharged: [pulled route backward upper provenance, both cancellations, explicit upper factorization of generatedRouteCoreMate]
+    remaining: [Support/Axis/Observable backward realization, reads and naturality, geometry triangle and downstream contracts]
+  certificate_provenance:
+    discharged: [all inverse laws are compositions of the two explicit G-115 cleavage inverse pairs; core upper factorization uses the generated route mate triangle]
+    unresolved: [carrier-level comparison maps]
+  proof_use:
+    used: [inverseCorePackage backward/forward laws, SelectedRefinementTransport backward/forward laws, generatedRouteRefinementMate_fac]
+    unused: []
+  structure_field_escape: no backward upper map, cancellation law, or upper factorization is caller data
+  route_integrity: the construction uses the literal pulledRefinementAt, pullbackTargetExactArrow, pulledRouteGeometryHom, and baseRouteGeometryHom of the active G-115 context
+  predecessor_integrity: completed G-112 and G-114 remain unchanged; the absent backward realization API is added to G-115
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateRealization.lean => exit 0 and 6 declarations standard axioms only; git diff --check => exit 0; placeholder and hidden/BiDi scans => no matches]
+  blocking_findings: []
+  next_obligation: Construct the backward Support/Axis/Observable comparisons over pulledRouteBackwardUpper, compose them with the base-route forward comparisons, and prove upperGeometryMate_triangle over generatedRouteCoreMate.
+```
+
+Cycle 19 creates the missing realization API in G-115 and treats the completed
+G-112 and G-114 surfaces only as immutable inputs.
