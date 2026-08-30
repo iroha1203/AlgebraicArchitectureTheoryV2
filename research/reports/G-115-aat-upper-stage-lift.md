@@ -1929,3 +1929,61 @@ audits:
   blocking_findings: []
   next_obligation: Generate the base and pulled finite edge transports from sourceTransport.edgeLift using the two literal cartesian route legs, prove exact lower projections, factor laws, coefficient identity and G-109 cocartesian qualifications, then combine those transports with the two generated comparator families to derive route cochains.
 ```
+
+## Cycle 34 — generated route core diagrams and edge factor graphs
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 34
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 2b6b7a0c208dbbc4314d61d8162b51eb9bdaeae5
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 33 merged both finite comparator families generated from the sole authored source comparator
+  proof_dag_predecessors: [sourceFiberDiagram, sourceTransport.edgeLift, sourceTransport.edge_base, generatedBaseRouteLegAt, generatedPulledRouteLegAt, baseRouteComparisonCoreIso, pulledRouteComparisonCoreIso, baseCompositeLegAt_naturality, pulledCompositeLegAt_naturality]
+  proof_obligation: Conjugate the theorem-generated G-114 base and pulled core diagrams onto the literal route geometry endpoints, expose their actual edge maps, and prove that each edge factors its own literal route leg through the corresponding authored source edge without accepting a route transport or naturality certificate.
+  selection_reason: A complete geometry edge lift must lie over an exact core edge with a proved route factor graph. Generating this lower layer first separates the G-114 exact diagrammatic input from the next geometry-cartesian pullback and prevents a stored route transport from entering the compatible input.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCoreEdges.lean]
+  risks: [reusing stored baseTransport or pulledTransport, replacing the source edge by an unrelated morphism, collapsing the two route diagrams, accepting a naturality certificate, claiming a geometry transport before the second cartesian pullback]
+  unchecked: [complete generated geometry edge lifts, coefficient identity and G-109 cocartesian qualifications, path and two-cell compatibility, derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: The two G-114 core diagrams are independently conjugated onto the pointwise base-first and pulled-first route endpoints. For every presented edge, each exact generated core map now factors its literal route leg through the actual sourceTransport edgeLift. The proofs use the theorem-generated naturality of the two composite route legs and rewrite the right side through sourceTransport.edge_base.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteCoreIsoAt, generatedPulledRouteCoreIsoAt, generatedBaseRouteCoreDiagram, generatedPulledRouteCoreDiagram, generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac]
+  evidence: [focused Lean check, 6-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleRouteCoreEdges.lean: edcf51398915489e566936caeffe5c6428e3c00c7eaa546ebf6c7d592a1c1e6c
+  claim_mapping:
+    theorem_names: [generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac]
+    source_labels: [revision 4 certificate-free route edge construction, target theorem clause (b)]
+    conjuncts: [base route core endpoint comparison, pulled route core endpoint comparison, two functorial generated core diagrams, base source-edge factor graph, pulled source-edge factor graph]
+    undischarged_assumptions: [geometry-stage edge pullbacks, G-109 edge qualifications and coefficient identity, finite path and cell coherence, route cochains and global mate equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: Both edge maps are functorial conjugations of distinct G-114 core diagrams. Their factor laws terminate literally at input.sourceTransport.edgeLift edge, after sourceTransport.edge_base is used to connect the authored lift to the source diagram map. No route edge or naturality witness is an input field or theorem argument.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 33 compatible input and comparators, completed G-114 base and pulled core diagrams, theorem-generated composite route-leg naturality, authored G-109 source edge lifts]
+    direction_hypothesis: []
+    discharged: [two exact endpoint comparison families, two generated core diagrams, both source-edge factor graphs]
+    remaining: [complete geometry edge lifts, edge coefficient identity and G-109 cocartesian qualifications, finite path and two-cell compatibility, derived cochains and global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [endpoint comparisons come from G-112/G-114 route comparison isomorphisms; edge maps are conjugations of actual G-114 diagrams; factor graphs come from baseCompositeLegAt_naturality or pulledCompositeLegAt_naturality plus sourceTransport.edge_base]
+    unresolved: [geometry-stage cartesian edge pullback, edge cocartesianness and coefficient identity, cochain laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [sourceFiberDiagram, sourceTransport.edgeLift, sourceTransport.edge_base, baseRouteComparisonCoreIso, pulledRouteComparisonCoreIso, baseCompositeLegAt_naturality, pulledCompositeLegAt_naturality, baseRouteComparisonInv_fac, pulledRouteComparisonInv_fac, baseRouteComparisonHom_fac, pulledRouteComparisonHom_fac]
+    unused: [root and rootPath; source comparator fields were consumed in Cycle 33 and are not needed for this lower edge layer]
+  structure_field_escape: no route core diagram, edge, transport, naturality, cartesianness, cochain, comparison, or solution is stored in the input or accepted as a theorem argument
+  route_integrity: base and pulled core diagrams are separate conjugations of the corresponding G-114 diagrams and each factor law uses its own literal generated route leg
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: endpoint core isomorphisms are used only to conjugate diagrams; no route-between solution or solution-space equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleFiniteComparators` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCoreEdges.lean` => exit 0 and 6 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Use each generated exact core edge and factor graph as the lower map for the strongly Cartesian geometry pullback, exactify the complete geometry edge, and prove its literal route factorization before assembling G-109 edge qualifications and route transports.
+```
