@@ -1697,3 +1697,61 @@ audits:
   blocking_findings: []
   next_obligation: Construct the G-115-local two-stage cartesian pullback and exactification of the source comparator and inverse on both generated routes, including map-id and map-mul.
 ```
+
+## Cycle 30 — package stage of cartesian comparator pullback
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 30
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 40cf37a3786af3a203b56632596c3292ff9e2c04
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 29 merged the certificate-free source input and both theorem-qualified generated route legs
+  proof_dag_predecessors: [UpperGeometryCompatibleProblemInputData, baseRouteGeometryBase_isStronglyCartesian, pulledRouteGeometryBase_isStronglyCartesian, CompositeFiberAut.hom_base_base_eq, IsStronglyCartesian.map, exactPackageToRefinement]
+  proof_obligation: Pull the package map of an arbitrary source CompositeFiberAut along each generated strongly Cartesian route, prove both factor laws and pointed-identity projections, and exactify both universal factors to PackageTotalHom.
+  selection_reason: CompositeFiberAut is vertical only after the pointed projection, not necessarily after geometryProjection. The package pullback must therefore be exposed and checked before the geometry-stage pullback can be typed without a false verticality inference.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparator.lean]
+  risks: [skipping the package stage, using G-109 covariant map on a contravariant refinement route, accepting a cartesianness argument, treating source automorphism base as a package identity]
+  unchecked: [geometry-stage pullback and exactification, generated CompositeFiberAut inverse laws, map-id and map-mul, compositor/unitor compatibility, finite route comparator families and derived cochain, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Both generated reverse routes now canonically pull back the package map of any source CompositeFiberAut by their theorem-derived strong-cartesian universal property. Each factor has a proved route factorization and lies over the exact pointed identity, so a local exactification recovers an exact PackageTotalHom without assuming that the source geometry automorphism is already package-vertical.
+  completion_candidate: no
+  lean_artifacts: [exactPackageHomOfRefinement, exactPackageHomOfRefinement_toRefinement, generatedBasePackageComparatorCandidateAt, generatedBasePackageComparatorCandidateAt_base, generatedBasePackageComparatorRefinementAt, generatedBasePackageComparatorRefinementAt_fac, generatedBasePackageComparatorRefinementAt_base, generatedBasePackageComparatorAt, generatedBasePackageComparatorAt_toRefinement, generatedPulledPackageComparatorCandidateAt, generatedPulledPackageComparatorCandidateAt_base, generatedPulledPackageComparatorRefinementAt, generatedPulledPackageComparatorRefinementAt_fac, generatedPulledPackageComparatorRefinementAt_base, generatedPulledPackageComparatorAt, generatedPulledPackageComparatorAt_toRefinement]
+  evidence: [focused Lean check, 17-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleComparator.lean: 3cee0da2285fa2e7d70f81d38ae1f5fb974140797e02d53dab65021a279ab2d2
+  claim_mapping:
+    theorem_names: [generatedBasePackageComparatorCandidateAt_base, generatedBasePackageComparatorRefinementAt_fac, generatedBasePackageComparatorRefinementAt_base, generatedBasePackageComparatorAt_toRefinement, generatedPulledPackageComparatorCandidateAt_base, generatedPulledPackageComparatorRefinementAt_fac, generatedPulledPackageComparatorRefinementAt_base, generatedPulledPackageComparatorAt_toRefinement]
+    source_labels: [revision 4 cartesian comparator pullback, target theorem clause (b)]
+    conjuncts: [two package-stage cartesian pullbacks, pointed verticality, two route factor laws, exact package recovery]
+    undischarged_assumptions: [geometry-stage pullback, inverse and group laws, finite comparator transport and global mate equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: The constructors accept an arbitrary source CompositeFiberAut but no route, cartesianness, comparison, or solution certificate. Passing its group inverse to the same API supplies the inverse-side package factor; proving that the geometry factors form an automorphism remains a successor obligation.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 29 compatible input, G-109 source CompositeFiberAut, completed G-112/G-114 generated route cleavages]
+    direction_hypothesis: []
+    discharged: [package-stage pullback on both routes, pointed identity projection, exact PackageTotalHom recovery, both package factor laws]
+    remaining: [geometry-stage exact pullback, generated comparator group laws, finite comparator/cochain/global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [route cartesianness comes from Cycle 29 predecessors; factors come from IsStronglyCartesian.map; exact lower identity follows from CompositeFiberAut.hom_base_base_eq; exactification reuses the complete universal factor upper map]
+    unresolved: [geometry inverse laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [CompositeFiberAut.hom_base_base_eq, baseRouteGeometryBase_isStronglyCartesian, pulledRouteGeometryBase_isStronglyCartesian, IsStronglyCartesian.map, IsStronglyCartesian.fac, IsHomLift.eq_of_isHomLift, exactPointedToRefinement, exactPackageToRefinement]
+    unused: [root and rootPath; source edge and two-cell fields are reserved for successor finite transport]
+  structure_field_escape: no package factor, route cartesianness, generated comparator, comparison, solution, or cochain is stored in the input or accepted as a theorem argument
+  route_integrity: base and pulled factors use the two literal Cycle 29 legs at the actual retargeted source object; neither route is reconstructed from the other
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: no automorphism or solution equivalence is claimed at this package-only checkpoint
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleInput` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparator.lean` => exit 0 and 17 declarations standard axioms only; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Use each exact package factor as the lower map for the second IsStronglyCartesian.map at refinementGeometryProjection, exactify the geometry factor, and prove hom/inverse laws to obtain both generated CompositeFiberAut families.
+```
