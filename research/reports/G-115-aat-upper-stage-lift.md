@@ -2395,3 +2395,61 @@ audits:
   blocking_findings: []
   next_obligation: Prove the remaining finite compositor/unitor compatibility, derive both raw-cochain image equations through the generated group homomorphisms, then prove the global canonical upper-mate equation.
 ```
+
+## Cycle 42 — raw-cochain images under generated route homomorphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 42
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: eb0cfde7221a562742a81bbaad6bfa3750b80f87
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 41 merged the two canonical-comparator pullback equalities
+  proof_dag_predecessors: [generatedBaseRouteRawDefectCochain, generatedPulledRouteRawDefectCochain, compatibleSourceRawDefectCochain, generatedBaseCompositeFiberAutHomAt, generatedPulledCompositeFiberAutHomAt, generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback]
+  proof_obligation: Prove that each generated route raw cochain is pointwise the image of the source raw cochain under its generated composite-fiber group homomorphism.
+  selection_reason: The G-109 raw defect is authored comparator times inverse canonical comparator, so Cycle 41 supplies exactly the missing canonical factor required to transport it by map_mul and map_inv.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRawCochainImages.lean]
+  risks: [using only authored-comparator functoriality, omitting inverse preservation, conflating dependent route codomains, claiming the global mate from pointwise cochain images]
+  unchecked: [finite compositor/unitor compatibility beyond path-factor prerequisites, global canonical upper-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Both generated raw cochains are now identified pointwise with the image of the source raw cochain. The proof unfolds the actual G-109 raw defect and consumes map_mul, map_inv, the authored comparator pullback definition, and the corresponding canonical-comparator pullback theorem.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteRawDefectCochain_eq_image, generatedPulledRouteRawDefectCochain_eq_image]
+  source_sha256:
+    UpperGeometryCompatibleRawCochainImages.lean: 5655786aac814597228073b364a2927c59d419cd165edfcd0d31d91aab789557
+  evidence: [focused Lean check, 2-declaration namespace standard-axiom audit, targeted direct-module construction, module registration, source hash, literal scans]
+  claim_mapping:
+    theorem_names: [generatedBaseRouteRawDefectCochain_eq_image, generatedPulledRouteRawDefectCochain_eq_image]
+    source_labels: [revision 4 finite compatible upper pseudofunctor, target theorem clause (b)]
+    conjuncts: [base raw-cochain image law, pulled raw-cochain image law]
+    undischarged_assumptions: [finite compositor/unitor compatibility, global mate, endpoint and solution equivalences]
+    acceptance_point: Each equality is derived from the actual transport-generated cochains and its route-specific group homomorphism; neither cochain nor image law is accepted from the caller.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [three Cycle 40 transport-derived raw cochains, two generated group homomorphisms, two Cycle 41 canonical-comparator pullback equalities]
+    direction_hypothesis: []
+    discharged: [base raw-cochain image law, pulled raw-cochain image law]
+    remaining: [finite compositor/unitor compatibility, global canonical-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [both image laws are computed from map_mul and map_inv on theorem-generated group homomorphisms]
+    unresolved: [global mate, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [upperRawTwoCellDefect, map_mul, map_inv, generatedBaseCompositeFiberAutHomAt_apply, generatedPulledCompositeFiberAutHomAt_apply, generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback]
+    unused: [the pointwise upper mate is reserved for the global mate equation]
+  structure_field_escape: no cochain, image law, or comparator compatibility is stored in the input or accepted as an argument
+  route_integrity: base and pulled equalities use distinct raw cochains, group homomorphisms, and canonical pullback theorems
+  predecessor_integrity: the fixed GOAL and completed predecessor declarations are unchanged
+  target_fitting: none-found
+  vacuity: theorems quantify over every declared two-cell; named nonidentity firing remains downstream
+  one_way_as_equivalence: no endpoint or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRawCochainImages` passed; focused checker passed with 2 declarations standard axioms only; module registered in research-modules.txt and DoctrineFiberProduct.lean; git diff --check and hidden/BiDi, privacy, placeholder, reverse-import scans clean]
+  blocking_findings: []
+  next_obligation: Prove the remaining finite compositor/unitor compatibility and the global canonical upper-mate equation, then construct endpoint isomorphisms and the solution equivalence.
+```
