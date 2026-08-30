@@ -1264,3 +1264,63 @@ audits:
 
 Cycle 21 creates the complete missing geometry mate in G-115. Completed G-112
 and G-114 remain immutable inputs rather than retroactive edit targets.
+
+## Cycle 22 — finite pointwise mate family
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 22
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: 7087f8a812d1971364ec67379639f8756af4c4fa
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 21 merged the complete objectwise upper geometry mate and full route triangle
+  proof_dag_predecessors: [upperGeometryMate, upperGeometryMate_fac, generatedRouteCoreMate_comparison_square, UpperRefinementBCProblemData]
+  proof_obligation: Evaluate the generated target geometry and upper mate at every vertex of the actual finite problem, retaining its coefficient carriers, full geometry triangle, and G-114 comparison square without identifying independently authored route geometries.
+  selection_reason: Edge naturality and solution transport require a named dependent family over the actual sourceFiberDiagram; a standalone mate at one target does not provide that finite indexing boundary.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteMate.lean]
+  risks: [casting generated route geometries to authored problem geometries, replacing the G-114 comparison square by endpoint equality, claiming edge or comparator naturality before constructing it]
+  unchecked: [generated route edge maps, edge naturality, authored comparator intertwining, geometry/core solution-space equivalence, named positive and negative problems, target clauses (c)--(d), final target assembly]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: G-115 now provides a target geometry, generated base and pulled route geometries, and canonical upper geometry mate at every vertex of an arbitrary actual finite upper problem, together with both coefficient-carrier identifications, the full pointwise triangle, and the pointwise G-114 comparison square.
+  completion_candidate: no
+  lean_artifacts: [generatedTargetGeometryAt, generatedBaseRouteGeometryAt, generatedPulledRouteGeometryAt, generatedUpperGeometryMateAt, generatedUpperGeometryMateAt_base, generatedBaseRouteGeometryAt_coefficient_eq, generatedPulledRouteGeometryAt_coefficient_eq, generatedUpperGeometryMateAt_triangle, generatedUpperGeometryMateAt_comparison_square]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryFiniteMate.lean: 70a2b047d14aad4a70f748856481789ebfb89540496c091e1fa4c53d91d92dd9
+  claim_mapping:
+    theorem_names: [generatedUpperGeometryMateAt_base, generatedUpperGeometryMateAt_triangle, generatedUpperGeometryMateAt_comparison_square]
+    source_labels: [target theorem clause (b), finite presentation pointwise comparison boundary]
+    conjuncts: [actual sourceFiberDiagram indexing, generated complete geometry mate, retained coefficient carriers, full pointwise factorization, explicit G-114 comparison square]
+    undischarged_assumptions: [edgewise comparison naturality, authored comparator intertwining, solution-space equivalence, named fixtures, paired cochain and exchange-exact artifacts]
+    acceptance_point: Generated and independently authored route geometries remain distinct; the new family fixes the vertices and comparison square that later bridge maps must consume.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [finite pointwise evaluation of the generated mate, pointwise full triangle, pointwise G-114 core comparison square]
+    remaining: [finite edge maps and naturality, comparator intertwining, solution equivalence, positive and negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [each component is generated directly from the common target geometry in the actual problem and the retargeted active context]
+    unresolved: [geometry-level endpoint comparison and downstream solution transports]
+  proof_use:
+    used: [problem sourceFiberDiagram, problem commonTarget geometry, upperGeometryMate_fac, generatedRouteCoreMate_comparison_square]
+    unused: []
+  structure_field_escape: no component, triangle, comparison square, edge law, or solution is supplied by the caller
+  route_integrity: every vertex is evaluated on its literal sourceFiberDiagram object and retargeted G-114 context
+  predecessor_integrity: completed G-112 and G-114 source and GOAL cards are unchanged; the finite-family API is added only in G-115
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: not-yet-claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteMate.lean => exit 0 and 9 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: Construct the generated base and pulled edge maps over this family, prove upperGeometryMate edge naturality and authored comparator intertwining, then build the two solution transports and their inverse laws.
+```
+
+Cycle 22 fixes the finite pointwise domain of the comparison without collapsing
+generated and authored geometry endpoints. Completed predecessor GOALs remain
+unchanged.
