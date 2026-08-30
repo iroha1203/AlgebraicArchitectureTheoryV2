@@ -9,9 +9,10 @@ from the first stage as the lower morphism for the strongly Cartesian
 geometry pullback.  The resulting complete refinement-geometry factor is
 then exactified to a `GeometryTotalHom`.
 
-The group laws and the resulting `CompositeFiberAut` structures are kept as
-successor obligations.  The declarations here expose the two factorization
-laws needed to prove those laws by Cartesian uniqueness.
+The declarations here prove the inverse laws, package the two pulled-back
+factors as `CompositeFiberAut` structures, and expose their factorization laws.
+Functorial `map-id` / `map-mul` laws and compositor / unitor compatibility are
+kept as successor obligations for the finite comparator-family construction.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -492,8 +493,8 @@ noncomputable def generatedBaseCompositeFiberAutAt
       𝟙 (packagePoint (input.generatedBaseRouteGeometryAt i).core)
     rfl⟩
 
-/-- The generated base-route automorphism has the exact pulled-back forward
-geometry factor. -/
+/-- Normalize the generated base-route automorphism's forward accessor to the
+exact pulled-back geometry factor. -/
 @[simp] theorem generatedBaseCompositeFiberAutAt_hom
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -503,8 +504,8 @@ geometry factor. -/
       (input.generatedBaseCompositeFiberAutAt i automorphism) =
       input.generatedBaseGeometryComparatorAt i automorphism := rfl
 
-/-- The generated base-route automorphism has the exact pulled-back inverse
-geometry factor. -/
+/-- Normalize the generated base-route automorphism's inverse accessor to the
+exact pulled-back geometry factor for the source inverse. -/
 @[simp] theorem generatedBaseCompositeFiberAutAt_inv
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -995,8 +996,8 @@ noncomputable def generatedPulledCompositeFiberAutAt
       𝟙 (packagePoint (input.generatedPulledRouteGeometryAt i).core)
     rfl⟩
 
-/-- The generated pulled-route automorphism has the exact pulled-back forward
-geometry factor. -/
+/-- Normalize the generated pulled-route automorphism's forward accessor to the
+exact pulled-back geometry factor. -/
 @[simp] theorem generatedPulledCompositeFiberAutAt_hom
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -1006,8 +1007,8 @@ geometry factor. -/
       (input.generatedPulledCompositeFiberAutAt i automorphism) =
       input.generatedPulledGeometryComparatorAt i automorphism := rfl
 
-/-- The generated pulled-route automorphism has the exact pulled-back inverse
-geometry factor. -/
+/-- Normalize the generated pulled-route automorphism's inverse accessor to the
+exact pulled-back geometry factor for the source inverse. -/
 @[simp] theorem generatedPulledCompositeFiberAutAt_inv
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
