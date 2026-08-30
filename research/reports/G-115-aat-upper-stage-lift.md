@@ -765,3 +765,57 @@ Cycle 12 does not equate the generated route cores with the G-114 selected
 domains. Those endpoints arise from different universal choices, so their
 comparison must be generated as isomorphisms in the current G-115 rather than
 forced by equality or by editing the completed predecessor GOALs.
+
+## Cycle 13 — base-route universal domain bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 13
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: dbeaf48f5c031965c6dc1500af817c36fc587178
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 12 merged exact vertical route mate
+  proof_obligation: Compare the explicit base-first geometry route domain with the independently selected G-114 base mate domain by universal uniqueness, without endpoint-equality substitution for the selected objects.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComparison.lean]
+  unchecked: [pulled-route domain bridge, full base and pulled composite triangles, comparison square with ctx.mateAtTarget, geometry-level upperGeometryMate, named problems and solutions, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The chosen target core and intermediate refinement package are anchored to the retargeted active context; the explicit and G-112-selected exact lift domains are connected by the canonical cartesian domain isomorphism with both factor triangles; this yields the actual base-route-to-base-mate endpoint iso.
+  completion_candidate: no
+  lean_artifacts: [targetCoreFiber, retargetedContext, baseRefinementCoreFiber, refinementSourceGeometry_core_eq_refinementLiftDomain, baseRefinementCoreFiber_eq_legacy, selectedBaseExactLift, explicitBaseExactLift, baseRouteCoreFiber_eq_explicit, selectedBaseExactLift_domain_eq_baseMate, baseRouteSelectedDomainIso, baseRouteSelectedDomainIso_hom_fac, baseRouteSelectedDomainIso_inv_fac, baseRouteBaseMateIso]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateComparison.lean: b2a62253e12ed8d3c7efd25014f5852f3ea54a7925917c8bb979a78617a75e44
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a componentwise comparison iso]
+    conjuncts: [actual target-core anchoring, explicit-to-public refinement-domain coherence, explicit-versus-selected exact universal iso, forward and inverse exact factor graphs, retargeted G-114 endpoint comparison]
+    undischarged_assumptions: [pulled-route universal bridge, complete route comparison square, geometry-level comparison and downstream artifacts]
+    acceptance_point: The base endpoint comparison is generated from cartesian uniqueness; equality is used only to normalize proven representations before assembling the iso.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 12 explicit route core, G-112 selected exact lift, G-114 retarget and legacy-domain coherence]
+    direction_hypothesis: []
+    discharged: [base intermediate package coherence, base explicit/selected domain iso, both exact-lift factor triangles, actual base endpoint iso]
+    remaining: [pulled endpoint iso, full route triangles and mate square, geometry lift, downstream named contracts]
+  certificate_provenance:
+    discharged: [base comparison comes from StrongCartesianLift.domainIso and its generated HomLift witnesses]
+    unresolved: [pulled refinement comparison and route-level mate square]
+  proof_use:
+    used: [legacyRefinementLift_domain_coherence, StrongCartesianLift.domainIso, domainIso_hom_fac, domainIso_inv_fac, domainIso hom and inverse IsHomLift]
+    unused: []
+  structure_field_escape: no domain comparison, endpoint iso, or factor triangle is supplied by the caller
+  route_integrity: the selected endpoint is the retargeted G-114 baseMatePackage and the explicit endpoint is the actual Cycle 10 baseRouteCoreFiber
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComparison.lean => exit 0 and 13 declarations standard axioms only; git diff --check => exit 0; placeholder scan => no matches]
+  blocking_findings: []
+  next_obligation: Construct the pulled-route domain bridge using exact-domain comparison followed by refinement universal uniqueness, then prove both complete route triangles.
+```
+
+Cycle 13 uses the completed G-112 and G-114 APIs only as immutable inputs. The
+fact that two universal choices have isomorphic domains is represented by the
+generated isomorphism itself; it is not collapsed into an endpoint cast.
