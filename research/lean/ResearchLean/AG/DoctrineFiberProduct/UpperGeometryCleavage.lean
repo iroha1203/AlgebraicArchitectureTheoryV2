@@ -294,14 +294,15 @@ theorem exactSourceGeometry_raw_forward {U : AtomCarrier.{u}}
     (inverseCorePackageBackwardUpper G.core f)
     (inverseCorePackageBackward_comp_forward G.core f) G.raw).symm
 
-/-- Target geometry pulled back to the realized-refinement inverse package. -/
+/-- Target geometry pulled back to the realized-refinement inverse package.
+The supplied fiber equality is used directly when selecting transport data, so
+the target coefficient carrier and ring instance remain definitionally fixed. -/
 noncomputable def refinementSourceGeometry {U : AtomCarrier.{u}}
     {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
     (r : PointedRefinementHom X Y)
     (condition : RealizedLocusExtractionReflecting r)
     (hG : packagePoint G.core = Y) : GeometryPackage.{u, v} U := by
-  subst Y
-  let data := selectedTransportDataOfRealizedReflection r condition ⟨G.core, rfl⟩
+  let data := selectedTransportDataOfRealizedReflection r condition ⟨G.core, hG⟩
   exact pullPackage G
     (SelectedRefinementTransport.inverseCorePackageForwardUpper G.core data)
     (SelectedRefinementTransport.inverseCorePackageBackwardUpper G.core data)
@@ -386,16 +387,16 @@ noncomputable def refinementBaseHom {U : AtomCarrier.{u}}
     atomEquiv_eq := rfl
   }
 
-/-- The generated refinement geometry keeps the target coefficient ring. -/
+/-- The generated refinement geometry uses the literal identity on the
+definitionally retained target coefficient ring. -/
 noncomputable def refinementCoefficientHom {U : AtomCarrier.{u}}
     {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
     (r : PointedRefinementHom X Y)
     (condition : RealizedLocusExtractionReflecting r)
     (hG : packagePoint G.core = Y) :
     (refinementSourceGeometry G r condition hG).Coefficient →+*
-      G.Coefficient := by
-  subst Y
-  exact RingHom.id G.Coefficient
+      G.Coefficient :=
+  RingHom.id G.Coefficient
 
 /-- The refinement forward leg recovers the target raw system strictly. -/
 theorem refinementSourceGeometry_raw_forward {U : AtomCarrier.{u}}
