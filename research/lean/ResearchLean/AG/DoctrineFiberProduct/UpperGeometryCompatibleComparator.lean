@@ -44,6 +44,8 @@ noncomputable def exactPackageHomOfRefinement
     intro atom
     rfl
 
+/-- Package exactification normalizes its base projection to the specified
+exact package morphism. -/
 @[simp] theorem exactPackageHomOfRefinement_base
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     (f : PackageTotalHom P Q)
