@@ -710,3 +710,58 @@ audits:
 
 Cycle 11 adds the missing API only in G-115. Completed G-112 and G-114 files
 remain untouched and serve solely as inputs and the later comparison target.
+
+## Cycle 12 — exact vertical packaging and uniqueness surface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 12
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: c55bb13126ca2a09b1943b303e15fffc4cda0169
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 11 merged universal refinement-package comparison
+  proof_obligation: Package the generated comparison as an exact vertical morphism in the actual mixed-pullback core fiber and expose the uniqueness theorem needed for the separate G-114 mate comparison.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMate.lean]
+  unchecked: [route-domain comparison isos with G-114 selected lift domains, comparison square with ctx.mateAtTarget, geometry-level upperGeometryMate, named problems and solutions, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The universally generated lax-package comparison is proved to lie over the exact endpoint transport, packaged as a vertical CoreFiber morphism, recovered exactly by the exact-to-refinement embedding, and characterized by the pulled-route universal property.
+  completion_candidate: no
+  lean_artifacts: [generatedRouteRefinementMate_isHomLift, generatedRouteRefinementMate_base, generatedRouteCoreMate, generatedRouteCoreMate_toRefinement, generatedRouteRefinementMate_unique]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMate.lean: 1354aab13db906b5f9f32120d8ed20694d14d2b8713d6471f1ef75aed69735bf
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a exact core mate packaging]
+    conjuncts: [exact lower provenance, vertical CoreFiber membership, faithful exact embedding recovery, universal uniqueness]
+    undischarged_assumptions: [G-114 selected-domain bridge isos, G-114 mate comparison square, geometry-level comparison and downstream artifacts]
+    acceptance_point: The local route mate is now an exact core-fiber morphism; it is not identified with the differently typed G-114 selected-domain mate by endpoint casts.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 11 generated comparison and factor triangle, actual mixed-pullback endpoint equations]
+    direction_hypothesis: []
+    discharged: [exact endpoint lower map, vertical core-fiber packaging, embedding recovery, uniqueness among comparisons with the same lower map and route triangle]
+    remaining: [universal route-domain bridges and G-114 mate square, geometry lift, downstream named contracts]
+  certificate_provenance:
+    discharged: [the exact mate upper is the generated universal comparison upper; its lower exactness follows from the generated IsHomLift equation]
+    unresolved: [comparison with G-114 selected lift domains and geometry fields]
+  proof_use:
+    used: [IsStronglyCartesian.map_isHomLift, IsHomLift.fac, exact endpoint equations, exactPackageToRefinement, IsStronglyCartesian.map_uniq]
+    unused: []
+  structure_field_escape: no exact mate, lower identity, factor triangle, or uniqueness certificate is accepted as input
+  route_integrity: exact embedding recovers the full generated refinement-package comparison, not only its upper field
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMate.lean => exit 0 and 20 declarations standard axioms only; git diff --check => exit 0; placeholder scan => no matches]
+  blocking_findings: []
+  next_obligation: Construct G-115-local universal route-domain bridge isos to the G-114 selected lift domains, then prove the lower and upper parts of the mate comparison square separately.
+```
+
+Cycle 12 does not equate the generated route cores with the G-114 selected
+domains. Those endpoints arise from different universal choices, so their
+comparison must be generated as isomorphisms in the current G-115 rather than
+forced by equality or by editing the completed predecessor GOALs.
