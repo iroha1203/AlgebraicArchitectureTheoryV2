@@ -478,3 +478,67 @@ carrier equalities, while the readable-morphism computation route needed for
 naturality has not yet been identified or connected through the public API. The
 refinement realization comparisons remain a separate undischarged obligation.
 No naturality field or `HGeom` certificate was added to bypass either gap.
+
+## Cycle 8 — G-115-local exact restriction naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 8
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: 99ed49cacde78dfda5ab1f4168aba213a78c310b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 7 merged checkpoint and revision 3 K2b2a
+  proof_dag_predecessors: [Cycle 7 source geometry pullback, inverseCoreEquationForward, deconjugateEquationSystemExact]
+  proof_obligation: Construct the missing exact support/axis/observable restriction-naturality API inside G-115 without changing completed predecessor modules.
+  selection_reason: Exact restriction naturality is the shortest remaining step from the Cycle 7 carrier/read data to an exact geometry hom.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean]
+  risks: [dependent source-reading cast, contravariant observable direction, certificate escape]
+  unchecked: [refinement realization and naturality, exact coverage and overlap packaging, total geometry hom, downstream cleavage and comparisons]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: A G-115-local source-reading-cast computation route now generates exact support, axis, and observable comparisons together with their reading-preservation and restriction-naturality laws.
+  completion_candidate: no
+  lean_artifacts: [inverseCoreEquationForward_eq_geometryCast, generatedExactSupportComp, generatedExactSupportComp_naturality, generatedExactAxisComp, generatedExactAxisComp_naturality, generatedExactObservableComp, generatedExactObservableComp_naturality, generatedExactSupportComp_reads, generatedExactAxisComp_reads, generatedExactObservableComp_reads]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCleavageNaturality.lean: 582126fedb8a1c2ede30ed41e37c94958597ae27b5398d47a412f0ea276e76b3
+  claim_mapping:
+    theorem_names: [generatedExactSupportComp_naturality, generatedExactAxisComp_naturality, generatedExactObservableComp_naturality, generatedExactSupportComp_reads, generatedExactAxisComp_reads, generatedExactObservableComp_reads]
+    source_labels: [target theorem clause (b), K2b2a exact branch]
+    conjuncts: [exact realization carrier comparison, exact reading preservation, exact restriction naturality]
+    undischarged_assumptions: [refinement realization and naturality, exact coverage and overlap packaging, all later revision-3 artifacts]
+    acceptance_point: The exact restriction-naturality obligation is discharged; this cycle does not claim a complete geometry hom or O10.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [G-112 explicit exact upper pair]
+    direction_hypothesis: []
+    discharged: [exact support/axis/observable restriction naturality generated from the explicit upper construction]
+    remaining: [refinement realization and naturality, coverage and overlap packaging, geometry cleavage and mate comparison, named problems, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [source-reading cast computation and deconjugate context transport are constructed in G-115]
+    unresolved: [refinement realization and downstream comparison]
+  proof_use:
+    used: [inverseCoreEquationForward, deconjugateEquationSystemExact, transport context equivalence, source-reading equality]
+    unused: []
+  structure_field_escape: no supplied realization, naturality, or HGeom field
+  route_integrity: the comparisons and naturality laws are generated from the exact upper equation transport and its explicit source cast
+  target_fitting: none-found
+  vacuity: not yet applicable before named fixtures
+  one_way_as_equivalence: not claimed
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean => exit 0 and 10 declarations standard axioms only; git diff --check => exit 0; rg -n "\\b(axiom|admit|sorry|unsafe)\\b" research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean => exit 1/no matches]
+  blocking_findings: []
+  next_obligation: Generate the refinement realization and restriction-naturality route locally in G-115, then package coverage, overlap, and total geometry homs.
+```
+
+The Cycle 7 API gap was resolved in the current GOAL.  The new source-cast
+computation layer is local to G-115 and leaves G-112 and G-114 unchanged.  It
+proves all three exact restriction squares from the constructed equation
+transport, including the contravariant observable square, while retaining the
+separate reading-preservation laws.  Refinement realization and packaging into
+the complete geometry morphism remain unimplemented.
