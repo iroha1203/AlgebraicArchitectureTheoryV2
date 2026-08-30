@@ -194,10 +194,13 @@
      coefficient componentがidentityであるpaired relationを定義する。identity、
      vertical composition、path concatenationでの閉性、`upperRawDefectCochain`の
      componentwise intertwining、actual coefficient-trivial suborbit membershipのpaired
-     preservationを証明する。さらにgeometry-level comparisonを通じてcore-selected
-     companionのcochain / paired relationへtransportし、componentwise cochainとsuborbit
-     membershipの一致を証明する。proof bodyはleg triangle、edge equation、comparator
-     equation、comparison naturality / comparator compatibilityを別々に実消費し、core-only
+     preservationを証明する。geometry-level comparisonからcoefficient-trivial
+     reselectionのforward / backward transportを生成し、各edge automorphism、coefficient
+     identity、solution intertwiningを保ち、実際に比較するrestricted reselection space上で
+     両側inverseを証明する。このreselection transportを通じてcore-selected companionの
+     cochain / paired relationへtransportし、componentwise cochainとsuborbit membershipの
+     一致を導く。proof bodyはleg triangle、edge equation、comparator equation、comparison
+     naturality / comparator compatibility、reselection transportを別々に実消費し、core-only
      transportで閉じない。
 
      `upperDecisionSolution` 上でnonidentity comparator / cochain / coefficient-trivial
@@ -261,7 +264,7 @@
 | G-115-local geometry cleavage / mate comparison | discharge-required | G-112 / G-114を変更せず、明示exact strong liftとrealized-refinement inverse liftからgeometry packages / homs / map lawsを生成する。G-114 actual mateとのcore comparisonにgeometry transportを載せ、presentation naturality、leg / edge / authored-comparator compatibility、solution-space equivalenceを証明する。caller-supplied `HGeom`やcomparison certificateを受け取らない |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。route間solutionを含まず、O10放電とは数えない。naturalityのcore射影だけを既存factor lawsで証明する |
 | named decision / negative problems | discharge-required | active genuinely-lax routeから生成したG-115-local geometry-compatible route上でactual solutionとactual non-liftabilityを別々に構成し、G-114 mate comparisonを実消費する。decision component自身のnonidentityを具体評価するがIsIsoは決めない。certificate payload不可 |
-| paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費し、geometry comparisonのnaturality / comparator compatibilityからcore-selected companion cochain / paired relationとの一致を証明する。既存full orbitとの一致は主張しない |
+| paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費する。geometry comparisonからcoefficient-trivial reselectionの双方向transportとrestricted space上の両側inverseを生成し、そのedgewise compatibilityからcore-selected companion cochain / paired relation / suborbit membershipとの一致を導く。既存full orbitとの一致は主張しない |
 | `UpperStageExchangeExact solution` | direction-hypothesis | (d)のconditional interfaceでのみ仮定し、componentwise `IsIso` をconjugation / inverse / cochain / restricted-suborbit各定理で実消費する。predicateの成立証明またはO12放電とは数えない |
 | conditional orbit equivalence | discharge-required | `IsIso`仮定からconjugationを構成するが、その存否は決めない |
 
@@ -272,7 +275,9 @@
   direction-hypothesisの各fieldはroute内naturalityだけを担い、route間結論を含めない。
   G-115-local cleavageをG-112/G-114 routeと無関係なparallel fixtureにせず、生成された
   geometry-level comparisonのpresentation naturality、leg / edge / authored-comparator
-  compatibilityをsolution-space equivalenceとcochain / paired relationの一致で実消費する。
+  compatibilityをsolution-space equivalence、restricted reselection spaceの双方向transport、
+  cochain / paired relationの一致で実消費する。存在量化されたsuborbit membershipの一致だけを
+  reselection witnessの対応とみなさない。
   core squareへの単なる参照や過去GOALのdefinition変更を放電扱いしない。
 - `target route integrity gate`: G-115-local cleavage、selected lift、finite presentation、named decision / negative
   fixture、coefficient-trivial reselectionの出所を、入力data、G-112 / G-114 reviewed theorem、
