@@ -2161,3 +2161,62 @@ audits:
   blocking_findings: []
   next_obligation: Use source geometry IsIso, both route-leg Cartesian qualifications, and Cycle 35 factor laws with IsStronglyCartesian.of_comp to prove each generated refinement edge is Cartesian and IsIso; exactify its inverse and reflect both inverse laws to obtain complete geometry IsIso and strong cocartesianness.
 ```
+
+
+## Cycle 38 — complete route geometry-edge qualification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 38
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 1bba4b7a07b4acabaf75e5b2f3db6fcb81dcffd9
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 37 merged source and generated core-edge isomorphisms together with both core-stage cocartesian qualifications
+  proof_dag_predecessors: [sourceTransportGeometryEdge_isIso, generatedBaseRouteCoreEdge_isIso, generatedPulledRouteCoreEdge_isIso, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, IsStronglyCartesian.of_comp, exactGeometryHomOfRefinement, exactGeometryToRefinementGeometry_faithful]
+  proof_obligation: Cancel each generated route leg from the Cycle 35 factor graph to qualify the refinement geometry edge as strongly Cartesian, derive its isomorphism from the Cycle 37 exact core isomorphism, exactify the actual inverse, and obtain complete geometry-stage strong cocartesianness without a route certificate.
+  selection_reason: This is the certificate-free route identified by the independent rejection of PR 4289. It closes the second G-109 edge qualification before coefficient normalization and fixed-coefficient route packaging.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteGeometryQualifications.lean]
+  risks: [using the source-edge isomorphism without its actual factor law, cancelling a non-Cartesian route leg, assuming a faithful functor reflects isomorphisms, accepting an inverse or route qualification as input, collapsing the base and pulled routes]
+  unchecked: [generated endpoint coefficient normalization and identity, actual FixedCoefficientTwoLayerTransportOver route values, finite path and two-cell laws, derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Both generated refinement geometry edges are strongly Cartesian by cancellation against their distinct target route legs after the Cycle 35 factor laws identify the composites with a strongly Cartesian source-leg/source-edge composite. Their exact core bases are Cycle 37 isomorphisms, hence both refinement edges are isomorphisms. A reusable exactification theorem constructs the complete inverse from the actual refinement and core inverses and proves both inverse laws through the faithful exact embedding. The complete base and pulled geometry edges are therefore isomorphisms and acquire geometry-stage strong-cocartesian qualifications by of_isIso.
+  completion_candidate: no
+  lean_artifacts: [exactGeometryHomOfRefinement_isIso, generatedBaseRouteRefinementGeometryEdge_isStronglyCartesian, generatedPulledRouteRefinementGeometryEdge_isStronglyCartesian, generatedBaseRouteRefinementGeometryEdge_isIso, generatedPulledRouteRefinementGeometryEdge_isIso, generatedBaseRouteGeometryEdge_isIso, generatedPulledRouteGeometryEdge_isIso, generatedBaseRouteGeometryEdge_isStronglyCocartesian, generatedPulledRouteGeometryEdge_isStronglyCocartesian]
+  evidence: [focused Lean check, 9-declaration namespace standard-axiom audit, targeted direct-predecessor construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleRouteGeometryQualifications.lean: 14184011377ae6a42fc9a1b7319ce5c560b6f2f7b52572c202e193542a61d0b3
+  claim_mapping:
+    theorem_names: [generatedBaseRouteRefinementGeometryEdge_isStronglyCartesian, generatedPulledRouteRefinementGeometryEdge_isStronglyCartesian, generatedBaseRouteRefinementGeometryEdge_isIso, generatedPulledRouteRefinementGeometryEdge_isIso, generatedBaseRouteGeometryEdge_isIso, generatedPulledRouteGeometryEdge_isIso, generatedBaseRouteGeometryEdge_isStronglyCocartesian, generatedPulledRouteGeometryEdge_isStronglyCocartesian]
+    source_labels: [revision 4 certificate-free route edge construction, target theorem clause (b)]
+    conjuncts: [two refinement-edge Cartesian cancellations, two refinement-edge isomorphisms, explicit inverse exactification, two complete geometry-edge isomorphisms, two geometry-stage cocartesian qualifications]
+    undischarged_assumptions: [coefficient normalization and identity, route path and cell coherence, cochains and global equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: Every qualification is a theorem output. The only source-side edge premise is the existing authored source transport qualification already consumed by Cycle 37; the generated proof uses the actual Cycle 35 factor laws and the two separately generated route legs. No Beck--Chevalley, inverse, Cartesian, cocartesian, or route-transport certificate is added to the compatible input or accepted as a theorem argument.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 35 route edges and factor laws, Cycle 37 source and generated core-edge isomorphisms, theorem-generated pointwise route-leg cartesianness]
+    direction_hypothesis: []
+    discharged: [both refinement geometry-edge strong-Cartesian qualifications, both refinement geometry-edge isomorphisms, both complete geometry-edge isomorphisms, both geometry-stage strong-cocartesian qualifications]
+    remaining: [coefficient normalization and identity, fixed-coefficient route packaging, finite coherence, route cochains and global equation, endpoint geometry isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [Cartesian cancellation uses the literal Cycle 35 factor equations; base isomorphisms are the Cycle 37 generated core conclusions; complete inverses are exactifications of the actual refinement inverses and their laws are reflected by faithful map_injective; cocartesianness comes from the resulting actual isomorphisms]
+    unresolved: [coefficient equality casts, route path and cell laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [sourceTransportGeometryEdge_isIso, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, generatedBaseRouteCoreEdge_isIso, generatedPulledRouteCoreEdge_isIso, IsStronglyCartesian.comp, IsStronglyCartesian.of_comp, IsStronglyCartesian.isIso_of_base_isIso, exactGeometryHomOfRefinement_toRefinement, exactGeometryToRefinementGeometry.map_injective, IsStronglyCocartesian.of_isIso]
+    unused: [source coefficient identities and comparator fields remain reserved for coefficient normalization, fixed-coefficient packaging, and cochain construction]
+  structure_field_escape: no route edge qualification, inverse, transport, path law, cochain, comparison, or solution is stored in the input or accepted as a theorem argument
+  route_integrity: base and pulled cancellations use their own route legs, edge factor laws, generated core diagrams, and complete exactifications; only the authored source edge is shared
+  predecessor_integrity: completed G-109, G-112, and G-114 declarations and fixed GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: every generator edge is qualified; named nonidentity firing remains downstream
+  one_way_as_equivalence: edge isomorphisms are proved from universal properties and explicit exact inverses; no endpoint solution-space equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteEdgeQualifications` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteGeometryQualifications.lean` => exit 0 and 9 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Normalize both generated endpoint coefficient systems and prove that each generated complete route edge has identity coefficient map, then package the two actual FixedCoefficientTwoLayerTransportOver route transports from the now-derived core and geometry qualifications.
+```
