@@ -2337,3 +2337,42 @@ audits:
   blocking_findings: []
   next_obligation: Use the all-path unit/composition factor laws to prove the remaining finite compositor/unitor compatibility and the two-level Cartesian uniqueness theorem identifying each generated canonical comparator with the pullback of the source canonical comparator, then derive both raw-cochain image equations and prove the global canonical upper-mate comparator equation.
 ```
+
+## Cycle 41 — two-level canonical-comparator pullback
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 41
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: bebd406794c3d9c6e78cdb88124260176009171e
+tracking_issue: 4250
+selection:
+  proof_obligation: Identify each generated route canonical comparator with the Cartesian pullback of the source canonical comparator, without equating authored and canonical comparators.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleCanonicalComparators.lean]
+  unchecked: [finite compositor/unitor compatibility beyond path-factor prerequisites, route raw-cochain image equations, global canonical upper-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback]
+  source_sha256:
+    UpperGeometryCompatibleCanonicalComparators.lean: cc3cec52732354ea86f4219c875ccf19fe375dcbdfe8c4af6cafd127912296fe
+  claim_mapping:
+    conjuncts: [base canonical comparator pullback, pulled canonical comparator pullback]
+    acceptance_point: Each proof consumes its all-path factor laws and the source canonical factor law, then applies refinement-package uniqueness, refinement-geometry uniqueness, and strong-path CompositeFiberAut cancellation in order.
+audits:
+  premise_delta:
+    discharged: [base and pulled canonical-comparator pullback compatibility]
+    remaining: [finite compositor/unitor compatibility, two raw-cochain image laws, global canonical-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [both equalities are outputs of two-level Cartesian uniqueness]
+    unresolved: [cochain image, global mate, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [generatedBaseRoutePath_fac, generatedPulledRoutePath_fac, upperCanonicalTwoCellComparator_fac, generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, refinementPackageProjection Cartesian uniqueness, refinementGeometryProjection Cartesian uniqueness, CompositeFiberAut.ext_of_strong_fac]
+  structure_field_escape: no comparator compatibility or route equation is stored in the input or accepted as an argument
+  route_integrity: base and pulled proofs use distinct route data, legs, group homomorphisms, and Cartesian qualifications
+  target_fitting: none-found
+  blocking_findings: []
+  next_obligation: Derive both raw-cochain image equations, then prove the global canonical upper-mate equation.
+```
