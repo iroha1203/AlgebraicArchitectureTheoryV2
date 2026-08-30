@@ -2411,12 +2411,12 @@ selection:
   proof_dag_predecessors: [generatedBaseRouteRawDefectCochain, generatedPulledRouteRawDefectCochain, compatibleSourceRawDefectCochain, generatedBaseCompositeFiberAutHomAt, generatedPulledCompositeFiberAutHomAt, generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback]
   proof_obligation: Prove that each generated route raw cochain is pointwise the image of the source raw cochain under its generated composite-fiber group homomorphism.
   selection_reason: The G-109 raw defect is authored comparator times inverse canonical comparator, so Cycle 41 supplies exactly the missing canonical factor required to transport it by map_mul and map_inv.
-  expected_result_type: target-proof-checkpoint
+  expected_result_type: proof-obligation-discharged
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRawCochainImages.lean]
   risks: [using only authored-comparator functoriality, omitting inverse preservation, conflating dependent route codomains, claiming the global mate from pointwise cochain images]
   unchecked: [finite compositor/unitor compatibility beyond path-factor prerequisites, global canonical upper-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
 result:
-  proposed_result_type: target-proof-checkpoint
+  proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: Both generated raw cochains are now identified pointwise with the image of the source raw cochain. The proof unfolds the actual G-109 raw defect and consumes map_mul, map_inv, the authored comparator pullback definition, and the corresponding canonical-comparator pullback theorem.
   completion_candidate: no
   lean_artifacts: [generatedBaseRouteRawDefectCochain_eq_image, generatedPulledRouteRawDefectCochain_eq_image]
