@@ -604,3 +604,56 @@ Cycle 9 follows the forward-only rule for completed work: G-112 and G-114 are
 unchanged. The missing refinement geometry API is constructed in G-115 from the
 realized-reflection data, and the exact/refinement branches are packaged as
 actual geometry morphisms rather than accepted as caller certificates.
+
+## Cycle 10 — actual geometry-compatible reverse routes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 10
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: e35e42ce1d14998480c9e1cdde02ab58d45c360e
+tracking_issue: 4250
+selection:
+  proof_state_ref: Cycle 9 merged geometry cleavage
+  proof_obligation: Apply the generated exact/refinement cleavage to both reverse orders of the actual G-114 context without drifting to a parallel target package.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRoutes.lean]
+  unchecked: [upperGeometryMate, universal-uniqueness comparison with ctx.mate, geometry-level comparison, named problems and solutions, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The actual base-first and pulled-first geometry packages, their four generated legs, and their two composite refinement-geometry routes now exist over the fixed active context.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCleavage.TargetGeometry, baseRefinementGeometry, baseRouteGeometry, pullbackTargetGeometry, pulledRouteGeometry, baseRefinementGeometryHom, baseRouteExactGeometryHom, pullbackTargetGeometryHom, pulledRefinementGeometryHom, baseRouteGeometryHom, pulledRouteGeometryHom, baseRouteCoreFiber, pulledRouteCoreFiber]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryRoutes.lean: 4d3d99e8178deee4874542bbb00d0871299a6225cdd33c84847b9a25bad12716
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a actual reverse routes]
+    conjuncts: [actual target-package anchoring, base-first route, pulled-first route, exact/refinement leg provenance, common mixed-pullback fiber]
+    undischarged_assumptions: [mate and comparison artifacts, named problem/solution, clauses (c)--(d)]
+    acceptance_point: Both geometry-compatible routes are generated from ctx and its fixed target geometry; the route-between comparison is not yet claimed.
+audits:
+  premise_delta:
+    ambient_boundary: [ActiveRefinementBCContext ctx, geometry on ctx.targetPackage]
+    direction_hypothesis: []
+    discharged: [two actual geometry route objects, four route legs, two composite route homs, common-fiber endpoint equations]
+    remaining: [upperGeometryMate and G-114 mate comparison, downstream named artifacts]
+  certificate_provenance:
+    discharged: [every route leg comes from Cycle 9 generated cleavage]
+    unresolved: [route-between comparison]
+  proof_use:
+    used: [ctx base and pulled refinements, ctx.condition, pulledRealizedReflection, actual pullbackFst and pulledFst, exact and refinement generated geometry homs]
+    unused: []
+  structure_field_escape: TargetGeometry carries only geometry and literal core equality to ctx.targetPackage; no route, mate, or comparison certificate
+  route_integrity: both endpoints are proved to lie in ctx.configuration.pullbackSourceAt ctx.source and all legs retain their actual exact/lax lower arrows
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRoutes.lean => exit 0 and 33 declarations standard axioms only; git diff --check => exit 0; placeholder and hidden/BiDi scans => no matches]
+  blocking_findings: []
+  next_obligation: Construct universal-uniqueness endpoint comparison isos and upperGeometryMate, then prove the separate square with ctx.mateAtTarget.
+```
+
+The target geometry is indexed by the actual `ctx.targetPackage`, not merely by
+an equal pointed endpoint. Both generated route cores are separately proved to
+belong to the actual mixed pullback fiber. G-112 and G-114 remain unchanged.
