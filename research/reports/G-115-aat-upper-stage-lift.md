@@ -2220,3 +2220,62 @@ audits:
   blocking_findings: []
   next_obligation: Normalize both generated endpoint coefficient systems and prove that each generated complete route edge has identity coefficient map, then package the two actual FixedCoefficientTwoLayerTransportOver route transports from the now-derived core and geometry qualifications.
 ```
+
+## Cycle 39 — fixed-coefficient compatible route transports
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 39
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 8843a5b7ed7815ad5fb2dfa6d1efba58c7c297a9
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 38 merged both complete route geometry-edge isomorphisms and strong-cocartesian qualifications
+  proof_dag_predecessors: [generatedBaseRouteGeometryAt_coefficient_eq, generatedPulledRouteGeometryAt_coefficient_eq, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac, generatedBaseRouteCoreEdge_isStronglyCocartesian, generatedPulledRouteCoreEdge_isStronglyCocartesian, generatedBaseRouteGeometryEdge_isStronglyCocartesian, generatedPulledRouteGeometryEdge_isStronglyCocartesian, FixedCoefficientTwoLayerTransportOver]
+  proof_obligation: Normalize both generated endpoint families at the authored coefficient ring, derive edge and comparator coefficient identities from their literal factor graphs, prove finite path projection and two-cell base coherence, and package two actual fixed-coefficient G-109 route transports without adding route data to the compatible input.
+  selection_reason: Clause (b) requires actual generated base and pulled G-109 transports rather than isolated edge qualifications. Coefficient normalization, finite path projection, and two-cell base equality are precisely the remaining fields of FixedCoefficientTwoLayerTransportOver after Cycles 37--38.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCoefficientNormalization.lean]
+  risks: [casting only the coefficient carrier while changing its CommRing instance, asserting generated coefficient identity without consuming the source identity, using one route transport for both routes, treating arbitrary parallel total morphisms as equal, accepting path or two-cell coherence from the caller]
+  unchecked: [derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named positive and negative artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: The realized-refinement pullback now retains the source coefficient carrier and ring structure definitionally instead of introducing an unnecessary endpoint-equality recursor. Both generated endpoint families therefore package as FixedCoefficientGeometryAt values with literal package recovery. The base and pulled route-leg coefficient maps reduce to identity. Applying coefficientHom to the actual edge and comparator factor laws, and then consuming the authored source edge/comparator identity fields, proves all four generated identity laws. Path lifts project to the corresponding generated core-diagram maps by induction, and parallel paths have equal extraction projections because each actual diagram is valued in one CoreFiber. These results assemble two independent FixedCoefficientTwoLayerTransportOver values.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteFixedGeometryAt, generatedPulledRouteFixedGeometryAt, generatedBaseRouteLegAt_coefficient_id, generatedPulledRouteLegAt_coefficient_id, generatedBaseRouteFixedGeometryEdge, generatedPulledRouteFixedGeometryEdge, generatedBaseRouteFixedGeometryEdge_coefficient_id, generatedPulledRouteFixedGeometryEdge_coefficient_id, generatedBaseRouteFixedComparator, generatedPulledRouteFixedComparator, generatedBaseRouteFixedComparator_coefficient_id, generatedPulledRouteFixedComparator_coefficient_id, generatedBaseRouteLiftData, generatedPulledRouteLiftData, generatedBaseRoutePathLift_base, generatedPulledRoutePathLift_base, generatedBaseRouteTwoCellBase, generatedPulledRouteTwoCellBase, generatedBaseRouteTransport, generatedPulledRouteTransport]
+  evidence: [focused Lean check, 26-declaration namespace standard-axiom audit, targeted direct-predecessor construction, module registration, source hashes, literal scans]
+  source_sha256:
+    UpperGeometryCleavage.lean: ef36cc1f4ab418bb2c55ede5a94cde9b3ff290708eacadeee8d51be78eb974e8
+    UpperGeometryCompatibleRouteCoefficientNormalization.lean: 56941c71fe655cdcce0d466a448283909881fb99756c6874c22c8e211563ef04
+  claim_mapping:
+    theorem_names: [generatedBaseRouteFixedGeometryAt_package, generatedPulledRouteFixedGeometryAt_package, generatedBaseRouteFixedGeometryEdge_coefficient_id, generatedPulledRouteFixedGeometryEdge_coefficient_id, generatedBaseRouteFixedComparator_coefficient_id, generatedPulledRouteFixedComparator_coefficient_id, generatedBaseRoutePathLift_base, generatedPulledRoutePathLift_base, generatedBaseRouteTwoCellBase, generatedPulledRouteTwoCellBase, generatedBaseRouteTransport, generatedPulledRouteTransport]
+    source_labels: [revision 4 certificate-free compatible locus, target theorem clause (b)]
+    conjuncts: [two definitionally fixed endpoint families, two generated edge coefficient identities, two generated comparator coefficient identities, two finite path projection laws, two two-cell base laws, two actual G-109 transports]
+    undischarged_assumptions: [route cochain and global mate equations, endpoint comparison isomorphisms and solution equivalence]
+    acceptance_point: The only authored coefficient evidence is sourceTransport.edge_coefficient_id and sourceTransport.comparator_coefficient_id, each consumed through the corresponding generated factor graph. Path and two-cell laws are theorem outputs from actual generated core-fiber diagrams. No route edge, comparator, coefficient identity, path law, cell law, or transport is accepted as input.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [single authored FixedCoefficientTwoLayerTransportOver, Cycle 35 edge and comparator factor laws, Cycles 37--38 core and geometry qualifications]
+    direction_hypothesis: []
+    discharged: [endpoint coefficient normalization, both route-leg coefficient identities, both edge coefficient identities, both comparator coefficient identities, finite path projection, both two-cell base laws, both actual fixed-coefficient route transports]
+    remaining: [derived route cochains and global canonical-mate equation, endpoint geometry isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [coefficient carriers and ring instances are retained definitionally by the generated cleavage; edge and comparator identities are cancellations of the literal factor equations against generated identity legs and authored source identities; two-cell base equality comes from the verticality witnesses of the actual generated CoreFiber diagrams]
+    unresolved: [route cochain comparison laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [refinementSourceGeometry, refinementCoefficientHom, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, sourceTransport.edge_coefficient_id, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac, sourceTransport.comparator_coefficient_id, generatedBaseRouteCoreDiagram.map_id, generatedBaseRouteCoreDiagram.map_comp, generatedPulledRouteCoreDiagram.map_id, generatedPulledRouteCoreDiagram.map_comp, IsHomLift.fac', both core and geometry strong-cocartesian qualifications]
+    unused: [sourceTransport.twoCellBase is unnecessary for the extraction-level route field because every actual CoreFiber diagram already supplies the stronger verticality equation; the authored comparator values remain reserved for derived cochains and the global mate equation]
+  structure_field_escape: no generated endpoint, edge, comparator, qualification, coefficient law, path law, two-cell law, or route transport is stored in UpperGeometryCompatibleProblemInputData or accepted as a theorem argument
+  route_integrity: base and pulled transports use separate endpoint families, core diagrams, complete edges, factor laws, qualification theorems, comparators, path inductions, and two-cell proofs; only the single authored source transport is shared
+  predecessor_integrity: the fixed GOAL and completed G-109, G-112, and G-114 declarations are unchanged; the G-115-local cleavage implementation is definitionally normalized without changing its signature or mathematical output
+  target_fitting: none-found
+  vacuity: every generator edge and declared two-cell is covered; named nonidentity firing remains downstream
+  one_way_as_equivalence: no endpoint or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteGeometryQualifications` constructed only the direct predecessor DAG after the local cleavage normalization; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteCoefficientNormalization.lean` => exit 0 and 26 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Derive the base and pulled finite route cochains from the two generated transports and their generated comparator families, then prove the global canonical upper-mate equation before constructing endpoint isomorphisms and the solution-space equivalence.
+```
