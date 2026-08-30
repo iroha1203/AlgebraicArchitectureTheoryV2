@@ -2374,7 +2374,7 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    ambient_boundary: [Cycle 40 all-path factor laws, source and generated G-109 route data, route-leg Cartesian qualifications, generated composite-fiber group homomorphisms]
+    ambient_boundary: [Cycle 40 all-path factor laws, source and generated G-109 route data, route-leg Cartesian qualifications, generated pointwise composite-fiber pullbacks]
     direction_hypothesis: []
     discharged: [base and pulled canonical-comparator pullback compatibility]
     remaining: [finite compositor/unitor compatibility, two raw-cochain image laws, global canonical-mate equation, endpoint isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
@@ -2393,5 +2393,5 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleCanonicalComparators` passed; focused checker passed with 2 declarations standard axioms only; module registered in research-modules.txt and DoctrineFiberProduct.lean; git diff --check and hidden/BiDi, privacy, placeholder, reverse-import scans clean]
   blocking_findings: []
-  next_obligation: Derive both raw-cochain image equations, then prove the global canonical upper-mate equation.
+  next_obligation: Prove the remaining finite compositor/unitor compatibility, derive both raw-cochain image equations through the generated group homomorphisms, then prove the global canonical upper-mate equation.
 ```
