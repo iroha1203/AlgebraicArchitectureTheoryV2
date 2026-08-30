@@ -2,13 +2,15 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 2
+- GOAL revision: 3 candidate
 - proof state: `target-proof-checkpoint`
 - completion candidate: no
 
-This report records incremental proof obligations against the fixed revision-2
-target. Lean acceptance is evidence for the named cycle only; it is not a
-completion verdict for G-115.
+This report records incremental proof obligations through the revision-3
+candidate. Cycles 1--5 remain accepted evidence for their named interfaces;
+revision 3 adds the G-115-local geometry cleavage required before the named
+fixture cycle. Lean acceptance is evidence for the named cycle only; it is not
+a completion verdict for G-115.
 
 ## Fixed target
 
@@ -16,6 +18,11 @@ completion verdict for G-115.
 - final reviewed GOAL head: `ee3e400c92a2946ad2c8e4ee15e8b2cc235b8e39`
 - merged GOAL commit and implementation base: `5cb6994f72063e23733bcefb081b11ed4b6f5fef`
 - GOAL blob SHA: `b307ba6dfe0c098a85160292c86999b63c8f19c1`
+
+Revision 3 candidate is based on merge `f09dc1fe36853eea5f9854cc4ecfad8f60a667f8`.
+Its GOAL blob is `d349d0500ad6b8a73cc421185667d1303416d447` and its
+SHA-256 is `4b6e9e57ce859d658acb62c54915cf48092ce549c7108b5798d4f1fc427117b1`.
+The revision becomes the fixed target only after its PR review and merge.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 
@@ -337,3 +344,64 @@ projections, full geometry triangles, edge naturality, and authored-comparator
 intertwining. The authored two-cell theorem pastes the left path with the
 authored comparator; it does not identify the authored comparator with the
 canonical comparator or force the raw defect to vanish.
+
+## Cycle 6 — revision 3 geometry-cleavage repair
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 6
+goal_blob_sha: d349d0500ad6b8a73cc421185667d1303416d447
+base_oid: f09dc1fe36853eea5f9854cc4ecfad8f60a667f8
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md revision 3 disposition and K2b2a
+  proof_dag_predecessors: [G-108 geometry contract, G-112 explicit strongCartesianLiftOfTarget constructor, G-114 active context and mate, Cycles 1--5]
+  proof_obligation: Repair the K2b2 route inside G-115 by constructing a geometry-compatible exact/refinement cleavage and a generated comparison to the unchanged G-114 mate.
+  selection_reason: The G-112 selected core lift intentionally exposes only the core universal property. Geometry realization is a new downstream obligation and must not be supplied by editing a completed predecessor or by adding a caller field.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean]
+  risks: [parallel route disconnected from G-114, caller-supplied HGeom, endpoint equality cast replacing comparison iso, retrospective predecessor edit, scope overclaim]
+  unchecked: [Lean signature and construction of UpperGeometryCleavage, upperGeometryMate, G-114 mate comparison square, named positive and negative artifacts, paired orbit and conditional exchange interface]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Revision 3 fixes the missing obligation in the current GOAL while preserving G-112 and G-114 unchanged. Lean implementation remains the next cycle.
+  completion_candidate: no
+  lean_artifacts: []
+  evidence: [revision-3 GOAL contract and material-premise ledger]
+  claim_mapping:
+    theorem_names: []
+    source_labels: [target theorem clause (b), revision disposition, target proof artifacts, material premise ledger]
+    conjuncts: [G-115-local generated geometry cleavage, generated upper mate, G-114 mate comparison, predecessor immutability]
+    undischarged_assumptions: [all revision-3 Lean artifacts, named decision and negative artifacts, paired reselection and exchange artifacts]
+    acceptance_point: This cycle revises the fixed target only; it does not claim implementation or O10 discharge.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining: [G-115-local geometry cleavage and mate comparison, named decision and negative problems, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: []
+    unresolved: [generated geometry cleavage, G-114 comparison square, named solution and negative witnesses]
+  proof_use:
+    used: [K2b2 blocker analysis distinguishing core strong lift data from geometry realization data]
+    unused: [explicit lift constructors and universal comparison theorems pending Lean implementation]
+  structure_field_escape: prohibited by revised anti-weakening rule
+  route_integrity: pending Lean implementation and fixed-head review
+  target_fitting: pending Lean implementation
+  vacuity: pending named fixtures
+  one_way_as_equivalence: prohibited by explicit comparison-square requirement
+  goal_or_report_reinterpretation: revision is explicit and does not rewrite predecessor GOALs
+  validation_refs: [git diff --check; hidden and bidirectional Unicode scan]
+  blocking_findings: []
+  next_obligation: Review and merge revision 3, then construct UpperGeometryCleavage and upperGeometryMate without changing G-112 or G-114.
+```
+
+The former K2b2 stop correctly identified that generic realization transport
+does not follow from an arbitrary core `StrongCartesianLift`. Its proposed
+repair was wrong: changing G-112 would make a downstream need retroactive.
+Revision 3 instead places the missing cleavage at the geometry stage that first
+needs it. The literal G-114 mate remains the immutable core comparison target;
+the new geometry-compatible mate must be connected to it by generated
+universal-property comparisons rather than endpoint casts or supplied fields.
