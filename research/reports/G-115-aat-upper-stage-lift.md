@@ -1144,3 +1144,61 @@ audits:
 
 Cycle 19 creates the missing realization API in G-115 and treats the completed
 G-112 and G-114 surfaces only as immutable inputs.
+
+## Cycle 20 — backward geometry carriers, readings, and naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 20
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: cc618c5c6a8dc7903570101ef814db69c9bfa984
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 19 merged the literal pulled-route backward upper realization
+  proof_dag_predecessors: [pulledRouteBackwardUpper, generatedRouteCoreMate_upper_eq_explicit, exact and selected canonical inverse transports]
+  proof_obligation: Construct Support, Axis, and Observable maps for the actual pulled-route backward upper, and prove their reading-preservation and restriction-naturality laws from the two explicit backward transports.
+  selection_reason: These are the missing computational fields required to lift generatedRouteCoreMate from its exact core upper map to a geometry comparison; carrier equalities alone do not preserve reading predicates or morphism maps.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean]
+  risks: [dependent target casts could hide a supplied comparison; carrier equalities could be mistaken for reading preservation; composite naturality could lose one route leg]
+  unchecked: [complete upperGeometryMate GeomReadHom, coverage/overlap/raw equality, geometry triangle, finite-presentation comparison, named problems, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Each exact and realized-refinement backward leg is locally identified with its canonical target transport; their generated carrier maps preserve Support/Axis/Observable readings and restriction maps; the two legs are then literally composed to obtain the public pulled-route backward maps and laws.
+  completion_candidate: no
+  lean_artifacts: [pulledRouteBackwardUpper_contextForward_support_type, pulledRouteBackwardUpper_contextForward_axis_type, pulledRouteBackwardUpper_contextForward_observable_type, pulledRouteBackwardSupportComp, pulledRouteBackwardSupportComp_reads, pulledRouteBackwardSupportComp_naturality, pulledRouteBackwardAxisComp, pulledRouteBackwardAxisComp_reads, pulledRouteBackwardAxisComp_naturality, pulledRouteBackwardObservableComp, pulledRouteBackwardObservableComp_reads, pulledRouteBackwardObservableComp_naturality]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateComponents.lean: d1a258700a9d29bfa900096eac077a7dc032d57fb8d9e0ac830df0878ea172a9
+  claim_mapping:
+    theorem_names: [pulledRouteBackwardSupportComp_reads, pulledRouteBackwardSupportComp_naturality, pulledRouteBackwardAxisComp_reads, pulledRouteBackwardAxisComp_naturality, pulledRouteBackwardObservableComp_reads, pulledRouteBackwardObservableComp_naturality]
+    source_labels: [target theorem clause (b), K2b2a explicit Support/Axis/Observable transport]
+    conjuncts: [backward carrier preservation, reading preservation for all three carriers, restriction naturality for all three carriers, literal exact-then-refinement route composition]
+    undischarged_assumptions: [coverage/overlap/raw equality for the complete geometry mate, geometry triangle, downstream named contracts]
+    acceptance_point: The public maps are generated from the actual exact and selected backward transports and their computational context transports; no caller map, HGeom, or comparison certificate is accepted.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [pulled-route backward Support/Axis/Observable comparison generation, their reading preservation, their full restriction naturality]
+    remaining: [complete geometry mate and triangle, finite-presentation comparison and solution-space equivalence, positive/negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [all three maps arise from transportEquationSystemExact on the exact pullback leg and the selected realized-refinement leg; target casts are eliminated by equality induction]
+    unresolved: [complete geometry-level comparison]
+  proof_use:
+    used: [pulledRouteTransportData, pullbackTargetExactArrow, inverseCorePackageBackwardUpper, SelectedRefinementTransport.inverseCorePackageBackwardUpper, transportContextFunctor_supportMap, transportContextFunctor_axisMap, transportContextFunctor_observableRestrict]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean => exit 0 and 12 declarations standard axioms only; git diff --check => exit 0; placeholder and hidden/BiDi scans => no matches; protected G-112/G-114 and AAT mathematical-source diff scan => no matches]
+  blocking_findings: []
+  next_obligation: Compose the base-route forward geometry maps with these backward maps, construct the complete upperGeometryMate GeomReadHom over generatedRouteCoreMate, and prove its geometry triangle.
+```
+
+Cycle 20 adds the missing geometry-carrier realization in the active G-115
+surface. Completed G-112 and G-114 APIs and GOAL cards remain unchanged.
