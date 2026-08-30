@@ -927,3 +927,58 @@ audits:
 Cycle 15 supplies a missing G-115-local eligibility theorem, not a retroactive
 change to G-112 or G-114. The completed predecessor route definitions remain
 unchanged.
+
+## Cycle 16 — complete comparison of generated and selected routes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 16
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: fd65c165135578a7f89c5ed84ec70015793fa0f2
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 15 qualified both actual retargeted G-114 composites as strongly cartesian
+  proof_obligation: Compare each geometry-generated route with the corresponding actual retargeted G-114 route by a complete package isomorphism, including lower normalization, both factor triangles, and inverse laws.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRouteComparison.lean]
+  unchecked: [G-114 mate comparison square, identification with generatedRouteCoreMate, geometry-level upperGeometryMate, named problems and solutions, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: G-115 now exposes exact endpoint transports from each generated route source to its selected G-114 source and back; proves both lower factor laws by normalizing exact and relative lift projections; generates forward and inverse complete package comparisons by strong-cartesian universality; proves both package factor triangles and both inverse laws on the base and pulled routes.
+  completion_candidate: no
+  lean_artifacts: [exactLiftRefinementBase_eq_casts, refinementPackageHomOfOver_base_eq_casts, baseRouteActualSource, baseRouteActualSource_fac, pulledRouteActualSource, pulledRouteActualSource_fac, baseActualRouteSource, baseActualRouteSource_fac, pulledActualRouteSource, pulledActualRouteSource_fac, baseRouteComparisonHom, baseRouteComparisonInv, baseRouteComparisonIso, pulledRouteComparisonHom, pulledRouteComparisonInv, pulledRouteComparisonIso]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryRouteComparison.lean: 83fa9f38a11624d13596aa10fe6c3cd8605f483d16501bdba8f4f254f54ca931
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a universal mate comparison]
+    conjuncts: [base lower normalization, pulled lower normalization, complete forward and inverse comparisons, four factor triangles, four inverse identities]
+    undischarged_assumptions: [mate square against the retargeted G-114 mate, exact-core identification, geometry lift, downstream named contracts]
+    acceptance_point: The comparison maps and their inverses are generated from cartesian uniqueness. Endpoint cast normalization is an implementation lemma, not a new mathematical finding or caller-supplied certificate.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 15 route cartesianness, authored G-114 route composites, geometry-generated route cartesianness]
+    direction_hypothesis: []
+    discharged: [both lower route factor laws, both complete comparison maps and inverse maps, all four package factor triangles, both route comparison isomorphisms]
+    remaining: [mate square and core identification, geometry lift, downstream named contracts]
+  certificate_provenance:
+    discharged: [comparison maps come from IsStronglyCartesian.map; factor triangles come from IsStronglyCartesian.fac; inverse laws come from IsStronglyCartesian.ext after proved endpoint cancellation]
+    unresolved: [mate-square uniqueness and geometry fields]
+  proof_use:
+    used: [IsHomLift.fac', IsStronglyCartesian.map, IsStronglyCartesian.fac, IsStronglyCartesian.ext, Cycle 15 route cartesianness, generated route cartesianness]
+    unused: []
+  structure_field_escape: no comparison, inverse, lower factor, or inverse law is accepted from a caller
+  route_integrity: the compared selected legs are literally retargetedContext.baseCompositeLeg and pulledCompositeLeg; the generated legs are literally baseRouteGeometryHom.base and pulledRouteGeometryHom.base
+  predecessor_integrity: completed G-112 and G-114 files and declarations are unchanged; all missing normalization and comparison APIs are added in G-115
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRouteComparison.lean => exit 0 and 33 declarations standard axioms only; git diff --check => exit 0; placeholder scan => no proof placeholders]
+  blocking_findings: []
+  next_obligation: Conjugate the retargeted G-114 mate by the two complete route comparison isomorphisms, prove its route triangle, and identify it with generatedRouteRefinementMate and generatedRouteCoreMate by uniqueness.
+```
+
+Cycle 16 adds the comparison surface entirely in G-115. Completed G-112 and
+G-114 remain fixed and are used only through their exported route and mate
+properties.

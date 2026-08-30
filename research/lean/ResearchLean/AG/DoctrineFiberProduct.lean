@@ -222,6 +222,7 @@ import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRoutes
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryMate
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryMateComparison
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryMateSquare
+import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRouteComparison
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCRoutes
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCGeometry
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCProblem
