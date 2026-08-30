@@ -1573,3 +1573,69 @@ audits:
 Cycle 26 removes the last caller-supplied Cartesian certificates from the
 finite geometry route. It remains a G-115 checkpoint rather than a completion
 claim; authored comparator intertwining is the next obligation.
+
+## Cycle 27 — authored comparator intertwining
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 27
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: 4e09d885bf1b9852df7b6cdbb857717d0444ba89
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 26 merged unconditional generated geometry edges and mate naturality
+  proof_dag_predecessors: [generatedBaseGeometryEdgeUnconditional, generatedPulledGeometryEdgeUnconditional, generatedUpperGeometryMateAt_edge_naturality_unconditional, UpperRefinementBCSolution.comparator_intertwining]
+  proof_obligation: Prove authored comparator intertwining for the unconditional finite generated upper geometry mate without replacing the problem comparators by canonical or identity comparators and without storing a route-between equation in the raw problem.
+  selection_reason: This is the next fixed-GOAL equation after generator naturality and the shortest remaining path to the geometry-compatible solution contract.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteComparatorNaturality.lean]
+  risks: [generated and authored endpoint type mismatch, comparator replacement, core-only equality, caller-supplied route-between certificate, missing comparison-map provenance]
+  unchecked: [solution-space equivalence, named positive and negative fixtures, coefficient-trivial reselection transport, paired cochain theorem, conditional exchange interface]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The authored base and pulled route endpoints now map to the generated G-115 endpoints by complete exact geometry comparisons obtained from the generated route Cartesian universal properties. For every actual solution, the solution component and generated mate form a full geometry square. Pasting that square with the stored solution comparator equation proves authored comparator intertwining without regenerating either comparator.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseGeometryComparisonRefinementAt, generatedBaseGeometryComparisonAt, generatedBaseGeometryComparisonAt_fac, generatedPulledGeometryComparisonRefinementAt, generatedPulledGeometryComparisonAt, generatedPulledGeometryComparisonAt_fac, generated_component_base_square, generated_component_geometry_square, generated_authored_comparator_intertwining]
+  evidence: [focused Lean check, 13-declaration standard-axiom audit, source hash, placeholder and hidden-character scans]
+  source_sha256:
+    UpperGeometryFiniteComparatorNaturality.lean: 49f84b9eb79a068da16cdf2d5de11c8a843159e031a6856e9aee51daecf0fab7
+  claim_mapping:
+    theorem_names: [generatedBaseGeometryComparisonAt_fac, generatedPulledGeometryComparisonAt_fac, generated_component_geometry_square, generated_authored_comparator_intertwining]
+    source_labels: [target theorem clause (b), geometry-level G-114 comparison and authored-comparator compatibility]
+    conjuncts: [authored-to-generated complete endpoint comparisons, exact lower recovery, both route-leg factor laws, solution-to-generated-mate geometry square, authored comparator pasting]
+    undischarged_assumptions: [construction of the two solution-space transports and inverse laws, named actual positive and negative artifacts, clause (c) restricted reselection and paired cochain, clause (d) conditional exchange interface]
+    acceptance_point: Comparator compatibility is derived for every existing actual solution from its triangle and authored comparator equation together with G-115-generated endpoint comparisons. The theorem accepts no new comparator equation or comparison certificate.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [the raw problem's authored route geometries and comparator families, completed G-114 mate, Cycle 26 generated mate and route Cartesianity]
+    direction_hypothesis: []
+    solution_contract_input: [the existing actual solution supplies its route-between triangle]
+    conclusion_equivalent_risk: [the existing actual solution supplies its authored comparator equation; Cycle 27 does not discharge that stored equation, but proves its preservation after the generated endpoint comparison]
+    discharged: [complete endpoint comparison maps, comparison-square proof-use, authored comparator intertwining against the generated mate]
+    remaining: [solution-space equivalence, positive and negative named artifacts, coefficient-trivial reselection transport, paired cochain theorem, conditional exchange interface]
+  certificate_provenance:
+    discharged: [both endpoint comparisons are generated by IsStronglyCartesian.map over the exact inverse endpoint core isomorphisms and exactified with faithful recovery]
+    unresolved: [named solution and negative witnesses, reselection witness transports]
+  proof_use:
+    used: [baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian, baseRouteComparisonCoreInv, pulledRouteComparisonCoreInv, generatedUpperGeometryMateAt_triangle, generatedConjugateCoreMateAt_eq_generated, UpperRefinementBCSolution.triangle, UpperRefinementBCSolution.comparator_intertwining]
+    unused: []
+  structure_field_escape: no endpoint comparison or generated comparator equation is added to raw problem data; the only route-between fields consumed belong to the pre-existing solution contract
+  route_integrity: both comparison maps factor the literal authored route legs through the literal generated G-115 routes; the geometry square uses the actual G-114 component base equality and the generated conjugate-mate identification
+  predecessor_integrity: completed G-112 and G-114 files are unchanged; all comparison and comparator-pasting APIs are local to active G-115
+  target_fitting: none-found
+  vacuity: not yet decided before the named positive and negative fixtures
+  one_way_as_equivalence: no solution-space equivalence is claimed in this cycle
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteComparatorNaturality.lean => exit 0 and 13 declarations standard axioms only; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Define the geometry-compatible generated solution contract and construct both transports with inverse laws to the core-selected companion solution space.
+```
+
+Cycle 27 retains both authored comparator families. The new theorem is
+conditional only on an actual solution already carrying the route-between
+triangle and authored comparator equation required by the fixed contract; it
+does not move either equation into the raw problem or claim the still-missing
+solution-space equivalence.
