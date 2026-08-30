@@ -423,15 +423,15 @@ report_path: research/reports/G-115-aat-upper-stage-lift.md
 selection:
   proof_state_ref: research/goals/G-115-aat-upper-stage-lift.md revision 3 K2b2a
   proof_dag_predecessors: [G-108 geometry contract, G-112 explicit inverse-package upper pair, G-114 realized-refinement transport]
-  proof_obligation: Construct caller-free geometry source packages and strict raw roundtrips for the explicit exact/refinement lifts, then expose their realization transport.
-  selection_reason: Revision 3 places the missing geometry cleavage in G-115 and forbids retrospective predecessor edits or caller-supplied HGeom.
+  proof_obligation: Construct HGeom-free geometry source packages and strict raw roundtrips for the explicit exact/refinement lifts, then expose the exact lift's objectwise realization carrier and reading transport.
+  selection_reason: Revision 3 places the missing geometry cleavage in G-115 and forbids retrospective predecessor edits or caller-supplied HGeom. The refinement construction remains relative to G-114's reviewed RealizedLocusExtractionReflecting direction-hypothesis.
   expected_result_type: target-proof-checkpoint
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageRealization.lean]
   risks: [strict raw equality, dependent carrier casts, restriction naturality, accidental lower inverse]
   unchecked: [complete exact/refinement geometry hom, generated cleavage, upper geometry mate, G-114 comparison, solution/reselection transport, named artifacts, clauses (c)--(d)]
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: The explicit exact/refinement target-to-source geometry packages, upper-only raw reindex algebra, strict forward raw equalities, carrier comparisons, and three reading-preservation laws are constructed. Restriction naturality remains blocked on an unexposed computation law.
+  proof_obligation_delta: The explicit exact/refinement target-to-source geometry packages, upper-only raw reindex algebra, and strict forward raw equalities are constructed. On the exact branch, carrier comparisons and three reading-preservation laws are also constructed. Refinement realization comparisons and both branches' restriction naturality remain open.
   completion_candidate: no
   lean_artifacts: [exactSourceGeometry, exactSourceGeometry_raw_forward, refinementSourceGeometry, refinementBaseHom, refinementSourceGeometry_raw_forward, exactSupportComp, exactAxisComp, exactObservableComp, exactSupportReads, exactAxisReads, exactObservableReads]
   evidence: [two focused Lean checks, namespace standard-axiom audits, source hashes, literal scans]
@@ -441,27 +441,29 @@ result:
   claim_mapping:
     theorem_names: [rawReindexUpper_id, rawReindexUpper_comp, rawReindexUpper_cancel, exactSourceGeometry_raw_forward, refinementSourceGeometry_raw_forward, exactSupportReads, exactAxisReads, exactObservableReads]
     source_labels: [target theorem clause (b), material premise G-115-local geometry cleavage]
-    conjuncts: [caller-free source geometry generation, coefficient-ring retention, strict raw roundtrip, realization carrier and reading preservation]
-    undischarged_assumptions: [support/axis/observable restriction naturality, total geometry hom, all later revision-3 artifacts]
+    conjuncts: [HGeom-free source geometry generation, coefficient-ring retention, exact/refinement strict raw roundtrip, exact realization carrier and reading preservation]
+    undischarged_assumptions: [refinement realization carrier and reading preservation, exact/refinement support/axis/observable restriction naturality, total geometry hom, all later revision-3 artifacts]
     acceptance_point: This is a data and reading checkpoint only; it does not construct UpperGeometryCleavage or discharge O10.
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: [source geometry package generation, exact/refinement strict raw equality, support/axis/observable carrier comparison and reading preservation]
-    remaining: [restriction naturality, total geometry hom, geometry cleavage and mate comparison, named problems, clauses (c)--(d)]
+    ambient_boundary: [G-112 explicit exact upper pair, G-114 realized-refinement transport]
+    direction_hypothesis: [RealizedLocusExtractionReflecting r for the generic refinement specialization; active ctx.condition specialization remains pending]
+    discharged: [exact/refinement source geometry package generation relative to their reviewed inputs, exact/refinement strict raw equality, exact support/axis/observable carrier comparison and reading preservation]
+    remaining: [refinement support/axis/observable carrier comparison and reading preservation, exact/refinement restriction naturality, total geometry hom, geometry cleavage and mate comparison, named problems, clauses (c)--(d)]
   certificate_provenance:
-    discharged: [source packages and raw equalities generated from explicit forward/backward upper maps]
+    discharged: [exact source package and raw equality generated from the explicit upper pair; refinement source package and raw equality generated from r plus the reviewed realized-locus condition]
     unresolved: [complete realization transport and downstream comparison]
   proof_use:
     used: [inverseCorePackageBackward_comp_forward, SelectedRefinementTransport.inverseCorePackageBackward_comp_forward, realized-reflection selected transport data, explicit carrier preservation]
     unused: [restriction-morphism computation hidden behind the explicit source-reading cast]
-  structure_field_escape: no caller realization or naturality field was added
-  route_integrity: exact/refinement source cores and raw systems are definitionally generated from reviewed explicit lifts
+  structure_field_escape: no caller HGeom, completed geometry lift, or naturality field was added; the refinement condition is a reviewed direction-hypothesis, not a conclusion certificate
+  route_integrity: exact/refinement source cores and raw systems are definitionally generated from reviewed explicit lifts relative to their fixed inputs
   target_fitting: no target-chosen cleavage or opaque comparison
   vacuity: not yet applicable before named fixtures
   one_way_as_equivalence: not claimed
   goal_or_report_reinterpretation: none
-  validation_refs: [focused Lean checks for both leaf files; git diff --check; hidden and bidirectional Unicode scan; placeholder scan]
+  validation_refs: [./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean => exit 0 and 12 declarations standard axioms only; ./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageRealization.lean => exit 0 and 7 declarations standard axioms only; git diff --check; hidden and bidirectional Unicode scan; placeholder scan]
   blocking_findings: [the public inverse-package API exposes context-object carrier equalities but not the support/axis/observable readable-morphism computation laws required by RefinementGeomReadHom naturality]
   next_obligation: Prove G-115-local source-reading-cast naturality without predecessor edits; if the same API-visibility blocker persists, record target-blocked with the exact missing declarations.
 ```
@@ -469,8 +471,9 @@ audits:
 The raw obstruction was discharged without inventing a lower inverse. The
 G-115-local `rawReindexUpper` uses only the complete upper equivalence, and its
 identity/composition laws reduce both explicit roundtrips to strict raw-system
-equalities. Realization carrier casts and reading preservation are also
-generated locally. Three independent proof attempts then reached the same
-remaining boundary: the completed predecessor exposes objectwise carrier
-equalities, while the corresponding readable-morphism computation lemmas are
-private. No naturality field or `HGeom` certificate was added to bypass it.
+equalities. Exact-branch realization carrier casts and reading preservation are
+also generated locally. The remaining boundary is fixed by the declaration
+surface: the completed predecessor exposes objectwise carrier equalities, while
+the corresponding readable-morphism computation lemmas are private. The
+refinement realization comparisons remain a separate undischarged obligation.
+No naturality field or `HGeom` certificate was added to bypass either gap.
