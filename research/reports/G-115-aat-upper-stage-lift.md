@@ -1509,3 +1509,67 @@ audits:
 Cycle 25 adds the missing exactification and finite geometry-factor API only to
 G-115. It is deliberately not a completion claim: the route-leg cartesian
 qualifications remain the next G-115-local construction obligation.
+
+## Cycle 26 — generated geometry cartesianness and unconditional edge naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 26
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: 1c81c20465ec4099ec36156176c28f89e1139ef2
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 25 exposed conditional finite geometry edges whose only undischarged inputs were the two generated route-leg Cartesian qualifications
+  proof_dag_predecessors: [generatedExactGeometryHom, generatedRefinementGeometryHom, generatedBaseGeometryEdge, generatedPulledGeometryEdge, generatedUpperGeometryMateAt_edge_naturality]
+  proof_obligation: Prove the exact and realized-refinement G-115 geometry cleavages strongly Cartesian, inherit this property along both literal route composites, and eliminate the temporary Cartesian arguments from finite geometry naturality.
+  selection_reason: The missing universal properties concern G-115-generated geometry reading data. They are constructed locally from the existing two-sided context and carrier transports; no completed predecessor needs revision.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCartesian.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteCartesianNaturality.lean]
+  risks: [using carrier casts without reading reflection, proving only lower-package cartesianness, retaining caller-supplied Cartesian certificates, reopening completed predecessor APIs]
+  unchecked: [authored comparator intertwining, solution-space equivalence, named positive and negative fixtures, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Exact and realized-refinement support, axis, and observable transports now expose reading reflection, cancellation, and injectivity. These generate complete geometry factors, factor laws, uniqueness, and strong cartesianness for both primitive legs. Composition proves both literal geometry routes strongly Cartesian, yielding unconditional exact finite edge maps, their full geometry factor laws, and upper geometry mate edge naturality with no caller certificate.
+  completion_candidate: no
+  lean_artifacts: [generatedExactSupportComp_reads_iff, generatedExactAxisComp_reads_iff, generatedExactObservableComp_reads_iff, generatedRefinementSupportComp_reads_iff, generatedRefinementAxisComp_reads_iff, generatedRefinementObservableComp_reads_iff, generatedExactCartesianFactor, generatedExactCartesianFactor_fac, generatedExactCartesianFactor_unique, generatedExactGeometryHom_isStronglyCartesian, generatedRefinementCartesianFactor, generatedRefinementCartesianFactor_fac, generatedRefinementCartesianFactor_unique, generatedRefinementGeometryHom_isStronglyCartesian, baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian, generatedBaseGeometryEdgeUnconditional, generatedPulledGeometryEdgeUnconditional, generatedBaseGeometryEdgeUnconditional_fac, generatedPulledGeometryEdgeUnconditional_fac, generatedUpperGeometryMateAt_edge_naturality_unconditional]
+  evidence: [three focused Lean checks, targeted direct-module build, namespace standard-axiom audits, source hashes, literal scans]
+  source_sha256:
+    UpperGeometryCleavageNaturality.lean: 34d61065049243c6ee49676b3a2c6315225362ece635a6f7beee8d090419f13d
+    UpperGeometryCartesian.lean: bf2fd6e25cdeba75edf30e97307bb727cadb9868288711557f0d6d640494a0fb
+    UpperGeometryFiniteCartesianNaturality.lean: 83a640f50d80d7d0761270f5feb5ab084aecef1b7530211579f336ea44ab4b8e
+  claim_mapping:
+    theorem_names: [generatedExactGeometryHom_isStronglyCartesian, generatedRefinementGeometryHom_isStronglyCartesian, baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian, generatedBaseGeometryEdgeUnconditional_fac, generatedPulledGeometryEdgeUnconditional_fac, generatedUpperGeometryMateAt_edge_naturality_unconditional]
+    source_labels: [target theorem clause (b), G-115-local geometry cleavage and finite naturality boundary]
+    conjuncts: [primitive exact geometry cartesianness, primitive realized-refinement geometry cartesianness, both literal route composite Cartesian qualifications, unconditional finite exact geometry edges, both full route factor laws, unconditional upper mate edge naturality]
+    undischarged_assumptions: [authored comparator compatibility, downstream solution and orbit contracts]
+    acceptance_point: Strong cartesianness is proved by explicit factor construction and uniqueness for every compatible complete geometry hom. The finite APIs instantiate those generated proofs internally; no Cartesian witness remains in their signatures.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [completed G-112 exact lower cleavage API, completed G-114 realized-refinement and actual route data, Cycle 25 conditional geometry exactification]
+    direction_hypothesis: [realized-locus extraction reflection already required by the active G-115 route]
+    discharged: [exact primitive geometry cartesianness, realized-refinement primitive geometry cartesianness, both composite route qualifications, unconditional exact edge generation, unconditional mate edge naturality]
+    remaining: [authored comparator intertwining, solution equivalence, positive and negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [context inverse cancellation comes from generated equation equivalences; carrier cancellation and reading reflection come from G-115 deconjugation transports; factor uniqueness is proved by complete geometry contract extensionality]
+    unresolved: [downstream comparator and reselection witnesses]
+  proof_use:
+    used: [generated exact and refinement reading iff laws, generated exact and refinement carrier HEq laws, generated exact and refinement carrier inverse laws, generated exact and refinement carrier injectivity laws, generated exact and refinement carrier naturality laws, rawReindexUpper_comp, IsStronglyCartesian.mk, IsStronglyCartesian.comp, Cycle 25 universal geometry edge factorization]
+    unused: []
+  structure_field_escape: no Cartesian certificate, factor, uniqueness equation, edge factor law, or mate naturality equation is stored in problem data or accepted from a caller
+  route_integrity: both unconditional finite edges still factor the literal generated baseRouteGeometryHom and pulledRouteGeometryHom through the actual sourceTransport edge, and the mate square uses both full geometry triangles
+  predecessor_integrity: completed G-112 and G-114 source, GOAL, report, and implementation files are unchanged; all missing semantic APIs are added under active G-115
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: both primitive Cartesian proofs include existence and uniqueness; no unsupported equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [three check_research_modules.sh --focused invocations => exit 0 with 58, 16, and 9 declarations standard axioms only; lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryFiniteCartesianNaturality => exit 0 with 4077 jobs and standard-axiom audits]
+  blocking_findings: []
+  next_obligation: Prove the authored comparator intertwining against the now-unconditional finite generated geometry mate, then continue to the solution-space and named-fixture obligations.
+```
+
+Cycle 26 removes the last caller-supplied Cartesian certificates from the
+finite geometry route. It remains a G-115 checkpoint rather than a completion
+claim; authored comparator intertwining is the next obligation.

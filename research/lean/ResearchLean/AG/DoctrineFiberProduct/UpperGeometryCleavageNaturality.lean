@@ -168,6 +168,21 @@ private theorem geometryDeconjugateSupportComp_reads
   change W.ctx.minimal.supportReads support (e.symm (e atom))
   simpa using h
 
+private theorem geometryDeconjugateSupportComp_reads_iff
+    {U : AtomCarrier.{u}} (Q : AATCorePackage U)
+    (e : U.Atom ≃ U.Atom)
+    (W : Site.ContextCategoryObject
+      (transportEquationReading e.symm Q.object
+        Q.reading.equationReading).contextPreorder)
+    (support : W.ctx.Support) (atom : U.Atom) :
+    ((geometryDeconjugateEquationSystem Q e).contextEquivalence.functor.obj
+      W).ctx.minimal.supportReads
+        (geometryDeconjugateSupportComp Q e W support) (e atom) ↔
+      W.ctx.minimal.supportReads support atom := by
+  change W.ctx.minimal.supportReads support (e.symm (e atom)) ↔
+    W.ctx.minimal.supportReads support atom
+  simp
+
 private theorem geometryDeconjugateAxisComp_reads
     {U : AtomCarrier.{u}} (Q : AATCorePackage U)
     (e : U.Atom ≃ U.Atom)
@@ -179,6 +194,19 @@ private theorem geometryDeconjugateAxisComp_reads
       W).ctx.minimal.axisReads
         (geometryDeconjugateAxisComp Q e W axis) := by
   exact h
+
+private theorem geometryDeconjugateAxisComp_reads_iff
+    {U : AtomCarrier.{u}} (Q : AATCorePackage U)
+    (e : U.Atom ≃ U.Atom)
+    (W : Site.ContextCategoryObject
+      (transportEquationReading e.symm Q.object
+        Q.reading.equationReading).contextPreorder)
+    (axis : W.ctx.Axis) :
+    ((geometryDeconjugateEquationSystem Q e).contextEquivalence.functor.obj
+      W).ctx.minimal.axisReads
+        (geometryDeconjugateAxisComp Q e W axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  rfl
 
 private theorem geometryDeconjugateObservableComp_reads
     {U : AtomCarrier.{u}} (Q : AATCorePackage U)
@@ -192,6 +220,19 @@ private theorem geometryDeconjugateObservableComp_reads
       W).ctx.minimal.observableReads
         (geometryDeconjugateObservableComp Q e W observable) := by
   exact h
+
+private theorem geometryDeconjugateObservableComp_reads_iff
+    {U : AtomCarrier.{u}} (Q : AATCorePackage U)
+    (e : U.Atom ≃ U.Atom)
+    (W : Site.ContextCategoryObject
+      (transportEquationReading e.symm Q.object
+        Q.reading.equationReading).contextPreorder)
+    (observable : W.ctx.Observable) :
+    ((geometryDeconjugateEquationSystem Q e).contextEquivalence.functor.obj
+      W).ctx.minimal.observableReads
+        (geometryDeconjugateObservableComp Q e W observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  rfl
 
 private noncomputable def geometryCastSourceSupportComp
     {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
@@ -359,6 +400,31 @@ private theorem geometryCastSourceSupportComp_reads
   cases h
   exact comp_reads W support atom hread
 
+private theorem geometryCastSourceSupportComp_reads_iff
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Support → (T.contextEquivalence.functor.obj W).ctx.Support)
+    (comp_reads_iff : ∀ W support atom,
+      (T.contextEquivalence.functor.obj W).ctx.minimal.supportReads
+          (comp W support) (e atom) ↔
+        W.ctx.minimal.supportReads support atom)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder)
+    (support : W.ctx.Support) (atom : U.Atom) :
+    ((geometryCastSourceEquationExact h S e objectMap T).contextEquivalence.functor.obj
+      W).ctx.minimal.supportReads
+        (geometryCastSourceSupportComp h S e objectMap T comp W support)
+        (e atom) ↔
+      W.ctx.minimal.supportReads support atom := by
+  cases h
+  exact comp_reads_iff W support atom
+
 private theorem geometryCastSourceAxisComp_reads
     {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
     {D : Site.ContextPreorderCategory B}
@@ -379,6 +445,29 @@ private theorem geometryCastSourceAxisComp_reads
         (geometryCastSourceAxisComp h S e objectMap T comp W axis) := by
   cases h
   exact comp_reads W axis hread
+
+private theorem geometryCastSourceAxisComp_reads_iff
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Axis → (T.contextEquivalence.functor.obj W).ctx.Axis)
+    (comp_reads_iff : ∀ W axis,
+      (T.contextEquivalence.functor.obj W).ctx.minimal.axisReads (comp W axis) ↔
+        W.ctx.minimal.axisReads axis)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder)
+    (axis : W.ctx.Axis) :
+    ((geometryCastSourceEquationExact h S e objectMap T).contextEquivalence.functor.obj
+      W).ctx.minimal.axisReads
+        (geometryCastSourceAxisComp h S e objectMap T comp W axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  cases h
+  exact comp_reads_iff W axis
 
 private theorem geometryCastSourceObservableComp_reads
     {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
@@ -402,6 +491,30 @@ private theorem geometryCastSourceObservableComp_reads
         (geometryCastSourceObservableComp h S e objectMap T comp W observable) := by
   cases h
   exact comp_reads W observable hread
+
+private theorem geometryCastSourceObservableComp_reads_iff
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A)
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Observable → (T.contextEquivalence.functor.obj W).ctx.Observable)
+    (comp_reads_iff : ∀ W observable,
+      (T.contextEquivalence.functor.obj W).ctx.minimal.observableReads
+          (comp W observable) ↔
+        W.ctx.minimal.observableReads observable)
+    (W : Site.ContextCategoryObject
+      (castEquationReading h S).contextPreorder)
+    (observable : W.ctx.Observable) :
+    ((geometryCastSourceEquationExact h S e objectMap T).contextEquivalence.functor.obj
+      W).ctx.minimal.observableReads
+        (geometryCastSourceObservableComp h S e objectMap T comp W observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  cases h
+  exact comp_reads_iff W observable
 
 /-- G-115-generated support comparison for the exact inverse-package lift. -/
 noncomputable def generatedExactSupportComp {U : AtomCarrier.{u}}
@@ -632,6 +745,87 @@ theorem generatedExactObservableComp_reads {U : AtomCarrier.{u}}
       (geometryDeconjugateObservableComp G.core f.doctrineHom.atomEquiv)
       (geometryDeconjugateObservableComp_reads
         G.core f.doctrineHom.atomEquiv) W observable h)
+
+/-- The generated exact support comparison reflects as well as preserves reading. -/
+theorem generatedExactSupportComp_reads_iff {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) support atom :
+    (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map (exactBaseHom G f)) W).ctx.minimal.supportReads
+        (generatedExactSupportComp G f W support)
+        (((exactPackageToRefinement U).map
+          (exactBaseHom G f)).upper.atomEquiv atom) ↔
+      W.ctx.minimal.supportReads support atom := by
+  change
+    ((inverseCoreEquationForward G.core f).contextEquivalence.functor.obj
+      W).ctx.minimal.supportReads
+        (generatedExactSupportComp G f W support)
+        (f.doctrineHom.atomEquiv atom) ↔
+      W.ctx.minimal.supportReads support atom
+  simpa only [generatedExactSupportComp] using
+    (geometryCastSourceSupportComp_reads_iff
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv
+      (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateSupportComp G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateSupportComp_reads_iff
+        G.core f.doctrineHom.atomEquiv) W support atom)
+
+/-- The generated exact axis comparison reflects as well as preserves reading. -/
+theorem generatedExactAxisComp_reads_iff {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) axis :
+    (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map (exactBaseHom G f)) W).ctx.minimal.axisReads
+        (generatedExactAxisComp G f W axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  change
+    ((inverseCoreEquationForward G.core f).contextEquivalence.functor.obj
+      W).ctx.minimal.axisReads (generatedExactAxisComp G f W axis) ↔
+      W.ctx.minimal.axisReads axis
+  simpa only [generatedExactAxisComp] using
+    (geometryCastSourceAxisComp_reads_iff
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv
+      (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateAxisComp G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateAxisComp_reads_iff
+        G.core f.doctrineHom.atomEquiv) W axis)
+
+/-- The generated exact observable comparison reflects as well as preserves reading. -/
+theorem generatedExactObservableComp_reads_iff {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) observable :
+    (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map
+        (exactBaseHom G f)) W).ctx.minimal.observableReads
+          (generatedExactObservableComp G f W observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  change
+    ((inverseCoreEquationForward G.core f).contextEquivalence.functor.obj
+      W).ctx.minimal.observableReads
+        (generatedExactObservableComp G f W observable) ↔
+      W.ctx.minimal.observableReads observable
+  simpa only [generatedExactObservableComp] using
+    (geometryCastSourceObservableComp_reads_iff
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv
+      (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateObservableComp G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateObservableComp_reads_iff
+        G.core f.doctrineHom.atomEquiv) W observable)
 
 /-- Coverage preservation generated by the explicit exact pullback. -/
 noncomputable def generatedExactCoverage {U : AtomCarrier.{u}}
@@ -1042,6 +1236,104 @@ theorem generatedRefinementObservableComp_reads {U : AtomCarrier.{u}}
       (geometryDeconjugateObservableComp_reads
         G.core data.atomEquiv) W observable h)
 
+/-- The generated refinement support comparison reflects as well as preserves reading. -/
+theorem generatedRefinementSupportComp_reads_iff {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    support atom :
+    (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.minimal.supportReads
+        (generatedRefinementSupportComp G r condition hG W support)
+        ((refinementBaseHom G r condition hG).upper.atomEquiv atom) ↔
+      W.ctx.minimal.supportReads support atom := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition
+    ⟨G.core, rfl⟩
+  change
+    ((SelectedRefinementTransport.inverseCoreEquationForward
+      G.core data).contextEquivalence.functor.obj W).ctx.minimal.supportReads
+        (generatedRefinementSupportComp G r condition rfl W support)
+        (data.atomEquiv atom) ↔
+      W.ctx.minimal.supportReads support atom
+  simpa only [generatedRefinementSupportComp] using
+    (geometryCastSourceSupportComp_reads_iff
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv
+      (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateSupportComp G.core data.atomEquiv)
+      (geometryDeconjugateSupportComp_reads_iff
+        G.core data.atomEquiv) W support atom)
+
+/-- The generated refinement axis comparison reflects as well as preserves reading. -/
+theorem generatedRefinementAxisComp_reads_iff {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    axis :
+    (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.minimal.axisReads
+        (generatedRefinementAxisComp G r condition hG W axis) ↔
+      W.ctx.minimal.axisReads axis := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition
+    ⟨G.core, rfl⟩
+  change
+    ((SelectedRefinementTransport.inverseCoreEquationForward
+      G.core data).contextEquivalence.functor.obj W).ctx.minimal.axisReads
+        (generatedRefinementAxisComp G r condition rfl W axis) ↔
+      W.ctx.minimal.axisReads axis
+  simpa only [generatedRefinementAxisComp] using
+    (geometryCastSourceAxisComp_reads_iff
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv
+      (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateAxisComp G.core data.atomEquiv)
+      (geometryDeconjugateAxisComp_reads_iff
+        G.core data.atomEquiv) W axis)
+
+/-- The generated refinement observable comparison reflects as well as preserves reading. -/
+theorem generatedRefinementObservableComp_reads_iff {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    observable :
+    (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.minimal.observableReads
+        (generatedRefinementObservableComp G r condition hG W observable) ↔
+      W.ctx.minimal.observableReads observable := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition
+    ⟨G.core, rfl⟩
+  change
+    ((SelectedRefinementTransport.inverseCoreEquationForward
+      G.core data).contextEquivalence.functor.obj W).ctx.minimal.observableReads
+        (generatedRefinementObservableComp G r condition rfl W observable) ↔
+      W.ctx.minimal.observableReads observable
+  simpa only [generatedRefinementObservableComp] using
+    (geometryCastSourceObservableComp_reads_iff
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv
+      (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateObservableComp G.core data.atomEquiv)
+      (geometryDeconjugateObservableComp_reads_iff
+        G.core data.atomEquiv) W observable)
+
 /-- Coverage preservation generated by the realized-refinement pullback. -/
 noncomputable def generatedRefinementCoverage {U : AtomCarrier.{u}}
     {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
@@ -1363,6 +1655,187 @@ theorem generatedRefinementObservableComp_heq {U : AtomCarrier.{u}}
       (geometryDeconjugateEquationSystem G.core data.atomEquiv)
       (geometryDeconjugateObservableComp G.core data.atomEquiv)
       (fun _ _ => HEq.rfl) W observable
+
+/-! ## Forward/inverse carrier cancellation -/
+
+/-- The exact support comparison cancels the canonical inverse carrier cast. -/
+theorem generatedExactSupportComp_inverse {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category)
+    (support : (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map (exactBaseHom G f)) W).ctx.Support) :
+    generatedExactSupportComp G f W
+        (cast (inverseCorePackageForwardUpper_contextFunctor_obj_support_type
+          G.core f W) support) = support := by
+  apply eq_of_heq
+  exact (generatedExactSupportComp_heq G f W _).trans (cast_heq _ _)
+
+/-- The exact axis comparison cancels the canonical inverse carrier cast. -/
+theorem generatedExactAxisComp_inverse {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category)
+    (axis : (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map (exactBaseHom G f)) W).ctx.Axis) :
+    generatedExactAxisComp G f W
+        (cast (inverseCorePackageForwardUpper_contextFunctor_obj_axis_type
+          G.core f W) axis) = axis := by
+  apply eq_of_heq
+  exact (generatedExactAxisComp_heq G f W _).trans (cast_heq _ _)
+
+/-- The exact observable comparison cancels the canonical inverse carrier cast. -/
+theorem generatedExactObservableComp_inverse {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category)
+    (observable : (refinementGeometryContextForward
+      ((exactPackageToRefinement U).map (exactBaseHom G f)) W).ctx.Observable) :
+    generatedExactObservableComp G f W
+        (cast (inverseCorePackageForwardUpper_contextFunctor_obj_observable_type
+          G.core f W) observable) = observable := by
+  apply eq_of_heq
+  exact (generatedExactObservableComp_heq G f W _).trans (cast_heq _ _)
+
+/-- The generated exact support comparison is injective on carrier values. -/
+theorem generatedExactSupportComp_injective {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) :
+    Function.Injective (generatedExactSupportComp G f W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact (generatedExactSupportComp_heq G f W a).symm.trans
+    ((heq_of_eq hab).trans (generatedExactSupportComp_heq G f W b))
+
+/-- The generated exact axis comparison is injective on carrier values. -/
+theorem generatedExactAxisComp_injective {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) :
+    Function.Injective (generatedExactAxisComp G f W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact (generatedExactAxisComp_heq G f W a).symm.trans
+    ((heq_of_eq hab).trans (generatedExactAxisComp_heq G f W b))
+
+/-- The generated exact observable comparison is injective on carrier values. -/
+theorem generatedExactObservableComp_injective {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) :
+    Function.Injective (generatedExactObservableComp G f W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact (generatedExactObservableComp_heq G f W a).symm.trans
+    ((heq_of_eq hab).trans (generatedExactObservableComp_heq G f W b))
+
+/-- The refinement support comparison cancels the canonical inverse carrier cast. -/
+theorem generatedRefinementSupportComp_inverse {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (support : (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.Support) :
+    generatedRefinementSupportComp G r condition hG W
+        (cast (by
+          subst Y
+          let data := selectedTransportDataOfRealizedReflection r condition
+            ⟨G.core, rfl⟩
+          exact
+            SelectedRefinementTransport.inverseCorePackageForwardUpper_contextFunctor_obj_support_type
+              G.core data W) support) = support := by
+  apply eq_of_heq
+  exact (generatedRefinementSupportComp_heq G r condition hG W _).trans
+    (cast_heq _ _)
+
+/-- The refinement axis comparison cancels the canonical inverse carrier cast. -/
+theorem generatedRefinementAxisComp_inverse {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (axis : (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.Axis) :
+    generatedRefinementAxisComp G r condition hG W
+        (cast (by
+          subst Y
+          let data := selectedTransportDataOfRealizedReflection r condition
+            ⟨G.core, rfl⟩
+          exact
+            SelectedRefinementTransport.inverseCorePackageForwardUpper_contextFunctor_obj_axis_type
+              G.core data W) axis) = axis := by
+  apply eq_of_heq
+  exact (generatedRefinementAxisComp_heq G r condition hG W _).trans
+    (cast_heq _ _)
+
+/-- The refinement observable comparison cancels the canonical inverse carrier cast. -/
+theorem generatedRefinementObservableComp_inverse {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (observable : (refinementGeometryContextForward
+      (refinementBaseHom G r condition hG) W).ctx.Observable) :
+    generatedRefinementObservableComp G r condition hG W
+        (cast (by
+          subst Y
+          let data := selectedTransportDataOfRealizedReflection r condition
+            ⟨G.core, rfl⟩
+          exact
+            SelectedRefinementTransport.inverseCorePackageForwardUpper_contextFunctor_obj_observable_type
+              G.core data W) observable) = observable := by
+  apply eq_of_heq
+  exact (generatedRefinementObservableComp_heq G r condition hG W _).trans
+    (cast_heq _ _)
+
+/-- The generated refinement support comparison is injective on carrier values. -/
+theorem generatedRefinementSupportComp_injective {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category) :
+    Function.Injective (generatedRefinementSupportComp G r condition hG W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact (generatedRefinementSupportComp_heq G r condition hG W a).symm.trans
+    ((heq_of_eq hab).trans
+      (generatedRefinementSupportComp_heq G r condition hG W b))
+
+/-- The generated refinement axis comparison is injective on carrier values. -/
+theorem generatedRefinementAxisComp_injective {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category) :
+    Function.Injective (generatedRefinementAxisComp G r condition hG W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact (generatedRefinementAxisComp_heq G r condition hG W a).symm.trans
+    ((heq_of_eq hab).trans
+      (generatedRefinementAxisComp_heq G r condition hG W b))
+
+/-- The generated refinement observable comparison is injective on carrier values. -/
+theorem generatedRefinementObservableComp_injective {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category) :
+    Function.Injective
+      (generatedRefinementObservableComp G r condition hG W) := by
+  intro a b hab
+  apply eq_of_heq
+  exact
+    (generatedRefinementObservableComp_heq G r condition hG W a).symm.trans
+      ((heq_of_eq hab).trans
+        (generatedRefinementObservableComp_heq G r condition hG W b))
 
 end UpperGeometryCleavage
 
