@@ -1611,7 +1611,9 @@ result:
 audits:
   premise_delta:
     ambient_boundary: [the raw problem's authored route geometries and comparator families, completed G-114 mate, Cycle 26 generated mate and route Cartesianity]
-    direction_hypothesis: [the existing actual solution contract supplies its route-between triangle and authored comparator equation]
+    direction_hypothesis: []
+    solution_contract_input: [the existing actual solution supplies its route-between triangle]
+    conclusion_equivalent_risk: [the existing actual solution supplies its authored comparator equation; Cycle 27 does not discharge that stored equation, but proves its preservation after the generated endpoint comparison]
     discharged: [complete endpoint comparison maps, comparison-square proof-use, authored comparator intertwining against the generated mate]
     remaining: [solution-space equivalence, positive and negative named artifacts, coefficient-trivial reselection transport, paired cochain theorem, conditional exchange interface]
   certificate_provenance:
