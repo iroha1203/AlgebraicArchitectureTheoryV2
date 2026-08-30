@@ -1871,3 +1871,61 @@ audits:
   blocking_findings: []
   next_obligation: Apply the two generated group homomorphisms to the single source transport comparator, prove the finite path/cell compositor-unitor compatibility and route naturality, derive both comparator families and cochains, and establish the constructor-level global canonical-mate equation.
 ```
+
+## Cycle 33 — finite comparator families from the single source comparator
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 33
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: f03ac77e9c2302788a00f6a2c7ab7a6ba2bf8974
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 32 merged two lawful group homomorphisms pulling source CompositeFiberAut values onto the generated base and pulled endpoints
+  proof_dag_predecessors: [generatedBaseCompositeFiberAutHomAt, generatedPulledCompositeFiberAutHomAt, generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, FixedCoefficientTwoLayerTransportOver.comparator]
+  proof_obligation: Apply both generated group homomorphisms to the sole authored comparator family stored in sourceTransport, expose the resulting dependent finite comparator families, and prove that each family factors its own literal generated route leg through that same authored source comparator.
+  selection_reason: Revision 4 forbids base and pulled comparators as input fields. The first finite constructor step must therefore visibly consume sourceTransport.comparator and produce both route families independently before route transport data or cochains are assembled.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleFiniteComparators.lean]
+  risks: [copying the source comparator without cartesian pullback, storing route comparator certificates in the input, using one generated route family for both routes, hiding authored-comparator use behind an opaque wrapper, claiming a cochain before route transport data exists]
+  unchecked: [generated route edge transports and G-109 qualifications, two-cell path compatibility, finite compositor/unitor compatibility, derived route cochains, route naturality, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: The single sourceTransport.comparator family now generates separate base-first and pulled-first CompositeFiberAut families at every two-cell target. Both output families are evaluations of the Cycle 32 group homomorphisms, and their explicit factor laws show that each literal generated route leg followed by the authored source comparator is exactly the corresponding pulled-back comparator followed by that route leg.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteComparator, generatedPulledRouteComparator, generatedBaseRouteComparator_apply, generatedPulledRouteComparator_apply, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac]
+  evidence: [focused Lean check, 6-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleFiniteComparators.lean: c8ee9a431ba5ab9cc9aa1350917ddcfb14c8abfe2d06db8434331ee6f3880adf
+  claim_mapping:
+    theorem_names: [generatedBaseRouteComparator_apply, generatedPulledRouteComparator_apply, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac]
+    source_labels: [revision 4 cartesian-compatible finite comparator constructor, target theorem clause (b)]
+    conjuncts: [base finite comparator family, pulled finite comparator family, literal base route factor law, literal pulled route factor law, authored source comparator proof-use]
+    undischarged_assumptions: [generated finite route transports and their G-109 qualifications, path/cell normalization, route cochains and global mate equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: Each output is defined by evaluating its route-specific generated group homomorphism on input.sourceTransport.comparator cell. The factor-law right sides contain that same authored comparator literally; no independent route comparator is accepted from a caller.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 32 generated group homomorphisms, the single fixed-coefficient source transport and its authored comparator family]
+    direction_hypothesis: []
+    discharged: [dependent base comparator family, dependent pulled comparator family, both authored-comparator factor laws]
+    remaining: [generated edge transports and cocartesian qualifications, finite compositor/unitor and two-cell compatibility, derived cochains, global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [both comparator families come only from the Cycle 32 theorem-generated homomorphisms applied to sourceTransport.comparator; both factor laws specialize the Cycle 31 literal route laws]
+    unresolved: [route edge qualification, finite path compatibility and cochain laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [sourceTransport.comparator, generatedBaseCompositeFiberAutHomAt, generatedPulledCompositeFiberAutHomAt, generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac]
+    unused: [root and rootPath; source edges and coefficient-identity fields remain reserved for construction of the generated route transports]
+  structure_field_escape: the input still contains only one authored source comparator family; neither generated route comparator, factor law, route, cartesianness, cochain, comparison, or solution is stored or accepted as a theorem argument
+  route_integrity: base and pulled families are evaluations of distinct route-specific homomorphisms and satisfy factor laws against distinct literal generated legs
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: two finite families and their one-route factor laws are constructed; no route-between isomorphism or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleComparatorMapLaws` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleFiniteComparators.lean` => exit 0 and 6 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Generate the base and pulled finite edge transports from sourceTransport.edgeLift using the two literal cartesian route legs, prove exact lower projections, factor laws, coefficient identity and G-109 cocartesian qualifications, then combine those transports with the two generated comparator families to derive route cochains.
+```
