@@ -2453,3 +2453,62 @@ audits:
   blocking_findings: []
   next_obligation: Prove the remaining finite compositor/unitor compatibility and the global canonical upper-mate equation, then construct endpoint isomorphisms and the solution equivalence.
 ```
+
+## Cycle 43 — pseudofunctor normalization and global compatible mate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 43
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: b2f9585334f116340a0cb1edc68ea41dc1775c56
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 42 merged both raw-cochain image laws while leaving genuine pseudofunctor normalization and the global mate equation open
+  proof_dag_predecessors: [compatibleSourceRouteData, generatedBaseRouteData, generatedPulledRouteData, generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac, generatedCompatibleUpperGeometryMateAt_triangle, generatedPulledRouteLegAt_isStronglyCartesian]
+  proof_obligation: Consume the actual geometry-fiber unitor and compositor normalization on the compatible finite routes, then prove that the canonical generated upper mate intertwines the two comparator families pulled back from the single authored source comparator.
+  selection_reason: Map-one/map-mul and recursive nil/append factor laws alone do not mention the genuine pseudofunctor cells. The unitor factor theorem and pseudofunctor-normalized comparator must be connected explicitly before the constructor-level global equation closes clause (b)'s remaining coherence prerequisite.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatiblePseudofunctorCoherence.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleGlobalMate.lean]
+  risks: [renaming map-one or path-nil as unitor compatibility, aliasing the upper canonical comparator without consuming the genuine compositor, replacing the authored comparator by the canonical comparator, proving only the equation after the route leg, skipping package-level uniqueness, accepting comparator intertwining from the caller]
+  unchecked: [endpoint comparison isomorphisms, generated solution constructor, solution equivalence, named positive and negative artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The genuine geometry-fiber unitor now normalizes the canonical identity lift to the literal source empty path at geometry and package levels. Each generated endpoint unitor is separately identified with its theorem-generated pullback of the source identity by map-one, and both generated/source unitor normalizations are connected through the corresponding route-specific nil factor at geometry and package levels. The genuine pseudofunctor-compositor normalization on each generated route is proved to be the route-specific Cartesian pullback of the source normalization. Finally, both authored-comparator factor laws and the canonical mate triangle give the global comparator equation after the pulled leg; package and geometry strong-cartesian uniqueness reflect it to the required literal equality.
+  completion_candidate: no
+  lean_artifacts: [compatibleSourceRoutePathNil_unitor, compatibleSourceRoutePathNil_unitor_base, generatedBaseRouteUnitor_eq_pullback_one, generatedPulledRouteUnitor_eq_pullback_one, generatedBaseRouteUnitor_compatibility, generatedPulledRouteUnitor_compatibility, generatedBaseRouteUnitor_compatibility_base, generatedPulledRouteUnitor_compatibility_base, generatedBaseRoutePseudofunctorComparator_eq_pullback, generatedPulledRoutePseudofunctorComparator_eq_pullback, generatedCompatibleUpperGeometryMateAt_comparator_intertwining]
+  source_sha256:
+    UpperGeometryCompatiblePseudofunctorCoherence.lean: e93d04fcbd9cc43a61126c8bb4d3af72e798f33c4f4333ee08d8b8171724ed50
+    UpperGeometryCompatibleGlobalMate.lean: c94efa66927838b0c12b8cbc307b07c36dc8b1a523bb551d8c67e5da1db3d7d2
+  evidence: [focused Lean checks, 10-declaration and 1-declaration namespace standard-axiom audits, targeted direct-module construction, module registration, source hashes, literal scans]
+  claim_mapping:
+    theorem_names: [compatibleSourceRoutePathNil_unitor, compatibleSourceRoutePathNil_unitor_base, generatedBaseRouteUnitor_eq_pullback_one, generatedPulledRouteUnitor_eq_pullback_one, generatedBaseRouteUnitor_compatibility, generatedPulledRouteUnitor_compatibility, generatedBaseRouteUnitor_compatibility_base, generatedPulledRouteUnitor_compatibility_base, generatedBaseRoutePseudofunctorComparator_eq_pullback, generatedPulledRoutePseudofunctorComparator_eq_pullback, generatedCompatibleUpperGeometryMateAt_comparator_intertwining]
+    source_labels: [revision 4 finite compatible pseudofunctor coherence, revision 4 global canonical upper-mate equation, target theorem clause (b)]
+    conjuncts: [source geometry and package unitor normalization, base and pulled generated unitor map-one normalization, base and pulled route-specific unitor compatibility at geometry and package levels, base and pulled compositor-normalized comparator pullback, global authored-comparator intertwining by the canonical upper mate]
+    undischarged_assumptions: [endpoint comparison inverse laws, componentwise generated solution laws, solution equivalence]
+    acceptance_point: The global equation is not an input field or an equality after forgetting geometry. It consumes the same literal sourceTransport.comparator on both routes through separate factor laws and is reflected through package then complete-geometry Cartesian uniqueness.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [G-109 geometry-fiber unitor and pseudofunctor compositor normalization, Cycles 32 and 40 route pullback and finite path laws, Cycle 41 canonical-comparator pullback, Cycle 36 canonical mate triangle]
+    direction_hypothesis: []
+    discharged: [literal source empty-path unitor normalization, generated base and pulled unitor pullback-one normalizations, both route-specific generated/source unitor compatibilities at geometry and package levels, both generated pseudofunctor-compositor normalization pullbacks, constructor-level global canonical upper-mate comparator equation]
+    remaining: [endpoint comparison isomorphisms, generated solution, solution equivalence, named artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [unitor compatibility comes from generated and source geomFiberUnitorApp_hom_fac, both theorem-generated map-one laws, and both route nil factor laws; compositor compatibility comes from pseudofunctorCanonicalComparator_eq_upper plus two-level Cartesian comparator uniqueness; global mate comes from both authored comparator factor laws, the mate triangle, and two-level Cartesian uniqueness]
+    unresolved: [endpoint inverse uniqueness, solution transports, named firing and negative classification]
+  proof_use:
+    used: [geomFiberUnitorApp_hom_fac, generatedBaseCompositeFiberAutAt_one, generatedPulledCompositeFiberAutAt_one, generatedBaseRoutePath_nil_fac, generatedPulledRoutePath_nil_fac, pseudofunctorCanonicalComparator_eq_upper, generatedBaseRouteCanonicalComparator_eq_pullback, generatedPulledRouteCanonicalComparator_eq_pullback, generatedBaseRouteComparator_fac, generatedPulledRouteComparator_fac, generatedCompatibleUpperGeometryMateAt_triangle, pulledRouteGeometryBase_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, IsStronglyCartesian.ext]
+    unused: [raw-cochain image laws remain adjacent diagnostic consequences rather than substitutes for comparator intertwining]
+  structure_field_escape: no unitor, compositor normalization, route comparator equation, mate equation, endpoint comparison, or solution is stored in the compatible input or accepted as a theorem argument
+  route_integrity: base and pulled pseudofunctor comparator normalizations use distinct generated transports and pullback maps; the global equation consumes both distinct route comparator factor laws and the one shared authored source comparator
+  predecessor_integrity: the fixed GOAL and completed predecessor declarations are unchanged
+  target_fitting: none-found
+  vacuity: all statements quantify over actual vertices or two-cells; the global equation uses the literal authored comparator at every cell; named nonidentity firing remains downstream
+  one_way_as_equivalence: no endpoint or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted direct-module builds passed; focused checkers passed with 10 and 1 declarations standard axioms only; both modules registered in research-modules.txt and DoctrineFiberProduct.lean; git diff --check and hidden/BiDi, privacy, placeholder, reverse-import scans clean]
+  blocking_findings: []
+  next_obligation: Construct the base and pulled endpoint comparison isomorphisms from base-iso-normalized strong-cartesian uniqueness, prove their inverse, factor, coefficient, component, edge, and authored-comparator conjugation laws, then build the generated solution and solution equivalence.
+```
