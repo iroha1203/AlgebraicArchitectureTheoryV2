@@ -2103,3 +2103,66 @@ audits:
   blocking_findings: []
   next_obligation: Normalize the propositionally fixed generated endpoint coefficients and determine whether the existing G-109 APIs derive strong cocartesianness of the two cartesian-pulled route edges; package actual fixed-coefficient route transports if they do, or record the exact missing public preservation primitive after exhausting the relevant interfaces.
 ```
+
+## Cycle 37 — goal defect: missing Beck--Chevalley stability for route edges
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 37
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 7e2d43ed2818b50e0e24c96503fbc01f79ed988e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 35 generated both route edges by Cartesian pullback and Cycle 36 proved their complete geometry naturality with the actual G-114 mate
+  proof_dag_predecessors: [sourceTransport.edgeGeometryStrong, sourceTransport.edgeCoreStrong, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, IsStronglyCocartesian.comp, IsStronglyCocartesian.of_comp]
+  proof_obligation: Derive the geometry-stage and core-stage strong cocartesianness required by FixedCoefficientTwoLayerTransportOver for both Cartesian-pulled route edges, without accepting those qualifications or a conclusion-equivalent certificate from the compatible input.
+  selection_reason: Fixed-coefficient endpoint normalization is transport along proved equalities, but the G-109 route contract independently requires each generated edge to be strongly cocartesian. This is the first remaining semantic qualification needed before route transports, path lifts, cochains, and the global comparator equation can be assembled.
+  expected_result_type: target-proof-checkpoint-or-goal-defect
+  risks: [treating a commutative Cartesian square as Beck--Chevalley exact without proof, cancelling a strongly cocartesian right factor using the one-sided of_comp theorem, confusing source-edge qualification with route-edge qualification, adding edgeStrong certificates to the input, weakening the generated route to an unqualified diagram]
+  unchecked: [fixed-coefficient route transports, finite compositor/unitor and two-cell coherence, derived cochains/global equation, endpoint geometry comparison isomorphisms, solution equivalence, named positive/negative artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: goal-defect
+  proof_obligation_delta: The exact public API boundary has been exhausted. The generated square has generatedEdge followed by the target route leg equal to the source route leg followed by the authored strongly cocartesian source edge. Both route legs are strongly Cartesian; package-level selected legs also have separate ambidextrous results. However neither Mathlib nor AAT supplies the required right-cancellation/base-change theorem that turns this square into a strongly cocartesian generated edge. Mathlib IsStronglyCocartesian.of_comp assumes the left factor and the composite are strongly cocartesian and concludes the right factor; applying it here would require the generated edge qualification already. Strong cartesianness and square commutativity alone do not imply Beck--Chevalley exactness in a bifibration. Therefore revision 4's certificate-free input is insufficient for the required G-109 route transport contract.
+  completion_candidate: no
+  lean_artifacts: []
+  evidence: [Cycle 35 typed route factor graphs, Cycle 36 complete edge naturality, FixedCoefficientTwoLayerTransportOver field audit, Mathlib IsStronglyCocartesian API audit, AAT package and geometry cocartesian API audit, repository-wide declaration search]
+  missing_public_primitive:
+    geometry: Given generatedEdge ≫ targetRouteLeg = sourceRouteLeg ≫ sourceEdge, strong-cartesian source/target route legs, and a strongly cocartesian sourceEdge, derive geometryProjection.IsStronglyCocartesian generatedEdge under an explicit Beck--Chevalley exactness hypothesis on that square.
+    core: Given the projected package square and the corresponding exactness hypothesis, derive packageProjection.IsStronglyCocartesian generatedEdge.base.
+    absent_in_current_api: [no right-factor cancellation for IsStronglyCocartesian, no cartesian-base-change-preserves-cocartesian theorem, no route-square Beck--Chevalley exactness datum or theorem on UpperGeometryCompatibleProblemInputData]
+  claim_mapping:
+    theorem_names: []
+    source_labels: [revision 4 compatible route generation, target theorem clause (b), target failure policy goal-defect]
+    conjuncts: [exact missing semantic implication, current API variance audit, separation of coefficient normalization from cocartesian qualification, revision proposal]
+    undischarged_assumptions: [route-square Beck--Chevalley exactness at package and geometry levels]
+    acceptance_point: No Lean theorem or structure field currently supplies the missing exactness. Adding edgeGeometryStrong or edgeCoreStrong directly to the compatible input would violate the fixed anti-weakening rule; pretending IsStronglyCocartesian.of_comp has the opposite cancellation direction would be invalid.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [single qualified source transport, theorem-generated exact/realized route legs, Cycle 35 commutative edge squares]
+    direction_hypothesis: []
+    discharged: [route edge construction and exact lower maps, route square commutativity, actual mate edge naturality, identification of the precise missing semantic implication]
+    remaining: [both route edge cocartesian qualifications and every downstream artifact depending on FixedCoefficientTwoLayerTransportOver]
+  certificate_provenance:
+    discharged: [source edge qualification is reviewed G-109 input; route legs and factor squares are theorem-generated]
+    unresolved: [Beck--Chevalley stability of the two route squares]
+  proof_use:
+    used: [FixedCoefficientTwoLayerTransportOver.edgeGeometryStrong, FixedCoefficientTwoLayerTransportOver.edgeCoreStrong, IsStronglyCocartesian.comp, IsStronglyCocartesian.of_comp, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac]
+    unused: [coefficient equality transport is not the semantic blocker and does not imply either cocartesian qualification]
+  structure_field_escape: adding the two desired strong-edge propositions, or a proposition definitionally equivalent to them, to UpperGeometryCompatibleProblemInputData is forbidden by revision 4 and is not proposed
+  route_integrity: the defect concerns base-change stability for each separately generated route square; it is not repaired by identifying the two routes
+  predecessor_integrity: completed G-109, G-112, and G-114 declarations and GOAL files remain unchanged
+  target_fitting: no ad hoc qualification or selected edge was introduced
+  vacuity: not-applicable to the missing universal implication
+  one_way_as_equivalence: no one-way factor graph is promoted to a cocartesian universal property
+  goal_or_report_reinterpretation: revision 4 itself classifies inability to construct route transports from the certificate-free input as goal-defect
+  validation_refs: [repository-wide search for cocartesian/cartesian stability declarations; direct inspection of Mathlib CategoryTheory/FiberedCategory/Cocartesian.lean IsStronglyCocartesian.comp and of_comp; direct inspection of FixedCoefficientTwoLayerTransportOver; direct inspection of PackageProjectionBeckChevalleyExactness and geometry transport cocartesian uniqueness APIs; no Research aggregate/full build]
+  blocking_findings: [certificate-free compatible input lacks route-square Beck--Chevalley exactness needed to derive both route edge strong-cocartesian fields]
+  revision_proposal:
+    recommended: Introduce a semantic UpperRouteBeckChevalleyExact compatibility predicate on each generated package and geometry base-change square, stated as invertibility/exactness of its canonical Beck--Chevalley comparison rather than as stored edgeStrong output fields. Define the compatible locus as source data plus this square-exactness boundary, derive route edge cocartesianness from a generic exact-square stability theorem, and require a genuinely lax nonidentity named witness that proves the predicate from concrete AAT transport data.
+    anti_weakening_guard: The predicate must not contain the desired generated route edge or its IsStronglyCocartesian proof as payload; its proof must be consumed to construct the universal factorization. The final packet must audit that both geometry and core qualifications follow from the canonical comparison theorem.
+    rejected_alternative: Weakening generated routes to unqualified edge diagrams would sever the G-109 path-lift, comparator, and cochain contracts and is not natural for the Gr4 series.
+  next_obligation: Human review and explicit authorization of a revision-5 GOAL that adds route-square Beck--Chevalley exactness as the compatible-locus boundary; do not edit the fixed GOAL in this loop.
+```
