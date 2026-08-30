@@ -1202,3 +1202,65 @@ audits:
 
 Cycle 20 adds the missing geometry-carrier realization in the active G-115
 surface. Completed G-112 and G-114 APIs and GOAL cards remain unchanged.
+
+## Cycle 21 — complete exact geometry mate and factorization triangle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 21
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: c0ee6bc22145bbf5648c36365d61b59cbb6d35dd
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 20 merged the pulled-route backward realization maps and laws
+  proof_dag_predecessors: [generatedRouteCoreMate_upper_eq_explicit, baseRouteGeometryHom, pulledRouteGeometryHom, pulledRouteBackwardUpper and its carrier maps]
+  proof_obligation: Create every missing exact geometry-mate field inside G-115, identify its base with generatedRouteCoreMate, and prove the full geometry-level factorization triangle without modifying completed G-112 or G-114.
+  selection_reason: The core mate alone does not supply coverage, overlap, coefficient/raw transport, realization maps, or equality of the dependent geometry data in the route triangle.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateGeometry.lean]
+  risks: [inventing a backward coefficient map without provenance, inferring overlap from core equality, treating HEq carrier values as strict function equality before the base triangle, reopening completed predecessor GOALs]
+  unchecked: [geometry-level comparison naturality and solution-space equivalence, named positive and negative problems, target clauses (c)--(d), final target assembly]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: G-115 now supplies canonical exact and realized-refinement backward coefficient maps and raw laws, forward/backward context and carrier computation laws, a complete GeometryTotalHom upperGeometryMate over generatedRouteCoreMate, and a pointwise-proved geometry-level factorization triangle through pulledRouteGeometryHom.
+  completion_candidate: no
+  lean_artifacts: [exactSourceCoefficientBackwardHom, refinementSourceCoefficientBackwardHom, refinementSourceBackwardUpper, rawReindexUpper_baseChange, generatedExactSupportComp_heq, generatedRefinementSupportComp_heq, generatedExactAxisComp_heq, generatedRefinementAxisComp_heq, generatedExactObservableComp_heq, generatedRefinementObservableComp_heq, pulledRouteBackwardSupportComp_heq, pulledRouteBackwardAxisComp_heq, pulledRouteBackwardObservableComp_heq, upperGeometryMate, upperGeometryMate_raw_eq, upperGeometryMate_fac]
+  evidence: [four focused Lean checks, namespace standard-axiom audits, source hashes, literal scans]
+  source_sha256:
+    UpperGeometryCleavage.lean: 18b9224f7ed015fbdba8dd898f8d23a57fd229245017b5bedee8aae60c779499
+    UpperGeometryCleavageNaturality.lean: a495859f5238fdb8149b55418076cd086fd63617ca783c79d8939b9ec78afb0c
+    UpperGeometryMateComponents.lean: 85dd63b2ab8e5978a1d59e1f16b26c2f368433c4b0a7225a5ad3f2775a2db9a8
+    UpperGeometryMateGeometry.lean: 464da064fa5a5012b63bc7e7804af09bc7bb6854e414139047f35bdd712f5975
+  claim_mapping:
+    theorem_names: [upperGeometryMateExplicitBase_eq, upperGeometryMateOverlap, upperGeometryMate_raw_eq, upperGeometryMateCoefficient_fac, upperGeometryMate_fac]
+    source_labels: [target theorem clause (b), K2b2a complete geometry mate and leg triangle]
+    conjuncts: [generated exact core base, all nine coverage clauses, selected overlap comparison, coefficient and raw transport, support axis observable readings and naturality, exact-to-refinement geometry triangle]
+    undischarged_assumptions: [edgewise geometry comparison, solution-space equivalence, named fixtures, paired cochain and exchange-exact artifacts]
+    acceptance_point: The dependent triangle is proved only after the lower package triangle and pointwise forward/backward carrier cancellation laws; no geometry equality is inferred from the core upper equation alone.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [complete upperGeometryMate construction, canonical coefficient provenance, raw reindex/base-change compatibility, selected overlap transport, geometry-level route factorization]
+    remaining: [finite-presentation comparison and solution-space equivalence, positive and negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [backward coefficient maps are identity maps induced by the two G-115 pullback geometries; overlap is the mapped base-route overlap followed by explicit pulled context inversion; the triangle consumes generatedRouteRefinementMate_fac and all three carrier cancellation laws]
+    unresolved: [downstream solution and reselection witnesses]
+  proof_use:
+    used: [baseRouteGeometryHom geometry fields, pulledRouteBackwardUpper_comp_forward, exact and selected context inverse laws, rawReindexUpper_comp, RawAmbientRestrictionSystem.baseChange_comp, generatedRouteCoreMate_toRefinement, generatedRouteRefinementMate_fac]
+    unused: []
+  structure_field_escape: no mate field, triangle, overlap, raw law, or cancellation certificate is caller data
+  route_integrity: the mate connects the literal baseRouteGeometry and pulledRouteGeometry and factors their literal refinement-geometry legs
+  predecessor_integrity: completed G-112 and G-114 source and GOAL cards are unchanged; every absent API is created in the active G-115 surface
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused checks for all four changed Lean modules => exit 0 with standard axioms only; git diff --check => exit 0; placeholder and hidden/BiDi scans => no matches; protected G-112/G-114 and AAT mathematical-source diff scan => no matches]
+  blocking_findings: []
+  next_obligation: Lift upperGeometryMate pointwise over the finite presentation, prove edge naturality and the G-114 authored comparator intertwining, and construct the geometry/core solution-space equivalence before named positive and negative problems.
+```
+
+Cycle 21 creates the complete missing geometry mate in G-115. Completed G-112
+and G-114 remain immutable inputs rather than retroactive edit targets.

@@ -178,6 +178,19 @@ theorem rawReindexUpper_comp {U : AtomCarrier.{u}}
         (rawReindexUpper geometryP geometryQ f raw) := by
   apply LawAlgebra.RawAmbientRestrictionSystem.ext <;> rfl
 
+/-- Reindexing an upper raw system commutes with coefficient base change. -/
+theorem rawReindexUpper_baseChange {U : AtomCarrier.{u}}
+    {P Q : AATCorePackage U}
+    (geometryP : Site.SelectedGeometryReading P)
+    (geometryQ : Site.SelectedGeometryReading Q)
+    {k k' : Type v} [CommRing k] [CommRing k']
+    (f : SignedExactCoreReadingHom P Q)
+    (raw : LawAlgebra.RawAmbientRestrictionSystem geometryP.toAATSite k)
+    (coeff : k →+* k') :
+    (rawReindexUpper geometryP geometryQ f raw).baseChange coeff =
+      rawReindexUpper geometryP geometryQ f (raw.baseChange coeff) := by
+  apply LawAlgebra.RawAmbientRestrictionSystem.ext <;> rfl
+
 theorem rawReindexUpper_cancel {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
     (geometryP : Site.SelectedGeometryReading P)
@@ -230,6 +243,33 @@ noncomputable def exactSourceGeometry {U : AtomCarrier.{u}}
     (inverseCorePackageForwardUpper G.core f)
     (inverseCorePackageBackwardUpper G.core f)
 
+/-- The generated exact pullback retains the target coefficient ring. -/
+theorem exactSourceGeometry_coefficient_eq {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core) :
+    (exactSourceGeometry G f).Coefficient = G.Coefficient :=
+  rfl
+
+/-- The exact pullback's coefficient ring maps canonically back from the target. -/
+noncomputable def exactSourceCoefficientBackwardHom {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core) :
+    G.Coefficient →+* (exactSourceGeometry G f).Coefficient :=
+  RingHom.id G.Coefficient
+
+/-- The exact pullback raw system is the backward upper reindexing together
+with its canonical coefficient identification. -/
+theorem exactSourceGeometry_raw_backward {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core) :
+    (exactSourceGeometry G f).raw =
+      rawReindexUpper G.geometry (exactSourceGeometry G f).geometry
+        (inverseCorePackageBackwardUpper G.core f)
+        (G.raw.baseChange (exactSourceCoefficientBackwardHom G f)) := by
+  unfold exactSourceGeometry pullPackage pullRaw
+  unfold exactSourceCoefficientBackwardHom
+  rw [LawAlgebra.RawAmbientRestrictionSystem.baseChange_id]
+
 @[simp] theorem exactSourceGeometry_core {U : AtomCarrier.{u}}
     {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
     (f : X ⟶ packagePoint G.core) :
@@ -265,6 +305,58 @@ noncomputable def refinementSourceGeometry {U : AtomCarrier.{u}}
   exact pullPackage G
     (SelectedRefinementTransport.inverseCorePackageForwardUpper G.core data)
     (SelectedRefinementTransport.inverseCorePackageBackwardUpper G.core data)
+
+/-- The generated realized-refinement pullback retains the target coefficient ring. -/
+theorem refinementSourceGeometry_coefficient_eq {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y) :
+    (refinementSourceGeometry G r condition hG).Coefficient = G.Coefficient := by
+  subst Y
+  rfl
+
+/-- The realized-refinement pullback's coefficient ring maps canonically back
+from the target. -/
+noncomputable def refinementSourceCoefficientBackwardHom {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y) :
+    G.Coefficient →+* (refinementSourceGeometry G r condition hG).Coefficient := by
+  subst Y
+  exact RingHom.id G.Coefficient
+
+/-- Complete backward upper map with the generated refinement source as its
+literal codomain. -/
+noncomputable def refinementSourceBackwardUpper {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y) :
+    SignedExactCoreReadingHom G.core
+      (refinementSourceGeometry G r condition hG).core := by
+  subst Y
+  exact SelectedRefinementTransport.inverseCorePackageBackwardUpper G.core
+    (selectedTransportDataOfRealizedReflection r condition ⟨G.core, rfl⟩)
+
+/-- The realized-refinement pullback raw system is the backward upper
+reindexing together with its canonical coefficient identification. -/
+theorem refinementSourceGeometry_raw_backward {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y) :
+    (refinementSourceGeometry G r condition hG).raw =
+      rawReindexUpper G.geometry
+        (refinementSourceGeometry G r condition hG).geometry
+        (refinementSourceBackwardUpper G r condition hG)
+        (G.raw.baseChange
+          (refinementSourceCoefficientBackwardHom G r condition hG)) := by
+  subst Y
+  unfold refinementSourceGeometry refinementSourceCoefficientBackwardHom
+    refinementSourceBackwardUpper pullPackage pullRaw
+  rw [LawAlgebra.RawAmbientRestrictionSystem.baseChange_id]
 
 @[simp] theorem refinementSourceGeometry_core {U : AtomCarrier.{u}}
     {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
