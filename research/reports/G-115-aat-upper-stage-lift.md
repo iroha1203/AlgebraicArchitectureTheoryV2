@@ -1987,3 +1987,61 @@ audits:
   blocking_findings: []
   next_obligation: Use each generated exact core edge and factor graph as the lower map for the strongly Cartesian geometry pullback, exactify the complete geometry edge, and prove its literal route factorization before assembling G-109 edge qualifications and route transports.
 ```
+
+## Cycle 35 — complete generated route geometry edges
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 35
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: ca3a5731a6dfd93d6055246073338507091bb5a4
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 34 merged both exact route core diagrams and their authored source-edge factor graphs
+  proof_dag_predecessors: [generatedBaseRouteCoreDiagram, generatedPulledRouteCoreDiagram, generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, exactGeometryHomOfRefinement]
+  proof_obligation: Pull each authored source geometry edge back through the corresponding literal strongly Cartesian route leg over the exact Cycle 34 core edge, prove the lower projection, exactify the complete geometry factor, and retain the literal source-edge factor graph.
+  selection_reason: G-109 route transports require actual GeometryTotalHom edge lifts. The complete geometry pullback must be generated before its coefficient identity and cocartesian qualifications can be audited.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteGeometryEdges.lean]
+  risks: [accepting route cartesianness as an argument, losing the exact lower map during exactification, using a stored route transport, reversing the Cartesian factor law, claiming G-109 qualification before it is proved]
+  unchecked: [coefficient identity and G-109 cocartesian qualifications, route transport path and two-cell laws, derived route cochains, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Both authored source geometry edges are independently pulled back through their theorem-generated strongly Cartesian route legs. Each universal refinement factor is proved to lie over the exact Cycle 34 core edge, exactified to a complete GeometryTotalHom, and shown to satisfy full literal route-leg naturality against the same sourceTransport.edgeLift.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteRefinementGeometryEdge, generatedBaseRouteRefinementGeometryEdge_base, generatedBaseRouteGeometryEdge, generatedBaseRouteGeometryEdge_base, generatedBaseRouteGeometryEdge_toRefinement, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteRefinementGeometryEdge, generatedPulledRouteRefinementGeometryEdge_base, generatedPulledRouteGeometryEdge, generatedPulledRouteGeometryEdge_base, generatedPulledRouteGeometryEdge_toRefinement, generatedPulledRouteGeometryEdge_fac]
+  evidence: [focused Lean check, 12-declaration namespace standard-axiom audit, targeted direct-predecessor module construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleRouteGeometryEdges.lean: e1674558f9e50642e8f7d880e0b2204cfe21b78bbb88c6843eea7ce710baeb59
+  claim_mapping:
+    theorem_names: [generatedBaseRouteRefinementGeometryEdge_base, generatedBaseRouteGeometryEdge_base, generatedBaseRouteGeometryEdge_toRefinement, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteRefinementGeometryEdge_base, generatedPulledRouteGeometryEdge_base, generatedPulledRouteGeometryEdge_toRefinement, generatedPulledRouteGeometryEdge_fac]
+    source_labels: [revision 4 certificate-free route edge construction, target theorem clause (b)]
+    conjuncts: [two geometry-stage Cartesian pullbacks, exact lower projection laws, two complete exact geometry edges, two refinement recovery laws, two authored source-edge factor graphs]
+    undischarged_assumptions: [G-109 coefficient identity and cocartesian qualifications, route path and cell coherence, cochains and global equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: Each route edge is generated from the literal route leg's theorem-level strong cartesianness and the actual sourceTransport.edgeLift. The exact lower edge and full refinement factor are both exposed. No route edge, qualification, transport, or naturality certificate is an input or theorem argument.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 34 exact core edges and factor graphs, theorem-generated route-leg strong cartesianness, authored source geometry edge lifts]
+    direction_hypothesis: []
+    discharged: [two refinement geometry pullbacks, exact lower projections, exact complete geometry edges, refinement recovery, both complete geometry factor laws]
+    remaining: [coefficient identity and G-109 cocartesian qualifications, finite route transport coherence, derived cochains and global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [refinement factors come from IsStronglyCartesian.map over the exact Cycle 34 lower maps; exactification uses the proved lower projection; factor laws come from IsStronglyCartesian.fac]
+    unresolved: [edge cocartesianness and coefficient identity, path and cell laws, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [sourceTransport.edgeLift, generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, IsStronglyCartesian.map, IsStronglyCartesian.fac, IsHomLift.eq_of_isHomLift, exactGeometryHomOfRefinement, exactGeometryHomOfRefinement_toRefinement]
+    unused: [root and rootPath; comparator fields are reserved for route cochain assembly]
+  structure_field_escape: no route edge, Cartesian qualification, transport, path law, cochain, comparison, or solution is stored in the input or accepted as a theorem argument
+  route_integrity: base and pulled edges independently use their own core diagrams, factor laws, literal route legs, and theorem-generated Cartesian instances while sharing only the authored source edge
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: complete edge morphisms and one-way factor laws are generated; no edge isomorphism, route-between endpoint isomorphism, or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteCoreEdges` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteGeometryEdges.lean` => exit 0 and 12 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Prove that both generated complete route edges retain coefficient identity and derive the G-109 cocartesian qualifications needed to assemble actual FixedCoefficientTwoLayerTransportOver values and their route cochains.
+```
