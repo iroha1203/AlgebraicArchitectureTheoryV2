@@ -1385,3 +1385,65 @@ audits:
 
 Cycle 23 creates the missing finite comparison API in G-115. Completed G-112
 and G-114 remain immutable sources of the actual diagrams and mate.
+
+## Cycle 24 — exactification and generated core mate naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 24
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: b00c49a6b4c4fba72ca1f9911f9178fdace5cb0a
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 23 merged the actual G-114 finite mate conjugated onto generated core endpoints
+  proof_dag_predecessors: [baseRouteComparisonIso, pulledRouteComparisonIso, transportedG114RefinementMate_eq_generated, generatedRouteCoreMate_toRefinement, generatedConjugateCoreMateAt_naturality]
+  proof_obligation: Exactify the G-115 universal refinement endpoint comparisons, identify the conjugated actual G-114 mate with the pointwise generated exact mate, and transfer finite path naturality to generatedRouteCoreMate itself.
+  selection_reason: The exact endpoint choices and universal refinement comparisons are not definitionally equal. G-115 therefore needs an explicit exactification/recovery theorem instead of an rfl cast or a predecessor edit.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteCoreNaturality.lean]
+  risks: [assuming exact/refinement comparisons definitionally equal, losing complete upper data during exactification, inferring geometry edge naturality from core naturality]
+  unchecked: [generated geometry edge maps, geometry-mate edge naturality, authored comparator intertwining, solution-space equivalence, named fixtures, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: A refinement comparison over literal exact endpoint transport is now exactified to a vertical CoreFiber morphism and recovered faithfully after refinement embedding. Both universal endpoint comparison isomorphisms are lifted this way. The conjugated actual G-114 mate embeds to transportedG114RefinementMate, hence equals generatedRouteCoreMate by the previously proved universal identification. The generated components therefore assemble into a natural transformation over the finite presentation.
+  completion_candidate: no
+  lean_artifacts: [exactCoreHomOfRefinementComparison, exactCoreHomOfRefinementComparison_toRefinement, baseRouteComparisonCoreHom, baseRouteComparisonCoreHom_toRefinement, baseRouteComparisonCoreInv, baseRouteComparisonCoreInv_toRefinement, baseRouteComparisonCoreIso, pulledRouteComparisonCoreHom, pulledRouteComparisonCoreHom_toRefinement, pulledRouteComparisonCoreInv, pulledRouteComparisonCoreInv_toRefinement, pulledRouteComparisonCoreIso, generatedConjugateCoreMateAt_toRefinement, generatedConjugateCoreMateAt_eq_generated, generatedRouteCoreMateAt_naturality, generatedRouteCoreMateNatTrans]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryFiniteCoreNaturality.lean: 4d2bede615f74fec8bb2ac4c6c37cb42d75ba0930ff2ba7f832a88e7322f2147
+  claim_mapping:
+    theorem_names: [exactCoreHomOfRefinementComparison_toRefinement, baseRouteComparisonCoreHom_toRefinement, pulledRouteComparisonCoreHom_toRefinement, generatedConjugateCoreMateAt_toRefinement, generatedConjugateCoreMateAt_eq_generated, generatedRouteCoreMateAt_naturality]
+    source_labels: [target theorem clause (b), finite-presentation generated core comparison naturality]
+    conjuncts: [complete-upper-preserving exactification, endpoint comparison isomorphisms, transported G-114 mate identification, generated core mate path naturality, finite natural transformation]
+    undischarged_assumptions: [geometry realization of route edges, geometry mate edge naturality, authored comparator compatibility, downstream solution and orbit contracts]
+    acceptance_point: Exactification consumes the full RefinementPackageHom upper map and proves faithful recovery. Generated mate equality then uses both endpoint recovery theorems, the actual ctx.mate component, transportedG114RefinementMate_eq_generated, and exact embedding injectivity.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [completed G-114 actual mate, Cycle 17 universal refinement comparisons, Cycle 23 conjugated core naturality]
+    direction_hypothesis: []
+    discharged: [exact core realization of both endpoint comparisons, exact/refinement recovery, conjugated-to-generated component equality, generated core mate finite naturality]
+    remaining: [geometry edge generation and naturality, comparator intertwining, solution equivalence, positive and negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [exact lower maps are literal endpoint equality transports; complete upper maps come from the universal refinement comparison isomorphisms; inverse laws are reflected through exactPackageToRefinement_map_injective]
+    unresolved: [geometry-level edge and comparator lifts]
+  proof_use:
+    used: [baseRouteComparisonHom_base, baseRouteComparisonInv_base, pulledRouteComparisonHom_base, pulledRouteComparisonInv_base, exactPackageToRefinement_map_injective, transportedG114RefinementMate_eq_generated, generatedRouteCoreMate_toRefinement, ctx.mate.naturality]
+    unused: []
+  structure_field_escape: no exact comparison, mate equality, or route-between naturality is supplied by the finite problem
+  route_integrity: exactification recovers the literal G-115 universal comparisons; conjugation still uses the actual G-114 route diagrams and mate at each actual sourceFiberDiagram object
+  predecessor_integrity: completed G-112 and G-114 source and GOAL cards are unchanged; all new exactification and identification APIs are local to active G-115
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: both endpoint comparison inverses and both exact iso laws are constructed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteCoreNaturality.lean => exit 0 and 23 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: Use the now-natural generated core diagrams to construct strongly cocartesian generated geometry edge maps, prove upperGeometryMate edge naturality, and then address authored comparator intertwining.
+```
+
+Cycle 24 identifies the actual and generated finite core mates through a
+G-115-local exactification of the universal comparisons. Completed predecessor
+GOALs remain unchanged.
