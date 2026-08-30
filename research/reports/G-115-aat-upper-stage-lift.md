@@ -2103,3 +2103,61 @@ audits:
   blocking_findings: []
   next_obligation: Normalize the propositionally fixed generated endpoint coefficients and determine whether the existing G-109 APIs derive strong cocartesianness of the two cartesian-pulled route edges; package actual fixed-coefficient route transports if they do, or record the exact missing public preservation primitive after exhausting the relevant interfaces.
 ```
+
+## Cycle 37 — vertical-source isomorphisms and generated core-edge qualification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 37
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 7e2d43ed2818b50e0e24c96503fbc01f79ed988e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 35 generated both route edges by Cartesian pullback; a proposed goal-defect in closed PR 4289 was vetoed because every authored source edge lies over the identity of one fixed core fiber
+  proof_dag_predecessors: [sourceFiberDiagram, sourceTransport.edge_base, sourceTransport.edgeCoreStrong, sourceTransport.edgeGeometryStrong, IsStronglyCocartesian.isIso_of_base_isIso, coreFiberHom_isIso_of_total_isIso, generatedBaseRouteCoreDiagram, generatedPulledRouteCoreDiagram]
+  proof_obligation: Prove that every authored source core and geometry edge is an isomorphism, transport that invertibility through both generated route core diagrams, and derive the core-stage strong-cocartesian qualifications required by the G-109 route contract without adding a Beck--Chevalley or edge-qualification certificate.
+  selection_reason: Independent review of PR 4289 identified the fixed-fiber verticality that the rejected generic bifibration argument had omitted. This existing premise turns source strong-cocartesian edges into isomorphisms and opens a certificate-free route through functoriality, Cartesian cancellation, and exactification.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteEdgeQualifications.lean]
+  risks: [forgetting that IsHomLift over the fixed fiber requires retagging, treating a raw PackageTotalHom as an unbundled IsIso proposition, assuming the geometry edge is iso before proving its core base iso, failing to transport IsIso through the two distinct generated core functors, adding route qualification to the input]
+  unchecked: [refinement generated-edge cartesianness and isomorphism, complete geometry-edge inverse exactification and strong cocartesianness, coefficient normalization and identity, fixed-coefficient route transports, path/two-cell coherence, cochains/global equation, endpoint geometry isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Each source diagram edge is retagged as a strongly cocartesian morphism over the identity of the fixed core fiber and is therefore an isomorphism. Its underlying package edge and then its strongly cocartesian geometry lift are isomorphisms as well. Functorial transport and endpoint-isomorphism conjugation make every base and pulled generated core edge an isomorphism. Both exact core projections of the Cycle 35 complete route edges consequently acquire theorem-generated strong-cocartesian qualifications via of_isIso.
+  completion_candidate: no
+  lean_artifacts: [stronglyCocartesian_of_isHomLift_support, sourceFiberDiagramEdge_isIso, sourceTransportCoreEdge_isIso, sourceTransportGeometryEdge_isIso, generatedBaseRouteCoreEdge_isIso, generatedPulledRouteCoreEdge_isIso, generatedBaseRouteCoreEdge_isStronglyCocartesian, generatedPulledRouteCoreEdge_isStronglyCocartesian]
+  evidence: [focused Lean check, 8-declaration namespace standard-axiom audit, targeted direct-predecessor construction, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleRouteEdgeQualifications.lean: 3d6d96365f1c1c40b6724bb158f6f85b0590461f1049d12496db75fedc72f1ea
+  claim_mapping:
+    theorem_names: [sourceFiberDiagramEdge_isIso, sourceTransportCoreEdge_isIso, sourceTransportGeometryEdge_isIso, generatedBaseRouteCoreEdge_isIso, generatedPulledRouteCoreEdge_isIso, generatedBaseRouteCoreEdge_isStronglyCocartesian, generatedPulledRouteCoreEdge_isStronglyCocartesian]
+    source_labels: [revision 4 source qualified transport, target theorem clause (b)]
+    conjuncts: [fixed-fiber source edge isomorphism, package and geometry source-edge isomorphisms, two generated route core-edge isomorphisms, two core-stage cocartesian qualifications]
+    undischarged_assumptions: [complete geometry-edge isomorphisms and cocartesian qualifications, coefficient normalization and identity, route transport/cochain/global equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: The proof consumes the existing source edgeCoreStrong and edgeGeometryStrong fields only at the authored source boundary. Generated route core qualifications are conclusions obtained from functorial IsIso transport and of_isIso; they are not compatible-input fields or theorem arguments.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [single FixedCoefficientTwoLayerTransportOver on a PresentedPathCategory diagram valued in one CoreFiber]
+    direction_hypothesis: []
+    discharged: [source fiber-edge IsIso, source package-edge IsIso, source geometry-edge IsIso, both generated core-edge IsIso propositions, both generated core-stage strong-cocartesian qualifications]
+    remaining: [both complete geometry-stage strong-cocartesian qualifications, coefficient identity, route packaging and all downstream coherence/solution artifacts]
+  certificate_provenance:
+    discharged: [source invertibility comes from fixed-fiber IsHomLift plus reviewed source strong-edge qualifications; generated core invertibility comes from functor maps and endpoint isomorphisms; generated core cocartesianness comes from IsIso]
+    unresolved: [complete geometry inverse exactification and coefficient casts]
+  proof_use:
+    used: [sourceTransport.edge_base, sourceTransport.edgeCoreStrong, sourceTransport.edgeGeometryStrong, stronglyCocartesian_of_isHomLift_support, IsStronglyCocartesian.isIso_of_base_isIso, coreFiberHom_isIso_of_total_isIso, generatedBaseRouteCoreIsoAt, generatedPulledRouteCoreIsoAt, IsStronglyCocartesian.of_isIso]
+    unused: [source comparator and coefficient identity fields remain reserved for route packaging and cochain construction]
+  structure_field_escape: no route edge, route IsIso, route cartesianness/cocartesianness, inverse, or Beck--Chevalley certificate is added to compatible input
+  route_integrity: base and pulled core edges are transported through distinct route functors and conjugated by their own endpoint isomorphisms
+  predecessor_integrity: completed G-109, G-112, and G-114 declarations and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: every generator edge is covered; named nonidentity firing remains downstream
+  one_way_as_equivalence: IsIso is derived only from the universal strong-cocartesian property over an identity base or from functorial transport of that actual isomorphism
+  goal_or_report_reinterpretation: closed PR 4289 is recorded as a rejected stop attempt and is not merged; the fixed revision-4 target remains active
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleMateNaturality` and `lake build ResearchLean.AG.DoctrineFiberProduct.PackageProjectionBeckChevalleyExactness` constructed only direct predecessor DAGs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleRouteEdgeQualifications.lean` => exit 0 and 8 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Use source geometry IsIso, both route-leg Cartesian qualifications, and Cycle 35 factor laws with IsStronglyCartesian.of_comp to prove each generated refinement edge is Cartesian and IsIso; exactify its inverse and reflect both inverse laws to obtain complete geometry IsIso and strong cocartesianness.
+```
