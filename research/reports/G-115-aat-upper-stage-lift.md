@@ -1639,3 +1639,61 @@ conditional only on an actual solution already carrying the route-between
 triangle and authored comparator equation required by the fixed contract; it
 does not move either equation into the raw problem or claim the still-missing
 solution-space equivalence.
+
+## Cycle 29 — certificate-free compatible input and generated route spine
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 29
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 98a3a59140e406c613a26056fb1ef46ba3a4a670
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: revision 4 merged after Cycle 28 identified that arbitrary raw authored endpoints do not admit inverse comparisons
+  proof_dag_predecessors: [FixedCoefficientTwoLayerTransportOver, UpperGeometryCleavage.baseRouteGeometryHom, UpperGeometryCleavage.pulledRouteGeometryHom, baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian]
+  proof_obligation: Define the certificate-free compatible input, retain its one source transport for successor finite-edge and comparator constructions, and generate both literal reverse-route geometries, route legs, coefficient identifications, and strong-cartesian qualifications from the actual source geometry family.
+  selection_reason: The revision-4 compatible locus must be independent of raw authored route legs. This source-only spine is the common domain required before cartesian comparator pullback, endpoint isomorphisms, or solution transport can be stated without certificate escape.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleInput.lean]
+  risks: [reusing raw legData, storing a route comparator or cartesianness certificate, duplicating a raw cochain, confusing coefficient type equality with morphism identity]
+  unchecked: [cartesian pullback and exactification of the source comparator and inverse, map-id and map-mul, finite generated route transports, endpoint comparison isomorphisms, solution equivalence, named positive and negative artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: A source-only compatible input now fixes the finite presentation, root reachability, actual target-fiber diagram, source geometry family, and exactly one fixed-coefficient G-109 transport. Both reverse-route geometries and literal legs are generated pointwise by the G-112/G-114 cleavage, retain the coefficient ring, and are proved strongly Cartesian without input fields or theorem arguments.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData, UpperGeometryCompatibleProblemInput, sourceTargetGeometryAt, generatedBaseRouteGeometryAt, generatedPulledRouteGeometryAt, generatedBaseRouteLegAt, generatedPulledRouteLegAt, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, generatedBaseRouteGeometryAt_coefficient_eq, generatedPulledRouteGeometryAt_coefficient_eq]
+  evidence: [focused Lean check, 41-declaration namespace standard-axiom audit, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleInput.lean: 2ad1afce030e76d60f9a315219e32df3fcb00b932b4b8224fa26d59bf8ff188f
+  claim_mapping:
+    theorem_names: [generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian]
+    source_labels: [revision 4 compatible-input boundary, target theorem clause (b)]
+    conjuncts: [source-only finite input, two generated literal route geometries and legs, theorem-derived strong cartesianness, retained coefficient ring]
+    undischarged_assumptions: [cartesian comparator pullback laws, generated finite route transports, endpoint comparison isomorphisms, solution equivalence and downstream artifacts]
+    acceptance_point: This cycle fixes only the certificate-free domain and generated route spine. It does not claim comparator pullback, endpoint inverses, or solution equivalence; those remain explicit successor obligations.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [completed G-112 exact and G-114 realized-refinement cleavages, G-109 source transport]
+    direction_hypothesis: []
+    discharged: [certificate-free source input, both literal generated route geometries and legs, both theorem-derived strong-cartesian qualifications, coefficient-ring retention]
+    remaining: [cartesian comparator pullback and laws, endpoint comparison isomorphisms, solution equivalence, named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [both route qualifications are inherited from the explicit G-115 exact and realized-refinement cleavage constructors rather than stored or caller-supplied]
+    unresolved: [source comparator pullback, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [sourceFiberDiagram objects, sourceGeometry, UpperGeometryCleavage.baseRouteGeometry, UpperGeometryCleavage.pulledRouteGeometry, UpperGeometryCleavage.baseRouteGeometryHom, UpperGeometryCleavage.pulledRouteGeometryHom, baseRouteGeometryHom_isStronglyCartesian, pulledRouteGeometryHom_isStronglyCartesian]
+    unused: [root, rootPath, and sourceTransport are retained for successor finite-path, edge, and comparator constructions but are not consumed by this pointwise route-spine proof]
+  structure_field_escape: the input has no generated route leg, route comparator, endpoint comparison, IsIso, generated-route cartesianness certificate, solution, or raw cochain field; sourceTransport contains only the permitted G-109 source-edge cocartesianness qualifications and its single authored source comparator
+  route_integrity: both pointwise routes target the literal source geometry and are generated by the active retargeted G-112/G-114 context in the required two orders
+  predecessor_integrity: completed G-112 and G-114 implementation files remain unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: not-claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleInput.lean => exit 0 and 41 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Construct the G-115-local two-stage cartesian pullback and exactification of the source comparator and inverse on both generated routes, including map-id and map-mul.
+```
