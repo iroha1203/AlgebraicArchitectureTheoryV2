@@ -52,7 +52,8 @@
   包装し、その summand 内では固定する。carrier間の射やcarrier changeは語らない。
   係数は各context内で固定し、終対象・絶対積は導入しない。量化域は、carrierを
   内包するG-110 `AuthoredBCDatumSquare`、G-114 `ActiveRefinementBCContext`、
-  G-115 がcompatible constructorから構成した canonical actual `UpperRefinementBCSolution` からなる
+  G-115 がcompatible constructorから直接構成した canonical generated
+  `GeometryCompatibleUpperRefinementBCSolution` からなる
   非index型 `Gr4ExchangeContext` とする。本カードは
   upper solutionを新設しない。G-114 の forward-only / inactive refinement と
   G-115 のraw one-way domainとincoherent negative problemは O12 の外に置くが、O19 でその
@@ -114,6 +115,7 @@
   共通する量化域と実質条件は次のとおり:
   - `Gr4ExchangeContext` を、`Σ U, AuthoredBCDatumSquare U`、`Σ U,`
     G-114 `ActiveRefinementBCContext U`、および G-115 theorem artifact
+    generated `GeometryCompatibleUpperRefinementBCSolution`である
     `upperDecisionSolution` をconstructorに持つ `G115NamedUpperContext` の
     tagged sumとして定義する。named solutionの concrete carrierはそのconstructorが
     隠蔽し、任意 `U` へtransportしない。
@@ -150,7 +152,8 @@
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
   上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
   comparison isomorphismsを生成し、actual `upperDecisionSolution`を供給する。G-115は
-  `UpperStageExchangeExact`とcore companion exactnessのpointwise iffまでを証明するが、
+  `UpperStageExchangeExact`とauthored-compatible companion actual geometry solutionの
+  componentwise `IsIso`のpointwise iffまでを証明するが、
   このsolutionのpredicateも否定も証明しない。O12のupper summandはこのnamed
   solutionだけを含み、G-116がactual componentを計算してbranch-selection evidenceを
   作る。raw one-way domainとglobal comparator coherenceを欠くG-115 named problemは
@@ -245,7 +248,7 @@
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
 | O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw authored domainの片方向comparison、certificate-free compatible inputから生成する二strong-cartesian route・endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
-| O11 | compatible actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、`UpperStageExchangeExact` companion iff | G-115 |
+| O11 | compatible actual solution上のcoefficient-trivial paired reselection / derived raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間の`UpperStageExchangeExact` iff | G-115 |
 | O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
@@ -264,6 +267,13 @@
 |---|---|---|
 | O10-r1 | 任意の `ActiveRefinementBCContext` と任意の `TwoLayerTransportData` に対する global `GeomRead` BC lift、actual lifted natural transformation、Gr3 bridge、upper regime 型 | contextとtransport dataのsemantic connection、およびgenuinely lax `RefinementPackageHom` 上のgeometry homが無く `goal-defect`。意味未確定の旧claimはrefutedとせずsuperseded。人間承認revision 2は欠落していた`RefinementGeometryHom` categoryと、bridge上のnamed finite decision problem / solutionへ置換する。全active contextへのsolutionは主張しない |
 | O11-r1 | proxy `ObProblem` interface、双方向 adequacy、構成された class の base-change naturality、非恒等発火 | proxy interfaceとmembership iffは定義的再包装であり、非可逆mateはfull automorphism / orbit mapを誘導しないためsuperseded。revision 2 O11はfixed-coefficient scopeに合わせたcoefficient-trivial actual suborbitのpaired intertwiningを無条件部分とし、componentwise `IsIso` の場合だけrestricted suborbitのconjugation equivalenceを与える。IsIso存否はG-116専属 |
+
+**G-115 revision 3 義務 disposition(履歴台帳)**:
+
+| id | revision 3 義務 | disposition |
+|---|---|---|
+| O10-r3 | 任意raw authored upper problemのendpoint comparison inverseとsolution-space equivalence、named正負artifact | raw authored geometry legはcore projectionがisoでもfull geometry inverseを持たず`goal-defect`。Cycle 25–27で証明したcategory / bridge / raw片方向comparison / comparator preservationは保持する。revision 4はinverseとsolution `Equiv`を、単一source two-cellから二route comparatorを生成するcartesian-compatible locusへ移す。negative artifactはcompatible locus外のglobal-comparator-incoherent raw problemへ固定する |
+| O11-r3 | raw domain全体のrestricted reselection双方向transportとconditional exchange conjugation | endpoint inverseが無いraw domainでは双方向transportを構成できずsuperseded。revision 4はcompatible locusのendpoint isomorphismsからrestricted conjugationを無条件に構成し、`UpperStageExchangeExact`はcanonical generated solutionとcompanionのpointwise iffに限定する。真偽決定はO12に残す |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 

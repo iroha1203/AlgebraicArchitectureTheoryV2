@@ -34,7 +34,7 @@ tracking Issue に置き、ここには書かない。
    `DiagnosticConservative` は G-113 revision 1 で定義・全 hom 証明済み。
    `ObProblem` はLean / AG数学本文の宣言名ではない。G-115は新しいproxy
    interfaceを設けず、Lean上の指示対象をG-109 actual upper cochain / reselectionと
-   compatible solution上のpaired intertwiningに固定する**。
+  compatible solution上のpaired intertwiningに固定し、raw cochainはtransport dataから導出する**。
 5. 整合性監査(§5)で被覆行列(義務の全域・一意な担当割当)、重複防止の
    判定線5本、語彙正本規則、universe 設計規則、改訂伝播 DAG を固定する。
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
@@ -184,7 +184,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
 | O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence・正負named artifact | gate (iii) | G-115 |
-| O11 | compatible actual solution上のcoefficient-trivial reselection / raw-cochain intertwining、comparison isomorphismsによる双方向conjugation、exchange-exactness companion iff | gate (iii)・n1001 §3.3 | G-115 |
+| O11 | compatible actual solution上のcoefficient-trivial reselection / derived raw-cochain intertwining、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間のexchange-exactness iff | gate (iii)・n1001 §3.3 | G-115 |
 | O12 | actual mate-bearing sector / active refinement / G-115 canonical generated upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | gate (v) | G-113 |
@@ -480,17 +480,24 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (b) 任意のraw authored upper problemには、G-109のauthored comparator / cochain方向を
   保存するcore-selected companionへの**片方向comparisonだけ**を与える。raw endpointの
   support / axis / observable inverseは主張しない。別にroute leg、comparison、`IsIso`、
-  cartesianness certificate、solutionをfieldに持たない
+  cartesianness certificate、solution、base / pulled route comparatorをfieldに持たない
   `UpperGeometryCompatibleProblemInput`を置き、G-112 strong liftとG-114
   realized-refinement transportから二つのrouteを独立に生成してstrong cartesiannessを証明する。
-  universal uniquenessからbase / pulled endpoint comparison isomorphismsを導出し、
+  単一source transport comparatorをstrong-cartesian legs沿いにpull backし、vertical lower mapを
+  exact identityとしてgeometry automorphismへexactifyするG-115-local APIで二route comparatorを
+  生成する。raw cochainは各transportから導出し、map-id / map-mulとG-109 compositor / unitor
+  compatibility、canonical mateとのglobal equationを証明する。G-114 exact endpoint
+  base iso / factor triangleで正規化したstrong-cartesian uniquenessからbase / pulled endpoint
+  comparison isomorphismsを導出し、
   componentwise conjugationでactual solution spaceの`Equiv`を構成する。逆写像は元solutionを
   wrapperに保存せず、比較isoから実際に戻す。(c) compatible actual solution上で
   coefficient-trivial reselection、paired relation、raw-cochain intertwiningと双方向conjugationを
   証明する。(d) `UpperStageExchangeExact`とcore-selected companion exactnessのpointwise iffを
   証明するが、canonical `upperDecisionSolution`での成立 / 不成立はG-116に残す。
-  正例はcompatible constructorから生成し、負例はlocal cartesian legs / local matesを持つが
-  nonidentity authored comparatorのglobal equationが具体評価で破れるproblemとする。
+  正例はcompatible constructorから生成し、負例はcompatible locus外でlocal cartesian legs /
+  local matesとcomparator以外の全solution fieldsを満たすrigid pre-solutionを持つが、nonidentity
+  authored comparatorのglobal equationが具体評価で破れるraw problemとする。任意candidateを
+  cartesian uniquenessでpre-solutionへ固定してsolution不在を証明する。
 - **錨**: `CoreFiber` / `coreFiberTransportFunctor`
   (`CrossStageCoherence/CorePseudofunctor.lean`)、G-108
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
@@ -501,10 +508,11 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (`CrossStageCoherence/UpperObstruction.lean`)、G-114
   `ActiveRefinementBCContext` / canonical mate。
 - **供給契約**: G-116 gate (iv) へcompatible constructor由来のcanonical
-  `upperDecisionSolution`と`UpperStageExchangeExact` companion iffを供給する。raw
+  `upperDecisionSolution`とactual geometry solution components間の
+  `UpperStageExchangeExact` companion iffを供給する。raw
   one-way domainやnegative incoherent problemはO12へ入れない。
 - **リスク / dullness 骨格**: raw one-way comparisonをequivalenceと呼ぶ経路、
-  compatible inputにroute / comparison / cartesianness certificateを埋める経路、
+  compatible inputにroute / route comparator / comparison / cartesianness certificateを埋める経路、
   元solution保存wrapperで逆写像を作る経路、core-only equalityやidentity comparatorで
   authored coherenceを代用する経路。
 - **failure 骨格**: certificate-free inputとG-112 / G-114 public transportから
@@ -542,7 +550,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   branch-selection evidence と単一 branch-specific theorem に強化した。
 - **completion criteria+report 義務(O19)**: §7 の成立条件に従う
   Gr4 達成の範囲併記記録。raw forward / realized reverse / active mate /
-  exchange の四層と forward-only / inactive の disposition を含める。
+  exchange に加え、G-115のraw one-way / generated cartesian-compatible /
+  comparator-incoherent分類と forward-only / inactive の disposition を含める。
   **達成階梯対応表**(§8 — Gr0–Gr4 ↔ theorem
   package ↔ Lean 宣言錨 ↔ 記録正本の所在 ↔ 範囲限定、の5列。Gr2 =
   G-101 の遡及記載を含む)を report 成果物として義務化する。
@@ -692,7 +701,8 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
 1. G-111〜G-115 が担当義務(O1–O11・O13–O18・O20)の帰趨を
    `target-theorem-proved` で確定している。G-114 は raw forward、
    realized reverse、active mate、forward-only / inactive disposition
-   の全層を固定している。義務は
+   の全層を固定している。G-115はraw one-way、generated cartesian-compatible、
+   comparator-incoherent raw negativeの全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。
 2. G-116 が active 昇格時に固定した universal `IsIso` theorem または
@@ -702,7 +712,8 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
    O6 / O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
    converse 反証・
-   G-114 の support-stratified classification と O7 の semantic-global
+   G-114 の support-stratified classification、G-115のraw / compatible /
+   comparator-incoherent classification と O7 の semantic-global
    正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
    G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
