@@ -235,6 +235,51 @@ private noncomputable def pullPackage {U : AtomCarrier.{u}}
   coefficientCommRing := G.coefficientCommRing
   raw := pullRaw G forward backward
 
+/-- Reindex a complete geometry package along specified forward/backward upper
+transports.  This is the object-level normalization primitive used when
+an exact core-fiber isomorphism identifies a generated endpoint with an
+independently constructed endpoint.  The caller does not supply any geometry
+comparison: all selected geometry and raw data are rebuilt from the two upper
+maps. -/
+noncomputable def pullGeometryPackageAlongUpperPair {U : AtomCarrier.{u}}
+    {P : AATCorePackage U} (G : GeometryPackage.{u, v} U)
+    (forward : SignedExactCoreReadingHom P G.core)
+    (backward : SignedExactCoreReadingHom G.core P) :
+    GeometryPackage.{u, v} U :=
+  pullPackage G forward backward
+
+/-- Upper-pair normalization has the independently specified source core. -/
+@[simp] theorem pullGeometryPackageAlongUpperPair_core
+    {U : AtomCarrier.{u}} {P : AATCorePackage U}
+    (G : GeometryPackage.{u, v} U)
+    (forward : SignedExactCoreReadingHom P G.core)
+    (backward : SignedExactCoreReadingHom G.core P) :
+    (pullGeometryPackageAlongUpperPair G forward backward).core = P :=
+  rfl
+
+/-- Upper-pair normalization retains the coefficient ring definitionally. -/
+@[simp] theorem pullGeometryPackageAlongUpperPair_coefficient
+    {U : AtomCarrier.{u}} {P : AATCorePackage U}
+    (G : GeometryPackage.{u, v} U)
+    (forward : SignedExactCoreReadingHom P G.core)
+    (backward : SignedExactCoreReadingHom G.core P) :
+    (pullGeometryPackageAlongUpperPair G forward backward).Coefficient =
+      G.Coefficient :=
+  rfl
+
+/-- The normalized raw system is the literal backward-upper reindexing of the
+original raw system. -/
+@[simp] theorem pullGeometryPackageAlongUpperPair_raw
+    {U : AtomCarrier.{u}} {P : AATCorePackage U}
+    (G : GeometryPackage.{u, v} U)
+    (forward : SignedExactCoreReadingHom P G.core)
+    (backward : SignedExactCoreReadingHom G.core P) :
+    (pullGeometryPackageAlongUpperPair G forward backward).raw =
+      rawReindexUpper G.geometry
+        (pullGeometryPackageAlongUpperPair G forward backward).geometry
+        backward G.raw :=
+  rfl
+
 /-- Target geometry pulled back to the explicit exact inverse-package lift. -/
 noncomputable def exactSourceGeometry {U : AtomCarrier.{u}}
     {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)

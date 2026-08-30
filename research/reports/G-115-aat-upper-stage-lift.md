@@ -2512,3 +2512,62 @@ audits:
   blocking_findings: []
   next_obligation: Construct the base and pulled endpoint comparison isomorphisms from base-iso-normalized strong-cartesian uniqueness, prove their inverse, factor, coefficient, component, edge, and authored-comparator conjugation laws, then build the generated solution and solution equivalence.
 ```
+
+## Cycle 44 — authored-compatible endpoint normalization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 44
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: 185de03d4c25ef5e66ab67f5c2ad72e47bccaa1e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 43 merged the global compatible mate while endpoint comparison isomorphisms remained open
+  proof_dag_predecessors: [generatedBaseRouteCoreIsoAt, generatedPulledRouteCoreIsoAt, generatedBaseRouteFixedGeometryAt, generatedPulledRouteFixedGeometryAt]
+  proof_obligation: Construct complete fixed-coefficient authored-compatible geometry endpoints on the literal G-114 base and pulled route packages, keeping them distinct from the canonical generated endpoints and deriving their normalization maps from the theorem-generated exact core isomorphisms.
+  selection_reason: The existing one-way endpoint comparison and raw solution contract are indexed by literal G-114 route packages, whereas the compatible construction currently exposes only canonically isomorphic generated packages. Endpoint comparison isomorphisms cannot be typed naturally until this object-level base-iso normalization boundary exists.
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavage.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleAuthoredEndpoints.lean]
+  risks: [identifying isomorphic endpoint cores definitionally, discarding selected geometry or raw data, accepting an endpoint comparison or inverse in the input, normalizing only one route, treating object construction as the completed endpoint isomorphism]
+  unchecked: [authored route geometry legs and their strong-cartesian qualifications, authored edge and comparator transports, raw compatible problem constructor, complete endpoint comparison isomorphisms and their laws, generated solution and solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: A reusable object-level upper-pair normalization now rebuilds selected geometry and raw data on an independently specified core while retaining the coefficient ring. Applying it separately to the inverse/hom upper maps of the generated base and pulled core isomorphisms produces complete fixed-coefficient geometry endpoints on the literal G-114 route packages. Four cancellation theorems expose that both specialized upper pairs are actual inverses rather than unrelated maps.
+  completion_candidate: no
+  lean_artifacts: [pullGeometryPackageAlongUpperPair, pullGeometryPackageAlongUpperPair_core, pullGeometryPackageAlongUpperPair_coefficient, pullGeometryPackageAlongUpperPair_raw, generatedBaseRouteEndpointUpper_inv_hom, generatedBaseRouteEndpointUpper_hom_inv, generatedPulledRouteEndpointUpper_inv_hom, generatedPulledRouteEndpointUpper_hom_inv, generatedAuthoredBaseRouteGeometryAt, generatedAuthoredPulledRouteGeometryAt, generatedAuthoredBaseRouteGeometryAt_core, generatedAuthoredPulledRouteGeometryAt_core, generatedAuthoredBaseRouteGeometryAt_coefficient, generatedAuthoredPulledRouteGeometryAt_coefficient, generatedAuthoredBaseRouteFixedGeometryAt, generatedAuthoredPulledRouteFixedGeometryAt, generatedAuthoredBaseRouteFixedGeometryAt_package, generatedAuthoredPulledRouteFixedGeometryAt_package]
+  source_sha256:
+    UpperGeometryCleavage.lean: c526120f8ae68911f999daec0d070b0821939f6d79c620d9505425e0e2d1cdbd
+    UpperGeometryCompatibleAuthoredEndpoints.lean: e93e98f62ddda6cf0ed6628c47627f0996c36cc1d4cf2dd549f09353df19e826
+  evidence: [targeted direct-module construction, focused 18-declaration checker, declaration-level standard-axiom audit, module registration, source hashes, literal scans]
+  claim_mapping:
+    theorem_names: [generatedBaseRouteEndpointUpper_inv_hom, generatedBaseRouteEndpointUpper_hom_inv, generatedPulledRouteEndpointUpper_inv_hom, generatedPulledRouteEndpointUpper_hom_inv, generatedAuthoredBaseRouteGeometryAt, generatedAuthoredPulledRouteGeometryAt, generatedAuthoredBaseRouteFixedGeometryAt, generatedAuthoredPulledRouteFixedGeometryAt]
+    source_labels: [revision 4 authored-compatible route generation, revision 4 endpoint comparison isomorphism prerequisite, target theorem clause (b)]
+    conjuncts: [base and pulled exact upper-pair cancellation, literal G-114 endpoint core placement, complete selected-geometry and raw-data reconstruction, fixed authored coefficient ring]
+    undischarged_assumptions: [geometry comparison homs and inverse laws, authored leg and transport laws, solution transport laws]
+    acceptance_point: This checkpoint closes the object-index mismatch without calling the endpoints equal and without storing a comparison certificate. It deliberately does not claim an endpoint geometry isomorphism before the full authored legs and Cartesian uniqueness proofs exist.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 39 fixed-coefficient canonical route endpoints, Cycle 34 exact core endpoint isomorphisms]
+    direction_hypothesis: []
+    discharged: [actual G-114 base endpoint geometry object, actual G-114 pulled endpoint geometry object, both fixed-coefficient wrappers, both upper inverse-pair laws]
+    remaining: [authored route legs, authored route transports and naturality, compatible raw problem constructor, endpoint comparison isomorphisms and all component laws, solution equivalence, named artifacts, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [normalization maps are projections of generatedBaseRouteCoreIsoAt and generatedPulledRouteCoreIsoAt; inverse laws are projections of their Iso laws]
+    unresolved: [strong-cartesian authored legs, exactified geometry comparisons, edge and authored-comparator conjugation]
+  proof_use:
+    used: [pullSelectedGeometry, pullRaw, rawReindexUpper, generatedBaseRouteCoreIsoAt hom and inv, generatedPulledRouteCoreIsoAt hom and inv, fixed-coefficient canonical endpoints]
+    unused: [Cycle 43 global mate is reserved for the compatible solution constructor; one-way raw endpoint comparisons await the raw compatible problem]
+  structure_field_escape: none-found
+  route_integrity: base and pulled endpoints use distinct core isomorphisms and distinct fixed-coefficient canonical endpoints while landing on their corresponding literal G-114 route packages
+  predecessor_integrity: the fixed GOAL and completed G-109, G-112, and G-114 declarations are unchanged
+  target_fitting: none-found
+  vacuity: both constructions quantify over every presentation vertex and rebuild complete geometry and raw data; neither is an identity-only fixture
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleAuthoredEndpoints` passed and reported 14 declarations standard axioms only; `/tmp/G115Cycle44Check.lean` passed with 18 declarations and each `#print axioms` reported only propext, Classical.choice, Quot.sound; module registered in research-modules.txt and DoctrineFiberProduct.lean; git diff --check and placeholder scan clean]
+  blocking_findings: []
+  next_obligation: Construct the complete authored base and pulled geometry legs from these normalized endpoints, prove their strong-cartesian qualifications and route-internal transport laws, and assemble the certificate-free compatible raw problem before exactifying the endpoint comparison isomorphisms.
+```
