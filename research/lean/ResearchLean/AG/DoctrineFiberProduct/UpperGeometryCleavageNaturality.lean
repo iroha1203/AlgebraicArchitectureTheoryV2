@@ -1205,6 +1205,165 @@ noncomputable def generatedRefinementGeometryHom {U : AtomCarrier.{u}}
       refinementBaseHom G r condition hG :=
   rfl
 
+private theorem geometryCastSourceSupportComp_heq
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B}
+    {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Support → (T.contextForward W).ctx.Support)
+    (hcomp : ∀ W support, HEq (comp W support) support)
+    (W : Site.ContextCategoryObject (castEquationReading h S).contextPreorder)
+    (support : W.ctx.Support) :
+    HEq (geometryCastSourceSupportComp h S e objectMap T comp W support) support := by
+  cases h
+  exact hcomp W support
+
+/-- The generated exact forward support comparison preserves its carrier value. -/
+theorem generatedExactSupportComp_heq {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) (support : W.ctx.Support) :
+    HEq (generatedExactSupportComp G f W support) support := by
+  simpa only [generatedExactSupportComp] using
+    geometryCastSourceSupportComp_heq
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateSupportComp G.core f.doctrineHom.atomEquiv)
+      (fun _ _ => HEq.rfl) W support
+
+/-- The generated refinement forward support comparison preserves its carrier value. -/
+theorem generatedRefinementSupportComp_heq {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (support : W.ctx.Support) :
+    HEq (generatedRefinementSupportComp G r condition hG W support) support := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition ⟨G.core, rfl⟩
+  simpa only [generatedRefinementSupportComp] using
+    geometryCastSourceSupportComp_heq
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateSupportComp G.core data.atomEquiv)
+      (fun _ _ => HEq.rfl) W support
+
+private theorem geometryCastSourceAxisComp_heq
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B} {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Axis → (T.contextForward W).ctx.Axis)
+    (hcomp : ∀ W axis, HEq (comp W axis) axis)
+    (W : Site.ContextCategoryObject (castEquationReading h S).contextPreorder)
+    (axis : W.ctx.Axis) :
+    HEq (geometryCastSourceAxisComp h S e objectMap T comp W axis) axis := by
+  cases h
+  exact hcomp W axis
+
+/-- The generated exact forward axis comparison preserves its carrier value. -/
+theorem generatedExactAxisComp_heq {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) (axis : W.ctx.Axis) :
+    HEq (generatedExactAxisComp G f W axis) axis := by
+  simpa only [generatedExactAxisComp] using
+    geometryCastSourceAxisComp_heq
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateAxisComp G.core f.doctrineHom.atomEquiv)
+      (fun _ _ => HEq.rfl) W axis
+
+/-- The generated refinement forward axis comparison preserves its carrier value. -/
+theorem generatedRefinementAxisComp_heq {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (axis : W.ctx.Axis) :
+    HEq (generatedRefinementAxisComp G r condition hG W axis) axis := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition ⟨G.core, rfl⟩
+  simpa only [generatedRefinementAxisComp] using
+    geometryCastSourceAxisComp_heq
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateAxisComp G.core data.atomEquiv)
+      (fun _ _ => HEq.rfl) W axis
+
+private theorem geometryCastSourceObservableComp_heq
+    {U : AtomCarrier.{u}} {A A' B : ArchitectureObject U}
+    {D : Site.ContextPreorderCategory B} {G : ArchitecturalEquationSystem D}
+    (h : A = A') (S : EquationReading A) (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport S.equationSystem G e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject S.contextPreorder,
+      W.ctx.Observable → (T.contextForward W).ctx.Observable)
+    (hcomp : ∀ W observable, HEq (comp W observable) observable)
+    (W : Site.ContextCategoryObject (castEquationReading h S).contextPreorder)
+    (observable : W.ctx.Observable) :
+    HEq (geometryCastSourceObservableComp h S e objectMap T comp W observable)
+      observable := by
+  cases h
+  exact hcomp W observable
+
+/-- The generated exact forward observable comparison preserves its carrier value. -/
+theorem generatedExactObservableComp_heq {U : AtomCarrier.{u}}
+    {X : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (f : X ⟶ packagePoint G.core)
+    (W : (exactSourceGeometry G f).site.category) (observable : W.ctx.Observable) :
+    HEq (generatedExactObservableComp G f W observable) observable := by
+  simpa only [generatedExactObservableComp] using
+    geometryCastSourceObservableComp_heq
+      (inverseBaseObject_eq G.core f).symm
+      (transportEquationReading f.doctrineHom.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      f.doctrineHom.atomEquiv (transportArchitectureObject f.doctrineHom.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core f.doctrineHom.atomEquiv)
+      (geometryDeconjugateObservableComp G.core f.doctrineHom.atomEquiv)
+      (fun _ _ => HEq.rfl) W observable
+
+/-- The generated refinement forward observable comparison preserves its carrier value. -/
+theorem generatedRefinementObservableComp_heq {U : AtomCarrier.{u}}
+    {X Y : ExtractionInstance U} (G : GeometryPackage.{u, v} U)
+    (r : PointedRefinementHom X Y)
+    (condition : RealizedLocusExtractionReflecting r)
+    (hG : packagePoint G.core = Y)
+    (W : (refinementSourceGeometry G r condition hG).site.category)
+    (observable : W.ctx.Observable) :
+    HEq (generatedRefinementObservableComp G r condition hG W observable)
+      observable := by
+  subst Y
+  let data := selectedTransportDataOfRealizedReflection r condition ⟨G.core, rfl⟩
+  simpa only [generatedRefinementObservableComp] using
+    geometryCastSourceObservableComp_heq
+      (SelectedRefinementTransport.inverseBaseObject_eq G.core data).symm
+      (transportEquationReading data.atomEquiv.symm
+        G.core.object G.core.reading.equationReading)
+      data.atomEquiv (transportArchitectureObject data.atomEquiv)
+      (geometryDeconjugateEquationSystem G.core data.atomEquiv)
+      (geometryDeconjugateObservableComp G.core data.atomEquiv)
+      (fun _ _ => HEq.rfl) W observable
+
 end UpperGeometryCleavage
 
 end AAT.AG.DoctrineFiberProduct

@@ -81,6 +81,35 @@ private def geometryCastTargetEquationExact {U : AtomCarrier.{u}}
   cases h
   exact T
 
+private theorem geometryCastTargetEquationExact_contextForward_ctx
+    {U : AtomCarrier.{u}} {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A')
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (W : Site.ContextCategoryObject C₀) :
+    ((geometryCastTargetEquationExact S h e objectMap T).contextForward W).ctx =
+      cast (congrArg Site.ArchitectureContext h) (T.contextForward W).ctx := by
+  cases h
+  rfl
+
+private theorem geometryCastTargetEquationExact_contextBackward_ctx
+    {U : AtomCarrier.{u}} {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A')
+    (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (W : Site.ContextCategoryObject (castEquationReading h S).contextPreorder) :
+    ((geometryCastTargetEquationExact S h e objectMap T).contextBackward W).ctx =
+      (T.contextBackward
+        ⟨cast (congrArg Site.ArchitectureContext h.symm) W.ctx⟩).ctx := by
+  cases h
+  rfl
+
 private theorem inverseCoreEquationBackward_eq_geometryCast
     {U : AtomCarrier.{u}} {X : ExtractionInstance U}
     (Q : AATCorePackage U) (f : X ⟶ packagePoint Q) :
@@ -94,6 +123,32 @@ private theorem inverseCoreEquationBackward_eq_geometryCast
         (transportEquationSystemExact f.doctrineHom.atomEquiv.symm
           Q.object Q.reading.equationReading.contextPreorder
           Q.reading.equationReading.equationSystem) := by
+  rfl
+
+/-- The explicit exact backward context functor is the inverse context functor
+of its generated forward upper map. -/
+theorem inverseCorePackageBackward_contextForward_eq_forward_contextBackward
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject Q.contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextForward W).ctx =
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextBackward W).ctx := by
+  rw [inverseCoreEquationBackward_eq_geometryCast,
+    geometryCastTargetEquationExact_contextForward_ctx,
+    inverseCorePackageForwardUpper_contextInverse_obj_eq]
+  rfl
+
+/-- The inverse context functor of the explicit exact backward map is the
+generated forward context functor. -/
+theorem inverseCorePackageBackward_contextBackward_eq_forward_contextForward
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U) (f : X ⟶ packagePoint Q)
+    (W : Site.ContextCategoryObject (inverseCorePackage Q f).contextPreorder) :
+    ((inverseCorePackageBackwardUpper Q f).equationTransport.contextBackward W).ctx =
+      ((inverseCorePackageForwardUpper Q f).equationTransport.contextForward W).ctx := by
+  rw [inverseCoreEquationBackward_eq_geometryCast,
+    geometryCastTargetEquationExact_contextBackward_ctx,
+    inverseCorePackageForwardUpper_contextFunctor_obj_eq]
   rfl
 
 private noncomputable def geometryTransportSupportComp
@@ -476,6 +531,39 @@ private theorem selectedInverseCoreEquationBackward_eq_geometryCast
         (transportArchitectureObject data.atomEquiv.symm)
         (transportEquationSystemExact data.atomEquiv.symm
           Q.object Q.contextPreorder Q.algebra.equationSystem) := by
+  rfl
+
+/-- The explicit realized-refinement backward context functor is the inverse
+context functor of its generated forward upper map. -/
+theorem selectedInverseCorePackageBackward_contextForward_eq_forward_contextBackward
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U)
+    (data : SelectedRefinementTransport.SelectedTransportData X Q)
+    (W : Site.ContextCategoryObject Q.contextPreorder) :
+    ((SelectedRefinementTransport.inverseCorePackageBackwardUpper Q data).equationTransport.contextForward
+      W).ctx =
+      ((SelectedRefinementTransport.inverseCorePackageForwardUpper Q data).equationTransport.contextBackward
+        W).ctx := by
+  rw [selectedInverseCoreEquationBackward_eq_geometryCast,
+    geometryCastTargetEquationExact_contextForward_ctx,
+    SelectedRefinementTransport.inverseCorePackageForwardUpper_contextInverse_obj_eq]
+  rfl
+
+/-- The inverse context functor of the explicit realized-refinement backward
+map is the generated forward context functor. -/
+theorem selectedInverseCorePackageBackward_contextBackward_eq_forward_contextForward
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (Q : AATCorePackage U)
+    (data : SelectedRefinementTransport.SelectedTransportData X Q)
+    (W : Site.ContextCategoryObject
+      (SelectedRefinementTransport.inverseCorePackage Q data).contextPreorder) :
+    ((SelectedRefinementTransport.inverseCorePackageBackwardUpper Q data).equationTransport.contextBackward
+      W).ctx =
+      ((SelectedRefinementTransport.inverseCorePackageForwardUpper Q data).equationTransport.contextForward
+        W).ctx := by
+  rw [selectedInverseCoreEquationBackward_eq_geometryCast,
+    geometryCastTargetEquationExact_contextBackward_ctx,
+    SelectedRefinementTransport.inverseCorePackageForwardUpper_contextFunctor_obj_eq]
   rfl
 
 private noncomputable def refinementRouteBackwardSupportComp
@@ -1110,6 +1198,225 @@ theorem pulledRouteBackwardObservableComp_naturality
       ((inverseCorePackageBackwardUpper target.geometry.core
         (pullbackTargetExactArrow ctx target)).equationTransport.contextForward W))
     (exactRouteBackwardObservableComp_naturality ctx target w observable)
+
+private theorem geometryCastTargetSupportComp_heq
+    {U : AtomCarrier.{u}} {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A') (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject C₀,
+      W.ctx.Support → (T.contextForward W).ctx.Support)
+    (hcomp : ∀ W support, HEq (comp W support) support)
+    (W : Site.ContextCategoryObject C₀) (support : W.ctx.Support) :
+    HEq (geometryCastTargetSupportComp S h e objectMap T comp W support) support := by
+  cases h
+  exact hcomp W support
+
+private theorem exactRouteBackwardSupportComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (support : W.ctx.Support) :
+    HEq (exactRouteBackwardSupportComp ctx target W support) support := by
+  simpa only [inverseCorePackageBackwardUpper,
+    exactRouteBackwardSupportComp] using
+    geometryCastTargetSupportComp_heq
+      (transportEquationReading
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.reading.equationReading)
+      (inverseBaseObject_eq target.geometry.core
+        (pullbackTargetExactArrow ctx target)).symm
+      (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+      (transportArchitectureObject
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (transportEquationSystemExact
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.contextPreorder
+        target.geometry.core.algebra.equationSystem)
+      (geometryTransportSupportComp target.geometry.core
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W support
+
+private theorem refinementRouteBackwardSupportComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : (pullbackTargetGeometry ctx target).site.category)
+    (support : W.ctx.Support) :
+    HEq (refinementRouteBackwardSupportComp ctx target W support) support := by
+  simpa only [refinementRouteBackwardSupportComp] using
+    geometryCastTargetSupportComp_heq
+      (transportEquationReading (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.reading.equationReading)
+      (SelectedRefinementTransport.inverseBaseObject_eq
+        (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target)).symm
+      (pulledRouteTransportData ctx target).atomEquiv.symm
+      (transportArchitectureObject
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (transportEquationSystemExact
+        (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.contextPreorder
+        (pullbackTargetGeometry ctx target).core.algebra.equationSystem)
+      (geometryTransportSupportComp (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W support
+
+/-- The pulled-route backward support comparison preserves its carrier value. -/
+theorem pulledRouteBackwardSupportComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (support : W.ctx.Support) :
+    HEq (pulledRouteBackwardSupportComp ctx target W support) support := by
+  apply HEq.trans
+    (refinementRouteBackwardSupportComp_heq ctx target _
+      (exactRouteBackwardSupportComp ctx target W support))
+  exact exactRouteBackwardSupportComp_heq ctx target W support
+
+private theorem geometryCastTargetAxisComp_heq
+    {U : AtomCarrier.{u}} {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A') (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject C₀,
+      W.ctx.Axis → (T.contextForward W).ctx.Axis)
+    (hcomp : ∀ W axis, HEq (comp W axis) axis)
+    (W : Site.ContextCategoryObject C₀) (axis : W.ctx.Axis) :
+    HEq (geometryCastTargetAxisComp S h e objectMap T comp W axis) axis := by
+  cases h
+  exact hcomp W axis
+
+private theorem exactRouteBackwardAxisComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (axis : W.ctx.Axis) :
+    HEq (exactRouteBackwardAxisComp ctx target W axis) axis := by
+  simpa only [inverseCorePackageBackwardUpper,
+    exactRouteBackwardAxisComp] using
+    geometryCastTargetAxisComp_heq
+      (transportEquationReading
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.reading.equationReading)
+      (inverseBaseObject_eq target.geometry.core
+        (pullbackTargetExactArrow ctx target)).symm
+      (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+      (transportArchitectureObject
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (transportEquationSystemExact
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.contextPreorder
+        target.geometry.core.algebra.equationSystem)
+      (geometryTransportAxisComp target.geometry.core
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W axis
+
+private theorem refinementRouteBackwardAxisComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : (pullbackTargetGeometry ctx target).site.category) (axis : W.ctx.Axis) :
+    HEq (refinementRouteBackwardAxisComp ctx target W axis) axis := by
+  simpa only [refinementRouteBackwardAxisComp] using
+    geometryCastTargetAxisComp_heq
+      (transportEquationReading (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.reading.equationReading)
+      (SelectedRefinementTransport.inverseBaseObject_eq
+        (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target)).symm
+      (pulledRouteTransportData ctx target).atomEquiv.symm
+      (transportArchitectureObject
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (transportEquationSystemExact
+        (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.contextPreorder
+        (pullbackTargetGeometry ctx target).core.algebra.equationSystem)
+      (geometryTransportAxisComp (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W axis
+
+/-- The pulled-route backward axis comparison preserves its carrier value. -/
+theorem pulledRouteBackwardAxisComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (axis : W.ctx.Axis) :
+    HEq (pulledRouteBackwardAxisComp ctx target W axis) axis := by
+  apply HEq.trans
+    (refinementRouteBackwardAxisComp_heq ctx target _
+      (exactRouteBackwardAxisComp ctx target W axis))
+  exact exactRouteBackwardAxisComp_heq ctx target W axis
+
+private theorem geometryCastTargetObservableComp_heq
+    {U : AtomCarrier.{u}} {A₀ A A' : ArchitectureObject U}
+    {C₀ : Site.ContextPreorderCategory A₀}
+    {E₀ : ArchitecturalEquationSystem C₀}
+    (S : EquationReading A) (h : A = A') (e : U.Atom ≃ U.Atom)
+    (objectMap : ArchitectureObject U → ArchitectureObject U)
+    (T : EquationSystemExactTransport E₀ S.equationSystem e objectMap)
+    (comp : ∀ W : Site.ContextCategoryObject C₀,
+      W.ctx.Observable → (T.contextForward W).ctx.Observable)
+    (hcomp : ∀ W observable, HEq (comp W observable) observable)
+    (W : Site.ContextCategoryObject C₀) (observable : W.ctx.Observable) :
+    HEq (geometryCastTargetObservableComp S h e objectMap T comp W observable)
+      observable := by
+  cases h
+  exact hcomp W observable
+
+private theorem exactRouteBackwardObservableComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (observable : W.ctx.Observable) :
+    HEq (exactRouteBackwardObservableComp ctx target W observable) observable := by
+  simpa only [inverseCorePackageBackwardUpper,
+    exactRouteBackwardObservableComp] using
+    geometryCastTargetObservableComp_heq
+      (transportEquationReading
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.reading.equationReading)
+      (inverseBaseObject_eq target.geometry.core
+        (pullbackTargetExactArrow ctx target)).symm
+      (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+      (transportArchitectureObject
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (transportEquationSystemExact
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm
+        target.geometry.core.object target.geometry.core.contextPreorder
+        target.geometry.core.algebra.equationSystem)
+      (geometryTransportObservableComp target.geometry.core
+        (pullbackTargetExactArrow ctx target).doctrineHom.atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W observable
+
+private theorem refinementRouteBackwardObservableComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : (pullbackTargetGeometry ctx target).site.category)
+    (observable : W.ctx.Observable) :
+    HEq (refinementRouteBackwardObservableComp ctx target W observable) observable := by
+  simpa only [refinementRouteBackwardObservableComp] using
+    geometryCastTargetObservableComp_heq
+      (transportEquationReading (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.reading.equationReading)
+      (SelectedRefinementTransport.inverseBaseObject_eq
+        (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target)).symm
+      (pulledRouteTransportData ctx target).atomEquiv.symm
+      (transportArchitectureObject
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (transportEquationSystemExact
+        (pulledRouteTransportData ctx target).atomEquiv.symm
+        (pullbackTargetGeometry ctx target).core.object
+        (pullbackTargetGeometry ctx target).core.contextPreorder
+        (pullbackTargetGeometry ctx target).core.algebra.equationSystem)
+      (geometryTransportObservableComp (pullbackTargetGeometry ctx target).core
+        (pulledRouteTransportData ctx target).atomEquiv.symm)
+      (fun _ _ => HEq.rfl) W observable
+
+/-- The pulled-route backward observable comparison preserves its carrier value. -/
+theorem pulledRouteBackwardObservableComp_heq
+    (ctx : ActiveRefinementBCContext U) (target : TargetGeometry.{u, v} ctx)
+    (W : target.geometry.site.category) (observable : W.ctx.Observable) :
+    HEq (pulledRouteBackwardObservableComp ctx target W observable) observable := by
+  apply HEq.trans
+    (refinementRouteBackwardObservableComp_heq ctx target _
+      (exactRouteBackwardObservableComp ctx target W observable))
+  exact exactRouteBackwardObservableComp_heq ctx target W observable
 
 end UpperGeometryCleavage
 end AAT.AG.DoctrineFiberProduct
