@@ -542,3 +542,65 @@ proves all three exact restriction squares from the constructed equation
 transport, including the contravariant observable square, while retaining the
 separate reading-preservation laws.  Refinement realization and packaging into
 the complete geometry morphism remain unimplemented.
+
+## Cycle 9 — generated exact/refinement geometry cleavage
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 9
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: e812075ab2939059c01b9a99bd76828c5e8f921e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 8 merged checkpoint and revision 3 K2b2a
+  proof_dag_predecessors: [Cycle 7 source geometry pullback, Cycle 8 exact deconjugation naturality, selectedTransportDataOfRealizedReflection]
+  proof_obligation: Generate the realized-refinement comparison and restriction laws locally, then package both explicit pullbacks as complete geometry morphisms.
+  selection_reason: This closes the remaining G-115-local cleavage fields before the route-mate comparison is constructed.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean]
+  risks: [caller-supplied realization escape, overlap roundtrip, observable direction, retrospective predecessor edits]
+  unchecked: [geometry route mate and universal-uniqueness comparison, named finite problem and solution, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The exact and realized-refinement pullbacks now generate coverage, overlap, coefficient identity, raw equality, all three geometry comparisons, reading laws, restriction naturality, and total geometry homs.
+  completion_candidate: no
+  lean_artifacts: [selectedInverseCoreEquationForward_eq_geometryCast, generatedRefinementSupportComp, generatedRefinementAxisComp, generatedRefinementObservableComp, generatedRefinementSupportComp_naturality, generatedRefinementAxisComp_naturality, generatedRefinementObservableComp_naturality, generatedRefinementSupportComp_reads, generatedRefinementAxisComp_reads, generatedRefinementObservableComp_reads, generatedExactCoverage, generatedExactOverlap, generatedExactGeometryHom, generatedRefinementCoverage, generatedRefinementOverlap, generatedRefinementGeometryHom]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCleavageNaturality.lean: 9f72c54ce55efb05d7ebf1abb4518ffc314a2c6bba59d65be2f454a7b2535378
+  claim_mapping:
+    theorem_names: [generatedExactGeometryHom, generatedRefinementGeometryHom, generatedExactGeometryHom_base, generatedRefinementGeometryHom_base]
+    source_labels: [target theorem clause (b), K2b2a exact/refinement cleavage]
+    conjuncts: [exact geometry hom, realized-refinement geometry hom, coverage, overlap, coefficient identity, raw equality, support/axis/observable realization and naturality]
+    undischarged_assumptions: [geometry route mate and generated comparison square, named problems and solutions, clauses (c)--(d)]
+    acceptance_point: The G-115-local cleavage is complete relative to its reviewed explicit exact and realized-refinement inputs; this cycle does not claim the route mate or O10.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [G-112 explicit exact upper pair, G-114 realized-refinement transport, RealizedLocusExtractionReflecting r]
+    direction_hypothesis: []
+    discharged: [exact and refinement geometry realization, restriction naturality, coverage and overlap packaging, coefficient identity, total geometry hom construction]
+    remaining: [geometry mate comparison and universal-uniqueness square, named finite problems and solutions, clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [all geometry fields are generated from the explicit upper equivalences and pulled target geometry]
+    unresolved: [route-level mate and downstream solution artifacts]
+  proof_use:
+    used: [exact and selected inverseCoreEquationForward, deconjugateEquationSystemExact, context forward/backward object computations, pullback overlap, raw roundtrip equalities]
+    unused: []
+  structure_field_escape: no supplied HGeom, completed geometry hom, comparison, reading, or naturality certificate
+  route_integrity: exact base is inverseCorePackageHom; refinement base retains the actual PointedRefinementHom and selected realized-refinement upper map
+  target_fitting: none-found
+  vacuity: not yet applicable before named fixtures
+  one_way_as_equivalence: not claimed
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCleavageNaturality.lean => exit 0 and 34 declarations standard axioms only; git diff --check => exit 0; rg placeholder and hidden/BiDi scans => no matches]
+  blocking_findings: []
+  next_obligation: Generate the two geometry-compatible reverse routes and the upper geometry mate comparison from the completed local cleavage and G-114 actual route.
+```
+
+Cycle 9 follows the forward-only rule for completed work: G-112 and G-114 are
+unchanged. The missing refinement geometry API is constructed in G-115 from the
+realized-reflection data, and the exact/refinement branches are packaged as
+actual geometry morphisms rather than accepted as caller certificates.
