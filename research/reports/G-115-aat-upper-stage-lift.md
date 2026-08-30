@@ -982,3 +982,57 @@ audits:
 Cycle 16 adds the comparison surface entirely in G-115. Completed G-112 and
 G-114 remain fixed and are used only through their exported route and mate
 properties.
+
+## Cycle 17 — identification of the generated and G-114 mates
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 17
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: df53dceed1cbbcf9b9f1bdf3c940bc7c55a8c60b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 16 merged complete comparison isomorphisms for both routes
+  proof_obligation: Conjugate the retargeted G-114 mate by the route comparisons, prove its complete route triangle, and identify it with the generated refinement and core mates.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateIdentification.lean]
+  unchecked: [geometry-level upperGeometryMate, named problem and solution contracts, target clauses (c)--(d), final target assembly]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The conjugated G-114 mate has the generated routeSourceForward lower map and the full package route triangle; cartesian uniqueness identifies it with generatedRouteRefinementMate, and exact embedding identifies the resulting square with generatedRouteCoreMate.
+  completion_candidate: no
+  lean_artifacts: [transportedG114RefinementMate, transportedG114RefinementMate_upper_fac, baseRouteCommonSource, commonSourcePulledRoute, baseRouteComparisonHom_isHomLift_common, pulledRouteComparisonInv_isHomLift_common, transportedG114RefinementMate_isHomLift, transportedG114RefinementMate_fac, transportedG114RefinementMate_eq_generated, generatedRouteRefinementMate_comparison_square, generatedRouteCoreMate_comparison_square]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateIdentification.lean: f31914166e086e1483cf3ab727026955ea9096d91ca4fc873595e8fc4be5aba4
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a universal mate comparison]
+    conjuncts: [conjugated G-114 mate, normalized lower endpoint transport, complete route triangle, uniqueness identification, exact-core comparison square]
+    undischarged_assumptions: [geometry lift, named contracts, clauses (c)--(d), final assembly]
+    acceptance_point: Lower equality and upper factorization are proved separately before universal uniqueness is invoked; neither is inferred from the other.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 16 comparison isomorphisms, exported G-114 upper triangle, generated route cartesianness]
+    direction_hypothesis: []
+    discharged: [G-114 mate comparison square, refinement mate identification, embedded core mate comparison square]
+    remaining: [geometry lift and downstream target contracts]
+  certificate_provenance:
+    discharged: [lower HomLift composition is generated from the two comparison lifts and G-114 mate verticality; mate equality comes from generatedRouteRefinementMate_unique]
+    unresolved: [geometry-component provenance and downstream assembly]
+  proof_use:
+    used: [Cycle 16 route comparison factors and inverse laws, refinementMate_upper_triangle, refinementMate_isHomLift, IsHomLift.comp, generatedRouteRefinementMate_unique, generatedRouteCoreMate_toRefinement]
+    unused: []
+  structure_field_escape: no mate square, lower equality, or triangle is caller data
+  route_integrity: the square uses the literal retargeted G-114 refinementMateAtTarget and the literal generatedRouteRefinementMate/generatedRouteCoreMate
+  predecessor_integrity: completed G-112 and G-114 remain unchanged
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateIdentification.lean => exit 0 and 13 declarations standard axioms only; git diff --check => exit 0; placeholder scan => no matches]
+  blocking_findings: []
+  next_obligation: Lift the identified core mate to the fixed-coefficient geometry level, then instantiate the named upperGeometryProblem and upperGeometrySolution contracts and discharge clauses (c)--(d).
+```
+
+Cycle 17 proves the G-115 mate comparison square without reopening any
+completed predecessor GOAL.
