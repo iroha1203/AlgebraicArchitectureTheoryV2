@@ -819,3 +819,57 @@ audits:
 Cycle 13 uses the completed G-112 and G-114 APIs only as immutable inputs. The
 fact that two universal choices have isomorphic domains is represented by the
 generated isomorphism itself; it is not collapsed into an endpoint cast.
+
+## Cycle 14 — pulled-route universal domain bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 14
+goal_blob_sha: 3c7dd5c34934205817b88d39c00d53b116fbb8f9
+base_oid: 068b357e40d91d606fa21a4cd440b3f4e5d3313d
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 13 merged base-route universal domain bridge
+  proof_obligation: Compare the explicit pulled-first geometry route with the independently selected G-114 pulled mate domain, accounting for both the exact pullback-target choice and the refinement-lift choice by universal uniqueness.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComparison.lean]
+  unchecked: [full base and pulled composite triangles, comparison square with ctx.mateAtTarget, geometry-level upperGeometryMate, named problems and solutions, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: The explicit and selected pullback-target exact lift domains are compared by the canonical cartesian domain isomorphism with both exact factor triangles; after transporting the explicit realized-refinement lift along that target iso, refinement cartesian uniqueness generates mutually inverse source comparisons and both transported factor triangles; these assemble the actual pulled-route-to-pulled-mate endpoint iso.
+  completion_candidate: no
+  lean_artifacts: [pullbackTargetCoreFiber, selectedPullbackExactLift, explicitPullbackExactLift, pullbackTargetCoreFiber_eq_explicit, selectedPullbackExactLift_domain_eq_target, pullbackTargetSelectedDomainIso, pullbackTargetSelectedDomainIso_hom_fac, pullbackTargetSelectedDomainIso_inv_fac, pullbackTargetPackageIso, explicitPulledRefinementLift, pulledRouteCoreFiber_eq_explicit, explicitPulledLegacyLift, explicitPulledRefinementLift_domain_eq_legacy, pulledLegacyDomainComparisonHom, pulledLegacyDomainComparisonInv, pulledLegacyDomainComparisonHom_fac, pulledLegacyDomainComparisonInv_fac, pulledLegacyDomainIso, pulledRouteCoreFiber_eq_legacy, pulledRoutePulledMateIso]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryMateComparison.lean: 814ae593945e43e1ef0bcbd7f4519a92d3e48b974418d480541d74b44e581713
+  claim_mapping:
+    source_labels: [target theorem clause (b), K2b2a componentwise comparison iso]
+    conjuncts: [explicit-versus-selected pullback-target exact iso, both exact factor triangles, target-transported refinement comparison, both refinement factor triangles, inverse laws from refinement cartesian uniqueness, retargeted G-114 pulled endpoint comparison]
+    undischarged_assumptions: [complete base and pulled route triangles, G-114 mate comparison square, geometry-level comparison and downstream artifacts]
+    acceptance_point: Both changes of universal choice on the pulled route are represented by generated isomorphisms; equality is used only for proved representation normalization at the explicit route endpoint.
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 13 target anchoring, G-112 selected exact lift, G-114 legacy pulled cleavage, realized-refinement domain coherence]
+    direction_hypothesis: []
+    discharged: [pullback-target exact domain iso and both factor triangles, target-transported refinement source iso and both factor triangles, actual pulled endpoint iso]
+    remaining: [full route triangles and mate square, geometry lift, downstream named contracts]
+  certificate_provenance:
+    discharged: [exact comparison comes from StrongCartesianLift.domainIso; refinement comparison and inverse laws come from the two LegacyRefinementCartesianLift universal properties]
+    unresolved: [route-level mate square and geometry fields]
+  proof_use:
+    used: [StrongCartesianLift.domainIso, domainIso_hom_fac, domainIso_inv_fac, legacyRefinementLift_domain_coherence, RefinementOverHom precomp and postcomp laws, LegacyRefinementCartesianLift.factor_fac, factor_unique]
+    unused: []
+  structure_field_escape: no exact-domain comparison, refinement-domain comparison, inverse law, endpoint iso, or factor triangle is accepted from the caller
+  route_integrity: the explicit endpoint is the actual Cycle 10 pulledRouteCoreFiber and the selected endpoint is the retargeted G-114 pulledMatePackage; the intervening target transport is the exact-lift uniqueness iso
+  target_fitting: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComparison.lean => exit 0 and 33 declarations standard axioms only; git diff --check => exit 0; placeholder scan => no matches]
+  blocking_findings: []
+  next_obligation: Use the two endpoint bridge isos and their factor triangles to prove the complete base and pulled route comparisons, then prove the generated mate square against the retargeted G-114 mate.
+```
+
+Cycle 14 again adds the missing comparison surface only in G-115. Completed
+G-112 and G-114 remain unchanged and are consumed solely through their exported
+universal properties.
