@@ -32,9 +32,9 @@ tracking Issue に置き、ここには書かない。
    責務(担当義務)、target theorem 骨格、錨(実在・実型を突合済みの
    reviewed 宣言)、供給契約、リスク、failure 骨格。**Lean 実査の要点:
    `DiagnosticConservative` は G-113 revision 1 で定義・全 hom 証明済み。
-   `ObProblem` 段は Lean に不在であり、G-115 の新設建設義務である
-   (`ObProblem` は AG 数学本文にも語が無く、class の Lean 指示対象は
-   G-115 カード (c) で固定する)**。
+   `ObProblem` はLean / AG数学本文の宣言名ではない。G-115は新しいproxy
+   interfaceを設けず、Lean上の指示対象をG-109 actual upper cochain / reselectionと
+  compatible solution上のpaired intertwiningに固定し、raw cochainはtransport dataから導出する**。
 5. 整合性監査(§5)で被覆行列(義務の全域・一意な担当割当)、重複防止の
    判定線5本、語彙正本規則、universe 設計規則、改訂伝播 DAG を固定する。
    G-116 capstone が義務台帳との突合の上で Gr4 達成を記録する(§7)。
@@ -155,8 +155,8 @@ monte 由来)と系譜を共有する — 衝突ではなく敬意の系譜と�
   square-family liftability の分類)。
 - **gate (ii)**: refinement 系統(`RefinementDoctrineHom` の圏化と
   refinement base change)。
-- **gate (iii)**: 上段(`GeomRead` / `ObProblem`)への base-change lift
-  (Gr3 段横断輸送への接続 bridge)。
+- **gate (iii)**: 上段geometry readingとactual upper cochain / reselectionへの
+  base-change bridge(Gr3 段横断輸送への接続)。
 - **gate (iv)**: IsIso 水準の Beck–Chevalley exchange-failure の存否決定
   (存否は未決定の問い。本 sector と refinement / 上段 regime を含む
   設定で決定する)。
@@ -183,9 +183,9 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
-| O10 | `GeomRead` 段への base-change lift+Gr3 接続 bridge+上段 regime 型の建設 | gate (iii) | G-115 |
-| O11 | `ObProblem` 段への base-change lift = 構成された障害類の base-change naturality(class 構成は変更しない。semantic adequacy 条件は §4 G-115) | gate (iii)・n1001 §3.3 | G-115 |
-| O12 | actual mate-bearing sector / active refinement / active upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
+| O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence・正負named artifact | gate (iii) | G-115 |
+| O11 | compatible actual solution上のcoefficient-trivial reselection / derived raw-cochain intertwining、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間のexchange-exactness iff | gate (iii)・n1001 §3.3 | G-115 |
+| O12 | actual mate-bearing sector / active refinement / G-115 canonical generated upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | gate (v) | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | gate (v) | G-113 |
@@ -473,33 +473,31 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 
 ### G-115(仮 slug: `G-115-aat-upper-stage-lift`)
 
-- **責務**: O10–O11。上段への base-change lift と Gr3 接続 bridge。
-- **claim 骨格**: (a) `GeomRead` 段 lift — pointed pullback square の BC
-  構造を G-114 `ActiveRefinementBCContext` から受け取り、その
-  canonical mate を再構成せず geometry 段 fiber へ持ち上げ、
-  G-109 pseudofunctor package(compositor / unitor・pseudonatural
-  compatibility)と両立する形で段射影と可換にする。**上段 regime 型
-  (G-116 が消費する mate 比較の型)を成果物形式に含める**、(b) Gr3
-  接続 bridge — 持ち上げた BC 作用と G-109 の段横断輸送・G-110 の
-  G-106 / G-109 coherence bridge との整合 theorem、(c) **`ObProblem`
-  段** — n1001 §3.3 の `ObProblem -> GeomRead` は「構成された cocycle /
-  class の naturality」の段である。したがって O11 が閉じるべき対象は、
-  何らかの class 読み出し interface ではなく、**構成された障害類その
-  ものの base-change naturality** である。`ObProblem` の語は research
-  木・Formal 木・AG 数学本文のいずれにも無い。Lean 上の指示対象は
-  G-106 の `rawDefectCochain` とその reselection orbit
-  (`InReselectionOrbit`)の類に固定し、上段接続点は G-109 の
-  `InUpperReselectionOrbit` とする(正本 = G-115 カード (c))。
-  interface はその上の最小 class 読み出しとして新設する。**ただし完了
-  には、interface がこの指示対象を表すことの adequacy bridge と、その
-  class の base-change naturality への移送を含める**(semantic
-  adequacy 条件)。代理
-  interface 上の naturality だけでは O11 の放電と数えない。class
-  構成自体は変更しない(G-110 claim boundary の継承)、(d) 非退化発火
-  witness — 非自明 geometry fiber 上の発火(G-108 系 fixture 資産が
-  素材)に加え、**`ObProblem` interface 上でも非恒等 class 読み出しが
-  BC lift で実際に動く fixture** を要求する(定数読み出しの vacuous
-  naturality の排除)。
+- **責務**: O10–O11。raw authored domainとgenerated cartesian-compatible
+  locusを分離した上段 base-change bridge。
+- **claim 骨格**: (a) lax `RefinementPackageHom` を実fieldに持つ
+  `RefinementGeometryHom` category・projection・exact faithful embeddingを構成する。
+  (b) 任意のraw authored upper problemには、G-109のauthored comparator / cochain方向を
+  保存するcore-selected companionへの**片方向comparisonだけ**を与える。raw endpointの
+  support / axis / observable inverseは主張しない。別にroute leg、comparison、`IsIso`、
+  cartesianness certificate、solution、base / pulled route comparatorをfieldに持たない
+  `UpperGeometryCompatibleProblemInput`を置き、G-112 strong liftとG-114
+  realized-refinement transportから二つのrouteを独立に生成してstrong cartesiannessを証明する。
+  単一source transport comparatorをstrong-cartesian legs沿いにpull backし、vertical lower mapを
+  exact identityとしてgeometry automorphismへexactifyするG-115-local APIで二route comparatorを
+  生成する。raw cochainは各transportから導出し、map-id / map-mulとG-109 compositor / unitor
+  compatibility、canonical mateとのglobal equationを証明する。G-114 exact endpoint
+  base iso / factor triangleで正規化したstrong-cartesian uniquenessからbase / pulled endpoint
+  comparison isomorphismsを導出し、
+  componentwise conjugationでactual solution spaceの`Equiv`を構成する。逆写像は元solutionを
+  wrapperに保存せず、比較isoから実際に戻す。(c) compatible actual solution上で
+  coefficient-trivial reselection、paired relation、raw-cochain intertwiningと双方向conjugationを
+  証明する。(d) `UpperStageExchangeExact`とcore-selected companion exactnessのpointwise iffを
+  証明するが、canonical `upperDecisionSolution`での成立 / 不成立はG-116に残す。
+  正例はcompatible constructorから生成し、負例はcompatible locus外でlocal cartesian legs /
+  local matesとcomparator以外の全solution fieldsを満たすrigid pre-solutionを持つが、nonidentity
+  authored comparatorのglobal equationが具体評価で破れるraw problemとする。任意candidateを
+  cartesian uniquenessでpre-solutionへ固定してsolution不在を証明する。
 - **錨**: `CoreFiber` / `coreFiberTransportFunctor`
   (`CrossStageCoherence/CorePseudofunctor.lean`)、G-108
   `GeomReadCategory`(通称 GeomRead_U)/ `geomTransportAlongHom` 系
@@ -509,15 +507,17 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   (c) の指示対象)、G-109 `InUpperReselectionOrbit`
   (`CrossStageCoherence/UpperObstruction.lean`)、G-114
   `ActiveRefinementBCContext` / canonical mate。
-- **供給契約**: G-116 gate (iv) の active upper-stage regime 型。
-  `ObProblem` interface の命名は本カード専属。
-- **リスク / dullness 骨格**: lift を base equality 一本で代用する経路、
-  離散段(`ExtInst -> Doct`)での vacuous 発火、`ObProblem` interface に
-  class 構成の変更を紛れ込ませる経路、定数 class 読み出しでの vacuous
-  naturality、adequacy bridge を欠く代理 interface での O11 放電。
-- **failure 骨格**: `ObProblem` interface の Lean 建設が型不能なら
-  `goal-defect`(gate (iii) の縮小 = `ObProblem` 部分の分離は人間
-  裁定であり、自動 weakening をしない)。
+- **供給契約**: G-116 gate (iv) へcompatible constructor由来のcanonical
+  `upperDecisionSolution`とactual geometry solution components間の
+  `UpperStageExchangeExact` companion iffを供給する。raw
+  one-way domainやnegative incoherent problemはO12へ入れない。
+- **リスク / dullness 骨格**: raw one-way comparisonをequivalenceと呼ぶ経路、
+  compatible inputにroute / route comparator / comparison / cartesianness certificateを埋める経路、
+  元solution保存wrapperで逆写像を作る経路、core-only equalityやidentity comparatorで
+  authored coherenceを代用する経路。
+- **failure 骨格**: certificate-free inputとG-112 / G-114 public transportから
+  二strong-cartesian routeまたはendpoint inverseを構成できなければ`goal-defect`。
+  named solutionまたはglobal-comparator-incoherent negative problemに反例があれば`target-refuted`。
 
 ### G-116(仮 slug: `G-116-aat-gr4-capstone`)
 
@@ -533,7 +533,7 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   `not_forall`、choice、`P ∨ ¬ P` の包装は O12 の放電と数えない。
   量化域 `Gr4ExchangeContext` は
   mate を伴う G-110 sector、G-114 `ActiveRefinementBCContext`、
-  G-115 active upper-stage regime の tagged sum とする(**capstone は
+  G-115 canonical generated upper-stage regime の tagged sum とする(**capstone は
   regime / mate を新設しない**)。
   **量化域は authored datum 付き lax square を含める** — G-110 sector の
   pullback square 上の mate 同型は証明済みの正例(TargetTheorem の
@@ -550,7 +550,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   branch-selection evidence と単一 branch-specific theorem に強化した。
 - **completion criteria+report 義務(O19)**: §7 の成立条件に従う
   Gr4 達成の範囲併記記録。raw forward / realized reverse / active mate /
-  exchange の四層と forward-only / inactive の disposition を含める。
+  exchange に加え、G-115のraw one-way / generated cartesian-compatible /
+  comparator-incoherent分類と forward-only / inactive の disposition を含める。
   **達成階梯対応表**(§8 — Gr0–Gr4 ↔ theorem
   package ↔ Lean 宣言錨 ↔ 記録正本の所在 ↔ 範囲限定、の5列。Gr2 =
   G-101 の遡及記載を含む)を report 成果物として義務化する。
@@ -589,8 +590,9 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 3. **G-113 の診断 exactness / G-109 effectivity 反射**: 前者 = indexed
    BC 輸送の双方向(O14・O20)、後者 = 段射影 `p` の押し出し方向
    (域外・G-109 frontier のまま)。G-113 statement に分界を明記する。
-4. **G-115 / G-116**: G-115 は regime 型(上段の BC 構造)を建設するが
-   IsIso を主張しない。存否決定は G-116 専属(G-110 が `¬IsIso` を負例
+4. **G-115 / G-116**: G-115 はraw片方向comparisonとgenerated cartesian-compatible
+   regimeを建設し、exchange exactnessのcompanion iffまでを証明するが、canonical solutionの
+   IsIso / 非IsIsoを主張しない。存否決定は G-116 専属(G-110 が `¬IsIso` を負例
    軸に採らなかった分界の継承)。
 5. **既決 / 未決**: G-110 sector の pullback square 上の mate 同型は
    証明済みの正例であり、G-116 の存否決定の対象は lax square と
@@ -607,7 +609,7 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 専属させる — `IndexedBaseDiagram` / `IndexedBaseDiagramHom` =
 G-111、`IndexedDiagnosticTransportEquivalence` = G-113
 (`DiagnosticConservative` は revision 1 の既存語彙)、refinement 圏 =
-G-114、`ObProblem` interface = G-115。命名が
+   G-114、`UpperGeometryCompatibleProblemInput` = G-115。命名が
 重複・分散していないかは batch レビューで検査する。
 
 **universe 設計規則(全カード共通)**: universe をまたぐ義務は、先に
@@ -666,8 +668,9 @@ G-110 / G-109 / G-108 / G-106 ─────────┘
   この一回に集める。
 - **昇格**: 一枚ずつ、G-111 から。昇格時は敵対レビュー往復を経る。
   昇格順の推奨は依存 DAG に従い G-111 → G-112 → G-113
-  → G-114 → G-115 → G-116。**`ObProblem` の Lean 指示対象は G-115
-  カード (c) で固定する**(semantic adequacy 条件は §4 G-115)。
+  → G-114 → G-115 → G-116。**conceptualな`ObProblem`段のLean指示対象は
+  G-109 actual upper cochain / reselectionとG-115 compatible solution上のpaired
+  intertwiningに固定する**。
 - **昇格レビューの右サイズ化(提案 — G-111 昇格前に正式裁定)**: 全体
   整合を batch レビューで先に閉じるため、昇格レビューはカード内部
   (statement の型・資格条項・witness 形)に限定できる。gate カードは
@@ -698,7 +701,8 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
 1. G-111〜G-115 が担当義務(O1–O11・O13–O18・O20)の帰趨を
    `target-theorem-proved` で確定している。G-114 は raw forward、
    realized reverse、active mate、forward-only / inactive disposition
-   の全層を固定している。義務は
+   の全層を固定している。G-115はraw one-way、generated cartesian-compatible、
+   comparator-incoherent raw negativeの全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。
 2. G-116 が active 昇格時に固定した universal `IsIso` theorem または
@@ -708,7 +712,8 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
    (自己確定)。範囲併記は coverage の到達段(第一段 / 第二段)、
    O6 / O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
    converse 反証・
-   G-114 の support-stratified classification と O7 の semantic-global
+   G-114 の support-stratified classification、G-115のraw / compatible /
+   comparator-incoherent classification と O7 の semantic-global
    正枝記録、任意の独立 raw
    square family が自動的には coherent diagnostic assembly をなさない
    G-111 の分類負枝、§3 域外リスト(carrier change 含む)、
