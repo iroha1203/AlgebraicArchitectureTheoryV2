@@ -1324,3 +1324,64 @@ audits:
 Cycle 22 fixes the finite pointwise domain of the comparison without collapsing
 generated and authored geometry endpoints. Completed predecessor GOALs remain
 unchanged.
+
+## Cycle 23 — conjugated finite core diagrams and natural transformation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 23
+goal_blob_sha: a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985
+base_oid: 766e681016f4a6b13a1737322b0fa59453e2b14d
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 22 merged the generated pointwise geometry mate family and its G-114 comparison square
+  proof_dag_predecessors: [baseRouteBaseMateIso, pulledRoutePulledMateIso, ActiveRefinementBCContext.baseCoreDiagram, ActiveRefinementBCContext.pulledCoreDiagram, ctx.mate]
+  proof_obligation: Put the actual G-114 finite route diagrams onto the literal G-115-generated endpoint families and transport the completed G-114 mate naturality across those endpoint isomorphisms.
+  selection_reason: Generated endpoints are not definitionally equal to the independently selected G-114 endpoints. Edgewise work therefore needs explicit conjugated functors and a natural transformation, not a cast or a retroactive predecessor API change.
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteCoreNaturality.lean]
+  risks: [reopening G-112 or G-114, claiming equality with generatedRouteCoreMate before proving it, treating endpoint isomorphism as definitional equality]
+  unchecked: [identification with generatedRouteCoreMate, generated geometry edge maps, geometry-mate edge naturality, authored comparator intertwining, solution-space equivalence, named fixtures, clauses (c)--(d)]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: At every finite-presentation vertex G-115 now exposes exact endpoint isomorphisms to the actual G-114 route objects; conjugating both actual route functors by those isomorphisms gives literal generated-endpoint core diagrams; conjugating ctx.mate gives a natural transformation between them along every presented path.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseCoreIsoAt, generatedPulledCoreIsoAt, generatedBaseCoreDiagram, generatedPulledCoreDiagram, generatedConjugateCoreMateAt, generatedConjugateCoreMateAt_naturality, generatedConjugateCoreMate]
+  evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
+  source_sha256:
+    UpperGeometryFiniteCoreNaturality.lean: ba63d92613d05f87bdbcde72304b5a6e96b6af920d7c2d9d5e30f733accb5456
+  claim_mapping:
+    theorem_names: [generatedConjugateCoreMateAt_naturality]
+    source_labels: [target theorem clause (b), finite-presentation G-114 comparison naturality substrate]
+    conjuncts: [literal generated core endpoints, actual route functor transport, exact endpoint provenance, path naturality of the conjugated completed mate]
+    undischarged_assumptions: [equality with the pointwise generated mate, geometry edge realization, comparator compatibility, downstream solution and orbit contracts]
+    acceptance_point: This cycle proves only the transported actual-core natural transformation. It does not infer geometry naturality or identify it with generatedRouteCoreMate without the remaining universal-property argument.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [completed G-114 base and pulled core diagrams and ctx.mate, Cycle 22 pointwise generated endpoints]
+    direction_hypothesis: []
+    discharged: [finite generated-endpoint core functors, exact endpoint comparison provenance, conjugated core path naturality]
+    remaining: [generated mate identification, geometry edge maps and naturality, comparator intertwining, solution equivalence, positive and negative named artifacts, paired orbit/cochain and exchange-exact interface]
+  certificate_provenance:
+    discharged: [endpoint isomorphisms are the G-115-local universal comparisons baseRouteBaseMateIso and pulledRoutePulledMateIso; naturality is transported directly from ctx.mate.naturality]
+    unresolved: [geometry-level edge and comparator comparison]
+  proof_use:
+    used: [baseRouteBaseMateIso, pulledRoutePulledMateIso, sourceFiberDiagram map, ctx.mate.naturality]
+    unused: []
+  structure_field_escape: no route-between component or naturality law is supplied by the problem input
+  route_integrity: both conjugated diagrams are obtained from the literal actual G-114 route functors at the actual sourceFiberDiagram, with explicit endpoint isomorphisms
+  predecessor_integrity: completed G-112 and G-114 source and GOAL cards are unchanged; the absent finite comparison API is created only in G-115
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: not-claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFiniteCoreNaturality.lean => exit 0 and 7 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: Identify generatedConjugateCoreMateAt with generatedRouteCoreMate by the endpoint-comparison universal properties, then lift the conjugated edge maps to the generated geometry families and prove upperGeometryMate edge naturality.
+```
+
+Cycle 23 creates the missing finite comparison API in G-115. Completed G-112
+and G-114 remain immutable sources of the actual diagrams and mate.
