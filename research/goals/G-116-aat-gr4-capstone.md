@@ -8,7 +8,7 @@
   担当カード = **Gr4 capstone**(設計の source note は n1007 §3–§8)。
   依存は G-111〜G-115 の全カード — 存否決定の量化域は G-114 / G-115 が
   供給する active mate-bearing context から組む。G-115 からは
-  geometry-refinement bridge と、IsIso評価前の actual
+  generated cartesian-compatible geometry-refinement bridge と、IsIso評価前の canonical actual
   `upperDecisionSolution` を消費し、達成記録は全カードの
   帰趨確定を突合する。
   したがって**昇格は G-111〜G-115 の全帰趨確定後にのみ行う**。上流の
@@ -32,7 +32,7 @@
 - `core tension`: 存否決定の核心は既決と未決の分界にある — G-110
   sector の pullback square 上の mate 同型は証明済みの正例であり、
   未決なのは authored datum 付き lax square と active refinement /
-  上段 context 側である。G-115 の solution を持たない named raw upper problemは
+  上段 context 側である。G-115 のraw one-way comparisonやsolutionを持たないnamed incoherent upper problemは
   mate 未定義のため O12 の正負いずれにも入れず O19 に分類する。upper summandは
   G-115がcaller-freeに構成したactual solution相対であり、canonical
   core mateの choice-independent exactnessとは呼ばない。既決正例の再包装や empty-fiber context を
@@ -52,10 +52,10 @@
   包装し、その summand 内では固定する。carrier間の射やcarrier changeは語らない。
   係数は各context内で固定し、終対象・絶対積は導入しない。量化域は、carrierを
   内包するG-110 `AuthoredBCDatumSquare`、G-114 `ActiveRefinementBCContext`、
-  G-115 が構成した actual `UpperRefinementBCSolution` からなる
+  G-115 がcompatible constructorから構成した canonical actual `UpperRefinementBCSolution` からなる
   非index型 `Gr4ExchangeContext` とする。本カードは
   upper solutionを新設しない。G-114 の forward-only / inactive refinement と
-  G-115 の non-liftable raw problem は O12 の外に置くが、O19 でその
+  G-115 のraw one-way domainとincoherent negative problemは O12 の外に置くが、O19 でその
   帰趨と理由を記録する。
   下記域外リストの全項目は主張しない。達成記録は
   theorem ではなく completion criteria+report 側の義務である(O19 を
@@ -96,7 +96,7 @@
      `ExchangeExact` はG-110 summandでは
      `generatedAuthoredDiagnosticObjectCollapseComparison input`の`IsIso`、
      G-114 summandではactual canonical refinement mateの`IsIso`、
-     G-115 upper summandでは選ばれたactual solutionの全vertex
+     G-115 upper summandではcanonical generated actual solutionの全vertex
      component に `IsIso` を要求する `UpperStageExchangeExact` として casewise に定義
      する。proof body は tagged sum の各成分で mate の構成と比較式を実使用し、
      成分別非退化 witness 上でも発火しなければならない。
@@ -117,7 +117,8 @@
     `upperDecisionSolution` をconstructorに持つ `G115NamedUpperContext` の
     tagged sumとして定義する。named solutionの concrete carrierはそのconstructorが
     隠蔽し、任意 `U` へtransportしない。
-    任意 caller-supplied solutionを payload として量化域へ追加しない。量化域は
+    `G115NamedUpperContext`はcompatible constructor由来のcanonical solutionだけを保持する。
+    任意 caller-supplied solutionやraw one-way comparisonをpayloadとして量化域へ追加しない。量化域は
     この型に固定し、**authored
     datum 付き lax square を含める**。
   - 既決 / 未決の分界: G-110のcomparator-free
@@ -129,7 +130,7 @@
   - **成分別の実質**: universal branch では量化域の各成分ごとに
     非退化発火 witness を要求する。named-failure branch でも failure
     context が属する成分以外を含む全成分の domain 非空虚性を別途記録する。
-    inactive / forward-only refinement と non-liftable raw upper problem
+    inactive / forward-only refinement と raw one-way / comparator-incoherent upper problem
     は mate が未定義なので O12 の反例でも正例でもなく、O19 の
     domain-classification 行で記録する。lax 成分が既決 mate+可逆 twist
     の系で従う場合は系として
@@ -145,12 +146,15 @@
   `not_forall` だけで閉じ、exchange の数学を使用しないため棄却した。
   O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
   active 昇格時の単一 branch-specific theorem に強化して保持する。
-- `G-115 revision 2 propagation`: G-115 は lax `RefinementPackageHom` 上の
+- `G-115 revision 4 propagation`: G-115 は lax `RefinementPackageHom` 上の
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
-  上でactual `upperDecisionSolution`を供給する。G-115はこのsolutionの
-  `UpperStageExchangeExact`も否定も証明しない。O12のupper summandはこのnamed
+  上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
+  comparison isomorphismsを生成し、actual `upperDecisionSolution`を供給する。G-115は
+  `UpperStageExchangeExact`とcore companion exactnessのpointwise iffまでを証明するが、
+  このsolutionのpredicateも否定も証明しない。O12のupper summandはこのnamed
   solutionだけを含み、G-116がactual componentを計算してbranch-selection evidenceを
-  作る。solutionを持たないG-115 named problemはO19のdomain-classificationに残す。
+  作る。raw one-way domainとglobal comparator coherenceを欠くG-115 named problemは
+  O19のdomain-classificationに残す。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
   module。G-110〜G-115 の reviewed module は参照のみ。regime の新設
@@ -176,9 +180,8 @@
   `MateCoherentRel`正負対、TargetTheoremのcanonical mate
   exactness(比較対象と既決正例の分界)、G-114
   `ActiveRefinementBCContext`、G-115 `RefinementGeometryHom` /
-  `UpperRefinementBCSolution` / `upperDecisionSolution` /
-  `UpperStageExchangeExact` / conditional
-  orbit-equivalence interface。
+  `UpperGeometryCompatibleProblemInput` / endpoint comparison isomorphisms /
+  solution equivalence / `upperDecisionSolution` / `UpperStageExchangeExact` companion iff。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
@@ -208,9 +211,10 @@
      support 上の reverse regime、actual package 上の active mate、
      その外側の forward-only / inactive 分類が揃って初めて帰趨確定と
      数える。
-     G-115 については geometry-refinement category / projection / exact embedding、
-     actual `upperDecisionSolution`、solutionを持たないnamed problem、coefficient-trivial
-     actual suborbitのpaired intertwining、`UpperStageExchangeExact` 条件付きconjugation、chosen-solution-relative
+     G-115 については geometry-refinement category / projection / exact embedding、raw authored
+     domainの片方向comparison、generated cartesian-compatible locusの二route / endpoint isomorphisms /
+     solution equivalence、actual `upperDecisionSolution`、global comparator coherenceを欠くnamed problem、
+     coefficient-trivial actual suborbitのpaired intertwining、`UpperStageExchangeExact` companion iff、canonical-solution-relative
      というexactnessの読みを突合する。
   3. **範囲併記**: coverage の到達段(第一段 / 第二段)、O6 /
      O12・G-113 の transport equivalence / base-`IsIso` 非依存性と
@@ -240,9 +244,9 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、G-114 two-route finite upper problem / actual solution、named decision solutionとnamed non-liftable problem | G-115 |
-| O11 | actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・restricted actual suborbit preservation、`UpperStageExchangeExact` 条件付きconjugation・raw-cochain commuting・restricted suborbit equivalence | G-115 |
-| O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
+| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw authored domainの片方向comparison、certificate-free compatible inputから生成する二strong-cartesian route・endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
+| O11 | compatible actual solution上のcoefficient-trivial paired reselection / raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、`UpperStageExchangeExact` companion iff | G-115 |
+| O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
 | O14 | obstruction vanishing iff と全 hom 上の `DiagnosticConservative` / no-killing corollary | G-113 |
 | O15 | reselection equivalence と `InReselectionOrbit` membership iff | G-113 |
@@ -266,6 +270,7 @@
 | id | 旧義務 | disposition |
 |---|---|---|
 | O12-r1 | actual mate-bearing sector / active refinement / active upper-stage regime上でexchange-failureの存否を決定する | O10-r1のglobal upper liftが`goal-defect`となり、全active upper-stage solution域は供給できなかった。人間承認revision 2はG-115がcaller-freeに構成する単一のnamed `upperDecisionSolution`をupper summandへ供給し、現O12はそのchosen-solution-relativeな`UpperStageExchangeExact`を決定する。全active upper-stage solutionsの分類は主張せず、G-115 frontierの全active contextでのliftability classificationへ残す。O19はこの量化域縮小と旧義務のsuperseded dispositionを範囲併記する |
+| O12-r3 | raw authored upper problem全体のcomparisonをsolution equivalenceとしてupper summandへ運ぶ | endpoint cartesiannessを持たないraw domainでは逆比較を生成できず`goal-defect`。人間承認revision 4はraw片方向comparisonをO12外へ分類し、新しいgenerated cartesian-compatible locusのcanonical `upperDecisionSolution`だけをupper summandへ供給する。O19はこのdomain restrictionを記録する |
 
 **G-113 revision 1 義務 disposition(履歴台帳)**:
 
@@ -322,14 +327,14 @@
   - `G-111〜G-115 の完遂成果`: `ambient-boundary`(各カード完遂後に
     final head を固定して昇格する — 昇格条件。台帳突合の対象。支える
     結論 = 量化域の組成と O19。G-115 は geometry-refinement bridge、named
-    `upperDecisionSolution`、chosen-solution-relative な
-    `UpperStageExchangeExact`、paired intertwining、conditional orbit-equivalenceを
-    供給する。non-liftable problemはO19の分類対象とする)。
+    `upperDecisionSolution`、canonical-solution-relative な
+    `UpperStageExchangeExact` companion iff、paired intertwining、comparison-iso conjugationを
+    供給する。raw one-way / comparator-incoherent problemはO19の分類対象とする)。
   - `Gr4ExchangeContext の組成`: `discharge-required`(支える結論 =
     O12 の設定。discharge artifact = G-114 / G-115 の active
     mate-bearing 成果物、G-115 の `upperDecisionSolution`、G-110
     `AuthoredBCDatumSquare`のみから
-    組むtagged sum。inactive / forward-only / non-liftable
+    組むtagged sum。inactive / forward-only / raw one-way / comparator-incoherent
     problemの除外は O19 に記録し、新設 mate は不可)。
   - `branch selection と branch-specific theorem`: `discharge-required`
     (支える結論 = O12。draft artifact = mate の構造または具体評価を使う
@@ -345,7 +350,7 @@
 - `target route integrity gate`: 量化域は供給された actual
   mate-bearing context からのみ組む。負例枝 witness は lax square・
   active refinement / named actual upper-solution 域に限定し、既決域、inactive
-  域、non-liftable raw upper problem に
+  域、raw one-way / comparator-incoherent upper problem に
   置かない。witness fixture は proof obligation 選定時に固定する。禁止
   経路 — regime の新設建設、既決正例の再包装、twist 系の独立計上、
   台帳突合を欠く達成宣言、payload の caller 供給、`Classical.em` /
