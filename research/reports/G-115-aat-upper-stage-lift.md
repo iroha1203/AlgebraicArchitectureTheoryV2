@@ -2,27 +2,27 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 3 candidate
+- GOAL revision: 4 fixed
 - proof state: `target-proof-checkpoint`
 - completion candidate: no
 
-This report records incremental proof obligations through the revision-3
-candidate. Cycles 1--5 remain accepted evidence for their named interfaces;
-revision 3 adds the G-115-local geometry cleavage required before the named
-fixture cycle. Lean acceptance is evidence for the named cycle only; it is not
-a completion verdict for G-115.
+This report records incremental proof obligations against the fixed revision-4
+target. Cycles 1--27 remain accepted evidence for their named interfaces;
+revision 4 replaces the attempted route-between conclusion with the
+certificate-free cartesian-compatible locus implemented from Cycle 29 onward.
+Lean acceptance is evidence for the named cycle only; it is not a completion
+verdict for G-115.
 
 ## Fixed target
 
-- merged GOAL revision PR: #4252
-- final reviewed GOAL head: `ee3e400c92a2946ad2c8e4ee15e8b2cc235b8e39`
-- merged GOAL commit and implementation base: `5cb6994f72063e23733bcefb081b11ed4b6f5fef`
-- GOAL blob SHA: `b307ba6dfe0c098a85160292c86999b63c8f19c1`
+- merged GOAL revision PR: #4280
+- final reviewed GOAL head: `1bef307c99f58ae2050f01bc4c0e0bce9e2766f1`
+- merged GOAL commit and implementation base: `98a3a59140e406c613a26056fb1ef46ba3a4a670`
+- GOAL blob SHA: `2d3f5424cc26c9274cc5260509a9f40ef86d59a4`
+- GOAL SHA-256: `fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c`
 
-Revision 3 candidate is based on merge `f09dc1fe36853eea5f9854cc4ecfad8f60a667f8`.
-Its GOAL blob is `3c7dd5c34934205817b88d39c00d53b116fbb8f9` and its
-SHA-256 is `a11f61a5790c8ac75ce7f13da1277a859e2ab600ac96038bc55c338b80d38985`.
-The revision becomes the fixed target only after its PR review and merge.
+Revision 4 is the fixed target approved and merged by PR #4280. Its target
+contract is not weakened by the checkpoint cycles below.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 
@@ -1812,4 +1812,62 @@ audits:
   validation_refs: [targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleComparator` constructed only the direct predecessor DAG; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorGeometry.lean` => exit 0 and 40 declarations standard axioms only; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
   blocking_findings: []
   next_obligation: Prove map-id and map-mul for both generated CompositeFiberAut families from the same route factorization and Cartesian uniqueness, then assemble the finite comparator families and global mate equation.
+```
+
+## Cycle 32 — functorial laws for generated comparator pullback
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 32
+goal_blob_sha: fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c
+base_oid: eca54d47a78f452c5b764666315250b3b23e7585
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 31 merged the two exact geometry pullbacks, inverse laws, actual generated CompositeFiberAut values, and literal route factor laws
+  proof_dag_predecessors: [generatedBaseCompositeFiberAutAt, generatedPulledCompositeFiberAutAt, generatedBasePackageComparatorRefinementAt_fac, generatedPulledPackageComparatorRefinementAt_fac, generatedBaseGeometryComparatorRefinementAt_fac, generatedPulledGeometryComparatorRefinementAt_fac, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, exactPackageToRefinement, exactGeometryToRefinementGeometry]
+  proof_obligation: Prove identity and multiplication preservation for both generated comparator pullbacks, first at the exact package level and then at complete exact geometry level, promote both pointwise constructions to group homomorphisms, and do so without accepting any map-law certificate.
+  selection_reason: The finite comparator families must be derived by applying a lawful G-115-local pullback to the single source comparator. Package map laws are required material premises for the geometry-level Cartesian uniqueness proof and cannot be skipped or inferred from pointed verticality alone.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorMapLaws.lean]
+  risks: [reversing the Aut multiplication order, proving geometry map laws without matching complete package lower maps, using definitional equality in place of Cartesian uniqueness, collapsing base and pulled routes, storing map laws in the input]
+  unchecked: [two-stage compositor/unitor compatibility for finite source paths and cells, finite base/pulled comparator families and derived cochains, route naturality, global canonical-mate equation, endpoint comparison isomorphisms, solution equivalence, named artifacts, clauses (c)--(d)]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: Both route pullbacks now preserve identity and multiplication. Each package law is derived by strong-cartesian uniqueness against the literal package leg; each complete geometry law consumes the corresponding package law as its lower-map qualification and then applies strong-cartesian uniqueness against the literal geometry leg. The resulting base and pulled pointwise maps are bundled as actual group homomorphisms.
+  completion_candidate: no
+  lean_artifacts: [generatedBasePackageComparatorAt_one, generatedBasePackageComparatorAt_mul, generatedPulledPackageComparatorAt_one, generatedPulledPackageComparatorAt_mul, generatedBaseGeometryComparatorAt_one, generatedBaseGeometryComparatorAt_mul, generatedPulledGeometryComparatorAt_one, generatedPulledGeometryComparatorAt_mul, generatedBaseCompositeFiberAutAt_one, generatedBaseCompositeFiberAutAt_mul, generatedPulledCompositeFiberAutAt_one, generatedPulledCompositeFiberAutAt_mul, generatedBaseCompositeFiberAutHomAt, generatedPulledCompositeFiberAutHomAt, generatedBaseCompositeFiberAutHomAt_apply, generatedPulledCompositeFiberAutHomAt_apply]
+  evidence: [focused Lean check, 16-declaration namespace standard-axiom audit, module registration, source hash, literal scans]
+  source_sha256:
+    UpperGeometryCompatibleComparatorMapLaws.lean: f296a5fda755b4eb6372a6cdbfe2d7251f27e74ebddeae050a74a88fdd402795
+  claim_mapping:
+    theorem_names: [generatedBasePackageComparatorAt_one, generatedBasePackageComparatorAt_mul, generatedPulledPackageComparatorAt_one, generatedPulledPackageComparatorAt_mul, generatedBaseGeometryComparatorAt_one, generatedBaseGeometryComparatorAt_mul, generatedPulledGeometryComparatorAt_one, generatedPulledGeometryComparatorAt_mul, generatedBaseCompositeFiberAutAt_one, generatedBaseCompositeFiberAutAt_mul, generatedPulledCompositeFiberAutAt_one, generatedPulledCompositeFiberAutAt_mul]
+    source_labels: [revision 4 cartesian comparator pullback, target theorem clause (b)]
+    conjuncts: [package map-id and map-mul on both routes, complete geometry map-id and map-mul on both routes, generated CompositeFiberAut map-id and map-mul on both routes, two bundled group homomorphisms]
+    undischarged_assumptions: [finite compositor/unitor normalization, finite comparator transport and global mate equation, endpoint isomorphisms and solution equivalence]
+    acceptance_point: The multiplication theorem follows the actual Aut convention hom(left * right) = hom(right) ≫ hom(left). Both factor compositions are compared through their literal generated route leg. The geometry proof explicitly uses the proved package multiplication equality to put both complete factors over the same package morphism.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 31 generated automorphisms and factor laws, G-109 source CompositeFiberAut group laws, completed G-112/G-114 generated route cleavages]
+    direction_hypothesis: []
+    discharged: [package map-id and map-mul on both routes, geometry map-id and map-mul on both routes, CompositeFiberAut map-id and map-mul on both routes, group-homomorphism bundling]
+    remaining: [finite compositor/unitor compatibility, finite comparator/cochain/global equation, endpoint isomorphisms, solution equivalence, named artifacts and clauses (c)--(d)]
+  certificate_provenance:
+    discharged: [all map laws come from literal route factor laws, source group identity/multiplication, theorem-derived route cartesianness, and IsStronglyCartesian.ext; no law is accepted as an input]
+    unresolved: [finite route naturality and canonical-mate compatibility, endpoint inverse uniqueness, solution transports]
+  proof_use:
+    used: [generatedBasePackageComparatorRefinementAt_fac, generatedPulledPackageComparatorRefinementAt_fac, generatedBaseGeometryComparatorRefinementAt_fac, generatedPulledGeometryComparatorRefinementAt_fac, generatedBasePackageComparatorAt_one, generatedBasePackageComparatorAt_mul, generatedPulledPackageComparatorAt_one, generatedPulledPackageComparatorAt_mul, IsStronglyCartesian.ext, exactPackageToRefinement_map_injective, exactGeometryToRefinementGeometry_faithful, CompositeFiberAut multiplication order]
+    unused: [root and rootPath; source edge and two-cell fields remain reserved for the next finite-family and global-equation construction]
+  structure_field_escape: no map-id, map-mul, route, cartesianness, comparator family, comparison, solution, or cochain certificate is stored in the input or accepted as a theorem argument
+  route_integrity: base and pulled laws independently use their own package and geometry factors and their own literal strong-cartesian route legs
+  predecessor_integrity: completed G-112/G-114 implementation and GOAL files are unchanged
+  target_fitting: none-found
+  vacuity: pending downstream named fixtures
+  one_way_as_equivalence: pointwise pullbacks are bundled only as group homomorphisms; no route-between isomorphism or solution equivalence is claimed
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorMapLaws.lean` => exit 0 and 16 declarations standard axioms only; module registered in research/lean/research-modules.txt and ResearchLean/AG/DoctrineFiberProduct.lean; git diff --check => exit 0; placeholder, hidden/BiDi, privacy, and reverse-import scans => no matches]
+  blocking_findings: []
+  next_obligation: Apply the two generated group homomorphisms to the single source transport comparator, prove the finite path/cell compositor-unitor compatibility and route naturality, derive both comparator families and cochains, and establish the constructor-level global canonical-mate equation.
 ```
