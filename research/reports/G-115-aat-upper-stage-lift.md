@@ -2,27 +2,29 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 4 fixed
-- proof state: `target-proof-checkpoint`
+- GOAL revision: 5 fixed
+- proof state: `target-blocked` (`goal-defect`)
 - completion candidate: no
 
-This report records incremental proof obligations against the fixed revision-4
-target. Cycles 1--27 remain accepted evidence for their named interfaces;
-revision 4 replaces the attempted route-between conclusion with the
-certificate-free cartesian-compatible locus implemented from Cycle 29 onward.
-Lean acceptance is evidence for the named cycle only; it is not a completion
-verdict for G-115.
+This report records incremental proof obligations against the current fixed
+target. Cycles 1--44 remain evidence for their named interfaces under their
+then-current target revisions. Revision 5 replaces the selected-endpoint
+realization requirement with a realization-exact upper-equivalence locus.
+Cycle 45 fixes a contradiction in revision 5's required negative fixture and
+therefore stops at `goal-defect`. Lean acceptance is evidence for each named
+cycle only; it is not a completion verdict for G-115.
 
 ## Fixed target
 
-- merged GOAL revision PR: #4280
-- final reviewed GOAL head: `1bef307c99f58ae2050f01bc4c0e0bce9e2766f1`
-- merged GOAL commit and implementation base: `98a3a59140e406c613a26056fb1ef46ba3a4a670`
-- GOAL blob SHA: `2d3f5424cc26c9274cc5260509a9f40ef86d59a4`
-- GOAL SHA-256: `fcd33815da27d5e1390b101223de49173967a349ad5f2e85324ec3b8d25b597c`
+- merged GOAL revision PR: #4298
+- final reviewed GOAL head: `02c31988500ac7bf832bef6497a3d4e91ae6a639`
+- merged GOAL commit and implementation base: `07aeb56235ae6310045936cd9462ace9d59934e4`
+- GOAL blob SHA: `a8d272da92156eb23b831830b9fa274d4a018583`
+- GOAL SHA-256: `13e97feb2063108c91a074862aad07566813ceb15c439899a927aa45758758c9`
 
-Revision 4 is the fixed target approved and merged by PR #4280. Its target
-contract is not weakened by the checkpoint cycles below.
+Revision 5 is the fixed target approved and merged by PR #4298. Its target
+contract is not weakened by Cycle 45: the literal required negative producer
+is refuted, and no substitute fixture is selected without human revision.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 
@@ -2584,27 +2586,48 @@ tracking_issue: 4250
 report_path: research/reports/G-115-aat-upper-stage-lift.md
 selection:
   proof_state_ref: revision 5 requires realization-exact upper equivalences and specifically requires NegativeGeometryWitness.coreHom.upper as the forward map of the negative exact upper equivalence
+  proof_dag_predecessors: [NegativeGeometryWitness.coreHom, NegativeGeometryWitness.not_hGeom, SignedExactCoreReadingHom.comp, SignedExactCoreReadingHom.refl, revision-5 ExactUpperEquivalence signature]
   proof_obligation: Define the upper-indexed realization algebra and construct the required negative exact upper equivalence before proving its realization nonexistence
+  selection_reason: K2b2b-r lists the negative equivalence as a mandatory boundary artifact; it must exist before the planned adapter can reduce realization-exactness to NegativeGeometryWitness.not_hGeom.
   expected_result_type: blocker-fixed
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessWitnesses.lean]
+  risks: [confusing Atom involutivity with full upper-hom invertibility, hiding carrier mismatch by unchecked cast, replacing the literal G-108 witness with a parallel fixture, reporting partial primitive algebra as target completion]
+  unchecked: [RealizationExactUpperEquivalence composition and reading reflection, canonical exact and realized-refinement positive inhabitants, base and pulled route inhabitants, all downstream endpoint and solution artifacts]
 result:
   proposed_result_type: blocker-fixed
   stop_reason: goal-defect
   proof_obligation_delta: ExactUpperEquivalence, UpperRealizationTransportSupply, the total-hom supply equivalence, cancellation-transported six-field RealizationExactUpperEquivalence, identity, symmetry, and conditional total-hom/HGeom adapters are implemented. The required negative fixture is impossible before realization data are considered because coreHom.upper.objectMap canonicalizes arbitrary ArchitectureObjects and is not injective, while forward_backward would give it a left inverse.
   completion_candidate: no
-  lean_artifacts: [ExactUpperEquivalence, UpperRealizationTransportSupply, upperRealizationTransportSupplyEquiv, RealizationExactUpperEquivalence, RealizationExactUpperEquivalence.refl, RealizationExactUpperEquivalence.symm, RealizationExactUpperEquivalence.homHGeom, negativeUpperUnitObject, negativeUpperBoolObject, negativeCoreUpper_objectMap_not_injective, no_negativeExactUpperEquivalence]
+  lean_artifacts: [ExactUpperEquivalence, UpperRealizationTransportSupply, upperRealizationTransportSupplyEquiv, RealizationExactUpperEquivalence, RealizationExactUpperEquivalence.refl, RealizationExactUpperEquivalence.symm, RealizationExactUpperEquivalence.homTotalSupply, RealizationExactUpperEquivalence.invTotalSupply, RealizationExactUpperEquivalence.homHGeom, RealizationExactUpperEquivalence.invHGeom, negativeUpperUnitObject, negativeUpperBoolObject, negativeCoreUpper_objectMap_not_injective, no_negativeExactUpperEquivalence]
   source_sha256:
     UpperGeometryRealizationExactness.lean: 6577a3bce6bac41787be079daa6c566eef0cddf8155d6356adcd5e3b3c351451
     UpperGeometryRealizationExactnessWitnesses.lean: 59391b0258bfad0097178cdb58939536aa75b0e1e7ce120aeab2493f0a737aa5
   evidence: [focused Lean checks, declaration-level standard-axiom audits, explicit pair of collapsed but unequal ArchitectureObjects, module registration]
+  claim_mapping:
+    theorem_names: [negativeUpperUnitObject_ne_boolObject, negativeCoreUpper_objectMap_not_injective, no_negativeExactUpperEquivalence]
+    source_labels: [revision 5 K2b2b-r negative upper equivalence, revision 5 target failure policy]
+    conjuncts: [literal negative forward map, full upper cancellation, realization boundary nonvacuity]
+    undischarged_assumptions: [all positive endpoint producers and downstream K2b2b-r algebra]
+    acceptance_point: no_negativeExactUpperEquivalence uses the literal required coreHom.upper and its actual objectMap; it does not assume realization failure or accept an obstruction certificate.
+    port_status: not-applicable
 audits:
   premise_delta:
     discharged: [upper-indexed supply signature, compatibility with existing total-hom supply, explicit cancellation-indexed carrier inverse-law signature, identity, symmetry, conditional HGeom adapters]
     blocked: [negativeExactUpperEquivalence, not_realizationExact_negativeExactUpperEquivalence, downstream completion of K2b2b-r]
   proof_use:
     used: [NegativeGeometryWitness.coreHom.upper.objectMap, ExactUpperEquivalence.forward_backward, SignedExactCoreReadingHom.comp objectMap, SignedExactCoreReadingHom.refl objectMap]
+    unused: [NegativeGeometryWitness.not_hGeom is downstream of the equivalence that cannot be constructed]
+  certificate_provenance:
+    discharged: [noninjectivity is generated by two explicit ArchitectureObjects and definitional equality of their literal forward images]
+    unresolved: [a replacement negative fixture requires human mathematical selection]
+  structure_field_escape: none; forward_backward is the defining law being refuted, and no blocker certificate is accepted by ExactUpperEquivalence
   route_integrity: the blocker uses the literal G-108 coreHom.upper required by the fixed GOAL, not a parallel fixture
+  predecessor_integrity: revision 5 GOAL and G-108 declarations are unchanged
+  target_fitting: none-found
   vacuity: noninjectivity fires on two explicit ArchitectureObjects with the same configuration and distinct PUnit/Bool StructureMaps carriers
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none; the failure is classified by revision 5's own explicit policy
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean` passed with 72 declarations standard axioms only; `./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessWitnesses.lean` passed with 5 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationExactnessWitnesses` passed; research module manifest entries added; git diff --check, hidden/BiDi, placeholder, and reverse-import scans clean]
   blocking_findings: [revision 5 incorrectly treats Atom-level involutivity of coreHom.upper as full SignedExactCoreReadingHom invertibility]
   next_obligation: Human GOAL revision must either choose a genuinely invertible negative SignedExactCoreReadingHom with a realization obstruction, or weaken the negative boundary artifact without weakening the positive realization-exact endpoint target.
 ```
