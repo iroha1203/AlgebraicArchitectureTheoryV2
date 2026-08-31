@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 7 human-approved
-- proof state: `target-proof-checkpoint` (revision 7 restart)
+- proof state: `target-proof-checkpoint` (revision 7 Cycle 64)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -51,13 +51,15 @@ comparator equations to those witnesses. The generated and canonical companion
 solutions share one named compatible problem data object; their solution-type
 `Equiv` relates the solutions and is not claimed to generate another problem.
 
-- proposed GOAL blob SHA: `2e0c792a9387f9f4d0272590ad0129bfea5e04ff`
-- proposed GOAL SHA-256: `14c9f071c1815252693ab0e060f6dcd7172057bc1cb2a572e9ef5bd77159507b`
+- merged GOAL revision PR: #4319
+- final reviewed GOAL head: `0100caf1dc105aa182bede61bd7db67fa5e8cc67`
+- merged GOAL commit and implementation base: `8d916de9cd77b88efdb37cdbba4dd171f96a2f4b`
+- GOAL blob SHA: `2e0c792a9387f9f4d0272590ad0129bfea5e04ff`
+- GOAL SHA-256: `14c9f071c1815252693ab0e060f6dcd7172057bc1cb2a572e9ef5bd77159507b`
 
 The revision 7 review head, merge commit, GOAL hash, and implementation base are
-fixed in tracking Issue #4250 after the revision PR is merged. Cycle 63 remains
-the terminal record for revision 6 and is not rewritten as a successful proof
-of its refuted conjunct.
+also fixed in tracking Issue #4250. Cycle 63 remains the terminal record for
+revision 6 and is not rewritten as a successful proof of its refuted conjunct.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 
@@ -3628,4 +3630,59 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleDecisionNoGo.lean` passed and reported 12 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the direct Cycle 62 solution-equivalence dependency DAG was targeted when its olean was absent; Research aggregate and full build were not run]
   blocking_findings: [The fixed O10 nonvacuity clause requires a theorem-generated solution local Support Axis or Observable value to differ from identity or equality transport, but all three are generically HEq to the input carrier value.]
   next_obligation: Human GOAL revision is required before implementation can continue. The revision must either identify a different nonidentity observation surface such as the base upper map, or introduce and specify a semantic primitive capable of generating nonidentity local geometry carrier actions. The solution-type Equiv also cannot itself construct a problem object until the intended canonical companion problem type is specified.
+```
+
+## Cycle 64 — revision 7 named compatible decision packet
+
+```yaml
+ledger_type: target-proof-checkpoint
+goal: G-115-aat-upper-stage-lift
+cycle: 64
+goal_blob_sha: 2e0c792a9387f9f4d0272590ad0129bfea5e04ff
+goal_sha256: 14c9f071c1815252693ab0e060f6dcd7172057bc1cb2a572e9ef5bd77159507b
+base_oid: 8d916de9cd77b88efdb37cdbba4dd171f96a2f4b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 7 merged in PR 4319 after four independent central audits and one finding-limited direct response; Cycle 63 remains the terminal revision-6 target refutation
+  proof_dag_predecessors: [activeReverseContext and its outside-exact nonidentity refinement witnesses, certificate-free UpperGeometryCompatibleProblemInput, generated base and pulled route transports and comparators, generated compatible solution constructor, wrapper-free canonical-generated solution Equiv, generic generated-component carrier-conservativity]
+  proof_obligation: Construct one named root-connected finite compatible problem over the active reverse context whose genuinely lax horizontal strong edge, authored comparator, generated comparator, and derived raw cochain fire by concrete evaluations; construct the named generated and canonical-companion solutions over that same problem data; specialize the actual solution edge and comparator equations to the named witnesses without deciding the full component IsIso
+  selection_reason: This is the first revision-7 discharge-required obligation and the common positive packet consumed by the later negative, paired-cochain, exchange-exactness, and G-116 decision stages. Closing it as one packet prevents an existence-only fixture or a comparator-only witness from being mistaken for Gr4 nondegeneracy.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleDecisionFixtures.lean]
+  risks: [identity-only or core-only witness, known twist or gauge repackaging, nonidentity certificate stored in an input field, generated comparator assumed nonidentity without concrete evaluation, raw cochain supplied instead of derived, unspecified reselection, separate generated and companion problems, solution equation fields left unused, accidental full-component IsIso decision]
+  unchecked: [named comparator-incoherent negative problem and no-solution theorem, paired cochain and restricted reselection bidirectional transport, UpperStageExchangeExact companion iff, G-116 O12 full-component branch decision, final K4 completion review]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: A four-axis finite core and selected geometry are generated inside the actual active-reverse target fiber. A pointed finite-meet local-context preorder exposes four actual Support Axis and Observable values at the named decision context, with a Support/Axis-empty and uniquely observable bottom making the adjacent transpositions natural on the whole site. Its one-vertex presentation is root-connected and has a coefficient-trivial nonidentity strongly cocartesian edge. The edge fires 0 to 1 and the authored comparator fires 1 to 2 on all three local geometry carriers. For the generated base-route Cartesian comparator, the reviewed realization-exact Support Axis and Observable equivalences pull the concrete source values one and two back to actual generated-route total carrier values; the full Cartesian factorization proves the generated comparator itself sends each generated one-value to the corresponding two-value and hence moves that value. The source and generated base raw cochains are independently derived and fire on the signature axis. The named generated and canonical-companion solutions share exactly one problem data object, the solution Equiv maps the companion to the generated solution, the generic vertical carrier-conservativity family is specialized to this named solution, and its actual edge and comparator equations are specialized to the firing witnesses. No full-component IsIso statement is made.
+  completion_candidate: no
+  lean_artifacts: [UpperDecisionWitness.decisionContext, UpperDecisionWitness.bottomContext, UpperDecisionWitness.decisionContextPreorder, UpperDecisionWitness.decisionContextFiniteMeet, UpperDecisionWitness.reading, UpperDecisionWitness.core, UpperDecisionWitness.coreObject, UpperDecisionWitness.package, UpperDecisionWitness.presentation, UpperDecisionWitness.sourceFiberDiagram, UpperDecisionWitness.sourceTransport, UpperDecisionWitness.problemData, UpperDecisionWitness.problem, UpperDecisionWitness.solution, UpperDecisionWitness.canonicalCompanionSolution, upperDecisionContext, upperDecisionProblem, upperDecisionSolution, upperDecisionCanonicalCompanionSolution, upperDecisionCanonicalCompanion_maps_to_generated, UpperDecisionWitness.active_refinement_fires, UpperDecisionWitness.context_outside_exact_image, UpperDecisionWitness.problem_root_connected, UpperDecisionWitness.source_edge_local_support_fires, UpperDecisionWitness.source_edge_local_axis_fires, UpperDecisionWitness.source_edge_local_observable_fires, UpperDecisionWitness.source_edge_ne_identity, UpperDecisionWitness.authored_comparator_local_support_fires, UpperDecisionWitness.authored_comparator_local_axis_fires, UpperDecisionWitness.authored_comparator_local_observable_fires, UpperDecisionWitness.authored_comparator_ne_one, UpperDecisionWitness.refinementSupportSigmaMap, UpperDecisionWitness.refinementSupportSigmaMap_comp, UpperDecisionWitness.refinementAxisSigmaMap, UpperDecisionWitness.refinementAxisSigmaMap_comp, UpperDecisionWitness.refinementObservableSigmaMap, UpperDecisionWitness.refinementObservableSigmaMap_comp, UpperDecisionWitness.generatedBaseRealizationExact, UpperDecisionWitness.generatedBaseRouteLeg_supportComp_eq_homSupply, UpperDecisionWitness.generatedBaseRouteLeg_axisComp_eq_homSupply, UpperDecisionWitness.generatedBaseRouteLeg_observableComp_eq_homSupply, UpperDecisionWitness.generatedBaseRoute_supportSigmaMap_eq, UpperDecisionWitness.generatedBaseRoute_axisSigmaMap_eq, UpperDecisionWitness.generatedBaseRoute_observableSigmaMap_eq, UpperDecisionWitness.generatedBaseSupportValue, UpperDecisionWitness.generatedBaseAxisValue, UpperDecisionWitness.generatedBaseObservableValue, UpperDecisionWitness.generatedBaseRoute_support_value, UpperDecisionWitness.generatedBaseRoute_axis_value, UpperDecisionWitness.generatedBaseRoute_observable_value, UpperDecisionWitness.authoredComparator_support_value, UpperDecisionWitness.authoredComparator_axis_value, UpperDecisionWitness.authoredComparator_observable_value, UpperDecisionWitness.generated_base_comparator_local_support_fires, UpperDecisionWitness.generated_base_comparator_local_support_ne_input, UpperDecisionWitness.generated_base_comparator_local_axis_fires, UpperDecisionWitness.generated_base_comparator_local_axis_ne_input, UpperDecisionWitness.generated_base_comparator_local_observable_fires, UpperDecisionWitness.generated_base_comparator_local_observable_ne_input, UpperDecisionWitness.generated_base_comparator_axis_fires, UpperDecisionWitness.generated_base_comparator_ne_one, UpperDecisionWitness.source_raw_cochain_axis_fires, UpperDecisionWitness.source_raw_cochain_ne_one, UpperDecisionWitness.generated_base_raw_cochain_axis_fires, UpperDecisionWitness.generated_base_raw_cochain_ne_one, UpperDecisionWitness.solution_support_carrier_conservative, UpperDecisionWitness.solution_axis_carrier_conservative, UpperDecisionWitness.solution_observable_carrier_conservative, UpperDecisionWitness.solution_edge_naturality_fires, UpperDecisionWitness.solution_comparator_intertwining_fires]
+  source_sha256:
+    UpperGeometryCompatibleDecisionFixtures.lean: a853df47a837f523b3b6ff94a1cb19cebc7eaedf00e8caacc2fdf4ba1fe904f5
+  evidence: [focused Lean single-file check, 184-declaration namespace standard-axiom audit, concrete local Support Axis Observable evaluations for the horizontal edge authored comparator and Cartesian-generated comparator, independent generated-comparator factorization and source and generated raw-cochain signature-axis evaluations, named vertical carrier-conservativity specializations, actual solution field specialization, same-problem solution Equiv computation]
+audits:
+  premise_delta:
+    ambient_boundary: [revision 7 activeReverseContext, certificate-free compatible input, theorem-generated route comparators and solution, wrapper-free solution Equiv, generic vertical carrier-conservativity]
+    direction_hypothesis: [one authored finite source transport with independently qualified edge and authored comparator]
+    discharged: [named upperDecisionContext problem generated solution and canonical companion, active outside-exact refinement, root-connected finite source diagram, local Support Axis Observable nonidentity strong-edge firing, local Support Axis Observable authored-comparator firing, generated-route Support Axis Observable values corresponding to concrete one and two, Cartesian-generated comparator local three-carrier firing and moved-input witnesses, identity-reselection source and generated raw-cochain firing, coefficient identities, same-problem Equiv application, named vertical carrier-conservativity specializations, named solution edge and comparator equation specializations]
+    remaining: [comparator-incoherent negative raw problem and no-solution theorem, paired cochain and restricted reselection bidirectional transport, UpperStageExchangeExact companion iff, G-116 O12 full-component branch decision, K4 completion audit]
+  certificate_provenance:
+    problem: one UpperGeometryCompatibleProblemInput containing only presentation coefficient source diagram source geometry and authored source transport
+    generated_comparator: Cartesian pullback of the authored comparator through generatedBaseCompositeFiberAutHomAt; nonidentity is proved from its actual factorization equation and a concrete signature-axis evaluation
+    raw_cochains: compatibleSourceRawDefectCochain and generatedBaseRouteRawDefectCochain at the fixed identity reselection; the generated cochain is the proved group-hom image of the source cochain
+    solutions: generated by generatedGeometryCompatibleUpperRefinementBCSolution and canonicalCompanionUpperRefinementBCSolution over the same problem.data
+  proof_use:
+    used: [activeReverse outside-exact and Atom witness, both independent strong qualifications of the source edge, generated base-route realization-exact Support Axis Observable equivalences, generated comparator full factorization projected to total local carriers, canonical comparator uniqueness, raw defect formula, generated raw-cochain image theorem, solution Equiv companion equation, actual solution edge_naturality and comparator_intertwining fields]
+    deliberately_not_used: [caller-supplied solution, stored generated comparator, stored raw cochain, nonidentity Prop field, known post-composed twist or gauge, separate companion problem, full component IsIso or not-IsIso]
+  structure_field_escape: no new input or certificate field; all generated comparators cochains solutions and nonidentity theorems are downstream declarations
+  route_integrity: source authored data generate the base and pulled routes; the positive packet proves firing on the generated base comparator and generated base raw cochain, then consumes the generated solution equations on the named edge and cell
+  predecessor_integrity: G-108 G-109 G-112 G-114 Formal and the revision-7 GOAL are unchanged; one G-115-local fixture module and its two registrations are added
+  target_fitting: none-found after central-finding repair; the core and geometry are rebuilt in the actual active target fiber, the edge and authored comparator move actual local Support Axis and Observable values, the generated comparator moves actual generated-route total carrier values proved through its full Cartesian factorization rather than a core-only projection, cochains are separately derived, and no nonidentity claim is stored as an input certificate
+  vacuity: the source site has a named context and top cover, the coefficient ring and raw relation are nonzero, and the named edge cell axis values and problem solutions are all inhabited
+  one_way_as_equivalence: none-found; both named solutions inhabit the same indexed problem fiber and the existing two-sided Equiv is evaluated on the companion
+  goal_or_report_reinterpretation: none-found; vertical carrier-conservativity remains unchanged, horizontal and two-cell firing is newly discharged, and full IsIso truth remains exclusively unchecked in G-116 O12
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleDecisionFixtures.lean` passed and reported 184 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the missing direct dependency targets RefinementBaseChange.Witnesses ComparisonDescentInstances and UpperGeometryCompatibleDecisionNoGo were built; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct the named comparator-incoherent raw problem outside the compatible locus, its rigid comparator-free pre-solution, and the concrete no-solution theorem without adding a comparator certificate or applying the compatible solution Equiv.
 ```
