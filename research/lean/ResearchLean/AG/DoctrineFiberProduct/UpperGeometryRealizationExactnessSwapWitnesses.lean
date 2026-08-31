@@ -10,6 +10,14 @@ arbitrary architecture object.  The complete signed upper map cancels on every
 computational field, while its matching total hom retains the same concrete
 support-reading obstruction.  Hence exact upper equivalence alone does not
 produce realization-exactness.
+
+## Implementation notes
+
+The construction uses the public G-108 finite Atom involution and the canonical
+`transportArchitectureObject` record update.  This retains arbitrary opaque
+object data, unlike the rejected G-108 object-normalizing upper.  Dependent
+equation and operation fields are compared explicitly rather than hidden by a
+cast; the resulting lemmas are the no-unfold API for the revision-6 fixture.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -17,6 +25,8 @@ namespace AAT.AG.DoctrineFiberProduct
 open AtomFoundation GeometryTransport
 open AAT.AG.ReadingFunctorialityFinite
 
+/-- Internal extensionality reducing exact equation transports to their three
+computational equivalence fields. -/
 private theorem structurePreservingSwapEquationTransport_ext
     {U : AtomCarrier.{u}}
     {A B : ArchitectureObject U}
@@ -37,6 +47,8 @@ private theorem structurePreservingSwapEquationTransport_ext
   cases hobservable
   rfl
 
+/-- Internal heterogeneous form of equation-transport extensionality across
+equal Atom and object maps. -/
 private theorem structurePreservingSwapEquationTransport_hext
     {U : AtomCarrier.{u}}
     {A B : ArchitectureObject U}
@@ -57,6 +69,8 @@ private theorem structurePreservingSwapEquationTransport_hext
   exact heq_of_eq
     (structurePreservingSwapEquationTransport_ext hcontext hequation hobservable)
 
+/-- Internal heterogeneous extensionality for configuration homomorphisms with
+propositionally equal endpoints. -/
 private theorem structurePreservingSwapConfigurationHom_hext
     {U : AtomCarrier.{u}}
     {C C' D D' : AtomConfiguration U}
@@ -75,34 +89,46 @@ noncomputable def structurePreservingSwapObjectMap
   AtomFoundation.transportArchitectureObject
     nonidentityExactCoreChange.atomEquiv A
 
+/-- The public G-108 component swap is involutive; this is the primitive Atom
+cancellation API for the revision-6 negative producer. -/
 theorem structurePreservingSwapAtom_involutive
     (atom : FiniteModel.carrier.Atom) :
     nonidentityExactCoreChange.atomEquiv
         (nonidentityExactCoreChange.atomEquiv atom) = atom := by
   cases atom <;> rfl
 
+/-- Simplify the structure-map carrier of a swapped object to the original
+carrier; the orientation exposes preservation as the simp normal form. -/
 @[simp] theorem structurePreservingSwapObjectMap_structureMaps
     (A : ArchitectureObject FiniteModel.carrier) :
     (structurePreservingSwapObjectMap A).StructureMaps = A.StructureMaps :=
   rfl
 
+/-- Simplify the selected-quantity carrier of a swapped object to the original
+carrier; the orientation exposes preservation as the simp normal form. -/
 @[simp] theorem structurePreservingSwapObjectMap_selectedQuantities
     (A : ArchitectureObject FiniteModel.carrier) :
     (structurePreservingSwapObjectMap A).SelectedQuantities =
       A.SelectedQuantities :=
   rfl
 
+/-- The dependent structure-map value is preserved; `HEq` records the carrier
+dependency and rewrites toward the original value. -/
 @[simp] theorem structurePreservingSwapObjectMap_structureMaps_value
     (A : ArchitectureObject FiniteModel.carrier) :
     HEq (structurePreservingSwapObjectMap A).structureMaps A.structureMaps :=
   HEq.rfl
 
+/-- The dependent selected-quantity value is preserved; `HEq` records the
+carrier dependency and rewrites toward the original value. -/
 @[simp] theorem structurePreservingSwapObjectMap_selectedQuantities_value
     (A : ArchitectureObject FiniteModel.carrier) :
     HEq (structurePreservingSwapObjectMap A).selectedQuantities
       A.selectedQuantities :=
   HEq.rfl
 
+/-- Configuration transport cancels twice while all other architecture-object
+fields remain unchanged. -/
 theorem structurePreservingSwapObjectMap_involutive
     (A : ArchitectureObject FiniteModel.carrier) :
     structurePreservingSwapObjectMap (structurePreservingSwapObjectMap A) = A := by
@@ -116,6 +142,12 @@ theorem structurePreservingSwapObjectMap_involutive
       nonidentityExactCoreChange.atomEquiv.apply_symm_apply]]
   exact AtomFoundation.transportArchitectureObject_equiv_symm _ A
 
+/-- Complete signed exact upper implementing the revision-6 negative producer.
+
+All data come from the public finite swap and canonical configuration
+transport.  Unlike the rejected G-108 upper, its object map retains arbitrary
+nonconfiguration fields; no cancellation or realization certificate is an
+input. -/
 noncomputable def structurePreservingSwapUpper :
     SignedExactCoreReadingHom exactSourceCore exactTargetCore where
   atomEquiv := nonidentityExactCoreChange.atomEquiv
@@ -217,6 +249,7 @@ theorem structurePreservingSwapUpper_invariant_transport
       _root_.id structurePreservingSwapObjectMap :=
   structurePreservingSwapUpper.invariant_transport i
 
+/-- Atom-equivalence component of the full upper self-cancellation API. -/
 theorem structurePreservingSwapUpper_comp_self_atomEquiv :
     (structurePreservingSwapUpper.comp
         structurePreservingSwapUpper).atomEquiv =
@@ -225,6 +258,7 @@ theorem structurePreservingSwapUpper_comp_self_atomEquiv :
   intro atom
   exact structurePreservingSwapAtom_involutive atom
 
+/-- Object-map component of the full upper self-cancellation API. -/
 theorem structurePreservingSwapUpper_comp_self_objectMap :
     (structurePreservingSwapUpper.comp
         structurePreservingSwapUpper).objectMap =
@@ -280,6 +314,11 @@ theorem structurePreservingSwapUpper_comp_self_operationMap :
     rw [structurePreservingSwapAtom_involutive,
       structurePreservingSwapAtom_involutive]
 
+/-- Full computational cancellation of the structure-preserving upper map.
+
+This is the revision-6 exact-upper equivalence theorem: it consumes the named
+Atom, object, equation, operation, invariant, axis, and coordinate bridges via
+`SignedExactCoreReadingHom.ext`. -/
 theorem structurePreservingSwapUpper_comp_self :
     structurePreservingSwapUpper.comp
         structurePreservingSwapUpper =
@@ -293,12 +332,18 @@ theorem structurePreservingSwapUpper_comp_self :
   · rfl
   · rfl
 
+/-- Matching total core hom over the reviewed G-108 exact doctrine map.
+
+The lower map is reused only for its authored provenance and shares the new
+upper's Atom equivalence definitionally; no lower inverse is introduced. -/
 noncomputable def structurePreservingSwapCoreHom :
     PackageTotalHom exactSourceCore exactTargetCore where
   base := NegativeGeometryWitness.coreHom.base
   upper := structurePreservingSwapUpper
   atomEquiv_eq := rfl
 
+/-- Exact upper equivalence generated by the proved self-cancellation of the
+structure-preserving swap; both directions are the same explicit upper map. -/
 noncomputable def structurePreservingSwapExactUpperEquivalence :
     ExactUpperEquivalence exactSourceCore exactTargetCore where
   forward := structurePreservingSwapUpper
@@ -306,6 +351,10 @@ noncomputable def structurePreservingSwapExactUpperEquivalence :
   forward_backward := structurePreservingSwapUpper_comp_self
   backward_forward := structurePreservingSwapUpper_comp_self
 
+/-- The new matching total hom fails the concrete G-108 support-reading test.
+
+This theorem reevaluates the new hom directly and does not call the old lossy
+upper's nonrealization theorem. -/
 theorem not_hGeom_structurePreservingSwap :
     ¬ Nonempty
       (HGeom NegativeGeometryWitness.package
@@ -317,6 +366,11 @@ theorem not_hGeom_structurePreservingSwap :
     FiniteModel.FiniteAtom.componentA at hread
   exact FiniteModel.FiniteAtom.noConfusion hread
 
+/-- The explicit exact upper equivalence does not carry realization-exactness.
+
+Any forward supply would pass through the conditional total-hom adapter to an
+`HGeom` for `structurePreservingSwapCoreHom`, contradicting the concrete support
+calculation above. -/
 theorem not_realizationExact_structurePreservingSwap :
     ¬ Nonempty
       (RealizationExactUpperEquivalence
