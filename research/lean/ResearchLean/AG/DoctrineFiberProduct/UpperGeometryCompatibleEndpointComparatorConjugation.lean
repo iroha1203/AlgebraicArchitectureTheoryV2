@@ -1,5 +1,4 @@
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointNaturality
-import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleGlobalMate
 
 /-!
 # Endpoint comparator conjugation
@@ -67,6 +66,8 @@ noncomputable def canonicalAuthoredBaseRouteComparatorRefinement
           (input.generatedBaseRouteComparator_fac cell).symm)
     candidate
 
+/-- The direct base comparator lies over the exact package pullback of the
+literal source-authored comparator. -/
 theorem canonicalAuthoredBaseRouteComparatorRefinement_base
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -115,6 +116,8 @@ noncomputable def canonicalAuthoredBaseRouteComparator
     (input.canonicalAuthoredBaseRouteComparatorRefinement cell)
     (input.canonicalAuthoredBaseRouteComparatorRefinement_base cell)
 
+/-- Exact embedding recovers the directly pulled-back complete base
+comparator. -/
 theorem canonicalAuthoredBaseRouteComparator_toRefinement
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -358,6 +361,8 @@ noncomputable def canonicalAuthoredPulledRouteComparatorRefinement
         (input.sourceTransport.comparator cell))
     candidate
 
+/-- The direct pulled comparator lies over the exact package pullback of the
+literal source-authored comparator. -/
 theorem canonicalAuthoredPulledRouteComparatorRefinement_base
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -410,6 +415,8 @@ noncomputable def canonicalAuthoredPulledRouteComparator
     (input.canonicalAuthoredPulledRouteComparatorRefinement cell)
     (input.canonicalAuthoredPulledRouteComparatorRefinement_base cell)
 
+/-- Exact embedding recovers the directly pulled-back complete pulled
+comparator. -/
 theorem canonicalAuthoredPulledRouteComparator_toRefinement
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
