@@ -20,8 +20,9 @@ set_option maxHeartbeats 3000000
 
 namespace UpperGeometryCleavage
 
-/-- Direct normalization of a target geometry by a realization-exact upper
-equivalence. -/
+/-- Object-level direct normalization of a target geometry by an exact upper
+equivalence.  Realization supplies are connected separately at the concrete
+route specializations below. -/
 noncomputable def realizationNormalizedGeometry
     {U : AtomCarrier.{u}} {P : AATCorePackage U}
     (G : GeometryPackage.{u, v} U)
