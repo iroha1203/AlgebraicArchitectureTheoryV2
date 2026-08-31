@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 6 fixed
-- proof state: `target-proof-checkpoint`
+- proof state: `target-refuted` (Cycle 63)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -16,6 +16,12 @@ producer by a structure-preserving exact upper automorphism. Cycle 46 proves
 the replacement's full cancellation and concrete realization obstruction.
 Lean acceptance is evidence for each named cycle only; it is not a completion
 verdict for G-115.
+
+Cycle 63 proves that the theorem-generated solution preserves every local
+Support, Axis, and Observable carrier value by heterogeneous equality. This
+refutes the fixed decision-fixture requirement that one such value differ from
+identity or equality transport. Further implementation therefore requires a
+human revision of that observation surface or a new semantic primitive.
 
 ## Fixed target
 
@@ -3545,4 +3551,58 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean` passed and reported 38 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the direct Cycle 61 solution-contract dependency DAG was targeted when its olean was absent; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Construct the named canonical companion problem and the named upperDecisionContext upperDecisionProblem and upperDecisionSolution from a genuinely lax root-connected finite compatible input with nonidentity refinement strong edge comparator and raw cochain, prove a concrete nonidentity complete solution component without deciding IsIso, then construct the comparator-incoherent negative raw problem and its no-solution theorem.
+```
+
+## Cycle 63 — generated decision-component carrier no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 63
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 986beb0ee08465b393229478f67094979f10ae76
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 62 merged the wrapper-free canonical-authored/generated solution Equiv and left the named genuinely lax decision fixture as the next fixed obligation
+  proof_dag_predecessors: [generated exact forward carrier transports, generated realized-refinement forward carrier transports, exact and realized-refinement backward carrier transports, upperGeometryMate construction, theorem-generated compatible solution constructor]
+  proof_obligation: Determine whether a theorem-generated compatible solution can satisfy the fixed GOAL requirement that one actual solution component differ from identity or equality transport by a concrete Support Axis or Observable value evaluation
+  selection_reason: Every otherwise suitable finite fixture still uses the same theorem-generated vertical component. A generic carrier theorem decides the requirement before adding new fixture data and prevents a target-fitting core-only witness from being accepted.
+  expected_result_type: blocker-fixed
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleDecisionNoGo.lean]
+  risks: [mistaking nonidentity base Atom or signature action for a local geometry carrier value, known invertible twist repackaging, fixture-specific argument, proof by empty carrier, conflating HEq with unproved definitional equality]
+  unchecked: [any human-approved GOAL reinterpretation or new semantic primitive, named positive and negative problem packets, paired cochain transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: blocker-fixed
+  proof_state: target-refuted
+  stop_reason: target-refuted
+  proof_obligation_delta: The base forward route preserves every Support Axis and Observable carrier value by composing the existing generated exact and realized-refinement HEq laws. The pulled reverse comparison has the existing backward HEq laws. Their composite is the explicit upper geometry mate, and the actual mate base cast preserves the same HEq results. Unfolding the caller-free generated solution constructor therefore proves, for every compatible input vertex context and carrier value, that each of its three local geometry component maps is equality transport. Consequently no finite presentation active refinement source edge authored comparator or derived raw cochain can make a value of this fixed generated solution component differ.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCleavage.baseRouteForwardSupportComp_heq, UpperGeometryCleavage.baseRouteForwardAxisComp_heq, UpperGeometryCleavage.baseRouteForwardObservableComp_heq, UpperGeometryCleavage.upperGeometryMateSupportComp_heq, UpperGeometryCleavage.upperGeometryMateAxisComp_heq, UpperGeometryCleavage.upperGeometryMateObservableComp_heq, UpperGeometryCleavage.upperGeometryMate_actual_supportComp_heq, UpperGeometryCleavage.upperGeometryMate_actual_axisComp_heq, UpperGeometryCleavage.upperGeometryMate_actual_observableComp_heq, UpperGeometryCompatibleProblemInputData.generatedGeometryCompatibleSolution_supportComp_heq, UpperGeometryCompatibleProblemInputData.generatedGeometryCompatibleSolution_axisComp_heq, UpperGeometryCompatibleProblemInputData.generatedGeometryCompatibleSolution_observableComp_heq]
+  source_sha256:
+    UpperGeometryCompatibleDecisionNoGo.lean: 4c47ea755e5678a8626fe9211a1fe6ab8b053f1b59db30c3236778a0bf4a6e03
+  evidence: [focused Lean file check, 12-declaration namespace standard-axiom audit, direct predecessor targeted build only, generic three-carrier HEq theorem family, theorem-generated solution unfolding]
+audits:
+  premise_delta:
+    ambient_boundary: [current generated exact and realized-refinement geometry transport primitives, fixed compatible solution constructor, fixed GOAL literal Support Axis Observable nonidentity evaluation requirement]
+    direction_hypothesis: []
+    discharged: [generic base-route forward carrier preservation, generic explicit mate carrier preservation, actual mate cast carrier preservation, generated compatible solution carrier preservation at every vertex]
+    remaining: [positive decision input edge comparator and raw cochain construction cannot discharge the contradicted local-carrier nonidentity requirement, named canonical companion problem remains semantically unspecified by the solution-only Equiv, negative problem, paired cochain, exchange-exact iff]
+  certificate_provenance:
+    forward: generatedExactSupport Axis Observable HEq and generatedRefinementSupport Axis Observable HEq theorem families
+    backward: pulledRouteBackwardSupport Axis Observable HEq theorem families
+    solution: generatedGeometryCompatibleUpperRefinementBCSolution component is the actual upperGeometryMate at each vertex
+  proof_use:
+    used: [exact forward carrier laws, realized-refinement forward carrier laws, pulled backward carrier laws, base-route composition order, explicit-to-actual mate equality, generated solution constructor]
+    deliberately_not_used: [activeReverse core Atom nonidentity as a substitute, NoncentralTwist known automorphism as a substitute, IsIso or not IsIso of any decision component, caller-supplied solution, empty presentation or empty carrier]
+  structure_field_escape: no input field or certificate is added; the no-go quantifies over every existing certificate-free compatible input
+  route_integrity: both generated base-route forward stages and the opposite pulled-route backward stages are consumed before concluding carrier preservation
+  predecessor_integrity: G-108 G-112 G-114 Formal the fixed GOAL and all Cycle 62 declarations are unchanged; one G-115-local generic no-go module and registrations are added
+  target_fitting: none-found; the proof blocks the core-only and known-twist substitutions that the fixed GOAL explicitly rejects
+  vacuity: every theorem quantifies an arbitrary actual vertex site context and existing carrier value; no emptiness is used to claim a nonidentity witness
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: required; under the ordinary GeomReadHom meaning of Support Axis Observable component the fixed requested nonidentity value is contradicted by the generic theorem family. Counting the base upper Atom or signature axis map instead changes the target reading, while permitting nonidentity local carrier maps requires a new semantic transport primitive.
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleDecisionNoGo.lean` passed and reported 12 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the direct Cycle 62 solution-equivalence dependency DAG was targeted when its olean was absent; Research aggregate and full build were not run]
+  blocking_findings: [The fixed O10 nonvacuity clause requires a theorem-generated solution local Support Axis or Observable value to differ from identity or equality transport, but all three are generically HEq to the input carrier value.]
+  next_obligation: Human GOAL revision is required before implementation can continue. The revision must either identify a different nonidentity observation surface such as the base upper map, or introduce and specify a semantic primitive capable of generating nonidentity local geometry carrier actions. The solution-type Equiv also cannot itself construct a problem object until the intended canonical companion problem type is specified.
 ```
