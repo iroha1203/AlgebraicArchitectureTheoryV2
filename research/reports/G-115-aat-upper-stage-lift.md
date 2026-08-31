@@ -3690,7 +3690,7 @@ audits:
 ## Cycle 66 — coefficient-trivial upper-reselection suborbit
 
 ```yaml
-ledger_type: target-proof-checkpoint
+ledger_type: target_cycle_result
 goal: G-115-aat-upper-stage-lift
 cycle: 66
 goal_blob_sha: 2e0c792a9387f9f4d0272590ad0129bfea5e04ff
@@ -3716,6 +3716,13 @@ result:
   source_sha256:
     UpperGeometryCoefficientTrivialReselection.lean: 720030064200a23c907038cf89586c61e8fe512d75b91f3ef15e83c73e2d9996
   evidence: [focused Lean single-file check, 27-declaration namespace standard-axiom audit, literal actual-reselection projection, literal actual-orbit witness projection, generated-base and generated-pulled route specializations]
+  claim_mapping:
+    theorem_names: [CoefficientTrivialUpperEdgeReselection, CoefficientTrivialUpperEdgeReselection.one, CoefficientTrivialUpperEdgeReselection.mul, InCoefficientTrivialUpperReselectionOrbit, InCoefficientTrivialUpperReselectionOrbit.toInUpperReselectionOrbit, identityRawDefectCochain_mem_coefficientTrivialOrbit, UpperGeometryCompatibleProblemInputData.generatedBaseIdentityRawDefectCochain_mem_coefficientTrivialOrbit, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityRawDefectCochain_mem_coefficientTrivialOrbit]
+    source_labels: [revision 7 target theorem clause (c) actual paired orbit intertwining typing predecessor, target proof artifacts coefficient-trivial reselection and actual restricted suborbit]
+    conjuncts: [actual upper reselection subtype, edgewise coefficient identity, identity witness, pointwise multiplication closure, actual restricted suborbit inclusion, generated base and pulled route specializations]
+    undischarged_assumptions: [paired relation over an arbitrary actual compatible solution, solution-equation proof-use, path-concatenation closure, componentwise cochain intertwining, bidirectional conjugation and inverse laws, paired restricted membership preservation, named nonidentity firing]
+    acceptance_point: The declarations construct only the literal actual reselection subtype and its actual raw-cochain suborbit, prove identity and pointwise multiplication closure, and specialize them to both theorem-generated compatible routes. This is a typing predecessor and does not discharge or restate the required paired relation.
+    port_status: not-applicable
 audits:
   premise_delta:
     ambient_boundary: [fixed revision-7 compatible route transports, existing G-109 actual upper reselection and raw defect cochain APIs]
