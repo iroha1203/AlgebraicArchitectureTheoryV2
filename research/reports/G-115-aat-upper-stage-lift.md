@@ -2967,3 +2967,55 @@ audits:
   blocking_findings: []
   next_obligation: Use the generated context cancellation with the Cycle 50 realization supplies and raw recovery to construct the direct base and pulled RefinementGeometryHom legs, including coverage and overlap preservation, without new compatible-input fields.
 ```
+
+## Cycle 52 — direct canonical-authored route geometry homs
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 52
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: e00a907e37a0b88b6deb676475d102a8d36d7163
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 50 generated direct normalizations and forward realization supplies; Cycle 51 generated the raw context cancellation required by overlap transport
+  proof_obligation: Construct complete base and pulled RefinementGeometryHom legs from each canonical-authored route normalization to the authored source geometry, using the literal lax route bases and no caller-supplied geometry contract
+  selection_reason: Endpoint comparison requires actual geometry morphisms, not only object normalizations, upper supplies, or raw cancellation lemmas.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryDirectRouteHoms.lean]
+  risks: [casting the existing generated-route geometry contract onto a different normalization, replacing the lax lower route by an exact hom, accepting coverage overlap or context cancellation as input data, using only core transport, omitting coefficient identity]
+  unchecked: [strong-cartesianness of the direct route homs, universal factor constructors, endpoint comparison isomorphisms, edge naturality, comparator conjugation, solution equivalence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: A generic upper-pair pullback constructor now builds all coverage, overlap, coefficient, raw, Support, Axis, Observable, reading, and naturality fields over an actual lax route base. Premise-free finite base and pulled specializations consume the literal generated route bases, theorem-generated forward realization supplies, upper cancellation, and Cycle 51 context cancellation.
+  completion_candidate: no
+  lean_artifacts: [upperPairPullRefinementGeomReadHom, upperPairPullRefinementGeometryHom, canonicalAuthoredBaseRouteGeometryHomAt, canonicalAuthoredBaseRouteGeometryHomAt_base, canonicalAuthoredBaseRouteGeometryHomAt_coefficientHom, canonicalAuthoredPulledRouteGeometryHomAt, canonicalAuthoredPulledRouteGeometryHomAt_base, canonicalAuthoredPulledRouteGeometryHomAt_coefficientHom]
+  source_sha256:
+    UpperGeometryDirectRouteHoms.lean: 9417879a97760a8a69d846becee0bf6bef1ad0d12bc088b449c5dc75921ce38e
+  evidence: [focused Lean file check, targeted direct-module dependency-DAG build, 8-declaration namespace standard-axiom audit, complete RefinementGeomReadHom field construction, literal finite route specializations]
+audits:
+  premise_delta:
+    ambient_boundary: [authored source geometry, actual generated lax route bases, theorem-generated route realization equivalences]
+    direction_hypothesis: []
+    discharged: [direct route coverage preservation, direct route selected-overlap preservation, coefficient identity, forward raw recovery, Support Axis Observable transport, reading preservation, context naturality, complete base and pulled RefinementGeometryHom legs]
+    remaining: [strong-cartesian universality for both direct route legs, endpoint comparison homs and inverse laws, comparison naturality and comparator compatibility, solution equivalence]
+  certificate_provenance:
+    generic: normalized coverage is definitional pullback; overlap uses the four generated raw context equalities; raw recovery uses backward-comp-forward upper cancellation; carrier maps and laws use the supplied theorem-generated forward upper realization supply
+    base: actual generatedBaseRouteLegAt base, generatedBaseRouteUpperEquivalenceAt backward and backward_forward, canonicalAuthoredBaseRouteForwardSupplyAt, canonicalAuthoredBaseRouteContextForward_backwardAt
+    pulled: actual generatedPulledRouteLegAt base, generatedPulledRouteUpperEquivalenceAt backward and backward_forward, canonicalAuthoredPulledRouteForwardSupplyAt, canonicalAuthoredPulledRouteContextForward_backwardAt
+  proof_use:
+    used: [literal lax lower route bases, pullGeometryPackageAlongUpperPair coverage and overlap definitions, rawReindexUpper_cancel, forward realization support axis observable maps and reading naturality laws, Cycle 51 context cancellation]
+    deliberately_not_used: [existing generated-route geometry contract, G-114 selected endpoint comparison, backward realization supply, opaque selected-domain iso]
+  structure_field_escape: none; the compatible input is unchanged and neither geometry contract nor cancellation is accepted from the caller
+  route_integrity: both finite homs retain the literal generated route base and independently generated base versus pulled upper equivalence
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 direct-route module and its registrations are added
+  target_fitting: none-found; the generic constructor normalizes along f.upper itself and each finite specialization uses the actual route base definitionally
+  vacuity: coverage contains nine explicit preservation functions, overlap is constructed at every context triple, and all realization maps and laws are populated; no existence-only wrapper is used
+  one_way_as_equivalence: not-applicable; these are forward complete geometry homs and are not claimed to be endpoint isomorphisms
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryDirectRouteHoms.lean` passed and reported 8 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryDirectRouteHoms` passed with 4103 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Prove both direct canonical-authored route homs strongly Cartesian by constructing universal factors from the backward realization supplies and the componentwise inverse laws, then derive the endpoint comparison isomorphisms by strong-cartesian uniqueness.
+```
