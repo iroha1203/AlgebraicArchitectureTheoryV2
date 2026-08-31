@@ -2753,3 +2753,62 @@ audits:
   blocking_findings: []
   next_obligation: Construct the explicit canonical exact and realized-refinement RealizationExactUpperEquivalence inhabitants, then compose them into the base and pulled route inhabitants.
 ```
+
+## Cycle 48 — theorem-generated positive realization-exact route inhabitants
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 48
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 0a8692367fa8906270512206def66ddbb0e5c37c
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 47 supplied realization-exact composition and reading reflection; the next fixed obligation is to generate the positive primitive inhabitants and actual route compositions
+  proof_dag_predecessors: [inverseCorePackageForwardUpper and backward cancellation, generated exact carrier comparisons, selected realized-refinement forward and backward uppers, generated refinement carrier comparisons, RealizationExactUpperEquivalence.comp]
+  proof_obligation: Construct bidirectional upper realization supplies and six component inverse laws for the canonical exact and realized-refinement inverse packages, then specialize and compose them for both generated routes
+  selection_reason: This discharges the positive realization provenance required before endpoint comparison isomorphisms may be constructed; accepting endpoint HGeom or realization certificates would violate the fixed GOAL.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean]
+  risks: [repackaging only the forward HGeom, using the forward context inverse instead of the authored backward upper, retaining realization as caller data, omitting one carrier or one cancellation direction, composing route legs in the wrong order]
+  unchecked: [endpoint comparison isomorphisms, canonicalized solution equivalence, reselection conjugation, paired cochain theorem, negative problem, exchange-exact companion iff]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Generic exact and realized-refinement inverse packages now each generate independent forward and backward UpperRealizationTransportSupply values from concrete carrier maps, reading preservation, and naturality. Their six component inverse laws yield RealizationExactUpperEquivalence inhabitants. Specializations to both base-first legs and both pulled-first legs are composed in route order, and the resulting forward upper maps are identified with the actual generated route uppers.
+  completion_candidate: no
+  lean_artifacts: [exactBackwardSupportComp, exactBackwardAxisComp, exactBackwardObservableComp, exactInversePackageUpperEquivalence, exactForwardUpperRealizationSupply, exactBackwardUpperRealizationSupply, exactInversePackageRealizationExact, refinementBackwardSupportComp, refinementBackwardAxisComp, refinementBackwardObservableComp, refinementInversePackageUpperEquivalence, refinementForwardUpperRealizationSupply, refinementBackwardUpperRealizationSupply, refinementInversePackageRealizationExact, baseRouteExactRealizationExact, baseRouteRefinementRealizationExact, baseRouteRealizationExact, baseRouteRealizationExact_forward_eq, pulledRouteRefinementRealizationExact, pullbackTargetExactRealizationExact, pulledRouteRealizationExact, pulledRouteRealizationExact_forward_eq]
+  source_sha256:
+    UpperGeometryMateComponents.lean: 216526380f47d2a55b49aec320d115b994a98f968296363bd33ce6c14fc4ebbe
+  evidence: [focused Lean file check, targeted direct module build, in-module standard-axiom audit, concrete forward and backward reading/naturality laws, componentwise HEq cancellation, actual route-upper identifications]
+  claim_mapping:
+    theorem_names: [exactInversePackageRealizationExact, refinementInversePackageRealizationExact, baseRouteRealizationExact, pulledRouteRealizationExact, baseRouteRealizationExact_forward_eq, pulledRouteRealizationExact_forward_eq]
+    source_labels: [revision 6 K2b2b-r positive producer, target material premise ledger realization-exact upper equivalence, target proof artifacts endpoint generation]
+    conjuncts: [canonical exact inhabitant, realized-refinement inhabitant, base route composition, pulled route composition, actual route-upper agreement]
+    undischarged_assumptions: [endpoint geometry inverse construction and downstream solution contracts]
+    acceptance_point: Both primitive inhabitants consume authored forward and backward upper maps, concrete Support Axis Observable maps, reading preservation, restriction naturality, and both component cancellation directions. Route inhabitants are theorem-generated specializations and compositions, not caller fields.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [exact inverse-package constructors, realized-reflection selected transport, existing generated forward carrier comparisons]
+    direction_hypothesis: []
+    discharged: [generic exact backward supply, generic realized-refinement backward supply, both generic realization-exact inhabitants, base-route two-leg composition, pulled-route two-leg composition, route upper-map agreement]
+    remaining: [endpoint comparison isomorphisms, canonicalized solution and reselection equivalences, named positive and negative problems, paired cochain relation, exchange-exact companion iff]
+  certificate_provenance:
+    discharged: [all supplies and inverse laws are generated from public exact or realized-reflection transport data; no HGeom realization or route leg is an input field]
+    unresolved: [geometry endpoint inverse provenance and strong-cartesian uniqueness use]
+  proof_use:
+    used: [exact forward and backward upper cancellation, selected refinement forward and backward upper cancellation, Support Axis Observable forward comparison laws, newly exposed backward comparison laws, six carrier HEq cancellation pairs, Cycle 47 composition]
+    unused: [opaque G-112 selected-domain iso is not a producer; conditional HGeom adapters are not used]
+  structure_field_escape: none; the output structures are assembled field by field from concrete maps and the six inverse laws are proved from carrier transport HEqs
+  route_integrity: base route composes exact then base-refinement; pulled route composes pulled-refinement then exact; both forward composites are definitionally identified with the actual route hom upper map
+  predecessor_integrity: G-108 G-112 G-114 and Formal are unchanged; only G-115 mate component API and this ledger changed
+  target_fitting: none-found
+  vacuity: generic inhabitants quantify over arbitrary target geometry and actual exact or realized-reflection inputs; route specializations use the active finite compatible input and produce concrete nonempty structures
+  one_way_as_equivalence: none-found; every primitive has independent backward carrier maps and both cancellation directions
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean` passed and reported 59 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryMateComponents` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Use the theorem-generated base and pulled route realization-exact inhabitants to construct the canonical endpoint comparison isomorphisms and componentwise conjugation solution equivalence.
+```
