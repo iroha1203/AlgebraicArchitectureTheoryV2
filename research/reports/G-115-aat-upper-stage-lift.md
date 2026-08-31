@@ -3784,7 +3784,7 @@ result:
   lean_artifacts: []
   evidence: [Issue 4250 Cycle 67 actual-endpoint bridge analysis, human-approved revision 8, synchronized G-115 G-116 and n1007 contracts]
   claim_mapping:
-    theorem_names: [planned UpperComparatorDescentAt, planned UpperRefinementBCSolution.comparatorDescentAt, planned GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, planned generatedPulledIdentityComparatorTransport, planned generatedBaseIdentityPair_support_incoherent, planned generatedBaseIdentityPair_axis_incoherent, planned generatedBaseIdentityPair_observable_incoherent]
+    theorem_names: [planned UpperComparatorDescentAt, planned UpperRefinementBCSolution.comparatorDescentAt, planned GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, planned upperDecisionSolution_comparatorDescentAt, planned generatedPulledIdentityComparatorTransport, planned generatedPulledIdentityComparator_coefficient_id, planned generatedBaseIdentityPair_support_incoherent, planned generatedBaseIdentityPair_axis_incoherent, planned generatedBaseIdentityPair_observable_incoherent]
     source_labels: [revision 8 target theorem clause b comparator descent, O10 comparator descent positive and negative pair]
     conjuncts: [typed qualified-transport hom equality, actual solution connection, compatible solution connection, generated positive pair, same-route same-component qualified negative pair, retained comparator-independent transport fields and laws, both comparator coefficient identities, Support failure, Axis failure, Observable failure, O12 IsIso separation]
     undischarged_assumptions: [all revision 8 Lean artifacts]
