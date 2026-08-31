@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 69)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 70)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
