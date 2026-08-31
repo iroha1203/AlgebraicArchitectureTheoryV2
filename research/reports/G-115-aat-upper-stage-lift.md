@@ -3440,3 +3440,56 @@ audits:
   blocking_findings: []
   next_obligation: Define the canonical-authored and generated compatible solution contracts, construct componentwise forward and backward transports through the endpoint isomorphisms, and prove preservation and inverse laws for component base, coefficient identity, triangle, edge naturality, and authored comparator equations.
 ```
+
+## Cycle 61 — canonical-authored and generated solution contracts
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 61
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 7b21ded43ddadf0321127d96058e4758a072e6b3
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 60 merged both independently generated literal authored-comparator conjugation directions
+  proof_dag_predecessors: [generated compatible upper mate triangle edge naturality and global comparator equation, both endpoint comparison isomorphisms and component laws, both endpoint edge naturality squares, both literal authored-comparator conjugation directions, both direct canonical-authored route legs edges and comparators]
+  proof_obligation: Define separate canonical-authored and theorem-generated compatible solution contracts with explicit nil append and two-cell equations, and construct a caller-free actual solution of each contract
+  selection_reason: The fixed target requires typed solution spaces before arbitrary solutions can be transported. Building both canonical inhabitants now also proves the endpoint comparison and literal comparator APIs compose coherently on the intended G-115 mate.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionContracts.lean]
+  risks: [aliasing the old G-114 selected-route solution, storing only core components, treating nil append or two-cell equations as omitted corollaries, caller-supplied solution, defining authored comparators by conjugation, wrapper-based inverse preparation, coefficient carrier equality without identity hom]
+  unchecked: [forward transport of arbitrary canonical-authored solutions, backward transport of arbitrary generated solutions, fieldwise preservation by both transports, both solution-space inverse laws, named solution Equiv, named decision and negative artifacts, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Separate CanonicalUpperRefinementBCSolution and GeometryCompatibleUpperRefinementBCSolution structures now require complete vertical components, the fixed G-115 core mate, coefficient identity, the appropriate route triangle, edge naturality, comparator intertwining, and explicit nil append and authored two-cell pasting equations. The generated contract is inhabited directly by the theorem-generated upper mate. The canonical-authored mate is exactified from base-hom followed by the generated mate followed by pulled-inverse endpoint conjugation; its triangle, coefficient identity, edge naturality, and literal comparator equation are proved from the actual endpoint laws, and it inhabits the canonical contract without caller data.
+  completion_candidate: no
+  lean_artifacts: [canonicalAuthoredBaseRoutePathLift, canonicalAuthoredPulledRoutePathLift, CanonicalUpperRefinementBCSolution, GeometryCompatibleUpperRefinementBCSolution, generatedCompatibleUpperGeometryMateAt_coefficient_id, generatedCompatibleUpperGeometryMateAt_path_naturality, generatedCompatibleUpperGeometryMateAt_append_naturality, generatedCompatibleUpperGeometryMateAt_authored_twoCell_pasting, generatedGeometryCompatibleUpperRefinementBCSolution, canonicalAuthoredUpperGeometryMateCoreAt, canonicalAuthoredUpperGeometryMateRefinementAt, canonicalAuthoredUpperGeometryMateRefinementAt_base, canonicalAuthoredUpperGeometryMateAt, canonicalAuthoredUpperGeometryMateAt_toRefinement, canonicalAuthoredUpperGeometryMateAt_base, canonicalAuthoredUpperGeometryMateAt_triangle, canonicalAuthoredUpperGeometryMateAt_coefficient_id, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_naturality_inv, canonicalAuthoredUpperGeometryMateAt_edge_naturality, canonicalAuthoredUpperGeometryMateAt_comparator_intertwining, canonicalAuthoredUpperGeometryMateAt_path_naturality, canonicalAuthoredUpperGeometryMateAt_append_naturality, canonicalAuthoredUpperGeometryMateAt_authored_twoCell_pasting, canonicalUpperRefinementBCSolution]
+  source_sha256:
+    UpperGeometryCompatibleSolutionContracts.lean: 60dbd87b77fcece1cc4c9b27367996668d540cce2dcc8b32b0b9c943e5ef8b56
+  evidence: [focused Lean file check, 64-declaration namespace standard-axiom audit, two distinct solution structures, two caller-free actual solutions, direct coefficient-identity derivations from route triangles, endpoint-conjugated complete canonical component, explicit edge and literal comparator proof-use chains]
+audits:
+  premise_delta:
+    ambient_boundary: [certificate-free compatible input, theorem-generated route geometry and mate, Cycle 57 endpoint isomorphisms, Cycle 59 endpoint naturality, Cycle 60 direct literal authored comparators and conjugation]
+    direction_hypothesis: []
+    discharged: [two typed G-115 solution contracts, explicit nil append and two-cell equations in each contract, generated actual solution, canonical-authored actual solution, both actual component lower projections, both coefficient identities, both triangles, both edge equations, both comparator equations]
+    remaining: [arbitrary-solution forward and backward transports, preservation of every solution field in both directions, both solution-space inverse laws, final solution Equiv, named decision and negative artifacts, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+  certificate_provenance:
+    generated_solution: constructed solely from generatedCompatibleUpperGeometryMateAt and its independently proved triangle edge and global comparator theorems
+    canonical_component: exactGeometryHomOfRefinement applied to endpoint base hom, generated mate, and endpoint pulled inverse; its exact lower map is the same generatedRouteCoreMate
+    canonical_equations: endpoint edge naturality and literal comparator conjugation are composed with the generated mate equations and pulled inverse equations; no equation is accepted from a caller
+  proof_use:
+    used: [both route-leg coefficient identities, generated mate triangle, generated edge naturality, generated global comparator equation, both endpoint hom and inverse factor laws, both endpoint edge naturality squares, both Cycle 60 literal comparator conjugation directions, exactGeometryHomOfRefinement_toRefinement, category associativity and endpoint inverse cancellation]
+    deliberately_not_used: [old UpperRefinementBCSolution as either new contract, G-114 selected endpoint comparison, endpoint isomorphism as the definition of canonical-authored edges or comparators, caller-supplied solution or solution equation, lower inverse, sigma or wrapper storage]
+  structure_field_escape: compatible input remains source-only; neither new solution, endpoint map, route equation, nor comparator equation is added to an input structure
+  route_integrity: generated and canonical-authored contracts mention their own independently generated route legs edges path evaluations and comparators; the canonical component uses endpoint conjugation only after those objects exist independently
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 solution-contract module and registrations are added
+  target_fitting: none-found; the actual solutions are theorem-generated, and their component and equation proofs consume the preceding route constructions
+  vacuity: both structures quantify every presentation vertex edge path pair and two-cell; both named inhabitants have complete GeometryTotalHom components and literal coefficient identity proofs
+  one_way_as_equivalence: none-found; no solution-space equivalence is claimed in this cycle, and both arbitrary-solution transports remain explicit obligations
+  goal_or_report_reinterpretation: none-found; this remains target-proof-checkpoint and the final Equiv plus downstream artifacts are unchecked
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionContracts.lean` passed and reported 64 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the direct Cycle 60 comparator-conjugation dependency DAG was targeted when its olean was absent; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct componentwise forward and backward transports for arbitrary solutions through the endpoint isomorphisms, prove separate preservation of component base coefficient identity triangle edge naturality comparator nil append and two-cell fields, prove both pointwise component cancellation laws and structure-level inverse laws, and package the two solution types as an Equiv without wrapper storage.
+```
