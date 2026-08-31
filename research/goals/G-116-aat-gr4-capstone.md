@@ -148,10 +148,14 @@
   `not_forall` だけで閉じ、exchange の数学を使用しないため棄却した。
   O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
   active 昇格時の単一 branch-specific theorem に強化して保持する。
-- `G-115 revision 4 propagation`: G-115 は lax `RefinementPackageHom` 上の
+- `G-115 revision 5 propagation`: G-115 は lax `RefinementPackageHom` 上の
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
   上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
-  comparison isomorphismsを生成し、actual `upperDecisionSolution`を供給する。G-115は
+  comparisonのconcrete core hom / invをG-112 exact・G-114 realized-refinement inverse-package
+  upper mapsから構成する。これらとuniversal comparisonとの宣言レベルの等式を証明し、
+  theorem-generated `RealizationExactUpperIso`からendpoint geometry isomorphismsとsolution
+  equivalenceを生成してactual `upperDecisionSolution`を供給する。realization-exactnessやendpoint
+  `HGeom`はG-116のregime field / theorem argumentとして受け取らない。G-115は
   `UpperStageExchangeExact`とauthored-compatible companion actual geometry solutionの
   componentwise `IsIso`のpointwise iffまでを証明するが、
   このsolutionのpredicateも否定も証明しない。O12のupper summandはこのnamed
@@ -247,7 +251,7 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw authored domainの片方向comparison、certificate-free compatible inputから生成する二strong-cartesian route・endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
+| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw authored domainの片方向comparison、certificate-free compatible inputから生成する二strong-cartesian route、G-112 / G-114 concrete inverse-package upper mapsとuniversal comparisonを結ぶrealization-exact upper iso、endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
 | O11 | compatible actual solution上のcoefficient-trivial paired reselection / derived raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間の`UpperStageExchangeExact` iff | G-115 |
 | O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
@@ -274,6 +278,12 @@
 |---|---|---|
 | O10-r3 | 任意raw authored upper problemのendpoint comparison inverseとsolution-space equivalence、named正負artifact | raw authored geometry legはcore projectionがisoでもfull geometry inverseを持たず`goal-defect`。Cycle 25–27で証明したcategory / bridge / raw片方向comparison / comparator preservationは保持する。revision 4はinverseとsolution `Equiv`を、単一source two-cellから二route comparatorを生成するcartesian-compatible locusへ移す。negative artifactはcompatible locus外のglobal-comparator-incoherent raw problemへ固定する |
 | O11-r3 | raw domain全体のrestricted reselection双方向transportとconditional exchange conjugation | endpoint inverseが無いraw domainでは双方向transportを構成できずsuperseded。revision 4はcompatible locusのendpoint isomorphismsからrestricted conjugationを無条件に構成し、`UpperStageExchangeExact`はcanonical generated solutionとcompanionのpointwise iffに限定する。真偽決定はO12に残す |
+
+**G-115 revision 4 義務 disposition(履歴台帳)**:
+
+| id | revision 4 義務 | disposition |
+|---|---|---|
+| O10-r4 | certificate-free compatible inputから二strong-cartesian routeを生成し、literal endpoint geometry objectsだけからauthored route legs、endpoint comparison inverse、solution equivalenceを構成する | Cycle 45でgenerated core endpoint isoだけではSupport / Axis / Observable carrier maps、reading / restriction lawsを供給せず、`pullGeometryPackageAlongUpperPair`もそれらを輸送しないため`goal-defect`。人間承認revision 5はraw片方向comparisonとcompatible locusを保持し、G-112 exact・G-114 realized-refinementのconcrete inverse-package upper mapsから最小`RealizationExactUpperIso`をtheorem生成し、universal comparisonとの宣言レベル等式を介してendpoint geometry isoへ運ぶ。endpoint `HGeom`やcomparison certificateをcaller inputにはしない |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 
