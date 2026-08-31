@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 72)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 73)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4100,4 +4100,63 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedRestrictedOrbit.lean` passed and reported seven declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryPairedRestrictedOrbit` completed its targeted dependency DAG successfully; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Construct coefficient-trivial reselection forward and backward conjugation along the compatible endpoint comparison isomorphisms, prove edgewise coefficient identity solution intertwining and both inverse laws on the actual paired restricted space, then transport the pair and cochains to the canonical companion.
+```
+
+## Cycle 73 — exact endpoint isomorphisms and canonical-authored route transports
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 73
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: f46867943f85e3dbdc8c42adf55b8624ae937545
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 72 is merged and supplies the same-witness paired restricted suborbit on the theorem-generated base and pulled routes. Endpoint conjugation still requires actual total-geometry isomorphisms and qualified canonical-authored fixed-coefficient transports rather than refinement-only comparisons.
+  proof_dag_predecessors: [Cycle 58 endpoint refinement-geometry comparison isomorphisms and laws, Cycle 59 endpoint naturality, Cycle 60 comparator conjugation, generated base and pulled core diagrams, canonical-authored geometry edges and comparators, generated route strong qualifications and coefficient normalization]
+  proof_obligation: Reflect both canonical-authored-to-generated endpoint comparisons to exact total-geometry isomorphisms with explicit hom and inverse core and coefficient laws, edge naturality, and comparator conjugation. Then assemble actual canonical-authored base and pulled FixedCoefficientTwoLayerTransportOver values from the independently pulled-back edges and comparators, proving their IsIso, geometry/core strong qualifications, coefficient laws, path projection, and two-cell data.
+  selection_reason: Coefficient-trivial reselection conjugation is typed between actual FixedCoefficientTwoLayerTransportOver values. Refinement-geometry endpoint isomorphisms alone do not supply GeometryTotalHom automorphisms, and a transport built from generated conjugates would replace rather than preserve the literal canonical-authored edges and comparators.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointExactIsos.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredRouteTransport.lean]
+  risks: [using asIso on only one endpoint direction, losing the independently proved inverse, omitting core or coefficient laws, replacing authored edges or comparators by generated conjugates, storing qualification certificates as new input, coefficient type equality without identity-hom proofs, incomplete lift path or two-cell data, claiming the reselection Equiv before its witness transport is constructed]
+  unchecked: [base and pulled coefficient-trivial reselection Equiv, paired relation transport, witness-bearing restricted point Equiv, canonical companion cochains, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The canonical-authored base and pulled endpoint comparisons are reflected from the reviewed refinement-geometry isomorphisms to separately constructed exact PackageTotalHom and GeometryTotalHom hom and inverse maps, then packaged as actual total-geometry Iso values. Their exact re-embedding, hom and inverse core maps, coefficient identities, edge naturality, and forward and inverse comparator conjugation are proved separately. The canonical-authored base and pulled route transports retain the literal independently pulled-back geometry edges and comparators, prove edge and comparator IsIso qualifications, geometry and core strong-cocartesian qualifications, edge and comparator coefficient identities, and assemble the actual lift data, path-base laws, two-cell-base laws, TwoLayerTransportData, and FixedCoefficientTwoLayerTransportOver values. This provides the exact typed source and target transports required by endpoint reselection conjugation but does not yet construct the reselection Equiv or transport a paired witness.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactCoreHomAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactCoreInvAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactGeometryHomAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactGeometryInvAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactGeometryIsoAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactCoreHomAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactCoreInvAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactGeometryHomAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactGeometryInvAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactGeometryIsoAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseToGeneratedRouteExactGeometryHomAt_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledToGeneratedRouteExactGeometryHomAt_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteComparator_exact_conjugation, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteComparator_exact_conjugation_inv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteComparator_exact_conjugation, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteComparator_exact_conjugation_inv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteFixedGeometryEdge, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteFixedGeometryEdge, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteFixedComparator, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteFixedComparator, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteLiftData, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteLiftData, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteData, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteData, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteTransport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteTransport]
+  source_sha256:
+    UpperGeometryCompatibleEndpointExactIsos.lean: 13b68554daca55e635851f5eee52326a11f32b54869b74d99df5c8d2af049ef6
+    UpperGeometryCanonicalAuthoredRouteTransport.lean: 76ed4b645af45278b72cf9cdcdea9277755ce04bd18b458aebe5a803e4cb5ffe
+  evidence: [focused Lean single-file checks, 36 and 38 declaration namespace standard-axiom audits, separately constructed exact hom and inverse endpoint maps, literal authored edge and comparator retention, actual fixed-coefficient transport assembly]
+  claim_mapping:
+    theorem_names: [canonicalAuthoredBaseToGeneratedRouteExactGeometryIsoAt, canonicalAuthoredPulledToGeneratedRouteExactGeometryIsoAt, canonicalAuthoredBaseToGeneratedRouteExactGeometryHomAt_naturality, canonicalAuthoredPulledToGeneratedRouteExactGeometryHomAt_naturality, canonicalAuthoredBaseRouteComparator_exact_conjugation, canonicalAuthoredBaseRouteComparator_exact_conjugation_inv, canonicalAuthoredPulledRouteComparator_exact_conjugation, canonicalAuthoredPulledRouteComparator_exact_conjugation_inv, canonicalAuthoredBaseRouteTransport, canonicalAuthoredPulledRouteTransport]
+    source_labels: [revision 8 clause c endpoint comparison conjugation transport prerequisites, target proof strategy K3 exact canonical-authored route transport]
+    conjuncts: [base and pulled exact endpoint total isomorphisms, hom and inverse core laws, hom and inverse coefficient identities, exact edge naturality, exact comparator conjugation in both directions, actual authored base and pulled edges, actual authored base and pulled comparators, edge and comparator IsIso, geometry and core strong qualifications, fixed coefficient laws, lift path and two-cell transport data]
+    undischarged_assumptions: [reselection conjugation and paired witness transport remain]
+    acceptance_point: Both endpoint directions are explicit exact total-geometry maps whose refinement images recover the reviewed comparison hom and inverse. Both canonical-authored transports store the actual pulled-back authored morphisms and satisfy the existing qualified fixed-coefficient transport contract; neither result is a renamed generated route or a supplied certificate.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [exact base endpoint hom inverse and Iso, exact pulled endpoint hom inverse and Iso, all endpoint core and coefficient laws, base and pulled exact edge naturality, base and pulled comparator conjugation and inverse conjugation, canonical-authored base and pulled fixed-coefficient route transport construction]
+    remaining: [base and pulled coefficient-trivial reselection Equiv, paired relation transport, witness-bearing restricted point Equiv, canonical companion cochains, exchange-exactness companion iff, final K4 audit]
+  certificate_provenance:
+    discharged: [exact total hom and inverse are separately reflected from the reviewed refinement comparison directions, Iso cancellation comes from those actual maps, route qualifications are theorems derived from exact endpoint naturality comparator conjugation and existing generated qualifications, fixed-coefficient transports are assembled from literal authored edges and comparators]
+    unresolved: [reselection conjugation maps, inverse laws on the restricted point space, transported paired witnesses and companion cochains]
+  proof_use:
+    used: [reviewed endpoint refinement hom and inverse, faithful exact embedding, endpoint core identifications, endpoint edge naturality, endpoint comparator conjugation, generated route core diagrams, literal canonical-authored edges and comparators, edge and comparator coefficient laws, IsIso and strong-cocartesian transfer, path projection and two-cell-base equations]
+    deliberately_not_used: [asIso from one direction, replacement generated edges, replacement generated comparators, caller-supplied route qualifications, coefficient type equality as a substitute for identity maps, supplied reselection or paired witness]
+  structure_field_escape: none-found; route structure fields are filled by the new theorems about the actual canonical-authored edges and comparators, while endpoint inverse maps and laws are constructed before Iso packaging
+  route_integrity: pass; canonical-authored route transports retain the independently pulled-back authored edges and comparators and use the existing generated core diagrams only for their required projections
+  predecessor_integrity: pass; G-108 G-109 G-112 G-114 Formal the fixed revision 8 GOAL and reviewed Cycles 71 and 72 sources are unchanged
+  target_fitting: none-found; this cycle constructs exactly the total-geometry endpoint and qualified authored-route prerequisites for conjugation without claiming the downstream Equiv
+  vacuity: pass; both route transports are actual inhabited FixedCoefficientTwoLayerTransportOver values and both endpoint comparison directions are packaged into total-geometry isomorphisms
+  one_way_as_equivalence: none-found; each Iso packages separately constructed hom and inverse maps with both cancellation laws
+  goal_or_report_reinterpretation: none-found; reselection transport paired preservation companion cochains exchange exactness and K4 remain explicitly open
+  validation_refs: [`./check_research_modules.sh --focused` passed separately and reported 36 declarations for UpperGeometryCompatibleEndpointExactIsos.lean and 38 declarations for UpperGeometryCanonicalAuthoredRouteTransport.lean under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredRouteTransport` completed the targeted dependency DAG successfully; source hashes were recomputed from the live files; both modules are registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; no Research aggregate or full build was run]
+  blocking_findings: []
+  next_obligation: Define forward and backward conjugation Equiv values on the actual base and pulled coefficient-trivial reselection spaces using the exact endpoint isomorphisms. Prove coefficient identity and both inverse laws, transport the full paired relation and the same-witness restricted point, and identify the resulting canonical companion cochains before the exchange-exactness iff and K4 audit.
 ```
