@@ -2,29 +2,33 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 5 fixed
-- proof state: `goal-defect`
+- GOAL revision: 6 fixed
+- proof state: `target-proof-checkpoint`
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
-target. Cycles 1--44 remain evidence for their named interfaces under their
-then-current target revisions. Revision 5 replaces the selected-endpoint
-realization requirement with a realization-exact upper-equivalence locus.
-Cycle 45 fixes a contradiction in revision 5's required negative fixture and
-therefore stops at `goal-defect`. Lean acceptance is evidence for each named
-cycle only; it is not a completion verdict for G-115.
+target. Cycles 1--45 remain evidence for their named interfaces under their
+then-current target revisions. Revision 5 replaced the selected-endpoint
+realization requirement with a realization-exact upper-equivalence locus, and
+Cycle 45 fixed the lossiness obstruction in its original negative producer.
+Human-approved revision 6 preserves the positive locus and replaces only that
+producer by a structure-preserving exact upper automorphism. Cycle 46 proves
+the replacement's full cancellation and concrete realization obstruction.
+Lean acceptance is evidence for each named cycle only; it is not a completion
+verdict for G-115.
 
 ## Fixed target
 
-- merged GOAL revision PR: #4298
-- final reviewed GOAL head: `02c31988500ac7bf832bef6497a3d4e91ae6a639`
-- merged GOAL commit and implementation base: `07aeb56235ae6310045936cd9462ace9d59934e4`
-- GOAL blob SHA: `a8d272da92156eb23b831830b9fa274d4a018583`
-- GOAL SHA-256: `13e97feb2063108c91a074862aad07566813ceb15c439899a927aa45758758c9`
+- merged GOAL revision PR: #4300
+- final reviewed GOAL head: `044c30255c8a2cc38873880717320a519b78b251`
+- merged GOAL commit and implementation base: `9bc1189e776bc2cab6eee95abaa3ec5298965dff`
+- GOAL blob SHA: `74ed227d3cb23734f84c43d6022bceab054b31e5`
+- GOAL SHA-256: `65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c`
 
-Revision 5 is the fixed target approved and merged by PR #4298. Its target
-contract is not weakened by Cycle 45: the literal required negative producer
-is refuted, and no substitute fixture is selected without human revision.
+Revision 6 is the fixed target approved and merged by PR #4300 after four
+independent math/Lean review lanes returned `No major findings`. Its positive
+endpoint, solution, reselection, cochain, and O12 contracts are unchanged from
+revision 5. Only the refuted lossy negative producer is replaced.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 
@@ -2630,4 +2634,63 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean` passed with 72 declarations standard axioms only; `./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessWitnesses.lean` passed with 5 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationExactnessWitnesses` passed; research module manifest entries added; git diff --check, hidden/BiDi, placeholder, and reverse-import scans clean]
   blocking_findings: [revision 5 incorrectly treats Atom-level involutivity of coreHom.upper as full SignedExactCoreReadingHom invertibility]
   next_obligation: Human GOAL revision must either choose a genuinely invertible negative SignedExactCoreReadingHom with a realization obstruction, or weaken the negative boundary artifact without weakening the positive realization-exact endpoint target.
+```
+
+## Cycle 46 — revision-6 structure-preserving exact upper nonrealization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 46
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 9bc1189e776bc2cab6eee95abaa3ec5298965dff
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: revision 6 replaces only the lossy negative producer by a G-115-local configuration-transport automorphism preserving all other ArchitectureObject data
+  proof_dag_predecessors: [no_negativeExactUpperEquivalence, nonidentityExactCoreChange public projections, NegativeGeometryWitness.doctrineHom, NegativeGeometryWitness.package, RealizationExactUpperEquivalence.homHGeom, AtomFoundation transport laws]
+  proof_obligation: Construct structurePreservingSwapUpper, prove full SignedExactCoreReadingHom self-cancellation including dependent equation and operation fields, assemble the matching total hom, and derive concrete realization nonexistence
+  selection_reason: This is the first active K2b2b-r obligation under the reviewed revision-6 target and removes Cycle 45's exact blocker without changing any positive endpoint contract.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessSwapWitnesses.lean]
+  risks: [mistaking Atom involutivity for full upper cancellation, dropping opaque ArchitectureObject fields, reusing the lossy object map, hiding dependent equation or operation mismatch, renaming the old HGeom no-go]
+  unchecked: [RealizationExactUpperEquivalence composition and reading reflection, canonical exact and realized-refinement positive inhabitants, base and pulled route inhabitants, endpoint comparison and downstream solution artifacts]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The revision-6 negative producer is constructed. Its object map transports configuration only and preserves StructureMaps, SelectedQuantities, and both values. The complete upper self-composition equals refl through named equation-transport and operation-map HEq cancellation bridges. A matching total hom retains the concrete component-A/component-B support-reading contradiction, and the conditional HGeom adapter refutes realization-exactness.
+  completion_candidate: no
+  lean_artifacts: [structurePreservingSwapObjectMap, structurePreservingSwapAtom_involutive, structurePreservingSwapObjectMap_structureMaps, structurePreservingSwapObjectMap_selectedQuantities, structurePreservingSwapObjectMap_structureMaps_value, structurePreservingSwapObjectMap_selectedQuantities_value, structurePreservingSwapUpper, structurePreservingSwapUpper_equationResidual_transport, structurePreservingSwapUpper_operation_conjugation, structurePreservingSwapUpper_operation_naturality, structurePreservingSwapUpper_invariant_transport, structurePreservingSwapUpper_comp_self_equationTransport, structurePreservingSwapUpper_comp_self_operationMap, structurePreservingSwapUpper_comp_self, structurePreservingSwapCoreHom, structurePreservingSwapExactUpperEquivalence, not_hGeom_structurePreservingSwap, not_realizationExact_structurePreservingSwap]
+  source_sha256:
+    UpperGeometryRealizationExactnessSwapWitnesses.lean: 6d752a50c55d58fc84dae559335a1832f9c792bca6ffde8f2c70247d62a6b067
+  evidence: [focused Lean file check, in-module standard-axiom audit, explicit full-field extensionality, direct support-reading contradiction, module wiring]
+  claim_mapping:
+    theorem_names: [structurePreservingSwapUpper_comp_self, structurePreservingSwapExactUpperEquivalence, not_hGeom_structurePreservingSwap, not_realizationExact_structurePreservingSwap]
+    source_labels: [revision 6 K2b2b-r negative producer, target material premise ledger realization-exact upper equivalence, target failure policy]
+    conjuncts: [same public Atom involution and identity context action, arbitrary ArchitectureObject nonconfiguration-field preservation, full computational cancellation, matching exact lower provenance, concrete realization obstruction]
+    undischarged_assumptions: [all positive endpoint producers and downstream K2b2b-r algebra]
+    acceptance_point: The nonrealization theorem consumes the newly constructed exact upper equivalence and matching total hom through homHGeom, then closes with a fresh direct support-reading evaluation. It neither assumes nonrealization nor reuses the lossy upper.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [public G-108 finite Atom involution, exact doctrine hom, concrete negative geometry package]
+    direction_hypothesis: []
+    discharged: [structure-preserving object transport, equation residual bridge, operation conjugation and naturality, invariant transport, dependent equation and operation cancellation, full upper equivalence, matching total hom, concrete HGeom nonexistence, realization-exactness nonexistence]
+    remaining: [composition and reading reflection for realization-exact equivalences, positive canonical exact and realized-refinement inhabitants, base and pulled compositions, all endpoint and solution artifacts]
+  certificate_provenance:
+    discharged: [all upper data are constructed from public finite fixture projections and AtomFoundation transport; no realization or cancellation certificate is an input]
+    unresolved: [positive realization supplies and endpoint geometry isomorphisms]
+  proof_use:
+    used: [nonidentityExactCoreChange atom equivalence, extraction and composition laws, direct configuration transport, equation residual computation, operation conjugation, invariant computation, SignedExactCoreReadingHom.ext, NegativeGeometryWitness doctrine hom and support reading, RealizationExactUpperEquivalence.homHGeom]
+    unused: [the old NegativeGeometryWitness.not_hGeom theorem is not called; the direct contradiction is reproved for the new total hom]
+  structure_field_escape: none; opaque object fields are preserved by named equalities and the cancellation theorem covers every computational field required by SignedExactCoreReadingHom.ext
+  route_integrity: the matching total hom uses the reviewed negative doctrine hom and exactly the new upper map; its context action and Atom firing reproduce the concrete obstruction
+  predecessor_integrity: G-108 declarations and the revision-6 GOAL are unchanged; no Formal characterization API addition was necessary after focused elaboration
+  target_fitting: none-found
+  vacuity: the Atom map swaps componentA/componentB, the geometry package has a concrete componentA support read, and the image context concretely fails the corresponding componentB read
+  one_way_as_equivalence: none-found; both exact upper cancellation directions are the proved full self-composition theorem
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessSwapWitnesses.lean` passed and reported 21 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationExactnessSwapWitnesses` passed; module registered in research-modules.txt and DoctrineFiberProduct.lean; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Complete RealizationExactUpperEquivalence composition and reading reflection, then construct the explicit canonical exact and realized-refinement positive inhabitants and their base/pulled compositions.
 ```
