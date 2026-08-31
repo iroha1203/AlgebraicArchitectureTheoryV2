@@ -27,7 +27,10 @@
   geometry morphismからのembeddingを構成する。(2) このbridge上でG-114の二
   reverse routeに対し、任意のauthored geometry direction dataへの一方向比較と、
   G-115が明示transportから生成するcartesian-compatible problem上の比較同型を分けて
-  構成する。後者でfinite upper mate、solution-space同値、named decision / coherence-failure
+  構成する。後者では、G-112 exact transportとG-114 realized-refinement transportの
+  concrete inverse-package constructorsから、Support / Axis / Observableを双方向に運び
+  reading / restrictionを反映するrealization-exact upper isoを定理として生成する。
+  この生成結果でfinite upper mate、solution-space同値、named decision / coherence-failure
   problemを固定する。(3) compatible locusのendpoint comparison isomorphismsからpaired
   upper-orbit intertwiningとrestricted reselectionの双方向conjugationを証明する。
   actual solutionの `IsIso` / `¬ IsIso` 評価はG-116 O12へ残す。
@@ -45,7 +48,8 @@
   任意のauthored geometry legをgenerated cartesian legへ因子化して得る比較は、core
   射影がisoでもSupport / Axis / Observable写像まで可逆とは限らない。従ってraw problem
   全域では一方向比較だけを主張し、双方向transportは両route geometry leg自身を
-  G-115の明示transportから生成してstrong cartesianであることを証明できるlocusで行う。
+  G-115の明示transportから生成してstrong cartesianであることを証明でき、さらに
+  concrete inverse-package upper pairのrealization-exactnessを定理生成できるlocusで行う。
 - `rival`: fibred 2-categoryのchange of baseとpseudonatural lift。差は、AATの
   `RefinementPackageHom` とgeometry reading dataに即したlax geometry categoryを
   構成し、actual upper cochain/orbitまで同じtyped routeで接続する点に置く。
@@ -57,7 +61,9 @@
   `IsIso` 存否決定は主張しない。任意の `UpperRefinementBCProblem` には一方向comparison
   と既存solution相対のpreservationだけを与える。solution-space同値、restricted
   reselectionの双方向transport、named decision solutionは、route geometry legsを
-  caller certificateなしに生成する `GeometryCompatibleUpperRefinementBCProblem` に限る。
+  caller certificateなしに生成し、endpoint realization-exactnessもtheorem artifactとして
+  生成する `GeometryCompatibleUpperRefinementBCProblem` に限る。任意のcore isoから
+  realization-exactnessが従うとは主張しない。
 - `capability categories`: refinement-category、geometry-bridge、base-change、
   tower-lift、relational-naturality。
 - `threshold policy`: SCORE は使わない。runtime stateはtracking Issueに置く。
@@ -98,6 +104,17 @@
     realized-refinement transportから両route legsを生成するcartesian-compatible locusでは
     endpoint comparison iso、solution / reselectionの双方向transport、IsIso不変性を証明する。
     `IsIso`、split、cartesianness、solutionをproblem input fieldとして受け取らない。
+  - revision 4 Cycle 45では、generated core endpoint isoがSupport / Axis carrier mapsと
+    reading / restriction lawsを持たず、`pullGeometryPackageAlongUpperPair`もgeometry objectと
+    raw systemだけを再構築するため、literal G-114 endpointからのauthored route legを構成できない
+    `goal-defect`が確定した(Issue #4250 comment `5471496128`)。任意のcore isoから`HGeom`を
+    導く一般則はG-108のnon-realization witnessに反するため採用しない。
+  - 人間承認revision 5は、G-112 / G-114のcompleted APIを変更せず、両routeで実際に使う
+    concrete inverse-package constructorsの合成に対してのみ、双方向realization transportと
+    componentwise inverse lawを生成するG-115-local `RealizationExactUpperIso` primitiveを置く。
+    endpoint別の`HGeom`、comparison hom / inv、inverse lawをinput field、theorem argument、
+    typeclass instanceとして受け取らず、primitive自身とbase / pulled endpointのinhabitationを
+    Lean theoremで構成する。revision 4のraw一方向comparisonとcompatible locusの区別は保持する。
 
 - `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
   Naturality Theorem**。次を構成・証明する。
@@ -145,6 +162,28 @@
      comparison dataはproblem入力ではなくtheorem artifactであり、G-114 actual routeから
      切り離された別fixtureを受理しない。
 
+     Cycle 45で不足したrealization段には、G-115-local
+     `RealizationExactUpperIso`を定義する。これは
+     `e : P ≅ Q` in `PackageTotalCategory U`について、`e.hom` / `e.inv`に沿う
+     `RealizationTransportSupply`、reading preservation / reflection、restriction naturality、
+     およびSupport / Axis / Observable comparisonのhom-inv / inv-hom lawを持つ。単なる`HGeom × HGeom`や
+     `GeomReadHom`の保存wrapperにはせず、identity、symmetry、composition、`HGeom`への各方向の
+     forgetful constructionを証明して、Gr4の連続するexact / realized-refinement transportで
+     再利用できる形にする。このdataとlawsが任意のcore isoに存在しないことはG-108
+     `FiniteGeometryWitness.not_hGeom` / `FiniteGeometryWitness.no_geometryLift_to_any_target`の
+     non-realization witnessで、生成locusが空でないことは下記のbase / pulled endpoint theoremで示す。
+
+     `UpperGeometryCompatibleProblemInput`から生成済みの各vertexについて、G-112 exact
+     inverse-package upper pairとG-114 realized-refinement inverse-package upper pairの
+     concrete constructorsのconstructor-level equationsを用い、共通target contextへの二つの経路を比較する。context
+     equivalenceのunit / counit、実際のcontext restriction maps、observable ring equivalenceから
+     Support / Axis / Observable comparisonを構成し、upper cancellationから両側inverse、reading
+     preservation / reflection、restriction naturalityを証明する。これにより
+     `generatedBaseEndpointRealizationExactAt` /
+     `generatedPulledEndpointRealizationExactAt`をtheorem artifactとして構成する。
+     任意の`SignedExactCoreReadingHom`、任意の`PackageTotalCategory` iso、またはG-114のopaqueな
+     universal-property isoだけからこのinhabitationを導いてはならない。
+
      `UpperRefinementBCProblem ctx` はfinite presentation `P`、root、全vertexへの
      directed `P.Path root i`、およびactual functor
      `sourceFiberDiagram : P ⥤ CoreFiber
@@ -190,7 +229,9 @@
      authored-compatible routeと`UpperGeometryCleavage`のcanonical generated routeは別構成とし、
      両lower arrowsがG-114の既存exact endpoint
      `RefinementPackageTotalCategory` isoとfactor triangleで対応する
-     strong cartesian liftsであることから、`IsStronglyCartesian.domainIsoOfBaseIso`型の
+     strong cartesian liftsであることに加え、上記theorem-generated
+     `RealizationExactUpperIso`から両方向のcomplete geometry homを構成する。その上で
+     `IsStronglyCartesian.domainIsoOfBaseIso`型の
      base-iso正規化を使って、既存の一方向comparisonを
      homとする `generatedBaseGeometryComparisonIsoAt` /
      `generatedPulledGeometryComparisonIsoAt` を構成する。hom / invをともにexactifyし、homが
@@ -198,7 +239,8 @@
      core projection、両route factor law、hom-inv / inv-hom、coefficient identity、Support /
      Axis / Observable inverse law、edge naturality、literal authored comparatorとの
      conjugation compatibilityを別theoremで証明する。比較isoまたはそのlawsをproblem field、
-     theorem argument、typeclass inputとして受け取らない。
+     theorem argument、typeclass inputとして受け取らない。`RealizationExactUpperIso`についても
+     endpoint別inhabitationをfieldやargumentから取り出すだけのproofは受理しない。
 
      revision 2で構成済みの `UpperRefinementBCProblem` / `UpperRefinementBCSolution` contractは
      authored-compatible route側のcontractとして保持する。canonical generated route側に
@@ -287,7 +329,9 @@
 - `target proof artifacts`: `RefinementGeometryHom` / category / projection、exact
   faithful embeddingとprojection square、`UpperGeometryCleavage`、
   `upperGeometryMate`、任意のraw authored problemからcore-selected companionへの片方向comparison、
-  `UpperGeometryCompatibleProblemInput`、G-112 / G-114から生成する二つのstrong cartesian route、
+  `UpperGeometryCompatibleProblemInput`、`RealizationExactUpperIso`とidentity / symmetry / composition /
+  両方向`HGeom`接続、concrete inverse-package routeから生成するbase / pulled endpointの
+  realization-exactness theorem、G-112 / G-114から生成する二つのstrong cartesian route、
   endpoint comparison isomorphismsとcomponentwise conjugation solution equivalence、`UpperRefinementBCProblem` /
   `UpperRefinementBCSolution`、`GeometryCompatibleUpperRefinementBCProblem` /
   `GeometryCompatibleUpperRefinementBCSolution`、named `upperDecisionProblem` / solution、named
@@ -299,15 +343,17 @@
   定義しhom/category/projection/exact embeddingをfocused checkする。K0 category lawsと
   exact comparison、K1 G-114 composite legs / factorization triangle、K2a raw problemと
   K2b1 core-selected solution contract、K2b2a 任意raw problemの片方向comparison、
-  K2b2b certificate-free compatible inputから二つのcartesian route、endpoint isomorphisms、
-  solution equivalence、K2b2c named decision / negative problems、K3 paired cochain theoremと
+  K2b2b certificate-free compatible inputから二つのcartesian route、K2b2b-rで
+  `RealizationExactUpperIso`のalgebraとconcrete base / pulled endpoint生成、K2b2b-iでその
+  realization transportを実消費するendpoint isomorphismsとsolution equivalence、K2b2c named decision / negative problems、K3 paired cochain theoremと
   conjugation、K4 premise / proof-use / axiom / nonvacuity監査。
 - `target theorem completion criteria`: 全artifactがsorryなしでResearchLeanに受理され、
   axiom / placeholder auditがcleanであること。material premise / hypothesis dischargeと
   certificate provenance / proof-use / structure-field escapeを監査する。
   G-114 lower lax arrows、bridge projection、leg triangle、G-109 comparator、actual cochainの
   proof-useに加え、compatible inputからの両route生成とstrong cartesianness、endpoint inverseの
-  universal uniqueness provenance、comparison isomorphismsとsolution equationsのproof-use、
+  universal uniqueness provenance、realization-exactness primitiveの両方向生成provenanceと
+  Support / Axis / Observable inverse lawのproof-use、comparison isomorphismsとsolution equationsのproof-use、
   predecessor不変性を監査し、report / tracking Issueを同期する。各実装PRのfixed-head
   `$review-pr` とcompletion candidateのfinal review packetに対する独立
   `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ完了とする。
@@ -326,7 +372,8 @@
 | `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
 | arbitrary raw authored comparison | discharge-required | authored comparator / cochain direction dataからcore-selected companionへの片方向comparisonを構成し、route factor lawとcomparator preservationを証明する。support / axis / observable inverseやsolution-space equivalenceは主張しない |
 | `UpperGeometryCompatibleProblemInput` / compatible route generation | discharge-required | route leg / comparator、comparison、`IsIso`、cartesianness certificate、solution、raw cochainをfieldに持たないsource finite dataと単一source transport comparatorから二routeを生成する。各legのstrong cartesiannessを使うG-115-local cartesian pullback / exactification APIで二comparatorを生成し、map-id / map-mul、G-109 compositor / unitor compatibility、canonical mateのglobal equation、derived cochainを証明する |
-| endpoint comparison isomorphisms / solution equivalence | discharge-required | G-114 exact endpoint base iso / factor triangleで正規化したstrong-cartesian uniquenessからbase / pulled endpoint inverseを導出し、conjugation `b.inv ≫ s ≫ p.hom` と逆写像 `b.hom ≫ ĝ ≫ p.inv` が全solution fieldを保存し両側inverseであることを証明する。元solutionをwrapper / sigma fieldに保存しない |
+| realization-exact upper iso / endpoint generation | discharge-required | `RealizationExactUpperIso`のidentity / symmetry / compositionと各方向`HGeom`接続を構成する。base / pulled endpointのinhabitationはcompatible inputのfieldではなく、G-112 exactとG-114 realized-refinementのconcrete inverse-package constructors、context equivalenceのunit / counit、restriction maps、observable equivalenceから構成し、Support / Axis / Observableのreading iff、naturality、hom-inv / inv-homを証明する。任意core isoへの一般化、`HGeom × HGeom`のrename、comparisonを格納するcertificateは放電と数えない |
+| endpoint comparison isomorphisms / solution equivalence | discharge-required | theorem-generated realization-exact upper isoから両方向complete geometry homを構成し、G-114 exact endpoint base iso / factor triangleで正規化したstrong-cartesian uniquenessからbase / pulled endpoint inverseを導出する。conjugation `b.inv ≫ s ≫ p.hom` と逆写像 `b.hom ≫ ĝ ≫ p.inv` が全solution fieldを保存し両側inverseであることを証明する。元solutionをwrapper / sigma fieldに保存しない |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。raw authored domainではroute間inverseを含まず、compatible inputの代替とは数えない |
 | named decision / negative problems | discharge-required | source-generated comparator coherenceを含むcompatible constructorからactual `upperDecisionSolution`を構成する。別にcompatible locus外でlocal cartesian legs / local matesとcomparator以外の全solution fieldsを満たすrigid pre-solutionを持つが、global authored comparator equationが具体評価で破れるraw problemを構成する。cartesian uniquenessで任意candidateをpre-solutionへ固定してraw solution spaceの不在を示す。decision componentのIsIsoは決めずcertificate payload不可 |
 | paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費する。geometry comparisonからcoefficient-trivial reselectionの双方向transportとrestricted space上の両側inverseを生成し、そのedgewise compatibilityからcore-selected companion cochain / paired relation / suborbit membershipとの一致を導く。既存full orbitとの一致は主張しない |
@@ -341,6 +388,11 @@
   base / pulled route comparator、comparison、`IsIso` / split、cartesianness certificate、元solutionを
   持たせない。raw cochainもinput fieldにせず、単一source transport comparatorからのcartesian
   pullback / exactificationによる二comparator生成、global equation、derived cochainを実証する。
+  endpoint別の`HGeom`、`RealizationExactUpperIso` inhabitant、Support / Axis / Observable map、
+  reading / naturality / inverse lawもcompatible input、theorem argument、typeclass、opaque membershipに
+  移さない。primitiveのfield accessorだけでendpoint theoremを閉じず、concrete inverse-package
+  constructorsからprimitive inhabitantを生成し、そのproof termでunit / counit、restriction、
+  observable equivalence、upper cancellationを実消費する。
   G-115-local cleavageをG-112/G-114 routeと無関係なparallel fixtureにせず、生成された
   geometry-level comparisonのpresentation naturality、leg / edge / authored-comparator
   compatibilityをsolution-space equivalence、restricted reselection spaceの双方向transport、
@@ -350,7 +402,9 @@
 - `target route integrity gate`: G-115-local cleavage、selected lift、finite presentation、named decision / negative
   fixture、coefficient-trivial reselectionの出所を、certificate-free compatible input、
   G-112 / G-114 reviewed theorem、
-  明示的canonical lift、または具体finite constructionに固定する。G-114とのcomparisonを
+  明示的canonical lift、concrete inverse-package realization-exactness theorem、または具体finite
+  constructionに固定する。realization-exactnessは任意core isoから選ばず、base / pulledの各生成
+  declarationとそのconstructor-level dependencyを固定する。G-114とのcomparisonを
   欠くparallel route、target-fitting selection、結論側lawのfield化、
   empty / identity-only退化、片方向theoremの同値扱いを受理しない。
 
@@ -362,6 +416,9 @@
   non-liftability certificateを入れる。
 - compatible inputにroute legs / comparison / `IsIso` / cartesianness certificateを入れる、
   またはsolution equivalenceの逆向きを元solution保存wrapperで定義する。
+- compatible input、theorem引数、typeclassに`HGeom`、`RealizationExactUpperIso`、endpoint realization
+  maps / inverse lawsを入れる、またはそれらを格納したcertificateのfield projectionだけで
+  authored route legを構成する。
 - coefficient typeの一致だけで「係数固定」とし、legs / components / edges /
   comparators / reselectionsのcoefficient homをidentityにしない。
 - `upperDecisionSolution`の`IsIso` / `¬ IsIso`をG-115で決め、O12を先取りする。
@@ -374,7 +431,9 @@
     二つのstrong cartesian route、単一source transport comparatorからのcartesian pullback /
     exactificationによる二comparator / global equation / derived cochain、
     base-iso正規化されたendpoint comparison inverse、またはsolution / cochain
-    transportを構成できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。
+    transportを構成できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。revision 5では、
+    concrete inverse-package constructorsからbase / pulled `RealizationExactUpperIso`を生成できない、
+    または生成primitiveがG-108 non-realization witnessと両立しない場合もこの判定にする。
   - `target-refuted`: category laws、named actual solution、global comparator incoherenceを持つnamed negative problem、
     paired/cochain theoremのいずれかに反例がある。
   - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
@@ -382,9 +441,10 @@
   - `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
     4査読を完了した場合だけ。
 
-- `stop reason`: なし(active)。revision 3 Cycle 28のgoal-defectは、raw authored domain全体に
-  comparison isomorphismを要求したstatement defectとして確定した。人間承認revision 4は
-  raw片方向comparisonを保存し、equivalenceを新しいgenerated cartesian-compatible locusへ限定する。
-- `next action`: F0で`UpperGeometryCompatibleProblemInput`、二route constructor / strong
-  cartesianness、二endpoint comparison isomorphisms、componentwise solution `Equiv`のLean
-  signaturesを同時に固定する。その後K2b2c named positive / coherence-failure artifactへ戻る。
+- `stop reason`: なし(active)。revision 4 Cycle 45のgoal-defectは、core endpoint isoから
+  realization transportを生成する根拠が欠けていたこととして確定した。人間承認revision 5は
+  raw片方向comparisonとgenerated cartesian-compatible locusを保持し、concrete inverse-package
+  routeだけにtheorem-generated realization-exactnessを追加する。
+- `next action`: K2b2b-rで`RealizationExactUpperIso`、identity / symmetry / composition、各方向
+  `HGeom`接続、base / pulled endpoint inhabitantの完全Lean signaturesとconstructor dependencyを
+  同時に固定する。その後、authored route legs / endpoint comparison isomorphismsへ進む。
