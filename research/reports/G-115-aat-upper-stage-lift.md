@@ -3334,3 +3334,56 @@ audits:
   blocking_findings: []
   next_obligation: Construct the canonical-authored base and pulled presentation edges independently through their strongly Cartesian legs, then prove both endpoint comparison naturality squares by strong-Cartesian uniqueness.
 ```
+
+## Cycle 59 — independently generated endpoint presentation naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 59
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: e29a55f65199ca7fae9db3814d2ca951b29a57ec
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 58 exposed the complete endpoint isomorphism component and inverse laws; Issue #4250 names presentation naturality as the next obligation
+  proof_dag_predecessors: [canonicalAuthoredBaseRouteGeometryHomAt_isStronglyCartesian, canonicalAuthoredPulledRouteGeometryHomAt_isStronglyCartesian, generatedBaseRouteCoreEdge_fac, generatedPulledRouteCoreEdge_fac, generatedBaseRouteGeometryEdge_fac, generatedPulledRouteGeometryEdge_fac, both Cycle 57 endpoint geometry isomorphisms and hom factor triangles]
+  proof_obligation: Construct the canonical-authored base and pulled presentation edges independently through the two direct strongly Cartesian route legs, then prove both endpoint comparison naturality squares by strong-Cartesian uniqueness
+  selection_reason: The fixed target needs presentation-compatible endpoint comparison isomorphisms before the literal authored comparator can be conjugated and the generated/authored solution spaces can be related. Defining these edges by endpoint conjugation would store the desired coherence and fail route integrity.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointNaturality.lean]
+  risks: [defining authored edges by endpoint conjugation, accepting a naturality equation, proving only core naturality, losing complete reading fields during exactification, using one route for both orders, omitting the literal source-edge factor graphs]
+  unchecked: [leg and literal authored-comparator conjugation, canonical-authored/generated solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Each canonical-authored route now has its own exact core edge, complete refinement-geometry Cartesian pullback, exactified complete geometry edge, lower-map recovery, and literal source-edge factor theorem. The two Cycle 57 endpoint isomorphism families satisfy presentation-edge naturality because both sides have the same lower map and agree after composition with the corresponding generated strongly Cartesian route leg.
+  completion_candidate: no
+  lean_artifacts: [canonicalAuthoredBaseRouteCoreEdge, canonicalAuthoredBaseRouteRefinementGeometryEdge, canonicalAuthoredBaseRouteRefinementGeometryEdge_base, canonicalAuthoredBaseRouteGeometryEdge, canonicalAuthoredBaseRouteGeometryEdge_base, canonicalAuthoredBaseRouteGeometryEdge_toRefinement, canonicalAuthoredBaseRouteGeometryEdge_fac, canonicalAuthoredPulledRouteCoreEdge, canonicalAuthoredPulledRouteRefinementGeometryEdge, canonicalAuthoredPulledRouteRefinementGeometryEdge_base, canonicalAuthoredPulledRouteGeometryEdge, canonicalAuthoredPulledRouteGeometryEdge_base, canonicalAuthoredPulledRouteGeometryEdge_toRefinement, canonicalAuthoredPulledRouteGeometryEdge_fac, canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_naturality, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_naturality]
+  source_sha256:
+    UpperGeometryCompatibleEndpointNaturality.lean: 2d97e0dd1013779247d9123d3b532e8bffb797590f16c834b74a08318a37bdfa
+  evidence: [focused Lean file check, targeted direct-predecessor dependency construction, 16-declaration namespace standard-axiom audit, two independently generated complete edge families, two strong-Cartesian uniqueness naturality proofs]
+audits:
+  premise_delta:
+    ambient_boundary: [certificate-free compatible input, literal authored source transport edge, theorem-generated direct and generated route strong cartesianness, Cycle 57 complete endpoint geometry isomorphisms]
+    direction_hypothesis: []
+    discharged: [independent base canonical-authored presentation edge, independent pulled canonical-authored presentation edge, both exact lower projections, both literal source-edge factor graphs, base endpoint comparison naturality, pulled endpoint comparison naturality]
+    remaining: [leg and literal authored-comparator conjugation, solution-space equivalence, named decision and negative artifacts, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+  certificate_provenance:
+    edges: both complete edges are Cartesian factors of the literal sourceTransport.edgeLift through the corresponding theorem-generated direct route leg, followed by faithful exactification
+    naturality: both squares follow from the route factor triangles, independently generated source-edge factor graphs, and generated-leg strong-Cartesian uniqueness
+    unresolved: [authored comparator conjugation, solution transports and inverse laws]
+  proof_use:
+    used: [both direct-route strong-Cartesian theorems, both generated core-edge factor laws, both generated complete geometry-edge factor laws, both endpoint hom factor triangles, exactGeometryHomOfRefinement_toRefinement, IsStronglyCartesian.map, IsStronglyCartesian.fac, IsStronglyCartesian.ext]
+    deliberately_not_used: [endpoint isomorphism as the definition of either authored edge, caller-supplied route edge or route naturality certificate, raw G-114 selected-endpoint one-way comparison, lower inverse]
+  structure_field_escape: the literal source edge and its G-109 qualifications are ambient input fields; direct and generated route cartesianness, canonical-authored route edges, endpoint isomorphisms, and endpoint naturality are theorem-generated and absent from the input structure
+  route_integrity: base and pulled authored edges are constructed separately from their literal direct legs and the common source edge; naturality is proved only after construction
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; all new evidence is local to G-115
+  target_fitting: none-found; the desired naturality is not used in either edge definition or accepted as a premise
+  vacuity: every finite presentation edge is quantified, and both squares compare complete geometry maps carrying all reading fields
+  one_way_as_equivalence: none-found; this cycle uses the already reviewed complete category isomorphisms and proves only their forward naturality squares
+  goal_or_report_reinterpretation: none-found; comparator conjugation and solution equivalence remain explicit
+  validation_refs: [`lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointGeometryLaws ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleRouteGeometryEdges` constructed only the direct predecessor DAG and passed with 4109 jobs; `lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointNaturality.lean` passed and reported 16 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Use the two endpoint naturality squares and endpoint factor triangles to prove the leg-edge and literal authored-comparator conjugation equations, then construct the generated/authored solution-space equivalence.
+```
