@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 68)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 69)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -3867,4 +3867,62 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorIncoherence.lean` passed and reported 17 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; changed-file placeholder and hidden or bidirectional Unicode scans had no hits; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define the paired base and pulled coefficient-trivial reselection relation for an arbitrary GeometryCompatibleUpperRefinementBCSolution and prove identity closure while explicitly consuming the component, triangle, edge naturality, comparator equation, and coefficient identity before advancing to cochain intertwining and endpoint conjugation.
+```
+
+## Cycle 69 — paired coefficient-trivial reselection relation and path closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 69
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 0e4906b8ed965c81584b1729782f64a979ba6c01
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 68 is merged and discharges clause (b). Cycle 66 already supplies the actual coefficient-trivial reselection subtype and restricted suborbit, but no relation connects the two generated routes.
+  proof_dag_predecessors: [Cycle 66 CoefficientTrivialUpperEdgeReselection and generated route specializations, GeometryCompatibleUpperRefinementBCSolution component and edge_naturality, actual upper reselected edge and path lifts]
+  proof_obligation: Define the typed edgewise paired relation for arbitrary compatible actual solutions; construct the identity pair; prove pointwise vertical-product closure; and derive reselected edge and path naturality from the actual solution edge equation and the paired endpoint equation.
+  selection_reason: The paired relation must remain a visible complete-geometry equation rather than opaque orbit membership or a core-only proxy. Edge and path closure are the minimal natural algebraic API required before the raw two-cell cochain calculation can consume comparator intertwining.
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedCoefficientTrivialReselection.lean]
+  risks: [paired conclusion hidden in membership or certificate input, core-only equation, invented reselection type, identity-only vacuity, wrong group multiplication order, path theorem bypasses actual edge_naturality, premature full-orbit MapsTo or selector claim]
+  unchecked: [factorization-triangle interaction, canonical comparator intertwining, componentwise raw-cochain intertwining, paired restricted-suborbit preservation, endpoint-comparison conjugation transports and inverse laws, named nonidentity intertwined pair, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: PairedCoefficientTrivialUpperReselection is now the literal edge-target GeometryTotalHom equation between one actual coefficient-trivial reselection on each generated route and an arbitrary compatible solution component. The identity pair is constructed without a supplied relation witness. Closure under the existing pointwise product respects the CompositeFiberAut categorical multiplication order. Every paired edge and every concatenated reselected path satisfy the actual route-between naturality square; the proofs directly consume the paired endpoint equation and solution.edge_naturality. No orbit-membership equivalence or cochain theorem is claimed yet.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData.PairedCoefficientTrivialUpperReselection, UpperGeometryCompatibleProblemInputData.pairedCoefficientTrivialUpperReselection_one, UpperGeometryCompatibleProblemInputData.PairedCoefficientTrivialUpperReselection.mul, UpperGeometryCompatibleProblemInputData.PairedCoefficientTrivialUpperReselection.reselectedEdge_naturality, UpperGeometryCompatibleProblemInputData.PairedCoefficientTrivialUpperReselection.reselectedPath_naturality]
+  source_sha256:
+    UpperGeometryPairedCoefficientTrivialReselection.lean: 3c886755aa1886b75ef4cd8ded46673cba8826b80dc616eef60d1460e7155b13
+  evidence: [focused Lean single-file check, 5-declaration namespace standard-axiom audit, explicit identity construction, explicit vertical-product calculation, induction over actual reselected paths]
+  claim_mapping:
+    theorem_names: [PairedCoefficientTrivialUpperReselection, pairedCoefficientTrivialUpperReselection_one, PairedCoefficientTrivialUpperReselection.mul, PairedCoefficientTrivialUpperReselection.reselectedEdge_naturality, PairedCoefficientTrivialUpperReselection.reselectedPath_naturality]
+    source_labels: [revision 8 clause c actual paired orbit intertwining, target proof strategy K3 paired cochain predecessor]
+    conjuncts: [typed base and pulled coefficient-trivial witnesses, endpoint component intertwining, identity closure, vertical composition closure, edge naturality preservation, path concatenation closure]
+    undischarged_assumptions: []
+    acceptance_point: The new relation and its constructors live on the existing actual coefficient-trivial reselection spaces and arbitrary compatible actual solutions. This cycle establishes the natural edge and path algebra only; it does not count relation definition or identity membership as the required cochain outcome.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [actual base and pulled coefficient-trivial reselection typing, arbitrary compatible solution component, identity pair, vertical-product closure, generator edge equation use, path-concatenation closure]
+    remaining: [leg triangle and coefficient-component use in the paired route, authored comparator use, canonical comparator and raw-cochain componentwise intertwining, paired restricted membership preservation, bidirectional endpoint conjugation and inverse laws, named nonidentity firing, exchange-exactness companion iff]
+  certificate_provenance:
+    discharged: [relation is an exposed GeometryTotalHom equality, identity and multiplication witnesses are theorem-generated, path law is derived by induction from actual edge_naturality]
+    unresolved: [cochain intertwining, conjugation transport, named nonidentity pair]
+  proof_use:
+    used: [existing actual coefficient-trivial reselections and coefficient laws, solution.component, solution.edge_naturality, CompositeFiberAut hom multiplication order, actual upperReselectedEdgeLift and upperReselectedPathLift]
+    deliberately_not_used: [opaque orbit membership as relation, custom cochain, selector, Set.MapsTo, full orbit equality, caller-supplied path law]
+  structure_field_escape: none-found; the relation is a transparent Prop and every inhabitant reported in this cycle is constructed by a theorem
+  route_integrity: pass; both witnesses remain on the exact generated base and pulled fixed-coefficient transports
+  predecessor_integrity: G-108 G-109 G-112 G-114 Formal and the fixed revision 8 GOAL are unchanged
+  target_fitting: none-found; the relation is complete-geometry endpoint naturality and path closure uses the actual route equation
+  vacuity: identity inhabits the relation and multiplication/path laws are quantified over arbitrary paired witnesses; named nonidentity firing remains required
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; no cochain or orbit-preservation completion is claimed
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedCoefficientTrivialReselection.lean` passed and reported 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Derive the canonical-comparator and componentwise upperRawDefectCochain intertwining theorem from reselected left and right path naturality plus solution.comparator_intertwining, while separately consuming solution.triangle and component_coefficient_id; then prove paired restricted-suborbit preservation and construct a named nonidentity paired firing witness.
 ```
