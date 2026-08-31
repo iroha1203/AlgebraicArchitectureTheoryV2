@@ -2,8 +2,8 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 7 human-approved
-- proof state: `target-proof-checkpoint` (revision 7 Cycle 66)
+- GOAL revision: 8 human-approved
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 67)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -26,6 +26,15 @@ firing to the genuinely lax horizontal refinement and strong edge, the
 authored and generated comparators, and the derived raw cochain. The generated
 vertical component continues to carry route coherence, while G-116 retains the
 full-component `IsIso` decision.
+
+Cycle 67 records the revision 7 negative-route defect: its custom raw problem
+did not inhabit the actual problem / solution contract and imported an unrelated
+selected-endpoint realization obligation. Human-approved revision 8 replaces
+that route with typed comparator descent on the existing generated route and
+canonical component. The positive pair is read from the actual solution field;
+the negative pair changes only the independently chosen pulled comparator to
+identity and must fail separately on Support, Axis, and Observable. It does not
+claim raw solution emptiness or decide the G-116 `IsIso` branch.
 
 ## Historical revision 6 target
 
@@ -3742,4 +3751,59 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCoefficientTrivialReselection.lean` passed and reported 27 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCoefficientTrivialReselection` passed for the targeted module and its dependency DAG; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define the paired base and pulled coefficient-trivial reselection relation for an arbitrary GeometryCompatibleUpperRefinementBCSolution, beginning with identity closure and separately consuming the solution component, factorization triangle, edge naturality, authored comparator equation, and coefficient identity. The unmerged Cycle 65 negative route remains a separate obligation and must eventually use the actual UpperRefinementBCProblem and UpperRefinementBCSolution contracts.
+```
+
+## Cycle 67 — revision 8 comparator-descent target repair
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 67
+goal_blob_sha: 2e4dfc37582a02e17352ac5c5a94102bd4152878
+goal_sha256: 1d68eb4a23e09f51dc2c602651b70b2ab128291aafd70fa67914571f4cbec433
+base_oid: b51d3b792f947e316d3727843c661832239c23ff
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 7 Cycle 65 was rejected before merge and Issue 4250 comment 5481630778 fixed the actual-endpoint bridge defect. Human approval selects revision 8 comparator descent as the replacement target.
+  proof_dag_predecessors: [Cycle 64 generated compatible routes and named solution component, generated nonidentity base comparator, identity CompositeFiberAut, actual and compatible solution comparator equations]
+  proof_obligation: Replace the custom raw no-solution problem with a typed comparator descent condition on the existing actual component and comparator pair, retaining a solution-derived positive pair and a same-route independently chosen negative pair.
+  selection_reason: The rejected raw problem imported a selected-endpoint realization obligation unrelated to comparator coherence and did not inhabit the actual UpperRefinementBCProblem or UpperRefinementBCSolution contract. Comparator descent is the exact O10 law surface already carried by actual solutions and admits positive and negative instances without changing the route or local mate.
+  expected_result_type: blocker-fixed
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorIncoherence.lean]
+  risks: [custom problem reintroduced, selected-endpoint realization reintroduced, comparator failure encoded as an input certificate, negative pair changes the route or component, one carrier evaluation overclaimed as all three, comparator descent confused with O12 IsIso failure]
+  unchecked: [Lean definition of UpperComparatorDescentAt, actual and compatible solution bridge theorems, positive generated pair, Support Axis and Observable negative evaluations, paired solution-intertwining relation, cochain transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: blocker-fixed
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The fixed target no longer requires a new raw problem, pre-solution, or proof that UpperRefinementBCSolution is empty. It requires the literal GeometryTotalHom comparator-descent equality, connections from both actual solution contracts, the Cycle 64 solution-derived positive pair, and a negative pair on the same generated routes and canonical component whose base comparator is the existing nonidentity generated comparator and whose pulled comparator is identity. All other local laws remain inherited from the positive packet, and failure is required independently on Support Axis and Observable.
+  completion_candidate: no
+  lean_artifacts: []
+  evidence: [Issue 4250 Cycle 67 actual-endpoint bridge analysis, human-approved revision 8, synchronized G-115 G-116 and n1007 contracts]
+  claim_mapping:
+    theorem_names: [UpperComparatorDescentAt, UpperRefinementBCSolution.comparatorDescentAt, GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, generatedBaseIdentityPair_support_incoherent, generatedBaseIdentityPair_axis_incoherent, generatedBaseIdentityPair_observable_incoherent]
+    source_labels: [revision 8 target theorem clause b comparator descent, O10 comparator descent positive and negative pair]
+    conjuncts: [typed actual hom equality, actual solution connection, compatible solution connection, generated positive pair, same-route same-component negative pair, Support failure, Axis failure, Observable failure, preservation of non-comparator local laws, O12 IsIso separation]
+    undischarged_assumptions: [all revision 8 Lean artifacts]
+    acceptance_point: Human approval repairs a specification defect and restores a typed proof route. This cycle does not claim a Lean implementation or O10 discharge.
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [negative witness scope is fixed to the existing generated route and canonical component, selected-endpoint realization is removed from the negative obligation, O10 and O12 roles are separated]
+    remaining: [all revision 8 comparator descent Lean declarations, clauses c and d, final K4 completion audit]
+  certificate_provenance:
+    discharged: [positive comparators come from the existing compatible solution, negative base comparator is the existing Cycle 64 generated comparator, negative pulled comparator is the canonical identity]
+    unresolved: [Lean proof terms for the two solution bridges and three concrete negative evaluations]
+  proof_use:
+    used: [Cycle 64 generated comparator nonidentity and carrier evaluations, generated vertical carrier-conservativity, literal solution comparator equation]
+    unused: [custom raw problem, pre-solution rigidity, selected-endpoint realization, caller-supplied incoherence certificate, full-component IsIso decision]
+  structure_field_escape: none-found at the revised statement level
+  route_integrity: pass at the revised statement level; implementation remains unchecked
+  target_fitting: none-found
+  vacuity: none-found at the revised statement level; all three carrier failures remain implementation obligations
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; revision 8 is explicitly human-approved and revision 7 Cycle 65 is retained as rejected history
+  validation_refs: [docs-only git diff check and hidden Unicode scan pending on the PR head; no Lean build is appropriate for this specification-only cycle]
+  blocking_findings: []
+  next_obligation: Implement UpperComparatorDescentAt and the actual and compatible solution bridge theorems, then construct and focused-check the positive generated pair and same-route base-nonidentity pulled-identity negative pair with independent Support Axis and Observable failures.
 ```
