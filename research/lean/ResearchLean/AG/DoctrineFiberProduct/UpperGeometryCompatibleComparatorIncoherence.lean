@@ -8,6 +8,16 @@ transports from the route-between comparator descent equation.  The positive
 pair is the theorem-generated pair already carried by an actual solution.  The
 negative pair keeps the generated pulled route data and changes only its
 authored comparator to the identity.
+
+## Implementation notes
+
+`UpperComparatorDescentAt` is the complete `GeometryTotalHom` equality already
+present in both solution contracts; a carrierwise predicate would lose the
+route law that the three concrete evaluations are meant to refute.  The
+negative transport is therefore a full qualified transport copied from the
+generated pulled route, rather than an unqualified automorphism pair or a
+custom raw problem.  Its failure is proved downstream and is never accepted as
+an incoherence certificate.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -93,6 +103,8 @@ noncomputable def generatedPulledIdentityComparatorTransport
   comparator_coefficient_id _ := by
     rfl
 
+/-- The only changed authored datum of the copied pulled transport is its
+identity comparator. -/
 @[simp] theorem generatedPulledIdentityComparatorTransport_comparator
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -101,6 +113,8 @@ noncomputable def generatedPulledIdentityComparatorTransport
     input.generatedPulledIdentityComparatorTransport.comparator cell = 1 :=
   rfl
 
+/-- The replacement identity comparator retains the fixed-coefficient
+qualification required of an authored route comparator. -/
 theorem generatedPulledIdentityComparator_coefficient_id
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -164,10 +178,75 @@ theorem solution_observableSigmaMap_injective :
   rw [← solution.triangle PUnit.unit]
   simp only [refinementObservableSigmaMap_comp, equality]
 
+/-- The actual named solution component preserves the carrier of every total
+support value.  This is the sigma-map form of the reviewed pointwise
+carrier-conservativity theorem. -/
+theorem solution_supportSigmaMap_carrier_conservative
+    (value : Σ W :
+      (problem.data.generatedBaseRouteGeometryAt PUnit.unit).site.category,
+      W.ctx.Support) :
+    HEq
+      (refinementSupportSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit)) value).2
+      value.2 := by
+  rcases value with ⟨W, support⟩
+  exact solution_support_carrier_conservative W support
+
+/-- The actual named solution component preserves the carrier of every total
+axis value. -/
+theorem solution_axisSigmaMap_carrier_conservative
+    (value : Σ W :
+      (problem.data.generatedBaseRouteGeometryAt PUnit.unit).site.category,
+      W.ctx.Axis) :
+    HEq
+      (refinementAxisSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit)) value).2
+      value.2 := by
+  rcases value with ⟨W, axis⟩
+  exact solution_axis_carrier_conservative W axis
+
+/-- The actual named solution component preserves the carrier of every total
+observable value. -/
+theorem solution_observableSigmaMap_carrier_conservative
+    (value : Σ W :
+      (problem.data.generatedBaseRouteGeometryAt PUnit.unit).site.category,
+      W.ctx.Observable) :
+    HEq
+      (refinementObservableSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit)) value).2
+      value.2 := by
+  rcases value with ⟨W, observable⟩
+  exact solution_observable_carrier_conservative W observable
+
 /-- On support carriers, the generated base comparator followed by the actual
 solution component differs from the actual component followed by the identity
 comparator. -/
 theorem generatedBaseIdentityPair_support_incoherent :
+    HEq
+      (refinementSupportSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (refinementSupportSigmaMap
+          ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+            (CompositeFiberAut.hom
+              (problem.data.generatedBaseRouteTransport.comparator
+                DecisionCell.comparison)))
+          (generatedBaseSupportValue (1 : Fin 4)))).2
+      (refinementSupportSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (CompositeFiberAut.hom
+            (problem.data.generatedBaseRouteTransport.comparator
+              DecisionCell.comparison)))
+        (generatedBaseSupportValue (1 : Fin 4))).2 ∧
+    HEq
+      (refinementSupportSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (generatedBaseSupportValue (1 : Fin 4))).2
+      (generatedBaseSupportValue (1 : Fin 4)).2 ∧
     refinementSupportSigmaMap
         ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
           ((CompositeFiberAut.hom
@@ -182,6 +261,8 @@ theorem generatedBaseIdentityPair_support_incoherent :
               (problem.data.generatedPulledIdentityComparatorTransport.comparator
                 DecisionCell.comparison))))
         (generatedBaseSupportValue (1 : Fin 4)) := by
+  refine ⟨solution_supportSigmaMap_carrier_conservative _,
+    solution_supportSigmaMap_carrier_conservative _, ?_⟩
   intro equality
   apply generated_base_comparator_local_support_ne_input
   apply solution_supportSigmaMap_injective
@@ -189,6 +270,28 @@ theorem generatedBaseIdentityPair_support_incoherent :
 
 /-- The same qualified route pair fails descent on axis carriers. -/
 theorem generatedBaseIdentityPair_axis_incoherent :
+    HEq
+      (refinementAxisSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (refinementAxisSigmaMap
+          ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+            (CompositeFiberAut.hom
+              (problem.data.generatedBaseRouteTransport.comparator
+                DecisionCell.comparison)))
+          (generatedBaseAxisValue (1 : Fin 4)))).2
+      (refinementAxisSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (CompositeFiberAut.hom
+            (problem.data.generatedBaseRouteTransport.comparator
+              DecisionCell.comparison)))
+        (generatedBaseAxisValue (1 : Fin 4))).2 ∧
+    HEq
+      (refinementAxisSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (generatedBaseAxisValue (1 : Fin 4))).2
+      (generatedBaseAxisValue (1 : Fin 4)).2 ∧
     refinementAxisSigmaMap
         ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
           ((CompositeFiberAut.hom
@@ -203,6 +306,8 @@ theorem generatedBaseIdentityPair_axis_incoherent :
               (problem.data.generatedPulledIdentityComparatorTransport.comparator
                 DecisionCell.comparison))))
         (generatedBaseAxisValue (1 : Fin 4)) := by
+  refine ⟨solution_axisSigmaMap_carrier_conservative _,
+    solution_axisSigmaMap_carrier_conservative _, ?_⟩
   intro equality
   apply generated_base_comparator_local_axis_ne_input
   apply solution_axisSigmaMap_injective
@@ -210,6 +315,28 @@ theorem generatedBaseIdentityPair_axis_incoherent :
 
 /-- The same qualified route pair fails descent on observable carriers. -/
 theorem generatedBaseIdentityPair_observable_incoherent :
+    HEq
+      (refinementObservableSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (refinementObservableSigmaMap
+          ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+            (CompositeFiberAut.hom
+              (problem.data.generatedBaseRouteTransport.comparator
+                DecisionCell.comparison)))
+          (generatedBaseObservableValue (1 : Fin 4)))).2
+      (refinementObservableSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (CompositeFiberAut.hom
+            (problem.data.generatedBaseRouteTransport.comparator
+              DecisionCell.comparison)))
+        (generatedBaseObservableValue (1 : Fin 4))).2 ∧
+    HEq
+      (refinementObservableSigmaMap
+        ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
+          (solution.component PUnit.unit))
+        (generatedBaseObservableValue (1 : Fin 4))).2
+      (generatedBaseObservableValue (1 : Fin 4)).2 ∧
     refinementObservableSigmaMap
         ((exactGeometryToRefinementGeometry FiniteModel.carrier).map
           ((CompositeFiberAut.hom
@@ -224,6 +351,8 @@ theorem generatedBaseIdentityPair_observable_incoherent :
               (problem.data.generatedPulledIdentityComparatorTransport.comparator
                 DecisionCell.comparison))))
         (generatedBaseObservableValue (1 : Fin 4)) := by
+  refine ⟨solution_observableSigmaMap_carrier_conservative _,
+    solution_observableSigmaMap_carrier_conservative _, ?_⟩
   intro equality
   apply generated_base_comparator_local_observable_ne_input
   apply solution_observableSigmaMap_injective
@@ -237,7 +366,7 @@ theorem generatedBaseIdentityPair_not_comparatorDescentAt :
       problem.data.generatedPulledIdentityComparatorTransport
       solution.component DecisionCell.comparison := by
   intro descent
-  exact generatedBaseIdentityPair_support_incoherent
+  exact generatedBaseIdentityPair_support_incoherent.2.2
     (congrArg
       (fun hom => refinementSupportSigmaMap
         ((exactGeometryToRefinementGeometry FiniteModel.carrier).map hom)
