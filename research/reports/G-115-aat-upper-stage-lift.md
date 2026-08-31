@@ -3263,7 +3263,7 @@ audits:
     ambient_boundary: [Cycle 56 theorem-generated strong cartesianness of both independently constructed endpoint legs, literal generated route lower maps]
     direction_hypothesis: []
     discharged: [base endpoint complete geometry isomorphism, base hom factorization, base inverse factorization, pulled endpoint complete geometry isomorphism, pulled hom factorization, pulled inverse factorization]
-    remaining: [endpoint comparison presentation naturality, leg and edge conjugation, literal authored-comparator conjugation, canonical-authored/generated solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+    remaining: [named hom and inv core projection laws, named hom-inv and inv-hom laws, coefficient identity, Support Axis and Observable inverse laws, endpoint comparison presentation naturality, leg and edge conjugation, literal authored-comparator conjugation, canonical-authored/generated solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
   certificate_provenance:
     isomorphisms: IsStronglyCartesian.domainIsoOfBaseIso applied to the Cycle 56 canonical-authored lift and the pre-existing generated lift over the identity package iso
     triangles: IsStronglyCartesian.fac gives the hom factorization; the inverse factorization follows from it and the category iso hom-inv law
@@ -3275,9 +3275,9 @@ audits:
   predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 endpoint-isomorphism module and its registrations are added
   target_fitting: none-found; the comparison is a complete RefinementGeometryCategory iso and its triangles use the actual authored and generated geometry legs
   vacuity: both finite routes provide an isomorphism at every presentation vertex, and both morphism directions satisfy explicit factorization equations
-  one_way_as_equivalence: none-found; the raw G-114 one-way selected-endpoint comparison is not imported or used
+  one_way_as_equivalence: none-found; the raw G-114 one-way selected-endpoint comparison is not referenced or used by any Cycle 57 declaration
   goal_or_report_reinterpretation: none-found; presentation naturality, comparator conjugation, and solution equivalence remain explicitly unchecked
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryIsos.lean` passed and reported 6 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointGeometryIsos` passed with 4108 jobs; Research aggregate and full build were not run]
   blocking_findings: []
-  next_obligation: Prove presentation-edge naturality for both endpoint comparison isomorphisms, then use those equations to establish leg edge and literal authored-comparator conjugation before constructing the solution-space equivalence.
+  next_obligation: Expose the hom and inv core projections, category inverse laws, coefficient identity, and Support Axis Observable inverse laws as named theorems; then prove presentation-edge naturality for both endpoint comparison isomorphisms and use it for leg edge and literal authored-comparator conjugation before constructing the solution-space equivalence.
 ```
