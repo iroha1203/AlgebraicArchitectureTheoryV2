@@ -2,8 +2,8 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 6 fixed
-- proof state: `target-refuted` (Cycle 63)
+- GOAL revision: 7 human-approved
+- proof state: `target-proof-checkpoint` (revision 7 restart)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -19,11 +19,15 @@ verdict for G-115.
 
 Cycle 63 proves that the theorem-generated solution preserves every local
 Support, Axis, and Observable carrier value by heterogeneous equality. This
-refutes the fixed decision-fixture requirement that one such value differ from
-identity or equality transport. Further implementation therefore requires a
-human revision of that observation surface or a new semantic primitive.
+refuted revision 6's requirement that one such vertical value differ from
+identity or equality transport. Human-approved revision 7 retains that generic
+theorem family as carrier-conservativity evidence and assigns nondegenerate
+firing to the genuinely lax horizontal refinement and strong edge, the
+authored and generated comparators, and the derived raw cochain. The generated
+vertical component continues to carry route coherence, while G-116 retains the
+full-component `IsIso` decision.
 
-## Fixed target
+## Historical revision 6 target
 
 - merged GOAL revision PR: #4300
 - final reviewed GOAL head: `044c30255c8a2cc38873880717320a519b78b251`
@@ -35,6 +39,25 @@ Revision 6 is the fixed target approved and merged by PR #4300 after four
 independent math/Lean review lanes returned `No major findings`. Its positive
 endpoint, solution, reselection, cochain, and O12 contracts are unchanged from
 revision 5. Only the refuted lossy negative producer is replaced.
+
+## Revision 7 fixed-statement disposition
+
+Revision 7 was explicitly approved after Cycle 63. It preserves every accepted
+revision 6 construction and records the Cycle 63 theorem family as a positive
+carrier-conservativity artifact. The named positive packet now proves concrete
+nonidentity on the horizontal strong edge, authored and generated comparators,
+and derived raw cochain, then specializes the actual solution edge and
+comparator equations to those witnesses. The generated and canonical companion
+solutions share one named compatible problem data object; their solution-type
+`Equiv` relates the solutions and is not claimed to generate another problem.
+
+- proposed GOAL blob SHA: `2e0c792a9387f9f4d0272590ad0129bfea5e04ff`
+- proposed GOAL SHA-256: `14c9f071c1815252693ab0e060f6dcd7172057bc1cb2a572e9ef5bd77159507b`
+
+The revision 7 review head, merge commit, GOAL hash, and implementation base are
+fixed in tracking Issue #4250 after the revision PR is merged. Cycle 63 remains
+the terminal record for revision 6 and is not rewritten as a successful proof
+of its refuted conjunct.
 
 ## Cycle 1 — F0 geometry-over-refinement category
 

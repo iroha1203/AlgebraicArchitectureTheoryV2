@@ -183,7 +183,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
-| O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence・正負named artifact | gate (iii) | G-115 |
+| O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence、horizontal edge / comparator / derived cochainが非退化発火しvertical mateがcarrier-conservativeな正named artifact、global-comparator-incoherent負named artifact | gate (iii) | G-115 |
 | O11 | compatible actual solution上のcoefficient-trivial reselection / derived raw-cochain intertwining、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間のexchange-exactness iff | gate (iii)・n1001 §3.3 | G-115 |
 | O12 | actual mate-bearing sector / active refinement / G-115 canonical generated upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
@@ -490,9 +490,16 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   base iso / factor triangleで正規化したstrong-cartesian uniquenessからbase / pulled endpoint
   comparison isomorphismsを導出し、
   componentwise conjugationでactual solution spaceの`Equiv`を構成する。逆写像は元solutionを
-  wrapperに保存せず、比較isoから実際に戻す。(c) compatible actual solution上で
+  wrapperに保存せず、比較isoから実際に戻す。同じcompatible problem data上にgenerated solutionと
+  canonical companion solutionを構成し、solution `Equiv`が両者を対応させる。別problem objectを
+  solution `Equiv`から生成したとは呼ばない。named positive fixtureではgenuinely lax refinementと
+  horizontal strong edge、authored / generated comparator、derived raw cochainを具体評価で非恒等とし、
+  actual solutionのedge naturality / comparator intertwiningをそのwitnessへ特殊化する。一方、
+  theorem-generated vertical componentはSupport / Axis / Observable値を`HEq`で保存する一般定理を持ち、
+  このcarrier-conservativityをvertical coherenceの正artifactとして固定する。(c) compatible actual solution上で
   coefficient-trivial reselection、paired relation、raw-cochain intertwiningと双方向conjugationを
-  証明する。(d) `UpperStageExchangeExact`とcore-selected companion exactnessのpointwise iffを
+  証明する。(d) `UpperStageExchangeExact`とcanonical-authored companion actual geometry
+  solutionのcomponentwise exactnessのpointwise iffを
   証明するが、canonical `upperDecisionSolution`での成立 / 不成立はG-116に残す。
   正例はcompatible constructorから生成し、負例はcompatible locus外でlocal cartesian legs /
   local matesとcomparator以外の全solution fieldsを満たすrigid pre-solutionを持つが、nonidentity
@@ -514,7 +521,8 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **リスク / dullness 骨格**: raw one-way comparisonをequivalenceと呼ぶ経路、
   compatible inputにroute / route comparator / comparison / cartesianness certificateを埋める経路、
   元solution保存wrapperで逆写像を作る経路、core-only equalityやidentity comparatorで
-  authored coherenceを代用する経路。
+  authored coherenceを代用する経路、generated vertical componentへ既知の可逆twist / gaugeを
+  付加してcanonical transportに由来しないlocal carrier非恒等性を作る経路。
 - **failure 骨格**: certificate-free inputとG-112 / G-114 public transportから
   二strong-cartesian routeまたはendpoint inverseを構成できなければ`goal-defect`。
   named solutionまたはglobal-comparator-incoherent negative problemに反例があれば`target-refuted`。
@@ -593,7 +601,10 @@ gate (v) = O13–O18・O20(G-113)、達成記録 = O19(G-116)。
 4. **G-115 / G-116**: G-115 はraw片方向comparisonとgenerated cartesian-compatible
    regimeを建設し、exchange exactnessのcompanion iffまでを証明するが、canonical solutionの
    IsIso / 非IsIsoを主張しない。存否決定は G-116 専属(G-110 が `¬IsIso` を負例
-   軸に採らなかった分界の継承)。
+   軸に採らなかった分界の継承)。G-115 named positive fixtureの非退化性はhorizontal
+   refinement / edgeとtwo-cell comparator / derived cochainが担い、generated vertical mateは
+   carrier-conservativeなcoherenceを担う。G-116はこの役割分離を保ったままfull componentの
+   `IsIso`を決定する。
 5. **既決 / 未決**: G-110 sector の pullback square 上の mate 同型は
    証明済みの正例であり、G-116 の存否決定の対象は lax square と
    refinement / 上段 regime に限る — 既決正例の再包装を全カードの
@@ -701,7 +712,8 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
 1. G-111〜G-115 が担当義務(O1–O11・O13–O18・O20)の帰趨を
    `target-theorem-proved` で確定している。G-114 は raw forward、
    realized reverse、active mate、forward-only / inactive disposition
-   の全層を固定している。G-115はraw one-way、generated cartesian-compatible、
+   の全層を固定している。G-115はraw one-way、horizontal / two-cell nondegeneracyと
+   carrier-conservative vertical coherenceを持つgenerated cartesian-compatible、
    comparator-incoherent raw negativeの全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。

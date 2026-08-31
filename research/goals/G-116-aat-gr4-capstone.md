@@ -40,7 +40,10 @@
   枝を放電する経路が最大リスクである — authored datum は可逆値
   (`PackageFiberAut`)を取るため、lax 成分の IsIso が既決 mate と
   可逆 twist の合成の系として従う可能性があり、その場合は独立の発見
-  ではなく系として計上しなければならない。また量化域そのものが
+  ではなく系として計上しなければならない。G-115 generated vertical componentは
+  local carrier値を保存するが、これはfull `GeometryTotalHom`の`IsIso`を決めない。
+  upper summandの非退化性はhorizontal refinement / edgeとtwo-cell comparator / cochainで
+  固定し、full componentの判定だけを本カードで行う。また量化域そのものが
   G-114 / G-115 の成果物形式から組めるかは供給契約に依存する — 組め
   ない場合は本カードで新設せず、gate (iv) の regime の意味の裁定へ
   差し戻す(単責務規律)。
@@ -69,7 +72,11 @@
   固定後は statement と completion criteria だけで完了判定する。
 - `portfolio constraint`: 採択 branch を固定する前に、**量化域の各成分
   (sector の lax square 域・active refinement・actual finite upper solution)
-  ごとに**非退化発火 witness を要求する。空 fiber による空虚性は
+  ごとに**非退化発火 witness を要求する。G-115 upper summandでは、active refinementが
+  exact comparison image外であること、horizontal strong edge、authored / generated comparator、
+  derived raw cochainの具体的非恒等評価、actual solution equationへの特殊化を非退化発火とする。
+  generated vertical component自体は三carrier値を保存するので、そのlocal carrier非恒等性を
+  要求しない。空 fiber による空虚性は
   放電と数えない。lax 成分の
   IsIso が既決 mate+可逆 twist の系として従う場合は独立放電と数えず
   系として記録する(計上規律)。達成記録は台帳突合を欠いた宣言だけ
@@ -136,7 +143,10 @@
     は mate が未定義なので O12 の反例でも正例でもなく、O19 の
     domain-classification 行で記録する。lax 成分が既決 mate+可逆 twist
     の系で従う場合は系として
-    記録する(portfolio constraint の計上規律)。
+    記録する(portfolio constraint の計上規律)。G-115 upper summandは、horizontal refinement /
+    edgeとtwo-cell comparator / cochainのnonidentity witness、generated vertical componentの
+    carrier-conservativity、triangle / edge / comparator equationのproof-useを一つのpacketとして
+    記録する。vertical componentへ既知の可逆twistを付加した非恒等性はpacketに数えない。
   - branch-selection evidence は、universal branch なら各 summand の
     structural `IsIso` producer、named-failure branch なら事前固定した
     finite/contextual evaluation とする。単なる論理的二分や構造化
@@ -148,7 +158,7 @@
   `not_forall` だけで閉じ、exchange の数学を使用しないため棄却した。
   O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
   active 昇格時の単一 branch-specific theorem に強化して保持する。
-- `G-115 revision 6 propagation`: G-115 は lax `RefinementPackageHom` 上の
+- `G-115 revision 7 propagation`: G-115 は lax `RefinementPackageHom` 上の
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
   上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
   realizationを、G-112 selected-domain isoを使わずexplicit canonical exact・G-114
@@ -164,7 +174,11 @@
   componentwise `IsIso`のpointwise iffまでを証明するが、
   このsolutionのpredicateも否定も証明しない。O12のupper summandはこのnamed
   solutionだけを含み、G-116がactual componentを計算してbranch-selection evidenceを
-  作る。raw one-way domainとglobal comparator coherenceを欠くG-115 named problemは
+  作る。revision 7では同じnamed problem data上にgenerated / canonical companion solutionを置き、
+  horizontal strong edge、authored / generated comparator、derived raw cochainを具体的に非恒等とする。
+  generated vertical componentのSupport / Axis / Observable carrier値は一般に`HEq`で保存され、
+  このcarrier-conservativityをsolutionのcoherence役割としてO12へ伝播する。raw one-way domainと
+  global comparator coherenceを欠くG-115 named problemは
   O19のdomain-classificationに残す。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
@@ -176,7 +190,7 @@
   昇格 revision で固定された universal `ExchangeExact` theorem または
   named `¬ ExchangeExact` evaluation theorem、量化域の regime
   組成 artifact(G-114 context / G-115 named actual upper decision solution
-  の成分族の消費、
+  の成分族、horizontal / two-cell nondegeneracy packet、vertical carrier-conservativityの消費、
   および O19 除外記録)、active
   成分ごとの非退化 witness、report
   `research/reports/G-116-aat-gr4-capstone.md`(**達成階梯対応表**を
@@ -192,7 +206,8 @@
   exactness(比較対象と既決正例の分界)、G-114
   `ActiveRefinementBCContext`、G-115 `RefinementGeometryHom` /
   `UpperGeometryCompatibleProblemInput` / endpoint comparison isomorphisms /
-  solution equivalence / `upperDecisionSolution` / `UpperStageExchangeExact` companion iff。
+  solution equivalence / `upperDecisionSolution` / horizontal edge・comparator・cochain firing /
+  generated component carrier-conservativity / `UpperStageExchangeExact` companion iff。
 - `target theorem completion criteria`: 全 artifact が sorry なしで
   `ResearchLean` に受理され、axiom / placeholder audit が clean で
   あること。下記 ledger の `discharge-required` を放電し、audit で
@@ -256,7 +271,7 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper equivalence、canonical endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
+| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper equivalence、canonical endpoint comparison isomorphisms・solution equivalence、同一named problem data上のgenerated / canonical companion solution、horizontal edge / authored / generated comparator / derived raw cochainの具体nonidentity firing、generated vertical componentの三carrier-conservativity、global-comparator-incoherent problem | G-115 |
 | O11 | canonicalized compatible actual solution上のcoefficient-trivial paired reselection / derived raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、generated / canonical-authored actual geometry solution components間の`UpperStageExchangeExact` iff | G-115 |
 | O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
@@ -296,6 +311,13 @@
 | id | revision 5 義務 | disposition |
 |---|---|---|
 | O10-r5-negative | G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとするexact upper equivalenceとprimitive非実現 theoremを構成する | Cycle 45でliteral upperのobjectMapが異なるarchitecture-object fibersをcanonical objectへcollapseして非単射であり、full upper cancellationと両立しないことをLeanで固定した。revision 6は正側O10/O11 contractを変更せず、負側だけを同じAtom/context firingを持ちながらfull object dataを保存するG-115-local exact upper automorphismとmatching total homへ差し替える。旧no-go theoremは旧lossy upperのproducer不適合を固定する定理として保持する |
+
+**G-115 revision 6 義務 disposition(履歴台帳)**:
+
+| id | revision 6 義務 | disposition |
+|---|---|---|
+| O10-r6-decision-component | named generated `upperDecisionSolution`の少なくとも一つのvertical componentがSupport / Axis / Observable具体値でidentity / equality transportと異なることを証明する | Cycle 63で全compatible input・vertex・context・carrier valueについてgenerated componentの三carrier値がidentity側と`HEq`であることをLean定理族として固定し、literal conjunctを`target-refuted`とした。人間承認revision 7はこの一般定理をcarrier-conservativity artifactへ昇格し、非退化発火をgenuinely lax horizontal refinement / strong edgeとauthored / generated comparator / derived raw cochainへ割り当てる。G-116 O12のfull component `IsIso`判定は維持する |
+| O10-r6-companion-problem | solution-space `Equiv`からnamed canonical companion problem / solutionを構成する | `Equiv`は同一compatible inputにindexされた二solution typeの間にあり、別problem objectを生成しない。revision 7は一つのnamed `upperDecisionProblem` data上にgenerated solutionとcanonical companion solutionを構成し、Equivが両者を対応させるstatementへ型整合化する |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 
