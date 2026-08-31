@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 67)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 68)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -3809,4 +3809,62 @@ audits:
   validation_refs: [docs-only git diff --check passed; changed-file hidden and bidirectional Unicode scan had no hits; added-line placeholder scan had no hits; no Lean build is appropriate for this specification-only cycle]
   blocking_findings: []
   next_obligation: Implement qualified-transport UpperComparatorDescentAt and the actual and compatible solution bridge theorems. Then copy the generated pulled route transport with only its comparator changed to identity, prove every retained transport field and both comparator coefficient laws, and focused-check the positive generated pair plus the same-route base-nonidentity pulled-identity negative pair with independent Support Axis and Observable failures.
+```
+
+## Cycle 68 — qualified comparator-descent positive and negative pair
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 68
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: d171030411922033c9ed300dc297eb46adfba237
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 67 merged the human-approved revision 8 statement repair and fixed the exact qualified-transport comparator-descent obligation
+  proof_dag_predecessors: [UpperRefinementBCSolution.comparator_intertwining, GeometryCompatibleUpperRefinementBCSolution.comparator_intertwining, Cycle 64 generated base and pulled fixed-coefficient route transports, Cycle 64 generated solution component, generated base comparator Support Axis Observable firing theorems, generated base route realization-exact carrier equivalences, generated solution triangle]
+  proof_obligation: Implement UpperComparatorDescentAt on two qualified fixed-coefficient transports, connect both actual solution contracts and the named positive solution, construct the same-route pulled identity-comparator transport, and prove independent Support Axis and Observable failures for the resulting negative pair
+  selection_reason: This directly discharges the revision 8 replacement for the rejected Cycle 65 raw-problem route. It closes the remaining O10 negative-classification gap without importing selected-endpoint realization or deciding the O12 IsIso question.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorIncoherence.lean]
+  risks: [changing comparator-independent route data, weakening the predicate to a local carrier equation, accepting an incoherence certificate, proving only one carrier failure, losing connection to literal solution fields, claiming common-source pair failure raw solution absence or IsIso failure]
+  unchecked: [paired base and pulled coefficient-trivial reselection relation, identity vertical-composition and path-concatenation closure, componentwise raw-cochain intertwining, bidirectional endpoint-conjugation transport and inverse laws, paired restricted-suborbit preservation, named nonidentity intertwined pair, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: UpperComparatorDescentAt is the literal complete GeometryTotalHom equality for the two qualified route comparators and the actual target component. Both actual solution contracts imply it from their comparator_intertwining fields, and the Cycle 64 named generated solution supplies the positive pair. generatedPulledIdentityComparatorTransport has the same indexed route geometry and copies edgeLift, edge_base, both strong-cartesian qualifications, twoCellBase, and edge_coefficient_id definitionally from the generated pulled transport while replacing only comparator by identity. Its comparator coefficient law is proved. For the negative pair, the generated solution triangle and the realization-exact base route leg prove its component is injective on each total Support Axis and Observable sigma carrier. Separately, sigma-map carrier-conservativity theorems directly consume the reviewed pointwise Support Axis and Observable conservativity family. Each negative artifact exposes conservation of the post-comparator value and the input value together with the explicit composite-map inequality derived from the existing generated-base comparator 1-to-2 firing theorem. The Support inequality refutes the full comparator-descent equality.
+  completion_candidate: no
+  lean_artifacts: [UpperComparatorDescentAt, UpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport_comparator, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparator_coefficient_id, UpperDecisionWitness.upperDecisionSolution_comparatorDescentAt, UpperDecisionWitness.solution_supportSigmaMap_injective, UpperDecisionWitness.solution_axisSigmaMap_injective, UpperDecisionWitness.solution_observableSigmaMap_injective, UpperDecisionWitness.solution_supportSigmaMap_carrier_conservative, UpperDecisionWitness.solution_axisSigmaMap_carrier_conservative, UpperDecisionWitness.solution_observableSigmaMap_carrier_conservative, UpperDecisionWitness.generatedBaseIdentityPair_support_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_axis_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_observable_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_not_comparatorDescentAt]
+  source_sha256:
+    UpperGeometryCompatibleComparatorIncoherence.lean: 62d8d61b2810d5452961ff8e97ebd2829d7dccd65abc5e525a67b50ac3317384
+  evidence: [focused Lean single-file check, 17-declaration namespace standard-axiom audit, literal bridges from both solution comparator fields, definitionally comparator-only transport replacement, existing generated-base comparator coefficient theorem plus new pulled-identity coefficient theorem, direct proof-use of all three reviewed carrier-conservativity theorems, three carrier-specific conservation-and-inequality artifacts, full predicate negation]
+  claim_mapping:
+    theorem_names: [UpperComparatorDescentAt, UpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, UpperDecisionWitness.upperDecisionSolution_comparatorDescentAt, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparator_coefficient_id, UpperDecisionWitness.generated_base_comparator_coefficient_id, UpperDecisionWitness.solution_supportSigmaMap_carrier_conservative, UpperDecisionWitness.solution_axisSigmaMap_carrier_conservative, UpperDecisionWitness.solution_observableSigmaMap_carrier_conservative, UpperDecisionWitness.generatedBaseIdentityPair_support_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_axis_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_observable_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_not_comparatorDescentAt]
+    source_labels: [revision 8 target theorem clause b qualified comparator descent, O10 comparator descent positive and negative pair]
+    conjuncts: [actual complete-hom descent equality, actual solution bridge, compatible solution bridge, generated positive pair, same generated routes and canonical component, comparator-only pulled transport replacement, both comparator coefficient identities, direct Support Axis Observable carrier-conservativity proof-use, Support failure, Axis failure, Observable failure, full descent negation, O12 separation]
+    undischarged_assumptions: []
+    acceptance_point: The negative artifact is not a custom raw problem. Both endpoint transports inhabit the existing fixed-coefficient qualified transport type, use the same generated route geometry and actual component, and differ only in the pulled authored comparator. The three failures are consequences of existing generated-comparator firing plus a route-factorization injectivity theorem, not stored certificates. This discharges the revision 8 O10 comparator-descent obligation but not clauses c or d.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [typed qualified-transport descent predicate, both literal solution bridges, named generated positive pair, comparator-only identity transport construction, both comparator coefficient identities, Support Axis Observable negative evaluations, full negative-pair descent refutation]
+    remaining: [paired coefficient-trivial reselection relation and closure, componentwise cochain theorem, endpoint-conjugation transport and inverse laws, paired restricted-suborbit preservation, named nonidentity intertwined pair, UpperStageExchangeExact companion iff, K4 completion audit]
+  certificate_provenance:
+    discharged: [positive pair uses the existing generated solution comparator_intertwining field, base comparator and its coefficient law are the Cycle 64 generated route artifacts, pulled negative comparator is constructed as identity inside a transport copying all other fields, carrier inequalities derive from generated route realization equivalence solution triangle and existing comparator firing]
+    unresolved: [paired intertwining and cochain transport witnesses]
+  proof_use:
+    used: [both literal solution comparator_intertwining fields, generated base and pulled fixed-coefficient transports, generated solution component and triangle, base-route realization-exact Support Axis Observable equivalences, generated-base comparator Support Axis Observable firing and non-input theorems, fixed-coefficient comparator coefficient fields]
+    deliberately_not_used: [Cycle 65 custom raw problem or pre-solution, selected G-114 endpoint realization, caller-supplied incoherence certificate, compatible solution Equiv on the negative pair, common-source comparator generation for the negative pulled choice, full-component IsIso or not-IsIso]
+  structure_field_escape: none-found
+  route_integrity: pass; the pulled negative transport reuses the exact generated pulled route geometry edge lifts projections qualifications and laws and changes only its authored comparator
+  predecessor_integrity: G-108 G-109 G-112 G-114 Formal and the fixed revision 8 GOAL are unchanged
+  target_fitting: none-found; the descent predicate is the specified complete-hom equality and the negative proof consumes independently established route and carrier theorems
+  vacuity: none-found; the positive predicate is inhabited and the negative side is refuted by three explicit values in inhabited total carrier spaces
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleComparatorIncoherence.lean` passed and reported 17 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; changed-file placeholder and hidden or bidirectional Unicode scans had no hits; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Define the paired base and pulled coefficient-trivial reselection relation for an arbitrary GeometryCompatibleUpperRefinementBCSolution and prove identity closure while explicitly consuming the component, triangle, edge naturality, comparator equation, and coefficient identity before advancing to cochain intertwining and endpoint conjugation.
 ```
