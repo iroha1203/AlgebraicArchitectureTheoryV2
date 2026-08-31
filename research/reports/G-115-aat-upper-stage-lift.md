@@ -3720,29 +3720,25 @@ result:
     theorem_names: [CoefficientTrivialUpperEdgeReselection, CoefficientTrivialUpperEdgeReselection.one, CoefficientTrivialUpperEdgeReselection.mul, InCoefficientTrivialUpperReselectionOrbit, InCoefficientTrivialUpperReselectionOrbit.toInUpperReselectionOrbit, identityRawDefectCochain_mem_coefficientTrivialOrbit, UpperGeometryCompatibleProblemInputData.generatedBaseIdentityRawDefectCochain_mem_coefficientTrivialOrbit, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityRawDefectCochain_mem_coefficientTrivialOrbit]
     source_labels: [revision 7 target theorem clause (c) actual paired orbit intertwining typing predecessor, target proof artifacts coefficient-trivial reselection and actual restricted suborbit]
     conjuncts: [actual upper reselection subtype, edgewise coefficient identity, identity witness, pointwise multiplication closure, actual restricted suborbit inclusion, generated base and pulled route specializations]
-    undischarged_assumptions: [paired relation over an arbitrary actual compatible solution, solution-equation proof-use, path-concatenation closure, componentwise cochain intertwining, bidirectional conjugation and inverse laws, paired restricted membership preservation, named nonidentity firing]
+    undischarged_assumptions: []
     acceptance_point: The declarations construct only the literal actual reselection subtype and its actual raw-cochain suborbit, prove identity and pointwise multiplication closure, and specialize them to both theorem-generated compatible routes. This is a typing predecessor and does not discharge or restate the required paired relation.
     port_status: not-applicable
 audits:
   premise_delta:
-    ambient_boundary: [fixed revision-7 compatible route transports, existing G-109 actual upper reselection and raw defect cochain APIs]
-    direction_hypothesis: []
-    discharged: [coefficient-trivial actual reselection subtype, identity witness, pointwise multiplication closure, actual restricted suborbit, restricted-to-existing orbit inclusion, generated base and pulled route typing specializations]
+    discharged: [the existing G-109 actual upper reselection is retained literally, the existing actual raw defect cochain is retained literally, edgewise coefficient identity is proved for identity and pointwise multiplication, both theorem-generated compatible route transports are consumed]
     remaining: [paired relation over an arbitrary actual compatible solution, use of solution component triangle edge and comparator equations, path-concatenation closure, componentwise cochain intertwining, forward and backward endpoint-conjugation transport with inverse laws, paired restricted membership preservation, named nonidentity firing, negative raw standard-contract problem, exchange-exactness companion iff]
   certificate_provenance:
-    reselection: the existing UpperEdgeReselection on FixedCoefficientTwoLayerTransportOver.toTwoLayerLiftData
-    coefficient_identity: edgewise equality of the actual CompositeFiberAut hom geometry coefficientHom to RingHom.id
-    suborbit: existential witness applied to the existing upperRawDefectCochain, then projected unchanged into InUpperReselectionOrbit
+    discharged: [reselection is the existing UpperEdgeReselection on FixedCoefficientTwoLayerTransportOver.toTwoLayerLiftData, coefficient identity is proved from the actual CompositeFiberAut hom geometry coefficientHom, restricted membership uses an existential actual reselection witness and the existing upperRawDefectCochain equality]
+    unresolved: [paired solution-intertwining witness, endpoint-conjugation transport and inverse certificate, named nonidentity intertwined pair]
   proof_use:
     used: [actual target-fiber automorphism, coefficient hom of that automorphism, existing pointwise reselection multiplication, existing raw defect cochain, actual generated base and pulled route transports]
-    deliberately_not_used: [caller-supplied orbit class, custom cochain, selector, Set.MapsTo, full-orbit coincidence, solution equation fields not yet available to the relation]
-  structure_field_escape: no compatible input or solution field is added; coefficient identity is the defining proof of a subtype over the existing actual reselection
-  route_integrity: both theorem-generated compatible route transports are used in named specializations; no core-only reselection replaces them
-  predecessor_integrity: G-108 G-109 G-112 G-114 Formal the fixed revision-7 GOAL and all merged Cycle 64 declarations are unchanged; one G-115-local module and its registrations are added
-  target_fitting: the construction matches only the explicit clause-c typing predecessor and is not counted as the required paired orbit intertwining outcome
-  vacuity: identity supplies an actual witness for every generated compatible route, but no nonidentity or paired-firing conclusion is inferred from identity membership
-  one_way_as_equivalence: not-applicable; only a literal suborbit inclusion is proved
-  goal_or_report_reinterpretation: none; the GOAL warning that suborbit extent and membership iff are not outcomes is preserved in the result classification and remaining obligations
+    unused: [caller-supplied orbit class, custom cochain, selector, Set.MapsTo, full-orbit coincidence, solution equation fields reserved for the successor paired relation]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCoefficientTrivialReselection.lean` passed and reported 27 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCoefficientTrivialReselection` passed for the targeted module and its dependency DAG; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define the paired base and pulled coefficient-trivial reselection relation for an arbitrary GeometryCompatibleUpperRefinementBCSolution, beginning with identity closure and separately consuming the solution component, factorization triangle, edge naturality, authored comparator equation, and coefficient identity. The unmerged Cycle 65 negative route remains a separate obligation and must eventually use the actual UpperRefinementBCProblem and UpperRefinementBCSolution contracts.
