@@ -3230,3 +3230,54 @@ audits:
   blocking_findings: []
   next_obligation: Combine the reviewed direct strong-Cartesian legs with the existing generated route legs and endpoint core equivalences to construct complete base and pulled endpoint comparison isomorphisms, then prove their naturality and comparator conjugation.
 ```
+
+## Cycle 57 — complete canonical-authored/generated endpoint geometry isomorphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 57
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 6a7e2c254e00763a154e335becb41f5ace84613d
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 56 proved that the canonical-authored and generated legs are independently strongly Cartesian over the same literal base and pulled route maps
+  proof_obligation: Construct complete base and pulled geometry isomorphisms between the canonical-authored normalizations and generated route endpoints, together with both factorization triangles
+  selection_reason: The later presentation naturality and solution conjugation must use actual complete geometry isomorphisms, not the raw G-114 one-way selected-endpoint comparison or a core-only equivalence.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryIsos.lean]
+  risks: [reusing the raw selected endpoint comparison, proving only core equivalence, importing an endpoint comparison as input, omitting one inverse triangle, attaching a lower inverse to the backward upper map]
+  unchecked: [comparison edge naturality, leg and edge conjugation, authored-comparator conjugation, solution equivalence, final endpoint IsIso correspondence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Strong-Cartesian uniqueness now compares the independently generated canonical-authored and generated route lifts over the literal identical base map. It yields complete RefinementGeometryCategory isomorphisms at every base and pulled vertex. The hom and inverse factorization triangles identify both directions with their authored route legs.
+  completion_candidate: no
+  lean_artifacts: [canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt, canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_hom_fac, canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_inv_fac, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_hom_fac, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_inv_fac]
+  source_sha256:
+    UpperGeometryCompatibleEndpointGeometryIsos.lean: 317fa8dec7127a7145957d65aeb527a9b8bb6f5a3e898f8d119db64d9f446623
+  evidence: [focused Lean file check, targeted dependency-DAG module build, 6-declaration namespace standard-axiom audit, complete category isomorphisms, hom and inverse factorization triangles for both finite routes]
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 56 theorem-generated strong cartesianness of both independently constructed endpoint legs, literal generated route lower maps]
+    direction_hypothesis: []
+    discharged: [base endpoint complete geometry isomorphism, base hom factorization, base inverse factorization, pulled endpoint complete geometry isomorphism, pulled hom factorization, pulled inverse factorization]
+    remaining: [named hom and inv core projection laws, named hom-inv and inv-hom laws, coefficient identity, Support Axis and Observable inverse laws, endpoint comparison presentation naturality, leg and edge conjugation, literal authored-comparator conjugation, canonical-authored/generated solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+  certificate_provenance:
+    isomorphisms: IsStronglyCartesian.domainIsoOfBaseIso applied to the Cycle 56 canonical-authored lift and the pre-existing generated lift over the identity package iso
+    triangles: IsStronglyCartesian.fac gives the hom factorization; the inverse factorization follows from it and the category iso hom-inv law
+  proof_use:
+    used: [both independently generated route legs, both Cycle 56 canonical-authored strong-cartesian theorems, both pre-existing generated strong-cartesian theorems, literal base-map equality, strong-Cartesian uniqueness, category iso cancellation]
+    deliberately_not_used: [G-114 selected endpoint comparison, G-114 endpoint core iso as the comparison, caller-supplied endpoint iso, caller-supplied HGeom, lower inverse, solution wrapper]
+  structure_field_escape: none; each isomorphism is theorem-generated from the compatible input and vertex only
+  route_integrity: base and pulled isomorphisms are constructed separately from their corresponding route-specific legs and literal route bases
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 endpoint-isomorphism module and its registrations are added
+  target_fitting: none-found; the comparison is a complete RefinementGeometryCategory iso and its triangles use the actual authored and generated geometry legs
+  vacuity: both finite routes provide an isomorphism at every presentation vertex, and both morphism directions satisfy explicit factorization equations
+  one_way_as_equivalence: none-found; the raw G-114 one-way selected-endpoint comparison is not referenced or used by any Cycle 57 declaration
+  goal_or_report_reinterpretation: none-found; presentation naturality, comparator conjugation, and solution equivalence remain explicitly unchecked
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryIsos.lean` passed and reported 6 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointGeometryIsos` passed with 4108 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Expose the hom and inv core projections, category inverse laws, coefficient identity, and Support Axis Observable inverse laws as named theorems; then prove presentation-edge naturality for both endpoint comparison isomorphisms and use it for leg edge and literal authored-comparator conjugation before constructing the solution-space equivalence.
+```
