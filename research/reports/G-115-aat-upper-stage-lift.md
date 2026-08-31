@@ -3019,3 +3019,55 @@ audits:
   blocking_findings: []
   next_obligation: Prove both direct canonical-authored route homs strongly Cartesian by constructing universal factors from the backward realization supplies and the componentwise inverse laws, then derive the endpoint comparison isomorphisms by strong-cartesian uniqueness.
 ```
+
+## Cycle 53 — dependent realization-factor carrier equivalences
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 53
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: d0f76895412d208c73c2a7799dd0e6c1994b8e41
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 52 constructed the complete direct route homs; their strong-Cartesian factor must invert realization carrier maps in dependent context fibers
+  proof_obligation: Convert the six component inverse laws of every RealizationExactUpperEquivalence into actual equivalences of the dependent Support Axis Observable total spaces, fiberwise inverse-at-forward maps, both cancellation directions, and reading reflection
+  selection_reason: The universal factor cannot be constructed by a nondependent inverse function because its carrier types vary with the context equivalence; the dependent cast and cancellation proof must be fixed before the factor contract.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationFactorCarriers.lean]
+  risks: [discarding dependent context indices, using only one inverse direction, silently identifying transported carrier types, proving set-level bijectivity without reading reflection, treating this algebra checkpoint as strong cartesianness]
+  unchecked: [inverse carrier naturality, complete universal factor geometry contract, factorization and uniqueness, direct route strong cartesianness, endpoint comparison isomorphisms, solution equivalence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The theorem-generated forward and backward realization supplies now form genuine Equiv values on the three dependent Sigma carrier spaces. Their inverse-at-forward maps land in the literal source context fiber, reflect all three readings, and satisfy both fiberwise cancellation directions.
+  completion_candidate: no
+  lean_artifacts: [supportSigmaEquiv, axisSigmaEquiv, observableSigmaEquiv, supportInverseAtForward, axisInverseAtForward, observableInverseAtForward, supportInverseAtForward_reads, axisInverseAtForward_reads, observableInverseAtForward_reads, support_forward_inverse, axis_forward_inverse, observable_forward_inverse, support_inverse_forward, axis_inverse_forward, observable_inverse_forward]
+  source_sha256:
+    UpperGeometryRealizationFactorCarriers.lean: b174a42144205e7bf2406e3a4a676f818bb3777bcc7df4e399ea5dc0b2296cbe
+  evidence: [focused Lean file check, targeted direct-module dependency-DAG build, 15-declaration namespace standard-axiom audit, three dependent Sigma equivalences, six fiberwise cancellation theorems, three reading-reflection theorems]
+audits:
+  premise_delta:
+    ambient_boundary: [ExactUpperEquivalence, theorem-generated RealizationExactUpperEquivalence]
+    direction_hypothesis: []
+    discharged: [dependent Support total-space equivalence, dependent Axis total-space equivalence, dependent Observable total-space equivalence, inverse-at-forward carrier maps, both component cancellation directions, inverse reading preservation]
+    remaining: [inverse carrier restriction naturality, universal factor coverage overlap coefficient raw and carrier contract, factor composition law, factor uniqueness, direct route strong cartesianness, endpoint comparison isomorphisms, solution equivalence]
+  certificate_provenance:
+    total_spaces: constructed directly from homSupply and invSupply; left_inv and right_inv consume the authored context cancellation and each corresponding component inverse law
+    fiber_maps: invSupply component transported only along ExactUpperEquivalence.forwardBackwardContext
+    readings: invSupply reading preservation followed by dependent Sigma equality and forwardBackwardAtom
+  proof_use:
+    used: [all six RealizationExactUpperEquivalence component inverse laws, homSupply carrier maps, invSupply carrier maps and reading laws, both context cancellation directions, forwardBackwardAtom]
+    deliberately_not_used: [HGeom adapter, lower inverse, G-114 endpoint core iso, selected-domain iso, caller geometry contract]
+  structure_field_escape: none; no compatible input or route structure is changed, and this generic algebra is not counted as the finite route strong-Cartesian conclusion
+  route_integrity: route-neutral algebra only; the next finite strong-Cartesian specializations remain fixed to the base and pulled theorem-generated inhabitants
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 carrier-factor module and its registrations are added
+  target_fitting: none-found; the equivalences quantify over every ExactUpperEquivalence and use its complete authored cancellation laws
+  vacuity: each Equiv has concrete toFun invFun and both inverse proofs; each fiber map has two concrete cancellation theorems and a reading theorem
+  one_way_as_equivalence: none-found; both Sigma inverse laws and both fiberwise cancellation directions are proved
+  goal_or_report_reinterpretation: none-found; strong cartesianness remains explicitly unchecked
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationFactorCarriers.lean` passed and reported 15 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationFactorCarriers` passed with 4104 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Prove restriction naturality of the three inverse-at-forward maps, use these carriers in the complete universal factor geometry contract, and close factorization uniqueness for both finite direct route homs.
+```
