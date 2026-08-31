@@ -2571,3 +2571,40 @@ audits:
   blocking_findings: []
   next_obligation: Construct the complete authored base and pulled geometry legs from these normalized endpoints, prove their strong-cartesian qualifications and route-internal transport laws, and assemble the certificate-free compatible raw problem before exactifying the endpoint comparison isomorphisms.
 ```
+
+## Cycle 45 — revision-5 realization-exact upper primitive and negative-fixture no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 45
+goal_blob_sha: 13e97feb2063108c91a074862aad07566813ceb15c439899a927aa45758758c9
+base_oid: 07aeb56235ae6310045936cd9462ace9d59934e4
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: revision 5 requires realization-exact upper equivalences and specifically requires NegativeGeometryWitness.coreHom.upper as the forward map of the negative exact upper equivalence
+  proof_obligation: Define the upper-indexed realization algebra and construct the required negative exact upper equivalence before proving its realization nonexistence
+  expected_result_type: blocker-fixed
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactnessWitnesses.lean]
+result:
+  proposed_result_type: blocker-fixed
+  stop_reason: goal-defect
+  proof_obligation_delta: ExactUpperEquivalence, UpperRealizationTransportSupply, the total-hom supply equivalence, cancellation-transported six-field RealizationExactUpperEquivalence, identity, symmetry, and conditional total-hom/HGeom adapters are implemented. The required negative fixture is impossible before realization data are considered because coreHom.upper.objectMap canonicalizes arbitrary ArchitectureObjects and is not injective, while forward_backward would give it a left inverse.
+  completion_candidate: no
+  lean_artifacts: [ExactUpperEquivalence, UpperRealizationTransportSupply, upperRealizationTransportSupplyEquiv, RealizationExactUpperEquivalence, RealizationExactUpperEquivalence.refl, RealizationExactUpperEquivalence.symm, RealizationExactUpperEquivalence.homHGeom, negativeUpperUnitObject, negativeUpperBoolObject, negativeCoreUpper_objectMap_not_injective, no_negativeExactUpperEquivalence]
+  source_sha256:
+    UpperGeometryRealizationExactness.lean: 6577a3bce6bac41787be079daa6c566eef0cddf8155d6356adcd5e3b3c351451
+    UpperGeometryRealizationExactnessWitnesses.lean: 59391b0258bfad0097178cdb58939536aa75b0e1e7ce120aeab2493f0a737aa5
+  evidence: [focused Lean checks, declaration-level standard-axiom audits, explicit pair of collapsed but unequal ArchitectureObjects, module registration]
+audits:
+  premise_delta:
+    discharged: [upper-indexed supply signature, compatibility with existing total-hom supply, explicit cancellation-indexed carrier inverse-law signature, identity, symmetry, conditional HGeom adapters]
+    blocked: [negativeExactUpperEquivalence, not_realizationExact_negativeExactUpperEquivalence, downstream completion of K2b2b-r]
+  proof_use:
+    used: [NegativeGeometryWitness.coreHom.upper.objectMap, ExactUpperEquivalence.forward_backward, SignedExactCoreReadingHom.comp objectMap, SignedExactCoreReadingHom.refl objectMap]
+  route_integrity: the blocker uses the literal G-108 coreHom.upper required by the fixed GOAL, not a parallel fixture
+  vacuity: noninjectivity fires on two explicit ArchitectureObjects with the same configuration and distinct PUnit/Bool StructureMaps carriers
+  blocking_findings: [revision 5 incorrectly treats Atom-level involutivity of coreHom.upper as full SignedExactCoreReadingHom invertibility]
+  next_obligation: Human GOAL revision must either choose a genuinely invertible negative SignedExactCoreReadingHom with a realization obstruction, or weaken the negative boundary artifact without weakening the positive realization-exact endpoint target.
+```
