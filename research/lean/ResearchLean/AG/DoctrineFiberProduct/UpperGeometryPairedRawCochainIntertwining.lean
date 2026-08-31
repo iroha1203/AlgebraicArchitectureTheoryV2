@@ -29,6 +29,7 @@ set_option maxHeartbeats 20000000
 
 namespace UpperGeometryCompatibleProblemInputData
 
+/-- Postcomposition preserves equality of complete geometry morphisms. -/
 private theorem geometryTotalHom_comp_congr
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     {left right : GeometryTotalHom G H} (equality : left = right)
