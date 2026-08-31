@@ -148,7 +148,7 @@
   `not_forall` だけで閉じ、exchange の数学を使用しないため棄却した。
   O12 の「存否決定」義務自体は削除せず、branch-selection evidence と
   active 昇格時の単一 branch-specific theorem に強化して保持する。
-- `G-115 revision 5 propagation`: G-115 は lax `RefinementPackageHom` 上の
+- `G-115 revision 6 propagation`: G-115 は lax `RefinementPackageHom` 上の
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
   上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
   realizationを、G-112 selected-domain isoを使わずexplicit canonical exact・G-114
@@ -156,7 +156,10 @@
   `ExactUpperEquivalence`、upper-map-indexed realization supply、各primitive inhabitantとそのcompositionで
   theorem-generated `RealizationExactUpperEquivalence`、canonical endpoint geometry isomorphisms、solution
   equivalenceを生成してactual `upperDecisionSolution`を供給する。realization-exactnessやendpoint
-  `HGeom`はG-116のregime field / theorem argumentとして受け取らない。G-115は
+  `HGeom`はG-116のregime field / theorem argumentとして受け取らない。
+  負側nonautomaticityを、G-108のlossy `coreHom.upper`ではなく、同じAtom/context firingを持ち
+  full architecture-object dataを保存するG-115-local exact upper automorphismとmatching total homの
+  具体support-reading非実現で固定する。この負例はO12のsolution domainや真偽決定には使用しない。G-115は
   `UpperStageExchangeExact`とcanonical-authored companion actual geometry solutionの
   componentwise `IsIso`のpointwise iffまでを証明するが、
   このsolutionのpredicateも否定も証明しない。O12のupper summandはこのnamed
@@ -287,6 +290,12 @@
 |---|---|---|
 | O10-r4 | certificate-free compatible inputから二strong-cartesian routeを生成し、literal G-114 selected endpoint geometry objectsだけからauthored route legs、endpoint comparison inverse、solution equivalenceを構成する | Cycle 45でgenerated core endpoint isoだけではSupport / Axis / Observable carrier maps、reading / restriction lawsを供給せず、`pullGeometryPackageAlongUpperPair`もそれらを輸送しないため`goal-defect`。人間承認revision 5はraw selected domainの片方向comparisonを保持し、双方向部分をexplicit canonical exact・G-114 realized-refinement inverse-package upper mapsだけで生成するcanonicalized locusへ移す。G-112 selected inverseに含まれるopaque domain iso、endpoint `HGeom`、comparison certificateをproducer / caller inputにはしない |
 | O11-r4 | literal G-114 selected endpoint comparison isoからauthored-compatible / generated solution `Equiv`、restricted reselection conjugation、`UpperStageExchangeExact` companion iffを構成する | O10-r4のselected-endpoint realization gapによりcomparison inverseが構成不能で、連鎖する双方向contractも`goal-defect`。revision 5はexact lower inverseを要求せず、explicit canonical exact / realized-refinement forward-backward upper mapsとcancellationから`RealizationExactUpperEquivalence`を生成する。solution `Equiv`、reselection conjugation、companion iffはcanonical-authored / generated solution間へ移し、raw selected solutionとの同値は主張しない |
+
+**G-115 revision 5 義務 disposition(履歴台帳)**:
+
+| id | revision 5 義務 | disposition |
+|---|---|---|
+| O10-r5-negative | G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとするexact upper equivalenceとprimitive非実現 theoremを構成する | Cycle 45でliteral upperのobjectMapが異なるarchitecture-object fibersをcanonical objectへcollapseして非単射であり、full upper cancellationと両立しないことをLeanで固定した。revision 6は正側O10/O11 contractを変更せず、負側だけを同じAtom/context firingを持ちながらfull object dataを保存するG-115-local exact upper automorphismとmatching total homへ差し替える。旧no-go theoremはlossy producer禁止境界として保持する |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 
