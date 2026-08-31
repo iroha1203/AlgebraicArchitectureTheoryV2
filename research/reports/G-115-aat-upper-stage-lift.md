@@ -2864,3 +2864,55 @@ audits:
   blocking_findings: []
   next_obligation: Generate the canonical-authored route realization supplies from the explicit inverse-package transports and normalization laws, then use strong-cartesian factorization to construct the base and pulled complete endpoint comparison isomorphisms.
 ```
+
+## Cycle 50 — direct canonical-authored route normalization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 50
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: dda963ca50c80c95dc03cb71b2dd6753eaafb941
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 49 separated theorem-generated route realization from the opaque G-114 selected-endpoint core normalization
+  proof_obligation: Construct the canonical-authored base and pulled route geometries by directly normalizing the actual source geometry along the two theorem-generated realization-exact route equivalences, and expose both realization directions and the raw normalization law
+  selection_reason: The endpoint comparison must start from the explicit inverse-package route realization, not by upgrading the unrelated G-114 selected-endpoint core isomorphism to realization data.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationNormalization.lean]
+  risks: [confusing direct route normalization with G-114 selected-endpoint normalization, alias-only checkpoint, losing the opposite route order, exposing only a forward supply, failing to connect raw normalization to upper cancellation]
+  unchecked: [complete canonical-authored route geometry legs, composite context cancellation, strong-cartesian factor constructors, complete endpoint comparison isomorphisms, edge naturality, comparator conjugation, solution equivalence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The actual source geometry is now normalized directly along the base and pulled theorem-generated ExactUpperEquivalence values. The two direct route objects retain the generated route cores and authored coefficient ring, expose genuine forward and backward realization supplies from the Cycle 49 inhabitants, and satisfy literal backward raw reindexing plus forward cancellation. No realization is inferred for the G-114 selected-endpoint core equivalences.
+  completion_candidate: no
+  lean_artifacts: [realizationNormalizedGeometry, realizationNormalizedGeometry_core, realizationNormalizedGeometry_coefficient, canonicalAuthoredBaseRouteGeometryAt, canonicalAuthoredPulledRouteGeometryAt, canonicalAuthoredBaseRouteGeometryAt_core, canonicalAuthoredPulledRouteGeometryAt_core, canonicalAuthoredBaseRouteGeometryAt_coefficient, canonicalAuthoredPulledRouteGeometryAt_coefficient, canonicalAuthoredBaseRouteGeometryAt_raw, canonicalAuthoredPulledRouteGeometryAt_raw, canonicalAuthoredBaseRouteForwardSupplyAt, canonicalAuthoredBaseRouteBackwardSupplyAt, canonicalAuthoredPulledRouteForwardSupplyAt, canonicalAuthoredPulledRouteBackwardSupplyAt, canonicalAuthoredBaseRouteRaw_forward, canonicalAuthoredPulledRouteRaw_forward]
+  source_sha256:
+    UpperGeometryRealizationNormalization.lean: 0772c1f81fea34df93eb3f7537d15927b0c580944630d22610447316dcc809b4
+  evidence: [focused Lean file check, namespace standard-axiom audit, direct authored source geometry use, both route-order specializations, both realization directions, explicit raw reindexing cancellation]
+audits:
+  premise_delta:
+    ambient_boundary: [certificate-free compatible input, actual source geometry, theorem-generated finite route equivalences and realization inhabitants]
+    direction_hypothesis: []
+    discharged: [direct base canonical-authored geometry normalization, direct pulled canonical-authored geometry normalization, both forward realization supplies, both backward realization supplies, both coefficient identities, both raw backward normalizations, both forward raw cancellation laws]
+    remaining: [complete direct route geometry homs, route context cancellation, strong-cartesian universality, endpoint comparison homs and inverse laws, comparison naturality and comparator compatibility, solution equivalence]
+  certificate_provenance:
+    route_realization: both supply directions are projections of the theorem-generated Cycle 49 RealizationExactUpperEquivalence inhabitants specialized at the actual finite vertex
+    object_normalization: pullGeometryPackageAlongUpperPair is applied to the actual source geometry with the explicit composite route forward and backward upper maps
+    raw_normalization: the backward upper literally defines the direct raw system and backward_forward cancellation proves its forward recovery
+    excluded: generatedBaseEndpointUpperEquivalenceAt and generatedPulledEndpointUpperEquivalenceAt are not upgraded or consumed as realization producers
+  proof_use:
+    used: [generatedBaseRouteUpperEquivalenceAt, generatedPulledRouteUpperEquivalenceAt, generatedBaseRouteRealizationExactAt, generatedPulledRouteRealizationExactAt, pullGeometryPackageAlongUpperPair, rawReindexUpper_cancel, both backward_forward laws]
+  structure_field_escape: none; no route geometry leg, endpoint comparison, realization inhabitant, context cancellation, or cartesianness is accepted from the compatible input
+  route_integrity: base and pulled direct normalizations consume the already reviewed explicit exact/refinement composites in their distinct actual route orders
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 normalization module and its registrations are added
+  target_fitting: none-found
+  vacuity: all artifacts are data or equations at every vertex of every compatible input; no new Prop premise is introduced
+  one_way_as_equivalence: none-found; both genuine realization supply directions remain present and originate in the reviewed six-cancellation inhabitants
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationNormalization.lean` passed and reported 17 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationNormalization` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Build the direct base and pulled RefinementGeometryHom legs from these supplies, proving composite context cancellation internally, then prove their strong-cartesian universal property for the endpoint comparison isomorphisms.
+```
