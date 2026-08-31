@@ -3,8 +3,9 @@ import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleDecisionFixtu
 /-!
 # Qualified comparator descent for the G-115 upper geometry route
 
-This module separates the local qualification of the two authored route
-transports from the route-between comparator descent equation.  The positive
+This module discharges G-115 revision 8 clause (b).  It separates the local
+qualification of the two authored route transports from the route-between
+comparator descent equation.  The positive
 pair is the theorem-generated pair already carried by an actual solution.  The
 negative pair keeps the generated pulled route data and changes only its
 authored comparator to the identity.
@@ -28,8 +29,9 @@ open UpperGeometryCompatibleProblemInputData
 
 universe u v
 
-/-- Descent of two individually qualified authored route comparators along an
-actual family of vertical geometry components. -/
+/-- G-115 revision 8 clause (b)'s principal predicate: descent of two
+individually qualified authored route comparators along an actual family of
+vertical geometry components. -/
 def UpperComparatorDescentAt
     {P : FiniteTransportPresentation.{u}}
     {U : AtomCarrier.{u}} {X : ExtractionInstance U}
@@ -53,8 +55,9 @@ def UpperComparatorDescentAt
 
 namespace UpperRefinementBCSolution
 
-/-- The literal actual-solution comparator field is qualified comparator
-descent for the problem's two authored route transports. -/
+/-- G-115 revision 8 clause (b) API bridge: the literal actual-solution
+comparator field is qualified comparator descent for the problem's two
+authored route transports. -/
 theorem comparatorDescentAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {problem : UpperRefinementBCProblem.{u, v} ctx}
@@ -68,8 +71,8 @@ end UpperRefinementBCSolution
 
 namespace UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCSolution
 
-/-- The theorem-generated compatible solution also lies in the qualified
-comparator descent locus. -/
+/-- G-115 revision 8 clause (b) API bridge: the theorem-generated compatible
+solution also lies in the qualified comparator descent locus. -/
 theorem comparatorDescentAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -84,8 +87,9 @@ end UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCS
 
 namespace UpperGeometryCompatibleProblemInputData
 
-/-- The independently qualified pulled route with all comparator-independent
-data unchanged and with the authored comparator replaced by identity. -/
+/-- G-115 revision 8 clause (b) negative companion: the independently
+qualified pulled route with all comparator-independent data unchanged and
+with the authored comparator replaced by identity. -/
 noncomputable def generatedPulledIdentityComparatorTransport
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -103,8 +107,8 @@ noncomputable def generatedPulledIdentityComparatorTransport
   comparator_coefficient_id _ := by
     rfl
 
-/-- The only changed authored datum of the copied pulled transport is its
-identity comparator. -/
+/-- G-115 revision 8 clause (b) simplification API: the only changed authored
+datum of the copied pulled transport is its identity comparator. -/
 @[simp] theorem generatedPulledIdentityComparatorTransport_comparator
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -113,8 +117,9 @@ identity comparator. -/
     input.generatedPulledIdentityComparatorTransport.comparator cell = 1 :=
   rfl
 
-/-- The replacement identity comparator retains the fixed-coefficient
-qualification required of an authored route comparator. -/
+/-- G-115 revision 8 clause (b) qualification witness: the replacement
+identity comparator retains the fixed-coefficient qualification required of
+an authored route comparator. -/
 theorem generatedPulledIdentityComparator_coefficient_id
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -129,7 +134,8 @@ end UpperGeometryCompatibleProblemInputData
 
 namespace UpperDecisionWitness
 
-/-- The named theorem-generated pair is in the comparator descent locus. -/
+/-- G-115 revision 8 clause (b) positive witness: the named theorem-generated
+pair is in the comparator descent locus. -/
 theorem upperDecisionSolution_comparatorDescentAt :
     UpperComparatorDescentAt problem.data.generatedBaseRouteTransport
       problem.data.generatedPulledRouteTransport solution.component
@@ -138,7 +144,8 @@ theorem upperDecisionSolution_comparatorDescentAt :
 
 /-! ## Carrierwise failure for the identity-comparator companion -/
 
-/-- The solution component is injective on total support carriers.  This is
+/-- G-115 revision 8 clause (b) support-side proof API: the solution component
+is injective on total support carriers.  This is
 not a pointwise accident: postcomposition with the pulled route leg is the
 realization-exact base route leg by the solution triangle. -/
 theorem solution_supportSigmaMap_injective :
@@ -152,8 +159,8 @@ theorem solution_supportSigmaMap_injective :
   rw [← solution.triangle PUnit.unit]
   simp only [refinementSupportSigmaMap_comp, equality]
 
-/-- The solution component is injective on total axis carriers, by the same
-route-factorization argument. -/
+/-- G-115 revision 8 clause (b) axis-side proof API: the solution component is
+injective on total axis carriers, by the same route-factorization argument. -/
 theorem solution_axisSigmaMap_injective :
     Function.Injective
       (refinementAxisSigmaMap
@@ -165,8 +172,9 @@ theorem solution_axisSigmaMap_injective :
   rw [← solution.triangle PUnit.unit]
   simp only [refinementAxisSigmaMap_comp, equality]
 
-/-- The solution component is injective on total observable carriers, by the
-same route-factorization argument. -/
+/-- G-115 revision 8 clause (b) observable-side proof API: the solution
+component is injective on total observable carriers, by the same
+route-factorization argument. -/
 theorem solution_observableSigmaMap_injective :
     Function.Injective
       (refinementObservableSigmaMap
@@ -178,8 +186,9 @@ theorem solution_observableSigmaMap_injective :
   rw [← solution.triangle PUnit.unit]
   simp only [refinementObservableSigmaMap_comp, equality]
 
-/-- The actual named solution component preserves the carrier of every total
-support value.  This is the sigma-map form of the reviewed pointwise
+/-- G-115 revision 8 clause (b) support provenance bridge: the actual named
+solution component preserves the carrier of every total support value.  This
+is the sigma-map form of the reviewed pointwise
 carrier-conservativity theorem. -/
 theorem solution_supportSigmaMap_carrier_conservative
     (value : Σ W :
@@ -193,8 +202,8 @@ theorem solution_supportSigmaMap_carrier_conservative
   rcases value with ⟨W, support⟩
   exact solution_support_carrier_conservative W support
 
-/-- The actual named solution component preserves the carrier of every total
-axis value. -/
+/-- G-115 revision 8 clause (b) axis provenance bridge: the actual named
+solution component preserves the carrier of every total axis value. -/
 theorem solution_axisSigmaMap_carrier_conservative
     (value : Σ W :
       (problem.data.generatedBaseRouteGeometryAt PUnit.unit).site.category,
@@ -207,8 +216,8 @@ theorem solution_axisSigmaMap_carrier_conservative
   rcases value with ⟨W, axis⟩
   exact solution_axis_carrier_conservative W axis
 
-/-- The actual named solution component preserves the carrier of every total
-observable value. -/
+/-- G-115 revision 8 clause (b) observable provenance bridge: the actual named
+solution component preserves the carrier of every total observable value. -/
 theorem solution_observableSigmaMap_carrier_conservative
     (value : Σ W :
       (problem.data.generatedBaseRouteGeometryAt PUnit.unit).site.category,
@@ -221,9 +230,9 @@ theorem solution_observableSigmaMap_carrier_conservative
   rcases value with ⟨W, observable⟩
   exact solution_observable_carrier_conservative W observable
 
-/-- On support carriers, the generated base comparator followed by the actual
-solution component differs from the actual component followed by the identity
-comparator. -/
+/-- G-115 revision 8 clause (b) support negative witness: the generated base
+comparator followed by the actual solution component differs from the actual
+component followed by the identity comparator. -/
 theorem generatedBaseIdentityPair_support_incoherent :
     HEq
       (refinementSupportSigmaMap
@@ -268,7 +277,8 @@ theorem generatedBaseIdentityPair_support_incoherent :
   apply solution_supportSigmaMap_injective
   simpa [refinementSupportSigmaMap_comp] using equality
 
-/-- The same qualified route pair fails descent on axis carriers. -/
+/-- G-115 revision 8 clause (b) axis negative witness: the same qualified
+route pair fails descent on axis carriers. -/
 theorem generatedBaseIdentityPair_axis_incoherent :
     HEq
       (refinementAxisSigmaMap
@@ -313,7 +323,8 @@ theorem generatedBaseIdentityPair_axis_incoherent :
   apply solution_axisSigmaMap_injective
   simpa [refinementAxisSigmaMap_comp] using equality
 
-/-- The same qualified route pair fails descent on observable carriers. -/
+/-- G-115 revision 8 clause (b) observable negative witness: the same
+qualified route pair fails descent on observable carriers. -/
 theorem generatedBaseIdentityPair_observable_incoherent :
     HEq
       (refinementObservableSigmaMap
@@ -358,9 +369,10 @@ theorem generatedBaseIdentityPair_observable_incoherent :
   apply solution_observableSigmaMap_injective
   simpa [refinementObservableSigmaMap_comp] using equality
 
-/-- The generated base transport and identity-comparator pulled transport are
-both individually qualified, but their actual route components do not satisfy
-comparator descent. -/
+/-- G-115 revision 8 clause (b)'s principal negative witness: the generated
+base transport and identity-comparator pulled transport are both individually
+qualified, but their actual route components do not satisfy comparator
+descent. -/
 theorem generatedBaseIdentityPair_not_comparatorDescentAt :
     ¬ UpperComparatorDescentAt problem.data.generatedBaseRouteTransport
       problem.data.generatedPulledIdentityComparatorTransport

@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 67)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 68)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -3838,7 +3838,7 @@ result:
   completion_candidate: no
   lean_artifacts: [UpperComparatorDescentAt, UpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport_comparator, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparator_coefficient_id, UpperDecisionWitness.upperDecisionSolution_comparatorDescentAt, UpperDecisionWitness.solution_supportSigmaMap_injective, UpperDecisionWitness.solution_axisSigmaMap_injective, UpperDecisionWitness.solution_observableSigmaMap_injective, UpperDecisionWitness.solution_supportSigmaMap_carrier_conservative, UpperDecisionWitness.solution_axisSigmaMap_carrier_conservative, UpperDecisionWitness.solution_observableSigmaMap_carrier_conservative, UpperDecisionWitness.generatedBaseIdentityPair_support_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_axis_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_observable_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_not_comparatorDescentAt]
   source_sha256:
-    UpperGeometryCompatibleComparatorIncoherence.lean: e1c195923ffe01fd16836d00e5c7f47d73d2bf994dce0e31ff60db7e3fcf348b
+    UpperGeometryCompatibleComparatorIncoherence.lean: 62d8d61b2810d5452961ff8e97ebd2829d7dccd65abc5e525a67b50ac3317384
   evidence: [focused Lean single-file check, 17-declaration namespace standard-axiom audit, literal bridges from both solution comparator fields, definitionally comparator-only transport replacement, existing generated-base comparator coefficient theorem plus new pulled-identity coefficient theorem, direct proof-use of all three reviewed carrier-conservativity theorems, three carrier-specific conservation-and-inequality artifacts, full predicate negation]
   claim_mapping:
     theorem_names: [UpperComparatorDescentAt, UpperRefinementBCSolution.comparatorDescentAt, UpperGeometryCompatibleProblemInputData.GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt, UpperDecisionWitness.upperDecisionSolution_comparatorDescentAt, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport, UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparator_coefficient_id, UpperDecisionWitness.generated_base_comparator_coefficient_id, UpperDecisionWitness.solution_supportSigmaMap_carrier_conservative, UpperDecisionWitness.solution_axisSigmaMap_carrier_conservative, UpperDecisionWitness.solution_observableSigmaMap_carrier_conservative, UpperDecisionWitness.generatedBaseIdentityPair_support_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_axis_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_observable_incoherent, UpperDecisionWitness.generatedBaseIdentityPair_not_comparatorDescentAt]
