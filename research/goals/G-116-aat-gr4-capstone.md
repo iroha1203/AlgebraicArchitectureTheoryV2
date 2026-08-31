@@ -295,7 +295,7 @@
 
 | id | revision 5 義務 | disposition |
 |---|---|---|
-| O10-r5-negative | G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとするexact upper equivalenceとprimitive非実現 theoremを構成する | Cycle 45でliteral upperのobjectMapが異なるarchitecture-object fibersをcanonical objectへcollapseして非単射であり、full upper cancellationと両立しないことをLeanで固定した。revision 6は正側O10/O11 contractを変更せず、負側だけを同じAtom/context firingを持ちながらfull object dataを保存するG-115-local exact upper automorphismとmatching total homへ差し替える。旧no-go theoremはlossy producer禁止境界として保持する |
+| O10-r5-negative | G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとするexact upper equivalenceとprimitive非実現 theoremを構成する | Cycle 45でliteral upperのobjectMapが異なるarchitecture-object fibersをcanonical objectへcollapseして非単射であり、full upper cancellationと両立しないことをLeanで固定した。revision 6は正側O10/O11 contractを変更せず、負側だけを同じAtom/context firingを持ちながらfull object dataを保存するG-115-local exact upper automorphismとmatching total homへ差し替える。旧no-go theoremは旧lossy upperのproducer不適合を固定する定理として保持する |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 
