@@ -152,8 +152,9 @@
   `RefinementGeometryHom` category、projection、exact embeddingを構成し、そのbridge
   上で、certificate-free compatible inputから二つのstrong cartesian routeとendpoint
   realizationを、G-112 selected-domain isoを使わずexplicit canonical exact・G-114
-  realized-refinement inverse-package upper mapsから構成する。各primitive inhabitantとそのcompositionで
-  theorem-generated `RealizationExactUpperIso`、canonical endpoint geometry isomorphisms、solution
+  realized-refinement inverse-package upper mapsから構成する。lower inverseを要求しない
+  `ExactUpperEquivalence`、upper-map-indexed realization supply、各primitive inhabitantとそのcompositionで
+  theorem-generated `RealizationExactUpperEquivalence`、canonical endpoint geometry isomorphisms、solution
   equivalenceを生成してactual `upperDecisionSolution`を供給する。realization-exactnessやendpoint
   `HGeom`はG-116のregime field / theorem argumentとして受け取らない。G-115は
   `UpperStageExchangeExact`とcanonical-authored companion actual geometry solutionの
@@ -218,8 +219,9 @@
      support 上の reverse regime、actual package 上の active mate、
      その外側の forward-only / inactive 分類が揃って初めて帰趨確定と
      数える。
-     G-115 については geometry-refinement category / projection / exact embedding、raw authored
-     domainの片方向comparison、generated cartesian-compatible locusの二route / endpoint isomorphisms /
+     G-115 については geometry-refinement category / projection / exact embedding、raw G-114 selected
+     domainの片方向comparison、explicit canonical exact / realized-refinement upper equivalenceだけから生成する
+     canonicalized compatible locusの二route / endpoint isomorphisms /
      solution equivalence、actual `upperDecisionSolution`、global comparator coherenceを欠くnamed problem、
      coefficient-trivial actual suborbitのpaired intertwining、`UpperStageExchangeExact` companion iff、canonical-solution-relative
      というexactnessの読みを突合する。
@@ -251,7 +253,7 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper iso、canonical endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
+| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper equivalence、canonical endpoint comparison isomorphisms・solution equivalence、named decision solutionとglobal-comparator-incoherent problem | G-115 |
 | O11 | canonicalized compatible actual solution上のcoefficient-trivial paired reselection / derived raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、generated / canonical-authored actual geometry solution components間の`UpperStageExchangeExact` iff | G-115 |
 | O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
@@ -284,6 +286,7 @@
 | id | revision 4 義務 | disposition |
 |---|---|---|
 | O10-r4 | certificate-free compatible inputから二strong-cartesian routeを生成し、literal G-114 selected endpoint geometry objectsだけからauthored route legs、endpoint comparison inverse、solution equivalenceを構成する | Cycle 45でgenerated core endpoint isoだけではSupport / Axis / Observable carrier maps、reading / restriction lawsを供給せず、`pullGeometryPackageAlongUpperPair`もそれらを輸送しないため`goal-defect`。人間承認revision 5はraw selected domainの片方向comparisonを保持し、双方向部分をexplicit canonical exact・G-114 realized-refinement inverse-package upper mapsだけで生成するcanonicalized locusへ移す。G-112 selected inverseに含まれるopaque domain iso、endpoint `HGeom`、comparison certificateをproducer / caller inputにはしない |
+| O11-r4 | literal G-114 selected endpoint comparison isoからauthored-compatible / generated solution `Equiv`、restricted reselection conjugation、`UpperStageExchangeExact` companion iffを構成する | O10-r4のselected-endpoint realization gapによりcomparison inverseが構成不能で、連鎖する双方向contractも`goal-defect`。revision 5はexact lower inverseを要求せず、explicit canonical exact / realized-refinement forward-backward upper mapsとcancellationから`RealizationExactUpperEquivalence`を生成する。solution `Equiv`、reselection conjugation、companion iffはcanonical-authored / generated solution間へ移し、raw selected solutionとの同値は主張しない |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 
@@ -291,6 +294,7 @@
 |---|---|---|
 | O12-r1 | actual mate-bearing sector / active refinement / active upper-stage regime上でexchange-failureの存否を決定する | O10-r1のglobal upper liftが`goal-defect`となり、全active upper-stage solution域は供給できなかった。人間承認revision 2はG-115がcaller-freeに構成する単一のnamed `upperDecisionSolution`をupper summandへ供給し、現O12はそのchosen-solution-relativeな`UpperStageExchangeExact`を決定する。全active upper-stage solutionsの分類は主張せず、G-115 frontierの全active contextでのliftability classificationへ残す。O19はこの量化域縮小と旧義務のsuperseded dispositionを範囲併記する |
 | O12-r3 | raw authored upper problem全体のcomparisonをsolution equivalenceとしてupper summandへ運ぶ | endpoint cartesiannessを持たないraw domainでは逆比較を生成できず`goal-defect`。人間承認revision 4はraw片方向comparisonをO12外へ分類し、新しいgenerated cartesian-compatible locusのcanonical `upperDecisionSolution`だけをupper summandへ供給する。O19はこのdomain restrictionを記録する |
+| O12-r4 | literal G-114 selected endpoint上のcartesian-compatible solutionをupper summandへ供給する | revision 4 Cycle 45でselected endpointのgeometry inverseが構成不能となり、当該upper summandは未供給。revision 5はraw selected routeとの接続を一方向comparisonとcore squareに限定し、explicit upper equivalenceから構成するcanonicalized `upperDecisionSolution`だけをO12へ供給する。O12のactual componentによる`IsIso` / `¬ IsIso`決定責務は変更せず、O19はselected domainとcanonicalized domainの差を記録する |
 
 **G-113 revision 1 義務 disposition(履歴台帳)**:
 
