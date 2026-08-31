@@ -3686,3 +3686,57 @@ audits:
   blocking_findings: []
   next_obligation: Construct the named comparator-incoherent raw problem outside the compatible locus, its rigid comparator-free pre-solution, and the concrete no-solution theorem without adding a comparator certificate or applying the compatible solution Equiv.
 ```
+
+## Cycle 65 — comparator-incoherent raw negative problem
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 65
+goal_blob_sha: 2e0c792a9387f9f4d0272590ad0129bfea5e04ff
+goal_sha256: 14c9f071c1815252693ab0e060f6dcd7172057bc1cb2a572e9ef5bd77159507b
+base_oid: a1bf604b8637e4a95052e5925bcb9c8bb079de9b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 64 merged in PR 4320 with the named compatible decision packet; its next obligation fixes the negative raw problem
+  proof_dag_predecessors: [certificate-free compatible input, generated base and pulled strong-Cartesian legs, generated compatible mate and edge equations, Cycle 64 concrete base-comparator axis firing]
+  proof_obligation: Construct a raw upper problem outside the compatible locus with independently authored base and pulled comparators, construct all comparator-free solution fields, prove Cartesian uniqueness of every candidate component, and derive a concrete no-solution theorem from failure of the global comparator equation
+  selection_reason: This discharges the remaining negative half of the named decision premise without adding a comparator certificate or using the compatible solution Equiv; it is the shortest predecessor of the paired-cochain and exchange-exactness artifacts
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryComparatorIncoherentProblem.lean]
+  risks: [reusing the compatible solution Equiv, storing comparator coherence as a field, comparing only core identities without an actual finite firing, omitting coefficient identity, claiming no-solution from a missing inhabitant, failing to fix arbitrary candidate components by the Cartesian universal property]
+  unchecked: [paired cochain and coefficient-trivial restricted reselection equivalence, nonidentity intertwined firing, UpperStageExchangeExact companion iff, final K4 completion review]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: UpperComparatorRawProblem.Data separates independently authored route comparators from the generated Cartesian route data. ComparatorFreePreSolution retains the component, fixed core projection, coefficient identity, triangle, edge, nil, and append equations, and its generated inhabitant does not inspect either comparator. component_eq_generated proves by the pulled leg's strong-Cartesian uniqueness that every candidate component is the theorem-generated mate. The named negative problem assigns the reviewed nonidentity base comparator and the identity pulled comparator. Their concrete Fin 4 axis evaluations are 1-to-2 and 1-to-1. Any alleged solution is first fixed to the generated mate by Cartesian uniqueness; injectivity of the generated route-mate isomorphism then turns the comparator equation into 2 equals 1. Thus the raw solution type is uninhabited.
+  completion_candidate: no
+  lean_artifacts: [UpperComparatorRawProblem.Data, UpperComparatorRawProblem.ComparatorFreePreSolution, UpperComparatorRawProblem.Solution, UpperComparatorRawProblem.ComparatorFreePreSolution.generated, UpperComparatorRawProblem.ComparatorFreePreSolution.component_eq_generated, UpperComparatorIncoherentWitness.problem, UpperComparatorIncoherentWitness.preSolution, UpperComparatorIncoherentWitness.preSolution_component_unique, UpperComparatorIncoherentWitness.comparator_axis_incoherent, UpperComparatorIncoherentWitness.no_solution, upperComparatorIncoherentProblem, upperComparatorIncoherentPreSolution, upperComparatorIncoherentProblem_noSolution]
+  source_sha256:
+    UpperGeometryComparatorIncoherentProblem.lean: 31023c12947fa6bbf61b7c441186531fca84e24c5fe762ee93dba35a500ef4ba
+  evidence: [focused Lean single-file check, 60-declaration namespace standard-axiom audit, concrete base and pulled comparator axis evaluations, Cartesian component uniqueness, route-mate inverse cancellation]
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 64 finite compatible input and its generated strong-Cartesian route data]
+    direction_hypothesis: [two independently authored coefficient-trivial route comparators in the raw problem]
+    discharged: [named comparator-incoherent raw problem, rigid comparator-free pre-solution, arbitrary candidate component uniqueness, concrete global-comparator contradiction, raw solution-space noninhabitation]
+    remaining: [paired cochain and restricted reselection bidirectional transport, nonidentity intertwined firing, UpperStageExchangeExact companion iff, K4 completion audit]
+  certificate_provenance:
+    raw_problem: generated route legs edges and mate come from the Cycle 64 certificate-free input; only the two raw route comparators are independently authored
+    pre_solution: constructed from the generated component and comparator-free equations; it does not read either comparator
+    obstruction: concrete generated-base comparator axis firing from Cycle 64 versus the definitional identity pulled comparator
+  proof_use:
+    used: [generated pulled-leg strong cartesianness, both candidate and generated triangle equations, both component core projections, generated route-mate isomorphism cancellation, concrete base-comparator axis firing, raw comparator-intertwining equation]
+    deliberately_not_used: [compatible solution Equiv, caller-supplied coherence proof, no-solution field, stored nonidentity proposition, decision component IsIso classification]
+  structure_field_escape: no coherence or non-liftability field; Data stores only the independently authored comparators and their coefficient identities
+  route_integrity: the raw problem reuses the actual named finite generated routes and changes only the independently authored pulled comparator; the obstruction is evaluated on the same Fin 4 axis as the positive packet
+  predecessor_integrity: G-108 G-109 G-112 G-114 Formal and the revision-7 GOAL are unchanged
+  target_fitting: none-found; comparator-free inhabitation and arbitrary-candidate rigidity are proved before the comparator contradiction
+  vacuity: the pre-solution is explicitly inhabited, the base comparator is concretely nonidentity, and no-solution follows only after consuming the global comparator equation
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryComparatorIncoherentProblem.lean` passed and reported 60 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryComparatorIncoherentProblem` passed with 4144 jobs; only the direct dependency target UpperGeometryCompatibleDecisionFixtures was built beforehand; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct coefficient-trivial reselection transport in both directions between the generated and canonical-authored solution sides, prove the restricted-space inverse laws and paired cochain relation, and fire the intertwining on the named nonidentity decision data.
+```
