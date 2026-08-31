@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 70)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 71)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -3983,4 +3983,63 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedRawCochainIntertwining.lean` passed and reported four declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryPairedRawCochainIntertwining` completed its targeted dependency DAG successfully; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; changed-file placeholder and hidden or bidirectional Unicode scans had no hits; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define the full transparent Gr4 paired coefficient-trivial reselection relation as a substantive conjunction containing the endpoint bridge, a reselected path-leg triangle derived from solution.triangle, authored comparator pasting, and actual composite coefficient triviality. Then package paired restricted-suborbit preservation using the same base and pulled witnesses and both exact cochains before endpoint conjugation.
+```
+
+## Cycle 71 — full transparent Gr4 paired reselection relation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 71
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 1ddaed314e1181c97359eab037fe17af7f7282d3
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 70 is merged and proves actual raw-cochain intertwining from the nonvacuous Cycle 69 endpoint precursor, while leaving triangle and coefficient proof-use outside the full relation.
+  proof_dag_predecessors: [Cycle 69 endpoint and path naturality, Cycle 70 canonical and raw-cochain intertwining, compatible solution triangle comparator and coefficient fields, actual route edge and comparator coefficient laws, actual canonical comparator factorization]
+  proof_obligation: Define the full transparent Gr4 paired coefficient-trivial reselection relation so that the same base and pulled witnesses occur in endpoint intertwining, a reselected path-leg triangle, reselected authored-comparator pasting, and coefficient triviality of the actual raw-cochain component square; derive identity multiplication and a named nonidentity firing without accepting the additional conjuncts as caller certificates.
+  selection_reason: A relation aliasing the endpoint precursor would not materially consume triangle or coefficient data, while storing the raw-cochain equality would answer-encode Cycle 70. The four-conjunct relation makes each geometric role visible and regenerates all extra conjuncts from the endpoint witness and existing actual solution and route laws.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedCoefficientLaws.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryFullPairedReselection.lean]
+  risks: [bare solution fields copied into the relation, caller-supplied triangle comparator or coefficient certificates, replacement cochain, component inverse, core-only triangle, coefficient type equality without hom calculation, raw equality stored as a field, identity-only full relation]
+  unchecked: [same-witness paired restricted-suborbit preservation, endpoint-comparison forward and backward conjugation transports and inverse laws, canonical companion paired transport, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Coefficient laws now propagate each actual reselection coefficient identity through actual reselected edges and paths, force the actual canonical comparator and its inverse to fix coefficients via its factorization and iso cancellation, and combine the literal authored route comparator law with the actual G-109 raw defect. The resulting base and pulled raw cochains compose with the actual solution component to coefficient identity on both sides. ReselectedPathLegTriangle is a complete refinement-geometry equality containing both actual reselected paths, both generated legs, and the actual source component; it is derived from Cycle 69 path naturality and solution.triangle. ReselectedAuthoredComparatorPasting contains both actual reselected left paths and both literal authored comparators and is derived from path naturality plus solution.comparator_intertwining. PairedCoefficientTrivialUpperReselection is the conjunction of endpoint intertwining, those two pair-dependent equations, and actual raw-square coefficient triviality. Its constructor accepts only the endpoint witness and regenerates all other conjuncts, so identity multiplication and the named nonidentity generated pair cannot escape through supplied certificates. The raw-cochain equality remains the separately proved Cycle 70 theorem and is not stored in the relation.
+  completion_candidate: no
+  lean_artifacts: [CoefficientTrivialUpperEdgeReselection.upperReselectedEdgeLift_coefficient_id, CoefficientTrivialUpperEdgeReselection.upperReselectedPathLift_coefficient_id, CoefficientTrivialUpperEdgeReselection.upperCanonicalTwoCellComparator_coefficient_id, CoefficientTrivialUpperEdgeReselection.upperCanonicalTwoCellComparator_inv_coefficient_id, CoefficientTrivialUpperEdgeReselection.upperRawDefectCochain_coefficient_id, UpperGeometryCompatibleProblemInputData.upperRawDefectCochain_component_square_coefficient_id, UpperGeometryCompatibleProblemInputData.ReselectedPathLegTriangle, CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_legTriangle, UpperGeometryCompatibleProblemInputData.ReselectedAuthoredComparatorPasting, CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedAuthoredComparator_pasting, UpperGeometryCompatibleProblemInputData.RawCochainComponentCoefficientTrivial, UpperGeometryCompatibleProblemInputData.PairedCoefficientTrivialUpperReselection, CoefficientTrivialUpperReselectionEndpointIntertwining.toPaired, pairedCoefficientTrivialUpperReselection_one, PairedCoefficientTrivialUpperReselection.mul, PairedCoefficientTrivialUpperReselection.upperRawDefectCochain_intertwining, UpperDecisionWitness.generatedComparatorUpperReselections_paired_fires, UpperDecisionWitness.generatedComparatorUpperReselections_paired_rawCochain_fires]
+  source_sha256:
+    UpperGeometryPairedCoefficientLaws.lean: 7caeff9b569382e9fef6d662ae6dca136bbf246485b47ac3a526bfe2e94f3329
+    UpperGeometryFullPairedReselection.lean: d50347eed822372f67b0bbd6ba935a3a397e7cfbcd8dc9db9209f98ab20ee545
+  evidence: [two focused Lean single-file checks, 6 and 12 declaration namespace standard-axiom audits, targeted dependency DAG build, pair-dependent complete refinement-geometry triangle, literal authored comparator pasting, explicit coefficient hom calculations, endpoint-only full constructor, named nonidentity full pair and raw-cochain firing]
+  claim_mapping:
+    theorem_names: [PairedCoefficientTrivialUpperReselection, CoefficientTrivialUpperReselectionEndpointIntertwining.toPaired, CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_legTriangle, CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedAuthoredComparator_pasting, upperRawDefectCochain_component_square_coefficient_id, pairedCoefficientTrivialUpperReselection_one, PairedCoefficientTrivialUpperReselection.mul, generatedComparatorUpperReselections_paired_fires]
+    source_labels: [revision 8 clause c full paired relation, target proof strategy K3 triangle edge comparator coefficient material use]
+    conjuncts: [actual endpoint intertwining, pair-dependent reselected path-leg triangle, pair-dependent actual authored comparator pasting, both actual raw-square composites coefficient identity, identity closure, vertical composition closure, named nonidentity full pair, actual raw-cochain theorem firing]
+    undischarged_assumptions: [paired restricted-suborbit and endpoint conjugation obligations remain]
+    acceptance_point: Full relation membership is generated from an actual endpoint witness and existing solution and route laws. No additional relation conjunct can be supplied by the caller, and the final raw-cochain equality is derived rather than stored.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [full transparent paired relation, factorization triangle material use on reselected paths, literal authored comparator material use, base and pulled reselection coefficient propagation, canonical and raw-cochain coefficient laws, component coefficient material use on both square composites, identity multiplication and named nonidentity full firing]
+    remaining: [same-witness paired restricted-suborbit preservation, endpoint conjugation transports with inverse laws, canonical companion transport, exchange-exactness iff, final K4 audit]
+  certificate_provenance:
+    discharged: [only endpoint witness enters the full constructor, triangle follows from actual path naturality and solution triangle, authored pasting follows from actual path naturality and literal comparator equation, coefficient square follows from reselection route comparator canonical iso and solution coefficient laws]
+    unresolved: [paired orbit witness and endpoint conjugation certificates]
+  proof_use:
+    used: [base and pulled reselection coefficient_id, fixed route edge_coefficient_id, fixed route comparator_coefficient_id, canonical comparator factorization, comparator iso inverse identity, actual upperRawDefectCochain, solution.component_coefficient_id, solution.triangle, solution.comparator_intertwining, Cycle 69 reselectedPath_naturality, Cycle 70 raw-cochain theorem]
+    deliberately_not_used: [bare solution fields as relation conjuncts, solution component inverse, replacement cochain, caller-supplied triangle comparator coefficient or raw equality, core-only transport, selector, full orbit MapsTo]
+  structure_field_escape: none-found; the full relation is a transparent Prop conjunction and its public constructor accepts only the already nonvacuous endpoint relation
+  route_integrity: pass; every new equation uses the exact generated base and pulled route data and actual reselection witnesses
+  predecessor_integrity: pass; G-108 G-109 G-112 G-114 Formal and the fixed revision 8 GOAL are unchanged
+  target_fitting: none-found; relation fields match the requested component triangle authored comparator and coefficient roles without storing the downstream cochain conclusion
+  vacuity: pass; identity and vertical multiplication are constructed, and the Cycle 69 nonidentity generated base witness participates in the named full pair and actual raw-cochain firing
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; paired orbit conjugation clause d and K4 remain explicitly open
+  validation_refs: [`./check_research_modules.sh --focused` passed separately for both new files and reported 6 and 12 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryFullPairedReselection` completed its targeted dependency DAG successfully; both modules registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Define same-witness InPairedCoefficientTrivialUpperReselectionOrbit using one full paired base and pulled witness plus both exact actual raw cochain equalities. Prove projection to each existing coefficient-trivial suborbit, componentwise cochain equality and coefficient preservation after existential elimination, then proceed to endpoint comparison conjugation.
 ```
