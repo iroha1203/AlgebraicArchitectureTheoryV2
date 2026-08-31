@@ -119,6 +119,18 @@
     typeclass instanceとして受け取らず、primitive自身とbase / pulled endpointのinhabitationを
     Lean theoremで構成する。G-112 selected inverseに含まれるopaque `StrongCartesianLift.domainIso`は
     producerに使わず、revision 4のraw一方向comparisonとcanonicalized compatible locusの区別は保持する。
+  - revision 5 Cycle 45では、G-108 `NegativeGeometryWitness.coreHom.upper`のAtom mapはinvolutionでも、
+    `objectMap`が同一configuration上の異なる`ArchitectureObject`をcanonical objectへcollapseするため
+    非単射であり、`ExactUpperEquivalence.forward_backward`が要求する左逆を持てないことを
+    `no_negativeExactUpperEquivalence`で固定した。これはG-108のlossy selected-lift負例としての役割を
+    否定せず、G-115の可逆upper負例producerとしてだけ不適合である。
+  - 人間承認revision 6は、正側の`RealizationExactUpperEquivalence`、canonical exact / realized-refinement
+    endpoint producer、solution / reselection / cochain責務を変更しない。負側だけを役割分離し、同じ
+    component A/B Atom involutionとcontext actionを持ちながら、任意の`ArchitectureObject`の
+    `StructureMaps`、`SelectedQuantities`とその選択値を保存し、configurationだけをtransportする
+    G-115-local structure-preserving exact upper automorphismへ差し替える。旧`coreHom.upper`のno-goは
+    旧lossy upperのproducer不適合を固定する定理として保持し、新automorphismのfull computational cancellationと具体的
+    realization非実現を別々に証明する。
 
 - `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
   Naturality Theorem**。次を構成・証明する。
@@ -194,15 +206,31 @@
      `HGeom`として読むadapterを与える。逆向きも同様とする。lower morphismを捏造せず、
      `HGeom`はexact total homが実在する方向だけに接続する。
 
-     このdataが任意のexact upper equivalenceに存在しないこともtarget artifactとしてLeanで固定する。具体的には
-     G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとし、Atom swapの明示的なbackwardと
-     両側cancellationを証明した `negativeExactUpperEquivalence`を構成する。その上で
-     `not_realizationExact_negativeExactUpperEquivalence :
-     ¬ Nonempty (RealizationExactUpperEquivalence negativeExactUpperEquivalence)`を、forward supplyを
-     上記total-hom adapterで`RealizationTransportSupply _ _ NegativeGeometryWitness.coreHom`へ移し、
-     `NegativeGeometryWitness.not_hGeom`へ帰着して証明する。単にupper pairの負例を仮定するだけでは
-     新primitiveの非実現性とは数えない。生成locusが空でないことは下記のbase / pulled
-     endpoint theoremで示す。
+     このdataが任意のexact upper equivalenceに存在しないこともtarget artifactとしてLeanで固定する。
+     G-108 `NegativeGeometryWitness.coreHom.upper`はlossy object normalizationを含みfull upper equivalenceに
+     ならないため、Cycle 45 `no_negativeExactUpperEquivalence`を旧lossy upperのproducer不適合を固定する定理として保持する。
+     代わりに、その公開Atom equivalenceと同じcontext actionを使い、任意の`ArchitectureObject`の
+     configurationだけをtransportして`StructureMaps` / `SelectedQuantities` / 各選択値を保持する
+     `structurePreservingSwapUpper`をG-115-localに構成する。全`SignedExactCoreReadingHom` computational
+     fieldsについて自己合成がreflであることを証明し、同じmapをforward / backwardとする
+     `structurePreservingSwapExactUpperEquivalence`を構成する。また既存exact doctrine homと組み合わせた
+     matching total hom `structurePreservingSwapCoreHom`を構成し、G-108 obstruction contextの具体
+     support-reading評価から
+     `not_hGeom_structurePreservingSwap :
+     ¬ Nonempty (HGeom NegativeGeometryWitness.package structurePreservingSwapCoreHom)`を独立に証明する。
+     その上でforward supplyをmatching total-hom adapterへ移し、
+     `not_realizationExact_structurePreservingSwap :
+     ¬ Nonempty (RealizationExactUpperEquivalence structurePreservingSwapExactUpperEquivalence)`へ帰着する。
+     この構成に先立ち、private fixture名をstatementまたはproof-use provenanceに含めない
+     G-115-local bridge lemma群として、公開Atom equivalenceのinvolution、structure-preserving
+     object mapに対するequation residual transport、operation conjugation / naturality、invariant
+     transport、自己合成時のequation transport / operation mapのdependent `HEq` cancellationを証明する。
+     公開projectionだけではこれらのstatementを証明できないことがfocused elaborationで確定した場合に限り、
+     G-108のdefinition、既存theorem statement、負例の意味を変更しないconservativeなpublic
+     characterization theoremを`Formal/AG/ReadingFunctoriality/FiniteExamples.lean`へ追加してよい。
+     その追加APIはfixtureの既存computational bodyから証明し、G-115-local bridge lemmaから実消費する。
+     旧`NegativeGeometryWitness.not_hGeom`の単なるrename、upper pairの非実現仮定、canonical objectだけへの
+     量化制限は新primitiveの非実現性と数えない。生成locusが空でないことは下記base / pulled endpoint theoremで示す。
 
      `UpperGeometryCompatibleProblemInput`から生成済みの各vertexについて、
      `strongCartesianLiftOfTarget`が公開するexplicit canonical exact inverse-package upper pairと
@@ -362,7 +390,10 @@
 
 - `target theorem boundary`: Lean置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新module。
-  G-108 / G-109 / G-112 / G-114 reviewed modulesは参照のみで変更しない。
+  G-108 / G-109 / G-112 / G-114 reviewed ResearchLean modulesは参照のみで変更しない。
+  ただしstructure-preserving swap bridgeに必要な場合だけ、上記のconservativeなpublic
+  characterization theoremをFormal finite fixture moduleへ追加できる。既存definition / theorem
+  statementの変更、private名のResearchLean側への露出、G-108負例の再定義は禁止する。
   G-115-local cleavageはそれらのpublic constructors / universal propertiesから構成する。
   Research aggregate /
   full buildは禁止し、direct dependency DAGとfocused file checkだけを使う。
@@ -371,7 +402,9 @@
   `upperGeometryMate`、任意のraw authored problemからcore-selected companionへの片方向comparison、
   `UpperGeometryCompatibleProblemInput`、`ExactUpperEquivalence`、`UpperRealizationTransportSupply`と
   total-hom supply equivalence、`RealizationExactUpperEquivalence`とidentity / symmetry / composition /
-  条件付き両方向`HGeom`接続、`negativeExactUpperEquivalence`とそのrealization-exactness非実現 theorem、
+  条件付き両方向`HGeom`接続、`structurePreservingSwapUpper` / matching total hom /
+  structure-preserving object mapのequation residual / operation / invariant transportとdependent
+  cancellation bridge lemma群、`structurePreservingSwapExactUpperEquivalence`とそのrealization-exactness非実現 theorem、
   explicit canonical exact / realized-refinement inverse-package upper equivalenceのrealization-exactness theoremと、
   そのcompositionから生成するbase / pulled route realization-exactness theorem、
   canonicalized solution contracts、G-112 / G-114から生成する二つのstrong cartesian route、
@@ -387,7 +420,7 @@
   exact comparison、K1 G-114 composite legs / factorization triangle、K2a raw problemと
   K2b1 core-selected solution contract、K2b2a 任意raw problemの片方向comparison、
   K2b2b certificate-free compatible inputから二つのcartesian route、K2b2b-rで
-  upper supply / `RealizationExactUpperEquivalence`の最小algebra、negative upper equivalence非実現 witness、explicit canonical exact /
+  upper supply / `RealizationExactUpperEquivalence`の最小algebra、structure-preserving negative upper equivalence非実現 witness、explicit canonical exact /
   realized-refinement inhabitantとconcrete base / pulled composition生成、K2b2b-iでその
   realization transportを実消費するendpoint isomorphismsとsolution equivalence、K2b2c named decision / negative problems、K3 paired cochain theoremと
   conjugation、K4 premise / proof-use / axiom / nonvacuity監査。
@@ -397,7 +430,7 @@
   G-114 lower lax arrows、bridge projection、leg triangle、G-109 comparator、actual cochainの
   proof-useに加え、compatible inputからの両route生成とstrong cartesianness、endpoint inverseの
   universal uniqueness provenance、realization-exactness primitiveの両方向生成provenanceと
-  Support / Axis / Observable inverse lawのproof-use、negative upper equivalenceでの非実現性、selected-domain isoを
+  Support / Axis / Observable inverse lawのproof-use、structure-preserving negative upper equivalenceでの非実現性、selected-domain isoを
   producerに使っていないこと、canonical comparison isomorphismsとsolution equationsのproof-use、
   predecessor不変性を監査し、report / tracking Issueを同期する。各実装PRのfixed-head
   `$review-pr` とcompletion candidateのfinal review packetに対する独立
@@ -417,7 +450,7 @@
 | `RefinementGeometryHom` category / projection / exact embedding | discharge-required | 欠落primitive。lax lowerを実fieldに持ち、exact lowerを捏造しない。category lawsとfaithfulnessを証明する |
 | arbitrary raw authored comparison | discharge-required | authored comparator / cochain direction dataからcore-selected companionへの片方向comparisonを構成し、route factor lawとcomparator preservationを証明する。support / axis / observable inverseやsolution-space equivalenceは主張しない |
 | `UpperGeometryCompatibleProblemInput` / compatible route generation | discharge-required | route leg / comparator、comparison、`IsIso`、cartesianness certificate、solution、raw cochainをfieldに持たないsource finite dataと単一source transport comparatorから二routeを生成する。各legのstrong cartesiannessを使うG-115-local cartesian pullback / exactification APIで二comparatorを生成し、map-id / map-mul、G-109 compositor / unitor compatibility、canonical mateのglobal equation、derived cochainを証明する |
-| realization-exact upper equivalence / endpoint generation | discharge-required | `ExactUpperEquivalence`はforward / backward `SignedExactCoreReadingHom`と両側upper cancellationだけを持つ。`UpperRealizationTransportSupply`は既存total-hom supplyと同じ三carrier map・reading preservation・naturalityをupper map上に置き、任意のtotal homでは既存`RealizationTransportSupply`との`Equiv`を証明する。`RealizationExactUpperEquivalence`は両方向upper supplyと三carrierのcomponentwise両側inverse lawだけをfieldに持ち、identity / symmetry / composition、reading reflection、exact total homが存在する方向の`HGeom` adapterを導出する。G-108 `NegativeGeometryWitness.coreHom.upper`をforwardとする`negativeExactUpperEquivalence`とprimitive非実現 theoremを証明する。正側は`strongCartesianLiftOfTarget`のexplicit canonical exact inverse-package upper equivalenceとG-114 realized-refinement inverse-package upper equivalenceを別々に構成し、そのcompositionからbase / pulled route inhabitantsを生成する。context equivalenceのunit / counit、restriction maps、observable equivalence、upper cancellationを実消費する。lower inverseの捏造、G-112 selected inverseのopaque domain iso、任意upper pair、`HGeom × HGeom`のrename、comparison certificateは放電と数えない |
+| realization-exact upper equivalence / endpoint generation | discharge-required | `ExactUpperEquivalence`はforward / backward `SignedExactCoreReadingHom`と両側upper cancellationだけを持つ。`UpperRealizationTransportSupply`は既存total-hom supplyと同じ三carrier map・reading preservation・naturalityをupper map上に置き、任意のtotal homでは既存`RealizationTransportSupply`との`Equiv`を証明する。`RealizationExactUpperEquivalence`は両方向upper supplyと三carrierのcomponentwise両側inverse lawだけをfieldに持ち、identity / symmetry / composition、reading reflection、exact total homが存在する方向の`HGeom` adapterを導出する。負側はG-108の公開Atom involution / context actionを保ちつつ任意`ArchitectureObject`の非configuration fieldsを保存するG-115-local `structurePreservingSwapUpper`、matching total hom、full upper cancellation、`structurePreservingSwapExactUpperEquivalence`、具体support-reading非実現 theoremを証明する。その前提としてAtom involution、equation residual、operation conjugation / naturality、invariant transport、dependent cancellationのbridge lemma群をG-115-localに証明する。公開projectionだけで不足する場合は、既存fixture bodyから証明するconservativeなpublic characterization theoremだけをFormal finite fixture moduleへ追加し、bridge lemmaがこれを実消費する。Cycle 45 `no_negativeExactUpperEquivalence`により旧lossy `coreHom.upper`をproducerに使わない。正側は`strongCartesianLiftOfTarget`のexplicit canonical exact inverse-package upper equivalenceとG-114 realized-refinement inverse-package upper equivalenceを別々に構成し、そのcompositionからbase / pulled route inhabitantsを生成する。context equivalenceのunit / counit、restriction maps、observable equivalence、upper cancellationを実消費する。lower inverseの捏造、G-112 selected inverseのopaque domain iso、任意upper pair、`HGeom × HGeom`のrename、comparison certificate、canonical/reachable objectだけへの負例の量化制限は放電と数えない |
 | endpoint comparison isomorphisms / solution equivalence | discharge-required | theorem-generated canonical route realization-exact upper equivalenceから両方向complete geometry homを構成し、normalization unit / associativityとstrong-cartesian uniquenessからbase / pulled endpoint inverseを導出する。exact lower homが必要な箇所では既存forward total homだけを使用し、backward upper mapにlower inverseを付加しない。conjugation `b.inv ≫ s ≫ p.hom` と逆写像 `b.hom ≫ ĝ ≫ p.inv` がcanonical-authored / generated solutionの全fieldを保存し両側inverseであることを証明する。raw G-114 selected solution contractとのEquivや、元solutionをwrapper / sigma fieldに保存する構成は主張しない |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。raw authored domainではroute間inverseを含まず、compatible inputの代替とは数えない |
 | named decision / negative problems | discharge-required | source-generated comparator coherenceを含むcompatible constructorからactual `upperDecisionSolution`を構成する。別にcompatible locus外でlocal cartesian legs / local matesとcomparator以外の全solution fieldsを満たすrigid pre-solutionを持つが、global authored comparator equationが具体評価で破れるraw problemを構成する。cartesian uniquenessで任意candidateをpre-solutionへ固定してraw solution spaceの不在を示す。decision componentのIsIsoは決めずcertificate payload不可 |
@@ -452,7 +485,8 @@
   明示的canonical lift、concrete inverse-package realization-exactness theorem、または具体finite
   constructionに固定する。realization-exactnessは任意upper pairから選ばず、base / pulledの各生成
   declaration、canonical exact / realized-refinementの各inhabitantとそのconstructor-level dependencyを
-  固定する。G-108の負例もcore homの引用だけでなくexplicit upper equivalenceとprimitive非実現 theoremで固定する。
+  固定する。負側もG-108のlossy core homをupper equivalenceと呼ばず、同じAtom/context firingを持つ
+  structure-preserving explicit upper equivalence、matching total hom、primitive非実現 theoremで固定する。
   G-114とのcore comparison squareを
   欠くparallel route、target-fitting selection、結論側lawのfield化、
   empty / identity-only退化、片方向theoremの同値扱いを受理しない。
@@ -480,10 +514,13 @@
     二つのstrong cartesian route、単一source transport comparatorからのcartesian pullback /
     exactificationによる二comparator / global equation / derived cochain、
     base-iso正規化されたendpoint comparison inverse、またはsolution / cochain
-    transportを構成できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。revision 5では、
+    transportを構成できず、新しいsemantic dataを人間判断なしに選ぶ必要がある。revision 6では、
     explicit canonical exact / realized-refinement inverse-package constructorsからbase / pulled
     `RealizationExactUpperEquivalence`を生成できない、selected-domain isoを使わずcanonicalized solutionを構成できない、
-    または生成primitiveがG-108 non-realization witnessと両立しない場合もこの判定にする。
+    structure-preserving swap upperのfull cancellationまたはmatching total homの具体support-reading非実現を、
+    G-115-local bridge lemmaと許可されたconservative public characterization theoremを実装した後にも
+    構成できない場合もこの判定にする。public characterization APIの現時点での欠落だけを
+    `goal-defect`とは数えない。旧lossy `coreHom.upper`の再利用は解消と数えない。
   - `target-refuted`: category laws、named actual solution、global comparator incoherenceを持つnamed negative problem、
     paired/cochain theoremのいずれかに反例がある。
   - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
@@ -491,12 +528,14 @@
   - `target-theorem-proved`: 全artifact、正負problem、監査、PR merge、台帳同期、final
     4査読を完了した場合だけ。
 
-- `stop reason`: なし(active)。revision 4 Cycle 45のgoal-defectは、core endpoint isoから
-  realization transportを生成する根拠が欠けていたこととして確定した。人間承認revision 5は
-  raw selected-routeの片方向comparisonを保持し、双方向部分をexplicit canonical exact /
-  realized-refinement inverse-packageだけで生成するcanonicalized locusへ固定する。
+- `stop reason`: なし(active)。revision 5 Cycle 45のgoal-defectは、G-108のlossy
+  `coreHom.upper`がfull upper equivalenceでないこととして確定した。人間承認revision 6は
+  正側canonicalized locusを変更せず、負側だけを同じAtom/context firingを持つ
+  structure-preserving exact upper automorphismへ差し替える。旧no-go theoremは旧lossy upperの
+  producer不適合を固定する定理として保持する。
 - `next action`: K2b2b-rで`ExactUpperEquivalence` / `UpperRealizationTransportSupply` /
   `RealizationExactUpperEquivalence`、identity / symmetry / composition、条件付き`HGeom`接続、
-  negative upper equivalence非実現 witness、canonical exact / realized-refinement inhabitants、
+  structure-preserving swap upper / matching total hom / exact upper equivalenceと非実現 witness、
+  canonical exact / realized-refinement inhabitants、
   base / pulled composition inhabitantの完全Lean signaturesとconstructor dependencyを同時に固定する。
   その後、authored route legs / endpoint comparison isomorphismsへ進む。
