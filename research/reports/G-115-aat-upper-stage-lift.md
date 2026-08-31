@@ -3926,3 +3926,61 @@ audits:
   blocking_findings: []
   next_obligation: Define the full transparent clause c paired relation and derive its componentwise upperRawDefectCochain intertwining theorem from endpoint and path naturality while materially consuming solution.triangle solution.comparator_intertwining and solution.component_coefficient_id; then prove paired restricted-suborbit preservation and endpoint conjugation inverse laws.
 ```
+
+## Cycle 70 — actual raw-defect-cochain intertwining
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 70
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 8e83a76590d2c4a72bc2612e3f7b9388199adfb4
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 69 is merged and supplies the nonvacuous actual endpoint-intertwining precursor together with reselected path naturality.
+  proof_dag_predecessors: [Cycle 69 endpoint intertwining and path naturality, actual upperCanonicalTwoCellComparator and its factorization, strong-cocartesian uniqueness of the actual reselected base left path, compatible solution authored comparator equation, actual G-109 upperRawDefectCochain]
+  proof_obligation: Prove that endpoint-intertwined coefficient-trivial reselections intertwine the actual canonical two-cell comparators, their inverses, and consequently the actual G-109 raw defect cochains; fire the theorem on the named nonidentity generated pair.
+  selection_reason: This is the exact actual-endpoint bridge requested before the full Gr4 paired relation can be defined. The proof must use the existing raw cochain and actual reselected paths, not introduce a replacement cochain or assume the solution component invertible.
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedRawCochainIntertwining.lean]
+  risks: [replacement cochain, cancellation through an unproved component inverse, comparator equation copied as a premise, bypass of actual path lifts, triangle or coefficient fields claimed as used when mathematically irrelevant to the raw equality, identity-only firing]
+  unchecked: [full transparent paired relation with path-leg triangle authored pasting and coefficient clauses, paired restricted-suborbit preservation, endpoint-comparison conjugation transports and inverse laws, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Canonical comparator intertwining is derived from both actual reselected-path naturality equations and both canonical comparator factorization equations by strong-cocartesian uniqueness along the actual base left path. Its inverse law is obtained only from the two actual comparator isomorphism inverse identities, without assuming the solution component invertible. Expanding the existing G-109 upperRawDefectCochain then combines inverse canonical intertwining with the compatible solution's literal authored comparator equation. The named generated comparator reselection pair fires this actual raw-cochain theorem and retains the Cycle 69 proved nonidentity base witness. The solution triangle and coefficient-component identities are deliberately not claimed as dependencies of this raw equality; they remain substantive fields of the successor full paired relation.
+  completion_candidate: no
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining.canonicalComparator_intertwining, UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining.canonicalComparator_inv_intertwining, UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining.upperRawDefectCochain_intertwining, UpperDecisionWitness.generatedComparatorUpperReselections_rawCochainIntertwining_fires]
+  source_sha256:
+    UpperGeometryPairedRawCochainIntertwining.lean: 040c8f76d8cc128b2b756cbc481438f8e091820eb079a4efbf0bf90a06cf7702
+  evidence: [focused Lean single-file check, four public declarations plus one private equality helper under standard axioms only, strong-cocartesian cancellation over the actual reselected path, literal authored comparator equation, literal existing upperRawDefectCochain, named nonidentity generated firing]
+  claim_mapping:
+    theorem_names: [CoefficientTrivialUpperReselectionEndpointIntertwining.canonicalComparator_intertwining, CoefficientTrivialUpperReselectionEndpointIntertwining.canonicalComparator_inv_intertwining, CoefficientTrivialUpperReselectionEndpointIntertwining.upperRawDefectCochain_intertwining, generatedComparatorUpperReselections_rawCochainIntertwining_fires]
+    source_labels: [revision 8 clause c actual paired cochain bridge, target proof strategy K3 paired raw-cochain intertwining predecessor]
+    conjuncts: [canonical comparator intertwining, inverse canonical comparator intertwining, actual raw defect cochain intertwining, named nonidentity firing]
+    undischarged_assumptions: [full clause c paired relation and its triangle coefficient orbit and conjugation obligations]
+    acceptance_point: The theorem concludes equality of complete GeometryTotalHom composites for the literal existing upperRawDefectCochain on both generated routes. It is derived from actual endpoint and solution equations and is not stored in the endpoint precursor or supplied by the caller.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [actual endpoint-to-canonical-comparator bridge, inverse canonical bridge without component invertibility, actual raw-cochain componentwise intertwining, named nonidentity generated firing]
+    remaining: [full paired relation using path-leg triangle authored pasting and coefficient identities, paired restricted membership preservation, bidirectional endpoint conjugation and inverse laws, exchange-exactness companion iff]
+  certificate_provenance:
+    discharged: [canonical equality is forced by strong-cocartesian uniqueness, inverse equality is forced by actual iso laws, authored term is the literal solution comparator equation, cochain is the existing G-109 definition]
+    unresolved: [full paired contract witness, restricted-suborbit map, conjugation transport certificates]
+  proof_use:
+    used: [Cycle 69 actual reselected left and right path naturality, both actual canonical comparator factorization laws, base left-path strong-cocartesian instance, both comparator iso inverse identities, solution.comparator_intertwining, existing upperRawDefectCochain]
+    deliberately_not_used: [replacement cochain, solution component inverse, caller-supplied comparator bridge, solution.triangle, solution.component_coefficient_id, selector, full-orbit MapsTo]
+  structure_field_escape: none-found; every new public declaration is a theorem derived from the Cycle 69 precursor and existing solution structure
+  route_integrity: pass; the proof uses the exact generated base and pulled route data and their actual reselected paths
+  predecessor_integrity: pass; G-108 G-109 G-112 G-114 Formal and the fixed revision 8 GOAL are unchanged
+  target_fitting: none-found; the bridge concludes the literal actual G-109 raw cochain equality and does not rename it as full clause c completion
+  vacuity: pass; the theorem fires on the Cycle 69 named pair whose base reselection is proved nonidentity
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found; triangle and coefficient obligations are explicitly retained for the full paired relation instead of being falsely attributed to the raw equality
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryPairedRawCochainIntertwining.lean` passed and reported four declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryPairedRawCochainIntertwining` completed its targeted dependency DAG successfully; module registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; `git diff --check` passed; changed-file placeholder and hidden or bidirectional Unicode scans had no hits; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Define the full transparent Gr4 paired coefficient-trivial reselection relation as a substantive conjunction containing the endpoint bridge, a reselected path-leg triangle derived from solution.triangle, authored comparator pasting, and actual composite coefficient triviality. Then package paired restricted-suborbit preservation using the same base and pulled witnesses and both exact cochains before endpoint conjugation.
+```
