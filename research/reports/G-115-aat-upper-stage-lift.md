@@ -3375,8 +3375,8 @@ audits:
     unresolved: [authored comparator conjugation, solution transports and inverse laws]
   proof_use:
     used: [both direct-route strong-Cartesian theorems, both generated core-edge factor laws, both generated complete geometry-edge factor laws, both endpoint hom factor triangles, exactGeometryHomOfRefinement_toRefinement, IsStronglyCartesian.map, IsStronglyCartesian.fac, IsStronglyCartesian.ext]
-    deliberately_not_used: [endpoint isomorphism as the definition of either authored edge, caller-supplied edge or naturality certificate, raw G-114 selected-endpoint one-way comparison, lower inverse]
-  structure_field_escape: none; source edges, Cartesian qualifications, authored presentation edges, and naturality equations are theorem-generated and absent from the input structure
+    deliberately_not_used: [endpoint isomorphism as the definition of either authored edge, caller-supplied route edge or route naturality certificate, raw G-114 selected-endpoint one-way comparison, lower inverse]
+  structure_field_escape: the literal source edge and its G-109 qualifications are ambient input fields; direct and generated route cartesianness, canonical-authored route edges, endpoint isomorphisms, and endpoint naturality are theorem-generated and absent from the input structure
   route_integrity: base and pulled authored edges are constructed separately from their literal direct legs and the common source edge; naturality is proved only after construction
   predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; all new evidence is local to G-115
   target_fitting: none-found; the desired naturality is not used in either edge definition or accepted as a premise
