@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 73)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 74)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4159,4 +4159,62 @@ audits:
   validation_refs: [`./check_research_modules.sh --focused` passed separately and reported 36 declarations for UpperGeometryCompatibleEndpointExactIsos.lean and 38 declarations for UpperGeometryCanonicalAuthoredRouteTransport.lean under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredRouteTransport` completed the targeted dependency DAG successfully; source hashes were recomputed from the live files; both modules are registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; no Research aggregate or full build was run]
   blocking_findings: []
   next_obligation: Define forward and backward conjugation Equiv values on the actual base and pulled coefficient-trivial reselection spaces using the exact endpoint isomorphisms. Prove coefficient identity and both inverse laws, transport the full paired relation and the same-witness restricted point, and identify the resulting canonical companion cochains before the exchange-exactness iff and K4 audit.
+```
+
+## Cycle 74 — canonical-authored coefficient-trivial reselection equivalences
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 74
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 5e101146f3fe7a2dc73eb8baa069bd60f17bdcd1
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 73 is merged and supplies exact total-geometry isomorphisms between the canonical-authored and generated endpoints together with actual canonical-authored fixed-coefficient route transports.
+  proof_dag_predecessors: [Cycle 73 exact endpoint total-geometry isomorphisms, Cycle 73 canonical-authored base and pulled fixed-coefficient transports, generated base and pulled coefficient-trivial reselection spaces]
+  proof_obligation: Restrict conjugation by an arbitrary exact total-geometry isomorphism to the actual CompositeFiberAut subgroup, expose its complete-geometry hom formulas, and use it edgewise to construct mutually inverse base and pulled equivalences between canonical-authored and generated coefficient-trivial upper reselections.
+  selection_reason: The next paired-witness transport needs an actual equivalence of the complete edgewise reselection structures. A route-specific ad hoc wrapper or equality cast would hide the mathematical operation and would not provide a reusable Gr4-level conjugation principle.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectionEquivalence.lean]
+  risks: [using refinement-only maps rather than exact total-geometry maps, choosing the source rather than target endpoint for edge automorphisms, reversing conjugation order, losing coefficient identity under composition, proving only pointwise functions without structure inverse laws, introducing HEq or Prop-level escape, claiming paired preservation before its relation is transported]
+  unchecked: [paired relation transport, reselected edge and path naturality, witness-bearing restricted point equivalence, canonical companion cochains, UpperStageExchangeExact companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Conjugation by any total-geometry isomorphism now restricts to an equivalence of CompositeFiberAut subgroups because the base-base identity condition is preserved by the two cancellation laws. Its forward and inverse complete-geometry hom formulas are public. Applying this equivalence at the target vertex of every presentation edge constructs base and pulled forward and backward coefficient-trivial reselections. The exact endpoint coefficient identities discharge the coefficient-trivial fields, and extensionality plus the pointwise conjugation inverse laws prove both structure-level inverse laws. The resulting base and pulled Equiv values are actual equivalences between the canonical-authored and generated reselection spaces. This cycle does not yet assert preservation of the paired relation or transport a restricted witness.
+  completion_candidate: no
+  lean_artifacts: [CompositeFiberAut.conjugationEquiv, CompositeFiberAut.conjugationEquiv_hom, CompositeFiberAut.conjugationEquiv_symm_hom, UpperGeometryCompatibleProblemInputData.CanonicalAuthoredBaseCoefficientTrivialUpperEdgeReselection, UpperGeometryCompatibleProblemInputData.CanonicalAuthoredPulledCoefficientTrivialUpperEdgeReselection, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCompositeFiberAutForwardAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCompositeFiberAutBackwardAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCompositeFiberAutBackwardAt_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCompositeFiberAutForwardAt_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCompositeFiberAutForwardAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCompositeFiberAutBackwardAt, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCompositeFiberAutBackwardAt_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCompositeFiberAutForwardAt_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCoefficientTrivialReselectionForward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCoefficientTrivialReselectionBackward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCoefficientTrivialReselectionBackward_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCoefficientTrivialReselectionForward_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredGeneratedBaseCoefficientTrivialReselectionEquiv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCoefficientTrivialReselectionForward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCoefficientTrivialReselectionBackward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCoefficientTrivialReselectionBackward_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCoefficientTrivialReselectionForward_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredGeneratedPulledCoefficientTrivialReselectionEquiv]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredReselectionEquivalence.lean: a7b4708d6256480b357ee1bd0634d9a361ba2f5399406b5290d4d76d81291a14
+  evidence: [focused Lean single-file check, 27 declaration namespace standard-axiom audit, targeted dependency-DAG build, public forward and inverse hom formulas, structure-level left and right inverse laws]
+  claim_mapping:
+    theorem_names: [conjugationEquiv, conjugationEquiv_hom, conjugationEquiv_symm_hom, canonicalAuthoredGeneratedBaseCoefficientTrivialReselectionEquiv, canonicalAuthoredGeneratedPulledCoefficientTrivialReselectionEquiv]
+    source_labels: [revision 8 clause c canonical companion transport, target proof strategy K3 paired reselection transport prerequisite]
+    conjuncts: [exact total-geometry conjugation on composite-fiber automorphisms, preservation of the base-base identity subgroup, forward and inverse complete-geometry hom formulas, target-vertex edgewise transport, base coefficient identity, pulled coefficient identity, base structure inverse laws, pulled structure inverse laws, actual base reselection Equiv, actual pulled reselection Equiv]
+    undischarged_assumptions: [paired relation preservation and witness transport remain]
+    acceptance_point: Both route-specific equivalences are restrictions of one general total-geometry conjugation equivalence, act on the existing CompositeFiberAut and CoefficientTrivialUpperEdgeReselection structures, use the target endpoint dictated by the edge codomain, and prove coefficient identity and two-sided structure equality without casts, HEq, or supplied certificates.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [generic composite-fiber conjugation Equiv, base and pulled edgewise forward conjugation, base and pulled edgewise backward conjugation, all coefficient-trivial fields, all pointwise inverse laws, both structure-level inverse laws, actual base and pulled reselection Equiv values]
+    remaining: [reselected edge and path naturality, paired relation transport, witness-bearing restricted point equivalence, canonical companion cochains, exchange-exactness companion iff, final K4 audit]
+  certificate_provenance:
+    discharged: [subgroup membership follows from the original composite-fiber base-base identity and the exact endpoint Iso cancellation laws, coefficient identity follows from the original reselection identity and exact endpoint hom and inverse coefficient identities, structure inverse laws follow from the underlying conjugation Equiv]
+    unresolved: [preservation of the paired relation and the same-witness restricted condition, companion cochain identification]
+  proof_use:
+    used: [both directions of each Cycle 73 exact endpoint Iso, exact endpoint hom and inverse coefficient identities, existing CompositeFiberAut subgroup condition, existing coefficient-trivial reselection field, CoefficientTrivialUpperEdgeReselection extensionality]
+    deliberately_not_used: [refinement-only comparison as a substitute for total geometry, source-indexed endpoint transport, equality casts, HEq, caller-supplied inverse laws, a parallel raw automorphism-family structure, paired preservation not yet proved]
+  structure_field_escape: none-found; every result inhabits the existing composite-fiber and coefficient-trivial reselection structures, and each proof field is derived from endpoint exactness plus the incoming structure field
+  route_integrity: pass; base and pulled maps use their respective actual canonical-authored and generated route endpoint geometries and do not replace either route's edges or comparators
+  predecessor_integrity: pass; the fixed revision 8 GOAL, G-108 G-109 G-112 G-114 Formal, and merged Cycles 71 through 73 sources are unchanged
+  target_fitting: none-found; this cycle discharges the reselection equivalence prerequisite and leaves paired preservation and companion exactness explicit
+  vacuity: pass; both equivalences are two-sided on inhabited structure types and expose their pointwise action
+  one_way_as_equivalence: none-found; forward and backward maps are independently present and both composition orders are proved at composite-fiber and full reselection levels
+  goal_or_report_reinterpretation: none-found; no paired or exchange-exactness conclusion is inferred from the unpaired equivalences
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectionEquivalence.lean` passed and reported 27 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredReselectionEquivalence` completed the targeted dependency DAG successfully; source hash was recomputed from the live file; module is registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Prove that the base and pulled conjugation maps intertwine the actual reselected edge and path actions, define the canonical-authored analogue of the full paired coefficient-trivial relation, and show forward and backward preservation. Then lift the componentwise Equiv to the same-witness restricted paired point and identify the canonical companion raw cochains.
 ```
