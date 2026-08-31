@@ -183,7 +183,7 @@ gate 文。義務は O 番号で固定し、担当カードは §4、被覆の�
 | O7 | 全域作用 = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 内部宣言 `strongCartesianLiftOfTarget` の正本化 — 実装実査 2026-08-26、n1001 §3.5 の忠実転写) | gate (i) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造) | gate (ii) | G-114 |
 | O9 | raw refinement の forward square、realized-support reflection iff reverse regime、active 正負 witness、inactive empty-fiber 分類、active mate context の供給 | gate (ii) | G-114 |
-| O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence、horizontal edge / comparator / derived cochainが非退化発火しvertical mateがcarrier-conservativeな正named artifact、actual / compatible solutionのcomparator descent正pairと同じgenerated route / component上で三carrier評価により破れるindependently chosen comparator負pair | gate (iii) | G-115 |
+| O10 | refinement-geometry category / projection / exact embedding、raw authored domainの片方向comparison、generated cartesian-compatible locusの二route・endpoint isomorphisms・solution equivalence、horizontal edge / comparator / derived cochainが非退化発火しvertical mateがcarrier-conservativeな正named artifact、actual / compatible solutionのqualified-transport comparator descent正pairと、同じgenerated route / component / comparator-independent transport lawsを保つidentity-comparator pulled transportを用いて三carrier評価で破れる負pair | gate (iii) | G-115 |
 | O11 | compatible actual solution上のcoefficient-trivial reselection / derived raw-cochain intertwining、comparison isomorphismsによる双方向conjugation、generated / authored-compatible actual geometry solution components間のexchange-exactness iff | gate (iii)・n1001 §3.3 | G-115 |
 | O12 | actual mate-bearing sector / active refinement / G-115 canonical generated upper stage の `Gr4ExchangeContext` 上で branch-selection evidence を固定し、active 昇格時に採択した universal `IsIso` theorem または named `¬IsIso` evaluation theorem を証明する | gate (iv)・(C) 移管文 | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | gate (v)・n1005 §4.3 (D) | G-113 |
@@ -501,15 +501,19 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   証明する。(d) `UpperStageExchangeExact`とcanonical-authored companion actual geometry
   solutionのcomponentwise exactnessのpointwise iffを
   証明するが、canonical `upperDecisionSolution`での成立 / 不成立はG-116に残す。
-  `UpperComparatorDescentAt component baseComparator pulledComparator`をactual
-  `GeometryTotalHom` equalityとして定義し、actual / compatible solutionのliteral comparator fieldから
-  正pairを導く。負pairは同じgenerated route / canonical componentに既存nonidentity base comparatorと
-  identity pulled comparatorを独立に選び、他のlocal lawsを変えずSupport / Axis / Observableの三評価で
-  descentだけを破る。raw solution不在やO12の`IsIso`失敗は主張しない。
+  `UpperComparatorDescentAt baseTransport pulledTransport component cell`を、同じpresentation上の
+  qualified `FixedCoefficientTwoLayerTransportOver`二つとactual `GeometryTotalHom` componentに対する
+  comparator equalityとして定義し、actual / compatible solutionのliteral comparator fieldから正pairを導く。
+  負側は同じgenerated route / canonical componentを使い、pulled transportのgeometry、edge lifts、projection /
+  strong-cartesian / two-cell-base laws、edge coefficient lawを保持してcomparatorだけをidentityへ替えたqualified
+  authored transportを構成する。既存nonidentity base comparatorとのpairは両comparatorのcoefficient identityと
+  comparator-independent local lawsを保ち、Support / Axis / Observableの三評価でdescentを破る。
+  common source comparatorから生成されたpairのfailure、raw solution不在、O12の`IsIso`失敗は主張しない。
 - **revision 8 注記**: revision 7 Cycle 65のcustom raw problem / pre-solution routeはactual
   `UpperRefinementBCProblem` / `UpperRefinementBCSolution`に接続せず、selected endpoint realizationを
   別途要求したためgoal-defectとして棄却した。revision 8は負例をO10のcomparator descent非自動性へ
-  置き直し、既存のgenerated route / canonical componentを再利用する。G-115のraw一方向contract、
+  置き直し、既存のgenerated route / canonical componentとqualified authored transport contractを再利用する。
+  endpoint automorphism二個だけの無資格pairは負例と数えない。G-115のraw一方向contract、
   O11のcochain / reselection transport、G-116 O12のfull component `IsIso`決定は変更しない。
 - **錨**: `CoreFiber` / `coreFiberTransportFunctor`
   (`CrossStageCoherence/CorePseudofunctor.lean`)、G-108
@@ -531,7 +535,7 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
   付加してcanonical transportに由来しないlocal carrier非恒等性を作る経路。
 - **failure 骨格**: certificate-free inputとG-112 / G-114 public transportから
   二strong-cartesian routeまたはendpoint inverseを構成できなければ`goal-defect`。
-  named solutionまたは同じactual route / component上のcomparator descent正負pairに反例があれば
+  named solutionまたは同じactual route / component上のqualified-transport comparator descent正負pairに反例があれば
   `target-refuted`。
 
 ### G-116(仮 slug: `G-116-aat-gr4-capstone`)
@@ -566,7 +570,7 @@ typing cycle で行う。錨に挙げた宣言は Lean 木で実在と実型を�
 - **completion criteria+report 義務(O19)**: §7 の成立条件に従う
   Gr4 達成の範囲併記記録。raw forward / realized reverse / active mate /
   exchange に加え、G-115のraw one-way / generated cartesian-compatible /
-  comparator descent正負pair分類と forward-only / inactive の disposition を含める。
+  qualified-transport comparator descent正負pair分類と forward-only / inactive の disposition を含める。
   **達成階梯対応表**(§8 — Gr0–Gr4 ↔ theorem
   package ↔ Lean 宣言錨 ↔ 記録正本の所在 ↔ 範囲限定、の5列。Gr2 =
   G-101 の遡及記載を含む)を report 成果物として義務化する。
@@ -721,7 +725,7 @@ O6 が反例枝、O12 が named-failure theorem で確定した場合に、記�
    realized reverse、active mate、forward-only / inactive disposition
    の全層を固定している。G-115はraw one-way、horizontal / two-cell nondegeneracyと
    carrier-conservative vertical coherenceを持つgenerated cartesian-compatible、
-   same-route comparator descent正負pairの全層を固定している。義務は
+   same-route qualified-transport comparator descent正負pairの全層を固定している。義務は
    移管または人間承認 revision でのみ動かし、旧義務の disposition を
    履歴台帳から削除しない(G-110 の移管規律の継続)。
 2. G-116 が active 昇格時に固定した universal `IsIso` theorem または

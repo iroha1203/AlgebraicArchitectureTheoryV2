@@ -32,7 +32,7 @@
 - `core tension`: 存否決定の核心は既決と未決の分界にある — G-110
   sector の pullback square 上の mate 同型は証明済みの正例であり、
   未決なのは authored datum 付き lax square と active refinement /
-  上段 context 側である。G-115 のraw one-way comparisonやindependently chosen comparator pairの
+  上段 context 側である。G-115 のraw one-way comparisonやindependently qualified authored comparator pairの
   descent failureはO12のexchange decisionではなく、O10でcomparator coherenceの非自動性を分類する。
   upper summandは
   G-115がcaller-freeに構成したactual solution相対であり、canonical
@@ -183,10 +183,13 @@
 - `G-115 revision 8 propagation`: revision 7 Cycle 65のcustom raw problem / pre-solution routeは、
   actual `UpperRefinementBCProblem` / `UpperRefinementBCSolution` contractへ接続せず、G-114 selected endpointの
   realizationを別途要求したためgoal-defectとして棄却された。revision 8は既存actual componentと
-  base / pulled `CompositeFiberAut` pairのtyped equality `UpperComparatorDescentAt`をO10へ置く。
-  actual / compatible solutionはliteral comparator fieldから正pairを与える。同じCycle 64 generated route / componentで
-  nonidentity generated base comparatorとidentity pulled comparatorを独立選択した負pairは、他のlocal lawsを保ったまま
-  Support / Axis / Observableの三評価でdescentだけを破る。raw one-way domainとこのdescent負pairは
+  base / pulled qualified route transports、actual component、cellのtyped equality
+  `UpperComparatorDescentAt`をO10へ置く。actual / compatible solutionはliteral comparator fieldから正pairを与える。
+  負側は同じCycle 64 generated route / componentを使い、pulled transportのgeometry、edge lifts、projection /
+  strong-cartesian / two-cell-base laws、edge coefficient lawを保持してcomparatorだけをidentityへ替えたqualified
+  authored transportを構成する。既存nonidentity generated base comparatorとのpairは、両comparatorのcoefficient
+  identityと全comparator-independent local lawsを保ちながらSupport / Axis / Observableの三評価でdescentを破る。
+  common source comparatorから生成されたpairのfailureは主張しない。raw one-way domainとこのdescent負pairは
   O12へ入れずO19で分類する。O12のnamed `upperDecisionSolution`とfull component `IsIso`責務は変更しない。
 - `target theorem boundary`: Lean 置き場所は
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新
@@ -279,7 +282,7 @@
 | O7 | 全域 lift = semantic-global strong cartesian lift の正枝確定(G-110 reviewed 宣言 `strongCartesianLiftOfTarget` の Gr4 正本 wrapper 化・proof-use audit・記録。completion artifact に semantic-global cleavage / reindexing functor と unitor・compositor・triangle・pentagon coherence(G-112 (e))を含む。実装実査 2026-08-26、n1001 §3.5 の忠実転写) | G-112 |
 | O8 | refinement 射の圏化(`RefinementDoctrineHom` を射とする圏構造と `Doct_U ⥤ Refin_U` 比較 functor) | G-114 |
 | O9 | refinement の unconditional forward square、realized-locus extraction reflection iff reverse regime、active forward-only / reverse witness、inactive empty-fiber 分類、`ActiveRefinementBCContext` の供給 | G-114 |
-| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper equivalence、canonical endpoint comparison isomorphisms・solution equivalence、同一named problem data上のgenerated / canonical companion solution、horizontal edge / authored / generated comparator / derived raw cochainの具体nonidentity firing、generated vertical componentの三carrier-conservativity、actual / compatible solutionのcomparator descent正pairと同じgenerated route / component上で三carrier評価により破れるindependently chosen comparator負pair | G-115 |
+| O10 | lax `RefinementPackageHom` 上の `RefinementGeometryHom` category・projection・exact faithful embedding、raw G-114 selected domainの片方向comparison、certificate-free canonicalized inputから生成する二strong-cartesian route、explicit canonical exact / realized-refinement inverse-package upper maps上のrealization-exact upper equivalence、canonical endpoint comparison isomorphisms・solution equivalence、同一named problem data上のgenerated / canonical companion solution、horizontal edge / authored / generated comparator / derived raw cochainの具体nonidentity firing、generated vertical componentの三carrier-conservativity、actual / compatible solutionのqualified-transport comparator descent正pairと、同じgenerated route / component / comparator-independent transport lawsを保つidentity-comparator pulled transportを用いて三carrier評価で破れる負pair | G-115 |
 | O11 | canonicalized compatible actual solution上のcoefficient-trivial paired reselection / derived raw-cochain intertwining・restricted actual suborbit preservation、comparison isomorphismsによる双方向conjugation、generated / canonical-authored actual geometry solution components間の`UpperStageExchangeExact` iff | G-115 |
 | O12 | `Gr4ExchangeContext` のG-110 actual authored comparison / active refinement mate / G-115 canonical generated `upperDecisionSolution` 上で、casewise `ExchangeExact` の universal theoremまたは named failure evaluation theoremを証明する | G-116 |
 | O13 | G-111 `indexedFiberAction` と G-112 semantic-global reindexing の vertexwise quasi-inverse、unit / counit、endpoint equivalence | G-113 |
@@ -331,7 +334,7 @@
 
 | id | revision 7 義務 | disposition |
 |---|---|---|
-| O10-r7-negative-problem | compatible locus外のactual raw problem、comparator-free pre-solution、raw solution不在 theoremを構成する | Cycle 65のcustom problemはactual `UpperRefinementBCProblem` / `UpperRefinementBCSolution` contractに接続せず、G-114 selected endpoint realizationも別途必要としたため`goal-defect`。人間承認revision 8はproblem不在ではなく、既存actual componentと二つの`CompositeFiberAut`のtyped equality `UpperComparatorDescentAt`へ置換する。正pairはsolution fieldから導き、同じCycle 64 generated route / componentでbase comparatorを既存nonidentity comparator、pulled comparatorをidentityとする負pairを三carrier評価で反証する。O12のsolution domainと`IsIso`判定は変更しない |
+| O10-r7-negative-problem | compatible locus外のactual raw problem、comparator-free pre-solution、raw solution不在 theoremを構成する | Cycle 65のcustom problemはactual `UpperRefinementBCProblem` / `UpperRefinementBCSolution` contractに接続せず、G-114 selected endpoint realizationも別途必要としたため`goal-defect`。人間承認revision 8はproblem不在ではなく、既存actual componentと二つのqualified `FixedCoefficientTwoLayerTransportOver` / cellのtyped equality `UpperComparatorDescentAt`へ置換する。正pairはsolution fieldから導く。負側は同じCycle 64 generated route / componentを使い、pulled transportのcomparator-independent data / lawsを保持してcomparatorだけをidentityへ替えたqualified transportを構成し、既存nonidentity base comparatorとのdescentを三carrier評価で反証する。common-source-generated pairのfailure、O12のsolution domainと`IsIso`判定は主張しない |
 
 **G-116 O12 upper-domain disposition(履歴台帳)**:
 

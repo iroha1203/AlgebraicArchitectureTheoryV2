@@ -155,15 +155,20 @@
     `UpperRefinementBCProblem` / `UpperRefinementBCSolution` contractに接続せず、さらにG-114
     selected endpointのrealization供給を別途要求した。この欠落は穴埋め可能なLean lemmaではなく、
     負例の居住域を誤って選んだ`goal-defect`として棄却する。
-  - 人間承認revision 8は、raw solution不在を要求せず、既存のactual componentと二つの
-    `CompositeFiberAut`に対するtyped descent condition
-    `UpperComparatorDescentAt component baseComparator pulledComparator`を置く。正側はactual / compatible
-    solutionの既存comparator equationからこのpredicateを得る。負側はCycle 64と同じgenerated routes、
-    同じcanonical vertical component、同じnonidentity generated base comparatorを使い、pulled comparatorだけを
-    identityとして独立選択する。component base、coefficient identity、triangle、edge naturality、nil / append /
-    path lawsを変えず、Support / Axis / Observableの三具体評価でdescent equalityだけが破れることを証明する。
-    これはcartesian routeとlocal mateだけでは独立comparator pairのdescentを強制しないO10分類負例であり、
-    solution不在やO12の`IsIso`失敗を主張しない。
+  - 人間承認revision 8は、raw solution不在を要求せず、同じpresentation上の二つの
+    `FixedCoefficientTwoLayerTransportOver`、そのtarget geometry間のactual component、cellに対するtyped
+    descent condition `UpperComparatorDescentAt baseTransport pulledTransport component cell`を置く。
+    正側はactual / compatible solutionの既存comparator equationからこのpredicateを得る。負側はCycle 64の
+    generated base / pulled route transportを使い、pulled側だけを、geometry、edge lifts、core projection、
+    geometry/core strong-cartesian qualifications、two-cell base equality、edge coefficient identityを元transportと
+    同一に保ちながらcomparatorをidentityへ替えた別のqualified authored transportとして構成する。
+    同じcanonical vertical componentに対し、base側の既存nonidentity generated comparatorとこのpulled identity
+    comparatorを組にする。component base、coefficient identity、triangle、edge naturality、nil / append / path
+    naturalityというcomparator-independent lawsを変えず、両comparatorのcoefficient identityを証明し、
+    Support / Axis / Observableの三具体評価でdescent equalityが破れることを証明する。
+    これは個別にqualifiedなauthored route comparator choicesの積の中でdescent locusがproperであることを示す
+    O10分類負例であり、common source comparatorから生成された正pairの失敗、solution不在、O12の`IsIso`失敗を
+    主張しない。
 
 - `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
   Naturality Theorem**。次を構成・証明する。
@@ -379,22 +384,26 @@
      担う分担を表す。既決core mateと既知の可逆twistの合成だけから従うfixtureは独立発火と
      数えず、solution componentの`IsIso`または否定は本カードで証明しない。
 
-     `UpperComparatorDescentAt component baseComparator pulledComparator : Prop`を、
-     `(CompositeFiberAut.hom baseComparator).comp component =
-     component.comp (CompositeFiberAut.hom pulledComparator)`というactual `GeometryTotalHom` equalityで定義する。
+     `UpperComparatorDescentAt baseTransport pulledTransport component cell : Prop`を、同じpresentation上の
+     二つの`FixedCoefficientTwoLayerTransportOver`と、そのcell targetのgeometry間のcomponentに対する
+     `(CompositeFiberAut.hom (baseTransport.comparator cell)).comp component =
+     component.comp (CompositeFiberAut.hom (pulledTransport.comparator cell))`というactual
+     `GeometryTotalHom` equalityで定義する。
      `UpperRefinementBCSolution.comparatorDescentAt`と
      `GeometryCompatibleUpperRefinementBCSolution.comparatorDescentAt`により、各solutionのliteral comparator
      fieldからこのpredicateへ接続する。
 
-     正側はCycle 64のgenerated solution componentとtheorem-generated base / pulled comparator pairで
+     正側はCycle 64のgenerated solution componentとtheorem-generated base / pulled route transportsで
      `UpperComparatorDescentAt`を証明する。負側は同じgenerated routesと同じcanonical componentを保ち、
-     base comparatorを既存nonidentity generated comparator、pulled comparatorをidentityとするindependently
-     chosen pairを置く。component base、coefficient identity、triangle、edge naturality、nil / append /
-     path lawsは正側の既存artifactをそのまま保持し、Support / Axis / Observableで左辺が具体値1を2へ送り、
+     pulled transportのgeometry、edge lifts、projection / strong-cartesian / two-cell-base laws、edge coefficient lawを
+     definitionally元transportと同じにし、comparatorだけをidentityとする
+     `generatedPulledIdentityComparatorTransport`を構成する。base / pulled両comparatorのcoefficient identityを
+     証明し、component base、coefficient identity、triangle、edge naturality、nil / append / path naturalityは
+     comparator-independentな正側の既存artifactをそのまま保持する。Support / Axis / Observableで左辺が具体値1を2へ送り、
      右辺がidentityにより1を1へ送ることから、三carrierそれぞれでdescent equalityの破れを証明する。
-     これをcartesian route / local mateからcomparator descentが自動ではない分類負例とする。
+     これをqualified authored route comparator choicesの積におけるproper descent locusの分類負例とする。
      incoherence certificateを入力fieldへ持たせず、raw solution不在、compatible solution `Equiv`の適用、
-     full componentの`IsIso` / `¬ IsIso`評価は主張しない。
+     common source comparatorから生成されたpairのfailure、full componentの`IsIso` / `¬ IsIso`評価は主張しない。
 
   3. **(c) actual paired orbit intertwining**:
      `CoefficientTrivialUpperEdgeReselection` を、既存 `UpperEdgeReselection` と
@@ -457,8 +466,10 @@
   `UpperRefinementBCSolution`、`GeometryCompatibleUpperRefinementBCSolution`、同じnamed
   `upperDecisionProblem` data上のgenerated / canonical companion solution、generated vertical
   componentの三carrier-conservativity theorem、horizontal edge / authored / generated comparator /
-  derived raw cochainの具体nonidentity firing theorem、`UpperComparatorDescentAt`、actual / compatible
-  solutionからのdescent theorem、同じgenerated route / component上の正pairと三carrierで破れる負pair、
+  derived raw cochainの具体nonidentity firing theorem、qualified route transports上の
+  `UpperComparatorDescentAt`、actual / compatible solutionからのdescent theorem、
+  `generatedPulledIdentityComparatorTransport`、同じgenerated route / component上の正pairと
+  三carrierで破れる負pair、
   `CoefficientTrivialUpperEdgeReselection` / restricted actual
   suborbit、paired relation / cochain theorem、nonidentity intertwined firing、
   `UpperStageExchangeExact` companion iff、report
@@ -484,8 +495,9 @@
   producerに使っていないこと、canonical comparison isomorphismsとsolution equationsのproof-use、
   named decision fixtureでの次元別nonvacuity(horizontal refinement / edge、two-cell comparator /
   cochain、vertical carrier-conservativity)とnamed witnessに特殊化したsolution equationのproof-use、
-  comparator descent正側がliteral solution fieldを使うこと、負側が同じroute / componentを保ったまま
-  comparator pairだけを変え三carrierすべてでequalityを破ること、
+  comparator descent正側がliteral solution fieldを使うこと、負側が同じroute / componentと全ての
+  comparator-independent transport data / lawsを保ったqualified authored transportのままpulled comparatorだけを
+  identityへ変え、両comparatorのcoefficient identityと三carrierすべてでのequality failureを証明すること、
   predecessor不変性を監査し、report / tracking Issueを同期する。各実装PRのfixed-head
   `$review-pr` とcompletion candidateのfinal review packetに対する独立
   `$math-lean-review` 4査読全 `No major findings` を通過した場合だけ完了とする。
@@ -507,7 +519,7 @@
 | realization-exact upper equivalence / endpoint generation | discharge-required | `ExactUpperEquivalence`はforward / backward `SignedExactCoreReadingHom`と両側upper cancellationだけを持つ。`UpperRealizationTransportSupply`は既存total-hom supplyと同じ三carrier map・reading preservation・naturalityをupper map上に置き、任意のtotal homでは既存`RealizationTransportSupply`との`Equiv`を証明する。`RealizationExactUpperEquivalence`は両方向upper supplyと三carrierのcomponentwise両側inverse lawだけをfieldに持ち、identity / symmetry / composition、reading reflection、exact total homが存在する方向の`HGeom` adapterを導出する。負側はG-108の公開Atom involution / context actionを保ちつつ任意`ArchitectureObject`の非configuration fieldsを保存するG-115-local `structurePreservingSwapUpper`、matching total hom、full upper cancellation、`structurePreservingSwapExactUpperEquivalence`、具体support-reading非実現 theoremを証明する。その前提としてAtom involution、equation residual、operation conjugation / naturality、invariant transport、dependent cancellationのbridge lemma群をG-115-localに証明する。公開projectionだけで不足する場合は、既存fixture bodyから証明するconservativeなpublic characterization theoremだけをFormal finite fixture moduleへ追加し、bridge lemmaがこれを実消費する。Cycle 45 `no_negativeExactUpperEquivalence`により旧lossy `coreHom.upper`をproducerに使わない。正側は`strongCartesianLiftOfTarget`のexplicit canonical exact inverse-package upper equivalenceとG-114 realized-refinement inverse-package upper equivalenceを別々に構成し、そのcompositionからbase / pulled route inhabitantsを生成する。context equivalenceのunit / counit、restriction maps、observable equivalence、upper cancellationを実消費する。lower inverseの捏造、G-112 selected inverseのopaque domain iso、任意upper pair、`HGeom × HGeom`のrename、comparison certificate、canonical/reachable objectだけへの負例の量化制限は放電と数えない |
 | endpoint comparison isomorphisms / solution equivalence | discharge-required | theorem-generated canonical route realization-exact upper equivalenceから両方向complete geometry homを構成し、normalization unit / associativityとstrong-cartesian uniquenessからbase / pulled endpoint inverseを導出する。exact lower homが必要な箇所では既存forward total homだけを使用し、backward upper mapにlower inverseを付加しない。conjugation `b.inv ≫ s ≫ p.hom` と逆写像 `b.hom ≫ ĝ ≫ p.inv` がcanonical-authored / generated solutionの全fieldを保存し両側inverseであることを証明する。raw G-114 selected solution contractとのEquivや、元solutionをwrapper / sigma fieldに保存する構成は主張しない |
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。raw authored domainではroute間inverseを含まず、compatible inputの代替とは数えない |
-| named decision / comparator descent正負pair | discharge-required | 一つのnamed `upperDecisionProblem` data上にconstructor-generated solutionとsolution `Equiv`の逆像であるcanonical companion solutionを構成し、Equivが両者を対応させる。fixtureのgenuinely lax refinement / horizontal strong edge、authored / generated comparator、derived raw cochainを具体評価で非恒等とし、actual solutionのedge / comparator equationsをそのwitnessへ特殊化する。vertical generated componentは三carrier-conservativity theorem familyを実消費し、非恒等gaugeを追加しない。`UpperComparatorDescentAt`をactual hom equalityとして定義し、actual / compatible solution fieldから正側を導く。同じgenerated routeとcanonical componentに対し、既存nonidentity base comparatorとidentity pulled comparatorを独立に選ぶ負pairを構成し、Support / Axis / Observableの三評価でdescent failureを証明する。他のlocal lawsを変えず、raw solution不在やdecision componentの`IsIso`は決めず、certificate payload不可 |
+| named decision / comparator descent正負pair | discharge-required | 一つのnamed `upperDecisionProblem` data上にconstructor-generated solutionとsolution `Equiv`の逆像であるcanonical companion solutionを構成し、Equivが両者を対応させる。fixtureのgenuinely lax refinement / horizontal strong edge、authored / generated comparator、derived raw cochainを具体評価で非恒等とし、actual solutionのedge / comparator equationsをそのwitnessへ特殊化する。vertical generated componentは三carrier-conservativity theorem familyを実消費し、非恒等gaugeを追加しない。`UpperComparatorDescentAt`を二つのqualified `FixedCoefficientTwoLayerTransportOver`とactual component / cell上のhom equalityとして定義し、actual / compatible solution fieldから正側を導く。負側は同じgenerated routeとcanonical componentを使い、pulled transportのgeometry、edge lifts、projection / strong-cartesian / two-cell-base laws、edge coefficient lawを保持し、comparatorだけをidentityへ替えたqualified transportを構成する。両comparatorのcoefficient identityとSupport / Axis / Observable三評価でdescent failureを証明する。comparator-independent local lawsを変えず、common-source-generated pairのfailure、raw solution不在、decision componentの`IsIso`は決めず、certificate payload不可 |
 | paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費する。geometry comparisonからcoefficient-trivial reselectionの双方向transportとrestricted space上の両側inverseを生成し、そのedgewise compatibilityからcanonical companion cochain / paired relation / suborbit membershipとの一致を導く。既存full orbitとの一致は主張しない |
 | `UpperStageExchangeExact` companion iff | discharge-required | endpoint comparison isomorphismsからcanonical generated solutionとcanonical-authored companion actual geometry solutionのcomponentsについてpointwise `IsIso` iffを証明する。G-114 core mateへのreflectionは主張せず、predicateの成立証明またはO12放電とは数えない |
 
@@ -534,8 +546,9 @@
   reselection witnessの対応とみなさない。named decisionの非恒等edge / comparator / cochainを
   inputのcertificate fieldに移さず、具体finite constructionと評価theoremで固定する。generated
   vertical componentへ既知の可逆twistやcaller-supplied gaugeを合成して非恒等性を捏造しない。
-  descent負pairのために別route、別component、別problem、selected-endpoint realizationを導入せず、
-  正pairと同じgenerated route / canonical componentでcomparator pairだけを独立選択する。
+  descent負pairのために別geometry、別edge lift、別component、別problem、selected-endpoint realizationを導入せず、
+  正pairと同じgenerated route / canonical componentから、pulled comparatorだけをidentityへ替えたqualified
+  authored transportを構成する。endpoint automorphism二個だけの無資格pairを負例と数えない。
   core squareへの単なる参照や過去GOALのdefinition変更を放電扱いしない。
 - `target route integrity gate`: G-115-local cleavage、selected lift、finite presentation、named decision / comparator descent
   fixture、coefficient-trivial reselectionの出所を、certificate-free compatible input、
@@ -585,7 +598,7 @@
     構成できない場合もこの判定にする。public characterization APIの現時点での欠落だけを
     `goal-defect`とは数えない。旧lossy `coreHom.upper`の再利用は解消と数えない。
   - `target-refuted`: category laws、named actual solution、horizontal edge / comparator / cochainの
-    named非退化発火、同じactual route / component上のcomparator descent正負pair、paired/cochain theoremの
+    named非退化発火、同じactual route / component上のqualified-transport comparator descent正負pair、paired/cochain theoremの
     いずれかに反例がある。generated vertical componentのcarrier-conservativityはrequired artifactであり、
     非恒等local carrier actionの欠如を反例とは数えない。
   - `target-blocked`: direct dependencyの未port / 未証明によりfocused checkが停止し、
@@ -600,6 +613,9 @@
   actual component `IsIso`判定責務は変更しない。revision 7 Cycle 65のraw no-solution routeは
   actual contractへ接続しないためgoal-defectとして棄却し、人間承認revision 8のtyped comparator descentへ置換した。
 - `next action`: K2b2cの既存Cycle 64 generated route / canonical component上に
-  `UpperComparatorDescentAt`を定義し、actual / compatible solution fieldから正pairを接続する。
-  同じnonidentity generated base comparatorとidentity pulled comparatorの負pairを構成し、
-  Support / Axis / Observableの三carrierでdescent failureを証明する。他のlocal lawsとO12の`IsIso`責務は変えない。
+  qualified route transport相対の`UpperComparatorDescentAt`を定義し、actual / compatible solution fieldから
+  正pairを接続する。同じgenerated pulled routeのcomparator-independent data / lawsを保持しcomparatorだけを
+  identityへ替えた`generatedPulledIdentityComparatorTransport`を構成する。既存nonidentity generated base
+  comparatorとの負pairについて両comparatorのcoefficient identityを固定し、
+  Support / Axis / Observableの三carrierでdescent failureを証明する。comparator-independent local lawsと
+  O12の`IsIso`責務は変えない。
