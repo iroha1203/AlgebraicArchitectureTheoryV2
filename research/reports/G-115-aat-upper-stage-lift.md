@@ -3281,3 +3281,56 @@ audits:
   blocking_findings: []
   next_obligation: Expose the hom and inv core projections, category inverse laws, coefficient identity, and Support Axis Observable inverse laws as named theorems; then prove presentation-edge naturality for both endpoint comparison isomorphisms and use it for leg edge and literal authored-comparator conjugation before constructing the solution-space equivalence.
 ```
+
+## Cycle 58 — named complete endpoint component laws
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 58
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: d04880a6b2039967f99e9844256ddd6ac27f30bc
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 57 constructed complete base and pulled endpoint geometry isomorphisms and both factorization triangles
+  proof_obligation: Expose each route iso's hom and inverse core projections, category inverse laws, coefficient identities, and dependent Support Axis Observable cancellation laws as named theorems
+  selection_reason: The fixed GOAL requires these component laws separately, and later solution and reselection transport must cite their exact proof-use rather than only the opaque Iso record.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryLaws.lean]
+  risks: [core-only laws, one cancellation direction only, proof-irrelevance in place of carrier computation, loss of Observable dependency, route aliasing, coefficient identity without factor provenance]
+  unchecked: [presentation edge naturality, leg and edge conjugation, literal authored-comparator conjugation, solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Both endpoint isomorphisms now expose identity lower projections for hom and inverse, named category hom-inverse and inverse-hom equations, coefficient identities derived through the route factor triangles, and pointwise dependent HEq cancellation in both directions for Support Axis and Observable. Base and pulled routes have separate public theorem families.
+  completion_candidate: no
+  lean_artifacts: [base and pulled hom_base, base and pulled inv_base, base and pulled hom_inv, base and pulled inv_hom, base and pulled hom_coefficient_id, base and pulled inv_coefficient_id, base and pulled Support hom_inv and inv_hom, base and pulled Axis hom_inv and inv_hom, base and pulled Observable hom_inv and inv_hom]
+  source_sha256:
+    UpperGeometryCompatibleEndpointGeometryLaws.lean: f6c8666fa05690d8846f171e8850803ea0de858cb25f88afd51c0e21491fdc3d
+  evidence: [focused Lean file check, targeted dependency-DAG module build, 24-declaration namespace standard-axiom audit, identity core projections from IsHomLift, coefficient identities from factor triangles, six dependent carrier cancellations per route]
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 57 theorem-generated complete endpoint isomorphisms, route factor triangles, generated and canonical-authored coefficient identity laws]
+    direction_hypothesis: []
+    discharged: [four core projection laws, four named category inverse laws, four coefficient identity laws, twelve dependent Support Axis Observable inverse laws]
+    remaining: [endpoint presentation naturality, leg and edge conjugation, literal authored-comparator conjugation, canonical-authored/generated solution equivalence, named decision and negative problems, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+  certificate_provenance:
+    core: domainIsoOfBaseIso IsHomLift instances over the typed identity core iso
+    category_inverse: the actual Cycle 57 category Iso hom_inv_id and inv_hom_id
+    coefficient: congruence of the Cycle 57 hom and inverse route factor triangles followed by generated and canonical-authored coefficient identities
+    carriers: explicit Support Axis Observable evaluation of category hom-inverse and inverse-hom; HEq retains the dependent context transports
+  proof_use:
+    used: [both Cycle 57 endpoint isomorphisms, all four route factor triangles, both category inverse directions, both route-specific generated and canonical-authored coefficient laws, all three carrier maps in both comparison directions]
+    deliberately_not_used: [raw G-114 selected-endpoint comparison, lower inverse, caller-supplied endpoint law, proof-irrelevance as a carrier inverse, solution wrapper]
+  structure_field_escape: none; every theorem is generated from compatible input and a vertex, with carrier values quantified pointwise
+  route_integrity: base and pulled laws cite their own route iso, leg, core, coefficient, context, and carrier data
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 law module and registrations are added
+  target_fitting: none-found; named results expose the complete comparison morphisms and their dependent geometry maps, not only core equivalences
+  vacuity: carrier laws quantify over arbitrary endpoint contexts and arbitrary Support Axis Observable elements in both directions
+  one_way_as_equivalence: none-found; every carrier family contains both hom-inverse and inverse-hom cancellation
+  goal_or_report_reinterpretation: none-found; naturality comparator and solution obligations remain explicit
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryLaws.lean` passed and reported 24 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointGeometryLaws` passed with 4109 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct the canonical-authored base and pulled presentation edges independently through their strongly Cartesian legs, then prove both endpoint comparison naturality squares by strong-Cartesian uniqueness.
+```
