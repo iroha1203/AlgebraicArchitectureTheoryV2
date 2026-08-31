@@ -3176,3 +3176,57 @@ audits:
   blocking_findings: []
   next_obligation: Lift the componentwise contract to a total factor, prove its composition and recovery equations from the Cycle 53 cancellation laws, then prove uniqueness and both finite direct route strong-Cartesian theorems.
 ```
+
+## Cycle 56 — realization-exact factorization and strong cartesianness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 56
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 9038ea5db85972e8a047685c477c0d0918edbc1f
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 55 constructed the complete componentwise factor contract and finite base/pulled specializations
+  proof_obligation: Lift that contract to a total factor, prove factor composition and recovery, prove uniqueness, derive the generic strongly Cartesian universal property, and specialize it to both finite direct route legs
+  selection_reason: Endpoint comparison isomorphisms require actual strongly Cartesian geometry legs with authored factorization and uniqueness, not only complete component fields.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationStrongCartesian.lean]
+  risks: [proving only existence without uniqueness, using one carrier cancellation direction, losing the actual lax lower map under casts, relying on typeclass inference without authored factor equations, claiming route strong cartesianness only generically without finite discharge]
+  unchecked: [complete endpoint comparison isomorphisms, comparison naturality, comparator conjugation, solution equivalence, final endpoint IsIso correspondence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The Cycle 55 contract is now a total refinement-geometry factor. Composition with the direct normalization leg recovers the supplied hom by forward-after-inverse carrier cancellation; factoring a composite recovers the original factor contract by inverse-after-forward cancellation. Extensionality and base-cast coherence prove uniqueness, yielding the generic IsStronglyCartesian theorem and premise-free finite base and pulled route specializations.
+  completion_candidate: no
+  lean_artifacts: [upperPairPullCartesianFactor, upperPairPullCartesianFactor_fac, upperPairPullCartesianFactorGeomCore_of_composite, upperPairPullCartesianFactor_unique, upperPairPullRefinementGeometryHom_isStronglyCartesian, canonicalAuthoredBaseRouteGeometryHomAt_isStronglyCartesian, canonicalAuthoredPulledRouteGeometryHomAt_isStronglyCartesian]
+  source_sha256:
+    UpperGeometryRealizationStrongCartesian.lean: 8f8830a2ee8f0fe66cb2b1d705177b50d7fb9936caa2adfd5dbacb410f840e9c
+  evidence: [focused Lean file check, targeted dependency-DAG module build, 7-declaration namespace standard-axiom audit, authored factor composition, authored factor recovery, total uniqueness, generic strong cartesianness, finite base and pulled strong-cartesian specializations]
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 55 universal factor data, arbitrary lower factor base g, arbitrary compatible total hom h, standard IsHomLift interface]
+    direction_hypothesis: []
+    discharged: [total factor construction, factor composition equation, factor contract recovery, total factor uniqueness, generic realization-exact strong cartesianness, finite base direct-route strong cartesianness, finite pulled direct-route strong cartesianness]
+    remaining: [endpoint comparison homs and inverse laws, comparison edge naturality, comparator conjugation, solution equivalence, actual endpoint IsIso iff]
+  certificate_provenance:
+    factorization: Cycle 55 factor carrier maps followed by the direct homSupply maps, cancelled with Cycle 53 forward-after-inverse laws
+    recovery: arbitrary factor carrier maps followed by the direct homSupply and then Cycle 55 inverse maps, cancelled with Cycle 53 inverse-after-forward laws
+    uniqueness: equality of lower bases plus equality of composites, normalized through explicit base casts and RefinementGeomReadHom extensionality
+    strong_cartesian: CategoryTheory.Functor.IsStronglyCartesian.mk receives the authored total factor, IsHomLift witness, factorization equation, and uniqueness theorem
+    finite: literal generated route bases, generated route realization exactness, and Cycle 51 context cancellation; no IsStronglyCartesian input
+  proof_use:
+    used: [all three forward-after-inverse realization laws, all three inverse-after-forward realization laws, Cycle 55 complete factor contract, direct route complete geometry hom, RefinementGeometryHom extensionality, IsHomLift base equality, IsStronglyCartesian.mk]
+    deliberately_not_used: [caller-supplied factor uniqueness, caller-supplied cartesianness, lower inverse, G-114 endpoint core iso, selected-domain iso]
+  structure_field_escape: none; strong cartesianness is a theorem output, and the finite compatible input remains unchanged
+  route_integrity: base and pulled finite theorems close independently over their literal actual route bases and route-specific realization producers
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 strong-cartesian module and its registrations are added
+  target_fitting: none-found; factor lower maps are equal to the arbitrary requested g and the direct legs are the literal canonical-authored route geometry homs
+  vacuity: the theorem satisfies existence factorization and uniqueness clauses of IsStronglyCartesian for every K g h and IsHomLift witness
+  one_way_as_equivalence: none-found; factorization and recovery consume opposite realization cancellation families
+  goal_or_report_reinterpretation: none-found; endpoint isomorphisms and solution equivalence remain explicitly unchecked
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationStrongCartesian.lean` passed and reported 7 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationStrongCartesian` passed with 4107 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Combine the reviewed direct strong-Cartesian legs with the existing generated route legs and endpoint core equivalences to construct complete base and pulled endpoint comparison isomorphisms, then prove their naturality and comparator conjugation.
+```
