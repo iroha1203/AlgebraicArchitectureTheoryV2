@@ -2694,3 +2694,62 @@ audits:
   blocking_findings: []
   next_obligation: Complete RealizationExactUpperEquivalence composition and reading reflection, then construct the explicit canonical exact and realized-refinement positive inhabitants and their base/pulled compositions.
 ```
+
+## Cycle 47 — realization-exact composition and reading reflection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 47
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 65850c0bb4ad12a61d19a5c8709581be61dfee75
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 46 discharged the revision-6 negative producer and selected the first remaining positive realization algebra obligation
+  proof_dag_predecessors: [ExactUpperEquivalence.comp, UpperRealizationTransportSupply.comp, RealizationExactUpperEquivalence componentwise inverse laws, forward and backward reading preservation]
+  proof_obligation: Prove composition for RealizationExactUpperEquivalence and derive Support, Axis, and Observable reading reflection from inverse preservation and component cancellation
+  selection_reason: These are the minimal algebraic operations required before the canonical exact and realized-refinement endpoint inhabitants can be composed into base and pulled routes.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean]
+  risks: [hiding dependent casts in unchecked simplification, assuming reflection independently, losing reverse composition order, introducing a lower inverse]
+  unchecked: [canonical exact and realized-refinement positive inhabitants, base and pulled route inhabitants, endpoint comparison and downstream solution artifacts]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Realization-exact upper equivalences now compose in route order with reverse-order inverse supplies. A dependent-sigma cancellation proof discharges all six transported carrier inverse laws. Forward-backward Atom cancellation is exposed, and three iff theorems derive reading reflection by applying the inverse supply preservation law and then the corresponding component cancellation.
+  completion_candidate: no
+  lean_artifacts: [ExactUpperEquivalence.forwardBackwardAtom, ExactUpperEquivalence.backwardForwardAtom, RealizationExactUpperEquivalence.comp, RealizationExactUpperEquivalence.supportReads_iff, RealizationExactUpperEquivalence.axisReads_iff, RealizationExactUpperEquivalence.observableReads_iff]
+  source_sha256:
+    UpperGeometryRealizationExactness.lean: 2a26f1bc7fc44a97bdde0754694a04525121e10662551a56a580daa3e1acbafe
+  evidence: [focused Lean file check, targeted direct module build, in-module standard-axiom audit, dependent Sigma cancellation, inverse-preservation proof-use]
+  claim_mapping:
+    theorem_names: [RealizationExactUpperEquivalence.comp, RealizationExactUpperEquivalence.supportReads_iff, RealizationExactUpperEquivalence.axisReads_iff, RealizationExactUpperEquivalence.observableReads_iff]
+    source_labels: [target proof artifacts realization-exact minimal algebra, material premise ledger realization-exact upper equivalence]
+    conjuncts: [composition, Support reflection, Axis reflection, Observable reflection]
+    undischarged_assumptions: [positive endpoint realization supplies and downstream geometry comparison data]
+    acceptance_point: Each reflection theorem consumes the stored backward reading-preservation field and the relevant forward-backward component inverse law; Support additionally consumes authored Atom cancellation. No reflected-reading premise is accepted as input.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    ambient_boundary: [reviewed exact upper equivalence and bidirectional realization supplies]
+    direction_hypothesis: []
+    discharged: [realization-exact composition, Support reading reflection, Axis reading reflection, Observable reading reflection]
+    remaining: [canonical exact endpoint inhabitant, realized-refinement endpoint inhabitant, base and pulled compositions, endpoint comparison and all downstream solution artifacts]
+  certificate_provenance:
+    discharged: [all composite inverse laws are derived from the two input realization-exact structures; all reflection laws are derived rather than supplied]
+    unresolved: [positive endpoint supply provenance]
+  proof_use:
+    used: [both exact-upper context cancellation laws, both component cancellation layers in composition, inverse supply reading preservation, Atom cancellation for Support]
+    unused: [no total hom or HGeom adapter is needed for the upper-only algebra]
+  structure_field_escape: none; composition accepts only the two predecessor realization-exact structures and derives every output field
+  route_integrity: forward supplies compose in forward route order and inverse supplies in reverse order; the dependent total-space proof fixes the transported carrier indices before extracting component equality
+  predecessor_integrity: no reviewed predecessor module or GOAL statement changed
+  target_fitting: none-found
+  vacuity: each iff has its original reading proposition on one side and the concrete forward carrier and Atom maps on the other
+  one_way_as_equivalence: none-found; reverse implications explicitly call the inverse supply
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationExactness.lean` passed and reported 78 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationExactness` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct the explicit canonical exact and realized-refinement RealizationExactUpperEquivalence inhabitants, then compose them into the base and pulled route inhabitants.
+```
