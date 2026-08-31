@@ -2805,7 +2805,7 @@ audits:
   route_integrity: base route composes exact then base-refinement; pulled route composes pulled-refinement then exact; both forward composites are definitionally identified with the actual route hom upper map
   predecessor_integrity: G-108 G-112 G-114 and Formal are unchanged; only G-115 mate component API and this ledger changed
   target_fitting: none-found
-  vacuity: generic inhabitants quantify over arbitrary target geometry and actual exact or realized-reflection inputs; route specializations use the active finite compatible input and produce concrete nonempty structures
+  vacuity: generic inhabitants quantify over arbitrary target geometry and actual exact or realized-reflection inputs; route specializations use an active context and actual TargetGeometry, while pointwise specialization through sourceTargetGeometryAt remains for the endpoint-comparison stage
   one_way_as_equivalence: none-found; every primitive has independent backward carrier maps and both cancellation directions
   goal_or_report_reinterpretation: none-found
   validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryMateComponents.lean` passed and reported 59 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryMateComponents` passed; Research aggregate and full build were not run]
