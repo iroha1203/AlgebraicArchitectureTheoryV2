@@ -29,6 +29,40 @@ universe u v
 open CategoryTheory AtomFoundation GeometryTransport CrossStageCoherence
 open TransportCoherence
 
+/-- G-115-local downstream rewrite API for the defining postcomposition of an
+upper reselected edge.  It is kept here so the reviewed G-109 implementation
+module remains read-only. -/
+theorem upperReselectedEdgeLift_eq_for_g115
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerLiftData.{u, v} P U)
+    (reselection : UpperEdgeReselection data)
+    {i j : P.Vertex} (edge : P.Edge i j) :
+    upperReselectedEdgeLift data reselection edge =
+      (data.edgeLift edge).comp
+        (CompositeFiberAut.hom (reselection i j edge)) :=
+  rfl
+
+/-- G-115-local rewrite API for the empty upper reselected path. -/
+theorem upperReselectedPathLift_nil_for_g115
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerLiftData.{u, v} P U)
+    (reselection : UpperEdgeReselection data) (vertex : P.Vertex) :
+    upperReselectedPathLift data reselection (.nil vertex) =
+      GeometryTotalHom.id (data.geometry vertex) :=
+  rfl
+
+/-- G-115-local rewrite API for a nonempty upper reselected path. -/
+theorem upperReselectedPathLift_cons_for_g115
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerLiftData.{u, v} P U)
+    (reselection : UpperEdgeReselection data)
+    {source middle target : P.Vertex}
+    (edge : P.Edge source middle) (tail : P.Path middle target) :
+    upperReselectedPathLift data reselection (.cons edge tail) =
+      (upperReselectedEdgeLift data reselection edge).comp
+        (upperReselectedPathLift data reselection tail) :=
+  rfl
+
 namespace UpperGeometryCompatibleProblemInputData
 
 /-- The endpoint-component precursor to G-115 revision 8 clause (c): base and
@@ -175,7 +209,8 @@ theorem CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedEdge_na
       (solution.component i).comp
         (upperReselectedEdgeLift input.generatedPulledRouteLiftData
           pulled.toUpperEdgeReselection edge) := by
-  rw [upperReselectedEdgeLift_eq, upperReselectedEdgeLift_eq]
+  rw [upperReselectedEdgeLift_eq_for_g115,
+    upperReselectedEdgeLift_eq_for_g115]
   calc
     ((input.generatedBaseRouteGeometryEdge edge).comp
         (CompositeFiberAut.hom
@@ -244,8 +279,8 @@ theorem CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_na
           pulled.toUpperEdgeReselection path) := by
   induction path with
   | nil vertex =>
-      change (GeometryTotalHom.id _).comp (solution.component vertex) =
-        (solution.component vertex).comp (GeometryTotalHom.id _)
+      rw [upperReselectedPathLift_nil_for_g115,
+        upperReselectedPathLift_nil_for_g115]
       exact (@Category.id_comp
         (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
         _ _ (solution.component vertex)).trans
@@ -253,16 +288,8 @@ theorem CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_na
             (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
             _ _ (solution.component vertex)).symm
   | @cons source middle target edge tail inductionHypothesis =>
-      change ((upperReselectedEdgeLift input.generatedBaseRouteLiftData
-          base.toUpperEdgeReselection edge).comp
-        (upperReselectedPathLift input.generatedBaseRouteLiftData
-          base.toUpperEdgeReselection tail)).comp
-          (solution.component target) =
-        (solution.component source).comp
-          ((upperReselectedEdgeLift input.generatedPulledRouteLiftData
-            pulled.toUpperEdgeReselection edge).comp
-          (upperReselectedPathLift input.generatedPulledRouteLiftData
-            pulled.toUpperEdgeReselection tail))
+      rw [upperReselectedPathLift_cons_for_g115,
+        upperReselectedPathLift_cons_for_g115]
       calc
         _ = (upperReselectedEdgeLift input.generatedBaseRouteLiftData
               base.toUpperEdgeReselection edge).comp
@@ -318,8 +345,9 @@ end UpperGeometryCompatibleProblemInputData
 
 namespace UpperDecisionWitness
 
-/-- On the one-vertex decision presentation, the authored generated base
-comparator defines an actual edge-indexed coefficient-trivial reselection.
+/-- G-115 revision 8 clause (c) precursor positive-witness API: on the
+one-vertex decision presentation, the authored generated base comparator
+defines an actual edge-indexed coefficient-trivial reselection.
 The one-vertex specialization is essential: for a general presentation a
 two-cell comparator belongs only to its own target fiber. -/
 noncomputable def generatedBaseComparatorCoefficientTrivialUpperReselection :
@@ -329,8 +357,9 @@ noncomputable def generatedBaseComparatorCoefficientTrivialUpperReselection :
     problem.data.generatedBaseRouteFixedComparator DecisionCell.comparison
   coefficient_id := fun _ => generated_base_comparator_coefficient_id
 
-/-- On the same one-vertex decision presentation, the authored generated
-pulled comparator defines the companion coefficient-trivial reselection. -/
+/-- G-115 revision 8 clause (c) precursor positive-witness API: on the same
+one-vertex decision presentation, the authored generated pulled comparator
+defines the companion coefficient-trivial reselection. -/
 noncomputable def generatedPulledComparatorCoefficientTrivialUpperReselection :
     UpperGeometryCompatibleProblemInputData.GeneratedPulledCoefficientTrivialUpperEdgeReselection
       problem.data where
@@ -340,8 +369,8 @@ noncomputable def generatedPulledComparatorCoefficientTrivialUpperReselection :
     problem.data.generatedPulledRouteFixedComparator_coefficient_id
       DecisionCell.comparison
 
-/-- In the named decision fixture, the generated base comparator reselection
-is genuinely nonidentity. -/
+/-- G-115 revision 8 clause (c) precursor nonvacuity API: in the named decision
+fixture, the generated base comparator reselection is genuinely nonidentity. -/
 theorem generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one :
     generatedBaseComparatorCoefficientTrivialUpperReselection ≠
       CoefficientTrivialUpperEdgeReselection.one
@@ -352,8 +381,9 @@ theorem generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one :
       PUnit.unit PUnit.unit DecisionEdge.twist) equality
   exact generated_base_comparator_ne_one edgeEquality
 
-/-- The named generated comparator pair is a concrete nonidentity positive
-instance of endpoint intertwining. -/
+/-- G-115 revision 8 clause (c) precursor positive-witness API: the named
+generated comparator reselection pair is a concrete nonidentity instance of
+endpoint intertwining. -/
 theorem generatedComparatorUpperReselections_endpointIntertwining_fires :
     UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining
       solution
@@ -362,10 +392,11 @@ theorem generatedComparatorUpperReselections_endpointIntertwining_fires :
   intro i j edge
   exact solution.comparator_intertwining DecisionCell.comparison
 
-/-- Keeping the same nonidentity generated base comparator while selecting the
-identity on the pulled route is a concrete negative endpoint instance.  Its
-failure is inherited from the independently established complete comparator
-descent obstruction on exactly these generated route geometries. -/
+/-- G-115 revision 8 clause (c) precursor negative-witness API: keeping the
+same nonidentity generated base comparator while selecting the identity on the
+pulled route is a concrete negative endpoint instance.  Its failure is
+inherited from the independently established complete comparator-descent
+obstruction on exactly these generated route geometries. -/
 theorem generatedBaseComparatorPulledIdentity_not_endpointIntertwining :
     ¬ UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining
       solution
