@@ -2812,3 +2812,55 @@ audits:
   blocking_findings: []
   next_obligation: Use the theorem-generated base and pulled route realization-exact inhabitants to construct the canonical endpoint comparison isomorphisms and componentwise conjugation solution equivalence.
 ```
+
+## Cycle 49 — finite route-realization and endpoint-normalization bridge
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 49
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 99285338c976b887ed8a6cc1b972722824246956
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 48 generated realization-exact inhabitants for arbitrary active contexts and target geometries; the endpoint stage needs their exact finite-vertex specialization separated from core-only normalization
+  proof_obligation: Fix both generated route realization equivalences at every compatible finite vertex, identify their forward uppers with the literal route legs, and package the independent base and pulled endpoint core upper equivalences without inferring realization from object normalization
+  selection_reason: Endpoint comparison construction must consume theorem-generated route realization while retaining the distinction between realization data and the upper-pair object normalization already used for canonical-authored endpoints.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointComparisons.lean]
+  risks: [treating core upper cancellation as realization, silently inserting Support Axis Observable maps, using the raw G-114 one-way comparison, failing to specialize through sourceTargetGeometryAt, conflating route and endpoint equivalences]
+  unchecked: [canonical-authored route realization supplies, complete endpoint comparison homs, strong-cartesian factor laws, endpoint isomorphisms, edge naturality, comparator conjugation, solution equivalence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The base and pulled route ExactUpperEquivalence values and their RealizationExactUpperEquivalence inhabitants are now specialized at every compatible finite vertex through sourceTargetGeometryAt. Their forward maps are identified with the literal generated route-leg uppers. Separately, the base and pulled core endpoint isomorphisms generate exact upper equivalences with both cancellation laws, but no realization supply is inferred from those core-only structures.
+  completion_candidate: no
+  lean_artifacts: [generatedBaseRouteUpperEquivalenceAt, generatedBaseRouteRealizationExactAt, generatedBaseRouteUpperEquivalenceAt_forward_eq, generatedPulledRouteUpperEquivalenceAt, generatedPulledRouteRealizationExactAt, generatedPulledRouteUpperEquivalenceAt_forward_eq, generatedBaseEndpointUpperEquivalenceAt, generatedPulledEndpointUpperEquivalenceAt]
+  source_sha256:
+    UpperGeometryCompatibleEndpointComparisons.lean: 94841a1059d379a6c931d1d54759a24e96bbb1192f75a96cd63c6e8d1a44c961
+  evidence: [focused Lean file check, targeted direct module dependency-DAG build, namespace standard-axiom audit, explicit finite specialization, literal route-upper equalities, endpoint upper cancellation from core isomorphisms]
+audits:
+  premise_delta:
+    ambient_boundary: [certificate-free compatible input, generated finite route legs, theorem-generated route realization inhabitants, generated endpoint core isomorphisms]
+    direction_hypothesis: []
+    discharged: [finite base route realization inhabitant, finite pulled route realization inhabitant, both literal route-upper identifications, base endpoint exact upper equivalence, pulled endpoint exact upper equivalence]
+    remaining: [canonical-authored route realization, endpoint complete geometry comparison homs and inverse laws, comparison naturality and comparator compatibility, solution equivalence]
+  certificate_provenance:
+    route_realization: specialized from Cycle 48 constructors using the actual sourceTargetGeometryAt geometry; no endpoint field or theorem argument is accepted
+    endpoint_upper: projected from theorem-generated core isomorphism hom and inv with cancellation obtained by congrArg on the categorical inverse laws
+    unresolved: endpoint Support Axis Observable comparison maps are not inferred from the endpoint upper equivalence
+  proof_use:
+    used: [baseRouteRealizationExact, pulledRouteRealizationExact, sourceTargetGeometryAt, actual generated route legs, both endpoint core iso inverse laws]
+    rejected_refutation: A generic claim that pullGeometryPackageAlongUpperPair alone supplies realization was tested and rejected at carrier-map typing; no such declaration remains
+  structure_field_escape: none; realization values are theorem-generated route specializations, while endpoint structures contain upper maps and cancellation only
+  route_integrity: both finite route equivalences unfold to the same exact/refinement order as the actual generated route legs
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 bridge module and its registration are added
+  target_fitting: none-found
+  vacuity: declarations quantify over every vertex of every certificate-free compatible input; no inhabitation or endpoint comparison is accepted from the caller
+  one_way_as_equivalence: none-found; route inhabitants retain both realization directions and six cancellation laws, while endpoint core equivalences are explicitly not claimed realization-exact
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleEndpointComparisons.lean` passed and reported 8 declarations standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleEndpointComparisons` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Generate the canonical-authored route realization supplies from the explicit inverse-package transports and normalization laws, then use strong-cartesian factorization to construct the base and pulled complete endpoint comparison isomorphisms.
+```
