@@ -3493,3 +3493,56 @@ audits:
   blocking_findings: []
   next_obligation: Construct componentwise forward and backward transports for arbitrary solutions through the endpoint isomorphisms, prove separate preservation of component base coefficient identity triangle edge naturality comparator nil append and two-cell fields, prove both pointwise component cancellation laws and structure-level inverse laws, and package the two solution types as an Equiv without wrapper storage.
 ```
+
+## Cycle 62 — wrapper-free compatible solution equivalence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 62
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 60564b90951bdeb99550da359e33b5e0762de09e
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 61 merged separate canonical-authored and generated solution contracts plus caller-free actual inhabitants
+  proof_dag_predecessors: [both Cycle 61 solution structures, both endpoint comparison isomorphisms and inverse laws, both endpoint edge naturality directions, all four literal comparator conjugation directions, both route factor triangles]
+  proof_obligation: Construct componentwise forward and backward transports for arbitrary solutions through the endpoint isomorphisms, prove every solution field and both inverse laws, and package a wrapper-free Equiv of the two solution types
+  selection_reason: The fixed target explicitly rejects a stored-source wrapper and requires the endpoint comparison isomorphisms to act on the full solution equations. This is the remaining K2b2b-i equivalence obligation before decision fixtures and paired cochains.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean]
+  risks: [source-solution storage, sigma wrapper, proof-irrelevance-only inverse, wrong conjugation direction, core-only component equality, omitted coefficient or comparator preservation, one-sided inverse, named companion not constructed from the Equiv]
+  unchecked: [named canonical companion problem, named upperDecisionContext problem and solution, genuinely lax nonidentity firing fixture, comparator-incoherent negative problem and no-solution theorem, paired cochain and restricted reselection bidirectional transport, UpperStageExchangeExact companion iff]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Arbitrary canonical-authored components are transported as base inverse followed by the source component followed by pulled hom; arbitrary generated components are transported as base hom followed by the source component followed by pulled inverse. Each refinement composite is exactified over the unchanged G-115 core mate. Both directions separately preserve component base, coefficient identity, route triangle, edge naturality, comparator intertwining, nil, append, and two-cell pasting. Actual endpoint inverse cancellation proves pointwise complete GeometryTotalHom recovery through the faithful exact embedding; structure extensionality then proves both solution-level inverse laws. The resulting Equiv stores no source solution. A named canonical companion is constructed by applying its inverse to the theorem-generated solution.
+  completion_candidate: no
+  lean_artifacts: [canonicalSolutionForwardCoreAt, canonicalSolutionForwardRefinementAt, canonicalSolutionForwardRefinementAt_base, canonicalSolutionForwardAt, canonicalSolutionForwardAt_toRefinement, canonicalSolutionForwardAt_base, canonicalSolutionForwardAt_triangle, canonicalSolutionForwardAt_coefficient_id, canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_naturality_inv, canonicalSolutionForwardAt_edge_naturality, canonicalSolutionForwardAt_comparator_intertwining, canonicalSolutionForwardAt_path_naturality, canonicalSolutionForwardAt_authored_twoCell_pasting, canonicalSolutionForward, generatedSolutionBackwardCoreAt, generatedSolutionBackwardRefinementAt, generatedSolutionBackwardRefinementAt_base, generatedSolutionBackwardAt, generatedSolutionBackwardAt_toRefinement, generatedSolutionBackwardAt_base, generatedSolutionBackwardAt_triangle, generatedSolutionBackwardAt_coefficient_id, generatedSolutionBackwardAt_edge_naturality, generatedSolutionBackwardAt_comparator_intertwining, generatedSolutionBackwardAt_path_naturality, generatedSolutionBackwardAt_authored_twoCell_pasting, generatedSolutionBackward, generatedSolutionBackwardAt_canonicalSolutionForward, canonicalSolutionForwardAt_generatedSolutionBackward, CanonicalUpperRefinementBCSolution.ext, GeometryCompatibleUpperRefinementBCSolution.ext, generatedSolutionBackward_canonicalSolutionForward, canonicalSolutionForward_generatedSolutionBackward, canonicalGeneratedUpperRefinementBCSolutionEquiv, canonicalCompanionUpperRefinementBCSolution, canonicalGeneratedUpperRefinementBCSolutionEquiv_companion]
+  source_sha256:
+    UpperGeometryCompatibleSolutionEquivalence.lean: b48f1d23dd31c88ca95eead93250f2de6a6a6df49cf1a59ebf416b1b6314e9dd
+  evidence: [focused Lean file check, 38-declaration namespace standard-axiom audit, two componentwise exactification directions, separate base coefficient triangle edge comparator and path preservation theorem families, two faithful complete-component cancellation theorems, two structure-level inverse laws, wrapper-free Equiv]
+audits:
+  premise_delta:
+    ambient_boundary: [Cycle 61 typed solution contracts, complete endpoint geometry isomorphisms, independent authored and generated route edges and comparators]
+    direction_hypothesis: []
+    discharged: [arbitrary canonical-to-generated solution transport, arbitrary generated-to-canonical solution transport, all forward field preservation, all backward field preservation, forward component cancellation, backward component cancellation, both solution-level inverse laws, wrapper-free solution Equiv, named canonical companion from the Equiv]
+    remaining: [named canonical companion problem, named decision and genuinely lax firing fixture, comparator-incoherent negative artifact and no-solution theorem, paired cochain and restricted reselection transport, UpperStageExchangeExact companion iff]
+  certificate_provenance:
+    forward: exactification of base endpoint inverse, arbitrary canonical component, and pulled endpoint hom
+    backward: exactification of base endpoint hom, arbitrary generated component, and pulled endpoint inverse
+    inverses: faithful exactGeometryToRefinementGeometry reflection after literal category hom-inverse and inverse-hom cancellation; source solutions are not retained
+  proof_use:
+    used: [all four endpoint hom and inverse base laws, both route endpoint factor laws, both edge naturality directions, both comparator conjugation directions per transport, arbitrary source solution triangle edge comparator fields, both route coefficient identity laws, exactGeometryHomOfRefinement_toRefinement, exact embedding map_injective, category Iso cancellation]
+    deliberately_not_used: [old G-114 selected solution, G-114 selected endpoint comparison, caller-supplied transport or inverse law, source-solution field, sigma or wrapper, proof irrelevance as the component inverse, lower inverse]
+  structure_field_escape: neither transport adds an input or certificate; each output structure is freshly constructed from the transformed complete components and newly proved equations
+  route_integrity: forward and backward directions use opposite actual endpoint hom/inv conjugations, their route-specific edge and comparator equations, and both independently generated endpoint families
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 solution-equivalence module and registrations are added
+  target_fitting: none-found; arbitrary solution data are transformed rather than copied, and component recovery is a complete geometry equality reflected by the faithful exact embedding
+  vacuity: the Equiv acts on the full solution types and the named generated inhabitant yields a named canonical companion through its actual inverse
+  one_way_as_equivalence: none-found; both functions and both inverse laws are explicit theorem artifacts
+  goal_or_report_reinterpretation: none-found; the named canonical companion problem, decision and negative fixtures, cochain, and exchange-exact obligations remain unchecked and status stays target-proof-checkpoint
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean` passed and reported 38 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; only the direct Cycle 61 solution-contract dependency DAG was targeted when its olean was absent; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Construct the named canonical companion problem and the named upperDecisionContext upperDecisionProblem and upperDecisionSolution from a genuinely lax root-connected finite compatible input with nonidentity refinement strong edge comparator and raw cochain, prove a concrete nonidentity complete solution component without deciding IsIso, then construct the comparator-incoherent negative raw problem and its no-solution theorem.
+```
