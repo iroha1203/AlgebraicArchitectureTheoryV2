@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 5 fixed
-- proof state: `target-blocked` (`goal-defect`)
+- proof state: `goal-defect`
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -2606,14 +2606,14 @@ result:
   claim_mapping:
     theorem_names: [negativeUpperUnitObject_ne_boolObject, negativeCoreUpper_objectMap_not_injective, no_negativeExactUpperEquivalence]
     source_labels: [revision 5 K2b2b-r negative upper equivalence, revision 5 target failure policy]
-    conjuncts: [literal negative forward map, full upper cancellation, realization boundary nonvacuity]
+    conjuncts: [literal negative forward map, full upper cancellation, explicit nonvacuous firing of the negative-producer obstruction]
     undischarged_assumptions: [all positive endpoint producers and downstream K2b2b-r algebra]
     acceptance_point: no_negativeExactUpperEquivalence uses the literal required coreHom.upper and its actual objectMap; it does not assume realization failure or accept an obstruction certificate.
     port_status: not-applicable
 audits:
   premise_delta:
     discharged: [upper-indexed supply signature, compatibility with existing total-hom supply, explicit cancellation-indexed carrier inverse-law signature, identity, symmetry, conditional HGeom adapters]
-    blocked: [negativeExactUpperEquivalence, not_realizationExact_negativeExactUpperEquivalence, downstream completion of K2b2b-r]
+    remaining: [negativeExactUpperEquivalence, not_realizationExact_negativeExactUpperEquivalence, downstream completion of K2b2b-r]
   proof_use:
     used: [NegativeGeometryWitness.coreHom.upper.objectMap, ExactUpperEquivalence.forward_backward, SignedExactCoreReadingHom.comp objectMap, SignedExactCoreReadingHom.refl objectMap]
     unused: [NegativeGeometryWitness.not_hGeom is downstream of the equivalence that cannot be constructed]
