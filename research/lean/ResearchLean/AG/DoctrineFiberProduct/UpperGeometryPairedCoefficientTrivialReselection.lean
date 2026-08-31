@@ -1,15 +1,16 @@
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCoefficientTrivialReselection
-import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSolutionContracts
+import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleComparatorIncoherence
 
 /-!
 # Paired coefficient-trivial upper reselections for G-115
 
-This module begins G-115 revision 8 clause (c).  A paired reselection is not a
-new orbit certificate: it is the literal endpoint-component naturality
-equation relating one actual coefficient-trivial reselection on each of the
-two theorem-generated routes.  The identity pair is constructed for every
-geometry-compatible actual solution, and paired reselections are closed under
-the existing pointwise vertical product.
+This module supplies an endpoint-component precursor for G-115 revision 8
+clause (c).  It is not yet the clause's full paired relation: it isolates the
+literal endpoint equation relating one actual coefficient-trivial reselection
+on each theorem-generated route.  Identity and multiplication laws are joined
+by named nonidentity positive and negative decision instances, so the
+precursor is neither an identity-only artifact nor an automatically inhabited
+predicate.
 
 ## Implementation notes
 
@@ -30,10 +31,15 @@ open TransportCoherence
 
 namespace UpperGeometryCompatibleProblemInputData
 
-/-- G-115 revision 8 clause (c)'s principal relation: base and pulled actual
-coefficient-trivial reselections intertwine the vertical solution component
-at every edge target. -/
-def PairedCoefficientTrivialUpperReselection
+/-- The endpoint-component precursor to G-115 revision 8 clause (c): base and
+pulled actual coefficient-trivial reselections intertwine the vertical
+solution component at every edge target.
+
+This transparent complete-geometry equation is kept separate from the full
+paired relation, which must additionally consume the solution triangle,
+authored comparator, and coefficient-component law in the subsequent
+raw-cochain construction. -/
+def CoefficientTrivialUpperReselectionEndpointIntertwining
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     {input : UpperGeometryCompatibleProblemInputData ctx P k}
@@ -52,12 +58,12 @@ def PairedCoefficientTrivialUpperReselection
 /-- G-115 revision 8 clause (c) identity closure: the two identity actual
 reselections form a paired coefficient-trivial reselection for every actual
 compatible solution. -/
-theorem pairedCoefficientTrivialUpperReselection_one
+theorem coefficientTrivialUpperReselectionEndpointIntertwining_one
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     {input : UpperGeometryCompatibleProblemInputData ctx P k}
     (solution : GeometryCompatibleUpperRefinementBCSolution input) :
-    PairedCoefficientTrivialUpperReselection solution
+    CoefficientTrivialUpperReselectionEndpointIntertwining solution
       (CoefficientTrivialUpperEdgeReselection.one
         input.generatedBaseRouteTransport)
       (CoefficientTrivialUpperEdgeReselection.one
@@ -74,7 +80,7 @@ theorem pairedCoefficientTrivialUpperReselection_one
 
 /-- G-115 revision 8 clause (c) vertical-composition closure: the pointwise
 product of two paired coefficient-trivial reselections is again paired. -/
-theorem PairedCoefficientTrivialUpperReselection.mul
+theorem CoefficientTrivialUpperReselectionEndpointIntertwining.mul
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     {input : UpperGeometryCompatibleProblemInputData ctx P k}
@@ -83,11 +89,11 @@ theorem PairedCoefficientTrivialUpperReselection.mul
       GeneratedBaseCoefficientTrivialUpperEdgeReselection input}
     {pulledFirst pulledSecond :
       GeneratedPulledCoefficientTrivialUpperEdgeReselection input}
-    (first : PairedCoefficientTrivialUpperReselection solution
+    (first : CoefficientTrivialUpperReselectionEndpointIntertwining solution
       baseFirst pulledFirst)
-    (second : PairedCoefficientTrivialUpperReselection solution
+    (second : CoefficientTrivialUpperReselectionEndpointIntertwining solution
       baseSecond pulledSecond) :
-    PairedCoefficientTrivialUpperReselection solution
+    CoefficientTrivialUpperReselectionEndpointIntertwining solution
       (CoefficientTrivialUpperEdgeReselection.mul baseFirst baseSecond)
       (CoefficientTrivialUpperEdgeReselection.mul pulledFirst pulledSecond) := by
   intro i j edge
@@ -155,21 +161,21 @@ theorem PairedCoefficientTrivialUpperReselection.mul
 /-- G-115 revision 8 clause (c) edge law: a paired reselection preserves the
 actual solution edge-naturality square.  The proof consumes both the original
 solution edge equation and the paired endpoint equation. -/
-theorem PairedCoefficientTrivialUpperReselection.reselectedEdge_naturality
+theorem CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedEdge_naturality
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     {input : UpperGeometryCompatibleProblemInputData ctx P k}
     {solution : GeometryCompatibleUpperRefinementBCSolution input}
     {base : GeneratedBaseCoefficientTrivialUpperEdgeReselection input}
     {pulled : GeneratedPulledCoefficientTrivialUpperEdgeReselection input}
-    (paired : PairedCoefficientTrivialUpperReselection solution base pulled)
+    (paired : CoefficientTrivialUpperReselectionEndpointIntertwining solution base pulled)
     {i j : P.Vertex} (edge : P.Edge i j) :
     (upperReselectedEdgeLift input.generatedBaseRouteLiftData
       base.toUpperEdgeReselection edge).comp (solution.component j) =
       (solution.component i).comp
         (upperReselectedEdgeLift input.generatedPulledRouteLiftData
           pulled.toUpperEdgeReselection edge) := by
-  unfold upperReselectedEdgeLift
+  rw [upperReselectedEdgeLift_eq, upperReselectedEdgeLift_eq]
   calc
     ((input.generatedBaseRouteGeometryEdge edge).comp
         (CompositeFiberAut.hom
@@ -222,14 +228,14 @@ theorem PairedCoefficientTrivialUpperReselection.reselectedEdge_naturality
 /-- G-115 revision 8 clause (c) path-concatenation closure: the paired
 reselection intertwines every reselected path.  The induction consumes the
 actual solution edge equation at each generator and the paired endpoint law. -/
-theorem PairedCoefficientTrivialUpperReselection.reselectedPath_naturality
+theorem CoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_naturality
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     {input : UpperGeometryCompatibleProblemInputData ctx P k}
     {solution : GeometryCompatibleUpperRefinementBCSolution input}
     {base : GeneratedBaseCoefficientTrivialUpperEdgeReselection input}
     {pulled : GeneratedPulledCoefficientTrivialUpperEdgeReselection input}
-    (paired : PairedCoefficientTrivialUpperReselection solution base pulled)
+    (paired : CoefficientTrivialUpperReselectionEndpointIntertwining solution base pulled)
     {i j : P.Vertex} (path : P.Path i j) :
     (upperReselectedPathLift input.generatedBaseRouteLiftData
       base.toUpperEdgeReselection path).comp (solution.component j) =
@@ -309,6 +315,68 @@ theorem PairedCoefficientTrivialUpperReselection.reselectedPath_naturality
               pulled.toUpperEdgeReselection tail)
 
 end UpperGeometryCompatibleProblemInputData
+
+namespace UpperDecisionWitness
+
+/-- On the one-vertex decision presentation, the authored generated base
+comparator defines an actual edge-indexed coefficient-trivial reselection.
+The one-vertex specialization is essential: for a general presentation a
+two-cell comparator belongs only to its own target fiber. -/
+noncomputable def generatedBaseComparatorCoefficientTrivialUpperReselection :
+    UpperGeometryCompatibleProblemInputData.GeneratedBaseCoefficientTrivialUpperEdgeReselection
+      problem.data where
+  toUpperEdgeReselection := fun _ _ _ =>
+    problem.data.generatedBaseRouteFixedComparator DecisionCell.comparison
+  coefficient_id := fun _ => generated_base_comparator_coefficient_id
+
+/-- On the same one-vertex decision presentation, the authored generated
+pulled comparator defines the companion coefficient-trivial reselection. -/
+noncomputable def generatedPulledComparatorCoefficientTrivialUpperReselection :
+    UpperGeometryCompatibleProblemInputData.GeneratedPulledCoefficientTrivialUpperEdgeReselection
+      problem.data where
+  toUpperEdgeReselection := fun _ _ _ =>
+    problem.data.generatedPulledRouteFixedComparator DecisionCell.comparison
+  coefficient_id := fun _ =>
+    problem.data.generatedPulledRouteFixedComparator_coefficient_id
+      DecisionCell.comparison
+
+/-- In the named decision fixture, the generated base comparator reselection
+is genuinely nonidentity. -/
+theorem generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one :
+    generatedBaseComparatorCoefficientTrivialUpperReselection ≠
+      CoefficientTrivialUpperEdgeReselection.one
+        problem.data.generatedBaseRouteTransport := by
+  intro equality
+  have edgeEquality := congrArg
+    (fun reselection => reselection.toUpperEdgeReselection
+      PUnit.unit PUnit.unit DecisionEdge.twist) equality
+  exact generated_base_comparator_ne_one edgeEquality
+
+/-- The named generated comparator pair is a concrete nonidentity positive
+instance of endpoint intertwining. -/
+theorem generatedComparatorUpperReselections_endpointIntertwining_fires :
+    UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining
+      solution
+      generatedBaseComparatorCoefficientTrivialUpperReselection
+      generatedPulledComparatorCoefficientTrivialUpperReselection := by
+  intro i j edge
+  exact solution.comparator_intertwining DecisionCell.comparison
+
+/-- Keeping the same nonidentity generated base comparator while selecting the
+identity on the pulled route is a concrete negative endpoint instance.  Its
+failure is inherited from the independently established complete comparator
+descent obstruction on exactly these generated route geometries. -/
+theorem generatedBaseComparatorPulledIdentity_not_endpointIntertwining :
+    ¬ UpperGeometryCompatibleProblemInputData.CoefficientTrivialUpperReselectionEndpointIntertwining
+      solution
+      generatedBaseComparatorCoefficientTrivialUpperReselection
+      (CoefficientTrivialUpperEdgeReselection.one
+        problem.data.generatedPulledRouteTransport) := by
+  intro paired
+  apply generatedBaseIdentityPair_not_comparatorDescentAt
+  exact paired (i := PUnit.unit) (j := PUnit.unit) DecisionEdge.twist
+
+end UpperDecisionWitness
 
 end AAT.AG.DoctrineFiberProduct
 

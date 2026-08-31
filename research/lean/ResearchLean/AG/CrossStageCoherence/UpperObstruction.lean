@@ -209,6 +209,19 @@ noncomputable def upperReselectedEdgeLift
   (data.edgeLift edge).comp
     (CompositeFiberAut.hom (reselection i j edge))
 
+/-- Public composition characterization of an upper reselected edge.  This is
+the downstream rewrite API for the defining postcomposition; proofs should
+not unfold `upperReselectedEdgeLift` directly. -/
+theorem upperReselectedEdgeLift_eq
+    {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
+    (data : TwoLayerLiftData.{u, v} P U)
+    (reselection : UpperEdgeReselection data)
+    {i j : P.Vertex} (edge : P.Edge i j) :
+    upperReselectedEdgeLift data reselection edge =
+      (data.edgeLift edge).comp
+        (CompositeFiberAut.hom (reselection i j edge)) :=
+  rfl
+
 /-- Projection of an upper reselected edge is the G-106 reselected edge. -/
 theorem upperReselectedEdgeLift_base
     {P : FiniteTransportPresentation.{u}} {U : AtomCarrier.{u}}
