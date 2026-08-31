@@ -3071,3 +3071,55 @@ audits:
   blocking_findings: []
   next_obligation: Prove restriction naturality of the three inverse-at-forward maps, use these carriers in the complete universal factor geometry contract, and close factorization uniqueness for both finite direct route homs.
 ```
+
+## Cycle 54 — naturality of realization-factor carrier inverses
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 54
+goal_blob_sha: 65a084cfe6eb6094d2dc33193e0b9185393043f44387e12151c17b355911044c
+base_oid: 41319c669629738d9095cca006d88eb077a6368b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Cycle 53 produced literal-source-fiber inverses and both cancellation directions, but the universal factor still needs those inverses to commute with all context restrictions
+  proof_obligation: Prove injectivity of the forward realization component maps and restriction naturality of inverse-at-forward for Support Axis and contravariant Observable
+  selection_reason: These are the last carrier-level laws required to populate the complete RefinementGeomReadHom factor without accepting a backward naturality certificate from the caller.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationFactorNaturality.lean]
+  risks: [assuming inverse naturality from bijectivity without proof, reversing Observable variance, erasing dependent context casts, introducing a new naturality premise, using only one cancellation direction]
+  unchecked: [complete universal factor geometry contract, factorization and uniqueness, direct route strong cartesianness, endpoint comparison isomorphisms, solution equivalence]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Forward Support Axis and Observable realization maps are now injective by the Cycle 53 inverse laws. Applying that injectivity reduces each inverse-at-forward naturality square to the existing forward naturality square and forward-after-inverse cancellation, including the contravariant Observable direction.
+  completion_candidate: no
+  lean_artifacts: [supportComp_injective, axisComp_injective, observableComp_injective, supportInverseAtForward_naturality, axisInverseAtForward_naturality, observableInverseAtForward_naturality]
+  source_sha256:
+    UpperGeometryRealizationFactorNaturality.lean: d46c766f5e26c5fc496bfade40d95afbc3fae73382d0cdca04b07cbc6f153662
+  evidence: [focused Lean file check, targeted dependency-DAG module build, 6-declaration namespace standard-axiom audit, explicit forward-map injectivity, covariant Support and Axis naturality, contravariant Observable naturality]
+audits:
+  premise_delta:
+    ambient_boundary: [ExactUpperEquivalence, theorem-generated RealizationExactUpperEquivalence]
+    direction_hypothesis: []
+    discharged: [forward Support component injectivity, forward Axis component injectivity, forward Observable component injectivity, inverse Support restriction naturality, inverse Axis restriction naturality, inverse Observable restriction naturality]
+    remaining: [universal factor coverage overlap coefficient raw and carrier contract, factor composition law, factor uniqueness, direct route strong cartesianness, endpoint comparison isomorphisms, solution equivalence]
+  certificate_provenance:
+    injectivity: each proof applies the corresponding Cycle 53 inverse-after-forward cancellation law to an equality of forward component values
+    naturality: each proof applies forward component injectivity, rewrites by the existing homSupply naturality field, and cancels both forward-after-inverse occurrences
+    observable_variance: the theorem starts at the target context V and restricts to W, exactly matching UpperRealizationTransportSupply.observable_naturality
+  proof_use:
+    used: [all three homSupply component naturality laws, all three inverse-after-forward laws, all three forward-after-inverse laws, exact upper context functor maps]
+    deliberately_not_used: [caller-supplied inverse naturality, compatible-input geometry contract, lower inverse, G-114 endpoint core iso]
+  structure_field_escape: none; no new premise or input field is introduced, and inverse naturality is derived from the existing realization-exact laws
+  route_integrity: route-neutral algebra only; finite base and pulled strong-Cartesian specializations remain tied to their independently generated route realization inhabitants
+  predecessor_integrity: G-108 G-112 G-114 Formal and the fixed GOAL are unchanged; one G-115 naturality module and its registrations are added
+  target_fitting: none-found; each result is stated over the literal dependent context fibers produced by the exact upper equivalence
+  vacuity: all six declarations are pointwise equations or injectivity results for arbitrary carrier values and arbitrary context morphisms
+  one_way_as_equivalence: none-found; the proofs materially use both Cycle 53 cancellation directions
+  goal_or_report_reinterpretation: none-found; strong cartesianness and endpoint isomorphisms remain explicitly unchecked
+  validation_refs: [`./check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryRealizationFactorNaturality.lean` passed and reported 6 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; targeted `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryRealizationFactorNaturality` passed with 4105 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Use the inverse-at-forward maps, inverse reading laws, and these naturality theorems to construct the complete universal factor RefinementGeomReadHom, then prove factorization and uniqueness.
+```
