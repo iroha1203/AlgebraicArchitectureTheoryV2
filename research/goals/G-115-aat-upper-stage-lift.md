@@ -169,6 +169,12 @@
     これは個別にqualifiedなauthored route comparator choicesの積の中でdescent locusがproperであることを示す
     O10分類負例であり、common source comparatorから生成された正pairの失敗、solution不在、O12の`IsIso`失敗を
     主張しない。
+  - 人間承認revision 9は、final completion reviewで判明したclause (d)のproof-use責務の
+    category errorを修正する。actual solution equationsはendpoint conjugationからactual
+    canonical companion solutionを構成する各fieldで実消費し、pointwise `IsIso` iff自体は
+    component normalizationとendpoint comparison isomorphismsの左右cancellationで証明する。
+    predicate、actual companion、pointwise iff、G-114 core reflection禁止、O12未決定という
+    revision 8の結論とstatementの対象制限は変更しない。
 
 - `target theorem`: **Geometry-Refinement Bridge and Upper BC Relational
   Naturality Theorem**。次を構成・証明する。
@@ -434,8 +440,11 @@
   4. **(d) exchange-exactness decision interface**:
      generated geometry-compatible solutionに対し `UpperStageExchangeExact solution : Prop` を
      全vertical geometry componentsの `IsIso` と定義する。endpoint comparison
-     isomorphismsによるconjugationとactual solution equationsを実消費し、これは
-     canonical companion **actual geometry solution**の
+     isomorphismsによるconjugationからcanonical companion **actual geometry solution**を構成し、
+     actual solution equationsはそのcompanionのtriangle、edge / comparator naturality、nil / append
+     path naturality、authored two-cell pastingを満たすことの証明でそれぞれ実消費する。その上で
+     component normalizationとendpoint comparison isomorphismsの左右cancellationを実消費し、これは
+     companionの
      `CanonicalUpperRefinementBCSolution.component`が`IsIso`であることとpointwise iffであると証明する。
      G-114 core mateの`IsIso`とのreflectionは主張しない。
      このiffはpredicateの成立・不成立の決定とは数えない。`upperDecisionSolution`の
@@ -492,7 +501,9 @@
   proof-useに加え、compatible inputからの両route生成とstrong cartesianness、endpoint inverseの
   universal uniqueness provenance、realization-exactness primitiveの両方向生成provenanceと
   Support / Axis / Observable inverse lawのproof-use、structure-preserving negative upper equivalenceでの非実現性、selected-domain isoを
-  producerに使っていないこと、canonical comparison isomorphismsとsolution equationsのproof-use、
+  producerに使っていないこと、canonical companion actual geometry solutionの構成における
+  solution equationsのfieldwise proof-useと、そのcomponent normalizationおよびcanonical comparison
+  isomorphismsの左右cancellationによるpointwise `IsIso` iffのproof-use、
   named decision fixtureでの次元別nonvacuity(horizontal refinement / edge、two-cell comparator /
   cochain、vertical carrier-conservativity)とnamed witnessに特殊化したsolution equationのproof-use、
   comparator descent正側がliteral solution fieldを使うこと、負側が同じroute / componentと全ての
@@ -521,7 +532,7 @@
 | source fiber diagram / individual legs | direction-hypothesis | actual `CoreFiber` functorとsource data projection equations、bridge hom family、full route内geometry naturality。raw authored domainではroute間inverseを含まず、compatible inputの代替とは数えない |
 | named decision / comparator descent正負pair | discharge-required | 一つのnamed `upperDecisionProblem` data上にconstructor-generated solutionとsolution `Equiv`の逆像であるcanonical companion solutionを構成し、Equivが両者を対応させる。fixtureのgenuinely lax refinement / horizontal strong edge、authored / generated comparator、derived raw cochainを具体評価で非恒等とし、actual solutionのedge / comparator equationsをそのwitnessへ特殊化する。vertical generated componentは三carrier-conservativity theorem familyを実消費し、非恒等gaugeを追加しない。`UpperComparatorDescentAt`を二つのqualified `FixedCoefficientTwoLayerTransportOver`とactual component / cell上のhom equalityとして定義し、actual / compatible solution fieldから正側を導く。負側は同じgenerated routeとcanonical componentを使い、pulled transportのgeometry、edge lifts、projection / strong-cartesian / two-cell-base laws、edge coefficient lawを保持し、comparatorだけをidentityへ替えたqualified transportを構成する。両comparatorのcoefficient identityとSupport / Axis / Observable三評価でdescent failureを証明する。comparator-independent local lawsを変えず、common-source-generated pairのfailure、raw solution不在、decision componentの`IsIso`は決めず、certificate payload不可 |
 | paired cochain / restricted orbit theorem | discharge-required | geometry-compatible solution上でleg triangle、edge equation、comparator equation、coefficient identityを実消費する。geometry comparisonからcoefficient-trivial reselectionの双方向transportとrestricted space上の両側inverseを生成し、そのedgewise compatibilityからcanonical companion cochain / paired relation / suborbit membershipとの一致を導く。既存full orbitとの一致は主張しない |
-| `UpperStageExchangeExact` companion iff | discharge-required | endpoint comparison isomorphismsからcanonical generated solutionとcanonical-authored companion actual geometry solutionのcomponentsについてpointwise `IsIso` iffを証明する。G-114 core mateへのreflectionは主張せず、predicateの成立証明またはO12放電とは数えない |
+| `UpperStageExchangeExact` companion iff | discharge-required | endpoint conjugationからcanonical-authored companion actual geometry solutionを構成し、generated solutionのtriangle、edge / comparator naturality、nil / append path naturality、authored two-cell pastingをcompanionの対応fieldの証明で実消費する。pointwise `IsIso` iff自体はcomponent normalizationとendpoint comparison isomorphismsの左右cancellationで証明する。G-114 core mateへのreflectionは主張せず、predicateの成立証明またはO12放電とは数えない |
 
 - `target anti-weakening rule`: 結論相当のgeometry bridge、route間solution、
   comparator descentの成立 / 破れ、paired intertwiningを theorem argument、typeclass、structure /
@@ -612,10 +623,11 @@
   comparator / derived cochainへ割り当てる。G-111〜G-114の完了済みstatementと、G-116 O12の
   actual component `IsIso`判定責務は変更しない。revision 7 Cycle 65のraw no-solution routeは
   actual contractへ接続しないためgoal-defectとして棄却し、人間承認revision 8のtyped comparator descentへ置換した。
-- `next action`: K2b2cの既存Cycle 64 generated route / canonical component上に
-  qualified route transport相対の`UpperComparatorDescentAt`を定義し、actual / compatible solution fieldから
-  正pairを接続する。同じgenerated pulled routeのcomparator-independent data / lawsを保持しcomparatorだけを
-  identityへ替えた`generatedPulledIdentityComparatorTransport`を構成する。既存nonidentity generated base
-  comparatorとの負pairについて両comparatorのcoefficient identityを固定し、
-  Support / Axis / Observableの三carrierでdescent failureを証明する。comparator-independent local lawsと
-  O12の`IsIso`責務は変えない。
+  final completion reviewのproof-use指摘は、人間承認revision 9の責務分離へ置換した。
+- `next action`: revision 9固定後のCycle 83で、canonical companion constructionの
+  `component_coefficient_id`、`nil_naturality`、`append_naturality`、
+  `authored_twoCell_pasting`がgenerated solutionの対応fieldを直接実消費するproof bodyへ修正し、
+  reportをrevision 9と新しい未放電 / 放電状態へ同期する。そのfocused check後、Cycle 81までの
+  累積実装を含む完全修飾declaration map、companion solution全fieldのproof-use、pointwise
+  exchange-exactness normalization / cancellation、premise / axiom / nonvacuityをK4 final packetで
+  再監査する。O12の`IsIso`責務は変えない。
