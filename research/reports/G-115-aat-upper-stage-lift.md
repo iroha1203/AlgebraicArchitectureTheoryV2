@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 78)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 79)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4432,4 +4432,64 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedReselection.lean` passed with fourteen declarations under standard axioms only; targeted module build completed 4156 jobs; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Prove route-specific forward and backward transport for each of the four source conjuncts without destination regeneration, derive the paired relation iff, and transport the named nonidentity generated pair to a canonical companion.
+```
+
+## Cycle 79 — fieldwise paired transport and named canonical companion
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 79
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 42db6aacd71af61928e00ca8b5b2267b14c4b92f
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 78 is merged and defines the native canonical-authored four-conjunct relation on actual route objects.
+  proof_dag_predecessors: [Cycle 62 wrapper-free compatible solution equivalence, Cycle 73 exact endpoint comparison isomorphisms, Cycle 74 base and pulled reselection equivalences, Cycle 75 multiplicative conjugation and exact solution normalization, Cycle 76 exact reselected-path transport, Cycle 77 literal comparator and raw-cochain transport, Cycle 78 native canonical-authored four-conjunct relation]
+  proof_obligation: Transport endpoint intertwining, path-leg triangle, literal comparator pasting, and actual raw-cochain coefficient triviality separately in both directions; derive the full relation iff; return the named generated nonidentity pair to a canonical-authored companion.
+  selection_reason: Pulling the generated relation back as an alias or invoking toPaired would erase proof-use of the canonical path, literal comparator, and raw cochain. The fixed target requires every source conjunct to survive endpoint conjugation independently.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedEndpointPathTransport.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedComparatorRawTransport.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedTransport.lean]
+  risks: [destination relation regeneration through toPaired, transporting only endpoint intertwining, losing literal comparator provenance, replacing actual raw-cochain equality by coefficient-only data, reversing a base or pulled endpoint conjugation, claiming an unrestricted generated-oriented iff, fabricating nonidentity on the canonical companion]
+  unchecked: [witness-bearing restricted point equivalence, canonical companion cochain equality and paired suborbit membership, exchange-exactness companion iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: Four route-specific theorem pairs transport the four native relation conjuncts forward and backward. Two full transport theorems pass paired.1, paired.2.1, paired.2.2.1, and paired.2.2.2 to those independent proofs, and the endpoint inverse laws yield a canonical-oriented iff. The named generated comparator pair transports backward to a native canonical companion pair, whose base reselection is proved nonidentity by applying the forward equivalence and the existing generated nonidentity theorem.
+  lean_artifacts: [conjugatedIntertwining, UpperGeometryCompatibleProblemInputData.canonicalAuthoredEndpointIntertwining_forward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredEndpointIntertwining_backward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredReselectedPathLegTriangle_forward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredReselectedPathLegTriangle_backward_transport, conjugatedPastingSquare, conjugatedPathComparator, UpperGeometryCompatibleProblemInputData.canonicalAuthoredReselectedAuthoredComparatorPasting_forward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredReselectedAuthoredComparatorPasting_backward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredRawCochainComponentCoefficientTrivial_forward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredRawCochainComponentCoefficientTrivial_backward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedCoefficientTrivialUpperReselection_forward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedCoefficientTrivialUpperReselection_backward_transport, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedCoefficientTrivialUpperReselection_iff_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseCoefficientTrivialReselectionForward_one, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledCoefficientTrivialReselectionForward_one, UpperDecisionWitness.canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection, UpperDecisionWitness.canonicalCompanionPulledComparatorCoefficientTrivialUpperReselection, UpperDecisionWitness.canonicalCompanionComparatorUpperReselections_paired_fires, UpperDecisionWitness.canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_ne_one]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredPairedEndpointPathTransport.lean: 0f986d7b4a36ba658dba0f00d503a2ab82a8ae39631fb4bc5093ff4370e5816d
+    UpperGeometryCanonicalAuthoredPairedComparatorRawTransport.lean: ac9c55d8bfd61c031da92030b4aa0a754804aa6a49c48e01228edf520bf04939
+    UpperGeometryCanonicalAuthoredFullPairedTransport.lean: f6198762a837bfd8b9c975736c862ccd633606ed6d22e7dc6f793e0577fcb2d7
+  evidence: [three focused Lean single-file checks, twenty declaration standard-axiom audit, three targeted dependency-DAG builds ending at 4157, 4158, and 4159 jobs, official focused module checker, aggregate and manifest registration]
+  claim_mapping:
+    theorem_names: [canonicalAuthoredEndpointIntertwining_forward_transport, canonicalAuthoredEndpointIntertwining_backward_transport, canonicalAuthoredReselectedPathLegTriangle_forward_transport, canonicalAuthoredReselectedPathLegTriangle_backward_transport, canonicalAuthoredReselectedAuthoredComparatorPasting_forward_transport, canonicalAuthoredReselectedAuthoredComparatorPasting_backward_transport, canonicalAuthoredRawCochainComponentCoefficientTrivial_forward_transport, canonicalAuthoredRawCochainComponentCoefficientTrivial_backward_transport, canonicalAuthoredPairedCoefficientTrivialUpperReselection_forward_transport, canonicalAuthoredPairedCoefficientTrivialUpperReselection_backward_transport, canonicalAuthoredPairedCoefficientTrivialUpperReselection_iff_forward, canonicalCompanionComparatorUpperReselections_paired_fires, canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_ne_one]
+    source_labels: [revision 8 clause c actual paired orbit intertwining, target proof strategy K3 paired cochain theorem and conjugation, target material premise paired cochain and restricted orbit theorem]
+    conjuncts: [endpoint intertwining forward and backward, actual path-leg triangle forward and backward, literal authored-comparator pasting forward and backward, actual raw-cochain coefficient square forward and backward, full four-conjunct relation iff on canonical arguments, named canonical companion paired firing, named canonical base reselection nonidentity]
+    undischarged_assumptions: [restricted witness point equivalence, canonical companion componentwise cochain equality, paired suborbit membership agreement, UpperStageExchangeExact companion iff, K4 final audit]
+    acceptance_point: Every native source field is consumed by its own two-sided transport theorem, the full iff follows from proved inverse laws, and the named companion is the backward image of the existing generated nonidentity pair.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [two-sided endpoint intertwining transport, two-sided path-leg transport, two-sided literal comparator-pasting transport, two-sided actual raw-cochain coefficient transport, full four-field transport and iff, named canonical companion paired firing, named base companion nonidentity]
+    remaining: [restricted witness point equivalence, companion cochain and paired suborbit agreement, exchange-exactness companion iff, K4 final audit]
+  certificate_provenance:
+    discharged: [solution conjugation equivalence and inverse laws from Cycle 62, endpoint comparison isomorphisms from Cycle 73, base and pulled reselection conjugation equivalences and inverse laws from Cycle 74, exact solution normalization from Cycle 75, actual route path naturality from Cycle 76, literal authored comparator naturality and actual raw-cochain equality from Cycle 77, endpoint coefficient identity laws, existing named generated paired firing and generated base nonidentity theorem]
+    unresolved: [restricted point witness correspondence, companion componentwise cochain correspondence, paired suborbit membership correspondence, pointwise IsIso companion correspondence]
+  proof_use:
+    used: [source endpoint conjunct, source path-leg conjunct, source literal-comparator conjunct, source raw-cochain coefficient conjunct, exact endpoint hom and inverse naturality, solution normalization, reselection inverse laws, generated named pair firing and nonidentity theorem]
+    unused: [CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.toPaired, destination relation regeneration, proof irrelevance, caller-supplied transport certificate, core-only transport, full orbit map]
+  structure_field_escape: none-found; the two generic category lemmas only reassociate and whisker supplied equalities, and all route-specific conclusions remain the original actual-object predicates
+  route_integrity: pass; base and pulled routes, source and target endpoint isomorphisms, literal comparators, and raw cochains remain separated throughout both transport directions
+  predecessor_integrity: pass; the fixed revision 8 GOAL and merged Cycles 71 through 78 are unchanged
+  target_fitting: none-found; full transport literally consumes all four fields and the iff is obtained from inverse laws rather than a pullback alias
+  vacuity: pass for this cycle; identity preservation is structural, while the named backward companion is separately proved to have a nonidentity base reselection
+  one_way_as_equivalence: none-found; every conjunct has forward and backward transport and the full relation has an iff on canonical arguments
+  goal_or_report_reinterpretation: none-found; restricted point, cochain/suborbit, exchange-exactness, and K4 obligations remain explicit
+  validation_refs: [`lake env lean` passed separately for all three modules and reported 5, 6, and 9 declarations under standard axioms only; targeted builds completed the direct dependency DAG at 4157, 4158, and 4159 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedTransport.lean` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Package the transported solution and both transported reselections as the witness-bearing restricted point, prove its two-sided equivalence and canonical companion cochain/suborbit agreement, then prove the pointwise UpperStageExchangeExact companion iff before the K4 audit.
 ```
