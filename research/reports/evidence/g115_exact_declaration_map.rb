@@ -390,6 +390,25 @@ end
 file_declarations = source_declaration_names.transform_values do |names|
   names.to_h { |name, kind| [relative_identity(name), kind] }
 end
+public_declarations = {}
+public_declaration_collisions = []
+file_declarations.each do |path, declarations|
+  declarations.each do |identity, kind|
+    next if kind.split('_').include?('private') || kind.split('_').include?('local')
+
+    if public_declarations.key?(identity)
+      public_declaration_collisions << [identity, public_declarations.fetch(identity).first, path]
+    else
+      public_declarations[identity] = [path, kind]
+    end
+  end
+end
+unless public_declaration_collisions.empty?
+  public_declaration_collisions.each do |identity, first_path, second_path|
+    warn "PUBLIC_DECLARATION_COLLISION #{identity}@#{first_path}|#{second_path}"
+  end
+  exit 1
+end
 
 resolved = {}
 resolved_kinds = {}
@@ -458,11 +477,14 @@ unless claim_resolution_manifest_sha256 == expected_claim_resolution_manifest_sh
 end
 
 grouped = Hash.new { |hash, key| hash[key] = [] }
-resolved.each { |name, path| grouped[path] << name }
+public_declarations.each do |name, (path, _kind)|
+  grouped[path] << name
+end
+public_declaration_kinds = public_declarations.transform_values(&:last)
 output = []
 output << "map_type: g115_exact_declaration_map"
 output << "goal_revision: 9"
-output << "artifact_semantics: canonical_source_declaration_identities_from_accepted_cycles_1_through_83"
+output << "artifact_semantics: all_nonprivate_nonlocal_source_declaration_identities_in_accepted_cycle_target_modules"
 output << "identity_root: #{ROOT_NAMESPACE}"
 output << "identity_resolution: cycle_local_qualified_suffix_with_locked_canonical_identity_module_and_declaration_kind"
 output << "identity_kind_manifest_sha256: #{resolved_manifest_sha256}"
@@ -479,6 +501,7 @@ output << "module_hash: sha256_of_same_in_memory_source_bytes_used_for_identity_
 output << "generator: research/reports/evidence/g115_exact_declaration_map.rb"
 output << "---"
 output << "# artifacts=#{occurrences.map { |_c, name, _t| name }.uniq.length}"
+output << "# public_source_declarations=#{public_declarations.length}"
 output << "# targets=#{all_targets.length}"
 output << "# resolved=#{resolved.length}"
 output << "# unresolved=#{unresolved.length}"
@@ -489,6 +512,6 @@ grouped.sort.each do |path, names|
   output << "- module: #{module_name}"
   output << "  head_sha256: #{file_sha256.fetch(path)}"
   output << "  declarations: [#{names.sort.join(', ')}]"
-  output << "  declaration_kinds: [#{names.sort.map { |name| "#{name}=#{resolved_kinds.fetch(name)}" }.join(', ')}]"
+  output << "  declaration_kinds: [#{names.sort.map { |name| "#{name}=#{public_declaration_kinds.fetch(name)}" }.join(', ')}]"
 end
 STDOUT.write(output.join("\n") + "\n")
