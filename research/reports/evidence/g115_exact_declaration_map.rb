@@ -80,6 +80,13 @@ end
   ambiguous.reject! { |_cycle, ambiguous_name, _paths| ambiguous_name == name }
 end
 
+puts "map_type: g115_exact_declaration_map"
+puts "goal_revision: 9"
+puts "artifact_semantics: unique_current_declaration_identities_from_accepted_cycles_1_through_83"
+puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
+puts "module_hash: sha256_of_current_worktree_file_content"
+puts "generator: research/reports/evidence/g115_exact_declaration_map.rb"
+puts "---"
 puts "# artifacts=#{occurrences.map { |_c, name, _t| name }.uniq.length}"
 puts "# targets=#{all_targets.length}"
 puts "# resolved=#{resolved.length}"
@@ -96,7 +103,8 @@ slice_size = (sorted_groups.length.to_f / part_count).ceil
 selected_groups = sorted_groups.slice((part_index - 1) * slice_size, slice_size) || []
 selected_groups.each do |path, names|
   sha = Digest::SHA256.file(File.join(repo_root, path)).hexdigest
-  puts "- module: #{path}"
+  module_name = path.sub(%r{\Aresearch/lean/ResearchLean/AG/DoctrineFiberProduct/}, '')
+  puts "- module: #{module_name}"
   puts "  head_sha256: #{sha}"
   puts "  declarations: [#{names.sort.join(', ')}]"
 end

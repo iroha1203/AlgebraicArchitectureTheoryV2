@@ -4695,7 +4695,7 @@ selection:
   expected_result_type: target-proof-checkpoint
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean]
   risks: [touching a source field without using its equality, deleting the generic path theorem, moving a solution law into the IsIso iff, deriving coefficient identity from triangle again, changing O12 truth, introducing a wrapper or certificate]
-  unchecked: [standard fixed-head review, corrected 1020-occurrence immutable declaration map, schema-complete final packet, fresh four-lane completion review, completion ledger, CI merge and durable status synchronization]
+  unchecked: [standard fixed-head review, corrected 1025-declaration immutable map, schema-complete final packet, fresh four-lane completion review, completion ledger, CI merge and durable status synchronization]
 result:
   proposed_result_type: target-proof-checkpoint
   proof_state: target-proof-checkpoint
@@ -4709,9 +4709,9 @@ result:
     path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
     sha256: 66f6b605883a6e05d823f785293be09d6aa8c8a2d9b90edd3398a092383cb6c8
     generator: research/reports/evidence/g115_exact_declaration_map.rb
-    generator_sha256: bc21c422e0679903b81f6fac920f67817f960bb3965fbd9b610733c509f84669
+    generator_sha256: 3741770c6d40cb004485b5978a3b6341d2b7b953df7bfc23998f199973a71d6b
     counts: {artifacts: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0}
-  evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, exact fully qualified 1025-declaration map reproduction, git diff check, hidden and bidirectional Unicode scan]
+  evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, exact module-scoped and collision-disambiguated 1025-declaration map reproduction, git diff check, hidden and bidirectional Unicode scan]
   claim_mapping:
     theorem_names: [generatedSolutionBackwardAt_coefficient_id, generatedSolutionBackwardAt_path_naturality_of_generated, generatedSolutionBackwardAt_nil_naturality, generatedSolutionBackwardAt_append_naturality, generatedSolutionBackwardAt_authored_twoCell_pasting, generatedSolutionBackward, generatedComponent_isIso_iff_backwardCompanion]
     source_labels: [revision 9 clause d actual companion fieldwise equation transport, target completion criteria, UpperStageExchangeExact companion iff material premise]
@@ -4736,7 +4736,10 @@ audits:
   vacuity: none-found; the transport theorems quantify over arbitrary actual generated solutions and use the named equality fields as proof terms
   one_way_as_equivalence: not-applicable
   goal_or_report_reinterpretation: none-found; O12 remains undecided and revision 9 is recorded as a new implementation obligation rather than retroactive evidence for Cycle 81
-  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean` passed with 43 declarations under standard axioms only; `lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed with five declarations under standard axioms only; Research aggregate and full build were not run]
+  validation_refs:
+    - "lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean passed with 43 declarations under standard axioms only"
+    - "lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean passed with five declarations under standard axioms only"
+    - "Research aggregate and full build were not run"
   blocking_findings: []
-  next_obligation: Bind the exact fully qualified 1025-declaration map to one fixed head, publish a schema-complete replacement packet, run four wholly fresh completion lanes, post the formal ledger, require green CI, merge PR #4338, then synchronize GOAL report registry and Issue #4250 while leaving the tracking Issue open.
+  next_obligation: Bind the exact module-scoped and collision-disambiguated 1025-declaration map to one fixed head, publish a schema-complete replacement packet, run four wholly fresh completion lanes, post the formal ledger, require green CI, merge PR #4338, then synchronize GOAL report registry and Issue #4250 while leaving the tracking Issue open.
 ```
