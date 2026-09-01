@@ -1,4 +1,6 @@
 require 'digest'
+require 'open3'
+require 'tempfile'
 
 unless ARGV.length == 2 || (ARGV.length == 3 && ARGV[2] == '--lean-audit')
   warn 'usage: g115_exact_declaration_map.rb REPORT REPO_ROOT [--lean-audit]'
@@ -242,14 +244,41 @@ unless unresolved.empty? && ambiguous.empty?
   exit 1
 end
 
+lean_audit_source = all_targets.sort.map do |path|
+  module_name = path.delete_prefix('research/lean/').delete_suffix('.lean').tr('/', '.')
+  "import #{module_name}"
+end.join("\n")
+lean_audit_source += "\n\n"
+lean_audit_source += resolved.keys.sort.map do |name|
+  "#check #{ROOT_NAMESPACE}.#{name}"
+end.join("\n")
+lean_audit_source += "\n"
+
 if output_mode == :lean_audit
-  all_targets.sort.each do |path|
-    module_name = path.delete_prefix('research/lean/').delete_suffix('.lean').tr('/', '.')
-    puts "import #{module_name}"
-  end
-  puts
-  resolved.keys.sort.each { |name| puts "#check #{ROOT_NAMESPACE}.#{name}" }
+  print lean_audit_source
   exit
+end
+
+expected_lean_audit_output_sha256 =
+  '605c1208efaa6ee56fb870678dfe9ef3f9a13a09e441659402f4e9f1a9ec8151'
+lean_audit_output = nil
+Tempfile.create(['G115ExactDeclarationIdentityAudit', '.lean']) do |audit_file|
+  audit_file.write(lean_audit_source)
+  audit_file.flush
+  lean_audit_output, status = Open3.capture2e(
+    'lake', 'env', 'lean', audit_file.path,
+    chdir: File.join(repo_root, 'research/lean')
+  )
+  unless status.success?
+    warn lean_audit_output
+    warn "fully qualified Lean identity audit failed with exit #{status.exitstatus}"
+    exit 1
+  end
+end
+lean_audit_output_sha256 = Digest::SHA256.hexdigest(lean_audit_output)
+unless lean_audit_output_sha256 == expected_lean_audit_output_sha256
+  warn "Lean identity audit output hash mismatch: #{lean_audit_output_sha256}"
+  exit 1
 end
 
 puts "map_type: g115_exact_declaration_map"
@@ -259,6 +288,7 @@ puts "identity_root: #{ROOT_NAMESPACE}"
 puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix_then_focused_lean_check"
 puts "source_lexer: nested_block_comment_line_comment_escaped_string_and_multiline_string_aware"
 puts "input_manifest_sha256: #{manifest_sha256}"
+puts "lean_identity_audit_output_sha256: #{lean_audit_output_sha256}"
 puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 puts "module_hash: sha256_of_current_worktree_file_content"
 puts "generator: research/reports/evidence/g115_exact_declaration_map.rb"
