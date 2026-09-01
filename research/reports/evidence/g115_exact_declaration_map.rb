@@ -2,9 +2,11 @@ require 'digest'
 
 report_path = ARGV.fetch(0)
 repo_root = ARGV.fetch(1)
+unless ARGV.length == 2 || (ARGV.length == 3 && ARGV[2] == '--lean-audit')
+  warn 'usage: g115_exact_declaration_map.rb REPORT REPO_ROOT [--lean-audit]'
+  exit 2
+end
 output_mode = ARGV[2] == '--lean-audit' ? :lean_audit : :map
-part_index = output_mode == :map ? (ARGV[2] || '1').to_i : 1
-part_count = output_mode == :map ? (ARGV[3] || '1').to_i : 1
 report = File.read(report_path)
 
 occurrences = []
@@ -158,10 +160,7 @@ puts "# ---MAP---"
 
 grouped = Hash.new { |hash, key| hash[key] = [] }
 resolved.each { |name, path| grouped[path] << name }
-sorted_groups = grouped.sort
-slice_size = (sorted_groups.length.to_f / part_count).ceil
-selected_groups = sorted_groups.slice((part_index - 1) * slice_size, slice_size) || []
-selected_groups.each do |path, names|
+grouped.sort.each do |path, names|
   sha = Digest::SHA256.file(File.join(repo_root, path)).hexdigest
   module_name = path.sub(%r{\Aresearch/lean/ResearchLean/AG/DoctrineFiberProduct/}, '')
   puts "- module: #{module_name}"
