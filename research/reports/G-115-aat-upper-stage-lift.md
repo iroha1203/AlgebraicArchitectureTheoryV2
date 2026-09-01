@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 75)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 76)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4275,4 +4275,62 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredTransportLaws.lean` passed and reported eight declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredTransportLaws` completed the targeted dependency DAG successfully; source hash was recomputed from the live file; module is registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Factor exact reselected-edge transport into lightweight endpoint-whiskering lemmas, derive base and pulled forward and backward path transport by induction, then use the multiplicative conjugation laws for authored comparator canonical comparator and raw-defect transport before defining and transporting the canonical four-conjunct paired relation fieldwise.
+```
+
+## Cycle 76 — exact reselected edge and path transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 76
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 9586b7eab76ee78814fe5478e06fe30469a6267b
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 75 is merged; this cycle uses the earlier exact endpoint and reselection comparison layers to discharge the still-open edge and path transport obligation.
+  proof_dag_predecessors: [Cycle 73 exact endpoint naturality and exact endpoint isomorphisms, Cycle 74 base and pulled reselection Equiv, generated and canonical-authored route lift data, generated paired-reselection edge and path normalization API]
+  proof_obligation: Prove exact forward and backward transport for every actual base and pulled reselected edge, and extend all four generator laws to arbitrary presented paths.
+  selection_reason: Comparator and raw-defect transport require path transport in the actual complete-geometry category. A category-generic whiskering lemma and inverse-naturality derivation isolate the conjugation algebra from route-specific definitions and avoid the monolithic definitional-equality search rejected in Cycle 75.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectedPathTransport.lean]
+  risks: [reversing source and target endpoint comparisons, conjugating at the edge source rather than target, using refinement-image equality as the conclusion, accepting inverse naturality as a new premise, path induction that omits the generator law]
+  unchecked: [authored and canonical comparator transport, raw cochain transport, canonical four-conjunct paired relation, paired relation iff, witness-bearing restricted point equivalence, companion cochains, exchange-exactness iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: Two category-generic lemmas show that postcomposition by an endomorphism commutes with isomorphism conjugation and derive the inverse naturality square from the forward one. They specialize to base and pulled exact reselected-edge transport in both directions. Four separate path inductions then extend those generator laws to all presented paths on the actual canonical-authored and generated route lift data.
+  completion_candidate: no
+  lean_artifacts: [conjugatedPostcomposition_naturality, inverseNaturality_of_naturality, conjugatedPostcomposition_inverse_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseReselectedEdge_forward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledReselectedEdge_forward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseReselectedEdge_backward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledReselectedEdge_backward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseReselectedPath_forward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledReselectedPath_forward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseReselectedPath_backward_naturality, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledReselectedPath_backward_naturality]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredReselectedPathTransport.lean: 7c98cbbc825ac15656b7f2ec52cd69254a8c7f271d1dbc60dbc7be9ca311483f
+  evidence: [focused Lean single-file check, eleven declaration namespace standard-axiom audit, generic conjugated postcomposition proof, route-specific forward and backward generator laws, four actual path inductions]
+  claim_mapping:
+    theorem_names: [conjugatedPostcomposition_naturality, inverseNaturality_of_naturality, conjugatedPostcomposition_inverse_naturality, canonicalAuthoredBaseReselectedEdge_forward_naturality, canonicalAuthoredPulledReselectedEdge_forward_naturality, canonicalAuthoredBaseReselectedEdge_backward_naturality, canonicalAuthoredPulledReselectedEdge_backward_naturality, canonicalAuthoredBaseReselectedPath_forward_naturality, canonicalAuthoredPulledReselectedPath_forward_naturality, canonicalAuthoredBaseReselectedPath_backward_naturality, canonicalAuthoredPulledReselectedPath_backward_naturality]
+    source_labels: [revision 8 clause c paired companion transport prerequisites, target proof strategy K3 exact relation transport]
+    conjuncts: [base edge forward and backward transport, pulled edge forward and backward transport, base path forward and backward transport, pulled path forward and backward transport]
+    undischarged_assumptions: [comparator and raw-cochain transport remain]
+    acceptance_point: Every route-specific conclusion is an exact GeometryTotalHom equality over actual route lift data; inverse direction is theorem-generated from hom naturality, and path laws are generated by induction rather than supplied.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [generic conjugated postcomposition transport, inverse naturality from hom naturality, exact base and pulled reselected-edge transport in both directions, exact base and pulled reselected-path transport in both directions]
+    remaining: [comparator and raw cochain transport, canonical full paired relation and iff, restricted witness packet, companion cochains, exchange exactness, final K4 audit]
+  certificate_provenance:
+    discharged: [route-specific edge laws consume Cycle 73 exact endpoint naturality and Cycle 74 target-fiber automorphism conjugation; path laws consume the edge laws at every cons constructor]
+    unresolved: [fieldwise transport of comparator and raw-cochain conjuncts and the witness-bearing point]
+  proof_use:
+    used: [exact base endpoint hom naturality, exact pulled endpoint hom naturality, both forward and backward CompositeFiberAut hom formulas, canonical-authored and generated actual edge lifts, presented-path nil and cons equations]
+    deliberately_not_used: [caller-supplied inverse naturality, caller-supplied edge or path certificates, refinement-only conclusions, equality casts, HEq, broad unfolding of route or solution structures, additional heartbeat escalation]
+  structure_field_escape: none-found; all eleven declarations are theorems over existing category route and reselection data
+  route_integrity: pass; each edge is conjugated at its target vertex and each path compares source and target endpoint maps in the forced direction
+  predecessor_integrity: pass; fixed revision 8 GOAL and merged Cycles 71 through 75 are unchanged
+  target_fitting: none-found; actual base and pulled edge/path actions are now transported independently in both directions
+  vacuity: pass; the generic lemmas quantify over arbitrary category morphisms and the route laws quantify over arbitrary coefficient-trivial reselections and presented paths
+  one_way_as_equivalence: none-found; both exact hom and exact inverse directions are present for base and pulled routes
+  goal_or_report_reinterpretation: none-found; comparator raw-cochain paired-relation and witness obligations remain explicit
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectedPathTransport.lean` passed and reported eleven declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredReselectedPathTransport` completed the targeted dependency DAG successfully; the focused module checker passed; source hash was recomputed from the live file; module is registered after all direct predecessors in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Use exact path transport together with the existing literal authored-comparator exact conjugation and Cycle 75 multiplicativity to prove canonical comparator and raw-defect cochain transport, then define the actual canonical four-conjunct paired relation and transport every conjunct fieldwise.
 ```
