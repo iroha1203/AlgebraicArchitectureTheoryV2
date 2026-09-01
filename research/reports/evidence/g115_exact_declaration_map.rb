@@ -1,20 +1,30 @@
 require 'digest'
 
-report_path = ARGV.fetch(0)
-repo_root = ARGV.fetch(1)
 unless ARGV.length == 2 || (ARGV.length == 3 && ARGV[2] == '--lean-audit')
   warn 'usage: g115_exact_declaration_map.rb REPORT REPO_ROOT [--lean-audit]'
   exit 2
 end
+report_path = ARGV.fetch(0)
+repo_root = ARGV.fetch(1)
 output_mode = ARGV[2] == '--lean-audit' ? :lean_audit : :map
 report = File.read(report_path)
 
 occurrences = []
 all_targets = []
+cycle_records = []
 
-report.split(/^## Cycle /).drop(1).each do |section|
+sections = report.split(/^## Cycle /).drop(1)
+expected_cycles = (1..83).to_a - [28, 65]
+accepted_sections = sections.select { |section| section[/\A(\d+)/, 1].to_i <= 83 }
+cycle_numbers = accepted_sections.map { |section| section[/\A(\d+)/, 1]&.to_i }
+unless cycle_numbers == expected_cycles
+  warn "accepted-cycle manifest mismatch; expected #{expected_cycles.join(',')}; " \
+    "got #{cycle_numbers.compact.join(',')}"
+  exit 1
+end
+
+accepted_sections.each do |section|
   cycle = section[/\A(\d+)/, 1].to_i
-  next if cycle > 83
   targets = section.scan(/^  lean_targets: \[(.*)\]$/).flat_map do |match|
     match.first.split(',').map(&:strip).select { |path| path.end_with?('.lean') }
   end.map do |path|
@@ -28,9 +38,24 @@ report.split(/^## Cycle /).drop(1).each do |section|
   end
   all_targets.concat(targets)
   artifacts.each { |name| occurrences << [cycle, name, targets] }
+  cycle_records << [cycle, targets, artifacts]
 end
 
 all_targets.uniq!
+manifest = cycle_records.map do |cycle, targets, artifacts|
+  "cycle=#{cycle}\ntargets=#{targets.join('|')}\nartifacts=#{artifacts.join('|')}"
+end.join("\n---\n")
+manifest_sha256 = Digest::SHA256.hexdigest(manifest)
+expected_manifest_sha256 = '9880b63cf3a688c9ab6a1fc6f51f8771994a3bdd3589d3d6e119e3f8a2b1809e'
+unless manifest_sha256 == expected_manifest_sha256 &&
+    occurrences.length == 1028 &&
+    occurrences.map { |_cycle, name, _targets| name }.uniq.length == 1025 &&
+    all_targets.length == 80
+  warn "input manifest mismatch sha256=#{manifest_sha256} occurrences=#{occurrences.length} " \
+    "identities=#{occurrences.map { |_cycle, name, _targets| name }.uniq.length} " \
+    "targets=#{all_targets.length}"
+  exit 1
+end
 file_text = {}
 all_targets.each { |path| file_text[path] = File.read(File.join(repo_root, path)) }
 
@@ -102,13 +127,6 @@ occurrences.each do |cycle, name, targets|
       [identity, path] if identity == name || identity.end_with?(".#{name}")
     end
   end
-  if matches.empty?
-    matches = all_targets.flat_map do |path|
-      file_declarations.fetch(path).filter_map do |identity|
-        [identity, path] if identity == name || identity.end_with?(".#{name}")
-      end
-    end
-  end
   matches.uniq!
   if matches.length == 1
     identity, path = matches.first
@@ -145,6 +163,7 @@ puts "goal_revision: 9"
 puts "artifact_semantics: canonical_namespace_qualified_current_declaration_identities_from_accepted_cycles_1_through_83"
 puts "identity_root: #{ROOT_NAMESPACE}"
 puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix_then_focused_lean_check"
+puts "input_manifest_sha256: #{manifest_sha256}"
 puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 puts "module_hash: sha256_of_current_worktree_file_content"
 puts "generator: research/reports/evidence/g115_exact_declaration_map.rb"
