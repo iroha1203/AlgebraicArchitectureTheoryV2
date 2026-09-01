@@ -4673,5 +4673,5 @@ audits:
   goal_or_report_reinterpretation: none-found; full-orbit equality and the O12 truth value remain outside G-115
   validation_refs: [exact per-cycle focused checks source hashes and standard-axiom audits recorded in Cycles 1 through 81, accepted fixed-head PR review comments CI results and merge commits recorded in the corresponding PRs and tracking Issue #4250 comments, no Research aggregate or full build]
   blocking_findings: []
-  next_obligation: Create the completion PR, run its standard fixed-head review, publish the schema-complete same-head final packet, run four fresh math-lean-review lanes, post the formal completion ledger, require green CI, merge, then synchronize durable status and Issue #4250 while leaving the tracking Issue open.
+  next_obligation: Complete the standard fixed-head review of PR #4338, publish the schema-complete same-head final packet, run four fresh math-lean-review lanes, post the formal completion ledger, require green CI, merge, then synchronize durable status and Issue #4250 while leaving the tracking Issue open.
 ```
