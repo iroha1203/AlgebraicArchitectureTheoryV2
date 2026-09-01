@@ -61,8 +61,80 @@ all_targets.each { |path| file_text[path] = File.read(File.join(repo_root, path)
 
 ROOT_NAMESPACE = 'AAT.AG.DoctrineFiberProduct'
 
+def lean_code_only(text)
+  bytes = text.bytes
+  output = Array.new(bytes.length, 32)
+  index = 0
+  state = :code
+  block_depth = 0
+
+  while index < bytes.length
+    byte = bytes[index]
+    pair = bytes[index, 2]
+    triple = bytes[index, 3]
+    case state
+    when :code
+      if pair == [47, 45] # /-
+        block_depth = 1
+        state = :block_comment
+        index += 2
+      elsif pair == [45, 45] # --
+        state = :line_comment
+        index += 2
+      elsif triple == [34, 34, 34]
+        state = :multiline_string
+        index += 3
+      elsif byte == 34 # "
+        state = :string
+        index += 1
+      else
+        output[index] = byte
+        index += 1
+      end
+    when :line_comment
+      if byte == 10
+        output[index] = byte
+        state = :code
+      end
+      index += 1
+    when :block_comment
+      if pair == [47, 45]
+        block_depth += 1
+        index += 2
+      elsif pair == [45, 47]
+        block_depth -= 1
+        state = :code if block_depth.zero?
+        index += 2
+      else
+        output[index] = byte if byte == 10
+        index += 1
+      end
+    when :string
+      if byte == 92 # backslash escape
+        index += [2, bytes.length - index].min
+      elsif byte == 34
+        state = :code
+        index += 1
+      else
+        output[index] = byte if byte == 10
+        index += 1
+      end
+    when :multiline_string
+      if triple == [34, 34, 34]
+        state = :code
+        index += 3
+      else
+        output[index] = byte if byte == 10
+        index += 1
+      end
+    end
+  end
+
+  output.pack('C*').force_encoding(text.encoding)
+end
+
 def source_declarations(text)
-  text = text.gsub(/\/-.*?-\//m, '')
+  text = lean_code_only(text)
   scope = []
   declarations = []
   structure_scope = nil
@@ -106,6 +178,28 @@ def source_declarations(text)
   end
 
   declarations.uniq
+end
+
+lexer_probe = <<~'LEAN'
+  namespace AAT.AG.DoctrineFiberProduct
+  /- outer
+    /- theorem BogusNested : True := by trivial -/
+    theorem BogusOuter : True := by trivial
+  -/
+  def probeString := "theorem BogusString : True"
+  def probeMultiline := """
+    theorem BogusMultiline : True
+  """
+  theorem RealProbe : True := by trivial
+  end AAT.AG.DoctrineFiberProduct
+LEAN
+unless source_declarations(lexer_probe) == [
+    'AAT.AG.DoctrineFiberProduct.probeString',
+    'AAT.AG.DoctrineFiberProduct.probeMultiline',
+    'AAT.AG.DoctrineFiberProduct.RealProbe'
+  ]
+  warn 'internal Lean lexer regression probe failed'
+  exit 1
 end
 
 def relative_identity(name)
@@ -163,6 +257,7 @@ puts "goal_revision: 9"
 puts "artifact_semantics: canonical_namespace_qualified_current_declaration_identities_from_accepted_cycles_1_through_83"
 puts "identity_root: #{ROOT_NAMESPACE}"
 puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix_then_focused_lean_check"
+puts "source_lexer: nested_block_comment_line_comment_escaped_string_and_multiline_string_aware"
 puts "input_manifest_sha256: #{manifest_sha256}"
 puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 puts "module_hash: sha256_of_current_worktree_file_content"

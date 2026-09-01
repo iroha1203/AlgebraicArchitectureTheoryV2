@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 9 human-approved
-- proof state: `target-proof-checkpoint` (revision 9 Cycle 83 completion candidate)
+- proof state: `target-proof-checkpoint` (revision 9 Cycle 84 completion candidate)
 - completion candidate: yes; final fixed-head packet and fresh four-lane review pending
 
 This report records incremental proof obligations against the current fixed
@@ -4695,7 +4695,7 @@ selection:
   expected_result_type: target-proof-checkpoint
   lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean]
   risks: [touching a source field without using its equality, deleting the generic path theorem, moving a solution law into the IsIso iff, deriving coefficient identity from triangle again, changing O12 truth, introducing a wrapper or certificate]
-  unchecked: [standard fixed-head review, corrected 1025-declaration immutable map, schema-complete final packet, fresh four-lane completion review, completion ledger, CI merge and durable status synchronization]
+  unchecked: [schema-complete final packet, fresh four-lane completion review, completion ledger, CI merge and durable status synchronization]
 result:
   proposed_result_type: target-proof-checkpoint
   proof_state: target-proof-checkpoint
@@ -4707,9 +4707,9 @@ result:
     UpperGeometryExchangeExactness.lean: 0fb1f37bce1972472b6c0021d89eb1f6dcd9a5be659358bd338607790b65385f
   exact_declaration_map:
     path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
-    sha256: ca7d37362322604e2a5a43c5ea4578118715f84883c4c4bf8d2508d825b70f13
+    sha256: c271838ab759809ed5245d8195be5ac4ca66e784bc0ff98db566f46676f84206
     generator: research/reports/evidence/g115_exact_declaration_map.rb
-    generator_sha256: 28e10be17d16f38b0e9e02adc2f7db3235bc120a5e168d68c4ecfd7c8b1221c3
+    generator_sha256: c3da5f8e21b11aa575c9b00cfccb36c74c80ba088520263d2a30637c4a23c231
     counts: {artifacts: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0}
   evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, canonical namespace-qualified 1025-declaration map reproduction and focused Lean identity check, git diff check, hidden and bidirectional Unicode scan]
   claim_mapping:
@@ -4767,24 +4767,26 @@ result:
   proposed_result_type: target-proof-checkpoint
   proof_state: target-proof-checkpoint
   completion_candidate: yes
-  proof_obligation_delta: The generator first requires the exact accepted Cycle manifest 1 through 83 with the intentional historical gaps 28 and 65, then verifies SHA-256 9880b63cf3a688c9ab6a1fc6f51f8771994a3bdd3589d3d6e119e3f8a2b1809e over every accepted cycle's ordered target and artifact lists together with 1028 occurrences, 1025 report identities, and 80 targets. It resolves only inside each occurrence's cycle-local targets, reconstructs each declaration's namespace stack from its defining source, canonicalizes identities relative to AAT.AG.DoctrineFiberProduct, accepts a report token only as an exact identity or exact qualified suffix, rejects unresolved or ambiguous identities with exit 1, and contains no global fallback or manual resolution override. It accepts only the complete map invocation and the explicit --lean-audit invocation; former partition and all other extra arguments exit 2 before emitting output. Its lean-audit mode imports the same 80 modules and emits a fully qualified #check for every one of the 1025 canonical identities. Arbitrary documents, missing, renumbered, or duplicate Cycle 83, and the original Bogus.Namespace mutation now fail with zero stdout, while the canonical audit elaborates successfully.
+  proof_obligation_delta: The generator first requires the exact accepted Cycle manifest 1 through 83 with the intentional historical gaps 28 and 65, then verifies SHA-256 9880b63cf3a688c9ab6a1fc6f51f8771994a3bdd3589d3d6e119e3f8a2b1809e over every accepted cycle's ordered target and artifact lists together with 1028 occurrences, 1025 report identities, and 80 targets. It resolves only inside each occurrence's cycle-local targets, uses a state-machine lexer that removes nested block comments, line comments, escaped strings, and multiline strings before reconstructing each declaration's namespace stack, canonicalizes identities relative to AAT.AG.DoctrineFiberProduct, accepts a report token only as an exact identity or exact qualified suffix, rejects unresolved or ambiguous identities with exit 1, and contains no global fallback or manual resolution override. A built-in nested-comment and string probe guards the lexer. It accepts only the complete map invocation and the explicit --lean-audit invocation; former partition and all other extra arguments exit 2 before emitting output. Its lean-audit mode imports the same 80 modules and emits a fully qualified #check for every one of the 1025 canonical identities. Arbitrary documents and missing, renumbered, duplicate, or identity-mutated accepted-cycle manifests fail before resolution with zero stdout. A separate canonical-manifest source mutation that removes the actual nil-naturality declaration and inserts the same token only inside nested comments reaches the resolver and fails unresolved with zero stdout. The canonical audit elaborates successfully.
   lean_artifacts: []
   evidence_artifacts:
     map:
       path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
-      sha256: ca7d37362322604e2a5a43c5ea4578118715f84883c4c4bf8d2508d825b70f13
-      blob_sha: fcd86d54b5ee86fa95b20d00b1d87cac2f1f365b
+      sha256: c271838ab759809ed5245d8195be5ac4ca66e784bc0ff98db566f46676f84206
+      blob_sha: b9eb9139d680613eda93d9beda39c9601979aeb6
     generator:
       path: research/reports/evidence/g115_exact_declaration_map.rb
-      sha256: 28e10be17d16f38b0e9e02adc2f7db3235bc120a5e168d68c4ecfd7c8b1221c3
-      blob_sha: d48356c730f8d643ca22ee01b657507b30d7f128
+      sha256: c3da5f8e21b11aa575c9b00cfccb36c74c80ba088520263d2a30637c4a23c231
+      blob_sha: fea2ea3bb201ae374862c365556f4621ba12477f
     generated_identity_audit_sha256: 0825579a629369c2760d63d4af8c697012be3e169c6ecf856bdb9f736552f742
     identity_audit_output_sha256: 605c1208efaa6ee56fb870678dfe9ef3f9a13a09e441659402f4e9f1a9ec8151
     counts: {accepted_artifact_occurrences: 1028, canonical_identities: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0, fully_qualified_lean_checks: 1025}
-  evidence: [accepted-cycle manifest SHA-256 and fixed count validation, byte-exact complete-map regeneration, cycle-local source namespace-stack identity resolution, fabricated namespace negative test with exit 1, arbitrary and incomplete report inputs rejected with exit 1 and zero output, former partial-output arguments rejected with exit 2 and zero output, "focused Lean elaboration of 1025 fully qualified #check commands", 80 explicit target module dependency construction, no Research aggregate or full build]
+  evidence: [accepted-cycle manifest SHA-256 and fixed count validation, byte-exact complete-map regeneration, nested-comment-aware cycle-local source namespace-stack identity resolution, accepted-manifest identity mutation rejected before resolution with exit 1 and zero output, nested-comment resolver negative control rejected unresolved with exit 1 and zero output, arbitrary and incomplete report inputs rejected with exit 1 and zero output, former partial-output arguments rejected with exit 2 and zero output, "focused Lean elaboration of 1025 fully qualified #check commands", 80 explicit target module dependency construction, no Research aggregate or full build]
 audits:
   declaration_identity: pass; all map identities are canonical relative to AAT.AG.DoctrineFiberProduct and independently accepted by Lean under that full root
-  negative_control: pass; replacing UpperDecisionWitness.upperStageExchangeExact_iff_canonicalCompanion by Bogus.Namespace.upperStageExchangeExact_iff_canonicalCompanion yields one unresolved identity and exit 1
+  manifest_mutation_control: pass; replacing UpperDecisionWitness.upperStageExchangeExact_iff_canonicalCompanion by Bogus.Namespace.upperStageExchangeExact_iff_canonicalCompanion is rejected by the accepted input-manifest hash with exit 1 and zero stdout before resolution
+  resolver_negative_control: pass; with the canonical report manifest unchanged, renaming the actual generatedSolutionBackwardAt_nil_naturality declaration and placing that original token only inside a nested block comment yields one unresolved identity, exit 1, and zero stdout
+  lexer_regression_probe: pass; nested block comments, line comments, escaped strings, and multiline strings cannot contribute declarations
   manual_override: none
   partial_output_escape: none; invocations 1 2, 2 1, 3 2, 0 2, and --bogus all exit 2 with zero stdout
   input_manifest: pass; exact accepted cycle list, ordered target and artifact manifest SHA-256, 1028 occurrences, 1025 report identities, and 80 targets are checked before source resolution
@@ -4795,7 +4797,8 @@ audits:
   target_fitting: none-found; this cycle repairs completion evidence and changes no theorem statement or proof
   validation_refs:
     - "ruby research/reports/evidence/g115_exact_declaration_map.rb research/reports/G-115-aat-upper-stage-lift.md . reproduced the committed map byte for byte"
-    - "the Bogus.Namespace negative-control report was rejected with exit 1"
+    - "the Bogus.Namespace report mutation was rejected at the input-manifest gate with exit 1 and zero stdout"
+    - "the canonical-manifest nested-comment source mutation reached resolution and was rejected as unresolved with exit 1 and zero stdout"
     - "non-report inputs and missing, renumbered, or duplicate Cycle 83 inputs were rejected with exit 1 and zero stdout"
     - "former partition arguments 1 2, 2 1, 3 2, and 0 2 and unknown mode --bogus were rejected with exit 2 and zero stdout"
     - "ruby research/reports/evidence/g115_exact_declaration_map.rb research/reports/G-115-aat-upper-stage-lift.md . --lean-audit generated 1025 fully qualified checks over 80 explicit imports"
