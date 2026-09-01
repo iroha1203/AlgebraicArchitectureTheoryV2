@@ -2,8 +2,8 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
-- GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 82 completion candidate)
+- GOAL revision: 9 human-approved
+- proof state: `target-proof-checkpoint` (revision 9 Cycle 83 completion candidate)
 - completion candidate: yes; final fixed-head packet and fresh four-lane review pending
 
 This report records incremental proof obligations against the current fixed
@@ -1337,7 +1337,7 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: G-115 now provides a target geometry, generated base and pulled route geometries, and canonical upper geometry mate at every vertex of an arbitrary actual finite upper problem, together with both coefficient-carrier identifications, the full pointwise triangle, and the pointwise G-114 comparison square.
   completion_candidate: no
-  lean_artifacts: [generatedTargetGeometryAt, generatedBaseRouteGeometryAt, generatedPulledRouteGeometryAt, generatedUpperGeometryMateAt, generatedUpperGeometryMateAt_base, generatedBaseRouteGeometryAt_coefficient_eq, generatedPulledRouteGeometryAt_coefficient_eq, generatedUpperGeometryMateAt_triangle, generatedUpperGeometryMateAt_comparison_square]
+  lean_artifacts: [generatedTargetGeometryAt, UpperRefinementBCProblemData.generatedBaseRouteGeometryAt, UpperRefinementBCProblemData.generatedPulledRouteGeometryAt, generatedUpperGeometryMateAt, generatedUpperGeometryMateAt_base, UpperRefinementBCProblemData.generatedBaseRouteGeometryAt_coefficient_eq, UpperRefinementBCProblemData.generatedPulledRouteGeometryAt_coefficient_eq, generatedUpperGeometryMateAt_triangle, generatedUpperGeometryMateAt_comparison_square]
   evidence: [focused Lean check, namespace standard-axiom audit, source hash, literal scans]
   source_sha256:
     UpperGeometryFiniteMate.lean: 70a2b047d14aad4a70f748856481789ebfb89540496c091e1fa4c53d91d92dd9
@@ -1712,7 +1712,7 @@ result:
   proposed_result_type: target-proof-checkpoint
   proof_obligation_delta: A source-only compatible input now fixes the finite presentation, root reachability, actual target-fiber diagram, source geometry family, and exactly one fixed-coefficient G-109 transport. Both reverse-route geometries and literal legs are generated pointwise by the G-112/G-114 cleavage, retain the coefficient ring, and are proved strongly Cartesian without input fields or theorem arguments.
   completion_candidate: no
-  lean_artifacts: [UpperGeometryCompatibleProblemInputData, UpperGeometryCompatibleProblemInput, sourceTargetGeometryAt, generatedBaseRouteGeometryAt, generatedPulledRouteGeometryAt, generatedBaseRouteLegAt, generatedPulledRouteLegAt, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, generatedBaseRouteGeometryAt_coefficient_eq, generatedPulledRouteGeometryAt_coefficient_eq]
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData, UpperGeometryCompatibleProblemInput, sourceTargetGeometryAt, UpperGeometryCompatibleProblemInputData.generatedBaseRouteGeometryAt, UpperGeometryCompatibleProblemInputData.generatedPulledRouteGeometryAt, generatedBaseRouteLegAt, generatedPulledRouteLegAt, generatedBaseRouteLegAt_isStronglyCartesian, generatedPulledRouteLegAt_isStronglyCartesian, UpperGeometryCompatibleProblemInputData.generatedBaseRouteGeometryAt_coefficient_eq, UpperGeometryCompatibleProblemInputData.generatedPulledRouteGeometryAt_coefficient_eq]
   evidence: [focused Lean check, 41-declaration namespace standard-axiom audit, module registration, source hash, literal scans]
   source_sha256:
     UpperGeometryCompatibleInput.lean: 2ad1afce030e76d60f9a315219e32df3fcb00b932b4b8224fa26d59bf8ff188f
@@ -4674,4 +4674,69 @@ audits:
   validation_refs: [exact per-cycle focused checks source hashes and standard-axiom audits recorded in Cycles 1 through 81, accepted fixed-head PR review comments CI results and merge commits recorded in the corresponding PRs and tracking Issue #4250 comments, no Research aggregate or full build]
   blocking_findings: []
   next_obligation: Complete the standard fixed-head review of PR #4338, publish the schema-complete same-head final packet, run four fresh math-lean-review lanes, post the formal completion ledger, require green CI, merge, then synchronize durable status and Issue #4250 while leaving the tracking Issue open.
+```
+
+## Cycle 83 — actual companion fieldwise equation transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 83
+goal_blob_sha: b7464686088f8fb314ed1cfb660d0fcc41685217
+goal_sha256: 2bbf3cda6e85fe44cd6c9140f88a2c065b19a81145591c2f18fd97653a373251
+base_oid: 65b8ca88a44dc185d31e01d8b2b9ef08742ad70a
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 9 is merged after the first Cycle 82 completion review rejected the old clause-d proof-use wording and exposed four source solution fields that the backward companion constructor rederived instead of transporting directly.
+  proof_dag_predecessors: [Cycle 62 wrapper-free generatedSolutionBackward construction, Cycle 73 exact endpoint isomorphisms and laws, Cycle 75 exact backward component normalization, Cycle 81 pointwise exchange-exactness companion iff, merged revision 9 responsibility split]
+  proof_obligation: Transport component_coefficient_id, nil_naturality, append_naturality, and authored_twoCell_pasting directly from the corresponding generated-solution fields through the actual endpoint conjugation, retain the generic path theorem, and reconnect the actual companion constructor to the direct theorems.
+  selection_reason: These equations are independent fields of the actual solution contract. Re-deriving them from triangle, edge, or comparator laws produces a valid inhabitant but does not meet revision 9 fieldwise proof-use. Direct conjugation is the reusable Gr4 operation and leaves the pointwise IsIso iff correctly isolated to normalization and endpoint cancellation.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean]
+  risks: [touching a source field without using its equality, deleting the generic path theorem, moving a solution law into the IsIso iff, deriving coefficient identity from triangle again, changing O12 truth, introducing a wrapper or certificate]
+  unchecked: [standard fixed-head review, corrected 1020-occurrence immutable declaration map, schema-complete final packet, fresh four-lane completion review, completion ledger, CI merge and durable status synchronization]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_state: target-proof-checkpoint
+  completion_candidate: yes
+  proof_obligation_delta: The backward coefficient proof now expands the actual endpoint conjugation, rewrites both endpoint coefficient maps to identity, and uses solution.component_coefficient_id. Two path-comparison naturality theorems and a general transport theorem carry an arbitrary generated path equality through the base hom and pulled inverse. The nil and append companion fields specialize that transport theorem to solution.nil_naturality and solution.append_naturality. The authored two-cell proof conjugates the source solution.authored_twoCell_pasting equality using path and comparator comparison laws on both sides. generatedSolutionBackward now assigns the direct nil and append theorems, while its two-cell field keeps the same public theorem name with the new direct proof. The exchange-exactness iff remains unchanged and still uses only component normalization and endpoint IsIso cancellation.
+  lean_artifacts: [generatedSolutionBackwardAt_coefficient_id, canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_path_naturality, canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_path_naturality_inv, generatedSolutionBackwardAt_path_naturality_of_generated, generatedSolutionBackwardAt_nil_naturality, generatedSolutionBackwardAt_append_naturality, generatedSolutionBackwardAt_authored_twoCell_pasting, generatedSolutionBackward]
+  source_sha256:
+    UpperGeometryCompatibleSolutionEquivalence.lean: f0ec1cb3af1ebfed0e78baaad4ac4d453d73228c1a62d8470f15ce033871797c
+    UpperGeometryExchangeExactness.lean: 0fb1f37bce1972472b6c0021d89eb1f6dcd9a5be659358bd338607790b65385f
+  exact_declaration_map:
+    path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
+    sha256: 66f6b605883a6e05d823f785293be09d6aa8c8a2d9b90edd3398a092383cb6c8
+    generator: research/reports/evidence/g115_exact_declaration_map.rb
+    generator_sha256: bc21c422e0679903b81f6fac920f67817f960bb3965fbd9b610733c509f84669
+    counts: {artifacts: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0}
+  evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, exact fully qualified 1025-declaration map reproduction, git diff check, hidden and bidirectional Unicode scan]
+  claim_mapping:
+    theorem_names: [generatedSolutionBackwardAt_coefficient_id, generatedSolutionBackwardAt_path_naturality_of_generated, generatedSolutionBackwardAt_nil_naturality, generatedSolutionBackwardAt_append_naturality, generatedSolutionBackwardAt_authored_twoCell_pasting, generatedSolutionBackward, generatedComponent_isIso_iff_backwardCompanion]
+    source_labels: [revision 9 clause d actual companion fieldwise equation transport, target completion criteria, UpperStageExchangeExact companion iff material premise]
+    conjuncts: [direct coefficient identity transport, direct nil equality transport, direct append equality transport, direct authored two-cell pasting transport, actual companion constructor use, unchanged pointwise IsIso normalization and cancellation]
+    undischarged_assumptions: []
+    acceptance_point: Each of the four previously missing source fields occurs in a theorem that transports that exact equality into the corresponding actual companion field. The pointwise IsIso iff does not consume those equations and does not decide either side.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [component_coefficient_id direct proof-use, nil_naturality direct proof-use, append_naturality direct proof-use, authored_twoCell_pasting direct proof-use, report revision 9 synchronization]
+    remaining: []
+  certificate_provenance:
+    discharged: [source fields belong to the arbitrary generated actual solution, endpoint hom and inverse come from theorem-generated exact comparisons, path comparison laws are induced from endpoint edge naturality, comparator comparison laws are the existing conjugation theorems]
+    unresolved: []
+  proof_use:
+    used: [solution.component_coefficient_id, solution.nil_naturality, solution.append_naturality, solution.authored_twoCell_pasting, base endpoint path naturality, pulled endpoint inverse path naturality, base and pulled comparator conjugation, exactGeometryToRefinementGeometry map injectivity, endpoint coefficient identities]
+    unused: [triangle as a substitute for component_coefficient_id, edge induction as a substitute for nil or append source fields, comparator and derived path laws as a substitute for authored_twoCell_pasting, solution equations inside generatedComponent_isIso_iff_backwardCompanion]
+  structure_field_escape: none-found; the constructor consumes existing actual solution fields and adds no premise or certificate
+  route_integrity: pass; base path and comparator comparisons use endpoint homs, pulled path and comparator comparisons use endpoint inverses, and all composites follow the source-to-target order
+  predecessor_integrity: pass; the generic path theorem and Cycle 81 exchange theorem remain available with unchanged statements
+  target_fitting: none-found; the implementation discharges the exact revision 9 delta and does not broaden the theorem
+  vacuity: none-found; the transport theorems quantify over arbitrary actual generated solutions and use the named equality fields as proof terms
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found; O12 remains undecided and revision 9 is recorded as a new implementation obligation rather than retroactive evidence for Cycle 81
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean` passed with 43 declarations under standard axioms only; `lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed with five declarations under standard axioms only; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Bind the exact fully qualified 1025-declaration map to one fixed head, publish a schema-complete replacement packet, run four wholly fresh completion lanes, post the formal ledger, require green CI, merge PR #4338, then synchronize GOAL report registry and Issue #4250 while leaving the tracking Issue open.
 ```
