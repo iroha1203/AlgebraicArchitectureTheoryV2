@@ -24,16 +24,28 @@ end
 
 accepted_sections.each do |section|
   cycle = section[/\A(\d+)/, 1].to_i
-  targets = section.scan(/^  lean_targets: \[(.*)\]$/).flat_map do |match|
-    match.first.split(',').map(&:strip).select { |path| path.end_with?('.lean') }
-  end.map do |path|
+  target_entries = section.scan(/^  lean_targets: \[(.*)\]$/).flat_map do |match|
+    match.first.empty? ? [] : match.first.split(',', -1).map(&:strip)
+  end
+  invalid_targets = target_entries.reject do |path|
+    path.end_with?('.lean') && path.match?(/\A[A-Za-z0-9_.'\/-]+\z/)
+  end
+  unless invalid_targets.empty?
+    warn "invalid lean_targets cycle=#{cycle} #{invalid_targets.join('|')}"
+    exit 1
+  end
+  targets = target_entries.map do |path|
     path.start_with?('research/', 'Formal/') ? path : "research/lean/#{path}"
   end
   artifacts = section.scan(/^  lean_artifacts: \[(.*)\]$/).flat_map do |match|
-    match.first.split(',').map(&:strip)
-  end.reject do |name|
-    name.empty? || name.start_with?('planned ') ||
-      !name.match?(/\A[A-Za-z_][A-Za-z0-9_'.]*\z/)
+    match.first.empty? ? [] : match.first.split(',', -1).map(&:strip)
+  end
+  invalid_artifacts = artifacts.reject do |name|
+    name.match?(/\A[A-Za-z_][A-Za-z0-9_'.]*\z/)
+  end
+  unless invalid_artifacts.empty?
+    warn "invalid lean_artifacts cycle=#{cycle} #{invalid_artifacts.join('|')}"
+    exit 1
   end
   all_targets.concat(targets)
   artifacts.each { |name| occurrences << [cycle, name, targets] }
@@ -45,10 +57,10 @@ manifest = cycle_records.map do |cycle, targets, artifacts|
   "cycle=#{cycle}\ntargets=#{targets.join('|')}\nartifacts=#{artifacts.join('|')}"
 end.join("\n---\n")
 manifest_sha256 = Digest::SHA256.hexdigest(manifest)
-expected_manifest_sha256 = 'ef75933b0a960097daac0c6541feadc66bc7a213be3374a47142d46b4ad9710a'
+expected_manifest_sha256 = '2b31e4c59f8e58c96ad6b8dcc3aa18879608c13127d1ef0a874a82a625524c44'
 unless manifest_sha256 == expected_manifest_sha256 &&
-    occurrences.length == 1034 &&
-    occurrences.map { |_cycle, name, _targets| name }.uniq.length == 1031 &&
+    occurrences.length == 1066 &&
+    occurrences.map { |_cycle, name, _targets| name }.uniq.length == 1063 &&
     all_targets.length == 80
   warn "input manifest mismatch sha256=#{manifest_sha256} occurrences=#{occurrences.length} " \
     "identities=#{occurrences.map { |_cycle, name, _targets| name }.uniq.length} " \
@@ -66,6 +78,7 @@ def lean_code_only(text)
   index = 0
   state = :code
   block_depth = 0
+  raw_hash_count = nil
 
   while index < bytes.length
     byte = bytes[index]
@@ -80,6 +93,17 @@ def lean_code_only(text)
       elsif pair == [45, 45] # --
         state = :line_comment
         index += 2
+      elsif byte == 114 # r followed by zero or more # and a quote
+        raw_end = index + 1
+        raw_end += 1 while bytes[raw_end] == 35
+        if bytes[raw_end] == 34
+          raw_hash_count = raw_end - index - 1
+          state = :raw_string
+          index = raw_end + 1
+        else
+          output[index] = byte
+          index += 1
+        end
       elsif triple == [34, 34, 34]
         state = :multiline_string
         index += 3
@@ -126,10 +150,20 @@ def lean_code_only(text)
         output[index] = byte if byte == 10
         index += 1
       end
+    when :raw_string
+      delimiter = [34] + Array.new(raw_hash_count, 35)
+      if bytes[index, delimiter.length] == delimiter
+        state = :code
+        raw_hash_count = nil
+        index += delimiter.length
+      else
+        output[index] = byte if byte == 10
+        index += 1
+      end
     end
   end
 
-  unless state == :code
+  unless [:code, :line_comment].include?(state)
     raise ArgumentError, "unterminated Lean lexical state #{state}"
   end
 
@@ -146,7 +180,7 @@ def source_declarations(text)
   text.each_line do |line|
     code = line.sub(/--.*$/, '')
     stripped = code.strip.sub(/\A(?:@\[[^\]]*\]\s*)+/, '')
-    stripped = stripped.sub(/\A(?:(?:noncomputable|private|protected)\s+)+/, '')
+    stripped = stripped.sub(/\A(?:(?:noncomputable|private|protected|local|scoped|partial|unsafe)\s+)+/, '')
 
     if (match = stripped.match(/\Anamespace\s+([A-Za-z_][A-Za-z0-9_'.]*)\z/))
       scope << [:namespace, match[1]]
@@ -174,36 +208,38 @@ def source_declarations(text)
     namespace = scope.filter_map { |kind, name| name if kind == :namespace }.join('.')
     if (match = stripped.match(/\A(?:structure|class)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
       declared = [namespace, match[1]].reject(&:empty?).join('.')
-      declarations << declared
+      kind = stripped.start_with?('class') ? 'class' : 'structure'
+      declarations << [declared, kind]
       structure_scope = declared
       inductive_scope = nil
       next
     end
     if (match = stripped.match(/\Ainductive\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
       declared = [namespace, match[1]].reject(&:empty?).join('.')
-      declarations << declared
+      declarations << [declared, 'inductive']
       structure_scope = nil
       inductive_scope = declared
       next
     end
     if inductive_scope && (match = line.match(/\A\s*\|\s*([A-Za-z_][A-Za-z0-9_']*)\b/))
-      declarations << "#{inductive_scope}.#{match[1]}"
+      declarations << ["#{inductive_scope}.#{match[1]}", 'constructor']
       next
     end
     if (match = stripped.match(/\A(?:def|abbrev|theorem|lemma|opaque|axiom|constant)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
-      declarations << [namespace, match[1]].reject(&:empty?).join('.')
+      kind = stripped[/\A([A-Za-z]+)/, 1]
+      declarations << [[namespace, match[1]].reject(&:empty?).join('.'), kind]
       structure_scope = nil
       inductive_scope = nil
       next
     end
     if (match = stripped.match(/\Ainstance\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
-      declarations << [namespace, match[1]].reject(&:empty?).join('.')
+      declarations << [[namespace, match[1]].reject(&:empty?).join('.'), 'instance']
       structure_scope = nil
       inductive_scope = nil
       next
     end
-    if structure_scope && (match = line.match(/\A\s{2,}([A-Za-z_][A-Za-z0-9_']*)\s*:/))
-      declarations << "#{structure_scope}.#{match[1]}"
+    if structure_scope && (match = line.match(/\A\s{2,}([A-Za-z_][A-Za-z0-9_']*)\s*:(?!=)/))
+      declarations << ["#{structure_scope}.#{match[1]}", 'field']
     elsif !line.match?(/\A\s/) && !stripped.empty?
       structure_scope = nil
       inductive_scope = nil
@@ -215,7 +251,12 @@ def source_declarations(text)
     raise ArgumentError, "unterminated #{kind} #{name || 'anonymous'}"
   end
 
-  declarations.uniq
+  duplicates = declarations.group_by(&:first).select { |_name, entries| entries.length > 1 }
+  unless duplicates.empty?
+    raise ArgumentError, "duplicate source declaration #{duplicates.keys.sort.join('|')}"
+  end
+
+  declarations
 end
 
 lexer_probe = <<~'LEAN'
@@ -228,19 +269,25 @@ lexer_probe = <<~'LEAN'
   def probeMultiline := """
     theorem BogusMultiline : True
   """
+  def probeRaw := r#"
+    "theorem BogusRaw : True"
+  "#
   theorem RealProbe : True := by trivial
   axiom RealAxiom : True
+  local instance RealLocalInstance : Inhabited Bool := inferInstance
   inductive RealInductive
     | actual
   end AAT.AG.DoctrineFiberProduct
 LEAN
 unless source_declarations(lexer_probe) == [
-    'AAT.AG.DoctrineFiberProduct.probeString',
-    'AAT.AG.DoctrineFiberProduct.probeMultiline',
-    'AAT.AG.DoctrineFiberProduct.RealProbe',
-    'AAT.AG.DoctrineFiberProduct.RealAxiom',
-    'AAT.AG.DoctrineFiberProduct.RealInductive',
-    'AAT.AG.DoctrineFiberProduct.RealInductive.actual'
+    ['AAT.AG.DoctrineFiberProduct.probeString', 'def'],
+    ['AAT.AG.DoctrineFiberProduct.probeMultiline', 'def'],
+    ['AAT.AG.DoctrineFiberProduct.probeRaw', 'def'],
+    ['AAT.AG.DoctrineFiberProduct.RealProbe', 'theorem'],
+    ['AAT.AG.DoctrineFiberProduct.RealAxiom', 'axiom'],
+    ['AAT.AG.DoctrineFiberProduct.RealLocalInstance', 'instance'],
+    ['AAT.AG.DoctrineFiberProduct.RealInductive', 'inductive'],
+    ['AAT.AG.DoctrineFiberProduct.RealInductive.actual', 'constructor']
   ]
   warn 'internal Lean lexer regression probe failed'
   exit 1
@@ -262,6 +309,13 @@ unless quotation_files.empty?
   quotation_files.each { |path| warn "SYNTAX_QUOTATION #{path}" }
   exit 1
 end
+escaped_identifier_files = code_text.filter_map do |path, text|
+  path if text.include?('«') || text.include?('»')
+end
+unless escaped_identifier_files.empty?
+  escaped_identifier_files.each { |path| warn "ESCAPED_IDENTIFIER #{path}" }
+  exit 1
+end
 begin
   source_declaration_names = file_text.transform_values { |text| source_declarations(text) }
 rescue ArgumentError => error
@@ -270,35 +324,39 @@ rescue ArgumentError => error
 end
 file_sha256 = file_text.transform_values { |text| Digest::SHA256.hexdigest(text) }
 outside_root = source_declaration_names.flat_map do |path, names|
-  names.reject { |name| name.start_with?("#{ROOT_NAMESPACE}.") }
-    .map { |name| [path, name] }
+  names.reject { |name, _kind| name.start_with?("#{ROOT_NAMESPACE}.") }
+    .map { |name, _kind| [path, name] }
 end
 unless outside_root.empty?
   outside_root.each { |path, name| warn "OUTSIDE_ROOT #{name}@#{path}" }
   exit 1
 end
 file_declarations = source_declaration_names.transform_values do |names|
-  names.map { |name| relative_identity(name) }
+  names.to_h { |name, kind| [relative_identity(name), kind] }
 end
 
 resolved = {}
+resolved_kinds = {}
+resolved_occurrences = []
 unresolved = []
 ambiguous = []
 
 occurrences.each do |cycle, name, targets|
   matches = targets.flat_map do |path|
-    file_declarations.fetch(path).filter_map do |identity|
-      [identity, path] if identity == name || identity.end_with?(".#{name}")
+    file_declarations.fetch(path).filter_map do |identity, kind|
+      [identity, path, kind] if identity == name || identity.end_with?(".#{name}")
     end
   end
   matches.uniq!
   if matches.length == 1
-    identity, path = matches.first
+    identity, path, kind = matches.first
     resolved[identity] = path
+    resolved_kinds[identity] = kind
+    resolved_occurrences << [cycle, name, identity, kind, path]
   elsif matches.empty?
     unresolved << [cycle, name, targets]
   else
-    ambiguous << [cycle, name, matches.map { |identity, path| "#{identity}@#{path}" }]
+    ambiguous << [cycle, name, matches.map { |identity, path, kind| "#{identity}:#{kind}@#{path}" }]
   end
 end
 
@@ -312,6 +370,16 @@ unless unresolved.empty? && ambiguous.empty?
   exit 1
 end
 
+resolved_manifest = resolved_occurrences.map do |cycle, report_name, identity, kind, path|
+  "cycle=#{cycle}|report=#{report_name}|identity=#{identity}|kind=#{kind}|module=#{path}"
+end.join("\n")
+resolved_manifest_sha256 = Digest::SHA256.hexdigest(resolved_manifest)
+expected_resolved_manifest_sha256 = '018da6091b9f0754fece7204de0e8bcdff684ed2f4862d1c0bfa8022d7fa8d31'
+unless resolved_manifest_sha256 == expected_resolved_manifest_sha256
+  warn "resolved manifest mismatch sha256=#{resolved_manifest_sha256}"
+  exit 1
+end
+
 grouped = Hash.new { |hash, key| hash[key] = [] }
 resolved.each { |name, path| grouped[path] << name }
 output = []
@@ -319,8 +387,9 @@ output << "map_type: g115_exact_declaration_map"
 output << "goal_revision: 9"
 output << "artifact_semantics: canonical_source_declaration_identities_from_accepted_cycles_1_through_83"
 output << "identity_root: #{ROOT_NAMESPACE}"
-output << "identity_resolution: source_namespace_stack_and_exact_qualified_suffix"
-output << "source_lexer: nested_block_comment_line_comment_escaped_string_multiline_string_and_syntax_quotation_fail_closed"
+output << "identity_resolution: cycle_local_qualified_suffix_with_locked_canonical_identity_module_and_declaration_kind"
+output << "identity_kind_manifest_sha256: #{resolved_manifest_sha256}"
+output << "source_lexer: nested_block_comment_line_comment_escaped_string_multiline_string_raw_string_syntax_quotation_and_escaped_identifier_fail_closed"
 output << "input_manifest_sha256: #{manifest_sha256}"
 output << "verification_scope: source_identity_and_same_byte_snapshot_module_hash"
 output << "lean_acceptance_provenance: per_cycle_single_file_focused_evidence_in_report"
@@ -339,5 +408,6 @@ grouped.sort.each do |path, names|
   output << "- module: #{module_name}"
   output << "  head_sha256: #{file_sha256.fetch(path)}"
   output << "  declarations: [#{names.sort.join(', ')}]"
+  output << "  declaration_kinds: [#{names.sort.map { |name| "#{name}=#{resolved_kinds.fetch(name)}" }.join(', ')}]"
 end
 STDOUT.write(output.join("\n") + "\n")
