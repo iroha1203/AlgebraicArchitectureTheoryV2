@@ -3,8 +3,8 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 81)
-- completion candidate: no
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 82 completion candidate)
+- completion candidate: yes; final fixed-head packet and fresh four-lane review pending
 
 This report records incremental proof obligations against the current fixed
 target. Cycles 1--45 remain evidence for their named interfaces under their
@@ -4609,4 +4609,60 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed with five declarations under standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryExchangeExactness` completed 4163 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Run the final K4 statement-match material-premise proof-use axiom route-integrity and nonvacuity audit across revision 8, assemble the completion packet, obtain fresh four-lane math review, merge, and synchronize the completion ledger and Issue #4250.
+```
+
+## Cycle 82 — K4 final completion candidate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 82
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 950bbe57a21fe8c0b66add4f7a26385e2c4e02ec
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycles 68 through 81 are merged; every theorem-producing obligation in clauses (a) through (d) is discharged.
+  proof_dag_predecessors: [Cycles 1 through 64 bridge route and named decision construction, Cycle 68 typed comparator descent positive and negative pair, Cycles 69 through 80 actual restricted reselection cochain and paired-suborbit transport, Cycle 81 pointwise UpperStageExchangeExact companion iff]
+  proof_obligation: Fix one exact-head completion packet and audit statement match, every material-premise role and producer, proof-use, certificate provenance, structure-field escape, route integrity, predecessor integrity, standard axioms, placeholders, and dimensional nonvacuity before a fresh four-lane completion review.
+  selection_reason: K4 is the only remaining fixed-order obligation; no additional theorem claim is permitted unless this cross-revision audit exposes a concrete gap.
+  expected_result_type: proof-checkpoint
+  lean_targets: [all revision-8 target artifacts registered under ResearchLean.AG.DoctrineFiberProduct and the one permitted Formal finite-fixture characterization module]
+  risks: [mistaking accumulated static acceptance for target fit, omitting an early-cycle producer from the declaration or premise map, accepting an opaque selected-domain iso or caller certificate as realization provenance, weakening actual paired transport to existential membership, treating the companion iff as an O12 decision, updating durable status before the final review and merge]
+  unchecked: [standard fixed-head PR review, schema-complete same-head final packet, fresh four-lane math-lean-review, completion ledger, CI and merge, post-verdict report registry and Issue synchronization]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_state: target-proof-checkpoint
+  completion_candidate: yes
+  proof_obligation_delta: No new theorem surface. The candidate consolidates the already merged revision-8 declaration, material-premise, proof-use, route, axiom, and nonvacuity evidence for the final adversarial gate.
+  lean_artifacts: [the exact per-cycle artifacts and hashes recorded in Cycles 1 through 81, with revision-8 completion claims supplied by Cycles 68 through 81 and their merged predecessors]
+  evidence: [merged fixed GOAL revision 8, accepted fixed-head review audits for every implementation cycle, focused Lean checks and targeted direct dependency-DAG builds only, per-namespace standard-axiom audits, named horizontal edge comparator cochain firing, vertical carrier-conservativity, same-route three-carrier negative comparator descent, witness-bearing paired restricted-point equivalence, pointwise exchange-exactness companion iff]
+  claim_mapping:
+    theorem_names: [RefinementGeometryHom, refinementGeometryProjection, UpperGeometryCompatibleProblemInput, RealizationExactUpperEquivalence, canonicalAuthoredGeneratedSolutionEquiv, UpperComparatorDescentAt, generatedPulledIdentityComparatorTransport, CanonicalAuthoredPairedRestrictedPoint, canonicalAuthoredGeneratedPairedRestrictedPointEquiv, UpperStageExchangeExact, upperStageExchangeExact_iff_backwardCompanion]
+    source_labels: [revision 8 clauses a through d, target proof artifacts, target material premise ledger, target anti-weakening rule]
+    conjuncts: [lax geometry-refinement bridge and projection, raw one-way comparison, certificate-free compatible route and realization-exact endpoint generation, exact endpoint and solution equivalences, named generated and canonical companion solutions, positive and qualified same-route three-carrier negative comparator descent, actual coefficient-trivial paired reselection and cochain transport, witness-bearing restricted-point equivalence and paired suborbit membership, pointwise exchange-exactness companion iff without deciding O12]
+    undischarged_assumptions: []
+    acceptance_point: Only the same-head standard PR review, schema-complete final packet, fresh four-lane completion review, formal completion ledger, CI, merge, and post-verdict synchronization may change this candidate to target-theorem-proved.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [all discharge-required rows in the fixed revision-8 material-premise ledger]
+    remaining: []
+  certificate_provenance:
+    discharged: [bridge and raw-comparison producers, certificate-free compatible route construction, realization-exact positive inhabitants and structure-preserving negative nonrealization witness, endpoint uniqueness and two-sided solution transport, actual-solution comparator descent, same-witness restricted-point transport, exact endpoint conjugation for exchange exactness]
+    unresolved: []
+  proof_use:
+    used: [G-114 lax lower routes and mate, G-108 geometry vocabulary without exact-lower fabrication, G-109 comparator cochain and orbit data, G-112 explicit canonical exact transport without opaque selected-domain iso as producer, leg triangles, edge and comparator equations, Support Axis Observable transport and inverse laws, literal actual solution fields, endpoint isomorphisms and both inverse laws, actual reselection witnesses and raw cochains]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  predecessor_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found; nonidentity is carried by the named horizontal refinement edge comparator and raw cochain, vertical components satisfy the required carrier-conservativity, and the negative descent pair keeps the same route and component while changing only the pulled comparator
+  one_way_as_equivalence: none-found; the arbitrary raw domain remains one-way, while every compatible-locus equivalence has explicit forward backward maps and both inverse laws
+  goal_or_report_reinterpretation: none-found; full-orbit equality and the O12 truth value remain outside G-115
+  validation_refs: [exact per-cycle focused checks source hashes standard-axiom audits PR review comments CI results and merge commits recorded in Cycles 1 through 81; no Research aggregate or full build]
+  blocking_findings: []
+  next_obligation: Create the completion PR, run its standard fixed-head review, publish the schema-complete same-head final packet, run four fresh math-lean-review lanes, post the formal completion ledger, require green CI, merge, then synchronize durable status and Issue #4250 while leaving the tracking Issue open.
 ```
