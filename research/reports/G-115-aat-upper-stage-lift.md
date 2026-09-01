@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 74)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 75)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4217,4 +4217,62 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectionEquivalence.lean` passed and reported 27 declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredReselectionEquivalence` completed the targeted dependency DAG successfully; source hash was recomputed from the live file; module is registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Prove that the base and pulled conjugation maps intertwine the actual reselected edge and path actions, define the canonical-authored analogue of the full paired coefficient-trivial relation, and show forward and backward preservation. Then lift the componentwise Equiv to the same-witness restricted paired point and identify the canonical companion raw cochains.
+```
+
+## Cycle 75 — multiplicative conjugation and exact solution normalization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 75
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: c419610f7620e6b9360d265e33c9fc224d2bf3a8
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 74 is merged and supplies actual base and pulled reselection Equiv values, while the existing solution Equiv exposes its conjugation only after faithful refinement re-embedding.
+  proof_dag_predecessors: [Cycle 73 exact endpoint total-geometry isomorphisms, Cycle 74 CompositeFiberAut conjugation Equiv, Cycle 74 base and pulled reselection Equiv, canonical/generated solution Equiv]
+  proof_obligation: Promote the general composite-fiber conjugation to a multiplicative equivalence preserving identity products and inverses, and prove that both independently exactified solution transports equal their actual three-factor total-geometry conjugations.
+  selection_reason: Full four-conjunct paired transport must carry comparator and raw-defect products and inverses, and its endpoint equation must combine reselection conjugation with solution conjugation in the same exact category. These are reusable Gr4-level laws rather than route-specific casts.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredTransportLaws.lean]
+  risks: [treating a plain Equiv as multiplicative without proof, replacing exactified solution definitions, retaining only refinement-image equality, reversing base or pulled endpoint factors, hiding reselected naturality behind heartbeat escalation]
+  unchecked: [exact reselected edge and path transport laws, authored and canonical comparator transport, raw cochain transport, canonical four-conjunct paired relation, paired relation iff, witness-bearing restricted point equivalence, companion cochains, exchange-exactness iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: The Cycle 74 subgroup conjugation now carries a genuine MulEquiv structure inherited from the ambient automorphism conjugation, with public identity product inverse and complete-geometry hom laws. The independently exactified forward solution component is proved equal to base exact inverse followed by the canonical component followed by pulled exact hom; the backward component is base exact hom followed by the generated component followed by pulled exact inverse. Both equalities are reflected from the faithful exact-to-refinement embedding and do not redefine either solution. An attempted monolithic edge/path proof was removed after it caused expensive definitional equality search; no partial theorem or additional heartbeat increase remains in the accepted artifact.
+  completion_candidate: no
+  lean_artifacts: [CompositeFiberAut.conjugationMulEquiv, CompositeFiberAut.conjugationMulEquiv_apply, CompositeFiberAut.conjugationMulEquiv_hom, CompositeFiberAut.conjugationMulEquiv_map_one, CompositeFiberAut.conjugationMulEquiv_map_mul, CompositeFiberAut.conjugationMulEquiv_map_inv, UpperGeometryCompatibleProblemInputData.canonicalSolutionForwardAt_exact_normalization, UpperGeometryCompatibleProblemInputData.generatedSolutionBackwardAt_exact_normalization]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredTransportLaws.lean: fc2b7cd1095c8be46bdfe799ab2a6e9ff9029f266eca3f6e3fc6f0afb85724cf
+  evidence: [focused Lean single-file check, eight declaration namespace standard-axiom audit, targeted dependency-DAG build, multiplicative equivalence laws, faithful exact normalization proofs]
+  claim_mapping:
+    theorem_names: [conjugationMulEquiv, conjugationMulEquiv_map_mul, conjugationMulEquiv_map_inv, canonicalSolutionForwardAt_exact_normalization, generatedSolutionBackwardAt_exact_normalization]
+    source_labels: [revision 8 clause c paired companion transport prerequisites, target proof strategy K3 exact relation transport]
+    conjuncts: [composite-fiber conjugation preserves multiplication, conjugation preserves inverse, forward solution exact total-geometry formula, backward solution exact total-geometry formula]
+    undischarged_assumptions: [edge path comparator and raw-cochain transport remain]
+    acceptance_point: The laws are generic or apply to arbitrary canonical/generated solutions, expose actual GeometryTotalHom equations, and preserve the independent exactification definitions; no named-fixture specialization or equality cast is used.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [multiplicative CompositeFiberAut conjugation, identity product and inverse preservation, exact forward solution normalization, exact backward solution normalization]
+    remaining: [reselected edge and path transport, comparator and raw cochain transport, canonical full paired relation and iff, restricted witness packet, companion cochains, exchange exactness, final K4 audit]
+  certificate_provenance:
+    discharged: [multiplicativity comes from the ambient Aut conjugation MulEquiv restricted to the already proved subgroup, solution equalities follow by faithful exact embedding from the existing refinement presentations and Cycle 73 exact map re-embedding laws]
+    unresolved: [fieldwise transport of the paired relation and witness-bearing point]
+  proof_use:
+    used: [Cycle 74 conjugation Equiv and its inverse laws, ambient Aut multiplicative conjugation, canonicalSolutionForwardAt_toRefinement, generatedSolutionBackwardAt_toRefinement, all four Cycle 73 exact endpoint re-embedding laws, faithful exactGeometryToRefinementGeometry]
+    deliberately_not_used: [caller-supplied multiplicativity, replacing exactified solution components, refinement equality as final conclusion, partial edge/path theorems, additional heartbeat escalation]
+  structure_field_escape: none-found; MulEquiv multiplication is proved and both solution equalities are theorems about existing structures
+  route_integrity: pass; forward and backward formulas use their respective base and pulled exact maps in the mathematically forced order
+  predecessor_integrity: pass; fixed revision 8 GOAL and merged Cycles 71 through 74 are unchanged
+  target_fitting: none-found; these are general algebraic transport laws required before any canonical paired relation can be transported
+  vacuity: pass; laws quantify over arbitrary composite-fiber automorphisms and arbitrary canonical or generated compatible solutions
+  one_way_as_equivalence: none-found; the MulEquiv retains Cycle 74 two-sided inverse data, and both solution transport directions receive exact formulas
+  goal_or_report_reinterpretation: none-found; paired preservation and all later completion obligations remain explicit
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredTransportLaws.lean` passed and reported eight declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredTransportLaws` completed the targeted dependency DAG successfully; source hash was recomputed from the live file; module is registered in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Factor exact reselected-edge transport into lightweight endpoint-whiskering lemmas, derive base and pulled forward and backward path transport by induction, then use the multiplicative conjugation laws for authored comparator canonical comparator and raw-defect transport before defining and transporting the canonical four-conjunct paired relation fieldwise.
 ```
