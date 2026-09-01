@@ -1,7 +1,19 @@
 # G-115-aat-upper-stage-lift — geometry-refinement bridge と上段 BC contract
 
 - `id`: `G-115-aat-upper-stage-lift`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Human-approved revision 9 の
+  fixed target clauses (a)–(d) を全放電（2026-09-01）。lax
+  geometry-refinement bridge、raw authored domainの一方向比較、
+  theorem-generated compatible locus上のroute / solution / reselection / actual
+  cochainの双方向transport、同一route/component上のcomparator-descent正負対、
+  actual canonical companionのcoefficient / nil / append / authored two-cell
+  fieldwise transport、pointwise `UpperStageExchangeExact` companion iffをLeanで
+  構成した。最終packetはPR #4338 `5491608369`、four-lane reviewは
+  `5491710694`、completion ledgerは`5491720139`、同PRはfixed head
+  `1e95d8fff48a9668851dafbb15fbff086ecb97d8`、CI 7/7でmerge
+  `cbae0b2e5ea99bf1b6ef34de8fa6d97418bf3f3a`。named actual solutionの
+  `IsIso` / `¬ IsIso` branch decisionはG-116 O12に残る。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項(O10–O11)。義務台帳は G-116、

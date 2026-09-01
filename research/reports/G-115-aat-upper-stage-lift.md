@@ -2,9 +2,10 @@
 
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
+- final completion PR: [#4338](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4338)
 - GOAL revision: 9 human-approved
-- proof state: `target-proof-checkpoint` (revision 9 Cycle 84 completion candidate)
-- completion candidate: yes; final fixed-head packet and fresh four-lane review pending
+- proof state: `target-theorem-proved`
+- completion candidate: finalized (formal math-lean-review: 4/4 `No major findings`)
 
 This report records incremental proof obligations against the current fixed
 target. Cycles 1--45 remain evidence for their named interfaces under their
@@ -38,6 +39,33 @@ laws, changing only its authored comparator to identity. The resulting pair
 must fail separately on Support, Axis, and Observable. It does not claim a
 failure for the common-source-generated pair, raw solution emptiness, or a
 decision of the G-116 `IsIso` branch.
+
+## Completion judgment (final, 2026-09-01)
+
+- final candidate head: `1e95d8fff48a9668851dafbb15fbff086ecb97d8`
+- schema-complete replacement packet:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4338#issuecomment-5491608369>
+- standard fixed-head review audit:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4338#issuecomment-5491426617>
+- formal four-lane completion review: 4/4 `No major findings`
+- final review audit:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4338#issuecomment-5491710694>
+- formal completion ledger:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4338#issuecomment-5491720139>
+- tracking Issue formal-verdict synchronization:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250#issuecomment-5491734944>
+- final completion PR: #4338, CI 7/7 successful
+- merge commit: `cbae0b2e5ea99bf1b6ef34de8fa6d97418bf3f3a`
+- verdict: `target-theorem-proved`
+- remaining G-115 proof obligations: none
+
+The final packet binds the 80-module / 1516-public-source accepted-target
+surface, its 1063-identity accepted-artifact subset, and the disjoint
+11-identity structured material external dependency surface. It audits all 13
+material-premise rows, actual proof-use, certificate provenance, route and
+direction integrity, comparator-descent positive/negative nonvacuity, standard
+axioms, scans, fixed-head CI, and artifact parity. The named actual solution's
+`IsIso` / `¬ IsIso` branch decision remains the separate G-116 O12 target.
 
 ## Historical revision 6 target
 
