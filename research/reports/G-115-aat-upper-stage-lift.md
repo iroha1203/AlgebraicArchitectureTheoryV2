@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 80)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 81)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4551,4 +4551,62 @@ audits:
   validation_refs: [`lake env lean` passed separately for both modules and reported standard axioms only; targeted builds completed the direct dependency DAG at 4161 and 4162 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedOrbitTransport.lean` passed; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define UpperStageExchangeExact on generated solutions, prove at every vertex that exact endpoint conjugation preserves and reflects IsIso for an arbitrary generated solution and its actual backward companion, specialize to the named canonical companion, and then run the final K4 completion audit.
+```
+
+## Cycle 81 — pointwise upper-stage exchange exactness companion iff
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 81
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 3dadeb14856b3d5e8aee83115e2068e37bc81c99
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 80 is merged and discharges the witness-bearing restricted point, companion cochain, and same-witness paired suborbit obligations.
+  proof_dag_predecessors: [Cycle 62 wrapper-free solution equivalence and actual backward companion, Cycle 64 named generated solution and canonical companion definitions, Cycle 73 exact base and pulled endpoint comparison isomorphisms, Cycle 75 exact backward solution-component normalization]
+  proof_obligation: Define UpperStageExchangeExact as pointwise IsIso of every generated vertical geometry component, prove for an arbitrary generated solution and every vertex that its component is IsIso iff the actual backward canonical companion component is IsIso, and specialize this iff to the named decision solution without deciding either side.
+  selection_reason: Revision 8 clause d requires an actual geometry-component iff under endpoint conjugation, not reflection to the G-114 core mate and not a proof of the predicate. Direct cancellation of the exact endpoint isomorphisms gives the required symmetric interface at the correct categorical level.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean]
+  risks: [stating IsIso only for a core or refinement image, assuming exchange exactness as an argument or structure field, proving only preservation without reflection, deciding the named fixture, relying on faithful-functor IsIso reflection, reversing base or pulled endpoint maps]
+  unchecked: [K4 final premise proof-use axiom nonvacuity and statement-match audit, completion packet lifecycle synchronization]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: UpperStageExchangeExact is the literal universal IsIso predicate on all actual generated solution components in the complete geometry category. For an arbitrary generated solution, the Cycle 75 exact normalization rewrites its actual backward canonical component as the base endpoint comparison hom followed by the generated component followed by the pulled endpoint comparison inverse. The forward implication installs the component IsIso instance and composes with both endpoint isomorphisms. The reverse implication first cancels the pulled inverse and then the base hom with the category IsIso cancellation theorems. This pointwise iff is lifted to the universal predicate and specialized to the named decision solution and its actual named canonical companion. No IsIso or non-IsIso instance is produced for the named component itself.
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData.UpperStageExchangeExact, UpperGeometryCompatibleProblemInputData.generatedComponent_isIso_iff_backwardCompanion, UpperGeometryCompatibleProblemInputData.upperStageExchangeExact_iff_backwardCompanion, UpperDecisionWitness.solution_component_isIso_iff_canonicalCompanion, UpperDecisionWitness.upperStageExchangeExact_iff_canonicalCompanion]
+  source_sha256:
+    UpperGeometryExchangeExactness.lean: 0fb1f37bce1972472b6c0021d89eb1f6dcd9a5be659358bd338607790b65385f
+  evidence: [focused Lean single-file check, five-declaration namespace standard-axiom audit, targeted dependency-DAG build ending at 4163 jobs, official focused research-module checker, aggregate and manifest registration]
+  claim_mapping:
+    theorem_names: [UpperStageExchangeExact, generatedComponent_isIso_iff_backwardCompanion, upperStageExchangeExact_iff_backwardCompanion, solution_component_isIso_iff_canonicalCompanion, upperStageExchangeExact_iff_canonicalCompanion]
+    source_labels: [revision 8 clause d exchange-exactness decision interface, target material premise UpperStageExchangeExact companion iff]
+    conjuncts: [literal pointwise generated-component IsIso predicate, arbitrary-solution pointwise preservation, arbitrary-solution pointwise reflection, universal predicate iff, named actual canonical companion pointwise iff]
+    undischarged_assumptions: [final K4 audit and completion lifecycle only]
+    acceptance_point: The theorem compares actual GeometryTotalHom components directly and cancels the actual exact endpoint isomorphisms in both directions. It neither reflects to the G-114 core mate nor decides the named fixture.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [UpperStageExchangeExact predicate, arbitrary generated component IsIso preservation to backward companion, reflection from backward companion, named componentwise companion iff, named universal predicate iff]
+    remaining: [final K4 statement premise proof-use axiom and nonvacuity audit, completion packet and lifecycle synchronization]
+  certificate_provenance:
+    discharged: [backward companion is the Cycle 62 actual solution transport, exact component formula is the Cycle 75 theorem reflected from the faithful exact embedding, base hom and pulled inverse are fields of separately constructed Cycle 73 exact endpoint isomorphisms, IsIso instances come only from those actual isomorphisms and the corresponding side of the iff]
+    unresolved: [final completion audit only]
+  proof_use:
+    used: [generatedSolutionBackward, generatedSolutionBackwardAt_exact_normalization, canonicalAuthoredBaseToGeneratedRouteExactGeometryIsoAt hom, canonicalAuthoredPulledToGeneratedRouteExactGeometryIsoAt inv, IsIso composition, of_isIso_comp_right, of_isIso_comp_left, named generated solution and canonical companion definitions]
+    unused: [G-114 core mate IsIso, faithful-functor IsIso reflection, caller-supplied exchange certificate, preinstalled named IsIso or non-IsIso instance, O12 decision, restricted point membership, cochain equality]
+  structure_field_escape: none-found; UpperStageExchangeExact is a theorem-level predicate on existing actual components and no problem solution or witness structure gains an IsIso field
+  route_integrity: pass; backward normalization uses base exact hom on the left and pulled exact inverse on the right, and reverse proof cancels in the forced opposite order
+  predecessor_integrity: pass; fixed revision 8 and merged endpoint solution and restricted-point predecessors are unchanged
+  target_fitting: none-found; pointwise complete-geometry IsIso is exactly clause d and is not weakened to a core or mapped component
+  vacuity: pass for the decision interface; the named solution and canonical companion are inhabited actual solutions, while neither side of the iff is asserted
+  one_way_as_equivalence: none-found; the generic pointwise theorem proves both composition preservation and two-step cancellation reflection
+  goal_or_report_reinterpretation: none-found; O12 truth remains explicitly undecided and completion status stays target-proof-checkpoint pending K4
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed with five declarations under standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryExchangeExactness` completed 4163 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Run the final K4 statement-match material-premise proof-use axiom route-integrity and nonvacuity audit across revision 8, assemble the completion packet, obtain fresh four-lane math review, merge, and synchronize the completion ledger and Issue #4250.
 ```
