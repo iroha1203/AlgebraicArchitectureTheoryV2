@@ -203,11 +203,28 @@ end
 
 def relative_identity(name)
   prefix = "#{ROOT_NAMESPACE}."
-  name.start_with?(prefix) ? name.delete_prefix(prefix) : name
+  name.delete_prefix(prefix)
 end
 
-file_declarations = file_text.transform_values do |text|
-  source_declarations(text).map { |name| relative_identity(name) }
+quotation_files = file_text.filter_map do |path, text|
+  path if lean_code_only(text).include?('`')
+end
+unless quotation_files.empty?
+  quotation_files.each { |path| warn "SYNTAX_QUOTATION #{path}" }
+  exit 1
+end
+source_declaration_names = file_text.transform_values { |text| source_declarations(text) }
+file_sha256 = file_text.transform_values { |text| Digest::SHA256.hexdigest(text) }
+outside_root = source_declaration_names.flat_map do |path, names|
+  names.reject { |name| name.start_with?("#{ROOT_NAMESPACE}.") }
+    .map { |name| [path, name] }
+end
+unless outside_root.empty?
+  outside_root.each { |path, name| warn "OUTSIDE_ROOT #{name}@#{path}" }
+  exit 1
+end
+file_declarations = source_declaration_names.transform_values do |names|
+  names.map { |name| relative_identity(name) }
 end
 
 resolved = {}
@@ -241,34 +258,32 @@ unless unresolved.empty? && ambiguous.empty?
   exit 1
 end
 
-puts "map_type: g115_exact_declaration_map"
-puts "goal_revision: 9"
-puts "artifact_semantics: canonical_source_declaration_identities_from_accepted_cycles_1_through_83"
-puts "identity_root: #{ROOT_NAMESPACE}"
-puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix"
-puts "source_lexer: nested_block_comment_line_comment_escaped_string_and_multiline_string_aware"
-puts "input_manifest_sha256: #{manifest_sha256}"
-puts "verification_scope: source_identity_and_current_module_content_hash"
-puts "lean_acceptance_provenance: per_cycle_single_file_focused_evidence_in_report"
-puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
-puts "module_hash: sha256_of_current_worktree_file_content"
-puts "generator: research/reports/evidence/g115_exact_declaration_map.rb"
-puts "---"
-puts "# artifacts=#{occurrences.map { |_c, name, _t| name }.uniq.length}"
-puts "# targets=#{all_targets.length}"
-puts "# resolved=#{resolved.length}"
-puts "# unresolved=#{unresolved.length}"
-unresolved.each { |cycle, name, targets| puts "# UNRESOLVED cycle=#{cycle} #{name} targets=#{targets.join('|')}" }
-puts "# ambiguous=#{ambiguous.length}"
-ambiguous.each { |cycle, name, matches| puts "# AMBIGUOUS cycle=#{cycle} #{name} matches=#{matches.join('|')}" }
-puts "# ---MAP---"
-
 grouped = Hash.new { |hash, key| hash[key] = [] }
 resolved.each { |name, path| grouped[path] << name }
+output = []
+output << "map_type: g115_exact_declaration_map"
+output << "goal_revision: 9"
+output << "artifact_semantics: canonical_source_declaration_identities_from_accepted_cycles_1_through_83"
+output << "identity_root: #{ROOT_NAMESPACE}"
+output << "identity_resolution: source_namespace_stack_and_exact_qualified_suffix"
+output << "source_lexer: nested_block_comment_line_comment_escaped_string_multiline_string_and_syntax_quotation_fail_closed"
+output << "input_manifest_sha256: #{manifest_sha256}"
+output << "verification_scope: source_identity_and_same_byte_snapshot_module_hash"
+output << "lean_acceptance_provenance: per_cycle_single_file_focused_evidence_in_report"
+output << "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
+output << "module_hash: sha256_of_same_in_memory_source_bytes_used_for_identity_resolution"
+output << "generator: research/reports/evidence/g115_exact_declaration_map.rb"
+output << "---"
+output << "# artifacts=#{occurrences.map { |_c, name, _t| name }.uniq.length}"
+output << "# targets=#{all_targets.length}"
+output << "# resolved=#{resolved.length}"
+output << "# unresolved=#{unresolved.length}"
+output << "# ambiguous=#{ambiguous.length}"
+output << "# ---MAP---"
 grouped.sort.each do |path, names|
-  sha = Digest::SHA256.file(File.join(repo_root, path)).hexdigest
   module_name = path.sub(%r{\Aresearch/lean/ResearchLean/AG/DoctrineFiberProduct/}, '')
-  puts "- module: #{module_name}"
-  puts "  head_sha256: #{sha}"
-  puts "  declarations: [#{names.sort.join(', ')}]"
+  output << "- module: #{module_name}"
+  output << "  head_sha256: #{file_sha256.fetch(path)}"
+  output << "  declarations: [#{names.sort.join(', ')}]"
 end
+STDOUT.write(output.join("\n") + "\n")
