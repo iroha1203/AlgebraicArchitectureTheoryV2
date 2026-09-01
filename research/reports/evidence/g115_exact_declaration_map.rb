@@ -45,10 +45,10 @@ manifest = cycle_records.map do |cycle, targets, artifacts|
   "cycle=#{cycle}\ntargets=#{targets.join('|')}\nartifacts=#{artifacts.join('|')}"
 end.join("\n---\n")
 manifest_sha256 = Digest::SHA256.hexdigest(manifest)
-expected_manifest_sha256 = '9880b63cf3a688c9ab6a1fc6f51f8771994a3bdd3589d3d6e119e3f8a2b1809e'
+expected_manifest_sha256 = 'ef75933b0a960097daac0c6541feadc66bc7a213be3374a47142d46b4ad9710a'
 unless manifest_sha256 == expected_manifest_sha256 &&
-    occurrences.length == 1028 &&
-    occurrences.map { |_cycle, name, _targets| name }.uniq.length == 1025 &&
+    occurrences.length == 1034 &&
+    occurrences.map { |_cycle, name, _targets| name }.uniq.length == 1031 &&
     all_targets.length == 80
   warn "input manifest mismatch sha256=#{manifest_sha256} occurrences=#{occurrences.length} " \
     "identities=#{occurrences.map { |_cycle, name, _targets| name }.uniq.length} " \
@@ -129,6 +129,10 @@ def lean_code_only(text)
     end
   end
 
+  unless state == :code
+    raise ArgumentError, "unterminated Lean lexical state #{state}"
+  end
+
   output.pack('C*').force_encoding(text.encoding)
 end
 
@@ -137,6 +141,7 @@ def source_declarations(text)
   scope = []
   declarations = []
   structure_scope = nil
+  inductive_scope = nil
 
   text.each_line do |line|
     code = line.sub(/--.*$/, '')
@@ -146,14 +151,23 @@ def source_declarations(text)
     if (match = stripped.match(/\Anamespace\s+([A-Za-z_][A-Za-z0-9_'.]*)\z/))
       scope << [:namespace, match[1]]
       structure_scope = nil
+      inductive_scope = nil
       next
-    elsif stripped.match?(/\A(?:section|noncomputable section)(?:\s+[A-Za-z_][A-Za-z0-9_']*)?\z/)
-      scope << [:section, nil]
+    elsif (match = stripped.match(/\A(?:section|noncomputable section)(?:\s+([A-Za-z_][A-Za-z0-9_']*))?\z/))
+      scope << [:section, match[1]]
       structure_scope = nil
+      inductive_scope = nil
       next
-    elsif stripped.match?(/\Aend(?:\s+[A-Za-z_][A-Za-z0-9_'.]*)?\z/)
+    elsif (match = stripped.match(/\Aend(?:\s+([A-Za-z_][A-Za-z0-9_'.]*))?\z/))
+      raise ArgumentError, "unmatched end #{match[1]}" if scope.empty?
+
+      expected = scope.last[1]
+      if match[1] && match[1] != expected
+        raise ArgumentError, "mismatched end #{match[1]}; expected #{expected || 'anonymous section'}"
+      end
       scope.pop
       structure_scope = nil
+      inductive_scope = nil
       next
     end
 
@@ -162,18 +176,43 @@ def source_declarations(text)
       declared = [namespace, match[1]].reject(&:empty?).join('.')
       declarations << declared
       structure_scope = declared
+      inductive_scope = nil
       next
     end
-    if (match = stripped.match(/\A(?:def|abbrev|theorem|lemma|opaque)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
+    if (match = stripped.match(/\Ainductive\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
+      declared = [namespace, match[1]].reject(&:empty?).join('.')
+      declarations << declared
+      structure_scope = nil
+      inductive_scope = declared
+      next
+    end
+    if inductive_scope && (match = line.match(/\A\s*\|\s*([A-Za-z_][A-Za-z0-9_']*)\b/))
+      declarations << "#{inductive_scope}.#{match[1]}"
+      next
+    end
+    if (match = stripped.match(/\A(?:def|abbrev|theorem|lemma|opaque|axiom|constant)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
       declarations << [namespace, match[1]].reject(&:empty?).join('.')
       structure_scope = nil
+      inductive_scope = nil
+      next
+    end
+    if (match = stripped.match(/\Ainstance\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
+      declarations << [namespace, match[1]].reject(&:empty?).join('.')
+      structure_scope = nil
+      inductive_scope = nil
       next
     end
     if structure_scope && (match = line.match(/\A\s{2,}([A-Za-z_][A-Za-z0-9_']*)\s*:/))
       declarations << "#{structure_scope}.#{match[1]}"
     elsif !line.match?(/\A\s/) && !stripped.empty?
       structure_scope = nil
+      inductive_scope = nil
     end
+  end
+
+  unless scope.empty?
+    kind, name = scope.last
+    raise ArgumentError, "unterminated #{kind} #{name || 'anonymous'}"
   end
 
   declarations.uniq
@@ -190,12 +229,18 @@ lexer_probe = <<~'LEAN'
     theorem BogusMultiline : True
   """
   theorem RealProbe : True := by trivial
+  axiom RealAxiom : True
+  inductive RealInductive
+    | actual
   end AAT.AG.DoctrineFiberProduct
 LEAN
 unless source_declarations(lexer_probe) == [
     'AAT.AG.DoctrineFiberProduct.probeString',
     'AAT.AG.DoctrineFiberProduct.probeMultiline',
-    'AAT.AG.DoctrineFiberProduct.RealProbe'
+    'AAT.AG.DoctrineFiberProduct.RealProbe',
+    'AAT.AG.DoctrineFiberProduct.RealAxiom',
+    'AAT.AG.DoctrineFiberProduct.RealInductive',
+    'AAT.AG.DoctrineFiberProduct.RealInductive.actual'
   ]
   warn 'internal Lean lexer regression probe failed'
   exit 1
@@ -206,14 +251,23 @@ def relative_identity(name)
   name.delete_prefix(prefix)
 end
 
-quotation_files = file_text.filter_map do |path, text|
-  path if lean_code_only(text).include?('`')
+begin
+  code_text = file_text.transform_values { |text| lean_code_only(text) }
+rescue ArgumentError => error
+  warn "SOURCE_PARSE_ERROR #{error.message}"
+  exit 1
 end
+quotation_files = code_text.filter_map { |path, text| path if text.include?('`') }
 unless quotation_files.empty?
   quotation_files.each { |path| warn "SYNTAX_QUOTATION #{path}" }
   exit 1
 end
-source_declaration_names = file_text.transform_values { |text| source_declarations(text) }
+begin
+  source_declaration_names = file_text.transform_values { |text| source_declarations(text) }
+rescue ArgumentError => error
+  warn "SOURCE_PARSE_ERROR #{error.message}"
+  exit 1
+end
 file_sha256 = file_text.transform_values { |text| Digest::SHA256.hexdigest(text) }
 outside_root = source_declaration_names.flat_map do |path, names|
   names.reject { |name| name.start_with?("#{ROOT_NAMESPACE}.") }
