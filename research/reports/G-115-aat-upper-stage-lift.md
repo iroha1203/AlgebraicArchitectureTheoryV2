@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 79)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 80)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4492,4 +4492,63 @@ audits:
   validation_refs: [`lake env lean` passed separately for all three modules and reported 5, 6, and 9 declarations under standard axioms only; targeted builds completed the direct dependency DAG at 4157, 4158, and 4159 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedTransport.lean` passed; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Package the transported solution and both transported reselections as the witness-bearing restricted point, prove its two-sided equivalence and canonical companion cochain/suborbit agreement, then prove the pointwise UpperStageExchangeExact companion iff before the K4 audit.
+```
+
+## Cycle 80 — witness-bearing restricted points and cochain/suborbit transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 80
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: b456dd3cc3a92dae479679db3c25865e7b554a37
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 79 is merged and supplies the two-sided solution and reselection transports, the fieldwise full-paired transport, and the named nonidentity canonical companion pair.
+  proof_dag_predecessors: [Cycle 62 wrapper-free solution equivalence, Cycle 73 endpoint exact isomorphisms, Cycle 74 two reselection equivalences, Cycle 75 cochain-coordinate conjugation MulEquiv, Cycle 77 actual raw-cochain transport, Cycle 79 fieldwise full-paired transport and named canonical companion]
+  proof_obligation: Package the solution and both actual reselections with their native full paired proof as one restricted point, prove a two-sided canonical/generated point equivalence, lift endpoint conjugation to the full dependent cochain groups, and derive the named companion cochain and paired-suborbit agreement from the transported shared witness.
+  selection_reason: An existential membership iff alone would discard the reselection correspondence forbidden by the fixed anti-weakening rule. The total witness point makes the Gr4 object primary and makes cochain and suborbit results functorial projections.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedPoint.lean, ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedOrbitTransport.lean]
+  risks: [keeping the solution only as an external index, comparing differently typed cochains by cast or HEq, using existential orbit extent as the witness correspondence, storing caller-supplied cochain equalities, proving only a named-fixture map, claiming a full-orbit map or selector]
+  unchecked: [UpperStageExchangeExact pointwise companion iff, K4 final premise proof-use axiom and nonvacuity audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: Canonical-authored and generated restricted-point structures each retain an actual solution, base reselection, pulled reselection, and native full four-conjunct paired proof. Forward and backward constructors transport all three data fields, and the existing solution and reselection inverse laws prove equality of the complete structures in both directions. Endpoint conjugation is lifted coordinatewise to base and pulled UpperDefectCochain MulEquivs. The two raw-cochain projections commute as whole dependent-function equalities with restricted-point transport. Existing paired suborbit membership is then produced from the transported same witness. The named canonical companion and named generated comparator pair are packaged as points, proved to correspond under the point Equiv, and specialized to componentwise cochain agreement and paired generated-suborbit membership.
+  lean_artifacts: [UpperGeometryCompatibleProblemInputData.CanonicalAuthoredPairedRestrictedPoint, UpperGeometryCompatibleProblemInputData.GeneratedPairedRestrictedPoint, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPointForward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPointBackward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPointBackward_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPointForward_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredGeneratedPairedRestrictedPointEquiv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredGeneratedBaseUpperDefectCochainMulEquiv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredGeneratedPulledUpperDefectCochainMulEquiv, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPoint_baseCochain_forward_eq, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPairedRestrictedPoint_pulledCochain_forward_eq, UpperGeometryCompatibleProblemInputData.CanonicalAuthoredPairedRestrictedPoint.forward_mem_pairedRestrictedOrbit, UpperDecisionWitness.generatedComparatorPairedRestrictedPoint, UpperDecisionWitness.canonicalCompanionComparatorPairedRestrictedPoint, UpperDecisionWitness.canonicalCompanionComparatorPairedRestrictedPoint_forward, UpperDecisionWitness.canonicalCompanionComparatorPairedRestrictedPoint_baseCochain_forward, UpperDecisionWitness.canonicalCompanionComparatorPairedRestrictedPoint_pulledCochain_forward, UpperDecisionWitness.canonicalCompanionComparatorPairedRestrictedPoint_forward_mem]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredPairedRestrictedPoint.lean: 05df6890e4a92cc2df78372c24aa89b4e15dfe3c2855c507ea47e0b6124f0a6d
+    UpperGeometryCanonicalAuthoredPairedRestrictedOrbitTransport.lean: b3c357f9740410d71c2747055f0c56417d9d5b1b2e896a476c632fccfd7059e7
+  evidence: [two focused Lean single-file checks, standard-axiom audits, two targeted dependency-DAG builds ending at 4161 and 4162 jobs, official focused research-module checker, aggregate and manifest registration]
+  claim_mapping:
+    theorem_names: [canonicalAuthoredPairedRestrictedPointBackward_forward, canonicalAuthoredPairedRestrictedPointForward_backward, canonicalAuthoredGeneratedPairedRestrictedPointEquiv, canonicalAuthoredPairedRestrictedPoint_baseCochain_forward_eq, canonicalAuthoredPairedRestrictedPoint_pulledCochain_forward_eq, CanonicalAuthoredPairedRestrictedPoint.forward_mem_pairedRestrictedOrbit, canonicalCompanionComparatorPairedRestrictedPoint_forward, canonicalCompanionComparatorPairedRestrictedPoint_baseCochain_forward, canonicalCompanionComparatorPairedRestrictedPoint_pulledCochain_forward, canonicalCompanionComparatorPairedRestrictedPoint_forward_mem]
+    source_labels: [revision 8 clause c actual paired orbit intertwining, target proof strategy K3 restricted reselection equivalence, target material premise paired cochain and restricted orbit theorem]
+    conjuncts: [solution-bearing restricted point, base and pulled witness retention, native four-conjunct paired proof retention, forward and backward point transport, both point inverse laws, whole base and pulled cochain conjugation, same-witness paired suborbit preservation, named canonical companion cochain and suborbit firing]
+    undischarged_assumptions: [UpperStageExchangeExact companion iff, final K4 audit and completion packet]
+    acceptance_point: The primary Equiv acts on structures retaining the solution and both reselections; cochain equality is stated under an explicit coordinatewise MulEquiv and suborbit membership is a theorem from the transported shared witness. No cast, HEq, existential-only correspondence, input certificate, or full-orbit map is used.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [witness-bearing total restricted-point structures, transport of solution and both reselections, full-paired proof transport, both complete point inverse laws, base and pulled whole-cochain transport, same-witness paired suborbit preservation, named companion point correspondence and componentwise cochain agreement]
+    remaining: [UpperStageExchangeExact pointwise companion iff, K4 final audit and lifecycle completion]
+  certificate_provenance:
+    discharged: [point solution transport comes from the Cycle 62 Equiv, point base and pulled transports and inverse laws come from Cycle 74, point paired fields come from Cycle 79 fieldwise transport, whole cochain maps come from Cycle 73 endpoint isomorphisms and Cycle 75 conjugation MulEquiv, cochain commutation comes from Cycle 77 actual raw-cochain theorems, named point fields come from the theorem-generated solution and Cycle 79 canonical companion pair]
+    unresolved: [pointwise IsIso companion equivalence and final audit]
+  proof_use:
+    used: [canonicalSolutionForward and generatedSolutionBackward, both solution inverse laws, base and pulled reselection forward backward and inverse laws, full paired forward and backward transport, exact endpoint comparison isomorphisms at every two-cell target, actual raw defect cochains, existing paired restricted-orbit constructor]
+    unused: [existential membership as the primary equivalence, caller-supplied cochain equality, casts, HEq, proof-irrelevant cochain identification, full InUpperReselectionOrbit equality, Set.MapsTo, selector, G-112 selected-domain isomorphism]
+  structure_field_escape: none-found; the point stores only the actual solution reselections and already required native paired proof, while cochains and orbit memberships remain theorem-generated projections
+  route_integrity: pass; base and pulled witnesses and endpoint conjugations remain separate, and every cochain coordinate is transported at its actual two-cell target
+  predecessor_integrity: pass; fixed revision 8 and merged Cycles 62 73 74 75 77 and 79 are consumed without reinterpretation
+  target_fitting: none-found; the total point Equiv precedes and generates the existential suborbit theorem
+  vacuity: pass; the named point uses the previously proved nonidentity generated base reselection and its canonical companion, and the generic Equiv quantifies over every actual restricted point
+  one_way_as_equivalence: none-found; explicit forward and backward point constructors have both complete-structure inverse laws
+  goal_or_report_reinterpretation: none-found; exchange exactness and final K4 remain explicit and status stays target-proof-checkpoint
+  validation_refs: [`lake env lean` passed separately for both modules and reported standard axioms only; targeted builds completed the direct dependency DAG at 4161 and 4162 jobs; `check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedOrbitTransport.lean` passed; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Define UpperStageExchangeExact on generated solutions, prove at every vertex that exact endpoint conjugation preserves and reflects IsIso for an arbitrary generated solution and its actual backward companion, specialize to the named canonical companion, and then run the final K4 completion audit.
 ```
