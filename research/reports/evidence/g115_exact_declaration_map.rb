@@ -11,6 +11,8 @@ report = File.read(report_path)
 occurrences = []
 all_targets = []
 cycle_records = []
+claim_records = []
+provenance_records = []
 
 sections = report.split(/^## Cycle /).drop(1)
 expected_cycles = (1..83).to_a - [28, 65]
@@ -47,6 +49,34 @@ accepted_sections.each do |section|
     warn "invalid lean_artifacts cycle=#{cycle} #{invalid_artifacts.join('|')}"
     exit 1
   end
+  section.scan(/^    (theorem_names|principal_theorem_names): \[(.*)\]$/).each do |field, body|
+    entries = body.empty? ? [] : body.split(',', -1).map(&:strip)
+    invalid_claims = entries.reject do |name|
+      name.start_with?('planned ') || name.match?(/\A[A-Za-z_][A-Za-z0-9_'.]*\z/)
+    end
+    unless invalid_claims.empty?
+      warn "invalid #{field} cycle=#{cycle} #{invalid_claims.join('|')}"
+      exit 1
+    end
+    entries.each { |name| claim_records << [cycle, field, name] }
+  end
+  lines = section.lines
+  lines.each_with_index do |line, index|
+    match = line.match(/\A(\s+)(source_sha256|validation_refs):/)
+    next unless match
+
+    indent = match[1].length
+    block = [line.strip]
+    cursor = index + 1
+    while cursor < lines.length
+      child = lines[cursor]
+      break unless child.strip.empty? || child[/\A\s*/].length > indent
+
+      block << child.strip unless child.strip.empty?
+      cursor += 1
+    end
+    provenance_records << [cycle, match[2], block.join('|')]
+  end
   all_targets.concat(targets)
   artifacts.each { |name| occurrences << [cycle, name, targets] }
   cycle_records << [cycle, targets, artifacts]
@@ -65,6 +95,24 @@ unless manifest_sha256 == expected_manifest_sha256 &&
   warn "input manifest mismatch sha256=#{manifest_sha256} occurrences=#{occurrences.length} " \
     "identities=#{occurrences.map { |_cycle, name, _targets| name }.uniq.length} " \
     "targets=#{all_targets.length}"
+  exit 1
+end
+claim_manifest = claim_records.map do |cycle, field, name|
+  "cycle=#{cycle}|field=#{field}|name=#{name}"
+end.join("\n")
+claim_manifest_sha256 = Digest::SHA256.hexdigest(claim_manifest)
+expected_claim_manifest_sha256 = '19ace3fad97e92c04fee690cf9a9ea6913157320158046055a68c04ae51eda30'
+unless claim_manifest_sha256 == expected_claim_manifest_sha256
+  warn "claim manifest mismatch sha256=#{claim_manifest_sha256} entries=#{claim_records.length}"
+  exit 1
+end
+provenance_manifest = provenance_records.map do |cycle, field, value|
+  "cycle=#{cycle}|field=#{field}|value=#{value}"
+end.join("\n")
+provenance_manifest_sha256 = Digest::SHA256.hexdigest(provenance_manifest)
+expected_provenance_manifest_sha256 = 'de6c74feeec5e51e1dcb266c3fdc696750d77339143c58024b6043d44633a661'
+unless provenance_manifest_sha256 == expected_provenance_manifest_sha256
+  warn "provenance manifest mismatch sha256=#{provenance_manifest_sha256} records=#{provenance_records.length}"
   exit 1
 end
 file_text = {}
@@ -180,7 +228,12 @@ def source_declarations(text)
   text.each_line do |line|
     code = line.sub(/--.*$/, '')
     stripped = code.strip.sub(/\A(?:@\[[^\]]*\]\s*)+/, '')
-    stripped = stripped.sub(/\A(?:(?:noncomputable|private|protected|local|scoped|partial|unsafe)\s+)+/, '')
+    modifiers = []
+    while (modifier = stripped.match(/\A(noncomputable|private|protected|local|scoped|partial|unsafe)\s+/))
+      modifiers << modifier[1]
+      stripped = stripped.delete_prefix(modifier[0])
+    end
+    declaration_kind = ->(base) { (modifiers + [base]).join('_') }
 
     if (match = stripped.match(/\Anamespace\s+([A-Za-z_][A-Za-z0-9_'.]*)\z/))
       scope << [:namespace, match[1]]
@@ -208,7 +261,7 @@ def source_declarations(text)
     namespace = scope.filter_map { |kind, name| name if kind == :namespace }.join('.')
     if (match = stripped.match(/\A(?:structure|class)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
       declared = [namespace, match[1]].reject(&:empty?).join('.')
-      kind = stripped.start_with?('class') ? 'class' : 'structure'
+      kind = declaration_kind.call(stripped.start_with?('class') ? 'class' : 'structure')
       declarations << [declared, kind]
       structure_scope = declared
       inductive_scope = nil
@@ -216,7 +269,7 @@ def source_declarations(text)
     end
     if (match = stripped.match(/\Ainductive\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
       declared = [namespace, match[1]].reject(&:empty?).join('.')
-      declarations << [declared, 'inductive']
+      declarations << [declared, declaration_kind.call('inductive')]
       structure_scope = nil
       inductive_scope = declared
       next
@@ -226,14 +279,17 @@ def source_declarations(text)
       next
     end
     if (match = stripped.match(/\A(?:def|abbrev|theorem|lemma|opaque|axiom|constant)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
-      kind = stripped[/\A([A-Za-z]+)/, 1]
+      kind = declaration_kind.call(stripped[/\A([A-Za-z]+)/, 1])
       declarations << [[namespace, match[1]].reject(&:empty?).join('.'), kind]
       structure_scope = nil
       inductive_scope = nil
       next
     end
     if (match = stripped.match(/\Ainstance\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
-      declarations << [[namespace, match[1]].reject(&:empty?).join('.'), 'instance']
+      declarations << [
+        [namespace, match[1]].reject(&:empty?).join('.'),
+        declaration_kind.call('instance')
+      ]
       structure_scope = nil
       inductive_scope = nil
       next
@@ -285,7 +341,7 @@ unless source_declarations(lexer_probe) == [
     ['AAT.AG.DoctrineFiberProduct.probeRaw', 'def'],
     ['AAT.AG.DoctrineFiberProduct.RealProbe', 'theorem'],
     ['AAT.AG.DoctrineFiberProduct.RealAxiom', 'axiom'],
-    ['AAT.AG.DoctrineFiberProduct.RealLocalInstance', 'instance'],
+    ['AAT.AG.DoctrineFiberProduct.RealLocalInstance', 'local_instance'],
     ['AAT.AG.DoctrineFiberProduct.RealInductive', 'inductive'],
     ['AAT.AG.DoctrineFiberProduct.RealInductive.actual', 'constructor']
   ]
@@ -374,9 +430,30 @@ resolved_manifest = resolved_occurrences.map do |cycle, report_name, identity, k
   "cycle=#{cycle}|report=#{report_name}|identity=#{identity}|kind=#{kind}|module=#{path}"
 end.join("\n")
 resolved_manifest_sha256 = Digest::SHA256.hexdigest(resolved_manifest)
-expected_resolved_manifest_sha256 = '018da6091b9f0754fece7204de0e8bcdff684ed2f4862d1c0bfa8022d7fa8d31'
+expected_resolved_manifest_sha256 = '274037f43519768ca7cc5b7e5df733e4da6f5530358708be27a74abfc50ddebe'
 unless resolved_manifest_sha256 == expected_resolved_manifest_sha256
   warn "resolved manifest mismatch sha256=#{resolved_manifest_sha256}"
+  exit 1
+end
+claim_resolutions = claim_records.filter_map do |cycle, field, name|
+  next if name.start_with?('planned ')
+
+  matches = resolved.keys.select do |identity|
+    identity == name || identity.end_with?(".#{name}")
+  end
+  unless matches.length == 1
+    warn "CLAIM_RESOLUTION cycle=#{cycle} field=#{field} name=#{name} matches=#{matches.join('|')}"
+    exit 1
+  end
+  [cycle, field, name, matches.first]
+end
+claim_resolution_manifest = claim_resolutions.map do |cycle, field, name, identity|
+  "cycle=#{cycle}|field=#{field}|name=#{name}|identity=#{identity}"
+end.join("\n")
+claim_resolution_manifest_sha256 = Digest::SHA256.hexdigest(claim_resolution_manifest)
+expected_claim_resolution_manifest_sha256 = 'e4444c10f8a2ffc0be62f93565384a75d0e71029519b0c30f95814d7d932216c'
+unless claim_resolution_manifest_sha256 == expected_claim_resolution_manifest_sha256
+  warn "claim resolution manifest mismatch sha256=#{claim_resolution_manifest_sha256}"
   exit 1
 end
 
@@ -389,10 +466,14 @@ output << "artifact_semantics: canonical_source_declaration_identities_from_acce
 output << "identity_root: #{ROOT_NAMESPACE}"
 output << "identity_resolution: cycle_local_qualified_suffix_with_locked_canonical_identity_module_and_declaration_kind"
 output << "identity_kind_manifest_sha256: #{resolved_manifest_sha256}"
+output << "claim_manifest_sha256: #{claim_manifest_sha256}"
+output << "claim_resolution_manifest_sha256: #{claim_resolution_manifest_sha256}"
+output << "acceptance_provenance_manifest_sha256: #{provenance_manifest_sha256}"
 output << "source_lexer: nested_block_comment_line_comment_escaped_string_multiline_string_raw_string_syntax_quotation_and_escaped_identifier_fail_closed"
 output << "input_manifest_sha256: #{manifest_sha256}"
-output << "verification_scope: source_identity_and_same_byte_snapshot_module_hash"
-output << "lean_acceptance_provenance: per_cycle_single_file_focused_evidence_in_report"
+output << "verification_scope: source_identity_kind_claim_and_reported_acceptance_provenance_with_same_byte_snapshot_module_hash"
+output << "head_oid_binding: deferred_to_schema_complete_same_head_final_packet"
+output << "lean_acceptance_provenance: source_sha256_and_validation_refs_projection_hash_locked_for_accepted_cycles"
 output << "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 output << "module_hash: sha256_of_same_in_memory_source_bytes_used_for_identity_resolution"
 output << "generator: research/reports/evidence/g115_exact_declaration_map.rb"
