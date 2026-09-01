@@ -2,8 +2,9 @@ require 'digest'
 
 report_path = ARGV.fetch(0)
 repo_root = ARGV.fetch(1)
-part_index = (ARGV[2] || '1').to_i
-part_count = (ARGV[3] || '1').to_i
+output_mode = ARGV[2] == '--lean-audit' ? :lean_audit : :map
+part_index = output_mode == :map ? (ARGV[2] || '1').to_i : 1
+part_count = output_mode == :map ? (ARGV[3] || '1').to_i : 1
 report = File.read(report_path)
 
 occurrences = []
@@ -31,14 +32,62 @@ all_targets.uniq!
 file_text = {}
 all_targets.each { |path| file_text[path] = File.read(File.join(repo_root, path)) }
 
-def declaration_score(text, local)
-  escaped = Regexp.escape(local)
-  patterns = [
-    /(?:structure|class|def|abbrev|theorem|lemma|instance)\s+(?:[A-Za-z0-9_'.]+\.)?#{escaped}\b/m,
-    /^\s*#{escaped}\s*:/m,
-    /(?:structure|class|def|abbrev|theorem|lemma|instance)\s*\n\s*(?:[A-Za-z0-9_'.]+\.)?#{escaped}\b/m
-  ]
-  patterns.each_with_index.sum { |pattern, index| text.match?(pattern) ? (3 - index) : 0 }
+ROOT_NAMESPACE = 'AAT.AG.DoctrineFiberProduct'
+
+def source_declarations(text)
+  text = text.gsub(/\/-.*?-\//m, '')
+  scope = []
+  declarations = []
+  structure_scope = nil
+
+  text.each_line do |line|
+    code = line.sub(/--.*$/, '')
+    stripped = code.strip.sub(/\A(?:@\[[^\]]*\]\s*)+/, '')
+    stripped = stripped.sub(/\A(?:(?:noncomputable|private|protected)\s+)+/, '')
+
+    if (match = stripped.match(/\Anamespace\s+([A-Za-z_][A-Za-z0-9_'.]*)\z/))
+      scope << [:namespace, match[1]]
+      structure_scope = nil
+      next
+    elsif stripped.match?(/\A(?:section|noncomputable section)(?:\s+[A-Za-z_][A-Za-z0-9_']*)?\z/)
+      scope << [:section, nil]
+      structure_scope = nil
+      next
+    elsif stripped.match?(/\Aend(?:\s+[A-Za-z_][A-Za-z0-9_'.]*)?\z/)
+      scope.pop
+      structure_scope = nil
+      next
+    end
+
+    namespace = scope.filter_map { |kind, name| name if kind == :namespace }.join('.')
+    if (match = stripped.match(/\A(?:structure|class)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
+      declared = [namespace, match[1]].reject(&:empty?).join('.')
+      declarations << declared
+      structure_scope = declared
+      next
+    end
+    if (match = stripped.match(/\A(?:def|abbrev|theorem|lemma|opaque)\s+([A-Za-z_][A-Za-z0-9_'.]*)\b/))
+      declarations << [namespace, match[1]].reject(&:empty?).join('.')
+      structure_scope = nil
+      next
+    end
+    if structure_scope && (match = line.match(/\A\s{2,}([A-Za-z_][A-Za-z0-9_']*)\s*:/))
+      declarations << "#{structure_scope}.#{match[1]}"
+    elsif !line.match?(/\A\s/) && !stripped.empty?
+      structure_scope = nil
+    end
+  end
+
+  declarations.uniq
+end
+
+def relative_identity(name)
+  prefix = "#{ROOT_NAMESPACE}."
+  name.start_with?(prefix) ? name.delete_prefix(prefix) : name
+end
+
+file_declarations = file_text.transform_values do |text|
+  source_declarations(text).map { |name| relative_identity(name) }
 end
 
 resolved = {}
@@ -46,43 +95,54 @@ unresolved = []
 ambiguous = []
 
 occurrences.each do |cycle, name, targets|
-  next if resolved.key?(name)
-  local = name.split('.').last
-  candidates = targets.select { |path| file_text[path]&.include?(local) }
-  candidates = all_targets.select { |path| file_text[path]&.include?(local) } if candidates.empty?
-  scored = candidates.map { |path| [path, declaration_score(file_text[path], local)] }
-  max_score = scored.map(&:last).max || 0
-  best = scored.select { |_path, score| score == max_score && score > 0 }.map(&:first)
-  if best.length == 1
-    resolved[name] = best.first
-  elsif candidates.length == 1
-    resolved[name] = candidates.first
-  elsif best.empty?
+  matches = targets.flat_map do |path|
+    file_declarations.fetch(path).filter_map do |identity|
+      [identity, path] if identity == name || identity.end_with?(".#{name}")
+    end
+  end
+  if matches.empty?
+    matches = all_targets.flat_map do |path|
+      file_declarations.fetch(path).filter_map do |identity|
+        [identity, path] if identity == name || identity.end_with?(".#{name}")
+      end
+    end
+  end
+  matches.uniq!
+  if matches.length == 1
+    identity, path = matches.first
+    resolved[identity] = path
+  elsif matches.empty?
     unresolved << [cycle, name, targets]
   else
-    # Prefer a file assigned to the same cycle; if still tied, leave fail-closed.
-    same_cycle = best & targets
-    if same_cycle.length == 1
-      resolved[name] = same_cycle.first
-    else
-      ambiguous << [cycle, name, best]
-    end
+    ambiguous << [cycle, name, matches.map { |identity, path| "#{identity}@#{path}" }]
   end
 end
 
-{
-  'UpperGeometryCompatibleProblemInputData.CanonicalAuthoredPairedRestrictedPoint' =>
-    'research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedPoint.lean',
-  'UpperGeometryCompatibleProblemInputData.GeneratedPairedRestrictedPoint' =>
-    'research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredPairedRestrictedPoint.lean'
-}.each do |name, path|
-  resolved[name] = path
-  ambiguous.reject! { |_cycle, ambiguous_name, _paths| ambiguous_name == name }
+unless unresolved.empty? && ambiguous.empty?
+  unresolved.each do |cycle, name, targets|
+    warn "UNRESOLVED cycle=#{cycle} #{name} targets=#{targets.join('|')}"
+  end
+  ambiguous.each do |cycle, name, matches|
+    warn "AMBIGUOUS cycle=#{cycle} #{name} matches=#{matches.join('|')}"
+  end
+  exit 1
+end
+
+if output_mode == :lean_audit
+  all_targets.sort.each do |path|
+    module_name = path.delete_prefix('research/lean/').delete_suffix('.lean').tr('/', '.')
+    puts "import #{module_name}"
+  end
+  puts
+  resolved.keys.sort.each { |name| puts "#check #{ROOT_NAMESPACE}.#{name}" }
+  exit
 end
 
 puts "map_type: g115_exact_declaration_map"
 puts "goal_revision: 9"
-puts "artifact_semantics: unique_current_declaration_identities_from_accepted_cycles_1_through_83"
+puts "artifact_semantics: canonical_namespace_qualified_current_declaration_identities_from_accepted_cycles_1_through_83"
+puts "identity_root: #{ROOT_NAMESPACE}"
+puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix_then_focused_lean_check"
 puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 puts "module_hash: sha256_of_current_worktree_file_content"
 puts "generator: research/reports/evidence/g115_exact_declaration_map.rb"
@@ -93,7 +153,7 @@ puts "# resolved=#{resolved.length}"
 puts "# unresolved=#{unresolved.length}"
 unresolved.each { |cycle, name, targets| puts "# UNRESOLVED cycle=#{cycle} #{name} targets=#{targets.join('|')}" }
 puts "# ambiguous=#{ambiguous.length}"
-ambiguous.each { |cycle, name, paths| puts "# AMBIGUOUS cycle=#{cycle} #{name} paths=#{paths.join('|')}" }
+ambiguous.each { |cycle, name, matches| puts "# AMBIGUOUS cycle=#{cycle} #{name} matches=#{matches.join('|')}" }
 puts "# ---MAP---"
 
 grouped = Hash.new { |hash, key| hash[key] = [] }

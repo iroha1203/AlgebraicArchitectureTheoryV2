@@ -4707,11 +4707,11 @@ result:
     UpperGeometryExchangeExactness.lean: 0fb1f37bce1972472b6c0021d89eb1f6dcd9a5be659358bd338607790b65385f
   exact_declaration_map:
     path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
-    sha256: 66f6b605883a6e05d823f785293be09d6aa8c8a2d9b90edd3398a092383cb6c8
+    sha256: 9abcfdcb4c92956f2fec29c992fc8d2d3da51bf201f4b280bb8ffb5a235bb4b9
     generator: research/reports/evidence/g115_exact_declaration_map.rb
-    generator_sha256: 3741770c6d40cb004485b5978a3b6341d2b7b953df7bfc23998f199973a71d6b
+    generator_sha256: 963cb1a12e43bb41d1d35c24c6f896bd3d2cf8824119703168e0169d3a59a172
     counts: {artifacts: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0}
-  evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, exact module-scoped and collision-disambiguated 1025-declaration map reproduction, git diff check, hidden and bidirectional Unicode scan]
+  evidence: [focused Lean check of UpperGeometryCompatibleSolutionEquivalence with 43 declarations under standard axioms only, focused Lean check of UpperGeometryExchangeExactness with five declarations under standard axioms only, source-field literal proof-use scan, canonical namespace-qualified 1025-declaration map reproduction and focused Lean identity check, git diff check, hidden and bidirectional Unicode scan]
   claim_mapping:
     theorem_names: [generatedSolutionBackwardAt_coefficient_id, generatedSolutionBackwardAt_path_naturality_of_generated, generatedSolutionBackwardAt_nil_naturality, generatedSolutionBackwardAt_append_naturality, generatedSolutionBackwardAt_authored_twoCell_pasting, generatedSolutionBackward, generatedComponent_isIso_iff_backwardCompanion]
     source_labels: [revision 9 clause d actual companion fieldwise equation transport, target completion criteria, UpperStageExchangeExact companion iff material premise]
@@ -4741,5 +4741,61 @@ audits:
     - "lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryExchangeExactness.lean passed with five declarations under standard axioms only"
     - "Research aggregate and full build were not run"
   blocking_findings: []
-  next_obligation: Bind the exact module-scoped and collision-disambiguated 1025-declaration map to one fixed head, publish a schema-complete replacement packet, run four wholly fresh completion lanes, post the formal ledger, require green CI, merge PR #4338, then synchronize GOAL report registry and Issue #4250 while leaving the tracking Issue open.
+  next_obligation: Bind the canonical namespace-qualified 1025-declaration map to one fixed head, publish a schema-complete replacement packet, run four wholly fresh completion lanes, post the formal ledger, require green CI, merge PR #4338, then synchronize GOAL report registry and Issue #4250 while leaving the tracking Issue open.
+```
+
+## Cycle 84 — fail-closed canonical declaration identity audit
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 84
+goal_blob_sha: b7464686088f8fb314ed1cfb660d0fcc41685217
+goal_sha256: 2bbf3cda6e85fe44cd6c9140f88a2c065b19a81145591c2f18fd97653a373251
+base_oid: 65b8ca88a44dc185d31e01d8b2b9ef08742ad70a
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: The first revision-9 final completion review rejected the declaration evidence because the generator matched only the final local token and accepted a fabricated namespace prefix.
+  proof_obligation: Make declaration resolution fail closed on canonical namespace-qualified identities, remove unchecked manual overrides, and independently elaborate every mapped identity at the fixed source snapshot.
+  selection_reason: K4 requires declaration-level completeness and proof-use evidence. Byte-exact reproduction and module hashes do not establish identity correctness when a resolver accepts a bogus qualified name.
+  expected_result_type: target-proof-checkpoint
+  lean_targets: [the 80 explicitly enumerated modules in G-115-revision9-exact-declaration-map.yml]
+  risks: [continuing to match only local names, treating report abbreviations as canonical identities, retaining hard-coded exceptions, silently emitting a partial map, confusing targeted dependency construction with a Research aggregate build]
+  unchecked: [schema-complete fixed-head replacement packet, four wholly fresh completion lanes, completion ledger, CI merge and durable status synchronization]
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_state: target-proof-checkpoint
+  completion_candidate: yes
+  proof_obligation_delta: The generator now reconstructs each declaration's namespace stack from its defining source, canonicalizes identities relative to AAT.AG.DoctrineFiberProduct, accepts a report token only as an exact identity or exact qualified suffix, rejects unresolved or ambiguous identities with exit 1, and contains no manual resolution overrides. Its lean-audit mode imports the same 80 modules and emits a fully qualified #check for every one of the 1025 canonical identities. The original Bogus.Namespace mutation now fails unresolved, while the canonical audit elaborates successfully.
+  lean_artifacts: []
+  evidence_artifacts:
+    map:
+      path: research/reports/evidence/G-115-revision9-exact-declaration-map.yml
+      sha256: 9abcfdcb4c92956f2fec29c992fc8d2d3da51bf201f4b280bb8ffb5a235bb4b9
+      blob_sha: 5049ab65fdd195e270b0f3504f1598fef221aa85
+    generator:
+      path: research/reports/evidence/g115_exact_declaration_map.rb
+      sha256: 963cb1a12e43bb41d1d35c24c6f896bd3d2cf8824119703168e0169d3a59a172
+      blob_sha: 8d1069c7dfa2001bf9f6faffc009d540af13fc4d
+    generated_identity_audit_sha256: 0825579a629369c2760d63d4af8c697012be3e169c6ecf856bdb9f736552f742
+    identity_audit_output_sha256: 605c1208efaa6ee56fb870678dfe9ef3f9a13a09e441659402f4e9f1a9ec8151
+    counts: {accepted_artifact_occurrences: 1028, canonical_identities: 1025, modules: 80, resolved: 1025, unresolved: 0, ambiguous: 0, fully_qualified_lean_checks: 1025}
+  evidence: [byte-exact map regeneration, source namespace-stack identity resolution, fabricated namespace negative test with exit 1, "focused Lean elaboration of 1025 fully qualified #check commands", 80 explicit target module dependency construction, no Research aggregate or full build]
+audits:
+  declaration_identity: pass; all map identities are canonical relative to AAT.AG.DoctrineFiberProduct and independently accepted by Lean under that full root
+  negative_control: pass; replacing UpperDecisionWitness.upperStageExchangeExact_iff_canonicalCompanion by Bogus.Namespace.upperStageExchangeExact_iff_canonicalCompanion yields one unresolved identity and exit 1
+  manual_override: none
+  artifact_reproduction: pass; normal generator output is byte-identical to the committed two-document YAML artifact
+  module_hashes: pass; all 80 defining-module hashes remain bound to current content
+  route_integrity: unchanged from Cycle 83
+  target_fitting: none-found; this cycle repairs completion evidence and changes no theorem statement or proof
+  validation_refs:
+    - "ruby research/reports/evidence/g115_exact_declaration_map.rb research/reports/G-115-aat-upper-stage-lift.md . reproduced the committed map byte for byte"
+    - "the Bogus.Namespace negative-control report was rejected with exit 1"
+    - "ruby research/reports/evidence/g115_exact_declaration_map.rb research/reports/G-115-aat-upper-stage-lift.md . --lean-audit generated 1025 fully qualified checks over 80 explicit imports"
+    - "lake env lean /tmp/G115ExactDeclarationIdentityAudit.lean passed; output SHA-256 605c1208efaa6ee56fb870678dfe9ef3f9a13a09e441659402f4e9f1a9ec8151"
+    - "only the 80 map modules were explicit lake build targets to construct missing oleans; Research aggregate and full build were not run"
+  blocking_findings: []
+  next_obligation: Fix the Cycle 84 evidence to one new head, replace the schema-complete final packet, run four wholly fresh math-lean-review lanes, and only after four clean verdicts post the completion ledger and merge.
 ```
