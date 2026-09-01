@@ -244,10 +244,11 @@ unless unresolved.empty? && ambiguous.empty?
   exit 1
 end
 
-lean_audit_source = all_targets.sort.map do |path|
+module_names = all_targets.sort.map do |path|
   module_name = path.delete_prefix('research/lean/').delete_suffix('.lean').tr('/', '.')
-  "import #{module_name}"
-end.join("\n")
+  module_name
+end
+lean_audit_source = module_names.map { |module_name| "import #{module_name}" }.join("\n")
 lean_audit_source += "\n\n"
 lean_audit_source += resolved.keys.sort.map do |name|
   "#check #{ROOT_NAMESPACE}.#{name}"
@@ -261,13 +262,23 @@ end
 
 expected_lean_audit_output_sha256 =
   '605c1208efaa6ee56fb870678dfe9ef3f9a13a09e441659402f4e9f1a9ec8151'
+research_lean_root = File.join(repo_root, 'research/lean')
+targeted_build_output, targeted_build_status = Open3.capture2e(
+  'lake', 'build', *module_names,
+  chdir: research_lean_root
+)
+unless targeted_build_status.success?
+  warn targeted_build_output
+  warn "explicit 80-module source-to-olean build failed with exit #{targeted_build_status.exitstatus}"
+  exit 1
+end
 lean_audit_output = nil
 Tempfile.create(['G115ExactDeclarationIdentityAudit', '.lean']) do |audit_file|
   audit_file.write(lean_audit_source)
   audit_file.flush
   lean_audit_output, status = Open3.capture2e(
     'lake', 'env', 'lean', audit_file.path,
-    chdir: File.join(repo_root, 'research/lean')
+    chdir: research_lean_root
   )
   unless status.success?
     warn lean_audit_output
@@ -288,6 +299,7 @@ puts "identity_root: #{ROOT_NAMESPACE}"
 puts "identity_resolution: source_namespace_stack_and_exact_qualified_suffix_then_focused_lean_check"
 puts "source_lexer: nested_block_comment_line_comment_escaped_string_and_multiline_string_aware"
 puts "input_manifest_sha256: #{manifest_sha256}"
+puts "source_olean_binding: explicit_lake_build_of_all_80_mapped_modules_before_identity_audit"
 puts "lean_identity_audit_output_sha256: #{lean_audit_output_sha256}"
 puts "module_root: research/lean/ResearchLean/AG/DoctrineFiberProduct/"
 puts "module_hash: sha256_of_current_worktree_file_content"
