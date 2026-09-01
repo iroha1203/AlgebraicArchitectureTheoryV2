@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 76)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 77)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4333,4 +4333,62 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredReselectedPathTransport.lean` passed and reported eleven declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredReselectedPathTransport` completed the targeted dependency DAG successfully; the focused module checker passed; source hash was recomputed from the live file; module is registered after all direct predecessors in ResearchLean/AG/DoctrineFiberProduct.lean and research-modules.txt; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Use exact path transport together with the existing literal authored-comparator exact conjugation and Cycle 75 multiplicativity to prove canonical comparator and raw-defect cochain transport, then define the actual canonical four-conjunct paired relation and transport every conjunct fieldwise.
+```
+
+## Cycle 77 — literal comparator and raw-defect cochain transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 77
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 54aeb1829aa6fcf6f9e5d8b5dd7593ebda123717
+tracking_issue: 4250
+report_path: research/reports/G-115-aat-upper-stage-lift.md
+selection:
+  proof_state_ref: Revision 8 Cycle 76 is merged and supplies exact base and pulled reselected-path transport in both directions.
+  proof_dag_predecessors: [Cycle 73 literal authored comparator exact conjugation, Cycle 74 reselection Equiv and automorphism conjugation, Cycle 75 multiplicative conjugation, Cycle 76 exact reselected-path transport, upper canonical comparator factorization uniqueness]
+  proof_obligation: Transport the literal authored comparators, reselection-generated canonical comparators, and actual raw defect cochains between canonical-authored and generated routes in both directions.
+  selection_reason: The canonical four-conjunct paired relation must mention literal route comparators and actual raw cochains. Transporting only endpoint automorphisms or path factors would leave these material conjuncts unconnected.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredCochainTransport.lean]
+  risks: [replacing the literal authored comparator, assuming canonical comparator transport as a premise, transporting only raw-cochain coefficient maps, forgetting multiplication reversal in CompositeFiberAut homs, proving only the forward direction]
+  unchecked: [canonical four-conjunct paired relation, fieldwise paired relation iff, witness-bearing restricted point equivalence, companion cochains, exchange-exactness iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  proof_obligation_delta: A generic subgroup lemma turns an actual intertwining square into conjugation equality, and a category-level factorization lemma transports an endomorphism relating two parallel paths. The literal authored base and pulled comparators therefore conjugate to their generated comparators. Cycle 76 path transport and strong-factor uniqueness identify the reselection-generated canonical comparators. Cycle 75 MulEquiv preservation of multiplication and inverse then transports the actual raw defect cochain coordinates. All three layers are proved forward and backward for base and pulled routes.
+  completion_candidate: no
+  lean_artifacts: [CompositeFiberAut.conjugationEquiv_eq_of_intertwining, conjugatedFactorization, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteFixedComparator_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteFixedComparator_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseRouteFixedComparator_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledRouteFixedComparator_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseUpperCanonicalTwoCellComparator_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledUpperCanonicalTwoCellComparator_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseUpperCanonicalTwoCellComparator_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledUpperCanonicalTwoCellComparator_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseUpperRawDefectCochain_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledUpperRawDefectCochain_forward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredBaseUpperRawDefectCochain_backward, UpperGeometryCompatibleProblemInputData.canonicalAuthoredPulledUpperRawDefectCochain_backward]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredCochainTransport.lean: 6bb6e4c06bae27f9290e799db2794327d60a96dc920f7b930bd7150942ad3706
+  evidence: [focused Lean single-file check, fourteen declaration namespace standard-axiom audit, literal authored comparator equality, canonical comparator uniqueness proof, multiplicative raw-defect transport, two-sided transport laws]
+  claim_mapping:
+    theorem_names: [conjugationEquiv_eq_of_intertwining, conjugatedFactorization, canonicalAuthoredBaseRouteFixedComparator_forward, canonicalAuthoredPulledRouteFixedComparator_forward, canonicalAuthoredBaseRouteFixedComparator_backward, canonicalAuthoredPulledRouteFixedComparator_backward, canonicalAuthoredBaseUpperCanonicalTwoCellComparator_forward, canonicalAuthoredPulledUpperCanonicalTwoCellComparator_forward, canonicalAuthoredBaseUpperCanonicalTwoCellComparator_backward, canonicalAuthoredPulledUpperCanonicalTwoCellComparator_backward, canonicalAuthoredBaseUpperRawDefectCochain_forward, canonicalAuthoredPulledUpperRawDefectCochain_forward, canonicalAuthoredBaseUpperRawDefectCochain_backward, canonicalAuthoredPulledUpperRawDefectCochain_backward]
+    source_labels: [revision 8 clause c actual canonical companion relation, target proof strategy K3 exact relation transport]
+    conjuncts: [literal authored comparator transport, canonical reselected comparator transport, raw defect cochain transport, base pulled and both directions]
+    undischarged_assumptions: [canonical relation definition and fieldwise transport remain]
+    acceptance_point: Comparator statements retain the literal canonical-authored and generated objects, canonical comparators are derived from actual reselected path factorization, and raw defect equality is subgroup equality rather than coefficient-only equality.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [literal authored comparator transport in four route directions, canonical comparator transport in four route directions, raw defect cochain transport in four route directions]
+    remaining: [canonical full paired relation and fieldwise iff, restricted witness packet, companion cochains, exchange exactness, final K4 audit]
+  certificate_provenance:
+    discharged: [authored comparator equality consumes Cycle 73 exact conjugation, canonical comparator equality consumes both left and right Cycle 76 path laws plus canonical factorization and strong uniqueness, raw cochain equality consumes Cycle 75 map_mul and map_inv]
+    unresolved: [fieldwise transport of the four paired conjuncts and witness-bearing point]
+  proof_use:
+    used: [literal canonical-authored comparator wrappers, generated route comparators, exact endpoint isomorphisms, Cycle 76 base and pulled path naturality, upperCanonicalTwoCellComparator_fac, CompositeFiberAut.ext_of_strong_fac, Cycle 75 conjugation MulEquiv, reselection Equiv inverse laws]
+    deliberately_not_used: [caller-supplied comparator or cochain equality, replacement comparator, coefficient-only raw conclusion, refinement-only equality, cast, HEq, proof irrelevance as automorphism equality]
+  structure_field_escape: none-found; all fourteen declarations are theorems over existing route reselection comparator and cochain objects
+  route_integrity: pass; base and pulled objects remain separated and every conjugation occurs at the two-cell target
+  predecessor_integrity: pass; fixed revision 8 GOAL and merged Cycles 71 through 76 are unchanged
+  target_fitting: none-found; the actual comparator and cochain objects required by the canonical full relation now have two-sided transport laws
+  vacuity: pass; laws quantify over arbitrary coefficient-trivial reselections and arbitrary two-cells, with identity reselections available
+  one_way_as_equivalence: none-found; forward and backward laws are present at authored comparator canonical comparator and raw cochain levels
+  goal_or_report_reinterpretation: none-found; the canonical four-conjunct relation and witness packet remain explicit
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredCochainTransport.lean` passed and reported fourteen declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredCochainTransport` completed the targeted dependency DAG successfully; the focused module checker passed; source hash was recomputed from the live file; module is registered after all direct predecessors; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Define the canonical-authored endpoint, path-leg, literal-comparator, and actual raw-cochain four-conjunct relation, derive its native theorem family, and transport every conjunct fieldwise to prove the canonical/generated paired relation iff.
 ```
