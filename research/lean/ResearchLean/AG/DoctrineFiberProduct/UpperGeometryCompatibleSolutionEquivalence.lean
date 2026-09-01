@@ -593,14 +593,22 @@ theorem generatedSolutionBackwardAt_coefficient_id
     (input.generatedSolutionBackwardAt solution i).geometry.coefficientHom =
       RingHom.id k := by
   have h := congrArg (fun hom => hom.geometry.coefficientHom)
-    (input.generatedSolutionBackwardAt_triangle solution i)
+    (input.generatedSolutionBackwardAt_toRefinement solution i)
   change
-    (input.canonicalAuthoredPulledRouteGeometryHomAt i).geometry.coefficientHom.comp
-        (input.generatedSolutionBackwardAt solution i).geometry.coefficientHom =
-      (input.canonicalAuthoredBaseRouteGeometryHomAt i).geometry.coefficientHom at h
-  rw [input.canonicalAuthoredPulledRouteGeometryHomAt_coefficientHom,
-    input.canonicalAuthoredBaseRouteGeometryHomAt_coefficientHom] at h
-  simpa only [RingHom.id_comp] using h
+    (input.generatedSolutionBackwardAt solution i).geometry.coefficientHom =
+      (input.generatedSolutionBackwardRefinementAt solution i).geometry.coefficientHom at h
+  rw [h]
+  unfold generatedSolutionBackwardRefinementAt
+  change
+    ((input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt i).inv.geometry.coefficientHom.comp
+      (solution.component i).geometry.coefficientHom).comp
+        (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt i).hom.geometry.coefficientHom =
+      RingHom.id k
+  rw [input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_hom_coefficient_id,
+    input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_inv_coefficient_id,
+    solution.component_coefficient_id]
+  ext x
+  rfl
 
 /-- Backward endpoint conjugation preserves edge naturality. -/
 theorem generatedSolutionBackwardAt_edge_naturality
@@ -720,6 +728,191 @@ theorem generatedSolutionBackwardAt_comparator_intertwining
     _ = b ≫ s ≫ (p ≫ cp) := by rw [hpulled]
     _ = (b ≫ s ≫ p) ≫ cp := by simp only [Category.assoc]
 
+/-- Base endpoint comparison is natural on every path. -/
+theorem canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_path_naturality
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    {i j : P.Vertex} (path : P.Path i j) :
+    ((exactGeometryToRefinementGeometry U).map
+      (input.canonicalAuthoredBaseRoutePathLift path)) ≫
+        (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt j).hom =
+      (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt i).hom ≫
+        ((exactGeometryToRefinementGeometry U).map
+          (input.generatedBaseRouteLiftData.pathLift path)) := by
+  induction path with
+  | nil vertex =>
+      change
+        (exactGeometryToRefinementGeometry U).map (𝟙 _) ≫ _ =
+          _ ≫ (exactGeometryToRefinementGeometry U).map (𝟙 _)
+      rw [(exactGeometryToRefinementGeometry U).map_id,
+        (exactGeometryToRefinementGeometry U).map_id,
+        Category.id_comp, Category.comp_id]
+  | cons edge tail inductionHypothesis =>
+      rw [show input.canonicalAuthoredBaseRoutePathLift (.cons edge tail) =
+          (input.canonicalAuthoredBaseRouteGeometryEdge edge).comp
+            (input.canonicalAuthoredBaseRoutePathLift tail) from rfl,
+        show input.generatedBaseRouteLiftData.pathLift (.cons edge tail) =
+          (input.generatedBaseRouteGeometryEdge edge).comp
+            (input.generatedBaseRouteLiftData.pathLift tail) from rfl,
+        ]
+      change
+        (((exactGeometryToRefinementGeometry U).map
+          (input.canonicalAuthoredBaseRouteGeometryEdge edge)) ≫
+            ((exactGeometryToRefinementGeometry U).map
+              (input.canonicalAuthoredBaseRoutePathLift tail))) ≫ _ =
+          _ ≫ (((exactGeometryToRefinementGeometry U).map
+            (input.generatedBaseRouteGeometryEdge edge)) ≫
+              ((exactGeometryToRefinementGeometry U).map
+                (input.generatedBaseRouteLiftData.pathLift tail)))
+      calc
+        (_ ≫ _) ≫ _ = _ ≫ (_ ≫ _) := Category.assoc _ _ _
+        _ = _ ≫ (_ ≫ _) := congrArg _ inductionHypothesis
+        _ = (_ ≫ _) ≫ _ := (Category.assoc _ _ _).symm
+        _ = (_ ≫ _) ≫ _ := congrArg (fun hom => hom ≫ _)
+          (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_naturality edge)
+        _ = _ ≫ (_ ≫ _) := Category.assoc _ _ _
+
+/-- Pulled endpoint inverse comparison is natural on every path. -/
+theorem canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_path_naturality_inv
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    {i j : P.Vertex} (path : P.Path i j) :
+    ((exactGeometryToRefinementGeometry U).map
+      (input.generatedPulledRouteLiftData.pathLift path)) ≫
+        (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt j).inv =
+      (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt i).inv ≫
+        ((exactGeometryToRefinementGeometry U).map
+          (input.canonicalAuthoredPulledRoutePathLift path)) := by
+  induction path with
+  | nil vertex =>
+      change
+        (exactGeometryToRefinementGeometry U).map (𝟙 _) ≫ _ =
+          _ ≫ (exactGeometryToRefinementGeometry U).map (𝟙 _)
+      rw [(exactGeometryToRefinementGeometry U).map_id,
+        (exactGeometryToRefinementGeometry U).map_id,
+        Category.id_comp, Category.comp_id]
+  | cons edge tail inductionHypothesis =>
+      rw [show input.generatedPulledRouteLiftData.pathLift (.cons edge tail) =
+          (input.generatedPulledRouteGeometryEdge edge).comp
+            (input.generatedPulledRouteLiftData.pathLift tail) from rfl,
+        show input.canonicalAuthoredPulledRoutePathLift (.cons edge tail) =
+          (input.canonicalAuthoredPulledRouteGeometryEdge edge).comp
+            (input.canonicalAuthoredPulledRoutePathLift tail) from rfl,
+        ]
+      change
+        (((exactGeometryToRefinementGeometry U).map
+          (input.generatedPulledRouteGeometryEdge edge)) ≫
+            ((exactGeometryToRefinementGeometry U).map
+              (input.generatedPulledRouteLiftData.pathLift tail))) ≫ _ =
+          _ ≫ (((exactGeometryToRefinementGeometry U).map
+            (input.canonicalAuthoredPulledRouteGeometryEdge edge)) ≫
+              ((exactGeometryToRefinementGeometry U).map
+                (input.canonicalAuthoredPulledRoutePathLift tail)))
+      calc
+        (_ ≫ _) ≫ _ = _ ≫ (_ ≫ _) := Category.assoc _ _ _
+        _ = _ ≫ (_ ≫ _) := congrArg _ inductionHypothesis
+        _ = (_ ≫ _) ≫ _ := (Category.assoc _ _ _).symm
+        _ = (_ ≫ _) ≫ _ := congrArg (fun hom => hom ≫ _)
+          (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_naturality_inv edge)
+        _ = _ ≫ (_ ≫ _) := Category.assoc _ _ _
+
+/-- A generated path equation transports directly through the two endpoint
+comparisons to the canonical-authored path equation. -/
+theorem generatedSolutionBackwardAt_path_naturality_of_generated
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (solution : GeometryCompatibleUpperRefinementBCSolution input)
+    {i j : P.Vertex} (path : P.Path i j)
+    (hsolution :
+      (input.generatedBaseRouteLiftData.pathLift path).comp
+          (solution.component j) =
+        (solution.component i).comp
+          (input.generatedPulledRouteLiftData.pathLift path)) :
+    (input.canonicalAuthoredBaseRoutePathLift path).comp
+        (input.generatedSolutionBackwardAt solution j) =
+      (input.generatedSolutionBackwardAt solution i).comp
+        (input.canonicalAuthoredPulledRoutePathLift path) := by
+  apply (exactGeometryToRefinementGeometry U).map_injective
+  change
+    ((exactGeometryToRefinementGeometry U).map
+      (input.canonicalAuthoredBaseRoutePathLift path)) ≫
+        ((exactGeometryToRefinementGeometry U).map
+          (input.generatedSolutionBackwardAt solution j)) =
+      ((exactGeometryToRefinementGeometry U).map
+        (input.generatedSolutionBackwardAt solution i)) ≫
+        ((exactGeometryToRefinementGeometry U).map
+          (input.canonicalAuthoredPulledRoutePathLift path))
+  rw [input.generatedSolutionBackwardAt_toRefinement,
+    input.generatedSolutionBackwardAt_toRefinement]
+  unfold generatedSolutionBackwardRefinementAt
+  let cb := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredBaseRoutePathLift path)
+  let bi := (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt i).hom
+  let bj := (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt j).hom
+  let gb := (exactGeometryToRefinementGeometry U).map
+    (input.generatedBaseRouteLiftData.pathLift path)
+  let si := (exactGeometryToRefinementGeometry U).map (solution.component i)
+  let sj := (exactGeometryToRefinementGeometry U).map (solution.component j)
+  let gp := (exactGeometryToRefinementGeometry U).map
+    (input.generatedPulledRouteLiftData.pathLift path)
+  let pi := (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt i).inv
+  let pj := (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt j).inv
+  let cp := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredPulledRoutePathLift path)
+  have hbase :=
+    input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_path_naturality path
+  change cb ≫ bj = bi ≫ gb at hbase
+  have hmapped := congrArg (exactGeometryToRefinementGeometry U).map hsolution
+  change gb ≫ sj = si ≫ gp at hmapped
+  have hpulled :=
+    input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_path_naturality_inv path
+  change gp ≫ pj = pi ≫ cp at hpulled
+  change cb ≫ (bj ≫ sj ≫ pj) = (bi ≫ si ≫ pi) ≫ cp
+  calc
+    cb ≫ (bj ≫ sj ≫ pj) = ((cb ≫ bj) ≫ sj) ≫ pj := by
+      simp only [Category.assoc]
+    _ = ((bi ≫ gb) ≫ sj) ≫ pj := by rw [hbase]
+    _ = (bi ≫ (gb ≫ sj)) ≫ pj := by
+      exact congrArg (fun hom => hom ≫ pj) (Category.assoc bi gb sj)
+    _ = (bi ≫ (si ≫ gp)) ≫ pj := by rw [hmapped]
+    _ = bi ≫ si ≫ (gp ≫ pj) := by simp only [Category.assoc]
+    _ = bi ≫ si ≫ (pi ≫ cp) := by rw [hpulled]
+    _ = (bi ≫ si ≫ pi) ≫ cp := by simp only [Category.assoc]
+
+/-- Backward transport carries the source solution's retained nil equation
+directly to the canonical-authored nil equation. -/
+theorem generatedSolutionBackwardAt_nil_naturality
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (solution : GeometryCompatibleUpperRefinementBCSolution input)
+    (i : P.Vertex) :
+    (input.canonicalAuthoredBaseRoutePathLift (.nil i)).comp
+        (input.generatedSolutionBackwardAt solution i) =
+      (input.generatedSolutionBackwardAt solution i).comp
+        (input.canonicalAuthoredPulledRoutePathLift (.nil i)) := by
+  exact input.generatedSolutionBackwardAt_path_naturality_of_generated
+    solution (.nil i) (solution.nil_naturality i)
+
+/-- Backward transport carries each retained source append equation directly
+to the corresponding canonical-authored append equation. -/
+theorem generatedSolutionBackwardAt_append_naturality
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (solution : GeometryCompatibleUpperRefinementBCSolution input)
+    {i j l : P.Vertex} (first : P.Path i j) (second : P.Path j l) :
+    (input.canonicalAuthoredBaseRoutePathLift (first.append second)).comp
+        (input.generatedSolutionBackwardAt solution l) =
+      (input.generatedSolutionBackwardAt solution i).comp
+        (input.canonicalAuthoredPulledRoutePathLift
+          (first.append second)) := by
+  exact input.generatedSolutionBackwardAt_path_naturality_of_generated
+    solution (first.append second) (solution.append_naturality first second)
+
 /-- Backward transported components are natural on every canonical-authored
 path. -/
 theorem generatedSolutionBackwardAt_path_naturality
@@ -797,44 +990,97 @@ theorem generatedSolutionBackwardAt_authored_twoCell_pasting
       (input.generatedSolutionBackwardAt solution (P.twoSource cell)).comp
         ((input.canonicalAuthoredPulledRoutePathLift (P.twoLeft cell)).comp
           (input.canonicalAuthoredPulledRouteComparator cell)) := by
+  apply (exactGeometryToRefinementGeometry U).map_injective
+  change
+    ((((exactGeometryToRefinementGeometry U).map
+      (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell))) ≫
+        ((exactGeometryToRefinementGeometry U).map
+          (input.canonicalAuthoredBaseRouteComparator cell))) ≫
+      ((exactGeometryToRefinementGeometry U).map
+        (input.generatedSolutionBackwardAt solution (P.twoTarget cell)))) =
+    (((exactGeometryToRefinementGeometry U).map
+      (input.generatedSolutionBackwardAt solution (P.twoSource cell))) ≫
+        (((exactGeometryToRefinementGeometry U).map
+          (input.canonicalAuthoredPulledRoutePathLift (P.twoLeft cell))) ≫
+          ((exactGeometryToRefinementGeometry U).map
+            (input.canonicalAuthoredPulledRouteComparator cell))))
+  rw [input.generatedSolutionBackwardAt_toRefinement,
+    input.generatedSolutionBackwardAt_toRefinement]
+  unfold generatedSolutionBackwardRefinementAt
+  let cbp := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell))
+  let cbc := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredBaseRouteComparator cell)
+  let bs := (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt
+    (P.twoSource cell)).hom
+  let bt := (input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt
+    (P.twoTarget cell)).hom
+  let gbp := (exactGeometryToRefinementGeometry U).map
+    (input.generatedBaseRouteLiftData.pathLift (P.twoLeft cell))
+  let gbc := (exactGeometryToRefinementGeometry U).map
+    (CompositeFiberAut.hom (input.generatedBaseRouteComparator cell))
+  let ss := (exactGeometryToRefinementGeometry U).map
+    (solution.component (P.twoSource cell))
+  let st := (exactGeometryToRefinementGeometry U).map
+    (solution.component (P.twoTarget cell))
+  let gpp := (exactGeometryToRefinementGeometry U).map
+    (input.generatedPulledRouteLiftData.pathLift (P.twoLeft cell))
+  let gpc := (exactGeometryToRefinementGeometry U).map
+    (CompositeFiberAut.hom (input.generatedPulledRouteComparator cell))
+  let ps := (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt
+    (P.twoSource cell)).inv
+  let pt := (input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt
+    (P.twoTarget cell)).inv
+  let cpp := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredPulledRoutePathLift (P.twoLeft cell))
+  let cpc := (exactGeometryToRefinementGeometry U).map
+    (input.canonicalAuthoredPulledRouteComparator cell)
+  have hbasePath :=
+    input.canonicalAuthoredBaseToGeneratedRouteGeometryIsoAt_path_naturality
+      (P.twoLeft cell)
+  change cbp ≫ bt = bs ≫ gbp at hbasePath
+  have hbaseComparator :=
+    input.canonicalAuthoredBaseRouteComparator_conjugation cell
+  change cbc ≫ bt = bt ≫ gbc at hbaseComparator
+  have hbase : (cbp ≫ cbc) ≫ bt = bs ≫ (gbp ≫ gbc) := by
+    calc
+      (cbp ≫ cbc) ≫ bt = cbp ≫ (cbc ≫ bt) := Category.assoc _ _ _
+      _ = cbp ≫ (bt ≫ gbc) := by rw [hbaseComparator]
+      _ = (cbp ≫ bt) ≫ gbc := (Category.assoc _ _ _).symm
+      _ = (bs ≫ gbp) ≫ gbc := by rw [hbasePath]
+      _ = bs ≫ (gbp ≫ gbc) := Category.assoc _ _ _
+  have hsource := congrArg (exactGeometryToRefinementGeometry U).map
+    (solution.authored_twoCell_pasting cell)
+  change (gbp ≫ gbc) ≫ st = ss ≫ (gpp ≫ gpc) at hsource
+  have hpulledPath :=
+    input.canonicalAuthoredPulledToGeneratedRouteGeometryIsoAt_path_naturality_inv
+      (P.twoLeft cell)
+  change gpp ≫ pt = ps ≫ cpp at hpulledPath
+  have hpulledComparator :=
+    input.canonicalAuthoredPulledRouteComparator_conjugation_inv cell
+  change gpc ≫ pt = pt ≫ cpc at hpulledComparator
+  have hpulled : (gpp ≫ gpc) ≫ pt = ps ≫ (cpp ≫ cpc) := by
+    calc
+      (gpp ≫ gpc) ≫ pt = gpp ≫ (gpc ≫ pt) := Category.assoc _ _ _
+      _ = gpp ≫ (pt ≫ cpc) := by rw [hpulledComparator]
+      _ = (gpp ≫ pt) ≫ cpc := (Category.assoc _ _ _).symm
+      _ = (ps ≫ cpp) ≫ cpc := by rw [hpulledPath]
+      _ = ps ≫ (cpp ≫ cpc) := Category.assoc _ _ _
+  change (cbp ≫ cbc) ≫ (bt ≫ st ≫ pt) =
+    (bs ≫ ss ≫ ps) ≫ (cpp ≫ cpc)
   calc
-    _ = (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell)).comp
-        ((input.canonicalAuthoredBaseRouteComparator cell).comp
-          (input.generatedSolutionBackwardAt solution
-            (P.twoTarget cell))) := @Category.assoc
-      (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
-      _ _ _ _ (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell))
-      (input.canonicalAuthoredBaseRouteComparator cell)
-      (input.generatedSolutionBackwardAt solution (P.twoTarget cell))
-    _ = (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell)).comp
-        ((input.generatedSolutionBackwardAt solution
-          (P.twoTarget cell)).comp
-          (input.canonicalAuthoredPulledRouteComparator cell)) :=
-      congrArg _ (input.generatedSolutionBackwardAt_comparator_intertwining
-        solution cell)
-    _ = ((input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell)).comp
-          (input.generatedSolutionBackwardAt solution
-            (P.twoTarget cell))).comp
-        (input.canonicalAuthoredPulledRouteComparator cell) :=
-      (@Category.assoc
-        (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
-        _ _ _ _ (input.canonicalAuthoredBaseRoutePathLift (P.twoLeft cell))
-        (input.generatedSolutionBackwardAt solution (P.twoTarget cell))
-        (input.canonicalAuthoredPulledRouteComparator cell)).symm
-    _ = ((input.generatedSolutionBackwardAt solution
-          (P.twoSource cell)).comp
-          (input.canonicalAuthoredPulledRoutePathLift
-            (P.twoLeft cell))).comp
-        (input.canonicalAuthoredPulledRouteComparator cell) :=
-      congrArg (fun hom => hom.comp
-        (input.canonicalAuthoredPulledRouteComparator cell))
-        (input.generatedSolutionBackwardAt_path_naturality solution
-          (P.twoLeft cell))
-    _ = _ := @Category.assoc
-      (GeomReadCategory.{u, v} U) (geometryTotalCategory U)
-      _ _ _ _ (input.generatedSolutionBackwardAt solution (P.twoSource cell))
-      (input.canonicalAuthoredPulledRoutePathLift (P.twoLeft cell))
-      (input.canonicalAuthoredPulledRouteComparator cell)
+    (cbp ≫ cbc) ≫ (bt ≫ st ≫ pt) =
+        (((cbp ≫ cbc) ≫ bt) ≫ st) ≫ pt := by
+      simp only [Category.assoc]
+    _ = ((bs ≫ (gbp ≫ gbc)) ≫ st) ≫ pt := by rw [hbase]
+    _ = (bs ≫ ((gbp ≫ gbc) ≫ st)) ≫ pt := by
+      exact congrArg (fun hom => hom ≫ pt) (Category.assoc _ _ _)
+    _ = (bs ≫ (ss ≫ (gpp ≫ gpc))) ≫ pt := by rw [hsource]
+    _ = bs ≫ ss ≫ ((gpp ≫ gpc) ≫ pt) := by
+      simp only [Category.assoc]
+    _ = bs ≫ ss ≫ (ps ≫ (cpp ≫ cpc)) := by rw [hpulled]
+    _ = (bs ≫ ss ≫ ps) ≫ (cpp ≫ cpc) := by
+      simp only [Category.assoc]
 
 /-- Backward transport of an arbitrary generated compatible solution. -/
 noncomputable def generatedSolutionBackward
@@ -852,10 +1098,9 @@ noncomputable def generatedSolutionBackward
   comparator_intertwining :=
     input.generatedSolutionBackwardAt_comparator_intertwining solution
   nil_naturality i :=
-    input.generatedSolutionBackwardAt_path_naturality solution (.nil i)
+    input.generatedSolutionBackwardAt_nil_naturality solution i
   append_naturality first second :=
-    input.generatedSolutionBackwardAt_path_naturality solution
-      (first.append second)
+    input.generatedSolutionBackwardAt_append_naturality solution first second
   authored_twoCell_pasting :=
     input.generatedSolutionBackwardAt_authored_twoCell_pasting solution
 
