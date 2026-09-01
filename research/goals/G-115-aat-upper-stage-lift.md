@@ -1,7 +1,19 @@
 # G-115-aat-upper-stage-lift — geometry-refinement bridge と上段 BC contract
 
 - `id`: `G-115-aat-upper-stage-lift`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。Human-approved revision 9 の
+  fixed target clauses (a)–(d) を全放電（2026-09-01）。lax
+  geometry-refinement bridge、raw authored domainの一方向比較、
+  theorem-generated compatible locus上のroute / solution / reselection / actual
+  cochainの双方向transport、同一route/component上のcomparator-descent正負対、
+  actual canonical companionのcoefficient / nil / append / authored two-cell
+  fieldwise transport、pointwise `UpperStageExchangeExact` companion iffをLeanで
+  構成した。最終packetはPR #4338 `5491608369`、four-lane reviewは
+  `5491710694`、completion ledgerは`5491720139`、同PRはfixed head
+  `1e95d8fff48a9668851dafbb15fbff086ecb97d8`、CI 7/7でmerge
+  `cbae0b2e5ea99bf1b6ef34de8fa6d97418bf3f3a`。named actual solutionの
+  `IsIso` / `¬ IsIso` branch decisionはG-116 O12に残る。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: Gr4 完遂 gate 第三項(O10–O11)。義務台帳は G-116、
@@ -617,17 +629,7 @@
   - `target-theorem-proved`: 全artifact、comparator descent正負pair、監査、PR merge、台帳同期、final
     4査読を完了した場合だけ。
 
-- `stop reason`: なし(active)。revision 6 Cycle 63の`target-refuted`は、generated vertical
-  componentへlocal carrier非恒等性を要求したconjunctの反証として履歴固定した。人間承認revision 7は、
-  同じtheorem familyをcarrier-conservativity artifactへ昇格し、非退化発火をhorizontal edge /
-  comparator / derived cochainへ割り当てる。G-111〜G-114の完了済みstatementと、G-116 O12の
-  actual component `IsIso`判定責務は変更しない。revision 7 Cycle 65のraw no-solution routeは
-  actual contractへ接続しないためgoal-defectとして棄却し、人間承認revision 8のtyped comparator descentへ置換した。
-  final completion reviewのproof-use指摘は、人間承認revision 9の責務分離へ置換した。
-- `next action`: revision 9固定後のCycle 83で、canonical companion constructionの
-  `component_coefficient_id`、`nil_naturality`、`append_naturality`、
-  `authored_twoCell_pasting`がgenerated solutionの対応fieldを直接実消費するproof bodyへ修正し、
-  reportをrevision 9と新しい未放電 / 放電状態へ同期する。そのfocused check後、Cycle 81までの
-  累積実装を含む完全修飾declaration map、companion solution全fieldのproof-use、pointwise
-  exchange-exactness normalization / cancellation、premise / axiom / nonvacuityをK4 final packetで
-  再監査する。O12の`IsIso`責務は変えない。
+- `stop reason`: 完了（`target-theorem-proved`）。revision 9の全artifact、K4 final
+  packet、fixed-head監査、final four-lane review、PR merge、台帳同期を完了した。
+- `next action`: なし（G-115完了）。named actual solutionの`IsIso` / `¬ IsIso`
+  branch decisionはG-116 O12の別責務であり、本カードの残存義務ではない。
