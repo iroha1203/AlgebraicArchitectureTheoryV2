@@ -3,7 +3,7 @@
 - primary specification: [`research/goals/G-115-aat-upper-stage-lift.md`](../goals/G-115-aat-upper-stage-lift.md)
 - tracking Issue: [#4250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4250)
 - GOAL revision: 8 human-approved
-- proof state: `target-proof-checkpoint` (revision 8 Cycle 77)
+- proof state: `target-proof-checkpoint` (revision 8 Cycle 78)
 - completion candidate: no
 
 This report records incremental proof obligations against the current fixed
@@ -4391,4 +4391,45 @@ audits:
   validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredCochainTransport.lean` passed and reported fourteen declarations under AAT.AG.DoctrineFiberProduct standard axioms only; `lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCanonicalAuthoredCochainTransport` completed the targeted dependency DAG successfully; the focused module checker passed; source hash was recomputed from the live file; module is registered after all direct predecessors; Research aggregate and full build were not run]
   blocking_findings: []
   next_obligation: Define the canonical-authored endpoint, path-leg, literal-comparator, and actual raw-cochain four-conjunct relation, derive its native theorem family, and transport every conjunct fieldwise to prove the canonical/generated paired relation iff.
+```
+
+## Cycle 78 — native canonical-authored full paired relation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-115-aat-upper-stage-lift
+cycle: 78
+goal_blob_sha: 9bf5b5d9ffc209dd050a90e4e3aad7c4d8378961
+goal_sha256: 9a57647e18671e9903c695bea7276140172c0d59ce56e006cced8bd260a0dc38
+base_oid: 58b8707dc3102dcbbf280f345bea2f18c017652f
+tracking_issue: 4250
+selection:
+  proof_state_ref: Revision 8 Cycle 77 is merged and supplies two-sided exact path comparator and raw-cochain transport prerequisites.
+  proof_obligation: Define the canonical-authored full four-conjunct Gr4 paired relation directly on actual canonical route objects and derive its native closure theorem family.
+  selection_reason: A generated-relation pullback alias would erase the canonical path literal comparator and raw cochain from the statement. Fieldwise endpoint-conjugation preservation is isolated as the next category-cancellation layer.
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedReselection.lean]
+  unchecked: [fieldwise canonical/generated relation transport and iff, named nonidentity canonical companion pair, witness-bearing restricted point equivalence, companion cochains, exchange-exactness iff, K4 completion audit]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_state: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: A native transparent canonical-authored relation now conjoins endpoint intertwining, actual reselected path-leg triangle, literal authored-comparator pasting, and actual raw-cochain component coefficient triviality. Endpoint data theorem-generates edge and path naturality, the triangle, comparator pasting, and coefficient square; identity and pointwise multiplication preserve the relation. No definition refers to the generated full relation.
+  lean_artifacts: [CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining, canonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining_one, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.mul, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.reselectedEdge_naturality, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_naturality, CanonicalAuthoredReselectedPathLegTriangle, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.reselectedPath_legTriangle, CanonicalAuthoredReselectedAuthoredComparatorPasting, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.reselectedAuthoredComparator_pasting, CanonicalAuthoredRawCochainComponentCoefficientTrivial, CanonicalAuthoredPairedCoefficientTrivialUpperReselection, CanonicalAuthoredCoefficientTrivialUpperReselectionEndpointIntertwining.toPaired, canonicalAuthoredPairedCoefficientTrivialUpperReselection_one, CanonicalAuthoredPairedCoefficientTrivialUpperReselection.mul]
+  source_sha256:
+    UpperGeometryCanonicalAuthoredFullPairedReselection.lean: d98c60d3f76e73a36b09e9fb99e435b267d4ff42117a096628bf0facf706b923
+  evidence: [focused Lean single-file check, fourteen declaration standard-axiom audit, targeted dependency-DAG build, direct actual-object relation statements]
+audits:
+  premise_delta:
+    discharged: [native canonical endpoint relation, reselected edge and path naturality, path-leg triangle, literal comparator pasting, raw-cochain coefficient square, identity and multiplication closure]
+    remaining: [fieldwise paired relation transport and iff, named nonidentity canonical companion, restricted witness packet, companion cochains, exchange exactness, final K4 audit]
+  certificate_provenance: all consequence conjuncts are generated from canonical solution and actual route laws; no caller certificate is accepted
+  proof_use: [actual canonical base and pulled route lift data, canonical solution edge triangle comparator and coefficient laws, actual canonical raw defect cochains]
+  structure_field_escape: none-found
+  route_integrity: pass; base and pulled canonical-authored paths literal comparators and raw cochains remain separate actual objects
+  predecessor_integrity: pass; fixed revision 8 GOAL and merged Cycles 71 through 77 are unchanged
+  target_fitting: none-found; endpoint-conjugation equivalence is not claimed here
+  vacuity: partial; identity closure is proved and named nonidentity canonical firing remains explicit for Cycle 79
+  validation_refs: [`lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCanonicalAuthoredFullPairedReselection.lean` passed with fourteen declarations under standard axioms only; targeted module build completed 4156 jobs; Research aggregate and full build were not run]
+  blocking_findings: []
+  next_obligation: Prove route-specific forward and backward transport for each of the four source conjuncts without destination regeneration, derive the paired relation iff, and transport the named nonidentity generated pair to a canonical companion.
 ```
