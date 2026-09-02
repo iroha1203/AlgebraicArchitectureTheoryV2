@@ -8,14 +8,18 @@ statement を変更しない。目的は二つある。一つは、Issue #4341 �
 
 ## 要旨
 
-1. G-110 の generated comparison `β` は、二つの射の合成 `β = α ≫ E` に分かれる。`α` は
-   canonical mate で、可逆である。`E` は diagnostic が選んだ canonical normalization を
-   transport で運んだものである。finite axis-fold で `β` が同型にならないのは、exchange
-   が壊れたからではない。観測に見えない fiber の方向を `E` が潰しているからである。
-2. canonical normalization `N_P` は、configuration へ落としてから戻す写像 `s_P ∘ π_P`
-   である。固定点は `AtomConfiguration U` と一対一に対応する。`N_P` で値が変わらない
-   関数は、configuration を通って一意に分解する。これは n1001 の「AAT の結論は Atom 層を
-   通して factor する」というテーゼの、そのままの Lean 形である。
+1. G-110 の generated comparison `β` は、cell ごとに二つの射の合成 `β_c = α_c ≫ E_c` に
+   分かれる。`α` は canonical mate で、可逆である。`E_c` は、cell ごとに diagnostic が
+   選んだ射(firing かつ admissible なら canonical normalization、それ以外は恒等射)を
+   transport で運んだものである。この成分式は証明済み。finite axis-fold で `E_c` が
+   同型にならないことも証明済み。`β` 全体が同型でないことは、G-116 で固定する結論で
+   ある。`β` が同型にならないのは exchange が壊れたからではない。観測に見えない fiber
+   の方向を `E_c` が潰しているからである。
+2. object の水準の canonical normalization `n_P` は、configuration へ落としてから戻す
+   写像 `s_P ∘ π_P` である。固定点は `AtomConfiguration U` と一対一に対応する。`n_P` で
+   値が変わらない関数は、configuration を通って一意に分解する。これは normalization で
+   不変な関数についての局所的な命題で、n1001 の因子化テーゼ(AAT の結論は Atom 層を
+   通る)への橋は別の義務になる。
 3. exactness は三つの層に分かれる。raw(そのままの圏で `β` が同型か)、image(Karoubi
    の像の上で同型か)、observable(観測できる関数の上で `β` と `α` が一致するか)。raw で
    壊れても、image と observable では回復する。これが G-116 改訂の中心定理候補
@@ -58,14 +62,15 @@ statement を変更しない。目的は二つある。一つは、Issue #4341 �
   `DoctrineFiberProduct/UpperGeometryPairedCoefficientTrivialReselection`、
   `DoctrineFiberProduct/UpperGeometryFullPairedReselection`、
   `CrossStageCoherence/CorePseudofunctor`、`TransportCoherence/FinitePresentation`、
-  `StructuralCover/GeneratedH1Vanishing`、`AtomFoundation/Transport`
+  `StructuralCover/GeneratedH1Vanishing`、`AtomFoundation/Transport`、
+  `AtomFoundation/Categories`
 - `Formal/AG/ReadingFunctoriality/Core.lean`(`SignedExactCoreReadingHom` の
   `object_formation_eq` / `configuration_eq`)
 
 **上流考察ノート**:
 
-- [n1001](n1001_atom_is_all_you_need_discussion.md)(§3.5 達成階梯 Gr0–Gr4、
-  因子化テーゼ)
+- [n1001](n1001_atom_is_all_you_need_discussion.md)(§1 因子化テーゼ、§3.5 達成階梯
+  Gr0–Gr4)
 - [n1004](n1004_aat_denotational_semantics_of_architecture.md)(§10 SHIGURE)
 - [n1005](n1005_aat_semantic_geometry_route_after_g107.md)(§4.3 exchange-failure
   義務)
@@ -74,6 +79,22 @@ statement を変更しない。目的は二つある。一つは、Issue #4341 �
 
 **議論の記録**: Issue #4341(設計案、実査、高次化、研究プログラム案、合意の確定)。
 
+## 記号と証明の状態
+
+本ノートで使う記号を、型と証明の状態ごとに分けておく。
+
+| 記号 | 型 | 定義 | 状態 |
+|---|---|---|---|
+| `n_P` | `ArchitectureObject U → ArchitectureObject U` | `canonicalObjectNormalization P`。object の写像 | 冪等性は証明済み(`canonicalObjectNormalization_idempotent`) |
+| `N_P` | `P ⟶ P`(`PackageTotalHom`) | `canonicalObjectNormalizationTotal P adm`。package の射。underlying の object 写像は `n_P` | package の水準の冪等性 `N_P ≫ N_P = N_P` は未証明 |
+| `α` | natural transformation | `authoredSupportCanonicalMate`。canonical mate | 同型であることは証明済み |
+| `β` | natural transformation | `generatedAuthoredDiagnosticObjectCollapseComparison`。generated comparison | 成分式 `β_c = α_c ≫ E_c` は証明済み(`..._app`)。`β` 全体が同型でないことは未固定 |
+| `E_c` | 各 cell `c` での射 `V_c ⟶ V_c` | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`。選択子で選んだ射を transport したもの | finite axis-fold で firing cell では同型でない(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。global な `E : V ⟶ V` は名前付きの宣言がない |
+| `ν` | modification | G-117(候補)で作る、fiber を貫く自然な冪等射 | 未構成 |
+
+以下、`U(h)` で package の射 `h` の underlying の object 写像(`h.upper.objectMap`)を
+表す。
+
 ## §1 出発点 — 反例の形
 
 G-110 sector の authored lax square には、比較射が二本ある。
@@ -81,34 +102,34 @@ G-110 sector の authored lax square には、比較射が二本ある。
 - canonical mate `α : D ⟶ V`。`authoredSupportCanonicalMate` で作られ、同型であることが
   証明済み。
 - generated comparison `β : D ⟶ V`。`generatedAuthoredDiagnosticObjectCollapseComparison`
-  で作られる。成分ごとの式は `authoredDiagnosticObjectCollapseComparisonAtCochain_app` の
-  statement そのもので、`β = α ≫ E` である。
+  で作られる。cell ごとの式は `authoredDiagnosticObjectCollapseComparisonAtCochain_app` の
+  statement そのもので、`β_c = α_c ≫ E_c` である。
 
-`E` の成分は、southwest fiber で選ばれた endomorphism を transport functor
+`E_c` は、southwest fiber で選ばれた endomorphism を transport functor
 (`coreFiberTransportFunctor` から `selectedCoreFiberReindexFunctor`)で運んだものである。
 どの endomorphism を選ぶかは `authoredDiagnosticObjectCollapseComponentAtCochain` が
-決める。各 cell で、raw defect が `1` なら恒等射、`1` でなく admissible なら `N_P`、
-それ以外は恒等射を選ぶ。以下、raw defect が `1` でない cell を firing と呼ぶ。ここで
+決める。各 cell で、raw defect が `1` なら恒等射、`1` でなく admissible なら `N_P` の
+成分、それ以外は恒等射を選ぶ。以下、raw defect が `1` でない cell を firing と呼ぶ。
 
-```text
-N_P := canonicalObjectNormalizationTotal P adm : P ⟶ P
-```
-
-は admissible な support package `P` ごとの canonical normalization である。object map の
-水準で `N_P ∘ N_P = N_P`(`canonicalObjectNormalization_idempotent`)が証明済みである。
-admissible というのは、選んだ equation / operation / invariant / coordinate の各 reading が
-`x` と `N_P x` を区別しないこと(`CanonicalObjectNormalizationAdmissible P`)。
+`N_P := canonicalObjectNormalizationTotal P adm : P ⟶ P` は admissible な support package
+`P` ごとの canonical normalization で、underlying の object 写像が `n_P` である。admissible
+というのは、選んだ equation / operation / invariant / coordinate の各 reading が `x` と
+`n_P x` を区別しないこと(`CanonicalObjectNormalizationAdmissible P`)。
 
 finite axis-fold witness では、次が同時に成り立つ。
 
 | 事実 | 宣言 |
 |---|---|
 | 全 cell で admissible | `finiteAxisFold_canonicalNormalizationAdmissibleAt` |
-| `N_P` は同型でない(単射でない) | `finiteCanonicalObjectNormalizationTotal_not_isIso` |
-| transport 後の support component も同型でない | `finiteAxisFoldCanonicalNormalizationSupportComponent_not_isIso` |
+| `N_P` は同型でない(`n_P` が単射でない) | `finiteCanonicalObjectNormalizationTotal_not_isIso` |
+| support の側の normalization 成分は同型でない | `finiteAxisFoldCanonicalNormalizationSupportComponent_not_isIso` |
+| transport 後の `E_c` は firing cell で同型でない(前提 `cochain cell ≠ 1`) | `finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso` |
 | 公開関係の反証。reselection / replacement をしても変わらない | `finiteAxisFoldBCDatumSquare_not_mateCoherentRel`、`finiteAxisFold_reselectEdges_not_mateCoherentRel`、`finiteAxisFold_replacePresentation_not_mateCoherentRel` |
 | admissibility が空虚な条件でないことの対照例 | `auxiliarySensitiveCorePackage_not_admissible` |
 | presentation replacement に関する自然性 | `generatedAuthoredDiagnosticObjectCollapseComparison_replacement`、`mateCoherentRel_replacePresentation_iff` |
+
+`α_c` が同型で `E_c` が同型でないので、firing cell では `β_c` は同型でない。`β` 全体が
+同型でないことはここから従うが、名前付きの theorem はまだない(G-116 で固定する)。
 
 つまり、ここで見えた「同型でない」は、名前を付けて閉じる種類の反例ではない。比較射の
 ずれには二つの因子があり、性質がちょうど裏返しになっている。
@@ -121,9 +142,9 @@ finite axis-fold witness では、次が同時に成り立つ。
 | 分類上の扱い | canonical-post-iso twist は既知の系として数える | 本体。改訂 G-116 の対象 |
 
 反例が教えているのは、この分解である。可逆で観測に見える twist の部分と、冪等で観測に
-見えない正規化の部分。正規化の部分の像は package 圏の中には作れない(§2.4)。住める
-場所は、Karoubi(冪等射を形式的に分裂させた圏)、configuration の商、localization
-(候補)のどれかである。
+見えない正規化の部分。§2.4 の見込みが定理になれば、正規化の部分の像は package 圏の中
+には作れない。そのとき住める場所は、Karoubi(冪等射を形式的に分裂させた圏)、
+configuration の商、localization(候補)のどれかになる。
 
 ## §2 中心定理候補 — Split Configuration Descent and Idempotent Beck–Chevalley Exactness
 
@@ -138,41 +159,51 @@ s_P : AtomConfiguration U → ArchitectureObject U,   s_P(c) := P.reading.object
 
 `π_P` は object から configuration を読む。`s_P` は configuration から `P` の object reading
 で object を作る。`ObjectReading.configuration_eq` により `π_P ∘ s_P = id`。定義から
-`N_P = s_P ∘ π_P`。つまり `N_P` は、configuration へ落としてから戻す写像である。既存の
+`n_P = s_P ∘ π_P`。つまり `n_P` は、configuration へ落としてから戻す写像である。既存の
 `canonicalObjectNormalization_configuration`、`..._selected`、`..._idempotent` は、この
-落として戻す構造からそのまま出る。object map の冪等性は偶然ではない。
+落として戻す構造からそのまま出る。object 写像の冪等性は偶然ではない。
 
 ここから `Type` の水準で次が言える(候補、証明は数行)。
 
 ```text
-Fix(N_P) := {x // N_P x = x}  ≃  AtomConfiguration U
+Fix(n_P) := {x // n_P x = x}  ≃  AtomConfiguration U
 ```
 
 行きは `π_P`、帰りは `s_P`。さらに任意の型 `Y` と関数 `f : ArchitectureObject U → Y` に
 ついて
 
 ```text
-f ∘ N_P = f   ↔   ∃! f̄ : AtomConfiguration U → Y,  f = f̄ ∘ π_P
+f ∘ n_P = f   ↔   ∃! f̄ : AtomConfiguration U → Y,  f = f̄ ∘ π_P
 ```
 
-証明はこうである。左から右は `f̄ := f ∘ s_P` と置く。`f̄ ∘ π_P = f ∘ N_P = f` なので存在
+証明はこうである。左から右は `f̄ := f ∘ s_P` と置く。`f̄ ∘ π_P = f ∘ n_P = f` なので存在
 する。別の `f̄'` が `f = f̄' ∘ π_P` を満たすなら `f̄' = f̄' ∘ π_P ∘ s_P = f ∘ s_P` なので
-一意である。右から左は `f ∘ N_P = f̄ ∘ π_P ∘ s_P ∘ π_P = f̄ ∘ π_P = f`。
+一意である。右から左は `f ∘ n_P = f̄ ∘ π_P ∘ s_P ∘ π_P = f̄ ∘ π_P = f`。
 
-言い換えると、`π_P` は `N_P` と `id` の split coequalizer である。商 `Quot (x ~ N_P x)`
-は `AtomConfiguration U` と同一視できる。
+言い換えると、`π_P` は `n_P` と `id` の split coequalizer である。`ArchitectureObject U`
+の上に同値関係 `x ≈_P y :↔ π_P x = π_P y`(同じことだが `n_P x = n_P y`)を置くと、商
+`ArchitectureObject U / ≈_P` は `AtomConfiguration U` と同一視できる。
 
 observable の定義はこう固める。
 
 ```text
-Observable_P(f) :≡ f ∘ N_P = f
+Observable_P(f) :≡ f ∘ n_P = f
 ```
 
 正規化しても値が変わらない関数のことである。上の同値から、observable な関数は必ず Atom
-configuration を通って一意に分解する。これは n1001 の因子化テーゼそのものである。選んだ
-reading の共通核で商を取る定義もありうる。しかし reading が configuration を区別しない
-場合、その商は configuration より粗くなる。だから observable の主定義には使わず、後ろに
-置く。
+configuration を通って一意に分解する。
+
+これは n1001 §1 の因子化テーゼ(AAT が語れる結論は Atom 層を通る)の局所モデルで
+あって、テーゼそのものではない。テーゼは「AAT の結論」や「doctrine で不変な結論」という
+実質的な対象についての主張である。ここで示せるのは「`n_P` で不変な `Type` 値の関数は
+configuration を通る」までで、「AAT の結論なら `n_P` で不変」と「configuration から
+canonical Atom family へ降りる」の二つの橋がない。同じ Atom family を持ちながら relation
+が異なる configuration を、relation の値で読み分ける関数は、この飛躍の反例になる。二つの
+橋は別の義務にする。
+
+選んだ reading の共通核で商を取る定義もありうる。しかし reading が configuration を
+区別しない場合、その商は configuration より粗くなる。だから observable の主定義には
+使わず、後ろに置く。
 
 admissibility の各 field は、reading が `π_P` に沿って降りるためのデータと読める。
 `equationResidual_eq` と `coordinate_eq` は、ふつうの関数の分解を与える。
@@ -183,41 +214,51 @@ admissibility の各 field は、reading が `π_P` に沿って降りるため�
 
 ### 2.2 冪等因子と三つの exactness
 
-`α` が同型なので、次が置ける。
+`α_c` が同型なので、cell ごとに次が置ける。
 
 ```text
-E := inv α ≫ β : V ⟶ V,      β ≫ inv α : D ⟶ D
+E_c := inv α_c ≫ β_c : V_c ⟶ V_c,      β_c ≫ inv α_c : D_c ⟶ D_c
 ```
 
-最初に必要なのは、package morphism の水準で `E ≫ E = E` を示すことである(§2.3)。
+最初に必要なのは、package の射の水準で `E_c ≫ E_c = E_c` を示すことである(§2.3)。
 
-これが通ると、Karoubi の圏で `β` は同型になる。Karoubi の圏というのは、対象を「元の圏の
-対象と冪等射の組 `(X, e)`」に取り、射を `e` と両立する射に取った圏のこと。`β` は
-`(D, β ≫ inv α)` から `(V, E)` への射で、逆射の候補は `E ≫ inv α` である。二つの合成
-`β ≫ E ≫ inv α = β ≫ inv α` と `E ≫ inv α ≫ β = E` は、それぞれ projector に戻る。
+これが通ると、Karoubi の圏で `β_c` は同型になる。Karoubi の圏というのは、対象を「元の
+圏の対象と冪等射の組 `(X, e)`」に取り、射を `e` と両立する射に取った圏のこと。`β_c` は
+`(D_c, β_c ≫ inv α_c)` から `(V_c, E_c)` への射で、逆射の候補は `E_c ≫ inv α_c` である。
+二つの合成 `β_c ≫ E_c ≫ inv α_c = β_c ≫ inv α_c` と `E_c ≫ inv α_c ≫ β_c = E_c` は、
+それぞれ projector に戻る。
 
-exactness は三つの層に分ける。
+exactness は三つの層に分ける。observable の層は `Type` の水準で書く。`q` は
+`ArchitectureObject U` から適当な型への関数で、`U(·)` は underlying の object 写像である。
 
 ```text
-raw exactness        : IsIso β
-image exactness      : Karoubi の像 (V, E) の上で β が可逆
-observable exactness : E ≫ q = q を満たす observable q に対して β ≫ q = α ≫ q
+raw exactness        : IsIso β_c
+image exactness      : Karoubi の像 (V_c, E_c) の上で β_c が可逆
+observable exactness : q ∘ U(E_c) = q を満たす q に対して  q ∘ U(β_c) = q ∘ U(α_c)
 ```
+
+圏の側で書くなら `q : V_c ⟶ Q` とし、`E_c ≫ q = q` から `β_c ≫ q = α_c ≫ q` を言う。
+この二つの書き方は分けて扱う。`Type` の側の商 `≈_P` と圏の側の商は別物である。
 
 そのままの圏では壊れていても、意味の像と observable の商の上では成り立つ。これは反例を
-消しているのではない。`β` が同型でない理由が「冪等像の外側を落としているから」だと説明
-している。observable の層は `Type` の水準の `Quot` で立て、圏の中には戻さない。戻そうと
-すると `coforkReturn_not_isIso_of_ne` に当たる。最初の定理候補は「observable の exactness
-は configuration の水準の exactness と同じ」という主張である。
+消しているのではない。`β_c` が同型でない理由が「冪等像の外側を落としているから」だと
+説明している。
 
-raw で壊れる条件は projector の側に移せる。成分ごとに
+observable の層を圏の中へ戻す道には、一つ障害がある。`coforkReturn_not_isIso_of_ne` は、
+恒等でない endomorphism と恒等射の cofork から元の対象へ戻す射を取ると、その合成は可逆に
+ならない、と言う。つまり raw の package object へ可逆に戻す経路は閉じている。ただし、
+この theorem は cofork や商対象の存在、別の弱い射の圏の可能性までは否定していない。
+最初の定理候補は「observable の exactness は configuration の水準の exactness と同じ」
+という主張である。
+
+raw で壊れる条件は projector の側に移せる。cell ごとに
 
 ```text
-IsIso β ↔ IsIso E,        E ≫ E = E なら  IsIso E ↔ E = 𝟙
+IsIso β_c ↔ IsIso E_c,        E_c ≫ E_c = E_c なら  IsIso E_c ↔ E_c = 𝟙
 ```
 
 だから見るべきは「比較射が可逆か」ではなく「選ばれた projector が恒等か」である。
-選択子の作り方から、成分の水準では、raw で壊れることと「firing かつ admissible かつ
+選択子の作り方から、cell の水準では、raw で壊れることと「firing かつ admissible かつ
 正規化が非自明」は同じである。これを一般の同値として書くには、transport / reindex
 functor が conservativity を持つこと(像が同型なら元も同型)が要る。これは別の義務に
 する。証明するか、G-113 の O13・O18 から導くか、成り立たないか、を決める。
@@ -227,25 +268,27 @@ functor が conservativity を持つこと(像が同型なら元も同型)が要
 `SignedExactCoreReadingHom` は次の二つの field を持つ。
 
 ```text
-object_formation_eq : objectMap (P.object C) = Q.object (C.transport atomEquiv)
-configuration_eq    : (objectMap A).configuration = A.configuration.transport atomEquiv
+object_formation_eq : ∀ C, objectMap (P.reading.objectReading.object C)
+                          = Q.reading.objectReading.object (C.transport atomEquiv)
+configuration_eq    : ∀ A, (objectMap A).configuration = A.configuration.transport atomEquiv
 ```
 
-だから任意の exact hom `f : P ⟶ Q` について
+だから任意の `f : P ⟶ Q`(`PackageTotalHom`)について、`f.upper.objectMap` と
+`f.upper.atomEquiv` で
 
 ```text
-f.objectMap (N_P x)
-  = f.objectMap (P.object x.configuration)
-  = Q.object (x.configuration.transport e)
-  = Q.object ((f.objectMap x).configuration)
-  = N_Q (f.objectMap x)
+f.upper.objectMap (n_P x)
+  = f.upper.objectMap (P.reading.objectReading.object x.configuration)
+  = Q.reading.objectReading.object (x.configuration.transport f.upper.atomEquiv)
+  = Q.reading.objectReading.object ((f.upper.objectMap x).configuration)
+  = n_Q (f.upper.objectMap x)
 ```
 
-objectMap の水準では、正規化はすべての exact hom に対して自然である。診断の選択で
-壊れうるのは `N` そのものではない。firing と admissibility という、入力に依存する選択
+object 写像の水準では、正規化はすべての exact hom に対して自然である。診断の選択で
+壊れうるのは `n_P` そのものではない。firing と admissibility という、入力に依存する選択
 ゲートの側だけである。
 
-package の水準の冪等性 `E ≫ E = E` は、`PackageTotalHom.ext` を経て
+package の水準の冪等性 `N_P ≫ N_P = N_P` は、`PackageTotalHom.ext` を経て
 `SignedExactCoreReadingHom.ext` の 7 条件に落ちる。6 つは機械的に閉じる見込みである。
 残る一つ、`EquationSystemExactTransport` に関する `HEq` が、いちばん難しい一点である。
 ただし `finiteAxisFoldPermutationTotal_comp` は、同じ support package 上の合成で 7 条件
@@ -261,23 +304,26 @@ package の水準の冪等性 `E ≫ E = E` は、`PackageTotalHom.ext` を経�
 `i ≫ r = 𝟙 Q` かつ `r ≫ i = N_P` は成り立たない。ただし、同じ configuration の上に
 相異なる二つの `ArchitectureObject` があるとき。
 
-証明の見込み。`a := r.objectMap`、`b := i.objectMap` と置くと `a ∘ b = id`、
-`b ∘ a = N_P`。`N_P ∘ b = b ∘ a ∘ b = b` なので、`b` の像は `Fix(N_P)` に入る。
+証明の見込み。`a := r.upper.objectMap`、`b := i.upper.objectMap` と置くと `a ∘ b = id`、
+`b ∘ a = n_P`。`n_P ∘ b = b ∘ a ∘ b = b` なので、`b` の像は `Fix(n_P)` に入る。
 `a ∘ b = id` なので `b` は単射である。同じ configuration の上の `x₁ ≠ x₂` を取る。
-`configuration_eq` により `b x₁` と `b x₂` の configuration は等しい。`Fix(N_P)` は
+`configuration_eq` により `b x₁` と `b x₂` の configuration は等しい。`Fix(n_P)` は
 configuration ごとに一点しかないので `b x₁ = b x₂`。単射性と矛盾する。
 
 効いているのは大きさの非対称である。object の fiber は configuration ごとに
 `StructureMaps` 全体を走るので大きい。正規化の固定点は configuration ごとに一点しか
 ない。有限 witness の性質は使っていない。
 
-帰結は二つある。
+ここで問いは四つに分かれる。cofork / coequalizer が存在するか、split retract が存在
+するか、return map が存在するか、戻した合成が可逆か。既存の theorem が言うのは最後の
+一つだけである。残りは構成 / no-go の二枝のまま、theorem ができるまで保つ。
 
-- 判定順序の「圏の中で分裂するか、しないか」は、しない側を固定した義務にできる。
-  Lean 化に失敗したら二枝へ戻す。
+見込みが定理になった場合の帰結は二つある。
+
+- 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
 - 分裂しないのは正規化の欠陥ではない。raw な `ArchitectureObject U` を carrier に固定した
-  今の package 圏が、意味の像を対象として持てないほど狭い、という圏そのものの定理で
-  ある。だから Karoubi は便宜的な逃げ道ではなく、意味の像を表すための最小の完備化に
+  今の package 圏が、意味の像を対象として持てないほど狭い、という圏そのものの定理に
+  なる。そのとき Karoubi は便宜的な逃げ道ではなく、意味の像を表すための最小の完備化に
   なる。分裂像 `P ↦ Q` の functor 性を経由して reflective localization を作る道は、前提
   ごと消える。localization を候補に残すなら、正規化射のクラス `W` を形式的に逆転した
   `C[W⁻¹]` として、Karoubi の後に別に立てる。
@@ -293,13 +339,15 @@ configuration ごとに一点しかないので `b x₁ = b x₂`。単射性と
 | carrier | 同じ configuration の上の相異なる raw object |
 | firing | raw defect が `1` でない cell |
 | admissibility | 全 cell で admissible |
-| noninjectivity | `N_P x = N_P y` かつ `x ≠ y` |
-| selected reading preservation | 選んだ reading が `x` と `N_P x` を区別しない |
+| noninjectivity | `n_P x = n_P y` かつ `x ≠ y` |
+| selected reading preservation | 選んだ reading が `x` と `n_P x` を区別しない |
 | separation | 選んだ reading が少なくとも二つの configuration を区別する |
 
 最後の separation がないと、observable 層の正の定理が退化した例(すべてを潰す reading)
-でも成り立ってしまう。witness packet は `E ≠ 𝟙`、`β` が同型でないこと、observable が
-保たれることの三つを同時に示す。
+でも成り立ってしまう。observable の側では、`q ∘ n_P = q` を満たす具体的な `q` を名前
+付きで作り、それが二つの configuration を分けることを theorem にする。`q` が observable
+であることを前提として受け取るだけでは、定数関数でも成り立ってしまう。witness packet
+は `E_c ≠ 𝟙`、`β_c` が同型でないこと、observable が保たれることの三つを同時に示す。
 
 ## §3 G-116 改訂カードの骨格
 
@@ -311,8 +359,8 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 
 | 旧義務 | 行き先 |
 |---|---|
-| O12 universal 枝 | G-110 成分の finite witness により、raw な universal `IsIso` は成り立たない。反証として記録 |
-| O12 named-failure 枝 | 名前を付けるだけでは閉じない。§2 の構造定理に置き換える |
+| O12 universal 枝 | cell の水準では、firing cell の `E_c` が同型でないことが証明済み(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。`β` 全体が同型でないことは G-116 で名前付きの theorem に固定し、それをもって反証として記録する |
+| O12 named-failure 枝 | 旧 branch は、固定した cell と component の上で、caller が証明書を持ち込まずに `¬ IsIso` を評価する branch だった。その評価は ob.8 / ob.9 に残し、結論を §2 の構造定理に置き換える |
 | O12 の G-114 / G-115 成分 | Gr4 を閉じるカードへ |
 | O19 | Gr4 を閉じるカードへ |
 
@@ -320,15 +368,15 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 
 | # | 義務 | 既存の宣言・状態 |
 |---|---|---|
-| 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | object map は `canonicalObjectNormalization_idempotent`。ext 補題群は名前付きの artifact にして、後続カードが使う |
-| 2 | objectMap の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
-| 3 | `β = α ≫ E` であること、`E` の冪等性、replacement に関する自然性 | `..._eq_canonical`、`..._eq_provenance`、`..._replacement` |
-| 4 | Karoubi exactness: `β : (D, β ≫ inv α) ⟶ (V, E)` が同型 | mathlib `Idempotents.Karoubi` |
-| 5 | 圏の中では分裂しないこと(固定した義務。失敗したら二枝) | 見込みのみ(§2.4) |
-| 6 | configuration descent: `Fix ≃ AtomConfiguration U`、一意分解、`Quot ≃ AtomConfiguration U`。dependent な reading は「できる / できない」を決める | 未着手。Čech nerve の装置は G-118(候補)へ |
-| 7 | observable exactness と「observable exactness = configuration 水準の exactness」。`Type` 水準 | 圏へ戻す障害は `coforkReturn_not_isIso_of_ne` |
-| 8 | raw で壊れる場所: 成分ごとに `IsIso β ↔ IsIso E ↔ E = 𝟙`。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
-| 9 | witness packet(§2.5 の六つの役割) | `finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible` |
+| 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | object 写像は `canonicalObjectNormalization_idempotent`。ext 補題群は名前付きの artifact にして、後続カードが使う |
+| 2 | object 写像の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
+| 3 | `β_c = α_c ≫ E_c` であること、`E_c` の冪等性、replacement に関する自然性 | `..._eq_canonical`、`..._eq_provenance`、`..._replacement` |
+| 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | mathlib `Idempotents.Karoubi` |
+| 5 | 圏の中では分裂しないこと(構成 / no-go の二枝) | 見込みのみ(§2.4) |
+| 6 | configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`。dependent な reading は「できる / できない」を決める | 未着手。Čech nerve の装置は G-118(候補)へ |
+| 7 | observable exactness(`Type` の側: `q ∘ U(E_c) = q ⇒ q ∘ U(β_c) = q ∘ U(α_c)`)と「observable exactness = configuration 水準の exactness」 | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |
+| 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
+| 9 | witness packet(§2.5 の六つの役割と、名前付きの observable `q` と分離) | `finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible` |
 | 10 | 行き先の表と evidence map | §3.1、§3.4 |
 
 ### 3.3 定型項目
@@ -339,11 +387,16 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
   image と observable の各層で exactness が回復することを、有限 witness つきで決める。
 - rival: Beck–Chevalley の古典論と、冪等射の分裂の古典論(Karoubi の一般論)。差は、
   diagnostic による選択、admissibility、observable の分離を証明の中で実際に使う点に置く。
-- dullness filter: mathlib の Karoubi API を包み直しただけの構成、二点半束の lax law
-  だけを単独で数える構成を弾く。`E` が transport された `ν`(§4.1)の成分であることを
-  示すことを、証明の必須要素にする。
+- dullness filter(新規性のない構成を弾く条件): mathlib の Karoubi API を包み直しただけ
+  の構成、二点半束の lax law だけを単独で数える構成を弾く。`E_c` が、選択子で選んだ
+  局所の canonical normalization `N_P` の成分を transport / reindex / provenance iso で
+  運んだもの(`E_c = transport(selector(rawDefect c, N_P))`)であることを、証明の必須
+  要素にする。global な modification `ν` との対応は G-117(候補)の仕事で、G-116 では
+  要求しない。
 - 命名: id `G-116` は変えない。filename は `G-116-aat-idempotent-exchange-structure.md`
-  にする。旧 slug との対応は README に書く。
+  にする。旧 slug との対応は README に書く。改訂時に同期するもの:
+  `research/goals/README.md`、関連 note、GOAL 間の参照、Issue #4248 の「G-116 は現行型で
+  走り切る」という記述。
 - program context: Gr4 系列。Gr4 完成をどう表現するかは、閉じるカードで決める。
 - ArchSig: 後続の client route として分ける。AAT 側は observable predicate と theorem
   interface だけを定める。ArchSig の artifact や実装の挙動を theorem の前提にしない。
@@ -359,17 +412,18 @@ Issue 備考の 5 module(`BCAuthoredCanonicalObjectNormalization`、
 `BCAuthoredComparatorInductionObstruction`、`BCAuthoredNonAxisCollapseAudit`、
 `BCAuthoredObjectCollapse`、`BCAuthoredDiagnosticObjectCollapse`、
 `BCAuthoredDiagnosticPresentationReplacement`(+`Witnesses`)。twist を既知の系として
-数える判断と、非可逆性が objectMap にあるという判断は、この群が根拠になる。パスは
+数える判断と、非可逆性が object 写像にあるという判断は、この群が根拠になる。パスは
 すべて `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下である。
 
 ## §4 後続カードの切り分け(候補)
 
-Issue の解決方針 7 項目と行き先の対応。
+Issue の解決方針 7 項目と行き先の対応。以下の番号と骨格は仮置きで、カード起票時に
+改める。
 
 | 解決方針 | 行き先 |
 |---|---|
 | 1 冪等性の持ち上げ / 分裂 | G-116 ob.1、ob.5 |
-| 2 `β = α ≫ E` と自然性 | G-116(replacement、objectMap)/ G-117(base-arrow、modification) |
+| 2 `β = α ≫ E` と自然性 | G-116(replacement、object 写像)/ G-117(base-arrow、modification) |
 | 3 圏論的な住処 | G-116(Karoubi + 圏の中では分裂しないこと)。`W`-inversion は G-118 の候補素材 |
 | 4 raw / observable の分離 | G-116 ob.7 |
 | 5 同型でない場所 | G-116 ob.8 |
@@ -387,14 +441,15 @@ Issue の解決方針 7 項目と行き先の対応。
 χ_N(g) ≫ χ_N(h) = χ_N(gh)   ↔   g = 1 ∨ h = 1 ∨ gh ≠ 1
 ```
 
-が成り立つ(右から左には `N ≠ 𝟙` を使う)。壊れるのは `g ≠ 1`、`h ≠ 1`、`gh = 1`、
-つまり `h = g⁻¹` の場合だけで、そのとき
+が成り立つ。右から左は `N ≫ N = N` で閉じる。左から右には `N ≠ 𝟙` が要る。`g ≠ 1`、
+`h ≠ 1`、`gh = 1`、つまり `h = g⁻¹` の場合に
 
 ```text
 χ_N(g) ≫ χ_N(g⁻¹) = N,      χ_N(gg⁻¹) = 𝟙
 ```
 
-defect の側では履歴が消える。projector の側では、一度起きた不可逆な正規化が消えない。
+となり、`N ≠ 𝟙` がこの場合を等式から除く。defect の側では履歴が消える。projector の側
+では、一度起きた不可逆な正規化が消えない。
 
 同じ対象の上の可換な冪等射に、像の包含の順序 `e ⪯ f :↔ e ≫ f = e ∧ f ≫ e = e` を
 置く。`N ⪯ 𝟙` である。すべての `g, h` について
@@ -412,39 +467,41 @@ defect group の逆元と、冪等半束の積とが、本質的に違うから�
 群から冪等射だけを値に取る strict な monoid 準同型は自明なものしかない(可逆な冪等射は
 恒等射だけだから)。後段が monoid 射になる条件がちょうど `N ≫ N = N`、順序の埋め込みに
 なる条件がちょうど `N ≠ 𝟙` である。AAT に固有の中身は四つに集まる。package の水準の
-冪等性、`N ≠ 𝟙` の witness、`E` が transport された `ν` の成分であること、generated
-orbit で打ち消しが実際に起きること。
+冪等性、`N ≠ 𝟙` の witness、firing かつ admissible の cell で `E_c` が transport された
+`ν` の成分であること、generated orbit で打ち消しが実際に起きること。
 
 **proof obligations(候補)**。
 
 1. admissibility の transport: `CanonicalObjectNormalizationAdmissible P` が canonical な
    transport `transportAlong P f` で保たれる。量化は Atom equivalence から来る transport
    に限る。一般の exact hom では、像の外の object に対する reading に制約がないので、
-   admissibility は運べない。自然性は全 hom で成り立ち(objectMap の水準)、admissibility
-   は equivalence 型の transport でだけ運べる。この一般性の食い違いは、そのままこの構造の
-   正しい記述である。
+   admissibility は運べない。自然性は全 hom で成り立ち(object 写像の水準)、
+   admissibility は equivalence 型の transport でだけ運べる。この一般性の食い違いは、
+   そのままこの構造の正しい記述である。
 2. admissible fiber: `CoreFiber X` のうち admissible な package からなる full subcategory
    `AdmCoreFiber X` と、`coreFiberTransportFunctor` の制限。
 3. fiber の中の自然性: `ν_X : 𝟭 ⟶ 𝟭`、`ν_X.app P := N_P`、`ν_X ≫ ν_X = ν_X`。
 4. base arrow との両立: `(T_f).map (ν_X.app P) = ν_Y.app ((T_f).obj P)`。G-109 の
    `coreFiberCompositor` / `coreFiberUnitor` と合わせて、`ν` を idempotent modification と
    して束ねる。
-5. Karoubi への持ち上げ: fiber ごとの Karoubi completion の上で、generated defect
-   `E = inv α ≫ β` が一般の冪等射ではなく、transport / provenance iso で運ばれた `ν` の
-   成分そのものだと示す。既存の `..._eq_canonical` と `..._eq_provenance` を `ν` の成分に
-   付け替える形になる。
+5. Karoubi への持ち上げと `E_c` の同定: fiber ごとの Karoubi completion の上で、firing
+   かつ admissible の cell では `E_c` が transport / provenance iso で運ばれた `ν` の成分
+   そのものだと示す。firing でない cell では `E_c = 𝟙` なので、無条件の `E = ν` は成り
+   立たない。全 cell で書くなら、gate 込みの `E = χ(ν)` の形になる。既存の
+   `..._eq_canonical` と `..._eq_provenance` を `ν` の成分に付け替える形になる。
 6. 選択子の分類: 上の strictness の同値、`⪯` の法則、二項と三項の coherence。
-7. 二本の有限 witness。**raw cochain lane**: firing の元は隣接 swap で、二乗が恒等に
+7. 二本の有限 witness。**raw cochain の側**: firing の元は隣接 swap で、二乗が恒等に
    なることは `finiteAxisFoldSwapTotal_square` として定理済み。`h := g` で打ち消しの対が
    立つ。pointwise の積 cochain は `DefectCochain` の型上そのまま入力にできる。壊れの
-   実体は G-116 の二義務(冪等性と `N ≠ 𝟙`)そのものである。**generated-orbit lane**:
+   実体は G-116 の二義務(冪等性と `N ≠ 𝟙`)そのものである。**generated orbit の側**:
    実際の reselection や oriented pasting が `g` と `g⁻¹` の対を作るかを構成するか、
    生成される像には現れないことを定理にする。局所の defect を `δ = u · φ⁻¹` とすると、
    authored と canonical の comparator を別々に反転した逆向きの面は `δ_back = u⁻¹ · φ`
    で、`δ⁻¹ = φ · u⁻¹` とは一般に一致しない。reverse の宣言があるだけでは足りない。
 
 ob.3 と ob.4 で残る field の等式は、G-116 の冪等性と同じ一点(§2.3)に帰着する。ext
-補題群を G-116 で一度だけ作り、G-117 は同じ artifact を使う。
+補題群を G-116 で一度だけ作り、G-117 は同じ artifact を使う。依存の向きは G-116 →
+G-117 の一方向で、G-116 は `ν` を要求しない。
 
 **置き場所**: 独立したカード。dullness filter には、G-109 を `functorExtension₂` で
 Karoubi へ持ち上げただけの構成を弾く一文を置く。
@@ -474,8 +531,10 @@ profunctor 型の住処、が残る。
 comparator)と configuration の縦方向(Čech)の bisimplicial 構成に進む。横の次数ごとの
 対象、face と degeneracy、simplicial identities、mixed square、二つの totalization の
 比較を実際に作る。configuration の方向は split なので、単独では obstruction が消える。
-`generatedAllComplex_h1Zero`(G-105)により、全 support を無差別に取る横方向は使えない。
-横方向は Law が選んだ非退化な cover / diagnostic の方向でなければならない。
+横方向の取り方には先例がある。`generatedAllComplex_h1Zero`(G-105)は、Atom と Source が
+有限のとき、全 support を無差別に取った generated な `ℚ` 係数複体の `H¹` が消えると
+言う。この範囲では、無差別な横方向に残差は住めない。横方向は Law が選んだ非退化な
+cover / diagnostic の方向でなければならない。
 
 **Test A**(統一テスト)。G-114 の fiber の中の垂直射は、base への射影が恒等で
 atomEquiv が強制され、非恒等な observable は cartesian lift edge(水平側)に置かれて
@@ -523,16 +582,17 @@ configuration の上の装飾だけが違う二つの object を潰す以上、�
 | strict な層 | 同型性を壊す(単射でない collapse) | descent を壊す(反転) |
 | 組織のされ方 | 二点の冪等半束 `{𝟙, N}` | defect 群の上の cochain / torsor 的な族 |
 
-本当の定理と本当の壊れは、この混合層(`β = α ≫ E`、comparator descent、lax projector
-law)にある。証拠として強いのは、負例がこの見方の成立より前に、loop の反証としてこの形へ
-押し込まれてきたことである。設計の意図ではなく、構造の側からの押し返しの跡である。
+本当の定理と本当の壊れは、この混合層(`β_c = α_c ≫ E_c`、comparator descent、lax
+projector law)にある。証拠として強いのは、負例がこの見方の成立より前に、証明ループ
+(target-theorem-loop)の反証としてこの形へ押し込まれてきたことである。設計の意図では
+なく、構造の側からの押し返しの跡である。
 
 判定テストは三本。Test A(垂直 strictness の統一定理、§4.2)、Test B(comparator
-inertia、§4.2)、Test C(G-117 の generated-orbit lane、§4.1)。thin な context 圏で ext
-の 7 条件が `rfl` で閉じたことは、高次に見えるものの一部が定義的に潰れる証拠でもある。
-`generatedAllComplex_h1Zero` は、無差別な方向には残差が住めないことを示す。だから
-Test B が本丸である。残差が具体的に生き残る場所を一つ示せた時点で、G-118 の存在理由が
-決まる。
+inertia、§4.2)、Test C(G-117 の generated orbit の側の witness、§4.1)。thin な
+context 圏で ext の 7 条件が `rfl` で閉じたことは、高次に見えるものの一部が定義的に
+潰れる証拠でもある。`generatedAllComplex_h1Zero` は、有限の範囲で、無差別な方向には
+残差が住めないことを示す。だから Test B が本丸である。残差が具体的に生き残る場所を
+一つ示せた時点で、G-118 の存在理由が決まる。
 
 ## §6 育てる候補 — 研究仮説
 
@@ -544,16 +604,16 @@ Test B が本丸である。残差が具体的に生き残る場所を一つ示�
 両者を strict な 1-圏の等式で統一することは一般にできない。正しい相互作用は、可逆で
 ない 2-cell として現れる。最小の Lean 形は §4.1 の一般論(可逆な変更の群を、非自明で
 不可逆な projector へ strict に送ることはできない)である。AAT に固有の中身は、この
-一般論と diagnostic の選択子 `χ_N`、generated comparison `E`、finite axis-fold の非自明な
-witness を一つに繋ぐことにある。これが通れば、raw の exchange の壊れは「群の可逆な積と、
-冪等半束の不可逆な積の不一致」として説明される。
+一般論と diagnostic の選択子 `χ_N`、generated comparison の成分 `E_c`、finite axis-fold
+の非自明な witness を一つに繋ぐことにある。これが通れば、raw の exchange の壊れは
+「群の可逆な積と、冪等半束の不可逆な積の不一致」として説明される。
 
 **仮説**。G-115 / G-116 の負例は、可逆な base-change / defect の幾何と、不可逆な意味の
 正規化との mixed lax geometry を、1-圏の exactness に押し潰したときに現れる影である。
 一次元の地図では描けない semantic geometry の影である。
 
 **定理になる条件**: G-116 の ob.1 と ob.9、G-117 の ob.5 と ob.7。
-**置き場所**: G-117 lane 1 の背景と、本ノート。
+**置き場所**: G-117 の raw cochain 側の背景と、本ノート。
 
 ### 6.2 二軸の研究地図 — 完備化の種類 C と coherence の深さ H
 
@@ -574,8 +634,10 @@ H: coherence depth(正しい意味論を書くのに何次の proof-relevant dat
   H4+ 実際の残差が証明された場合のみ
 ```
 
-「Karoubi completion が要るか」と「2-cell が要るか」は別の問いである。G-116 は C1–C2 と
-H0–H1、G-117 は H2、G-118 は H3 を扱う。SFT が入れば時間 `T` が加わり、研究空間は
+C の四つは、いまの段階では候補の一覧であって、`C0 → C1 → C2 → C3` という包含や強さの
+順序を主張しているのではない。相互の比較は、それぞれを構成してから決める。「Karoubi
+completion が要るか」と「2-cell が要るか」は別の問いである。G-116 は C1–C2 と H0–H1、
+G-117 は H2、G-118 は H3 を扱う。SFT が入れば時間 `T` が加わり、研究空間は
 `Gr × C × H × T` になる。
 
 **定理になる条件**。C の各段は、AAT の instance の上でその完備化を実際に作り、前の段
@@ -590,7 +652,7 @@ comparator descent」(§4.2 の対)、2 次は「同じ 1-truncation で異な�
 **中身**。AAT には二方向の合成がある。横は doctrine change、base change、refinement、
 presentation replacement、migration。縦は package morphism、reading transformation、
 canonical normalization、semantic collapse。square には mate、comparison、comparator
-descent、transport coherence が住む。generated comparison `β = α ≫ E` は「exact な
+descent、transport coherence が住む。generated comparison `β_c = α_c ≫ E_c` は「exact な
 canonical square に、不可逆な意味の projector が作用した lax square」と読める。だから
 高次化の住処は、単なる bicategory より double category / equipment 型の構造が自然で
 ある。新しさは double category を使うことにはない。Atom / Law から生成された実際の
@@ -612,23 +674,23 @@ witness、generated route との同定にある。高次圏論は住処であっ
 ```
 
 と置く。これは arrow category の対象 `c` の自己同型群、つまり `c` の descent transporter
-(isotropy group)である。`c` 自身が同型である必要はない。今の宣言は、この構造の
-かなりの部分をすでに持っている。`UpperComparatorDescentAt` は cell ごとの所属条件、
-`CoefficientTrivialUpperReselectionEndpointIntertwining` は edge ごとの同じ条件、
-`coefficientTrivialUpperReselectionEndpointIntertwining_one` と
+(isotropy group)である。`c` 自身が同型である必要はない。
+
+既存の宣言は、この構造の候補にあたるものを持っている。`UpperComparatorDescentAt` は
+cell ごとの所属条件、`CoefficientTrivialUpperReselectionEndpointIntertwining` は edge
+ごとの同じ条件、`coefficientTrivialUpperReselectionEndpointIntertwining_one` と
 `CoefficientTrivialUpperReselectionEndpointIntertwining.mul`、
 `pairedCoefficientTrivialUpperReselection_one` と
-`PairedCoefficientTrivialUpperReselection.mul` は単位元と積についての閉性、
-`upperDecisionSolution_comparatorDescentAt` は定理が作る正の元、
+`PairedCoefficientTrivialUpperReselection.mul` は reselection の関係についての単位元と
+積の閉性、`upperDecisionSolution_comparatorDescentAt` は定理が作る正の元、
 `generatedBaseIdentityPair_not_comparatorDescentAt` は同じ route と component を保った
-qualified な非所属の元である。つまり G-115 の負例は、個別には qualified な comparator の
-対の積の中で、実際に solution component と整合する対が真部分集合 `Γ_c` をなすことの
-有限 witness である。
-
-最初の未証明 theorem は、逆元で閉じることである。`b ≫ c = c ≫ p` から
-`b⁻¹ ≫ c = c ≫ p⁻¹` が出るので、型の transport を除けば新しい仮定は要らない。これが
-閉じれば、既存の `one` と `mul` は群の構造になる。`c` を動かして集めれば comparator の
-arrow groupoid になる。
+qualified な非所属の元である。ただし、これらは subtype `Γ_c` そのものについての theorem
+ではない。`Γ_c` の packaging、その上の単位元・積・逆元、既存の正負 fixture との対応は、
+すべて Test 1 の未証明の項目である。閉じれば、G-115 の負例は、個別には qualified な
+comparator の対の積の中で、実際に solution component と整合する対が真部分集合 `Γ_c` を
+なすことの有限 witness になる。逆元については、`b ≫ c = c ≫ p` から
+`b⁻¹ ≫ c = c ≫ p⁻¹` が出るので、型の transport を除けば新しい仮定は要らない見込みで
+ある。`c` を動かして集めれば comparator の arrow groupoid になる。
 
 `c` が同型なら `p = c⁻¹ ≫ b ≫ c` なので、`Γ_c` は共役のグラフで、両端の自己同型群と
 同型である(conjugation regime。Gr4 を閉じるカードの決定対象)。`c` が同型でなくても
@@ -644,21 +706,22 @@ well-defined なら、Test B の comparator inertia は「coarse な観測から
 対称性を左右する核の作用」として実体を持つ。`Γ_c` が正規部分群であることや、商群の
 存在は仮定しない。
 
-G-116 の projector を加えると、群より partial symmetry が本命になる。package の水準で
-`E ≫ E = E` が立てば `β† := E ≫ inv α` を選べて
+G-116 の projector を加えると、群より partial symmetry が本命になる。cell を一つ固定し、
+package の水準で `E_c ≫ E_c = E_c` が立てば `β_c† := E_c ≫ inv α_c` を選べて
 
 ```text
-β ≫ β† ≫ β = β,      β† ≫ β ≫ β† = β†
+β_c ≫ β_c† ≫ β_c = β_c,      β_c† ≫ β_c ≫ β_c† = β_c†
 ```
 
-が成り立つ。`β` はそのままの圏では同型でなくても、選ばれた generalized inverse を持つ
-regular morphism である。`β ≫ β†` と `β† ≫ β` は source と target の projector である。
-G-115 は可逆な端点の対称性と arrow の isotropy `Γ_c` を与える。G-116 は、冪等射で定義域を
-切られた diagnostic の partial symmetry を与える。関係する射について generalized inverse が
-coherent に選べ、restriction idempotent が合成と可換なら、全体は inverse category /
-restriction category 型になる。その場合、一つの対称群があるのではない。projector の半束が
-partial symmetry の定義域を並べ、各 projector の上に G-115 型の局所 isotropy 群が載る
-ordered groupoid が本命である。
+が成り立つ。`β_c` はそのままの圏では同型でなくても、選ばれた generalized inverse を持つ
+regular morphism である。target 側の projector は `β_c† ≫ β_c = E_c : V_c ⟶ V_c`、
+source 側の projector は `β_c ≫ β_c† = α_c ≫ E_c ≫ inv α_c : D_c ⟶ D_c` で、二つは
+別物である。G-115 は可逆な端点の対称性と arrow の isotropy `Γ_c` を与える。G-116 は、
+冪等射で定義域を切られた diagnostic の partial symmetry を与える。関係する射について
+generalized inverse が coherent に選べ、restriction idempotent が合成と可換なら、全体は
+inverse category / restriction category 型になる。その場合、一つの対称群があるのでは
+ない。projector の半束が partial symmetry の定義域を並べ、各 projector の上に G-115 型の
+局所 isotropy 群が載る ordered groupoid が本命である。
 
 **採否テスト**(この順で、落ちたら止まる)。
 
@@ -669,15 +732,16 @@ ordered groupoid が本命である。
 3. comparator inertia test: 差 `Δ` を coefficient の影の核の作用元として束ね、replacement
    と reselection のもとでの well-definedness を決める。失敗は今の inertia model の no-go
    であり、他の高次候補まで否定しない。
-4. regular comparison test: `β†` と二本の regularity の等式を証明し、generated comparison
-   の source / target の冪等射を G-116 の `E` と同一視する。
+4. regular comparison test: `β_c†` と二本の regularity の等式を証明し、target 側の
+   projector を G-116 の `E_c` と、source 側の projector を `α_c ≫ E_c ≫ inv α_c` と
+   同一視する。
 5. inverse-category test: 選んだ inverse の一意性、合成の保存、関係する冪等射の可換性を
    決める。
 
 結果は三段になる。1–5 が通れば diagnostic partial symmetry の inverse / restriction
-category。1–4 が通り 5 が落ちれば transporter groupoid と regular morphism の圏。1–2 だけ
-なら G-115 の descent symmetry groupoid を独立の成果として持つ。どの枝でも、具体的な
-theorem か no-go が残る。
+category。1–4 が通り 5 が落ちれば、transporter groupoid と、regular morphism の族(圏に
+なるかは 5 の結果次第)。1–2 だけなら G-115 の descent symmetry groupoid を独立の成果
+として持つ。どの枝でも、具体的な theorem か no-go が残る。
 
 **置き場所**: transporter group の最小の packaging と Test B への接続は G-118 の候補
 素材。regular comparison は G-116 の theorem から導く後続の補題候補。inverse /
@@ -694,7 +758,9 @@ locality nonfactorization と §4.2 の対は、同じ「coherence height の下
 読める。
 
 **定理になる条件**: 各 height の定義は H 軸の構成に依存する。少なくとも height 1 の下限
-(Test B)が最初の判定になる。
+(Test B)が最初の判定になる。さらに、observation grammar `Ω` の定義、coarse な影への
+写像、下限を測る対象の範囲(どの coefficient、どの truncation か)を、Test B とは別に
+固定する必要がある。
 **置き場所**: 本ノート。G-118 の判定後にプログラムの定義へ。
 
 ### 6.6 SHIGURE への含意 — scheme か stack かは定理が決める
@@ -714,7 +780,9 @@ scheme か stack かは設計上の好みではなく、software の意味論が
 groupoid 値の prestack を先に立て、scheme は trivial-inertia locus / 0-truncation として
 取り出す」は、この装置で実際に判定される。
 
-**定理になる条件**: coherence height の決定と、その高さでの表現可能性。
+**定理になる条件**: coherence height の決定と、その高さでの表現可能性。表現可能性には、
+site / topology の選択と descent の条件が別途要る。Test B や height の下限だけからは
+stack の必要性は出ない。
 **置き場所**: n1004 / n1005 の SHIGURE 素描。山頂は動かさない。
 
 ### 6.7 SFT への含意 — moduli の上の力学と履歴依存
@@ -732,7 +800,7 @@ G-117 の `χ(g) ≫ χ(g⁻¹) = N` が generated orbit でも実際に起き�
 revert・再生成を繰り返す状況では、今のコードだけでなく「どの意味の正規化を通ったか」が
 将来の安全性を左右しうる。この履歴依存を SFT の力学として扱う。
 
-**定理になる条件**: G-117 の generated-orbit lane が正で終わること。
+**定理になる条件**: G-117 の generated orbit の側の witness が正で終わること。
 **置き場所**: SFT の骨格 note。
 
 ### 6.8 CS への一般化の候補 — Relative Higher Abstract Interpretation(仮称)
@@ -785,10 +853,11 @@ Lean が教えていた。
 
 ## §7 反証ゲート
 
-このプログラムは、どの段でも止まれる。各ゲートで落ちた場合の帰結は、停止ではなく確定
-した成果である。
+このプログラムは、どの段でも止まれる。ただし、ゲートで落ちたことを確定した成果と
+呼べるのは、反例か no-go の theorem が得られた場合だけである。証明が見つからない、
+構成が作れない、というだけでは未証明であり、具体的な blocker を記録して止まる。
 
-| ゲート | 落ちた場合 |
+| ゲート | 反例 / no-go が立った場合 |
 |---|---|
 | 1 package の水準の冪等性が立たない | object の水準の split descent で止める。どの等式が成り立たないかを theorem の形で残す |
 | 2 正規化が base change に対して自然でない | fiber ごとの projector の理論で閉じる |
