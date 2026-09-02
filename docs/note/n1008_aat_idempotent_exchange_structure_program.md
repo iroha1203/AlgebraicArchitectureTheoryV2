@@ -27,10 +27,11 @@ statement を変更しない。目的は二つある。一つは、Issue #4341 �
 4. G-116 は Gr4 の最後のカードではない。Gr4 達成記録(O19)と、O12 のうち G-114 / G-115
    に関わる部分は、Gr4 を閉じる別のカードへ送る。G-116 は正規化因子の数学的な正体を
    突き止めるカードになる。
-5. 高次化の入口は bisimplicial object より手前にある。diagnostic の選択子
-   `χ_N(g) = if g = 1 then 𝟙 else N` は群の積を保たない。壊れるのは `g` と `g⁻¹` が
-   打ち消し合う場合だけである。これが lax projector law として G-117(候補)の target に
-   なる。
+5. 高次化の入口は bisimplicial object より手前にある。package の水準で `N ≫ N = N` と
+   `N ≠ 𝟙` が立つという仮定のもとで、diagnostic の選択子 `χ_N(g) = if g = 1 then 𝟙 else N`
+   は群の積を保たず、壊れるのは `g` と `g⁻¹` が打ち消し合う場合だけになる(候補
+   theorem。前者の仮定はまだ未証明)。これが lax projector law として G-117(候補)の
+   target になる。
 6. G-115 の負例は三つの型に揃っている。垂直方向は情報を運ばない。lossy な collapse は
    可逆性の材料にならない。coefficient の水準では自明な comparator の差が descent を
    反転させる。研究仮説はこう読む。可逆な変更と不可逆な意味射影がぶつかると strict な
@@ -138,7 +139,7 @@ finite axis-fold witness では、次が同時に成り立つ。
 |---|---|---|
 | 可逆か | 可逆(`authoredViaBaseRawDefectComponent_isIso`) | 可逆でない |
 | reading への作用 | coordinate に非恒等作用 | admissible なら 4 readings から見えない |
-| cofork | 固定 witness 上で作れない(`BCAuthoredFixedTargetCoforkNoGoWitnesses`) | 冪等性が立てば `N` 自身が cofork になる(候補) |
+| cofork | 固定した finite target では作れない(`finiteAxisFold_viaBaseRawDefect_no_cofork`: 固定した transported residual と恒等射の標準 `Cofork` が存在しない。この有限 target に限る) | 冪等性が立てば `N` 自身が cofork になる(候補) |
 | 分類上の扱い | canonical-post-iso twist は既知の系として数える | 本体。改訂 G-116 の対象 |
 
 反例が教えているのは、この分解である。可逆で観測に見える twist の部分と、冪等で観測に
@@ -300,9 +301,12 @@ package の水準の冪等性 `N_P ≫ N_P = N_P` は、`PackageTotalHom.ext` �
 
 ### 2.4 圏の中では分裂しない(見込み、未証明)
 
-主張: 任意の `P Q : AATCorePackage U`、`r : P ⟶ Q`、`i : Q ⟶ P` について、
-`i ≫ r = 𝟙 Q` かつ `r ≫ i = N_P` は成り立たない。ただし、同じ configuration の上に
-相異なる二つの `ArchitectureObject` があるとき。
+主張: 任意の `P Q : AATCorePackage U`、`adm : CanonicalObjectNormalizationAdmissible P`、
+`r : P ⟶ Q`、`i : Q ⟶ P` について、`i ≫ r = 𝟙 Q` かつ
+`r ≫ i = canonicalObjectNormalizationTotal P adm` は成り立たない。ただし、同じ
+configuration の上に相異なる二つの `ArchitectureObject` があるとき(この witness も
+theorem の引数に置く)。`adm` は省けない。admissible でない package は実在する
+(`auxiliarySensitiveCorePackage_not_admissible`)。
 
 証明の見込み。`a := r.upper.objectMap`、`b := i.upper.objectMap` と置くと `a ∘ b = id`、
 `b ∘ a = n_P`。`n_P ∘ b = b ∘ a ∘ b = b` なので、`b` の像は `Fix(n_P)` に入る。
@@ -316,7 +320,10 @@ configuration ごとに一点しかないので `b x₁ = b x₂`。単射性と
 
 ここで問いは四つに分かれる。cofork / coequalizer が存在するか、split retract が存在
 するか、return map が存在するか、戻した合成が可逆か。既存の theorem が言うのは最後の
-一つだけである。残りは構成 / no-go の二枝のまま、theorem ができるまで保つ。
+一つだけである。G-116 が固定した義務として引き受けるのは split retract の no-go
+(上の主張)で、残りは候補のままにする。no-go の Lean 化で偽・型不能・反例が判明した
+場合は、成功枝へ移らず `goal-defect` として止まり、人間の判断で target を改めてから
+構成 / no-go の二枝に戻す。
 
 見込みが定理になった場合の帰結は二つある。
 
@@ -370,13 +377,15 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 |---|---|---|
 | 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | object 写像は `canonicalObjectNormalization_idempotent`。ext 補題群は名前付きの artifact にして、後続カードが使う |
 | 2 | object 写像の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
-| 3 | `β_c = α_c ≫ E_c` であること、`E_c` の冪等性、replacement に関する自然性 | `..._eq_canonical`、`..._eq_provenance`、`..._replacement` |
-| 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | mathlib `Idempotents.Karoubi` |
-| 5 | 圏の中では分裂しないこと(構成 / no-go の二枝) | 見込みのみ(§2.4) |
+| 3a | `β_c = α_c ≫ E_c` であること、replacement に関する自然性 | 証明済み(`..._app`、`..._eq_canonical`、`..._eq_provenance`、`..._replacement`) |
+| 3b | `E_c ≫ E_c = E_c` | 未証明。ob.1 と transport の functor 性から導く |
+| 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 未証明(ob.3b を仮定した条件付き候補)。圏の一般 API は mathlib `Idempotents.Karoubi` にあるが、AAT の instance での theorem はまだない |
+| 5 | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` と同一 configuration 上の相異なる object の witness を含める。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
 | 6 | configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`。dependent な reading は「できる / できない」を決める | 未着手。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness(`Type` の側: `q ∘ U(E_c) = q ⇒ q ∘ U(β_c) = q ∘ U(α_c)`)と「observable exactness = configuration 水準の exactness」 | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |
 | 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
-| 9 | witness packet(§2.5 の六つの役割と、名前付きの observable `q` と分離) | `finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible` |
+| 9a | witness packet のうち carrier / firing / admissibility / noninjectivity | 証明済み(`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible`) |
+| 9b | 名前付きの observable `q`、`q ∘ n_P = q`、二つの configuration の分離、`E_c ≠ 𝟙` と observable 保存の同時成立 | 未構成 |
 | 10 | 行き先の表と evidence map | §3.1、§3.4 |
 
 ### 3.3 定型項目
@@ -520,8 +529,10 @@ coefficient の水準では自明な差が descent を反転させる。この�
 2. その差の class が、presentation replacement と reselection のもとで well-defined かを
    決める。
 
-well-defined なら、0-truncation では失われるが coherence を左右する proof-relevant な
-data が実在する。この時点で G-118 の存在理由が決まる。失敗した場合に否定されるのは、
+well-defined なら、指定した coefficient の影では失われるが descent を左右する
+proof-relevant な data が実在する。この時点で G-118 の存在理由が決まる。この影が圏論
+の意味での 0-truncation(対象・射・普遍性・equivalence での不変性)にあたるかは、別に
+構成しないと言えない。失敗した場合に否定されるのは、
 今の comparator-inertia / H¹ model である。高次構造一般ではない。comparator の商の取り方、
 replacement / reselection の作用の定義、horizontal な対象の粗さ、cohomology class では
 なく double category の square でだけ well-defined になる可能性、span / correspondence /
@@ -580,7 +591,7 @@ configuration の上の装飾だけが違う二つの object を潰す以上、�
 |---|---|---|
 | 観測の層 | admissible なら 4 readings から見えない | coefficient identity を保つ |
 | strict な層 | 同型性を壊す(単射でない collapse) | descent を壊す(反転) |
-| 組織のされ方 | 二点の冪等半束 `{𝟙, N}` | defect 群の上の cochain / torsor 的な族 |
+| 組織のされ方 | 二点の冪等半束 `{𝟙, N}`(package の水準で `N ≫ N = N`、`N ≠ 𝟙` が立てば) | defect 群の上の cochain / torsor 的な族 |
 
 本当の定理と本当の壊れは、この混合層(`β_c = α_c ≫ E_c`、comparator descent、lax
 projector law)にある。証拠として強いのは、負例がこの見方の成立より前に、証明ループ
@@ -642,9 +653,12 @@ G-117 は H2、G-118 は H3 を扱う。SFT が入れば時間 `T` が加わり�
 
 **定理になる条件**。C の各段は、AAT の instance の上でその完備化を実際に作り、前の段
 では成り立たない exactness がその段で成り立つと示せたときに定義になる。H の各段は、
-有限の分離 witness による下限が立ったときに定義になる。0 次は「同じ局所観測で異なる
-大域的性質」(G-107 の locality nonfactorization)、1 次は「同じ coarse な影で異なる
-comparator descent」(§4.2 の対)、2 次は「同じ 1-truncation で異なる mixed coherence」。
+二つの theorem が揃ったときに定義になる。一つは有限の分離 witness による下限(その
+次数より低い data では足りない)。もう一つは adequacy(その次数の data で observation と
+合成則を回収できる)という上限。下限の候補は、0 次が「同じ局所観測で異なる大域的性質」
+(G-107 の locality nonfactorization)、1 次が「指定した coefficient の影では同じだが
+comparator descent が異なる」(§4.2 の対)、2 次が「同じ 1-truncation で異なる mixed
+coherence」。いま言えるのは、指定した影に対する非因子化と下限までである。
 **置き場所**: 本ノートの地図。G-118 の判定後にカードへ写す。
 
 ### 6.3 Semantic Equipment
@@ -659,18 +673,23 @@ canonical square に、不可逆な意味の projector が作用した lax squar
 data、diagnostic が選ぶ冪等射、raw / image / observable の exactness、有限の正負
 witness、generated route との同定にある。高次圏論は住処であって、成果の本体ではない。
 
-**定理になる条件**: companion と conjoint の構成。G-109 の `coreFiberCompositor` /
-`coreFiberUnitor` と、結合律・単位律の coherence が素材である。
+**定理になる条件**。まず double category の data を型付けする。共通の object、横の射と
+縦の射、square、横と縦の二つの合成と単位、associator と unitor、whiskering、interchange
+と、それらの coherence。そのうえで companion と conjoint を構成する。G-109 の
+`coreFiberCompositor` / `coreFiberUnitor` と結合律・単位律の coherence は、横方向一つ分の
+素材にすぎない。
 **置き場所**: G-118 の住処の候補。Test B の後。
 
 ### 6.4 Descent Transporter / Diagnostic Partial Symmetry
 
-**中身**。solution component `c : X ⟶ Y` を一つ固定し、両端の qualified automorphism を
-`b : Aut(X)`、`p : Aut(Y)` とする。G-115 の comparator descent の中心式は
+**中身**。solution component `c : X ⟶ Y`(G-115 では geometry package の間の
+`GeometryTotalHom`)を一つ固定し、両端の qualified automorphism を `b`、`p` とする。
+G-115 で comparator が属する端点の群は一般の自己同型群ではなく、base の上で恒等になる
+部分群 `CompositeFiberAut X`、`CompositeFiberAut Y` である。comparator descent の中心式は
 `b ≫ c = c ≫ p` である。そこで
 
 ```text
-Γ_c := { (b, p) ∈ Aut(X) × Aut(Y) | b ≫ c = c ≫ p }
+Γ_c := { (b, p) ∈ CompositeFiberAut X × CompositeFiberAut Y | b ≫ c = c ≫ p }
 ```
 
 と置く。これは arrow category の対象 `c` の自己同型群、つまり `c` の descent transporter
@@ -690,17 +709,21 @@ qualified な非所属の元である。ただし、これらは subtype `Γ_c` 
 comparator の対の積の中で、実際に solution component と整合する対が真部分集合 `Γ_c` を
 なすことの有限 witness になる。逆元については、`b ≫ c = c ≫ p` から
 `b⁻¹ ≫ c = c ≫ p⁻¹` が出るので、型の transport を除けば新しい仮定は要らない見込みで
-ある。`c` を動かして集めれば comparator の arrow groupoid になる。
+ある。この段階で得られるのは、固定した `c` ごとの isotropy 群の族である。`c` を動かして
+arrow groupoid にするには、source と target、射、合成、逆射を別に構成する必要があり、
+それは Test 1 の次の段にする。
 
 `c` が同型なら `p = c⁻¹ ≫ b ≫ c` なので、`Γ_c` は共役のグラフで、両端の自己同型群と
 同型である(conjugation regime。Gr4 を閉じるカードの決定対象)。`c` が同型でなくても
-`Γ_c` はある。二つの射影 `Γ_c ⟶ Aut(X)`、`Γ_c ⟶ Aut(Y)` は一般に全射でも単射でもない。
+`Γ_c` はある。二つの射影 `Γ_c ⟶ CompositeFiberAut X`、`Γ_c ⟶ CompositeFiberAut Y` は一般に全射でも
+単射でもない。
 射影の像は、反対側へ運べる端点の対称性。核は、`c` を通すと見えなくなる端点の対称性。
 一つの base comparator の上の fiber は、両立する pulled comparator の選択肢の空間で
 ある。
 
 §4.2 の対では、取り替えた comparator は coefficient の水準で identity である。だから差
-`Δ := p` は、coarse な coefficient の影 `U` の核に入る候補でありながら、`(b, p) ∈ Γ_c`、
+`Δ := p` は、coefficient の影 `κ_c : CompositeFiberAut Y → (coefficient 水準の群)`(群
+準同型の候補。domain と codomain は Test 3 で固定する)の核に入る候補でありながら、`(b, p) ∈ Γ_c`、
 `(b, 1) ∉ Γ_c` と所属を反転させる。replacement と reselection の後にも class として
 well-defined なら、Test B の comparator inertia は「coarse な観測からは消えるが、arrow の
 対称性を左右する核の作用」として実体を持つ。`Γ_c` が正規部分群であることや、商群の
@@ -757,10 +780,12 @@ groupoid が要る。height 2 は射の間の coherence 2-cell が要る。heigh
 locality nonfactorization と §4.2 の対は、同じ「coherence height の下限」の系列として
 読める。
 
-**定理になる条件**: 各 height の定義は H 軸の構成に依存する。少なくとも height 1 の下限
-(Test B)が最初の判定になる。さらに、observation grammar `Ω` の定義、coarse な影への
-写像、下限を測る対象の範囲(どの coefficient、どの truncation か)を、Test B とは別に
-固定する必要がある。
+**定理になる条件**: 最小の次数を定義するには、各候補次数について、下限の theorem(有限の
+分離 witness)と adequacy の theorem(その次数で全 observation と合成則を回収できる)の
+両方が要る。いま手元にあるのは下限の候補だけである。少なくとも height 1 の下限(Test B)
+が最初の判定になる。さらに、observation grammar `Ω` の定義、coefficient の影への写像、
+下限を測る対象の範囲(どの coefficient、どの truncation か)を、Test B とは別に固定する
+必要がある。
 **置き場所**: 本ノート。G-118 の判定後にプログラムの定義へ。
 
 ### 6.6 SHIGURE への含意 — scheme か stack かは定理が決める
@@ -773,26 +798,28 @@ locality nonfactorization と §4.2 の対は、同じ「coherence height の下
 Sem_{A,r}^{≤n} : CommAlg → nGroupoid,     Sem_{A,r}^{≤n}(R) ≃ Map(Spec R, 𝔐_{A,r}^{≤n})
 ```
 
-ここで `n` は §6.5 の coherence height で決まる。`n = 0` なら scheme / algebraic space、
+ここで `n` は §6.5 の coherence height で決める。下限だけでは `n` は決まらず、その高さで
+足りることを示す adequacy の theorem が要る。`n = 0` なら scheme / algebraic space、
 `n = 1` なら stack、`n = 2` なら 2-stack、それ以上は具体的な残差が証明された場合だけ。
 scheme か stack かは設計上の好みではなく、software の意味論が要求する証明の次元の定理に
 なる。既存の SHIGURE 素描にある案、「`H⁰` の torsor と gauge 自己同型が中心にあるので
 groupoid 値の prestack を先に立て、scheme は trivial-inertia locus / 0-truncation として
 取り出す」は、この装置で実際に判定される。
 
-**定理になる条件**: coherence height の決定と、その高さでの表現可能性。表現可能性には、
-site / topology の選択と descent の条件が別途要る。Test B や height の下限だけからは
-stack の必要性は出ない。
+**定理になる条件**: coherence height の決定(下限と adequacy の両方)と、その高さでの
+表現可能性。表現可能性は独立の義務で、site / topology の選択と descent の条件が要る。
+Test B や height の下限だけからは stack の必要性は出ない。
 **置き場所**: n1004 / n1005 の SHIGURE 素描。山頂は動かさない。
 
 ### 6.7 SFT への含意 — moduli の上の力学と履歴依存
 
-**中身**。SHIGURE の後は、development trace を semantic moduli の上の path / section
+**中身**。SHIGURE の後は、SFT の開発系 `𝔇` の軌道を semantic moduli の上の path / section
 `γ : 𝒯 → 𝔐_sem` として読める。変更は関数とは限らないので、correspondence
-`𝔐_before ← Change → 𝔐_after` として扱う。review / CI / governance は、許される
-correspondence や到達できる部分空間を制限する。SFT の ForecastCone descent は
-「大域的に到達できる未来 ≃ 両立する局所的に到達できる未来」という path descent として、
-SHIGURE の意味空間の上に載る。
+`𝔐_before ← Change → 𝔐_after` として扱う。review / CI / governance は、SFT v2 の語彙では
+統治された到達集合(閉ループ生成子のもとで挙動空間の上に到達できる配置の集合)を
+制限する。SFT の到達集合と計器射影を、SHIGURE の意味空間の上で「大域的に到達できる
+配置 ≃ 両立する局所的に到達できる配置」という path descent として読めるか、が問いに
+なる。可能性の側は変形空間で扱う。
 
 G-117 の `χ(g) ≫ χ(g⁻¹) = N` が generated orbit でも実際に起きるなら、SFT の側に新しい
 現象が出る。raw の変更は打ち消し合っても、どの意味の射影 / 証明の経路を通ったかという
@@ -800,8 +827,12 @@ G-117 の `χ(g) ≫ χ(g⁻¹) = N` が generated orbit でも実際に起き�
 revert・再生成を繰り返す状況では、今のコードだけでなく「どの意味の正規化を通ったか」が
 将来の安全性を左右しうる。この履歴依存を SFT の力学として扱う。
 
-**定理になる条件**: G-117 の generated orbit の側の witness が正で終わること。
-**置き場所**: SFT の骨格 note。
+**定理になる条件**: 三つ。G-117 の generated orbit の側の witness が正で終わること。AAT
+の projector の履歴(どの cell でどの `E_c` を通ったか)を SFT の開発系 `𝔇` の配置または
+場の記憶へ渡す写像を定義すること。その写像のもとで、到達集合が経路に依存する(同じ
+raw 配置に戻っても統治された到達集合が異なる)という SFT 側の theorem を立てること。
+**置き場所**: SFT 本文(`docs/sft/software_field_theory.md`)の第VI・VII・IX部と、SFT の
+骨格 note。
 
 ### 6.8 CS への一般化の候補 — Relative Higher Abstract Interpretation(仮称)
 
@@ -837,7 +868,7 @@ theorem にし、AAT の instance で再び接地する、という往復にす�
 > 可逆な canonical mate と diagnostic が生成する冪等 projector に分解される。raw の
 > exactness の壊れは projector の非自明性で分類され、意味の像 / observable の商の上では
 > exactness が回復する。defect の合成は projector に strict ではなく lax に作用し、必要な
-> coherence の深さは有限の分離 witness で決まる。その高さの coherent realization functor
+> coherence の深さは、有限の分離 witness による下限と adequacy の theorem で決まる。その高さの coherent realization functor
 > は対応する algebraic n-stack で表現され、SFT の software evolution はその moduli の上の
 > dynamics として書かれる。
 
