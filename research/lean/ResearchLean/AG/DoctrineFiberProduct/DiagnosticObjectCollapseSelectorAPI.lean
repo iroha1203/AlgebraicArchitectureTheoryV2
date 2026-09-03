@@ -13,7 +13,7 @@ namespace AAT.AG.DoctrineFiberProduct
 universe u
 
 open CategoryTheory
-open AtomFoundation TransportCoherence
+open AtomFoundation CrossStageCoherence TransportCoherence
 
 /-- A firing component with inadmissible support readings selects the
 identity. -/
@@ -30,6 +30,34 @@ theorem authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissib
   classical
   simp [authoredDiagnosticObjectCollapseComponentAtCochain,
     fires, inadmissible]
+
+/-- Functorial transport carries idempotence of the selected raw component to
+the authored via-base component.  This keeps the producer definition unfolding
+inside its lightweight API layer. -/
+theorem authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_of_raw_comp
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : AuthoredBCDatumSquare U)
+    (cochain : DefectCochain input.toTransportData)
+    (cell : input.context.Category)
+    (rawComp :
+      authoredDiagnosticObjectCollapseComponentAtCochain input cochain cell.as ≫
+          authoredDiagnosticObjectCollapseComponentAtCochain input cochain cell.as =
+        authoredDiagnosticObjectCollapseComponentAtCochain input cochain cell.as) :
+    authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell ≫
+        authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell =
+      authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell := by
+  rcases input with ⟨⟨⟨semantic, presentation, realization_eq⟩,
+    lift, endpoint_eq⟩, twoCellBase, authored⟩
+  cases realization_eq
+  simpa only [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain,
+    ← Functor.map_comp] using congrArg
+      (fun morphism =>
+        (selectedCoreFiberReindexFunctor
+          (typedRealizableHom (bcRightPresentation presentation))).map
+          ((coreFiberTransportFunctor
+            (typedPresentationToSemantic
+              (bcBottomPresentation presentation))).map morphism))
+      rawComp
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
 
