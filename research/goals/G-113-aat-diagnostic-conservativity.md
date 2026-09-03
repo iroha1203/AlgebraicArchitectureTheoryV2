@@ -138,7 +138,7 @@
   state を追記しない。
 - `source note`: [docs/note/n1007_aat_sakura_gr4_completion_design.md](../../docs/note/n1007_aat_sakura_gr4_completion_design.md)
   (§3 義務台帳、§4 G-113、§5 判定線1・3)、
-  [G-116 カード](G-116-aat-idempotent-exchange-structure.md)(旧 id `G-116-aat-gr4-capstone`。O13–O18・O20 の義務台帳は Gr4 を閉じるカードへ移す)、
+  [G-116 カード](G-116-aat-idempotent-exchange-structure.md)(O13–O18・O20 の義務台帳は Gr4 を閉じるカードへ移す)、
   [revision 1 report](../reports/G-113-aat-diagnostic-conservativity.md)
   (revision 1 の refutation candidate / proof ledger。最終 `target-refuted` の
   資格は上記 PR #4203 の exact / merge anchor、Lean 宣言、Issue #4198 に置く)。

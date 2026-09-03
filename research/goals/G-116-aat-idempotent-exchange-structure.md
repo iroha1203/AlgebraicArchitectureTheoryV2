@@ -7,12 +7,16 @@
 - `research mode`: `target-theorem`
 - `program context`: Gr4 系列。G-110 の generated comparison が同型にならない
   理由を、比較射に含まれる冪等な正規化因子の数学的な正体として同定する。
-  Gr4 達成記録(旧 O19)と、旧 O12 のうち G-114 refinement mate と G-115
-  `upperDecisionSolution` の決定は、Gr4 を閉じるカード(別途、番号は先取り
-  しない)が担う。本カードは Gr4 の最後のカードではない。
+  Gr4 達成記録(旧 O19)、旧 O12 のうち G-114 refinement mate と G-115
+  `upperDecisionSolution` の決定、義務台帳 O1–O20 は、Gr4 を閉じるカード(別途、
+  番号は先取りしない)が担う。本カードは Gr4 の最後のカードではない。先行カード
+  (G-111〜G-115)の本文にある「義務台帳は G-116」「O12 は G-116」「successor G-116」
+  という記述は、完了時点の記録として据え置き、Gr4 を閉じるカードを指すと読む。
+  依存する reviewed カード(G-110、G-113)の statement が改訂された場合は、本カード
+  を draft へ差し戻して再固定する。
 - `predecessor`: G-110(完遂済み。canonical mate の同型性、generated comparison、
   finite axis-fold witness、MateCoherentRel 正負対)、G-113(完遂済み。transport
-  equivalence O13・O18。clause (g) の conservativity の供給候補)。
+  equivalence O13・O18)。
 - `tracking issue`: 未起票(active 昇格時に起票)
 - `source note`: [n1008](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)
   (§1 反例の形、§2 中心定理候補、§3 骨格)、
@@ -24,173 +28,249 @@
   非自明性で分類する。Karoubi の像と、選んだ reading の上で exactness が回復する
   ことを、有限 witness つきで決める。
 - `core tension`: 既証明と未証明の分界にある。canonical mate `α` は同型、cell ごとの
-  成分式 `β_c = α_c ≫ E_c`、finite axis-fold の firing cell で `E_c` が同型でない
-  こと、object 写像 `n_P` の冪等性、までは証明済み。未証明の核は package 射
-  `N_P` の冪等性 `N_P ≫ N_P = N_P` で、`SignedExactCoreReadingHom.ext` の 7 条件の
-  うち `EquationSystemExactTransport` の `HEq` 一つに帰着する。これが立てば Karoubi
-  の像で `β_c` が可逆になり、立たなければ具体の不成立等式が残る。分裂像を package
-  圏の内部に作ることは no-go の見込みで、定理になれば Karoubi は意味の像を表す
-  最小の完備化になる。observable の層では、一般の関数に対する `E_c` 不変性の
-  implication は結合律だけの補題で中身がなく、AAT の中身は選んだ reading の
-  admissibility field と transport にだけある。
+  成分式 `β_c = α_c ≫ E_c`、選択子と `N_P` の成分の対応、replacement に関する
+  自然性、finite axis-fold の firing cell で `E_c` が同型でないこと、object 写像
+  `n_P` の冪等性、までは証明済み。未証明の核は package 射 `N_P` の冪等性
+  `N_P ≫ N_P = N_P` で、`PackageTotalHom.ext` と `SignedExactCoreReadingHom.ext` の
+  条件のうち `EquationSystemExactTransport` の `HEq` 一つに帰着する見込みである。
+  これが立てば Karoubi の像で `β_c` が可逆になり、立たなければ具体の不成立等式が
+  残る。分裂像を package 圏の内部に作ることは no-go の見込みで、定理になれば
+  Karoubi は意味の像を表す最小の完備化になる。observable の層では、一般の関数に
+  対する `E_c` 不変性の implication は結合律だけの補題で中身がなく、AAT の中身は
+  選んだ reading の admissibility field と transport にだけある。
 - `rival`: Beck–Chevalley 条件の古典論と、冪等射の分裂の古典論(Karoubi 一般論)。
-  差は、diagnostic による選択、admissibility、選んだ reading の分離を証明の中で
-  実際に使う点に置く。
-- `claim boundary`: G-110 sector の authored lax square。`input : AuthoredBCDatumSquare U`、
-  `cochain : DefectCochain input.toTransportData`、cell `c` は `input.context.Category`
-  の対象。`D := authoredSupportDirectRoute input.context`、
-  `V := authoredSupportViaBaseRoute input.context`、`α := authoredSupportCanonicalMate
-  input.context`、`β := authoredDiagnosticObjectCollapseComparisonAtCochain input cochain`、
-  `E_c := authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain c`。
-  generated comparison は `cochain := initialRawDefectCochain input.toTransportData`。
-  `n_P := canonicalObjectNormalization P`(object 写像)、
-  `N_P := canonicalObjectNormalizationTotal P adm`(package 射)、`U(h)` は package 射
-  `h` の underlying object 写像。carrier `U` と係数は固定する。語らないもの:
-  G-114 refinement mate と G-115 upper solution の同型性、localization
-  (`W`-inversion)、fiber を貫く global modification `ν`(後続カード)、
-  ArchSig の artifact と実装挙動(client route として分離し、AAT 側は observable
-  predicate と theorem interface だけを定める)。
+  差は、diagnostic による選択、admissibility、選んだ reading の分離を (c)(f)(h) の
+  証明の中で実際に使う点に置く((e) は admissibility を使わない)。
+- `claim boundary`: 記号を次で固定する。
+  - package と object: `P Q : AATCorePackage U`、射は total category
+    `PackageTotalCategory U` の `PackageTotalHom`。`U(h) := h.upper.objectMap`
+    (fiber の射 `E_c` では `E_c.1.upper.objectMap`)。`π_P x := x.configuration`、
+    `s_P c := P.reading.objectReading.object c`、`n_P := canonicalObjectNormalization P
+    = s_P ∘ π_P`、`Fix(n_P) := {x // n_P x = x}`、`x ≈_P y :↔ π_P x = π_P y`。
+    `adm : CanonicalObjectNormalizationAdmissible P`、
+    `N_P := canonicalObjectNormalizationTotal P adm : P ⟶ P`。
+  - 比較射: `input : AuthoredBCDatumSquare U`、`cochain : DefectCochain
+    input.toTransportData`、cell `c` は `input.context.Category` の対象で、その
+    support package は `P := input.context.supportPackage c.as`。
+    `D := authoredSupportDirectRoute input.context`、
+    `V := authoredSupportViaBaseRoute input.context`、
+    `α := authoredSupportCanonicalMate input.context : D ⟶ V`、
+    `β := authoredDiagnosticObjectCollapseComparisonAtCochain input cochain : D ⟶ V`、
+    `E_c := authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain c`。
+    generated comparison は `cochain := initialRawDefectCochain input.toTransportData`。
+    `V_c` の package を `P'_c` と書く。
+  - 量化域: (a)(b)(e) は任意の `P`(と `adm`)の上で言う。(c)(d)(f)(g) の cell ごとの
+    主張は任意の `input`、`cochain`、`c` の上で言う。(g) の `β` 全体の非同型と (h) は
+    fixture `finiteAxisFoldBCDatumSquare` とその generated cochain の上で言う。carrier
+    `U` は (a)–(g) で任意、(h) では fixture の carrier。係数、law universe、coverage
+    topology、site は動かさない。
+  - 語らないもの: G-114 refinement mate と G-115 upper solution の同型性、
+    localization(`W`-inversion)、fiber を貫く global modification `ν`(後続カード)、
+    ArchSig の artifact と実装挙動(client route として分離し、AAT 側は observable
+    predicate と theorem interface だけを定める)。
 - `capability categories`: exactness、decision、counterexample、unification。
 - `threshold policy`: SCORE は使わない。runtime state は tracking Issue に置く。
-- `portfolio constraint`: 正の定理(Karoubi、observable)だけで完了と数えない。
-  witness packet(下記 (h))と、no-go (e) または具体の blocker のどちらか一方を
-  要求する。firing でない cell(`E_c = 𝟙`)での成立は放電と数えない。
+- `portfolio constraint`: 正の定理((d)(f))だけで完了と数えない。(e) の no-go theorem
+  と (h) の witness packet の両方を要求する。(e) の blocker は checkpoint の事由で
+  あって代替ではない。`E_c = 𝟙` となる cell(firing でない、または admissible でない)
+  での成立は放電と数えない。
 - `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証なら
   `target-refuted`、全完了条件と final review を満たした場合だけ
   `target-theorem-proved`。
 - `reward rubric`: `not-applicable (target-theorem mode)`。
-- `dullness filter`: 次を弾く。mathlib の Karoubi API を包み直しただけの構成。
-  二点半束の lax law を単独で数える構成。一般の `q` に対する
-  `q ∘ U(E_c) = q ⇒ q ∘ U(β_c) = q ∘ U(α_c)`(結合律だけで出る)を observable
-  exactness の放電と数える構成。`q := π_P` で separation を満たす構成。gate なしの
-  「`E_c` = transport された `N_P`」(firing でない cell で偽)。後続カードの `ν` を
-  前提にする構成。
-- `frontier`: natural idempotent modification と lax projector law(G-117 候補)、
-  comparator inertia test(G-118 候補)、`W`-inversion、係数 base change。候補の
-  中身は n1008 §4・§6。
+- `dullness filter`: 次を弾く。mathlib の Karoubi API を包み直しただけの構成((d) は
+  (c) の theorem を instantiate した系として認め、独立の放電と数えない)。二点半束の
+  lax law を単独で数える構成。一般の `q` に対する
+  `q ∘ U(E_c) = q ⇒ q ∘ U(β_c) = q ∘ U(α_c)`(結合律だけで出る)を (f) の放電と数える
+  構成。`q := π_P`、`π_P` との pairing、reading の後合成で (h) の separation を満たす
+  構成。gate なしの「`E_c` = transport された `N_P`」(`E_c = 𝟙` の cell で偽)。
+  `E_c` の transport field(`equationTransport` の `observableEquiv` / `equationEquiv` /
+  `contextEquivalence` / `atomEquiv`)を名前付けするだけの (f)。後続カードの `ν` を
+  前提にする構成。散文だけの「できない」判定。
+- `frontier`: natural idempotent modification と lax projector law、comparator inertia
+  test、`W`-inversion、係数 base change。候補の中身は n1008 §4・§6。
 
 - `target theorem`: **Split Configuration Descent and Idempotent Beck–Chevalley
   Exactness**。次の (a)–(h) を Lean で構成または反証する。
-  - **(a) configuration descent**(`Type` の水準): `Fix(n_P) ≃ AtomConfiguration U`、
-    `f ∘ n_P = f ↔ ∃! f̄, f = f̄ ∘ π_P`、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`
-    (`x ≈_P y :↔ π_P x = π_P y`)。operation / invariant の dependent な因子化は
-    「できる / できない」を決める。
-  - **(b) package idempotence**: `N_P ≫ N_P = N_P`。`EquationSystemExactTransport` の
-    ext 補題と refl-trans の等式を経由する。落ちた場合は、どの等式が成り立たないかを
-    theorem の形で固定する。
-  - **(c) factorization**: `β_c = α_c ≫ E_c`(証明済みの再繋留)、`E_c ≫ E_c = E_c`、
-    firing かつ admissible の cell で `E_c` が `N_P` の成分を transport / provenance iso で
-    運んだものであること(gate 込み)、replacement に関する自然性。
-  - **(d) image exactness**: (b)(c) のもとで、`β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)`
-    が Karoubi の圏で同型。
-  - **(e) internal split no-go**(固定した義務): 任意の `P Q`、
-    `adm : CanonicalObjectNormalizationAdmissible P`、`r : P ⟶ Q`、`i : Q ⟶ P` と、
-    同じ configuration の上の相異なる二つの `ArchitectureObject` の witness に対して、
-    `¬ (i ≫ r = 𝟙 Q ∧ r ≫ i = N_P)`。
-  - **(f) observable exactness**: firing かつ admissible の cell で、選んだ reading
-    `ρ`(equation residual / operation / invariant / coordinate)について、admissibility
-    の対応する field から `ρ ∘ n_P = ρ`、その transport `ρ'` について
-    `ρ' ∘ U(E_c) = ρ'`、よって `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。firing でない cell は
-    `E_c = 𝟙` の別 case とする。
-  - **(g) raw failure locus**: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の
-    `¬ IsIso` を名前付き theorem にする。「raw で壊れる ⟺ firing ∧ admissible ∧
-    正規化が非自明」を cell の外の一般形で言うのに要る transport / reindex の
-    conservativity は、「証明 / G-113 O13・O18 からの導出 / 不成立(反例を theorem
-    に)」のどれかで決める。
-  - **(h) witness packet**: finite axis-fold で carrier / firing / admissibility /
-    noninjectivity / selected reading preservation / separation の六役割を備え、
-    `q` は実際に選んだ reading に型付けして `q ∘ n_P = q` を admissibility field から
-    導き、`E_c ≠ 𝟙`、`¬ IsIso β_c`、reading の保存を同時に示す。
-- `target theorem boundary`: Lean 置き場所は `research/lean/ResearchLean/AG/
-  DoctrineFiberProduct/` 配下の新 module。G-110 / G-113 の reviewed module は参照のみ。
-  (a) と (f) の `Type` 水準の商と、(d) の圏水準の Karoubi は分けて扱い、`Type` の側の
-  商を圏へ戻さない(`coforkReturn_not_isIso_of_ne` の障害)。universe は F0 で確定。
-- `target proof artifacts`: (a)–(h) の theorem と finite witness packet、旧 O12 の
-  disposition と declaration-level evidence map を含む report
+  - **(a) configuration descent**(`Type` の水準、任意の `P`): `Fix(n_P) ≃
+    AtomConfiguration U`。任意の `Y : Type` と `f : ArchitectureObject U → Y` について
+    `f ∘ n_P = f ↔ ∃! f̄, f = f̄ ∘ π_P`。`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`。
+    operation と invariant の dependent な因子化は、それぞれ「降ろした data と等式の
+    Lean 構成」か「具体的な `P adm` で因子化が存在しない名前付き no-go theorem」の
+    どちらかを artifact とする。散文の判定は放電と数えない。
+  - **(b) package idempotence**(任意の `P adm`): total category の射の等式
+    `N_P ≫ N_P = N_P`。`PackageTotalHom.ext` と `SignedExactCoreReadingHom.ext` を経由し、
+    `EquationSystemExactTransport` の ext 補題と refl-trans の等式を名前付きの artifact
+    として残す(後続カードが使う)。object 写像の等式で代替しない。
+  - **(c) factorization and naturality**(任意の `input cochain c`、任意の `f : P ⟶ Q`):
+    既証明の `β_c = α_c ≫ E_c`、gate 込みの同定(`cochain c = 1` なら `E_c = 𝟙`、firing
+    かつ admissible なら `E_c` は `N_P` の成分の transport / provenance iso による像)、
+    replacement に関する自然性は、既存 theorem の参照として使う(再証明しない、新規
+    放電に数えない)。新しく示すのは `E_c ≫ E_c = E_c` と、object 写像の水準の自然性
+    `U(f) ∘ n_P = n_Q ∘ U(f)`(`object_formation_eq` と `configuration_eq` から)。
+  - **(d) image exactness**: (b)(c) の theorem を使って、`β_c : (D_c, β_c ≫ inv α_c) ⟶
+    (V_c, E_c)` が Karoubi の圏で同型。
+  - **(e) internal split no-go**(固定した義務、total category、任意の `P Q adm`):
+    `r : P ⟶ Q`、`i : Q ⟶ P` について `¬ (i ≫ r = 𝟙 Q ∧ r ≫ i = N_P)`。同じ
+    configuration の上の相異なる二つの `ArchitectureObject` は証明の中で構成する
+    (装飾の異なる object。fixture では `finiteAxisFoldBoolObject` 型の構成)。witness を
+    theorem の引数にする場合は、fixture の上で構成して放電したものだけを認める。
+    `CoreFiber` への制限で代替しない。
+  - **(f) observable exactness**(任意の `input cochain c`、`cochain c ≠ 1` かつ `adm` の
+    もとで): reading は equation residual と coordinate に限る(operation / invariant は
+    (a) の dependent 因子化へ)。`ρ` を `P` のその reading field の適用そのもの、`ρ'` を
+    `P'_c` の同じ reading field の適用そのものとする。`ρ ∘ n_P = ρ` を `adm` の対応する
+    field(`equationResidual_eq` / `coordinate_eq`)から導き、`ρ' ∘ U(E_c) = ρ'` を
+    equivalence 成分を含まない literal な等式として示し、そこから
+    `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。`E_c = 𝟙` の cell は自明なので別 case とし、放電に
+    数えない。
+  - **(g) raw failure locus**: 任意の `input cochain c` で、(c) の冪等性のもとで
+    `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。fixture `finiteAxisFoldBCDatumSquare` の generated
+    comparison について、仮定なしの名前付き theorem
+    `¬ IsIso (generatedAuthoredDiagnosticObjectCollapseComparison finiteAxisFoldBCDatumSquare)`
+    (firing は `finiteAxisFold_initialRawDefect_second` で放電する)。
+    「`E_c = 𝟙 ↔ ¬ (cochain c ≠ 1 ∧ adm ∧ ¬ Function.Injective n_P)`」の形の一般の同値は
+    target の conjunct ではなく、下記 ledger の conservativity 行で扱う。
+  - **(h) witness packet**: fixture `finiteAxisFoldBCDatumSquare`、generated cochain、
+    cell `second`、`P := supportPackage second`、一つの `ρ`(この fixture では coordinate
+    と invariant が object を読まないので equation residual に限る)について、carrier
+    (同じ configuration の相異なる raw object)、firing、admissibility、noninjectivity
+    (`n_P x = n_P y`、`x ≠ y`)、`ρ ∘ n_P = ρ`(`adm` の field から)、separation(`ρ` が
+    二つの configuration を区別する)、`E_c ≠ 𝟙`、`¬ IsIso β_c`、`ρ' ∘ U(E_c) = ρ'` を、
+    一本の conjunction theorem または structure の中で同時に示す。別 fixture を新設する
+    場合は、その fixture の上で全役割を再放電する。
+- `target theorem boundary`: Lean 置き場所は
+  `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。G-110 / G-113
+  の reviewed module は参照のみ。(a) と (f) の `Type` 水準の商と、(d) の圏水準の
+  Karoubi は分けて扱い、`Type` の側の商を圏へ戻さない(`coforkReturn_not_isIso_of_ne`
+  の障害)。量化域は claim boundary のとおり。universe は F0 で確定する。
+- `target proof artifacts`: (a)–(h) の theorem、(b) の ext 補題群(名前付き)、(h) の
+  witness packet、旧 O12 の disposition と declaration-level evidence map を含む report
   `research/reports/G-116-aat-idempotent-exchange-structure.md`。
 - `target proof strategy`: F0 typing(`n_P` / `N_P` / `E_c` の型分離、ext 補題の
-  signature)→ K1 (a)(b) → K2 (c)(d) → K3 (e) → K4 (f)(g) → K5 (h) と report。既存
-  成果の利用 map: `canonicalObjectNormalization_idempotent`、
+  signature、(f) の literal 等式の形)→ K1 (a)(b) → K2 (c)(d) → K3 (e) → K4 (f)(g)
+  → K5 (h) と report。既存成果の利用 map: `canonicalObjectNormalization_idempotent`、
   `canonicalObjectNormalizationTotal_proof_irrel`、`ObjectReading.configuration_eq`、
   `SignedExactCoreReadingHom.object_formation_eq` / `configuration_eq`、
-  `finiteAxisFoldPermutationTotal_comp`(ext 7 条件が `rfl` で閉じる前例)、
+  `finiteAxisFoldPermutationTotal_comp`(ext 条件が `rfl` で閉じる前例)、
+  `packageTotalHom_objectMap_injective_of_isIso`、
   `authoredDiagnosticObjectCollapseComparisonAtCochain_app`、
-  `authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical`、
+  `authoredDiagnosticObjectCollapseComponentAtCochain_eq_id` / `_eq_canonical`、
   `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`、
   `generatedAuthoredDiagnosticObjectCollapseComparison_replacement`、
+  `finiteAxisFold_initialRawDefect_second`、
   `authoredViaBaseRawDefectComponent_isIso`(twist は既知の系として数える)、
-  mathlib `Idempotents.Karoubi`。
+  mathlib `Idempotents.Karoubi`。選択子の定義に沿う case 分析(`cochain c = 1`、`adm`)は
+  許す。
 - `target theorem completion criteria`: 全 artifact が sorry なしで `ResearchLean` に
   受理され、axiom / placeholder audit が clean であること。下記 ledger の
   `discharge-required` を放電し、provenance、proof-use、structure-field escape、route
   integrity を監査すること。二段 review gate(各実装 PR の fixed-head `$review-pr`、
   completion candidate での Lean / report / tracking Issue 同期と final review packet、
-  独立 `$math-lean-review` 4 査読の全 `No major findings`)を通過すること。Gr4 達成
-  記録は完了条件に含めない。
+  独立 `$math-lean-review` 4 査読の全 `No major findings`)を通過すること。(e) と (h)
+  を欠いた完了は認めない。Gr4 達成記録は完了条件に含めない。
 
 **旧義務の行き先**:
 
 | 旧義務 | 行き先 |
 |---|---|
-| O12 universal 枝 | cell 水準では firing cell の `E_c` が同型でないことが証明済み(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、前提 `cochain cell ≠ 1`)。`β` 全体の `¬ IsIso` は (g) で名前付き theorem にし、それをもって raw universal `IsIso` の反証として記録する |
+| O12 universal 枝 | finite axis-fold の firing cell で `E_c` が同型でないことは証明済み(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、前提 `cochain cell ≠ 1`)。`β` 全体の非同型は (g) の仮定なしの名前付き theorem にし、それをもって raw universal `IsIso` の反証として記録する |
 | O12 named-failure 枝 | 固定 cell・固定 component・caller 供給の証明書禁止という評価は (g)(h) に残す。結論は上の構造定理に置き換える |
 | O12 の G-114 / G-115 成分 | Gr4 を閉じるカードへ |
 | O19(Gr4 達成記録、達成階梯対応表) | Gr4 を閉じるカードへ |
-| 義務台帳 O1–O20 と、G-113 / G-115 の revision disposition | O19 とともに Gr4 を閉じるカードへ移す。設計元は n1007 §3、各 revision の記録は G-113 / G-115 の tracking Issue(#4204、#4250) |
+| 義務台帳 O1–O20 と、G-113 / G-115 の revision disposition | O19 とともに Gr4 を閉じるカードへ移す。移るまでの所在は改訂前カードの版(blob `be49fdeb2e1d2eeefd76c93aafb75541c02a79a0`)と n1007 §3。各 revision の記録は G-113 / G-115 の tracking Issue(#4204、#4250) |
 
 **旧 O12 の disposition(履歴)**:
 
 | id | 旧義務 | disposition |
 |---|---|---|
-| O12-r1〜r4 | actual mate-bearing sector / active refinement / upper-stage regime での exchange-failure の存否決定 | upper-stage 側は G-115 の各 revision で named `upperDecisionSolution` へ縮小した。その成分の決定は Gr4 を閉じるカードへ。G-110 成分は本カードの (c)–(h) に置き換える |
+| O12-r1 | actual mate-bearing sector / active refinement / active upper-stage regime 上で exchange-failure の存否を決定する | O10-r1 の global upper lift が `goal-defect` となり、全 active upper-stage solution 域は供給できなかった。人間承認 revision 2 は G-115 が caller-free に構成する単一の named `upperDecisionSolution` を upper summand へ供給し、O12 はその chosen-solution-relative な `UpperStageExchangeExact` を決定する形になった |
+| O12-r3 | raw authored upper problem 全体の comparison を solution equivalence として upper summand へ運ぶ | endpoint cartesianness を持たない raw domain では逆比較を生成できず `goal-defect`。人間承認 revision 4 は raw 片方向 comparison を O12 外へ分類し、generated cartesian-compatible locus の canonical `upperDecisionSolution` だけを upper summand へ供給する形になった |
+| O12-r4 | literal G-114 selected endpoint 上の cartesian-compatible solution を upper summand へ供給する | selected endpoint の geometry inverse が構成不能となり、当該 upper summand は未供給。revision 5 は raw selected route との接続を一方向 comparison と core square に限定し、explicit upper equivalence から構成する canonicalized `upperDecisionSolution` だけを O12 へ供給する形になった |
+| O12(G-110 成分) | 本カードの (c)–(h) に置き換える。upper summand の決定は Gr4 を閉じるカードへ |
 
-**declaration-level evidence map**:
+**declaration-level evidence map**(module は `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下):
 
 | 対象 | 宣言 |
 |---|---|
-| canonical mate `α` と同型性 | `authoredSupportCanonicalMate`(`BCAuthoredSupportCanonicalMate`) |
+| canonical mate `α` と同型性 | `authoredSupportCanonicalMate`、instance `authoredSupportCanonicalMate_isIso`(`BCAuthoredSupportCanonicalMate`) |
 | via-base collapse component `E_c` と選択子 | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`、`authoredDiagnosticObjectCollapseComponentAtCochain`(`BCAuthoredDiagnosticObjectCollapseProducer`) |
 | generated comparison と成分式 | `generatedAuthoredDiagnosticObjectCollapseComparison`、`authoredDiagnosticObjectCollapseComparisonAtCochain_app` |
 | replacement naturality | `generatedAuthoredDiagnosticObjectCollapseComparison_replacement`、`mateCoherentRel_replacePresentation_iff` |
-| normalization(object 写像・package 射・admissibility) | `canonicalObjectNormalization`、`canonicalObjectNormalizationTotal`、`CanonicalObjectNormalizationAdmissible`(`BCAuthoredCanonicalObjectNormalization`) |
-| finite axis-fold witness | `finiteAxisFold_canonicalNormalizationAdmissibleAt`、`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFoldCanonicalNormalizationSupportComponent_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFoldBCDatumSquare_not_mateCoherentRel`、`finiteAxisFold_reselectEdges_not_mateCoherentRel`、`finiteAxisFold_replacePresentation_not_mateCoherentRel`、対照例 `auxiliarySensitiveCorePackage_not_admissible` |
-| twist と cofork の no-go(系として数える根拠) | `authoredViaBaseRawDefectComponent_isIso`、`finiteAxisFold_viaBaseRawDefect_no_cofork`、`coforkReturn_not_isIso_of_ne` |
+| normalization(object 写像・package 射・admissibility) | `canonicalObjectNormalization`、`canonicalObjectNormalizationTotal`、`CanonicalObjectNormalizationAdmissible`(`BCAuthoredCanonicalObjectNormalization`)、`packageTotalHom_objectMap_injective_of_isIso`(`BCAuthoredObjectCollapse`) |
+| finite axis-fold witness | `finiteAxisFold_canonicalNormalizationAdmissibleAt`、`finiteAxisFoldCanonicalNormalizationSupportComponent_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFoldBCDatumSquare_not_mateCoherentRel`、`finiteAxisFold_reselectEdges_not_mateCoherentRel`、`finiteAxisFold_replacePresentation_not_mateCoherentRel`(`BCAuthoredDiagnosticObjectCollapseProducerWitnesses`)、`finiteCanonicalObjectNormalizationTotal_not_isIso`、対照例 `auxiliarySensitiveCorePackage_not_admissible`(`BCAuthoredCanonicalObjectNormalizationWitnesses`)、`finiteAxisFold_initialRawDefect_second`(`BCDiagnosticAxisFoldComparisonWitnesses`) |
+| twist と cofork の no-go(系として数える根拠) | `authoredViaBaseRawDefectComponent_isIso`(`BCAuthoredComparisonNoGo`)、`finiteAxisFold_viaBaseRawDefect_no_cofork`(`BCAuthoredFixedTargetCoforkNoGoWitnesses`)、`coforkReturn_not_isIso_of_ne`(`BCAuthoredFixedTargetQuotientNoGo`)、`BCAuthoredNonAxisCollapseAudit`(非可逆性が object 写像に住むことの監査) |
 
-- `target premise discharge policy`: 入力(`input`、`cochain`、witness fixture)だけを
-  残せる。冪等性、同型性、no-go、reading の保存は放電対象であり、結論相当の
-  データを供給として受けない。
-- `target material premise ledger`:
+- `target premise discharge policy`: 入力(`input`、fixture の `AuthoredBCDatumSquare`
+  data)だけを残せる。`cochain` は generated cochain に固定し、fixture の data として
+  自由に選ばない。冪等性、同型性、no-go、firing、noninjectivity、separation、reading の
+  保存は放電対象であり、結論相当のデータを供給として受けない。
+- `target material premise ledger`(`discharge-required` 行の provenance は「入力 data と
+  reviewed predecessor theorem から proof term が構成されること」、proof-use は「当該
+  field / theorem が proof term に現れること」を要件とする):
   - `G-110 reviewed artifact`: `ambient-boundary`。参照のみ。固定参照 = 完了
-    PR #4153(final head `a1471483`、merge `315a2537`)。支える結論 = (c) の既証明
-    部分と (h) の fixture。結論相当でない理由 = `E_c` の冪等性、Karoubi での同型性、
-    `β` 全体の非同型は既証明 artifact からは従わない。
+    PR #4153(final head `a1471483`、merge `315a2537`)。宣言は上の evidence map。支える
+    結論 = (c) の既証明部分と (h) の fixture。結論相当でない理由 = `E_c` の冪等性、
+    Karoubi での同型性、`β` 全体の非同型は既証明 artifact からは従わない。
   - `G-113 reviewed artifact`: `ambient-boundary`。参照のみ。固定参照 = 完了
-    PR #4233(head `76e58611`、merge `7083db0d`)。支える結論 = (g) の conservativity の
-    導出候補。結論相当でない理由 = O13・O18 は transport の equivalence であり、
-    `E_c` の恒等性の反映はそこから別に導く必要がある。
-  - `finite axis-fold fixture`: `ambient-boundary`(入力幾何)。支える結論 = (h)。
-    結論相当でない理由 = fixture は object と cochain の data であり、非同型・
-    admissibility・分離はいずれも theorem として放電する。
+    PR #4233(head `76e58611`、merge `7083db0d`)。宣言 =
+    `indexedDiagnosticTransportEquivalence`(O13)と
+    `indexedDiagnosticTransportPush_isEquivalence`(O18)。
+    支える結論 = conservativity 行の導出候補。結論相当でない理由 = O13・O18 は
+    `coreFiberTransportFunctor` 側の equivalence であり、`selectedCoreFiberReindexFunctor`
+    との合成への bridge と、`E_c` の恒等性の反映は別に導く必要がある。
+  - `finite axis-fold fixture`(`finiteAxisFoldBCDatumSquare`、`finiteAxisFoldSupportPackage`)
+    と対照例 fixture(`auxiliarySensitiveCorePackage`): `ambient-boundary`(入力幾何)。
+    支える結論 = (h) と非空虚性。結論相当でない理由 = fixture は object と square の
+    data であり、非同型・admissibility・分離はいずれも theorem として放電する。
+  - `adm : CanonicalObjectNormalizationAdmissible P`: `direction-hypothesis`(選択子の
+    gate 条件)。非空虚性 = `auxiliarySensitiveCorePackage_not_admissible`(admissible で
+    ない package が実在する)。fixture での放電 =
+    `finiteAxisFold_canonicalNormalizationAdmissibleAt`。(f)(h) では対応する field の
+    proof-use を要件とする。結論相当でない理由 = admissibility は選んだ reading が
+    `n_P` を区別しないことであり、`E_c` の冪等性・非同型性・separation は含まない。
+  - `firing : cochain c ≠ 1`: `direction-hypothesis`(cell ごとの主張 (f)(g))。fixture
+    では `finiteAxisFold_initialRawDefect_second` で放電し、(g) の名前付き theorem と
+    (h) では仮定に置かない。
   - `package idempotence (b)`: `discharge-required`。artifact = ext 補題と
     `N_P ≫ N_P = N_P`、または不成立等式の theorem。
-  - `internal split no-go (e)`: `discharge-required`。artifact = no-go theorem。
-    失敗時は下記 failure policy。
-  - `observable transport (f)`: `discharge-required`。artifact = 選んだ reading の
-    admissibility field の proof-use と、transport 後の不変性の theorem。
-  - `named reading witness (h)`: `discharge-required`。artifact = 実際の reading に
-    型付けした `q` と separation theorem。
-- `target route integrity gate`: 量化域は `AuthoredBCDatumSquare` の data からのみ
-  組む。witness は finite axis-fold 系 fixture と対照例 fixture に限る。禁止経路:
-  caller 供給の certificate、`Classical.em` / `not_forall` / choice だけによる分岐、
-  mathlib API の包み直しによる (d) の放電、`q := π_P` による (h) の放電、gate なしの
-  `E_c = transport(N_P)`、後続カードの `ν` を前提にした (c)、firing でない cell での
-  (f) の放電。
-- `target anti-weakening rule`: 冪等性、同型性、no-go、reading の保存を theorem
-  argument、typeclass、structure field、certificate field へ移して成功扱いしない。
-  `ambient-boundary` に残せるのは入力幾何と reviewed predecessor の成果だけである。
-- `target failure policy`: fail-closed。(b) が落ちた場合は不成立等式を theorem に
-  固定して `target-proof-checkpoint` で止め、人間の判断を待つ。(e) が偽・型不能・
-  反例のときは成功枝へ移らず `goal-defect` で止め、人間の判断で target を改めてから
-  構成 / no-go の二枝に戻す。(g) の conservativity が不成立なら反例を theorem に
-  固定し、一般形は主張せず cell 水準の同値に範囲を併記する。F0 で型不能が判明した
-  場合も `goal-defect` で止める。fixed target の変更は人間の別判断とする。
+  - `E_c ≫ E_c = E_c` と object 写像の自然性 (c)`: `discharge-required`。
+  - `internal split no-go (e)`: `discharge-required`。artifact = no-go theorem と、証明内
+    または fixture 上で構成した witness。
+  - `dependent factorization (a)`: `discharge-required`。artifact = 構成または名前付き
+    no-go theorem(operation、invariant それぞれ)。
+  - `observable transport (f)`: `discharge-required`。artifact = `adm` の field の
+    proof-use と、literal な等式 `ρ' ∘ U(E_c) = ρ'` の theorem。provenance 連鎖
+    (`adm.<field>` → `canonicalObjectNormalizationEquationTransport` → `_eq_canonical` /
+    `_eq_provenance`)を report に書く。
+  - `named ¬ IsIso β (g)` と `witness packet (h)`: `discharge-required`。artifact = 仮定
+    なしの fixture theorem と一本の conjunction theorem。
+  - `transport conservativity`: `conclusion-equivalent-risk`。対象 =
+    `coreFiberTransportFunctor` と `selectedCoreFiberReindexFunctor` の合成が `E_c = 𝟙`
+    を反映すること(任意の `input`)。三つの枝のどれかを artifact とする: 直接の
+    theorem、G-113 `indexedDiagnosticTransportEquivalence` からの bridge 付き導出、
+    反例 theorem(非 identity presentation の fixture が要りうる。この行に限り新
+    fixture を許す)。fixture の identity presentation 上では unitor で自明に成り立つ
+    ので、それだけでは放電と数えない。結果は (g) の cell 水準の同値を変えない。
+- `target route integrity gate`: (a)(b)(e) の量化域は `AATCorePackage U` と
+  `PackageTotalHom` の全体。(c)(d)(f)(g)(h) の量化域は `AuthoredBCDatumSquare` の data
+  から組み、cell の package は `input.context.supportPackage c.as`。witness は
+  `finiteAxisFoldBCDatumSquare` 系 fixture と対照例 fixture に限る(conservativity 行の
+  反例のみ例外)。禁止経路: caller 供給の certificate、`Classical.em` / `not_forall` /
+  choice だけによる分岐(選択子の定義に沿う case 分析は可)、mathlib API の包み直し
+  による (d) の独立計上、`q := π_P` や pairing による (h) の放電、gate なしの
+  `E_c = transport(N_P)`、`E_c` の transport field の名前付けによる (f) の放電、後続
+  カードの `ν` を前提にした (c)、`E_c = 𝟙` の cell での (f) の放電、fixture の
+  `cochain` を firing が成り立つように選ぶこと、(e) の `CoreFiber` への制限。
+- `target anti-weakening rule`: 冪等性、同型性、no-go、firing、noninjectivity、
+  separation、reading の保存を theorem argument、typeclass、structure field、certificate
+  field へ移して成功扱いしない(一般の `input` の定理で `firing` / `adm` を仮定に置く
+  ことは可。fixture の theorem では不可)。`ambient-boundary` に残せるのは入力幾何と
+  reviewed predecessor の成果だけである。
+- `target failure policy`: fail-closed。証明が得られず具体の blocker(どの field の
+  `HEq` か、どの等式か)が report に記録された状態は `target-proof-checkpoint`。同じ
+  blocker が二 cycle 続けば `target-blocked`。(b)(c)(e)(g) のいずれかで反例が
+  theorem として立てば `target-refuted`(fixed target の改訂は人間の別判断)。(e) が
+  型不能、または witness が構成できない場合は `goal-defect` で止め、人間の判断で
+  target を改めてから構成 / no-go の二枝に戻す。F0 で型不能が判明した場合も
+  `goal-defect` で止める。GOAL 改訂の提案は tracking Issue のコメントに置く。
