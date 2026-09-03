@@ -329,13 +329,17 @@ package の水準の冪等性 `N_P ≫ N_P = N_P` は、`PackageTotalHom.ext` �
 と、数学的な coherence が実際に壊れていることは別である。先回りして高次 obstruction と
 読まない。
 
-### 2.4 圏の中では分裂しない(見込み、未証明)
+### 2.4 圏の中では分裂しない(前半証明済み、no-go 未証明)
 
 主張: 任意の `P Q : AATCorePackage U`、`adm : CanonicalObjectNormalizationAdmissible P`、
 `r : P ⟶ Q`、`i : Q ⟶ P` について、`i ≫ r = 𝟙 Q` かつ
 `r ≫ i = canonicalObjectNormalizationTotal P adm` は成り立たない。ただし、同じ
-configuration の上に相異なる二つの `ArchitectureObject` があるとき(この witness も
-theorem の引数に置く)。`adm` は省けない。admissible でない package は実在する
+configuration の上に相異なる二つの `ArchitectureObject` がある。G-116 Cycle 6 は、任意の
+carrier と任意の configuration に対し `StructureMaps` を `ULift PUnit` と `ULift Bool` に
+選んだ二 object を構成し、この存在を
+`exists_distinct_architectureObjects_over_configuration` として証明した。したがって no-go
+は witness を theorem の引数にせず、この一般定理から取る。`adm` は省けない。
+admissible でない package は実在する
 (`auxiliarySensitiveCorePackage_not_admissible`)。
 
 証明の見込み。`a := r.upper.objectMap`、`b := i.upper.objectMap` と置くと `a ∘ b = id`、
@@ -412,7 +416,8 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 3a | `β_c = α_c ≫ E_c` であること、replacement に関する自然性 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app`、`authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`、`generatedAuthoredDiagnosticObjectCollapseComparison_replacement`) |
 | 3b | `E_c ≫ E_c = E_c` と `E_c.1.upper.atomEquiv = Equiv.refl _` | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv`)。raw selector の全 branch と2段の functor transport を名前付き補題で固定 |
 | 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 証明済み(`authoredDiagnosticImageSourceKaroubi`、`authoredDiagnosticImageTargetKaroubi`、`authoredDiagnosticObjectCollapseKaroubiIso`)。逆射は `E_c ≫ inv α_c` |
-| 5 | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` と同一 configuration 上の相異なる object の witness を含める。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
+| 5a | 任意の carrier と任意の configuration 上に相異なる二つの `ArchitectureObject` が存在する | 証明済み(`exists_distinct_architectureObjects_over_configuration`)。`StructureMaps` の型を `ULift PUnit` と `ULift Bool` に変えた装飾を使用 |
+| 5b | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` を含め、5a の witness を実使用する。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
 | 6b | dependent な operation / invariant reading が configuration quotient へ descent できる条件と、できない場合の frontier を決める | 未構成。将来義務として保持。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness。firing でない cell は `E_c = 𝟙` の別 case。firing かつ admissible の cell で、`U(E_c)` と transport した `n_P` の対応、選んだ reading `ρ` の admissibility field からの `ρ ∘ n_P = ρ`、その transport `ρ' ∘ U(E_c) = ρ'` を独立の義務にし、そこから `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。一般の `q` に対する implication は結合律だけの補題で放電と数えない | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |

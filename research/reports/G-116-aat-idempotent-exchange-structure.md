@@ -294,3 +294,62 @@ The Karoubi source uses the literal projector `β_c ≫ inv α_c`, and the targe
 uses `E_c`.  The constructed isomorphism has underlying forward map `β_c` and
 inverse `E_c ≫ inv α_c`; its compatibility and inverse laws use the fixed
 component equation and cell-projector idempotence.
+
+## Cycle 6 — K3(e1) distinct objects over every configuration
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 6
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: d989ed401df317e451921912c295b3dc8f91b453
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 5 merge d989ed401df317e451921912c295b3dc8f91b453
+  proof_dag_predecessors: [ArchitectureObject, ULift, Equiv.cast, Fintype.card_congr]
+  proof_obligation: Prove clause (e1) for every AtomCarrier U and every AtomConfiguration U by constructing two distinct ArchitectureObjects with that configuration.
+  selection_reason: The general same-configuration witness is the first K3 obligation and supplies the witness that clause (e2) must consume rather than accept as a premise.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean]
+  risks: [proving only the finite fixture, fixing the carrier universe, assuming an existing object, changing only a value inside the same decoration type, accepting distinctness as a premise]
+  unchecked: [clauses (e2), (f), (g), (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (e1) is proved uniformly by constructing unit- and Boolean-decorated architecture objects over the supplied configuration and deriving their inequality from the cardinalities of their StructureMaps types.
+  completion_candidate: no
+  lean_artifacts: [unitDecoratedArchitectureObject, boolDecoratedArchitectureObject, unitDecoratedArchitectureObject_ne_boolDecoratedArchitectureObject, exists_distinct_architectureObjects_over_configuration]
+  evidence: [focused elaboration exit 0, targeted module build exit 0, standard-axiom audit for all four declarations]
+  claim_mapping:
+    theorem_names: [exists_distinct_architectureObjects_over_configuration]
+    source_labels: [target theorem clause (e1), target proof strategy K3]
+    conjuncts: [two ArchitectureObjects, object inequality, first configuration equality, second configuration equality]
+    undischarged_assumptions: []
+    acceptance_point: The theorem quantifies over an arbitrary universe-polymorphic carrier and supplied configuration; both witnesses are constructed internally and distinctness is proved rather than assumed.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [distinct objects lemma (e1)]
+    remaining: [clauses (e2), (f), (g), (g2), (h)]
+  certificate_provenance:
+    discharged: [the witnesses use explicit ULift PUnit and ULift Bool decorations and their inequality follows from Fintype.card]
+    unresolved: [internal split no-go, fixture witness packet]
+  proof_use:
+    used: [ArchitectureObject.StructureMaps, congrArg, Equiv.cast, Fintype.card_congr]
+    unused: [admissibility, package idempotence, cell projector data]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: K3(e2) prove that canonical package normalization has no internal split in the total category, using the general clause (e1) witness.
+```
+
+The construction changes only the decoration type while retaining the supplied
+configuration literally.  Universe-polymorphism is preserved by lifting both
+finite decoration types into the carrier universe.  The result supplies a
+theorem-generated witness for clause (e2); no finite carrier or package data is
+assumed.
