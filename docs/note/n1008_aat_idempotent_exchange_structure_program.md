@@ -46,8 +46,9 @@
 
 **事実関係の判定基準**:
 
-- [G-116 カード](../../research/goals/G-116-aat-gr4-capstone.md)(改訂前の
-  義務台帳 O1–O20 と O12 / O19 の定義)
+- [G-116 カード](../../research/goals/G-116-aat-idempotent-exchange-structure.md)
+  (旧 id `G-116-aat-gr4-capstone`。改訂前の義務台帳 O1–O20 と O12 / O19 の定義は
+  git 履歴にある)
 - [G-110 カード](../../research/goals/G-110-aat-doctrine-fiber-product.md)
   (canonical mate exactness、MateCoherentRel 正負対)
 - [G-115 カード](../../research/goals/G-115-aat-upper-stage-lift.md)
