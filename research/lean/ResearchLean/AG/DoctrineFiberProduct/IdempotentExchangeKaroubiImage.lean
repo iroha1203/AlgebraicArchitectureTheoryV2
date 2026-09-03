@@ -5,9 +5,9 @@ import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturali
 # G-116 Karoubi image exactness
 
 This module discharges G-116(d) at each authored diagnostic cell.  The source
-idempotent is the generated comparison followed by the inverse canonical mate;
-the target idempotent is the selected cell projector.  Their comparison is an
-isomorphism in the Karoubi envelope.
+idempotent is the cochain-indexed authored diagnostic comparison followed by
+the inverse canonical mate; the target idempotent is the selected cell
+projector.  Their comparison is an isomorphism in the Karoubi envelope.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct

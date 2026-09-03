@@ -267,7 +267,7 @@ result:
     source_labels: [target theorem clause (d), target proof strategy K2]
     conjuncts: [source projector idempotence, target projector idempotence, Karoubi morphism compatibility, two inverse laws]
     undischarged_assumptions: []
-    acceptance_point: The forward underlying morphism is the generated comparison component beta_c and the inverse is constructed as E_c composed with inv alpha_c for arbitrary input, cochain, and cell.
+    acceptance_point: The forward underlying morphism is the cochain-indexed authored diagnostic comparison component beta_c and the inverse is constructed as E_c composed with inv alpha_c for arbitrary input, cochain, and cell.
     port_status: not-applicable
 audits:
   premise_delta:
@@ -277,8 +277,8 @@ audits:
     discharged: [both projectors and both inverse laws are theorem-generated from beta_c equals alpha_c composed with E_c, E_c idempotence, and the existing IsIso alpha_c instance]
     unresolved: [fixture witness packet]
   proof_use:
-    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, IsIso.inv_hom_id_assoc, Karoubi.Hom.ext]
-    unused: [a caller-supplied splitting, raw IsIso beta_c, G-110 and G-113 reviewed artifacts]
+    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredSupportCanonicalMate_isIso, component IsIso instance chain, IsIso.inv_hom_id_assoc, Karoubi.Hom.ext]
+    unused: [a caller-supplied splitting, raw IsIso beta_c]
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
