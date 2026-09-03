@@ -77,9 +77,10 @@
   と (h) の witness packet の両方を要求する。(e2) の blocker は checkpoint の事由で
   あって代替ではない。`E_c = 𝟙` となる cell(firing でない、または admissible でない)
   での成立は放電と数えない。
-- `phase boundary criteria`: 未証明なら `target-proof-checkpoint`、反証なら
-  `target-refuted`、全完了条件と final review を満たした場合だけ
-  `target-theorem-proved`。
+- `phase boundary criteria`: 未証明なら `target-proof-checkpoint`。型付いた fixed
+  universal clause に反例 theorem が立てば `target-refuted`。例外は、正負二枝をあらかじめ
+  固定した classification clause((g2))の qualified な負枝で、これはその clause の確定
+  結果とする。全完了条件と final review を満たした場合だけ `target-theorem-proved`。
 - `reward rubric`: `not-applicable (target-theorem mode)`。
 - `dullness filter`: 次を弾く。mathlib の Karoubi API を包み直しただけの構成((d) は
   (c1) の theorem を instantiate した系として認め、独立の放電と数えない)。二点半束の
@@ -142,14 +143,18 @@
     comparison について、仮定なしの名前付き theorem
     `¬ IsIso (generatedAuthoredDiagnosticObjectCollapseComparison finiteAxisFoldBCDatumSquare)`
     (firing は `finiteAxisFold_initialRawDefect_second` で放電する)。
-  - **(g2) transport conservativity**(completion に必須): 任意の `input cochain c` で、
-    `coreFiberTransportFunctor` と `selectedCoreFiberReindexFunctor` の合成が `E_c = 𝟙` を
-    反映するか、すなわち `E_c = 𝟙 ↔ ¬ (cochain c ≠ 1 ∧ adm ∧ ¬ Function.Injective n_P)`
-    の一般形が成り立つかを、次の三つのどれか一つの Lean artifact で決める。直接の
-    theorem。G-113 `indexedDiagnosticTransportEquivalence` からの bridge 付きの導出。
-    反例 theorem(非 identity presentation の fixture が要りうる。この clause に限り新
-    fixture を許す)。fixture の identity presentation 上では unitor で自明に成り立つので、
-    それだけでは放電と数えない。どの枝でも (g) の cell 水準の同値は変わらない。
+  - **(g2) transport identity-reflection classification**(completion に必須。正負二枝を
+    あらかじめ固定した classification clause): 対象は、任意の `input cochain c`
+    (`P := input.context.supportPackage c.as`)についての一般形
+    `E_c = 𝟙 ↔ ¬ (cochain c ≠ 1 ∧ CanonicalObjectNormalizationAdmissible P ∧
+    ¬ Function.Injective (canonicalObjectNormalization P))`。正枝: この一般形を theorem
+    として証明する(直接、または G-113 `indexedDiagnosticTransportEquivalence` からの
+    bridge 付きの導出)。負枝: 具体的な `input cochain c` を固定し、一般形の反例を仮定
+    なしの名前付き theorem として証明する(非 identity presentation の fixture が要りうる。
+    この枝に限り新 fixture を許す)。どちらの枝も qualified な classification result と
+    して (g2) の放電と数える。`Classical.em` / `not_forall` / choice だけで枝を選ぶことは
+    認めない。fixture の identity presentation 上では unitor で自明に成り立つので、それ
+    だけでは正枝の放電と数えない。どちらの枝でも (g) の cell 水準の同値は変わらない。
   - **(h) witness packet**: fixture `finiteAxisFoldBCDatumSquare`、generated cochain、
     cell `second`、`P := supportPackage second`、reading は equation residual(この fixture
     では coordinate と invariant が object を読まない)に固定し、一本の conjunction
@@ -263,9 +268,9 @@
     `_eq_provenance`)を report に書く。
   - `named ¬ IsIso β (g)` と `witness packet (h)`: `discharge-required`。artifact = 仮定
     なしの fixture theorem と一本の conjunction theorem。
-  - `transport conservativity (g2)`: `discharge-required`。artifact = (g2) の三枝の
-    どれか一つの theorem。結論相当でない理由 = どの枝も (g) の cell 水準の同値と (h) を
-    変えず、一般形の成否そのものが本カードの結論の一部である。
+  - `transport identity-reflection classification (g2)`: `discharge-required`。artifact =
+    (g2) の正枝または負枝の theorem。結論相当でない理由 = どちらの枝も (g) の cell 水準
+    の同値と (h) を変えず、一般形の成否そのものが本カードの結論の一部である。
 - `target route integrity gate`: (a)(b)(e1)(e2)(c2) の量化域は `AATCorePackage U`、
   `ArchitectureObject U`、`PackageTotalHom` の全体。(c1)(d)(f)(g)(g2)(h) の量化域は `AuthoredBCDatumSquare` の data
   から組み、cell の package は `input.context.supportPackage c.as`。witness は
@@ -284,10 +289,10 @@
   reviewed predecessor の成果だけである。
 - `target failure policy`: fail-closed。証明が得られず具体の blocker(どの field の
   `HEq` か、どの等式か)が report に記録された状態は `target-proof-checkpoint`。同じ
-  blocker が二 cycle 続けば `target-blocked`。(b)(c1)(c2)(e2)(g) のいずれかで反例が
-  theorem として立てば `target-refuted`(fixed target の改訂は人間の別判断)。(e1) が
-  型不能または偽なら `goal-defect` で止め、人間の判断で (e2) を条件付きの形に改める。
-  (e2) が型不能なら `goal-defect` で止め、人間の判断で target を改めてから構成 /
-  no-go の二枝に戻す。(h) の役割が fixture で成り立たなければ、その役割の反例を
-  theorem に固定して `target-refuted`。F0 で型不能が判明した場合も
-  `goal-defect` で止める。GOAL 改訂の提案は tracking Issue のコメントに置く。
+  blocker が二 cycle 続けば `target-blocked`。型付いた fixed universal clause((a)(b)
+  (c1)(c2)(d)(e1)(e2)(f)(g)(h))に反例 theorem が立てば `target-refuted`(fixed target の
+  改訂は人間の別判断。(e1) が偽なら、(e2) を witness を仮定に置く条件付きの形に改める
+  のがその改訂候補)。例外は (g2) の qualified な負枝で、これは (g2) の確定結果とし、
+  `target-refuted` にしない。型不能、または指示対象の欠落は `goal-defect` で止め、
+  人間の判断で target を改める(F0 の型不能を含む)。GOAL 改訂の提案は tracking Issue
+  のコメントに置く。
