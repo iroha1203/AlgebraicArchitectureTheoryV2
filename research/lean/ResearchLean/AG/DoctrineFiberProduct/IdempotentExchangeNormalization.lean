@@ -15,8 +15,11 @@ universe u v
 open CategoryTheory
 open AtomFoundation
 
-/-- Heterogeneous extensionality for exact equation transports whose Atom and
-object maps are propositionally equal. -/
+/-- API support for G-116(b): heterogeneous extensionality for exact equation
+transports whose Atom and object maps are propositionally equal.  Its equality
+arguments compare the computational data needed by
+`canonicalObjectNormalizationTotal_comp`; they are not material premises of
+the G-116 theorem. -/
 theorem equationSystemExactTransport_hext
     {U : AtomCarrier.{u}}
     {A B : ArchitectureObject U}
@@ -43,8 +46,10 @@ theorem equationSystemExactTransport_hext
   cases hobservable
   rfl
 
-/-- Composing the canonical equation transport with itself gives the same
-transport.  This is the equation-field step of package idempotence. -/
+/-- Equation-field API support for G-116(b): composing the canonical equation
+transport with itself gives the same transport.  The package `P` is the GOAL
+input and `admissible` is its declared direction-hypothesis; object-map
+idempotence is supplied by `canonicalObjectNormalization_idempotent`. -/
 theorem canonicalObjectNormalizationEquationTransport_comp_heq
     {U : AtomCarrier.{u}} (P : AATCorePackage U)
     (admissible : CanonicalObjectNormalizationAdmissible P) :
@@ -62,8 +67,10 @@ theorem canonicalObjectNormalizationEquationTransport_comp_heq
   · rfl
   · rfl
 
-/-- Successive casts along two type equalities are heterogeneously equal to
-the first cast. -/
+/-- Operation-field API support for G-116(b): successive casts along two type
+equalities are heterogeneously equal to the first cast.  The equality arguments
+are the generic transport data used by `canonicalObjectNormalizationUpper_comp`,
+not material premises of the package theorem. -/
 theorem cast_cast_heq_first
     {alpha beta gamma : Sort v} (first : alpha = beta) (second : beta = gamma)
     (value : alpha) :
@@ -72,7 +79,10 @@ theorem cast_cast_heq_first
   cases second
   rfl
 
-/-- The complete signed-reading normalization is idempotent. -/
+/-- Upper-field API support for G-116(b): the complete signed-reading
+normalization is idempotent.  The package `P` is the GOAL input and
+`admissible` is its declared direction-hypothesis; no idempotence certificate
+is accepted. -/
 theorem canonicalObjectNormalizationUpper_comp
     {U : AtomCarrier.{u}} (P : AATCorePackage U)
     (admissible : CanonicalObjectNormalizationAdmissible P) :
@@ -104,8 +114,10 @@ theorem canonicalObjectNormalizationUpper_comp
   · rfl
   · rfl
 
-/-- The canonical normalization is an idempotent endomorphism in the package
-total category. -/
+/-- Main theorem for G-116(b): the canonical normalization is an idempotent
+endomorphism in the package total category.  The package `P` is the GOAL input
+and `admissible` is its declared direction-hypothesis; the conclusion is
+constructed through the complete lower and upper morphism data. -/
 theorem canonicalObjectNormalizationTotal_comp
     {U : AtomCarrier.{u}} (P : AATCorePackage U)
     (admissible : CanonicalObjectNormalizationAdmissible P) :

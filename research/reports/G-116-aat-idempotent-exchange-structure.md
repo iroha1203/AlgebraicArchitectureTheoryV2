@@ -32,7 +32,7 @@ result:
     theorem_names: [canonicalObjectNormalizationEquationTransport_comp_heq, canonicalObjectNormalizationUpper_comp, canonicalObjectNormalizationTotal_comp]
     source_labels: [target theorem clause (b), target proof strategy F0 and K1]
     conjuncts: [heterogeneous equation-transport equality, signed-reading hom idempotence, package total hom idempotence]
-    undischarged_assumptions: [all target clauses except (b)]
+    undischarged_assumptions: []
     acceptance_point: canonicalObjectNormalizationTotal_comp has the fixed universal quantification over P and admissible and concludes N_P composed with itself equals N_P without accepting idempotence as an argument or field.
     port_status: not-applicable
 audits:
