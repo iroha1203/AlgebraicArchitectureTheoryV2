@@ -175,7 +175,7 @@ s_P : AtomConfiguration U → ArchitectureObject U,   s_P(c) := P.reading.object
 `canonicalObjectNormalization_configuration`、`..._selected`、`..._idempotent` は、この
 落として戻す構造からそのまま出る。object 写像の冪等性は偶然ではない。
 
-ここから `Type` の水準で次が言える(候補、証明は数行)。
+G-116 Cycle 2 は `Type` の水準で次を証明した。
 
 ```text
 Fix(n_P) := {x // n_P x = x}  ≃  AtomConfiguration U
@@ -411,7 +411,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 3b | `E_c ≫ E_c = E_c` | 未証明。ob.1 と transport の functor 性から導く |
 | 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 未証明(ob.3b を仮定した条件付き候補)。圏の一般 API は mathlib `Idempotents.Karoubi` にあるが、AAT の instance での theorem はまだない |
 | 5 | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` と同一 configuration 上の相異なる object の witness を含める。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
-| 6 | configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`。dependent な reading は「できる / できない」を決める | 未着手。Čech nerve の装置は G-118(候補)へ |
+| 6 | configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U`。dependent な reading は「できる / できない」を決める | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness。firing でない cell は `E_c = 𝟙` の別 case。firing かつ admissible の cell で、`U(E_c)` と transport した `n_P` の対応、選んだ reading `ρ` の admissibility field からの `ρ ∘ n_P = ρ`、その transport `ρ' ∘ U(E_c) = ρ'` を独立の義務にし、そこから `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。一般の `q` に対する implication は結合律だけの補題で放電と数えない | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |
 | 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
 | 9a | witness packet のうち carrier / firing / admissibility / noninjectivity | 証明済み(`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible`) |
