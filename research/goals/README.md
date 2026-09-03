@@ -18,13 +18,13 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+- [G-116-aat-idempotent-exchange-structure](G-116-aat-idempotent-exchange-structure.md)
+  (旧 id `G-116-aat-gr4-capstone`。Gr4 系列。exchange 反例の背後にある冪等正規化
+  構造を同定する。Gr4 達成記録と義務台帳 O1–O20 は Gr4 を閉じる別カードが担う。
+  `$target-theorem-loop` 対象)
 
 ## draft（人間の確認待ち）
 
-- [G-116-aat-idempotent-exchange-structure](G-116-aat-idempotent-exchange-structure.md)
-  (旧 id `G-116-aat-gr4-capstone`。exchange 反例の背後にある冪等正規化構造を
-  同定する。Gr4 達成記録と義務台帳 O1–O20 は Gr4 を閉じる別カードが担う。
-  昇格は人間の確認後)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
