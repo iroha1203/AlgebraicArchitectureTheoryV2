@@ -17,8 +17,7 @@
 - `predecessor`: G-110(完遂済み。canonical mate の同型性、generated comparison、
   finite axis-fold witness、MateCoherentRel 正負対)、G-113(完遂済み。transport
   equivalence O13・O18)。
-- `tracking issue`: 未起票(昇格 PR マージ後に起票し、カード同期 PR で本行を
-  更新する)
+- `tracking issue`: #4345
 - `source note`: [n1008](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)
   (§1 反例の形、§2 中心定理候補、§3 骨格)、
   [n1005](../../docs/note/n1005_aat_semantic_geometry_route_after_g107.md)(§4.3)、
