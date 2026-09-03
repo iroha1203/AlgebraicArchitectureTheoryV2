@@ -141,7 +141,8 @@ finite axis-fold witness では、次が同時に成り立つ。
 | presentation replacement に関する自然性 | `generatedAuthoredDiagnosticObjectCollapseComparison_replacement`、`mateCoherentRel_replacePresentation_iff` |
 
 `α_c` が同型で `E_c` が同型でないので、firing cell では `β_c` は同型でない。`β` 全体が
-同型でないことはここから従うが、名前付きの theorem はまだない(G-116 で固定する)。
+同型でないことは
+`finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso` として固定した。
 
 つまり、ここで見えた「同型でない」は、名前を付けて閉じる種類の反例ではない。比較射の
 ずれには二つの因子があり、性質がちょうど裏返しになっている。
@@ -406,7 +407,22 @@ G-116 Cycle 9 は、任意の `input`、`cochain`、cell で
 `finiteAxisFold_initialRawDefect_second` で放電され、既証明の
 `finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso` と矛盾する。
 
-### 2.7 有限 witness の六つの役割
+### 2.7 transport identity-reflection classification(証明済み)
+
+G-116 Cycle 10 は、任意の `input`、`cochain`、cell について
+
+```text
+E_c = 𝟙 ↔ ¬ (cochain c ≠ 1 ∧ adm_P ∧ ¬ Injective(n_P))
+```
+
+を証明した。G-113 の global transport equivalence と canonical adjunction から via-base
+route 全体が equivalence であることを導き、その faithfulness と provenance isomorphism で
+transport 後の恒等性を raw selector の恒等性へ反射する。`n_P` の非単射性は任意の
+configuration 上の相異なる装飾 object から一様に構成される。したがって identity
+presentation だけの計算でも `Classical.em` だけの枝選択でもなく、固定した正枝の一般形が
+成立する。
+
+### 2.8 有限 witness の六つの役割(証明済み)
 
 | 役割 | 内容 |
 |---|---|
@@ -422,8 +438,12 @@ G-116 Cycle 9 は、任意の `input`、`cochain`、cell で
 coordinate など)に型付けし、`q ∘ n_P = q` を admissibility の対応する field から導く。
 `q` が observable であることを前提として受け取るだけでは定数関数でも成り立つ。
 `q := π_P` は separation を満たすが admissibility を使わないので、放電と数えない。
-witness packet は `E_c ≠ 𝟙`、`β_c` が同型でないこと、選んだ reading が保たれることの
-三つを同時に示す。
+witness packet `finiteAxisFold_idempotentExchange_witnessPacket` は、固定した generated
+cochain と second cell 上で六つの役割をすべて放電する。noninjectivity には同じ
+configuration の unit / Boolean 装飾を、separation には異なる cyclic / acyclic
+configuration と実際の equation residual を使う。さらに `E_c ≠ 𝟙`、component `β_c` の
+非同型性、実際の via-base package `P'_c` 上の `E_c` residual 保存と `β_c` / `α_c`
+residual 等式を同じ theorem に束ねる。
 
 ## §3 G-116 改訂カードの骨格
 
@@ -454,9 +474,9 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
 | 6b | dependent な operation / invariant reading が configuration quotient へ descent できる条件と、できない場合の frontier を決める | 未構成。将来義務として保持。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness。firing かつ admissible の cell で、`E_c` の equation residual(同じ context / index / Atom)と coordinate(同じ axis)の literal 保存、および `beta_c` / `alpha_c` の対応式 | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate`、`authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual`、`authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate`)。一般の `q` と identity cell は不使用 |
-| 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_isIso_iff_eq_id`、`authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus`、`authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff_eq_id`、`finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso`)。fixture の firing は theorem 内で放電 |
+| 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso`。さらに `E_c = 𝟙` の一般 classification | 証明済み(`authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus`、`authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff_eq_id`、`finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff`)。一般 classification は G-113 transport equivalence と selector の全 branch を実使用 |
 | 9a | witness packet のうち carrier / firing / admissibility / noninjectivity | 証明済み(`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible`) |
-| 9b | 名前付きの `q` を実際に選んだ reading に型付けし、`q ∘ n_P = q` を admissibility field から導く。二つの configuration の分離、`E_c ≠ 𝟙` と reading 保存の同時成立。`q := π_P` は放電と数えない | 未構成 |
+| 9b | 名前付きの `q` を実際に選んだ reading に型付けし、`q ∘ n_P = q` を admissibility field から導く。二つの configuration の分離、`E_c ≠ 𝟙` と reading 保存の同時成立。`q := π_P` は放電と数えない | 証明済み(`finiteAxisFold_idempotentExchange_witnessPacket`)。equation residual を使い、cyclic / acyclic configuration を分離し、`P'_c` 上の literal residual 等式も同じ packet に含める |
 | 10 | 行き先の表と evidence map | §3.1、§3.4 |
 
 ### 3.3 定型項目
