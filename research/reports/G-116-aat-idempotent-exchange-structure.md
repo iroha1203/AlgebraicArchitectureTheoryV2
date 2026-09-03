@@ -307,7 +307,7 @@ tracking_issue: 4345
 report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
 selection:
   proof_state_ref: Issue #4345 and Cycle 5 merge d989ed401df317e451921912c295b3dc8f91b453
-  proof_dag_predecessors: [ArchitectureObject, finiteAxisFoldUnitObject, finiteAxisFoldBoolObject, finiteAxisFoldUnitObject_ne_boolObject]
+  proof_dag_predecessors: [ArchitectureObject, ULift, Equiv.cast, Fintype.card_congr]
   proof_obligation: Prove clause (e1) for every AtomCarrier U and every AtomConfiguration U by constructing two distinct ArchitectureObjects with that configuration.
   selection_reason: The general same-configuration witness is the first K3 obligation and supplies the witness that clause (e2) must consume rather than accept as a premise.
   expected_result_type: proof-obligation-discharged
