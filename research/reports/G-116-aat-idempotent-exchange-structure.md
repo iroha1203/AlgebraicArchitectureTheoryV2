@@ -119,3 +119,63 @@ object reading of the input package.  The factorization theorem quantifies over
 an arbitrary target type and proves uniqueness by evaluating any competing
 factor on the selected object.  No dependent operation or invariant descent,
 and no category-level quotient, is included in this result.
+
+## Cycle 3 — K2(c1) cell projector idempotence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 3
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 3fa6b8f090c240b5033ce755721d595462e5b1e3
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 2 merge 3fa6b8f090c240b5033ce755721d595462e5b1e3
+  proof_dag_predecessors: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance]
+  proof_obligation: Prove clause (c1) for every input, cochain, and cell: E_c composed with itself equals E_c and its upper Atom equivalence is identity.
+  selection_reason: The raw selector gates and provenance route already exist; package idempotence can now be transported functorially to the selected cell component.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean]
+  risks: [proving only the admissible firing branch, assuming a gate certificate, stopping at the raw support component, losing an equality through transport, omitting the Atom-equivalence conclusion]
+  unchecked: [clauses (c2), (d), (e1), (e2), (f), (g), (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (c1) is proved for the complete selector and its two-stage transported via-base component, including identity of the upper Atom equivalence.
+  completion_candidate: no
+  lean_artifacts: [authoredSupportCanonicalNormalizationComponent_comp, authoredDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv]
+  evidence: [focused elaboration exit 0, standard-axiom audit for all four declarations]
+  claim_mapping:
+    theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv]
+    source_labels: [target theorem clause (c1), target proof strategy K2]
+    conjuncts: [cell projector idempotence, identity upper Atom equivalence]
+    undischarged_assumptions: []
+    acceptance_point: The theorems quantify over every authored input, diagnostic cochain, and cell; the selector's three branches are discharged internally and the two functor maps preserve the package-level equality.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [projector idempotence and identity Atom equivalence (c1)]
+    remaining: [clauses (c2), (d), (e1), (e2), (f), (g), (g2), (h)]
+  certificate_provenance:
+    discharged: [selector gates are decided inside the definition; normalization idempotence is theorem-generated; transport uses Functor.map_comp]
+    unresolved: [fixture witness packet]
+  proof_use:
+    used: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, Functor.map_comp, CategoryTheory.IsHomLift.fac']
+    referenced_existing_identifications: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_replacement]
+    unused: [G-110 and G-113 reviewed artifacts]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean — exit 0; axiom audit 4 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: K2(c2) prove naturality of canonical object normalization under arbitrary package total homs.
+```
+
+The component theorem covers the vanishing, admissible-firing, and
+inadmissible branches of the selector.  The two transport functors preserve
+the raw equality by `Functor.map_comp`.  The Atom-equivalence theorem reads the
+identity lower map forced by the component's vertical core-fiber type through
+the existing `PackageTotalHom.atomEquiv_eq` law.
