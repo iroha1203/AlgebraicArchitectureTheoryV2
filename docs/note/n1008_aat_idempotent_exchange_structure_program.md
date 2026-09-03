@@ -31,7 +31,8 @@
 5. 高次化の入口は bisimplicial object より手前にある。package の水準で `N ≫ N = N` と
    `N ≠ 𝟙` が立つという仮定のもとで、diagnostic の選択子 `χ_N(g) = if g = 1 then 𝟙 else N`
    は、`g ≠ 1` となる defect があれば群の積を保たず、壊れるのは `g` と `g⁻¹` が打ち消し
-   合う場合だけになる(候補 theorem。前者の仮定はまだ未証明)。これが lax projector law として G-117(候補)の
+   合う場合だけになる(候補 theorem。package 冪等性と固定 fixture での非恒等性は G-116 で
+   証明済みであり、generated orbit への持ち上げは未証明)。これが lax projector law として G-117(候補)の
    target になる。
 6. G-115 の負例は三つの型に揃っている。この named / finite の regime では、垂直の Atom
    作用と三つの carrier 値は保存され、非退化な例は水平側に置かれた。lossy な collapse は

@@ -114,10 +114,7 @@ theorem finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_i
           finiteAxisFoldBCDatumSquare
           (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)).app
         (Discrete.mk DoubleDiamondTwoCell.second)) := by
-    change IsIso
-      ((generatedAuthoredDiagnosticObjectCollapseComparison
-        finiteAxisFoldBCDatumSquare).app
-          (Discrete.mk DoubleDiamondTwoCell.second))
+    rw [← generatedAuthoredDiagnosticObjectCollapseComparison_apply]
     infer_instance
   have projectorIsIso : IsIso
       (authoredViaBaseDiagnosticObjectCollapseComponentAtCochain

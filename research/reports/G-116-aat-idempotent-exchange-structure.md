@@ -521,7 +521,7 @@ audits:
     discharged: [canonical mate component invertibility is an existing instance; projector idempotence is the reviewed clause (c1) theorem; fixture firing is derived from finiteAxisFold_initialRawDefect_second; fixture projector noninvertibility is the reviewed predecessor theorem]
     unresolved: [transport identity-reflection classification, fixture conjunction packet]
   proof_use:
-    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, isIso_comp_left_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, cancel_epi_id, generatedAuthoredDiagnosticObjectCollapseComparison_apply by definitional change, NatTrans component IsIso instance, finiteAxisFold_initialRawDefect_second, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso]
+    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, isIso_comp_left_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, cancel_epi_id, generatedAuthoredDiagnosticObjectCollapseComparison_apply, NatTrans component IsIso instance, finiteAxisFold_initialRawDefect_second, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso]
     unused: [observable exactness fields, an assumed idempotence certificate, an assumed firing certificate, a component-only replacement for the whole fixture theorem]
   structure_field_escape: none-found
   route_integrity: pass
