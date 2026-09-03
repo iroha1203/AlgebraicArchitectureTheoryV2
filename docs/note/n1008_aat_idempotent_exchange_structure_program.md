@@ -154,8 +154,8 @@ finite axis-fold witness では、次が同時に成り立つ。
 | 分類上の扱い | canonical-post-iso twist は既知の系として数える | 本体。改訂 G-116 の対象 |
 
 反例が教えているのは、この分解である。可逆で観測に見える twist の部分と、冪等で観測に
-見えない正規化の部分。§2.4 の見込みが定理になれば、正規化の部分の像は package 圏の中
-には作れない。そのとき住める場所は、Karoubi(冪等射を形式的に分裂させた圏)、
+見えない正規化の部分。§2.4 の定理により、正規化の部分の像は package 圏の中には
+作れない。そのとき住める場所は、Karoubi(冪等射を形式的に分裂させた圏)、
 configuration の商、localization(候補)のどれかになる。
 
 ## §2 中心定理候補 — Split Configuration Descent and Idempotent Beck–Chevalley Exactness
@@ -329,7 +329,7 @@ package の水準の冪等性 `N_P ≫ N_P = N_P` は、`PackageTotalHom.ext` �
 と、数学的な coherence が実際に壊れていることは別である。先回りして高次 obstruction と
 読まない。
 
-### 2.4 圏の中では分裂しない(前半証明済み、no-go 未証明)
+### 2.4 圏の中では分裂しない(証明済み)
 
 主張: 任意の `P Q : AATCorePackage U`、`adm : CanonicalObjectNormalizationAdmissible P`、
 `r : P ⟶ Q`、`i : Q ⟶ P` について、`i ≫ r = 𝟙 Q` かつ
@@ -342,11 +342,12 @@ carrier と任意の configuration に対し `StructureMaps` を `ULift PUnit` �
 admissible でない package は実在する
 (`auxiliarySensitiveCorePackage_not_admissible`)。
 
-証明の見込み。`a := r.upper.objectMap`、`b := i.upper.objectMap` と置くと `a ∘ b = id`、
-`b ∘ a = n_P`。`n_P ∘ b = b ∘ a ∘ b = b` なので、`b` の像は `Fix(n_P)` に入る。
-`a ∘ b = id` なので `b` は単射である。同じ configuration の上の `x₁ ≠ x₂` を取る。
-`configuration_eq` により `b x₁` と `b x₂` の configuration は等しい。`Fix(n_P)` は
-configuration ごとに一点しかないので `b x₁ = b x₂`。単射性と矛盾する。
+G-116 Cycle 7 は、この主張を
+`canonicalObjectNormalizationTotal_not_internal_split` として証明した。
+`a := r.upper.objectMap`、`b := i.upper.objectMap` と置くと `a ∘ b = id` なので `b` は単射で
+ある。(c2) の自然性 `b ∘ n_Q = n_P ∘ b` と `b ∘ a = n_P` を使うと、任意の `z` について
+`b (n_Q z) = b z`、したがって `n_Q z = z` となる。一方、(e1) から同じ configuration 上の
+`x₁ ≠ x₂` を取ると、`n_Q x₁ = n_Q x₂` である。`n_Q` が恒等写像であることと矛盾する。
 
 効いているのは大きさの非対称である。object の fiber は configuration ごとに
 `StructureMaps` 全体を走るので大きい。正規化の固定点は configuration ごとに一点しか
@@ -356,10 +357,10 @@ configuration ごとに一点しかないので `b x₁ = b x₂`。単射性と
 するか、return map が存在するか、戻した合成が可逆か。既存の theorem が言うのは最後の
 一つだけである。G-116 が固定した義務として引き受けるのは split retract の no-go
 (上の主張)で、残りは候補のままにする。no-go の Lean 化で偽・型不能・反例が判明した
-場合は、成功枝へ移らず `goal-defect` として止まり、人間の判断で target を改めてから
-構成 / no-go の二枝に戻す。
+場合は成功枝へ移らず `goal-defect` として止める方針であったが、Cycle 7 では no-go が
+固定 statement のまま成立した。
 
-見込みが定理になった場合の帰結は二つある。
+この定理の帰結は二つある。
 
 - 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
 - 分裂しないのは正規化の欠陥ではない。raw な `ArchitectureObject U` を carrier に固定した
@@ -417,7 +418,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 3b | `E_c ≫ E_c = E_c` と `E_c.1.upper.atomEquiv = Equiv.refl _` | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv`)。raw selector の全 branch と2段の functor transport を名前付き補題で固定 |
 | 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 証明済み(`authoredDiagnosticImageSourceKaroubi`、`authoredDiagnosticImageTargetKaroubi`、`authoredDiagnosticObjectCollapseKaroubiIso`)。逆射は `E_c ≫ inv α_c` |
 | 5a | 任意の carrier と任意の configuration 上に相異なる二つの `ArchitectureObject` が存在する | 証明済み(`exists_distinct_architectureObjects_over_configuration`)。`StructureMaps` の型を `ULift PUnit` と `ULift Bool` に変えた装飾を使用 |
-| 5b | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` を含め、5a の witness を実使用する。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
+| 5b | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` を含め、5a の witness を実使用する) | 証明済み(`canonicalObjectNormalizationTotal_not_internal_split`)。(c2) の自然性、split 等式の object-map 成分、5a の一般 witness を実使用 |
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
 | 6b | dependent な operation / invariant reading が configuration quotient へ descent できる条件と、できない場合の frontier を決める | 未構成。将来義務として保持。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness。firing でない cell は `E_c = 𝟙` の別 case。firing かつ admissible の cell で、`U(E_c)` と transport した `n_P` の対応、選んだ reading `ρ` の admissibility field からの `ρ ∘ n_P = ρ`、その transport `ρ' ∘ U(E_c) = ρ'` を独立の義務にし、そこから `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。一般の `q` に対する implication は結合律だけの補題で放電と数えない | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |

@@ -319,7 +319,7 @@ result:
   proof_obligation_delta: Clause (e1) is proved uniformly by constructing unit- and Boolean-decorated architecture objects over the supplied configuration and deriving their inequality from the cardinalities of their StructureMaps types.
   completion_candidate: no
   lean_artifacts: [unitDecoratedArchitectureObject, boolDecoratedArchitectureObject, unitDecoratedArchitectureObject_ne_boolDecoratedArchitectureObject, exists_distinct_architectureObjects_over_configuration]
-  evidence: [focused elaboration exit 0, targeted module build exit 0, standard-axiom audit for all four declarations]
+  evidence: [canonical focused checker exit 0, targeted module build exit 0, standard-axiom audit for all four declarations, module manifest registration]
   claim_mapping:
     theorem_names: [exists_distinct_architectureObjects_over_configuration]
     source_labels: [target theorem clause (e1), target proof strategy K3]
@@ -343,7 +343,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only; research-modules.txt registration]
   blocking_findings: []
   next_obligation: K3(e2) prove that canonical package normalization has no internal split in the total category, using the general clause (e1) witness.
 ```
@@ -353,3 +353,63 @@ configuration literally.  Universe-polymorphism is preserved by lifting both
 finite decoration types into the carrier universe.  The result supplies a
 theorem-generated witness for clause (e2); no finite carrier or package data is
 assumed.
+
+## Cycle 7 — K3(e2) internal normalization split no-go
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 7
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: bbfddc1f390883453bd4cfa95c9d204db8277ba2
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 6 merge bbfddc1f390883453bd4cfa95c9d204db8277ba2
+  proof_dag_predecessors: [canonicalObjectNormalization_natural_apply, exists_distinct_architectureObjects_over_configuration, PackageTotalHom.comp, PackageTotalHom.id, canonicalObjectNormalizationTotal]
+  proof_obligation: Prove clause (e2) for arbitrary P Q adm r i in the package total category: not both i composed with r equals identity Q and r composed with i equals N_P.
+  selection_reason: Clause (e1) now supplies the required same-configuration witness uniformly, while clause (c2) transports normalization across the proposed splitting maps.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean]
+  risks: [accepting the distinct witness as a premise, restricting to CoreFiber or a fixture, proving only non-IsIso, reversing categorical composition, failing to use naturality, assuming normalization nonidentity]
+  unchecked: [clauses (f), (g), (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (e2) is proved in the total category by showing any proposed split makes n_Q the identity, then contradicting the theorem-generated distinct same-configuration objects of Q.
+  completion_candidate: no
+  lean_artifacts: [packageTotalHom_objectMap_comp_apply, packageTotalHom_objectMap_id_apply, canonicalObjectNormalizationTotal_objectMap_apply, canonicalObjectNormalizationTotal_not_internal_split]
+  evidence: [canonical focused checker exit 0, standard-axiom audit passed, module manifest registration]
+  claim_mapping:
+    theorem_names: [canonicalObjectNormalizationTotal_not_internal_split]
+    source_labels: [target theorem clause (e2), target proof strategy K3]
+    conjuncts: [arbitrary total-category P and Q, admissibility of P, arbitrary r and i, retraction equality negated jointly with normalization equality]
+    undischarged_assumptions: []
+    acceptance_point: The theorem has exactly the fixed universal split-no-go signature; the same-configuration witness is constructed from clause (e1), and neither split impossibility nor normalization nonidentity is supplied as a premise.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [internal split no-go (e2)]
+    remaining: [clauses (f), (g), (g2), (h)]
+  certificate_provenance:
+    discharged: [the two proposed split equalities are contradiction hypotheses; injectivity of i and identity of n_Q are derived; the final two objects come from clause (e1)]
+    unresolved: [observable exactness, raw failure classification, transport identity-reflection classification, fixture conjunction packet]
+  proof_use:
+    used: [PackageTotalHom.comp, PackageTotalHom.id, canonicalObjectNormalizationTotal, canonicalObjectNormalization_natural_apply, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalization]
+    unused: [finite-axis-fold witness, IsIso API, Karoubi image exactness]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean — exit 0; standard-axiom audit passed; research-modules.txt registration]
+  blocking_findings: []
+  next_obligation: K4(f) prove the fixed equation-residual and coordinate observable exactness equalities for every admissible firing cell.
+```
+
+The proof extracts the object-map equations of the two categorical equalities.
+The retraction makes `i.upper.objectMap` injective.  Naturality of normalization
+along `i`, followed by both split equations, makes every object of `Q` fixed by
+`n_Q`.  Clause (e1) then provides two distinct objects over one explicitly
+constructed configuration; normalization identifies them because it depends
+only on configuration, yielding the contradiction.
