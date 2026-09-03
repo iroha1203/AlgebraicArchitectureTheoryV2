@@ -143,7 +143,7 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: Clause (c1) is proved for the complete selector and its two-stage transported via-base component, including identity of the upper Atom equivalence.
   completion_candidate: no
-  lean_artifacts: [authoredSupportCanonicalNormalizationComponent_comp, authoredDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv]
+  lean_artifacts: [authoredSupportCanonicalNormalizationComponent_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible, authoredDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv]
   evidence: [focused elaboration exit 0, standard-axiom audit for all four declarations]
   claim_mapping:
     theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv]
@@ -169,7 +169,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean — exit 0; axiom audit 4 declarations standard axioms only]
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean — exit 0; axiom audit 5 declarations standard axioms only]
   blocking_findings: []
   next_obligation: K2(c2) prove naturality of canonical object normalization under arbitrary package total homs.
 ```
@@ -203,10 +203,10 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: Clause (c2) is proved pointwise and as the fixed function equality for arbitrary package total homs.
   completion_candidate: no
-  lean_artifacts: [canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
+  lean_artifacts: [canonicalObjectNormalization_apply, canonicalObjectNormalization_eq_of_configuration_eq, canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
   evidence: [focused elaboration exit 0, standard-axiom audit for both declarations]
   claim_mapping:
-    theorem_names: [canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
+    theorem_names: [canonicalObjectNormalization_apply, canonicalObjectNormalization_eq_of_configuration_eq, canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
     source_labels: [target theorem clause (c2), target proof strategy K2]
     conjuncts: [pointwise naturality, ArchitectureObject-valued function equality]
     undischarged_assumptions: []
@@ -228,7 +228,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean — exit 0; axiom audit 2 declarations standard axioms only]
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean — exit 0; axiom audit 4 declarations standard axioms only]
   blocking_findings: []
   next_obligation: K2(d) construct the fixed Karoubi image isomorphism from package and cell projector idempotence.
 ```
@@ -394,7 +394,7 @@ audits:
     discharged: [the two proposed split equalities are contradiction hypotheses; injectivity of i and identity of n_Q are derived; the final two objects come from clause (e1)]
     unresolved: [observable exactness, raw failure classification, transport identity-reflection classification, fixture conjunction packet]
   proof_use:
-    used: [PackageTotalHom.comp, PackageTotalHom.id, canonicalObjectNormalizationTotal, canonicalObjectNormalization_natural_apply, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalization]
+    used: [PackageTotalHom.comp, PackageTotalHom.id, canonicalObjectNormalizationTotal, canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_eq_of_configuration_eq, exists_distinct_architectureObjects_over_configuration]
     unused: [finite-axis-fold witness, IsIso API, Karoubi image exactness]
   structure_field_escape: none-found
   route_integrity: pass
@@ -565,7 +565,7 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: Clause (g2) takes the positive branch. For every authored input, cochain, and cell, E_c is the identity exactly outside the simultaneous firing, admissible, noninjective selector branch.
   completion_candidate: no
-  lean_artifacts: [selectedCoreFiberReindexFunctor_isEquivalence, bcProvenanceViaBaseRoute_isEquivalence, functor_map_eq_id_iff_of_faithful, iso_conjugate_eq_id_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff_raw, canonicalObjectNormalization_not_injective, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
+  lean_artifacts: [selectedCoreFiberReindexFunctor_isEquivalence, bcProvenanceViaBaseRoute_eq, bcProvenanceViaBaseRoute_isEquivalence, functor_map_eq_id_iff_of_faithful, iso_conjugate_eq_id_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff_raw, canonicalObjectNormalization_not_injective, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
   evidence: [canonical focused checker exit 0, standard-axiom audit passed, module manifest registration]
   claim_mapping:
     theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
@@ -582,7 +582,7 @@ audits:
     discharged: [core transport equivalence comes from semanticGlobalTransport_isEquivalence; selected reindex equivalence follows from coreTransportReindexAdjunction and equivalence of its left adjoint; faithfulness is inferred from the composed equivalence; canonical-normalization noninjectivity is generated by exists_distinct_architectureObjects_over_configuration]
     unresolved: [fixture conjunction packet]
   proof_use:
-    used: [semanticGlobalTransport_isEquivalence, coreTransportReindexAdjunction.isEquivalence_right_of_isEquivalence_left, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, faithful map injectivity, isomorphism cancellation, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalization, selector identity and canonical branches]
+    used: [semanticGlobalTransport_isEquivalence, coreTransportReindexAdjunction.isEquivalence_right_of_isEquivalence_left, bcProvenanceViaBaseRoute_eq, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, faithful map injectivity, isomorphism cancellation, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalization_eq_of_configuration_eq, selector vanishing, canonical, and inadmissible branch APIs]
     unused: [identity-presentation unitors, a caller-supplied injectivity decision, Classical.em as branch evidence]
   structure_field_escape: none-found
   route_integrity: pass
@@ -590,7 +590,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0; axiom audit reports 8 declarations and standard axioms only; research-modules.txt registration]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0; axiom audit reports 9 declarations and standard axioms only; research-modules.txt registration]
   blocking_findings: []
   next_obligation: K5(h) package the fixed finite-axis-fold firing, admissibility, two distinct witness pairs, E_c nonidentity, beta_c noninvertibility, and literal transported residual equality in one theorem or structure.
 ```
@@ -615,7 +615,7 @@ base_oid: 2cb9cacb7e81920fee15d38052641027f4217e3d
 tracking_issue: 4345
 report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
 selection:
-  proof_state_ref: Cycle 10 proof-obligation discharge over commit 2cb9cacb7e81920fee15d38052641027f4217e3d
+  proof_state_ref: Cycle 10 and Cycle 11 were implemented atomically in commit 0e3e7638235e3c169eee3503bd00c1fc9af426a8, with 2cb9cacb7e81920fee15d38052641027f4217e3d as their shared pre-implementation snapshot; no intervening Git OID exists
   proof_dag_predecessors: [finiteAxisFold_initialRawDefect_second, finiteAxisFoldSwap_ne_one, finiteAxisFold_canonicalNormalizationAdmissibleAt, finiteAxisFoldUnitObject_ne_boolObject, finiteAxisFoldEraseObject_unit_eq_bool, transportAlongEquationSystemExact.equationResidual_eq, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual]
   proof_obligation: Package every clause (h) witness on the fixed finite-axis-fold datum, generated cochain, and second cell in one assumption-free theorem.
   selection_reason: Clause (h) is the sole remaining fixed mathematical obligation after the general transport identity-reflection theorem.
@@ -665,3 +665,54 @@ cell, firing and admissibility select the noninvertible normalization factor;
 the packet records both its nonidentity and the comparison component's
 noninvertibility.  It finally instantiates both Cycle 8 equation-residual
 theorems on the actual via-base package `P'_second`.
+
+## Cycle 12 — final-review API and ledger remediation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 12
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 9af76250e27b537df58a7ee825e01617af63923a
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: First fixed-head completion review over 9af76250e27b537df58a7ee825e01617af63923a
+  proof_obligation: Resolve the completion review's no-unfold API and Cycle 11 snapshot-provenance findings without changing any fixed target statement or conclusion.
+  selection_reason: Lean B found two noncentral completion blockers after the central clauses (a) through (h) passed all four lanes.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean, ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean]
+  risks: [changing theorem signatures, hiding definitional expansion in downstream proofs, claiming an intervening commit that never existed]
+  unchecked: [fresh standard fixed-head PR review, replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: Downstream target proofs now use named evaluation, same-configuration, route-composition, and inadmissible-selector APIs; Cycle 11 explicitly records that Cycles 10 and 11 were implemented atomically and names both the shared pre-implementation snapshot and implementation commit.
+  completion_candidate: yes
+  lean_artifacts: [canonicalObjectNormalization_apply, canonicalObjectNormalization_eq_of_configuration_eq, bcProvenanceViaBaseRoute_eq, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible]
+  evidence: [focused checks exit 0, standard-axiom audits passed, no target theorem signature or conclusion changed]
+  claim_mapping:
+    theorem_names: [canonicalObjectNormalization_natural_apply, canonicalObjectNormalizationTotal_not_internal_split, canonicalObjectNormalization_not_injective, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
+    source_labels: [Lean quality standard no-unfold API, completion ledger reproducibility]
+    conjuncts: [named downstream APIs, honest atomic-commit provenance]
+    undischarged_assumptions: []
+    acceptance_point: These are proof-route and ledger repairs only; clauses (a) through (h) retain their fixed statements.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [completion-review API and ledger findings]
+    remaining: []
+  certificate_provenance:
+    discharged: [new API lemmas are definitional or derive from explicit configuration equality; no certificate is accepted from a caller]
+    unresolved: []
+  proof_use:
+    used: [canonicalObjectNormalization_apply, canonicalObjectNormalization_eq_of_configuration_eq, bcProvenanceViaBaseRoute_eq, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible]
+    unused: [downstream unfold of canonicalObjectNormalization, downstream unfold of bcProvenanceViaBaseRoute, downstream selector simp]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: Refix the PR head, rerun the standard PR gate, publish a replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
+```

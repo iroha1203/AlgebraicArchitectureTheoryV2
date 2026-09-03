@@ -14,6 +14,26 @@ universe u
 
 open AtomFoundation
 
+/-- Public evaluation API for canonical object normalization. -/
+@[simp]
+theorem canonicalObjectNormalization_apply
+    {U : AtomCarrier.{u}} (P : AATCorePackage U)
+    (object : ArchitectureObject U) :
+    canonicalObjectNormalization P object =
+      P.reading.objectReading.object object.configuration :=
+  rfl
+
+/-- Objects with the same configuration have the same canonical
+normalization. -/
+theorem canonicalObjectNormalization_eq_of_configuration_eq
+    {U : AtomCarrier.{u}} (P : AATCorePackage U)
+    {first second : ArchitectureObject U}
+    (configuration_eq : first.configuration = second.configuration) :
+    canonicalObjectNormalization P first =
+      canonicalObjectNormalization P second := by
+  rw [canonicalObjectNormalization_apply,
+    canonicalObjectNormalization_apply, configuration_eq]
+
 /-- G-116(c2) pointwise API: canonical object normalization commutes with the
 object map of every package total morphism.  The proof uses the morphism's
 declared `object_formation_eq` and `configuration_eq` laws; it assumes no
@@ -23,8 +43,9 @@ theorem canonicalObjectNormalization_natural_apply
     (hom : PackageTotalHom P Q) (object : ArchitectureObject U) :
     hom.upper.objectMap (canonicalObjectNormalization P object) =
       canonicalObjectNormalization Q (hom.upper.objectMap object) := by
-  unfold canonicalObjectNormalization
-  rw [hom.upper.object_formation_eq, hom.upper.configuration_eq]
+  rw [canonicalObjectNormalization_apply,
+    canonicalObjectNormalization_apply,
+    hom.upper.object_formation_eq, hom.upper.configuration_eq]
 
 /-- G-116(c2): at the `ArchitectureObject`-valued object-map level,
 `U(hom) ∘ n_P = n_Q ∘ U(hom)` for every package total morphism.  This is

@@ -30,6 +30,17 @@ theorem selectedCoreFiberReindexFunctor_isEquivalence
     semanticGlobalTransport_isEquivalence input.semantic.hom
   exact (coreTransportReindexAdjunction input).isEquivalence_right_of_isEquivalence_left
 
+/-- Public composition API for the provenance-indexed via-base route. -/
+@[simp]
+theorem bcProvenanceViaBaseRoute_eq
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    {input : BCSemanticInput U} (provenance : BCRealizationProvenance input) :
+    bcProvenanceViaBaseRoute provenance =
+      coreFiberTransportFunctor input.square.bottom ⋙
+        selectedCoreFiberReindexFunctor
+          provenance.rightProvenance.toRealizableHom :=
+  rfl
+
 /-- The provenance-indexed via-base route is an equivalence for every finite
 presentation, not only for an identity presentation. -/
 theorem bcProvenanceViaBaseRoute_isEquivalence
@@ -42,7 +53,7 @@ theorem bcProvenanceViaBaseRoute_isEquivalence
       provenance.rightProvenance.toRealizableHom).IsEquivalence :=
     selectedCoreFiberReindexFunctor_isEquivalence
       provenance.rightProvenance.toRealizableHom
-  unfold bcProvenanceViaBaseRoute
+  rw [bcProvenanceViaBaseRoute_eq]
   infer_instance
 
 /-- A faithful functor reflects equality of an endomorphism with the identity. -/
@@ -117,8 +128,8 @@ theorem canonicalObjectNormalization_not_injective
   intro injective
   apply distinct
   apply injective
-  unfold canonicalObjectNormalization
-  rw [firstConfiguration, secondConfiguration]
+  exact canonicalObjectNormalization_eq_of_configuration_eq P
+    (firstConfiguration.trans secondConfiguration.symm)
 
 /-- The raw selector is the identity exactly outside the simultaneous firing,
 admissible, noninjective branch.  The case split follows the selector's own
@@ -166,8 +177,9 @@ theorem authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff
     · have selectedIdentity :
           authoredDiagnosticObjectCollapseComponentAtCochain
               input cochain cell = 𝟙 (input.context.supportObject cell) := by
-          simp [authoredDiagnosticObjectCollapseComponentAtCochain,
-            vanishes, admissible]
+          exact
+            authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible
+              input cochain cell vanishes admissible
       constructor
       · intro _ selectedBranch
         exact admissible selectedBranch.2.1
