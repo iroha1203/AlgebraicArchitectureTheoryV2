@@ -360,6 +360,20 @@ G-116 Cycle 7 は、この主張を
 場合は成功枝へ移らず `goal-defect` として止める方針であったが、Cycle 7 では no-go が
 固定 statement のまま成立した。
 
+この定理の帰結は二つある。
+
+- 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
+- 分裂しないのは正規化の欠陥ではない。raw な `ArchitectureObject U` を carrier に固定した
+  今の package 圏が、意味の像を対象として持てないほど狭い、という圏そのものの定理に
+  なる。そのとき Karoubi は便宜的な逃げ道ではなく、意味の像を表すための最小の完備化に
+  なる。分裂像 `P ↦ Q` の functor 性を経由して reflective localization を作る道は、前提
+  ごと消える。localization を候補に残すなら、正規化射のクラス `W` を形式的に逆転した
+  `C[W⁻¹]` として、Karoubi の後に別に立てる。
+
+同じ仕組みが G-115 にも出ている。`negativeCoreUpper_objectMap_not_injective` と
+`no_negativeExactUpperEquivalence` である。lossy な upper は、同じ configuration の上の
+装飾だけが違う二つの object を潰す。打ち消しが要求する単射性とは両立しない。
+
 ### 2.5 observable exactness(証明済み)
 
 G-116 Cycle 8 は、firing かつ admissible な任意の cell で、`E_c` が
@@ -377,21 +391,7 @@ generated upper inverse による共役として固定する。元の support pa
 `alpha_c` の residual / coordinate の対応式も同じ field 上で証明した。
 一般の関数 `q` の不変性や identity cell はこの放電に使っていない。
 
-この定理の帰結は二つある。
-
-- 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
-- 分裂しないのは正規化の欠陥ではない。raw な `ArchitectureObject U` を carrier に固定した
-  今の package 圏が、意味の像を対象として持てないほど狭い、という圏そのものの定理に
-  なる。そのとき Karoubi は便宜的な逃げ道ではなく、意味の像を表すための最小の完備化に
-  なる。分裂像 `P ↦ Q` の functor 性を経由して reflective localization を作る道は、前提
-  ごと消える。localization を候補に残すなら、正規化射のクラス `W` を形式的に逆転した
-  `C[W⁻¹]` として、Karoubi の後に別に立てる。
-
-同じ仕組みが G-115 にも出ている。`negativeCoreUpper_objectMap_not_injective` と
-`no_negativeExactUpperEquivalence` である。lossy な upper は、同じ configuration の上の
-装飾だけが違う二つの object を潰す。打ち消しが要求する単射性とは両立しない。
-
-### 2.5 有限 witness の六つの役割
+### 2.6 有限 witness の六つの役割
 
 | 役割 | 内容 |
 |---|---|
