@@ -236,3 +236,61 @@ audits:
 The pointwise proof unfolds the canonical normalization and rewrites exactly
 with the two complete upper-hom laws.  Function extensionality packages that
 calculation in the composition orientation fixed by clause (c2).
+
+## Cycle 5 — K2(d) Karoubi image exactness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 5
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 733da785fbd2a1a6faa3b45f27206a59d394bba9
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 4 merge 733da785fbd2a1a6faa3b45f27206a59d394bba9
+  proof_dag_predecessors: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredSupportCanonicalMate_isIso, Mathlib.CategoryTheory.Idempotents.Karoubi]
+  proof_obligation: Construct clause (d): beta_c as an isomorphism in the Karoubi envelope from (D_c, beta_c composed with inv alpha_c) to (V_c, E_c).
+  selection_reason: Clause (c1) supplies the target idempotent and the component factorization conjugates it to the source idempotent.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean]
+  risks: [ill-typed source projector, proving only an abstract wrapper unrelated to beta_c, supplying a split as input, confusing raw IsIso with Karoubi IsIso, omitting inverse laws]
+  unchecked: [clauses (e1), (e2), (f), (g), (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (d) is constructed with the literal source and target projectors and beta_c as the underlying forward Karoubi morphism.
+  completion_candidate: no
+  lean_artifacts: [authoredDiagnosticImageSourceKaroubi, authoredDiagnosticImageTargetKaroubi, authoredDiagnosticObjectCollapseKaroubiIso]
+  evidence: [focused elaboration exit 0, standard-axiom audit for all three declarations]
+  claim_mapping:
+    theorem_names: [authoredDiagnosticObjectCollapseKaroubiIso]
+    source_labels: [target theorem clause (d), target proof strategy K2]
+    conjuncts: [source projector idempotence, target projector idempotence, Karoubi morphism compatibility, two inverse laws]
+    undischarged_assumptions: []
+    acceptance_point: The forward underlying morphism is the generated comparison component beta_c and the inverse is constructed as E_c composed with inv alpha_c for arbitrary input, cochain, and cell.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [Karoubi image exactness (d)]
+    remaining: [clauses (e1), (e2), (f), (g), (g2), (h)]
+  certificate_provenance:
+    discharged: [both projectors and both inverse laws are theorem-generated from beta_c equals alpha_c composed with E_c, E_c idempotence, and the existing IsIso alpha_c instance]
+    unresolved: [fixture witness packet]
+  proof_use:
+    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, IsIso.inv_hom_id_assoc, Karoubi.Hom.ext]
+    unused: [a caller-supplied splitting, raw IsIso beta_c, G-110 and G-113 reviewed artifacts]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean — exit 0; axiom audit 3 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: K3(e1) construct two distinct architecture objects over every configuration.
+```
+
+The Karoubi source uses the literal projector `β_c ≫ inv α_c`, and the target
+uses `E_c`.  The constructed isomorphism has underlying forward map `β_c` and
+inverse `E_c ≫ inv α_c`; its compatibility and inverse laws use the fixed
+component equation and cell-projector idempotence.
