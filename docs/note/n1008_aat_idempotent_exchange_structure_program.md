@@ -360,6 +360,23 @@ G-116 Cycle 7 は、この主張を
 場合は成功枝へ移らず `goal-defect` として止める方針であったが、Cycle 7 では no-go が
 固定 statement のまま成立した。
 
+### 2.5 observable exactness(証明済み)
+
+G-116 Cycle 8 は、firing かつ admissible な任意の cell で、`E_c` が
+transport 後の package の equation residual と coordinate を literal に保つことを
+証明した。residual は同じ context、equation index、Atom、coordinate は同じ
+axis を両辺で使う。宣言は
+`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual` と
+`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate` である。
+
+証明は core transport と selected reindexing の universal factor を、それぞれの
+generated upper inverse による共役として固定する。元の support package では
+`adm.equationResidual_eq` と `adm.coordinate_eq` が `n_P` の保存を与え、二段の
+共役は exact upper map の同型性でその literal 等式を運ぶ。さらに
+`authoredDiagnosticObjectCollapseComparisonAtCochain_app` を使い、`beta_c` と
+`alpha_c` の residual / coordinate の対応式も同じ field 上で証明した。
+一般の関数 `q` の不変性や identity cell はこの放電に使っていない。
+
 この定理の帰結は二つある。
 
 - 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
@@ -421,7 +438,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 5b | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` を含め、5a の witness を実使用する) | 証明済み(`canonicalObjectNormalizationTotal_not_internal_split`)。(c2) の自然性、split 等式の object-map 成分、5a の一般 witness を実使用 |
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
 | 6b | dependent な operation / invariant reading が configuration quotient へ descent できる条件と、できない場合の frontier を決める | 未構成。将来義務として保持。Čech nerve の装置は G-118(候補)へ |
-| 7 | observable exactness。firing でない cell は `E_c = 𝟙` の別 case。firing かつ admissible の cell で、`U(E_c)` と transport した `n_P` の対応、選んだ reading `ρ` の admissibility field からの `ρ ∘ n_P = ρ`、その transport `ρ' ∘ U(E_c) = ρ'` を独立の義務にし、そこから `ρ' ∘ U(β_c) = ρ' ∘ U(α_c)`。一般の `q` に対する implication は結合律だけの補題で放電と数えない | 圏へ可逆に戻す障害は `coforkReturn_not_isIso_of_ne` |
+| 7 | observable exactness。firing かつ admissible の cell で、`E_c` の equation residual(同じ context / index / Atom)と coordinate(同じ axis)の literal 保存、および `beta_c` / `alpha_c` の対応式 | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate`、`authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual`、`authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate`)。一般の `q` と identity cell は不使用 |
 | 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
 | 9a | witness packet のうち carrier / firing / admissibility / noninjectivity | 証明済み(`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible`) |
 | 9b | 名前付きの `q` を実際に選んだ reading に型付けし、`q ∘ n_P = q` を admissibility field から導く。二つの configuration の分離、`E_c ≠ 𝟙` と reading 保存の同時成立。`q := π_P` は放電と数えない | 未構成 |
