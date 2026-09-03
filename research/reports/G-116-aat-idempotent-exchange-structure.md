@@ -480,3 +480,64 @@ the forward exact map is injective on the corresponding observable or
 coordinate value and its inverse cancels on architecture objects.  The final
 step specializes the raw equalities to the two admissibility fields and then
 uses the actual component factorization `beta_c = alpha_c ≫ E_c`.
+
+## Cycle 9 — K4(g) raw failure locus
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 9
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: b492329a3a75edcbb79f2a20fb55c4185c266d41
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 8 merge b492329a3a75edcbb79f2a20fb55c4185c266d41
+  proof_dag_predecessors: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, isIso_comp_left_iff, NatTrans component IsIso instance, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso, finiteAxisFold_initialRawDefect_second]
+  proof_obligation: Prove the cellwise IsIso beta_c iff IsIso E_c iff E_c equals identity chain for arbitrary authored input, cochain, and cell, and prove the assumption-free named non-IsIso theorem for the whole generated finite-axis-fold comparison.
+  selection_reason: Clause (f) is complete; clause (g) is the next fixed K4 obligation and isolates raw noninvertibility before the general transport identity-reflection classification.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean]
+  risks: [confusing the whole natural transformation with one component, parsing an unparenthesized three-way biconditional incorrectly, accepting projector idempotence or fixture firing as caller data, proving only component noninvertibility for the fixture]
+  unchecked: [clauses (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (g) is proved. The two cellwise biconditionals are named separately and packaged as a conjunction, their outer composite is named, and the fixed fixture's whole generated comparison is proved noninvertible without assumptions.
+  completion_candidate: no
+  lean_artifacts: [isIso_iff_eq_id_of_comp_self_eq_self, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_isIso_iff_eq_id, authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff_eq_id, finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso]
+  evidence: [canonical focused checker exit 0, standard-axiom audit passed, module manifest registration]
+  claim_mapping:
+    theorem_names: [authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff_eq_id, finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso]
+    source_labels: [target theorem clause (g), target proof strategy K4]
+    conjuncts: [cellwise IsIso beta_c iff IsIso E_c, cellwise IsIso E_c iff E_c equals identity, assumption-free whole generated finite-axis-fold comparison noninvertibility]
+    undischarged_assumptions: []
+    acceptance_point: The general theorems quantify over arbitrary input, cochain, and cell and invoke the previously proved idempotence internally. The fixture theorem fixes the generated cochain and second cell internally, discharges firing, and concludes noninvertibility of the whole natural transformation.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [raw failure locus and named non-IsIso beta (g)]
+    remaining: [clauses (g2), (h)]
+  certificate_provenance:
+    discharged: [canonical mate component invertibility is an existing instance; projector idempotence is the reviewed clause (c1) theorem; fixture firing is derived from finiteAxisFold_initialRawDefect_second; fixture projector noninvertibility is the reviewed predecessor theorem]
+    unresolved: [transport identity-reflection classification, fixture conjunction packet]
+  proof_use:
+    used: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, isIso_comp_left_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, cancel_epi_id, generatedAuthoredDiagnosticObjectCollapseComparison_apply by definitional change, NatTrans component IsIso instance, finiteAxisFold_initialRawDefect_second, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso]
+    unused: [observable exactness fields, an assumed idempotence certificate, an assumed firing certificate, a component-only replacement for the whole fixture theorem]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean — exit 0; standard-axiom audit passed; research-modules.txt registration]
+  blocking_findings: []
+  next_obligation: K4(g2) decide and prove the fixed general transport identity-reflection classification, or prove its qualified concrete counterexample branch.
+```
+
+The comparison component factors as the invertible canonical mate component
+followed by `E_c`, so left-composition by that isomorphism reflects and
+preserves invertibility.  An invertible idempotent endomorphism is the identity
+by epimorphic cancellation.  For the fixed finite axis-fold fixture, an
+isomorphism of the whole generated comparison would make its second component,
+and hence `E_second`, invertible; the internally discharged firing theorem and
+the existing projector noninvertibility theorem contradict this.

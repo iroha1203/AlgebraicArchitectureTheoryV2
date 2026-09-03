@@ -92,7 +92,7 @@
 | `n_P` | `ArchitectureObject U → ArchitectureObject U` | `canonicalObjectNormalization P`。object の写像 | 冪等性は証明済み(`canonicalObjectNormalization_idempotent`) |
 | `N_P` | `P ⟶ P`(`PackageTotalHom`) | `canonicalObjectNormalizationTotal P adm`。package の射。underlying の object 写像は `n_P` | package の水準の冪等性 `N_P ≫ N_P = N_P` は証明済み(`canonicalObjectNormalizationTotal_comp`) |
 | `α` | natural transformation | `authoredSupportCanonicalMate`。canonical mate | 同型であることは証明済み |
-| `β` | natural transformation | `generatedAuthoredDiagnosticObjectCollapseComparison`。generated comparison | 成分式 `β_c = α_c ≫ E_c` は証明済み(`..._app`)。`β` 全体が同型でないことは未固定 |
+| `β` | natural transformation | `generatedAuthoredDiagnosticObjectCollapseComparison`。generated comparison | 成分式 `β_c = α_c ≫ E_c` は証明済み(`..._app`)。finite axis-fold の generated `β` 全体が同型でないことも証明済み |
 | `E_c` | 各 cell `c` での射 `V_c ⟶ V_c` | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`。選択子で選んだ射を transport したもの | 任意の input / cochain / cell で `E_c ≫ E_c = E_c`、`E_c.1.upper.atomEquiv = Equiv.refl _` は証明済み。finite axis-fold の firing cell では同型でない(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。global な `E : V ⟶ V` は名前付きの宣言がない |
 | `ν` | modification | G-117(候補)で作る、fiber を貫く自然な冪等射 | 未構成 |
 
@@ -391,7 +391,22 @@ generated upper inverse による共役として固定する。元の support pa
 `alpha_c` の residual / coordinate の対応式も同じ field 上で証明した。
 一般の関数 `q` の不変性や identity cell はこの放電に使っていない。
 
-### 2.6 有限 witness の六つの役割
+### 2.6 raw failure locus(証明済み)
+
+G-116 Cycle 9 は、任意の `input`、`cochain`、cell で
+`IsIso β_c ↔ IsIso E_c` と `IsIso E_c ↔ E_c = 𝟙` を証明した。前者は
+`β_c = α_c ≫ E_c` と `α_c` の可逆性、後者は Cycle 3 で証明した `E_c` の冪等性を
+実使用する。Lean の連鎖した `↔` の結合を曖昧にしないため、二つの同値、両者の論理積、
+外側の同値をそれぞれ名前付き theorem として固定した。
+
+さらに `finiteAxisFoldBCDatumSquare` の generated comparison 全体について
+`finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso` を証明した。
+自然変換全体が同型だと仮定すると second component も同型になり、最初の同値から
+`E_second` が同型になる。しかし generated cochain の firing は
+`finiteAxisFold_initialRawDefect_second` で放電され、既証明の
+`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso` と矛盾する。
+
+### 2.7 有限 witness の六つの役割
 
 | 役割 | 内容 |
 |---|---|
@@ -439,7 +454,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
 | 6b | dependent な operation / invariant reading が configuration quotient へ descent できる条件と、できない場合の frontier を決める | 未構成。将来義務として保持。Čech nerve の装置は G-118(候補)へ |
 | 7 | observable exactness。firing かつ admissible の cell で、`E_c` の equation residual(同じ context / index / Atom)と coordinate(同じ axis)の literal 保存、および `beta_c` / `alpha_c` の対応式 | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate`、`authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual`、`authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate`)。一般の `q` と identity cell は不使用 |
-| 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 未着手 |
+| 8 | raw で壊れる場所: cell ごとに `IsIso β_c ↔ IsIso E_c ↔ E_c = 𝟙`。`β` 全体の `¬ IsIso` を名前付きにする。一般の同値に必要な transport の conservativity は別の義務 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_isIso_iff_eq_id`、`authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus`、`authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff_eq_id`、`finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso`)。fixture の firing は theorem 内で放電 |
 | 9a | witness packet のうち carrier / firing / admissibility / noninjectivity | 証明済み(`finiteCanonicalObjectNormalizationTotal_not_isIso`、`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`、`finiteAxisFold_canonicalNormalizationAdmissibleAt`、対照例 `auxiliarySensitiveCorePackage_not_admissible`) |
 | 9b | 名前付きの `q` を実際に選んだ reading に型付けし、`q ∘ n_P = q` を admissibility field から導く。二つの configuration の分離、`E_c ≠ 𝟙` と reading 保存の同時成立。`q := π_P` は放電と数えない | 未構成 |
 | 10 | 行き先の表と evidence map | §3.1、§3.4 |
