@@ -179,3 +179,60 @@ inadmissible branches of the selector.  The two transport functors preserve
 the raw equality by `Functor.map_comp`.  The Atom-equivalence theorem reads the
 identity lower map forced by the component's vertical core-fiber type through
 the existing `PackageTotalHom.atomEquiv_eq` law.
+
+## Cycle 4 — K2(c2) canonical normalization naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 4
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 913ea9dc765fa77cc44230b004a866a18ab67465
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Issue #4345 and Cycle 3 merge 913ea9dc765fa77cc44230b004a866a18ab67465
+  proof_dag_predecessors: [SignedExactCoreReadingHom.object_formation_eq, SignedExactCoreReadingHom.configuration_eq, canonicalObjectNormalization]
+  proof_obligation: Prove clause (c2), U(hom) composed with n_P equals n_Q composed with U(hom), for every package total hom.
+  selection_reason: Both required equations are primitive laws of every complete exact upper hom, so the fixed object-map equality can be proved without additional hypotheses.
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean]
+  risks: [assuming admissibility, restricting to isomorphisms, reversing the composition equation, proving only a selected fixture, claiming a package-morphism equality]
+  unchecked: [clauses (d), (e1), (e2), (f), (g), (g2), (h)]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Clause (c2) is proved pointwise and as the fixed function equality for arbitrary package total homs.
+  completion_candidate: no
+  lean_artifacts: [canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
+  evidence: [focused elaboration exit 0, standard-axiom audit for both declarations]
+  claim_mapping:
+    theorem_names: [canonicalObjectNormalization_natural_apply, canonicalObjectNormalization_natural]
+    source_labels: [target theorem clause (c2), target proof strategy K2]
+    conjuncts: [pointwise naturality, ArchitectureObject-valued function equality]
+    undischarged_assumptions: []
+    acceptance_point: The function equality quantifies over arbitrary P, Q, and PackageTotalHom P Q and uses no admissibility, isomorphism, or fixture premise.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [naturality of canonical object normalization (c2)]
+    remaining: [clauses (d), (e1), (e2), (f), (g), (g2), (h)]
+  certificate_provenance:
+    discharged: [the equality is generated from object_formation_eq and configuration_eq]
+    unresolved: [Karoubi image exactness, fixture witness packet]
+  proof_use:
+    used: [canonicalObjectNormalization, SignedExactCoreReadingHom.object_formation_eq, SignedExactCoreReadingHom.configuration_eq, Function.funext]
+    unused: [admissibility, package idempotence, cell projector data, G-110 and G-113 reviewed artifacts]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean — exit 0; axiom audit 2 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: K2(d) construct the fixed Karoubi image isomorphism from package and cell projector idempotence.
+```
+
+The pointwise proof unfolds the canonical normalization and rewrites exactly
+with the two complete upper-hom laws.  Function extensionality packages that
+calculation in the composition orientation fixed by clause (c2).

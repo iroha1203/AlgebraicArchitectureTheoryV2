@@ -312,7 +312,9 @@ f.upper.objectMap (n_P x)
   = n_Q (f.upper.objectMap x)
 ```
 
-object 写像の水準では、正規化はすべての exact hom に対して自然である。診断の選択で
+この計算は `canonicalObjectNormalization_natural_apply` と関数等式
+`canonicalObjectNormalization_natural` で証明済みである。object 写像の水準では、
+正規化はすべての exact hom に対して自然である。診断の選択で
 壊れうるのは `n_P` そのものではない。firing と admissibility という、入力に依存する選択
 ゲートの側だけである。
 
@@ -406,7 +408,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | # | 義務 | 既存の宣言・状態 |
 |---|---|---|
 | 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | 証明済み(`canonicalObjectNormalizationTotal_comp`)。ext 補題群は名前付きの artifact として固定済み |
-| 2 | object 写像の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
+| 2 | object 写像の水準の自然性(全 exact hom) | 証明済み(`canonicalObjectNormalization_natural_apply`、`canonicalObjectNormalization_natural`)。`object_formation_eq` と `configuration_eq` を実使用 |
 | 3a | `β_c = α_c ≫ E_c` であること、replacement に関する自然性 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app`、`authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`、`generatedAuthoredDiagnosticObjectCollapseComparison_replacement`) |
 | 3b | `E_c ≫ E_c = E_c` と `E_c.1.upper.atomEquiv = Equiv.refl _` | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv`)。raw selector の全 branch と2段の functor transport を名前付き補題で固定 |
 | 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 未証明(ob.3b を仮定した条件付き候補)。圏の一般 API は mathlib `Idempotents.Karoubi` にあるが、AAT の instance での theorem はまだない |
