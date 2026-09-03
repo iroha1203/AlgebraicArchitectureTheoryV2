@@ -56,6 +56,29 @@ noncomputable def authoredDiagnosticImageTargetKaroubi
   idem := authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp
     input cochain cell
 
+/-- Evaluation API for the source-image projector. -/
+theorem authoredDiagnosticImageSourceKaroubi_p
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : AuthoredBCDatumSquare U)
+    (cochain : DefectCochain input.toTransportData)
+    (cell : input.context.Category) :
+    (authoredDiagnosticImageSourceKaroubi input cochain cell).p =
+      (authoredDiagnosticObjectCollapseComparisonAtCochain
+          input cochain).app cell ≫
+        inv ((authoredSupportCanonicalMate input.context).app cell) :=
+  rfl
+
+/-- Evaluation API for the target-image projector. -/
+theorem authoredDiagnosticImageTargetKaroubi_p
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : AuthoredBCDatumSquare U)
+    (cochain : DefectCochain input.toTransportData)
+    (cell : input.context.Category) :
+    (authoredDiagnosticImageTargetKaroubi input cochain cell).p =
+      authoredViaBaseDiagnosticObjectCollapseComponentAtCochain
+        input cochain cell :=
+  rfl
+
 /-- G-116(d): `β_c` is an isomorphism from its conjugate source image to the
 `E_c` image in the Karoubi envelope.  Its inverse is
 `E_c ≫ inv α_c`; no splitting data is supplied. -/
@@ -70,8 +93,8 @@ noncomputable def authoredDiagnosticObjectCollapseKaroubiIso
     { f := (authoredDiagnosticObjectCollapseComparisonAtCochain
           input cochain).app cell
       comm := by
-        simp only [authoredDiagnosticImageSourceKaroubi,
-          authoredDiagnosticImageTargetKaroubi]
+        rw [authoredDiagnosticImageSourceKaroubi_p,
+          authoredDiagnosticImageTargetKaroubi_p]
         rw [authoredDiagnosticObjectCollapseComparisonAtCochain_app]
         simp [Category.assoc,
           authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp] }
@@ -80,8 +103,8 @@ noncomputable def authoredDiagnosticObjectCollapseKaroubiIso
           input cochain cell ≫
         inv ((authoredSupportCanonicalMate input.context).app cell)
       comm := by
-        simp only [authoredDiagnosticImageSourceKaroubi,
-          authoredDiagnosticImageTargetKaroubi]
+        rw [authoredDiagnosticImageSourceKaroubi_p,
+          authoredDiagnosticImageTargetKaroubi_p]
         rw [authoredDiagnosticObjectCollapseComparisonAtCochain_app]
         simp [Category.assoc,
           authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp] }

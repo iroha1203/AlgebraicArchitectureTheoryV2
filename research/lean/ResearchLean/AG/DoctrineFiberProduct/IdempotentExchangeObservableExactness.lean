@@ -1,5 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.InternalNormalizationSplitNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFold
+import ResearchLean.AG.DoctrineFiberProduct.SignedExactCoreReadingHomObjectMapAPI
+import ResearchLean.AG.DoctrineFiberProduct.CoreFiberLiftAxisAPI
 
 /-!
 # G-116 observable exactness of the transported projector
@@ -169,8 +171,8 @@ theorem equationResidual_eq_of_upper_conjugation
     have applied := congrArg
       (fun hom : SignedExactCoreReadingHom target target =>
         hom.objectMap current) inverseData.inverse_hom
-    simpa [SignedExactCoreReadingHom.comp,
-      SignedExactCoreReadingHom.refl] using applied
+    simpa only [signedExactCoreReadingHom_comp_objectMap_apply,
+      signedExactCoreReadingHom_refl_objectMap_apply] using applied
   change target.algebra.equationSystem.equationResidual
       (forward.equationTransport.contextForward W)
       (forward.objectMap
@@ -203,8 +205,8 @@ theorem coordinate_eq_of_upper_conjugation
     have applied := congrArg
       (fun hom : SignedExactCoreReadingHom target target =>
         hom.objectMap current) inverseData.inverse_hom
-    simpa [SignedExactCoreReadingHom.comp,
-      SignedExactCoreReadingHom.refl] using applied
+    simpa only [signedExactCoreReadingHom_comp_objectMap_apply,
+      signedExactCoreReadingHom_refl_objectMap_apply] using applied
   change target.reading.signatureReading.coordinate
       (forward.objectMap
         (inverseData.inverse.objectMap
@@ -409,8 +411,7 @@ theorem coreFiberTransportMap_axisMap_of_eq
     (coreFiberTransportMap base endomorphism).1.upper.axisMap axis =
       (coreFiberLift base package).upper.axisMap
         (endomorphism.1.upper.axisMap axis) at factor
-  simpa [coreFiberLift, transportAlongHom, transportAlongUpper,
-    axis_fixed axis] using factor
+  simpa only [coreFiberLift_axisMap, axis_fixed axis] using factor
 
 /-- Selected contravariant reindexing preserves a literally fixed axis of a
 vertical endomorphism. -/
@@ -503,7 +504,7 @@ theorem signedExactCoreReadingHom_coordinate_eq_of_comp
     have applied := congrArg
       (fun hom : SignedExactCoreReadingHom package package =>
         hom.objectMap current) idempotent
-    simpa [SignedExactCoreReadingHom.comp] using applied
+    simpa only [signedExactCoreReadingHom_comp_objectMap_apply] using applied
   have landed_fixed :
       landed (package.reading.signatureReading.coordinate object axis) =
         package.reading.signatureReading.coordinate object axis := by

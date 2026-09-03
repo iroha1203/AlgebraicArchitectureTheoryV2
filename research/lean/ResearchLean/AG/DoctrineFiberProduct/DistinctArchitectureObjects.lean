@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeKaroubiImage
+import ResearchLean.AG.DoctrineFiberProduct.ConfigurationDescent
 
 /-!
 # G-116 distinct architecture objects over every configuration

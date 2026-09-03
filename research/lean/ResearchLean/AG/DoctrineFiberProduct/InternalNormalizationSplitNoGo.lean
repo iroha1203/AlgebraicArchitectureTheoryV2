@@ -1,4 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturality
 
 /-!
 # G-116 internal normalization split no-go
