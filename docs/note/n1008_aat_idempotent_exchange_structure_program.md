@@ -1,7 +1,8 @@
 # 冪等 exchange 構造と高次整合の研究図 — G-116 改訂の設計と育てる仮説
 
 本ノートは考察ノートである。Lean と一次の数学本文は変更しない。ここに書く定義と
-定理はすべて候補であり、証明済み定理の statement を変更しない。目的は二つある。一つは、Issue #4341 の議論で決まった G-116
+定理は改訂設計時点の候補として記し、証明済み定理の statement を変更しない。現在の
+証明状態は G-116 カードと report を正とする。目的は二つある。一つは、Issue #4341 の議論で決まった G-116
 改訂の設計を書き留めること(§1–§5)。もう一つは、同じ議論で出てきた研究仮説を、
 数学的な中身、定理になるための条件、置き場所の三点で書き、育てる候補として残すこと
 (§6–§7)。経緯は Issue #4341 にある。
@@ -89,7 +90,7 @@
 | 記号 | 型 | 定義 | 状態 |
 |---|---|---|---|
 | `n_P` | `ArchitectureObject U → ArchitectureObject U` | `canonicalObjectNormalization P`。object の写像 | 冪等性は証明済み(`canonicalObjectNormalization_idempotent`) |
-| `N_P` | `P ⟶ P`(`PackageTotalHom`) | `canonicalObjectNormalizationTotal P adm`。package の射。underlying の object 写像は `n_P` | package の水準の冪等性 `N_P ≫ N_P = N_P` は未証明 |
+| `N_P` | `P ⟶ P`(`PackageTotalHom`) | `canonicalObjectNormalizationTotal P adm`。package の射。underlying の object 写像は `n_P` | package の水準の冪等性 `N_P ≫ N_P = N_P` は証明済み(`canonicalObjectNormalizationTotal_comp`) |
 | `α` | natural transformation | `authoredSupportCanonicalMate`。canonical mate | 同型であることは証明済み |
 | `β` | natural transformation | `generatedAuthoredDiagnosticObjectCollapseComparison`。generated comparison | 成分式 `β_c = α_c ≫ E_c` は証明済み(`..._app`)。`β` 全体が同型でないことは未固定 |
 | `E_c` | 各 cell `c` での射 `V_c ⟶ V_c` | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`。選択子で選んだ射を transport したもの | finite axis-fold で firing cell では同型でない(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。global な `E : V ⟶ V` は名前付きの宣言がない |
@@ -316,8 +317,9 @@ object 写像の水準では、正規化はすべての exact hom に対して�
 ゲートの側だけである。
 
 package の水準の冪等性 `N_P ≫ N_P = N_P` は、`PackageTotalHom.ext` を経て
-`SignedExactCoreReadingHom.ext` の 7 条件に落ちる。6 つは機械的に閉じる見込みである。
-残る一つ、`EquationSystemExactTransport` に関する `HEq` が、いちばん難しい一点である。
+`SignedExactCoreReadingHom.ext` の 7 条件に落ちる。G-116 Cycle 1 は
+`EquationSystemExactTransport` に関する `HEq` と operation の二段 cast を名前付き補題で
+閉じ、`canonicalObjectNormalizationTotal_comp` として証明した。
 ただし `finiteAxisFoldPermutationTotal_comp` は、同じ support package 上の合成で 7 条件
 すべてを `rfl` で閉じている。context の圏は常に thin なので、定義的に潰れる余地がある。
 そこで最初の義務を「`EquationSystemExactTransport` の ext 補題と refl-trans の等式」に
@@ -403,7 +405,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 
 | # | 義務 | 既存の宣言・状態 |
 |---|---|---|
-| 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | object 写像は `canonicalObjectNormalization_idempotent`。ext 補題群は名前付きの artifact にして、後続カードが使う |
+| 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | 証明済み(`canonicalObjectNormalizationTotal_comp`)。ext 補題群は名前付きの artifact として固定済み |
 | 2 | object 写像の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
 | 3a | `β_c = α_c ≫ E_c` であること、replacement に関する自然性 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app`、`authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`、`generatedAuthoredDiagnosticObjectCollapseComparison_replacement`) |
 | 3b | `E_c ≫ E_c = E_c` | 未証明。ob.1 と transport の functor 性から導く |
