@@ -132,7 +132,7 @@ tracking_issue: 4345
 report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
 selection:
   proof_state_ref: Issue #4345 and Cycle 2 merge 3fa6b8f090c240b5033ce755721d595462e5b1e3
-  proof_dag_predecessors: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance]
+  proof_dag_predecessors: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, authoredDiagnosticObjectCollapseComparisonAtCochain_app, generatedAuthoredDiagnosticObjectCollapseComparison_replacement]
   proof_obligation: Prove clause (c1) for every input, cochain, and cell: E_c composed with itself equals E_c and its upper Atom equivalence is identity.
   selection_reason: The raw selector gates and provenance route already exist; package idempotence can now be transported functorially to the selected cell component.
   expected_result_type: proof-obligation-discharged
@@ -160,8 +160,8 @@ audits:
     discharged: [selector gates are decided inside the definition; normalization idempotence is theorem-generated; transport uses Functor.map_comp]
     unresolved: [fixture witness packet]
   proof_use:
-    used: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, Functor.map_comp, CategoryTheory.IsHomLift.fac']
-    referenced_existing_identifications: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_replacement]
+    used: [canonicalObjectNormalizationTotal_comp, authoredDiagnosticObjectCollapseComponentAtCochain, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical, Functor.map_comp, PackageTotalHom.atomEquiv_eq, CategoryTheory.IsHomLift.fac']
+    referenced_existing_identifications: [authoredDiagnosticObjectCollapseComparisonAtCochain_app, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_replacement, generatedAuthoredDiagnosticObjectCollapseComparison_replacement]
     unused: [G-110 and G-113 reviewed artifacts]
   structure_field_escape: none-found
   route_integrity: pass
