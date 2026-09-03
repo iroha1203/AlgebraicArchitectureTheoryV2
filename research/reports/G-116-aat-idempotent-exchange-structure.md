@@ -802,9 +802,9 @@ result:
   completion_candidate: yes
   implementation_oids: [b4a32b1786564c127ea24e85e4c516e47dda613e]
   lean_artifacts: [signedExactCoreReadingHom_comp_objectMap_apply, signedExactCoreReadingHom_refl_objectMap_apply, coreFiberLift_axisMap, authoredDiagnosticImageSourceKaroubi_p, authoredDiagnosticImageTargetKaroubi_p]
-  evidence: [seven named focused checks exit 0, every changed module standard-axiom audit passes, target unfold pattern scan has no match, aggregate and manifest registration, exact import ownership]
+  evidence: [eight named focused checks exit 0, every changed module standard-axiom audit passes, target unfold pattern scan has no match, aggregate and manifest registration, exact import ownership]
   claim_mapping:
-    theorem_names: [equationResidual_eq_of_upper_conjugation, coordinate_eq_of_upper_conjugation, coreFiberTransportMap_axisMap_of_eq, coordinate_eq_of_idempotent, authoredDiagnosticObjectCollapseKaroubiIso, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalizationTotal_not_internal_split]
+    theorem_names: [equationResidual_eq_of_upper_conjugation, coordinate_eq_of_upper_conjugation, coreFiberTransportMap_axisMap_of_eq, signedExactCoreReadingHom_coordinate_eq_of_comp, authoredDiagnosticObjectCollapseKaroubiIso, exists_distinct_architectureObjects_over_configuration, canonicalObjectNormalizationTotal_not_internal_split]
     source_labels: [Lean quality standard no-unfold API, dependency minimality, completion ledger reproducibility]
     conjuncts: [named object-map evaluation, named lift-axis evaluation, named Karoubi projectors, direct e1 dependency, explicit e2 naturality dependency]
     undischarged_assumptions: []
@@ -829,4 +829,59 @@ audits:
   validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/SignedExactCoreReadingHomObjectMapAPI.lean — exit 0, 2 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/CoreFiberLiftAxisAPI.lean — exit 0, 1 declaration standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0, 4 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean — exit 0, 5 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean — exit 0, 5 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeObservableExactness.lean — exit 0, 36 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeUniversalTargets.lean — exit 0, 10 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, 5 declarations standard axioms only]
   blocking_findings: []
   next_obligation: Refix the PR head, rerun the standard PR gate, publish a replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
+```
+
+## Cycle 15 — classification import and ledger exactness closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 15
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: fed22056a6eaf9a159be037a7ba460121fb2dd67
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh standard four-lane review over fed22056a6eaf9a159be037a7ba460121fb2dd67
+  proof_dag_predecessors: [DistinctArchitectureObjects, CanonicalObjectNormalizationAPI, DiagnosticObjectCollapseSelectorAPI, BCProvenanceViaBaseRouteAPI, TransportEquivalence]
+  proof_obligation: Remove the classification module's unused raw-failure dependency and correct the two Cycle 14 declaration/evidence transcription errors.
+  selection_reason: Lean B found the high-layer import; Math A and Lean A/B found the same nonexistent declaration name, and Math A/Lean A found the seven-versus-eight validation count mismatch.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [losing a transitive producer API, changing g2 statement or proof, rewriting historical Cycle 14 facts]
+  unchecked: [finding-limited direct response, replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: Transport identity classification now imports the exact lower modules it uses rather than IdempotentExchangeRawFailureLocus. Cycle 14 names signedExactCoreReadingHom_coordinate_eq_of_comp and accurately records eight focused module checks.
+  completion_candidate: yes
+  implementation_oids: [0c4ea102f8035d8d5c33e1a83113478d3f361768]
+  lean_artifacts: []
+  evidence: [classification focused check exit 0 with 8 declarations standard axioms only, no target declaration change, exact direct imports, two cause-local Cycle 14 ledger corrections]
+  claim_mapping:
+    theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
+    source_labels: [G-116(g2), Lean quality dependency minimality, completion ledger reproducibility]
+    conjuncts: [unchanged g2 positive classification, direct producer and API dependencies, exact historical declaration and validation references]
+    undischarged_assumptions: []
+    acceptance_point: The fixed target, proof body, and all mathematical conclusions are unchanged; only import ownership and ledger spelling/count are repaired.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [unused high-layer raw-failure import, nonexistent Cycle 14 declaration name, Cycle 14 validation count mismatch]
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: [canonicalObjectNormalization_eq_of_configuration_eq, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible, bcProvenanceViaBaseRoute_eq, G-113 transport equivalence]
+    unused: [IdempotentExchangeRawFailureLocus import]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0, 8 declarations standard axioms only; git diff --check — exit 0]
+  blocking_findings: []
+  next_obligation: Obtain the finding-limited direct response, publish the replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
 ```
