@@ -93,7 +93,7 @@
 | `N_P` | `P ⟶ P`(`PackageTotalHom`) | `canonicalObjectNormalizationTotal P adm`。package の射。underlying の object 写像は `n_P` | package の水準の冪等性 `N_P ≫ N_P = N_P` は証明済み(`canonicalObjectNormalizationTotal_comp`) |
 | `α` | natural transformation | `authoredSupportCanonicalMate`。canonical mate | 同型であることは証明済み |
 | `β` | natural transformation | `generatedAuthoredDiagnosticObjectCollapseComparison`。generated comparison | 成分式 `β_c = α_c ≫ E_c` は証明済み(`..._app`)。`β` 全体が同型でないことは未固定 |
-| `E_c` | 各 cell `c` での射 `V_c ⟶ V_c` | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`。選択子で選んだ射を transport したもの | finite axis-fold で firing cell では同型でない(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。global な `E : V ⟶ V` は名前付きの宣言がない |
+| `E_c` | 各 cell `c` での射 `V_c ⟶ V_c` | `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain`。選択子で選んだ射を transport したもの | 任意の input / cochain / cell で `E_c ≫ E_c = E_c`、`E_c.1.upper.atomEquiv = Equiv.refl _` は証明済み。finite axis-fold の firing cell では同型でない(`finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso`)。global な `E : V ⟶ V` は名前付きの宣言がない |
 | `ν` | modification | G-117(候補)で作る、fiber を貫く自然な冪等射 | 未構成 |
 
 以下、`U(h)` で package の射 `h` の underlying の object 写像(`h.upper.objectMap`)を
@@ -408,7 +408,7 @@ refinement mate と G-115 の `upperDecisionSolution` が同型かどうかを�
 | 1 | package の水準の冪等性 `N_P ≫ N_P = N_P` | 証明済み(`canonicalObjectNormalizationTotal_comp`)。ext 補題群は名前付きの artifact として固定済み |
 | 2 | object 写像の水準の自然性(全 exact hom) | `object_formation_eq` + `configuration_eq` の計算を補題にする |
 | 3a | `β_c = α_c ≫ E_c` であること、replacement に関する自然性 | 証明済み(`authoredDiagnosticObjectCollapseComparisonAtCochain_app`、`authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`、`generatedAuthoredDiagnosticObjectCollapseComparison_replacement`) |
-| 3b | `E_c ≫ E_c = E_c` | 未証明。ob.1 と transport の functor 性から導く |
+| 3b | `E_c ≫ E_c = E_c` と `E_c.1.upper.atomEquiv = Equiv.refl _` | 証明済み(`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp`、`authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv`)。raw selector の全 branch と2段の functor transport を名前付き補題で固定 |
 | 4 | Karoubi exactness: `β_c : (D_c, β_c ≫ inv α_c) ⟶ (V_c, E_c)` が同型 | 未証明(ob.3b を仮定した条件付き候補)。圏の一般 API は mathlib `Idempotents.Karoubi` にあるが、AAT の instance での theorem はまだない |
 | 5 | 圏の中では分裂しないこと(no-go を固定した義務とする。signature に `adm` と同一 configuration 上の相異なる object の witness を含める。偽・型不能・反例なら `goal-defect` で停止) | 未証明(§2.4 の見込み) |
 | 6a | Type-level configuration descent: `Fix(n_P) ≃ AtomConfiguration U`、一意分解、`ArchitectureObject U / ≈_P ≃ AtomConfiguration U` | `canonicalNormalizationFixedEquiv`、`canonicalObjectNormalization_factorization_iff`、`architectureObjectConfigurationQuotientEquiv` で証明済み |
