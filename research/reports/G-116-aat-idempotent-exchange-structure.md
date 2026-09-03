@@ -720,3 +720,58 @@ audits:
   blocking_findings: []
   next_obligation: Refix the PR head, rerun the standard PR gate, publish a replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
 ```
+
+## Cycle 13 — arbitrary-carrier target surface and transport API closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 13
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 99987d36b6cb94b489f076f53c7742886cb3947d
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh standard four-lane review over 99987d36b6cb94b489f076f53c7742886cb3947d
+  proof_dag_predecessors: [authoredDiagnosticObjectCollapseComponentAtCochain_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_of_raw_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp, authoredDiagnosticObjectCollapseKaroubiIso, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual, authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual, authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff]
+  proof_obligation: Expose clauses (c1), (d), (f), (g), and (g2) for every Atom carrier without a caller-supplied DecidableEq instance, and remove the remaining downstream unfolding of the via-base component definition.
+  selection_reason: Math A identified the unclassified typeclass binder as a central anti-weakening risk, and Lean B found one remaining noncentral no-unfold violation.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/DiagnosticObjectCollapseSelectorAPI.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeUniversalTargets.lean]
+  artifact_targets: [ResearchLean/AG/DoctrineFiberProduct.lean, research-modules.txt, research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [changing the fixed target, changing fixture instance selection, leaving DecidableEq as a public target premise, moving producer unfolding into another downstream target]
+  unchecked: [fresh standard fixed-head PR review, replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: A lightweight producer-adjacent API now transports raw idempotence through the two functors without downstream unfolding. A new target-surface module internally selects Classical.decEq and restates all affected clauses with no DecidableEq binder, while the existing instance-parametric implementation and fixed finite fixture remain unchanged.
+  completion_candidate: yes
+  implementation_oids: [668c873e45e7c2ca7ca7c39bb272926fc9817e0e]
+  lean_artifacts: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_of_raw_comp, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv_universal, authoredDiagnosticObjectCollapseKaroubiIso_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual_universal, authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate_universal, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual_universal, authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff_universal]
+  evidence: [three named focused checks exit 0, all three module-local standard-axiom audits pass, exact #check output shows every universal declaration quantifies only over U input cochain and cell before the GOAL-permitted direction hypotheses, fixed witness packet focused check remains exit 0, aggregate and manifest registration]
+  claim_mapping:
+    theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_atomEquiv_universal, authoredDiagnosticObjectCollapseKaroubiIso_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual_universal, authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate_universal, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual_universal, authoredDiagnosticObjectCollapseAtCochain_rawFailureLocus_universal, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff_universal]
+    source_labels: [G-116(c1), G-116(d), G-116(f), G-116(g), G-116(g2)]
+    conjuncts: [arbitrary-carrier target signatures, internally selected classical decidable equality, unchanged mathematical conclusions, fixture independence]
+    undischarged_assumptions: []
+    acceptance_point: The fixed target is not weakened; each affected public target declaration has no DecidableEq binder, and the original proof-producing declarations remain available as implementation API.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [DecidableEq U.Atom is selected internally by the target surface and is no longer a caller premise]
+    remaining: []
+  certificate_provenance:
+    discharged: [Classical.decEq is a canonical internal computational choice, not a proposition carrying any target conclusion; raw idempotence is theorem-generated before functorial transport]
+    unresolved: []
+  proof_use:
+    used: [all nine universal target declarations directly reuse their proved instance-parametric declarations; authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp uses the lightweight comp_of_raw_comp API and the raw idempotence theorem]
+    unused: [downstream unfolding of authoredViaBaseDiagnosticObjectCollapseComponentAtCochain]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/DiagnosticObjectCollapseSelectorAPI.lean — exit 0, 2 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean — exit 0, 4 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeUniversalTargets.lean — exit 0, 10 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, 5 declarations standard axioms only; lake env lean /private/tmp/G116UniversalSignatureCheck.lean — exit 0, no DecidableEq binder in any of the nine target declarations]
+  blocking_findings: []
+  next_obligation: Refix the PR head, rerun the standard PR gate, publish a replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
+```
