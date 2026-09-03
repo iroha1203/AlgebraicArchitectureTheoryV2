@@ -35,17 +35,17 @@
   条件のうち `EquationSystemExactTransport` の `HEq` 一つに帰着する見込みである。
   これが立てば Karoubi の像で `β_c` が可逆になり、立たなければ具体の不成立等式が
   残る。分裂像を package 圏の内部に作ることは no-go の見込みで、定理になれば
-  分裂像の置き場は Karoubi の像になる(普遍性までは主張しない)。observable の層では、一般の関数に
-  対する `E_c` 不変性の implication は結合律だけの補題で中身がなく、AAT の中身は
-  選んだ reading の admissibility field と transport にだけある。
+  分裂像の置き場は Karoubi の像になる(普遍性までは主張しない)。observable の層
+  では、一般の関数に対する `E_c` 不変性の implication は結合律だけの補題で中身が
+  なく、AAT の中身は選んだ reading の admissibility field と transport にだけある。
 - `rival`: Beck–Chevalley 条件の古典論と、冪等射の分裂の古典論(Karoubi 一般論)。
   差は、diagnostic による選択、admissibility、選んだ reading の分離を (c1)(f)(h) の
   証明の中で実際に使う点に置く((e2) は admissibility を使わない)。
 - `claim boundary`: 記号を次で固定する。
   - package と object: `P Q : AATCorePackage U`、射は total category
     `PackageTotalCategory U` の `PackageTotalHom`。`U(h) := h.upper.objectMap`
-    (fiber の射 `E_c` では `E_c.1.upper.objectMap`)。`π x := x.configuration`(`P` に依存しない)、
-    `s_P c := P.reading.objectReading.object c`、`n_P := canonicalObjectNormalization P
+    (fiber の射 `E_c` では `E_c.1.upper.objectMap`)。`π x := x.configuration`(`P` に
+    依存しない)、`s_P c := P.reading.objectReading.object c`、`n_P := canonicalObjectNormalization P
     = s_P ∘ π`、`Fix(n_P) := {x // n_P x = x}`、configuration の核の関係
     `x ≈ y :↔ π x = π y`(`P` に依存しない)。
     `adm : CanonicalObjectNormalizationAdmissible P`、
@@ -60,12 +60,12 @@
     `E_c := authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain c`。
     generated comparison は `cochain := initialRawDefectCochain input.toTransportData`。
     `V_c` の package を `P'_c` と書く。
-  - 量化域: (a)(b)(c2)(e1)(e2) は任意の `P`(と `adm`)の上で言う。(c1)(d)(f)(g)(g2) の cell ごとの
-    主張は任意の `input`、`cochain`、`c` の上で言う。(g) の `β` 全体の非同型と (h) は
-    fixture `finiteAxisFoldBCDatumSquare` とその generated cochain の上で言い、この
-    fixture を動かさない。carrier
-    `U` は (a)–(g) で任意、(h) では fixture の carrier。係数、law universe、coverage
-    topology、site は動かさない。
+  - 量化域: (a)(b)(c2)(e2) は任意の `P`(と `adm`)の上で、(e1) は任意の configuration
+    の上で言う。(c1)(d)(f)(g)(g2) の cell ごとの主張は任意の `input`、`cochain`、`c` の
+    上で言う。(g) の `β` 全体の非同型と (h) は fixture `finiteAxisFoldBCDatumSquare` と
+    その generated cochain の上で言い、この fixture を動かさない。carrier `U` は任意
+    だが、(g) の fixture theorem、(h)、(g2) の反例では当該 fixture の carrier に固定
+    される。係数、law universe、coverage topology、site は動かさない。
   - 語らないもの: operation / invariant の dependent な因子化(後続カード)、G-114
     refinement mate と G-115 upper solution の同型性、localization(`W`-inversion)、
     fiber を貫く global modification `ν`(後続カード)、
@@ -168,9 +168,10 @@
   `research/lean/ResearchLean/AG/DoctrineFiberProduct/` 配下の新 module。G-110 / G-113
   の reviewed module は参照のみ。(a) と (f) の `Type` 水準の商と、(d) の圏水準の
   Karoubi は分けて扱い、`Type` の側の商を圏へ戻さない(`coforkReturn_not_isIso_of_ne`
-  の障害)。量化域は claim boundary のとおり((g2) の反例 fixture だけ例外)。universe は F0 で確定する。
-- `target proof artifacts`: (a)–(h) の theorem、(b) の ext 補題群(名前付き)、(h) の
-  witness packet、旧 O12 の disposition と declaration-level evidence map を含む report
+  の障害)。量化域は claim boundary のとおり((g2) の反例 fixture だけ例外)。universe
+  は F0 で確定する。
+- `target proof artifacts`: (a)–(h) の theorem((g2) は正枝または負枝の theorem)、(b) の
+  ext 補題群(名前付き)、(h) の witness packet、旧 O12 の disposition と declaration-level evidence map を含む report
   `research/reports/G-116-aat-idempotent-exchange-structure.md`。
 - `target proof strategy`: F0 typing(`n_P` / `N_P` / `E_c` の型分離、ext 補題の
   signature、(f) の literal 等式の形)→ K1 (a)(b) → K2 (c1)(c2)(d) → K3 (e1)(e2) → K4 (f)(g)(g2)
@@ -241,7 +242,7 @@
     PR #4233(head `76e58611`、merge `7083db0d`)。宣言 =
     `indexedDiagnosticTransportEquivalence`(O13)と
     `indexedDiagnosticTransportPush_isEquivalence`(O18)。
-    支える結論 = conservativity 行の導出候補。結論相当でない理由 = O13・O18 は
+    支える結論 = (g2) の正枝の導出候補。結論相当でない理由 = O13・O18 は
     `coreFiberTransportFunctor` 側の equivalence であり、`selectedCoreFiberReindexFunctor`
     との合成への bridge と、`E_c` の恒等性の反映は別に導く必要がある。
   - `finite axis-fold fixture`(`finiteAxisFoldBCDatumSquare`、`finiteAxisFoldSupportPackage`)
@@ -259,7 +260,8 @@
     (h) では仮定に置かない。
   - `package idempotence (b)`: `discharge-required`。artifact = ext 補題と
     `N_P ≫ N_P = N_P`、または不成立等式の theorem。
-  - `E_c ≫ E_c = E_c`、`atomEquiv = Equiv.refl` (c1) と `n_P` の自然性 (c2): `discharge-required`。
+  - `E_c ≫ E_c = E_c`、`atomEquiv = Equiv.refl` (c1) と `n_P` の自然性 (c2):
+    `discharge-required`。artifact = 各 theorem。
   - `distinct objects (e1)` と `internal split no-go (e2)`: `discharge-required`。artifact =
     一様補題と no-go theorem。
   - `observable transport (f)`: `discharge-required`。artifact = `adm` の field の
@@ -271,9 +273,9 @@
   - `transport identity-reflection classification (g2)`: `discharge-required`。artifact =
     (g2) の正枝または負枝の theorem。結論相当でない理由 = どちらの枝も (g) の cell 水準
     の同値と (h) を変えず、一般形の成否そのものが本カードの結論の一部である。
-- `target route integrity gate`: (a)(b)(e1)(e2)(c2) の量化域は `AATCorePackage U`、
-  `ArchitectureObject U`、`PackageTotalHom` の全体。(c1)(d)(f)(g)(g2)(h) の量化域は `AuthoredBCDatumSquare` の data
-  から組み、cell の package は `input.context.supportPackage c.as`。witness は
+- `target route integrity gate`: (a)(b)(c2)(e1)(e2) の量化域は `AATCorePackage U`、
+  `ArchitectureObject U`、`PackageTotalHom` の全体。(c1)(d)(f)(g)(g2)(h) の量化域は
+  `AuthoredBCDatumSquare` の data から組み、cell の package は `input.context.supportPackage c.as`。witness は
   `finiteAxisFoldBCDatumSquare` 系 fixture と対照例 fixture に限る((g2) の反例のみ
   例外)。禁止経路: caller 供給の certificate、`Classical.em` / `not_forall` /
   choice だけによる分岐(選択子の定義に沿う case 分析は可)、mathlib API の包み直し
