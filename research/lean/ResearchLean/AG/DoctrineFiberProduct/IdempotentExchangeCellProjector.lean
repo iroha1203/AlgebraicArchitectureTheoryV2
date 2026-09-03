@@ -1,5 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeNormalization
-import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
 
 /-!
 # G-116 cell projector idempotence
@@ -32,23 +32,6 @@ theorem authoredSupportCanonicalNormalizationComponent_comp
   apply Subtype.ext
   exact canonicalObjectNormalizationTotal_comp
     (input.context.supportPackage cell) admissible
-
-/-- A firing component with inadmissible support readings selects the
-identity.  This is the public third-branch API complementary to the vanishing
-and admissible-firing selector theorems. -/
-theorem authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible
-    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    (input : AuthoredBCDatumSquare U)
-    (cochain : DefectCochain input.toTransportData)
-    (cell : input.context.square.semantic.diagnostic.TwoCell)
-    (fires : cochain cell ≠ 1)
-    (inadmissible : ¬ CanonicalObjectNormalizationAdmissible
-      (input.context.supportPackage cell)) :
-    authoredDiagnosticObjectCollapseComponentAtCochain input cochain cell =
-      𝟙 (input.context.supportObject cell) := by
-  classical
-  simp [authoredDiagnosticObjectCollapseComponentAtCochain,
-    fires, inadmissible]
 
 /-- G-116(c1) API lemma: every selected raw support component is idempotent.
 The selector's vanishing, admissible-firing, and inadmissible branches are all

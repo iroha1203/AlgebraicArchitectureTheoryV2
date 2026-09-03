@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeRawFailureLocus
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
+import ResearchLean.AG.DoctrineFiberProduct.BCProvenanceViaBaseRouteAPI
 import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 
 /-!
@@ -29,17 +30,6 @@ theorem selectedCoreFiberReindexFunctor_isEquivalence
   letI : (coreFiberTransportFunctor input.semantic.hom).IsEquivalence :=
     semanticGlobalTransport_isEquivalence input.semantic.hom
   exact (coreTransportReindexAdjunction input).isEquivalence_right_of_isEquivalence_left
-
-/-- Public composition API for the provenance-indexed via-base route. -/
-@[simp]
-theorem bcProvenanceViaBaseRoute_eq
-    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
-    {input : BCSemanticInput U} (provenance : BCRealizationProvenance input) :
-    bcProvenanceViaBaseRoute provenance =
-      coreFiberTransportFunctor input.square.bottom ⋙
-        selectedCoreFiberReindexFunctor
-          provenance.rightProvenance.toRealizableHom :=
-  rfl
 
 /-- The provenance-indexed via-base route is an equivalence for every finite
 presentation, not only for an identity presentation. -/
