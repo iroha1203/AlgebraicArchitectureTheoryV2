@@ -319,7 +319,7 @@ result:
   proof_obligation_delta: Clause (e1) is proved uniformly by constructing unit- and Boolean-decorated architecture objects over the supplied configuration and deriving their inequality from the cardinalities of their StructureMaps types.
   completion_candidate: no
   lean_artifacts: [unitDecoratedArchitectureObject, boolDecoratedArchitectureObject, unitDecoratedArchitectureObject_ne_boolDecoratedArchitectureObject, exists_distinct_architectureObjects_over_configuration]
-  evidence: [focused elaboration exit 0, targeted module build exit 0, standard-axiom audit for all four declarations]
+  evidence: [canonical focused checker exit 0, targeted module build exit 0, standard-axiom audit for all four declarations, module manifest registration]
   claim_mapping:
     theorem_names: [exists_distinct_architectureObjects_over_configuration]
     source_labels: [target theorem clause (e1), target proof strategy K3]
@@ -343,7 +343,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only; research-modules.txt registration]
   blocking_findings: []
   next_obligation: K3(e2) prove that canonical package normalization has no internal split in the total category, using the general clause (e1) witness.
 ```
@@ -378,7 +378,7 @@ result:
   proof_obligation_delta: Clause (e2) is proved in the total category by showing any proposed split makes n_Q the identity, then contradicting the theorem-generated distinct same-configuration objects of Q.
   completion_candidate: no
   lean_artifacts: [packageTotalHom_objectMap_comp_apply, packageTotalHom_objectMap_id_apply, canonicalObjectNormalizationTotal_objectMap_apply, canonicalObjectNormalizationTotal_not_internal_split]
-  evidence: [focused elaboration exit 0, standard-axiom audit for all five module declarations]
+  evidence: [canonical focused checker exit 0, standard-axiom audit passed, module manifest registration]
   claim_mapping:
     theorem_names: [canonicalObjectNormalizationTotal_not_internal_split]
     source_labels: [target theorem clause (e2), target proof strategy K3]
@@ -402,7 +402,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean — exit 0; axiom audit 5 declarations standard axioms only]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean — exit 0; standard-axiom audit passed; research-modules.txt registration]
   blocking_findings: []
   next_obligation: K4(f) prove the fixed equation-residual and coordinate observable exactness equalities for every admissible firing cell.
 ```
