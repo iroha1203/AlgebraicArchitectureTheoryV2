@@ -1,5 +1,6 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeRawFailureLocus
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
 import ResearchLean.AG.DoctrineFiberProduct.BCProvenanceViaBaseRouteAPI
 import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 
