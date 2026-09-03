@@ -154,8 +154,8 @@ finite axis-fold witness では、次が同時に成り立つ。
 | 分類上の扱い | canonical-post-iso twist は既知の系として数える | 本体。改訂 G-116 の対象 |
 
 反例が教えているのは、この分解である。可逆で観測に見える twist の部分と、冪等で観測に
-見えない正規化の部分。§2.4 の見込みが定理になれば、正規化の部分の像は package 圏の中
-には作れない。そのとき住める場所は、Karoubi(冪等射を形式的に分裂させた圏)、
+見えない正規化の部分。§2.4 の定理により、正規化の部分の像は package 圏の中には
+作れない。そのとき住める場所は、Karoubi(冪等射を形式的に分裂させた圏)、
 configuration の商、localization(候補)のどれかになる。
 
 ## §2 中心定理候補 — Split Configuration Descent and Idempotent Beck–Chevalley Exactness
