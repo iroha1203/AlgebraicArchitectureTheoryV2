@@ -22,6 +22,12 @@
   G-113(完遂済み。indexed diagnostic transport equivalence)、G-114 / G-115(完遂
   済み。(i) の決定対象の名前付き宣言)。
 - `tracking issue`: #4359
+- `target revision`: 2026-09-05 の F0 typing で、(h2)(2) の
+  `whiskerFiberAut` は fixture の cell 値を `singleDiskLeftPath` /
+  `singleDiskRightPath` の始点に置けず型付け不能と確定した。人間の選択により、
+  edge reselection が path の終点に生成する `pathReselectionTransition` と
+  `rawTwoCellDefect_transition` の合成へ置き換えた。fixture、firing cell、orbit の
+  量化域は変更しない。
 - `source note`: [n1008](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)
   (§4.1 義務の骨格、§4.3 三項 coherence、§6.1 一般論との切り分け)、
   [G-116 カード](G-116-aat-idempotent-exchange-structure.md)(記号と既証明の一覧)。
@@ -83,12 +89,12 @@
     場合は report に二重計上である旨を明記する。(g) は fixture
     `finiteAxisFoldBCDatumSquare` とその generated cochain に固定する。(h1) の族は
     reselection orbit の membership 述語 `InReselectionOrbit`(fixture の transport
-    data 上、全 `EdgeReselection` の `rawDefectCochain` の像)に固定する。whiskering
-    (`whiskerFiberAut`。automorphism を path に沿って運ぶ作用)と typed pasting
-    (`orientedFaceDefect` / `pastingRawDefect`。reselection ごとに face / pasting の
-    defect を評価する演算)はいずれも単一 endpoint automorphism を返し、族の生成
-    演算に含めず (h2) の transport の側で扱う(閉包に混ぜて逆元生成を族の定義側に
-    埋め込まない)。(i) は上で固定した決定対象の上で言う。係数、law universe、
+    data 上、全 `EdgeReselection` の `rawDefectCochain` の像)に固定する。edge
+    reselection が path の終点に生成する gauge (`pathReselectionTransition`)と typed
+    pasting (`orientedFaceDefect` / `pastingRawDefect`。reselection ごとに face /
+    pasting の defect を評価する演算)はいずれも単一 endpoint automorphism を返し、
+    族の生成演算に含めず (h2) の propagation の側で扱う(閉包に混ぜて逆元生成を族の
+    定義側に埋め込まない)。(i) は上で固定した決定対象の上で言う。係数、law universe、
     coverage topology、site は動かさない。
   - 語らないもの: comparator inertia と descent class(G-118 候補)、bisimplicial /
     mixed descent、`W`-inversion localization、operation / invariant の dependent
@@ -113,7 +119,11 @@
   `δ_back = u⁻¹ · φ`)の存在だけをもって打ち消しの実現と数える構成(`δ_back` は
   `δ⁻¹ = φ · u⁻¹` と一般に一致しない)。(h1) で、自己打ち消し対(`q₁ c = q₂ c`。
   (g) と同じ対、その共役や gauge 移動を含む)をもって成り立つ枝の放電と数える構成。
-  (h2) の transport 等式だけをもって (h1) の放電と数える構成。(g) の statement の
+  (h2) の propagation 等式だけをもって (h1) の放電と数える構成。(h2) で
+  `pathReselectionTransition_singleEdge`、`singleDisk_leftTransition` /
+  `singleDisk_rightTransition`、`rawTwoCellDefect_transition` を再輸出または fixture に
+  specialization しただけで、二本の endpoint gauge の計算と orbit 値の変換式を一つの
+  theorem に接続しない構成。(g) の statement の
   `g · g` を literal な
   `1` に置き換えた形(群水準の square 等式の proof-use を要件とする)。(i) で、mate
   成分や component が identity presentation / unitor により定義的に恒等となる評価点の
@@ -213,17 +223,29 @@
       cell の値は defect 群を広く掃くので、相異なる相互逆元の対を実際の二つの
       reselection で構成できる見込みが高い。この条項は帰趨を開くためではなく、その
       構成を実データで要求するためにある。
-    - (h2) propagation: (h1) の量化域の orbit 値が、`whiskerFiberAut` と typed
-      pasting(`orientedFaceDefect` / `pastingRawDefect`)の下でどう運ばれるかの
-      transport theorem。最低限次を含む: (1) 任意の reselection と任意の
+    - (h2) propagation: (h1) の量化域の orbit 値が、edge reselection が left / right
+      path の終点に生成する gauge (`pathReselectionTransition`)と typed pasting
+      (`orientedFaceDefect` / `pastingRawDefect`)によりどう変換されるかの theorem。
+      最低限次を含む: (1) 任意の reselection と任意の
       `RewritePasting`(長さ任意)に対し、`pastingRawDefect` を面ごとの
-      `orientedFaceDefect` の積として表す明示式。(2) `whiskerFiberAut` について、
-      fixture の非 nil path(`singleDiskLeftPath` / `singleDiskRightPath`)に沿う
-      orbit 値の像の明示式。(3) (h1) で対が立った場合、両 cell を通る具体的
-      pasting の下で `q₁ c * q₂ c = 1` に対応する関係が保たれるか壊れるかの等式
-      または反例。nil path の `whiskerFiberAut_nil` や既存 pasting 補題の再輸出・
-      specialization だけでは放電と数えない。statement の正確な形は F0 で確定する。
-      (h2) の transport 等式だけでは (h1) の放電と数えない。
+      `orientedFaceDefect` の積として表す明示式。(2) fixture
+      `data := finiteAxisFoldBCDatumSquare.toTransportData`、firing cell
+      `c := DoubleDiamondTwoCell.second` とし、その
+      `twoLeft c` / `twoRight c`(定義上 `singleDiskLeftPath` /
+      `singleDiskRightPath`)について、`current increment : EdgeReselection` が生成する
+      二本の `pathReselectionTransition` を明示的に計算し、その二式を
+      `rawTwoCellDefect_transition` に代入して
+      `rawDefectCochain data (increment * current) c` を
+      `rawDefectCochain data current c` の left / right endpoint gauge 作用として表す
+      等式。(3) (h1) で対が立った場合、その二つの witness reselection に具体的な追加
+      reselection を作用させ、各々について firing cell `c` を含む
+      `doubleDiamondPasting` を評価し、(1)(2) の式を使って
+      `q₁ c * q₂ c = 1` に対応する関係が保たれるか壊れるかを決定する等式または反例。
+      `pathReselectionTransition_singleEdge`、`singleDisk_leftTransition` /
+      `singleDisk_rightTransition`、`rawTwoCellDefect_transition`、既存 pasting 補題の
+      再輸出・specialization だけでは放電と数えない。二本の endpoint gauge の計算、
+      raw defect の変換、具体的 pasting を同じ fixed fixture 上で接続する。
+      (h2) の propagation 等式だけでは (h1) の放電と数えない。
   - **(i) summand 決定**(成り立つ枝と成り立たない枝をあらかじめ固定した
     classification clause、二本):
     - (i1) `IsIso activeReverseMateComponent` の成否。`refinementBCMateAt` は
@@ -247,19 +269,19 @@
   G-115 の reviewed module は参照のみ。F0 で確定するのは universe、(a) の field 別
   transport artifact の一覧、(b) の subcategory の実装形、(d) の modification の
   packaging、(e) の gate 込み同定の正確な形、(f) の `χ_N` の domain の型と余域二点
-  subtype の実装形、(h2) の transport statement の形((h2) の最低限の内容はカード
+  subtype の実装形、(h2) の propagation statement の形((h2) の最低限の内容はカード
   固定)、(i) の評価点の Lean 上の束ね方である。帰趨を左右する選択((h1) の族 =
   `InReselectionOrbit` と firing cell 固定、(i) の評価点・問題 instance・判定射)は
   claim boundary と target theorem で固定済みであり、F0 で変更しない。F0 で型不能
   なら `goal-defect` で止める。量化域は claim boundary のとおり。
 - `target proof artifacts`: (a)–(g) の theorem、(h1)(i) の classification theorem
-  (どちらの枝で確定したかを statement で明示する)、(h2) の transport theorem、
+  (どちらの枝で確定したかを statement で明示する)、(h2) の propagation theorem、
   (d) の modification structure、
   declaration-level evidence map と (i) の決定記録を含む report
   `research/reports/G-117-aat-lax-diagnostic-projector.md`。
 - `target proof strategy`: F0 typing(universe、(a) の field 別 transport
   artifact、`AdmCoreFiber` の実装形、(d) の `ν` の modification packaging、(e) の
-  同定の形、`χ_N` の domain と余域 subtype の実装形、(h2) の transport statement、
+  同定の形、`χ_N` の domain と余域 subtype の実装形、(h2) の propagation statement、
   (i) の評価点の束ね方)→
   K1 (a)(b) → K2 (c)(d) → K3 (e) → K4 (f)(g) → K5 (h)(i) と
   report。既存成果の利用 map: G-116 ext 補題群と
@@ -269,7 +291,9 @@
   `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_provenance`((e))、
   `finiteAxisFoldSwapTotal_square`、`finiteAxisFold_initialRawDefect_second`((g))、
   `finiteAxisFoldPermutationTotal_comp`(thin context で ext 条件が `rfl` で閉じる
-  前例)、G-113 `indexedDiagnosticTransportEquivalence` と G-116
+  前例)、G-106 `pathReselectionTransition_fac` / `_mul`、
+  `rawTwoCellDefect_transition`、`singleDisk_leftTransition` /
+  `singleDisk_rightTransition`((h2))、G-113 `indexedDiagnosticTransportEquivalence` と G-116
   `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff`((i) の帰着
   候補)、mathlib `Idempotents.Karoubi`。選択子の定義に沿う case 分析(`cochain c = 1`、
   `adm`)は許す。
@@ -293,17 +317,20 @@
     `canonicalObjectNormalizationTotal_comp`、`E_c` 系、
     `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff`、witness
     packet。支える結論 = (c)(e)(g) の既証明部分。結論相当でない理由 = fiber を貫く
-    自然性、modification 化、lax law、(h1)(i) の決定と (h2) の transport は G-116
+    自然性、modification 化、lax law、(h1)(i) の決定と (h2) の propagation は G-116
     の artifact からは従わない。
   - `G-106 / transport-coherence reviewed artifact`: `ambient-boundary`。参照のみ。
     固定参照 = 完了同期 PR #4009(final reviewed head `d7b1d488`、merge
     `ae1ba0ea`)。宣言 = `InReselectionOrbit`、`EdgeReselection`、
-    `rawDefectCochain`、`initialRawDefectCochain`、`whiskerFiberAut`(+`_nil`)、
-    `orientedFaceDefect`、`pastingRawDefect`、`RewritePasting`、
+    `rawDefectCochain`、`initialRawDefectCochain`、`pathReselectionTransition`(+`_fac` /
+    `_mul`)、`rawTwoCellDefect_transition`、`singleDisk_leftTransition` /
+    `singleDisk_rightTransition`、`orientedFaceDefect`、`pastingRawDefect`、`RewritePasting`、
+    `doubleDiamondPasting`、
     `DoubleDiamondTwoCell`、`singleDiskLeftPath` / `singleDiskRightPath`
-    (`TransportCoherence` 配下)。支える結論 = (h1) の量化域と (h2) の transport の
+    (`TransportCoherence` 配下)。支える結論 = (h1) の量化域と (h2) の propagation の
     指示対象。結論相当でない理由 = これらは orbit の membership と transport の定義
-    であり、打ち消し対の存否と transport 等式はいずれも theorem として放電する。
+    または一般変換則であり、打ち消し対の存否、fixed fixture 上の二本の endpoint gauge
+    計算と orbit 値の変換・pasting の接続はいずれも新しい theorem として放電する。
   - `G-109 reviewed artifact`: `ambient-boundary`。参照のみ。固定参照 = 完了 PR
     #4029(final reviewed head `b5ca4630`、merge `faaf7160`)。宣言 =
     `coreFiberTransportFunctor`、`coreFiberCompositor`、`coreFiberUnitor`
@@ -364,8 +391,8 @@
   `Classical.em` / `not_forall` / choice だけによる枝選択((h1)(i) を含む。選択子の
   定義に沿う case 分析は可)、gate なしの `E = ν`、G-116 補題の再証明・repackage に
   よる独立計上、抽象の群一般論の単独計上、(h1) の reverse 宣言による代替、(h1) の族
-  の入力 datum の差し替えと `InReselectionOrbit` 以外への族の拡大・縮小(whiskering /
-  pasting を族の閉包に混ぜることを含む)、(i) の評価点・問題 instance の新設と
+  の入力 datum の差し替えと `InReselectionOrbit` 以外への族の拡大・縮小
+  (`pathReselectionTransition` / pasting を族の閉包に混ぜることを含む)、(i) の評価点・問題 instance の新設と
   差し替え、(i) の同型性を field に持つ structure / typeclass / certificate、
   fixture の差し替え、(d) の等式を `HEq` のまま等式と数えること。
 - `target anti-weakening rule`: 冪等性、自然性、(a) の admissibility 保存、両立
@@ -384,7 +411,7 @@
   判断。(a) または (d) が成り立たなければ、fiber ごとの projector の理論へ縮める
   改訂が候補)。(h1)(i) は枝をあらかじめ固定した classification でどちらの枝も確定
   結果とし、`target-refuted` にしない((h2) は構成義務で、(a)–(g) と同じ扱い)。
-  型不能、指示対象の欠落、(h2) の transport statement が F0 で型付けできない場合、
+  型不能、指示対象の欠落、(h2) の propagation statement が F0 で型付けできない場合、
   (i) の評価点が claim boundary の固定どおりに束ねられない場合は `goal-defect` で
   止め、人間の判断で target を改める。GOAL 改訂の提案は tracking Issue のコメントに
   置く。
