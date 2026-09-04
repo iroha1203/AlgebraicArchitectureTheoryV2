@@ -47,15 +47,16 @@
   normalization projector に分解する。raw exactness が壊れる場所を projector の
   非自明性で分類する。Karoubi の像と、選んだ reading の上で exactness が回復する
   ことを、有限 witness つきで決める。
-- `core tension`: 既証明と未証明の分界にある。canonical mate `α` は同型、cell ごとの
-  成分式 `β_c = α_c ≫ E_c`、選択子と `N_P` の成分の対応、replacement に関する
-  自然性、finite axis-fold の firing cell で `E_c` が同型でないこと、object 写像
-  `n_P` の冪等性、までは証明済み。未証明の核は package 射 `N_P` の冪等性
-  `N_P ≫ N_P = N_P` で、`PackageTotalHom.ext` と `SignedExactCoreReadingHom.ext` の
-  条件のうち `EquationSystemExactTransport` の `HEq` 一つに帰着する見込みである。
-  これが立てば Karoubi の像で `β_c` が可逆になり、立たなければ具体の不成立等式が
-  残る。分裂像を package 圏の内部に作ることは no-go の見込みで、定理になれば
-  分裂像の置き場は Karoubi の像になる(普遍性までは主張しない)。observable の層
+- `core tension at activation`: target 固定時点では、canonical mate `α` の同型性、cell
+  ごとの成分式 `β_c = α_c ≫ E_c`、選択子と `N_P` の成分の対応、replacement に
+  関する自然性、finite axis-fold の firing cell で `E_c` が同型でないこと、object
+  写像 `n_P` の冪等性までが証明済みであり、package 射 `N_P` の冪等性
+  `N_P ≫ N_P = N_P` と total category 内の split no-go が未放電の核だった。完了時点
+  では、前者を `canonicalObjectNormalizationTotal_comp` が
+  `PackageTotalHom.ext`、`SignedExactCoreReadingHom.ext`、
+  `EquationSystemExactTransport` の `HEq` を経て証明し、後者を
+  `canonicalObjectNormalizationTotal_not_internal_split` が証明する。明示的 Karoubi
+  iso はその分裂像を与える(普遍性までは主張しない)。observable の層
   では、一般の関数に対する `E_c` 不変性の implication は結合律だけの補題で中身が
   なく、AAT の中身は選んだ reading の admissibility field と transport にだけある。
 - `rival`: Beck–Chevalley 条件の古典論と、冪等射の分裂の古典論(Karoubi 一般論)。
