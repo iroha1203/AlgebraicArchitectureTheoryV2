@@ -1,7 +1,7 @@
 # G-117-aat-lax-diagnostic-projector — 冪等 modification ν と診断選択子の lax law
 
 - `id`: `G-117-aat-lax-diagnostic-projector`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `program context`: G-116 後続。G-116 が同定した冪等正規化因子を、admissible fiber を
