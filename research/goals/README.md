@@ -18,10 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
-- [G-116-aat-idempotent-exchange-structure](G-116-aat-idempotent-exchange-structure.md)
-  (旧 id `G-116-aat-gr4-capstone`。Gr4 系列。exchange 反例の背後にある冪等正規化
-  構造を同定する。Gr4 達成記録と義務台帳 O1–O20 は Gr4 を閉じる別カードが担う。
-  `$target-theorem-loop` 対象)
 
 ## draft（人間の確認待ち）
 
@@ -48,6 +44,10 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   (`target-theorem-proved`。Gr4 O8–O9)
 - [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
   (`target-theorem-proved`。Gr4 O10–O11。upper solution の `IsIso` 決定は Gr4 を閉じるカードへ)
+- [G-116-aat-idempotent-exchange-structure](G-116-aat-idempotent-exchange-structure.md)
+  (`target-theorem-proved`。exchange 反例の背後の冪等正規化、raw failure
+  classification、fixed finite witness。Gr4 達成記録と義務台帳 O1–O20 は Gr4 を
+  閉じる別カードへ)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)

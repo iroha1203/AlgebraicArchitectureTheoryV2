@@ -1,7 +1,41 @@
 # G-116 — Split Configuration Descent and Idempotent Beck–Chevalley Exactness
 
-This report records proof-obligation deltas for the fixed active GOAL
-`G-116-aat-idempotent-exchange-structure`.
+- primary specification: [`research/goals/G-116-aat-idempotent-exchange-structure.md`](../goals/G-116-aat-idempotent-exchange-structure.md)
+- tracking Issue: [#4345](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4345)
+- final completion PR: [#4355](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4355)
+- proof state: `target-theorem-proved`
+- completion candidate: finalized (formal math-lean-review: 4/4 `No major findings`)
+
+This report records proof-obligation deltas and the final completion judgment
+for the fixed GOAL `G-116-aat-idempotent-exchange-structure`.
+
+## Completion judgment (final, 2026-09-04)
+
+- final candidate head: `2d6731df0b130b6614ff3e64419154e341756f1a`
+- fixed GOAL blob: `9b3a1157889b33d5b2ce279365f3bec9f6e3bed6`
+- schema-complete replacement packet:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4355#issuecomment-5534552042>
+- standard fixed-head review audit:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4355#issuecomment-5534378901>
+- formal four-lane completion review: 4/4 `No major findings`
+- formal completion ledger:
+  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4355#issuecomment-5534609056>
+- final completion PR: #4355, exact-head CI 7/7 successful
+- merge commit: `a9f135518cfba0691f995621fdc3892054f36ca6`
+- verdict: `target-theorem-proved`
+- remaining G-116 proof obligations: none
+
+The fixed clauses (a)--(h) are all discharged. The final review reconstructed
+the full statement, material-premise provenance and proof-use, literal
+Karoubi projectors, total-category split no-go, observable residual and
+coordinate equalities, both raw-failure equivalences, the general positive
+identity-reflection classification, and the argument-free finite witness.
+All 19 target/API/fixture modules passed focused static checking and
+module-local standard-axiom audits. The exact-head dependency audit found no
+remaining transitive-only substantive owner, unused umbrella, downstream
+target-definition unfold, placeholder, reverse import, or route escape.
+Research aggregate/full build was not run. Gr4 achievement and the O1--O20
+ledger remain outside this target and belong to the separate Gr4-closing card.
 
 ## Cycle 1 — F0 / K1(b) package normalization idempotence
 
