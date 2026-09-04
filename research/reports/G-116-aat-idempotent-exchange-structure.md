@@ -940,3 +940,58 @@ audits:
   blocking_findings: []
   next_obligation: Refix the PR head, rerun the standard PR gate, publish the replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
 ```
+
+## Cycle 17 — exact witness theorem-owner closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 17
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: f00f8c704e21207f1980193cca94d4748e928577
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh standard four-lane review over f00f8c704e21207f1980193cca94d4748e928577
+  proof_dag_predecessors: [Formal.AG.Examples.FiniteModel, BCDiagnosticAxisFoldComparisonWitnesses, BCDiagnosticPairwiseAxisFoldWitnesses, BCAuthoredObjectCollapse, BCAuthoredCanonicalObjectNormalizationWitnesses, BCAuthoredDiagnosticObjectCollapseProducerWitnesses, IdempotentExchangeRawFailureLocus, IdempotentExchangeObservableExactness, FiniteGeneratedEquationTransportWitnesses]
+  proof_obligation: Make the Cycle 16 theorem-owner claim literal by importing every module that owns a theorem used by IdempotentExchangeWitnessPacket, and remove the unused classification umbrella import.
+  selection_reason: Both fresh Lean lanes found that the witness elaborated through transitive theorem imports while Cycle 16 claimed exact direct ownership.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [retaining an unused umbrella import, omitting a theorem owner, confusing public theorem inventory with axiom-audit output count]
+  unchecked: [finding-limited direct response, replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: WitnessPacket now directly imports all six previously transitive theorem-owner modules, retains the three directly used target theorem modules, removes the unused IdempotentExchangeTransportIdentityClassification import, and passes focused source elaboration.
+  completion_candidate: yes
+  implementation_oids: [9a449e7b737e702249205e619516cfbc0779a535]
+  lean_artifacts: []
+  evidence: [WitnessPacket focused check exit 0 with 5 declarations standard axioms only, declaration-to-owner source scan, exact direct theorem-owner imports, unchanged fixed GOAL blob]
+  claim_mapping:
+    theorem_names: [finiteAxisFold_idempotentExchange_witnessPacket]
+    source_labels: [G-116(h), Lean dependency ownership, Cycle 16 evidence correction]
+    conjuncts: [unchanged fixed witness packet, direct theorem-owner closure, no unused classification umbrella]
+    undischarged_assumptions: []
+    acceptance_point: The clause h statement and proof term are unchanged; only its explicit source dependency closure and the evidence ledger are repaired.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [transitive theorem-owner imports in WitnessPacket]
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: [FiniteModel.object_hasCycleWitness, finiteAxisFold_toTransportData, finiteAxisFold_initialRawDefect_second, finiteAxisFoldSwap_ne_one, finiteAxisFoldEraseObject_configuration, finiteAxisFoldUnitObject_ne_boolObject, finiteAxisFoldEraseObject_unit_eq_bool, finiteCanonicalObjectNormalization_eq_erase, finiteAxisFold_canonicalNormalizationAdmissibleAt, finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso, finiteSelectiveTwo_noCycleResidual_object_sensitive, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual]
+    unused: [IdempotentExchangeTransportIdentityClassification import]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, axiom audit raw output reports 5 namespace declarations standard axioms only; DiagnosticObjectCollapseSelectorAPI has three public theorem declarations while its axiom-audit macro raw output reports 4 namespace declarations]
+  blocking_findings: []
+  next_obligation: Obtain finding-limited direct responses for the Cycle 17 import fix and the exact-head PR body, then publish the replacement final packet and run four wholly fresh completion lanes.
+```
