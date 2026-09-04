@@ -995,3 +995,58 @@ audits:
   blocking_findings: []
   next_obligation: Obtain finding-limited direct responses for the Cycle 17 import fix and the exact-head PR body, then publish the replacement final packet and run four wholly fresh completion lanes.
 ```
+
+## Cycle 18 — witness no-unfold API closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 18
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 072852ddc9963a7335ece163471d16d25703169a
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh full standard four-lane review over 072852ddc9963a7335ece163471d16d25703169a
+  proof_dag_predecessors: [SchemaWitnesses, BCAuthoredObjectCollapse, IdempotentExchangeWitnessPacket]
+  proof_obligation: Remove the remaining downstream unfolds of finite cycle, decoration configuration, and schema atom transport from clause h by adding and consuming owner-adjacent named APIs.
+  selection_reason: Lean B found that the witness proof still unfolded externally owned definitions even though Cycle 16 claimed the target no-unfold route was closed.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/SchemaWitnesses.lean, ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [moving external definition unfolds into the target proof, stale owner oleans, changing the fixed clause h conjunction]
+  unchecked: [fresh full standard fixed-head PR review, schema-complete replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: SchemaWitnesses now exposes identity Atom-equivalence and configuration-transport APIs; BCAuthoredObjectCollapse exposes both decoration configurations and configuration congruence for the finite cycle predicate; WitnessPacket consumes those named APIs and no longer unfolds the external definitions identified by review.
+  completion_candidate: yes
+  implementation_oids: [5daebba770203f1a9782e44bd7954a981a93b0ca]
+  lean_artifacts: [finiteModelDoctrineFromFixture_atomEquiv, finiteModelDoctrineFromFixture_configuration_transport, finiteAxisFoldUnitObject_configuration, finiteAxisFoldBoolObject_configuration, finiteModel_hasDependencyCycle_iff_of_configuration_eq]
+  evidence: [three named focused source checks, targeted dependency construction for SchemaWitnesses and BCAuthoredObjectCollapse, WitnessPacket exit 0 with 5 declarations standard axioms only, target no-unfold scan, unchanged fixed GOAL blob]
+  claim_mapping:
+    theorem_names: [finiteAxisFold_cyclic_configuration_ne_acyclic, finiteAxisFold_idempotentExchange_witnessPacket]
+    source_labels: [G-116(h), Lean quality no-unfold rule]
+    conjuncts: [cycle-based configuration separation, same-configuration decoration pair, transported separated configurations]
+    undischarged_assumptions: []
+    acceptance_point: Clause h retains the exact theorem signature and proof obligations while all externally owned implementation reductions move behind named source APIs.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [downstream finite cycle unfold, downstream decoration constructor unfold, downstream schema morphism unfold]
+    remaining: []
+  certificate_provenance:
+    discharged: [cycle congruence follows from configuration equality; both decoration configurations and schema identity transport have named theorem producers]
+    unresolved: []
+  proof_use:
+    used: [finiteModel_hasDependencyCycle_iff_of_configuration_eq, finiteAxisFoldUnitObject_configuration, finiteAxisFoldBoolObject_configuration, finiteModelDoctrineFromFixture_configuration_transport]
+    unused: [target-local unfolding of FiniteModel.hasCycleWitness, FiniteModel.hasDependencyCycle, finiteAxisFoldUnitObject, finiteAxisFoldBoolObject, finiteModelDoctrineFromFixture]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/SchemaWitnesses.lean — exit 0, 48 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean — exit 0, 24 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, 5 declarations standard axioms only; lake build ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse — targeted dependency construction only, exit 0; git diff --check — exit 0]
+  blocking_findings: []
+  next_obligation: Refix the PR head, repeat the full standard four-lane review, then emit a schema-complete replacement packet and run four wholly fresh completion lanes.
+```
