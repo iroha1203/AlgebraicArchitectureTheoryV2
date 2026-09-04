@@ -1,4 +1,3 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeCellProjector
 import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
 
 /-!

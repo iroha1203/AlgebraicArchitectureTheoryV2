@@ -130,12 +130,7 @@ theorem finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_i
     DoubleDiamondTwoCell.second
   · rw [finiteAxisFold_toTransportData,
       finiteAxisFold_initialRawDefect_second]
-    intro equality
-    have axisEquality := congrArg
-      (fun automorphism : PackageFiberAut finiteAxisFoldSupportPackage =>
-        (PackageFiberAut.hom automorphism).upper.axisMap (0 : Fin 3)) equality
-    change (1 : Fin 3) = 0 at axisEquality
-    exact Fin.zero_ne_one axisEquality.symm
+    exact finiteAxisFoldSwap_ne_one
   · exact projectorIsIso
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct

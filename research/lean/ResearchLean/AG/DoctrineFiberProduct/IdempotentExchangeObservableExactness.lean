@@ -1,5 +1,5 @@
-import ResearchLean.AG.DoctrineFiberProduct.InternalNormalizationSplitNoGo
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFold
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
 import ResearchLean.AG.DoctrineFiberProduct.SignedExactCoreReadingHomObjectMapAPI
 import ResearchLean.AG.DoctrineFiberProduct.CoreFiberLiftAxisAPI
 

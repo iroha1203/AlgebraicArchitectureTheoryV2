@@ -153,13 +153,10 @@ theorem authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff
       · intro equality selectedBranch
         rcases selectedBranch with ⟨_, _, notInjective⟩
         apply notInjective
-        have objectMapEquality := congrArg
-          (fun morphism : input.context.supportObject cell ⟶
-              input.context.supportObject cell => morphism.1.upper.objectMap)
-          equality
-        change canonicalObjectNormalization
-            (input.context.supportPackage cell) = _root_.id at objectMapEquality
-        rw [objectMapEquality]
+        have normalizationEquality :=
+          canonicalObjectNormalization_eq_id_of_supportComponent_eq_id
+            input cell admissible equality
+        rw [normalizationEquality]
         exact Function.injective_id
       · intro outsideSelectedBranch
         exact (outsideSelectedBranch ⟨vanishes, admissible,

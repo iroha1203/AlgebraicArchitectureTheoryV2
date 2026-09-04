@@ -1,5 +1,7 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeTransportIdentityClassification
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeObservableExactness
+import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeRawFailureLocus
+import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWitnesses
 
 /-!
 # G-116 finite witness packet
@@ -80,15 +82,7 @@ theorem finiteAxisFold_supportResidual_separates_cyclic_acyclic :
     apply (transport.observableEquiv sourceW).injective
     rw [transport.equationResidual_eq, transport.equationResidual_eq]
     exact targetEquality
-  change FiniteModel.noCycleResidual FiniteModel.object =
-    FiniteModel.noCycleResidual FiniteModel.acyclicObject at sourceEquality
-  have cyclic : FiniteModel.hasDependencyCycle FiniteModel.object := by
-    simpa [FiniteModel.hasCycleWitness, FiniteModel.hasDependencyCycle] using
-      FiniteModel.object_hasCycleWitness
-  have acyclic : ¬ FiniteModel.hasDependencyCycle FiniteModel.acyclicObject := by
-    intro cycle
-    exact cycle.1
-  simp [FiniteModel.noCycleResidual, cyclic, acyclic] at sourceEquality
+  exact finiteSelectiveTwo_noCycleResidual_object_sensitive sourceEquality
 
 /-- The generated cochain fires at the fixed second cell. -/
 theorem finiteAxisFold_generatedCochain_second_ne_one :

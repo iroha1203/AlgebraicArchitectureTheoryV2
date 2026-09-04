@@ -59,6 +59,26 @@ theorem authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_of_raw_co
               (bcBottomPresentation presentation))).map morphism))
       rawComp
 
+/-- Equality of the selected canonical component with the identity forces the
+underlying canonical object normalization to be the identity function. -/
+theorem canonicalObjectNormalization_eq_id_of_supportComponent_eq_id
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (input : AuthoredBCDatumSquare U)
+    (cell : input.context.square.semantic.diagnostic.TwoCell)
+    (admissible : CanonicalObjectNormalizationAdmissible
+      (input.context.supportPackage cell))
+    (equality : authoredSupportCanonicalNormalizationComponent
+      input cell admissible = 𝟙 (input.context.supportObject cell)) :
+    canonicalObjectNormalization (input.context.supportPackage cell) =
+      _root_.id := by
+  funext object
+  have applied := congrArg
+    (fun morphism : input.context.supportObject cell ⟶
+        input.context.supportObject cell => morphism.1.upper.objectMap object)
+    equality
+  simpa [authoredSupportCanonicalNormalizationComponent,
+    canonicalObjectNormalizationTotal] using applied
+
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
 
 end AAT.AG.DoctrineFiberProduct

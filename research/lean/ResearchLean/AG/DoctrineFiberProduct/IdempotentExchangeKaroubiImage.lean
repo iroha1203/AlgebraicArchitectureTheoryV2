@@ -1,5 +1,5 @@
 import Mathlib.CategoryTheory.Idempotents.Karoubi
-import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturality
+import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeCellProjector
 
 /-!
 # G-116 Karoubi image exactness
