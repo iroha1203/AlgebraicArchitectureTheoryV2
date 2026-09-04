@@ -13,9 +13,9 @@
   引き受ける。O19(Gr4 達成記録)と義務台帳 O1–O20 の統合は本カードの責務に含めない
   (台帳の所在は改訂前 G-116 カードの版 blob `be49fdeb` と n1007 §3 のまま)。n1008
   §6.4 の conjugation regime(solution component が同型かで場合分けする読み)の成否の
-  入力は、(i2) の決定が与える。依存する reviewed カード(G-116、G-109、G-113、
-  G-114、G-115)の statement が改訂された場合は、本カードを draft へ差し戻して再固定
-  する。
+  入力は、(i2) の決定が与える。依存する reviewed カード(G-106、G-109、G-113、
+  G-114、G-115、G-116)の statement が改訂された場合は、本カードを draft へ差し戻し
+  て再固定する。
 - `predecessor`: G-116(完遂済み。`N_P` / `E_c` の冪等性、ext 補題群、raw failure
   locus、transport identity-reflection classification、witness packet)、G-109(完遂
   済み。`coreFiberTransportFunctor` / `coreFiberCompositor` / `coreFiberUnitor`)、
@@ -69,20 +69,25 @@
     `upperDecisionSolution` の vertical component 族
     `upperDecisionSolution.component`。評価点・問題 instance の新設や差し替えは
     認めない(Lean 上の束ね方だけを F0 で確定する)。
-  - 量化域: (a) は `transportAlong` の定義域の任意の arrow の上で言う。(b)(c)(d) は
+  - 量化域: (a) は任意の `P adm` と `transportAlong` の定義域の任意の arrow の上で
+    言う。(b)(c)(d) は
     任意の `X Y σ` と admissible な `P` の上で言う。(e) は任意の `input cochain c` の
     上で言う。(f) は cell の defect 群と `N_P` の上で言う。抽象補題は support として
     許すが、放電は実 defect 群・実選択子での instantiation で数え、instantiation は
     fixture の firing cell で行う。実 `N_P` の instantiation では `N ≫ N = N` を
     `canonicalObjectNormalizationTotal_comp` で放電して仮定に残さず、`N_P ≠ 𝟙` と
     `Nontrivial G` は fixture の theorem(下記 ledger)で放電する。前提を仮定に残した
-    specialization は (f) の instantiation と数えない。(g) は fixture
+    specialization は (f) の instantiation と数えない。(f1) の instantiation は、
+    破れ側(`g * h = 1` で等式が落ちる場合)と成立側(`g * h ≠ 1` で等式が立つ場合)
+    の両方の実データ評価を含める。破れ側の評価定理は (g) と同一宣言でよく、その
+    場合は report に二重計上である旨を明記する。(g) は fixture
     `finiteAxisFoldBCDatumSquare` とその generated cochain に固定する。(h1) の族は
     reselection orbit の membership 述語 `InReselectionOrbit`(fixture の transport
     data 上、全 `EdgeReselection` の `rawDefectCochain` の像)に固定する。whiskering
-    (`whiskerFiberAut`)と typed pasting(`orientedFaceDefect` /
-    `pastingRawDefect`)は単一 endpoint automorphism を返す作用であり、族の生成演算
-    に含めず (h2) の transport の側で扱う(閉包に混ぜて逆元生成を族の定義側に
+    (`whiskerFiberAut`。automorphism を path に沿って運ぶ作用)と typed pasting
+    (`orientedFaceDefect` / `pastingRawDefect`。reselection ごとに face / pasting の
+    defect を評価する演算)はいずれも単一 endpoint automorphism を返し、族の生成
+    演算に含めず (h2) の transport の側で扱う(閉包に混ぜて逆元生成を族の定義側に
     埋め込まない)。(i) は上で固定した決定対象の上で言う。係数、law universe、
     coverage topology、site は動かさない。
   - 語らないもの: comparator inertia と descent class(G-118 候補)、bisimplicial /
@@ -106,13 +111,14 @@
   (firing でない cell で偽)。G-116 の ext 補題・冪等性・classification の再証明や
   repackage(参照のみ許す)。(h1) で reverse 宣言(局所 defect `δ = u · φ⁻¹` に対する
   `δ_back = u⁻¹ · φ`)の存在だけをもって打ち消しの実現と数える構成(`δ_back` は
-  `δ⁻¹ = φ · u⁻¹` と一般に一致しない)。(h1) で、(g) と同じ自己打ち消し対
-  (`h := g`)だけをもって成り立つ枝の放電と数える構成。(h2) の transport 等式だけを
-  もって (h1) の放電と数える構成。(g) の statement の `g · g` を literal な
+  `δ⁻¹ = φ · u⁻¹` と一般に一致しない)。(h1) で、自己打ち消し対(`q₁ c = q₂ c`。
+  (g) と同じ対、その共役や gauge 移動を含む)をもって成り立つ枝の放電と数える構成。
+  (h2) の transport 等式だけをもって (h1) の放電と数える構成。(g) の statement の
+  `g · g` を literal な
   `1` に置き換えた形(群水準の square 等式の proof-use を要件とする)。(i) で、mate
   成分や component が identity presentation / unitor により定義的に恒等となる評価点の
   成立だけをもって成り立つ枝の放電と数える構成。(i) の同型性を field に持つ
-  structure / certificate で受ける構成。
+  structure / typeclass / certificate で受ける構成。
 - `frontier`: 「AAT の結論の Morita 形」予想の statement 化(Karoubi 包絡と
   configuration 層)、垂直 strictness の統一定理(n1008 §4.2 Test A)、ordered
   groupoid / partial symmetry(n1008 §6.4)、semantic-analysis hysteresis(n1008
@@ -152,11 +158,15 @@
     named theorem として成果に数え、report に明記する。
   - **(e) `E_c` の同定**(任意の `input cochain c`): firing かつ admissible の cell
     で、`E_c` は transport / provenance iso で運ばれた `ν` の成分である(既存
-    `_eq_canonical` / `_eq_provenance` の付け替え)。全 cell では gate 込みの
-    `E_c = χ_{N'}(cochain c)`(`N'` は transport された `ν` の成分。正確な形は F0 で
-    確定する)の形でのみ主張し、gate なしの `E = ν` は主張しない(firing でない
-    cell で偽)。fiber ごとの Karoubi completion の上で G-116 (d) の Karoubi iso を
-    `ν` の像として再読する系を添える(独立の放電には数えない)。
+    `_eq_canonical` / `_eq_provenance` の付け替え)。全 cell の式は選択子の三分岐に
+    一致させる: `cochain c = 1` なら `𝟙`、firing かつ admissible なら transport
+    された `ν` の成分、firing かつ非 admissible なら `𝟙`。gate は firing と
+    admissibility の両方を含む。`ν` の成分の指示は (b) の `T_σ` と (d) の
+    modification data による像として書き、G-116 の provenance 経路はその橋渡しと
+    してのみ使う(`E_c` の定義を経由して `ν` の成分を定義しない)。同定の正確な形
+    は F0 で確定する。gate なしの `E = ν` は主張しない(firing でない cell で偽)。
+    fiber ごとの Karoubi completion の上で G-116 (d) の Karoubi iso を `ν` の像と
+    して再読する系を添える(独立の放電には数えない)。
   - **(f) selector の分類**(cell の defect 群 `G` と `N := N_P` の上):
     - (f1) `N ≫ N = N` と `N ≠ 𝟙` のもとで、点ごとの同値
       `χ_N(g) ≫ χ_N(h) = χ_N(gh) ↔ (g = 1 ∨ h = 1 ∨ gh ≠ 1)`。
@@ -166,10 +176,14 @@
       lax law `χ_N(g) ≫ χ_N(h) ⪯ χ_N(gh)`。
     - (f4) 二段分解(固定形): 指示関数 `b : G → Bool` は `b g = true ↔ g = 1`。
       `Bool` 側は積 `&&`・単位 `true`・順序 `false ≤ true` で読む。埋め込みは
-      `ι_N(true) = 𝟙`、`ι_N(false) = N` で、余域は二点 subtype `{𝟙, N}`(または
-      冪等 endomorphism の subtype)に狭める。`χ_N = ι_N ∘ b`。示すのは、`b` が lax
-      monoid map であること(`b g && b h ≤ b (g * h)`)、`ι_N` が monoid 射である
-      ことと `N ≫ N = N` の同値、`ι_N` が順序埋め込みであることと `N ≠ 𝟙` の同値。
+      `ι_N(true) = 𝟙`、`ι_N(false) = N`。順序の主張と `χ_N` の packaging では余域を
+      二点 subtype `{𝟙, N}` に固定する(`N = 𝟙` の退化は各同値の否定側が引き受け
+      る)。`χ_N = ι_N ∘ b`。示すのは、`b` が lax monoid map であること
+      (`b g && b h ≤ b (g * h)`)、`ι_N` が積を保つこと(`∀ x y, ι_N (x && y) =
+      ι_N x ≫ ι_N y`。endomorphism の等式として言う)と `N ≫ N = N` の同値、および
+      `N ≫ N = N` のもとで `ι_N` が順序埋め込みであることと `N ≠ 𝟙` の同値(仮定を
+      置かない形では右辺は `N ≫ N = N ∧ N ≠ 𝟙`。順序埋め込みの `(false, false)` 対
+      が `N ⪯ N` すなわち `N ≫ N = N` を要求するため)。
     - (f5) 二元の projector 順序では三項の coherence が自動で閉じること。statement は
       「三項合成の両括弧づけの `⪯` 導出の値の一致」と「`⪯` の比較が Prop 値(thin)
       であることの明示」に型を固定し、この lax law から 3-cocycle 型の残差が出ない
@@ -187,26 +201,40 @@
   - **(h) witness lane 2(generated orbit の側)**: 二段に分ける。
     - (h1) actual reselection orbit(成り立つ枝と成り立たない枝をあらかじめ固定した
       classification clause): 量化域は claim boundary で固定した reselection orbit
-      (`InReselectionOrbit`)。成り立つ枝 = orbit に属する `q₁ q₂ : DefectCochain`
-      と cell `c` で、`q₁ c ≠ 1`、`q₂ c ≠ 1`、`q₁ c * q₂ c = 1` を満たす対の構成。
+      (`InReselectionOrbit`)、cell は firing cell(`DoubleDiamondTwoCell.second`)
+      に固定する。成り立つ枝 = orbit に属する `q₁ q₂ : DefectCochain` で、
+      `q₁ c ≠ 1`、`q₂ c ≠ 1`、`q₁ c ≠ q₂ c`、`q₁ c * q₂ c = 1` を満たす対の構成。
       少なくとも一方は `initialRawDefectCochain` と異なり、生成した
-      `EdgeReselection` を witness に含める。成り立たない枝 = この orbit にそのよう
-      な対が存在しないことの theorem。どちらの枝も qualified な確定結果として (h1)
-      の放電と数える。reverse 宣言の存在だけ、または (g) と同じ自己打ち消し対だけ
-      では、成り立つ枝の放電と数えない(dullness filter)。
+      `EdgeReselection` を witness に含める。成り立たない枝 = この orbit に
+      `q₁ c ≠ q₂ c` を満たすそのような対が存在しないことの theorem。どちらの枝も
+      qualified な確定結果として (h1) の放電と数える。自己打ち消し対
+      (`q₁ c = q₂ c`。(g) と同じ対、その共役や gauge 移動を含む)と reverse 宣言の
+      存在だけでは、成り立つ枝の放電と数えない(dullness filter)。orbit の firing
+      cell の値は defect 群を広く掃くので、相異なる相互逆元の対を実際の二つの
+      reselection で構成できる見込みが高い。この条項は帰趨を開くためではなく、その
+      構成を実データで要求するためにある。
     - (h2) propagation: (h1) の量化域の orbit 値が、`whiskerFiberAut` と typed
       pasting(`orientedFaceDefect` / `pastingRawDefect`)の下でどう運ばれるかの
-      transport theorem。(h1) で対が立った場合は、その像の対の関係の記述を含める。
-      statement の正確な形は F0 で確定する。(h2) の transport 等式だけでは (h1) の
-      放電と数えない。
+      transport theorem。最低限次を含む: (1) 任意の reselection と任意の
+      `RewritePasting`(長さ任意)に対し、`pastingRawDefect` を面ごとの
+      `orientedFaceDefect` の積として表す明示式。(2) `whiskerFiberAut` について、
+      fixture の非 nil path(`singleDiskLeftPath` / `singleDiskRightPath`)に沿う
+      orbit 値の像の明示式。(3) (h1) で対が立った場合、両 cell を通る具体的
+      pasting の下で `q₁ c * q₂ c = 1` に対応する関係が保たれるか壊れるかの等式
+      または反例。nil path の `whiskerFiberAut_nil` や既存 pasting 補題の再輸出・
+      specialization だけでは放電と数えない。statement の正確な形は F0 で確定する。
+      (h2) の transport 等式だけでは (h1) の放電と数えない。
   - **(i) summand 決定**(成り立つ枝と成り立たない枝をあらかじめ固定した
     classification clause、二本):
     - (i1) `IsIso activeReverseMateComponent` の成否。`refinementBCMateAt` は
       proof-use / unfolding の経路として使い、評価点の新設は認めない。
     - (i2) `upperDecisionProblem` 上の `upperDecisionSolution` について
       `∀ i, IsIso (upperDecisionSolution.component i)` の成否(成り立たない枝は
-      その否定と witness vertex)。問題 instance は差し替えない。この形が型不能なら
-      `goal-defect` で止める。
+      その否定と witness vertex)。問題の presentation の Vertex は単元なので実質は
+      一成分の判定である。非退化性の固定参照 = `authored_comparator_ne_one` と
+      `source_edge_ne_identity`。成り立つ枝が定義的簡約のみで閉じた場合は、非退化
+      参照の proof-use を添えた named theorem として計上し、report に明記する。
+      問題 instance は差し替えない。この形が型不能なら `goal-defect` で止める。
     - 可能なら (e) の同定と G-116 の様式(`IsIso ↔ 恒等`、
       `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff`)へ帰着
       させ、帰着できない場合は直接の theorem または反例で決める。どちらの枝も
@@ -218,19 +246,21 @@
   構成が必要なら `CrossStageCoherence` 配下も可)。G-116 / G-109 / G-113 / G-114 /
   G-115 の reviewed module は参照のみ。F0 で確定するのは universe、(a) の field 別
   transport artifact の一覧、(b) の subcategory の実装形、(d) の modification の
-  packaging、(f) の `χ_N` の domain の型、(h2) の transport statement の形、(i) の
-  評価点の Lean 上の束ね方である。帰趨を左右する選択((h1) の族 =
-  `InReselectionOrbit`、(i) の評価点・問題 instance・判定射)は claim boundary で
-  固定済みであり、F0 で変更しない。F0 で型不能なら `goal-defect` で止める。量化域は
-  claim boundary のとおり。
+  packaging、(e) の gate 込み同定の正確な形、(f) の `χ_N` の domain の型と余域二点
+  subtype の実装形、(h2) の transport statement の形((h2) の最低限の内容はカード
+  固定)、(i) の評価点の Lean 上の束ね方である。帰趨を左右する選択((h1) の族 =
+  `InReselectionOrbit` と firing cell 固定、(i) の評価点・問題 instance・判定射)は
+  claim boundary と target theorem で固定済みであり、F0 で変更しない。F0 で型不能
+  なら `goal-defect` で止める。量化域は claim boundary のとおり。
 - `target proof artifacts`: (a)–(g) の theorem、(h1)(i) の classification theorem
   (どちらの枝で確定したかを statement で明示する)、(h2) の transport theorem、
   (d) の modification structure、
   declaration-level evidence map と (i) の決定記録を含む report
   `research/reports/G-117-aat-lax-diagnostic-projector.md`。
 - `target proof strategy`: F0 typing(universe、(a) の field 別 transport
-  artifact、`AdmCoreFiber` の実装形、`ν` の型と (d) の modification packaging、
-  `χ_N` の domain、(h2) の transport statement、(i) の評価点の束ね方)→
+  artifact、`AdmCoreFiber` の実装形、(d) の `ν` の modification packaging、(e) の
+  同定の形、`χ_N` の domain と余域 subtype の実装形、(h2) の transport statement、
+  (i) の評価点の束ね方)→
   K1 (a)(b) → K2 (c)(d) → K3 (e) → K4 (f)(g) → K5 (h)(i) と
   report。既存成果の利用 map: G-116 ext 補題群と
   `canonicalObjectNormalizationTotal_comp`((c))、
@@ -252,8 +282,9 @@
   の正式な基準 = `target-goal-contract.md`)。(f2)、(g)、(h1)、(h2)、(i) を欠いた
   完了は認めない。
 - `target premise discharge policy`: 入力(fixture data、reviewed predecessor の成果)
-  だけを残せる。冪等性、自然性、両立等式、strict 破れ、打ち消しの実現、(i) の同型性は
-  放電対象であり、結論相当のデータを供給として受けない。
+  だけを残せる。冪等性、自然性、(a) の admissibility 保存、両立等式、strict 破れ、
+  打ち消しの実現、(i) の同型性は放電対象であり、結論相当のデータを供給として
+  受けない。
 - `target material premise ledger`(`discharge-required` 行の provenance は「入力 data
   と reviewed predecessor theorem から proof term が構成されること」、proof-use は
   「当該 field / theorem が proof term に現れること」を要件とする):
@@ -262,8 +293,17 @@
     `canonicalObjectNormalizationTotal_comp`、`E_c` 系、
     `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff`、witness
     packet。支える結論 = (c)(e)(g) の既証明部分。結論相当でない理由 = fiber を貫く
-    自然性、modification 化、lax law、(h)(i) の決定は G-116 の artifact からは
-    従わない。
+    自然性、modification 化、lax law、(h1)(i) の決定と (h2) の transport は G-116
+    の artifact からは従わない。
+  - `G-106 / transport-coherence reviewed artifact`: `ambient-boundary`。参照のみ。
+    固定参照 = 完了同期 PR #4009(final reviewed head `d7b1d488`、merge
+    `ae1ba0ea`)。宣言 = `InReselectionOrbit`、`EdgeReselection`、
+    `rawDefectCochain`、`initialRawDefectCochain`、`whiskerFiberAut`(+`_nil`)、
+    `orientedFaceDefect`、`pastingRawDefect`、`RewritePasting`、
+    `DoubleDiamondTwoCell`、`singleDiskLeftPath` / `singleDiskRightPath`
+    (`TransportCoherence` 配下)。支える結論 = (h1) の量化域と (h2) の transport の
+    指示対象。結論相当でない理由 = これらは orbit の membership と transport の定義
+    であり、打ち消し対の存否と transport 等式はいずれも theorem として放電する。
   - `G-109 reviewed artifact`: `ambient-boundary`。参照のみ。固定参照 = 完了 PR
     #4029(final reviewed head `b5ca4630`、merge `faaf7160`)。宣言 =
     `coreFiberTransportFunctor`、`coreFiberCompositor`、`coreFiberUnitor`
@@ -281,7 +321,8 @@
     `activeReverseConfiguration` / `activeReverseSource` / `activeReverse_condition` /
     `activeReverseTargetPackage`、`activeReverseMateComponent`、
     `activeReverse_pulledRefinement_atom_nonidentity`、
-    `upperDecisionProblem`、`upperDecisionSolution`。支える結論 = (i) の決定対象の
+    `upperDecisionProblem`、`upperDecisionSolution`、`authored_comparator_ne_one`、
+    `source_edge_ne_identity`。支える結論 = (i) の決定対象の
     指示。結論相当でない理由 = 同型性の成否はどちらの完了 artifact にも含まれない
     ((i) はそれを決めるための義務である)。
   - finite axis-fold fixture(`finiteAxisFoldBCDatumSquare` 系)と対照例 fixture
@@ -294,7 +335,9 @@
     置かない。(a) は `adm` を仮定でなく結論の側でも扱う(transport 後の
     admissibility を構成する)。
   - `firing : cochain c ≠ 1`: `direction-hypothesis`((e) の gate)。fixture では
-    `finiteAxisFold_initialRawDefect_second` で放電し、(g) では仮定に置かない。
+    `finiteAxisFold_generatedCochain_second_ne_one`(内部で
+    `finiteAxisFold_initialRawDefect_second` と `finiteAxisFoldSwap_ne_one` を使う)
+    で放電し、(g) では仮定に置かない。
   - `admissibility transport (a)`: `discharge-required`。artifact = transport 保存の
     theorem。
   - `admissible fiber (b)` と `naturality / idempotence (c)`: `discharge-required`。
@@ -309,7 +352,7 @@
     `finiteCanonicalObjectNormalizationTotal_not_isIso` から導く named theorem
     (恒等射は同型なので、非同型から従う)。
   - `Nontrivial`(fixture の defect 群): `discharge-required`。artifact = swap 元の
-    非自明性の named theorem(`finiteAxisFold_initialRawDefect_second` と firing から
+    非自明性の named theorem(`finiteAxisFold_generatedCochain_second_ne_one` から
     導く)。
   - `witness lane 1 (g)`: `discharge-required`。artifact = fixture 上の評価 theorem
     ((f1) の実 instantiation と群水準の square 等式の proof-use を含む)。
