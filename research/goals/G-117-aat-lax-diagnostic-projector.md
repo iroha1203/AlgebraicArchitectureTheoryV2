@@ -21,7 +21,7 @@
   済み。`coreFiberTransportFunctor` / `coreFiberCompositor` / `coreFiberUnitor`)、
   G-113(完遂済み。indexed diagnostic transport equivalence)、G-114 / G-115(完遂
   済み。(i) の決定対象の名前付き宣言)。
-- `tracking issue`: 昇格時に起票する。
+- `tracking issue`: #4359
 - `source note`: [n1008](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)
   (§4.1 義務の骨格、§4.3 三項 coherence、§6.1 一般論との切り分け)、
   [G-116 カード](G-116-aat-idempotent-exchange-structure.md)(記号と既証明の一覧)。
