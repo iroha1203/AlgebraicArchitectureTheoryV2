@@ -381,6 +381,7 @@ operation coherenceを否定し、total naturalityを否定する。さらにpac
 | all-field admissibility | `taggedOperationPackage_admissible` |
 | endpoint-dependent exact endomorphism | `taggedEndpointFlipUpper`, `taggedEndpointFlipTotal` |
 | fixed operation input | `taggedBoolOperation` |
+| no-unfold operation APIs | `taggedEndpointFlipTotal_operationMap`, `taggedBoolOperation_snd`, `taggedLeftComposite_operationMap`, `taggedRightComposite_operationMap` |
 | normalization moves the endpoint | `taggedBoolNormalization_eq_unit` |
 | left/right tag evaluations | `taggedLeftComposite_snd`, `taggedRightComposite_snd` |
 | residual coherence failure | `taggedEndpointFlip_not_coherent` |
@@ -453,7 +454,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none
-  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean: exit 0; namespace axiom assertion: 23 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationCounterexample: exit 0; 4068 targeted dependency jobs", "all 21 public reported declarations #print axioms: standard axioms only; two generic cast lemmas use no axioms"]
+  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean: exit 0; namespace axiom assertion: 26 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationCounterexample: exit 0; 4068 targeted dependency jobs", "all 25 public reported declarations #print axioms: standard axioms only; two generic cast lemmas use no axioms"]
   blocking_findings: []
   stopping_reason: "target-refuted: no_taggedAdmissibleCanonicalNormalizationNatTrans contradicts fixed clause (c)"
   next_obligation: "fixed-head standard review, CI, merge, and target-refuted Issue synchronization"

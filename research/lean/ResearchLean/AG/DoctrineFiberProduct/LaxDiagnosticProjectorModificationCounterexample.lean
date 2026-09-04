@@ -26,10 +26,13 @@ namespace AAT.AG.DoctrineFiberProduct
 open CategoryTheory
 open AtomFoundation
 
+/-- G-117(c) counterexample support: classical endpoint equality selects the
+explicit tag-flip branch; it supplies no naturality or failure proposition. -/
 noncomputable local instance taggedArchitectureObjectDecidableEq :
     DecidableEq (ArchitectureObject FiniteModel.carrier) := Classical.decEq _
 
-/-- A product cast retains the first component up to the original cast. -/
+/-- G-117(c) counterexample cast support: a product cast retains the first
+component up to the finite predecessor's original cast. -/
 theorem taggedOperationCast_fst {alpha beta : Type} (equality : alpha = beta)
     (value : alpha × Bool) :
     (cast (congrArg (fun operationType => operationType × Bool) equality) value).1 =
@@ -86,9 +89,9 @@ theorem taggedOperationPackage_operationCast_fst
     operation).1 = cast source_eq operation.1
   exact taggedOperationCast_fst source_eq operation
 
-/-- The tagged package satisfies every canonical-normalization admissibility
-field because all semantic readings use the unchanged first operation
-component. -/
+/-- G-117(c) counterexample admissibility, generated from the reviewed finite
+predecessor: every semantic reading uses the unchanged first operation
+component, so all five normalization fields are constructed. -/
 theorem taggedOperationPackage_admissible :
     CanonicalObjectNormalizationAdmissible taggedOperationPackage where
   equationResidual_eq := by
@@ -117,8 +120,9 @@ theorem taggedOperationPackage_admissible :
     simpa [taggedOperationPackage] using
       finiteCanonicalObjectNormalization_admissible.coordinate_eq
 
-/-- An exact core endomorphism that flips the invisible operation tag exactly
-at the Boolean-decorated source endpoint. -/
+/-- G-117(c) counterexample morphism: a newly constructed exact core
+endomorphism flips the invisible operation tag exactly at the
+Boolean-decorated source endpoint. -/
 noncomputable def taggedEndpointFlipUpper :
     SignedExactCoreReadingHom taggedOperationPackage taggedOperationPackage :=
   { SignedExactCoreReadingHom.refl taggedOperationPackage with
@@ -139,13 +143,23 @@ noncomputable def taggedEndpointFlipUpper :
       rfl
   }
 
-/-- The endpoint-dependent flip as a genuine package total endomorphism over
-the identity extraction point. -/
+/-- G-117(c) counterexample morphism: the newly constructed endpoint-dependent
+flip as a genuine package total endomorphism over the identity extraction
+point. -/
 noncomputable def taggedEndpointFlipTotal :
     PackageTotalHom taggedOperationPackage taggedOperationPackage where
   base := ExtInstHom.id (packagePoint taggedOperationPackage)
   upper := taggedEndpointFlipUpper
   atomEquiv_eq := rfl
+
+/-- No-unfold operation-map API for the endpoint-dependent total flip. -/
+@[simp] theorem taggedEndpointFlipTotal_operationMap
+    {first second : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op first second) :
+    taggedEndpointFlipTotal.upper.operationMap operation =
+      (operation.1,
+        if first = finiteAxisFoldBoolObject then !operation.2 else operation.2) :=
+  rfl
 
 /-- The test operation at the Boolean-decorated endpoint, with initial tag
 `false`. -/
@@ -159,6 +173,10 @@ noncomputable def taggedBoolOperation :
     (transportArchitectureObject
       finiteModelDoctrineFromFixture.atomEquiv.symm finiteAxisFoldBoolObject).configuration
   exact ConfigurationHom.id _
+
+/-- No-unfold evaluation API for the test operation's initial Boolean tag. -/
+@[simp] theorem taggedBoolOperation_snd : taggedBoolOperation.2 = false :=
+  rfl
 
 /-- The canonical normalization sends the Boolean-decorated object to the
 reviewed unit-decorated object. -/
@@ -208,25 +226,45 @@ theorem taggedCanonicalNormalizationOperation_snd
   rw [proof_equality]
   exact taggedNormalizationCast_snd operation
 
+/-- No-unfold operation-map API for normalization followed by the endpoint
+flip. -/
+theorem taggedLeftComposite_operationMap
+    {first second : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op first second) :
+    ((canonicalObjectNormalizationTotal taggedOperationPackage
+      taggedOperationPackage_admissible).comp taggedEndpointFlipTotal).upper.operationMap
+        operation =
+      taggedEndpointFlipTotal.upper.operationMap
+        ((canonicalObjectNormalizationTotal taggedOperationPackage
+          taggedOperationPackage_admissible).upper.operationMap operation) :=
+  rfl
+
+/-- No-unfold operation-map API for the endpoint flip followed by
+normalization. -/
+theorem taggedRightComposite_operationMap
+    {first second : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op first second) :
+    (taggedEndpointFlipTotal.comp
+      (canonicalObjectNormalizationTotal taggedOperationPackage
+        taggedOperationPackage_admissible)).upper.operationMap operation =
+      (canonicalObjectNormalizationTotal taggedOperationPackage
+        taggedOperationPackage_admissible).upper.operationMap
+        (taggedEndpointFlipTotal.upper.operationMap operation) :=
+  rfl
+
 /-- Normalizing first moves the source away from the flip endpoint, so the
 left composite evaluates the test tag to `false`. -/
 theorem taggedLeftComposite_snd :
     (((canonicalObjectNormalizationTotal taggedOperationPackage
       taggedOperationPackage_admissible).comp taggedEndpointFlipTotal).upper.operationMap
         taggedBoolOperation).2 = false := by
-  simp only [PackageTotalHom.comp, SignedExactCoreReadingHom.comp,
-    taggedEndpointFlipTotal, taggedEndpointFlipUpper]
+  rw [taggedLeftComposite_operationMap,
+    taggedEndpointFlipTotal_operationMap,
+    taggedCanonicalNormalizationOperation_snd]
   change (if canonicalObjectNormalization taggedOperationPackage
-      finiteAxisFoldBoolObject = finiteAxisFoldBoolObject then
-        !(cast (taggedOperationPackage_operationTypeEq
-          finiteAxisFoldBoolObject finiteAxisFoldBoolObject)
-            taggedBoolOperation).2
-      else
-        (cast (taggedOperationPackage_operationTypeEq
-          finiteAxisFoldBoolObject finiteAxisFoldBoolObject)
-            taggedBoolOperation).2) = false
-  rw [taggedNormalizationCast_snd, taggedBoolNormalization_eq_unit]
-  simp [finiteAxisFoldUnitObject_ne_boolObject, taggedBoolOperation]
+      finiteAxisFoldBoolObject = finiteAxisFoldBoolObject then true else false) = false
+  rw [taggedBoolNormalization_eq_unit]
+  simp [finiteAxisFoldUnitObject_ne_boolObject]
 
 /-- Flipping first changes the test tag to `true`, which normalization then
 preserves. -/
@@ -235,10 +273,10 @@ theorem taggedRightComposite_snd :
       (canonicalObjectNormalizationTotal taggedOperationPackage
         taggedOperationPackage_admissible)).upper.operationMap
         taggedBoolOperation).2 = true := by
-  simp only [PackageTotalHom.comp, SignedExactCoreReadingHom.comp,
-    taggedEndpointFlipTotal, taggedEndpointFlipUpper]
-  rw [taggedCanonicalNormalizationOperation_snd]
-  simp [taggedBoolOperation]
+  rw [taggedRightComposite_operationMap,
+    taggedCanonicalNormalizationOperation_snd,
+    taggedEndpointFlipTotal_operationMap]
+  simp
 
 /-- The endpoint flip fails the exact operation-map coherence isolated in
 Cycle 3. -/
@@ -269,13 +307,15 @@ theorem taggedEndpointFlip_not_natural :
       taggedEndpointFlipTotal taggedOperationPackage_admissible
       taggedOperationPackage_admissible).mp equality)
 
-/-- The tagged package as an actual object of its full admissible core fiber. -/
+/-- G-117(c) counterexample object: the newly constructed tagged package as an
+actual object of its full admissible core fiber. -/
 noncomputable def taggedAdmCoreFiberObject :
     AdmCoreFiber (packagePoint taggedOperationPackage) :=
   ⟨⟨taggedOperationPackage, rfl⟩, taggedOperationPackage_admissible⟩
 
-/-- The endpoint flip as an actual endomorphism in the full admissible core
-fiber. -/
+/-- G-117(c) counterexample morphism: the endpoint flip is lifted from the
+newly constructed total endomorphism to an actual endomorphism in the full
+admissible core fiber. -/
 noncomputable def taggedAdmCoreFiberEndomorphism :
     taggedAdmCoreFiberObject ⟶ taggedAdmCoreFiberObject :=
   ObjectProperty.homMk
