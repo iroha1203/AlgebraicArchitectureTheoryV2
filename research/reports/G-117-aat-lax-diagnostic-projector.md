@@ -263,8 +263,11 @@ operation-map coherence は `CanonicalObjectNormalizationAdmissible` にも
 
 `CanonicalNormalizationOperationCoherent` は残った field をそのまま命名し、
 `canonicalObjectNormalizationTotal_natural_of_operationCoherent` は、それを置いた場合に
-他の全 field が閉じることを Lean で示す。この仮定相対 theorem は K2(c) の放電には
-数えない。
+他の全 field が閉じることを Lean で示す。
+`canonicalObjectNormalizationTotal_natural_iff_operationCoherent` は total naturality が
+この残存 field と同値であることを固定し、`canonicalNormalizationOperationCoherent_id`
+は identity total morphism での成立例を与える。この仮定相対 theorem 群は K2(c) の
+放電には数えず、一般の不成立例は本 cycle では主張しない。
 
 ### Declaration map
 
@@ -272,7 +275,10 @@ operation-map coherence は `CanonicalObjectNormalizationAdmissible` にも
 | --- | --- |
 | exact residual field | `CanonicalNormalizationOperationCoherent` |
 | all remaining fields close from the residual | `canonicalObjectNormalizationTotal_natural_of_operationCoherent` |
+| exact characterization | `canonicalObjectNormalizationTotal_natural_iff_operationCoherent` |
+| positive identity instance | `canonicalNormalizationOperationCoherent_id` |
 | proposed component family | `admissibleCanonicalNormalizationComponent` |
+| component projection API | `admissibleCanonicalNormalizationComponent_hom_hom` |
 | component idempotence | `admissibleCanonicalNormalizationComponent_comp` |
 
 ### Premise and proof-use audit
@@ -311,7 +317,7 @@ result:
   proof_obligation_delta: "the component family and its idempotence are checked; the exact operation-map coherence preventing NatTrans assembly is isolated"
   completion_candidate: no
   lean_artifacts: ["ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean"]
-  evidence: ["CanonicalNormalizationOperationCoherent", "canonicalObjectNormalizationTotal_natural_of_operationCoherent", "admissibleCanonicalNormalizationComponent_comp"]
+  evidence: ["CanonicalNormalizationOperationCoherent", "canonicalObjectNormalizationTotal_natural_iff_operationCoherent", "canonicalNormalizationOperationCoherent_id", "admissibleCanonicalNormalizationComponent_comp"]
   claim_mapping:
     theorem_names: ["admissibleCanonicalNormalizationComponent_comp"]
     source_labels: ["G-117(c), idempotence subclause"]
@@ -325,17 +331,17 @@ audits:
     remaining: ["K2(c) naturality", "K2(d)", "clauses (e)-(g), (h1), (i)"]
   certificate_provenance:
     discharged: ["component generated from G-116 normalization"]
-    unresolved: ["no source theorem generates operation-map coherence for arbitrary full-subcategory morphisms"]
+    unresolved: ["no reviewed source theorem has been identified that generates operation-map coherence for arbitrary full-subcategory morphisms", "negative instance not yet constructed"]
   proof_use:
     used: ["canonicalObjectNormalization_natural", "equationSystemExactTransport_hext", "canonicalObjectNormalizationTotal_comp"]
     unused: []
   structure_field_escape: "residual premise exposed but rejected as target evidence"
   route_integrity: pass-for-blocker-artifact
   target_fitting: "K2(c) remains unmet"
-  vacuity: none-found
+  vacuity: "positive identity instance proved; negative instance unresolved"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none
-  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean: exit 0; namespace axiom assertion: 4 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationBlocker: exit 0; 4066 targeted dependency jobs", "all 4 reported declarations #print axioms: propext, Classical.choice, Quot.sound only"]
+  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean: exit 0; namespace axiom assertion: 7 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationBlocker: exit 0; 4066 targeted dependency jobs before review-finding documentation and characterization additions", "all 7 reported declarations #print axioms: propext, Classical.choice, Quot.sound only"]
   blocking_findings: ["arbitrary SignedExactCoreReadingHom supplies configuration naturality but no equality between operationMap values at normalization-related endpoint indices"]
   next_obligation: "search for a stronger existing morphism API or construct a fixed-target counterexample; a repeated unresolved blocker triggers target-blocked"
 ```

@@ -7,12 +7,13 @@ import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturali
 
 The canonical normalization gives an endomorphism at every object of an
 admissible core fiber, and those endomorphisms are idempotent.  To assemble
-them into a natural transformation on the full subcategory, however, one more
-operation-level coherence is necessary: a general package total morphism need
-not commute with the dependent cast used by canonical normalization.
+them into a natural transformation on the full subcategory, the current
+morphism interface does not supply the operation-level coherence comparing a
+general package total morphism with the dependent cast used by canonical
+normalization.
 
-This module isolates that exact residual field.  The equivalence below is a
-blocker artifact, not an assumption accepted as a discharge of G-117(c).
+This module isolates that exact residual field.  The characterization below is
+a blocker artifact, not an assumption accepted as a discharge of G-117(c).
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -66,6 +67,34 @@ theorem canonicalObjectNormalizationTotal_natural_of_operationCoherent
     · rfl
     · rfl
 
+/-- Total-morphism naturality holds exactly when the residual operation maps
+are heterogeneously equal.  This characterizes the proof obligation but does
+not generate it from the current morphism laws. -/
+theorem canonicalObjectNormalizationTotal_natural_iff_operationCoherent
+    {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    (hom : PackageTotalHom P Q)
+    (admissibleP : CanonicalObjectNormalizationAdmissible P)
+    (admissibleQ : CanonicalObjectNormalizationAdmissible Q) :
+    (hom.comp (canonicalObjectNormalizationTotal Q admissibleQ) =
+        (canonicalObjectNormalizationTotal P admissibleP).comp hom) ↔
+      CanonicalNormalizationOperationCoherent hom admissibleP admissibleQ := by
+  constructor
+  · intro equality
+    unfold CanonicalNormalizationOperationCoherent
+    rw [equality]
+  · exact canonicalObjectNormalizationTotal_natural_of_operationCoherent
+      hom admissibleP admissibleQ
+
+/-- The residual coherence is inhabited for the identity total morphism.  A
+negative example for the fixed universal clause is not claimed here. -/
+theorem canonicalNormalizationOperationCoherent_id
+    {U : AtomCarrier.{u}} (P : AATCorePackage U)
+    (admissible : CanonicalObjectNormalizationAdmissible P) :
+    CanonicalNormalizationOperationCoherent
+      (PackageTotalHom.id P) admissible admissible := by
+  unfold CanonicalNormalizationOperationCoherent
+  rfl
+
 /-- The canonical normalization endomorphism at an admissible fiber object.
 This is the proposed component of G-117's `ν`; no naturality is hidden in the
 definition. -/
@@ -81,6 +110,15 @@ noncomputable def admissibleCanonicalNormalizationComponent
           P.obj.2 P.obj.2
         rw [packageProjection_map]
         exact Category.id_comp _⟩
+
+/-- The underlying total morphism of the proposed component is the reviewed
+G-116 canonical normalization. -/
+@[simp] theorem admissibleCanonicalNormalizationComponent_hom_hom
+    {U : AtomCarrier.{u}} {X : ExtractionInstance U}
+    (P : AdmCoreFiber X) :
+    (admissibleCanonicalNormalizationComponent P).hom.1 =
+      canonicalObjectNormalizationTotal P.obj.1 P.property :=
+  rfl
 
 /-- The proposed fiber component is idempotent, by direct use of the reviewed
 G-116 total-category theorem. -/
