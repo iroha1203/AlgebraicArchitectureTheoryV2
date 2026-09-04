@@ -8,6 +8,17 @@ datum.  It first records the noncommutative recursion for an arbitrary typed
 pasting, then connects the two endpoint gauges, the raw cochain action, a
 genuine two-face pasting, and the closed double-diamond obstruction on the
 fixed nonidentity reselection.
+
+## Implementation notes
+
+The endpoint increments below are edge coordinates re-presented in the firing
+cell's endpoint fiber.  This is the type-correct form of the G-117 endpoint
+gauge action; transporting an endpoint automorphism forward along the same
+nonempty path would have the wrong source.  The named pasting uses the first
+face forward and the second face backward so that it is a genuine length-two
+closed rewrite.  A one-face pasting, the reverse order, and an identity
+increment are rejected because they do not test the ordered propagation clause
+fixed by G-117(h2).
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -209,11 +220,13 @@ theorem finiteAxisFold_fixed_rightTransition :
   rw [finiteAxisFold_rightTransition]
   rfl
 
+/-- G-117(h2) normalizes the fixed left endpoint increment to the identity. -/
 @[simp]
 theorem finiteAxisFold_fixed_leftIncrement :
     finiteAxisFoldLeftIncrement finiteAxisFoldSecondFaceReselection = 1 := by
   rfl
 
+/-- G-117(h2) normalizes the fixed right endpoint increment to the named swap. -/
 @[simp]
 theorem finiteAxisFold_fixed_rightIncrement :
     finiteAxisFoldRightIncrement finiteAxisFoldSecondFaceReselection =
@@ -249,6 +262,32 @@ def doubleDiamondBackwardFace (Marker : Type u)
   outgoing := .nil SingleDiskVertex.target
   orientation := .backward
 
+/-- The backward face exposes the selected second-cell coordinate without unfolding. -/
+@[simp]
+theorem doubleDiamondBackwardFace_cell (Marker : Type u)
+    (cell : DoubleDiamondTwoCell Marker) :
+    (doubleDiamondBackwardFace Marker cell).cell = cell := rfl
+
+/-- The backward face has empty incoming whiskering. -/
+@[simp]
+theorem doubleDiamondBackwardFace_incoming (Marker : Type u)
+    (cell : DoubleDiamondTwoCell Marker) :
+    (doubleDiamondBackwardFace Marker cell).incoming =
+      .nil SingleDiskVertex.source := rfl
+
+/-- The backward face has empty outgoing whiskering. -/
+@[simp]
+theorem doubleDiamondBackwardFace_outgoing (Marker : Type u)
+    (cell : DoubleDiamondTwoCell Marker) :
+    (doubleDiamondBackwardFace Marker cell).outgoing =
+      .nil SingleDiskVertex.target := rfl
+
+/-- The selected face is used in the backward orientation. -/
+@[simp]
+theorem doubleDiamondBackwardFace_orientation (Marker : Type u)
+    (cell : DoubleDiamondTwoCell Marker) :
+    (doubleDiamondBackwardFace Marker cell).orientation = .backward := rfl
+
 /-- The backward face is a typed step from the right path to the left path. -/
 def doubleDiamondBackwardStep (Marker : Type u)
     (cell : DoubleDiamondTwoCell Marker) :
@@ -264,6 +303,13 @@ def doubleDiamondBackwardStep (Marker : Type u)
       WhiskeredFace.localAfter, doubleDiamondTwoPresentation,
       PresentedPath.append]
 
+/-- The backward rewrite step is characterized by its named backward face. -/
+@[simp]
+theorem doubleDiamondBackwardStep_face (Marker : Type u)
+    (cell : DoubleDiamondTwoCell Marker) :
+    (doubleDiamondBackwardStep Marker cell).face =
+      doubleDiamondBackwardFace Marker cell := rfl
+
 /-- Forward along the first face, then backward along the second face. -/
 def finiteAxisFoldTwoFacePasting :
     RewritePasting (doubleDiamondTwoPresentation PUnit)
@@ -275,7 +321,20 @@ def finiteAxisFoldTwoFacePasting :
         (SingleDiskVertex.target : SingleDiskVertex PUnit)
         (singleDiskLeftPath PUnit)))
 
-/-- Empty outgoing whiskering is literal on the fixed lift data. -/
+/--
+The public constructor equation fixes the two-face order without exposing the
+definition to downstream proofs.
+-/
+theorem finiteAxisFoldTwoFacePasting_spec :
+    finiteAxisFoldTwoFacePasting =
+      .cons (doubleDiamondStep PUnit DoubleDiamondTwoCell.first)
+        (.cons (doubleDiamondBackwardStep PUnit DoubleDiamondTwoCell.second)
+          (@RewritePasting.nil (doubleDiamondTwoPresentation PUnit)
+            (SingleDiskVertex.source : SingleDiskVertex PUnit)
+            (SingleDiskVertex.target : SingleDiskVertex PUnit)
+            (singleDiskLeftPath PUnit))) := rfl
+
+/-- Empty whiskering is the normal form used by the two-face evaluation API. -/
 @[simp]
 theorem finiteAxisFold_whiskerFiberAut_nil
     (reselection : EdgeReselection finiteAxisFoldTransportData.lift)
@@ -288,12 +347,14 @@ theorem finiteAxisFold_whiskerFiberAut_nil
   exact whiskerFiberAut_nil finiteAxisFoldTransportData.lift reselection
     automorphism
 
+/-- The authored comparator of the first face normalizes to the identity. -/
 @[simp]
 theorem finiteAxisFold_authoredComparator_first :
     finiteAxisFoldTransportData.comparator
         (DoubleDiamondTwoCell.first : DoubleDiamondTwoCell PUnit) = 1 := by
   rfl
 
+/-- The authored comparator of the second face normalizes to the named swap. -/
 @[simp]
 theorem finiteAxisFold_authoredComparator_second :
     finiteAxisFoldTransportData.comparator
@@ -308,6 +369,7 @@ theorem finiteAxisFoldSwap_inv : finiteAxisFoldSwap⁻¹ = finiteAxisFoldSwap :=
   apply Iso.ext
   rfl
 
+/-- At baseline, the first canonical face comparator normalizes to the identity. -/
 @[simp]
 theorem finiteAxisFold_canonicalComparator_first_baseline :
     canonicalTwoCellComparator finiteAxisFoldTransportData 1
@@ -315,6 +377,7 @@ theorem finiteAxisFold_canonicalComparator_first_baseline :
   rw [finiteAxisFold_canonicalComparator_faces_eq]
   exact finiteAxisFold_canonicalComparator_second_eq_one
 
+/-- In shifted coordinates, the second canonical comparator normalizes to the swap. -/
 @[simp]
 theorem finiteAxisFold_canonicalComparator_second_shifted :
     canonicalTwoCellComparator finiteAxisFoldTransportData
@@ -324,6 +387,7 @@ theorem finiteAxisFold_canonicalComparator_second_shifted :
   rw [← finiteAxisFold_secondComparator_eq_canonical]
   rfl
 
+/-- In shifted coordinates, the first canonical comparator normalizes to the swap. -/
 @[simp]
 theorem finiteAxisFold_canonicalComparator_first_shifted :
     canonicalTwoCellComparator finiteAxisFoldTransportData
@@ -337,16 +401,9 @@ theorem finiteAxisFold_canonicalComparator_first_shifted :
 theorem finiteAxisFold_twoFacePasting_baseline :
     pastingRawDefect finiteAxisFoldTransportData 1
         finiteAxisFoldTwoFacePasting = finiteAxisFoldSwap := by
-  change pastingRawDefect finiteAxisFoldTransportData 1
-    (.cons (doubleDiamondStep PUnit DoubleDiamondTwoCell.first)
-      (.cons (doubleDiamondBackwardStep PUnit DoubleDiamondTwoCell.second)
-        (@RewritePasting.nil (doubleDiamondTwoPresentation PUnit)
-          (SingleDiskVertex.source : SingleDiskVertex PUnit)
-          (SingleDiskVertex.target : SingleDiskVertex PUnit)
-          (singleDiskLeftPath PUnit)))) = finiteAxisFoldSwap
+  rw [finiteAxisFoldTwoFacePasting_spec]
   rw [pastingRawDefect_cons, pastingRawDefect_cons]
-  simp [doubleDiamondBackwardStep,
-    doubleDiamondBackwardFace, doubleDiamondStep, doubleDiamondFace,
+  simp [doubleDiamondStep, doubleDiamondFace,
     pastingRawDefect, authoredPastingComparator,
     canonicalPastingComparator, pastingComparator,
     orientedFaceDefect, orientedFaceAuthoredComparator,
@@ -360,17 +417,9 @@ theorem finiteAxisFold_twoFacePasting_shifted :
     pastingRawDefect finiteAxisFoldTransportData
         finiteAxisFoldSecondFaceReselection finiteAxisFoldTwoFacePasting =
       finiteAxisFoldSwap := by
-  change pastingRawDefect finiteAxisFoldTransportData
-    finiteAxisFoldSecondFaceReselection
-    (.cons (doubleDiamondStep PUnit DoubleDiamondTwoCell.first)
-      (.cons (doubleDiamondBackwardStep PUnit DoubleDiamondTwoCell.second)
-        (@RewritePasting.nil (doubleDiamondTwoPresentation PUnit)
-          (SingleDiskVertex.source : SingleDiskVertex PUnit)
-          (SingleDiskVertex.target : SingleDiskVertex PUnit)
-          (singleDiskLeftPath PUnit)))) = finiteAxisFoldSwap
+  rw [finiteAxisFoldTwoFacePasting_spec]
   rw [pastingRawDefect_cons, pastingRawDefect_cons]
-  simp [doubleDiamondBackwardStep,
-    doubleDiamondBackwardFace, doubleDiamondStep, doubleDiamondFace,
+  simp [doubleDiamondStep, doubleDiamondFace,
     pastingRawDefect, authoredPastingComparator,
     canonicalPastingComparator, pastingComparator,
     orientedFaceDefect, orientedFaceAuthoredComparator,
@@ -416,6 +465,11 @@ the raw transition, the length-two pasting decision, and the closed comparison
 decision.  Thus the result is not a specialization of one predecessor lemma.
 -/
 
+/--
+The G-117(h2) fixed-fixture integration theorem.  Its inputs are the reviewed
+finite datum and named reselection; every propagation component is constructed
+by the theorem family above rather than supplied as a premise.
+-/
 theorem finiteAxisFold_propagation_decision :
     finiteAxisFoldBCDatumSquare.toTransportData =
         finiteAxisFoldTransportData ∧

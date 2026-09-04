@@ -54,6 +54,7 @@ cell値を変えるが、二面pastingとclosed comparisonの値を保存する�
 | (h2)(3), nonidentity and fixed gauges | `finiteAxisFoldSecondFaceReselection_ne_one`, `finiteAxisFold_fixed_leftTransition`, `finiteAxisFold_fixed_rightTransition` |
 | (h2)(3), firing-cell change | `finiteAxisFold_fixed_rawDefect_transition`, predecessor `finiteAxisFold_shiftedCochain_ne_initial` |
 | (h2)(3), length-2 geometry | `doubleDiamondBackwardFace`, `doubleDiamondBackwardStep`, `finiteAxisFoldTwoFacePasting` |
+| (h2)(3), length-2 no-unfold API | `doubleDiamondBackwardFace_cell`, `_incoming`, `_outgoing`, `_orientation`, `doubleDiamondBackwardStep_face`, `finiteAxisFoldTwoFacePasting_spec` |
 | (h2)(3), length-2 decision | `finiteAxisFold_twoFacePasting_baseline`, `finiteAxisFold_twoFacePasting_shifted` |
 | (h2)(3), closed comparison decision | `finiteAxisFold_closedObstruction_baseline`, `finiteAxisFold_closedObstruction_shifted` |
 | connected fixed-fixture result | `finiteAxisFold_propagation_decision` |
@@ -66,6 +67,9 @@ cell値を変えるが、二面pastingとclosed comparisonの値を保存する�
   newly proved endpoint calculations.
 - `finiteAxisFold_twoFacePasting_baseline` and `_shifted` invoke
   `pastingRawDefect_cons` twice, including the nontrivial outer cons case.
+- The backward face, backward step, and ordered two-face pasting expose
+  constructor/destructor equations, so the two evaluation proofs use the public
+  specification rather than unfolding the new geometry definitions.
 - `finiteAxisFold_propagation_decision` uses the input equality
   `finiteAxisFold_toTransportData`, G-110's actual cochain-change theorem, and every new fixed
   evaluation theorem.
@@ -123,7 +127,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorPropagation.lean: exit 0; standard-axiom audit 32 declarations", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorPropagation: exit 0; 4062 targeted dependency jobs", "all 31 reported declarations #print axioms: propext, Classical.choice, Quot.sound only"]
+  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorPropagation.lean: exit 0; standard-axiom audit 38 declarations", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorPropagation: exit 0; 4062 targeted dependency jobs", "all 37 reported declarations #print axioms: propext, Classical.choice, Quot.sound only"]
   blocking_findings: []
   next_obligation: "complete the remaining F0 type map, then K1 admissibility transport and AdmCoreFiber"
 ```
