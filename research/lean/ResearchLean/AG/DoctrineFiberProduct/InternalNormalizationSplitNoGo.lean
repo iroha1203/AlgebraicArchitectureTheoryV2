@@ -1,4 +1,8 @@
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturality
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
+import ResearchLean.AG.AtomFoundation.Categories
 
 /-!
 # G-116 internal normalization split no-go
@@ -97,9 +101,9 @@ theorem canonicalObjectNormalizationTotal_not_internal_split
   calc
     first = canonicalObjectNormalization Q first :=
       (normalization_fixed first).symm
-    _ = canonicalObjectNormalization Q second := by
-      unfold canonicalObjectNormalization
-      rw [first_configuration, second_configuration]
+    _ = canonicalObjectNormalization Q second :=
+      canonicalObjectNormalization_eq_of_configuration_eq Q
+        (first_configuration.trans second_configuration.symm)
     _ = second := normalization_fixed second
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct

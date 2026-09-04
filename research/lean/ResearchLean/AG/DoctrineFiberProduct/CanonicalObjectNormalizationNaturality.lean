@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeCellProjector
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
 
 /-!
 # G-116 canonical object-normalization naturality
@@ -23,8 +23,9 @@ theorem canonicalObjectNormalization_natural_apply
     (hom : PackageTotalHom P Q) (object : ArchitectureObject U) :
     hom.upper.objectMap (canonicalObjectNormalization P object) =
       canonicalObjectNormalization Q (hom.upper.objectMap object) := by
-  unfold canonicalObjectNormalization
-  rw [hom.upper.object_formation_eq, hom.upper.configuration_eq]
+  rw [canonicalObjectNormalization_apply,
+    canonicalObjectNormalization_apply,
+    hom.upper.object_formation_eq, hom.upper.configuration_eq]
 
 /-- G-116(c2): at the `ArchitectureObject`-valued object-map level,
 `U(hom) ∘ n_P = n_Q ∘ U(hom)` for every package total morphism.  This is

@@ -1,4 +1,7 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeKaroubiImage
+import Formal.AG.Atom.ArchitectureObject
+import Formal.AG.Atom.Configuration
+import Formal.Util.AssertStandardAxioms
+import Mathlib.Tactic
 
 /-!
 # G-116 distinct architecture objects over every configuration
@@ -22,8 +25,6 @@ theorem.
 namespace AAT.AG.DoctrineFiberProduct
 
 universe u
-
-open AtomFoundation
 
 /-- Supporting constructor for G-116(e1): the unit-decorated witness over the
 configuration supplied by the fixed statement. -/

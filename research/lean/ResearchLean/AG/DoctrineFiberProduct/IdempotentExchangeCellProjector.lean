@@ -1,4 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeNormalization
+import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
 
 /-!
@@ -54,8 +55,9 @@ theorem authoredDiagnosticObjectCollapseComponentAtCochain_comp
     · rw [authoredDiagnosticObjectCollapseComponentAtCochain_eq_canonical
           input cochain cell vanishes admissible,
         authoredSupportCanonicalNormalizationComponent_comp]
-    · simp [authoredDiagnosticObjectCollapseComponentAtCochain, vanishes,
-        admissible]
+    · rw [authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_of_not_admissible
+          input cochain cell vanishes admissible]
+      simp
 
 /-- G-116(c1): the transported cell projector `E_c` is idempotent for every
 authored input, diagnostic cochain, and cell.  The proof uses functorial
@@ -69,12 +71,8 @@ theorem authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp
     authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell ≫
         authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell =
       authoredViaBaseDiagnosticObjectCollapseComponentAtCochain input cochain cell := by
-  rcases input with ⟨⟨⟨semantic, presentation, realization_eq⟩,
-    lift, endpoint_eq⟩, twoCellBase, authored⟩
-  cases realization_eq
-  simp only [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain,
-    ← Functor.map_comp]
-  rw [authoredDiagnosticObjectCollapseComponentAtCochain_comp]
+  apply authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp_of_raw_comp
+  exact authoredDiagnosticObjectCollapseComponentAtCochain_comp input cochain cell.as
 
 /-- G-116(c1): the transported cell projector has the identity upper Atom
 equivalence.  This follows from its vertical core-fiber typing, whose lift law
