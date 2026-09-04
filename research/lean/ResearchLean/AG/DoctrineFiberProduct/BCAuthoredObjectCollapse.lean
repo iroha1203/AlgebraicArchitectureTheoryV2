@@ -98,6 +98,18 @@ theorem finiteModel_hasDependencyCycle_iff_of_configuration_eq
   unfold FiniteModel.hasDependencyCycle
   rw [configuration_eq]
 
+/-- The reviewed cyclic fixture satisfies the dependency-cycle predicate. -/
+theorem finiteModel_object_hasDependencyCycle :
+    FiniteModel.hasDependencyCycle FiniteModel.object := by
+  unfold FiniteModel.hasDependencyCycle
+  exact FiniteModel.object_hasCycleWitness
+
+/-- The reviewed acyclic fixture does not satisfy the dependency-cycle predicate. -/
+theorem finiteModel_acyclicObject_not_hasDependencyCycle :
+    ¬ FiniteModel.hasDependencyCycle FiniteModel.acyclicObject := by
+  intro cycle
+  exact cycle.1
+
 /-- The two objects are genuinely distinct despite sharing their configuration. -/
 theorem finiteAxisFoldUnitObject_ne_boolObject :
     finiteAxisFoldUnitObject ≠ finiteAxisFoldBoolObject := by

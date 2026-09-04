@@ -1,4 +1,5 @@
 import Formal.AG.Examples.FiniteModel
+import ResearchLean.AG.AtomFoundation.Transport
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalizationWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredObjectCollapse
@@ -7,6 +8,7 @@ import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesse
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeObservableExactness
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeRawFailureLocus
 import ResearchLean.AG.DoctrineFiberProduct.FiniteGeneratedEquationTransportWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
 
 /-!
 # G-116 finite witness packet
@@ -41,13 +43,9 @@ theorem finiteAxisFold_cyclic_configuration_ne_acyclic :
     FiniteModel.object.configuration ≠
       FiniteModel.acyclicObject.configuration := by
   intro equality
-  have cyclic : FiniteModel.hasDependencyCycle FiniteModel.object := by
-    exact FiniteModel.object_hasCycleWitness
-  have acyclic : ¬ FiniteModel.hasDependencyCycle FiniteModel.acyclicObject := by
-    intro cycle
-    exact cycle.1
-  exact acyclic
-    ((finiteModel_hasDependencyCycle_iff_of_configuration_eq equality).mp cyclic)
+  exact finiteModel_acyclicObject_not_hasDependencyCycle
+    ((finiteModel_hasDependencyCycle_iff_of_configuration_eq equality).mp
+      finiteModel_object_hasDependencyCycle)
 
 /-- The selected finite residual distinguishes the cyclic and acyclic
 configurations inside the fixed support package. -/
