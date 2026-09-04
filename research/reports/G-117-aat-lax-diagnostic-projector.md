@@ -10,7 +10,7 @@ proof obligation delta を記録する。GOAL の statement は変更しない�
 - tracking Issue: #4359
 - fixed GOAL blob: `107263cd9185412b72453a6ebfe0c3e7cf979740`
 - base commit: `8b669569525c0125e809d2d8b56d885edd8a3724`
-- current status: `active / target-proof-checkpoint`
+- current status: `target-refuted pending fixed-head review`
 
 ## Proof obligation state
 
@@ -21,10 +21,10 @@ proof obligation delta を記録する。GOAL の statement は変更しない�
 - 完了(Cycle 2): F0の(a)(b)型表現とK1。任意のcanonical `transportAlong` に対する
   admissibility保存を全fieldについて証明し、`AdmCoreFiber X` と制限transport functorを
   構成した。
-- 未完: F0のmodification packaging、(e)(f)(i)の型表現。K2(c)(d)、K3(e)、
-  K4(f)(g)、K5(h1)(i)。
-- h1が成り立つ枝の場合に必要な二witnessへの固定increment作用は、h1の分類後に
-  h2へ追加する。
+- 反例(Cycle 4): full `AdmCoreFiber` の実際の対象・射において prescribed component の
+  自然性が破れるため、fixed universal clause (c) は偽。
+- 未完: F0のmodification packaging、(e)(f)(i)の型表現、K2(d)、K3(e)、K4(f)(g)、
+  K5(h1)(i)。targetがconjunctionとして反証されたため、これらは現カードでは追行しない。
 
 ## Cycle 1 — K5-h2 core propagation
 
@@ -346,11 +346,122 @@ audits:
   next_obligation: "search for a stronger existing morphism API or construct a fixed-target counterexample; a repeated unresolved blocker triggers target-blocked"
 ```
 
+## Cycle 4 — K2(c) full-subcategory naturality counterexample
+
+### Mathematical result
+
+review済み finite package の operation 型へ、configuration realizationから見えない
+`Bool` tagを積として加えた `taggedOperationPackage` を構成した。equation、invariant、
+signature、object readingは変えず、operationのconfiguration mapは第一成分だけを読む。
+したがって `taggedOperationPackage_admissible` は五つのadmissibility fieldをすべて
+既存finite theoremから構成する。
+
+`taggedEndpointFlipTotal` はsource architecture objectが
+`finiteAxisFoldBoolObject`であるときだけtagを反転するactual
+`PackageTotalHom`である。configuration mapはtagを読まないため、このendomorphismは
+`SignedExactCoreReadingHom.operation_naturality`を満たす。一方canonical normalizationは
+同じconfigurationを持つ`finiteAxisFoldBoolObject`をdistinctな
+`finiteAxisFoldUnitObject`へ送る。
+
+初期tag `false`の`taggedBoolOperation`を評価すると、normalization後にflipする合成のtagは
+`false`、flip後にnormalizationする合成のtagは`true`になる。これによりCycle 3の
+operation coherenceを否定し、total naturalityを否定する。さらにpackageとendomorphismを
+実際のfull admissible fiberへ持ち上げ、prescribed componentとendomorphismが可換でないこと、
+および全componentがprescribed canonical normalizationであるidentity endofunctor上の
+`NatTrans`が存在しないことを証明した。
+
+最後の定理は、任意のadmissible package上でその`NatTrans`を要求するfixed clause (c)の
+一つの具体的反例である。GOAL failure policyによりtarget全体は`target-refuted`となる。
+
+### Declaration map
+
+| role | Lean declaration |
+| --- | --- |
+| configuration-invisible operation extension | `taggedOperationPackage` |
+| all-field admissibility | `taggedOperationPackage_admissible` |
+| endpoint-dependent exact endomorphism | `taggedEndpointFlipUpper`, `taggedEndpointFlipTotal` |
+| fixed operation input | `taggedBoolOperation` |
+| normalization moves the endpoint | `taggedBoolNormalization_eq_unit` |
+| left/right tag evaluations | `taggedLeftComposite_snd`, `taggedRightComposite_snd` |
+| residual coherence failure | `taggedEndpointFlip_not_coherent` |
+| total naturality failure | `taggedEndpointFlip_not_natural` |
+| actual full-fiber object/morphism | `taggedAdmCoreFiberObject`, `taggedAdmCoreFiberEndomorphism` |
+| component naturality failure | `taggedAdmCoreFiberComponent_not_natural` |
+| fixed clause counterexample | `no_taggedAdmissibleCanonicalNormalizationNatTrans` |
+
+### Premise and proof-use audit
+
+- `taggedOperationPackage_admissible` constructs every target field; no target admissibility
+  certificate is accepted.
+- `taggedEndpointFlipUpper.operation_naturality` proves equality of configuration maps directly;
+  the nontrivial tag action is retained in `operationMap`.
+- `taggedLeftComposite_snd` uses the reviewed object distinction
+  `finiteAxisFoldUnitObject_ne_boolObject`; the two evaluated tags are definitionally distinct.
+- `taggedEndpointFlip_not_natural` uses Cycle 3's exact iff characterization rather than treating
+  an unconnected operation discrepancy as total-morphism inequality.
+- the full-fiber endomorphism is constructed over identity via `IsHomLift.of_commsq`; the morphism
+  type is not narrowed.
+- `no_taggedAdmissibleCanonicalNormalizationNatTrans` consumes `NatTrans.naturality` at the actual
+  endomorphism and contradicts the proved component inequality. It does not accept a nonnaturality
+  certificate.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-117-aat-lax-diagnostic-projector
+cycle: 4
+goal_blob_sha: 107263cd9185412b72453a6ebfe0c3e7cf979740
+base_oid: 7cb967ddbe8b2ab9e16328e36ef60bbb71cdac29
+tracking_issue: 4359
+report_path: research/reports/G-117-aat-lax-diagnostic-projector.md
+selection:
+  proof_state_ref: "Cycle 3 blocker accepted by merged PR #4364"
+  proof_dag_predecessors: ["Cycle 3 exact operation-coherence characterization", "G-116 finite normalization witness", "G-117 AdmCoreFiber"]
+  proof_obligation: "decide K2(c) by discharging residual coherence or constructing a fixed universal-clause counterexample"
+  selection_reason: "A configuration-invisible operation tag directly tests the missing faithfulness of the full-subcategory morphism interface."
+  expected_result_type: proof-obligation-discharged-or-target-refuted
+  lean_targets: ["ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationCounterexample"]
+  risks: ["tagged package not admissible", "flip not an exact total morphism", "operation discrepancy not lifted to the actual full fiber", "counterexample outside universal quantification"]
+  unchecked: ["fixed-head independent review", "CI"]
+result:
+  proposed_result_type: target-refuted
+  proof_obligation_delta: "the Cycle 3 residual is realized by a concrete noncoherent full-fiber endomorphism, refuting the prescribed NatTrans on one admissible fiber"
+  completion_candidate: yes-terminal-refutation
+  lean_artifacts: ["ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean"]
+  evidence: ["taggedOperationPackage_admissible", "taggedEndpointFlip_not_natural", "taggedAdmCoreFiberComponent_not_natural", "no_taggedAdmissibleCanonicalNormalizationNatTrans"]
+  claim_mapping:
+    theorem_names: ["no_taggedAdmissibleCanonicalNormalizationNatTrans"]
+    source_labels: ["G-117(c)"]
+    conjuncts: ["existence of the prescribed natural endotransformation on every admissible core fiber"]
+    undischarged_assumptions: []
+    acceptance_point: "The theorem negates the prescribed NatTrans on one explicitly constructed admissible full fiber, which refutes the universally quantified conjunct."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["counterexample package admissibility", "counterexample total-hom laws", "full-fiber object and morphism", "left/right unequal evaluations"]
+    remaining: []
+  certificate_provenance:
+    discharged: ["package generated from reviewed finite data", "tag flip generated by endpoint equality decision", "failure derived from false/true evaluation"]
+    unresolved: []
+  proof_use:
+    used: ["finiteCanonicalObjectNormalization_admissible", "finiteAxisFoldUnitObject_ne_boolObject", "canonicalObjectNormalizationTotal_natural_iff_operationCoherent", "NatTrans.naturality"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean: exit 0; namespace axiom assertion: 23 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationCounterexample: exit 0; 4068 targeted dependency jobs", "all 21 public reported declarations #print axioms: standard axioms only; two generic cast lemmas use no axioms"]
+  blocking_findings: []
+  stopping_reason: "target-refuted: no_taggedAdmissibleCanonicalNormalizationNatTrans contradicts fixed clause (c)"
+  next_obligation: "fixed-head standard review, CI, merge, and target-refuted Issue synchronization"
+```
+
 ## Current judgment
 
-- latest cycle result proposal: `blocker-fixed` for K2(c)。
-- completion candidate: no。
-- target result: `target-proof-checkpoint`。
-- next obligation: determine whether the residual operation-map coherence follows from an
-  existing stronger morphism API or admits a fixed-target counterexample; K2(d) remains
-  downstream of K2(c)。
+- latest cycle result proposal: `target-refuted` by fixed clause (c)。
+- terminal refutation candidate: yes。
+- target result: `target-refuted pending fixed-head review`。
+- next obligation: fixed-head standard review, CI, merge, and Issue synchronization。
