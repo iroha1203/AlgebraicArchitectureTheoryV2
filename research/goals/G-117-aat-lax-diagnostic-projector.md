@@ -423,7 +423,9 @@
     ((f1) の実 instantiation と群水準の square 等式の proof-use を含む)。
   - `witness lane 2 (h1)(h2)` と `summand decisions (i)`: `discharge-required`。
     artifact = (h1)(i) は classification theorem(どちらの枝かを明示)、(h2) は
-    transport theorem。
+    propagation theorem family(共役付き再帰、二本の endpoint gauge と raw 変換の接続、
+    fixed nonidentity action、長さ2 pasting、closed obstruction、該当時の (h1) witness
+    pair への作用を含む)。
 - `target route integrity gate`: 許容経路 = reviewed predecessor の宣言と fixture data
   から proof term を構成すること。禁止経路: caller 供給の certificate、
   `Classical.em` / `not_forall` / choice だけによる枝選択((h1)(i) を含む。選択子の
