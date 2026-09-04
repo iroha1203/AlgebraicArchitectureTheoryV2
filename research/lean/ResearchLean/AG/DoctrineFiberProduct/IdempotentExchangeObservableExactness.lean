@@ -1,5 +1,11 @@
+import ResearchLean.AG.AtomFoundation.Categories
+import ResearchLean.AG.CrossStageCoherence.CorePseudofunctor
 import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFold
-import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
+import ResearchLean.AG.DoctrineFiberProduct.CartesianTransport
+import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
+import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
 import ResearchLean.AG.DoctrineFiberProduct.SignedExactCoreReadingHomObjectMapAPI
 import ResearchLean.AG.DoctrineFiberProduct.CoreFiberLiftAxisAPI
 

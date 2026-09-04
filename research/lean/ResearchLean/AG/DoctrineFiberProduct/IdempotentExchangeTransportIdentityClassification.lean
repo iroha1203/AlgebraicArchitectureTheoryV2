@@ -1,7 +1,12 @@
+import ResearchLean.AG.CrossStageCoherence.CorePseudofunctor
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
 import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
 import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
 import ResearchLean.AG.DoctrineFiberProduct.BCProvenanceViaBaseRouteAPI
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
+import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunction
+import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
 import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 
 /-!
