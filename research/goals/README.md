@@ -21,6 +21,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
+  (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
+  G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
