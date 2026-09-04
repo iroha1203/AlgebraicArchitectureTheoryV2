@@ -319,7 +319,7 @@ result:
   proof_obligation_delta: Clause (e1) is proved uniformly by constructing unit- and Boolean-decorated architecture objects over the supplied configuration and deriving their inequality from the cardinalities of their StructureMaps types.
   completion_candidate: no
   lean_artifacts: [unitDecoratedArchitectureObject, boolDecoratedArchitectureObject, unitDecoratedArchitectureObject_ne_boolDecoratedArchitectureObject, exists_distinct_architectureObjects_over_configuration]
-  evidence: [canonical focused checker exit 0, targeted module build exit 0, standard-axiom audit for all four declarations, module manifest registration]
+  evidence: [canonical focused checker exit 0, targeted module build exit 0, standard-axiom audit for all four declarations, aggregate import registration]
   claim_mapping:
     theorem_names: [exists_distinct_architectureObjects_over_configuration]
     source_labels: [target theorem clause (e1), target proof strategy K3]
@@ -343,7 +343,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only; research-modules.txt registration]
+  validation_refs: [research/lean/check_research_modules.sh --focused ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean — exit 0; lake build ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects — exit 0; axiom audit 4 declarations standard axioms only; ResearchLean/AG/DoctrineFiberProduct.lean import registration]
   blocking_findings: []
   next_obligation: K3(e2) prove that canonical package normalization has no internal split in the total category, using the general clause (e1) witness.
 ```
@@ -884,4 +884,59 @@ audits:
   validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0, 8 declarations standard axioms only; git diff --check — exit 0]
   blocking_findings: []
   next_obligation: Obtain the finding-limited direct response, publish the replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
+```
+
+## Cycle 16 — fresh-source witness and scope closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 16
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 80307a3f4792c237474ded0ed699f1725aaeecb5
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh standard four-lane review over 80307a3f4792c237474ded0ed699f1725aaeecb5
+  proof_dag_predecessors: [IdempotentExchangeRawFailureLocus, IdempotentExchangeTransportIdentityClassification, IdempotentExchangeObservableExactness, FiniteGeneratedEquationTransportWitnesses, DiagnosticObjectCollapseSelectorAPI]
+  proof_obligation: Restore the witness packet's fresh-source declaration closure, remove remaining target unfold routes and unnecessary upper-layer imports, correct Cycle 6 registration provenance, and align n1008's Karoubi claim with the fixed GOAL boundary.
+  selection_reason: Lean A/B found the witness import break and transitive import fragility; Lean B found remaining target unfolds; Math B found the Cycle 6 manifest overclaim and Karoubi minimality overclaim.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/DiagnosticObjectCollapseSelectorAPI.lean, ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeObservableExactness.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeUniversalTargets.lean]
+  artifact_targets: [docs/note/n1008_aat_idempotent_exchange_structure_program.md, research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [stale olean false pass, losing witness theorem owners, changing fixed target claims, retroactively claiming a Cycle 6 manifest entry]
+  unchecked: [fresh standard fixed-head PR review, replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: WitnessPacket directly imports every theorem owner it uses and passes a fresh focused check. The classification object-map step, fixed swap nonidentity, and residual separation use named APIs. Naturality, Karoubi, Observable, and Witness imports are direct and minimal. n1008 now states only the explicit Karoubi isomorphism proved by clause (d), with universal/minimal completion and localization questions separated as later candidates. Cycle 6 records only its actual aggregate registration.
+  completion_candidate: yes
+  implementation_oids: [a25d9cb67afad7e18cbb7cbe8c66506c45c3d2a8]
+  lean_artifacts: [canonicalObjectNormalization_eq_id_of_supportComponent_eq_id]
+  evidence: [eight named focused checks exit 0 with standard-axiom audits, fresh WitnessPacket check after direct RawFailure and finite residual API imports, target no-unfold scan, exact direct-import closure, unchanged fixed GOAL blob]
+  claim_mapping:
+    theorem_names: [canonicalObjectNormalization_eq_id_of_supportComponent_eq_id, authoredDiagnosticObjectCollapseComponentAtCochain_eq_id_iff, finiteAxisFold_generatedAuthoredDiagnosticObjectCollapseComparison_not_isIso, finiteAxisFold_supportResidual_separates_cyclic_acyclic, finiteAxisFold_idempotentExchange_witnessPacket]
+    source_labels: [G-116(g), G-116(g2), G-116(h), Lean quality no-unfold and dependency rules, GOAL Karoubi claim boundary]
+    conjuncts: [fresh-source witness closure, named normalization object-map API, named swap nonidentity, named residual separation, explicit Karoubi iso scope]
+    undischarged_assumptions: []
+    acceptance_point: All fixed clauses retain their statements; the changes restore source-level proof routing and remove documentation and historical-ledger overclaims.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [fresh-source clause h import break, remaining target unfold routes, upper-layer transitive imports, Cycle 6 registration overclaim, Karoubi minimality overclaim]
+    remaining: []
+  certificate_provenance:
+    discharged: [normalization identity follows from an explicit morphism equality through a producer-adjacent API; fixed swap and residual separation come from named proved fixture theorems]
+    unresolved: []
+  proof_use:
+    used: [canonicalObjectNormalization_eq_id_of_supportComponent_eq_id, finiteAxisFoldSwap_ne_one, finiteSelectiveTwo_noCycleResidual_object_sensitive, authoredDiagnosticObjectCollapseComparisonAtCochain_app_isIso_iff]
+    unused: [transitive theorem-owner imports, target-local unfolding of normalization objectMap, finite swap axis implementation, FiniteModel.noCycleResidual]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/DiagnosticObjectCollapseSelectorAPI.lean — exit 0, 4 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean — exit 0, 2 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean — exit 0, 5 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeObservableExactness.lean — exit 0, 36 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean — exit 0, 7 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0, 8 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, 5 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeUniversalTargets.lean — exit 0, 10 declarations standard axioms only]
+  blocking_findings: []
+  next_obligation: Refix the PR head, rerun the standard PR gate, publish the replacement same-head final packet, run four wholly fresh completion lanes, and only then emit the formal completion ledger and merge.
 ```

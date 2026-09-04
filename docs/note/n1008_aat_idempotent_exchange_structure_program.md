@@ -362,15 +362,15 @@ G-116 Cycle 7 は、この主張を
 場合は成功枝へ移らず `goal-defect` として止める方針であったが、Cycle 7 では no-go が
 固定 statement のまま成立した。
 
-この定理の帰結は二つある。
+この定理が固定する帰結は二つある。
 
 - 判定順序の「圏の中で分裂するか、しないか」は、しない側で決まる。
-- 分裂しないのは正規化の欠陥ではない。raw な `ArchitectureObject U` を carrier に固定した
-  今の package 圏が、意味の像を対象として持てないほど狭い、という圏そのものの定理に
-  なる。そのとき Karoubi は便宜的な逃げ道ではなく、意味の像を表すための最小の完備化に
-  なる。分裂像 `P ↦ Q` の functor 性を経由して reflective localization を作る道は、前提
-  ごと消える。localization を候補に残すなら、正規化射のクラス `W` を形式的に逆転した
-  `C[W⁻¹]` として、Karoubi の後に別に立てる。
+- raw な `ArchitectureObject U` を carrier に固定した package 圏の中では、正規化射は
+  internal split を持たない。一方、(d) は固定した projector
+  `β_c ≫ inv α_c` と `E_c` の明示的な Karoubi object 間に `β_c` を forward map
+  とする同型を与える。これが G-116 で証明する像の置き場である。Karoubi envelope
+  一般の完備化としての役割、分裂像の functor 性、reflective localization、正規化射の
+  クラス `W` を逆転した `C[W⁻¹]` の比較は、後続候補として分離する。
 
 同じ仕組みが G-115 にも出ている。`negativeCoreUpper_objectMap_not_injective` と
 `no_negativeExactUpperEquivalence` である。lossy な upper は、同じ configuration の上の
