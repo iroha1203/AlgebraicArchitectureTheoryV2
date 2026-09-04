@@ -1,5 +1,11 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeCellProjector
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducerWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparisonWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticPairwiseAxisFoldWitnesses
+import ResearchLean.AG.TransportCoherence.FinitePresentation
+import ResearchLean.AG.TransportCoherence.FiniteWitnesses
 
 /-!
 # G-116 raw failure locus

@@ -6,6 +6,7 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianTarget
 import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.FiniteModelLiftComparison
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
 import ResearchLean.AG.DoctrineFiberProduct.SignedExactCoreReadingHomObjectMapAPI
 import ResearchLean.AG.DoctrineFiberProduct.CoreFiberLiftAxisAPI
 

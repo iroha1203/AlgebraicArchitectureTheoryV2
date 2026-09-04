@@ -1,4 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.Schema
+import ResearchLean.AG.AtomFoundation.Doctrine
 import ResearchLean.AG.AtomFoundation.TransportLaws
 import Formal.AG.Examples.FiniteModel
 

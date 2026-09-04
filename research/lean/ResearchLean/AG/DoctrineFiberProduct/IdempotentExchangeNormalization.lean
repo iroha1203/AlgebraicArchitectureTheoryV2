@@ -1,3 +1,6 @@
+import Formal.AG.ReadingFunctoriality.Core
+import ResearchLean.AG.AtomFoundation.Categories
+import ResearchLean.AG.AtomFoundation.Doctrine
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
 
 /-!

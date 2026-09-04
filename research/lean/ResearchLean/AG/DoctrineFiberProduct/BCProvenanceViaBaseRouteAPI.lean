@@ -1,3 +1,5 @@
+import ResearchLean.AG.CrossStageCoherence.CorePseudofunctor
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
 
 /-!

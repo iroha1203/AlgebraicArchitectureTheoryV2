@@ -1,4 +1,13 @@
-import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredNonAxisCollapseAudit
+import Formal.AG.Examples.FiniteModel
+import Formal.AG.Atom.AATCore
+import Formal.AG.Atom.ObjectAlgebra
+import Formal.AG.ReadingFunctoriality.Core
+import ResearchLean.AG.AtomFoundation.Categories
+import ResearchLean.AG.AtomFoundation.Transport
+import ResearchLean.AG.AtomFoundation.TransportLaws
+import ResearchLean.AG.DoctrineFiberProduct.SchemaWitnesses
+import ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparisonWitnesses
+import ResearchLean.AG.TransportCoherence.FiniteWitnesses
 
 /-!
 # Object-collapse route on the fixed authored support

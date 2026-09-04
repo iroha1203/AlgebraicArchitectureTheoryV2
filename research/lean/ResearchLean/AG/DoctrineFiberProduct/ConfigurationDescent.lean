@@ -1,4 +1,4 @@
-import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeNormalization
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
 
 /-!
 # Configuration descent for canonical normalization

@@ -1,5 +1,8 @@
 import ResearchLean.AG.DoctrineFiberProduct.DistinctArchitectureObjects
 import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturality
+import ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationAPI
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
+import ResearchLean.AG.AtomFoundation.Categories
 
 /-!
 # G-116 internal normalization split no-go

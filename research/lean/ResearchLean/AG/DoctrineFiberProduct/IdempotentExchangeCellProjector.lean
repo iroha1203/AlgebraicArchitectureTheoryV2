@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeNormalization
 import ResearchLean.AG.DoctrineFiberProduct.DiagnosticObjectCollapseSelectorAPI
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
 
 /-!
 # G-116 cell projector idempotence

@@ -7,6 +7,7 @@ import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
 import ResearchLean.AG.DoctrineFiberProduct.CoreTransportReindexAdjunction
 import ResearchLean.AG.DoctrineFiberProduct.BCPresentationReplacement
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredSupportCanonicalMate
 import ResearchLean.AG.DiagnosticConservativity.TransportEquivalence
 
 /-!

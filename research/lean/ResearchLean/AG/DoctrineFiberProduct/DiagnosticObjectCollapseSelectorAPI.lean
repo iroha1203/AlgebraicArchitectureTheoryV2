@@ -1,3 +1,9 @@
+import ResearchLean.AG.CrossStageCoherence.CorePseudofunctor
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexing
+import ResearchLean.AG.DoctrineFiberProduct.CartesianRegimeReindexingCoherence
+import ResearchLean.AG.DoctrineFiberProduct.CoreBeckChevalleyMate
+import ResearchLean.AG.DoctrineFiberProduct.Schema
+import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredCanonicalObjectNormalization
 import ResearchLean.AG.DoctrineFiberProduct.BCAuthoredDiagnosticObjectCollapseProducer
 
 /-!
