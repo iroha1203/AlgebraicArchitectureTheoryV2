@@ -21,6 +21,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
+  (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
+  G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
@@ -43,11 +46,12 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-114-aat-refinement-base-change](G-114-aat-refinement-base-change.md)
   (`target-theorem-proved`。Gr4 O8–O9)
 - [G-115-aat-upper-stage-lift](G-115-aat-upper-stage-lift.md)
-  (`target-theorem-proved`。Gr4 O10–O11。upper solution の `IsIso` 決定は Gr4 を閉じるカードへ)
+  (`target-theorem-proved`。Gr4 O10–O11。upper solution の `IsIso` 決定は
+  G-117 (i2) へ)
 - [G-116-aat-idempotent-exchange-structure](G-116-aat-idempotent-exchange-structure.md)
   (`target-theorem-proved`。exchange 反例の背後の冪等正規化、raw failure
-  classification、fixed finite witness。Gr4 達成記録と義務台帳 O1–O20 は Gr4 を
-  閉じる別カードへ)
+  classification、fixed finite witness。Gr4 を閉じるカードは作らない。G-114 /
+  G-115 成分の同型判定は G-117 (i) へ)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
