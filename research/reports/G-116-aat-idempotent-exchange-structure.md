@@ -1050,3 +1050,58 @@ audits:
   blocking_findings: []
   next_obligation: Refix the PR head, repeat the full standard four-lane review, then emit a schema-complete replacement packet and run four wholly fresh completion lanes.
 ```
+
+## Cycle 19 — cycle bridge and direct-owner closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 19
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 4b1602d8ff28b9f50422da31b92bff21cb2a8300
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh full standard four-lane review over 4b1602d8ff28b9f50422da31b92bff21cb2a8300
+  proof_dag_predecessors: [AtomFoundation.Transport, SchemaWitnesses, BCAuthoredObjectCollapse, IdempotentExchangeWitnessPacket]
+  proof_obligation: Eliminate the residual definitional reduction between hasCycleWitness and hasDependencyCycle, replace direct acyclic conjunction projection by a named fixture theorem, and directly import both new theorem owners used by the witness.
+  selection_reason: Math B found that Cycle 18 still used definitional equality for the cyclic/acyclic facts; Lean B found two newly used theorem owners remained transitive imports.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [hiding an unfold behind exact-term conversion, adding a theorem without a direct owner import, changing clause h]
+  unchecked: [fresh full standard fixed-head PR review, schema-complete replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: BCAuthoredObjectCollapse now owns named cyclic and acyclic dependency-cycle facts. WitnessPacket uses those facts and the configuration-congruence theorem without reducing either external predicate, and directly imports AtomFoundation.Transport and SchemaWitnesses for the remaining named transport theorems.
+  completion_candidate: yes
+  implementation_oids: [17160a978abfb86ff344906857f55a9bf2ea7ca6]
+  lean_artifacts: [finiteModel_object_hasDependencyCycle, finiteModel_acyclicObject_not_hasDependencyCycle]
+  evidence: [BCAuthoredObjectCollapse exit 0 with 26 declarations standard axioms only, WitnessPacket exit 0 with 5 declarations standard axioms only, target no-unfold source inspection, direct theorem-owner imports, unchanged fixed GOAL blob]
+  claim_mapping:
+    theorem_names: [finiteAxisFold_cyclic_configuration_ne_acyclic, finiteAxisFold_idempotentExchange_witnessPacket]
+    source_labels: [G-116(h), Lean quality no-unfold and import ownership rules]
+    conjuncts: [named cyclic fact, named acyclic fact, configuration congruence, direct transport and schema owners]
+    undischarged_assumptions: []
+    acceptance_point: The fixed witness statement is unchanged; all cycle and transport reasoning in the target proof now consumes named theorems through direct imports.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [hasCycleWitness-to-hasDependencyCycle definitional conversion, direct projection from acyclic predicate body, transitive Transport theorem import, transitive SchemaWitnesses theorem import]
+    remaining: []
+  certificate_provenance:
+    discharged: [cyclic and acyclic fixture facts have named source theorems]
+    unresolved: []
+  proof_use:
+    used: [finiteModel_object_hasDependencyCycle, finiteModel_acyclicObject_not_hasDependencyCycle, finiteModel_hasDependencyCycle_iff_of_configuration_eq, transportArchitectureObject_configuration, finiteModelDoctrineFromFixture_configuration_transport]
+    unused: [target-local reduction of FiniteModel.hasCycleWitness or FiniteModel.hasDependencyCycle]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/BCAuthoredObjectCollapse.lean — exit 0, 26 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeWitnessPacket.lean — exit 0, 5 declarations standard axioms only; targeted dependency construction for BCAuthoredObjectCollapse — exit 0; git diff --check — exit 0]
+  blocking_findings: []
+  next_obligation: Refix the PR head and body, repeat the fresh full standard four-lane review, then publish a schema-complete replacement packet and run four wholly fresh completion lanes.
+```
