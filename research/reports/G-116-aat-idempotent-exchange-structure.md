@@ -1160,3 +1160,58 @@ audits:
   blocking_findings: []
   next_obligation: Refix the PR head and body, repeat the fresh full standard four-lane review, then publish the schema-complete replacement packet and run four wholly fresh completion lanes.
 ```
+
+## Cycle 21 — full target-family owner closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 21
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 2517a3fd0bfb432367a867fea0a36f7ee2dc1245
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Exhaustive direct-owner precheck over the Cycle 20 head
+  proof_dag_predecessors: [the nineteen target, API, and finite-witness modules in the final G-116 dependency surface]
+  proof_obligation: Close every remaining transitive declaration-owner dependency across the complete target family and remove the three unused umbrella imports, without changing a theorem statement or proof body.
+  selection_reason: The exact-head owner precheck extended the earlier two-module review to the whole target family and found sixteen modules with residual transitive owner dependencies.
+  expected_result_type: target-completion-candidate
+  lean_targets: [IdempotentExchangeNormalization, ConfigurationDescent, IdempotentExchangeCellProjector, IdempotentExchangeKaroubiImage, DistinctArchitectureObjects, InternalNormalizationSplitNoGo, IdempotentExchangeObservableExactness, IdempotentExchangeRawFailureLocus, IdempotentExchangeTransportIdentityClassification, IdempotentExchangeWitnessPacket, IdempotentExchangeUniversalTargets, DiagnosticObjectCollapseSelectorAPI, BCProvenanceViaBaseRouteAPI, CoreFiberLiftAxisAPI, SchemaWitnesses, BCAuthoredObjectCollapse]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [introducing an import cycle, dropping tactic or macro providers while removing umbrellas, changing elaboration through dependency order]
+  unchecked: [fresh full standard fixed-head PR review, schema-complete replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: Sixteen modules now directly import every substantively used declaration owner. ConfigurationDescent, DistinctArchitectureObjects, and BCAuthoredObjectCollapse no longer use their unused umbrella imports. DistinctArchitectureObjects names its axiom-audit macro and norm_num providers explicitly. Statements and proof bodies are unchanged.
+  completion_candidate: yes
+  implementation_oids: [7a471fed6d217519a6c4e0690409fd348fd75af0]
+  lean_artifacts: []
+  evidence: [sixteen individual focused source checks exit 0, every module-local axiom audit reports standard axioms only, independent static owner audit PASS over all nineteen scoped modules, no scoped import cycle, git diff --check clean]
+  claim_mapping:
+    theorem_names: [all G-116 target and supporting API declarations]
+    source_labels: [G-116(a-h), Lean dependency ownership]
+    conjuncts: [unchanged fixed mathematical targets, explicit direct declaration ownership, removal of unused umbrellas]
+    undischarged_assumptions: []
+    acceptance_point: The complete fixed target surface has direct, auditable source ownership without mathematical or proof-body changes.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [all residual transitive-only owner edges in the nineteen-module target surface, three unused umbrella imports]
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: [all direct declaration-owner imports recorded by the exhaustive static audit]
+    unused: [IdempotentExchangeNormalization import in ConfigurationDescent, ConfigurationDescent import in DistinctArchitectureObjects, BCAuthoredNonAxisCollapseAudit import in BCAuthoredObjectCollapse]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [sixteen named lake env lean module checks — exit 0; axiom audit counts 5, 5, 4, 5, 4, 5, 36, 7, 8, 5, 10, 4, 1, 1, 48, 26 — standard axioms only; static owner closure audit — PASS; git diff --check — exit 0]
+  blocking_findings: []
+  next_obligation: Fix the PR head and body, run a wholly fresh full standard four-lane review, publish a schema-complete replacement final packet, then run four wholly fresh completion lanes.
+```
