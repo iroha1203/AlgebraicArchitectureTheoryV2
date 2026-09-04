@@ -1105,3 +1105,58 @@ audits:
   blocking_findings: []
   next_obligation: Refix the PR head and body, repeat the fresh full standard four-lane review, then publish a schema-complete replacement packet and run four wholly fresh completion lanes.
 ```
+
+## Cycle 20 — classification and observable owner closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-116-aat-idempotent-exchange-structure
+cycle: 20
+goal_blob_sha: 9b3a1157889b33d5b2ce279365f3bec9f6e3bed6
+base_oid: 44e362d596611f3b26a371b88717e3faad2f0dbd
+tracking_issue: 4345
+report_path: research/reports/G-116-aat-idempotent-exchange-structure.md
+selection:
+  proof_state_ref: Fresh full standard four-lane review over 44e362d596611f3b26a371b88717e3faad2f0dbd
+  proof_dag_predecessors: [CorePseudofunctor, CartesianRegimeReindexing, CoreTransportReindexAdjunction, BCPresentationReplacement, BCAuthoredDiagnosticObjectCollapseProducer, AtomFoundation.Categories, CartesianTransport, CartesianTarget, FiniteModelLiftComparison, BCDiagnosticAxisFold]
+  proof_obligation: Close all remaining transitive declaration-owner imports in the g2 classification and observable-exactness target modules, without changing statements or proof bodies.
+  selection_reason: Lean B found that these two target modules still obtained materially used transport, adjunction, presentation, lift, and producer declarations through umbrella imports.
+  expected_result_type: target-completion-candidate
+  lean_targets: [ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean, ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeObservableExactness.lean]
+  artifact_targets: [research/reports/G-116-aat-idempotent-exchange-structure.md]
+  risks: [repeating the earlier stale transitive import failure, retaining an unused selector umbrella, changing target proofs]
+  unchecked: [fresh full standard fixed-head PR review, schema-complete replacement final packet, four wholly fresh completion lanes, completion ledger, CI, merge, durable synchronization]
+result:
+  proposed_result_type: target-completion-candidate
+  proof_obligation_delta: Classification directly imports the five previously transitive route/adjunction/producer owners. ObservableExactness directly imports the seven previously transitive category/transport/lift/producer owners and removes its unused DiagnosticObjectCollapseSelectorAPI umbrella. The theorem statements and proof bodies are unchanged.
+  completion_candidate: yes
+  implementation_oids: [4215bbfbe236fb7015b27496f972daeaad7f23e0]
+  lean_artifacts: []
+  evidence: [classification exit 0 with 8 declarations standard axioms only, observable exactness exit 0 with 36 declarations standard axioms only, declaration-to-owner scan, unchanged fixed GOAL blob]
+  claim_mapping:
+    theorem_names: [authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_coordinate, authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_equationResidual, authoredDiagnosticObjectCollapseComparisonAtCochain_coordinate, authoredDiagnosticObjectCollapseComparisonAtCochain_equationResidual]
+    source_labels: [G-116(f), G-116(g2), Lean dependency ownership]
+    conjuncts: [unchanged identity classification, unchanged four literal observable equalities, exact direct owner dependencies]
+    undischarged_assumptions: []
+    acceptance_point: All fixed mathematical artifacts are unchanged; only direct source dependency ownership is repaired.
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: [classification transitive route and adjunction owners, observable transitive transport and lift owners, unused observable selector umbrella]
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: [coreTransportReindexAdjunction, bcProvenanceViaBaseRoute, authoredSupportViaBaseRouteProvenanceIso, authoredDiagnosticObjectCollapseComponentAtCochain_eq_provenance, coreFiberTransportFunctor, selectedCoreFiberReindexFunctor, strongCartesianLiftOfTarget, StrongCartesianLift.domainIso, coreFiberTransportMap_fac]
+    unused: [DiagnosticObjectCollapseSelectorAPI import in IdempotentExchangeObservableExactness]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeTransportIdentityClassification.lean — exit 0, 8 declarations standard axioms only; lake env lean ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeObservableExactness.lean — exit 0, 36 declarations standard axioms only; git diff --check — exit 0]
+  blocking_findings: []
+  next_obligation: Refix the PR head and body, repeat the fresh full standard four-lane review, then publish the schema-complete replacement packet and run four wholly fresh completion lanes.
+```
