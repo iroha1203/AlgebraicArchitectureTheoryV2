@@ -244,9 +244,107 @@ audits:
   next_obligation: "complete the F0 modification packaging, then K2(c)(d)"
 ```
 
+## Cycle 3 — K2(c) operation-map naturality blocker
+
+### Mathematical result
+
+各 `P : AdmCoreFiber X` には、G-116 の total normalization を underlying hom とする
+`admissibleCanonicalNormalizationComponent P : P ⟶ P` があり、その成分は
+`canonicalObjectNormalizationTotal_comp` により冪等である。
+
+一方、これらの成分を full subcategory 上の `NatTrans` に束ねる自然性は、任意の
+`PackageTotalHom hom : P ⟶ Q` について、source の operation を normalization の
+dependent cast で移してから `hom.upper.operationMap` を適用する経路と、先に operation
+を移して target の dependent cast を適用する経路の `HEq` を要求する。object map、exact
+equation transport、invariant、axis、coordinate の各 field は既存 API で閉じるが、この
+operation-map coherence は `CanonicalObjectNormalizationAdmissible` にも
+`SignedExactCoreReadingHom` にも含まれない。後者の `operation_naturality` は両経路が
+与える `ConfigurationHom` の合成則であり、operation 値そのものの一致ではない。
+
+`CanonicalNormalizationOperationCoherent` は残った field をそのまま命名し、
+`canonicalObjectNormalizationTotal_natural_of_operationCoherent` は、それを置いた場合に
+他の全 field が閉じることを Lean で示す。この仮定相対 theorem は K2(c) の放電には
+数えない。
+
+### Declaration map
+
+| role | Lean declaration |
+| --- | --- |
+| exact residual field | `CanonicalNormalizationOperationCoherent` |
+| all remaining fields close from the residual | `canonicalObjectNormalizationTotal_natural_of_operationCoherent` |
+| proposed component family | `admissibleCanonicalNormalizationComponent` |
+| component idempotence | `admissibleCanonicalNormalizationComponent_comp` |
+
+### Premise and proof-use audit
+
+- `canonicalObjectNormalizationTotal_natural_of_operationCoherent` uses
+  `canonicalObjectNormalization_natural` for the object map and
+  `equationSystemExactTransport_hext` for equation transport; all other non-operation fields
+  close by reflexivity.
+- the residual premise is conclusion-bearing for the missing operation field and therefore is
+  recorded only as a blocker witness; it is not accepted as a material premise of the target.
+- `admissibleCanonicalNormalizationComponent_comp` instantiates
+  `canonicalObjectNormalizationTotal_comp`; it does not reprove G-116 idempotence.
+- no `NatTrans` or modification package is claimed in this cycle.
+
+### Target cycle ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-117-aat-lax-diagnostic-projector
+cycle: 3
+goal_blob_sha: 107263cd9185412b72453a6ebfe0c3e7cf979740
+base_oid: cdbfa1539b76d7f0da06f7af7d482249e91fbbe6
+tracking_issue: 4359
+report_path: research/reports/G-117-aat-lax-diagnostic-projector.md
+selection:
+  proof_state_ref: "K1 accepted by merged PR #4363; F0 modification packaging and K2(c)(d) selected"
+  proof_dag_predecessors: ["G-116 canonical normalization idempotence", "G-116 object-map naturality", "G-117 AdmCoreFiber"]
+  proof_obligation: "K2(c): assemble the canonical normalization components into a natural idempotent endotransformation"
+  selection_reason: "This is the immediate prerequisite for base-arrow, unitor, and compositor compatibility."
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationBlocker"]
+  risks: ["dependent operation cast", "configuration-map equality mistaken for operation equality", "conclusion-bearing coherence premise"]
+  unchecked: ["whether a stronger reviewed morphism API discharges the residual", "fixed-target counterexample", "clauses (d)-(g), (h1), (i)"]
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "the component family and its idempotence are checked; the exact operation-map coherence preventing NatTrans assembly is isolated"
+  completion_candidate: no
+  lean_artifacts: ["ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean"]
+  evidence: ["CanonicalNormalizationOperationCoherent", "canonicalObjectNormalizationTotal_natural_of_operationCoherent", "admissibleCanonicalNormalizationComponent_comp"]
+  claim_mapping:
+    theorem_names: ["admissibleCanonicalNormalizationComponent_comp"]
+    source_labels: ["G-117(c), idempotence subclause"]
+    conjuncts: ["pointwise component construction", "pointwise idempotence"]
+    undischarged_assumptions: ["operation-map coherence required for naturality on the full subcategory"]
+    acceptance_point: "Accept only as a reusable blocker-fixed checkpoint, not as K2(c) discharge."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["K2(c) component construction", "K2(c) component idempotence"]
+    remaining: ["K2(c) naturality", "K2(d)", "clauses (e)-(g), (h1), (i)"]
+  certificate_provenance:
+    discharged: ["component generated from G-116 normalization"]
+    unresolved: ["no source theorem generates operation-map coherence for arbitrary full-subcategory morphisms"]
+  proof_use:
+    used: ["canonicalObjectNormalization_natural", "equationSystemExactTransport_hext", "canonicalObjectNormalizationTotal_comp"]
+    unused: []
+  structure_field_escape: "residual premise exposed but rejected as target evidence"
+  route_integrity: pass-for-blocker-artifact
+  target_fitting: "K2(c) remains unmet"
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none
+  validation_refs: ["cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean: exit 0; namespace axiom assertion: 4 declarations, standard axioms only", "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationBlocker: exit 0; 4066 targeted dependency jobs", "all 4 reported declarations #print axioms: propext, Classical.choice, Quot.sound only"]
+  blocking_findings: ["arbitrary SignedExactCoreReadingHom supplies configuration naturality but no equality between operationMap values at normalization-related endpoint indices"]
+  next_obligation: "search for a stronger existing morphism API or construct a fixed-target counterexample; a repeated unresolved blocker triggers target-blocked"
+```
+
 ## Current judgment
 
-- latest cycle result proposal: `proof-obligation-discharged` for K1(a)(b)。
+- latest cycle result proposal: `blocker-fixed` for K2(c)。
 - completion candidate: no。
 - target result: `target-proof-checkpoint`。
-- next obligation: complete the F0 modification packaging, then K2(c)(d)。
+- next obligation: determine whether the residual operation-map coherence follows from an
+  existing stronger morphism API or admits a fixed-target counterexample; K2(d) remains
+  downstream of K2(c)。
