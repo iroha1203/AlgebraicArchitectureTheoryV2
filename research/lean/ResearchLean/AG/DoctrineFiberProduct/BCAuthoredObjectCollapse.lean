@@ -77,6 +77,27 @@ noncomputable def finiteAxisFoldBoolObject : ArchitectureObject FiniteModel.carr
   structureMaps := false
   selectedQuantities := PUnit.unit
 
+/-- The unit-decorated fixture retains the cyclic object's configuration. -/
+@[simp]
+theorem finiteAxisFoldUnitObject_configuration :
+    finiteAxisFoldUnitObject.configuration = FiniteModel.object.configuration :=
+  finiteAxisFoldEraseObject_configuration FiniteModel.object
+
+/-- The Boolean decoration changes no Atom-configuration data. -/
+@[simp]
+theorem finiteAxisFoldBoolObject_configuration :
+    finiteAxisFoldBoolObject.configuration = FiniteModel.object.configuration :=
+  rfl
+
+/-- The finite dependency-cycle predicate depends only on the Atom configuration. -/
+theorem finiteModel_hasDependencyCycle_iff_of_configuration_eq
+    {first second : ArchitectureObject FiniteModel.carrier}
+    (configuration_eq : first.configuration = second.configuration) :
+    FiniteModel.hasDependencyCycle first ↔
+      FiniteModel.hasDependencyCycle second := by
+  unfold FiniteModel.hasDependencyCycle
+  rw [configuration_eq]
+
 /-- The two objects are genuinely distinct despite sharing their configuration. -/
 theorem finiteAxisFoldUnitObject_ne_boolObject :
     finiteAxisFoldUnitObject ≠ finiteAxisFoldBoolObject := by
@@ -151,10 +172,8 @@ theorem finiteEquationResidual_configurationInvariant
     (C : Site.ContextPreorderCategory FiniteModel.object) :
     EquationResidualConfigurationInvariant (FiniteModel.equationSystem C) := by
   intro W first second index atom configuration_eq
-  have cycle_eq : FiniteModel.hasDependencyCycle first ↔
-      FiniteModel.hasDependencyCycle second := by
-    unfold FiniteModel.hasDependencyCycle
-    rw [configuration_eq]
+  have cycle_eq :=
+    finiteModel_hasDependencyCycle_iff_of_configuration_eq configuration_eq
   by_cases first_cycle : FiniteModel.hasDependencyCycle first
   · have second_cycle := cycle_eq.mp first_cycle
     simp [FiniteModel.equationSystem, FiniteModel.noCycleResidual,

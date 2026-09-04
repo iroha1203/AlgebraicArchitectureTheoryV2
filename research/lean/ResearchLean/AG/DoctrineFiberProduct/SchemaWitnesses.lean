@@ -1,4 +1,5 @@
 import ResearchLean.AG.DoctrineFiberProduct.Schema
+import ResearchLean.AG.AtomFoundation.TransportLaws
 import Formal.AG.Examples.FiniteModel
 
 /-!
@@ -158,6 +159,21 @@ def finiteModelDoctrineFromFixture :
         AtomPredicateCode.Holds, AtomPredicateCode.eval,
         ExtractionDoctrine.extracts, FiniteDoctrineCode.toDoctrine,
         FiniteModel.extractionDoctrine]
+
+/-- The concrete reverse schema comparison fixes the Atom carrier pointwise. -/
+@[simp]
+theorem finiteModelDoctrineFromFixture_atomEquiv :
+    finiteModelDoctrineFromFixture.atomEquiv = Equiv.refl _ :=
+  rfl
+
+/-- The reverse schema comparison acts trivially on every finite configuration. -/
+@[simp]
+theorem finiteModelDoctrineFromFixture_configuration_transport
+    (configuration : AtomConfiguration FiniteModel.carrier) :
+    configuration.transport finiteModelDoctrineFromFixture.atomEquiv =
+      configuration := by
+  rw [finiteModelDoctrineFromFixture_atomEquiv]
+  exact AtomFoundation.atomConfiguration_transport_id configuration
 
 /--
 The existing reviewed `FiniteModel.extractionDoctrine` is in the finite-code

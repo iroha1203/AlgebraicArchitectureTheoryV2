@@ -42,13 +42,12 @@ theorem finiteAxisFold_cyclic_configuration_ne_acyclic :
       FiniteModel.acyclicObject.configuration := by
   intro equality
   have cyclic : FiniteModel.hasDependencyCycle FiniteModel.object := by
-    simpa [FiniteModel.hasCycleWitness, FiniteModel.hasDependencyCycle] using
-      FiniteModel.object_hasCycleWitness
+    exact FiniteModel.object_hasCycleWitness
   have acyclic : ¬ FiniteModel.hasDependencyCycle FiniteModel.acyclicObject := by
     intro cycle
     exact cycle.1
-  apply acyclic
-  simpa only [FiniteModel.hasDependencyCycle, equality] using cyclic
+  exact acyclic
+    ((finiteModel_hasDependencyCycle_iff_of_configuration_eq equality).mp cyclic)
 
 /-- The selected finite residual distinguishes the cyclic and acyclic
 configurations inside the fixed support package. -/
@@ -154,8 +153,8 @@ theorem finiteAxisFold_idempotentExchange_witnessPacket :
   have sameConfiguration :
       finiteAxisFoldUnitObject.configuration =
         finiteAxisFoldBoolObject.configuration := by
-    simpa [finiteAxisFoldUnitObject, finiteAxisFoldBoolObject] using
-      finiteAxisFoldEraseObject_configuration FiniteModel.object
+    exact finiteAxisFoldUnitObject_configuration.trans
+      finiteAxisFoldBoolObject_configuration.symm
   have sameNormalization :
       canonicalObjectNormalization finiteAxisFoldSupportPackage
           finiteAxisFoldUnitObject =
@@ -167,9 +166,10 @@ theorem finiteAxisFold_idempotentExchange_witnessPacket :
   have separatedConfigurations :
       (transportArchitectureObject finiteModelDoctrineFromFixture.atomEquiv
           FiniteModel.object).configuration ≠
-        (transportArchitectureObject finiteModelDoctrineFromFixture.atomEquiv
+      (transportArchitectureObject finiteModelDoctrineFromFixture.atomEquiv
           FiniteModel.acyclicObject).configuration := by
-    simpa [finiteModelDoctrineFromFixture] using
+    simpa only [transportArchitectureObject_configuration,
+      finiteModelDoctrineFromFixture_configuration_transport] using
       finiteAxisFold_cyclic_configuration_ne_acyclic
   have projectorNotIso :=
     finiteAxisFold_viaBaseGeneratedObjectCollapseComponent_not_isIso
