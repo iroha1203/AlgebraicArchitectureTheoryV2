@@ -10,10 +10,10 @@ proof-use、査読結果を cycle ごとに記録する。
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
 - completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification
-- current obligation: Cycle 4 B1 actual input-map characterization fixed-head review
+- current obligation: B2 fixed comparison decisions
 - pending obligations: B2、C1、C2、C3、D、completion audit
-- current target state: Cycle 4 implementation 後の `target-proof-checkpoint`
-- next obligation: Cycle 4 fixed-head review、次いで B2 fixed comparison decisions
+- current target state: Cycle 4 acceptance 後の `target-proof-checkpoint`
+- next obligation: B2 fixed comparison decisions
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -424,7 +424,9 @@ audits:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonInputCharacterization.lean; exit 0"
     - "module terminal axiom audit: 31 namespace declarations, standard axioms only"
-    - "fixed-head review pending"
+    - "PR #4373 implementation head 0cd556420d0fd761601c0aff43bb9c63e21e009e; CI 7/7 pass"
+    - "four fresh independent implementation-head lanes: all No major findings"
+    - "review audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4373#issuecomment-5549854766"
   blocking_findings: []
   next_obligation: "B2: decide IsIso, both endpoint stabilizers, both projection surjectivities, and the fixed evaluation-pair fiber cardinality"
 ```
