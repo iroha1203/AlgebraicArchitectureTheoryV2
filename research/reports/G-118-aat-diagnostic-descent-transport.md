@@ -10,10 +10,10 @@ proof-use、査読結果を cycle ごとに記録する。
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
 - completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification
-- current obligation: B2 fixed comparison decisions
+- current obligation: Cycle 5 B2 fixed comparison decisions review
 - pending obligations: B2、C1、C2、C3、D、completion audit
-- current target state: Cycle 4 acceptance 後の `target-proof-checkpoint`
-- next obligation: B2 fixed comparison decisions
+- current target state: Cycle 5 implementation 後の `target-proof-checkpoint`
+- next obligation: Cycle 5 fixed-head review、次いで C1 complete-geometry presentation transport
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -427,6 +427,126 @@ audits:
     - "PR #4373 implementation head 0cd556420d0fd761601c0aff43bb9c63e21e009e; CI 7/7 pass"
     - "four fresh independent implementation-head lanes: all No major findings"
     - "review audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4373#issuecomment-5549854766"
+    - "final reviewed head 415de16198bc820598544c3a2c9e93fa6dcb78cb; CI 7/7 pass; four fresh final lanes all No major findings"
+    - "final review audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4373#issuecomment-5549885211"
+    - "acceptance regression: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4373#issuecomment-5549886301"
+    - "merged by PR #4373 at 396efffb6f3a6cc31751e0263059cfcc255dd471"
   blocking_findings: []
   next_obligation: "B2: decide IsIso, both endpoint stabilizers, both projection surjectivities, and the fixed evaluation-pair fiber cardinality"
+```
+
+## Cycle 5 — B2 fixed comparison decisions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 5
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 396efffb6f3a6cc31751e0263059cfcc255dd471
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 5 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5549920902"
+  proof_dag_predecessors:
+    - "generatedRouteCoreMateIso and the actual upper geometry mate triangle"
+    - "strong Cartesianity of both generated refinement geometry route legs"
+    - "exactGeometryHomOfRefinement_isIso and faithful exact embedding"
+    - "Cycle 2 isomorphic-comparison graph, stabilizer, and projection API"
+    - "fixed generated comparator positive and base/identity negative pairs"
+  proof_obligation: "B2: decide IsIso c_*, both endpoint stabilizers, both comparison projections, and the mandatory fixed-pair fiber consequence"
+  selection_reason: "Evidence comparison selects the constructive positive IsIso branch; carrier injectivity alone and base/identity failure alone were explicitly rejected as insufficient inferences."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonFixedDecision.lean
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCleavage.upperGeometryMate_isIso
+    - AAT.AG.DoctrineFiberProduct.UpperDecisionWitness.solution_component_isIso
+    - AAT.AG.DoctrineFiberProduct.UpperDecisionWitness.solution_baseComparator_targetPartner_existsUnique
+  risks:
+    - "core IsIso must not be confused with complete geometry IsIso"
+    - "full endpoint automorphism groups are not finite enumerations"
+    - "failure of partner 1 does not imply absence of all partners"
+  unchecked:
+    - "all C/D obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The complete generated mate is structurally IsIso for every compatible input: its refinement image is strongly Cartesian by cancellation in the actual triangle, its base is the already constructed core iso, and its refinement inverse is reflected through exactification. At the fixed datum this yields c_* IsIso, both stabilizers equal bottom, both projections surjective, and Gamma as the conjugation graph. The named pair (b_*,p_*) is in Gamma, (b_*,1) is not, p_* is nonidentity, and both named partner fibers are singleton."
+  completion_candidate: no
+  decision_branches:
+    isIso_c_star: positive
+    target_stabilizer_trivial: positive
+    source_stabilizer_trivial: positive
+    source_projection_surjective: positive
+    target_projection_surjective: positive
+    fixed_target_partner_fiber: unique
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonFixedDecision.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - geometryTotalHom_isIso_of_refinement_isIso
+      - upperGeometryMate_isIso
+      - generatedCompatibleUpperGeometryMateAt_isIso
+      - UpperDecisionWitness.solution_component_isIso
+      - UpperDecisionWitness.solutionComponentIso
+      - UpperDecisionWitness.solution_targetStabilizer_eq_bot
+      - UpperDecisionWitness.solution_sourceStabilizer_eq_bot
+      - UpperDecisionWitness.solutionQualifiedComparisonGraphMulEquiv
+      - UpperDecisionWitness.solution_sourceProjection_surjective
+      - UpperDecisionWitness.solution_targetProjection_surjective
+      - UpperDecisionWitness.solution_comparator_pair_mem
+      - UpperDecisionWitness.solution_base_identity_pair_not_mem
+      - UpperDecisionWitness.generated_pulled_comparator_ne_one
+      - UpperDecisionWitness.solution_baseComparator_targetPartner_existsUnique
+      - UpperDecisionWitness.solution_pulledComparator_sourcePartner_existsUnique
+    source_labels:
+      - "target theorem (B2), fixed comparison decision"
+    conjuncts:
+      - "full c_* IsIso -> solution_component_isIso, via the general upperGeometryMate_isIso"
+      - "K_Y(c_*)={1} and K_X(c_*)={1} -> solution_targetStabilizer_eq_bot and solution_sourceStabilizer_eq_bot"
+      - "Gamma is the conjugation graph -> solutionQualifiedComparisonGraphMulEquiv"
+      - "both projections are surjective -> solution_sourceProjection_surjective and solution_targetProjection_surjective"
+      - "mandatory positive and negative pairs -> solution_comparator_pair_mem and solution_base_identity_pair_not_mem"
+      - "the fixed nonempty fiber is unique -> both existsUnique partner theorems"
+      - "the named pulled partner is nonidentity -> generated_pulled_comparator_ne_one"
+    undischarged_assumptions:
+      - "all C/D material-premise rows"
+    acceptance_point: "The positive decisions are derived from a complete-geometry inverse route; neither finite enumeration nor carrier injection is used as an IsIso certificate."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B2 complete fixed comparison IsIso decision"
+      - "B2 both endpoint stabilizer decisions"
+      - "B2 both projection surjectivity decisions and graph connection"
+      - "B2 fixed evaluation pair membership, identity-partner failure, and unique fiber"
+    remaining:
+      - "C transport/reflection/coherence"
+      - "D coefficient observation and nonfactorization"
+  certificate_provenance:
+    discharged:
+      - "IsIso consumes actual mate triangle, both route Cartesian theorems, core mate Iso, and exactification inverse"
+      - "fixed positive/negative pair consumes the actual solution comparator equation and reviewed support-incoherence route"
+    unresolved:
+      - "C/D transport and observation witnesses"
+  proof_use:
+    used:
+      - "upperGeometryMate_fac and both route strong-Cartesian declarations in the refinement mate cancellation"
+      - "generatedRouteCoreMateIso in the base IsIso"
+      - "exactGeometryHomOfRefinement_isIso and exactGeometryHomOfRefinement_toRefinement in complete reflection"
+      - "Cycle 2 isomorphic graph, projection-surjectivity, and stabilizer-bottom declarations"
+      - "fixed solution_comparator_intertwining_fires and generated relation negative theorem"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted direct dependency build only: lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonInputCharacterization; no Research aggregate/full build"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonFixedDecision.lean; exit 0"
+    - "module terminal axiom audit: 15 namespace declarations, standard axioms only"
+    - "fixed-head review pending"
+  blocking_findings: []
+  next_obligation: "C1: transport Gamma, both stabilizers, fibers, projections, and coefficient identities across the two fixed complete endpoint presentation isomorphisms"
 ```
