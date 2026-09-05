@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API
-- current obligation: B1 generated-image classification
-- pending obligations: B1 actual input-map characterization、B2、C1、C2、C3、D、completion audit
-- current target state: Cycle 3 implementation 後の `target-proof-checkpoint`
-- next obligation: Cycle 3 fixed-head review、次いで B1 actual input-map characterization
+- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification
+- current obligation: Cycle 4 B1 actual input-map characterization fixed-head review
+- pending obligations: B2、C1、C2、C3、D、completion audit
+- current target state: Cycle 4 implementation 後の `target-proof-checkpoint`
+- next obligation: Cycle 4 fixed-head review、次いで B2 fixed comparison decisions
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -320,7 +320,111 @@ audits:
     - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer; exit 0; targeted direct dependency DAG only, not the Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean; exit 0"
     - "module terminal axiom audit: 9 namespace declarations, including 8 public mapped declarations, standard axioms only"
-    - "fixed-head review pending"
+    - "PR #4372 final fixed head 293e45c9fcad0595aba346859ac1c5c727da3e88; CI 7/7 pass"
+    - "four fresh independent final fixed-head lanes: all No major findings"
+    - "review audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4372#issuecomment-5549773608"
+    - "acceptance regression: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4372#issuecomment-5549773604"
+    - "merged by PR #4372 at 202effb88355309bbae041dfcaf782d2401e3722"
   blocking_findings: []
   next_obligation: "B1b: characterize residual-kernel membership by the literal actual Geometry input maps and close with GeomReadHom/GeometryTotalHom extensionality"
+```
+
+## Cycle 4 — B1 actual generated input-map characterization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 4
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 202effb88355309bbae041dfcaf782d2401e3722
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 4 selection: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5549820812"
+  proof_dag_predecessors:
+    - "Cycle 3 generatedPulledComparisonKernel and generatedQualifiedComparisonRelation_iff_difference_mem"
+    - "SignedExactCoreReadingHom.ext, PackageTotalHom.ext, GeomReadHom.ext, and GeometryTotalHom.ext"
+    - "the fixed Cycle 3 negative generated relation witness"
+  proof_obligation: "B1b: characterize J_i membership by every literal computational component of the actual generated comparison composite and connect that iff to R_i(a,d) through d*a^-1"
+  selection_reason: "This is the sole remaining B1 clause and prevents the residual subgroup from remaining an opaque membership predicate."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonInputCharacterization.lean
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.mem_generatedPulledComparisonKernel_iff_inputConditions
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_iff_inputConditions
+  risks:
+    - "dependent equation-transport and geometry maps require HEq rather than an ill-typed homogeneous equality"
+    - "the condition package must contain computational components, not whole-hom equality or the desired membership conclusion"
+    - "the necessary direction and a concrete failing instance must remain visible"
+  unchecked:
+    - "all B2/C/D obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For all I,i and source changes, membership in J_i is equivalent to equality of the actual composite and comparison on pointed source/atom maps, signed atom/object maps, all three equation computational equivalences, operation/invariant/axis/coordinate maps, coefficient hom, and support/axis/observable composites. The extensionality spine reconstructs whole equality only as a derived conclusion. R_i(a,d) is equivalent to these conditions on d*a^-1. Identity satisfies them and the fixed comparator inverse fails them."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonInputCharacterization.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - equationSystemExactTransport_heq_of_computational
+      - GeometryTotalHomInputConditions
+      - GeometryTotalHomInputConditions.of_eq
+      - geomReadHom_heq_of_base_eq
+      - GeometryTotalHomInputConditions.eq
+      - generatedPulledEndpointHomAt
+      - generatedPulledComparisonCompositeAt
+      - GeneratedPulledKernelInputConditions
+      - mem_generatedPulledComparisonKernel_iff_inputConditions
+      - generatedQualifiedComparisonRelation_iff_inputConditions
+      - UpperDecisionWitness.generatedPulledKernelInputConditions_one
+      - UpperDecisionWitness.generatedPulledKernelInputConditions_comparator_inv_not
+    source_labels:
+      - "target theorem (B1), literal generated input-map characterization"
+    conjuncts:
+      - "pointed core -> pointedSourceMap and pointedAtomEquiv, reconstructed by ExtInstHom.ext / ExactDoctrineHom.ext"
+      - "signed core -> atomEquiv, objectMap, equation computational fields, operationMap, invariantMap, axisMap, coordinateEquiv, reconstructed by SignedExactCoreReadingHom.ext"
+      - "equation HEq -> equationSystemExactTransport_heq_of_computational from context/equation/observable equivalences"
+      - "geometry -> coefficientHom and support/axis/observable composites, reconstructed by GeomReadHom.ext and GeometryTotalHom.ext"
+      - "necessary and sufficient J_i condition -> mem_generatedPulledComparisonKernel_iff_inputConditions"
+      - "same chain as the generated relation -> generatedQualifiedComparisonRelation_iff_inputConditions"
+      - "positive and fixed negative instances -> generatedPulledKernelInputConditions_one and generatedPulledKernelInputConditions_comparator_inv_not"
+    undischarged_assumptions:
+      - "all B2/C/D material-premise rows"
+    acceptance_point: "The Prop structure exposes only literal computational equalities and HEq fields; membership and whole GeometryTotalHom equality are derived in both directions."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B1 actual generated input-map characterization of J_i"
+      - "B1 connection from R_i(a,d) through d*a^-1 to every literal input component"
+      - "B1 input-condition nonvacuity through named positive and negative instances"
+    remaining:
+      - "B2 fixed comparison decisions"
+      - "C transport/reflection/coherence"
+      - "D coefficient observation and nonfactorization"
+  certificate_provenance:
+    discharged:
+      - "the reverse iff derives equation/core/geometry equality through the existing extensionality declarations"
+      - "the fixed negative input instance consumes UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not"
+    unresolved:
+      - "B2/C/D named decision and transport witnesses"
+  proof_use:
+    used:
+      - "Cycle 3 difference-membership iff and fixed negative relation"
+      - "ExactDoctrineHom.ext, SignedExactCoreReadingHom.ext, PackageTotalHom.ext, GeomReadHom.ext, and GeometryTotalHom.ext"
+      - "all listed computational condition fields in the reverse reconstruction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonInputCharacterization.lean; exit 0"
+    - "module terminal axiom audit: 31 namespace declarations, standard axioms only"
+    - "fixed-head review pending"
+  blocking_findings: []
+  next_obligation: "B2: decide IsIso, both endpoint stabilizers, both projection surjectivities, and the fixed evaluation-pair fiber cardinality"
 ```
