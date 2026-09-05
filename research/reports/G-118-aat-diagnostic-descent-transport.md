@@ -1,4 +1,4 @@
-# G-118 — Qualified Comparison Transport and Diagnostic Information Loss
+# G-118 — Source-Presentation-Natural Qualified Comparison Transport and Diagnostic Information Loss
 
 一次仕様は
 [`research/goals/G-118-aat-diagnostic-descent-transport.md`](../goals/G-118-aat-diagnostic-descent-transport.md)
@@ -7,13 +7,16 @@ proof-use、査読結果を cycle ごとに記録する。
 
 ## Proof state
 
-- fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
+- revision 1 fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
+- revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
+- revision 2 review: pending。GOAL 改訂 PR の固定 head に対する独立数学査読前である。
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and type-correct C1 composition、D fixed coefficient nonfactorization and all-C1-chain transport
-- current obligation: completion audit
-- pending obligations: fixed-head implementation review、final completion review
-- current target state: Cycle 11 completion candidate の `target-proof-checkpoint`
-- next obligation: review the fixed Cycle 11 head, then run the final completion audit
+- reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
+- current obligation: revision 2 F0s — C1s source presentation change、変更後 input constructor、両段 qualification、generated `η_B/η_P` の構成可能性
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s input reconstruction、C3 source-presentation naturality、Γ/J/生成像/係数 correspondence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current target state: revision 2 の `target-proof-checkpoint`
+- revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
+- next obligation: F0s で source change と certificate-free changed input を型付けし、actual two-stage generator から exact endpoint iso が構成可能かを判定する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1271,3 +1274,27 @@ audits:
   blocking_findings: []
   next_obligation: "fixed-head implementation review, then final completion audit"
 ```
+
+## Revision 2 authorization — source-presentation naturality
+
+2026-09-05、人間の指示により、Issue #4367 の第1案を採用して GOAL を revision 2 へ
+改訂した。revision 1 の C1 は canonical-authored / generated の target endpoint 表示変更
+だけを量化したため、その pair type は `A_B × A_P` であり、C3 の source pair
+`A_S × A_S` の前には置けなかった。Cycle 11 の identity-only precomposition は要求未達、
+PR #4382 の source coefficient-kernel inner conjugation は固定 C1 の量化域外であり、
+`goal-defect` と判定した。
+
+Revision 2 は source input 全体の表示変更 `C1s` と、既存 target endpoint 表示変更 `C1t` を
+分ける。C1s は別 source complete geometry、同じ `CoreFiber` 内の iso、その上の exact
+complete-geometry iso、両方向 coefficient identity だけを量化する。変更後の diagram、
+edge、comparator、transport、両段の qualification、two-cell/coefficient laws は元の入力と
+source iso から構成する。変更後 input を既存 generator へ独立に通し、generated endpoint
+iso、比較成分の可換式、`T` の中心自然性、Γ/J/生成像/係数観測の対応を theorem として
+導く。これらの出力や可換式を certificate field として受け取らない。
+
+Revision 1 の A/B/C1t/C2/C3/D declaration は predecessor artifact として保持するが、
+revision 2 の completion evidence へ自動昇格させない。最初の obligation は F0s とし、
+`UpperGeometryCompatibleProblemInputData` の changed-input constructor と actual two-stage
+generator からの exact endpoint iso の構成可能性を先に確定する。固定 finite witness は
+`swap01Iso` / `compositeSwap01` と `compositeSwap12` の local `Fin 4` evaluation を使い、
+作用元ではなく induced pair action の非恒等性を証明する。
