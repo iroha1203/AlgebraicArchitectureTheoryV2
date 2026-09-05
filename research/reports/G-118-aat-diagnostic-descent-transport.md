@@ -12,7 +12,7 @@ proof-use、査読結果を cycle ごとに記録する。
 - completed obligations: なし
 - current obligation: F0 typing
 - pending obligations: A、B1、B2、C1、C2、C3、D、completion audit
-- current result: Cycle 1 review 前の `proof-checkpoint`
+- current target state: Cycle 1 review 中の `target-proof-checkpoint`
 - next obligation: A の comparison stabilizer、射影、核、fiber action
 
 ## Cycle 1 — F0 fixed source-map typing
@@ -32,7 +32,7 @@ selection:
     - "G-117 target-refuted record; no G-117 conclusion is imported as a proof premise"
   proof_obligation: "F0: elaborate the fixed source-map declarations at the exact universes, endpoint geometries, and variance required by G-118"
   selection_reason: "F0 is the unique next action in Issue #4367 and fixes the types consumed by every later A--D declaration without selecting a proof branch."
-  expected_result_type: proof-checkpoint
+  expected_result_type: proof-obligation-discharged
   lean_targets:
     - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonTransportTyping.lean
     - AAT.AG.DoctrineFiberProduct.QualifiedComparisonTransportTyping
@@ -44,8 +44,8 @@ selection:
   unchecked:
     - "all A--D theorem conclusions and material-premise discharge"
 result:
-  proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "The fixed G-115 source declarations now elaborate together at the G-118 endpoint and universe types; no A--D conclusion is claimed."
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The fixed G-115 source declarations now elaborate together at the G-118 universe, endpoint, relational-composite, coefficient, normalization, and decision-witness types; no A--D conclusion is claimed."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonTransportTyping.lean
@@ -58,12 +58,13 @@ result:
       - "fixed source map"
     conjuncts:
       - "B1/C3 source automorphism maps -> two bundled MonoidHom examples"
-      - "B/C comparison -> generatedCompatibleUpperGeometryMateAt endpoint example"
-      - "C1 endpoint changes -> two exact geometry Iso examples"
-      - "B2/D fixed datum -> solution and decision-witness checks"
+      - "B1/C3 comparison typing -> mate, GeomReadHom, paired-composite, and both route-factorization examples"
+      - "C1 endpoint changes -> two exact geometry Iso, conjugation, four coefficient identity, solution equivalence, and normalization examples"
+      - "B2/D fixed datum -> solution/component equality and typed positive/negative decision-witness examples"
+      - "D route qualification -> generatedPulledIdentityComparator_coefficient_id example"
     undischarged_assumptions:
       - "all discharge-required rows in the target material premise ledger"
-    acceptance_point: "F0 is only a type-alignment checkpoint and does not discharge a theorem premise."
+    acceptance_point: "F0 discharges only the selected type-alignment obligation and does not discharge an A--D material premise."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -71,18 +72,12 @@ audits:
     remaining:
       - "all target material premise ledger discharge-required rows"
   certificate_provenance:
-    discharged:
-      - "fixed decision solution is referenced through UpperDecisionWitness.solution and upperDecisionSolution"
+    discharged: []
     unresolved:
       - "B2 decisions, C transport witnesses, and D nonfactorization"
   proof_use:
-    used:
-      - "generatedBaseCompositeFiberAutHomAt and generatedPulledCompositeFiberAutHomAt"
-      - "generatedCompatibleUpperGeometryMateAt"
-      - "canonicalAuthoredBaseToGeneratedRouteExactGeometryIsoAt and canonicalAuthoredPulledToGeneratedRouteExactGeometryIsoAt"
-      - "fixed positive and negative decision declarations"
-    unused:
-      - "A--D proof premises are intentionally not introduced by F0"
+    used: []
+    unused: []
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
@@ -91,6 +86,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonTransportTyping.lean; exit 0"
+    - "F0 explicit examples cover both source MonoidHom targets, GeomReadHom/GeometryTotalHom mate direction, the B1/C3 paired composite, both fac theorems, both endpoint isomorphisms and conjugations, four endpoint coefficient identities, solution equivalence and normalizations, generated pulled identity coefficient, fixed solution equality, and four positive/negative witnesses"
     - "git diff --check; exit 0"
     - "hidden/BiDi and axiom/admit/sorry/unsafe scans on the F0 file; no matches"
     - "fixed-head review pending"
@@ -101,6 +97,7 @@ audits:
 ### F0 acceptance spine
 
 F0 の scaffold は新しい certificate、solution、intertwining field を導入しない。B1/C3 の
-二つの source 群準同型、generated mate、C1 の正方向 exact endpoint isomorphism、固定
-decision datum の正負宣言を既存名のまま型検査する。従ってこの cycle の claim は型整合だけで、
-A–D の分類・決定・移送・非因子化はすべて未証明である。
+二つの source 群準同型と比較合成、generated mate と `GeomReadHom`、両 route の factorization、
+C1 の正方向 exact endpoint isomorphism・共役・係数恒等・solution normalization、固定 decision
+datum の solution 同一性と正負宣言を既存名のまま型検査する。従ってこの cycle の claim は
+型整合だけで、A–D の分類・決定・移送・非因子化はすべて未証明である。
