@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C3 source-presentation の generated-range correspondence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、射影・核・非空 fiber・作用・J・生成像・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C3 source-presentation の射影・核・非空 fiber・作用 correspondence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、射影・核・非空 fiber・作用・J・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: 中心 `T` 自然性と source/endpoint MulEquiv の全射性から `Θ_BP,i(Set.range T'_i) = Set.range T_i` を証明する
+- next obligation: full Γ MulEquiv を両射影・核・非空 fiber と作用の対応へ特殊化する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1690,4 +1690,78 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean; exit 0; 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C3 source-presentation generated-range correspondence"
+```
+
+## Cycle 17 — generated-range correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 17
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: ba16fc8f5ba903a54a6394dbf834ad3f5f52584f
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 16 accepted full qualified-comparison correspondence"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+  proof_obligation: "prove Theta_BP,i(Set.range T'_i) = Set.range T_i without assuming either generated map is surjective"
+  selection_reason: "this is the literal generated-image equality required separately from the full Gamma correspondence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF4.lean
+  risks:
+    - reversing the endpoint image direction
+    - conflating full Gamma with generated range
+    - using central naturality without source-map surjectivity
+  unchecked:
+    - projection, kernel, fiber, action, J, and coefficient-observation correspondence
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_image_range_generatedComparisonPairHomAt
+  source_labels:
+    - "C3 literal generated-range source-presentation correspondence"
+  acceptance_point: "Forward inclusion is central T naturality. Reverse inclusion chooses the actual inverse source-pair conjugate of each old source input, so no surjectivity of T or T' is assumed and the result is not identified with the full qualified subgroup."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "literal endpoint-conjugation image equality for independently generated comparison-map ranges"
+    remaining:
+      - "projection, kernel, fiber, action, J, and observation correspondence"
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "fixed firing and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "forward inclusion uses the Cycle 15 central naturality through its Cycle 16 pointwise form"
+      - "reverse inclusion uses generatedSourcePairMulEquivAt.symm and apply_symm_apply"
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedEndpointPairMulEquivAt_generatedComparisonPairHomAt"
+      - "generatedSourcePairMulEquivAt inverse and apply_symm_apply"
+      - "actual independently generated old and changed generatedComparisonPairHomAt maps"
+    unused:
+      - "full Gamma equivalence is intentionally not used to identify generated range with the whole qualified subgroup"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "all lanes confirmed the changed-to-old image direction; the refutation lane exhibited a counterexample showing why source-map surjectivity is essential, and the implemented source MulEquiv supplies it"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF3; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF4.lean; exit 0; 1 declaration under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C3 source-presentation projection, kernel, fiber, and action correspondence"
 ```
