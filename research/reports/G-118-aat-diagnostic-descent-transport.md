@@ -272,7 +272,6 @@ result:
       - generatedPulledComparisonKernel
       - generatedQualifiedComparisonRelation_iff_difference_mem
       - generatedQualifiedComparisonRelation_iff_target_stabilizer_image
-      - generatedQualifiedComparisonRelation_iff_kernel_mem
       - generatedQualifiedComparisonRelation_iff_exists_kernel_factor
       - UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not
     source_labels:
@@ -281,7 +280,7 @@ result:
       - "every generated diagonal pair lies in Gamma -> generatedCompatibleUpperGeometryMateAt_automorphism_intertwining and generatedQualifiedComparisonRelation_diagonal"
       - "J_i is the pulled generated-map preimage of K_Y(c_i) -> generatedPulledComparisonKernel"
       - "R_i(a,d) iff the generated pulled-image difference belongs to K_Y(c_i) -> generatedQualifiedComparisonRelation_iff_target_stabilizer_image"
-      - "R_i(a,d) iff d*a^-1 belongs to J_i -> generatedQualifiedComparisonRelation_iff_difference_mem / iff_kernel_mem"
+      - "R_i(a,d) iff d*a^-1 belongs to J_i -> generatedQualifiedComparisonRelation_iff_difference_mem"
       - "R_i(a,d) iff d=j*a for a residual j in J_i -> generatedQualifiedComparisonRelation_iff_exists_kernel_factor"
       - "the new relation has a concrete failing pair -> UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not"
     undischarged_assumptions:
@@ -320,7 +319,7 @@ audits:
   validation_refs:
     - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer; exit 0; targeted direct dependency DAG only, not the Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean; exit 0"
-    - "module terminal axiom audit: 10 namespace declarations, including 9 public mapped declarations, standard axioms only"
+    - "module terminal axiom audit: 9 namespace declarations, including 8 public mapped declarations, standard axioms only"
     - "fixed-head review pending"
   blocking_findings: []
   next_obligation: "B1b: characterize residual-kernel membership by the literal actual Geometry input maps and close with GeomReadHom/GeometryTotalHom extensionality"

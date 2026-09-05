@@ -29,8 +29,9 @@ set_option maxHeartbeats 3000000
 
 namespace UpperGeometryCompatibleProblemInputData
 
-/-- Every source composite-fiber automorphism generates endpoint changes that
-intertwine the generated compatible upper mate. -/
+/-- G-118(B1) generated-diagonal theorem.  From the two generated route
+factorizations and the mate triangle, every source composite-fiber
+automorphism generates endpoint changes intertwining the compatible mate. -/
 theorem generatedCompatibleUpperGeometryMateAt_automorphism_intertwining
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -131,8 +132,9 @@ theorem generatedCompatibleUpperGeometryMateAt_automorphism_intertwining
     pulledLeg.base pulledLeg right.base
   exact hafterLeg'
 
-/-- Relation on two source endpoint changes obtained by testing their
-generated images in the actual comparison subgroup. -/
+/-- G-118(B1) relation on two source endpoint changes.  Its ambient data are
+the source-only compatible input and the already generated endpoint maps and
+mate; membership is tested in the actual comparison subgroup. -/
 noncomputable def GeneratedQualifiedComparisonRelation
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -145,8 +147,8 @@ noncomputable def GeneratedQualifiedComparisonRelation
     qualifiedComparisonSubgroup
       (input.generatedCompatibleUpperGeometryMateAt i)
 
-/-- Every source change lies on the diagonal of the generated comparison
-relation. -/
+/-- G-118(B1) diagonal membership, derived from the generated-diagonal theorem
+rather than supplied as a compatibility certificate. -/
 theorem generatedQualifiedComparisonRelation_diagonal
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -157,8 +159,8 @@ theorem generatedQualifiedComparisonRelation_diagonal
   input.generatedCompatibleUpperGeometryMateAt_automorphism_intertwining
     i automorphism
 
-/-- Source changes whose generated pulled image becomes invisible after the
-generated comparison. -/
+/-- G-118(B1) residual subgroup `J_i`, constructed from the actual generated
+pulled endpoint homomorphism as the preimage of the target stabilizer. -/
 noncomputable def generatedPulledComparisonKernel
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -169,8 +171,9 @@ noncomputable def generatedPulledComparisonKernel
     (qualifiedComparisonTargetStabilizer
       (input.generatedCompatibleUpperGeometryMateAt i))
 
-/-- A generated pair preserves the mate exactly when its pulled source change
-differs from the base source change by the residual pulled kernel. -/
+/-- G-118(B1) source-level criterion.  The comparison equation, diagonal
+intertwining, and the Cycle 2 target-lift action derive membership of the
+literal source difference in `J_i`. -/
 theorem generatedQualifiedComparisonRelation_iff_difference_mem
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -240,8 +243,9 @@ theorem generatedQualifiedComparisonRelation_iff_difference_mem
     rw [actedValue] at actedRelation
     exact actedRelation
 
-/-- Membership in the generated relation is equivalent to the corresponding
-generated pulled-image difference lying in the actual target stabilizer. -/
+/-- G-118(B1) image-level criterion, obtained from the source-level criterion
+through the actual generated pulled homomorphism and its multiplication and
+inverse laws. -/
 theorem generatedQualifiedComparisonRelation_iff_target_stabilizer_image
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -261,23 +265,9 @@ theorem generatedQualifiedComparisonRelation_iff_target_stabilizer_image
           (input.generatedCompatibleUpperGeometryMateAt i) ↔ _
   rw [map_mul, map_inv]
 
-/-- Membership in the generated relation is the residual subgroup condition
-on the literal source difference. -/
-theorem generatedQualifiedComparisonRelation_iff_kernel_mem
-    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
-    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
-    (input : UpperGeometryCompatibleProblemInputData ctx P k)
-    (i : P.Vertex)
-    (baseChange pulledChange :
-      CompositeFiberAut (input.sourceGeometry i).package) :
-    input.GeneratedQualifiedComparisonRelation i baseChange pulledChange ↔
-      pulledChange * baseChange⁻¹ ∈
-        input.generatedPulledComparisonKernel i :=
-  input.generatedQualifiedComparisonRelation_iff_difference_mem
-    i baseChange pulledChange
-
-/-- All pulled source changes over a fixed base source change form the right
-coset of the generated residual subgroup. -/
+/-- G-118(B1) right-coset classification.  The source difference criterion and
+group cancellation derive, in both directions, the residual factorization
+without a normality or quotient assumption. -/
 theorem generatedQualifiedComparisonRelation_iff_exists_kernel_factor
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -288,7 +278,7 @@ theorem generatedQualifiedComparisonRelation_iff_exists_kernel_factor
     input.GeneratedQualifiedComparisonRelation i baseChange pulledChange ↔
       ∃ residual : input.generatedPulledComparisonKernel i,
         pulledChange = residual.1 * baseChange := by
-  rw [input.generatedQualifiedComparisonRelation_iff_kernel_mem]
+  rw [input.generatedQualifiedComparisonRelation_iff_difference_mem]
   constructor
   · intro differenceMem
     refine ⟨⟨pulledChange * baseChange⁻¹, differenceMem⟩, ?_⟩
@@ -300,9 +290,9 @@ end UpperGeometryCompatibleProblemInputData
 
 namespace UpperDecisionWitness
 
-/-- The generated comparison relation has a concrete negative instance: the
-named generated base comparator is not compatible with the identity pulled
-source change. -/
+/-- G-118(B1) nonvacuity witness.  The fixed G-115 carrierwise incoherence
+theorem supplies a concrete failure of the generated relation for the named
+base comparator and identity pulled source change. -/
 theorem generatedQualifiedComparisonRelation_base_identity_not :
     ¬ problem.data.GeneratedQualifiedComparisonRelation PUnit.unit
       (problem.data.sourceTransport.comparator DecisionCell.comparison) 1 := by
