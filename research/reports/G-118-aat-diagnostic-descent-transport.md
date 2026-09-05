@@ -260,7 +260,7 @@ selection:
     - "all B2/C/D obligations"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "For every I, i, and source automorphism, the actual generated route factorizations and mate triangle imply generated endpoint intertwining. The generated comparison relation is then equivalent to membership of pulledChange * baseChange^-1 in the actual pulled preimage of the target stabilizer, and equivalently to a unique-form residual factor pulledChange = j * baseChange."
+  proof_obligation_delta: "For every I, i, and source automorphism, the actual generated route factorizations and mate triangle imply generated endpoint intertwining. The generated comparison relation is then equivalent to target-stabilizer membership of the generated pulled-image difference, to membership of pulledChange * baseChange^-1 in the actual pulled preimage subgroup, and to a residual factor pulledChange = j * baseChange. A named fixed-datum negative instance establishes nonvacuity."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean
@@ -271,15 +271,19 @@ result:
       - generatedQualifiedComparisonRelation_diagonal
       - generatedPulledComparisonKernel
       - generatedQualifiedComparisonRelation_iff_difference_mem
+      - generatedQualifiedComparisonRelation_iff_target_stabilizer_image
       - generatedQualifiedComparisonRelation_iff_kernel_mem
       - generatedQualifiedComparisonRelation_iff_exists_kernel_factor
+      - UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not
     source_labels:
       - "target theorem (B1), generated-image and residual-coset clauses"
     conjuncts:
       - "every generated diagonal pair lies in Gamma -> generatedCompatibleUpperGeometryMateAt_automorphism_intertwining and generatedQualifiedComparisonRelation_diagonal"
       - "J_i is the pulled generated-map preimage of K_Y(c_i) -> generatedPulledComparisonKernel"
+      - "R_i(a,d) iff the generated pulled-image difference belongs to K_Y(c_i) -> generatedQualifiedComparisonRelation_iff_target_stabilizer_image"
       - "R_i(a,d) iff d*a^-1 belongs to J_i -> generatedQualifiedComparisonRelation_iff_difference_mem / iff_kernel_mem"
       - "R_i(a,d) iff d=j*a for a residual j in J_i -> generatedQualifiedComparisonRelation_iff_exists_kernel_factor"
+      - "the new relation has a concrete failing pair -> UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not"
     undischarged_assumptions:
       - "B1b literal actual input-map characterization"
       - "all B2/C/D material-premise rows"
@@ -289,7 +293,8 @@ audits:
   premise_delta:
     discharged:
       - "B1 generated diagonal intertwining from actual generated routes"
-      - "B1 residual subgroup, difference-membership criterion, and right-coset factorization"
+      - "B1 target-image criterion, residual subgroup, source difference-membership criterion, and right-coset factorization"
+      - "new relation positive and negative instances for nonvacuity"
     remaining:
       - "B1 actual input-map characterization"
       - "B2 fixed positive/negative decisions"
@@ -315,7 +320,7 @@ audits:
   validation_refs:
     - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer; exit 0; targeted direct dependency DAG only, not the Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean; exit 0"
-    - "module terminal axiom audit: 7 declarations, standard axioms only"
+    - "module terminal axiom audit: 10 namespace declarations, including 9 public mapped declarations, standard axioms only"
     - "fixed-head review pending"
   blocking_findings: []
   next_obligation: "B1b: characterize residual-kernel membership by the literal actual Geometry input maps and close with GeomReadHom/GeometryTotalHom extensionality"

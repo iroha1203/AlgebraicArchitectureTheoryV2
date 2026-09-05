@@ -1,5 +1,6 @@
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleGlobalMate
+import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleComparatorIncoherence
 
 /-!
 # Generated qualified-comparison classification
@@ -239,6 +240,27 @@ theorem generatedQualifiedComparisonRelation_iff_difference_mem
     rw [actedValue] at actedRelation
     exact actedRelation
 
+/-- Membership in the generated relation is equivalent to the corresponding
+generated pulled-image difference lying in the actual target stabilizer. -/
+theorem generatedQualifiedComparisonRelation_iff_target_stabilizer_image
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (i : P.Vertex)
+    (baseChange pulledChange :
+      CompositeFiberAut (input.sourceGeometry i).package) :
+    input.GeneratedQualifiedComparisonRelation i baseChange pulledChange ↔
+      input.generatedPulledCompositeFiberAutHomAt i pulledChange *
+          (input.generatedPulledCompositeFiberAutHomAt i baseChange)⁻¹ ∈
+        qualifiedComparisonTargetStabilizer
+          (input.generatedCompatibleUpperGeometryMateAt i) := by
+  rw [input.generatedQualifiedComparisonRelation_iff_difference_mem]
+  change input.generatedPulledCompositeFiberAutHomAt i
+      (pulledChange * baseChange⁻¹) ∈
+        qualifiedComparisonTargetStabilizer
+          (input.generatedCompatibleUpperGeometryMateAt i) ↔ _
+  rw [map_mul, map_inv]
+
 /-- Membership in the generated relation is the residual subgroup condition
 on the literal source difference. -/
 theorem generatedQualifiedComparisonRelation_iff_kernel_mem
@@ -275,6 +297,24 @@ theorem generatedQualifiedComparisonRelation_iff_exists_kernel_factor
     simpa only [mul_inv_cancel_right] using residual.2
 
 end UpperGeometryCompatibleProblemInputData
+
+namespace UpperDecisionWitness
+
+/-- The generated comparison relation has a concrete negative instance: the
+named generated base comparator is not compatible with the identity pulled
+source change. -/
+theorem generatedQualifiedComparisonRelation_base_identity_not :
+    ¬ problem.data.GeneratedQualifiedComparisonRelation PUnit.unit
+      (problem.data.sourceTransport.comparator DecisionCell.comparison) 1 := by
+  simpa [UpperGeometryCompatibleProblemInputData.GeneratedQualifiedComparisonRelation,
+    qualifiedComparisonSubgroup, UpperComparatorDescentAt,
+    UpperGeometryCompatibleProblemInputData.generatedBaseRouteComparator,
+    UpperGeometryCompatibleProblemInputData.generatedPulledIdentityComparatorTransport,
+    solution,
+    UpperGeometryCompatibleProblemInputData.generatedGeometryCompatibleUpperRefinementBCSolution]
+    using generatedBaseIdentityPair_not_comparatorDescentAt
+
+end UpperDecisionWitness
 
 end AAT.AG.DoctrineFiberProduct
 
