@@ -2530,8 +2530,12 @@ selection:
     - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.observation_apply
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_coefficientObservation
     - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedPulledComparisonKernel_eq_bot_pasted_iff
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+    - UpperGeometryCompatibleProblemInputData.closedComparisonPairHomAt_coefficientObservation
   proof_obligation: "fix the cast-free C1t-before/C1s/C1t-after order and connect C1s ; C3 ; C1t to membership, exact reflection, coefficient observation, and generated range"
   selection_reason: "the two presentation-change mechanisms live over different input indices and endpoint displays, so their legal composition order must be made explicit before the fixed witness is fired"
   expected_result_type: proof-obligation-discharged
@@ -2588,7 +2592,9 @@ audits:
     used:
       - "C1t chain pair equivalences, decision iff, and observation equality on both input indices"
       - "F10 pasted full-Gamma membership and central generated-map naturality"
-      - "F12 residual J bottom iff and pasted source coefficient observation"
+      - "F12 residual J bottom iff and pasted source/endpoint coefficient observations"
+      - "the generated comparison map's qualified-membership preservation and exact residual-J reflection iff"
+      - "the closed generated comparison route's complete coefficient-observation equality"
       - "the actual inverse of the pasted source-pair equivalence in the generated-range reverse inclusion"
     unused:
       - "no supplied mixed composition, membership, reflection, observation, or range certificate"
