@@ -310,6 +310,7 @@ import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCRoutes
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCGeometry
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCProblem
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCSolution
+import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonTransportTyping
 
 /-!
 # Doctrine fiber-product schema
