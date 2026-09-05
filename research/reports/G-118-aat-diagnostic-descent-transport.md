@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C3 source-presentation の `J` と係数観測 correspondence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、`J`・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C1s の identity、inverse、型の合う有限合成に対する coherence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: source-presentation change が `J'_i` と両 endpoint の係数観測を運ぶことを証明する
+- next obligation: source-presentation change の identity、inverse、型の合う有限合成に対する `η_B,η_P` と自然性の unitality / composition coherence を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1858,4 +1858,94 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF5.lean; exit 0; 12 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C3 source-presentation J and coefficient-observation correspondence"
+```
+
+## Cycle 19 — residual subgroup and coefficient-observation correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 19
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 01e0bb703147f29be53cb49139a90c9da1ea3080
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 18 accepted both projection, kernel, lift-fiber, nonempty, and action correspondences"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledCompositeFiberAutAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.generatedTargetStabilizerSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_hom_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_inv_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_hom_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_inv_coefficient_id
+  proof_obligation: "prove Ad(w_i)(J'_i) = J_i, J'_i = {1} iff J_i = {1}, and coefficient-observation naturality in both source and endpoint components"
+  selection_reason: "these are the remaining pointwise C3 consequences before source-change coherence; J must be transported as the actual pulled-map preimage of the target stabilizer rather than confused with a Gamma projection kernel"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF6.lean
+  risks:
+    - confusing J with Gamma, a Gamma projection kernel, or the target stabilizer itself
+    - asserting normality or a quotient without a normality premise
+    - using eta_B rather than eta_P in pulled stabilizer transport
+    - claiming coefficient observation is faithful or detects automorphisms
+  unchecked:
+    - C1s identity, inverse, and finite-composition coherence
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledComparisonKernel_mem_sourcePresentation_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourceConjugation_map_generatedPulledComparisonKernel
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledComparisonKernel_eq_bot_sourcePresentation_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourceConjugation_coefficientHom
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseEndpointConjugation_coefficientHom
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledEndpointConjugation_coefficientHom
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_coefficientObservation
+  source_labels:
+    - "C3 residual-subgroup and coefficient-observation source-presentation correspondence"
+  acceptance_point: "The actual changed pulled generated map lands in the changed target stabilizer exactly when its source conjugate lands in the old target stabilizer. This gives the literal subgroup image equality and exact triviality iff. Source and endpoint pair observations commute componentwise using the hom and inverse coefficient identities of w_i, eta_B,i, and eta_P,i."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "literal Ad(w_i)(J'_i) = J_i as a Subgroup.map equality"
+      - "J'_i = {1} iff J_i = {1} without endpoint-map injectivity or surjectivity"
+      - "source-pair coefficient-observation naturality in both components"
+      - "generated endpoint-pair coefficient-observation naturality in base and pulled components"
+    remaining:
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "fixed firing and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "J membership transport consumes F2 pulled generated-map naturality and the F5 target-stabilizer MulEquiv"
+      - "J image equality consumes the actual source conjugation MulEquiv and its inverse"
+      - "coefficient observation consumes the source coefficient identities carried by the allowed C1s datum and the independently derived F1 endpoint coefficient identities"
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedPulledCompositeFiberAutAt_naturality"
+      - "generatedTargetStabilizerSourcePresentationMulEquivAt and its inverse"
+      - "geometryIso hom and inverse coefficient identities"
+      - "generated base and pulled exact geometry iso hom and inverse coefficient identities"
+    unused:
+      - "central T naturality and generated-range equality are not used to identify J"
+      - "no normality, quotient, endpoint-map bijectivity, or coefficient-observation faithfulness is assumed"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "all lanes identified J as H_P inverse-image of the target stabilizer and agreed on changed-to-old source conjugation; the refutation lane supplied counterexamples to identifying J with the stabilizer or asserting normality and rejected any faithfulness claim for coefficient observation"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF5; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF6.lean; exit 0; 8 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C1s source-presentation identity, inverse, and finite-composition coherence"
 ```
