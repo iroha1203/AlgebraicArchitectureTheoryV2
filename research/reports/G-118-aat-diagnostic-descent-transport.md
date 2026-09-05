@@ -13,7 +13,7 @@ proof-use、査読結果を cycle ごとに記録する。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
 - current obligation: C3 source-presentation の generated-range correspondence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、J/生成像/係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、射影・核・非空 fiber・作用・J・生成像・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
 - next obligation: 中心 `T` 自然性と source/endpoint MulEquiv の全射性から `Θ_BP,i(Set.range T'_i) = Set.range T_i` を証明する
