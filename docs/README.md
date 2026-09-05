@@ -23,6 +23,7 @@ source of truth として扱わない。
    - [Tooling guideline](tool/guideline.md)
    - [Website guideline](website/guideline.md)
    - [Paper guideline](paper/guideline.md)
+   - [ブログ執筆ガイドライン](outreach/guideline.md)
    - Tier 1に従って、領域ごとの編集規律・運用規律・現行基準を定める。
 3. **Tier 3: 作業用文書**
    - `docs/prd/` のPRD本文など（`docs/prd/guideline.md` はTier 2）
@@ -131,3 +132,4 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
 - [Website guideline](website/guideline.md): Cloudflare Pages 公開面、route、tone、asset path、sitemap の編集方針。
 - [Paper guideline](paper/guideline.md): 論文の執筆、品質基準、検証、投稿・公開。
+- [ブログ執筆ガイドライン](outreach/guideline.md): 研究・実務・思想記事の執筆と読者向け品質のレビュー基準。

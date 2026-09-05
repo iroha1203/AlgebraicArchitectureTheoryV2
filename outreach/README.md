@@ -5,6 +5,8 @@
 
 ## 構成
 
+ブログの執筆・レビュー時は [ブログ執筆ガイドライン](../docs/outreach/guideline.md) を参照する。
+
 - `blog/hashnode/`: 英語記事(Hashnode ほか英語媒体向け、技術系)
 - `blog/zenn/`: 日本語記事・下書き(Zenn ほか日本語媒体向け)
 - `blog/medium/`: 思想系記事(Medium「Spec Z」向け、日本語原稿+英語公開版)
