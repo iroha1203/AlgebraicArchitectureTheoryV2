@@ -8,7 +8,8 @@
 - `revision`: 2。2026-09-05、人間の指示により、移送元の完全幾何の表示変更と
   生成移送の自然性を固定 target に追加した。改訂前の C1-before-C3 の型欠落と
   PR #4382 の `goal-defect` 判定は tracking Issue の履歴として保持する。
-- `revision review`: pending。GOAL 改訂 PR の固定 head に対する独立数学査読で確定する。
+- `revision review`: accepted。PR #4383 の固定 head に対する独立数学/Lean査読を通過し、
+  merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で確定した。
 - `source note`: [n1008 §4.2・§6.4](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)。
 - `program context`: [研究の全体目標](../../docs/research_goal.md)の reading 間の輸送と
   変形に対し、意味構造の比較を変更後にも使う条件を与える。比較射に沿って運べる

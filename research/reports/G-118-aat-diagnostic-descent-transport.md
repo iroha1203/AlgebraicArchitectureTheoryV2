@@ -9,14 +9,14 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - revision 1 fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
-- revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。
+- revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s generated endpoint factorization / coefficient laws と comparison-component naturality
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s endpoint factorization/coefficient laws、C3 source-presentation naturality、Γ/J/生成像/係数 correspondence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C3 source-presentation central `T` naturality
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C3 source-presentation central `T` naturality、Γ/J/生成像/係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: independently generated `η_B/η_P` の factorization・coefficient identity を固定し、比較成分可換式へ接続する
+- next obligation: independently generated `T'_i` と source/endpoint conjugation から中心自然性を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1422,4 +1422,95 @@ audits:
     - "hidden/bidirectional Unicode scan; clean"
   blocking_findings: []
   next_obligation: "C1s generated endpoint factorization/coefficient laws and comparison-component naturality"
+```
+
+## Cycle 14 — generated endpoint and comparison-component naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 14
+goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
+base_oid: e081978a8220486513c567d9e81765b1225ea04e
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 13 accepted F0s construction gate"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt
+    - CategoryTheory.Functor.IsStronglyCartesian.fac
+    - UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt_triangle
+    - ActiveRefinementBCContext.mate.naturality
+  proof_obligation: "derive both endpoint factorization/coefficient laws and the generated comparison-component square without supplied endpoint or naturality certificates"
+  selection_reason: "these laws are the exact bridge from independently generated endpoints to central T naturality"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF1.lean
+  risks:
+    - exact/refinement composition associativity
+    - comparison-component variance
+    - cancellation without monomorphism assumptions
+    - core and complete-geometry naturality alignment
+  unchecked:
+    - central T naturality
+    - Gamma/J/range and coefficient-observation transport
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_inv_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_hom_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_inv_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_inv_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_hom_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_inv_coefficient_id
+    - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleConjugateCoreMateAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleUpperGeometryMateAt_naturality
+  source_labels:
+    - "C1s generated eta_B/eta_P factorization and coefficient identity"
+    - "C3 source-presentation comparison-component naturality"
+  acceptance_point: "Both exact endpoint isomorphisms satisfy forward and reverse factorization and coefficient identities. The exact core mate square is derived from the actual naturality of ctx.mate, and complete comparison-component naturality is reflected through the old pulled strongly-cartesian leg. No endpoint comparison or naturality equation is supplied."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "base and pulled endpoint hom/inv factorization"
+      - "base and pulled endpoint hom/inv coefficient identity"
+      - "generated core mate naturality under source change"
+      - "generated complete comparison-component naturality"
+    remaining:
+      - "central T naturality"
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "Gamma, projection, kernel, fiber, J, range, observation, fixed firing, and D transport"
+  certificate_provenance:
+    discharged:
+      - "factorization is IsStronglyCartesian.fac for the F0s domain comparison"
+      - "coefficient identity is forced by both generated-leg identities and selected source-change identities"
+      - "core naturality is ctx.mate.naturality conjugated by actual generated normalization isomorphisms"
+      - "complete naturality uses both generated mate triangles and strongly-cartesian uniqueness"
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedBaseRouteExactGeometryIsoAt_hom_fac and generatedPulledRouteExactGeometryIsoAt_hom_fac from the independently generated legs"
+      - "generatedBaseRouteLegAt_coefficient_id and generatedPulledRouteLegAt_coefficient_id for old and changed inputs"
+      - "geometryIso_hom_coefficient_id and geometryIso_inv_coefficient_id"
+      - "ctx.mate.naturality and generatedCompatibleConjugateCoreMateAt_eq_generated"
+      - "both old and changed generatedCompatibleUpperGeometryMateAt_triangle declarations"
+      - "generatedPulledRouteLegAt_isStronglyCartesian and IsStronglyCartesian.ext"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF1.lean; exit 0; 10 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+    - "targeted dependency construction of ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF0; exit 0"
+  blocking_findings: []
+  next_obligation: "C3 source-presentation central T naturality"
 ```
