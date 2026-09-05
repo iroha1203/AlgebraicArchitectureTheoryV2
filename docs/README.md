@@ -130,5 +130,4 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
 - [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
 - [Website guideline](website/guideline.md): Cloudflare Pages 公開面、route、tone、asset path、sitemap の編集方針。
-
 - [Paper guideline](paper/guideline.md): 論文の執筆、品質基準、検証、投稿・公開。

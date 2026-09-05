@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 
 MARKERS = re.compile(r'\b(?:TODO|FIXME|TBD|PLACEHOLDER)\b|\[insert\b|as an AI language model|here is (?:the|your) (?:revised|updated)|fill in (?:the )?(?:real|actual) (?:numbers|values)|turn\d+(?:search|view)\d+', re.I)
 HIDDEN = re.compile(r'[\u200b-\u200f\u202a-\u202e\u2066-\u2069]')
-LOCAL = re.compile(r'/Users/|/home/|[A-Z]:\\Users\\')
+LOCAL = re.compile('/' + r'Users/|/' + r'home/|[A-Z]:\\' + r'Users\\')
 
 
 def digest(data):

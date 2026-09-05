@@ -153,11 +153,11 @@ def main() -> int:
     (repro / "README.md").write_text(f"""# Reproduction
 
 Release identity: tag `{TAG}`, DOI `{DOI}`, ArchSig `{TOOL_VERSION}`,
+schemas `{SCHEMA_VERSIONS['repairPlan']}` / `{SCHEMA_VERSIONS['runManifest']}`.
+
 Historical evidence commit: `{EVIDENCE_COMMIT}`.
 This is a local reconstruction; the paper source and supplied PDF are recorded
 separately in the manifest. The historical audit describes the published snapshot.
-
-schemas `{SCHEMA_VERSIONS['repairPlan']}` / `{SCHEMA_VERSIONS['runManifest']}`.
 
 1. Obtain the repository at the release tag:
 
