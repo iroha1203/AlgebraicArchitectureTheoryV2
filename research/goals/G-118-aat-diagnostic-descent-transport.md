@@ -397,9 +397,13 @@
   `upperDecisionSolution_comparatorDescentAt`、
   `generatedBaseIdentityPair_not_comparatorDescentAt`、
   `generatedPulledIdentityComparator_coefficient_id` を必須の接続点とする。
-  C1s/C3 では `UpperGeometryCompatibleProblemInputData` の source-only constructor、
-  `FixedCoefficientTwoLayerTransportOver` の全 field、実際の G-115 base/pulled 二段 generator、
-  strong-cocartesian factorization とその一意性を必須経路とする。`I^w` を独立入力として
+  C1s の input reconstruction では `UpperGeometryCompatibleProblemInputData` の source-only
+  constructor、`FixedCoefficientTwoLayerTransportOver` の全 field、source edge の geometry/core
+  両段の strongly-cocartesian 性と同型合成での保存を必須経路とする。C3 の generated
+  endpoint iso では、実際の G-115 base/pulled reverse-route leg の strongly-cartesian 性、
+  `baseCompositeLegAt_naturality` / `pulledCompositeLegAt_naturality`、底射同型に沿う domain
+  comparison とその factorization、refinement geometry iso の exactification を必須経路とする。
+  `I^w` を独立入力として
   受けること、`η_B/η_P` または自然性可換式を入力すること、自然性式から `T'_i` を定義する
   こと、source group の内共役だけを直接 C3 前に置いて input reconstruction を省くことを
   禁止する。
@@ -431,7 +435,9 @@
   | 義務 | module / 既存宣言 | 新しく証明する接続 |
   | --- | --- | --- |
   | C1s F0 | `DoctrineFiberProduct/UpperGeometryCompatibleInput` / `UpperGeometryCompatibleProblemInputData`、`UpperRefinementBCProblem` / `FixedCoefficientTwoLayerTransportOver`、`UpperRefinementBCGeometry` / `FixedCoefficientGeometryAt` | 別 source geometry と selected exact iso だけから変更後 diagram / edge / comparator / transport と全 structure field を構成 |
-  | C1s qualification | `GeometryTransport/Categories` / `IsStronglyCocartesian.of_iso`、`GeometryTransport/LiftUniqueness` / `geomTransportAlong_liftUniqueUpToFiberIso`、`AtomFoundation/LiftUniqueness` / `transportAlong_liftUniqueUpToFiberIso` | edge 共役後の両段 qualification、二段 factorization の generated exact endpoint iso と uniqueness |
+  | C1s source-edge qualification | mathlib `CategoryTheory.Functor.IsStronglyCocartesian.of_iso` / `.comp`、`DoctrineFiberProduct/UpperGeometryCompatibleDecisionFixtures` / `swap01_geometryStrong`、`swap01_coreStrong` | edge 共役後の geometry/core 両段 strongly-cocartesian qualification。cocartesian API はこの source-edge constructor にだけ使う |
+  | C1s generated lower naturality | `DoctrineFiberProduct/UpperRefinementBCSolution` / `ActiveRefinementBCContext.baseCompositeLegAt_naturality`、`pulledCompositeLegAt_naturality` | `ω_i` に沿って新旧 reverse-route の底射を比較し、generated domain comparison の base factorization を作る |
+  | C1s generated endpoint iso | `DoctrineFiberProduct/UpperGeometryCompatibleInput` / `generatedBaseRouteLegAt_isStronglyCartesian`、`generatedPulledRouteLegAt_isStronglyCartesian`、mathlib `CategoryTheory.Functor.IsStronglyCartesian.domainIsoOfBaseIso` / `.fac`、`DoctrineFiberProduct/UpperGeometryCompatibleEndpointGeometryIsos` / 既存 endpoint comparison pattern、`UpperGeometryFiniteGeometryExactification` / `exactGeometryHomOfRefinement`、`UpperGeometryCompatibleEndpointExactIsos` / refinement-to-exact iso の既存 pattern | reverse-route leg の strongly-cartesian domain comparison から generated refinement geometry iso と factorizationを構成し、selected exact `η_B,η_P` へ exactifyする。cocartesian lift uniqueness で代替しない |
   | A / D | `CrossStageCoherence/ObstructionGroups` / `CompositeFiberAut`、`GeometryTransport/Categories` / `GeometryTotalHom`、`GeomReadHom` | Γ の群・作用、coefficient Aut 準同型 |
   | B1 / C3 | `DoctrineFiberProduct/UpperGeometryCompatibleComparatorMapLaws` / `generatedBaseCompositeFiberAutHomAt`、`generatedPulledCompositeFiberAutHomAt` | 任意 source 自己同型での mate 両立、J の特徴づけと反映 |
   | B1 | `DoctrineFiberProduct/UpperGeometryCompatibleComparatorGeometry` / `generatedBaseCompositeFiberAutAt_fac`、`generatedPulledCompositeFiberAutAt_fac` | source の任意 a,d と実 carrier 条件の接続 |
