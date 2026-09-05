@@ -2136,6 +2136,7 @@ audits:
   validation_refs:
     - "targeted construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF8; exit 0; no Research aggregate target"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF8.lean; exit 0"
+    - "tracked module AxiomAudit: #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct; standard axioms only"
     - "cd research/lean && lake env lean /tmp/G118F8AxiomAudit.lean; exit 0; seven exported definitions/theorems use only propext, Classical.choice, and Quot.sound"
   blocking_findings: []
   next_obligation: "lift generated endpoint eta and induced Theta/T/Gamma/range/J/coefficient actions from binary composition to dependent finite chains"

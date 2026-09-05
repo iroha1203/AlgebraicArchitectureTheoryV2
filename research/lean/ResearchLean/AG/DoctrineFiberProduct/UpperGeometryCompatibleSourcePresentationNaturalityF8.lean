@@ -140,3 +140,5 @@ end Chain
 
 end UpperGeometryCompatibleSourcePresentationChange
 end AAT.AG.DoctrineFiberProduct
+
+#assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
