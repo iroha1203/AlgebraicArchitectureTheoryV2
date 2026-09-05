@@ -767,6 +767,8 @@ noncomputable def generatedPulledRouteExactGeometryInvAt
     (change.generatedPulledRouteRefinementGeometryIsoAt i).inv
     (change.generatedPulledRouteRefinementGeometryIsoAt_inv_base i)
 
+/-- Re-embedding the exact pulled comparison recovers the independently
+constructed cartesian-uniqueness comparison. -/
 theorem generatedPulledRouteExactGeometryHomAt_toRefinement
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -775,6 +777,8 @@ theorem generatedPulledRouteExactGeometryHomAt_toRefinement
       (change.generatedPulledRouteRefinementGeometryIsoAt i).hom :=
   UpperGeometryCleavage.exactGeometryHomOfRefinement_toRefinement _ _ _
 
+/-- Re-embedding the exact pulled inverse recovers the independently
+constructed refinement inverse. -/
 theorem generatedPulledRouteExactGeometryInvAt_toRefinement
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
