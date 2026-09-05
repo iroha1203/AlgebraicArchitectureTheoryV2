@@ -2,12 +2,14 @@ import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresent
 import ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleMateNaturality
 
 /-!
-# Generated endpoint factor laws under source-presentation change
+# Generated endpoint and comparison naturality under source-presentation change
 
 The independently constructed endpoint isomorphisms from the F0s gate satisfy
 the cartesian factorization triangles that characterize them.  Their
 coefficient maps are then forced to be identities by the generated-leg and
-selected source-change coefficient laws.
+selected source-change coefficient laws.  The same factor triangles, together
+with the actual lower mate naturality and both generated mate triangles, lift
+to the G-118 C3 comparison-component naturality square.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
