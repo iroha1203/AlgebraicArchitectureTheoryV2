@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s dependent finite chain 上の pasted endpoint action による `Gamma/range/J`・係数観測の coherence
+- current obligation: C1s dependent finite chain 上の pasted full-`Gamma` equivalence による projection/kernel/fiber/action coherence
 - pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain classification coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: pasted source/endpoint action を `Gamma/range/J`・係数観測の finite-chain correspondence へ接続する
+- next obligation: pasted full-`Gamma` equivalence を両 projection、kernel、lift fiber、nonempty iff、stabilizer action へ接続する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -100,6 +100,7 @@ audits:
   blocking_findings: []
   next_obligation: "A: construct the comparison stabilizer, both projections/kernels, and nonempty-fiber torsor actions"
 ```
+
 
 ### F0 acceptance spine
 
@@ -2239,4 +2240,96 @@ audits:
     - "tracked module AxiomAudit: 25 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "transport Gamma, projections, kernels, fibers, generated range, J, and coefficient observations by the pasted finite-chain endpoint action"
+```
+
+## Cycle 23 — pasted finite-chain `Gamma`, central map, and generated range
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 23
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 49334a9b670e51373c95148319590e96f885074c
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 22 accepted typed recursive source/endpoint actions and their equality with pasted and composite-generated actions"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_eq_recursive
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_eq_recursive
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedEndpointPairMulEquivAt_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedSourcePairMulEquivAt_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_image_range_generatedComparisonPairHomAt
+  proof_obligation: "express full Gamma preservation/reflection, central generated-map naturality, and generated-range equality by the actual pasted finite-chain actions"
+  selection_reason: "the finite-chain classification surface must expose and proof-use the recursively composed action rather than merely restate the one-step theorem for an opaque composite"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF10.lean
+  risks:
+    - identifying full Gamma with the generated range
+    - hiding every-link action behind Chain.composite
+    - treating the selected source comparison as independently generated endpoint data
+    - adding a supplied membership or coherence certificate
+  unchecked:
+    - finite-chain projection/kernel/fiber and stabilizer-action correspondence
+    - finite-chain residual subgroup J and coefficient-observation correspondence
+    - C1s/C1t order and fixed firing
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.recursiveSourcePairMulEquivAt_eq_composite_generated
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.recursiveEndpointPairMulEquivAt_eq_composite_generated
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedCompatibleUpperGeometryMateAt_eq_pasted_conjugation
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt_val
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt_val_eq_recursive
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_map_qualifiedComparisonSubgroup
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_image_range_generatedComparisonPairHomAt
+  acceptance_point: "The full qualified-comparison subgroup is preserved and reflected by an explicitly constructed MulEquiv whose underlying raw map is the endpoint action pasted from the dependent chain and whose recursive-action equality is public. The independently generated comparison maps commute with the pasted source/endpoint actions, and the pasted endpoint action identifies their generated ranges without identifying either range with full Gamma."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "finite-chain full Gamma membership preservation and reflection"
+      - "explicit full-Gamma MulEquiv induced by the pasted endpoint action"
+      - "finite-chain central generated-map naturality"
+      - "literal equality of the two independently generated ranges under the pasted endpoint action"
+    remaining:
+      - "projection, kernel, fiber, nonempty, and stabilizer-action correspondence under the pasted full-Gamma equivalence"
+      - "residual subgroup J and coefficient-observation correspondence under pasted actions"
+      - "C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "membership transport is derived from the generated mate equation and actual pasted endpoint action"
+      - "the generated-range equality compares independently constructed terminal and initial comparison maps"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 22 pasted-equals-recursive equalities for both source and endpoint actions"
+      - "Cycle 22 recursive-equals-composite-generated bridge equalities derived in F10"
+      - "F3 full qualified-comparison preservation/reflection and subgroup image equality"
+      - "F3 central generated comparison-map naturality"
+      - "F4 generated-range equality"
+    unused:
+      - "no supplied Gamma membership, pasted action, naturality square, or range equality certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "both searches selected an explicit pasted-action surface; the narrower accepted candidate separates Gamma/T/range from the later projection/fiber and J/coefficient API"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF10.lean; exit 0"
+    - "tracked module AxiomAudit: 10 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "transport projections, both projection kernels, both lift fibers, nonemptiness, and stabilizer actions by the explicit pasted full-Gamma equivalence"
 ```
