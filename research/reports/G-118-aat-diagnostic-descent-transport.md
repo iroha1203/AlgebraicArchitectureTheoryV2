@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport
-- current obligation: C2 actual edge reselection
-- pending obligations: C2、C3、D、completion audit
-- current target state: Cycle 6 acceptance 後の `target-proof-checkpoint`
-- next obligation: C2 actual edge reselection
+- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection
+- current obligation: C3 generated base-transport preservation and reflection
+- pending obligations: C3、D、completion audit
+- current target state: Cycle 7 implementation candidate の `target-proof-checkpoint`
+- next obligation: C3 generated base-transport preservation and reflection
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -96,6 +96,127 @@ audits:
     - "merged by PR #4370 at b537678d24b16f88f709dc32356e6a409cebd4ee"
   blocking_findings: []
   next_obligation: "A: construct the comparison stabilizer, both projections/kernels, and nonempty-fiber torsor actions"
+```
+
+## Cycle 7 — C2 actual coefficient-trivial edge reselection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 7
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 61bee41de6b6d772df786d56f56baf36ad7e26d0
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 7 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5550469098"
+  proof_dag_predecessors:
+    - "CoefficientTrivialUpperReselectionEndpointIntertwining and its edge/path/full-pair/raw-cochain consumers"
+    - "qualifiedComparisonTargetLiftAction with free and transitive laws"
+    - "generatedCompatibleUpperGeometryMateAt_isIso and qualifiedComparisonIsoGraphMulEquiv"
+    - "generatedQualifiedComparisonRelation_diagonal and the H_B/H_P Cartesian factorizations"
+    - "C1 canonical-authored/generated reselection transport"
+  proof_obligation: "C2: classify all actual coefficient-trivial edge pairs, construct the nonempty product-stabilizer torsor for fixed base families, connect source H_B/H_P generation to downstream consumers, and preserve the mandatory fixed positive/negative decisions through inverse presentation"
+  selection_reason: "The existing endpoint predicate is definitionally the all-edge Gamma product. The selected action uses the literal target stabilizer intersected with the kernel of the newly bundled coefficient observation, while source qualification comes from the B1 diagonal theorem rather than a supplied pairing certificate."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean
+  risks:
+    - "the stabilizer product must retain ker kappa and the coefficient-trivial reselection fields"
+    - "edge comparison is at the target vertex j"
+    - "source-to-paired existence must remain separate from arbitrary paired preservation"
+    - "the fixed negative pair must survive the inverse canonical-authored presentation"
+  unchecked:
+    - "C3, the remainder of D beyond coefficientObservation, and final closure"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For arbitrary compatible input and arbitrary coefficient-trivial generated base/pulled edge families, endpoint intertwining is exactly pointwise membership in Gamma_(c_j). For each fixed base family the partner family is nonempty and carries a free and transitive action of the dependent edge product of K_(P_j)(c_j) intersect ker kappa_(P_j). A coefficient-trivial source family is mapped through H_B/H_P to a qualified generated pair and hence to the existing path, path-leg, authored-comparator, full-pair, and raw-cochain routes. At DecisionEdge.twist the generated comparator pair is positive, the pulled-identity pair is negative, the base is nonidentity, and inverse canonical-authored transport retains the positive pair, nonidentity, and negative identity decision."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - CompositeFiberAut.coefficientObservation
+      - CompositeFiberAut.mem_coefficientObservation_ker_iff
+      - qualifiedComparisonCoefficientTrivialTargetStabilizer
+      - coefficientTrivialUpperReselectionEndpointIntertwining_iff_forall_mem
+      - GeneratedCoefficientTrivialTargetStabilizerFamily
+      - GeneratedCoefficientTrivialPulledPartner
+      - generatedCoefficientTrivialPulledPartnerAction
+      - generatedCoefficientTrivialPulledPartnerAction_free
+      - generatedCoefficientTrivialPulledPartnerAction_transitive
+      - generatedCoefficientTrivialPulledPartner_existsUnique
+      - generatedCoefficientTrivialPulledPartnerOrigin
+      - generatedCoefficientTrivialPulledPartner_nonempty
+      - generatedBaseCompositeFiberAutAt_coefficient_id
+      - generatedPulledCompositeFiberAutAt_coefficient_id
+      - generatedBaseOfSourceCoefficientTrivialUpperEdgeReselection
+      - generatedPulledOfSourceCoefficientTrivialUpperEdgeReselection
+      - sourceCoefficientTrivialUpperEdgeReselection_generated_mem
+      - sourceCoefficientTrivialUpperEdgeReselection_generated_endpointIntertwining
+      - sourceCoefficientTrivialUpperEdgeReselection_generatedPath_legTriangle
+      - sourceCoefficientTrivialUpperEdgeReselection_generatedAuthoredComparator_pasting
+      - sourceCoefficientTrivialUpperEdgeReselection_generatedPaired
+      - UpperDecisionWitness.generatedComparatorUpperReselections_twist_mem_qualifiedComparison
+      - UpperDecisionWitness.generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison
+      - UpperDecisionWitness.canonicalCompanionBaseComparatorPulledIdentity_not_endpointIntertwining
+    source_labels:
+      - "target theorem (C2), actual coefficient-trivial edge reselection"
+    conjuncts:
+      - "all-edge Gamma decision iff existing endpoint intertwining"
+      - "literal product of K target stabilizer intersect coefficient kernel acts freely and transitively on the nonempty fixed-base partner family"
+      - "source coefficient-trivial family is qualified through H_B/H_P and connected to existing downstream APIs"
+      - "fixed twist positive and pulled-identity negative decisions, including inverse-presentation tracking"
+    undischarged_assumptions:
+      - "C3, D nonfactorization/transport, and final closure"
+    acceptance_point: "The action and existence theorems quantify over arbitrary edge families on the fixed generated routes; the finite twist datum is used only for mandatory nonvacuity and negative separation."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C2 arbitrary paired-family all-edge qualification"
+      - "C2 nonempty fixed-base partner-family torsor with coefficient kernel retained"
+      - "C2 source H_B/H_P qualification and downstream connection"
+      - "C2 fixed generated and inverse-presentation positive/negative decisions"
+    remaining:
+      - "C3 preservation/reflection and fixed J decision"
+      - "D coefficient nonfactorization and C1/C2/C3 transport"
+      - "identity/inverse/finite-composition closure and completion audit"
+  certificate_provenance:
+    discharged:
+      - "partner existence comes from the complete generated comparison IsIso and its qualified graph"
+      - "coefficient triviality comes from the Gamma equation plus base/comparison coefficient identities"
+      - "source qualification comes from generatedQualifiedComparisonRelation_diagonal; H_B/H_P coefficient preservation comes from Cartesian factorization and route-leg coefficient identities"
+      - "fixed inverse negative decision is reflected forward to the existing generated negative theorem"
+    unresolved:
+      - "C3 and D witnesses and final closure"
+  proof_use:
+    used:
+      - "qualifiedComparisonTargetLiftAction and its free/transitive laws in the product action"
+      - "generatedCompatibleUpperGeometryMateAt_isIso and qualifiedComparisonIsoGraphMulEquiv in arbitrary-partner existence"
+      - "generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, and both route-leg coefficient identities"
+      - "generatedQualifiedComparisonRelation_diagonal in source-to-paired generation"
+      - "existing endpoint edge/path, path-leg, authored-comparator, toPaired, and raw-cochain routes"
+      - "generated fixed positive/negative theorems and canonical-authored forward/backward reselection transport"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted direct dependency builds only; no Research aggregate/full build"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean; exit 0; 5 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean; exit 0; 19 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 6 declarations standard-only"
+  blocking_findings: []
+  next_obligation: "C3: prove generated base-transport preservation and exact reflection criterion, then decide J_*"
 ```
 
 ### F0 acceptance spine
