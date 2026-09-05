@@ -185,11 +185,12 @@ noncomputable def generatedCoefficientTrivialPulledPartnerOrigin
           qualifiedComparisonSubgroup
             (input.generatedCompatibleUpperGeometryMateAt j) := by
       exact pair.2
+    have relationEquation := mem_qualifiedComparisonSubgroup.mp relation
     have coefficientEquality := congrArg
       (fun hom : GeometryTotalHom
           (input.generatedBaseRouteGeometryAt j)
           (input.generatedPulledRouteGeometryAt j) =>
-        hom.geometry.coefficientHom) relation
+        hom.geometry.coefficientHom) relationEquation
     change
       (input.generatedCompatibleUpperGeometryMateAt j).geometry.coefficientHom.comp
           (CompositeFiberAut.hom
@@ -336,6 +337,11 @@ theorem sourceCoefficientTrivialUpperEdgeReselection_generated_endpointIntertwin
       input.generatedGeometryCompatibleUpperRefinementBCSolution
       (input.generatedBaseOfSourceCoefficientTrivialUpperEdgeReselection source)
       (input.generatedPulledOfSourceCoefficientTrivialUpperEdgeReselection source) := by
+  apply
+    (coefficientTrivialUpperReselectionEndpointIntertwining_iff_forall_mem
+      input.generatedGeometryCompatibleUpperRefinementBCSolution
+      (input.generatedBaseOfSourceCoefficientTrivialUpperEdgeReselection source)
+      (input.generatedPulledOfSourceCoefficientTrivialUpperEdgeReselection source)).2
   intro i j edge
   exact input.sourceCoefficientTrivialUpperEdgeReselection_generated_mem source edge
 

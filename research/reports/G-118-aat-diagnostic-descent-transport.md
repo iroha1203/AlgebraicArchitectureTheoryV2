@@ -742,6 +742,8 @@ result:
       - sourceCoefficientTrivialUpperEdgeReselection_generatedRawCochain_intertwining
       - UpperDecisionWitness.generatedComparatorUpperReselections_twist_mem_qualifiedComparison
       - UpperDecisionWitness.generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison
+      - UpperDecisionWitness.canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_forward
+      - UpperDecisionWitness.canonicalCompanionUpperRefinementBCSolution_forward
       - UpperDecisionWitness.generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one
       - UpperDecisionWitness.canonicalCompanionComparatorUpperReselections_paired_fires
       - UpperDecisionWitness.canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_ne_one
@@ -796,7 +798,7 @@ audits:
     - "targeted direct dependency builds only; no Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean; exit 0; 5 declarations standard-only"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean; exit 0; 20 declarations standard-only"
-    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 7 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 9 declarations standard-only"
   blocking_findings: []
   next_obligation: "C3: prove generated base-transport preservation and exact reflection criterion, then decide J_*"
 ```
