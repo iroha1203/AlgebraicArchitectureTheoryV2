@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s/C1t の型の合う合成順序、fixed induced-action firing、C1s/C1t/C2/D 接続
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t typed integration、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: fixed induced-action firing と変更後入力上の C2/D packet
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: C1s と既存 C1t の前後合成を固定し、actual local `Fin 4` evaluation で induced pair action を発火させる
+- next obligation: fixed source change を構成し、actual local `Fin 4` evaluation で induced pair action を発火させる
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2510,4 +2510,110 @@ audits:
     - "tracked module AxiomAudit: 7 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "fix the type-correct C1s/C1t composition order and prove nontrivial induced pair-action firing by the actual local Fin 4 evaluation"
+```
+
+## Cycle 26 — typed C1s/C1t and C1s/C3/C1t integration
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 26
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: c2a5e926b00eed27e8ad55201b8badc207a00658
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 25 accepted finite-chain residual-subgroup and coefficient-observation correspondence under the actual pasted actions"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.pairMulEquivAt
+    - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.decision_iff
+    - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.observation_apply
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedPulledComparisonKernel_eq_bot_pasted_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+    - UpperGeometryCompatibleProblemInputData.closedComparisonPairHomAt_coefficientObservation
+  proof_obligation: "fix the cast-free C1t-before/C1s/C1t-after order and connect C1s ; C3 ; C1t to membership, exact reflection, coefficient observation, and generated range"
+  selection_reason: "the two presentation-change mechanisms live over different input indices and endpoint displays, so their legal composition order must be made explicit before the fixed witness is fired"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF13.lean
+  risks:
+    - placing C1t forward immediately after a generated endpoint and creating a type mismatch
+    - inserting dependent casts through Chain.terminalInput into the core definitions
+    - promoting the generated range to the full qualified subgroup
+    - dropping either C1s source naturality or the residual J criterion
+  unchecked:
+    - fixed induced-action firing
+    - changed-input C2/D packet and final C1s/C1t/C2/D connection
+    - revision-1 artifact statement/proof-use re-audit
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_apply
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_generated_generated
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_decision_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_observation_apply
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_apply
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_source_route
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_preserves_qualifiedComparison
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_reflects_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_range
+  acceptance_point: "The only cast-free mixed endpoint route is fixed as terminal C1t to terminal generated, pasted C1s to initial generated, then initial C1t to the selected display. The mixed hom is defined by terminal generation, pasted C1s endpoint transport, and initial C1t; central naturality rewrites it to pasted C1s source action, initial generatedComparisonPairHomAt, and initial C1t. It preserves qualified membership, reflects it exactly when the initial and equivalently terminal residual subgroup is bottom, commutes with complete coefficient observation, and has precisely the initial generated range transported through C1t."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "type-correct C1t-before/C1s/C1t-after raw-pair composition order"
+      - "mixed display qualified-membership preservation and reflection"
+      - "mixed display coefficient-observation naturality"
+      - "C1s/C3/C1t central source route and qualified preservation"
+      - "C1s/C3/C1t exact residual-subgroup reflection criterion"
+      - "C1s/C3/C1t generated-range equality"
+    remaining:
+      - "fixed induced-action firing"
+      - "changed-input C2/D packet and final C1s/C1t/C2/D connection"
+      - "revision-1 artifact statement/proof-use re-audit"
+  certificate_provenance:
+    discharged:
+      - "C1t chains carry only typed forward/backward generators whose decision and observation laws are previously proved"
+      - "the mixed C3 route uses the independently generated terminal comparison map and the F10 pasted central square"
+      - "exact reflection uses the F12 residual-subgroup equivalence rather than a supplied reflection certificate"
+    unresolved: []
+  proof_use:
+    used:
+      - "C1t chain pair equivalences, decision iff, and observation equality on both input indices"
+      - "F10 pasted full-Gamma membership and central generated-map naturality"
+      - "F12 residual J bottom iff and pasted source/endpoint coefficient observations"
+      - "the generated comparison map's qualified-membership preservation and exact residual-J reflection iff"
+      - "the closed generated comparison route's complete coefficient-observation equality"
+      - "the actual inverse of the pasted source-pair equivalence in the generated-range reverse inclusion"
+    unused:
+      - "no supplied mixed composition, membership, reflection, observation, or range certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the order lane fixed terminal C1t then C1s then initial C1t and rejected forward-after-generated; the firing lane independently confirmed that the fixed witness must follow this typed bridge"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF13.lean; exit 0"
+    - "tracked module AxiomAudit: 12 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the fixed swap01 source change and prove nontrivial induced pair-action firing from the actual local Fin 4 evaluation"
 ```
