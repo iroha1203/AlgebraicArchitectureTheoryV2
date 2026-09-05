@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection、C3 generated base-transport preservation and reflection
-- current obligation: D coefficient nonfactorization and transport
-- pending obligations: D、C1/C2/C3 closure、completion audit
-- current target state: Cycle 8 implementation candidate の `target-proof-checkpoint`
-- next obligation: D coefficient nonfactorization at the fixed datum
+- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection、C3 generated base-transport preservation and reflection、D fixed coefficient nonfactorization
+- current obligation: D transport through C1/C2/C3
+- pending obligations: D transport、C1/C2/C3 closure、completion audit
+- current target state: Cycle 9 implementation candidate の `target-proof-checkpoint`
+- next obligation: transport the fixed coefficient-invisible separation through C1/C2/C3
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -927,6 +927,111 @@ audits:
   validation_refs:
     - "targeted direct dependency builds only; no Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean; exit 0; 30 declarations standard-only"
+    - "reviewed head c82d7527743e6372cd60b7db4a2e2fecb1583970: four fresh full-head lanes and one bounded direct-response review accepted; GitHub CI 7/7 pass"
+    - "fixed-head audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4377#issuecomment-5550776351"
+    - "root acceptance: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4377#issuecomment-5550776344"
+    - "merged by PR #4377 at 17e644f0c2c986994d4120c533c42b62991f33eb"
   blocking_findings: []
   next_obligation: "D: prove fixed coefficient-observation nonfactorization and transport it through C1/C2/C3"
+```
+
+## Cycle 9 — D fixed coefficient nonfactorization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 9
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 17e644f0c2c986994d4120c533c42b62991f33eb
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 9 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5550784957"
+  proof_dag_predecessors:
+    - "CompositeFiberAut.coefficientObservation"
+    - "generatedBaseComparatorCoefficientTrivialUpperReselection and generatedPulledComparatorCoefficientTrivialUpperReselection"
+    - "generatedComparatorUpperReselections_twist_mem_qualifiedComparison"
+    - "generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison"
+  proof_obligation: "D fixed datum: define literal Q_*, O_*, and D_*; prove an observation-colliding positive/negative pair and nonfactorization of D_* through O_*"
+  selection_reason: "The reviewed C2 pair is already the literal fixed generated pair required by D. Its positive and pulled-identity negative values have equal product coefficient observations, while C2 proves opposite membership decisions."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean
+  risks:
+    - "D_* must be literal qualifiedComparisonSubgroup membership rather than a proxy boolean"
+    - "the observations must be equal as the full product coefficient automorphisms"
+    - "the nonfactorization theorem must quantify over every predicate on the observation space"
+  unchecked:
+    - "D transport through C1/C2/C3"
+    - "C1/C2/C3 identity, inverse, and finite-composition closure"
+    - "final completion review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "At the fixed B2 datum, Q_* is the literal product of the generated base and pulled complete automorphism groups, O_* is the product of their coefficient observations, and D_* is literal Gamma_(c_*) membership. The generated comparator pair and its pulled-identity companion have equal O_* values, but D_* accepts the first and rejects the second. Therefore no predicate on the coefficient-observation space factors D_* for all pairs."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - UpperDecisionWitness.FixedQualifiedPair
+      - UpperDecisionWitness.FixedCoefficientObservationSpace
+      - UpperDecisionWitness.fixedCoefficientObservation
+      - UpperDecisionWitness.FixedQualifiedDecision
+      - UpperDecisionWitness.fixedPositiveQualifiedPair
+      - UpperDecisionWitness.fixedNegativeQualifiedPair
+      - UpperDecisionWitness.fixedPositivePulled_coefficientObservation_eq_one
+      - UpperDecisionWitness.fixedNegativePulled_coefficientObservation_eq_one
+      - UpperDecisionWitness.fixedCoefficientObservation_positive_eq_negative
+      - UpperDecisionWitness.fixedPositiveQualifiedDecision
+      - UpperDecisionWitness.fixedNegativeNotQualifiedDecision
+      - UpperDecisionWitness.fixedQualifiedDecision_not_factor_through_coefficientObservation
+    source_labels:
+      - "target theorem (D), fixed coefficient-invisible comparison information"
+    conjuncts:
+      - "literal Q_*, product coefficient observation O_*, and literal Gamma decision D_*"
+      - "positive/negative observation collision"
+      - "positive Gamma membership and negative nonmembership"
+      - "universal predicate nonfactorization"
+    undischarged_assumptions:
+      - "D transport, closure, and final completion review"
+    acceptance_point: "The diagnostic is quantified as an arbitrary predicate on the complete product coefficient-observation space; no restriction on the candidate diagnostic encodes the contradiction."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D fixed observation equality"
+      - "D fixed positive/negative qualified-decision separation"
+      - "D fixed universal nonfactorization"
+    remaining:
+      - "D transport through C1/C2/C3"
+      - "C1/C2/C3 closure"
+      - "final completion review"
+  certificate_provenance:
+    discharged:
+      - "positive and negative pairs are the reviewed C2 fixed generated witnesses"
+      - "pulled positive coefficient identity is the actual generatedPulledRouteTransport comparator coefficient theorem; pulled negative coefficient identity is generatedPulledIdentityComparator_coefficient_id for the named copied-transport comparator"
+      - "decision separation is supplied by the reviewed C2 literal membership and nonmembership theorems"
+    unresolved:
+      - "transported separation and closure witnesses"
+  proof_use:
+    used:
+      - "CompositeFiberAut.coefficientObservation and coefficientObservation_hom"
+      - "generatedPulledRouteTransport.comparator_coefficient_id"
+      - "generatedPulledIdentityComparator_coefficient_id"
+      - "generatedComparatorUpperReselections_twist_mem_qualifiedComparison"
+      - "generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison"
+      - "fixedCoefficientObservation_positive_eq_negative in the universal contradiction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted direct dependency builds only; no Research aggregate/full build"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean; exit 0; 12 declarations standard-only"
+  blocking_findings: []
+  next_obligation: "D transport the observation collision and qualified separation through C1/C2/C3"
 ```
