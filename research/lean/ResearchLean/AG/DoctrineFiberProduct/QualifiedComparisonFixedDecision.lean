@@ -201,7 +201,7 @@ theorem solution_comparator_pair_mem :
     (problem.data.generatedBaseRouteComparator DecisionCell.comparison,
         problem.data.generatedPulledRouteComparator DecisionCell.comparison) ∈
       qualifiedComparisonSubgroup (solution.component PUnit.unit) := by
-  exact solution_comparator_intertwining_fires
+  exact upperDecisionSolution_comparatorDescentAt
 
 /-- The mandatory base-comparator/identity pair does not belong to the actual
 comparison subgroup. -/
@@ -232,11 +232,25 @@ theorem solution_baseComparator_targetPartner_existsUnique :
   refine ⟨problem.data.generatedPulledRouteComparator DecisionCell.comparison,
     solution_comparator_pair_mem, ?_⟩
   intro pulled relation
-  letI := solution_component_isIso
-  apply Subtype.ext
-  apply Iso.ext
-  apply (cancel_epi (solution.component PUnit.unit)).1
-  exact relation.symm.trans solution_comparator_pair_mem
+  let named : QualifiedComparisonTargetLift (solution.component PUnit.unit)
+      (problem.data.generatedBaseRouteComparator DecisionCell.comparison) :=
+    ⟨problem.data.generatedPulledRouteComparator DecisionCell.comparison,
+      solution_comparator_pair_mem⟩
+  let candidate : QualifiedComparisonTargetLift (solution.component PUnit.unit)
+      (problem.data.generatedBaseRouteComparator DecisionCell.comparison) :=
+    ⟨pulled, relation⟩
+  obtain ⟨stabilizer, action⟩ :=
+    qualifiedComparisonTargetLiftAction_transitive named candidate
+  have stabilizerValue : stabilizer.1 = 1 := by
+    have memBottom : stabilizer.1 ∈ (⊥ : Subgroup
+        (CompositeFiberAut
+          (problem.data.generatedPulledRouteGeometryAt PUnit.unit))) := by
+      rw [← solution_targetStabilizer_eq_bot]
+      exact stabilizer.2
+    simpa using memBottom
+  have stabilizerIdentity : stabilizer = 1 := Subtype.ext stabilizerValue
+  rw [stabilizerIdentity, one_smul] at action
+  exact (congrArg Subtype.val action).symm
 
 /-- Symmetrically, the nonempty source-partner fiber over `p_*` is a
 singleton with named point `b_*`. -/
@@ -249,11 +263,25 @@ theorem solution_pulledComparator_sourcePartner_existsUnique :
   refine ⟨problem.data.generatedBaseRouteComparator DecisionCell.comparison,
     solution_comparator_pair_mem, ?_⟩
   intro base relation
-  letI := solution_component_isIso
-  apply Subtype.ext
-  apply Iso.ext
-  apply (cancel_mono (solution.component PUnit.unit)).1
-  exact relation.trans solution_comparator_pair_mem.symm
+  let named : QualifiedComparisonSourceLift (solution.component PUnit.unit)
+      (problem.data.generatedPulledRouteComparator DecisionCell.comparison) :=
+    ⟨problem.data.generatedBaseRouteComparator DecisionCell.comparison,
+      solution_comparator_pair_mem⟩
+  let candidate : QualifiedComparisonSourceLift (solution.component PUnit.unit)
+      (problem.data.generatedPulledRouteComparator DecisionCell.comparison) :=
+    ⟨base, relation⟩
+  obtain ⟨stabilizer, action⟩ :=
+    qualifiedComparisonSourceLiftAction_transitive named candidate
+  have stabilizerValue : stabilizer.1 = 1 := by
+    have memBottom : stabilizer.1 ∈ (⊥ : Subgroup
+        (CompositeFiberAut
+          (problem.data.generatedBaseRouteGeometryAt PUnit.unit))) := by
+      rw [← solution_sourceStabilizer_eq_bot]
+      exact stabilizer.2
+    simpa using memBottom
+  have stabilizerIdentity : stabilizer = 1 := Subtype.ext stabilizerValue
+  rw [stabilizerIdentity, one_smul] at action
+  exact (congrArg Subtype.val action).symm
 
 end UpperDecisionWitness
 

@@ -534,7 +534,8 @@ audits:
       - "generatedRouteCoreMateIso in the base IsIso"
       - "exactGeometryHomOfRefinement_isIso and exactGeometryHomOfRefinement_toRefinement in complete reflection"
       - "Cycle 2 isomorphic graph, projection-surjectivity, and stabilizer-bottom declarations"
-      - "fixed solution_comparator_intertwining_fires and generated relation negative theorem"
+      - "the route-integrity gate upperDecisionSolution_comparatorDescentAt and generated relation negative theorem"
+      - "both fixed stabilizer-bottom decisions and the Cycle 2 transitive fiber actions in the two partner uniqueness proofs"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
