@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing
-- current obligation: A comparison stabilizer API
-- pending obligations: B1、B2、C1、C2、C3、D、completion audit
-- current target state: Cycle 2 implementation 後の `target-proof-checkpoint`
-- next obligation: Cycle 2 fixed-head review、次いで B1 の生成像分類
+- completed obligations: F0 typing、A comparison stabilizer API
+- current obligation: B1 generated-image classification
+- pending obligations: B1 actual input-map characterization、B2、C1、C2、C3、D、completion audit
+- current target state: Cycle 3 implementation 後の `target-proof-checkpoint`
+- next obligation: Cycle 3 fixed-head review、次いで B1 actual input-map characterization
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -219,7 +219,108 @@ audits:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonStabilizer.lean; exit 0"
     - "module terminal axiom audit: 37 declarations, standard axioms only"
-    - "fixed-head review pending"
+    - "PR #4371 revised fixed head 9befcdf2b38e487e53b3e7dc4afd9d616bf3e3cc; CI 7/7 pass"
+    - "four fresh independent revised fixed-head lanes: all No major findings"
+    - "review audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4371#issuecomment-5549563800"
+    - "acceptance regression: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4371#issuecomment-5549563970"
+    - "merged by PR #4371 at 073636cf15f5ec3b4fc139f9a21a3e70e05fce98"
   blocking_findings: []
   next_obligation: "B1: connect generated endpoint maps to Gamma and classify J_i by actual geometry input maps"
+```
+
+## Cycle 3 — B1 generated-image residual classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 3
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 073636cf15f5ec3b4fc139f9a21a3e70e05fce98
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycles 1--2 accepted F0 and A; B1 is the next fixed-target obligation"
+  proof_dag_predecessors:
+    - "Cycle 2 qualifiedComparisonSubgroup, target stabilizer, and target-lift action"
+    - "generated base/pulled route factorizations and generated mate triangle"
+    - "the two fixed generated CompositeFiberAut MonoidHom declarations"
+  proof_obligation: "B1a: prove every generated diagonal pair lies in Gamma and classify all generated pairs by the residual source subgroup J_i and its right cosets"
+  selection_reason: "This derives the algebraic generated-image half of B1 directly from the actual route legs and leaves the larger literal input-map characterization as the next named sub-obligation rather than hiding it."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt_automorphism_intertwining
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_iff_exists_kernel_factor
+  risks:
+    - "GeometryTotalHom.comp and CompositeFiberAut multiplication use the established categorical order"
+    - "the generated diagonal must be derived from both actual route factorizations, not assumed as a certificate"
+    - "a source preimage subgroup must not be confused with a proof that each Geometry input map is fixed"
+  unchecked:
+    - "B1b literal core, atomEquiv, objectMap, equation, operation, invariant, axis, coordinate, coefficient, support, axis-image, and observable-image characterization"
+    - "all B2/C/D obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For every I, i, and source automorphism, the actual generated route factorizations and mate triangle imply generated endpoint intertwining. The generated comparison relation is then equivalent to target-stabilizer membership of the generated pulled-image difference, to membership of pulledChange * baseChange^-1 in the actual pulled preimage subgroup, and to a residual factor pulledChange = j * baseChange. A named fixed-datum negative instance establishes nonvacuity."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean
+  claim_mapping:
+    theorem_names:
+      - generatedCompatibleUpperGeometryMateAt_automorphism_intertwining
+      - GeneratedQualifiedComparisonRelation
+      - generatedQualifiedComparisonRelation_diagonal
+      - generatedPulledComparisonKernel
+      - generatedQualifiedComparisonRelation_iff_difference_mem
+      - generatedQualifiedComparisonRelation_iff_target_stabilizer_image
+      - generatedQualifiedComparisonRelation_iff_exists_kernel_factor
+      - UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not
+    source_labels:
+      - "target theorem (B1), generated-image and residual-coset clauses"
+    conjuncts:
+      - "every generated diagonal pair lies in Gamma -> generatedCompatibleUpperGeometryMateAt_automorphism_intertwining and generatedQualifiedComparisonRelation_diagonal"
+      - "J_i is the pulled generated-map preimage of K_Y(c_i) -> generatedPulledComparisonKernel"
+      - "R_i(a,d) iff the generated pulled-image difference belongs to K_Y(c_i) -> generatedQualifiedComparisonRelation_iff_target_stabilizer_image"
+      - "R_i(a,d) iff d*a^-1 belongs to J_i -> generatedQualifiedComparisonRelation_iff_difference_mem"
+      - "R_i(a,d) iff d=j*a for a residual j in J_i -> generatedQualifiedComparisonRelation_iff_exists_kernel_factor"
+      - "the new relation has a concrete failing pair -> UpperDecisionWitness.generatedQualifiedComparisonRelation_base_identity_not"
+    undischarged_assumptions:
+      - "B1b literal actual input-map characterization"
+      - "all B2/C/D material-premise rows"
+    acceptance_point: "The arbitrary-source intertwining is derived from the generated route legs and mate triangle; no solution or intertwining certificate is added to the input."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B1 generated diagonal intertwining from actual generated routes"
+      - "B1 target-image criterion, residual subgroup, source difference-membership criterion, and right-coset factorization"
+      - "new relation positive and negative instances for nonvacuity"
+    remaining:
+      - "B1 actual input-map characterization"
+      - "B2 fixed positive/negative decisions"
+      - "C transport/reflection/coherence"
+      - "D coefficient observation and nonfactorization"
+  certificate_provenance:
+    discharged:
+      - "intertwining consumes generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, and generatedCompatibleUpperGeometryMateAt_triangle"
+    unresolved:
+      - "B2/C/D named decision and transport witnesses"
+  proof_use:
+    used:
+      - "Cycle 2 target stabilizer and target-lift MulAction in the reverse residual implication"
+      - "both generated endpoint MonoidHom maps in the subgroup preimage and difference calculation"
+      - "strongly-cartesian route-leg extensionality in the arbitrary-source intertwining proof"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer; exit 0; targeted direct dependency DAG only, not the Research aggregate/full build"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean; exit 0"
+    - "module terminal axiom audit: 9 namespace declarations, including 8 public mapped declarations, standard axioms only"
+    - "fixed-head review pending"
+  blocking_findings: []
+  next_obligation: "B1b: characterize residual-kernel membership by the literal actual Geometry input maps and close with GeomReadHom/GeometryTotalHom extensionality"
 ```

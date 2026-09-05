@@ -312,6 +312,7 @@ import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCProblem
 import ResearchLean.AG.DoctrineFiberProduct.UpperRefinementBCSolution
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonTransportTyping
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer
+import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonGeneratedClassification
 
 /-!
 # Doctrine fiber-product schema
