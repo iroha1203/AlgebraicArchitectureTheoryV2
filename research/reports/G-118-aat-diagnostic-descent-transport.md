@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection
-- current obligation: C3 generated base-transport preservation and reflection
-- pending obligations: C3、D、completion audit
-- current target state: Cycle 7 implementation candidate の `target-proof-checkpoint`
-- next obligation: C3 generated base-transport preservation and reflection
+- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection、C3 generated base-transport preservation and reflection
+- current obligation: D coefficient nonfactorization and transport
+- pending obligations: D、C1/C2/C3 closure、completion audit
+- current target state: Cycle 8 implementation candidate の `target-proof-checkpoint`
+- next obligation: D coefficient nonfactorization at the fixed datum
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -97,7 +97,6 @@ audits:
   blocking_findings: []
   next_obligation: "A: construct the comparison stabilizer, both projections/kernels, and nonempty-fiber torsor actions"
 ```
-
 
 ### F0 acceptance spine
 
@@ -801,4 +800,111 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 9 declarations standard-only"
   blocking_findings: []
   next_obligation: "C3: prove generated base-transport preservation and exact reflection criterion, then decide J_*"
+```
+
+## Cycle 8 — C3 generated base transport and reflection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 8
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 3bd575eca0d2539c80364e758cb322b362a9d7c1
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 8 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5550672875"
+  proof_dag_predecessors:
+    - "generatedBaseCompositeFiberAutHomAt and generatedPulledCompositeFiberAutHomAt"
+    - "generatedQualifiedComparisonRelation_diagonal and generatedQualifiedComparisonRelation_iff_difference_mem"
+    - "generatedPulledRouteUpperEquivalenceAt and generatedPulledRouteRealizationExactAt"
+    - "mem_generatedPulledComparisonKernel_iff_inputConditions"
+    - "solution_targetStabilizer_eq_bot"
+  proof_obligation: "C3: define T_i=(H_B,H_P), prove Gamma_(identity) preservation, characterize reflection exactly by J_i=bottom, and decide J_* from the actual input maps"
+  selection_reason: "The positive branch is determined without a supplied faithfulness premise: the actual pulled Cartesian factor map is injective because its exact upper map and all three realization total-carrier maps are equivalences. The fixed comparison is an isomorphism, hence its target stabilizer is bottom and J_* is the kernel of an injective H_P."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean
+  risks:
+    - "reflection must be equivalent to J_i=bottom rather than assumed from faithfulness"
+    - "the source predicate must be the literal qualified group of the identity comparison"
+    - "injectivity must reflect upper and geometry carrier maps, not only the package core"
+    - "the fixed positive decision must connect to the B1 computational input conditions"
+  unchecked:
+    - "D, C1/C2/C3 closure, and final completion review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For every compatible input and vertex, the actual product homomorphism T_i sends the identity-comparison qualified subgroup into Gamma_(c_i). Reflection of this map is equivalent to J_i=bottom. The generated pulled endpoint homomorphism is injective, proved from its Cartesian factorization, the exact upper equivalence, and the realization-exact Support/Axis/Observable equivalences. At the fixed datum the target stabilizer is bottom, so J_*=bottom; consequently R_*(a,d) iff a=d for all source automorphisms, and the literal B1 input conditions hold exactly for the identity residual."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - mem_qualifiedComparisonSubgroup_identity_iff
+      - ExactUpperEquivalence.forward_comp_injective
+      - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_supportSigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_axisSigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_observableSigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.generatedPulledCompositeFiberAutHomAt_injective
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_reflects_iff_kernel_eq_bot
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+      - UpperDecisionWitness.generatedPulledComparisonKernel_eq_bot
+      - UpperDecisionWitness.generatedQualifiedComparisonRelation_iff_eq
+      - UpperDecisionWitness.solution_generatedComparisonPairHom_mem_iff_source_identity_mem
+      - UpperDecisionWitness.generatedPulledKernelInputConditions_iff_eq_one
+    source_labels:
+      - "target theorem (C3), generated base-transport preservation and reflection"
+    conjuncts:
+      - "T_i is the actual product of H_B and H_P"
+      - "Gamma_(identity source) is the diagonal and is preserved by T_i"
+      - "reflection iff J_i=bottom for every input and vertex"
+      - "actual H_P injectivity and fixed positive decision J_*=bottom"
+      - "fixed all-pair reflection and computational input-condition decision"
+    undischarged_assumptions:
+      - "D, C1/C2/C3 closure, and final completion review"
+    acceptance_point: "No injectivity, faithfulness, reflection, or trivial-kernel certificate is accepted from the caller; H_P injectivity is constructed from the generated route equivalences and used to decide the fixed branch."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C3 preservation under T_i"
+      - "C3 exact reflection criterion J_i=bottom"
+      - "actual H_P injectivity"
+      - "fixed J_*=bottom and all-pair positive reflection branch"
+    remaining:
+      - "D coefficient nonfactorization and transport"
+      - "C1/C2/C3 identity, inverse, and finite-composition closure"
+      - "final completion review"
+  certificate_provenance:
+    discharged:
+      - "preservation is generated by the B1 diagonal theorem"
+      - "reflection is derived from the B1 residual-difference iff"
+      - "H_P injectivity uses the actual Cartesian factorization, exact upper inverse, and realization-exact total-carrier equivalences"
+      - "J_* uses the reviewed fixed target-stabilizer decision and the constructed H_P injectivity"
+    unresolved:
+      - "D and closure witnesses"
+  proof_use:
+    used:
+      - "generatedQualifiedComparisonRelation_diagonal"
+      - "generatedQualifiedComparisonRelation_iff_difference_mem"
+      - "generatedPulledCompositeFiberAutAt_fac"
+      - "generatedPulledRouteUpperEquivalenceAt_forward_eq and backward_forward"
+      - "generatedPulledRouteRealizationExactAt supportSigmaEquiv, axisSigmaEquiv, and observableSigmaEquiv"
+      - "solution_targetStabilizer_eq_bot"
+      - "mem_generatedPulledComparisonKernel_iff_inputConditions"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted direct dependency builds only; no Research aggregate/full build"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean; exit 0; 25 declarations standard-only"
+  blocking_findings: []
+  next_obligation: "D: prove fixed coefficient-observation nonfactorization and transport it through C1/C2/C3"
 ```
