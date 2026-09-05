@@ -103,30 +103,45 @@ noncomputable def comp
 object and complete geometry, so these equalities do not require whole-input
 record equality. -/
 
+/-- C1s route-leg API: normalize the identity-changed base leg to the original
+input leg.  This is definitional because the leg reads the selected pointwise
+source geometry. -/
 @[simp] theorem identity_changedInput_generatedBaseRouteLegAt
     (input : UpperGeometryCompatibleProblemInputData ctx P k)
     (i : P.Vertex) :
     (identity input).changedInput.generatedBaseRouteLegAt i =
       input.generatedBaseRouteLegAt i := by rfl
 
+/-- C1s route-leg API: normalize the identity-changed pulled leg to the
+original input leg.  This is definitional because the leg reads the selected
+pointwise source geometry. -/
 @[simp] theorem identity_changedInput_generatedPulledRouteLegAt
     (input : UpperGeometryCompatibleProblemInputData ctx P k)
     (i : P.Vertex) :
     (identity input).changedInput.generatedPulledRouteLegAt i =
       input.generatedPulledRouteLegAt i := by rfl
 
+/-- C1s route-leg API: normalize the inverse change's reconstructed base leg
+to the original input leg.  The inverse restores the original pointwise source
+geometry definitionally. -/
 @[simp] theorem inverse_changedInput_generatedBaseRouteLegAt
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
     change.inverse.changedInput.generatedBaseRouteLegAt i =
       input.generatedBaseRouteLegAt i := by rfl
 
+/-- C1s route-leg API: normalize the inverse change's reconstructed pulled leg
+to the original input leg.  The inverse restores the original pointwise source
+geometry definitionally. -/
 @[simp] theorem inverse_changedInput_generatedPulledRouteLegAt
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
     change.inverse.changedInput.generatedPulledRouteLegAt i =
       input.generatedPulledRouteLegAt i := by rfl
 
+/-- C1s route-leg API: normalize a composite change's reconstructed base leg
+to the second change's terminal leg.  Typed composition selects the second
+change's pointwise source geometry definitionally. -/
 @[simp] theorem comp_changedInput_generatedBaseRouteLegAt
     (first : UpperGeometryCompatibleSourcePresentationChange input)
     (second : UpperGeometryCompatibleSourcePresentationChange
@@ -135,6 +150,9 @@ record equality. -/
     (first.comp second).changedInput.generatedBaseRouteLegAt i =
       second.changedInput.generatedBaseRouteLegAt i := by rfl
 
+/-- C1s route-leg API: normalize a composite change's reconstructed pulled leg
+to the second change's terminal leg.  Typed composition selects the second
+change's pointwise source geometry definitionally. -/
 @[simp] theorem comp_changedInput_generatedPulledRouteLegAt
     (first : UpperGeometryCompatibleSourcePresentationChange input)
     (second : UpperGeometryCompatibleSourcePresentationChange
