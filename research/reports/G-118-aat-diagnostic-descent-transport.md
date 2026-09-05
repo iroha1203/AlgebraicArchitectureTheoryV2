@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s dependent finite chain 上の pasted source/endpoint action による residual subgroup `J` と coefficient-observation coherence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain classification coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C1s/C1t の型の合う合成順序、fixed induced-action firing、C1s/C1t/C2/D 接続
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t typed integration、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: pasted source action を residual subgroup `J` と triviality iff、pasted source/endpoint actions を係数観測へ接続する
+- next obligation: C1s と既存 C1t の前後合成を固定し、actual local `Fin 4` evaluation で induced pair action を発火させる
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2421,4 +2421,93 @@ audits:
     - "tracked module AxiomAudit: 12 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "transport residual subgroup J, its triviality criterion, and both pair coefficient observations by the actual pasted finite-chain actions"
+```
+
+## Cycle 25 — pasted residual subgroup and coefficient correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 25
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 19b338f3ad3d1b60d50532e5852391a88847ed4e
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 24 accepted projection, kernel, fiber, nonempty, and stabilizer-action transport by the explicit pasted full-Gamma equivalence"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledComparisonKernel_mem_sourcePresentation_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.recursiveSourcePairMulEquivAt_eq_composite_generated
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_eq_recursive
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.recursiveEndpointPairMulEquivAt_eq_composite_generated
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_eq_recursive
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_coefficientObservation
+  proof_obligation: "transport residual subgroup J, its triviality criterion, and both pair coefficient observations by the actual pasted finite-chain actions"
+  selection_reason: "the source-level residual preimage and coefficient observations must consume the recursively composed action of every C1s link before C1s is composed with C1t and the fixed decision packet"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF12.lean
+  risks:
+    - identifying J with a projection kernel of full Gamma
+    - transporting J by the pulled endpoint conjugation instead of the source conjugation
+    - adding normality, endpoint surjectivity, or coefficient faithfulness
+    - hiding the every-link action behind Chain.composite
+  unchecked:
+    - C1s/C1t order and typed finite composition
+    - fixed induced-action firing
+    - C1s/C1t/C2/D connection and revision-1 artifact re-audit
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.recursiveSourcePairMulEquivAt_fst_left_one_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedPulledComparisonKernel_mem_recursiveSourcePair_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceConjugation_mem_generatedPulledComparisonKernel_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceConjugation_map_generatedPulledComparisonKernel
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedPulledComparisonKernel_eq_bot_pasted_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_coefficientObservation
+  acceptance_point: "The source residual subgroup is transported by the pasted source conjugation, with membership first expressed through the recursive every-link source-pair action. Its literal subgroup image and exact bottom criterion are preserved and reflected. Both source and independently generated endpoint pair actions commute with coefficient observation through the recursive-to-composite-generated bridge, without identifying J with a Gamma projection kernel or assuming coefficient faithfulness."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "finite-chain residual-subgroup membership under actual recursive and pasted source action"
+      - "literal finite-chain source-conjugation image equality for J"
+      - "finite-chain preservation and reflection of J = bottom"
+      - "source and endpoint pair coefficient-observation naturality under actual pasted actions"
+    remaining:
+      - "C1s/C1t order and typed finite composition"
+      - "fixed induced-action firing"
+      - "C1s/C1t/C2/D connection and revision-1 artifact re-audit"
+  certificate_provenance:
+    discharged:
+      - "J membership is inherited from the actual generated pulled comparison and target stabilizer, not supplied as a field"
+      - "coefficient commutation uses the selected and independently generated exact-isomorphism coefficient identities through F6"
+    unresolved: []
+  proof_use:
+    used:
+      - "F6 residual-subgroup membership for the freshly generated structural chain composite"
+      - "F9/F10 pasted-equals-recursive-equals-composite-generated source and endpoint actions"
+      - "F6 source and endpoint coefficient-observation squares"
+      - "the actual inverse of the pasted source conjugation for reverse subgroup inclusion"
+    unused:
+      - "no supplied J membership, subgroup equality, triviality, or coefficient-observation certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "both searches separated source-level J from Gamma projection kernels and selected a recursive-action bridge before the pasted subgroup and coefficient conclusions"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF12.lean; exit 0"
+    - "tracked module AxiomAudit: 7 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "fix the type-correct C1s/C1t composition order and prove nontrivial induced pair-action firing by the actual local Fin 4 evaluation"
 ```
