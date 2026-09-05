@@ -27,6 +27,19 @@ noncomputable def qualifiedComparisonCoefficientTrivialTargetStabilizer
   qualifiedComparisonTargetStabilizer comparison ⊓
     (CompositeFiberAut.coefficientObservation H).ker
 
+/-- Membership in the coefficient-trivial target stabilizer exposes exactly
+the comparison-stabilizer and coefficient-kernel obligations. -/
+@[simp] theorem mem_qualifiedComparisonCoefficientTrivialTargetStabilizer_iff
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {comparison : GeometryTotalHom G H}
+    {automorphism : CompositeFiberAut H} :
+    automorphism ∈
+        qualifiedComparisonCoefficientTrivialTargetStabilizer comparison ↔
+      automorphism ∈ qualifiedComparisonTargetStabilizer comparison ∧
+        automorphism ∈
+          (CompositeFiberAut.coefficientObservation H).ker :=
+  Iff.rfl
+
 namespace UpperGeometryCompatibleProblemInputData
 
 set_option synthInstance.maxHeartbeats 100000
@@ -86,10 +99,13 @@ noncomputable def generatedCoefficientTrivialPulledPartnerAction
           partner.1.toUpperEdgeReselection i j edge)
     coefficient_id := by
       intro i j edge
+      have stabilizerMembership :=
+        mem_qualifiedComparisonCoefficientTrivialTargetStabilizer_iff.mp
+          (stabilizer i j edge).2
       apply CompositeFiberAut.mem_coefficientObservation_ker_iff.mp
       exact (CompositeFiberAut.coefficientObservation
         (input.generatedPulledRouteGeometryAt j)).ker.mul_mem
-          (stabilizer i j edge).2.2
+          stabilizerMembership.2
           (CompositeFiberAut.mem_coefficientObservation_ker_iff.mpr
             (partner.1.coefficient_id edge))
   }
@@ -101,9 +117,13 @@ noncomputable def generatedCoefficientTrivialPulledPartnerAction
     ⟨partner.1.toUpperEdgeReselection i j edge, partner.2 edge⟩
   let targetStabilizer : qualifiedComparisonTargetStabilizer
       (input.generatedCompatibleUpperGeometryMateAt j) :=
-    ⟨(stabilizer i j edge).1, (stabilizer i j edge).2.1⟩
+    ⟨(stabilizer i j edge).1,
+      (mem_qualifiedComparisonCoefficientTrivialTargetStabilizer_iff.mp
+        (stabilizer i j edge).2).1⟩
   exact (qualifiedComparisonTargetLiftAction targetStabilizer lift).2
 
+/-- Scalar multiplication on partner families is the actual pointwise
+coefficient-trivial target-stabilizer action. -/
 noncomputable instance generatedCoefficientTrivialPulledPartnerSMul
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -113,6 +133,7 @@ noncomputable instance generatedCoefficientTrivialPulledPartnerSMul
       (GeneratedCoefficientTrivialPulledPartner input base) where
   smul := generatedCoefficientTrivialPulledPartnerAction
 
+/-- The pointwise product laws make the partner-family action multiplicative. -/
 noncomputable instance generatedCoefficientTrivialPulledPartnerMulAction
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -398,7 +419,9 @@ theorem generatedCoefficientTrivialPulledPartnerAction_transitive
       exact ((CompositeFiberAut.coefficientObservation
         (input.generatedPulledRouteGeometryAt j)).ker.mul_mem_cancel_right
           sourceCoefficient).mp productCoefficient
-    exact ⟨⟨stabilizer.1, stabilizer.2, stabilizerCoefficient⟩, actionValue⟩
+    exact ⟨⟨stabilizer.1,
+      mem_qualifiedComparisonCoefficientTrivialTargetStabilizer_iff.mpr
+        ⟨stabilizer.2, stabilizerCoefficient⟩⟩, actionValue⟩
   let stabilizer : GeneratedCoefficientTrivialTargetStabilizerFamily input :=
     fun _ _ edge => Classical.choose (pointwise edge)
   refine ⟨stabilizer, ?_⟩

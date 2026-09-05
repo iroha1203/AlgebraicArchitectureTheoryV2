@@ -742,6 +742,9 @@ result:
       - sourceCoefficientTrivialUpperEdgeReselection_generatedRawCochain_intertwining
       - UpperDecisionWitness.generatedComparatorUpperReselections_twist_mem_qualifiedComparison
       - UpperDecisionWitness.generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison
+      - UpperDecisionWitness.generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one
+      - UpperDecisionWitness.canonicalCompanionComparatorUpperReselections_paired_fires
+      - UpperDecisionWitness.canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_ne_one
       - UpperDecisionWitness.canonicalCompanionBaseComparatorPulledIdentity_not_endpointIntertwining
     source_labels:
       - "target theorem (C2), actual coefficient-trivial edge reselection"
@@ -780,7 +783,8 @@ audits:
       - "generatedBaseCompositeFiberAutAt_fac, generatedPulledCompositeFiberAutAt_fac, and both route-leg coefficient identities"
       - "generatedQualifiedComparisonRelation_diagonal in source-to-paired generation"
       - "existing endpoint edge/path, path-leg, authored-comparator, toPaired, and raw-cochain routes"
-      - "generated fixed positive/negative theorems and canonical-authored forward/backward reselection transport"
+      - "generatedComparatorUpperReselections_endpointIntertwining_fires, generatedBaseComparatorPulledIdentity_not_endpointIntertwining, and generatedBaseComparatorCoefficientTrivialUpperReselection_ne_one"
+      - "canonicalCompanionComparatorUpperReselections_paired_fires, canonicalCompanionBaseComparatorCoefficientTrivialUpperReselection_ne_one, and canonical-authored forward/backward reselection transport"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -791,7 +795,7 @@ audits:
   validation_refs:
     - "targeted direct dependency builds only; no Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean; exit 0; 5 declarations standard-only"
-    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean; exit 0; 19 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean; exit 0; 20 declarations standard-only"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 7 declarations standard-only"
   blocking_findings: []
   next_obligation: "C3: prove generated base-transport preservation and exact reflection criterion, then decide J_*"
