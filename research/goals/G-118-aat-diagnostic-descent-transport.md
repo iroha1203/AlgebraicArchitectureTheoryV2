@@ -112,11 +112,15 @@
     これで全解を右剰余類 `J_i*a` として固定する。`J_i` の正規性や商群は仮定しない。
 
     `J_i` は membership の言い換えだけで済ませず、生成 route の入力写像から得る
-    次のデータ条件として特徴づける: core の pointed / operation / invariant /
-    axis / coordinate map の等式、係数写像の等式、および各 context 上の
+    次のデータ条件として特徴づける: core の pointed 部分、`atomEquiv`、`objectMap`、
+    `equationTransport` の計算データ(`contextEquivalence` / `equationEquiv` /
+    `observableEquiv`)、`operationMap` / `invariantMap` / `axisMap` / `coordinateEquiv`
+    の等式、係数写像の等式、および各 context 上の
     supportComp / axisComp / observableComp の像での固定条件。
-    `GeometryTotalHom.ext`、`GeomReadHom` の ext API と core の ext API へ接続して
-    条件の必要十分性を示す。overlap の同一視は thin context の一意性で放電する。
+    `SignedExactCoreReadingHom.ext` が要求する `objectMap` の等式と
+    `equationTransport` の `HEq` を含む全条件を放電し、core 射の一致を確定する。
+    その後、同じ core 射上で overlap の同一視を thin context の一意性により放電し、
+    `GeomReadHom.ext` と `GeometryTotalHom.ext` へ接続して条件の必要十分性を示す。
     この特徴づけと下記の実 decision を同じ proof chain にする。
     生成像 `H_B,H_P` の分類と、A の全端点群の分類の範囲を区別する。
 
