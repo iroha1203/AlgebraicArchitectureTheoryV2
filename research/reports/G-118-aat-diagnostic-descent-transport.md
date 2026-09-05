@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C3 source-presentation central `T` naturality
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C3 source-presentation central `T` naturality、Γ/J/生成像/係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C3 source-presentation の Γ correspondence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、Γ/J/生成像/係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: independently generated `T'_i` と source/endpoint conjugation から中心自然性を証明する
+- next obligation: comparison-component naturality と中心 `T` 自然性から `Θ_BP,i(Γ_(c'_i)) = Γ_(c_i)` を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1513,4 +1513,92 @@ audits:
     - "targeted dependency construction of ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF0; exit 0"
   blocking_findings: []
   next_obligation: "C3 source-presentation central T naturality"
+```
+
+## Cycle 15 — central generated comparison-map naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 15
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 2ff16752a918293e6ee4a2f42f155002b086ee4a
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 14 accepted generated endpoint and comparison-component naturality"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_hom_fac
+    - UpperGeometryCompatibleProblemInputData.generatedBaseCompositeFiberAutAt_fac
+    - UpperGeometryCompatibleProblemInputData.generatedPulledCompositeFiberAutAt_fac
+    - CompositeFiberAut.conjugationMulEquiv
+    - CategoryTheory.Functor.IsStronglyCartesian.ext
+  proof_obligation: "prove T_i composed with source-pair conjugation equals endpoint-pair conjugation composed with the independently generated T'_i"
+  selection_reason: "this is the central C3 source-presentation naturality square and the immediate predecessor of Gamma, J, range, and observation correspondence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF2.lean
+  risks:
+    - source and endpoint conjugation variance
+    - accidental definition of T'_i from the target equality
+    - complete-geometry equality without package-level lift equality
+  unchecked:
+    - Gamma/J/range and coefficient-observation correspondence
+    - C1s identity, inverse, and finite-composition coherence
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseCompositeFiberAutAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledCompositeFiberAutAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.generatedComparisonPairHomAt_sourcePresentation_naturality
+  source_labels:
+    - "C3 source and independently generated endpoint pair conjugation"
+    - "C3 central T_i source-presentation naturality"
+  acceptance_point: "Both old and changed generated endpoint homomorphisms are constructed independently. Their pointwise naturality is derived from actual cartesian factorization triangles and source conjugation, then assembled as an equality of bundled MonoidHom maps. No endpoint-intertwining or central-naturality certificate is supplied."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "base generated endpoint homomorphism naturality under source change"
+      - "pulled generated endpoint homomorphism naturality under source change"
+      - "central bundled comparison-pair homomorphism naturality"
+    remaining:
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "Gamma, projection, kernel, fiber, J, range, observation, fixed firing, and D transport"
+  certificate_provenance:
+    discharged:
+      - "source pair transport is literal conjugation by the selected geometryIso"
+      - "endpoint pair transport is literal conjugation by independently generated eta_B and eta_P"
+      - "T'_i is changedInput.generatedComparisonPairHomAt, independently generated before the equality"
+      - "endpoint intertwining is forced by old/new route-leg factorization and two-stage cartesian uniqueness"
+    unresolved: []
+  proof_use:
+    used:
+      - "conjugationMulEquiv_hom and actual source iso inverse laws"
+      - "old and changed generatedBaseCompositeFiberAutAt_fac and generatedPulledCompositeFiberAutAt_fac"
+      - "generatedBaseRouteExactGeometryIsoAt_hom_fac and generatedPulledRouteExactGeometryIsoAt_hom_fac"
+      - "baseRouteGeometryBase_isStronglyCartesian and pulledRouteGeometryBase_isStronglyCartesian"
+      - "generated base/pulled route-leg strongly-cartesian uniqueness"
+      - "MonoidHom.ext and product extensionality"
+    unused:
+      - "comparison-component naturality is intentionally reserved for the next Gamma correspondence obligation"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "all lanes agreed on forward changed-to-old conjugation variance; no missing mathematical premise or counterexample was found"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF2.lean; exit 0; 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C3 source-presentation Gamma correspondence"
 ```
