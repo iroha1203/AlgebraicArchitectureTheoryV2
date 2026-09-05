@@ -641,7 +641,7 @@ audits:
       - "C1 coefficient identity in both presentation directions"
     remaining:
       - "C2 actual edge reselection"
-      - "C3 horizontal context base change"
+      - "C3 generated base-transport preservation via T_i and reflection from J_i = {1}"
       - "D observation and nonfactorization"
       - "identity/inverse/finite-composition closure and completion audit"
   certificate_provenance:
