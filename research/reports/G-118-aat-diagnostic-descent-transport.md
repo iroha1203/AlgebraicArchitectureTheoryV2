@@ -798,6 +798,10 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedCoefficientObservation.lean; exit 0; 5 declarations standard-only"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselection.lean; exit 0; 20 declarations standard-only"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEdgeReselectionConsequences.lean; exit 0; 9 declarations standard-only"
+    - "reviewed head 4ed6181aecfd00983225bb45b90d0bd6754fa598: direct-response review resolved all bounded noncentral findings; GitHub CI 7/7 pass"
+    - "fixed-head audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4376#issuecomment-5550584684"
+    - "root acceptance: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4376#issuecomment-5550584800"
+    - "merged by PR #4376 at 3bd575eca0d2539c80364e758cb322b362a9d7c1"
   blocking_findings: []
   next_obligation: "C3: prove generated base-transport preservation and exact reflection criterion, then decide J_*"
 ```
@@ -834,7 +838,7 @@ selection:
     - "D, C1/C2/C3 closure, and final completion review"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "For every compatible input and vertex, the actual product homomorphism T_i sends the identity-comparison qualified subgroup into Gamma_(c_i). Reflection of this map is equivalent to J_i=bottom. The generated pulled endpoint homomorphism is injective, proved from its Cartesian factorization, the exact upper equivalence, and the realization-exact Support/Axis/Observable equivalences. At the fixed datum the target stabilizer is bottom, so J_*=bottom; consequently R_*(a,d) iff a=d for all source automorphisms, and the literal B1 input conditions hold exactly for the identity residual."
+  proof_obligation_delta: "For every compatible input and vertex, the actual product homomorphism T_i sends the identity-comparison qualified subgroup into Gamma_(c_i). Reflection of this map is equivalent to J_i=bottom. The generated pulled endpoint homomorphism is injective: its Cartesian factorization reflects the exact upper map; composite-fiber qualification fixes the lower pointed map; coefficient-triviality reflects the coefficient map; and the realization-exact Support/Axis/Observable Sigma equivalences reflect all dependent carrier maps before GeometryTotalHom extensionality. At the fixed datum the target stabilizer is bottom, so J_*=bottom; consequently R_*(a,d) iff a=d for all source automorphisms, and the literal B1 input conditions hold exactly for the identity residual."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean
@@ -843,14 +847,29 @@ result:
     theorem_names:
       - mem_qualifiedComparisonSubgroup_identity_iff
       - ExactUpperEquivalence.forward_comp_injective
+      - UpperGeometryCompatibleProblemInputData.refinementGeometrySupportSigmaMap
+      - UpperGeometryCompatibleProblemInputData.refinementGeometrySupportSigmaMap_comp
+      - UpperGeometryCompatibleProblemInputData.refinementGeometryAxisSigmaMap
+      - UpperGeometryCompatibleProblemInputData.refinementGeometryAxisSigmaMap_comp
+      - UpperGeometryCompatibleProblemInputData.refinementGeometryObservableSigmaMap
+      - UpperGeometryCompatibleProblemInputData.refinementGeometryObservableSigmaMap_comp
+      - UpperGeometryCompatibleProblemInputData.geometryTotalHom_supportComp_heq_of_sigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.geometryTotalHom_axisComp_heq_of_sigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.geometryTotalHom_observableComp_heq_of_sigmaMap_eq
       - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_supportSigmaMap_eq
       - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_axisSigmaMap_eq
       - UpperGeometryCompatibleProblemInputData.generatedPulledRoute_observableSigmaMap_eq
+      - UpperGeometryCompatibleProblemInputData.generatedPulledGeometryComparatorCandidateAt_coefficientHom
+      - UpperGeometryCompatibleProblemInputData.generatedPulledGeometryComparatorCandidateAt_supportSigmaMap
+      - UpperGeometryCompatibleProblemInputData.generatedPulledGeometryComparatorCandidateAt_axisSigmaMap
+      - UpperGeometryCompatibleProblemInputData.generatedPulledGeometryComparatorCandidateAt_observableSigmaMap
       - UpperGeometryCompatibleProblemInputData.generatedPulledCompositeFiberAutHomAt_injective
       - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_apply
       - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
       - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_reflects_iff_kernel_eq_bot
       - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+      - UpperGeometryCompatibleProblemInputData.generatedPulledComparisonKernel_eq_ker_of_targetStabilizer_eq_bot
       - UpperDecisionWitness.generatedPulledComparisonKernel_eq_bot
       - UpperDecisionWitness.generatedQualifiedComparisonRelation_iff_eq
       - UpperDecisionWitness.solution_generatedComparisonPairHom_mem_iff_source_identity_mem
@@ -882,7 +901,7 @@ audits:
     discharged:
       - "preservation is generated by the B1 diagonal theorem"
       - "reflection is derived from the B1 residual-difference iff"
-      - "H_P injectivity uses the actual Cartesian factorization, exact upper inverse, and realization-exact total-carrier equivalences"
+      - "H_P injectivity uses the actual Cartesian factorization, exact upper inverse, composite-fiber lower-pointed identity, generated route coefficient identity, and realization-exact total-carrier equivalences; PackageTotalHom.ext, geomReadHom_heq_of_base_eq, GeometryTotalHom.ext, and Iso.ext reconstruct equality of the complete automorphisms"
       - "J_* uses the reviewed fixed target-stabilizer decision and the constructed H_P injectivity"
     unresolved:
       - "D and closure witnesses"
@@ -892,7 +911,10 @@ audits:
       - "generatedQualifiedComparisonRelation_iff_difference_mem"
       - "generatedPulledCompositeFiberAutAt_fac"
       - "generatedPulledRouteUpperEquivalenceAt_forward_eq and backward_forward"
+      - "CompositeFiberAut.hom_base_base_eq and PackageTotalHom.ext for the lower pointed and upper package components"
+      - "generatedPulledRouteLegAt_coefficient_id via generatedPulledGeometryComparatorCandidateAt_coefficientHom"
       - "generatedPulledRouteRealizationExactAt supportSigmaEquiv, axisSigmaEquiv, and observableSigmaEquiv"
+      - "refinementGeometry Support/Axis/Observable Sigma-map composition and HEq bridge declarations, followed by geomReadHom_heq_of_base_eq, GeometryTotalHom.ext, and Iso.ext"
       - "solution_targetStabilizer_eq_bot"
       - "mem_generatedPulledComparisonKernel_iff_inputConditions"
     unused: []
@@ -904,7 +926,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "targeted direct dependency builds only; no Research aggregate/full build"
-    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean; exit 0; 25 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean; exit 0; 30 declarations standard-only"
   blocking_findings: []
   next_obligation: "D: prove fixed coefficient-observation nonfactorization and transport it through C1/C2/C3"
 ```

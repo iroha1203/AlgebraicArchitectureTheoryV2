@@ -9,6 +9,13 @@ form a homomorphism on pairs of source composite-fiber automorphisms.  It sends
 the qualified group of the source identity comparison into the qualified group
 of the generated mate.  Reflection is characterized exactly by triviality of
 the residual source subgroup `J_i`.
+
+The injectivity proof packages each context-indexed Support, Axis, and
+Observable map as a dependent Sigma-carrier map.  This turns equality after
+the generated route into ordinary function equality, where surjectivity of the
+reviewed realization equivalence cancels the route.  Direct cancellation of
+the indexed maps would leave dependent context equalities implicit and would
+not supply the heterogeneous equalities required by `GeometryTotalHom.ext`.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -228,10 +235,75 @@ theorem generatedPulledRoute_observableSigmaMap_eq
   · rfl
   · rfl
 
+/-- The pulled comparator candidate has the source coefficient map: the
+generated route leg is coefficient-trivial. -/
+theorem generatedPulledGeometryComparatorCandidateAt_coefficientHom
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex)
+    (automorphism : CompositeFiberAut (input.sourceGeometry i).package) :
+    (input.generatedPulledGeometryComparatorCandidateAt i automorphism).geometry.coefficientHom =
+      (CompositeFiberAut.hom automorphism).geometry.coefficientHom := by
+  simp only [generatedPulledGeometryComparatorCandidateAt,
+    RefinementGeometryHom.comp, RefinementGeomReadHom.comp,
+    input.generatedPulledRouteLegAt_coefficient_id]
+  ext value
+  rfl
+
+/-- The support Sigma-map of the pulled candidate is route composition with
+the source automorphism Sigma-map. -/
+theorem generatedPulledGeometryComparatorCandidateAt_supportSigmaMap
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex)
+    (automorphism : CompositeFiberAut (input.sourceGeometry i).package) :
+    refinementGeometrySupportSigmaMap
+        (input.generatedPulledGeometryComparatorCandidateAt i automorphism) =
+      refinementGeometrySupportSigmaMap
+          ((exactGeometryToRefinementGeometry U).map
+            (CompositeFiberAut.hom automorphism)) ∘
+        refinementGeometrySupportSigmaMap (input.generatedPulledRouteLegAt i) := by
+  rw [generatedPulledGeometryComparatorCandidateAt]
+  exact refinementGeometrySupportSigmaMap_comp _ _
+
+/-- The axis Sigma-map of the pulled candidate is route composition with the
+source automorphism Sigma-map. -/
+theorem generatedPulledGeometryComparatorCandidateAt_axisSigmaMap
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex)
+    (automorphism : CompositeFiberAut (input.sourceGeometry i).package) :
+    refinementGeometryAxisSigmaMap
+        (input.generatedPulledGeometryComparatorCandidateAt i automorphism) =
+      refinementGeometryAxisSigmaMap
+          ((exactGeometryToRefinementGeometry U).map
+            (CompositeFiberAut.hom automorphism)) ∘
+        refinementGeometryAxisSigmaMap (input.generatedPulledRouteLegAt i) := by
+  rw [generatedPulledGeometryComparatorCandidateAt]
+  exact refinementGeometryAxisSigmaMap_comp _ _
+
+/-- The observable Sigma-map of the pulled candidate is route composition
+with the source automorphism Sigma-map. -/
+theorem generatedPulledGeometryComparatorCandidateAt_observableSigmaMap
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex)
+    (automorphism : CompositeFiberAut (input.sourceGeometry i).package) :
+    refinementGeometryObservableSigmaMap
+        (input.generatedPulledGeometryComparatorCandidateAt i automorphism) =
+      refinementGeometryObservableSigmaMap
+          ((exactGeometryToRefinementGeometry U).map
+            (CompositeFiberAut.hom automorphism)) ∘
+        refinementGeometryObservableSigmaMap
+          (input.generatedPulledRouteLegAt i) := by
+  rw [generatedPulledGeometryComparatorCandidateAt]
+  exact refinementGeometryObservableSigmaMap_comp _ _
+
 /-- The generated pulled endpoint homomorphism is injective.  The lower
-pointed maps of composite-fiber automorphisms are identities, while the upper
-and three realization carriers are reflected through the generated route
-equivalences. -/
+pointed maps of composite-fiber automorphisms are identities; coefficient
+maps are reflected by coefficient-triviality of the generated route; and the
+upper and three realization carriers are reflected through the generated
+route equivalences. -/
 theorem generatedPulledCompositeFiberAutHomAt_injective
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -271,10 +343,14 @@ theorem generatedPulledCompositeFiberAutHomAt_injective
   have coefficientEquality :
       firstHom.geometry.coefficientHom =
         secondHom.geometry.coefficientHom := by
-    simpa only [generatedPulledGeometryComparatorCandidateAt,
-      RefinementGeometryHom.comp, RefinementGeomReadHom.comp,
-      input.generatedPulledRouteLegAt_coefficient_id, RingHom.comp_id]
-      using coefficientCompositeEquality
+    change
+      (input.generatedPulledGeometryComparatorCandidateAt i first).geometry.coefficientHom =
+        (input.generatedPulledGeometryComparatorCandidateAt i second).geometry.coefficientHom
+      at coefficientCompositeEquality
+    rw [input.generatedPulledGeometryComparatorCandidateAt_coefficientHom,
+      input.generatedPulledGeometryComparatorCandidateAt_coefficientHom]
+      at coefficientCompositeEquality
+    exact coefficientCompositeEquality
   have supportCompositeEquality := congrArg refinementGeometrySupportSigmaMap
     candidateEquality
   have supportMapEquality :
@@ -287,10 +363,10 @@ theorem generatedPulledCompositeFiberAutHomAt_injective
       Equiv.surjective _
     apply routeSurjective.right_cancellable.mp
     rw [← input.generatedPulledRoute_supportSigmaMap_eq i]
-    funext value
-    simpa only [Function.comp_apply, ← refinementGeometrySupportSigmaMap_comp,
-      generatedPulledGeometryComparatorCandidateAt] using
-      congrFun supportCompositeEquality value
+    rw [input.generatedPulledGeometryComparatorCandidateAt_supportSigmaMap,
+      input.generatedPulledGeometryComparatorCandidateAt_supportSigmaMap]
+      at supportCompositeEquality
+    exact supportCompositeEquality
   have axisCompositeEquality := congrArg refinementGeometryAxisSigmaMap
     candidateEquality
   have axisMapEquality :
@@ -303,10 +379,10 @@ theorem generatedPulledCompositeFiberAutHomAt_injective
       Equiv.surjective _
     apply routeSurjective.right_cancellable.mp
     rw [← input.generatedPulledRoute_axisSigmaMap_eq i]
-    funext value
-    simpa only [Function.comp_apply, ← refinementGeometryAxisSigmaMap_comp,
-      generatedPulledGeometryComparatorCandidateAt] using
-      congrFun axisCompositeEquality value
+    rw [input.generatedPulledGeometryComparatorCandidateAt_axisSigmaMap,
+      input.generatedPulledGeometryComparatorCandidateAt_axisSigmaMap]
+      at axisCompositeEquality
+    exact axisCompositeEquality
   have observableCompositeEquality := congrArg refinementGeometryObservableSigmaMap
     candidateEquality
   have observableMapEquality :
@@ -319,10 +395,10 @@ theorem generatedPulledCompositeFiberAutHomAt_injective
       Equiv.surjective _
     apply routeSurjective.right_cancellable.mp
     rw [← input.generatedPulledRoute_observableSigmaMap_eq i]
-    funext value
-    simpa only [Function.comp_apply, ← refinementGeometryObservableSigmaMap_comp,
-      generatedPulledGeometryComparatorCandidateAt] using
-      congrFun observableCompositeEquality value
+    rw [input.generatedPulledGeometryComparatorCandidateAt_observableSigmaMap,
+      input.generatedPulledGeometryComparatorCandidateAt_observableSigmaMap]
+      at observableCompositeEquality
+    exact observableCompositeEquality
   apply Subtype.ext
   apply Iso.ext
   apply GeometryTotalHom.ext baseEquality
@@ -433,6 +509,20 @@ theorem generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
     exact mem_qualifiedComparisonSubgroup_identity_iff.mpr
       (reflects pair.1 pair.2 targetMembership)
 
+/-- If the generated target stabilizer is trivial, the residual subgroup
+`J_i` is exactly the kernel of the actual pulled endpoint homomorphism. -/
+theorem generatedPulledComparisonKernel_eq_ker_of_targetStabilizer_eq_bot
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex)
+    (targetStabilizerIdentity :
+      qualifiedComparisonTargetStabilizer
+        (input.generatedCompatibleUpperGeometryMateAt i) = ⊥) :
+    input.generatedPulledComparisonKernel i =
+      MonoidHom.ker (input.generatedPulledCompositeFiberAutHomAt i) := by
+  rw [generatedPulledComparisonKernel, targetStabilizerIdentity]
+  rfl
+
 end UpperGeometryCompatibleProblemInputData
 
 namespace UpperDecisionWitness
@@ -442,10 +532,8 @@ target stabilizer is trivial because the generated comparison is an
 isomorphism, and the actual pulled endpoint homomorphism is injective. -/
 theorem generatedPulledComparisonKernel_eq_bot :
     problem.data.generatedPulledComparisonKernel PUnit.unit = ⊥ := by
-  unfold UpperGeometryCompatibleProblemInputData.generatedPulledComparisonKernel
-  rw [show qualifiedComparisonTargetStabilizer
-      (problem.data.generatedCompatibleUpperGeometryMateAt PUnit.unit) = ⊥ by
-    exact solution_targetStabilizer_eq_bot]
+  rw [problem.data.generatedPulledComparisonKernel_eq_ker_of_targetStabilizer_eq_bot
+    PUnit.unit solution_targetStabilizer_eq_bot]
   exact (MonoidHom.ker_eq_bot_iff
     (problem.data.generatedPulledCompositeFiberAutHomAt PUnit.unit)).2
       (problem.data.generatedPulledCompositeFiberAutHomAt_injective PUnit.unit)
