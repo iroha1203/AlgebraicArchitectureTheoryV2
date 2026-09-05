@@ -1,7 +1,3 @@
-# 否定形禁止
-
-> 各文・各段落・各節は、対象の肯定的な定義、役割、価値、達成から始める。
-
 # Paper Workspace
 
 このディレクトリは、AAT / SFT / ArchSig の研究成果を査読論文へまとめるための作業面である。
@@ -17,7 +13,7 @@ SAGA の数学、Lean 形式化、ArchSig による実コード診断を統合�
 機械検証、有限 measurement を通って実在 software の一セントへ到達した研究成果として構成する。
 
 Related Work の原典調査、必須文献、比較軸、本文候補は
-[zenodo_saga_related_work.md](zenodo_saga_related_work.md) に整理する。
+[zenodo_saga_related_work.md](../zenodo_saga_related_work.md) に整理する。
 
 論文の日本語正本は [zenodo_saga_draft.md](zenodo_saga_draft.md) に置く。
 release identity は確定済み: release tag `saga-paper-v1.0.0`、v1.0.0 deposit の version DOI
@@ -33,3 +29,22 @@ Release 監査面: claim-to-evidence 対応は
 canonical 対応表(内部監査用)は [zenodo_canonical_map.md](zenodo_canonical_map.md)、
 deposit metadata は [zenodo_metadata.md](zenodo_metadata.md)、
 deposit bundle の組成は [bundle/build_bundle.py](bundle/build_bundle.py) が固定する。
+
+## 作業環境
+
+共通の執筆・品質基準は [Paper guideline](../../../docs/paper/guideline.md)、
+検査・投稿用 source の作成は [共通ツール](../_tools/README.md) を参照する。
+`zenodo_saga.md` のチェック欄は初稿の計画であり、公開時の完了記録は
+`zenodo_claim_evidence_matrix.md` の「P0-6 final review 記録」にある。
+現在の再生成物の確認は、その都度の検査結果と投稿記録に残す。
+
+証拠 bundle の再生成例:
+
+```bash
+python3 outreach/paper/saga/bundle/build_bundle.py --pdf .tmp/paper-saga-tectonic/build/main.pdf --out .tmp/saga-reconstruction
+```
+
+再生成 bundle は公開時の固定 commit から証拠と供給工程を取得し、現在の原稿と指定 PDF を
+組み合わせる。`MANIFEST.json` は `local-reconstruction` と記録する。
+指定 PDF と現在の原稿は共通ビルド記録の hash と照合する。公開済み deposit との
+byte 一致と投稿可否は、その都度確認する。

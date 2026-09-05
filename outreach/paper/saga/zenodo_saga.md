@@ -339,7 +339,7 @@ Related Work は、SAGA の主成果を次の研究群の中へ位置づける�
 
 比較では、対象、site、係数の生成、`H¹` の意味、comparison theorem、repair、
 Lean、実行系、実証単位を確認する。原典調査と比較候補は
-[`zenodo_saga_related_work.md`](zenodo_saga_related_work.md) で管理する。
+[`zenodo_saga_related_work.md`](../zenodo_saga_related_work.md) で管理する。
 
 SAGA の比較では、言語や framework を越える Atom 構成、実装型が一致する場合にも
 semantic mismatch を捉える equation geometry、repair 前後の有限比較を主要な差異として示す。

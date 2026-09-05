@@ -69,6 +69,7 @@
 | Tooling | `tools/archsig`, `tools/archview`, `tools/fieldsig`, `docs/tool` | [Tool guideline](docs/tool/guideline.md) |
 | Website | `website`, `docs/website` | [Website guideline](docs/website/guideline.md) |
 | PRD | `docs/prd` | [PRD guideline](docs/prd/guideline.md) |
+| 論文 | `outreach/paper`, `docs/paper` | [Paper guideline](docs/paper/guideline.md) |
 | Outreach | `outreach` | [Outreach README](outreach/README.md) |
 | 研究プログラム | `research/`, `research/lean/ResearchLean/` | [research README](research/README.md) |
 | 横断(全領域) | — | [Workflow guideline](docs/workflow/guideline.md) |

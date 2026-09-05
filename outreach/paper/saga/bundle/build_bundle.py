@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """saga-zenodo-bundle の組成スクリプト。
 
-repository root から実行する。paper PDF は事前に tectonic でビルドしておく:
-    cd outreach/paper/saga/en && tectonic main.tex
+repository root から実行する。共通 CLI で paper PDF と build.json を生成しておく:
+    python3 outreach/paper/_tools/paper.py build outreach/paper/saga/paper.json --out .tmp/saga-build
 組成:
-    python3 outreach/paper/saga/bundle/build_bundle.py [--ci-run URL] [--out DIR]
-tag 押下後に --ci-run で release CI run URL を渡すと MANIFEST に記録される。
+    python3 outreach/paper/saga/bundle/build_bundle.py --pdf .tmp/saga-build/build/main.pdf [--ci-run URL] [--out DIR]
+--ci-run は公開時の証拠 commit に対応する CI run URL を指定する。
 """
 
 import argparse
@@ -15,10 +15,13 @@ import shutil
 import subprocess
 import sys
 import zipfile
+import tempfile
 from pathlib import Path
 
 TAG = "saga-paper-v1.0.0"
-DOI = "10.5281/zenodo.21603762"
+DOI = "10.5281/zenodo.21605207"
+CONCEPT_DOI = "10.5281/zenodo.21603761"
+EVIDENCE_COMMIT = "5246d5326f01c0879f2305d9a7872d35e97c9380"
 TOOL_VERSION = "0.5.4"
 SCHEMA_VERSIONS = {
     "repairPlan": "archsig-repair-plan/v0.5.7",
@@ -74,19 +77,49 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=".tmp/saga-zenodo-bundle")
     ap.add_argument("--ci-run", default=None,
-                    help="release CI run URL (tag 押下後に指定)")
+                    help="公開時の固定 evidence commit の CI run URL")
+    ap.add_argument("--pdf", default="outreach/paper/saga/en/main.pdf",
+                    help="今回同梱する PDF。再生成版として manifest に hash を記録")
+    ap.add_argument("--build-record", help="指定 PDF の build.json (共通ビルドなら自動検出)")
     args = ap.parse_args()
 
     root = Path.cwd()
     if not (root / "outreach/paper/saga/en/main.tex").exists():
         sys.exit("run from the repository root")
-    pdf = root / "outreach/paper/saga/en/main.pdf"
+    pdf = Path(args.pdf).resolve()
     if not pdf.exists():
-        sys.exit("build the PDF first: cd outreach/paper/saga/en && tectonic main.tex")
+        sys.exit("build the PDF with the common CLI and pass --pdf")
+
+    verify = [sys.executable, "outreach/paper/_tools/paper.py", "check",
+              "outreach/paper/saga/paper.json", "--pdf", str(pdf)]
+    if args.build_record:
+        verify += ["--build-record", args.build_record]
+    checked = subprocess.run(verify, capture_output=True, text=True)
+    if checked.returncode:
+        sys.exit("PDF/source verification failed: " + checked.stdout + checked.stderr)
 
     out = Path(args.out)
-    if out.exists():
-        shutil.rmtree(out)
+    if out.exists() or (out.parent / (out.name + ".zip")).exists():
+        sys.exit("output already exists; choose a new --out")
+
+    # 公開時の証拠と供給工程を固定 commit から取得する。
+    tagged = subprocess.check_output(["git", "rev-parse", TAG + "^{commit}"], text=True).strip()
+    if tagged != EVIDENCE_COMMIT:
+        sys.exit("release tag does not match the recorded evidence commit")
+    paths = ["docs/reports/train_ticket_dogfooding/evidence/saga",
+             "docs/reports/train_ticket_dogfooding/saga_diagnosis.md",
+             "tools/archsig/skills/archmap-creater",
+             "outreach/paper/zenodo_claim_evidence_matrix.md"]
+    temporary = tempfile.TemporaryDirectory(prefix="saga-evidence-")
+    snapshot = Path(temporary.name)
+    for prefix in paths:
+        names = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", EVIDENCE_COMMIT, "--", prefix], text=True).splitlines()
+        if not names:
+            sys.exit("missing historical source: " + prefix)
+        for name in names:
+            target = snapshot / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(subprocess.check_output(["git", "show", EVIDENCE_COMMIT + ":" + name]))
 
     # paper/: PDF + figures + bib(paper/ 直下)、tex source(paper/src/)。
     # src/ からの ../ 参照(bib・図)が paper/ 直下に解決される配置。
@@ -102,24 +135,28 @@ def main() -> int:
         shutil.copy2(tex, src / tex.name)
 
     # evidence/
-    shutil.copytree(root / "docs/reports/train_ticket_dogfooding/evidence/saga",
+    shutil.copytree(snapshot / "docs/reports/train_ticket_dogfooding/evidence/saga",
                     out / "evidence/saga")
 
     # report/
     (out / "report").mkdir()
-    shutil.copy2(root / "docs/reports/train_ticket_dogfooding/saga_diagnosis.md",
+    shutil.copy2(snapshot / "docs/reports/train_ticket_dogfooding/saga_diagnosis.md",
                  out / "report/saga_diagnosis.md")
 
     # reproduction/
     repro = out / "reproduction"
     repro.mkdir()
-    shutil.copytree(root / "tools/archsig/skills/archmap-creater",
+    shutil.copytree(snapshot / "tools/archsig/skills/archmap-creater",
                     repro / "archmap-creater")
     expected_rows = "\n".join(
         f"| {step} | `{concl}` | {rid} |" for step, concl, rid in EXPECTED)
     (repro / "README.md").write_text(f"""# Reproduction
 
 Release identity: tag `{TAG}`, DOI `{DOI}`, ArchSig `{TOOL_VERSION}`,
+Historical evidence commit: `{EVIDENCE_COMMIT}`.
+This is a local reconstruction; the paper source and supplied PDF are recorded
+separately in the manifest. The historical audit describes the published snapshot.
+
 schemas `{SCHEMA_VERSIONS['repairPlan']}` / `{SCHEMA_VERSIONS['runManifest']}`.
 
 1. Obtain the repository at the release tag:
@@ -156,16 +193,19 @@ report with the condition matrix is `../report/saga_diagnosis.md`.
 
     # audit/
     (out / "audit").mkdir()
-    shutil.copy2(root / "outreach/paper/saga/zenodo_claim_evidence_matrix.md",
+    shutil.copy2(snapshot / "outreach/paper/zenodo_claim_evidence_matrix.md",
                  out / "audit/claim_evidence_matrix.md")
 
     # CITATION.md
     (out / "CITATION.md").write_text(f"""# Citation
 
-Version DOI (this deposit, v1.0.0): https://doi.org/{DOI}
+Published evidence deposit (v1.0.0) version DOI: https://doi.org/{DOI}
 
-Concept DOI (resolves to the latest version): see the Zenodo record
-page of this deposit — assigned automatically at publication.
+Concept DOI: https://doi.org/{CONCEPT_DOI}
+
+This locally reconstructed bundle combines the supplied PDF and current paper
+sources with the historical evidence snapshot. Its hashes identify this build;
+the DOI identifies the published deposit, not this reconstructed archive.
 
 Cite the version DOI when referring to the verified evidence and Lean
 status of this release; cite the concept DOI for the paper in general.
@@ -181,18 +221,22 @@ License: CC BY 4.0.
     # MANIFEST.json(自身を除く全ファイルの sha256)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
                             text=True, check=True).stdout.strip()
-    tag_at = subprocess.run(["git", "tag", "--points-at", "HEAD"],
-                            capture_output=True, text=True).stdout.split()
     files = {}
     for f in sorted(out.rglob("*")):
         if f.is_file():
             files[str(f.relative_to(out))] = sha256(f)
     manifest = {
-        "schema": "saga-zenodo-bundle-manifest/v1",
+        "schema": "saga-zenodo-bundle-manifest/v2",
+        "kind": "local-reconstruction",
+        "evidenceCommit": EVIDENCE_COMMIT,
+        "paperSourceCommit": commit,
+        "suppliedPdfSha256": sha256(pdf),
+        "workingTreeDirty": bool(subprocess.check_output(
+            ["git", "status", "--porcelain"], text=True).strip()),
         "releaseIdentity": {
             "tag": TAG,
-            "tagPresentOnHead": TAG in tag_at,
-            "commit": commit,
+            "tagVerified": True,
+            "commit": EVIDENCE_COMMIT,
             "versionDoi": DOI,
             "license": "CC-BY-4.0",
             "archsigToolVersion": TOOL_VERSION,
@@ -218,12 +262,8 @@ License: CC BY 4.0.
     n = len(files)
     print(f"bundle built at {out} ({n} files + MANIFEST.json)")
     print(f"deposit zip: {zip_path} sha256={sha256(zip_path)}")
-    print("upload to Zenodo: the zip above + the standalone paper/main.pdf "
-          "(never the unzipped tree — flat upload collides same-named files)")
-    if TAG not in tag_at:
-        print(f"WARNING: HEAD is not tagged {TAG} — rebuild after tagging")
-    if not args.ci_run:
-        print("NOTE: releaseCiRun is null — pass --ci-run after the tag CI finishes")
+    print("local reconstruction; PDF/source hashes verified; complete submission review before publication")
+    temporary.cleanup()
     return 0
 
 
