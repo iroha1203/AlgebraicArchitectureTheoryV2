@@ -1305,7 +1305,7 @@ generator からの exact endpoint iso の構成可能性を先に確定する�
 ledger_type: target_cycle_result
 goal: G-118-aat-diagnostic-descent-transport
 cycle: 13
-goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
 base_oid: 7d4080a28fbb7d0e20189709c2fbcc59f74809c3
 tracking_issue: 4367
 report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
@@ -1430,7 +1430,7 @@ audits:
 ledger_type: target_cycle_result
 goal: G-118-aat-diagnostic-descent-transport
 cycle: 14
-goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
 base_oid: e081978a8220486513c567d9e81765b1225ea04e
 tracking_issue: 4367
 report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
