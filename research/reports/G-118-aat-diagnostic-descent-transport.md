@@ -1364,7 +1364,8 @@ audits:
     discharged:
       - "source C1 changes are elements of the actual coefficientObservation kernel, not caller-supplied comparison certificates"
       - "the fixed nonidentity source change is sourceTransport.comparator with its existing coefficient theorem"
-    unresolved: []
+    unresolved:
+      - "no provenance from the fixed u_i/v_i endpoint presentation changes to SourceDiagonalC1ChangeAt"
   proof_use:
     used:
       - "MulAut.conj identity/multiplication/inverse laws and coefficientObservation homomorphism"
@@ -1372,9 +1373,10 @@ audits:
       - "generatedComparisonPairHomAt preservation, exact reflection iff, and coefficient theorem"
       - "target C1 chain decision and observation laws"
       - "authored_comparator_coefficient_id and authored_comparator_ne_one"
-    unused: []
+    unused:
+      - "the fixed u_i/v_i C1 constructors are not used to construct the source-side precomposition"
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: fail
   target_fitting: found
   vacuity: none-found
   one_way_as_equivalence: none-found
