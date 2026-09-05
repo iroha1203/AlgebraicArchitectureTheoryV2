@@ -9,14 +9,14 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - revision 1 fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
-- revision 2 review: pending。GOAL 改訂 PR の固定 head に対する独立数学査読前である。
+- revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: revision 2 F0s — C1s source presentation change、変更後 input constructor、両段 qualification、generated `η_B/η_P` の構成可能性
+- current obligation: C1s generated endpoint factorization / coefficient laws と comparison-component naturality
 - pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s input reconstruction、C3 source-presentation naturality、Γ/J/生成像/係数 correspondence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: F0s で source change と certificate-free changed input を型付けし、actual two-stage generator から exact endpoint iso が構成可能かを判定する
+- next obligation: independently generated `η_B/η_P` の factorization・coefficient identity を固定し、比較成分可換式へ接続する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -99,6 +99,81 @@ audits:
     - "merged by PR #4370 at b537678d24b16f88f709dc32356e6a409cebd4ee"
   blocking_findings: []
   next_obligation: "A: construct the comparison stabilizer, both projections/kernels, and nonempty-fiber torsor actions"
+```
+
+## Cycle 13 — revision 2 F0s result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 13
+goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
+base_oid: 7d4080a28fbb7d0e20189709c2fbcc59f74809c3
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange
+    - UpperGeometryCompatibleSourcePresentationChange.changedSourceFiberDiagram
+    - UpperGeometryCompatibleSourcePresentationChange.sourceFiberDiagramIso
+    - UpperGeometryCompatibleSourcePresentationChange.changedEdgeLift
+    - UpperGeometryCompatibleSourcePresentationChange.changedPathLift_base
+    - UpperGeometryCompatibleSourcePresentationChange.changedTwoCellBase
+    - UpperGeometryCompatibleSourcePresentationChange.changedSourceTransport
+    - UpperGeometryCompatibleSourcePresentationChange.changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactCoreIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteRefinementGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactCoreIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteRefinementGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt
+  source_labels:
+    - "C1s source complete-geometry presentation change"
+    - "C1s changed-input reconstruction"
+    - "C1s generated eta_B/eta_P construction gate"
+  acceptance_point: "The change datum stops at replacement source objects, selected core-fiber isomorphisms, exact complete-geometry isomorphisms, projection equations, and the two coefficient identities. The changed diagram, edges, comparator, both local qualifications, two-cell base law, coefficient laws, changed input, lower naturality maps, and both generated endpoint isomorphisms are derived definitions or theorems."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "typed C1s change datum without changed-output certificates"
+      - "certificate-free changed source diagram and complete transport"
+      - "geometry/core strongly-cocartesian qualification after source conjugation"
+      - "base and pulled generated exact endpoint isomorphism constructibility"
+    remaining:
+      - "exact endpoint factorization and coefficient laws"
+      - "comparison-component and central T naturality"
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "Gamma, projection, kernel, fiber, J, range, observation, fixed firing, and D transport"
+  certificate_provenance:
+    discharged:
+      - "changed edges and comparator are literal conjugates reconstructed from input and geometryIso"
+      - "two-cell base equality is derived from actual morphisms in the reconstructed fixed core fiber"
+      - "generated lower comparisons use baseCompositeLegAt_naturality and pulledCompositeLegAt_naturality"
+      - "generated geometry comparisons use IsStronglyCartesian.domainIsoOfBaseIso and exactGeometryHomOfRefinement"
+    unresolved: []
+  proof_use:
+    used:
+      - "sourceTransportGeometryEdge_isIso, itself derived from source strong-cocartesian qualifications"
+      - "generatedBaseRouteLegAt_isStronglyCartesian and generatedPulledRouteLegAt_isStronglyCartesian"
+      - "baseRouteComparisonCoreIso and pulledRouteComparisonCoreIso normalization factors"
+      - "exactGeometryHomOfRefinement_toRefinement and faithful map_injective for both inverse laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF0.lean; exit 0; 54 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+    - "git diff --check; clean"
+    - "literal scan for sorry/admit/axiom/unsafe; only #assert_standard_axioms_only matched"
+    - "hidden/bidirectional Unicode scan; clean"
+  blocking_findings: []
+  next_obligation: "C1s generated endpoint factorization/coefficient laws and comparison-component naturality"
 ```
 
 ### F0 acceptance spine
@@ -1298,3 +1373,40 @@ revision 2 の completion evidence へ自動昇格させない。最初の oblig
 generator からの exact endpoint iso の構成可能性を先に確定する。固定 finite witness は
 `swap01Iso` / `compositeSwap01` と `compositeSwap12` の local `Fin 4` evaluation を使い、
 作用元ではなく induced pair action の非恒等性を証明する。
+
+## Cycle 13 — revision 2 F0s selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 13
+goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
+base_oid: 7d4080a28fbb7d0e20189709c2fbcc59f74809c3
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "revision 2 merge #4383 and Issue #4367 synchronization"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleProblemInputData
+    - FixedCoefficientTwoLayerTransportOver
+    - ActiveRefinementBCContext.baseCompositeLegAt_naturality
+    - ActiveRefinementBCContext.pulledCompositeLegAt_naturality
+    - generatedBaseRouteLegAt_isStronglyCartesian
+    - generatedPulledRouteLegAt_isStronglyCartesian
+    - CategoryTheory.Functor.IsStronglyCartesian.domainIsoOfBaseIso
+    - UpperGeometryCleavage.exactGeometryHomOfRefinement
+  proof_obligation: "F0s: source change data と certificate-free changed-input constructor を型付けし、actual lower naturality と strongly-cartesian domain comparison から generated exact endpoint iso を構成できるか判定する"
+  selection_reason: "revision 2 の全新規義務が依存する最短の型・provenance gateであり、欠けたsemantic primitiveがあれば後続実装前に固定できる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF0.lean
+  risks:
+    - dependent functor/structure equality
+    - source edge cocartesian qualification under conjugation
+    - reverse-route base naturality orientation
+    - refinement domain iso exactification
+    - conclusion-equivalent endpoint/naturality certificate escape
+  unchecked:
+    - changed-input constructor elaboration
+    - generated exact endpoint iso construction
+```
