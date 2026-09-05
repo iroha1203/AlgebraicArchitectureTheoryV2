@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C3 source-presentation の Γ correspondence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、Γ/J/生成像/係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C3 source-presentation の generated-range correspondence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、射影・核・非空 fiber・作用・J・生成像・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: comparison-component naturality と中心 `T` 自然性から `Θ_BP,i(Γ_(c'_i)) = Γ_(c_i)` を証明する
+- next obligation: 中心 `T` 自然性と source/endpoint MulEquiv の全射性から `Θ_BP,i(Set.range T'_i) = Set.range T_i` を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1601,4 +1601,93 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF2.lean; exit 0; 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C3 source-presentation Gamma correspondence"
+```
+
+## Cycle 16 — full qualified-comparison correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 16
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 6cd485c3c8edcb3a5690c52dc7f4230ded3878f8
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 15 accepted central generated comparison-map naturality"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleUpperGeometryMateAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+    - qualifiedComparisonEndpointConjugationMulEquiv
+    - inverseConjugatedPair_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedComparisonPairHomAt_sourcePresentation_naturality
+  proof_obligation: "prove full Gamma_(c') to Gamma_c correspondence under the actual generated endpoint conjugation, without replacing Gamma by the generated range"
+  selection_reason: "the full qualified-comparison group must be transported by mate naturality and endpoint bijectivity; central T naturality alone controls only the generated range"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean
+  risks:
+    - conflating full Gamma with Set.range T
+    - endpoint conjugation variance
+    - proving only one membership direction
+  unchecked:
+    - generated-range equality
+    - projection, kernel, fiber, J, and coefficient-observation correspondence
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleUpperGeometryMateAt_eq_sourcePresentation_conjugation
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_map_qualifiedComparisonSubgroup
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+  source_labels:
+    - "C3 full Gamma source-presentation correspondence"
+    - "C3 compatibility between full endpoint transport and central T naturality"
+  acceptance_point: "The old mate is derived as the endpoint conjugate of the independently generated changed mate. Generic endpoint conjugation then yields a full subgroup MulEquiv, raw membership iff, and literal Subgroup.map equality. Reverse inclusion uses the actual inverse endpoint equivalence, not an unproved surjectivity of T."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "old generated mate equals the endpoint conjugate of the changed generated mate"
+      - "full qualified-comparison subgroup multiplicative equivalence"
+      - "raw-pair qualified membership preservation and reflection"
+      - "literal endpoint-conjugation image equality for the full qualified subgroup"
+      - "pointwise compatibility of that endpoint map with the central generated-map square"
+    remaining:
+      - "generated range, projection, kernel, fiber, J, and observation correspondence"
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "fixed firing and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "mate conjugation equality is derived from the Cycle 14 complete comparison-component square and iso inverse law"
+      - "full Gamma equivalence specializes the existing generic endpoint-conjugation construction"
+      - "reverse membership and subgroup inclusion use the inverse of the generated endpoint pair MulEquiv"
+      - "central compatibility specializes the independently proved Cycle 15 MonoidHom equality"
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedCompatibleUpperGeometryMateAt_naturality"
+      - "qualifiedComparisonEndpointConjugationMulEquiv and inverseConjugatedPair_mem_qualifiedComparison_iff"
+      - "generatedEndpointPairMulEquivAt and its inverse laws"
+      - "generatedComparisonPairHomAt_sourcePresentation_naturality"
+    unused:
+      - "central T naturality is not used to obtain full Gamma surjectivity; it is used only for compatibility and is reserved as the next generated-range proof"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the refutation lane rejected the unsound range-to-full-Gamma route and all lanes converged on endpoint conjugation as the exact full-group proof"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF2; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean; exit 0; 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C3 source-presentation generated-range correspondence"
 ```
