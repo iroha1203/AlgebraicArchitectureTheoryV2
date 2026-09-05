@@ -2528,11 +2528,14 @@ selection:
     - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.pairMulEquivAt
     - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.decision_iff
     - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.observation_apply
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_generatedComparisonPairHomAt
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_coefficientObservation
     - UpperGeometryCompatibleSourcePresentationChange.Chain.generatedPulledComparisonKernel_eq_bot_pasted_iff
     - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt
     - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
     - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
     - UpperGeometryCompatibleProblemInputData.closedComparisonPairHomAt_coefficientObservation
@@ -2567,7 +2570,7 @@ result:
     - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_reflects_qualifiedComparison_iff
     - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_coefficientObservation
     - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_range
-  acceptance_point: "The only cast-free mixed endpoint route is fixed as terminal C1t to terminal generated, pasted C1s to initial generated, then initial C1t to the selected display. The corresponding source route is terminal generation, pasted C1s endpoint transport, and initial C1t. It preserves qualified membership, reflects it exactly when the initial and equivalently terminal residual subgroup is bottom, commutes with complete coefficient observation, and has precisely the initial generated range transported through C1t."
+  acceptance_point: "The only cast-free mixed endpoint route is fixed as terminal C1t to terminal generated, pasted C1s to initial generated, then initial C1t to the selected display. The mixed hom is defined by terminal generation, pasted C1s endpoint transport, and initial C1t; central naturality rewrites it to pasted C1s source action, initial generatedComparisonPairHomAt, and initial C1t. It preserves qualified membership, reflects it exactly when the initial and equivalently terminal residual subgroup is bottom, commutes with complete coefficient observation, and has precisely the initial generated range transported through C1t."
   port_status: not-applicable
 audits:
   premise_delta:
