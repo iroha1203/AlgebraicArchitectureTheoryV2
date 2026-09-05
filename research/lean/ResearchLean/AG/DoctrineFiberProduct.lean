@@ -315,6 +315,7 @@ import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonGeneratedClassification
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonInputCharacterization
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonFixedDecision
+import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonEndpointTransport
 
 /-!
 # Doctrine fiber-product schema

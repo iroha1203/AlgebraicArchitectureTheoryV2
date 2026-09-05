@@ -10,10 +10,10 @@ proof-use、査読結果を cycle ごとに記録する。
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
 - completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions
-- current obligation: C1 complete-geometry presentation transport
+- current obligation: Cycle 6 C1 complete-geometry presentation transport review
 - pending obligations: C1、C2、C3、D、completion audit
-- current target state: Cycle 5 acceptance 後の `target-proof-checkpoint`
-- next obligation: C1 complete-geometry presentation transport
+- current target state: Cycle 6 implementation 後の `target-proof-checkpoint`
+- next obligation: Cycle 6 fixed-head review、次いで C2 actual edge reselection
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -552,4 +552,122 @@ audits:
     - "revised fixed-head audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4374#issuecomment-5550022475"
   blocking_findings: []
   next_obligation: "C1: transport Gamma, both stabilizers, fibers, projections, and coefficient identities across the two fixed complete endpoint presentation isomorphisms"
+```
+
+## Cycle 6 — C1 complete-geometry presentation transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 6
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: 4e6d1cf8590cb4e1691f0262c7b9a7267256c529
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 6 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5550063833"
+  proof_dag_predecessors:
+    - "canonicalAuthoredBaseToGeneratedRouteExactGeometryIsoAt and canonicalAuthoredPulledToGeneratedRouteExactGeometryIsoAt"
+    - "canonicalGeneratedUpperRefinementBCSolutionEquiv_companion"
+    - "canonicalSolutionForwardAt_exact_normalization and generatedSolutionBackwardAt_exact_normalization"
+    - "CompositeFiberAut.conjugationMulEquiv"
+    - "qualifiedComparison subgroup, stabilizer, projection-kernel, and lift-action API"
+  proof_obligation: "C1: transport the full qualified comparison classification across the two selected complete endpoint presentations, including Gamma, both projections and kernels, both stabilizers, nonempty lift fibers and their actions, and coefficient observations"
+  selection_reason: "The selected route proves the actual comparison equality first and then transports the existing full groups. Graph-of-an-iso alone and arbitrary decoded-presentation replacement were rejected because neither matches the fixed C1 route."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEndpointTransport.lean
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt_eq_endpoint_conjugation
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.canonicalGeneratedQualifiedComparisonMulEquivAt
+    - AAT.AG.DoctrineFiberProduct.qualifiedComparisonEndpointConjugation_targetLift_smul
+  risks:
+    - "the categorical composition order must state v_i o c_can o u_i^-1, represented in Lean as u_i.inv then c_can then v_i.hom"
+    - "transport must range over full CompositeFiberAut groups and actual comparison subgroups, not finite witnesses"
+    - "presentation replacement must remain restricted to the two selected complete upper presentation changes"
+  unchecked:
+    - "C2/C3/D and final closure obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For every compatible input and vertex, the actual generated comparison is exactly the canonical companion comparison conjugated by the selected base and pulled complete endpoint isomorphisms, with the reverse equality supplied by the independent backward exactification. Simultaneous endpoint conjugation gives a multiplicative equivalence of Gamma, commutes with both projections, restricts to both stabilizers, transports both projection kernels, and gives equivariant equivalences of every source and target lift fiber; hence nonemptiness is preserved and reflected. All four endpoint hom/inverse coefficient identities are consumed to show coefficient observations are unchanged in both directions."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEndpointTransport.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - generatedCompatibleUpperGeometryMateAt_eq_endpoint_conjugation
+      - canonicalCompanionUpperGeometryMateAt_eq_endpoint_conjugation
+      - qualifiedComparisonEndpointConjugationMulEquiv
+      - qualifiedComparisonEndpointConjugation_sourceProjection
+      - qualifiedComparisonEndpointConjugation_targetProjection
+      - qualifiedComparisonEndpointConjugationTargetStabilizerMulEquiv
+      - qualifiedComparisonEndpointConjugationSourceStabilizerMulEquiv
+      - qualifiedComparisonEndpointConjugationSourceKernelMulEquiv
+      - qualifiedComparisonEndpointConjugationTargetKernelMulEquiv
+      - qualifiedComparisonEndpointConjugationTargetLiftEquiv
+      - qualifiedComparisonEndpointConjugationSourceLiftEquiv
+      - qualifiedComparisonEndpointConjugation_targetLift_smul
+      - qualifiedComparisonEndpointConjugation_sourceLift_smul
+      - canonicalGeneratedQualifiedComparisonMulEquivAt
+      - canonicalGeneratedTargetStabilizerMulEquivAt
+      - canonicalGeneratedSourceStabilizerMulEquivAt
+      - canonicalGeneratedSourceProjectionKernelMulEquivAt
+      - canonicalGeneratedTargetProjectionKernelMulEquivAt
+      - canonicalGeneratedQualifiedComparisonTargetLiftEquivAt
+      - canonicalGeneratedQualifiedComparisonSourceLiftEquivAt
+      - canonicalGeneratedQualifiedComparisonTargetLift_nonempty_iff
+      - canonicalGeneratedQualifiedComparisonSourceLift_nonempty_iff
+      - canonicalAuthoredBaseConjugation_coefficientHom
+      - canonicalAuthoredBaseConjugation_symm_coefficientHom
+      - canonicalAuthoredPulledConjugation_coefficientHom
+      - canonicalAuthoredPulledConjugation_symm_coefficientHom
+    source_labels:
+      - "target theorem (C1), selected complete-presentation transport"
+    conjuncts:
+      - "actual exact comparison equality and its reverse"
+      - "Gamma multiplicative equivalence and both projection squares"
+      - "both stabilizer and both projection-kernel equivalences"
+      - "both lift-fiber equivalences, nonempty iff, and action equivariance"
+      - "base/pulled coefficient-observation preservation forward and backward"
+    undischarged_assumptions:
+      - "C2/C3/D and final identity/inverse/composition closure"
+    acceptance_point: "The actual comparison equality is proof-used before subtype transport, and the specialized declarations quantify only over the fixed canonical-authored/generated complete endpoints."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C1 actual complete comparison conjugation equality in both directions"
+      - "C1 Gamma, projections, stabilizers, kernels, lift fibers, and action transport"
+      - "C1 coefficient identity in both presentation directions"
+    remaining:
+      - "C2 actual edge reselection"
+      - "C3 horizontal context base change"
+      - "D observation and nonfactorization"
+      - "identity/inverse/finite-composition closure and completion audit"
+  certificate_provenance:
+    discharged:
+      - "comparison equality comes from the theorem-generated companion equivalence and both independent exact normalizations"
+      - "group and fiber transport comes from the selected exact endpoint isomorphisms and existing full CompositeFiberAut conjugation"
+    unresolved:
+      - "C2/C3/D witnesses and final closure"
+  proof_use:
+    used:
+      - "canonicalGeneratedUpperRefinementBCSolutionEquiv_companion and canonicalSolutionForwardAt_exact_normalization in the forward exact equality"
+      - "generatedSolutionBackwardAt_exact_normalization in the reverse exact equality"
+      - "conjugationMulEquiv hom, inverse, multiplication, and injectivity laws in Gamma, kernel, stabilizer, and lift transport"
+      - "existing qualified comparison projections, stabilizers, kernels, and free/transitive lift actions"
+      - "all four canonical-authored base/pulled exact hom/inverse coefficient-id declarations"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEndpointTransport.lean; exit 0"
+    - "module terminal axiom audit: 27 declarations, standard axioms only"
+    - "fixed-head review pending"
+  blocking_findings: []
+  next_obligation: "C2: classify actual coefficient-trivial edge reselection pairs and the product stabilizer action on partner families"
 ```
