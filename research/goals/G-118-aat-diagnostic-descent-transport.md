@@ -1,10 +1,10 @@
 # G-118-aat-diagnostic-descent-transport — 比較を保つ変更の分類と移送
 
 - `id`: `G-118-aat-diagnostic-descent-transport`
-- `status`: `draft`
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成。active 化前に設定する。
+- `tracking issue`: #4367
 - `source note`: [n1008 §4.2・§6.4](../../docs/note/n1008_aat_idempotent_exchange_structure_program.md)。
 - `program context`: [研究の全体目標](../../docs/research_goal.md)の reading 間の輸送と
   変形に対し、意味構造の比較を変更後にも使う条件を与える。比較射に沿って運べる
