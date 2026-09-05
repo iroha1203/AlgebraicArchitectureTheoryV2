@@ -16,6 +16,7 @@
 
 - ユーザーへの応答、commit message、PR / Issue の title と本文は日本語で書く。
   Lean 識別子、ファイル名、コマンド名、定理名、既存の英語技術用語はそのまま扱う。
+- 使ってよい語彙の分類と禁止・置換表は [語彙ルール](vocabulary.md) を正とする。
 
 ## Issue 起点の作業
 
@@ -94,3 +95,5 @@ rg -nP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]" <changed-files>  
   各分野 guideline の検証節を正本とする。Lean build の hard rule は
   [AAT guideline](../aat/guideline.md) の「Lean build 運用」を正本とする。
 - docs-only 変更でも Lean status、tool schema、website copy への影響を確認する。
+- 新規追加した文の語彙が [語彙ルール](vocabulary.md) に適合するかを確認する。
+  既存本文への遡及置換はしない。
