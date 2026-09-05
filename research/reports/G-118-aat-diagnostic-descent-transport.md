@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s の identity、inverse、型の合う有限合成に対する coherence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C1s の typed finite-chain closure と `Theta/T/Gamma/range/J`・係数観測の unitality / composition coherence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: source-presentation change の identity、inverse、型の合う有限合成に対する `η_B,η_P` と自然性の unitality / composition coherence を証明する
+- next obligation: source-presentation change の全 input equality を固定し、型の合う finite chain とその `Theta/T/Gamma/range/J`・係数観測の coherence を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1948,4 +1948,112 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF6.lean; exit 0; 8 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C1s source-presentation identity, inverse, and finite-composition coherence"
+```
+
+## Cycle 20 — structural source-change operations and endpoint coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 20
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 83a5f5eadbf9db70d43df033cfecccd50d794cb2
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 19 accepted J and coefficient-observation correspondence"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_hom_fac
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_hom_fac
+    - CategoryTheory.Functor.IsStronglyCartesian.ext
+  proof_obligation: "construct typed identity, inverse, and binary source-change composition and prove exact-core and independently generated eta_B/eta_P identity, inverse, and composition laws"
+  selection_reason: "these are the pointwise structural generators required before a dependent finite-chain closure can be stated without pretending reconstructed whole-input records are definitionally equal"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF7.lean
+  risks:
+    - treating propositionally equal reconstructed inputs as definitionally equal
+    - reversing the changed-to-old composition order
+    - deriving complete-geometry coherence from core equality alone
+    - replacing generated eta comparisons by supplied certificates
+  unchecked:
+    - whole changed-input equalities for identity, inverse, and composition
+    - dependent finite-chain closure
+    - Theta/T/Gamma/range/J and coefficient-observation unitality and composition
+    - C1s/C1t composition order
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.identity
+    - UpperGeometryCompatibleSourcePresentationChange.inverse
+    - UpperGeometryCompatibleSourcePresentationChange.comp
+    - UpperGeometryCompatibleSourcePresentationChange.identity_changedInput_generatedBaseRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.identity_changedInput_generatedPulledRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.inverse_changedInput_generatedBaseRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.inverse_changedInput_generatedPulledRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.comp_changedInput_generatedBaseRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.comp_changedInput_generatedPulledRouteLegAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactCoreIsoAt_identity
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactCoreIsoAt_identity
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactCoreIsoAt_inverse
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactCoreIsoAt_inverse
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactCoreIsoAt_comp
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactCoreIsoAt_comp
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_identity
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_identity
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_inverse
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_inverse
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_comp_after
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_comp_base
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_comp
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_comp_after
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_comp_base
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_comp
+  source_labels:
+    - "C1s typed identity, inverse, and binary composition"
+    - "C1s generated exact-core and complete-endpoint coherence"
+  acceptance_point: "Source changes are oriented from the reconstructed input to their indexing input. Identity uses reflexive comparisons, inverse reverses the selected comparisons, and typed composition uses second then first. Exact-core and independently generated complete endpoint comparisons preserve all three operations; complete equality is proved from the actual factor laws, equality over the core projection, exactification injectivity, and strongly-cartesian uniqueness."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "typed identity, inverse, and binary composition of C1s data"
+      - "base and pulled exact-core eta identity, inverse, and composition"
+      - "base and pulled complete-geometry eta identity, inverse, and composition"
+    remaining:
+      - "whole changed-input propositional equalities"
+      - "typed finite-chain closure and all induced-transport coherence"
+      - "C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "structural operations are constructed only from source fields and selected core/geometry isomorphisms"
+      - "complete endpoint coherence consumes independently generated eta factor laws"
+      - "equality after the old route leg and equality over the core projection are separated before strongly-cartesian uniqueness"
+    unresolved: []
+  proof_use:
+    used:
+      - "generated base and pulled hom factorization laws for identity, inverse, and both composition stages"
+      - "generated exact-core comparison definitions and functoriality"
+      - "generated base and pulled route-leg strongly-cartesian instances"
+      - "exactGeometryToRefinementGeometry.map_injective"
+    unused:
+      - "no supplied endpoint comparison, endpoint coherence certificate, or whole-input equality is assumed"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "all lanes agreed on changed-to-old variance and second-then-first composition; they rejected a strict groupoid claim before whole-input propositional equalities and identified dependent finite chains as the next obligation"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF6; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF7.lean; exit 0; 25 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C1s whole changed-input equalities and dependent finite-chain coherence for all induced transports"
 ```
