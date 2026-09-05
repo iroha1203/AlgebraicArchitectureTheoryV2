@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s dependent finite chain 上の generated eta と `Theta/T/Gamma/range/J`・係数観測の unitality / composition coherence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain induced-action coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C1s dependent finite chain 上の pasted endpoint action による `Gamma/range/J`・係数観測の coherence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain classification coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: dependent finite chain の composite から generated eta と `Theta/T/Gamma/range/J`・係数観測の coherence を導く
+- next obligation: pasted source/endpoint action を `Gamma/range/J`・係数観測の finite-chain correspondence へ接続する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2140,4 +2140,91 @@ audits:
     - "cd research/lean && lake env lean /tmp/G118F8AxiomAudit.lean; exit 0; seven exported definitions/theorems use only propext, Classical.choice, and Quot.sound"
   blocking_findings: []
   next_obligation: "lift generated endpoint eta and induced Theta/T/Gamma/range/J/coefficient actions from binary composition to dependent finite chains"
+```
+
+## Cycle 22 — pasted finite-chain endpoint actions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 22
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: efd6ebc0414df6111a359c8339572625d0d46b1c
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 21 accepted whole-input equality and certificate-free dependent finite chains"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt_comp
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt_comp
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+  proof_obligation: "paste selected source and independently generated endpoint comparisons link by link and identify their induced pair actions with those freshly generated from the finite-chain composite"
+  selection_reason: "classification transport along a chain must use the actual pasted eta actions, not merely reapply binary naturality to an opaque composite"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF9.lean
+  risks:
+    - replacing linkwise pasted generated eta by supplied endpoint data
+    - reversing the changed-to-old composition order
+    - hiding chain dependency behind casts
+    - exposing only a wrapper around the composite change
+  unchecked:
+    - finite-chain Gamma/kernel/fiber/range/J correspondences
+    - finite-chain coefficient-observation commutation
+    - C1s/C1t order and fixed firing
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedBaseRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedPulledRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_geometryIso_eq_pastedSourceGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedBaseRouteExactGeometryIsoAt_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedPulledRouteExactGeometryIsoAt_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedSourcePairMulEquivAt_eq_pasted
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_generatedEndpointPairMulEquivAt_eq_pasted
+  acceptance_point: "The source, base-endpoint, and pulled-endpoint comparisons are recursively pasted in tail-then-head order along the dependent chain. Induction using the Cycle 20 identity/composition laws proves equality with the three comparisons independently generated from the Cycle 21 composite. The corresponding source-pair and endpoint-pair conjugation equivalences therefore coincide with the actions induced by those linkwise pastings."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "finite-chain unitality and composition for selected source comparisons"
+      - "finite-chain unitality and composition for independently generated base and pulled eta"
+      - "finite-chain source-pair and endpoint-pair conjugation actions"
+    remaining:
+      - "classification, range, J, and coefficient-observation correspondence under the pasted actions"
+      - "C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "all three pasted comparisons are generated recursively from actual chain links"
+      - "the endpoint action consumes the independently generated base and pulled eta pastings"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 20 generated complete-geometry eta identity and typed composition laws"
+      - "Cycle 21 dependent Chain.composite"
+      - "F2 source and endpoint pair conjugation definitions"
+    unused:
+      - "no supplied pasted eta, endpoint action, or chain-coherence certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the accepted construction recursively pastes the three actual link comparisons and only then compares their actions with the composite-generated actions"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF9.lean; exit 0"
+    - "tracked module AxiomAudit: 13 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "transport Gamma, projections, kernels, fibers, generated range, J, and coefficient observations by the pasted finite-chain endpoint action"
 ```
