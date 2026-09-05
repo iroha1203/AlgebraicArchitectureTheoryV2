@@ -63,6 +63,30 @@ theorem sourceCoefficientTrivialUpperEdgeReselection_generatedPaired
     (input.sourceCoefficientTrivialUpperEdgeReselection_generated_endpointIntertwining
       source)
 
+/-- The generated full pair is consumed by the existing actual raw-cochain
+API at every two-cell. -/
+theorem sourceCoefficientTrivialUpperEdgeReselection_generatedRawCochain_intertwining
+    {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
+    {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
+    (input : UpperGeometryCompatibleProblemInputData ctx P k)
+    (source : SourceCoefficientTrivialUpperEdgeReselection input)
+    (cell : P.TwoCell) :
+    (CompositeFiberAut.hom
+      (upperRawDefectCochain input.generatedBaseRouteData
+        (input.generatedBaseOfSourceCoefficientTrivialUpperEdgeReselection
+          source).toUpperEdgeReselection cell)).comp
+        (input.generatedGeometryCompatibleUpperRefinementBCSolution.component
+          (P.twoTarget cell)) =
+      (input.generatedGeometryCompatibleUpperRefinementBCSolution.component
+        (P.twoTarget cell)).comp
+        (CompositeFiberAut.hom
+          (upperRawDefectCochain input.generatedPulledRouteData
+            (input.generatedPulledOfSourceCoefficientTrivialUpperEdgeReselection
+              source).toUpperEdgeReselection cell)) :=
+  PairedCoefficientTrivialUpperReselection.upperRawDefectCochain_intertwining
+    (input.sourceCoefficientTrivialUpperEdgeReselection_generatedPaired source)
+    cell
+
 end UpperGeometryCompatibleProblemInputData
 
 namespace UpperDecisionWitness
