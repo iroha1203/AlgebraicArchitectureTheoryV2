@@ -655,7 +655,7 @@ audits:
       - "canonicalGeneratedUpperRefinementBCSolutionEquiv_companion and canonicalSolutionForwardAt_exact_normalization in the forward exact equality"
       - "generatedSolutionBackwardAt_exact_normalization in the reverse exact equality"
       - "conjugationMulEquiv hom, inverse, multiplication, and injectivity laws in Gamma, kernel, stabilizer, and lift transport"
-      - "existing qualified comparison projections, stabilizers, kernels, and free/transitive lift actions"
+      - "existing qualified comparison projections, stabilizers, kernels, and lift-action definitions"
       - "all four canonical-authored base/pulled exact hom/inverse coefficient-id declarations"
     unused: []
   structure_field_escape: none-found
