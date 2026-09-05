@@ -9,6 +9,15 @@ intertwine the comparison.  The two projection fibers are described by the
 actual left and right comparison stabilizers, including their choice-free
 simply-transitive actions.  When the comparison is an isomorphism, the group
 is identified with the graph of the existing composite-fiber conjugation.
+
+Implementation notes: multiplication in `Aut` exposes the underlying
+categorical homs in reverse textual order, so every closure and action proof
+states that order explicitly.  The lift fibers are subtypes of the actual
+comparison subgroup, rather than new compatibility certificates.  Their
+actions are defined before any origin is selected; only the coordinate
+equivalences choose an origin.  In the isomorphism branch the existing
+composite-fiber conjugation is reused instead of introducing a parallel
+endpoint-transport construction.
 -/
 
 namespace AAT.AG.DoctrineFiberProduct
@@ -140,6 +149,8 @@ def qualifiedComparisonSourceStabilizer
             rw [relation']
       _ = comparison := by simp
 
+/-- Membership in the comparison subgroup is the literal intertwining
+equation. -/
 @[simp] theorem mem_qualifiedComparisonSubgroup
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H}
@@ -149,6 +160,8 @@ def qualifiedComparisonSourceStabilizer
         comparison.comp (CompositeFiberAut.hom pair.2) :=
   Iff.rfl
 
+/-- Membership in the target stabilizer is the literal postcomparison fixing
+equation. -/
 @[simp] theorem mem_qualifiedComparisonTargetStabilizer
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H}
@@ -157,6 +170,8 @@ def qualifiedComparisonSourceStabilizer
       comparison.comp (CompositeFiberAut.hom automorphism) = comparison :=
   Iff.rfl
 
+/-- Membership in the source stabilizer is the literal precomparison fixing
+equation. -/
 @[simp] theorem mem_qualifiedComparisonSourceStabilizer
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H}
@@ -209,6 +224,8 @@ noncomputable def qualifiedComparisonTargetLiftAction
       _ = base.1.hom ≫ comparison := by rw [stabilizerRelation]
   ⟩
 
+/-- Scalar multiplication on a target lift fiber is the actual target
+stabilizer action. -/
 noncomputable instance qualifiedComparisonTargetLiftSMul
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H} {base : CompositeFiberAut G} :
@@ -216,6 +233,7 @@ noncomputable instance qualifiedComparisonTargetLiftSMul
       (QualifiedComparisonTargetLift comparison base) where
   smul := qualifiedComparisonTargetLiftAction
 
+/-- The target stabilizer laws make its fiber action a multiplicative action. -/
 noncomputable instance qualifiedComparisonTargetLiftMulAction
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H} {base : CompositeFiberAut G} :
@@ -329,6 +347,8 @@ noncomputable def qualifiedComparisonSourceLiftAction
       _ = comparison ≫ pulled.1.hom := liftRelation
   ⟩
 
+/-- Scalar multiplication on a source lift fiber is the actual source
+stabilizer action. -/
 noncomputable instance qualifiedComparisonSourceLiftSMul
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H} {pulled : CompositeFiberAut H} :
@@ -336,6 +356,7 @@ noncomputable instance qualifiedComparisonSourceLiftSMul
       (QualifiedComparisonSourceLift comparison pulled) where
   smul := qualifiedComparisonSourceLiftAction
 
+/-- The source stabilizer laws make its fiber action a multiplicative action. -/
 noncomputable instance qualifiedComparisonSourceLiftMulAction
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {comparison : GeometryTotalHom G H} {pulled : CompositeFiberAut H} :
@@ -575,6 +596,8 @@ noncomputable def qualifiedComparisonIsoTargetProjectionMulEquiv
   (qualifiedComparisonIsoGraphMulEquiv iso).symm.trans
     (CompositeFiberAut.conjugationMulEquiv iso)
 
+/-- The source equivalence of an isomorphic comparison is its actual source
+projection. -/
 @[simp] theorem qualifiedComparisonIsoSourceProjectionMulEquiv_apply
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (iso : G ≅ H) (pair : qualifiedComparisonSubgroup iso.hom) :
@@ -582,6 +605,8 @@ noncomputable def qualifiedComparisonIsoTargetProjectionMulEquiv
       qualifiedComparisonSourceProjection iso.hom pair :=
   rfl
 
+/-- The target equivalence of an isomorphic comparison is its actual target
+projection. -/
 @[simp] theorem qualifiedComparisonIsoTargetProjectionMulEquiv_apply
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (iso : G ≅ H) (pair : qualifiedComparisonSubgroup iso.hom) :

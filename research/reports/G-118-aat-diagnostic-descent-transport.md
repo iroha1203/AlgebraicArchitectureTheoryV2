@@ -148,15 +148,34 @@ result:
       - qualifiedComparisonTargetProjection
       - qualifiedComparisonTargetStabilizer
       - qualifiedComparisonSourceStabilizer
+      - mem_qualifiedComparisonSubgroup
+      - mem_qualifiedComparisonTargetStabilizer
+      - mem_qualifiedComparisonSourceStabilizer
+      - QualifiedComparisonTargetLift
+      - QualifiedComparisonSourceLift
+      - qualifiedComparisonTargetLiftAction
+      - qualifiedComparisonTargetLiftSMul
+      - qualifiedComparisonTargetLiftMulAction
+      - qualifiedComparisonTargetLiftAction_free
+      - qualifiedComparisonTargetLiftAction_transitive
       - qualifiedComparisonSourceProjectionKernelMulEquiv
       - qualifiedComparisonTargetProjectionKernelMulEquiv
       - qualifiedComparisonTargetLift_existsUnique
-      - qualifiedComparisonSourceLift_existsUnique
       - qualifiedComparisonTargetLiftEquiv
+      - qualifiedComparisonSourceLiftAction
+      - qualifiedComparisonSourceLiftSMul
+      - qualifiedComparisonSourceLiftMulAction
+      - qualifiedComparisonSourceLiftAction_free
+      - qualifiedComparisonSourceLiftAction_transitive
+      - qualifiedComparisonSourceLift_existsUnique
       - qualifiedComparisonSourceLiftEquiv
+      - mem_qualifiedComparisonSourceProjection_range_iff
+      - mem_qualifiedComparisonTargetProjection_range_iff
       - qualifiedComparisonIsoGraphMulEquiv
       - qualifiedComparisonIsoSourceProjectionMulEquiv
       - qualifiedComparisonIsoTargetProjectionMulEquiv
+      - qualifiedComparisonIsoSourceProjectionMulEquiv_apply
+      - qualifiedComparisonIsoTargetProjectionMulEquiv_apply
       - qualifiedComparisonIsoSourceProjection_surjective
       - qualifiedComparisonIsoTargetProjection_surjective
       - qualifiedComparisonTargetStabilizer_eq_bot_of_iso
