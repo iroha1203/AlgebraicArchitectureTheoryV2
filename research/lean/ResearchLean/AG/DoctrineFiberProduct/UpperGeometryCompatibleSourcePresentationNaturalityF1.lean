@@ -25,9 +25,9 @@ variable {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
 variable {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
 variable {input : UpperGeometryCompatibleProblemInputData ctx P k}
 
-/-- The generated base endpoint comparison factors the old generated leg as
-the independently generated changed leg followed by the selected source
-presentation change. -/
+/-- G-118 C1s primary base-endpoint factor law.  The independently generated
+`eta_B.hom` is characterized by `IsStronglyCartesian.fac`, not by a supplied
+factorization certificate. -/
 theorem generatedBaseRouteExactGeometryIsoAt_hom_fac
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -71,8 +71,8 @@ theorem generatedBaseRouteExactGeometryIsoAt_hom_fac
     (refinementGeometryProjection U)
     oldLeg.base oldLeg base_fac candidate
 
-/-- The inverse base endpoint comparison gives the reverse factorization
-against the inverse selected source presentation change. -/
+/-- G-118 C1s reverse base-endpoint factor law.  It is derived from the primary
+factor law and the two actual isomorphism inverse laws. -/
 theorem generatedBaseRouteExactGeometryIsoAt_inv_fac
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -123,8 +123,8 @@ theorem generatedBaseRouteExactGeometryIsoAt_inv_fac
       (RefinementGeometryHom.id _) = input.generatedBaseRouteLegAt i at hidr
   exact hidl.trans hidr.symm
 
-/-- The generated base endpoint comparison fixes the common coefficient
-ring. -/
+/-- G-118 C1s base-endpoint coefficient law for `eta_B.hom`, forced by its
+factorization together with the old, changed, and source coefficient laws. -/
 theorem generatedBaseRouteExactGeometryIsoAt_hom_coefficient_id
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -142,8 +142,8 @@ theorem generatedBaseRouteExactGeometryIsoAt_hom_coefficient_id
     change.geometryIso_hom_coefficient_id] at h
   simpa only [RingHom.id_comp] using h
 
-/-- The inverse generated base endpoint comparison also fixes the common
-coefficient ring. -/
+/-- G-118 C1s base-endpoint coefficient law for `eta_B.inv`, forced by the
+reverse factorization and the corresponding inverse source coefficient law. -/
 theorem generatedBaseRouteExactGeometryIsoAt_inv_coefficient_id
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -161,8 +161,8 @@ theorem generatedBaseRouteExactGeometryIsoAt_inv_coefficient_id
     change.geometryIso_inv_coefficient_id] at h
   simpa only [RingHom.id_comp] using h
 
-/-- The generated pulled endpoint comparison satisfies the corresponding
-cartesian factorization triangle for the independently generated pulled leg. -/
+/-- G-118 C1s primary pulled-endpoint factor law.  The independently generated
+`eta_P.hom` is characterized by the pulled strongly-cartesian factorization. -/
 theorem generatedPulledRouteExactGeometryIsoAt_hom_fac
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -206,8 +206,8 @@ theorem generatedPulledRouteExactGeometryIsoAt_hom_fac
     (refinementGeometryProjection U)
     oldLeg.base oldLeg base_fac candidate
 
-/-- The inverse pulled endpoint comparison gives the reverse cartesian
-factorization. -/
+/-- G-118 C1s reverse pulled-endpoint factor law, derived from the primary
+pulled factor law and the two actual isomorphism inverse laws. -/
 theorem generatedPulledRouteExactGeometryIsoAt_inv_fac
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -258,8 +258,8 @@ theorem generatedPulledRouteExactGeometryIsoAt_inv_fac
       (RefinementGeometryHom.id _) = input.generatedPulledRouteLegAt i at hidr
   exact hidl.trans hidr.symm
 
-/-- The generated pulled endpoint comparison fixes the common coefficient
-ring. -/
+/-- G-118 C1s pulled-endpoint coefficient law for `eta_P.hom`, derived from
+the factor triangle and the old, changed, and source coefficient laws. -/
 theorem generatedPulledRouteExactGeometryIsoAt_hom_coefficient_id
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -277,8 +277,8 @@ theorem generatedPulledRouteExactGeometryIsoAt_hom_coefficient_id
     change.geometryIso_hom_coefficient_id] at h
   simpa only [RingHom.id_comp] using h
 
-/-- The inverse generated pulled endpoint comparison also fixes the common
-coefficient ring. -/
+/-- G-118 C1s pulled-endpoint coefficient law for `eta_P.inv`, derived from
+the reverse factor triangle and the inverse source coefficient law. -/
 theorem generatedPulledRouteExactGeometryIsoAt_inv_coefficient_id
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -298,8 +298,9 @@ theorem generatedPulledRouteExactGeometryIsoAt_inv_coefficient_id
 
 /-! ## Generated comparison-component naturality -/
 
-/-- The exact generated core mate is natural under the selected source core
-presentation change. -/
+/-- G-118 C3 lower naturality lemma.  The exact generated core mate square is
+obtained by conjugating the actual `ctx.mate.naturality` equation by the
+generated normalization isomorphisms. -/
 theorem generatedCompatibleConjugateCoreMateAt_naturality
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :
@@ -331,9 +332,10 @@ theorem generatedCompatibleConjugateCoreMateAt_naturality
   exact congrArg
     (fun hom => CategoryTheory.Functor.Fiber.fiberInclusion.map hom) h
 
-/-- The generated complete comparison component is natural under source
-presentation change: in ordinary composition order this is
-`eta_P ∘ c' = c ∘ eta_B`. -/
+/-- G-118 C3 primary comparison-component naturality theorem.  The independently
+generated old and changed mates satisfy `eta_P ∘ c' = c ∘ eta_B`; the result is
+lifted from the lower naturality lemma using both mate triangles and
+strongly-cartesian uniqueness. -/
 theorem generatedCompatibleUpperGeometryMateAt_naturality
     (change : UpperGeometryCompatibleSourcePresentationChange input)
     (i : P.Vertex) :

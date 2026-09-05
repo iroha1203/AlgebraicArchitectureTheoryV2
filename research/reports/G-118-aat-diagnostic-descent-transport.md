@@ -9,7 +9,7 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - revision 1 fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
-- revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。
+- revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
 - current obligation: C3 source-presentation central `T` naturality
@@ -1305,7 +1305,7 @@ generator からの exact endpoint iso の構成可能性を先に確定する�
 ledger_type: target_cycle_result
 goal: G-118-aat-diagnostic-descent-transport
 cycle: 13
-goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
 base_oid: 7d4080a28fbb7d0e20189709c2fbcc59f74809c3
 tracking_issue: 4367
 report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
@@ -1430,7 +1430,7 @@ audits:
 ledger_type: target_cycle_result
 goal: G-118-aat-diagnostic-descent-transport
 cycle: 14
-goal_blob_sha: 6eff0d6913d91ac4e8965f2b9459dbf69ca0739a
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
 base_oid: e081978a8220486513c567d9e81765b1225ea04e
 tracking_issue: 4367
 report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
