@@ -321,6 +321,7 @@ import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonEdgeReselection
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonEdgeReselectionConsequences
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonBaseTransport
 import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonCoefficientNonfactorization
+import ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonCoefficientTransport
 
 /-!
 # Doctrine fiber-product schema
