@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s の typed finite-chain closure と `Theta/T/Gamma/range/J`・係数観測の unitality / composition coherence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C1s dependent finite chain 上の generated eta と `Theta/T/Gamma/range/J`・係数観測の unitality / composition coherence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain induced-action coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: source-presentation change の全 input equality を固定し、型の合う finite chain とその `Theta/T/Gamma/range/J`・係数観測の coherence を証明する
+- next obligation: dependent finite chain の composite から generated eta と `Theta/T/Gamma/range/J`・係数観測の coherence を導く
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2056,4 +2056,87 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF7.lean; exit 0; 25 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C1s whole changed-input equalities and dependent finite-chain coherence for all induced transports"
+```
+
+## Cycle 21 — whole-input equality and dependent finite chains
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 21
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: baaf1e86cb2ff6be3486ae1f2a2ef1420dc1167b
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 20 accepted structural source-change operations and endpoint coherence"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.identity
+    - UpperGeometryCompatibleSourcePresentationChange.inverse
+    - UpperGeometryCompatibleSourcePresentationChange.comp
+    - CompositeFiberAut.conjugationEquiv
+  proof_obligation: "prove identity, inverse, and composition equality for reconstructed whole inputs, then construct a type-correct finite chain whose links may change the input index"
+  selection_reason: "record-level equality is the missing cast boundary between binary C1s coherence and induced transport coherence along arbitrary finite source-presentation replacement chains"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF8.lean
+  risks:
+    - treating inverse double conjugation as definitional equality
+    - erasing dependency between consecutive changes in an ordinary list
+    - accepting a changed transport or terminal input as an external certificate
+  unchecked:
+    - finite-chain generated eta and induced Theta/T/Gamma/range/J/coefficient coherence
+    - C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.identity_changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.inverse_changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.comp_changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.Chain
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.terminalInput
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.length
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_changedInput_eq_terminalInput
+  acceptance_point: "Identity and typed composition reconstruct the expected whole inputs definitionally. Inversion reconstructs the original diagram by double-conjugation cancellation and the authored comparator by inverse laws of complete-geometry conjugation. Every tail of the indexed chain is typed directly over the preceding reconstructed input, while its recursive composite reconstructs the terminal input."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "whole changed-input equalities for identity, inverse, and typed composition"
+      - "dependent finite-chain representation and recursively generated composite"
+      - "composite changed-input equality with the chain terminal input"
+    remaining:
+      - "finite-chain endpoint eta and all induced-transport identity/composition laws"
+      - "C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "inverse equality is derived from reconstructed diagram, edge, comparator, and proof fields"
+      - "chain composite is generated recursively from identity and typed binary composition"
+    unresolved: []
+  proof_use:
+    used:
+      - "Functor.ext and isomorphism cancellation for the inverse source diagram"
+      - "CompositeFiberAut.conjugationEquiv.apply_symm_apply for the inverse comparator"
+      - "Cycle 20 identity and composition constructors in the chain composite"
+    unused:
+      - "no caller-supplied changed transport, endpoint comparison, composite change, or terminal-input certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "making the changing input an inductive index, rather than a fixed parameter, lets every tail be indexed directly by the preceding `changedInput`; no equality certificate or cast is stored"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF8; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF8.lean; exit 0"
+    - "cd research/lean && lake env lean /tmp/G118F8AxiomAudit.lean; exit 0; seven exported definitions/theorems use only propext, Classical.choice, and Quot.sound"
+  blocking_findings: []
+  next_obligation: "lift generated endpoint eta and induced Theta/T/Gamma/range/J/coefficient actions from binary composition to dependent finite chains"
 ```
