@@ -9,11 +9,11 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - fixed base: `42cec580bbe8b748360abaa17145cb4af3be0be0`
 - tracking Issue: #4367
-- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection、C3 generated base-transport preservation and reflection、D fixed coefficient nonfactorization
-- current obligation: D transport through C1/C2/C3
-- pending obligations: D transport、C1/C2/C3 closure、completion audit
-- current target state: Cycle 9 implementation candidate の `target-proof-checkpoint`
-- next obligation: transport the fixed coefficient-invisible separation through C1/C2/C3
+- completed obligations: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1 complete-geometry presentation transport、C2 actual edge reselection、C3 generated base-transport preservation and reflection、D fixed coefficient nonfactorization、D transport through C1/C2/C3
+- current obligation: C1/C2/C3 closure
+- pending obligations: C1/C2/C3 closure、completion audit
+- current target state: Cycle 10 implementation candidate の `target-proof-checkpoint`
+- next obligation: prove identity、inverse、typed finite-composition closure for C1/C2/C3
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1032,6 +1032,134 @@ audits:
   validation_refs:
     - "targeted direct dependency builds only; no Research aggregate/full build"
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean; exit 0; 12 declarations standard-only"
+    - "reviewed head 1f97320f378f4b301d507a969a88a939bcf50110: four fresh full-head lanes accepted; GitHub CI 7/7 pass"
+    - "fixed-head audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4378#issuecomment-5550849734"
+    - "root acceptance: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4378#issuecomment-5550849735"
+    - "merged by PR #4378 at ddb1c26c87a9e282c84606cfc0ec74801cdc6b73"
   blocking_findings: []
   next_obligation: "D transport the observation collision and qualified separation through C1/C2/C3"
+```
+
+## Cycle 10 — D transport through C1 and C3
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 10
+goal_blob_sha: 641f3255062d2578ef070cbb77c019cc28c3febf
+base_oid: ddb1c26c87a9e282c84606cfc0ec74801cdc6b73
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Issue #4367 Cycle 10 evidence comparison: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5550858958; final route correction superseding the provisional route: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4367#issuecomment-5551078880"
+  proof_dag_predecessors:
+    - "canonicalGeneratedQualifiedComparisonMulEquivAt and the two selected endpoint conjugation equivalences"
+    - "Cycle 9 fixed generated positive/negative pairs, observation collision, and literal qualified decisions"
+    - "generatedBaseCompositeFiberAutAt_fac and generatedPulledCompositeFiberAutAt_fac"
+    - "generatedComparisonPairHomAt preservation and exact J_i=bottom reflection criterion"
+    - "Cycle 9 fixed coefficient nonfactorization"
+  proof_obligation: "D transport: show that C1 and C3 commute with the complete product coefficient observation, preserve and reflect the literal qualified decision under their exact hypotheses, and retain coefficient-invisible nonfactorization; C2 is the fixed edge pair already used by Cycle 9"
+  selection_reason: "C1 is an exact endpoint-presentation equivalence and C3 is the actual pair homomorphism. Their observation laws and literal Gamma transport isolate exactly which part of D survives each map."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientTransport.lean
+  risks:
+    - "raw-pair membership reconstruction must not replace the existing exact subgroup MulEquiv"
+    - "coefficient preservation must hold for arbitrary automorphisms, not only coefficient-trivial witnesses"
+    - "C3 reflection must remain conditional on the exact J_i=bottom criterion"
+    - "fixed canonical pairs must be proved equal to the C1 backward images of the Cycle 9 generated witnesses, so both prior witnesses and C1 are proof-used"
+  unchecked:
+    - "C1/C2/C3 identity, inverse, and typed finite-composition closure"
+    - "final completion review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For every generated endpoint pair, C1 backward conjugation commutes with the complete product coefficient observation and preserves and reflects literal qualified membership. The raw-pair iff is generated from the same endpoint-conjugation MulEquiv that supplies canonicalGeneratedQualifiedComparisonMulEquivAt. The fixed canonical positive and negative pairs are proved equal to the backward images of the Cycle 9 generated pairs; the observation equality and opposite decisions, hence universal nonfactorization, now consume that same transport chain. For every source pair, the actual C3 product homomorphism preserves both coefficient observations. Under exactly J_i=bottom it preserves and reflects literal qualified membership, and every source observation collision separated by the identity-comparison qualified decision transports to target nonfactorization."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonEndpointTransport.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientTransport.lean
+    - research/lean/ResearchLean/AG/DoctrineFiberProduct.lean
+  claim_mapping:
+    theorem_names:
+      - inverseConjugatedPair_mem_qualifiedComparison_iff
+      - UpperGeometryCompatibleProblemInputData.CanonicalQualifiedPairAt
+      - UpperGeometryCompatibleProblemInputData.GeneratedQualifiedPairAt
+      - UpperGeometryCompatibleProblemInputData.canonicalPairCoefficientObservationAt
+      - UpperGeometryCompatibleProblemInputData.generatedPairCoefficientObservationAt
+      - UpperGeometryCompatibleProblemInputData.canonicalPairBackwardAt
+      - UpperGeometryCompatibleProblemInputData.canonicalPairBackwardAt_mem_qualifiedComparison_iff
+      - UpperGeometryCompatibleProblemInputData.canonicalPairBackwardAt_coefficientObservation
+      - UpperGeometryCompatibleProblemInputData.generatedBaseCompositeFiberAutAt_coefficientHom
+      - UpperGeometryCompatibleProblemInputData.generatedPulledCompositeFiberAutAt_coefficientHom
+      - UpperGeometryCompatibleProblemInputData.sourcePairCoefficientObservationAt
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_coefficientObservation
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_mem_qualifiedComparison_iff_of_kernel_eq_bot
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedDecision_not_factor_of_source_collision
+      - UpperDecisionWitness.CanonicalFixedQualifiedPair
+      - UpperDecisionWitness.canonicalFixedCoefficientObservation
+      - UpperDecisionWitness.CanonicalFixedQualifiedDecision
+      - UpperDecisionWitness.canonicalFixedPositiveQualifiedPair
+      - UpperDecisionWitness.canonicalFixedNegativeQualifiedPair
+      - UpperDecisionWitness.canonicalFixedPositiveQualifiedPair_eq_backward
+      - UpperDecisionWitness.canonicalFixedNegativeQualifiedPair_eq_backward
+      - UpperDecisionWitness.canonicalFixedCoefficientObservation_positive_eq_negative
+      - UpperDecisionWitness.canonicalFixedPositiveQualifiedDecision
+      - UpperDecisionWitness.canonicalFixedNegativeNotQualifiedDecision
+      - UpperDecisionWitness.canonicalFixedQualifiedDecision_not_factor_through_coefficientObservation
+    source_labels:
+      - "target theorem (D), transport through C1/C2/C3"
+    conjuncts:
+      - "C1 all-pair product coefficient-observation commutation"
+      - "C1 all-raw-pair qualified-membership iff generated from the endpoint-conjugation MulEquiv underlying canonicalGeneratedQualifiedComparisonMulEquivAt"
+      - "fixed canonical positive/negative pairs identified with the Cycle 9 backward images, with transported separation and nonfactorization"
+      - "C3 all-source-pair product coefficient-observation preservation"
+      - "C3 literal Gamma iff under exactly J_i=bottom"
+      - "generic C3 transport of observation-collision nonfactorization"
+      - "C2 fixed edge pair is the Cycle 9 witness connected by the native canonical companion pair"
+    undischarged_assumptions:
+      - "C1/C2/C3 closure and final completion review"
+    acceptance_point: "The raw-pair iff is proved from the generic endpoint-conjugation MulEquiv and the actual comparison normalization, avoiding costly reduction of the specialized wrapper while retaining the identical map. No stronger unconditional C3 reflection is claimed."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D transport through C1"
+      - "D transport through the fixed C2 edge connection"
+      - "D transport through C3 under its exact reflection condition"
+    remaining:
+      - "C1/C2/C3 closure"
+      - "final completion review"
+  certificate_provenance:
+    discharged:
+      - "C1 coefficient commutation uses both inverse-conjugation coefficientHom theorems"
+      - "C1 literal qualified transport specializes inverseConjugatedPair_mem_qualifiedComparison_iff after the actual comparison normalization; that generic iff is constructed by the endpoint-conjugation MulEquiv underlying canonicalGeneratedQualifiedComparisonMulEquivAt"
+      - "fixed canonical pairs are definitionally connected to the reviewed reselection backward transport and proved equal to the Cycle 9 generated pair images"
+      - "C3 coefficient preservation is extracted from both actual route factorization equations and coefficient-identity route legs"
+      - "C3 decision iff uses the reviewed preservation theorem and the exact J_i=bottom reflection equivalence"
+    unresolved:
+      - "closure witnesses"
+  proof_use:
+    used:
+      - "canonicalAuthoredBaseConjugation_symm_coefficientHom and canonicalAuthoredPulledConjugation_symm_coefficientHom"
+      - "qualifiedComparisonEndpointConjugationMulEquiv via inverseConjugatedPair_mem_qualifiedComparison_iff and canonicalPairBackwardAt_mem_qualifiedComparison_iff"
+      - "canonicalFixedPositiveQualifiedPair_eq_backward and canonicalFixedNegativeQualifiedPair_eq_backward"
+      - "Cycle 9 fixedCoefficientObservation_positive_eq_negative, fixedPositiveQualifiedDecision, and fixedNegativeNotQualifiedDecision through the C1 transport chain"
+      - "generatedBaseCompositeFiberAutAt_fac and generatedPulledCompositeFiberAutAt_fac"
+      - "generatedComparisonPairHomAt_preserves_qualifiedComparison and generatedComparisonPairHomAt_reflects_qualifiedComparison_iff"
+      - "both product coefficient observation equalities inside the two universal nonfactorization contradictions"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted direct dependency build only: lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonEndpointTransport; exit 0; 4136 jobs; 28 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientTransport.lean; exit 0; 24 declarations standard-only"
+    - "cd research/lean && lake build ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonCoefficientTransport; exit 0; 4170 jobs; 24 declarations standard-only"
+    - "git diff --check and hidden/BiDi plus axiom/admit/sorry/unsafe scans; clean"
+    - "PR #4379 first fixed-head review found the missing integrated C1 chain; repaired by generic/specialized raw Gamma iff, fixed backward-image equalities, and actual proof-use in collision and decisions"
+  blocking_findings: []
+  next_obligation: "C1/C2/C3 identity, inverse, and typed finite-composition closure"
 ```

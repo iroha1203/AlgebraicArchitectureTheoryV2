@@ -119,6 +119,35 @@ noncomputable def qualifiedComparisonEndpointConjugationMulEquiv
     · exact map_mul (CompositeFiberAut.conjugationMulEquiv targetIso)
         left.1.2 right.1.2
 
+/-- A raw pair lies in the conjugated comparison group exactly when its
+inverse-conjugated pair lies in the source comparison group. -/
+theorem inverseConjugatedPair_mem_qualifiedComparison_iff
+    {U : AtomCarrier.{u}}
+    {G₀ G₁ H₀ H₁ : GeometryPackage.{u, v} U}
+    (sourceIso : G₀ ≅ G₁) (targetIso : H₀ ≅ H₁)
+    (comparison : GeometryTotalHom G₀ H₀)
+    (pair : CompositeFiberAut G₁ × CompositeFiberAut H₁) :
+    ((CompositeFiberAut.conjugationMulEquiv sourceIso).symm pair.1,
+        (CompositeFiberAut.conjugationMulEquiv targetIso).symm pair.2) ∈
+          qualifiedComparisonSubgroup comparison ↔
+      pair ∈ qualifiedComparisonSubgroup
+        ((sourceIso.inv.comp comparison).comp targetIso.hom) := by
+  constructor
+  · intro membership
+    have targetMembership :
+        ((CompositeFiberAut.conjugationMulEquiv sourceIso)
+            ((CompositeFiberAut.conjugationMulEquiv sourceIso).symm pair.1),
+          (CompositeFiberAut.conjugationMulEquiv targetIso)
+            ((CompositeFiberAut.conjugationMulEquiv targetIso).symm pair.2)) ∈
+          qualifiedComparisonSubgroup
+            ((sourceIso.inv.comp comparison).comp targetIso.hom) :=
+      (qualifiedComparisonEndpointConjugationMulEquiv
+        sourceIso targetIso comparison ⟨_, membership⟩).2
+    simpa only [MulEquiv.apply_symm_apply] using targetMembership
+  · intro membership
+    exact ((qualifiedComparisonEndpointConjugationMulEquiv
+      sourceIso targetIso comparison).symm ⟨pair, membership⟩).2
+
 /-- The source projection square for endpoint conjugation commutes. -/
 @[simp] theorem qualifiedComparisonEndpointConjugation_sourceProjection
     {U : AtomCarrier.{u}}
