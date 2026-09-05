@@ -53,12 +53,21 @@ rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
 rg -n "(\/Users\/|\/home\/|C:\\\\Users\\\\|Documents\/|HelloLean|private\/internal|\.codex|AlgebraicArchitectureTheoryV2)" <changed-files>
 # Research import方向(本体から ResearchLean.AG への import 禁止。)
 rg -n "import ResearchLean\.AG" Formal Formal.lean
+# 語彙の禁止・置換表(docs/workflow/vocabulary.md を正とする)
+rg -n "錨|正本|裁定|契約|右サイズ化|正枝|負枝|帳簿|玩具|衛生規則|湧|幻|裏取り" <changed-files>
 ```
 
 Research import方向scanの判定規則: ヒットが**差分で新規に追加された行**なら
 hard fail(レーン裁量なし)。差分と無関係な既存ヒット(main 由来)は、
 その PR の Reject 理由にはせず、**既存のimport方向違反 blocker** として
 ユーザーへ即時報告する(黙認しない)。
+
+語彙scanの判定規則: ヒットが**差分で新規に追加された行**なら finding とし、
+[語彙ルール](../../../docs/workflow/vocabulary.md)の禁止・置換表に従う置換を求める。
+既存行のヒットは対象外(既存本文への遡及置換はしない)。ファイル名・Lean 識別子・
+既存の英語識別子・置換表自身の引用は文脈で除外してよい。
+対象範囲は語彙ルールの「適用範囲」節に従う(`outreach/` / `website/` の
+記事本文・公開 copy のヒットは finding にしない)。
 
 - **横断 privacy 報告義務**: sub-agent は担当観点にかかわらず、
   センシティブなローカルパス・個人名・private/internal 風 fixture 値・

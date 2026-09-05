@@ -16,6 +16,7 @@ source of truth として扱わない。
    - リポジトリが扱う根本の目標と数学的主張を定める。
 2. **Tier 2: 領域基準**
    - [Workflow guideline](workflow/guideline.md)（横断作業規律の領域基準）
+   - [語彙ルール](workflow/vocabulary.md)（語彙の領域基準）
    - [PRD guideline](prd/guideline.md)（PRD lifecycleの領域基準）
    - [AAT / Lean guideline](aat/guideline.md)
    - [SFT guideline](sft/guideline.md)
