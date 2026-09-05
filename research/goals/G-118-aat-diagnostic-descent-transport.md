@@ -189,8 +189,8 @@
     により変更後の `sourceFiberDiagram`、`sourceGeometry`、`sourceTransport` を構成し、
     `I^w : UpperGeometryCompatibleProblemInputData ctx P k` を得る。functor の恒等・合成則、
     edge の core-fiber 投影等式、geometry/core 両段の strong-cocartesian 性、`twoCellBase`、
-    edge/comparator の coefficient identity をすべて `I`、`w_i`、同型と cartesian lift の
-    安定性から証明する。これらを caller-supplied certificate にしない。
+    edge/comparator の coefficient identity をすべて `I`、`w_i`、同型と strongly-cocartesian
+    lift の合成安定性から証明する。これらを caller-supplied certificate にしない。
     `root`、`rootPath`、`P`、`ctx`、`k` は元の入力からそのまま保持する。
 
     source change の identity、inverse、型の合う有限合成を構成し、`I^1 = I` と、連続する
