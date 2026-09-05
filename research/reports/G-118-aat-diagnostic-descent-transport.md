@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C3 source-presentation の射影・核・非空 fiber・作用 correspondence
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、射影・核・非空 fiber・作用・J・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: C3 source-presentation の `J` と係数観測 correspondence
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、`J`・係数 correspondence、C1s coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: full Γ MulEquiv を両射影・核・非空 fiber と作用の対応へ特殊化する
+- next obligation: source-presentation change が `J'_i` と両 endpoint の係数観測を運ぶことを証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -1764,4 +1764,98 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF4.lean; exit 0; 1 declaration under AAT.AG.DoctrineFiberProduct standard axioms only"
   blocking_findings: []
   next_obligation: "C3 source-presentation projection, kernel, fiber, and action correspondence"
+```
+
+## Cycle 18 — projection, kernel, lift-fiber, and action correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 18
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: ca81da80e889bbf3fe653065af8cf21896c9c5e6
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 17 accepted generated-range correspondence"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleUpperGeometryMateAt_eq_sourcePresentation_conjugation
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - qualifiedComparisonEndpointConjugationSourceKernelMulEquiv
+    - qualifiedComparisonEndpointConjugationTargetKernelMulEquiv
+  proof_obligation: "specialize the full endpoint-conjugation correspondence to both projections, both projection kernels, both lift-fiber types, nonemptiness, and both stabilizer actions"
+  selection_reason: "these are full-Gamma consequences of mate conjugation and must remain separate from the central T square, which controls only the generated range"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF5.lean
+  risks:
+    - deriving full-Gamma structure from central T naturality alone
+    - reversing changed-to-old endpoint variance
+    - swapping source-projection kernels with source stabilizers
+    - asserting unconditional nonemptiness or keeping fiber coordinates untransported
+  unchecked:
+    - J and coefficient-observation correspondence
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourcePresentationMulEquivAt_sourceProjection
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourcePresentationMulEquivAt_targetProjection
+    - UpperGeometryCompatibleSourcePresentationChange.generatedTargetStabilizerSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourceStabilizerSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourceProjectionKernelSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedTargetProjectionKernelSourcePresentationMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonTargetLiftSourcePresentationEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourceLiftSourcePresentationEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonTargetLiftSourcePresentation_nonempty_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourceLiftSourcePresentation_nonempty_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonTargetLiftSourcePresentation_smul
+    - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourceLiftSourcePresentation_smul
+  source_labels:
+    - "C3 full-Gamma projection, kernel, fiber, and action correspondence"
+  acceptance_point: "The explicit full-Gamma MulEquiv has underlying map Theta_BP definitionally. Both projections commute, both typed kernels are multiplicatively equivalent, corresponding-coordinate lift fibers are equivalent with nonemptiness iff, and both stabilizer actions are equivariant. No fiber is asserted nonempty unconditionally."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "both full qualified-comparison projection squares"
+      - "both projection-kernel MulEquivs"
+      - "both corresponding-coordinate lift-fiber Equivs and Nonempty iff statements"
+      - "target- and source-stabilizer action equivariance"
+    remaining:
+      - "J and coefficient-observation correspondence"
+      - "C1s identity, inverse, and finite-composition coherence"
+      - "fixed firing and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "the F3 MulEquiv implementation is rebuilt explicitly from the proved raw membership iff, preserving its public statement while exposing Theta_BP definitionally"
+      - "kernel equivalences specialize the existing generic endpoint-conjugation kernel API"
+      - "lift and stabilizer transports are built from actual full-Gamma membership preservation and reflection"
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedCompatibleUpperGeometryMateAt_eq_sourcePresentation_conjugation through the full-Gamma membership iff"
+      - "generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff in both directions"
+      - "actual endpoint conjugation MulEquivs and inverse laws"
+      - "generic source- and target-projection kernel equivalences"
+    unused:
+      - "central T naturality and generated-range equality are not used for full-Gamma projection, kernel, fiber, or action transport"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "all lanes agreed on changed-to-old variance and corresponding-coordinate transport; the refutation lane rejected unconditional fiber nonemptiness, swapped kernel/stabilizer variance, and any derivation from the central T square alone"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean; exit 0; 5 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+    - "targeted predecessor construction: lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF4; exit 0; no Research aggregate target"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF5.lean; exit 0; 12 declarations under AAT.AG.DoctrineFiberProduct standard axioms only"
+  blocking_findings: []
+  next_obligation: "C3 source-presentation J and coefficient-observation correspondence"
 ```

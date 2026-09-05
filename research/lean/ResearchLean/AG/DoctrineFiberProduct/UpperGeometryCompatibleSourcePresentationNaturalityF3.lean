@@ -53,22 +53,6 @@ theorem generatedCompatibleUpperGeometryMateAt_eq_sourcePresentation_conjugation
         (etaBase.inv ≫ newMate) ≫ etaPulled.hom
       exact (Category.assoc _ _ _).symm
 
-/-- G-118 C3 full qualified-comparison equivalence.  It is the restriction of
-literal endpoint conjugation by the independently generated `eta_B, eta_P`;
-it is not a restriction to the generated range of `T`. -/
-noncomputable def generatedQualifiedComparisonSourcePresentationMulEquivAt
-    (change : UpperGeometryCompatibleSourcePresentationChange input)
-    (i : P.Vertex) :
-    qualifiedComparisonSubgroup
-        (change.changedInput.generatedCompatibleUpperGeometryMateAt i) ≃*
-      qualifiedComparisonSubgroup
-        (input.generatedCompatibleUpperGeometryMateAt i) := by
-  rw [change.generatedCompatibleUpperGeometryMateAt_eq_sourcePresentation_conjugation i]
-  exact qualifiedComparisonEndpointConjugationMulEquiv
-    (change.generatedBaseRouteExactGeometryIsoAt i)
-    (change.generatedPulledRouteExactGeometryIsoAt i)
-    (change.changedInput.generatedCompatibleUpperGeometryMateAt i)
-
 /-- G-118 C3 raw-pair form of full qualified-comparison preservation and
 reflection by the generated endpoint-pair conjugation. -/
 theorem generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
@@ -102,6 +86,36 @@ theorem generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
         qualifiedComparisonSubgroup
           (input.generatedCompatibleUpperGeometryMateAt i)) at h
   simpa only [MulEquiv.symm_apply_apply] using h
+
+/-- G-118 C3 full qualified-comparison equivalence.  It is the restriction of
+literal endpoint conjugation by the independently generated `eta_B, eta_P`;
+its explicit construction exposes the endpoint-pair map definitionally and is
+not a restriction to the generated range of `T`. -/
+noncomputable def generatedQualifiedComparisonSourcePresentationMulEquivAt
+    (change : UpperGeometryCompatibleSourcePresentationChange input)
+    (i : P.Vertex) :
+    qualifiedComparisonSubgroup
+        (change.changedInput.generatedCompatibleUpperGeometryMateAt i) ≃*
+      qualifiedComparisonSubgroup
+        (input.generatedCompatibleUpperGeometryMateAt i) where
+  toFun pair :=
+    ⟨change.generatedEndpointPairMulEquivAt i pair.1,
+      (change.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+        i pair.1).mp pair.2⟩
+  invFun pair :=
+    ⟨(change.generatedEndpointPairMulEquivAt i).symm pair.1, by
+      apply (change.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+        i ((change.generatedEndpointPairMulEquivAt i).symm pair.1)).mpr
+      simpa only [MulEquiv.apply_symm_apply] using pair.2⟩
+  left_inv pair := by
+    apply Subtype.ext
+    exact (change.generatedEndpointPairMulEquivAt i).symm_apply_apply pair.1
+  right_inv pair := by
+    apply Subtype.ext
+    exact (change.generatedEndpointPairMulEquivAt i).apply_symm_apply pair.1
+  map_mul' left right := by
+    apply Subtype.ext
+    exact map_mul (change.generatedEndpointPairMulEquivAt i) left.1 right.1
 
 /-- G-118 C3 literal subgroup-image form of
 `Theta_BP,i (Gamma_(c'_i)) = Gamma_(c_i)`.  Reverse inclusion uses the actual
