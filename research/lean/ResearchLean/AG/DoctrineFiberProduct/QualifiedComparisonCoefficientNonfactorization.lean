@@ -59,7 +59,40 @@ pulled comparator by the identity. -/
 noncomputable def fixedNegativeQualifiedPair : FixedQualifiedPair :=
   (generatedBaseComparatorCoefficientTrivialUpperReselection.toUpperEdgeReselection
       PUnit.unit PUnit.unit DecisionEdge.twist,
-    1)
+    problem.data.generatedPulledIdentityComparatorTransport.comparator
+      DecisionCell.comparison)
+
+/-- The positive pulled comparator has identity coefficient observation by
+the actual generated pulled-route comparator coefficient theorem. -/
+theorem fixedPositivePulled_coefficientObservation_eq_one :
+    AAT.AG.DoctrineFiberProduct.CompositeFiberAut.coefficientObservation
+        (problem.data.generatedPulledRouteGeometryAt PUnit.unit)
+        fixedPositiveQualifiedPair.2 = 1 := by
+  apply CategoryTheory.Iso.ext
+  ext value
+  rw [AAT.AG.DoctrineFiberProduct.CompositeFiberAut.coefficientObservation_hom]
+  change
+    (CompositeFiberAut.hom
+      (problem.data.generatedPulledRouteTransport.comparator
+        DecisionCell.comparison)).geometry.coefficientHom value = value
+  rw [problem.data.generatedPulledRouteTransport.comparator_coefficient_id]
+  rfl
+
+/-- The negative pulled identity comparator has identity coefficient
+observation by the named copied-transport qualification theorem. -/
+theorem fixedNegativePulled_coefficientObservation_eq_one :
+    AAT.AG.DoctrineFiberProduct.CompositeFiberAut.coefficientObservation
+        (problem.data.generatedPulledRouteGeometryAt PUnit.unit)
+        fixedNegativeQualifiedPair.2 = 1 := by
+  apply CategoryTheory.Iso.ext
+  ext value
+  rw [AAT.AG.DoctrineFiberProduct.CompositeFiberAut.coefficientObservation_hom]
+  change
+    (CompositeFiberAut.hom
+      (problem.data.generatedPulledIdentityComparatorTransport.comparator
+        DecisionCell.comparison)).geometry.coefficientHom value = value
+  rw [problem.data.generatedPulledIdentityComparator_coefficient_id]
+  rfl
 
 /-- The fixed positive and negative pairs are indistinguishable by the full
 product coefficient observation. -/
@@ -68,17 +101,8 @@ theorem fixedCoefficientObservation_positive_eq_negative :
       fixedCoefficientObservation fixedNegativeQualifiedPair := by
   apply Prod.ext
   · rfl
-  · apply CategoryTheory.Iso.ext
-    ext value
-    change
-      (CompositeFiberAut.hom
-        (generatedPulledComparatorCoefficientTrivialUpperReselection.toUpperEdgeReselection
-          PUnit.unit PUnit.unit DecisionEdge.twist)).geometry.coefficientHom value =
-        (CompositeFiberAut.hom (1 : CompositeFiberAut
-          (problem.data.generatedPulledRouteGeometryAt PUnit.unit))).geometry.coefficientHom
-            value
-    rw [generatedPulledComparatorCoefficientTrivialUpperReselection.coefficient_id]
-    rfl
+  · exact fixedPositivePulled_coefficientObservation_eq_one.trans
+      fixedNegativePulled_coefficientObservation_eq_one.symm
 
 /-- The named generated comparator pair is accepted by `D_*`. -/
 theorem fixedPositiveQualifiedDecision :
@@ -88,7 +112,10 @@ theorem fixedPositiveQualifiedDecision :
 /-- The pulled-identity companion is rejected by `D_*`. -/
 theorem fixedNegativeNotQualifiedDecision :
     ¬ FixedQualifiedDecision fixedNegativeQualifiedPair :=
-  generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison
+  by
+    simpa only [fixedNegativeQualifiedPair,
+      problem.data.generatedPulledIdentityComparatorTransport_comparator] using
+      generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison
 
 /-- Qualified-comparison membership at the fixed datum does not factor
 through the product coefficient observation. -/

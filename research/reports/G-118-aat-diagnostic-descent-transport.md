@@ -980,6 +980,8 @@ result:
       - UpperDecisionWitness.FixedQualifiedDecision
       - UpperDecisionWitness.fixedPositiveQualifiedPair
       - UpperDecisionWitness.fixedNegativeQualifiedPair
+      - UpperDecisionWitness.fixedPositivePulled_coefficientObservation_eq_one
+      - UpperDecisionWitness.fixedNegativePulled_coefficientObservation_eq_one
       - UpperDecisionWitness.fixedCoefficientObservation_positive_eq_negative
       - UpperDecisionWitness.fixedPositiveQualifiedDecision
       - UpperDecisionWitness.fixedNegativeNotQualifiedDecision
@@ -1008,14 +1010,15 @@ audits:
   certificate_provenance:
     discharged:
       - "positive and negative pairs are the reviewed C2 fixed generated witnesses"
-      - "pulled positive coefficient identity is the coefficient-trivial reselection field generated from the route comparator theorem; pulled negative coefficient identity is definitional identity"
+      - "pulled positive coefficient identity is the actual generatedPulledRouteTransport comparator coefficient theorem; pulled negative coefficient identity is generatedPulledIdentityComparator_coefficient_id for the named copied-transport comparator"
       - "decision separation is supplied by the reviewed C2 literal membership and nonmembership theorems"
     unresolved:
       - "transported separation and closure witnesses"
   proof_use:
     used:
       - "CompositeFiberAut.coefficientObservation and coefficientObservation_hom"
-      - "generatedPulledComparatorCoefficientTrivialUpperReselection.coefficient_id"
+      - "generatedPulledRouteTransport.comparator_coefficient_id"
+      - "generatedPulledIdentityComparator_coefficient_id"
       - "generatedComparatorUpperReselections_twist_mem_qualifiedComparison"
       - "generatedBaseComparatorPulledIdentity_twist_not_mem_qualifiedComparison"
       - "fixedCoefficientObservation_positive_eq_negative in the universal contradiction"
@@ -1028,7 +1031,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "targeted direct dependency builds only; no Research aggregate/full build"
-    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean; exit 0; 10 declarations standard-only"
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean; exit 0; 12 declarations standard-only"
   blocking_findings: []
   next_obligation: "D transport the observation collision and qualified separation through C1/C2/C3"
 ```
