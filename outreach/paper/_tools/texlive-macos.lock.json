@@ -1,0 +1,7 @@
+{
+  "distribution": "TinyTeX-1 v2025.08 / TeX Live 2025",
+  "platform": "macOS universal-darwin",
+  "source": "https://github.com/rstudio/tinytex-releases/releases/tag/v2025.08",
+  "url": "https://github.com/rstudio/tinytex-releases/releases/download/v2025.08/TinyTeX-1-v2025.08.tgz",
+  "sha256": "54d5f9148e07bb906dd9a7dafe3a4d4766f06ab139b94cae42257266c242bdd7"
+}

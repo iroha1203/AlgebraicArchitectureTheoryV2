@@ -23,6 +23,10 @@ tex / bib / 図ソース一式を添付として deposit する。
 
 ## ビルド
 
+共通の隔離ビルド・静的検査・arXiv 用 source 作成は
+[paper tools](../../_tools/README.md) と [`../paper.json`](../paper.json) を使う。
+以下は従来の直接ビルド手順である。
+
 ```bash
 cd outreach/paper/saga/en && tectonic main.tex   # main.pdf を生成
 ```

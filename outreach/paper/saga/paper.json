@@ -1,0 +1,76 @@
+{
+  "schema": "paper-project/v1",
+  "main": "main.tex",
+  "environment": {
+    "tectonic": "Tectonic 0.16.9",
+    "texlive": "2025"
+  },
+  "files": [
+    {
+      "source": "en/appendix.tex",
+      "target": "appendix.tex"
+    },
+    {
+      "source": "en/main.tex",
+      "target": "main.tex"
+    },
+    {
+      "source": "en/sec01_intro.tex",
+      "target": "sec01_intro.tex"
+    },
+    {
+      "source": "en/sec02_aat.tex",
+      "target": "sec02_aat.tex"
+    },
+    {
+      "source": "en/sec03_foundations.tex",
+      "target": "sec03_foundations.tex"
+    },
+    {
+      "source": "en/sec04_two_complexes.tex",
+      "target": "sec04_two_complexes.tex"
+    },
+    {
+      "source": "en/sec05_comparison.tex",
+      "target": "sec05_comparison.tex"
+    },
+    {
+      "source": "en/sec06_lean.tex",
+      "target": "sec06_lean.tex"
+    },
+    {
+      "source": "en/sec07_archsig.tex",
+      "target": "sec07_archsig.tex"
+    },
+    {
+      "source": "en/sec08_related.tex",
+      "target": "sec08_related.tex"
+    },
+    {
+      "source": "en/sec09_outlook.tex",
+      "target": "sec09_outlook.tex"
+    },
+    {
+      "source": "en/sec10_conclusion.tex",
+      "target": "sec10_conclusion.tex"
+    },
+    {
+      "source": "zenodo_saga_references.bib",
+      "target": "zenodo_saga_references.bib"
+    },
+    {
+      "source": "zenodo_saga_figure1_comparison.png",
+      "target": "zenodo_saga_figure1_comparison.png"
+    },
+    {
+      "source": "zenodo_saga_figure2_one_cent.png",
+      "target": "zenodo_saga_figure2_one_cent.png"
+    }
+  ],
+  "tex_replacements": {
+    "../zenodo_saga_references.bib": "zenodo_saga_references.bib",
+    "../zenodo_saga_figure1_comparison.png": "zenodo_saga_figure1_comparison.png",
+    "../zenodo_saga_figure2_one_cent.png": "zenodo_saga_figure2_one_cent.png",
+    "../zenodo_saga_references": "zenodo_saga_references"
+  }
+}
