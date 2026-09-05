@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: C1s dependent finite chain 上の pasted full-`Gamma` equivalence による projection/kernel/fiber/action coherence
+- current obligation: C1s dependent finite chain 上の pasted source/endpoint action による residual subgroup `J` と coefficient-observation coherence
 - pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s finite-chain classification coherence、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: pasted full-`Gamma` equivalence を両 projection、kernel、lift fiber、nonempty iff、stabilizer action へ接続する
+- next obligation: pasted source action を residual subgroup `J` と triviality iff、pasted source/endpoint actions を係数観測へ接続する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2332,4 +2332,93 @@ audits:
     - "tracked module AxiomAudit: 10 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "transport projections, both projection kernels, both lift fibers, nonemptiness, and stabilizer actions by the explicit pasted full-Gamma equivalence"
+```
+
+## Cycle 24 — pasted projection, kernel, fiber, and action correspondence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 24
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 39a059b377108b31f11bb0fc5d3a39f8956d1630
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 23 accepted an explicit pasted full-Gamma MulEquiv and its recursive every-link action law"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedBaseRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedPulledRouteExactGeometryIsoAt
+  proof_obligation: "transport both projections, their kernels, both lift fibers, nonemptiness, and stabilizer actions by the explicit pasted full-Gamma equivalence"
+  selection_reason: "the full-Gamma correspondence must expose its coordinate, kernel, fiber, and action consequences before residual-subgroup reflection is transported"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF11.lean
+  risks:
+    - swapping source/base and target/pulled coordinates
+    - identifying a projection kernel with the wrong stabilizer
+    - claiming an unconditionally nonempty fiber
+    - retaining proof transports that hide the actual pasted actions
+  unchecked:
+    - finite-chain residual subgroup J and coefficient-observation correspondence
+    - C1s/C1t order and fixed firing
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt_sourceProjection
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt_targetProjection
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedTargetStabilizerMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceStabilizerMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceProjectionKernelMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedTargetProjectionKernelMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonTargetLiftEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonSourceLiftEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonTargetLift_nonempty_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonSourceLift_nonempty_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonTargetLift_smul
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonSourceLift_smul
+  acceptance_point: "The explicit pasted full-Gamma equivalence commutes with the base/source and pulled/target projections. Both projection kernels are restricted directly from that equivalence. Target- and source-partner fibers are equivalent at the conjugated fixed coordinate, so nonemptiness is preserved and reflected, and the target/source stabilizer actions are equivariant through the actual pasted pulled/base conjugations."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "finite-chain source/base and target/pulled projection squares"
+      - "finite-chain transport of both projection kernels"
+      - "finite-chain equivalence and nonempty iff for both lift-fiber directions"
+      - "finite-chain equivariance for target- and source-stabilizer actions"
+    remaining:
+      - "residual subgroup J and coefficient-observation correspondence under pasted actions"
+      - "C1s/C1t order, fixed firing, and C1s/C1t/C2/D connection"
+  certificate_provenance:
+    discharged:
+      - "stabilizer and lift membership are derived from the Cycle 23 pasted Gamma iff"
+      - "kernel inverse membership uses the actual inverse pasted full-Gamma equivalence and coordinate-conjugation injectivity"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 23 explicit pasted full-Gamma MulEquiv"
+      - "Cycle 23 pasted Gamma membership iff"
+      - "F9 pasted base and pulled endpoint comparisons"
+      - "actual multiplication laws of pasted base and pulled conjugation actions"
+    unused:
+      - "no supplied projection, kernel, fiber-nonempty, or equivariance certificate"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the accepted construction follows the generic endpoint-conjugation coordinate convention but reconstructs the public stabilizer, kernel, and fiber maps from the actual pasted Gamma action"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF11.lean; exit 0"
+    - "tracked module AxiomAudit: 12 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "transport residual subgroup J, its triviality criterion, and both pair coefficient observations by the actual pasted finite-chain actions"
 ```
