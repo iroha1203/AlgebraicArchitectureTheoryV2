@@ -296,6 +296,34 @@ r:H\longrightarrow
 (6)は比較と冪等射の情報を保持する。縮約では、その外側の作用を忘れる。
 **Aで選ぶ同一視が、Bの比較情報を保存するかが定理の内容になる。**
 
+### 4.3 canonical正規化では全自己同型群から出発する
+
+**本文導出**。§2.2の片側吸収が成立するadmissibleなcore圏では、任意の自己同型 `b`
+について `N(b)=be=ebe` は像の自己同型である。逆は `N(b⁻¹)` であり、
+積が像の恒等射 `e` になることは関手性から従う。強い条件 `be=eb` は不要である。
+従って任意の比較 `c:P→Q` に対して
+
+\[
+r_N:\operatorname{Aut}(P)\times\operatorname{Aut}(Q)
+ \longrightarrow\operatorname{Aut}(N(P))\times\operatorname{Aut}(N(Q)),
+\qquad (b,p)\longmapsto(N(b),N(p))
+\]
+
+を定め、`r_N(Γ_c)⊆Γ_{N(c)}` を関手性から得る。比較 `c` 自身にも
+`e_Q c=c e_P` を要求せず、像の比較は `N(c)=c e_P` とする。
+底の資格は、canonicalな `e_P` が底へ恒等を送ることから保持される。
+
+また、選択された像の間の任意の射 `a=e_Q a e_P` は元の圏の射でもあり、
+`N(a)=a e_P=a` である。よって、この像の圏への `N` は充満である。
+ただし、持ち上げたraw射 `a` の可逆性は従わない。像での逆射との積は `e_P,e_Q`
+であり、rawな恒等射 `1_P,1_Q` とは異なるためである。
+従って全自己同型群上でも、`r_N⁻¹(Γ_{N(c)})=Γ_c` と
+`r_N(Γ_c)=Γ_{N(c)}` は別々の成立判定を要する。
+
+(11)は一般の冪等対に対する中心化群上の構成、この節はcanonical正規化の片側吸収を
+使う構成である。後者を完全幾何へ移すには、§7.1の持ち上げと、そこでの片側吸収を
+構成する必要がある。coreでの関手性だけから完全幾何での関手性を推論しない。
+
 ## 5. 有限表示は、対象と射をともに表す必要がある
 
 ### 5.1 有限例外コードの位相的特徴づけ
@@ -488,18 +516,40 @@ flowchart TB
 
 ### 7.1 coreの正規化を完全幾何へ持ち上げる
 
-最初に `G:GeometryPackage U` と、G-116から生成された冪等射
-`e:G.core→G.core` を固定する。求めるのは `ē:GeometryTotalHom G G` で
-`ē.base=e`、`ē²=ē` を満たすものの構成である。
-同じ係数を読む版では `ē.geometry.coefficientHom=id` も含む。
+G-118の `generatedCompatibleUpperGeometryMateAt_isIso` は、一般のcompatible inputに
+対して生成比較が完全幾何の同型であることを証明している。従ってG-116の非可逆な枝の
+`β` との接続は、可逆比較 `α` と冪等因子 `E` の対応から構成する。
+
+G-116の `α:X≅Y`、`E:Y→Y`、`β=Eα` に対し、完全幾何の端点 `G,H` と、
+`ρG≅X`、`ρH≅Y` を与える具体的な端点同型を先に固定する。その同型に沿って型を
+合わせた記法で、次を構成する。
+
+\[
+\bar\alpha:G\cong H,\quad \bar d:H\to H,\quad
+\rho(\bar\alpha)=\alpha,\quad \rho(\bar d)=E,\quad \bar d^2=\bar d,
+\qquad
+\bar e=\bar\alpha^{-1}\bar d\bar\alpha,\quad
+\bar\beta=\bar d\bar\alpha.
+\]
+
+すると `ē²=ē`、`β̄ ē=β̄=d̄ β̄` が完全幾何で成立し、像の上の同型を得る。
+最初の二つの投影等式と、`ᾱ` をG-118の生成比較へ対応させる等式は、入力・生成経路から
+証明する構成義務である。coreの等式を完全幾何の等式として受け取らない。
+同じ係数を読む版では `d̄.geometry.coefficientHom=id` も証明する。
+
+早期の試作では、同じ `G:GeometryPackage U` 上のcanonical正規化
+`e=canonicalObjectNormalizationTotal G.core admissible` を先に扱う。
+この `e` はcontext equivalenceとAtom・equation・axisの添字写像が恒等で、
+`rawReindexCore` はcontextの逆関手から定まる。そのため係数と三つの局所比較を
+恒等に取り、以下の全法則を導く構成を試す根拠がある。
 
 必要な仕事は `GeomReadHom G G e` のcoverage・overlap・raw compatibilityと、
 Support・Axis・Observableの実際の写像、その読取り則と自然性を生成することである。
 冪等性はそれらの写像の合成から証明する。完成済みの `GeomReadHom` や冪等性の証書を
 callerから受け取る形を、G-116との接続の証明にはしない。
 
-最初の入力族にはG-116のcell projectorを使い、G-118のgenerated geometryと同じ
-出力型に置ける条件を調べる。G-116のresidual・coordinate保存だけから、
+この試作は未構成であり、成功した場合も、輸送後のG-116 cell projectorへの対応と
+可逆mateの持ち上げを続けて構成する。G-116のresidual・coordinate保存だけから、
 Support等の必要な写像が生成されるとは推論しない。
 結果が条件付きになるなら、その条件を元のreadingデータの条件として記し、満たす例と
 満たさない例を構成する。固定入力で持ち上がらない場合は、その欠ける写像を反証する。
@@ -519,8 +569,8 @@ core段には、packageのobject mapから作る関手
 `canonicalObjectNormalization_natural` を自然同型としてまとめる。
 
 しかし、operationを保持する実現には(16)の情報量の検査が要る。
-G-117の `taggedOperationPackage` の全域一定のBool反転を正規化で挟み、
-同じ固定点写像を持つ異なる正規化像の射になるかを調べる。
+G-117の `taggedOperationPackage` で、対象に依存せずBoolタグを反転する自己同型 `τ`
+を構成し、`e` と `eτe` が同じ固定点写像を持ちながらoperation上で異なることを調べる。
 端点依存の既存flipをそのまま(4)の射と見なさない。この試験で非忠実性を構成できれば、
 独立な `R` に残すoperationデータの具体的な必要性が得られる。
 
@@ -598,11 +648,22 @@ flowchart TD
   S3 --> S4
   S4 --> S5["S5 独立な実現と有限表示からの再構成"]
   S5 --> S6["S6 descent・H¹・Morita形"]
+  S1 -.-> T["早期試作：型を合わせた接続と実現圏の設計"]
+  T -.-> S4
+  T -.-> S5
 ```
 
-これは依存する研究の順序であり、一つのGOALで全段を実行する指示ではない。
+実線は成果を接続する順序であり、各段の着手条件を表さない。点線の設計試作は、
+S2・S3の形式化と並行して始める。一つのGOALで全段を実行する指示ではない。
 S1の一般構造はS2・S3と共通の定義を固定する。S4の入力族は、先行結果から狭めるのではなく、
 その段の研究対象として別途明示して固定する。
+
+早期試作では、§7.1の端点・可逆mate・冪等因子の対応、§7.2の一様なBool反転による
+分離試験、独立な `R` の最小限の対象・射を先に書く。射の範囲は、有限carrier上のすべての射、
+無限carrier上の有限supportの射、明示したパラメータに相対的な表示のどれを扱うかを
+意味条件から選ぶ。
+`R=decoderの像` と定義して充満性を済ませない。試作の成果は型と構成義務を固定する
+ことであり、S4・S5の完了判定とは区別する。
 
 ### 9.2 S1 — 実現・比較の圏と冪等像
 
@@ -613,6 +674,7 @@ S1の一般構造はS2・S3と共通の定義を固定する。S4の入力族は
 自己同型群とG-118の `Γ_c` の同定、G-116のKaroubi同型のcore段への配置である。
 さらに§2.2のcanonicalな片側吸収、正規化関手 `N` と自然な包含 `i:N→J` を構成し、
 逆向きの対象別射影 `p` の自然性がG-117の反例で失敗することを対応させる。
+選択された像の圏への `N` の充満性と、全自己同型群上の誘導準同型も§4.3から構成する。
 最大亜群を取る順序も型として固定する。一般圏論の別名だけで終えず、二つの実際の
 theorem packageがどの対象・射に入るかを直接示す。
 
@@ -629,6 +691,8 @@ theorem packageがどの対象・射に入るかを直接示す。
 G-118の固定 `k_*∈K_c\Γ_c`、C1sの入力再構成に沿う(10)の保存、
 (11)の像・核・非空fiberの作用、および二つの有限反例である。
 `r` の値域を最初から `Γ_a` にして中心条件を隠さない。
+canonicalなcore正規化については§4.3の `r_N` を別に扱い、比較の保存と、反映・liftの
+判定条件を固定する。`N` の充満性を自己同型のlift全射性として使用しない。
 
 AATの生成された正規化で反映またはlift全射性が成立するかはS4で決める。
 一般の反例を理由にその実例の判定を省かない。
@@ -655,7 +719,7 @@ codeを取る部分圏を固定し、その充満性と、任意のcodeからの
 
 | 段階 | カード化前に固定するデータ | 成果として判定するもの |
 | --- | --- | --- |
-| S4 | G-116のどの生成projectorを、どのG-118型の完全幾何へ持ち上げるか。必要なreadingと生成経路 | 幾何projectorの構成または固定入力での反証、(11)の反映・liftの成立条件と実例 |
+| S4 | G-116とG-118の端点同型、可逆mateと冪等因子の対応、必要なreadingと生成経路 | 完全幾何での因子化と像の同型、または固定入力での反証。中心化群版とcanonical版の反映・liftの判定 |
 | S5 | 独立な実現圏 `R`、有限表示の構文 `P`、decoder、対象範囲を定めるデータ条件 | 充満性・忠実性・冪等完備性・retract生成を個別に放電し、(15)と観測の整合を構成 |
 | S6 | base、siteの被覆、restriction、既存障害類の係数とcocycle、比較する二表示 | descentの有効性、同じH¹類の分離、Morita同値と結論関手の輸送 |
 
@@ -696,6 +760,9 @@ S5の一般転送命題(15)を証明することと、S5のAATでの完了を分
 | 正規化関手の構成に使うfield | [BCAuthoredCanonicalObjectNormalization](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean): `canonicalObjectNormalizationUpper`, `canonicalObjectNormalizationTotal`。片側吸収は本文導出であり新しいLean宣言は未構成 |
 | raw圏内の非分裂 | [InternalNormalizationSplitNoGo](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean): `canonicalObjectNormalizationTotal_not_internal_split` |
 | core fiberのKaroubi像 | [IdempotentExchangeKaroubiImage](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean): `authoredDiagnosticObjectCollapseKaroubiIso` |
+| cell projectorの生成と輸送 | [IdempotentExchangeCellProjector](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeCellProjector.lean): `authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp` |
+| 生成された完全幾何比較の同型性 | [QualifiedComparisonFixedDecision](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonFixedDecision.lean): `generatedCompatibleUpperGeometryMateAt_isIso` |
+| 正規化の幾何liftに使うraw transport | [GeometryTransport/Basic](../../research/lean/ResearchLean/AG/GeometryTransport/Basic.lean): `rawReindexCore` |
 | 正規化のoperation条件 | [LaxDiagnosticProjectorModificationBlocker](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean): `canonicalObjectNormalizationTotal_natural_iff_operationCoherent` |
 | Bool-tag反例 | [LaxDiagnosticProjectorModificationCounterexample](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean): `no_taggedAdmissibleCanonicalNormalizationNatTrans` |
 | 有限構文・意味・射の商 | [Schema](../../research/lean/ResearchLean/AG/DoctrineFiberProduct/Schema.lean): `AtomPredicateCode`, `AtomPermutationCode`, `CartPresentationBetween`, `finiteCodeCartRealization` |
