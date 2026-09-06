@@ -15,6 +15,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-118-aat-diagnostic-descent-transport](G-118-aat-diagnostic-descent-transport.md)
+  (比較を保つ端点変更の分類と移送。係数の観測による情報損失を帰結として扱う)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
   G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
@@ -31,9 +33,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
-- [G-118-aat-diagnostic-descent-transport](G-118-aat-diagnostic-descent-transport.md)
-  (`target-theorem-proved`。source-only input の完全表示変更に自然な比較分類、
-  C1s/C1t/C2/C3 の型付き移送、係数で不可視な正負分離と fixed finite witness)
 - [G-101-aat-atom-foundation](G-101-aat-atom-foundation.md)
 - [G-102-aat-two-phase-obstruction](G-102-aat-two-phase-obstruction.md)
 - [G-103-aat-canonical-resolution](G-103-aat-canonical-resolution.md)

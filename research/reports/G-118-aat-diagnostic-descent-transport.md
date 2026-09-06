@@ -11,38 +11,14 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
-- final completion PR: [#4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402)
+- completion packet PR: [#4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402)
+- completion audit correction PR: [#4403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403)
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: none
-- pending obligations: none
-- current target state: revision 2 の `target-theorem-proved`
+- current obligation: dependency/proof-use 記録と completion 順序を Lean 実体・標準 ledger に一致させ、訂正版 fixed head を最終査読する
+- pending obligations: 訂正版 packet、同一 fixed head の4独立 math-lean-review、formal completion ledger、merge、GOAL/Issue lifecycle synchronization
+- current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: none
-
-## Completion judgment (final, 2026-09-06)
-
-- completion packet head: `3463f2432ff43da9e64f7898d4c074163efa2955`
-- completion packet merge: `cbb7bd89d2449289e0f07ec036522b3f8c3453d2`
-- fixed reviewed GOAL blob: `64d9ec2cd1b771c929db043752fc8c477eddcf6f`
-- completion packet fixed-head review: Math A / Math B / Lean A / Lean B の4/4が
-  `No major findings`
-- completion packet review audit:
-  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402#issuecomment-5556205531>
-- formal completion review: merge後の別工程で4/4 `No major findings`
-- formal completion ledger:
-  <https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402#issuecomment-5556272977>
-- completion packet CI: 7/7 successful
-- verdict: `target-theorem-proved`
-- remaining G-118 proof obligations: none
-
-最終査読は固定 target A、B1、B2、C1s、C1t、C2、C3、D を、GOAL から
-material premise ledger、route integrity gate、Lean statement/body/dependency へ逆照合した。
-29 claim-bearing module、Cycles 2--11・13--29 の451 mapped declarations、75 acceptance
-declarations はすべて解決され、未放電の material premise、結論相当 certificate、
-structure-field escape、target fitting、vacuity はなかった。C1s の changed input と generated
-endpoint iso / mate / `T` は独立に構成され、旧 C1t-only closure は C1s の証拠に数えていない。
-各 claim-bearing module は standard-axiom assertion を持ち、cycleごとの focused 静的チェックと
-axiom audit は全て通過している。Research aggregate/full build は実行していない。
+- next obligation: PR #4403 の訂正版 fixed head に schema-complete final review packet を固定し、merge 前に4独立査読を通す
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -3015,7 +2991,7 @@ candidate_base_oid: 2a87e7dfd8e1b0db0e97e32060bd9c786c9db1b6
 tracking_issue: 4367
 report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
 candidate_state: target-proof-checkpoint
-completion_claim: "A--D の実装義務は declaration-level map 上で放電済み。target-theorem-proved への昇格は、この packet の固定 head 査読、merge、別工程の4独立 math-lean-review、lifecycle 同期を待つ。"
+completion_claim: "A--D の実装義務は declaration-level map 上で放電済み。target-theorem-proved への昇格は、同一 fixed head の schema-complete packet、merge 前4独立 math-lean-review、formal completion ledger、merge、lifecycle 同期を待つ。"
 
 claim_map:
   A:
@@ -3207,9 +3183,10 @@ route_integrity_gate:
 
 proof_use_spine:
   - "A subgroup equations feed B1 residual-coset classification and C1t/C1s Gamma transports."
+  - "B1 residual classification uses generatedQualifiedComparisonRelation_iff_difference_mem; generatedQualifiedComparisonRelation_iff_inputConditions is a separate actual-input-map characterization and is not the proof predecessor of C3 reflection."
   - "Actual H_B/H_P factorizations feed B1 diagonal membership, C3 T, C2 generated reselections and coefficient preservation."
   - "The changed-input constructor is fed independently to the existing generator before eta, mate and T naturality are proved."
-  - "Central T naturality feeds full-Gamma transport only together with the independently proved comparison-component conjugation; it does not replace it."
+  - "Central T naturality uses the independently generated base/pulled automorphism naturality. Full-Gamma transport is instead derived from mate naturality, comparison-component conjugation and the resulting membership iff; central T naturality is used only for compatibility and generated-map/range consequences."
   - "Full-Gamma transport feeds projections, kernels, fibers and actions; generated-range equality is proved separately."
   - "Residual J transport feeds exact reflection, and coefficient commutation plus literal positive/negative decisions feeds universal nonfactorization."
   - "The fixed source-action Fin 4 evaluation and the changed-input C3/C2 constructions are both direct leaves of the final changed-input packets."
@@ -3238,8 +3215,94 @@ audits:
   blocking_findings: []
 
 remaining_before_terminal_completion:
-  - "completion candidate PR の固定 head 内容査読と merge"
-  - "merge 後の固定 snapshot に対する別工程の Math A / Math B / Lean A / Lean B の4独立 math-lean-review。全 lane が No major findings であること"
-  - "査読結果を report と tracking Issue に同期し、GOAL status を terminal result に更新する lifecycle PR"
-  - "lifecycle PR の査読・CI・merge 後に Issue #4367 を terminal result と completion packet link で同期すること"
+  - "訂正版 completion candidate PR の fixed head に schema-complete final review packet を固定すること"
+  - "merge 前の同一 fixed head に対する Math A / Math B / Lean A / Lean B の4独立 math-lean-review が全て No major findings であること"
+  - "同じ fixed head と4査読参照を持つ schema-complete formal completion ledger を PR に固定してから merge すること"
+  - "merge 後に GOAL/report/index を terminal result へ更新する lifecycle PR を査読・CI・mergeすること"
+  - "その後 Issue #4367 を terminal result と completion packet/ledger link で同期すること。Issue close は人間の明示指示を別途要する。"
+```
+
+## Cycle 30 — final-review dependency and lifecycle repair
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 30
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 7b8b16184e7c28a3dc7dcccfd1c4faf2c0af1771
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "fresh final Lean review lane B on packet comment 5556575600"
+  proof_dag_predecessors:
+    - generatedQualifiedComparisonRelation_iff_difference_mem
+    - generatedQualifiedComparisonRelation_reflects_iff_kernel_eq_bot
+    - generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+    - generatedBaseCompositeFiberAutAt_naturality
+    - generatedPulledCompositeFiberAutAt_naturality
+    - generatedComparisonPairHomAt_sourcePresentation_naturality
+    - generatedCompatibleUpperGeometryMateAt_naturality
+    - generatedEndpointPairMulEquivAt_map_qualifiedComparisonSubgroup
+  proof_obligation: "make the recorded dependency/proof-use route and terminal completion order agree with the Lean bodies and completion-ledger schema"
+  selection_reason: "the final reviewer found a fail-closed evidence defect although the target theorem bodies themselves had no major defect"
+  expected_result_type: blocker-fixed
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonBaseTransport.lean
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF2.lean
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean
+  risks:
+    - recording actual-input characterization as a proof predecessor of C3 reflection
+    - recording central T naturality as a proof predecessor of full-Gamma transport
+    - placing final independent review after merge
+    - publishing terminal GOAL status before the repaired fixed-head review and ledger
+  unchecked:
+    - "the repaired fixed head has not yet received the required four fresh final reviews"
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "C3 reflection now records the residual-difference/kernel-bottom route; central T and full-Gamma routes are separated; final review and formal ledger are placed before merge; GOAL and index return to active checkpoint state."
+  completion_candidate: no
+  lean_artifacts: []
+  evidence:
+    - "QualifiedComparisonBaseTransport generatedQualifiedComparisonRelation_reflects_iff_kernel_eq_bot and generatedComparisonPairHomAt_reflects_qualifiedComparison_iff bodies"
+    - "F2 generatedComparisonPairHomAt_sourcePresentation_naturality body"
+    - "F3 mate conjugation, membership iff and subgroup map bodies"
+    - "target-theorem-loop completion-ledger ordering"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - dependency/proof-use accuracy
+      - terminal lifecycle ordering
+    conjuncts:
+      - "No theorem statement or body changes; this cycle repairs audit evidence only."
+    undischarged_assumptions: []
+    acceptance_point: "The reported edges now match direct Lean proof use and the candidate remains target-proof-checkpoint until a new packet, four reviews and formal ledger pass."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "false dependency edge from actual-input iff to C3 reflection removed"
+      - "false dependency edge from central T naturality to full-Gamma transport removed"
+      - "pre-merge final review and ledger order restored"
+    remaining:
+      - "new fixed-head final packet and four independent reviews"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "direct bodies of C3 reflection, F2 central T naturality and F3 full-Gamma transport"
+    unused:
+      - "generatedQualifiedComparisonRelation_iff_inputConditions is not used as C3 reflection's proof predecessor"
+      - "central T naturality is not used as full-Gamma transport's proof predecessor"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "git diff --check; clean"
+    - "direct source inspection at the three named modules"
+  blocking_findings: []
+  next_obligation: "fix a new schema-complete final review packet on PR #4403 head and run four fresh pre-merge reviews"
 ```

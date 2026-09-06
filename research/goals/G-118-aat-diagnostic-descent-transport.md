@@ -1,26 +1,7 @@
 # G-118-aat-diagnostic-descent-transport — 入力表示変更に自然な比較分類と診断情報損失
 
 - `id`: `G-118-aat-diagnostic-descent-transport`
-- `status`: `completed`
-- `completion result`: `target-theorem-proved`。固定した revision 2 の
-  **Source-Presentation-Natural Qualified Comparison Transport and Diagnostic
-  Information Loss Theorem** の A--D を全放電した（2026-09-06）。一般比較の
-  subgroup・像・核・fiber・torsor、実生成写像による分類、固定比較の全決定、source-only
-  input の完全表示変更からの changed input 再構成、独立生成された endpoint iso と中心自然性、
-  full `Γ`・生成像・`J`・fiber・作用・係数観測の対応、C1s/C1t/C2/C3 の型付き閉包、
-  係数で不可視な正負分離と普遍的非因子化、`swap01Iso` / `compositeSwap12` の実
-  `Fin 4` induced-action firing を Lean で構成した。completion packet は
-  [PR #4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402) の
-  fixed head `3463f2432ff43da9e64f7898d4c074163efa2955`、CI 7/7、固定 head 4査読
-  `No major findings` を経て merge `cbb7bd89d2449289e0f07ec036522b3f8c3453d2`。
-  別工程の formal completion review も Math A / Math B / Lean A / Lean B の4/4が
-  `No major findings` であり、
-  [formal completion ledger](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402#issuecomment-5556272977)
-  に固定した。
-- `stop reason`: `target-theorem-proved`
-- `next action`: G-118 としてはなし。観測へ追加する情報の十分性、variable-comparator、
-  regular comparison、restriction category、coherence height、SHIGURE の実現関手は
-  frontier の別カードで扱う。
+- `status`: `active`
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: #4367
