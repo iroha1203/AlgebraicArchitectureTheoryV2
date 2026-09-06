@@ -95,6 +95,7 @@ provenance 検査で一度停止した。G-114 と G-118 では、`proved` の�
 `research/lean/ResearchLean/AG/` 配下は 791 module、約 30 万行である。
 `DoctrineFiberProduct/` 配下だけで 364 module になる。個別では G-111 の宣言
 map が 345 件、G-115 が 80 module・公開宣言 1516 件、G-118 が 451 宣言である。
+実装ループを担った Codex の消費トークンは約 240 億トークンである。
 
 ### 2.3 反証の再利用
 
