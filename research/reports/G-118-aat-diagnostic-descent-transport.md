@@ -11,14 +11,36 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 source base: `4f8ba8f8396ce3bbdd00c581941acee73967096b`
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
-- completion packet PR: [#4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402)
-- completion audit correction PR: [#4403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403)
+- implementation completion PR: [#4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402)
+- final completion audit PR: [#4403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403), merge `27ef9d6a2deec3b315d856e881543cae38a14d04`
+- standard PR review: [PR comment 5556939163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5556939163), `Mergeable`
+- schema-complete final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
+- final math/Lean review: [PR comment 5557145097](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097), 4/4 `No major findings`
+- formal completion ledger: [PR comment 5557153114](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114), `target-theorem-proved`
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: dependency/proof-use 記録と completion 順序を Lean 実体・標準 ledger に一致させ、訂正版 fixed head を最終査読する
-- pending obligations: 訂正版 packet、同一 fixed head の4独立 math-lean-review、formal completion ledger、merge、GOAL/Issue lifecycle synchronization
-- current target state: revision 2 の `target-proof-checkpoint`
+- current proof obligation: none
+- pending proof obligations: none
+- current target state: revision 2 の `target-theorem-proved`
+- lifecycle obligation: この文書同期PRのmerge後に Issue #4367へterminal resultを同期する。Issue closeは人間の明示指示を別途要する。
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: PR #4403 の訂正版 fixed head に schema-complete final review packet を固定し、merge 前に4独立査読を通す
+- next proof obligation: none for G-118; frontier items require separately fixed GOALs
+
+## Completion judgment (final, 2026-09-06)
+
+- candidate head: `a661c341e9880eaa16d00b12c18bad5b915756b6`
+- fixed GOAL blob: `64d9ec2cd1b771c929db043752fc8c477eddcf6f`
+- standard review: [PR comment 5556939163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5556939163), `Mergeable`
+- final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
+- final independent review: [PR comment 5557145097](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097), 4/4 `No major findings`
+- formal ledger: [PR comment 5557153114](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114)
+- merge commit: `27ef9d6a2deec3b315d856e881543cae38a14d04`
+- verdict: `target-theorem-proved`
+- remaining proof obligations: none
+
+固定 target A、B1、B2、C1s、C1t、C2、C3、D、fixed firing、mixed
+transport は451宣言の実体へ対応し、12件の discharge-required premise は全放電された。
+31 owner moduleのfocused静的チェック、公理監査、placeholder・依存方向・非空虚性・
+proof-use監査を通過した。Research aggregate/full buildは実行していない。
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -3305,4 +3327,76 @@ audits:
     - "direct source inspection at the three named modules"
   blocking_findings: []
   next_obligation: "fix a new schema-complete final review packet on PR #4403 head and run four fresh pre-merge reviews"
+```
+
+## Cycle 31 — terminal document synchronization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 31
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 27ef9d6a2deec3b315d856e881543cae38a14d04
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "PR #4403 formal completion ledger comment 5557153114"
+  proof_dag_predecessors:
+    - "standard PR review comment 5556939163"
+    - "schema-complete final packet comment 5557101743"
+    - "fresh four-lane final review comment 5557145097"
+    - "formal completion ledger comment 5557153114"
+    - "PR #4403 merge 27ef9d6a2deec3b315d856e881543cae38a14d04"
+  proof_obligation: "synchronize the merged target-theorem-proved verdict to GOAL, report and index before the post-merge Issue update"
+  selection_reason: "all pre-merge theorem gates passed on one fixed head and the completion PR merged"
+  expected_result_type: blocker-fixed
+  lean_targets: []
+  risks:
+    - "reusing withdrawn packet comments"
+    - "marking a gate complete before its fixed-head evidence"
+  unchecked: []
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "All revision-2 proof obligations and pre-merge theorem gates are discharged; GOAL, report and index now record the terminal result, while tracking Issue synchronization remains a post-merge external step."
+  completion_candidate: no
+  lean_artifacts: []
+  evidence:
+    - "standard PR review 5556939163: Mergeable"
+    - "final packet 5557101743: 451 declarations, 31 owner modules, 16 material premises, 36 direction refs, 23-node selected material proof-use DAG"
+    - "fresh final review 5557145097: Math A, Math B, Lean A and Lean B all No major findings"
+    - "formal completion ledger 5557153114: all gates pass, no remaining obligations, blockers or unchecked central claims"
+    - "PR #4403 merge 27ef9d6a2deec3b315d856e881543cae38a14d04"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - terminal lifecycle synchronization
+    conjuncts:
+      - "No theorem statement or body changes; this cycle records the already reviewed and merged terminal verdict."
+    undischarged_assumptions: []
+    acceptance_point: "The fixed revision-2 target is target-theorem-proved."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "final packet, standard review, fresh final review and formal completion ledger on the fixed PR #4403 head"
+    unused:
+      - "withdrawn packet comments"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "GOAL, report and index terminal state are internally consistent"
+    - "all 31 report YAML blocks parse"
+    - "git diff --check; clean"
+  blocking_findings: []
+  next_obligation: "merge this lifecycle synchronization and synchronize Issue #4367; closing the Issue still requires an explicit human instruction"
 ```
