@@ -573,14 +573,64 @@ theorem swap01ChangedC2_mixed_transport_packet :
           swap01ChangedInput.generatedBaseRouteTransport ∧
       Swap01ChangedQualifiedDecision swap01ChangedC2PositiveQualifiedPair ∧
       ¬ Swap01ChangedQualifiedDecision swap01ChangedC2NegativeQualifiedPair ∧
+      swap01ChangedCoefficientObservation swap01ChangedC2PositiveQualifiedPair =
+        swap01ChangedCoefficientObservation swap01ChangedC2NegativeQualifiedPair ∧
+      swap01ChangedC2PositiveQualifiedPair ≠ 1 ∧
       Nonempty (GeneratedCoefficientTrivialPulledPartner
         swap01ChangedInput swap01ChangedBaseComparatorReselection) ∧
-      ∀ source target : GeneratedCoefficientTrivialPulledPartner
+      (∀ source target : GeneratedCoefficientTrivialPulledPartner
           swap01ChangedInput swap01ChangedBaseComparatorReselection,
         ∃! stabilizer : GeneratedCoefficientTrivialTargetStabilizerFamily
             swap01ChangedInput,
           generatedCoefficientTrivialPulledPartnerAction stabilizer source =
-            target := by
+            target) ∧
+      (∀ {sourceDisplay targetDisplay : QualifiedComparisonDisplay}
+          (before : swap01ChangedInput.QualifiedComparisonC1Chain
+            PUnit.unit sourceDisplay .generated)
+          (after : problem.data.QualifiedComparisonC1Chain
+            PUnit.unit .generated targetDisplay),
+        let positiveSource := before.pairMulEquivAt.symm
+          swap01ChangedC2PositiveQualifiedPair
+        let negativeSource := before.pairMulEquivAt.symm
+          swap01ChangedC2NegativeQualifiedPair
+        let positive := swap01MixedC1PairMulEquivAt before after positiveSource
+        let negative := swap01MixedC1PairMulEquivAt before after negativeSource
+        problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit
+            targetDisplay positive =
+          problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit
+            targetDisplay negative ∧
+        problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit
+            targetDisplay positive ∧
+        ¬ problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit
+            targetDisplay negative ∧
+        positive ≠ 1 ∧
+        ¬ ∃ diagnostic :
+            (Aut (CommRingCat.of Int) × Aut (CommRingCat.of Int)) → Prop,
+          ∀ pair : problem.data.qualifiedComparisonDisplayPairAt
+              PUnit.unit targetDisplay,
+            problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit
+                targetDisplay pair ↔
+              diagnostic
+                (problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit
+                  targetDisplay pair)) ∧
+      (problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit .canonical
+          swap01ChangedC2CanonicalMixedPositivePair =
+        problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit .canonical
+          swap01ChangedC2CanonicalMixedNegativePair ∧
+        problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit .canonical
+          swap01ChangedC2CanonicalMixedPositivePair ∧
+        ¬ problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit .canonical
+          swap01ChangedC2CanonicalMixedNegativePair ∧
+        swap01ChangedC2CanonicalMixedPositivePair ≠ 1 ∧
+        ¬ ∃ diagnostic :
+            (Aut (CommRingCat.of Int) × Aut (CommRingCat.of Int)) → Prop,
+          ∀ pair : problem.data.qualifiedComparisonDisplayPairAt
+              PUnit.unit .canonical,
+            problem.data.qualifiedComparisonDisplayDecisionAt PUnit.unit
+                .canonical pair ↔
+              diagnostic
+                (problem.data.qualifiedComparisonDisplayObservationAt PUnit.unit
+                  .canonical pair)) := by
   exact ⟨swap01ChangedC2PositiveQualifiedPair_eq,
     swap01ChangedC2NegativeQualifiedPair_eq,
     swap01ChangedComparatorEndpointIntertwining_fires,
@@ -591,8 +641,12 @@ theorem swap01ChangedC2_mixed_transport_packet :
     swap01ChangedBaseComparatorReselection_ne_one,
     swap01ChangedC2PositiveQualifiedDecision,
     swap01ChangedC2NegativeNotQualifiedDecision,
+    swap01ChangedC2CoefficientObservation_positive_eq_negative,
+    swap01ChangedC2PositiveQualifiedPair_ne_one,
     swap01ChangedPulledPartner_nonempty,
-    swap01ChangedPulledPartner_existsUnique⟩
+    swap01ChangedPulledPartner_existsUnique,
+    swap01ChangedC2_not_factor_after_mixed_c1,
+    swap01ChangedC2CanonicalMixed_packet⟩
 
 end UpperDecisionWitness
 
