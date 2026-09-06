@@ -13,8 +13,8 @@ proof-use、査読結果を cycle ごとに記録する。
 - tracking Issue: #4367
 - implementation completion PR: [#4402](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4402)
 - final completion audit PR: [#4403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403), merge `27ef9d6a2deec3b315d856e881543cae38a14d04`
-- schema-complete final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
 - standard PR review: [PR comment 5556939163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5556939163), `Mergeable`
+- schema-complete final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
 - final math/Lean review: [PR comment 5557145097](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097), 4/4 `No major findings`
 - formal completion ledger: [PR comment 5557153114](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114), `target-theorem-proved`
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
@@ -28,8 +28,8 @@ proof-use、査読結果を cycle ごとに記録する。
 
 - candidate head: `a661c341e9880eaa16d00b12c18bad5b915756b6`
 - fixed GOAL blob: `64d9ec2cd1b771c929db043752fc8c477eddcf6f`
-- final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
 - standard review: [PR comment 5556939163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5556939163), `Mergeable`
+- final packet: [PR comment 5557101743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)
 - final independent review: [PR comment 5557145097](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097), 4/4 `No major findings`
 - formal ledger: [PR comment 5557153114](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114)
 - merge commit: `27ef9d6a2deec3b315d856e881543cae38a14d04`
@@ -3341,8 +3341,8 @@ report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
 selection:
   proof_state_ref: "PR #4403 formal completion ledger comment 5557153114"
   proof_dag_predecessors:
-    - "schema-complete final packet comment 5557101743"
     - "standard PR review comment 5556939163"
+    - "schema-complete final packet comment 5557101743"
     - "fresh four-lane final review comment 5557145097"
     - "formal completion ledger comment 5557153114"
     - "PR #4403 merge 27ef9d6a2deec3b315d856e881543cae38a14d04"
@@ -3360,8 +3360,8 @@ result:
   completion_candidate: terminal
   lean_artifacts: []
   evidence:
-    - "final packet 5557101743: 451 declarations, 31 owner modules, 16 material premises, 36 direction refs, 23-node selected material proof-use DAG"
     - "standard PR review 5556939163: Mergeable"
+    - "final packet 5557101743: 451 declarations, 31 owner modules, 16 material premises, 36 direction refs, 23-node selected material proof-use DAG"
     - "fresh final review 5557145097: Math A, Math B, Lean A and Lean B all No major findings"
     - "formal completion ledger 5557153114: all gates pass, no remaining obligations, blockers or unchecked central claims"
     - "PR #4403 merge 27ef9d6a2deec3b315d856e881543cae38a14d04"
