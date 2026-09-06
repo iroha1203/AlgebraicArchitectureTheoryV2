@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: 変更後入力上の C2/D packet と C1s/C1t/C2/D connection
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t/C2/D connection、final completion review
+- current obligation: 変更後入力上での C2 edge-family provenance と C1s/C1t/C2/D connection
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、変更後 C2/C1t closure、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: fixed source change の changed input に既存 C2/D 正負 packet を接続し、移送後の分離と非因子化を証明する
+- next obligation: changed input の source comparator から C2 reselection 対を独立に再生成し、C1t 逆表示後の正負・非恒等性と mixed closure へ接続する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2712,4 +2712,120 @@ audits:
     - "tracked module AxiomAudit: 9 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "instantiate the fixed changed input and transport the existing C2/D positive-negative packet through C1s, then connect the remaining typed closure"
+```
+
+## Cycle 28 — fixed changed-input C3/D separation packet
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 28
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 20277de261ae7d1a91a07186f07937f5e2ec9f60
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 27 accepted the actual fixed source-presentation action and its nonidentity firing"
+  proof_dag_predecessors:
+    - UpperDecisionWitness.swap01SourcePresentationChange
+    - UpperDecisionWitness.swap01_induced_source_pair_action_ne
+    - UpperGeometryCompatibleSourcePresentationChange.changedInput
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_mem_qualifiedComparison_iff
+    - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_coefficientObservation
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledComparisonKernel_eq_bot_sourcePresentation_iff
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_mem_qualifiedComparison_iff_of_kernel_eq_bot
+    - UpperGeometryCompatibleProblemInputData.generatedQualifiedDecision_not_factor_of_source_collision
+    - UpperDecisionWitness.fixedPositiveQualifiedDecision
+    - UpperDecisionWitness.fixedNegativeNotQualifiedDecision
+    - UpperDecisionWitness.fixedCoefficientObservation_positive_eq_negative
+    - UpperDecisionWitness.generatedPulledComparisonKernel_eq_bot
+  proof_obligation: "instantiate the independently reconstructed changed input, regenerate both transported endpoint pairs through its own C3 map, and prove the complete changed-input qualified-decision separation and coefficient nonfactorization packet"
+  selection_reason: "endpoint inverse transport alone would not establish changed-input provenance; both pairs must be identified with the changed input's independently generated C3 images before D can be transferred"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF15.lean
+  risks:
+    - treating transported endpoint pairs as independently generated without the C1s/C3 naturality square
+    - transporting only a coefficient observation while omitting literal full-Gamma membership
+    - deriving source nonmembership from action firing instead of exact residual-kernel reflection
+    - reusing the old input in the nonfactorization conclusion
+  unchecked:
+    - changed-input C2 edge-family provenance and C1t inverse-display closure
+    - revision-1 artifact statement/proof-use re-audit
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperDecisionWitness.swap01ChangedInput
+    - UpperDecisionWitness.swap01ChangedPositiveSourcePair
+    - UpperDecisionWitness.swap01ChangedNegativeSourcePair
+    - UpperDecisionWitness.swap01ChangedPositiveQualifiedPair
+    - UpperDecisionWitness.swap01ChangedNegativeQualifiedPair
+    - UpperDecisionWitness.swap01ChangedCoefficientObservation
+    - UpperDecisionWitness.Swap01ChangedQualifiedDecision
+    - UpperDecisionWitness.fixedPositiveQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.fixedNegativeQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.swap01ChangedPositiveQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.swap01ChangedNegativeQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.swap01Changed_generatedPulledComparisonKernel_eq_bot
+    - UpperDecisionWitness.swap01ChangedPositiveQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedNegativeNotQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedCoefficientObservation_positive_eq_negative
+    - UpperDecisionWitness.swap01ChangedPositiveSourceDecision
+    - UpperDecisionWitness.swap01ChangedNegativeSourceNotQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedSourceCoefficientObservation_positive_eq_negative
+    - UpperDecisionWitness.swap01ChangedQualifiedDecision_not_factor_through_coefficientObservation
+    - UpperDecisionWitness.swap01ChangedInput_transport_packet
+  acceptance_point: "The changed input is definitionally the output of the field-minimal fixed source change. The positive and negative old source pairs and generated endpoint pairs are pulled back through the actual source and endpoint equivalences, and central C1s/C3 naturality proves that the endpoint pairs are precisely the changed input's independently generated C3 images. Full qualified membership transports positively and negatively, residual J remains bottom, exact C3 reflection recovers the source decision split, the complete product coefficient observations coincide at source and endpoint levels, and the changed-input decision cannot factor through that observation. The packet also retains the Cycle 27 nonidentity action firing."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "fixed changed input and its own generated C3 positive/negative image provenance"
+      - "changed-input residual subgroup triviality"
+      - "changed-input full qualified-comparison positive/negative split"
+      - "source-level decision reflection from exact residual-kernel triviality"
+      - "complete source and generated-endpoint coefficient-observation collision"
+      - "changed-input qualified decision nonfactorization through complete coefficient observation"
+    remaining:
+      - "changed-input C2 edge-family provenance and C1t inverse-display closure"
+      - "revision-1 artifact statement/proof-use re-audit"
+  certificate_provenance:
+    discharged:
+      - "the changed input is generated by swap01SourcePresentationChange.changedInput and supplies no endpoint or naturality certificate"
+      - "both changed endpoint pairs are proved equal to generatedComparisonPairHomAt images using the actual C1s central naturality theorem"
+      - "membership is transported through the full qualifiedComparisonSubgroup equivalence, not inferred from coefficients"
+      - "source separation uses the generated pulled-kernel bottom theorem and its exact membership reflection iff"
+    unresolved: []
+  proof_use:
+    used:
+      - "the old fixed positive and negative pairs' independently generated C3 source presentations"
+      - "C1s source-pair and generated-endpoint equivalences in inverse direction"
+      - "C1s generated-comparison naturality, full-Gamma membership iff, coefficient square, and residual-J bottom iff"
+      - "the changed input's generated C3 preservation/reflection and coefficient-observation theorem"
+      - "generic generated decision nonfactorization from a source collision and a reflected positive/negative split"
+      - "Cycle 27 induced source-pair action inequality in the final acceptance packet"
+    unused:
+      - "no caller-supplied changed endpoint, comparison, membership, coefficient-collision, or nonfactorization certificate"
+      - "no C2 reselection object is claimed in this cycle"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the provenance lane required explicit equalities to the changed input's generated C3 images; the closure lane separated this C3/D packet from the next changed C2 and C1t inverse-display construction"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF15.lean; exit 0"
+    - "lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF15; exit 0; selected module only"
+    - "tracked module AxiomAudit: 20 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "independently reconstruct the changed-input C2 comparator reselections from its source comparator and prove the required C1t inverse-display positive/negative and nonidentity closure"
 ```
