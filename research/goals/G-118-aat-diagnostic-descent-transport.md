@@ -1,7 +1,18 @@
 # G-118-aat-diagnostic-descent-transport — 入力表示変更に自然な比較分類と診断情報損失
 
 - `id`: `G-118-aat-diagnostic-descent-transport`
-- `status`: `active`
+- `status`: `completed`
+- `completion result`: `target-theorem-proved`。revision 2 の固定 target A–D、
+  fixed induced-action firing、mixed C1s/C3/C1t transport を全放電した
+  （2026-09-06）。最終候補 head `a661c341e9880eaa16d00b12c18bad5b915756b6` は
+  schema-complete [final packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557101743)、
+  同一 head の[標準PR監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5556939163)、
+  fresh Math A / Math B / Lean A / Lean B の4/4 `No major findings` を記録した
+  [最終査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097)、
+  全gateをpassとした[formal completion ledger](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114)
+  を経て、PR #4403 の merge `27ef9d6a2deec3b315d856e881543cae38a14d04` で確定した。
+- `stop reason`: `target-theorem-proved`
+- `next action`: G-118 としてはなし。`frontier` の各課題は別GOALで固定する。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: #4367
