@@ -64,13 +64,13 @@ The strangest finding is an invisible factor lodged inside comparisons.
 
 AAT generates comparison morphisms between two views: before and after a change, a fine view and a coarse view. Ideally a comparison is invertible; then the two views can be traded back and forth without losing information.
 
-A comparison is a family of maps, one per object. For the comparison \(\beta\) that the system actually generates, each component provably factors as
+A comparison is a family of maps, one per object. For the comparison β that the system actually generates, each component provably factors as
 
 $$
 \beta = E \circ \alpha
 $$
 
-first through \(\alpha\), then through \(E\). Here \(\alpha\) is the ideal comparison prescribed by the theory, and it is provably invertible. And \(\beta\) is the concrete comparison assembled from actual input. How does the concrete deviate from the ideal? The deviation is exactly \(E\), and this factor has three properties at once.
+first through α, then through *E*. Here α is the ideal comparison prescribed by the theory, and it is provably invertible. And β is the concrete comparison assembled from actual input. How does the concrete deviate from the ideal? The deviation is exactly *E*, and this factor has three properties at once.
 
 First, it is idempotent:
 
@@ -80,15 +80,15 @@ $$
 
 Applying it twice is the same as applying it once, like running a code formatter twice.
 
-Second, it is invisible to observation. \(E\) moves no observable quantity; under the observations considered here, it cannot be told apart from a map that does nothing.
+Second, it is invisible to observation. *E* moves no observable quantity; under the observations considered here, it cannot be told apart from a map that does nothing.
 
-Third, it is nevertheless not invertible. Wherever \(E\) actually fires, it cannot be undone, and therefore \(\beta\) as a whole is not invertible either.
+Third, it is nevertheless not invertible. Wherever *E* actually fires, it cannot be undone, and therefore β as a whole is not invertible either.
 
-So what breaks the invertibility of comparisons is a normalization factor that appears, to observation, to do nothing at all. And invertibility does recover — if you restrict where you stand. In the raw world, \(\beta\) is not invertible. Restricted to the image — the values that actually remain after \(E\) — it becomes invertible. And on observable quantities, \(\beta\) and \(\alpha\) agree exactly. The failure is not monolithic; it splits into these three stages. That recovery on the image will matter later: it is the doorway to the next stage of the research (Conjecture A, Section 11).
+So what breaks the invertibility of comparisons is a normalization factor that appears, to observation, to do nothing at all. And invertibility does recover — if you restrict where you stand. In the raw world, β is not invertible. Restricted to the image — the values that actually remain after *E* — it becomes invertible. And on observable quantities, β and α agree exactly. The failure is not monolithic; it splits into these three stages. That recovery on the image will matter later: it is the doorway to the next stage of the research (Conjecture A, Section 11).
 
-Then why not simply remove \(E\)? Bundle it into one natural operation running through every object, and subtract it from the system uniformly.
+Then why not simply remove *E*? Bundle it into one natural operation running through every object, and subtract it from the system uniformly.
 
-That is impossible, and this too is a theorem. From the same starting point, compare normalizing at A and then moving to B, against moving to B first and normalizing there. A concrete counterexample exists where the two disagree. Compatibility with movement between objects is what mathematics calls naturality: \(E\) is a perfectly usable normalization at each object, yet it cannot be bundled into one natural operation compatible with movement.
+That is impossible, and this too is a theorem. From the same starting point, compare normalizing at A and then moving to B, against moving to B first and normalizing there. A concrete counterexample exists where the two disagree. Compatibility with movement between objects is what mathematics calls naturality: *E* is a perfectly usable normalization at each object, yet it cannot be bundled into one natural operation compatible with movement.
 
 **A structure invisible to the observations at hand, one that decides whether comparisons succeed, and that cannot be removed: it was there all along.**
 
@@ -155,7 +155,7 @@ What failed comes down to two things.
 
 First, **vertical rigidity**. Call vertical the direction in which only extra labels are swapped while the base stays fixed. No meaning-moving transformation can be placed in that direction; such transformations have to be handled horizontally, where the base itself moves.
 
-Second, **the comparisons the system generates are not invertible**, because, as Section 4 explained, the invisible factor \(E\) sits inside them.
+Second, **the comparisons the system generates are not invertible**, because, as Section 4 explained, the invisible factor *E* sits inside them.
 
 So where did this conclusion come from?
 
@@ -169,11 +169,11 @@ Surveying the pile after the pitch, we noticed the counterexamples fell into thr
 - Lossy collapses were never going to yield invertibility. Identify two objects that differ only in decoration, and the map sends different things to the same place — no longer one-to-one, and a correspondence that is not one-to-one can never serve as part of an invertible comparison.
 - Fix all the route data and swap only the comparison component joining the two sides, and glueability flips, while to observation nothing appears to change at all.
 
-Line the three up and a common trait appears: something observation cannot see, yet which decides the strict properties — invertibility, glueability — and lurks in both the vertical and the horizontal directions. And none of these refutations had been designed to show this. They are the traces of the structure pushing back in the middle of proofs aimed elsewhere. If so, one structure must be behind them all. That structure was exactly the normalization factor \(E\) of Section 4.
+Line the three up and a common trait appears: something observation cannot see, yet which decides the strict properties — invertibility, glueability — and lurks in both the vertical and the horizontal directions. And none of these refutations had been designed to show this. They are the traces of the structure pushing back in the middle of proofs aimed elsewhere. If so, one structure must be behind them all. That structure was exactly the normalization factor *E* of Section 4.
 
-So the sixth card, originally the summit card that was to close out Gr4, was redesigned into the card that would hunt down the structure behind the counterexamples. The redesigned card was settled by proof on September 4 (the 9/4 row in the appendix): the identification of \(E\). The counterexamples had not been wrecking the mountain. They had been teaching us that there was a mountain that no one-dimensional map — no single yes-or-no ruler — could capture.
+So the sixth card, originally the summit card that was to close out Gr4, was redesigned into the card that would hunt down the structure behind the counterexamples. The redesigned card was settled by proof on September 4 (the 9/4 row in the appendix): the identification of *E*. The counterexamples had not been wrecking the mountain. They had been teaching us that there was a mountain that no one-dimensional map — no single yes-or-no ruler — could capture.
 
-Beyond that identification, the refutation of September 5 (Section 4: the impossibility of bundling) turned \(E\) from something to erase into something to classify, and that decision shaped the final theorem of September 6 (the classification of Section 5). In hindsight, this change of course led to the highest summit of the five weeks.
+Beyond that identification, the refutation of September 5 (Section 4: the impossibility of bundling) turned *E* from something to erase into something to classify, and that decision shaped the final theorem of September 6 (the classification of Section 5). In hindsight, this change of course led to the highest summit of the five weeks.
 
 The same pattern runs through all five weeks. The August 11 refutation supplied the method for designing counterexamples; on the cards of August 28 and 29, the content of a refutation directly became the design of the next revision, which was then proved. Individual refutations shaped the next card, and their accumulation rewrote the plan itself. In the Atlas article, I wrote that the four refutations were the best part of the climb. This time the same thing happened not inside one theorem but across the whole series. The map being wrong about the mountain: that itself was the harvest.
 
@@ -197,7 +197,7 @@ Over the five weeks, the Lean code grew to 791 files and roughly 300,000 lines, 
 
 From a summit, you see the next mountains. The harvest of the traverse includes three conjectures. None are proved, but for each, the object to construct next is already in view.
 
-**Conjecture A (making normal forms first-class).** Section 4 noted that invertibility recovers on the image, the world of values that remain after \(E\). The next construction promotes that world to a first-class citizen of the analysis. There, the founding claim of the theory — that AAT's conclusions factor through the layer of Atoms — is expected to become a theorem of the form "the two worlds carry essentially the same analysis." Mathematics calls the construction a Karoubi envelope, and this kind of equivalence a Morita equivalence.
+**Conjecture A (making normal forms first-class).** Section 4 noted that invertibility recovers on the image, the world of values that remain after *E*. The next construction promotes that world to a first-class citizen of the analysis. There, the founding claim of the theory — that AAT's conclusions factor through the layer of Atoms — is expected to become a theorem of the form "the two worlds carry essentially the same analysis." Mathematics calls the construction a Karoubi envelope, and this kind of equivalence a Morita equivalence.
 
 **Conjecture B (an invariant finer than the cohomology class).** Swap the base, and the obstruction's cohomology class stays fixed; yet glueability can change. So there are differences the cohomology class cannot see. The next construction defines a finer invariant — a quantity that stays fixed no matter how things are presented — that captures those differences. The torsor classification of Section 5 is constructive evidence that such a quantity exists.
 
