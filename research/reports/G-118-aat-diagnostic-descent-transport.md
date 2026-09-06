@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: 変更後入力上での C2 edge-family provenance と C1s/C1t/C2/D connection
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、変更後 C2/C1t closure、final completion review
+- current obligation: revision 1 artifact の declaration-by-declaration statement/proof-use 再監査と final completion review
+- pending obligations: final completion candidate assembly、独立 math-lean-review、Issue/GOAL lifecycle synchronization
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: changed input の source comparator から C2 reselection 対を独立に再生成し、C1t 逆表示後の正負・非恒等性と mixed closure へ接続する
+- next obligation: revision 2 全 A--D declaration map と material premise ledger を固定 head で再監査し、completion candidate を組み立てる
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2829,4 +2829,151 @@ audits:
     - "tracked module AxiomAudit: 20 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "independently reconstruct the changed-input C2 comparator reselections from its source comparator and prove the required C1t inverse-display positive/negative and nonidentity closure"
+```
+
+## Cycle 29 — actual changed C2 provenance and inverse-display mixed closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 29
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 454e76900f0ee35596b1e65b36028383abc95ddb
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 28 accepted the changed-input C3/D separation packet but deliberately left actual changed C2 edge-family provenance open"
+  proof_dag_predecessors:
+    - UpperGeometryCompatibleSourcePresentationChange.changedComparator
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseCompositeFiberAutAt_naturality
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_decision_iff
+    - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt_observation_apply
+    - UpperGeometryCompatibleProblemInputData.generatedBaseOfSourceCoefficientTrivialUpperEdgeReselection
+    - UpperGeometryCompatibleProblemInputData.generatedPulledOfSourceCoefficientTrivialUpperEdgeReselection
+    - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generated_endpointIntertwining
+    - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generatedPath_legTriangle
+    - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generatedAuthoredComparator_pasting
+    - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generatedPaired
+    - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generatedRawCochain_intertwining
+    - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartnerAction_free
+    - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartnerAction_transitive
+    - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartner_existsUnique
+    - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.decision_iff
+    - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.observation_apply
+    - UpperDecisionWitness.swap01ChangedPositiveQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.swap01ChangedNegativeQualifiedPair_eq_generatedComparisonPairHomAt
+    - UpperDecisionWitness.swap01ChangedPositiveQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedNegativeNotQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedCoefficientObservation_positive_eq_negative
+    - UpperDecisionWitness.generated_base_comparator_ne_one
+  proof_obligation: "reconstruct the fixed coefficient-trivial C2 edge families from the changed input's authored comparator itself, connect their actual twist values to the changed C3/D pair, consume the downstream path/pasting/raw-cochain APIs and partner torsor, and preserve the separation through arbitrary mixed C1t-before/C1s/C1t-after chains including the explicit inverse canonical display"
+  selection_reason: "an endpoint-pair inverse image is not an edge-reselection structure; the changed source comparator must be reselected first and then independently sent through the changed input's H_B/H_P generators"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF16.lean
+  risks:
+    - casting the old reselection structure into the changed input
+    - identifying the changed C2 values with Cycle 28 pairs without source-comparator provenance
+    - using actor nonidentity instead of the changed generated base edge value
+    - transporting only membership while dropping coefficient collision or nonidentity under C1t
+    - proving generated-display closure without the required inverse canonical display instance
+  unchecked:
+    - revision-1 artifact declaration-by-declaration statement/proof-use re-audit
+    - final completion review
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourceConjugation_changedComparator
+    - UpperDecisionWitness.swap01ChangedSourceComparatorReselection
+    - UpperDecisionWitness.swap01ChangedBaseComparatorReselection
+    - UpperDecisionWitness.swap01ChangedPulledComparatorReselection
+    - UpperDecisionWitness.swap01ChangedC2PositiveQualifiedPair
+    - UpperDecisionWitness.swap01ChangedC2NegativeQualifiedPair
+    - UpperDecisionWitness.swap01ChangedComparatorSourcePair_eq
+    - UpperDecisionWitness.swap01ChangedComparatorIdentitySourcePair_eq
+    - UpperDecisionWitness.swap01ChangedC2PositiveQualifiedPair_eq
+    - UpperDecisionWitness.swap01ChangedC2NegativeQualifiedPair_eq
+    - UpperDecisionWitness.swap01ChangedComparatorEndpointIntertwining_fires
+    - UpperDecisionWitness.swap01ChangedComparatorPathLegTriangle
+    - UpperDecisionWitness.swap01ChangedComparatorAuthoredPasting
+    - UpperDecisionWitness.swap01ChangedComparatorPaired
+    - UpperDecisionWitness.swap01ChangedComparatorRawCochain_intertwining
+    - UpperDecisionWitness.swap01ChangedPulledPartner
+    - UpperDecisionWitness.swap01ChangedPulledPartner_nonempty
+    - UpperDecisionWitness.swap01ChangedPulledPartnerAction_free
+    - UpperDecisionWitness.swap01ChangedPulledPartnerAction_transitive
+    - UpperDecisionWitness.swap01ChangedPulledPartner_existsUnique
+    - UpperDecisionWitness.swap01ChangedC2PositiveQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedC2NegativeNotQualifiedDecision
+    - UpperDecisionWitness.swap01ChangedC2CoefficientObservation_positive_eq_negative
+    - UpperDecisionWitness.swap01ChangedBaseComparatorReselection_ne_one
+    - UpperDecisionWitness.swap01ChangedC2PositiveQualifiedPair_ne_one
+    - UpperDecisionWitness.swap01SourcePresentationChain
+    - UpperDecisionWitness.swap01MixedC1PairMulEquivAt
+    - UpperDecisionWitness.swap01MixedC1PairMulEquivAt_decision_iff
+    - UpperDecisionWitness.swap01MixedC1PairMulEquivAt_observation_apply
+    - UpperDecisionWitness.swap01MixedC1Positive_ne_one
+    - UpperDecisionWitness.swap01ChangedC2_not_factor_after_mixed_c1
+    - UpperDecisionWitness.swap01ChangedCanonicalToGeneratedChain
+    - UpperDecisionWitness.swap01OldGeneratedToCanonicalChain
+    - UpperDecisionWitness.swap01ChangedC2CanonicalMixedPositivePair
+    - UpperDecisionWitness.swap01ChangedC2CanonicalMixedNegativePair
+    - UpperDecisionWitness.swap01ChangedC2CanonicalMixed_packet
+    - UpperDecisionWitness.swap01ChangedC2_mixed_transport_packet
+  acceptance_point: "The changed authored comparator is first reconstructed inside swap01ChangedInput and used as a coefficient-trivial source edge family. The changed input's actual H_B/H_P constructors independently generate the base and pulled reselections. Their twist values are proved equal to the Cycle 28 changed C3 positive pair, while base plus pulled identity equals the changed negative pair. The positive family satisfies endpoint intertwining, path-leg triangle, authored-comparator pasting, complete paired relation, and raw-cochain intertwining; its pulled partner fiber is a nonempty torsor under the literal coefficient-trivial target stabilizer. The changed base reselection and positive edge pair are nonidentity. For arbitrary typed C1t-before and C1t-after chains around the fixed one-link C1s chain, the transported pair retains coefficient collision, positive/negative literal decisions, positive nonidentity, and universal nonfactorization. A named forward-changed-C1t / backward-old-C1t instance records the required inverse canonical display."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "actual changed-input source coefficient-trivial reselection provenance"
+      - "independent changed H_B/H_P base and pulled reselection generation"
+      - "actual twist values equal the changed C3 positive and negative pairs"
+      - "changed C2 endpoint, path, authored-pasting, paired, and raw-cochain proof-use"
+      - "nonempty/free/transitive/unique changed pulled-partner torsor"
+      - "changed generated base and positive edge-pair nonidentity"
+      - "arbitrary typed mixed C1t-before/C1s/C1t-after decision, observation, nonidentity, and nonfactorization closure"
+      - "explicit inverse canonical-display positive/negative packet"
+    remaining:
+      - "revision-1 artifact declaration-by-declaration statement/proof-use re-audit"
+      - "final completion review"
+  certificate_provenance:
+    discharged:
+      - "the source reselection stores only the actual changed comparator family and its already-derived coefficient law"
+      - "base and pulled reselections are outputs of the changed input's generic H_B/H_P constructors"
+      - "edge-value identification uses source conjugation cancellation and Cycle 28 central generated-map provenance"
+      - "mixed closure quantifies over typed C1 chains and derives decision/observation/nonidentity rather than storing them"
+    unresolved: []
+  proof_use:
+    used:
+      - "changedComparator as the source edge family and generatedBase/generatedPulledOfSource constructors"
+      - "C1s source conjugation and generated base naturality for actual changed nonidentity"
+      - "source-to-paired endpoint, path, authored comparator, paired, and raw-cochain theorems"
+      - "coefficient-trivial target-stabilizer partner action free/transitive/unique API"
+      - "Cycle 28 changed C3 image equalities, full-Gamma decisions, and coefficient collision"
+      - "F13 mixed pair equivalence, decision iff, and observation equality"
+      - "C1-chain inverse maps to pull the actual changed C2 witnesses back before the mixed route"
+      - "the named canonical forward and backward generators for the inverse-display instance"
+    unused:
+      - "no old reselection structure is cast or reused as a changed-input reselection"
+      - "no raw-defect literal equality across source presentations is required"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the edge-provenance lane required source-comparator reconstruction before H_B/H_P; the closure lane required arbitrary typed mixed chains plus a named canonical inverse-display instance"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF16.lean; exit 0"
+    - "lake build ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF16; exit 0; selected module only"
+    - "tracked module AxiomAudit: 38 namespace declarations (37 mapped declarations plus Lean-generated CoefficientTrivialUpperEdgeReselection.mk.congr_simp), standard axioms only"
+  blocking_findings: []
+  next_obligation: "re-audit every revision-1 reusable declaration against revision 2 statement and material-premise rows, assemble the final completion candidate, and run the required independent math-lean-review"
 ```
