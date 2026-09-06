@@ -2737,6 +2737,7 @@ selection:
     - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_coefficientObservation
     - UpperGeometryCompatibleSourcePresentationChange.generatedPulledComparisonKernel_eq_bot_sourcePresentation_iff
     - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_mem_qualifiedComparison_iff_of_kernel_eq_bot
+    - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_coefficientObservation
     - UpperGeometryCompatibleProblemInputData.generatedQualifiedDecision_not_factor_of_source_collision
     - UpperDecisionWitness.fixedPositiveQualifiedDecision
     - UpperDecisionWitness.fixedNegativeNotQualifiedDecision

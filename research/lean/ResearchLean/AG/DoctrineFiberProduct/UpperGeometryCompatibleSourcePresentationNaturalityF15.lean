@@ -253,6 +253,10 @@ theorem swap01ChangedInput_transport_packet :
         (𝟙 (swap01ChangedInput.sourceGeometry PUnit.unit).package) ∧
       ¬ swap01ChangedNegativeSourcePair ∈ qualifiedComparisonSubgroup
         (𝟙 (swap01ChangedInput.sourceGeometry PUnit.unit).package) ∧
+      swap01ChangedInput.sourcePairCoefficientObservationAt PUnit.unit
+          swap01ChangedPositiveSourcePair =
+        swap01ChangedInput.sourcePairCoefficientObservationAt PUnit.unit
+          swap01ChangedNegativeSourcePair ∧
       swap01ChangedCoefficientObservation swap01ChangedPositiveQualifiedPair =
         swap01ChangedCoefficientObservation swap01ChangedNegativeQualifiedPair ∧
       ¬ ∃ diagnostic :
@@ -268,6 +272,7 @@ theorem swap01ChangedInput_transport_packet :
     swap01ChangedNegativeNotQualifiedDecision,
     swap01ChangedPositiveSourceDecision,
     swap01ChangedNegativeSourceNotQualifiedDecision,
+    swap01ChangedSourceCoefficientObservation_positive_eq_negative,
     swap01ChangedCoefficientObservation_positive_eq_negative,
     swap01ChangedQualifiedDecision_not_factor_through_coefficientObservation⟩
 
