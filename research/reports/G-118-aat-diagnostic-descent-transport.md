@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: revision 1 artifact の declaration-by-declaration statement/proof-use 再監査と final completion review
-- pending obligations: final completion candidate assembly、独立 math-lean-review、Issue/GOAL lifecycle synchronization
+- current obligation: revision 2 completion candidate の固定 head に対する実装査読と、merge 後の独立 final math-lean-review
+- pending obligations: completion candidate PR の固定 head 査読・merge、独立 math-lean-review、Issue/GOAL lifecycle synchronization
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: revision 2 全 A--D declaration map と material premise ledger を固定 head で再監査し、completion candidate を組み立てる
+- next obligation: 下記 final_review_packet を固定した completion candidate PR を査読し、merge 後に A--D 全体の独立 math-lean-review を実施する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2976,4 +2976,244 @@ audits:
     - "tracked module AxiomAudit: 38 namespace declarations (37 mapped declarations plus Lean-generated CoefficientTrivialUpperEdgeReselection.mk.congr_simp), standard axioms only"
   blocking_findings: []
   next_obligation: "re-audit every revision-1 reusable declaration against revision 2 statement and material-premise rows, assemble the final completion candidate, and run the required independent math-lean-review"
+```
+
+## Final review packet — revision 2 completion candidate
+
+```yaml
+ledger_type: final_review_packet
+goal: G-118-aat-diagnostic-descent-transport
+goal_revision: 2
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+candidate_base_oid: 2a87e7dfd8e1b0db0e97e32060bd9c786c9db1b6
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+candidate_state: target-proof-checkpoint
+completion_claim: "A--D の実装義務は declaration-level map 上で放電済み。target-theorem-proved への昇格は、この packet の固定 head 査読、merge、別工程の4独立 math-lean-review、lifecycle 同期を待つ。"
+
+claim_map:
+  A:
+    cycles: [2]
+    modules: [QualifiedComparisonStabilizer.lean]
+    acceptance_spine:
+      - qualifiedComparisonSubgroup
+      - qualifiedComparisonSourceProjection
+      - qualifiedComparisonTargetProjection
+      - qualifiedComparisonSourceProjectionKernelMulEquiv
+      - qualifiedComparisonTargetProjectionKernelMulEquiv
+      - qualifiedComparisonTargetLiftAction_free
+      - qualifiedComparisonTargetLiftAction_transitive
+      - qualifiedComparisonSourceLiftAction_free
+      - qualifiedComparisonSourceLiftAction_transitive
+      - qualifiedComparisonIsoGraphMulEquiv
+  B1:
+    cycles: [3, 4]
+    modules: [QualifiedComparisonGeneratedClassification.lean, QualifiedComparisonInputCharacterization.lean]
+    acceptance_spine:
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_diagonal
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_iff_difference_mem
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_iff_exists_kernel_factor
+      - UpperGeometryCompatibleProblemInputData.mem_generatedPulledComparisonKernel_iff_inputConditions
+      - UpperGeometryCompatibleProblemInputData.generatedQualifiedComparisonRelation_iff_inputConditions
+  B2:
+    cycles: [5]
+    modules: [QualifiedComparisonFixedDecision.lean]
+    decision_branches:
+      isIso_c_star: positive
+      source_stabilizer_trivial: positive
+      target_stabilizer_trivial: positive
+      source_projection_surjective: positive
+      target_projection_surjective: positive
+      fixed_partner_fibers: unique
+    acceptance_spine:
+      - UpperDecisionWitness.solution_component_isIso
+      - UpperDecisionWitness.solution_targetStabilizer_eq_bot
+      - UpperDecisionWitness.solution_sourceStabilizer_eq_bot
+      - UpperDecisionWitness.solution_sourceProjection_surjective
+      - UpperDecisionWitness.solution_targetProjection_surjective
+      - UpperDecisionWitness.solution_comparator_pair_mem
+      - UpperDecisionWitness.solution_base_identity_pair_not_mem
+  C1t:
+    cycles: [6, 10, 11, 26, 29]
+    modules: [QualifiedComparisonEndpointTransport.lean, QualifiedComparisonCoefficientTransport.lean, QualifiedComparisonTransportClosure.lean, UpperGeometryCompatibleSourcePresentationNaturalityF13.lean, UpperGeometryCompatibleSourcePresentationNaturalityF16.lean]
+    acceptance_spine:
+      - UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt_eq_endpoint_conjugation
+      - qualifiedComparisonEndpointConjugationMulEquiv
+      - UpperGeometryCompatibleProblemInputData.canonicalGeneratedQualifiedComparisonMulEquivAt
+      - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.decision_iff
+      - UpperGeometryCompatibleProblemInputData.QualifiedComparisonC1Chain.observation_apply
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.mixedC1sC1tPairMulEquivAt
+      - UpperDecisionWitness.swap01ChangedC2CanonicalMixed_packet
+  C1s:
+    cycles: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    modules: [UpperGeometryCompatibleSourcePresentationNaturalityF0.lean, UpperGeometryCompatibleSourcePresentationNaturalityF1.lean, UpperGeometryCompatibleSourcePresentationNaturalityF2.lean, UpperGeometryCompatibleSourcePresentationNaturalityF3.lean, UpperGeometryCompatibleSourcePresentationNaturalityF4.lean, UpperGeometryCompatibleSourcePresentationNaturalityF5.lean, UpperGeometryCompatibleSourcePresentationNaturalityF6.lean, UpperGeometryCompatibleSourcePresentationNaturalityF7.lean, UpperGeometryCompatibleSourcePresentationNaturalityF8.lean, UpperGeometryCompatibleSourcePresentationNaturalityF9.lean, UpperGeometryCompatibleSourcePresentationNaturalityF10.lean, UpperGeometryCompatibleSourcePresentationNaturalityF11.lean, UpperGeometryCompatibleSourcePresentationNaturalityF12.lean, UpperGeometryCompatibleSourcePresentationNaturalityF13.lean, UpperGeometryCompatibleSourcePresentationNaturalityF14.lean, UpperGeometryCompatibleSourcePresentationNaturalityF15.lean, UpperGeometryCompatibleSourcePresentationNaturalityF16.lean]
+    acceptance_spine:
+      - UpperGeometryCompatibleSourcePresentationChange.changedInput
+      - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt
+      - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt
+      - UpperGeometryCompatibleSourcePresentationChange.generatedCompatibleUpperGeometryMateAt_naturality
+      - UpperGeometryCompatibleSourcePresentationChange.generatedComparisonPairHomAt_sourcePresentation_naturality
+      - UpperGeometryCompatibleSourcePresentationChange.generatedQualifiedComparisonSourcePresentationMulEquivAt
+      - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_image_range_generatedComparisonPairHomAt
+      - UpperGeometryCompatibleSourcePresentationChange.generatedSourceConjugation_map_generatedPulledComparisonKernel
+      - UpperGeometryCompatibleSourcePresentationChange.identity
+      - UpperGeometryCompatibleSourcePresentationChange.inverse
+      - UpperGeometryCompatibleSourcePresentationChange.comp
+      - UpperGeometryCompatibleSourcePresentationChange.identity_changedInput
+      - UpperGeometryCompatibleSourcePresentationChange.inverse_changedInput
+      - UpperGeometryCompatibleSourcePresentationChange.comp_changedInput
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.composite_changedInput_eq_terminalInput
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedQualifiedComparisonMulEquivAt
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedSourceConjugation_map_generatedPulledComparisonKernel
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt
+      - UpperDecisionWitness.swap01_induced_source_pair_action_ne
+      - UpperDecisionWitness.swap01ChangedInput_transport_packet
+  C2:
+    cycles: [7, 11, 29]
+    modules: [QualifiedCoefficientObservation.lean, QualifiedComparisonEdgeReselection.lean, QualifiedComparisonEdgeReselectionConsequences.lean, QualifiedComparisonTransportClosure.lean, UpperGeometryCompatibleSourcePresentationNaturalityF16.lean]
+    acceptance_spine:
+      - UpperGeometryCompatibleProblemInputData.coefficientTrivialUpperReselectionEndpointIntertwining_iff_forall_mem
+      - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartnerAction_free
+      - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartnerAction_transitive
+      - UpperGeometryCompatibleProblemInputData.generatedCoefficientTrivialPulledPartner_existsUnique
+      - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generated_endpointIntertwining
+      - UpperGeometryCompatibleProblemInputData.sourceCoefficientTrivialUpperEdgeReselection_generatedRawCochain_intertwining
+      - UpperGeometryCompatibleProblemInputData.coefficientTrivialUpperReselectionEndpointIntertwining_mul_path
+      - UpperDecisionWitness.swap01ChangedC2_mixed_transport_packet
+  C3:
+    cycles: [8, 10, 11, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 28]
+    modules: [QualifiedComparisonBaseTransport.lean, QualifiedComparisonCoefficientTransport.lean, QualifiedComparisonTransportClosure.lean, UpperGeometryCompatibleSourcePresentationNaturalityF2.lean, UpperGeometryCompatibleSourcePresentationNaturalityF3.lean, UpperGeometryCompatibleSourcePresentationNaturalityF4.lean, UpperGeometryCompatibleSourcePresentationNaturalityF5.lean, UpperGeometryCompatibleSourcePresentationNaturalityF6.lean, UpperGeometryCompatibleSourcePresentationNaturalityF9.lean, UpperGeometryCompatibleSourcePresentationNaturalityF10.lean, UpperGeometryCompatibleSourcePresentationNaturalityF11.lean, UpperGeometryCompatibleSourcePresentationNaturalityF12.lean, UpperGeometryCompatibleSourcePresentationNaturalityF13.lean, UpperGeometryCompatibleSourcePresentationNaturalityF15.lean]
+    acceptance_spine:
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_preserves_qualifiedComparison
+      - UpperGeometryCompatibleProblemInputData.generatedComparisonPairHomAt_reflects_qualifiedComparison_iff
+      - UpperDecisionWitness.generatedPulledComparisonKernel_eq_bot
+      - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt_generatedComparisonPairHomAt
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_reflects_qualifiedComparison_iff
+      - UpperGeometryCompatibleSourcePresentationChange.Chain.c1sC3C1tPairHomAt_range
+  D:
+    cycles: [7, 9, 10, 11, 19, 22, 25, 26, 28, 29]
+    modules: [QualifiedCoefficientObservation.lean, QualifiedComparisonCoefficientNonfactorization.lean, QualifiedComparisonCoefficientTransport.lean, QualifiedComparisonTransportClosure.lean, UpperGeometryCompatibleSourcePresentationNaturalityF6.lean, UpperGeometryCompatibleSourcePresentationNaturalityF9.lean, UpperGeometryCompatibleSourcePresentationNaturalityF12.lean, UpperGeometryCompatibleSourcePresentationNaturalityF13.lean, UpperGeometryCompatibleSourcePresentationNaturalityF15.lean, UpperGeometryCompatibleSourcePresentationNaturalityF16.lean]
+    acceptance_spine:
+      - CompositeFiberAut.coefficientObservation
+      - UpperDecisionWitness.fixedCoefficientObservation_positive_eq_negative
+      - UpperDecisionWitness.fixedPositiveQualifiedDecision
+      - UpperDecisionWitness.fixedNegativeNotQualifiedDecision
+      - UpperDecisionWitness.fixedQualifiedDecision_not_factor_through_coefficientObservation
+      - UpperDecisionWitness.fixedQualifiedDecision_not_factor_after_c1_chain
+      - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt_coefficientObservation
+      - UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt_coefficientObservation
+      - UpperDecisionWitness.swap01ChangedQualifiedDecision_not_factor_through_coefficientObservation
+      - UpperDecisionWitness.swap01ChangedC2_not_factor_after_mixed_c1
+
+revision_1_readmission:
+  accepted:
+    - "Cycle 2 の A は任意の比較 c に対する一般群論 API であり、rev2 でも量化域と条件付き Iso 枝が不変。"
+    - "Cycles 3--5 の B1/B2 は元入力 I の actual H_B/H_P、実入力写像、固定 c_* の決定を扱い、C1s を前提にしない。"
+    - "Cycles 6,10,11 の endpoint transport は rev2 では C1t としてのみ再利用する。"
+    - "Cycles 7,9--11 の C2/D は元入力と C1t に対する結果として再利用し、changed input 版は Cycles 28--29 で別に再構成する。"
+    - "Cycle 8 の T/J 分類は各入力へ適用できる一般 C3 API として再利用し、I^w への独立適用と source naturality は Cycles 13--28 が供給する。"
+  explicitly_not_inherited:
+    - "QualifiedComparisonC1Step、QualifiedComparisonC1Chain、closedComparisonPairHomAt_* は、一つの固定 input の .canonical / .generated endpoint display 間だけを動く C1t-only 構成である。closedComparisonPairHomAt_comp_id は identity source precomposition だけを証明し、rev2 C1s の input reconstruction、naturality、identity/inverse/finite-composition closure の証拠には数えない。"
+    - "fixedQualifiedDecision_not_factor_after_c1_chain は original input 上の C1t-only D 証拠である。changed-input と mixed C1s/C3/C1t の D 証拠には Cycles 28--29 の F15/F16 だけを採用する。"
+    - "PR #4382 の source coefficient-kernel inner conjugation は固定 C1s の量化域外であり、completion evidence に含めない。"
+    - "Cycle 1 は typing scaffold だけであり、A--D の material conclusion を放電しない。"
+
+material_premise_discharge:
+  ambient_boundary:
+    - premise: "G-115 input geometry and reviewed route/component theorems"
+      role: "Cycles 1,3--10 and 13--16 use named route legs, mate triangles, exactification and fixed decision declarations; no G-115 completion label is used as a proof term."
+    - premise: "G-115 exact endpoint isomorphisms and CompositeFiberAut.conjugationMulEquiv"
+      role: "C1t uses the selected actual exact isomorphisms; Gamma, projections, kernels, fibers and observations are new derived declarations in Cycles 6,10,11."
+    - premise: "replacement source geometry, omega_i and w_i"
+      role: "UpperGeometryCompatibleSourcePresentationChange stores only replacement objects/isomorphisms, projection equalities and two coefficient identities; it stores no changed input or generated/naturality conclusion."
+  discharged:
+    - premise: "I^w source diagram, edge, comparator and transport"
+      evidence: "Cycle 13 F0: changedSourceFiberDiagram, changedEdgeLift, changedComparator, changedTwoLayerLiftData, changedSourceTransport, changedInput; geometry/core strong-cocartesian, two-cell and coefficient fields are derived."
+    - premise: "generated eta_B,i and eta_P,i"
+      evidence: "Cycles 13--14: generatedBaseRouteExactGeometryIsoAt and generatedPulledRouteExactGeometryIsoAt with hom/inv factorization and coefficient identities, constructed from actual lower naturality and strongly-cartesian uniqueness."
+    - premise: "comparison-component and central T naturality"
+      evidence: "Cycles 14--15: generatedCompatibleUpperGeometryMateAt_naturality and generatedComparisonPairHomAt_sourcePresentation_naturality; old and changed maps are independently generated."
+    - premise: "source-change identity, inverse and finite composition"
+      evidence: "Cycles 20--22: identity/inverse/comp together with identity_changedInput, inverse_changedInput, comp_changedInput and Chain.composite_changedInput_eq_terminalInput prove equality of the complete UpperGeometryCompatibleProblemInputData, not only equality of induced pair actions; the dependent Chain and pasted endpoint/source actions then give unitality/composition."
+    - premise: "transported generated range equality"
+      evidence: "Cycles 17,23,26: generatedEndpointPairMulEquivAt_image_range_generatedComparisonPairHomAt, pasted counterpart, and c1sC3C1tPairHomAt_range."
+    - premise: "J image equality and triviality iff"
+      evidence: "Cycles 19,25: generatedSourceConjugation_map_generatedPulledComparisonKernel, bottom iff, and pasted counterparts."
+    - premise: "actual image/kernel/fiber classification"
+      evidence: "Cycles 2--8 and 16,18,24: literal Gamma, both projections/kernels/stabilizers, corresponding lift fibers, nonempty iff and action equivariance."
+    - premise: "C1t endpoint correspondence"
+      evidence: "Cycles 6,10,11: actual comparison conjugation, Gamma/kernels/fibers/observations and typed finite chains."
+    - premise: "reflection and mixed transport coherence"
+      evidence: "Cycles 8,11,26: reflection iff J=bottom, target-side C1t composition, and typed C1t-before/C1s/C1t-after integration."
+    - premise: "coefficient homomorphism and transport commutation"
+      evidence: "Cycles 7,9--11,19,22,25,26: actual coefficientObservation MonoidHom and source/endpoint/finite-chain/mixed commutation."
+    - premise: "fixed transported positive and negative decisions"
+      evidence: "Cycles 5,7,9--11,28--29: named fixed positive membership, pulled-identity nonmembership, complete observation collision and universal nonfactorization."
+    - premise: "fixed induced action"
+      evidence: "Cycles 27--29: swap01SourcePresentationChange and swap01_induced_source_pair_action_ne use the actual local Fin 4 Axis evaluation; changed C3/C2 packets retain the firing."
+  direction_hypotheses:
+    - "A の lift-fiber torsor theorem は nonempty fiber のみ、Iso graph theorem は [IsIso c] のみで条件付き。"
+    - "B2 は fixed c_* の IsIso、両 stabilizer、両 projection、fiber cardinalityを Cycle 5 で constructive positive/unique branch に決定。"
+    - "C3 reflection remains exactly equivalent to J_i=bottom; the fixed J_* branch is positively decided in Cycle 8."
+
+route_integrity_gate:
+  fixed_decision_route: [upperDecisionSolution, upperDecisionSolution_comparatorDescentAt, generatedBaseIdentityPair_not_comparatorDescentAt, generatedPulledIdentityComparator_coefficient_id]
+  source_reconstruction_route:
+    - UpperGeometryCompatibleSourcePresentationChange.changedTwoLayerLiftData
+    - UpperGeometryCompatibleSourcePresentationChange.changedEdgeLift_geometryStrong
+    - UpperGeometryCompatibleSourcePresentationChange.changedEdgeLift_coreStrong
+    - UpperGeometryCompatibleSourcePresentationChange.changedTwoCellBase
+    - UpperGeometryCompatibleSourcePresentationChange.changedSourceTransport
+    - UpperGeometryCompatibleSourcePresentationChange.changedInput
+  generated_endpoint_route:
+    - ActiveRefinementBCContext.baseCompositeLegAt_naturality
+    - ActiveRefinementBCContext.pulledCompositeLegAt_naturality
+    - generatedBaseRouteLegAt_isStronglyCartesian
+    - generatedPulledRouteLegAt_isStronglyCartesian
+    - CategoryTheory.Functor.IsStronglyCartesian.domainIsoOfBaseIso
+    - UpperGeometryCleavage.exactGeometryHomOfRefinement
+    - UpperGeometryCompatibleSourcePresentationChange.generatedBaseRouteExactGeometryIsoAt
+    - UpperGeometryCompatibleSourcePresentationChange.generatedPulledRouteExactGeometryIsoAt
+  fixed_firing_route: [UpperDecisionWitness.swap01Iso, UpperDecisionWitness.compositeSwap01, UpperDecisionWitness.compositeSwap12, UpperDecisionWitness.compositeSwap12_local_axis_fires, UpperDecisionWitness.swap01_induced_source_pair_action_ne]
+  prohibited_shortcuts_found: []
+
+proof_use_spine:
+  - "A subgroup equations feed B1 residual-coset classification and C1t/C1s Gamma transports."
+  - "Actual H_B/H_P factorizations feed B1 diagonal membership, C3 T, C2 generated reselections and coefficient preservation."
+  - "The changed-input constructor is fed independently to the existing generator before eta, mate and T naturality are proved."
+  - "Central T naturality feeds full-Gamma transport only together with the independently proved comparison-component conjugation; it does not replace it."
+  - "Full-Gamma transport feeds projections, kernels, fibers and actions; generated-range equality is proved separately."
+  - "Residual J transport feeds exact reflection, and coefficient commutation plus literal positive/negative decisions feeds universal nonfactorization."
+  - "The fixed source-action Fin 4 evaluation and the changed-input C3/C2 constructions are both direct leaves of the final changed-input packets."
+  - "The transported fixed pairs are not accepted merely as old-witness images: F15 identifies them with independently generated change.changedInput.generatedComparisonPairHomAt images, and F16 independently reconstructs the changed C2 reselections before proving mixed closure."
+
+audits:
+  statement_match: pass-candidate
+  material_premise_discharge: pass-candidate
+  certificate_provenance: pass-candidate
+  proof_use: pass-candidate
+  structure_field_escape: none-found
+  route_integrity: pass-candidate
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  axiom_placeholder:
+    result: pass-candidate
+    static_source_evidence: "At candidate implementation snapshot 2a87e7dfd8e1b0db0e97e32060bd9c786c9db1b6, each claim-bearing Cycle 2--11 and revision-2 F0--F16 module has a terminal #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct; a literal source scan finds no actual axiom, sorry, admit, unsafe, or native_decide placeholder in those modules."
+    executed_evidence: "Cycle ledgers record focused elaboration and terminal namespace-audit runs for Cycles 2--11 and 13--29. This completion-packet re-audit did not rerun Lean or lake."
+    typing_only_exclusion: "Cycle 1 QualifiedComparisonTransportTyping.lean is example-only typing scaffolding without a terminal namespace audit and is not used as A--D theorem evidence."
+  validation_scope:
+    - "All implementation modules received focused Lean elaboration in their cycle."
+    - "Selected direct predecessor modules were built only when required; the Research aggregate/full build was not run."
+    - "Every implementation PR received fixed-head review and successful repository CI before merge."
+    - "This packet does not reuse those PR reviews as the required final whole-target review."
+  blocking_findings: []
+
+remaining_before_terminal_completion:
+  - "completion candidate PR の固定 head 内容査読と merge"
+  - "merge 後の固定 snapshot に対する別工程の Math A / Math B / Lean A / Lean B の4独立 math-lean-review。全 lane が No major findings であること"
+  - "査読結果を report と tracking Issue に同期し、GOAL status を terminal result に更新する lifecycle PR"
+  - "lifecycle PR の査読・CI・merge 後に Issue #4367 を terminal result と completion packet link で同期すること"
 ```
