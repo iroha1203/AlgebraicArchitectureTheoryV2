@@ -18,11 +18,12 @@ proof-use、査読結果を cycle ごとに記録する。
 - final math/Lean review: [PR comment 5557145097](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097), 4/4 `No major findings`
 - formal completion ledger: [PR comment 5557153114](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114), `target-theorem-proved`
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: none
-- pending obligations: none
+- current proof obligation: none
+- pending proof obligations: none
 - current target state: revision 2 の `target-theorem-proved`
+- lifecycle obligation: この文書同期PRのmerge後に Issue #4367へterminal resultを同期する。Issue closeは人間の明示指示を別途要する。
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: none for G-118; frontier items require separately fixed GOALs
+- next proof obligation: none for G-118; frontier items require separately fixed GOALs
 
 ## Completion judgment (final, 2026-09-06)
 
@@ -3328,7 +3329,7 @@ audits:
   next_obligation: "fix a new schema-complete final review packet on PR #4403 head and run four fresh pre-merge reviews"
 ```
 
-## Cycle 31 — terminal completion synchronization
+## Cycle 31 — terminal document synchronization
 
 ```yaml
 ledger_type: target_cycle_result
@@ -3346,18 +3347,18 @@ selection:
     - "fresh four-lane final review comment 5557145097"
     - "formal completion ledger comment 5557153114"
     - "PR #4403 merge 27ef9d6a2deec3b315d856e881543cae38a14d04"
-  proof_obligation: "synchronize the merged target-theorem-proved verdict to GOAL, report and index"
-  selection_reason: "all pre-merge completion gates passed on one fixed head and the completion PR merged"
-  expected_result_type: target-theorem-proved
+  proof_obligation: "synchronize the merged target-theorem-proved verdict to GOAL, report and index before the post-merge Issue update"
+  selection_reason: "all pre-merge theorem gates passed on one fixed head and the completion PR merged"
+  expected_result_type: blocker-fixed
   lean_targets: []
   risks:
     - "reusing withdrawn packet comments"
     - "marking a gate complete before its fixed-head evidence"
   unchecked: []
 result:
-  proposed_result_type: target-theorem-proved
-  proof_obligation_delta: "All revision-2 proof obligations and completion gates are discharged; GOAL, report and index now record the terminal result."
-  completion_candidate: terminal
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "All revision-2 proof obligations and pre-merge theorem gates are discharged; GOAL, report and index now record the terminal result, while tracking Issue synchronization remains a post-merge external step."
+  completion_candidate: no
   lean_artifacts: []
   evidence:
     - "standard PR review 5556939163: Mergeable"
@@ -3375,20 +3376,27 @@ result:
     acceptance_point: "The fixed revision-2 target is target-theorem-proved."
     port_status: not-applicable
 audits:
-  statement_match: pass
-  material_premise_discharge: pass
-  certificate_provenance: pass
-  proof_use: pass
+  premise_delta:
+    discharged: []
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "final packet, standard review, fresh final review and formal completion ledger on the fixed PR #4403 head"
+    unused:
+      - "withdrawn packet comments"
   structure_field_escape: none-found
   route_integrity: pass
-  nonvacuity: pass
-  direction_coverage: pass
-  definition_unfolding: pass
-  dependency: pass
-  axiom_audit: pass
-  placeholder_scan: pass
-  artifact_sync: pass
-  regression: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "GOAL, report and index terminal state are internally consistent"
+    - "all 31 report YAML blocks parse"
+    - "git diff --check; clean"
   blocking_findings: []
   next_obligation: "merge this lifecycle synchronization and synchronize Issue #4367; closing the Issue still requires an explicit human instruction"
 ```

@@ -12,7 +12,9 @@
   全gateをpassとした[formal completion ledger](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557153114)
   を経て、PR #4403 の merge `27ef9d6a2deec3b315d856e881543cae38a14d04` で確定した。
 - `stop reason`: `target-theorem-proved`
-- `next action`: G-118 としてはなし。`frontier` の各課題は別GOALで固定する。
+- `next research action`: G-118 としてはなし。`frontier` の各課題は別GOALで固定する。
+- `lifecycle`: この文書同期PRのmerge後に tracking Issueへterminal resultを同期する。
+  Issue closeは人間の明示指示を別途要する。
 - `priority`: `high`
 - `research mode`: `target-theorem`
 - `tracking issue`: #4367
