@@ -12,11 +12,11 @@ proof-use、査読結果を cycle ごとに記録する。
 - revision 2 review: PR #4383 の fixed-head 数学/Lean 査読を通過し、merge `7d4080a28fbb7d0e20189709c2fbcc59f74809c3` で固定した。review状態同期後のGOAL blobは `64d9ec2cd1b771c929db043752fc8c477eddcf6f`。
 - tracking Issue: #4367
 - reusable revision 1 artifacts: F0 typing、A comparison stabilizer API、B1 generated-image / actual input-map classification、B2 fixed comparison decisions、C1t complete-geometry endpoint transport and typed finite-chain closure、C2 actual edge reselection pointwise-product and finite-path closure、C3 generated base-transport preservation/reflection and target-side C1t postcomposition、D fixed coefficient nonfactorization and all-C1t-chain transport
-- current obligation: fixed induced-action firing と変更後入力上の C2/D packet
-- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t/C2/D connection、fixed induced-action firing、final completion review
+- current obligation: 変更後入力上の C2/D packet と C1s/C1t/C2/D connection
+- pending obligations: revision 1 artifact の statement/proof-use 再監査、C1s/C1t/C2/D connection、final completion review
 - current target state: revision 2 の `target-proof-checkpoint`
 - revision rule: revision 1 の cycle result を自動継承しない。各宣言を revision 2 の固定 statement と material premise ledger に再照合する。
-- next obligation: fixed source change を構成し、actual local `Fin 4` evaluation で induced pair action を発火させる
+- next obligation: fixed source change の changed input に既存 C2/D 正負 packet を接続し、移送後の分離と非因子化を証明する
 
 ## Cycle 1 — F0 fixed source-map typing
 
@@ -2616,4 +2616,100 @@ audits:
     - "tracked module AxiomAudit: 12 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the fixed swap01 source change and prove nontrivial induced pair-action firing from the actual local Fin 4 evaluation"
+```
+
+## Cycle 27 — fixed source-presentation induced-action firing
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-118-aat-diagnostic-descent-transport
+cycle: 27
+goal_blob_sha: 64d9ec2cd1b771c929db043752fc8c477eddcf6f
+base_oid: 4c40d098891058bb4439018ca76a9f8994817e9c
+tracking_issue: 4367
+report_path: research/reports/G-118-aat-diagnostic-descent-transport.md
+selection:
+  proof_state_ref: "Cycle 26 accepted the typed C1s/C1t and C1s/C3/C1t routes while retaining the fixed firing obligation"
+  proof_dag_predecessors:
+    - packageProjection
+    - CategoryTheory.IsHomLift.of_commsq
+    - UpperDecisionWitness.coreObject
+    - UpperDecisionWitness.corePermutationTotal
+    - UpperDecisionWitness.localAxisPermutation
+    - UpperDecisionWitness.swap01Total
+    - UpperDecisionWitness.swap01Total_square
+    - UpperDecisionWitness.swap01Iso
+    - UpperDecisionWitness.compositeSwap12
+    - UpperDecisionWitness.authored_comparator_local_axis_fires
+    - UpperGeometryCompatibleSourcePresentationChange.generatedSourcePairMulEquivAt
+    - CompositeFiberAut.conjugationMulEquiv
+  proof_obligation: "construct the fixed swap01 source-presentation change from the actual core and complete-geometry isomorphisms, then prove that its induced simultaneous conjugation moves (compositeSwap12, 1) by a local Fin 4 evaluation"
+  selection_reason: "the fixed target forbids inferring nontriviality from swap01 alone; the generated pair action itself must be evaluated on the authored comparator"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF14.lean
+  risks:
+    - replacing the selected core-fiber isomorphism by an untyped package map
+    - accepting the changed input or induced-action inequality as fixture data
+    - proving only compositeSwap01 != 1
+    - evaluating only the core signature axis rather than an actual local carrier
+  unchecked:
+    - changed-input C2/D packet and final C1s/C1t/C2/D connection
+    - revision-1 artifact statement/proof-use re-audit
+result:
+  classification: proof-obligation-discharged
+  progress_class: progress
+  terminal_status: target-proof-checkpoint
+  theorem_map:
+    - UpperDecisionWitness.swap01CoreFiberHom
+    - UpperDecisionWitness.swap01CoreFiberIso
+    - UpperDecisionWitness.swap01SourcePresentationChange
+    - UpperDecisionWitness.contextForward_corePermutation_base
+    - UpperDecisionWitness.contextForward_corePermutation_comp_base
+    - UpperDecisionWitness.swap01_conjugated_comparator_local_axis_fixes_one
+    - UpperDecisionWitness.swap01_induced_source_pair_local_axis_fixes_one
+    - UpperDecisionWitness.compositeSwap12_local_axis_fires
+    - UpperDecisionWitness.swap01_induced_source_pair_action_ne
+  acceptance_point: "The fixed source change is built from swap01Total.base in the actual active target CoreFiber and from swap01Iso over it, with both coefficient maps definitionally equal to the identity. Its generated source-pair action sends the first component of (compositeSwap12, 1) to the actual swap01-conjugate. On the distinguished local Axis carrier the conjugate fixes 1, while compositeSwap12 sends 1 to 2, so the induced pair action is not the identity."
+  port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "fixed source-presentation change over the active target CoreFiber"
+      - "actual generated simultaneous-conjugation firing on (compositeSwap12, 1)"
+      - "local Fin 4 Axis evaluation distinguishing the transported and original first components"
+    remaining:
+      - "changed-input C2/D packet and final C1s/C1t/C2/D connection"
+      - "revision-1 artifact statement/proof-use re-audit"
+  certificate_provenance:
+    discharged:
+      - "the CoreFiber isomorphism is constructed from swap01Total.base and involutivity"
+      - "the source change contains only the selected source/core/geometry isomorphisms and coefficient identities"
+      - "the action inequality is proved after applying generatedSourcePairMulEquivAt, not stored in the change datum"
+    unresolved: []
+  proof_use:
+    used:
+      - "swap01Total_square for both CoreFiber inverse laws"
+      - "the definitional generatedSourcePairMulEquivAt source conjugation by swap01Iso"
+      - "the actual nested local Axis maps for swap01, swap12, swap01 at the distinguished context"
+      - "authored_comparator_local_axis_fires for the original 1-to-2 evaluation"
+      - "pair equality projected to its first component before local evaluation"
+    unused:
+      - "compositeSwap01_ne_one is not used as a substitute for induced-action firing"
+      - "no changed input, action equality, or action inequality certificate is supplied"
+  independent_search:
+    candidates: 2
+    refutation_lanes: 1
+    result: "the core-isomorphism lane selected the actual IsHomLift construction; the firing lane selected local Axis value 1 and rejected a proof from actor nonidentity alone"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF14.lean; exit 0"
+    - "tracked module AxiomAudit: 9 declarations under AAT.AG.DoctrineFiberProduct, standard axioms only"
+  blocking_findings: []
+  next_obligation: "instantiate the fixed changed input and transport the existing C2/D positive-negative packet through C1s, then connect the remaining typed closure"
 ```
