@@ -158,7 +158,7 @@ Return to the 200,000-line codebase and the original request:
 
 The AI first queries ArchMap for the contexts in which email delivery is used. It retrieves the operations involved in authentication and newsletters, their requirements, and their source references, together with the shared data and relationships needed for the decision.
 
-In ArchView, a person examines the same structure. They follow code issuance through delivery and verification, checking which operations the AI selected for modification and why. Eventually, linking visual changes in detail to mathematical reading resolutions could make it clear which information each view preserves.
+In ArchView, a person examines the same structure. They follow code issuance through delivery and verification, checking which operations the AI selected for modification and why. Eventually, linking changes in the level of visual detail to mathematical reading resolutions could make it clear which information each view preserves.
 
 ArchSig analyzes the selected scope under the selected laws. I want to extend it to check the conditions for comparisons across resolutions and to handle structural correspondences before and after a change. The results and supporting evidence would serve both the AI's explanation and human review.
 
