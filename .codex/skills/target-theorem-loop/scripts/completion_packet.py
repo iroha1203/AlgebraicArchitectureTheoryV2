@@ -131,6 +131,11 @@ def validate_receipt(repo, receipt):
             path = (sysroot / dep["system"]).resolve()
             need(path.is_relative_to(sysroot), "system path escape")
             need(file_hash(path) == dep["sha256"], "system dependency mismatch")
+        elif "repository" in dep:
+            fields(dep, ["repository", "receipt"])
+            external_repo = repo / relative(repo, dep["repository"])
+            need(Path(run(["git", "rev-parse", "--show-toplevel"], external_repo)).resolve() == external_repo.resolve(), "dependency repository mismatch")
+            validate_receipt(external_repo, dep["receipt"])
         else:
             validate_receipt(repo, dep)
 
@@ -145,17 +150,23 @@ def check(repo, source, module, out, dependency_receipts):
     out = repo / relative(repo, out)
     out.mkdir(parents=True, exist_ok=True)
     deps = []
-    available = [read(p) for p in dependency_receipts]
+    available = []
+    for receipt_path in dependency_receipts:
+        receipt_path = Path(receipt_path).resolve()
+        owner_repo = Path(run(["git", "rev-parse", "--show-toplevel"], receipt_path.parent)).resolve()
+        r = read(receipt_path)
+        available.append((owner_repo, r))
     sysroot = Path(run(["lean", "--print-prefix"], repo)).resolve()
     for depname in run(["lean", "--deps", source], repo).splitlines():
         dep = Path(depname).resolve()
         if dep.is_relative_to(sysroot):
             deps.append({"system": dep.relative_to(sysroot).as_posix(), "sha256": file_hash(dep)})
         else:
-            found = [r for r in available if (repo / r["olean"]).resolve() == dep]
+            found = [(owner_repo, r) for owner_repo, r in available if (owner_repo / r["olean"]).resolve() == dep]
             need(len(found) == 1, f"dependency needs focused receipt: {dep.name}")
-            validate_receipt(repo, found[0])
-            deps.append(found[0])
+            owner_repo, r = found[0]
+            validate_receipt(owner_repo, r)
+            deps.append(r if owner_repo == repo else {"repository": relative(repo, owner_repo), "receipt": r})
     olean = out / (module.replace(".", "/") + ".olean")
     olean.parent.mkdir(parents=True, exist_ok=True)
     command = ["lean", "-o", relative(repo, olean), source]
@@ -319,14 +330,14 @@ def material(mapping, extraction, goal_text):
     done = set()
     for n in adjacency:
         visit(n, set(), done)
-    return {"direction_coverage": directions,
+    return {"criteria": mapping["criteria"], "direction_coverage": directions,
             "dependency_dag": {"semantics": "target-acceptance-spine", "nodes": [declaration(n) for n in sorted(central)],
                                "edges": sorted(routes, key=lambda e: canonical(e))},
             "material_premises": mapping["premises"], "gate_evidence": mapping["evidence"],
             "review_required": GATES}
 
 
-def collect(repo, mapping_path, receipt_paths, output):
+def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     mapping = read(mapping_path)
     validate_map(mapping)
     snap = snapshot(repo)
@@ -353,7 +364,8 @@ def collect(repo, mapping_path, receipt_paths, output):
     result = run(["lean", "--run", extractor, *modules], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
     core = material(mapping, extraction, (repo / goal["path"]).read_text())
-    source = {"snapshot": snap, "goal": goal, "report": report, "mapping": mapping_ref,
+    source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
+              "goal": goal, "report": report, "mapping": mapping_ref,
               "extractor": extractor_ref, "generator_sha256": file_hash(__file__)}
     bundle = {"schema_version": VERSION, "source": source, "mapping": mapping,
               "extraction": extraction, "receipts": receipts, "core": core}
@@ -364,7 +376,8 @@ def collect(repo, mapping_path, receipt_paths, output):
 def validate_bundle(repo, b):
     fields(b, ["schema_version", "source", "mapping", "extraction", "receipts", "core"])
     need(b["schema_version"] == VERSION, "bundle schema")
-    fields(b["source"], ["snapshot", "goal", "report", "mapping", "extractor", "generator_sha256"])
+    fields(b["source"], ["snapshot", "base_oid", "goal", "report", "mapping", "extractor", "generator_sha256"])
+    need(run(["git", "rev-parse", b["source"]["base_oid"] + "^{commit}"], repo) == b["source"]["base_oid"], "base ref mismatch")
     need(b["source"]["snapshot"] == snapshot(repo), "source snapshot mismatch")
     need(b["source"]["generator_sha256"] == file_hash(__file__), "generator changed; recollect")
     head = b["source"]["snapshot"]["head"]
@@ -396,7 +409,8 @@ def render(bundle, auxiliary):
     for ref in auxiliary["refs"]:
         string(ref)
     packet = {"packet_type": "target_theorem_final_review", "schema_version": VERSION,
-              "head_oid": bundle["source"]["snapshot"]["head"], "goal": bundle["mapping"]["goal"],
+              "head_oid": bundle["source"]["snapshot"]["head"], "base_oid": bundle["source"]["base_oid"],
+              "goal": bundle["mapping"]["goal"],
               "source_digest": digest(bundle["source"]), "claim_map_digest": digest(bundle["mapping"]),
               "core_evidence_digest": digest({"extraction": bundle["extraction"], "core": bundle["core"], "receipts": bundle["receipts"]}),
               "bundle_digest": digest(bundle), "core": bundle["core"], "auxiliary": auxiliary}
@@ -407,11 +421,33 @@ def validate_packet(bundle, packet):
     need(packet == render(bundle, packet.get("auxiliary", {})), "packet differs from generated result")
 
 
+def evidence_ref(ref):
+    fields(ref, ["path", "sha256"])
+    string(ref["path"])
+    need(isinstance(ref["sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", ref["sha256"]), "evidence digest")
+
+
+def resolve_evidence(repo, ref):
+    evidence_ref(ref)
+    need(file_hash(repo / relative(repo, ref["path"])) == ref["sha256"], "review evidence missing/changed")
+
+
 def route_findings(old, new, review):
     """Return routing only. An independent recheck is still needed for noncentral findings."""
-    fields(review, ["packet_digest", "lanes", "findings"])
+    fields(review, ["packet_digest", "lanes", "lane_evidence", "findings"])
     need(review["packet_digest"] == digest(old), "review packet mismatch")
     fields(review["lanes"], LANES)
+    fields(review["lane_evidence"], LANES)
+    reviewers = []
+    for lane in LANES:
+        evidence = review["lane_evidence"][lane]
+        fields(evidence, ["reviewer", "ref", "checked_gates", "unchecked_central_claim"])
+        string(evidence["reviewer"])
+        evidence_ref(evidence["ref"])
+        reviewers.append(evidence["reviewer"])
+        need(set(evidence["checked_gates"]) == set(GATES), "incomplete lane coverage")
+        need(evidence["unchecked_central_claim"] == [], "unchecked central claim")
+    distinct(reviewers, "independent lane reviewers")
     for lane in review["lanes"].values():
         need(lane in ("pass", "packet-only", "veto", "unchecked-central-claim"), "lane enum")
     ids = []
@@ -437,9 +473,20 @@ def route_findings(old, new, review):
 
 
 def ledger(packet, review, gates, recheck=None, old=None):
-    fields(gates, GATES + ["root_recheck", "standard_pr_review", "acceptance_check"])
+    fields(gates, GATES + ["root_recheck", "standard_pr_review", "acceptance_check", "premise_status", "completed_criteria", "stage_evidence"])
     need(all(gates[g] == "pass" for g in GATES + ["root_recheck", "acceptance_check"]), "gate not pass")
     need(gates["standard_pr_review"] == "Mergeable", "standard PR gate")
+    need(sorted(gates["completed_criteria"]) == sorted(packet["core"]["criteria"]), "incomplete criteria")
+    premises = packet["core"]["material_premises"]
+    fields(gates["premise_status"], [p["id"] for p in premises])
+    for premise in premises:
+        status = gates["premise_status"][premise["id"]]
+        need(status == "discharged" if premise["role"] == "discharge-required" else status in ("discharged", "justified-boundary"), "undischarged premise")
+    fields(gates["stage_evidence"], ["standard_pr_review", "acceptance_check", "root_recheck"])
+    for evidence in gates["stage_evidence"].values():
+        fields(evidence, ["head", "ref"])
+        need(evidence["head"] == packet["head_oid"], "stage evidence head mismatch")
+        evidence_ref(evidence["ref"])
     route = route_findings(old or packet, packet, review)
     need(route != "fresh-four-lane-review", "fresh review required")
     if route == "independent-direct-recheck-required":
@@ -450,7 +497,7 @@ def ledger(packet, review, gates, recheck=None, old=None):
         string(recheck["reviewer"])
         string(recheck["implementer"])
         need(recheck["reviewer"] != recheck["implementer"] and recheck["qualified"] is True, "independent qualification missing")
-        string(recheck["evidence"])
+        evidence_ref(recheck["evidence"])
         need(sorted(recheck["resolved"]) == sorted(f["id"] for f in review["findings"]), "unresolved finding")
         need(recheck["new_findings"] == [], "new finding needs review/recheck")
     else:
@@ -460,6 +507,7 @@ def ledger(packet, review, gates, recheck=None, old=None):
             "review_digest": digest(review), "recheck_digest": digest(recheck) if recheck else None,
             "gates": gates, "review_lanes": {lane: "pass" for lane in LANES},
             "verdict": "target-theorem-proved", "math_lean_review_verdict": "No major findings",
+            "completed_proof_obligations": gates["completed_criteria"], "material_premises": gates["premise_status"],
             "remaining_proof_obligations": [], "unchecked_central_claim": [], "blockers": []}
 
 
@@ -475,6 +523,7 @@ def main():
     c.add_argument("--mapping", required=True)
     c.add_argument("--receipt", action="append", required=True)
     c.add_argument("--out", required=True)
+    c.add_argument("--base", default="origin/main")
     for command in ("render", "validate", "ledger"):
         c = sub.add_parser(command)
         c.add_argument("--bundle", required=True)
@@ -496,7 +545,7 @@ def main():
         r = check(repo, a.source, a.module, a.out, a.dependency_receipt)
         write(Path(a.out) / (a.module + ".receipt.json"), r)
     elif a.command == "collect":
-        collect(repo, a.mapping, a.receipt, a.out)
+        collect(repo, a.mapping, a.receipt, a.out, a.base)
     elif a.command == "route":
         print(route_findings(read(a.old), read(a.new), read(a.review)))
     else:
@@ -510,7 +559,14 @@ def main():
             packet = read(a.packet)
             validate_packet(b, packet)
             if a.command == "ledger":
-                write(a.out, ledger(packet, read(a.review), read(a.gates), read(a.recheck) if a.recheck else None,
+                review, gates = read(a.review), read(a.gates)
+                for row in review["lane_evidence"].values():
+                    resolve_evidence(repo, row["ref"])
+                for row in gates["stage_evidence"].values():
+                    resolve_evidence(repo, row["ref"])
+                if a.recheck:
+                    resolve_evidence(repo, read(a.recheck)["evidence"])
+                write(a.out, ledger(packet, review, gates, read(a.recheck) if a.recheck else None,
                                     read(a.old_packet) if a.old_packet else None))
     print("ok")
 

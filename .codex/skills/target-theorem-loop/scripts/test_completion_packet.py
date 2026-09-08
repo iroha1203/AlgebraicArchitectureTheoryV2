@@ -110,7 +110,7 @@ class PacketTests(unittest.TestCase):
                 cp.read(p)
 
     def bundle(self):
-        return {"source": {"snapshot": {"head": "a"}}, "mapping": self.m,
+        return {"source": {"snapshot": {"head": "a"}, "base_oid": "base"}, "mapping": self.m,
                 "extraction": self.x, "core": self.core(), "receipts": []}
 
     def packet(self):
@@ -118,6 +118,8 @@ class PacketTests(unittest.TestCase):
 
     def review(self, old, cls="packet-only", gate="packet-integrity"):
         return {"packet_digest": cp.digest(old), "lanes": {l: "packet-only" for l in cp.LANES},
+                "lane_evidence": {l: {"reviewer": l, "ref": {"path": "fixture-" + l, "sha256": "0" * 64},
+                                      "checked_gates": cp.GATES, "unchecked_central_claim": []} for l in cp.LANES},
                 "findings": [{"id": "F1", "class": cls, "gate": gate,
                               "reason": "missing auxiliary reference", "evidence": "fixture comparison"}]}
 
@@ -136,9 +138,43 @@ class PacketTests(unittest.TestCase):
         self.assertEqual(cp.route_findings(old, new, self.review(old)), "independent-direct-recheck-required")
 
     def test_direction_overclaim_review_veto(self):
+        self.m = cp.read(HERE / "fixtures/overclaim.json")
+        # identityMember only proves positive 0, not the requested universal iff.
+        self.core()
         p = self.packet()
         # Semantic finding is an explicit independent reviewer input, not a lint result.
         self.assertEqual(cp.route_findings(p, p, self.review(p, "central", "direction_coverage")), "fresh-four-lane-review")
+
+    def test_changed_core_cannot_copy_digests(self):
+        p = self.packet()
+        q = copy.deepcopy(p)
+        q["core"]["direction_coverage"].pop()
+        self.assertEqual(cp.route_findings(p, q, self.review(p)), "fresh-four-lane-review")
+
+    def test_missing_independent_coverage(self):
+        p = self.packet()
+        r = self.review(p)
+        r["lane_evidence"]["lean_a"]["checked_gates"] = ["axiom_audit"]
+        with self.assertRaisesRegex(cp.Invalid, "coverage"):
+            cp.route_findings(p, p, r)
+
+    def test_reused_reviewer(self):
+        p = self.packet()
+        r = self.review(p)
+        r["lane_evidence"]["lean_a"]["reviewer"] = "math_a"
+        with self.assertRaisesRegex(cp.Invalid, "duplicate"):
+            cp.route_findings(p, p, r)
+
+    def test_routing_batch_comparison(self):
+        p = self.packet()
+        q = copy.deepcopy(p)
+        q["auxiliary"]["notes"] = "display correction"
+        for cls, gate, expected_new in [("central", "dependency_dag", 1),
+                                        ("central", "direction_coverage", 1),
+                                        ("packet-only", "packet-integrity", 0),
+                                        ("packet-only", "all_discharge_required", 1)]:
+            route = cp.route_findings(p, q, self.review(p, cls, gate))
+            self.assertEqual(int(route == "fresh-four-lane-review"), expected_new)
 
     def test_cannot_downgrade_central_gate(self):
         p = self.packet()
@@ -164,11 +200,15 @@ class PacketTests(unittest.TestCase):
         r = self.review(p)
         gates = {g: "pass" for g in cp.GATES + ["root_recheck", "acceptance_check"]}
         gates["standard_pr_review"] = "Mergeable"
+        gates["completed_criteria"] = self.m["criteria"]
+        gates["premise_status"] = {}
+        gates["stage_evidence"] = {s: {"head": p["head_oid"], "ref": {"path": "fixture-" + s, "sha256": "0" * 64}}
+                                   for s in ("standard_pr_review", "acceptance_check", "root_recheck")}
         with self.assertRaisesRegex(cp.Invalid, "recheck missing"):
             cp.ledger(q, r, gates, old=p)
         check = {"old_packet_digest": cp.digest(p), "new_packet_digest": cp.digest(q), "review_digest": cp.digest(r),
                  "reviewer": "independent-reviewer", "implementer": "author", "qualified": True,
-                 "resolved": ["F1"], "evidence": "fixed source and diff inspected", "new_findings": []}
+                 "resolved": ["F1"], "evidence": {"path": "fixture-recheck", "sha256": "0" * 64}, "new_findings": []}
         self.assertEqual(cp.ledger(q, r, gates, check, p)["verdict"], "target-theorem-proved")
         check["reviewer"] = "author"
         with self.assertRaises(cp.Invalid):

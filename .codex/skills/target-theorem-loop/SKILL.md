@@ -63,7 +63,7 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 標準レビュー後、rootはその独立review evidenceと固定headの実体からstatement、premise discharge、provenance、proof-use、field escape、route、nonvacuity、dependency、回帰scenarioを再統合する。中心項目の未確認、不一致、証拠なしはmerge不可とする。
 
-completion candidateでは、PR内容判定を再利用せず、別の`$math-lean-review`を数学2本・Lean 2本で起動する。固定GOALカードのtarget、boundary、全completion criteria、全material premise ledger行を、累積Lean declarations、proof artifacts、依存DAG、report/ledgerへ照合する。4本すべてと統合verdictが正確に`No major findings`でなければcompletion不可とする。
+completion candidateでは、PR内容判定を再利用せず、別の`$math-lean-review`を数学2本・Lean 2本で起動する。固定GOALカードのtarget、claim scope、全completion criteria、全material premise ledger行を、累積Lean declarations、proof artifacts、依存DAG、report/ledgerへ照合する。4本すべての有効な承認と、正確に`No major findings`である統合verdictを要求する。有効な承認の構成は共有review protocolの「completion packetの直接確認」に従う。
 
 ## Completion
 

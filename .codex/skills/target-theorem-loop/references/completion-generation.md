@@ -25,9 +25,12 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 `--deps`で見つけたtoolchain外のimportには、同じhead/source/oleanを結ぶ
 `--dependency-receipt <file>`を要求する。既存cacheを無条件で信用せず、証拠のない依存は
 親が必要なmoduleに限って確認する。`check`を全Research moduleのloopへ使わない。
+外部packageのreceiptは、そのGit作業領域内で同じcheckを実行し、同領域内に保存する。
+親repoへ渡す際はpackageのrepo相対位置・commit・source/blobも再検算する。
 subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に従う。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
+`--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
 型・値・owner・private名・公理・参照位置を記録する。`validate`はGitと実行出力を検算し、
 対象oleanから再抽出してbundleと一致することを確認する。全sourceのGit blob一覧は
 入力整合のための読取りであり、全moduleのelaborationではない。
@@ -99,6 +102,15 @@ fresh 4査読へ送る。schemaの意味や抽出結果を変える修正も再�
 4 laneと全gateを検査する。直接確認を使う場合は`--old-packet`と`--recheck`を追加する。
 review/gates/recheckは独立査読・親の統合判断を構造化した入力であり、generatorが作成する
 数学判断ではない。schemaは実装の`route_findings`/`ledger`、例は対応するtestを参照する。
+
+review入力は`packet_digest`、4つの`lanes`、`lane_evidence`、`findings`を持つ。
+各laneには別のreviewer ID、全gateの`checked_gates`、空の`unchecked_central_claim`、
+レビュー本文の`ref: {path, sha256}`を要求する。refのpathはrepo相対の保存済み本文とし、
+CLIは実ファイルをhashして解決する。GitHubコメントは取得した本文を保存して参照する。
+gates入力は15 gateとroot/標準PR/acceptance判定、全`completed_criteria`、全`premise_status`、
+同一headの`stage_evidence`を持つ。discharge-requiredに`discharged`以外は許可しない。
+recheckにも保存済み確認本文のrefを付ける。これらのIDやhashは本文の真偽を保証する署名では
+ないため、親はレビューを実際に独立起動し、結果との一致を確認して入力を作る。
 
 ## 検証
 

@@ -6,6 +6,10 @@
 実装前の検討用メモとして、入出力、判断の担当、検証方法、既存手順への反映先を示す。
 現行の完了判定は既存skillに従う。新方式の適用開始は、実装と検証を含む変更のレビュー後とする。
 
+実装の入出力と実行手順は[completion generation](../../.codex/skills/target-theorem-loop/references/completion-generation.md)にある。
+初期実装は標準ライブラリで扱えるJSON対応表を採用し、中心nodeの巡回は未確認として拒否する。
+以下のYAML模式例とSCC凝縮は設計上の表現であり、初期CLIの対応形式・機能とは区別する。
+
 ## 1. 設計判断
 
 手書きpacketを、次の三つの入力から機械生成する方式へ変更する。
