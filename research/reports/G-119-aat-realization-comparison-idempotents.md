@@ -989,7 +989,6 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "D package admissibility remains exactly the fixed object condition"
       - "D one-sided absorption is derived for arbitrary total morphisms"
       - "D dependent operation component is included in the total equality"
       - "D base identity pi(e_P)=1"

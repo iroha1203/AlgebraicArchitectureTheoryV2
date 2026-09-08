@@ -47,8 +47,8 @@ noncomputable def canonicalPackageNormalization
   ObjectProperty.homMk
     (canonicalObjectNormalizationTotal P.obj P.property)
 
-/-- API lemma for the underlying package morphism of the admissible-package
-normalization. -/
+/-- Normalization rule: reduce the full-subcategory morphism underlying the
+admissible-package normalization to the existing canonical total morphism. -/
 @[simp]
 theorem canonicalPackageNormalization_hom
     {U : AtomCarrier.{u}} (P : CanonicalNormalizationAdmissiblePackage U) :
