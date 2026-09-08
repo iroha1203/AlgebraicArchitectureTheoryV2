@@ -42,15 +42,9 @@ noncomputable def authoredDiagnosticRawIdempotentComparison
     (authoredDiagnosticImageSourceKaroubi input cochain cell).p
     (authoredDiagnosticImageTargetKaroubi input cochain cell).p
     (by
-      change
-        (((authoredDiagnosticObjectCollapseComparisonAtCochain
-            input cochain).app cell ≫
-          inv ((authoredSupportCanonicalMate input.context).app cell)) ≫
-            (authoredSupportCanonicalMate input.context).app cell) =
-          (authoredSupportCanonicalMate input.context).app cell ≫
-            authoredViaBaseDiagnosticObjectCollapseComponentAtCochain
-              input cochain cell
-      simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
+      rw [authoredDiagnosticImageSourceKaroubi_p,
+        authoredDiagnosticImageTargetKaroubi_p]
+      simp only [Arrow.mk_hom, Category.assoc, IsIso.inv_hom_id, Category.comp_id]
       exact authoredDiagnosticObjectCollapseComparisonAtCochain_app
         input cochain cell)
   idem := by
