@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: C のraw mateからのKaroubi交換
-- pending proof obligations: C、D
+- current proof obligation: D のcanonical正規化圏と自然な包含
+- pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: raw mate α と冪等対からA左辺の対象を構成し、そのT像を既存Karoubi比較へ同定
+- next proof obligation: admissible core packages上の吸収則と正規化圏N_Cを構成
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -809,4 +809,114 @@ Cycle 7 の material premise role は次のとおりである。
 - `ambient-boundary`: 任意の `U`、`[DecidableEq U.Atom]`、`input`、`cochain`、`cell`。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。既存のKaroubi同型とCoreFiber verticalityだけを使う。
+- `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 8 — G-116 raw-mate Karoubi exchange
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 8
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 8236a6a3ef1a901da7b2fd46e9d0c67b1966aad6
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 7 result: C1 discharged; C2 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.karoubiArrowToArrowKaroubiObj
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticKaroubiComparison
+    - AAT.AG.DoctrineFiberProduct.authoredDiagnosticObjectCollapseComparisonAtCochain_app
+    - AAT.AG.DoctrineFiberProduct.authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_comp
+  proof_obligation: "C2: independently construct the Kar(Arr(CoreFiber NE)) object with raw alpha and endpoint idempotents, derive the exchange identities, and identify its T-image with the actual beta Karoubi comparison"
+  selection_reason: "C2 closes the remaining fixed target C realization claim after C1 fixed the concrete target object and endpoint qualifications."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiExchange.lean
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison_exchange
+  risks:
+    - "using beta rather than the reversible mate alpha as the raw comparison"
+    - "reversing the conventional and Lean composition orders"
+    - "taking the normalized beta equation or Arrow square as a caller premise"
+    - "showing only the comparison morphism while losing endpoint object equality"
+  unchecked:
+    - "D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the raw-alpha idempotent square with endpoint projectors beta-comp-alpha-inverse and E, identified the source projector with the conjugate alpha-comp-E-comp-alpha-inverse, derived the Arrow exchange and normalized beta equations, and proved the entire T-image equals the placed G-116 Karoubi comparison."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiExchange.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison_p_left_conjugate
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison_intertwining
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison_normalized_hom
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticRawIdempotentComparison_exchange
+  claim_mapping:
+    theorem_names:
+      - authoredDiagnosticRawIdempotentComparison_X_hom
+      - authoredDiagnosticRawIdempotentComparison_p_left
+      - authoredDiagnosticRawIdempotentComparison_p_left_conjugate
+      - authoredDiagnosticRawIdempotentComparison_p_right
+      - authoredDiagnosticRawIdempotentComparison_intertwining
+      - authoredDiagnosticRawIdempotentComparison_normalized_hom
+      - authoredDiagnosticRawIdempotentComparison_exchange
+    source_labels:
+      - "fixed target C paragraph 3: raw alpha with idempotent pair (alpha-inverse E alpha, E)"
+      - "fixed target C paragraph 3: E alpha equals alpha e, e equals alpha-inverse beta, and E alpha e equals beta"
+      - "fixed target C paragraph 3: the T-image equals the existing Karoubi-isomorphism hom"
+    conjuncts:
+      - "raw comparison -> the actual reversible canonical mate alpha"
+      - "source idempotent -> beta followed by inverse alpha and equivalently alpha-E-inverse-alpha"
+      - "target idempotent -> the actual cell projector E"
+      - "exchange -> endpoint idempotents form an Arrow endomorphism of raw alpha"
+      - "normalization -> source-idempotent, alpha, target-idempotent compose to beta"
+      - "T-image -> full Arrow object equality with the C1 placed comparison, including endpoints"
+    undischarged_assumptions: []
+    acceptance_point: "C2 derives every exchange equation from beta equals alpha-comp-E, alpha invertibility, and E idempotence, and proves full object equality rather than only hom equality."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "D"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "the existing source and target Karoubi projectors supply the idempotent pair"
+      - "the existing beta factorization supplies the Arrow square and source conjugate equation"
+      - "the existing E idempotence supplies normalized beta"
+      - "A1 karoubiArrowToArrowKaroubiObj supplies the actual T normalization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.G116KaroubiPlacement; exit 0"
+    - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiExchange.lean; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal axiom audit: 8 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D: derive the canonical absorption law and construct the normalization category N_C"
+```
+
+### Cycle 8 acceptance spine
+
+`authoredDiagnosticRawIdempotentComparison` はraw比較を既存の可逆mate `α` とし、
+source projectorを `β ≫ α⁻¹`、target projectorを `E` とするA左辺の対象である。
+source projectorは既存の `β=α ≫ E` から `α ≫ E ≫ α⁻¹` とも同定される。
+Arrowの交換式、`E` の冪等性、`α` の可逆性から正規化射が `β` になることを導き、
+`authoredDiagnosticRawIdempotentComparison_exchange` はT像をC1の実比較対象と全体で同定する。
+
+Cycle 8 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U`、`[DecidableEq U.Atom]`、`input`、`cochain`、`cell`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。`β=α ≫ E`、`E²=E`、`α` の可逆性は既存G-116構成から使う。
 - `conclusion-equivalent-risk`: 該当なし。
