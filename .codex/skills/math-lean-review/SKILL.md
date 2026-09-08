@@ -196,7 +196,8 @@ lane定義、追加出力、統合schemaは
 findingが出た場合は、全laneのfindingをまとめて実装フェーズを再開し、修正後の確認は共有
 review protocolの「レビューバッチと修正後確認」に従う(直接対応の資格条件・確認subagentの
 検査義務・資格喪失時の4本再実行は同節が正本)。完了判定ゲートとして起動された場合のfindingに
-直接対応は適用されず、完了判定は4本の正式再実行だけで更新する。
+共有review protocolの「completion packetの直接確認」を適用する。中心findingはfresh 4本、
+packet-only非中心findingは有資格の直接確認で解消する。
 
 ## 親 Codex の統合判定
 

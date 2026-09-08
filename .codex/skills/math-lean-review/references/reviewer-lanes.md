@@ -25,6 +25,19 @@
 
 ## 追加出力
 
+### completion packetの読み方
+
+4 laneは、生成器が選んだ一覧だけで範囲を決めず、固定GOALの全claim・premiseから
+独立に対応を再構成する。型・値・公理・中心経路をsourceへ戻って検算する。
+schema lintと全補助constantの手作業列挙を通常責務にせず、中心predecessorの欠落、
+false edge、direction overclaim、certificateへの結論移動を優先して反証する。
+term中の出現と数学的proof-useを同一視しない。必要なら抽出グラフと定義実体へ掘り下げる。
+生成器の成功やPRレビューの判定を、GOALの成立証拠として継承しない。
+
+findingにはcentral completion / packet-only non-centralの区分、対象gate、具体的根拠を
+添える。型不一致や補助refでも唯一の中心証拠を損なう場合は中心findingである。
+再査読と直接確認は[共有review protocol](../../_shared/review-protocol.md)に従う。
+
 共有review protocolの出力に加え、各laneは次を返す。
 
 1. 対象数学claimと候補Lean declaration。
