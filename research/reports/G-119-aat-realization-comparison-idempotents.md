@@ -505,15 +505,24 @@ result:
     - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv
     - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_source_projection
     - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_target_projection
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_symm_source_projection
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_symm_target_projection
   claim_mapping:
     theorem_names:
+      - identityIdempotentReversibleComparison_left_X
       - identityIdempotentReversibleComparison_left_p
+      - identityIdempotentReversibleComparison_right_X
       - identityIdempotentReversibleComparison_right_p
+      - identityIdempotentReversibleComparison_hom_f
       - identityIdempotentReversibleComparison_projected_hom
       - mem_baseQualifiedReversibleComparisonSubgroup
       - baseQualifiedReversibleComparison_source_projected_identity
       - baseQualifiedReversibleComparison_target_projected_identity
       - qualifiedComparisonReversibleMulEquiv
+      - qualifiedComparisonReversibleMulEquiv_source_projection
+      - qualifiedComparisonReversibleMulEquiv_target_projection
+      - qualifiedComparisonReversibleMulEquiv_symm_source_projection
+      - qualifiedComparisonReversibleMulEquiv_symm_target_projection
       - baseQualifiedReversibleComparisonSourceProjection_hom
       - baseQualifiedReversibleComparisonTargetProjection_hom
     source_labels:
