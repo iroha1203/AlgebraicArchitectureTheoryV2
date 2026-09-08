@@ -1,9 +1,9 @@
 # G-119-aat-realization-comparison-idempotents — 実現・比較の圏と冪等正規化
 
 - `id`: `G-119-aat-realization-comparison-idempotents`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成。active化時に参照を確定する。
+- `tracking issue`: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
 - `source note`: [n1010 §1–2・§4.3・§9.2](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)
 
 ## 研究目的
