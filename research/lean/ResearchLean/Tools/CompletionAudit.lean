@@ -45,7 +45,8 @@ private def row (env : Environment) (n : Name) (info : ConstantInfo) : CoreM Jso
     ("start_line", toJson r.range.pos.line), ("start_column", toJson r.range.pos.column),
     ("end_line", toJson r.range.endPos.line), ("end_column", toJson r.range.endPos.column)]
   let kind := match info with
-    | .defnInfo _ => "definition" | .thmInfo _ => "theorem" | .axiomInfo _ => "axiom"
+    | .defnInfo _ => "definition" | .thmInfo _ => "theorem"
+    | .axiomInfo _ => (reprStr (ConstantKind.ofConstantInfo info)).splitOn "." |>.getLast!
     | .opaqueInfo _ => "opaque" | .quotInfo _ => "quotient" | .inductInfo _ => "inductive"
     | .ctorInfo _ => "constructor" | .recInfo _ => "recursor"
   let typeEdges := (refs info.type "type").map (fun e => e.setObjVal! "origin" (str "type"))
