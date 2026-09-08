@@ -262,13 +262,18 @@ def material(mapping, extraction, goal_text):
     distinct(extraction["modules"], "owner modules")
     rows = {}
     for row in extraction["declarations"]:
-        fields(row, ["name", "owner", "type", "value", "axioms", "references"])
+        fields(row, ["name", "owner", "type", "value", "axioms", "constant_names", "references"])
         need(row["name"] not in rows, "duplicate extracted declaration")
         need(row["owner"] in extraction["modules"], "owner mismatch")
         need(set(row["axioms"]) <= ALLOWED_AXIOMS, "axiom audit failed")
         for ref in row["references"]:
-            fields(ref, ["name", "site", "position"])
+            fields(ref, ["name", "site", "position", "origin"])
             need(ref["site"] in ("term", "type", "projection"), "reference site")
+            need(ref["origin"] in ("type", "value"), "reference origin")
+        fields(row["constant_names"], ["type", "value"])
+        for origin in ("type", "value"):
+            names = sorted({e["name"] for e in row["references"] if e["origin"] == origin and e["site"] != "projection"})
+            need(names == row["constant_names"][origin], "independent constant coverage mismatch")
         rows[row["name"]] = row
     terminals = {r["name"] for r in extraction["terminals"]}
     for row in rows.values():
@@ -434,7 +439,8 @@ def resolve_evidence(repo, ref):
 
 def route_findings(old, new, review):
     """Return routing only. An independent recheck is still needed for noncentral findings."""
-    fields(review, ["packet_digest", "lanes", "lane_evidence", "findings"])
+    fields(review, ["packet_digest", "implementer", "lanes", "lane_evidence", "findings"])
+    string(review["implementer"])
     need(review["packet_digest"] == digest(old), "review packet mismatch")
     fields(review["lanes"], LANES)
     fields(review["lane_evidence"], LANES)
@@ -448,6 +454,7 @@ def route_findings(old, new, review):
         need(set(evidence["checked_gates"]) == set(GATES), "incomplete lane coverage")
         need(evidence["unchecked_central_claim"] == [], "unchecked central claim")
     distinct(reviewers, "independent lane reviewers")
+    need(review["implementer"] not in reviewers, "implementer cannot review their own work")
     for lane in review["lanes"].values():
         need(lane in ("pass", "packet-only", "veto", "unchecked-central-claim"), "lane enum")
     ids = []
@@ -497,6 +504,8 @@ def ledger(packet, review, gates, recheck=None, old=None):
         string(recheck["reviewer"])
         string(recheck["implementer"])
         need(recheck["reviewer"] != recheck["implementer"] and recheck["qualified"] is True, "independent qualification missing")
+        need(recheck["implementer"] == review["implementer"], "implementer identity changed")
+        need(recheck["reviewer"] not in {e["reviewer"] for e in review["lane_evidence"].values()}, "recheck reviewer must be new")
         evidence_ref(recheck["evidence"])
         need(sorted(recheck["resolved"]) == sorted(f["id"] for f in review["findings"]), "unresolved finding")
         need(recheck["new_findings"] == [], "new finding needs review/recheck")

@@ -37,6 +37,11 @@ subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に�
 receiptはコマンド実行証拠なので手で作成・編集しない。第三者査読はreceiptとsourceを
 照合し、必要な対象だけを独立に再実行する。
 
+各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
+独自の位置付き走査の全件集合と照合し、欠落も余分な参照も拒否する。projection名は
+`Expr.const`と別のmetadataなので、この集合比較から分ける。全Expr constructorを持つ
+literal ASTのfixtureでは、参照名・site・位置をPythonの手書き期待値と完全一致で検査する。
+
 対象source、GOAL、report、対応表、extractorは固定headに存在する必要がある。
 未コミット変更・head/blob不一致・出力欠落・未知version・抽出不能は投稿不可。
 toolchain外の依存がreceiptで解決できなければ、対象を勝手に縮小せず未確認を報告する。
@@ -103,7 +108,7 @@ fresh 4査読へ送る。schemaの意味や抽出結果を変える修正も再�
 review/gates/recheckは独立査読・親の統合判断を構造化した入力であり、generatorが作成する
 数学判断ではない。schemaは実装の`route_findings`/`ledger`、例は対応するtestを参照する。
 
-review入力は`packet_digest`、4つの`lanes`、`lane_evidence`、`findings`を持つ。
+review入力は`packet_digest`、`implementer`、4つの`lanes`、`lane_evidence`、`findings`を持つ。
 各laneには別のreviewer ID、全gateの`checked_gates`、空の`unchecked_central_claim`、
 レビュー本文の`ref: {path, sha256}`を要求する。refのpathはrepo相対の保存済み本文とし、
 CLIは実ファイルをhashして解決する。GitHubコメントは取得した本文を保存して参照する。
@@ -111,6 +116,7 @@ gates入力は15 gateとroot/標準PR/acceptance判定、全`completed_criteria`
 同一headの`stage_evidence`を持つ。discharge-requiredに`discharged`以外は許可しない。
 recheckにも保存済み確認本文のrefを付ける。これらのIDやhashは本文の真偽を保証する署名では
 ないため、親はレビューを実際に独立起動し、結果との一致を確認して入力を作る。
+実装者を元laneに含む入力、直接確認者を元laneから再利用する入力、実装者IDの付替えは拒否する。
 
 ## 検証
 

@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -37,7 +38,8 @@ def extraction():
                        ("identityMember", []), ("negativeMember", [])]:
         rows.append({"name": n(name), "owner": "CompletionFixture", "type": "type:" + name,
                      "value": "value:" + name, "axioms": [],
-                     "references": [{"name": n(d), "site": "term", "position": "/body"} for d in deps]})
+                     "constant_names": {"type": [], "value": sorted(n(d) for d in deps)},
+                     "references": [{"name": n(d), "site": "term", "position": "/body", "origin": "value"} for d in deps]})
     return {"schema_version": 2, "modules": ["CompletionFixture"], "declarations": rows, "terminals": []}
 
 
@@ -97,6 +99,16 @@ class PacketTests(unittest.TestCase):
         with self.assertRaisesRegex(cp.Invalid, "unavailable"):
             self.core()
 
+    def test_omitted_reference_rejected_by_independent_set(self):
+        self.x["declarations"][0]["references"].pop()
+        with self.assertRaisesRegex(cp.Invalid, "constant coverage"):
+            self.core()
+
+    def test_extra_reference_rejected_by_independent_set(self):
+        self.x["declarations"][0]["references"].append({"name": "invented", "site": "term", "position": "/extra", "origin": "value"})
+        with self.assertRaisesRegex(cp.Invalid, "constant coverage"):
+            self.core()
+
     def test_axiom_rejection(self):
         self.x["declarations"][0]["axioms"] = ["unknownAxiom"]
         with self.assertRaisesRegex(cp.Invalid, "axiom"):
@@ -109,6 +121,15 @@ class PacketTests(unittest.TestCase):
             with self.assertRaisesRegex(cp.Invalid, "duplicate key"):
                 cp.read(p)
 
+    def test_g118_source_manifest(self):
+        sample = cp.read(HERE / "fixtures/g118-sample.json")
+        source = sample["sources"][0]
+        self.assertEqual(hashlib.sha256(source["body"].encode()).hexdigest(), source["body_sha256"])
+        self.assertIn("generatedQualifiedComparisonRelation_iff_difference_mem", source["body"])
+        self.assertIn("mem_generatedPulledComparisonKernel_iff_inputConditions", source["body"])
+        self.assertEqual(sample["routing_comparison"][0]["new_additional_full_batches"], 1)
+        self.assertEqual(sample["routing_comparison"][1]["new_additional_full_batches"], 0)
+
     def bundle(self):
         return {"source": {"snapshot": {"head": "a"}, "base_oid": "base"}, "mapping": self.m,
                 "extraction": self.x, "core": self.core(), "receipts": []}
@@ -117,7 +138,7 @@ class PacketTests(unittest.TestCase):
         return cp.render(self.bundle(), {"notes": "", "refs": []})
 
     def review(self, old, cls="packet-only", gate="packet-integrity"):
-        return {"packet_digest": cp.digest(old), "lanes": {l: "packet-only" for l in cp.LANES},
+        return {"packet_digest": cp.digest(old), "implementer": "author", "lanes": {l: "packet-only" for l in cp.LANES},
                 "lane_evidence": {l: {"reviewer": l, "ref": {"path": "fixture-" + l, "sha256": "0" * 64},
                                       "checked_gates": cp.GATES, "unchecked_central_claim": []} for l in cp.LANES},
                 "findings": [{"id": "F1", "class": cls, "gate": gate,
@@ -210,6 +231,10 @@ class PacketTests(unittest.TestCase):
                  "reviewer": "independent-reviewer", "implementer": "author", "qualified": True,
                  "resolved": ["F1"], "evidence": {"path": "fixture-recheck", "sha256": "0" * 64}, "new_findings": []}
         self.assertEqual(cp.ledger(q, r, gates, check, p)["verdict"], "target-theorem-proved")
+        for reviewer in cp.LANES:
+            check["reviewer"] = reviewer
+            with self.assertRaisesRegex(cp.Invalid, "must be new"):
+                cp.ledger(q, r, gates, check, p)
         check["reviewer"] = "author"
         with self.assertRaises(cp.Invalid):
             cp.ledger(q, r, gates, check, p)

@@ -15,6 +15,10 @@ G-118は監査事故のサンプルとして使う。全451宣言の再監査を
 作る形を保持する。`differenceCriterion`と`kernelInputCriterion`が直接参照されることを
 実Lean抽出と独立期待集合で検査する。G-118固有のgeometry・群・transportは省いている。
 
+選んだ撤回本文、入力packetコメント本文のSHA-256、抽出範囲、旧新routingは
+[サンプルmanifest](../scripts/fixtures/g118-sample.json)に固定した。
+packetコメントのdigestは取得したUTF-8本文のhashであり、v2の中心証拠digestとは区別する。
+
 中心`T`とfull `Γ`の誤った同一視、代表宣言への過大なdirection割当は、機械的な到達だけでは
 判定できない意味上の事例である。[overclaim.json](../scripts/fixtures/overclaim.json)は
 任意のnについての必要十分条件を、`positive 0`だけを証明する`identityMember`へ過大に
@@ -50,6 +54,9 @@ python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
 生成物・stdout/stderr・receipt・packet・結果は`.tmp/completion/integration/`に保存する。
 期待参照はfixtureのsourceから独立に定め、直接参照、private補助定理経由、型のみの参照、
 `simp`参照、標準公理、再生成一致、手編集拒否を検査する。
+全宣言の型・値のconstant集合をLean標準走査と照合するほか、全Expr constructorの
+literal ASTから独立に定めた参照集合・site・位置を完全一致で検査する。
+全type参照を削除するmutation、余分な参照、元lane確認者の再利用も拒否する。
 test名とassertionを検証証拠とし、過去のG-118完了判定を更新しない。
 
 意味上のサンプルの独立査読結果と、このPRの固定headでの実行結果はPR監査記録へ残す。

@@ -19,19 +19,45 @@ private partial def refs (e : Expr) (site : String) (pos : String := "") : Array
       ("position", str (pos ++ "/" ++ toString i))]] ++ refs b site (pos ++ "/structure")
   | _ => #[]
 
+-- The literal AST below makes every branch of refs independently inspectable.
+-- Its expected names, sites and positions are written independently in Python.
+private def referenceFixture : Json := Id.run do
+  let c (s : String) := Expr.const s.toName []
+  let cases : List (String × Expr) := [
+    ("const", c "C"),
+    ("app", .app (c "F") (c "A")),
+    ("lambda", .lam `x (c "T") (c "B") .default),
+    ("forall", .forallE `x (c "T") (c "B") .default),
+    ("let", .letE `x (c "T") (c "Unused") (c "B") false),
+    ("projection", .proj `Record 2 (c "R")),
+    ("metadata", .mdata {} (c "M")),
+    ("bvar", .bvar 0), ("fvar", .fvar ⟨`x⟩), ("mvar", .mvar ⟨`x⟩),
+    ("sort", .sort .zero), ("literal", .lit (.natVal 3))]
+  return obj (cases.map fun (label, expression) => (label, toJson (refs expression "term")))
+
 private def row (env : Environment) (n : Name) (info : ConstantInfo) : CoreM Json := do
   let axs ← collectAxioms n
   let owner := (env.getModuleIdxFor? n).map (fun i => env.header.moduleNames[i.toNat]!)
   let value := info.value? (allowOpaque := true)
-  let edges := refs info.type "type" ++ (value.map (fun v => refs v "term") |>.getD #[])
+  let typeEdges := (refs info.type "type").map (fun e => e.setObjVal! "origin" (str "type"))
+  let valueEdges := (value.map (fun v => refs v "term") |>.getD #[]).map (fun e => e.setObjVal! "origin" (str "value"))
+  let edges := typeEdges ++ valueEdges
+  -- Independent upstream traversal checks complete constant-name coverage.
+  -- Projection labels are additional metadata, not Expr.const occurrences.
+  let typeNames := info.type.getUsedConstants.toList.map Name.toString |>.mergeSort
+  let valueNames := (value.map Expr.getUsedConstants |>.getD #[]).toList.map Name.toString |>.mergeSort
   return obj [("name", str n.toString), ("owner", str (owner.getD env.mainModule).toString),
     ("type", str (reprStr info.type)), ("value", value.map (fun v => str (reprStr v)) |>.getD Json.null),
     ("axioms", toJson (axs.toList.map Name.toString |>.mergeSort)),
+    ("constant_names", obj [("type", toJson typeNames), ("value", toJson valueNames)]),
     ("references", toJson edges)]
 
 /-- Extract exact requested declarations and their reachable values within the selected owners.
 External references remain typed terminal records. No build is performed by this program. -/
 def main (args : List String) : IO UInt32 := do
+  if args == ["--reference-fixture"] then
+    IO.println referenceFixture.compress
+    return 0
   let modules := args.toArray.map String.toName
   if modules.isEmpty then
     IO.eprintln "usage: CompletionAudit.lean OWNER_MODULE ..."
