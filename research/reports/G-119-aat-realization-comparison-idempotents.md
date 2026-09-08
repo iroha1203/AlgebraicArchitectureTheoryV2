@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D の正規化圏 `N_C` と関手 `K`, `N`
+- current proof obligation: D の包含、比較関手、底射影 `π_N`
 - pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: sandwich射の圏 `N_C` と充満忠実な `K`、充満な正規化関手 `N` を構成
+- next proof obligation: `Kar(V)K`、`Arr(N_C)→M(E_core)`、正規化比較の計算、`π_N N=πV` を構成
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1036,3 +1036,133 @@ Cycle 9 の material premise role は次のとおりである。
 - `direction-hypothesis`: なし。対象条件とtotal射の既存法則から固定された片側吸収を導く。
 - `discharge-required`: 追加premiseなし。依存operation成分も主定理の証明項で直接放電する。
 - `conclusion-equivalent-risk`: 該当なし。吸収式は部分圏や射のfieldに入っていない。
+
+## Cycle 10 — normalized package category and full normalization functor
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 10
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: d4f610eeb3e12d271bb0b67b8a6580feffb220c9
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 9 result: D1 merged and discharged; D2 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_absorption
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_idem
+    - CategoryTheory.Idempotents.Karoubi
+  proof_obligation: "D2: construct the labelled sandwich category N_C, a fully faithful K:N_C→Kar(C), and a full normalization functor N:C→N_C with N(f)=e_P≫f"
+  selection_reason: "D2 turns the reviewed D1 absorption theorem into the categorical domain required by every remaining D comparison, naturality, and automorphism construction."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationCategory.lean
+    - AAT.AG.RealizationComparisonIdempotents.NormalizedPackageObject
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor
+  risks:
+    - "replacing all sandwich morphisms by the selected image of N"
+    - "adding absorption as a new Hom certificate instead of reusing the Karoubi equation"
+    - "using raw identities instead of e_P"
+    - "proving fullness only at a selected endpoint pair"
+  unchecked:
+    - "D3: ambient inclusion, comparison functors, and pi_N"
+    - "D4: i, objectwise p, naturality characterization, and tagged failure"
+    - "D5: endpoint automorphism and qualified subgroup homomorphisms"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed N_C with explicit package labels and Hom equal to the corresponding mathlib Karoubi Hom, so identities have raw map e_P and composition is raw composition.  Constructed K by identity-on-Hom reuse and proved it full and faithful.  Constructed N with raw map e_P≫f using D1 absorption and proved it full for every sandwich morphism by taking that morphism's raw map as preimage."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationCategory.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.NormalizedPackageObject
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiObject
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageCategory
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageCategory_id_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageCategory_comp_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageHom_sandwich
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor_faithful
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor_full
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor_map_f
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor_full
+  claim_mapping:
+    theorem_names:
+      - normalizedPackageCategory_id_f
+      - normalizedPackageCategory_comp_f
+      - normalizedPackageHom_sandwich
+      - normalizedPackageKaroubiFunctor_faithful
+      - normalizedPackageKaroubiFunctor_full
+      - packageNormalizationFunctor_map_f
+      - packageNormalizationFunctor_full
+    source_labels:
+      - "fixed target D paragraph 2: N_C, K, and N"
+    conjuncts:
+      - "N_C objects -> explicit labels P:C"
+      - "N_C homs -> Karoubi morphisms whose comm field is e_P ≫ a ≫ e_Q = a"
+      - "N_C identity -> underlying e_P"
+      - "N_C composition -> underlying raw composition"
+      - "K -> P maps to (P,e_P) and each Hom is retained"
+      - "K fully faithful -> identity Hom maps give injectivity and surjectivity"
+      - "N objects -> unchanged package labels"
+      - "N(f) -> underlying e_P ≫ f, conventional f e_P"
+      - "N functoriality -> D1 absorption and e_P idempotence"
+      - "N fullness -> every arbitrary sandwich morphism is lifted from its own raw map"
+    undischarged_assumptions: []
+    acceptance_point: "D2 uses the reviewed canonical idempotents and absorption theorem, reuses mathlib Karoubi Hom for the exact fixed sandwich equation, and quantifies fullness over every endpoint pair and sandwich morphism."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D labelled sandwich category N_C"
+      - "D fully faithful comparison K"
+      - "D full normalization functor N"
+    remaining:
+      - "D3--D5 constructions and characterization theorems"
+  certificate_provenance:
+    discharged:
+      - "the Hom sandwich law is the standard Karoubi.Hom comm equation for the independently constructed endpoint idempotents"
+      - "N(f) obtains its sandwich law from reviewed D1 absorption rather than caller input"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalPackageNormalization_idem defines each endpoint Karoubi object and N_C identity"
+      - "Karoubi Hom composition provides raw composition and its closure"
+      - "canonicalPackageNormalization_absorption proves N(f) is a sandwich morphism and proves N's composition law"
+      - "Karoubi.p_comp identifies N applied to an arbitrary sandwich morphism's raw map with that morphism"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.CanonicalNormalizationAbsorption; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal namespace audit: 27 declarations including the 8 imported D1 declarations, standard axioms only"
+    - "15 source-level declarations in NormalizationCategory.lean"
+  blocking_findings: []
+  next_obligation: "D3: construct Kar(V)K, Arr(N_C)→M(E_core), normalized comparison evaluation, pi_N, and pi_N N=pi V"
+```
+
+### Cycle 10 acceptance spine
+
+`NormalizedPackageObject` はadmissible packageをlabelとして保ち、そのHomに
+`normalizedPackageKaroubiObject P.obj ⟶ normalizedPackageKaroubiObject Q.obj` を使う。
+このKaroubi Homの `comm` が固定targetの `e_P ≫ a ≫ e_Q = a` であり、
+恒等射と合成のunderlying mapはそれぞれ `e_P` とraw合成になる。
+`normalizedPackageKaroubiFunctor` はobjectとHomをそのまま保つため充満忠実である。
+`packageNormalizationFunctor` は `f` を `e_P ≫ f` に送り、Cycle 9の吸収式で
+sandwich条件と合成則を導く。任意のsandwich射 `a` のraw map自身を逆像に取り、
+Karoubiの `p_comp` から充満性を証明する。
+
+Cycle 10 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U`とadmissible package `P,Q`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: `N_C`、`K`の充満忠実性、`N`の関手性と充満性。Cycle 9の査読済みD1定理とKaroubi構成から放電する。
+- `conclusion-equivalent-risk`: 該当なし。`N_C` を `N` の像とせず、任意のsandwich射を直接Homとする。
