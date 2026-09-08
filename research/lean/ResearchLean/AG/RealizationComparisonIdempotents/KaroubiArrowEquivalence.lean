@@ -310,12 +310,26 @@ def karoubiArrowCounitIso :
     intro P Q f
     apply Arrow.hom_ext
     · apply Karoubi.Hom.ext
-      simp only [Arrow.comp_left, Functor.comp_map, Functor.id_map]
-      change f.left.f ≫ Q.left.p = P.left.p ≫ f.left.f
+      change
+        (karoubiArrowToArrowKaroubi.map
+              (arrowKaroubiToKaroubiArrow.map f)).left.f ≫
+            (karoubiArrowCounitIsoApp Q).hom.left.f =
+          (karoubiArrowCounitIsoApp P).hom.left.f ≫ f.left.f
+      rw [karoubiArrowToArrowKaroubi_map_left_f,
+        arrowKaroubiToKaroubiArrow_map_f_left,
+        karoubiArrowCounitIsoApp_hom_left_f,
+        karoubiArrowCounitIsoApp_hom_left_f]
       exact (Karoubi.p_comm f.left).symm
     · apply Karoubi.Hom.ext
-      simp only [Arrow.comp_right, Functor.comp_map, Functor.id_map]
-      change f.right.f ≫ Q.right.p = P.right.p ≫ f.right.f
+      change
+        (karoubiArrowToArrowKaroubi.map
+              (arrowKaroubiToKaroubiArrow.map f)).right.f ≫
+            (karoubiArrowCounitIsoApp Q).hom.right.f =
+          (karoubiArrowCounitIsoApp P).hom.right.f ≫ f.right.f
+      rw [karoubiArrowToArrowKaroubi_map_right_f,
+        arrowKaroubiToKaroubiArrow_map_f_right,
+        karoubiArrowCounitIsoApp_hom_right_f,
+        karoubiArrowCounitIsoApp_hom_right_f]
       exact (Karoubi.p_comm f.right).symm)
 
 /-- G-119(A1): taking arrows commutes with Karoubi completion. -/
