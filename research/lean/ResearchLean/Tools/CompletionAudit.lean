@@ -39,6 +39,15 @@ private def row (env : Environment) (n : Name) (info : ConstantInfo) : CoreM Jso
   let axs ← collectAxioms n
   let owner := (env.getModuleIdxFor? n).map (fun i => env.header.moduleNames[i.toNat]!)
   let value := info.value? (allowOpaque := true)
+  let display ← (Meta.ppExpr info.type).run'
+  let ranges ← findDeclarationRanges? n
+  let sourceRange := ranges.map fun r => obj [
+    ("start_line", toJson r.range.pos.line), ("start_column", toJson r.range.pos.column),
+    ("end_line", toJson r.range.endPos.line), ("end_column", toJson r.range.endPos.column)]
+  let kind := match info with
+    | .defnInfo _ => "definition" | .thmInfo _ => "theorem" | .axiomInfo _ => "axiom"
+    | .opaqueInfo _ => "opaque" | .quotInfo _ => "quotient" | .inductInfo _ => "inductive"
+    | .ctorInfo _ => "constructor" | .recInfo _ => "recursor"
   let typeEdges := (refs info.type "type").map (fun e => e.setObjVal! "origin" (str "type"))
   let valueEdges := (value.map (fun v => refs v "term") |>.getD #[]).map (fun e => e.setObjVal! "origin" (str "value"))
   let edges := typeEdges ++ valueEdges
@@ -47,6 +56,8 @@ private def row (env : Environment) (n : Name) (info : ConstantInfo) : CoreM Jso
   let typeNames := info.type.getUsedConstants.toList.map Name.toString |>.mergeSort
   let valueNames := (value.map Expr.getUsedConstants |>.getD #[]).toList.map Name.toString |>.mergeSort
   return obj [("name", str n.toString), ("owner", str (owner.getD env.mainModule).toString),
+    ("kind", str kind), ("universe_parameters", toJson (info.levelParams.map Name.toString)),
+    ("type_display", str display.pretty), ("source_range", sourceRange.getD Json.null),
     ("type", str (reprStr info.type)), ("value", value.map (fun v => str (reprStr v)) |>.getD Json.null),
     ("axioms", toJson (axs.toList.map Name.toString |>.mergeSort)),
     ("constant_names", obj [("type", toJson typeNames), ("value", toJson valueNames)]),

@@ -58,6 +58,12 @@ def main():
     rows = {row["name"]: row for row in bundle["extraction"]["declarations"]}
     cp.need(rows["CompletionShadow.a"]["owner"] == "CompletionShadow.A" and
             rows["CompletionShadow.b"]["owner"] == "CompletionShadow.B", "multiple cache module resolution failed")
+    cp.need(rows["CompletionFixture.positive"]["kind"] == "definition" and
+            rows["CompletionFixture.inputCharacterization"]["kind"] == "theorem", "declaration kind mismatch")
+    cp.need(rows["CompletionFixture.universeIdentity"]["universe_parameters"] == ["u"], "universe parameters lost")
+    cp.need(rows["CompletionFixture.positive"]["type_display"] == "Nat → Prop", "readable type mismatch")
+    for row in rows.values():
+        cp.need("source_range" in row, "source availability missing")
     terms = lambda name: {r["name"] for r in rows[name]["references"] if r["site"] == "term"}
     # Independent source-derived expectations, not a copy of the extractor traversal.
     cp.need({"CompletionFixture.differenceCriterion", "CompletionFixture.kernelInputCriterion"}
@@ -91,7 +97,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 

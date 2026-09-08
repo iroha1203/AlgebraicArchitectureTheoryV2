@@ -280,7 +280,13 @@ def material(mapping, extraction, goal_text):
     array(extraction["terminals"])
     rows = {}
     for row in extraction["declarations"]:
-        fields(row, ["name", "owner", "type", "value", "axioms", "constant_names", "references"])
+        fields(row, ["name", "owner", "kind", "universe_parameters", "type_display", "source_range", "type", "value", "axioms", "constant_names", "references"])
+        need(row["kind"] in ("definition", "theorem", "axiom", "opaque", "quotient", "inductive", "constructor", "recursor"), "declaration kind")
+        distinct(row["universe_parameters"], "universe parameters", allow_empty=True)
+        string(row["type_display"])
+        if row["source_range"] is not None:
+            fields(row["source_range"], ["start_line", "start_column", "end_line", "end_column"])
+            need(all(type(v) is int and v >= (1 if k.endswith("line") else 0) for k, v in row["source_range"].items()), "source position")
         need(row["name"] not in rows, "duplicate extracted declaration")
         need(row["owner"] in extraction["modules"], "owner mismatch")
         distinct(row["axioms"], "axioms", allow_empty=True)
@@ -307,6 +313,8 @@ def material(mapping, extraction, goal_text):
         need(name in rows, f"missing declaration: {name}")
         need(rows[name]["value"] is not None, f"unavailable value: {name}")
         return {"name": name, "owner": rows[name]["owner"], "type": rows[name]["type"],
+                "kind": rows[name]["kind"], "universe_parameters": rows[name]["universe_parameters"],
+                "type_display": rows[name]["type_display"], "source_range": rows[name]["source_range"],
                 "type_digest": digest(rows[name]["type"]), "value_digest": digest(rows[name]["value"])}
 
     def route(a, b, distance):
@@ -328,10 +336,9 @@ def material(mapping, extraction, goal_text):
         central.update(p["consumed_by"])
         if p["role"] == "discharge-required":
             for dep in p["declarations"]:
-                need(any(path_between(rows, c, dep) for c in p["consumed_by"]), "premise has no value-use route")
                 for consumer in p["consumed_by"]:
-                    if path_between(rows, consumer, dep):
-                        route(consumer, dep, "either")
+                    need(path_between(rows, consumer, dep), "premise has no value-use route for registered consumer")
+                    route(consumer, dep, "either")
     for names in mapping["evidence"].values():
         central.update(names)
     # Every selected node is present; cycles are explicit, not silently discarded.

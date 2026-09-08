@@ -38,6 +38,7 @@ def extraction():
                        ("differenceCriterion", []), ("kernelInputCriterion", []),
                        ("identityMember", []), ("negativeMember", [])]:
         rows.append({"name": n(name), "owner": "CompletionFixture", "type": "type:" + name,
+                     "kind": "theorem", "universe_parameters": [], "type_display": "type:" + name, "source_range": None,
                      "value": "value:" + name, "axioms": [],
                      "constant_names": {"type": [], "value": sorted(n(d) for d in deps)},
                      "references": [{"name": n(d), "site": "term", "position": "/body", "origin": "value"} for d in deps]})
@@ -103,6 +104,23 @@ class PacketTests(unittest.TestCase):
                 with self.assertRaisesRegex(cp.Invalid, "toolchain namespace"):
                     with cp.extraction_environment(repo, [a]):
                         pass
+
+    def test_metadata_rejection(self):
+        for key, value in (("kind", "unknown"), ("universe_parameters", {}), ("type_display", ""),
+                           ("source_range", {}), ("source_range", {"start_line": 0, "end_line": 1, "start_column": 0, "end_column": 1})):
+            bad = extraction()
+            bad["declarations"][0][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(cp.Invalid):
+                cp.material(mapping(), bad, self.goal)
+
+    def test_every_registered_premise_consumer(self):
+        self.m["premises"] = [{"id": "p", "goal_quote": "入力条件", "role": "discharge-required",
+                               "declarations": ["CompletionFixture.differenceCriterion"],
+                               "consumed_by": ["CompletionFixture.inputCharacterization", "CompletionFixture.identityMember"]}]
+        with self.assertRaisesRegex(cp.Invalid, "registered consumer"):
+            self.core()
+        self.m["premises"][0]["consumed_by"].pop()
+        self.core()
 
     def test_false_central_edge(self):
         self.m["claims"][0]["routes"][0]["to"] = "CompletionFixture.identityMember"

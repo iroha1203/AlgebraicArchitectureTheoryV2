@@ -35,7 +35,9 @@ subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に�
 同一moduleの異なるdigestは拒否する。toolchainのroot namespaceと重なる外部receiptは
 初期実装では未対応として拒否し、検索順による上書きを許さない。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
-型・値・owner・private名・公理・参照位置を記録する。`validate`はGitと実行出力を検算し、
+型・値・owner・private名・公理・参照位置に加え、宣言種別・universe parameter一覧・
+読みやすい型表示・source位置を記録する。位置を環境から取得できない場合は`source_range: null`
+とし、取得不能を明示する。`validate`はGitと実行出力を検算し、
 対象oleanから再抽出してbundleと一致することを確認する。全sourceのGit blob一覧は
 入力整合のための読取りであり、全moduleのelaborationではない。
 receiptはコマンド実行証拠なので手で作成・編集しない。第三者査読はreceiptとsourceを
@@ -56,6 +58,8 @@ toolchain外の依存がreceiptで解決できなければ、対象を勝手に�
   literal quote、方向、複数のexact declaration名、中心node、必須routeを持つ。
 - `premises`はGOALの全material premise行を列挙する。roleの申告だけで放電と判定しない。
   discharge-requiredには放電宣言と実際のconsumerを対応させ、値の経路を要求する。
+  一行の`declarations × consumed_by`の全組を検査する。消費先ごとに異なる宣言が担当する
+  場合は、対応する組だけを持つ別行に分け、同じGOAL quoteと別IDで役割を明示する。
 - `evidence`には現行15 gate全ての宣言参照を置く。artifact sync等のコマンド・文書証拠は
   bundleのsource/receiptと併せて読む。宣言参照だけでgateをpassにしない。
 - `direction_coverage`は各claimへ複数のexact refと型を添えて生成する。同じ宣言を複数claimへ

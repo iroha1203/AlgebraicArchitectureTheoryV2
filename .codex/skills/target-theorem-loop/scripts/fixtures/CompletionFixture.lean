@@ -17,5 +17,6 @@ theorem bySimp (n : Nat) (h : positive n) : n + 0 = 0 := by
   simpa using differenceCriterion n h
 def typedOnly (_h : positive 0) : Nat := 0
 def projected (p : Nat × Nat) : Nat := p.1
+def universeIdentity.{u} {α : Sort u} (a : α) : α := a
 
 end CompletionFixture
