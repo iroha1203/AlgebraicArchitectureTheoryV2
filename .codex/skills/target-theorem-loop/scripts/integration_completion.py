@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Explicit single-leaf integration check. Run from the repository root after commit."""
+"""Explicit small leaf checks. Run from the repository root after commit."""
 import argparse
 import copy
 import json
+import os
 from pathlib import Path
 import completion_packet as cp
 
@@ -35,8 +36,28 @@ def main():
                        "CompletionFixture", out / "cache", [])
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
-    bundle = cp.collect(repo, cp.relative(repo, here / "fixtures/mapping.json"), [receipt_path], out / "bundle.json")
+    # Independent caches sharing a namespace: the earlier cache contains stale B.
+    shadow_a = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowA.lean"),
+                        "CompletionShadow.A", out / "cache-a", [])
+    shadow_b = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowB.lean"),
+                        "CompletionShadow.B", out / "cache-b", [])
+    cp.write(out / "receipt-a.json", shadow_a)
+    cp.write(out / "receipt-b.json", shadow_b)
+    (out / "cache-a/CompletionShadow/B.olean").write_bytes(b"stale unrecorded artifact")
+    previous_path = os.environ.get("LEAN_PATH")
+    os.environ["LEAN_PATH"] = str(out / "cache-a")
+    try:
+        bundle = cp.collect(repo, cp.relative(repo, here / "fixtures/mapping.json"),
+                            [receipt_path, out / "receipt-a.json", out / "receipt-b.json"], out / "bundle.json")
+        cp.validate_bundle(repo, bundle)
+    finally:
+        if previous_path is None:
+            os.environ.pop("LEAN_PATH", None)
+        else:
+            os.environ["LEAN_PATH"] = previous_path
     rows = {row["name"]: row for row in bundle["extraction"]["declarations"]}
+    cp.need(rows["CompletionShadow.a"]["owner"] == "CompletionShadow.A" and
+            rows["CompletionShadow.b"]["owner"] == "CompletionShadow.B", "multiple cache module resolution failed")
     terms = lambda name: {r["name"] for r in rows[name]["references"] if r["site"] == "term"}
     # Independent source-derived expectations, not a copy of the extractor traversal.
     cp.need({"CompletionFixture.differenceCriterion", "CompletionFixture.kernelInputCriterion"}
@@ -48,7 +69,6 @@ def main():
     cp.need("CompletionFixture.differenceCriterion" in terms("CompletionFixture.bySimp"), "simp dependency lost")
     packet = cp.render(bundle, {"notes": "", "refs": []})
     cp.write(out / "packet.json", packet)
-    cp.validate_bundle(repo, bundle)
     cp.validate_packet(bundle, packet)
     # Removing every type reference passed the old partial checks. It must fail now.
     missing_types = copy.deepcopy(bundle["extraction"])
@@ -71,7 +91,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 

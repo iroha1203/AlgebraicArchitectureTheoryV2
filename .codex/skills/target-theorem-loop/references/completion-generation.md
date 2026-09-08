@@ -30,6 +30,10 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に従う。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
+抽出と再検査は、推移依存を含む検証済みreceiptのartifactだけを一時treeへコピーし、
+そのtreeを唯一の`LEAN_PATH`とする。元cacheや環境変数の同名moduleを読み込まない。
+同一moduleの異なるdigestは拒否する。toolchainのroot namespaceと重なる外部receiptは
+初期実装では未対応として拒否し、検索順による上書きを許さない。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
 型・値・owner・private名・公理・参照位置を記録する。`validate`はGitと実行出力を検算し、
 対象oleanから再抽出してbundleと一致することを確認する。全sourceのGit blob一覧は

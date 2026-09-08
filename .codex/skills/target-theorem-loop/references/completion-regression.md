@@ -50,7 +50,9 @@ python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
 python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
 ```
 
-後者はコミット済みsourceに対する単一leafの実行で、全Research buildを呼ばない。
+後者はコミット済みsourceの明示的な3つの小さいleafを個別に実行し、全Research buildを呼ばない。
+追加の2 leafは同一namespaceを別cacheへ出力し、先のcacheに未記録の古いmoduleを残す。
+環境変数にもそのcacheを設定したままcollectと再抽出を行い、receiptのartifactだけを読むことを検証する。
 生成物・stdout/stderr・receipt・packet・結果は`.tmp/completion/integration/`に保存する。
 期待参照はfixtureのsourceから独立に定め、直接参照、private補助定理経由、型のみの参照、
 `simp`参照、標準公理、再生成一致、手編集拒否を検査する。

@@ -6,6 +6,7 @@ import hashlib
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("completion_packet", HERE / "completion_packet.py")
@@ -56,6 +57,52 @@ class PacketTests(unittest.TestCase):
         core = self.core()
         self.assertEqual(len(core["direction_coverage"][1]["declarations"]), 2)
         self.assertEqual(len(core["dependency_dag"]["edges"]), 2)
+
+    def test_array_containers(self):
+        for invalid in ({}, "", None, 0):
+            for field in ("claims", "premises"):
+                with self.subTest(field=field, invalid=invalid):
+                    bad = mapping()
+                    bad[field] = invalid
+                    with self.assertRaises(cp.Invalid):
+                        cp.validate_map(bad)
+            bad = mapping()
+            bad["claims"][1]["routes"] = invalid
+            with self.assertRaises(cp.Invalid):
+                cp.validate_map(bad)
+            for role in ("ambient-boundary", "direction-hypothesis", "discharge-required", "conclusion-equivalent-risk"):
+                bad = mapping()
+                bad["premises"] = [{"id": "p", "goal_quote": "入力条件", "role": role,
+                                    "declarations": ["CompletionFixture.positive"], "consumed_by": invalid}]
+                with self.assertRaises(cp.Invalid):
+                    cp.validate_map(bad)
+            for field in ("declarations", "terminals"):
+                bad = extraction()
+                bad[field] = invalid
+                with self.assertRaises(cp.Invalid):
+                    cp.material(mapping(), bad, self.goal)
+
+    def test_import_tree_recursive_and_conflict(self):
+        # Test staging independently of git/Lean qualification, covered by integration.
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d)
+            (repo / "a.olean").write_bytes(b"a")
+            (repo / "b.olean").write_bytes(b"b")
+            a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean"), "dependencies": []}
+            b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean"), "dependencies": [a]}
+            with patch.object(cp, "validate_receipt"), patch.object(cp, "run", return_value=d):
+                with cp.extraction_environment(repo, [b]) as env:
+                    tree = Path(env["LEAN_PATH"])
+                    self.assertEqual((tree / "P/A.olean").read_bytes(), b"a")
+                    self.assertEqual((tree / "P/B.olean").read_bytes(), b"b")
+                conflict = {**a, "olean": "b.olean", "olean_sha256": b["olean_sha256"]}
+                with self.assertRaisesRegex(cp.Invalid, "conflicting module"):
+                    with cp.extraction_environment(repo, [a, conflict]):
+                        pass
+                (repo / "lib/lean/P").mkdir(parents=True)
+                with self.assertRaisesRegex(cp.Invalid, "toolchain namespace"):
+                    with cp.extraction_environment(repo, [a]):
+                        pass
 
     def test_false_central_edge(self):
         self.m["claims"][0]["routes"][0]["to"] = "CompletionFixture.identityMember"

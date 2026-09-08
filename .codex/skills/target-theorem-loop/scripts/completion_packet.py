@@ -8,13 +8,16 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+from contextlib import contextmanager
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 VERSION = 2
 GATES = (
@@ -116,6 +119,10 @@ def snapshot(repo):
 
 def validate_receipt(repo, receipt):
     fields(receipt, ["head", "source", "module", "olean", "olean_sha256", "dependencies", "command", "stdout", "stderr", "exit_code", "lean_version"])
+    array(receipt["dependencies"])
+    distinct(receipt["command"], "command arguments", unique=False)
+    need(isinstance(receipt["module"], str) and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_][A-Za-z_0-9]*)*", receipt["module"]), "invalid receipt module")
+    need(receipt["olean"].endswith(receipt["module"].replace(".", "/") + ".olean"), "module/olean mismatch")
     need(receipt["head"] == run(["git", "rev-parse", "HEAD"], repo), "receipt head mismatch")
     need(receipt["lean_version"] == run(["lean", "--version"], repo), "receipt toolchain mismatch")
     need(blob(repo, receipt["head"], receipt["source"]["path"]) == receipt["source"], "receipt source mismatch")
@@ -187,11 +194,16 @@ def string(value):
     need(isinstance(value, str) and bool(value.strip()), "empty/non-string value")
 
 
-def distinct(values, what):
-    need(isinstance(values, list) and values, f"empty {what}")
-    need(len(values) == len(set(values)), f"duplicate {what}")
+def array(values):
+    need(isinstance(values, list), "expected array")
+
+
+def distinct(values, what, allow_empty=False, unique=True):
+    array(values)
+    need(allow_empty or values, f"empty {what}")
     for value in values:
         string(value)
+    need(not unique or len(values) == len(set(values)), f"duplicate {what}")
 
 
 def validate_map(mapping):
@@ -200,6 +212,8 @@ def validate_map(mapping):
     for name in ["goal", "goal_path", "report_path"]:
         string(mapping[name])
     distinct(mapping["criteria"], "criteria")
+    array(mapping["claims"])
+    array(mapping["premises"])
     claim_ids = []
     covered = set()
     for claim in mapping["claims"]:
@@ -214,6 +228,7 @@ def validate_map(mapping):
         distinct(claim["central"], "central declarations")
         need(set(claim["declarations"]) <= set(claim["central"]), "acceptance must be central")
         seen = set()
+        array(claim["routes"])
         for route in claim["routes"]:
             fields(route, ["from", "to", "distance"])
             need(route["distance"] in ("direct", "via", "either"), "distance enum")
@@ -230,6 +245,7 @@ def validate_map(mapping):
         string(p["goal_quote"])
         need(p["role"] in ("ambient-boundary", "direction-hypothesis", "discharge-required", "conclusion-equivalent-risk"), "premise role")
         distinct(p["declarations"], "premise evidence")
+        distinct(p["consumed_by"], "premise consumers", allow_empty=p["role"] != "discharge-required")
         if p["role"] == "discharge-required":
             distinct(p["consumed_by"], "premise consumers")
     if premises:
@@ -260,11 +276,15 @@ def material(mapping, extraction, goal_text):
     fields(extraction, ["schema_version", "modules", "declarations", "terminals"])
     need(extraction["schema_version"] == VERSION, "extractor schema")
     distinct(extraction["modules"], "owner modules")
+    array(extraction["declarations"])
+    array(extraction["terminals"])
     rows = {}
     for row in extraction["declarations"]:
         fields(row, ["name", "owner", "type", "value", "axioms", "constant_names", "references"])
         need(row["name"] not in rows, "duplicate extracted declaration")
         need(row["owner"] in extraction["modules"], "owner mismatch")
+        distinct(row["axioms"], "axioms", allow_empty=True)
+        array(row["references"])
         need(set(row["axioms"]) <= ALLOWED_AXIOMS, "axiom audit failed")
         for ref in row["references"]:
             fields(ref, ["name", "site", "position", "origin"])
@@ -272,6 +292,7 @@ def material(mapping, extraction, goal_text):
             need(ref["origin"] in ("type", "value"), "reference origin")
         fields(row["constant_names"], ["type", "value"])
         for origin in ("type", "value"):
+            distinct(row["constant_names"][origin], "constant names", allow_empty=True)
             names = sorted({e["name"] for e in row["references"] if e["origin"] == origin and e["site"] != "projection"})
             need(names == row["constant_names"][origin], "independent constant coverage mismatch")
         rows[row["name"]] = row
@@ -342,6 +363,46 @@ def material(mapping, extraction, goal_text):
             "review_required": GATES}
 
 
+@contextmanager
+def extraction_environment(repo, receipts):
+    """One clean namespace tree, containing only recursively validated receipts.
+
+    Lean selects the first root namespace directory, not the first exact module.
+    Never append ambient/cache roots: they can supply an unrecorded stale module.
+    Toolchain namespaces cannot be overlaid by user receipts in this version.
+    """
+    array(receipts)
+    need(receipts, "no focused receipts")
+    system = Path(run(["lean", "--print-prefix"], repo)).resolve() / "lib/lean"
+    artifacts = {}
+
+    def include(owner, receipt):
+        validate_receipt(owner, receipt)
+        module = receipt["module"]
+        top = system / module.split(".")[0]
+        need(not top.exists() and not top.with_suffix(".olean").exists(), "receipt overlaps toolchain namespace")
+        previous = artifacts.get(module)
+        need(previous is None or previous[1] == receipt["olean_sha256"], "conflicting module receipts")
+        artifacts[module] = (owner / receipt["olean"], receipt["olean_sha256"])
+        for dep in receipt["dependencies"]:
+            if "repository" in dep:
+                include(owner / relative(owner, dep["repository"]), dep["receipt"])
+            elif "system" not in dep:
+                include(owner, dep)
+
+    for receipt in receipts:
+        include(repo, receipt)
+    with tempfile.TemporaryDirectory(prefix="completion-import-") as directory:
+        for module, (source, expected) in artifacts.items():
+            destination = Path(directory) / (module.replace(".", "/") + ".olean")
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+            need(file_hash(destination) == expected, "artifact changed while staging")
+        env = dict(os.environ)
+        env["LEAN_PATH"] = directory
+        yield env
+
+
 def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     mapping = read(mapping_path)
     validate_map(mapping)
@@ -356,17 +417,12 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
         validate_receipt(repo, r)
     modules = sorted(r["module"] for r in receipts)
     distinct(modules, "receipt modules")
-    search = []
     for r in receipts:
-        suffix = r["module"].replace(".", "/") + ".olean"
-        need(r["olean"].endswith(suffix), "module/olean path mismatch")
-        search.append(str(repo / r["olean"][:-len(suffix)]))
         need(not PLACEHOLDER.search((repo / r["source"]["path"]).read_text()), "placeholder scan failed")
     extractor = "research/lean/ResearchLean/Tools/CompletionAudit.lean"
     extractor_ref = blob(repo, head, extractor)
-    env = dict(os.environ)
-    env["LEAN_PATH"] = os.pathsep.join(search + [env.get("LEAN_PATH", "")])
-    result = run(["lean", "--run", extractor, *modules], repo, env)
+    with extraction_environment(repo, receipts) as env:
+        result = run(["lean", "--run", extractor, *modules], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
     core = material(mapping, extraction, (repo / goal["path"]).read_text())
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
@@ -394,14 +450,8 @@ def validate_bundle(repo, b):
         validate_receipt(repo, r)
     need(sorted(r["module"] for r in b["receipts"]) == b["extraction"]["modules"], "extract scope mismatch")
     # Re-extract from the checked artifacts; a consistent edit of bundle/core is not evidence.
-    search = []
-    for receipt in b["receipts"]:
-        suffix = receipt["module"].replace(".", "/") + ".olean"
-        need(receipt["olean"].endswith(suffix), "module/olean mismatch")
-        search.append(str(repo / receipt["olean"][:-len(suffix)]))
-    env = dict(os.environ)
-    env["LEAN_PATH"] = os.pathsep.join(search + [env.get("LEAN_PATH", "")])
-    actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
+    with extraction_environment(repo, b["receipts"]) as env:
+        actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
     need(actual == b["extraction"], "extraction differs from Lean artifacts")
     core = material(b["mapping"], b["extraction"], (repo / b["source"]["goal"]["path"]).read_text())
     need(core == b["core"], "core was edited")
@@ -445,12 +495,14 @@ def route_findings(old, new, review):
     fields(review["lanes"], LANES)
     fields(review["lane_evidence"], LANES)
     reviewers = []
+    array(review["findings"])
     for lane in LANES:
         evidence = review["lane_evidence"][lane]
         fields(evidence, ["reviewer", "ref", "checked_gates", "unchecked_central_claim"])
         string(evidence["reviewer"])
         evidence_ref(evidence["ref"])
         reviewers.append(evidence["reviewer"])
+        distinct(evidence["checked_gates"], "checked gates")
         need(set(evidence["checked_gates"]) == set(GATES), "incomplete lane coverage")
         need(evidence["unchecked_central_claim"] == [], "unchecked central claim")
     distinct(reviewers, "independent lane reviewers")
@@ -483,6 +535,7 @@ def ledger(packet, review, gates, recheck=None, old=None):
     fields(gates, GATES + ["root_recheck", "standard_pr_review", "acceptance_check", "premise_status", "completed_criteria", "stage_evidence"])
     need(all(gates[g] == "pass" for g in GATES + ["root_recheck", "acceptance_check"]), "gate not pass")
     need(gates["standard_pr_review"] == "Mergeable", "standard PR gate")
+    distinct(gates["completed_criteria"], "completed criteria")
     need(sorted(gates["completed_criteria"]) == sorted(packet["core"]["criteria"]), "incomplete criteria")
     premises = packet["core"]["material_premises"]
     fields(gates["premise_status"], [p["id"] for p in premises])
@@ -507,6 +560,7 @@ def ledger(packet, review, gates, recheck=None, old=None):
         need(recheck["implementer"] == review["implementer"], "implementer identity changed")
         need(recheck["reviewer"] not in {e["reviewer"] for e in review["lane_evidence"].values()}, "recheck reviewer must be new")
         evidence_ref(recheck["evidence"])
+        distinct(recheck["resolved"], "resolved findings")
         need(sorted(recheck["resolved"]) == sorted(f["id"] for f in review["findings"]), "unresolved finding")
         need(recheck["new_findings"] == [], "new finding needs review/recheck")
     else:
