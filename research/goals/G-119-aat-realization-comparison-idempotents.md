@@ -136,9 +136,9 @@ r_N:\operatorname{Aut}_C(P)\times\operatorname{Aut}_C(Q)
 | AATの三圏・投影（B） | 既存入力として保持 | Bの投影・群同型 | 既存Categories、ObstructionGroups、QualifiedComparisonStabilizerから比較の圏へ |
 | G-118の生成入力（B） | 入力として保持 | Bの実比較への適用 | 既存生成器から対象・比較を得て群同定へ |
 | G-116のdatum・cochain・cell（C） | 入力として保持 | Cの成分一致と投影 | 既存Karoubi同型とcell factorizationからA・Bの圏へ |
-| packageのadmissibility（D） | 対象条件として保持 | 既存の5法則。Dの片側吸収は構成義務 | canonicalなtotal射を定義し、任意のtotal射との片側吸収へ |
+| packageのadmissibility（D） | 入力として保持（対象条件） | 既存の5法則。Dの片側吸収は構成義務 | canonicalなtotal射を定義し、任意のtotal射との片側吸収へ |
 | N、包含、投影、誘導準同型（D） | 構成・放電義務 | Dを参照 | 片側吸収・冪等性から関手性、充満性、比較の保存、M(E_core)への接続へ |
-| Bool-tag例（D） | 固定入力からの構成義務 | 同じ例でのDの正負の式 | 既存の具体的operation評価から射影の自然性の失敗へ |
+| Bool-tag例（D） | 構成・放電義務 | 既存の証明によるadmissibilityの放電と、同じ例でのDの正負の式 | 既存の具体的operation評価から射影の自然性の失敗へ |
 
 admissibilityは一般部分圏を指定する入力条件であり、全packageについてその成立を求めない。
 固定Bool-tag例では既存の証明からこの条件を放電する。
