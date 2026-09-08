@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: C の実際のKaroubi像の配置
+- current proof obligation: C のraw mateからのKaroubi交換
 - pending proof obligations: C、D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: G-116のcollapse Karoubi isoのhomを比較対象としてM(E_core)へ送る
+- next proof obligation: raw mate α と冪等対からA左辺の対象を構成し、そのT像を既存Karoubi比較へ同定
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -693,4 +693,120 @@ Cycle 6 の material premise role は次のとおりである。
 - `ambient-boundary`: 任意の `ctx`、有限表示 `P`、係数圏 `k`、互換入力 `input`、頂点 `i`。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。生成比較自身の底像に恒等性を要求しない。
+- `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 7 — G-116 Karoubi comparison placement
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 7
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: d040b4d2ba2aa944800d350eb7b31912dd6914fc
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 6 result: B discharged; C selected next"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.authoredDiagnosticObjectCollapseKaroubiIso
+    - CategoryTheory.Functor.Fiber.fiberInclusion
+    - AAT.AG.RealizationComparisonIdempotents.arrowKaroubiMap
+  proof_obligation: "C1: place the actual G-116 Karoubi-isomorphism hom in M(CoreFiber NE), map it to M(E_core), retain both existing endpoints and beta, and prove both endpoint projectors become bottom identities"
+  selection_reason: "This fixes the concrete comparison and its two qualified endpoint projectors before independently reconstructing it as the T-image of a raw-alpha idempotent square."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticCoreComparison
+  risks:
+    - "replacing the existing beta comparison by the raw reversible mate alpha"
+    - "requiring beta itself to project to an identity"
+    - "turning the fixed endpoint projector into an automorphism qualification"
+    - "assuming fiber verticality as a new caller-supplied certificate"
+  unchecked:
+    - "C2 raw-alpha Karoubi exchange"
+    - "D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Placed the existing G-116 Karoubi-isomorphism hom as a northeast-core-fiber comparison, mapped it through the fiber inclusion to M(E_core), retained both endpoint Karoubi objects and beta, exposed the inverse E-comp-alpha-inverse, and derived both base-identity projector equations from fiber verticality."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticKaroubiComparison
+    - AAT.AG.RealizationComparisonIdempotents.coreFiberComparisonInclusion
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticCoreComparison
+    - AAT.AG.RealizationComparisonIdempotents.coreFiberEndomorphism_packageProjection_identity
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticCoreComparison_source_projected_identity
+    - AAT.AG.RealizationComparisonIdempotents.authoredDiagnosticCoreComparison_target_projected_identity
+  claim_mapping:
+    theorem_names:
+      - authoredDiagnosticKaroubiComparison_left
+      - authoredDiagnosticKaroubiComparison_right
+      - authoredDiagnosticKaroubiComparison_hom_f
+      - authoredDiagnosticObjectCollapseKaroubiIso_inv_f
+      - authoredDiagnosticCoreComparison_left_X
+      - authoredDiagnosticCoreComparison_left_p
+      - authoredDiagnosticCoreComparison_right_X
+      - authoredDiagnosticCoreComparison_right_p
+      - authoredDiagnosticCoreComparison_hom_f
+      - authoredDiagnosticCoreComparison_source_projected_identity
+      - authoredDiagnosticCoreComparison_target_projected_identity
+    source_labels:
+      - "fixed target C paragraph 1: place the existing Karoubi-isomorphism hom in M(CoreFiber NE) and forget it to M(E_core)"
+      - "fixed target C paragraph 2: retain the existing endpoints, beta, source projector, target projector, and inverse component"
+      - "fixed target C paragraph 3: both endpoint idempotents project to identities"
+    conjuncts:
+      - "fiber placement -> the actual hom of authoredDiagnosticObjectCollapseKaroubiIso"
+      - "endpoints -> the existing authoredDiagnosticImageSourceKaroubi and authoredDiagnosticImageTargetKaroubi"
+      - "comparison -> the existing beta component, not the raw alpha mate"
+      - "inverse -> the existing E followed by inverse alpha component"
+      - "forgetful image -> complete underlying core packages, projectors, and beta morphism"
+      - "bottom qualification -> each endpoint projector maps to its endpoint bottom identity"
+    undischarged_assumptions: []
+    acceptance_point: "C1 derives the two bottom identities from the existing CoreFiber morphism witnesses and imposes no identity condition on beta."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "C2 and D"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "the existing G-116 Karoubi isomorphism supplies its actual hom and inverse"
+      - "fiberInclusion supplies the canonical forgetful functor to E_core"
+      - "each CoreFiber morphism's IsHomLift witness supplies its packageProjection identity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeKaroubiImage; exit 0"
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.GeneratedQualifiedComparison; exit 0"
+    - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal axiom audit: 15 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "C2: construct the raw-alpha idempotent square in Kar(Arr(CoreFiber NE)) and identify its T-image with the existing beta Karoubi comparison"
+```
+
+### Cycle 7 acceptance spine
+
+`authoredDiagnosticKaroubiComparison` はG-116の既存Karoubi同型のhomをそのまま
+`M(CoreFiber NE)` の対象とし、source、target、比較射を既存のKaroubi像と `β` に固定する。
+`coreFiberComparisonInclusion` による像 `authoredDiagnosticCoreComparison` は各完全core package、
+source projector `β ≫ α⁻¹`、target projector `E`、比較 `β` を保持する。
+二つのprojectorの底恒等性はCoreFiber射が既に持つverticalityから導き、比較 `β` 自身には
+底恒等性を要求しない。
+
+Cycle 7 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U`、`[DecidableEq U.Atom]`、`input`、`cochain`、`cell`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。既存のKaroubi同型とCoreFiber verticalityだけを使う。
 - `conclusion-equivalent-risk`: 該当なし。
