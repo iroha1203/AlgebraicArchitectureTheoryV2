@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: B の生成比較への特殊化
-- pending proof obligations: B、C、D
+- current proof obligation: C の実際のKaroubi像の配置
+- pending proof obligations: C、D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: G-118のgeneratedCompatibleUpperGeometryMateAtへ比較対象と群同型を特殊化
+- next proof obligation: G-116のcollapse Karoubi isoのhomを比較対象としてM(E_core)へ送る
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -585,4 +585,112 @@ Cycle 5 の material premise role は次のとおりである。
 - `ambient-boundary`: 任意の `G,H : GeometryPackage U` と任意の `c : GeometryTotalHom G H`。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。資格は自己同型の両端にだけ課す。
+- `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 6 — Generated compatible comparison specialization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 6
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 35275ec7c3f6068f1f10b4997a4673f1c648f6e4
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 5 result: B2 discharged; B3 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt
+    - AAT.AG.RealizationComparisonIdempotents.identityIdempotentReversibleComparison
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv
+  proof_obligation: "B3: specialize the comparison object and group identification to every generatedCompatibleUpperGeometryMateAt and retain the generated endpoints, comparison, and existing endpoint projections"
+  selection_reason: "B3 closes the final fixed target B clause before placing the concrete G-116 Karoubi image required by C."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/GeneratedQualifiedComparison.lean
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleQualifiedComparisonReversibleMulEquiv
+  risks:
+    - "replacing the generated endpoints or mate by definitionally convenient identities"
+    - "adding a base-identity premise on the generated comparison itself"
+    - "exposing only an alias without named endpoint and projection compatibility evidence"
+  unchecked:
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Specialized B2 to every G-118 generated compatible upper-geometry mate, retaining both generated endpoint geometries, identity endpoint idempotents, the actual mate and its base projection, and the existing source and target group projections."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/GeneratedQualifiedComparison.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleReversibleComparisonAt
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleBaseQualifiedReversibleComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleQualifiedComparisonReversibleMulEquiv
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleQualifiedComparisonReversibleMulEquiv_source_projection
+    - AAT.AG.RealizationComparisonIdempotents.generatedCompatibleQualifiedComparisonReversibleMulEquiv_target_projection
+  claim_mapping:
+    theorem_names:
+      - generatedCompatibleReversibleComparisonAt_left_X
+      - generatedCompatibleReversibleComparisonAt_left_p
+      - generatedCompatibleReversibleComparisonAt_right_X
+      - generatedCompatibleReversibleComparisonAt_right_p
+      - generatedCompatibleReversibleComparisonAt_hom_f
+      - generatedCompatibleReversibleComparisonAt_projected_hom
+      - generatedCompatibleQualifiedComparisonReversibleMulEquiv
+      - generatedCompatibleQualifiedComparisonReversibleMulEquiv_source_projection
+      - generatedCompatibleQualifiedComparisonReversibleMulEquiv_target_projection
+    source_labels:
+      - "fixed target B paragraph 3: every generated compatible upper-geometry mate"
+      - "fixed target B paragraph 3: generated endpoints and comparison are retained"
+      - "fixed target B paragraph 3: group identification agrees with existing endpoint projections"
+    conjuncts:
+      - "quantification -> arbitrary ctx, P, k, compatible input, and vertex"
+      - "object -> generated source and target geometries with raw identity idempotents"
+      - "comparison -> the actual generated compatible mate and its actual twice-projected map"
+      - "group -> the general B2 MulEquiv specialized to the generated mate"
+      - "projections -> the specialized equivalence preserves both existing CompositeFiberAut projections"
+    undischarged_assumptions: []
+    acceptance_point: "B3 is a premise-free specialization of B2 whose named evaluations retain the G-118 generated data and whose projection equations reuse the general compatibility theorems."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "C--D"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "generatedCompatibleUpperGeometryMateAt supplies the actual generated source, target, and comparison"
+      - "the B2 identity-idempotent embedding supplies the comparison object"
+      - "the B2 group equivalence and projection theorems supply the specialized group identification"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.QualifiedComparisonGroup; exit 0"
+    - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/GeneratedQualifiedComparison.lean; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal axiom audit: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "C: place the G-116 collapse Karoubi isomorphism hom as a comparison object and project it to M(E_core)"
+```
+
+### Cycle 6 acceptance spine
+
+`generatedCompatibleReversibleComparisonAt input i` はG-118が生成したsource、target、mateを
+そのまま用い、両端だけにraw恒等冪等射を置く。比較自身の合成投影は実際の
+`generatedCompatibleUpperGeometryMateAt` の `.base.base` であり、恒等性は要求しない。
+`generatedCompatibleQualifiedComparisonReversibleMulEquiv` はB2の群同型を任意の
+`ctx, P, k, input, i` へ特殊化し、既存のsource/target射影との一致を名前付き定理で保つ。
+
+Cycle 6 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `ctx`、有限表示 `P`、係数圏 `k`、互換入力 `input`、頂点 `i`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。生成比較自身の底像に恒等性を要求しない。
 - `conclusion-equivalent-risk`: 該当なし。
