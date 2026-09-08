@@ -67,32 +67,94 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## GOAL カードの型
 
-active な GOAL は、次の項目をすべて備えていなければならない。draft はここへ昇格する前にすべて埋める。足りない場合、`$research-loop` は `goal defect` として止まる。
+モードごとに型を分ける。`score-phase`（省略時のモード）の必須項目と欠陥判定は
+[探索型カードの検査基準](../../.codex/skills/research-loop/references/goal-card-contract.md)を参照する。
+以下は新規の`target-theorem`カードの記載基準である。
 
-- `id` と `status: active`。
-- 任意の `research mode`: 省略時は `score-phase`。大定理証明モードでは `target-theorem` とする。
-- `research aim`: 研究で成し遂げたい能力や到達像。
-- `core tension`: 何が分かれば本当に非自明で、何が解ければ理論の景色が変わるか。
-- `rival`: 比較対象にする既存概念、手法、tooling、理論枠組み。候補の価値は、GOAL 内部の面白さだけでなく、この rival に対してどの能力で有効かでも評価する。
-- `claim boundary`: どの語彙、law universe、coverage topology、係数、profile の上で語るか。
-- `capability categories`: SCORE を配分する能力カテゴリ。例: quantity、invariance、computability、interpretation、obstruction、unification。
-- `threshold policy`: active SCORE threshold を tracking Issue でどう設定・読むかの方針。固定値ではなく、フェーズごとの運用パラメータとして扱う。
-- `portfolio constraint`: ひとつの方向だけで点を稼いでフェーズを区切らないための条件。
-- `phase boundary criteria`: 研究としてキリが良いと判定する条件。
-- `reward rubric`: SCORE の採点規則。base score、evidence multiplier、penalty を分けて読めること。
-- `dullness filter`: 定義展開、既存定理の即時系、名前替え、小補題量産を弾く基準。
-- `frontier`: 探索してよい周辺領域。反例、obstruction、予想の強化、新しい不変量、別領域との橋を含めてよい。
-- 任意の `spine`: 現時点の仮説的な道筋。固定計画ではなく、壊す、鋭くする、置き換える対象として扱う。
+### 適用範囲
 
-`research mode: target-theorem` の GOAL は、さらに次の項目を持つ。大定理は GOAL カードに定義し、ループ中に弱めて成功扱いしない。
+この基準がmainへ導入された後に新規作成するtarget-theoremカードへ適用する。
+導入前から存在するdraft・active・completedカードには、移行・削減・再監査を要求しない。
+新基準への不適合を既存カードの`goal defect`としない。改名や既存draftのactive化を
+新規作成とは扱わない。形式の判別と適用版の記録手順は
+[targetカードの読み取り手順](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md)にある。
 
-- `target theorem`: 証明したい大定理の名前と statement。
-- `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、主張してよい範囲。
-- `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
-- `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
-- `target theorem completion criteria`: 証明完了の条件。原則として sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis の discharge audit(provenance / proof-use / structure-field escape / route integrity を含む)、各実装 PR の標準 fixed-head `$review-pr` gate、report と tracking Issue の target_cycle_result 同期、final_review_packet、別工程の 4 並列 `$math-lean-review` の全査読 `No major findings` 判定を含む(二段 gate の正本 = `target-goal-contract.md`)。
-- `target premise discharge policy`: target theorem が faithfulness、exactness、nondegeneracy、coverage、transport、representation adequacy などの実質的前提を含む場合、その前提を target boundary として残すのか、Lean theorem / finite witness / concrete certificate で discharge して completion 条件に含めるのかを書く。
-- `target material premise ledger`: target theorem の結論を支える実質的前提を列挙する。各 premise について、名前、何を支えるか、許される role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、completion までに必要な discharge artifact、provenance と proof-use、結論相当 premise ではない理由を書く。
-- 任意の `target route integrity gate`: 生成物(比較射・診断写像・witness)の許容経路と禁止経路(結論相当データの供給、証明後の target-fitting 選択、定義的 bridge 等)を独立の節として書く。selected fixture・checker・authored 入力を使うカードでは省略しない。この一覧の正本は `.codex/skills/target-theorem-loop/references/target-goal-contract.md` であり、drift した場合は契約側を正とする。
-- `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque class membership に移して成功扱いしないための規則を書く。`ambient-boundary` に残せるのは入力幾何だけであり、target conclusion、faithfulness、effectivity、triviality、global coherence、obstruction vanishing と同値または片方向に近い条件を隠してはならない。
-- `target failure policy`: 反例、仮説不足、証明停滞を `target-refuted`、`target-blocked`、GOAL 改訂提案のどれとして扱うか。
+### 必須の内容
+
+カードは、研究目標の達成を判定するための次の5項目を持つ。見出しの表記は固定せず、
+内容を統合して書ける。draftはactive化までに内容を確定する。
+
+| 項目 | 書く内容 |
+| --- | --- |
+| 基本情報 | `id`、`status`、`research mode: target-theorem`、tracking Issueへの参照 |
+| 研究目的 | 明らかにしたいことと、既存成果から進む点 |
+| 固定target | 入力、対象の制限、量化対象・量化順、構成義務、結論 |
+| 前提・構成台帳 | 前提の役割、必要な構成・証拠、その出所と使用先 |
+| 完了条件 | 全義務の確定、必要な成果物と置き場所、固有のwitness条件、達成として認める結果、共通完了基準への参照 |
+
+証明方針、既存宣言の参照表、研究背景は必要な場合だけ追加する。`research aim`、
+`core tension`、`rival`を独立の必須節にせず、研究目的で一度だけ説明する。
+SCORE用項目と`not-applicable`、独立した`target proof strategy`は要求しない。
+
+### 要求を一か所で定義する
+
+各要求は一か所で定義し、成果物一覧・台帳・監査からは条項番号などで参照する。
+targetを成果物欄へ全文再掲せず、台帳を第二の本文にしない。同じ条件を肯定形・禁止形・
+停止条件として繰り返さない。レビューfindingは、その要求の定義箇所へ反映する。
+
+共通の監査・anti-weakening・レビュー・停止規則は、読み取り手順が示す共通基準への
+参照で適用する。カードには、このGOALで追加の特定が必要な条件だけを書く。
+共通基準の適用版を追跡し、後日の更新で走行中の要求を暗黙に変えない。
+
+### 固定targetの精度
+
+各条項で、入力として受け取るもの、入力から構成するもの、独立に構成した結果について
+証明することを区別する。等式・同型・保存・反映・存在・分類の違いを保持し、
+一般定理と名前付き対象での具体的決定との接続を示す。
+
+数学的な構成経路そのものが研究対象なら、その経路を固定する。交換可能な補題の探索順や
+実装手順は任意の証明方針へ置く。同じ数学的要求を満たす別の証明方法まで禁止しない。
+
+### 前提・構成台帳
+
+| 対象・対応条項 | 役割 | 必要な構成・証拠 | 出所・使用先 |
+| --- | --- | --- | --- |
+| 前提や構成と、それを使う条項 | 入力として保持／一般定理の仮定／構成・放電義務 | targetの該当箇所を参照 | 何から得て、どの構成・保存則・結論で使うか |
+
+同じ前提でも定理・経路ごとに役割が異なれば行を分ける。一般定理の仮定と、具体例で
+その仮定を証明する義務を区別する。結論との循環が疑われる前提には理由と必要な確認を
+書くが、全行へ定型的な「結論相当でない理由」を追記しない。
+proof-useは対応する構成・保存則・結論へ指定し、全前提を全最終定理で直接使うことを
+要求しない。既存の監査roleとの対応は読み取り手順で扱う。
+
+### witnessと達成として認める結果
+
+witnessを要求するときは、固定するデータと選択してよいデータ、評価する写像・成分・作用、
+同じ例で同時に成立させる条件、一般定理との接続を特定する。「非退化な例」だけでは
+足りない。作用元の非恒等性と作用の非恒等性などを区別し、独立の現象を理由なく
+一つのwitnessへ束ねない。
+
+命題の証明・反証のいずれも達成として認める条項は、成立と不成立それぞれに必要な
+具体的証拠を事前に定める。不成立については反例の構成なのか非存在の証明なのかも書く。
+それ以外の固定主張への反例は共通の反証停止規則で扱う。
+
+### 実行記録の所在
+
+承認・改訂・棄却の経緯、旧target、サイクル、blocker、放電状況、完了日、CI、査読結果、
+merge記録、同期予定、後続研究の割当て・進行状態はIssue／reportへ置く。
+台帳の実際の宣言対応もreportで記録する。先行成果の定義・宣言・参照版など、
+固定targetを特定する情報はカードに残せる。棄却の経験から得た条件は、現在の要求として
+一度だけ書く。ループ中にtargetを改める必要がある場合は人間の判断を求める。
+
+### 追記とレビュー
+
+文やfieldを追加するときは、次を確認する。
+
+1. これがないと、どの誤読・誤判定が可能になるか。
+2. 同じ要求がカードまたは共通基準に既にないか。
+3. 要求を満たしたことを、何の証拠で判定できるか。
+
+過去の発火実績は判断材料であり、発火の有無だけで採否を決めない。防ぎたい誤判定、
+検出証拠、正当な研究の反復を不必要に止めないかを評価する。候補選定の時系列などの
+特別な制約はanti-weakeningから自動的に追加せず、目的・固定時点・修正可能範囲を明記する。
+行数上限は設けない。固有の数学的条件の不足と要求の多重掲載の両方を確認する。

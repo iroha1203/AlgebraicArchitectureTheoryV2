@@ -1,40 +1,70 @@
 # Target GOAL Card Contract
 
-`research mode: target-theorem` の GOAL card が満たすべき契約。
+`target-theorem`カードの適用版を特定し、内容をループ・査読の入力へ読み取る手順。
+新規カードの記載基準は[GOALカードの型](../../../../research/goals/README.md#goal-カードの型)にある。
 
-## 必須項目
+## 適用版の特定
 
-- `id` と `status: active`。
-- `research mode: target-theorem`。
-- `research aim`: target theorem が代表する研究能力。
-- `rival`: target theorem が差分を作る比較対象。
-- `claim boundary`: 通常の GOAL claim boundary。
-- `target theorem`: 証明したい大定理の名前と自然言語 statement。
-- `target theorem boundary`: 語彙、有限性、law universe、coverage topology、係数、site / cover、Lean 置き場所、証拠段階。
-- `target proof artifacts`: 完了時に存在すべき Lean theorem / theorem package / finite witness / concrete certificate / report section。
-- `target proof strategy`: support lemma、normalization、counterexample exclusion、bridge、既存成果の利用 map。
-- `target theorem completion criteria`: sorry なし Lean proof、対象 declaration の axiom audit、material premise / hypothesis discharge audit、certificate provenance audit、proof-use audit、structure-field escape audit、PR review、report / tracking Issue 同期、final review packet、final `$math-lean-review` の正式判定を含む完了条件。
-- `target premise discharge policy`: target theorem の実質的前提を target boundary として残すのか、completion までに theorem / finite witness / concrete certificate で discharge するのか。
-- `target material premise ledger`: 各 premise について、名前、支える結論、role (`direction-hypothesis` / `ambient-boundary` / `discharge-required` / `conclusion-equivalent-risk`)、必要 discharge artifact、certificate provenance requirement、proof-use requirement、結論相当 premise ではない理由。
-- `target anti-weakening rule`: 結論相当の仮定を theorem argument、typeclass、structure field、certificate field、opaque membership に移して成功扱いしない規則。
-- `target route integrity gate`: selected / canonical / free / realization / certificate / finite witness / class-boundary を target proof で使う場合、それが target-fitting な ad hoc construction ではなく入力data、canonical/free construction、universal property、finite witness、または reviewed predecessor theorem から来ることを監査する規則。該当する構成を使わない GOAL では省略可。
-- `target failure policy`: `target-refuted` / `target-blocked` / GOAL 改訂提案の扱い。
+1. カードの初出履歴と、上記記載基準のmainへの導入履歴を確認し、新規・既存を判別する。
+   カード内に新しい形式識別fieldを追加しない。
+2. 新規カードではactive化時に、GOALの固定commitと、共通基準を読むcommit・pathを
+   tracking Issueへ記録する。draftの記載点検では作業中の版を使う。
+   再開時は記録した版を`git show <commit>:<path>`などで読み、参照先の共通基準も同じ
+   commitから解決する。版変更は人間の判断と変更箇所をIssueへ記録してから適用する。
+3. 既存カードは人間が固定した内容と従来の適用版で読む。版は既存のtracking Issue・
+   report・Git履歴から復元し、本変更のためのカード追記・移行・再監査は行わない。
+   旧形式の項目一覧はcommit `d481b4e9f76b107b54e6d58fc7551416821bd701`の
+   `research/goals/README.md`と本ファイルで参照できる。既存の明示判断があればそれを優先する。
+4. 適用版を特定できない場合は、その不足を報告する。新形式へ自動変換したり、
+   新しい必須項目の欠如を既存カードの欠陥としたりしない。
+
+## 内容の読み取り
+
+新規カードの5項目から次の監査入力を抽出する。旧形式では右欄の従来fieldを読む。
+field名の有無ではなく、該当内容と参照先を確認する。
+
+| 監査入力 | 新規カードでの所在 | 旧形式での所在 |
+| --- | --- | --- |
+| id・mode・起動資格 | 基本情報 | `id`、`research mode`、`status` |
+| 研究目的と既存成果との差 | 研究目的 | `research aim`、`core tension`、`rival` |
+| statement・対象の制限 | 固定target | `target theorem`、`claim boundary`、`target theorem boundary` |
+| 成果物・完了判定 | 完了条件と参照するtarget条項 | `target proof artifacts`、`target theorem completion criteria` |
+| material premise・構成・使用先 | 前提・構成台帳と参照するtarget条項 | `target premise discharge policy`、`target material premise ledger` |
+| 固有の生成経路・許容結果 | 固定target・台帳・完了条件の該当箇所 | `target route integrity gate`、`target anti-weakening rule`、`target failure policy` |
+
+新規カードの台帳roleは、入力として保持するものを`ambient-boundary`、一般定理の仮定を
+`direction-hypothesis`、構成・放電義務を`discharge-required`として監査へ渡す。
+結論との循環の懸念は`conclusion-equivalent-risk`として確認事項を抽出する。
+同じ前提の経路別roleと、構成から主結論までの接続を保持する。
+
+## 共通基準の参照適用
+
+下表の基準を、上で特定した版から読む。新規カードはこの節を参照すれば共通基準を
+適用でき、監査や停止規則の本文をカードに転記する必要はない。
+
+| 判定 | 参照先 |
+| --- | --- |
+| statement一致・前提放電・anti-weakening・provenance・route・非空虚性 | [acceptance基準](acceptance-contract.md) |
+| 実装PRの標準レビュー、独立4査読による完了判定、停止処理 | [ループのPR gate・Completion・停止条件](../SKILL.md#pr-gate) |
+| final packet・report／Issueとの対応 | [completion ledger](completion-ledger.md) |
+| 独立した数学・Lean査読 | [math-lean-review](../../math-lean-review/SKILL.md)とそこから参照する共有基準 |
+
+監査へ渡すときはGOALと共通基準のcommit・pathおよび該当条項を添える。
+final packetの`completion_criteria`にはカード固有の条件と適用版付き共通基準の参照を
+含める。既存packetの必須項目や正式ゲートは維持する。
 
 ## 欠陥判定
 
-次のいずれかに当たる場合はproof obligationの選定へ進まない。
+起動資格としてactiveかつtarget-theoremであることを確認する。新規カードの内容は
+記載基準に従い、特に次の場合はproof obligationの選定へ進まない。
 
-- GOAL が active ではない。
-- `research mode: target-theorem` ではない。
-- target theorem / boundary / proof artifacts / proof strategy / completion criteria が不足している。
-- completion criteria が SCORE threshold、candidate card、PR merge だけになっている。
-- completion criteria に final `$math-lean-review` の正式 gate が含まれていない、またはこの skill 側で gate を実行できない。
-- target theorem の結論に必要な実質的前提があるのに、target boundary として残すのか completion までに discharge するのかが不明。
-- target material premise ledger または anti-weakening rule がなく、completion 時に premise を監査できない。
-- material premise ledger が faithfulness、exactness、coverage、sheaf condition、effectivity、triviality、representation adequacy などを `ambient-boundary` として残しているのに、結論相当 premise ではない理由がない。
-- `discharge-required` premise の certificate provenance requirement がなく、explicit certificate / structure field / theorem argument を放電済みと誤読できる。
-- completion criteria が proof-use audit と structure-field escape audit を含まず、未使用 premise や field への結論逃がしを検出できない。
-- selected / canonical / free / realization / certificate / finite witness / class-boundary を使うのに route integrity gate がなく、target-fitting construction、vacuity、one-way-as-equivalence、GOAL/report 後追い読み替えを検出できない。
-- target theorem が GOAL の research aim や rival delta と切り離され、ただの定理一覧項目になっている。
+- 入力・量化・構成義務・結論を特定できない、または研究目的との接続が不明。
+- 成果物と達成条件が不明で、SCOREやPR mergeだけで完了になっている。
+- 台帳から入力・一般定理の仮定・放電義務を区別できず、provenanceや使用先を追えない。
+- 結論相当の仮定を入力に移した疑いがあるのに、その確認事項が特定されていない。
+- 必要なwitnessの評価対象・同時成立条件、証明と反証の扱いを特定できない。
+- 共通基準への参照が解決できない、正式ゲートの省略を指示している、または必要な監査を実行できない。
 
-欠陥を見つけたら GOAL 本文は編集せず、tracking Issue コメントまたは別 Issue に改訂案を残す。
+新規カードで旧fieldの独立節、SCORE用stub、任意のproof strategyがないことは欠陥ではない。
+既存カードの点検は「適用版の特定」に従い、新規の記載基準で再判定しない。
+欠陥を見つけたらカードを編集せず、具体的な不足と改訂案をtracking Issueへ記録する。
