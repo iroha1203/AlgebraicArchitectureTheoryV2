@@ -163,7 +163,7 @@ rg -n "import ResearchLean\.AG" Formal Formal.lean
 大定理 / target theorem の最終 gate では、次を独立した必須監査にする。
 
 1. **Premise ledger extraction**
-   - GOAL card の `target premise discharge policy`、`target material premise ledger`、completion criteria、report の final packet から material premise を列挙する。
+   - [targetカードの読み取り手順](../target-theorem-loop/references/target-goal-contract.md)で適用版と内容の所在を確認し、固定target・前提構成台帳・完了条件とreportのfinal packetからmaterial premiseを列挙する。旧形式の個別fieldと新規カードの統合節・参照を同じ監査入力へ読み取り、参照適用される共通基準も指定版を使う。
    - 各 premise を `ambient-boundary`、`direction-hypothesis`、`discharge-required`、`conclusion-equivalent-risk` に分類する。
 
 2. **Certificate provenance**
@@ -172,7 +172,7 @@ rg -n "import ResearchLean\.AG" Formal Formal.lean
    - 放電済みと呼べるのは、対象の入力dataから certificate を作る theorem、有限 witness、構成、または既に査読済みの predecessor theorem が確認できる場合だけである。
 
 3. **Proof-use check**
-   - main theorem の proof term、`#print`、補題呼び出しを見て、material premise が主結論の証明に使われているか確認する。
+   - main theoremのproof term、`#print`、補題呼び出しから、台帳で指定した構成・保存則・結論へのmaterial premiseの使用と主結論までの依存を確認する。構成段階での使用を追い、すべての最終定理での直接使用を一律に要求しない。
    - premise が package の別成分として出力されるだけ、または `_premise` として未使用なら、主張の放電ではなく添付証拠として finding にする。
 
 4. **Field-content audit**

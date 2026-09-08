@@ -5,7 +5,7 @@ description: "research/goals/GOAL-ID.mdのactiveなtarget-theorem GOALで、固�
 
 # Target Theorem Loop
 
-`research mode: target-theorem`のactive GOALだけを扱う。GOALのtarget statement、boundary、completion criteria、premise ledger、anti-weakening rule、failure policyを固定入力とし、進捗を一つのproof obligation deltaで管理する。
+`research mode: target-theorem`のactive GOALだけを扱う。[カードの読み取り手順](references/target-goal-contract.md)で特定したGOALと参照先の共通基準を固定入力とし、進捗を一つのproof obligation deltaで管理する。
 
 GOALまたは指定一次仕様を弱める必要が生じたら、改訂案をtracking Issueへ記録して`goal defect`で止まる。ループ中に正本を書き換えない。
 
@@ -34,7 +34,7 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 ## 実行
 
 1. `git status --short --branch`と未追跡fileを確認し、base/headを固定する。mainから開始する場合はmainを最新化する。
-2. GOALがactiveかつtarget-theorem modeであり、[target GOAL contract](references/target-goal-contract.md)を満たすことを確認する。欠陥時はIssueを新設せず停止理由を返す。
+2. [カードの読み取り手順](references/target-goal-contract.md)に従って新規・既存と適用版を特定し、起動資格と内容を確認する。開始時・以後の各段階で読む共通基準も、その適用版で解決する。欠陥時はIssueを新設せず停止理由を返す。
 3. tracking Issueを特定し、なければ一本だけ作る。GOALのtarget節、Issueの直近state、reportの現proof obligation節、proof DAG、対象Lean宣言から現在状態を復元する。
 4. rootが[cycle ledger](references/cycle-ledger.md)のselectionを埋め、大定理までのproof distanceを最も直接縮めるproof obligationを一つ選ぶ。
 5. rootがLean theorem/package、input-generated witness/certificate、またはblocker/refutationを固定する。Lean証拠は`research/lean/ResearchLean/AG/<goal-area>/`に置き、`Formal/AG`は参照/importだけに使う。受理spineとcycle scaffoldを命名またはfileで分け、spine declaration listをreportに固定する。
