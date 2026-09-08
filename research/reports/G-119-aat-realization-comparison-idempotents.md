@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D のcanonical正規化圏と自然な包含
+- current proof obligation: D の正規化圏 `N_C` と関手 `K`, `N`
 - pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: admissible core packages上の吸収則と正規化圏N_Cを構成
+- next proof obligation: sandwich射の圏 `N_C` と充満忠実な `K`、充満な正規化関手 `N` を構成
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -920,3 +920,119 @@ Cycle 8 の material premise role は次のとおりである。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。`β=α ≫ E`、`E²=E`、`α` の可逆性は既存G-116構成から使う。
 - `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 9 — canonical package-normalization absorption
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 9
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 99bc00edb82115eec84d55bfd2ce759cd4b16e36
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 8 result: A--C discharged; D selected next"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.canonicalObjectNormalizationTotal
+    - AAT.AG.DoctrineFiberProduct.canonicalObjectNormalization_natural_apply
+    - AAT.AG.DoctrineFiberProduct.canonicalObjectNormalization_idempotent
+    - AAT.AG.DoctrineFiberProduct.equationSystemExactTransport_hext
+  proof_obligation: "D1: for every total morphism between admissible core packages, prove e_P ≫ f ≫ e_Q = e_P ≫ f as a complete total-morphism equality, including the dependent operation component"
+  selection_reason: "The absorption equation is the direct predecessor of the category N_C, the normalization functor, its fullness, and the natural inclusion required by every remaining D clause."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/CanonicalNormalizationAbsorption.lean
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_absorption
+  risks:
+    - "adding one-sided absorption or operation coherence as a morphism field or theorem premise"
+    - "proving only object-map equality while omitting the dependent operation map"
+    - "reversing conventional and Lean composition order"
+    - "using the G-117-refuted opposite two-sided naturality equation"
+  unchecked:
+    - "D2: N_C, K, and N"
+    - "D3: ambient inclusion, comparison functors, and pi_N"
+    - "D4: i, objectwise p, naturality characterization, and tagged failure"
+    - "D5: endpoint automorphism and qualified subgroup homomorphisms"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the full admissible-package subcategory and its existing canonical endomorphism, then proved the fixed one-sided sandwich equality for every total morphism by complete extensionality.  The operationMap branch uses heterogeneous function extensionality and cast_heq, so its dependent types are part of the theorem rather than an extra certificate."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/CanonicalNormalizationAbsorption.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.CanonicalNormalizationAdmissiblePackage
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization
+    - AAT.AG.RealizationComparisonIdempotents.canonicalObjectNormalization_fixed_after_map
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_absorption
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_idem
+    - AAT.AG.RealizationComparisonIdempotents.packageProjection_canonicalPackageNormalization
+  claim_mapping:
+    theorem_names:
+      - canonicalObjectNormalization_fixed_after_map
+      - canonicalPackageNormalization_absorption
+      - canonicalPackageNormalization_idem
+      - packageProjection_canonicalPackageNormalization
+    source_labels:
+      - "fixed target D: admissible core packages and canonical absorption"
+    conjuncts:
+      - "C -> the ordinary full subcategory cut out by existing CanonicalObjectNormalizationAdmissible"
+      - "e_P -> the existing canonicalObjectNormalizationTotal built from P.property"
+      - "object component -> naturality followed by target idempotence"
+      - "equation transport -> exact heterogeneous extensionality with the same object computation"
+      - "dependent operation component -> nested hfunext and cast_heq"
+      - "total equality -> e_P ≫ f ≫ e_Q = e_P ≫ f, equivalent to conventional e_Q f e_P = f e_P"
+      - "base projection -> pi(e_P) is the identity"
+    undischarged_assumptions: []
+    acceptance_point: "D1 quantifies over every morphism in the full subcategory and derives absorption solely from existing admissibility and total-morphism laws, with no conclusion-equivalent field or operation-coherence input."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D one-sided absorption is derived for arbitrary total morphisms"
+      - "D dependent operation component is included in the total equality"
+      - "D base identity pi(e_P)=1"
+    remaining:
+      - "D2--D5 constructions and characterization theorems"
+  certificate_provenance:
+    discharged:
+      - "e_P is canonicalObjectNormalizationTotal P.obj P.property"
+    unresolved: []
+  proof_use:
+    used:
+      - "P.property and Q.property construct the endpoint normalizations and their operation type equalities"
+      - "canonicalObjectNormalization_natural_apply uses the arbitrary total morphism's object-formation and configuration laws"
+      - "canonicalObjectNormalization_idempotent fixes the transported normalized objects"
+      - "PackageTotalHom.ext, SignedExactCoreReadingHom.ext, equationSystemExactTransport_hext, Function.hfunext, and cast_heq cover every total-morphism component"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.DoctrineFiberProduct.IdempotentExchangeNormalization; exit 0"
+    - "direct predecessor targeted build: ResearchLean.AG.DoctrineFiberProduct.CanonicalObjectNormalizationNaturality; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal axiom audit: 8 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D2: construct N_C, the fully faithful K:N_C→Kar(C), and the full normalization functor N:C→N_C"
+```
+
+### Cycle 9 acceptance spine
+
+`CanonicalNormalizationAdmissiblePackage` は既存の
+`CanonicalObjectNormalizationAdmissible` を対象条件とする通常の充満部分圏であり、
+射に追加の吸収則やoperation coherenceを持たせない。
+`canonicalPackageNormalization_absorption` は任意のtotal射に対し、object map、
+equation transport、依存型を持つoperation map、残りのexact成分を順に外延して
+`e_P ≫ f ≫ e_Q = e_P ≫ f` を証明する。operation mapでは
+`Function.hfunext` と `cast_heq` を使い、型の依存性も等式に含める。
+
+Cycle 9 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U`と、既存admissibilityを持つ任意の `P,Q:C`。
+- `direction-hypothesis`: なし。対象条件とtotal射の既存法則から固定された片側吸収を導く。
+- `discharge-required`: 追加premiseなし。依存operation成分も主定理の証明項で直接放電する。
+- `conclusion-equivalent-risk`: 該当なし。吸収式は部分圏や射のfieldに入っていない。
