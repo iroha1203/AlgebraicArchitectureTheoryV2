@@ -15,7 +15,7 @@ used directly.  A full subcategory on only invertible comparison arrows would
 drop noninvertible comparisons from the object type, contrary to the fixed
 target.  The object-surjectivity theorem below records that no invertibility
 condition is imposed on a comparison object.  The factorization theorem records
-the universal maximality property for every groupoid-valued source functor.
+the factorization property for every groupoid-valued source functor.
 -/
 
 open CategoryTheory CategoryTheory.Idempotents
