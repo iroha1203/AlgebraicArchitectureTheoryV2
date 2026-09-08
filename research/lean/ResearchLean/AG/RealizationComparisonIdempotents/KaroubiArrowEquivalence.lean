@@ -5,7 +5,7 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Karoubi completion and arrow categories
 
-This file constructs clause A of G-119: the equivalence between idempotent
+This file constructs the equivalence portion of clause A of G-119: the equivalence between idempotent
 squares of arrows and arrows between Karoubi objects.  The comparison arrow is
 the independently normalized composite `e ≫ c ≫ d`; it is not obtained by
 assuming that the raw comparison already lies in the selected image.
@@ -120,6 +120,20 @@ def karoubiArrowToArrowKaroubi : Karoubi (Arrow E) ⥤ Arrow (Karoubi E) where
     · apply Karoubi.Hom.ext
       rfl
 
+/-- Evaluation API: the forward functor retains the source endpoint map. -/
+@[simp]
+theorem karoubiArrowToArrowKaroubi_map_left_f
+    {P Q : Karoubi (Arrow E)} (f : P ⟶ Q) :
+    (karoubiArrowToArrowKaroubi.map f).left.f = f.f.left :=
+  rfl
+
+/-- Evaluation API: the forward functor retains the target endpoint map. -/
+@[simp]
+theorem karoubiArrowToArrowKaroubi_map_right_f
+    {P Q : Karoubi (Arrow E)} (f : P ⟶ Q) :
+    (karoubiArrowToArrowKaroubi.map f).right.f = f.f.right :=
+  rfl
+
 /-- A comparison in `Karoubi E` determines its raw arrow and endpoint idempotent square. -/
 def arrowKaroubiToKaroubiArrowObj (P : Arrow (Karoubi E)) : Karoubi (Arrow E) where
   X := { left := P.left.X, right := P.right.X, hom := P.hom.f }
@@ -128,6 +142,24 @@ def arrowKaroubiToKaroubiArrowObj (P : Arrow (Karoubi E)) : Karoubi (Arrow E) wh
     apply Arrow.hom_ext
     · exact P.left.idem
     · exact P.right.idem
+
+/-- Evaluation API for the raw comparison recovered by the inverse object map. -/
+@[simp]
+theorem arrowKaroubiToKaroubiArrowObj_X_hom (P : Arrow (Karoubi E)) :
+    (arrowKaroubiToKaroubiArrowObj P).X.hom = P.hom.f :=
+  rfl
+
+/-- Evaluation API for the source idempotent recovered by the inverse object map. -/
+@[simp]
+theorem arrowKaroubiToKaroubiArrowObj_p_left (P : Arrow (Karoubi E)) :
+    (arrowKaroubiToKaroubiArrowObj P).p.left = P.left.p :=
+  rfl
+
+/-- Evaluation API for the target idempotent recovered by the inverse object map. -/
+@[simp]
+theorem arrowKaroubiToKaroubiArrowObj_p_right (P : Arrow (Karoubi E)) :
+    (arrowKaroubiToKaroubiArrowObj P).p.right = P.right.p :=
+  rfl
 
 /-- Clause A inverse functor. -/
 def arrowKaroubiToKaroubiArrow : Arrow (Karoubi E) ⥤ Karoubi (Arrow E) where
@@ -146,6 +178,20 @@ def arrowKaroubiToKaroubiArrow : Arrow (Karoubi E) ⥤ Karoubi (Arrow E) where
   map_comp f g := by
     apply Karoubi.Hom.ext
     apply Arrow.hom_ext <;> rfl
+
+/-- Evaluation API: the inverse functor recovers the raw source endpoint map. -/
+@[simp]
+theorem arrowKaroubiToKaroubiArrow_map_f_left
+    {P Q : Arrow (Karoubi E)} (f : P ⟶ Q) :
+    (arrowKaroubiToKaroubiArrow.map f).f.left = f.left.f :=
+  rfl
+
+/-- Evaluation API: the inverse functor recovers the raw target endpoint map. -/
+@[simp]
+theorem arrowKaroubiToKaroubiArrow_map_f_right
+    {P Q : Arrow (Karoubi E)} (f : P ⟶ Q) :
+    (arrowKaroubiToKaroubiArrow.map f).f.right = f.right.f :=
+  rfl
 
 /-- Unit square.  Both directions have endpoint maps `(e,d)`, which are the
 identities of the corresponding Karoubi objects rather than raw identities. -/
@@ -186,6 +232,30 @@ def karoubiArrowUnitIsoApp (P : Karoubi (Arrow E)) :
     · change P.p.right ≫ P.p.right = P.p.right
       exact karoubiArrow_right_idem P
 
+/-- Evaluation API for the source endpoint of the unit hom. -/
+@[simp]
+theorem karoubiArrowUnitIsoApp_hom_f_left (P : Karoubi (Arrow E)) :
+    (karoubiArrowUnitIsoApp P).hom.f.left = P.p.left :=
+  rfl
+
+/-- Evaluation API for the target endpoint of the unit hom. -/
+@[simp]
+theorem karoubiArrowUnitIsoApp_hom_f_right (P : Karoubi (Arrow E)) :
+    (karoubiArrowUnitIsoApp P).hom.f.right = P.p.right :=
+  rfl
+
+/-- Evaluation API for the source endpoint of the unit inverse. -/
+@[simp]
+theorem karoubiArrowUnitIsoApp_inv_f_left (P : Karoubi (Arrow E)) :
+    (karoubiArrowUnitIsoApp P).inv.f.left = P.p.left :=
+  rfl
+
+/-- Evaluation API for the target endpoint of the unit inverse. -/
+@[simp]
+theorem karoubiArrowUnitIsoApp_inv_f_right (P : Karoubi (Arrow E)) :
+    (karoubiArrowUnitIsoApp P).inv.f.right = P.p.right :=
+  rfl
+
 /-- The unit natural isomorphism of the comparison equivalence. -/
 def karoubiArrowUnitIso :
     𝟭 (Karoubi (Arrow E)) ≅ karoubiArrowToArrowKaroubi ⋙ arrowKaroubiToKaroubiArrow :=
@@ -208,6 +278,30 @@ def karoubiArrowCounitIsoApp (P : Arrow (Karoubi E)) :
       (P.left.p ≫ P.hom.f ≫ P.right.p) ≫ P.right.p
     simp)
 
+/-- Evaluation API for the source endpoint of the counit hom. -/
+@[simp]
+theorem karoubiArrowCounitIsoApp_hom_left_f (P : Arrow (Karoubi E)) :
+    (karoubiArrowCounitIsoApp P).hom.left.f = P.left.p :=
+  rfl
+
+/-- Evaluation API for the target endpoint of the counit hom. -/
+@[simp]
+theorem karoubiArrowCounitIsoApp_hom_right_f (P : Arrow (Karoubi E)) :
+    (karoubiArrowCounitIsoApp P).hom.right.f = P.right.p :=
+  rfl
+
+/-- Evaluation API for the source endpoint of the counit inverse. -/
+@[simp]
+theorem karoubiArrowCounitIsoApp_inv_left_f (P : Arrow (Karoubi E)) :
+    (karoubiArrowCounitIsoApp P).inv.left.f = P.left.p :=
+  rfl
+
+/-- Evaluation API for the target endpoint of the counit inverse. -/
+@[simp]
+theorem karoubiArrowCounitIsoApp_inv_right_f (P : Arrow (Karoubi E)) :
+    (karoubiArrowCounitIsoApp P).inv.right.f = P.right.p :=
+  rfl
+
 /-- The counit natural isomorphism of the comparison equivalence. -/
 def karoubiArrowCounitIso :
     arrowKaroubiToKaroubiArrow ⋙ karoubiArrowToArrowKaroubi ≅
@@ -216,17 +310,15 @@ def karoubiArrowCounitIso :
     intro P Q f
     apply Arrow.hom_ext
     · apply Karoubi.Hom.ext
-      dsimp [karoubiArrowCounitIsoApp, karoubiArrowToArrowKaroubi,
-        arrowKaroubiToKaroubiArrow, karoubiArrowLeftMap]
+      simp only [Arrow.comp_left, Functor.comp_map, Functor.id_map]
       change f.left.f ≫ Q.left.p = P.left.p ≫ f.left.f
       exact (Karoubi.p_comm f.left).symm
     · apply Karoubi.Hom.ext
-      dsimp [karoubiArrowCounitIsoApp, karoubiArrowToArrowKaroubi,
-        arrowKaroubiToKaroubiArrow, karoubiArrowRightMap]
+      simp only [Arrow.comp_right, Functor.comp_map, Functor.id_map]
       change f.right.f ≫ Q.right.p = P.right.p ≫ f.right.f
       exact (Karoubi.p_comm f.right).symm)
 
-/-- G-119(A): taking arrows commutes with Karoubi completion. -/
+/-- G-119(A1): taking arrows commutes with Karoubi completion. -/
 def karoubiArrowEquivalence : Karoubi (Arrow E) ≌ Arrow (Karoubi E) where
   functor := karoubiArrowToArrowKaroubi
   inverse := arrowKaroubiToKaroubiArrow

@@ -59,6 +59,7 @@ result:
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowUnitIso
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowCounitIso
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowEquivalence
+    - CategoryTheory.Equivalence.unit_inverse_comp
   claim_mapping:
     theorem_names:
       - karoubiArrowToArrowKaroubiObj_hom_f
@@ -75,14 +76,14 @@ result:
       - "inverse -> raw comparison plus endpoint idempotent square"
       - "unit in both directions -> endpoint maps (e,d)"
       - "counit in both directions -> endpoint Karoubi identities, whose raw maps are the endpoint idempotents"
-      - "triangle identity -> karoubiArrowEquivalence.functor_unitIso_comp"
+      - "forward triangle -> karoubiArrowEquivalence.functor_unitIso_comp"
+      - "inverse triangle -> CategoryTheory.Equivalence.unit_inverse_comp karoubiArrowEquivalence"
     undischarged_assumptions: []
     acceptance_point: "A1 is general in every category E and introduces no added premise or certificate.  It discharges only the equivalence part of A."
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged:
-      - "A1 uses only the category structure and the idempotence/square equations carried by Karoubi(Arrow E) or Arrow(Karoubi E)."
+    discharged: []
     remaining:
       - "A functor naturality and identity/composition compatibility"
       - "A maximal subgroupoid statement"
@@ -103,7 +104,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/RealizationComparisonIdempotents/KaroubiArrowEquivalence.lean; exit 0"
-    - "module terminal axiom audit: 14 declarations, standard axioms only"
+    - "module terminal axiom audit: 29 declarations, standard axioms only"
     - "git diff --check; exit 0"
     - "hidden/BiDi scan on all changed and added files; no matches"
     - "axiom/admit/sorry/unsafe scan on the new Lean file; no matches"
@@ -118,4 +119,14 @@ audits:
 `karoubiArrowToArrowKaroubiObj` は raw comparison をそのまま採用せず、入力の二つの
 冪等射から `e ≫ c ≫ d` を構成する。逆関手は Karoubi 内の比較から raw comparison と
 両端の冪等正方形を回収する。unit と counit の両方向で端点写像を明示し、
-`karoubiArrowEquivalence` の triangle fieldまで同じ宣言群で閉じる。
+`karoubiArrowEquivalence` の forward triangle fieldを直接証明する。inverse triangleは
+mathlibの `CategoryTheory.Equivalence.unit_inverse_comp` から得る。
+
+Cycle 1 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の圏 `[Category E]`、`Karoubi (Arrow E)` のcomponentwise
+  idempotenceとArrow-square relation、`Arrow (Karoubi E)` のendpoint idempotenceと
+  `Karoubi.Hom.comm`、各圏のmorphism law。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。
+- `conclusion-equivalent-risk`: 該当なし。
