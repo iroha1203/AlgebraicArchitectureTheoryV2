@@ -146,6 +146,7 @@ selection:
   proof_dag_predecessors:
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowEquivalence
     - CategoryTheory.Functor.mapArrow
+    - CategoryTheory.Idempotents.functorExtension₂
   proof_obligation: "A2: for every F:E→E', construct the commuting natural isomorphism, identify all endpoint components, and prove identity/composition coherence"
   selection_reason: "A2 is the remaining functorial part of A and is required before applying A to the three AAT projection functors in B."
   expected_result_type: proof-obligation-discharged
@@ -166,7 +167,7 @@ result:
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/FunctorNaturality.lean
   evidence:
-    - AAT.AG.RealizationComparisonIdempotents.mapKaroubiFunctor
+    - CategoryTheory.Idempotents.functorExtension₂
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowMap
     - AAT.AG.RealizationComparisonIdempotents.arrowKaroubiMap
     - AAT.AG.RealizationComparisonIdempotents.karoubiArrowNaturalityIsoApp
@@ -227,8 +228,9 @@ audits:
 
 ### Cycle 2 acceptance spine
 
-`mapKaroubiFunctor` は対象の冪等射と射を `F.map` で送り、`karoubiArrowMap` と
-`arrowKaroubiMap` はそれぞれ `Kar(Arr(F))` と `Arr(Kar(F))` を与える。二経路の
+mathlibの `functorExtension₂` は対象の冪等射と射を `F.map` で送る。これを用いた
+`karoubiArrowMap` と `arrowKaroubiMap` はそれぞれ `Kar(Arr(F))` と
+`Arr(Kar(F))` を与える。二経路の
 比較射は定義的には同じではなく、片方は `F.map (e ≫ c ≫ d)`、他方は
 `F.map e ≫ F.map c ≫ F.map d` である。`karoubiArrowNaturalityIsoApp` は両者を
 端点のKaroubi恒等成分 `(F(e),F(d))` で結び、homとinvの双方を評価定理で固定する。
