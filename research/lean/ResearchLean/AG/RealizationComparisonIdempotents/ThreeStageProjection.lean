@@ -82,6 +82,11 @@ noncomputable def crossStageComparisonProjection :
       RealizationComparisonCategory (ExtractionInstance U) :=
   arrowKaroubiMap (crossStageProjection U)
 
+/-- The declared cross-stage projection is the geometry projection followed by the package projection. -/
+theorem crossStageProjection_eq_geometry_comp_package :
+    crossStageProjection U = geometryProjection U ⋙ packageProjection U :=
+  rfl
+
 /-- The two Karoubi-stage projections compose to the declared composite projection. -/
 theorem geometryPackageKaroubiProjection_comp :
     geometryKaroubiProjection U ⋙ packageKaroubiProjection U =
@@ -134,6 +139,27 @@ theorem crossStageKaroubiProjection_obj_p
     ((crossStageKaroubiProjection U).obj P).p = P.p.base.base :=
   rfl
 
+/-- Normalization rule: geometry Karoubi projection sends a morphism through its core map. -/
+@[simp]
+theorem geometryKaroubiProjection_map_f
+    {P Q : Karoubi (GeomReadCategory.{u, v} U)} (f : P ⟶ Q) :
+    ((geometryKaroubiProjection U).map f).f = f.f.base :=
+  rfl
+
+/-- Normalization rule: package Karoubi projection sends a morphism through its base map. -/
+@[simp]
+theorem packageKaroubiProjection_map_f
+    {P Q : Karoubi (AATCorePackage U)} (f : P ⟶ Q) :
+    ((packageKaroubiProjection U).map f).f = f.f.base :=
+  rfl
+
+/-- Normalization rule: composite Karoubi projection sends a morphism through both base maps. -/
+@[simp]
+theorem crossStageKaroubiProjection_map_f
+    {P Q : Karoubi (GeomReadCategory.{u, v} U)} (f : P ⟶ Q) :
+    ((crossStageKaroubiProjection U).map f).f = f.f.base.base :=
+  rfl
+
 /-- Normalization rule: geometry comparison projection retains the source core package. -/
 @[simp]
 theorem geometryComparisonProjection_obj_left_X
@@ -167,6 +193,22 @@ theorem geometryComparisonProjection_obj_right_p
 theorem geometryComparisonProjection_obj_hom_f
     (C : RealizationComparisonCategory (GeomReadCategory.{u, v} U)) :
     ((geometryComparisonProjection U).obj C).hom.f = C.hom.f.base :=
+  rfl
+
+/-- Normalization rule: geometry comparison projection sends a source endpoint map to its core map. -/
+@[simp]
+theorem geometryComparisonProjection_map_left_f
+    {C D : RealizationComparisonCategory (GeomReadCategory.{u, v} U)}
+    (f : C ⟶ D) :
+    ((geometryComparisonProjection U).map f).left.f = f.left.f.base :=
+  rfl
+
+/-- Normalization rule: geometry comparison projection sends a target endpoint map to its core map. -/
+@[simp]
+theorem geometryComparisonProjection_map_right_f
+    {C D : RealizationComparisonCategory (GeomReadCategory.{u, v} U)}
+    (f : C ⟶ D) :
+    ((geometryComparisonProjection U).map f).right.f = f.right.f.base :=
   rfl
 
 /-- Normalization rule: package comparison projection retains the source pointed extraction. -/
@@ -204,6 +246,20 @@ theorem packageComparisonProjection_obj_hom_f
     ((packageComparisonProjection U).obj C).hom.f = C.hom.f.base :=
   rfl
 
+/-- Normalization rule: package comparison projection sends a source endpoint map to its base map. -/
+@[simp]
+theorem packageComparisonProjection_map_left_f
+    {C D : RealizationComparisonCategory (AATCorePackage U)} (f : C ⟶ D) :
+    ((packageComparisonProjection U).map f).left.f = f.left.f.base :=
+  rfl
+
+/-- Normalization rule: package comparison projection sends a target endpoint map to its base map. -/
+@[simp]
+theorem packageComparisonProjection_map_right_f
+    {C D : RealizationComparisonCategory (AATCorePackage U)} (f : C ⟶ D) :
+    ((packageComparisonProjection U).map f).right.f = f.right.f.base :=
+  rfl
+
 /-- Normalization rule: the composite retains the source pointed extraction. -/
 @[simp]
 theorem crossStageComparisonProjection_obj_left_X
@@ -239,6 +295,22 @@ theorem crossStageComparisonProjection_obj_right_p
 theorem crossStageComparisonProjection_obj_hom_f
     (C : RealizationComparisonCategory (GeomReadCategory.{u, v} U)) :
     ((crossStageComparisonProjection U).obj C).hom.f = C.hom.f.base.base :=
+  rfl
+
+/-- Normalization rule: composite comparison projection sends a source endpoint through both base maps. -/
+@[simp]
+theorem crossStageComparisonProjection_map_left_f
+    {C D : RealizationComparisonCategory (GeomReadCategory.{u, v} U)}
+    (f : C ⟶ D) :
+    ((crossStageComparisonProjection U).map f).left.f = f.left.f.base.base :=
+  rfl
+
+/-- Normalization rule: composite comparison projection sends a target endpoint through both base maps. -/
+@[simp]
+theorem crossStageComparisonProjection_map_right_f
+    {C D : RealizationComparisonCategory (GeomReadCategory.{u, v} U)}
+    (f : C ⟶ D) :
+    ((crossStageComparisonProjection U).map f).right.f = f.right.f.base.base :=
   rfl
 
 /-- Clause A naturality specialized to the geometry projection. -/
@@ -299,7 +371,7 @@ theorem crossStageProjectionKaroubiArrowNaturalityIsoApp_comp
           (karoubiArrowNaturalityIsoApp (geometryProjection U) P) ≪≫
         karoubiArrowNaturalityIsoApp (packageProjection U)
           ((karoubiArrowMap (geometryProjection U)).obj P) := by
-  simpa only [crossStageProjection] using
+  simpa only [crossStageProjection_eq_geometry_comp_package] using
     karoubiArrowNaturalityIsoApp_comp
       (geometryProjection U) (packageProjection U) P
 

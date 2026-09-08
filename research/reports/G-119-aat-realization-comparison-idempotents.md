@@ -396,8 +396,11 @@ result:
     theorem_names:
       - geometryPackageKaroubiProjection_comp
       - geometryPackageComparisonProjection_comp
+      - crossStageProjection_eq_geometry_comp_package
       - crossStageKaroubiProjection_obj_p
       - crossStageComparisonProjection_obj_hom_f
+      - crossStageComparisonProjection_map_left_f
+      - crossStageComparisonProjection_map_right_f
       - crossStageProjectionKaroubiArrowNaturalityIsoApp_comp
     source_labels:
       - "fixed target B paragraph 1: three AAT categories, rho, pi, and compatibility with pi rho"
@@ -437,7 +440,7 @@ audits:
     - "direct predecessor targeted build: ResearchLean.AG.CrossStageCoherence.Basic; exit 0"
     - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.MaximalSubgroupoid; exit 0"
     - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/ThreeStageProjection.lean; exit 0"
-    - "module terminal axiom audit: 40 declarations, standard axioms only"
+    - "module terminal axiom audit: 50 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "B2: embed an arbitrary geometry comparison with identity idempotents and identify its base-qualified automorphism group with qualifiedComparisonSubgroup"
 ```
