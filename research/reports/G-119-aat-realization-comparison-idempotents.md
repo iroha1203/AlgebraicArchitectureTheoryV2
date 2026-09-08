@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: B の恒等冪等埋込みとqualified比較群
+- current proof obligation: B の生成比較への特殊化
 - pending proof obligations: B、C、D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B の任意の幾何比較をM(E_geom)へ埋め、qualifiedComparisonSubgroupとの群同型を固定
+- next proof obligation: G-118のgeneratedCompatibleUpperGeometryMateAtへ比較対象と群同型を特殊化
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -130,7 +130,6 @@ Cycle 1 の material premise role は次のとおりである。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。
 - `conclusion-equivalent-risk`: 該当なし。
-
 
 ## Cycle 2 — Functor naturality and coherence
 
@@ -461,4 +460,120 @@ Cycle 4 の material premise role は次のとおりである。
 - `ambient-boundary`: 任意の `U : AtomCarrier`、既存の幾何universe、三圏と二投影。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。一般の冪等対象や比較の底像に恒等性を要求しない。
+- `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 5 — Qualified automorphisms of an embedded comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 5
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 3d4e83bffcb38f0780f7894d81f1ebef5ea88d9e
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 4 result: B1 discharged; B2 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.ReversibleRepresentationChanges
+    - AAT.AG.CrossStageCoherence.compositeFiberAutSubgroup
+    - AAT.AG.DoctrineFiberProduct.qualifiedComparisonSubgroup
+  proof_obligation: "B2: embed every geometry comparison with identity endpoint idempotents and identify its base-qualified reversible automorphisms with the existing qualified comparison group"
+  selection_reason: "B2 provides the group-level bridge needed before specializing it to the generated G-118 comparison in B3."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv
+  risks:
+    - "requiring the comparison itself, rather than only endpoint automorphisms, to project to an identity"
+    - "reversing the Arrow intertwining equation or Aut multiplication order"
+    - "defining the new endpoint projections by transport across the final equivalence"
+  unchecked:
+    - "B3 generated comparison specialization"
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Embedded arbitrary comparisons into the maximal subgroupoid with identity endpoint idempotents, formed the independently qualified automorphism subgroup, and constructed a projection-compatible group equivalence with qualifiedComparisonSubgroup."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.identityIdempotentReversibleComparison
+    - AAT.AG.RealizationComparisonIdempotents.baseQualifiedReversibleComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.baseQualifiedReversibleComparisonSourceProjection
+    - AAT.AG.RealizationComparisonIdempotents.baseQualifiedReversibleComparisonTargetProjection
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_source_projection
+    - AAT.AG.RealizationComparisonIdempotents.qualifiedComparisonReversibleMulEquiv_target_projection
+  claim_mapping:
+    theorem_names:
+      - identityIdempotentReversibleComparison_left_p
+      - identityIdempotentReversibleComparison_right_p
+      - identityIdempotentReversibleComparison_projected_hom
+      - mem_baseQualifiedReversibleComparisonSubgroup
+      - baseQualifiedReversibleComparison_source_projected_identity
+      - baseQualifiedReversibleComparison_target_projected_identity
+      - qualifiedComparisonReversibleMulEquiv
+      - baseQualifiedReversibleComparisonSourceProjection_hom
+      - baseQualifiedReversibleComparisonTargetProjection_hom
+    source_labels:
+      - "fixed target B paragraph 2: identity-idempotent embedding of every geometry comparison"
+      - "fixed target B paragraph 2: base-qualified endpoint automorphisms and qualifiedComparisonSubgroup are isomorphic"
+      - "fixed target B paragraph 2: endpoint projections and full geometry maps agree"
+    conjuncts:
+      - "embedding -> endpoints are G and H with raw identity idempotents, and the comparison map is exactly c"
+      - "comparison base -> the projected comparison is c.base.base, with no identity requirement"
+      - "qualification -> only the two endpoint automorphisms map to bottom identities"
+      - "intertwining -> the Arrow square is the existing source-comp-c equals c-comp-target equation"
+      - "group isomorphism -> qualifiedComparisonSubgroup c is MulEquiv to the new qualified reversible automorphism subgroup"
+      - "projections -> source and target projections agree in both directions and retain full GeometryTotalHom maps"
+    undischarged_assumptions: []
+    acceptance_point: "B2 derives the existing subgroup equation from the Arrow square and constructs both endpoint projections before the final equivalence."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "B3 and C--D"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "toKaroubi supplies identity endpoint idempotents"
+      - "Core.isoMk realizes each endpoint-pair square as a reversible comparison change"
+      - "the Arrow morphism equation supplies comparison preservation"
+      - "compositeFiberAutSubgroup supplies the actual endpoint base-identity qualification"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonStabilizer; exit 0"
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.ThreeStageProjection; exit 0"
+    - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean; exit 0"
+    - "module terminal axiom audit: 26 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B3: specialize the embedded comparison object, group equivalence, and endpoint projections to generatedCompatibleUpperGeometryMateAt"
+```
+
+### Cycle 5 acceptance spine
+
+`identityIdempotentReversibleComparison c` は任意の完全幾何比較 `c` を、
+両端のraw恒等冪等射を持つ `Core (M(E_geom))` の対象へ入れる。
+`identityIdempotentReversibleComparison_projected_hom` は比較自身の底像が
+`c.base.base` であることだけを述べ、恒等性を要求しない。
+`baseQualifiedReversibleComparisonSubgroup c` はその自己同型のうち両端だけが
+合成投影で底の恒等射へ送られるものを選ぶ。
+`qualifiedComparisonReversibleMulEquiv c` はArrowの可換正方形を用いて、これを既存の
+`qualifiedComparisonSubgroup c` と群同型にし、独立に構成した両端射影と完全幾何写像を保つ。
+
+Cycle 5 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `G,H : GeometryPackage U` と任意の `c : GeometryTotalHom G H`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。資格は自己同型の両端にだけ課す。
 - `conclusion-equivalent-risk`: 該当なし。
