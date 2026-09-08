@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: A の最大亜群
-- pending proof obligations: A の最大亜群、B、C、D
+- current proof obligation: B の三段投影とqualified比較群
+- pending proof obligations: B、C、D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A の可逆な表示変更を `M(E)` の最大亜群として固定
+- next proof obligation: B の三圏と投影関手へAを適用し、合成投影との整合を固定
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -131,6 +131,7 @@ Cycle 1 の material premise role は次のとおりである。
 - `discharge-required`: 追加premiseなし。
 - `conclusion-equivalent-risk`: 該当なし。
 
+
 ## Cycle 2 — Functor naturality and coherence
 
 ```yaml
@@ -243,4 +244,102 @@ Cycle 2 の material premise role は次のとおりである。
   対象と射が持つ定義上の法則、関手法則。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加premiseなし。比較式は `F.map_comp` から導く。
+- `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 3 — Maximal subgroupoid of comparison changes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 3
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 466af9b2a384b254323d9a0fa2549b6b74aee497
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 2 result: A2 discharged; A3 selected next"
+  proof_dag_predecessors:
+    - CategoryTheory.Core
+    - AAT.AG.RealizationComparisonIdempotents.karoubiArrowEquivalence
+  proof_obligation: "A3: define reversible representation changes as the maximal subgroupoid of M(E), retaining every comparison object"
+  selection_reason: "A3 closes clause A and fixes the groupoid read used by the qualified automorphism groups in B and D."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean
+    - AAT.AG.RealizationComparisonIdempotents.ReversibleRepresentationChanges
+  risks:
+    - "using a full subcategory on invertible comparison arrows and thereby dropping objects"
+    - "characterizing only some invertible changes rather than all isomorphisms"
+    - "naming Core without recording its groupoid factorization property"
+  unchecked:
+    - "B--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Instantiated the comparison category and its Core, proved that inclusion is object-surjective, identified core morphisms with all comparison isomorphisms, and exposed the factorization of every groupoid functor through the inclusion."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.RealizationComparisonCategory
+    - AAT.AG.RealizationComparisonIdempotents.ReversibleRepresentationChanges
+    - AAT.AG.RealizationComparisonIdempotents.reversibleRepresentationInclusion_obj_surjective
+    - AAT.AG.RealizationComparisonIdempotents.reversibleRepresentationHomEquiv
+    - AAT.AG.RealizationComparisonIdempotents.reversibleRepresentationLift
+    - AAT.AG.RealizationComparisonIdempotents.reversibleRepresentationLift_comp_inclusion
+  claim_mapping:
+    theorem_names:
+      - reversibleRepresentationInclusion_obj_surjective
+      - reversibleRepresentationHomEquiv
+      - reversibleRepresentationLift_comp_inclusion
+    source_labels:
+      - "fixed target A: reversible representation changes are the maximal subgroupoid of M(E)"
+    conjuncts:
+      - "objects -> every object of Arrow(Karoubi E), with no invertibility condition on its comparison arrow"
+      - "morphisms -> exactly isomorphisms in Arrow(Karoubi E)"
+      - "maximality -> every functor from a groupoid factors through Core inclusion"
+    undischarged_assumptions: []
+    acceptance_point: "A3 uses the canonical Core, retains all comparison objects, and records both the all-isomorphism hom characterization and groupoid factorization."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "all B--D construction obligations"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "Core.of retains every comparison object"
+      - "CoreHom.iso identifies every reversible change"
+      - "Core.functorToCore supplies groupoid factorization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.FunctorNaturality; exit 0"
+    - "lake env lean ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean; exit 0"
+    - "module terminal axiom audit: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B1: instantiate A on the geometry, core, and extraction categories and prove compatibility with the composite projection"
+```
+
+### Cycle 3 acceptance spine
+
+`ReversibleRepresentationChanges E` は `Core (Arrow (Karoubi E))` である。
+`reversibleRepresentationInclusion_obj_surjective` は任意の比較対象がそのままCoreの対象に
+なることを示し、比較射自体の可逆性を対象条件にしない。
+`reversibleRepresentationHomEquiv` はCoreの射が元の比較圏の全同型と正確に一致することを示す。
+さらに `reversibleRepresentationLift_comp_inclusion` は任意のgroupoidから比較圏への関手が
+Core inclusionを経由することを固定する。
+
+Cycle 3 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の圏 `E`、標準的な `Core` とgroupoidの法則。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加premiseなし。
 - `conclusion-equivalent-risk`: 該当なし。
