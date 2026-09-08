@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "goal": "completion-fixture",
+  "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+  "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+  "criteria": [
+    "classification",
+    "decisions"
+  ],
+  "claims": [
+    {
+      "id": "input",
+      "criterion": "classification",
+      "goal_quote": "入力条件の必要十分性",
+      "direction": "iff",
+      "declarations": [
+        "CompletionFixture.inputCharacterization"
+      ],
+      "central": [
+        "CompletionFixture.inputCharacterization",
+        "CompletionFixture.differenceCriterion",
+        "CompletionFixture.kernelInputCriterion"
+      ],
+      "routes": [
+        {
+          "from": "CompletionFixture.inputCharacterization",
+          "to": "CompletionFixture.differenceCriterion",
+          "distance": "direct"
+        },
+        {
+          "from": "CompletionFixture.inputCharacterization",
+          "to": "CompletionFixture.kernelInputCriterion",
+          "distance": "direct"
+        }
+      ]
+    },
+    {
+      "id": "decisions",
+      "criterion": "decisions",
+      "goal_quote": "成立例と不成立例",
+      "direction": "decision",
+      "declarations": [
+        "CompletionFixture.identityMember",
+        "CompletionFixture.negativeMember"
+      ],
+      "central": [
+        "CompletionFixture.identityMember",
+        "CompletionFixture.negativeMember"
+      ],
+      "routes": []
+    }
+  ],
+  "premises": [],
+  "evidence": {
+    "goal_claim_and_artifacts": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "statement_strength": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "all_discharge_required": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "certificate_provenance": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "proof_use": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "structure_field_escape": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "route_integrity": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "nonvacuity": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "direction_coverage": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "definition_unfolding": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "dependency_dag": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "axiom_audit": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "placeholder_scan": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "artifact_sync": [
+      "CompletionFixture.inputCharacterization"
+    ],
+    "regression_gate": [
+      "CompletionFixture.inputCharacterization"
+    ]
+  }
+}
