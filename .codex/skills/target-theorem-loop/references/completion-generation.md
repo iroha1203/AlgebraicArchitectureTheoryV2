@@ -43,6 +43,14 @@ subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に�
 receiptはコマンド実行証拠なので手で作成・編集しない。第三者査読はreceiptとsourceを
 照合し、必要な対象だけを独立に再実行する。
 
+byte一致を要求する再生成は、同じ保存済みbundleと補助入力からのrenderを指す。
+check/collectの再実行では、head、`--base`の解決commit、platformを含むLean version、
+toolchain artifactのhash、出力先のrepo相対pathや実行記録もpacket digestへ影響する。
+同じ環境での再実行だけではdigest一致を保証しない。別環境の検証では`result: pass`と
+検査内容を確認し、元のpacketとの同一性を示す場合はこれらの入力も照合する。
+元bundleの`validate`は、現在のsource snapshot・toolchain・artifactが記録と異なれば
+失敗する。この不一致を無視して承認しない。
+
 各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
 独自の位置付き走査の全件集合と照合し、欠落も余分な参照も拒否する。projection名は
 `Expr.const`と別のmetadataなので、この集合比較から分ける。全Expr constructorを持つ
