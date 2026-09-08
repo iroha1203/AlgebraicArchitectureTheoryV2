@@ -9,6 +9,9 @@
    カード内に新しい形式識別fieldを追加しない。
 2. 新規カードではactive化時に、GOALの固定commitと、共通基準を読むcommit・pathを
    tracking Issueへ記録する。draftの記載点検では作業中の版を使う。
+   targetが参照する既存宣言の解決commitもactive化時に記録する。原則はGOALの固定commitとし、
+   別版を参照する宣言はcommit・path・宣言名を特定する。実装時の参照版変更で指示対象や要求が
+   変わる場合は、人間の判断と変更箇所をIssueへ記録してから適用する。
    再開時は記録した版を`git show <commit>:<path>`などで読み、参照先の共通基準も同じ
    commitから解決する。版変更は人間の判断と変更箇所をIssueへ記録してから適用する。
 3. 既存カードは人間が固定した内容と従来の適用版で読む。版は既存のtracking Issue・
