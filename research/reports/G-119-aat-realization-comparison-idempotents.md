@@ -15,13 +15,17 @@ proof-use、検証、査読結果を cycle ごとに記録する。
   `completion-ledger.md` blob `52af37a4f0bdbe839c7839875057c0a53280929c`
   （Issue #4416 comment 5605317972 の人間判断による）
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: 固定target A–D 全体の手組みcompletion audit
+- current proof obligation: completion audit の dependency-provenance closure を有限で
+  source-exactな受理単位へ再設計する
 - pending mathematical proof obligations: none after Cycle 13 acceptance
 - current target state: `target-proof-checkpoint`
-- completion candidate: yes。Cycle 13 は PR #4429、merge
+- mathematical implementation candidate: yes。Cycle 13 は PR #4429、merge
   `36d6e8de7541f3bb038ef99c2501367457ccea4e` で受理済み
-- next proof obligation: 固定headで手組みのschema-complete completion packetを作り、
-  標準PR reviewとは独立したfresh 4-lane最終査読を実施する
+- completion certification: stopped。PR #4436 の6回のwhole-GOAL査読で、修正後も
+  predecessor provenance の新しい深度から中心findingが連続して発生し、
+  `review stagnation` 停止条件に達した
+- next proof obligation: 別sessionで、proof-bearing predecessorの受理単位と
+  generic infrastructureの停止境界を、証明本体より重くならない有限contractとして設計する
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1688,4 +1692,79 @@ audits:
     - "focused checks, declaration audits, and CI remain to be fixed on the completion PR head"
   blocking_findings: []
   next_obligation: "fix the audit PR head, run standard review, post the hand-written final packet, and run four fresh completion-review lanes"
+```
+
+## Cycle 15 — Completion review stagnation stop
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 15
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: c1a63e7f67e07e6a3bc1b8d02ff6d627bf192be0
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "PR #4436 completion-audit head 7d268f3ba68ce692340a905b03c1efc41f231f39"
+  proof_dag_predecessors:
+    - "Cycles 1--13 accepted Lean declarations"
+    - "standard PR review Mergeable comment 5605885691"
+    - "whole-GOAL packet revisions 5606019259, 5606431724, 5606666514, 5606802315, 5606957457, 5607345514"
+  proof_obligation: "obtain four simultaneous No major findings verdicts for one schema-complete whole-GOAL packet"
+  selection_reason: "This is the sole remaining completion certification gate; no mathematical A--D obligation was reopened."
+  expected_result_type: proof-obligation-discharged
+  lean_targets: []
+  risks:
+    - "allowing the transitive predecessor inventory to expand one level per review"
+    - "confusing an accepted theorem body with a closed completion-evidence lineage"
+    - "letting audit machinery become more expensive than the proof"
+  unchecked:
+    - "a finite accepted-unit rule for material predecessor provenance"
+    - "a stable stopping boundary between proof-bearing generators and generic infrastructure"
+result:
+  proposed_result_type: rejected
+  proof_obligation_delta: "No A--D theorem statement or proof body changed. Completion certification remains unproved."
+  completion_candidate: no
+  lean_artifacts: []
+  evidence:
+    - "authoritative packet at the stopping head: PR #4436 comment 5607345514"
+    - "current-head raw Cycle 1--4 focused evidence: PR #4436 comment 5606640527"
+    - "six completed fresh four-lane review batches; each repair was followed by a new batch rather than direct confirmation"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - "fixed target A--D remain individually accepted through Cycle 13"
+    conjuncts:
+      - "whole-GOAL completion was not certified because at least one lane vetoed every batch"
+      - "the latest veto found unresolved provenance for the evolving Formal finite-fixture leaf and additional declaration/import edges in the D4 witness lineage"
+    undischarged_assumptions: []
+    acceptance_point: "review stagnation is a process stop, not a mathematical refutation and not target-theorem-proved"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "completion-evidence dependency closure contract"
+  certificate_provenance:
+    discharged: []
+    unresolved:
+      - "D4 finite-fixture origin/review provenance at declaration granularity"
+  proof_use:
+    used: []
+    unused:
+      - "all superseded packet revisions as completion evidence"
+      - "all vetoed review batches as a completion verdict"
+  structure_field_escape: none-found
+  route_integrity: cannot-determine
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "PR #4436 CI 7/7 passed at 7d268f3ba68ce692340a905b03c1efc41f231f39; CI is not a completion verdict"
+    - "Research aggregate/full build was not run"
+    - "two targeted dependency builds that expanded to 4,167 and 4,135 jobs were stopped and excluded from evidence"
+  blocking_findings:
+    - "review stagnation: at least five consecutive completion-review cycles produced a remaining or newly exposed central dependency-provenance finding after repair"
+  next_obligation: "stop PR #4436 without merge; redesign the finite accepted-unit rule for predecessor provenance in a separate session before resuming G-119 completion certification"
 ```
