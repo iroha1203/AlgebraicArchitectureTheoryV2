@@ -13,7 +13,7 @@
       "tracking_issue_ref": "https://github.com/example/project/issues/2"
     },
     "selected_owner": "focused-source-receipt-required",
-    "repository_local": "runtime-only-material-must-be-selected",
+    "repository_local": "runtime-only-material-selected-or-reviewed",
     "external_lake": "manifest-pinned-artifact-trust",
     "source_build_claim": false
   },

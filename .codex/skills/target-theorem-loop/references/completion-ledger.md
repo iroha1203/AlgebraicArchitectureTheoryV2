@@ -9,7 +9,8 @@ v2 packetのfieldとenum検査は生成器に集約する。source snapshot、cl
 全15 gateの証拠、command receipt、適用したdependency policyとその人間承認refをbundleに置き、
 packetからdigestで参照する。focused owner、manifest固定外部依存、同一repo runtime依存の分類を保持し、
 後二者についてsource buildを実施したとは主張しない。選択proof valueから到達する同一repo terminalは、
-focused ownerまたはdeclaration digest・review ref付きreviewed predecessorとしてpacketに現れなければならない。
+focused ownerまたは型/値/axiomを含むdeclaration digest・reviewed head・source blob・artifact ID・
+review ref付きreviewed predecessorとしてpacketに現れなければならない。
 `direction_coverage`はclaimごとの複数exact refと型を保持する。`dependency_dag`は
 target acceptance spineであり、direct/viaと型参照を区別する。完全性の範囲と査読責務は
 [生成手順](completion-generation.md)に従う。

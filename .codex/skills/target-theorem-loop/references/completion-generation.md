@@ -89,14 +89,16 @@ registryはmanifest pin、Git source blob、既存olean componentのhash、Lean 
 
 外部Lake packageはmanifest固定artifact trust、同一repoの非選択artifactはruntime dependencyに分類する。
 後者が選択宣言のproof valueから到達する場合、そのownerを選択ownerへ追加するか、exact owner、
-terminal declaration digest、既受理review commentを`reviewed_predecessors`へ固定する。生成器はregistryの
+terminalの型・値・axiom等を含むdeclaration digest、reviewed head、source blob、使用artifact ID、
+既受理review commentを`reviewed_predecessors`へ固定する。生成器はregistryの
 baseline module分類とLean抽出のvalue-origin terminalを結合し、未列挙と余分な列挙をともに拒否する。
 packetは三分類の件数とmembers digest、人間判断のtracking/conflict/decision ref、
 `source_build_claim: false`を保持する。selected owner leafだけをfocused `lean -o`する範囲を越えて、
 依存artifactをsource-build証拠として主張しない。固定適用版からcompletion方法を変更する場合は、targetと
 anti-weakening条件を維持した人間判断をtracking Issueへ記録し、そのrefを対応表へ固定する。
 authorizationは同一GitHub repositoryの異なるtracking/conflict Issueと、conflict Issue上のdecision commentを
-区別して固定し、GOAL IDとも結合する。生成器はURL形と役割を検査し、最終査読はリンク先本文が実際の
+区別して固定し、GOAL IDおよび現在のbaseline GitHub repositoryとも結合する。
+reviewed predecessorのcommentも同じrepositoryに限定する。生成器はURL形と役割を検査し、最終査読はリンク先本文が実際の
 人間判断であることを確認する。
 
 各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
@@ -171,6 +173,8 @@ fresh 4査読へ送る。schemaの意味や抽出結果を変える修正も再�
 4 laneと全gateを検査する。直接確認を使う場合は`--old-packet`と`--recheck`を追加する。
 review/gates/recheckは独立査読・親の統合判断を構造化した入力であり、generatorが作成する
 数学判断ではない。schemaは実装の`route_findings`/`ledger`、例は対応するtestを参照する。
+Python APIの公開`render`、`validate_packet`、`ledger`もCLIと同じlive bundle検証とevidence file解決を
+内部で実行する。構造だけを試すprivate helperの出力をcompletion成果物として扱わない。
 
 review入力は`packet_digest`、`implementer`、4つの`lanes`、`lane_evidence`、`findings`を持つ。
 各laneには別のreviewer ID、全gateの`checked_gates`、空の`unchecked_central_claim`、

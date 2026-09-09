@@ -83,9 +83,9 @@ def main():
             "indirect path lost")
     cp.need("CompletionFixture.positive" not in terms("CompletionFixture.typedOnly"), "type confused with term")
     cp.need("CompletionFixture.differenceCriterion" in terms("CompletionFixture.bySimp"), "simp dependency lost")
-    packet = cp.render(bundle, {"notes": "", "refs": []})
+    packet = cp.render(repo, bundle, {"notes": "", "refs": []})
     cp.write(out / "packet.json", packet)
-    cp.validate_packet(bundle, packet)
+    cp.validate_packet(repo, bundle, packet)
     # Removing every type reference passed the old partial checks. It must fail now.
     missing_types = copy.deepcopy(bundle["extraction"])
     for row in missing_types["declarations"]:
@@ -96,11 +96,11 @@ def main():
         pass
     else:
         raise cp.Invalid("missing type category accepted")
-    cp.need(cp.canonical(cp.render(bundle, {"notes": "", "refs": []})) == cp.canonical(packet), "nondeterministic render")
+    cp.need(cp.canonical(cp.render(repo, bundle, {"notes": "", "refs": []})) == cp.canonical(packet), "nondeterministic render")
     forged = copy.deepcopy(packet)
     forged["core"]["direction_coverage"].pop()
     try:
-        cp.validate_packet(bundle, forged)
+        cp.validate_packet(repo, bundle, forged)
     except cp.Invalid:
         pass
     else:

@@ -150,6 +150,38 @@ def public_repository_url(url):
     return value
 
 
+def github_repository(url):
+    """Return the canonical GitHub owner/repository pair for a public Git remote."""
+    value = normalize_url(public_repository_url(url))
+    patterns = (
+        r"https://github\.com/([^/]+)/([^/]+)",
+        r"git://github\.com/([^/]+)/([^/]+)",
+        r"git@github\.com:([^/]+)/([^/]+)",
+        r"ssh://git@github\.com/([^/]+)/([^/]+)",
+    )
+    match = next((re.fullmatch(pattern, value) for pattern in patterns
+                  if re.fullmatch(pattern, value) is not None), None)
+    need(match is not None, "completion authorization requires a GitHub repository")
+    return match.group(1), match.group(2)
+
+
+def github_ref_repository(ref):
+    match = re.fullmatch(r"https://github\.com/([^/]+)/([^/]+)/(?:issues|pull)/[1-9][0-9]*(?:#issuecomment-[1-9][0-9]*)?", ref)
+    need(match is not None, "invalid GitHub evidence ref")
+    return match.group(1), match.group(2)
+
+
+def validate_mapping_repository(repo, mapping):
+    """Reject authorization or predecessor reviews from a repository other than this checkout."""
+    expected = github_repository(run(["git", "remote", "get-url", "origin"], repo))
+    authorization = mapping["dependency_policy"]["authorization"]
+    refs = [authorization["decision_ref"], authorization["conflict_issue_ref"],
+            authorization["tracking_issue_ref"]]
+    refs.extend(predecessor["review_ref"] for predecessor in mapping["reviewed_predecessors"])
+    need(all(github_ref_repository(ref) == expected for ref in refs),
+         "evidence ref repository differs from baseline repository")
+
+
 def manifest_for(repo, source):
     source_path = repo / relative(repo, source)
     candidates = [p / "lake-manifest.json" for p in source_path.parents if p.is_relative_to(repo)]
@@ -198,7 +230,7 @@ def package_owners(repo, manifest, data):
     # The parent repository is always a valid baseline owner, even if a Lake
     # manifest omits its conventional path entry.
     if not any(owner == repo for owner, _, _ in result):
-        result.append((repo, manifest.parent, {"type": "path", "name": data["name"], "dir": "."}))
+        result.append((repo, manifest.parent, {"type": "root", "name": data["name"], "dir": "."}))
     return result
 
 
@@ -212,7 +244,7 @@ def repo_identity(owner, repo, manifest_ref, entry):
         need(normalize_url(remote) == normalize_url(entry["url"]), f"repository identity mismatch: {entry['name']}")
         identity = {"kind": "lake-git", "url": entry["url"], "commit": commit,
                     "manifest": manifest_ref, "manifest_entry": entry}
-    else:
+    elif entry["type"] in ("path", "root"):
         need(owner == repo, "path package outside baseline repository")
         remote = run(["git", "remote", "get-url", "origin"], owner)
         public_repository_url(remote)
@@ -267,20 +299,26 @@ def validate_artifact_metadata(metadata):
     fields(metadata["repository"], ["kind", "url", "commit", "manifest", "manifest_entry"])
     need(metadata["repository"]["kind"] in ("baseline", "lake-git"), "repository kind")
     entry_type = metadata["repository"]["manifest_entry"].get("type")
-    need((metadata["repository"]["kind"], entry_type) in (("baseline", "path"), ("lake-git", "git")),
+    need((metadata["repository"]["kind"], entry_type) in
+         (("baseline", "path"), ("baseline", "root"), ("lake-git", "git")),
          "repository kind/manifest entry mismatch")
     public_repository_url(metadata["repository"]["url"])
 
 
 def validate_repository(repo, identity):
     entry = identity["manifest_entry"]
-    need((identity["kind"], entry.get("type")) in (("baseline", "path"), ("lake-git", "git")),
+    need((identity["kind"], entry.get("type")) in
+         (("baseline", "path"), ("baseline", "root"), ("lake-git", "git")),
          "repository kind/manifest entry mismatch")
     manifest_ref = identity["manifest"]
     need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), manifest_ref["path"]) == manifest_ref,
          "registry manifest mismatch")
     manifest = read(repo / manifest_ref["path"])
-    need(entry in manifest["packages"], "manifest entry no longer pinned")
+    if entry["type"] == "root":
+        need(entry == {"type": "root", "name": manifest["name"], "dir": "."},
+             "baseline root identity mismatch")
+    else:
+        need(entry in manifest["packages"], "manifest entry no longer pinned")
     owners = package_owners(repo, repo / manifest_ref["path"], manifest)
     matches = [(owner, package_dir, row) for owner, package_dir, row in owners if row == entry]
     need(len(matches) == 1, "manifest owner resolution mismatch")
@@ -751,17 +789,24 @@ def validate_map(mapping):
     need(authorization["conflict_issue_ref"] != authorization["tracking_issue_ref"],
          "conflict and tracking issues must differ")
     need(policy["selected_owner"] == "focused-source-receipt-required", "selected owner policy")
-    need(policy["repository_local"] == "runtime-only-material-must-be-selected", "repository-local policy")
+    need(policy["repository_local"] == "runtime-only-material-selected-or-reviewed", "repository-local policy")
     need(policy["external_lake"] == "manifest-pinned-artifact-trust", "external Lake policy")
     need(policy["source_build_claim"] is False, "dependency policy must not claim source build")
     array(mapping["reviewed_predecessors"])
     predecessor_names = []
     for predecessor in mapping["reviewed_predecessors"]:
-        fields(predecessor, ["declaration", "owner", "declaration_digest", "review_ref"])
+        fields(predecessor, ["declaration", "owner", "declaration_digest", "reviewed_head",
+                             "source_blob", "artifact_id", "review_ref"])
         string(predecessor["declaration"])
         string(predecessor["owner"])
         need(re.fullmatch(r"[0-9a-f]{64}", predecessor["declaration_digest"]) is not None,
              "predecessor declaration digest")
+        need(re.fullmatch(r"[0-9a-f]{40}", predecessor["reviewed_head"]) is not None,
+             "predecessor reviewed head")
+        need(re.fullmatch(r"[0-9a-f]{40}", predecessor["source_blob"]) is not None,
+             "predecessor source blob")
+        need(re.fullmatch(r"[0-9a-f]{64}", predecessor["artifact_id"]) is not None,
+             "predecessor artifact ID")
         need(re.fullmatch(r"https://github\.com/[^/]+/[^/]+/(?:issues|pull)/[1-9][0-9]*#issuecomment-[1-9][0-9]*",
                           predecessor["review_ref"]) is not None, "predecessor review ref")
         predecessor_names.append(predecessor["declaration"])
@@ -830,9 +875,15 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
     validate_map(mapping)
     repository_artifacts = {} if repository_artifacts is None else repository_artifacts
     need(isinstance(repository_artifacts, dict), "repository artifact context")
-    for module, artifact_id in repository_artifacts.items():
+    for module, artifact in repository_artifacts.items():
         string(module)
-        need(re.fullmatch(r"[0-9a-f]{64}", artifact_id) is not None, "repository artifact ID")
+        fields(artifact, ["artifact_id", "source", "repository_commit"])
+        need(re.fullmatch(r"[0-9a-f]{64}", artifact["artifact_id"]) is not None, "repository artifact ID")
+        fields(artifact["source"], ["path", "blob"])
+        need(re.fullmatch(r"[0-9a-f]{40}", artifact["source"]["blob"]) is not None,
+             "repository source blob")
+        need(re.fullmatch(r"[0-9a-f]{40}", artifact["repository_commit"]) is not None,
+             "repository commit")
     fields(extraction, ["schema_version", "modules", "declarations", "terminals"])
     need(extraction["schema_version"] == VERSION, "extractor schema")
     distinct(extraction["modules"], "owner modules")
@@ -864,9 +915,14 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
         rows[row["name"]] = row
     terminal_rows = {}
     for terminal in extraction["terminals"]:
-        fields(terminal, ["name", "owner", "type"])
-        for field in ("name", "owner", "type"):
+        fields(terminal, ["name", "owner", "kind", "universe_parameters", "type_display", "source_range",
+                          "type", "value", "axioms", "constant_names", "references"])
+        for field in ("name", "owner", "type", "kind", "type_display"):
             string(terminal[field])
+        need(terminal["value"] is not None, "reviewable terminal value unavailable")
+        string(terminal["value"])
+        distinct(terminal["axioms"], "terminal axioms", allow_empty=True)
+        need(set(terminal["axioms"]) <= ALLOWED_AXIOMS, "terminal axiom audit failed")
         need(terminal["name"] not in terminal_rows, "duplicate extracted terminal")
         terminal_rows[terminal["name"]] = terminal
     terminals = set(terminal_rows)
@@ -937,10 +993,19 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
         terminal = terminal_rows[predecessor["declaration"]]
         need(predecessor["owner"] == terminal["owner"], "predecessor owner mismatch")
         need(predecessor["declaration_digest"] == digest(terminal), "predecessor declaration mismatch")
+        artifact = repository_artifacts[terminal["owner"]]
+        need(predecessor["artifact_id"] == artifact["artifact_id"], "predecessor artifact mismatch")
+        need(predecessor["source_blob"] == artifact["source"]["blob"], "predecessor source mismatch")
+        need(predecessor["reviewed_head"] == artifact["repository_commit"], "predecessor reviewed head mismatch")
         predecessor_nodes.append({"name": terminal["name"], "owner": terminal["owner"],
                                   "type": terminal["type"], "kind": "reviewed-predecessor",
                                   "declaration_digest": digest(terminal),
-                                  "artifact_id": repository_artifacts[terminal["owner"]],
+                                  "type_digest": digest(terminal["type"]),
+                                  "value_digest": digest(terminal["value"]),
+                                  "axioms": terminal["axioms"],
+                                  "artifact_id": artifact["artifact_id"],
+                                  "source": artifact["source"],
+                                  "reviewed_head": artifact["repository_commit"],
                                   "review_ref": predecessor["review_ref"]})
         for start in sorted(central):
             path = path_between(rows, start, terminal["name"])
@@ -1027,7 +1092,8 @@ def repository_artifact_context(index, artifact_ids, receipts):
         if artifact_id in owner_ids or row["repository"]["kind"] != "baseline":
             continue
         need(row["module"] not in context, f"multiple repository runtime artifacts: {row['module']}")
-        context[row["module"]] = artifact_id
+        context[row["module"]] = {"artifact_id": artifact_id, "source": row["source"],
+                                  "repository_commit": row["repository"]["commit"]}
     return context
 
 
@@ -1102,6 +1168,7 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
     need(registry is not None, "registry is required by the dependency policy")
     mapping = read(mapping_path)
     validate_map(mapping)
+    validate_mapping_repository(repo, mapping)
     snap = snapshot(repo)
     head = snap["head"]
     mapping_ref = blob(repo, head, mapping_path)
@@ -1154,6 +1221,8 @@ def validate_bundle(repo, b):
         ref = b["source"][key]
         need(blob(repo, head, ref["path"]) == ref, f"{key} ref mismatch")
     need(read(repo / b["source"]["mapping"]["path"]) == b["mapping"], "mapping differs from fixed source")
+    validate_map(b["mapping"])
+    validate_mapping_repository(repo, b["mapping"])
     fields(b["registry"], ["path", "artifact_ids", "artifact_set_digest", "evidence"])
     registry = repo / relative(repo, b["registry"]["path"])
     artifact_ids = b["registry"]["artifact_ids"]
@@ -1176,7 +1245,7 @@ def validate_bundle(repo, b):
     need(core == b["core"], "core was edited")
 
 
-def render(bundle, auxiliary):
+def _render_validated(bundle, auxiliary):
     need("registry" in bundle, "registry is required by the dependency policy")
     fields(auxiliary, ["notes", "refs"])
     need(isinstance(auxiliary["notes"], str), "notes type")
@@ -1194,8 +1263,21 @@ def render(bundle, auxiliary):
     return packet
 
 
-def validate_packet(bundle, packet):
-    need(packet == render(bundle, packet.get("auxiliary", {})), "packet differs from generated result")
+def render(repo, bundle, auxiliary):
+    """Validate every live input before rendering a public completion packet."""
+    validate_bundle(repo, bundle)
+    return _render_validated(bundle, auxiliary)
+
+
+def _validate_packet_generated(bundle, packet):
+    need(packet == _render_validated(bundle, packet.get("auxiliary", {})),
+         "packet differs from generated result")
+
+
+def validate_packet(repo, bundle, packet):
+    """Validate the live bundle and exact generated packet."""
+    validate_bundle(repo, bundle)
+    _validate_packet_generated(bundle, packet)
 
 
 def evidence_ref(ref):
@@ -1253,7 +1335,7 @@ def route_findings(old, new, review):
     return "independent-direct-recheck-required"
 
 
-def ledger(packet, review, gates, recheck=None, old=None):
+def _ledger_validated(packet, review, gates, recheck=None, old=None):
     fields(gates, GATES + ["root_recheck", "standard_pr_review", "acceptance_check", "premise_status", "completed_criteria", "stage_evidence"])
     need(all(gates[g] == "pass" for g in GATES + ["root_recheck", "acceptance_check"]), "gate not pass")
     need(gates["standard_pr_review"] == "Mergeable", "standard PR gate")
@@ -1296,6 +1378,18 @@ def ledger(packet, review, gates, recheck=None, old=None):
             "remaining_proof_obligations": [], "unchecked_central_claim": [], "blockers": []}
 
 
+def ledger(repo, bundle, packet, review, gates, recheck=None, old=None):
+    """Validate packet and stored review evidence before emitting a proved ledger."""
+    validate_packet(repo, bundle, packet)
+    for row in review["lane_evidence"].values():
+        resolve_evidence(repo, row["ref"])
+    for row in gates["stage_evidence"].values():
+        resolve_evidence(repo, row["ref"])
+    if recheck:
+        resolve_evidence(repo, recheck["evidence"])
+    return _ledger_validated(packet, review, gates, recheck, old)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
@@ -1319,7 +1413,7 @@ def main():
         c = sub.add_parser(command)
         c.add_argument("--bundle", required=True)
         c.add_argument("--packet", required=True)
-        c.add_argument("--registry")
+        c.add_argument("--registry", required=True)
         if command == "render":
             c.add_argument("--auxiliary")
         if command == "ledger":
@@ -1346,23 +1440,18 @@ def main():
         b = read(a.bundle)
         need(a.registry is not None, "--registry is required by the dependency policy")
         need(relative(repo, a.registry) == b["registry"]["path"], "explicit registry does not match bundle")
-        validate_bundle(repo, b)
         if a.command == "render":
-            packet = render(b, read(a.auxiliary) if a.auxiliary else {"notes": "", "refs": []})
+            packet = render(repo, b, read(a.auxiliary) if a.auxiliary else {"notes": "", "refs": []})
             write(a.packet, packet)
             Path(a.packet + ".md").write_text("```json\n" + json.dumps(packet, ensure_ascii=False, indent=2) + "\n```\n")
         else:
             packet = read(a.packet)
-            validate_packet(b, packet)
-            if a.command == "ledger":
+            if a.command == "validate":
+                validate_packet(repo, b, packet)
+            else:
                 review, gates = read(a.review), read(a.gates)
-                for row in review["lane_evidence"].values():
-                    resolve_evidence(repo, row["ref"])
-                for row in gates["stage_evidence"].values():
-                    resolve_evidence(repo, row["ref"])
-                if a.recheck:
-                    resolve_evidence(repo, read(a.recheck)["evidence"])
-                write(a.out, ledger(packet, review, gates, read(a.recheck) if a.recheck else None,
+                write(a.out, ledger(repo, b, packet, review, gates,
+                                    read(a.recheck) if a.recheck else None,
                                     read(a.old_packet) if a.old_packet else None))
     print("ok")
 

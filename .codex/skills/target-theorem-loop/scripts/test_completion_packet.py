@@ -25,7 +25,7 @@ def mapping():
                                   "conflict_issue_ref": "https://github.com/example/project/issues/1",
                                   "tracking_issue_ref": "https://github.com/example/project/issues/2"},
                 "selected_owner": "focused-source-receipt-required",
-                "repository_local": "runtime-only-material-must-be-selected",
+                "repository_local": "runtime-only-material-selected-or-reviewed",
                 "external_lake": "manifest-pinned-artifact-trust", "source_build_claim": False},
             "reviewed_predecessors": [], "criteria": ["classification", "decisions"],
             "claims": [
@@ -262,6 +262,20 @@ class PacketTests(unittest.TestCase):
                 owners = cp.package_owners(repo, manifest, data)
             self.assertTrue(any(owner == resolved_package and row == entry for owner, _, row in owners))
 
+    def test_manifest_adds_explicit_root_baseline_identity(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d).resolve()
+            manifest = repo / "lake-manifest.json"
+            manifest.write_text("{}")
+            data = {"version": "1", "packagesDir": ".lake/packages", "packages": [],
+                    "name": "root-fixture", "lakeDir": ".lake"}
+            with patch.object(cp, "run", return_value=str(repo)):
+                owners = cp.package_owners(repo, manifest, data)
+            self.assertEqual(owners, [(repo, repo, {"type": "root", "name": "root-fixture", "dir": "."})])
+            row = self.registry_row("Pkg.A", "f" * 64)
+            row["repository"]["manifest_entry"] = owners[0][2]
+            cp.validate_artifact_metadata(row)
+
     def test_registry_rejects_repository_url_mismatch(self):
         entry = {"type": "git", "name": "pkg", "rev": "a" * 40,
                  "url": "https://example.test/pkg"}
@@ -488,25 +502,47 @@ class PacketTests(unittest.TestCase):
         with self.assertRaisesRegex(cp.Invalid, "kind/manifest entry mismatch"):
             cp.validate_artifact_metadata(row)
 
+    def test_authorization_must_match_baseline_repository(self):
+        with patch.object(cp, "run", return_value="git@github.com:iroha1203/AlgebraicArchitectureTheoryV2.git"):
+            with self.assertRaisesRegex(cp.Invalid, "differs from baseline"):
+                cp.validate_mapping_repository(Path("."), mapping())
+        local = mapping()
+        for key in ("decision_ref", "conflict_issue_ref", "tracking_issue_ref"):
+            local["dependency_policy"]["authorization"][key] = \
+                local["dependency_policy"]["authorization"][key].replace("example/project", "iroha1203/AlgebraicArchitectureTheoryV2")
+        with patch.object(cp, "run", return_value="git@github.com:iroha1203/AlgebraicArchitectureTheoryV2.git"):
+            cp.validate_mapping_repository(Path("."), local)
+
     def test_repository_local_value_terminal_requires_reviewed_predecessor(self):
         x = extraction()
-        terminal = {"name": "RepoLocal.UnreviewedLemma", "owner": "RepoLocal.Unreviewed", "type": "Prop"}
+        terminal = copy.deepcopy(x["declarations"][0])
+        terminal.update({"name": "RepoLocal.UnreviewedLemma", "owner": "RepoLocal.Unreviewed",
+                         "type": "Prop", "type_display": "Prop", "value": "proof-value",
+                         "axioms": []})
         x["terminals"].append(terminal)
         row = next(row for row in x["declarations"] if row["name"] == "CompletionFixture.negativeMember")
         row["references"].append({"name": terminal["name"], "site": "term", "position": "/body",
                                   "origin": "value"})
         row["constant_names"]["value"].append(terminal["name"])
         row["constant_names"]["value"].sort()
-        context = {terminal["owner"]: "f" * 64}
+        context = {terminal["owner"]: {"artifact_id": "f" * 64,
+                                        "source": {"path": "RepoLocal/Unreviewed.lean", "blob": "e" * 40},
+                                        "repository_commit": "d" * 40}}
         with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
             cp.material(mapping(), x, self.goal, context)
         m = mapping()
         m["reviewed_predecessors"] = [{"declaration": terminal["name"], "owner": terminal["owner"],
                                         "declaration_digest": cp.digest(terminal),
+                                        "reviewed_head": "d" * 40, "source_blob": "e" * 40,
+                                        "artifact_id": "f" * 64,
                                         "review_ref": "https://github.com/example/project/pull/3#issuecomment-30"}]
         core = cp.material(m, x, self.goal, context)
         predecessor = core["reviewed_predecessors"][0]
         self.assertEqual(predecessor["artifact_id"], "f" * 64)
+        changed = copy.deepcopy(x)
+        changed["terminals"][0]["value"] = "changed-proof-value"
+        with self.assertRaisesRegex(cp.Invalid, "predecessor declaration mismatch"):
+            cp.material(m, changed, self.goal, context)
         self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
 
     def test_metadata_rejection(self):
@@ -605,7 +641,7 @@ class PacketTests(unittest.TestCase):
                 "registry": {"fixture": "required"}}
 
     def packet(self):
-        return cp.render(self.bundle(), {"notes": "", "refs": []})
+        return cp._render_validated(self.bundle(), {"notes": "", "refs": []})
 
     def review(self, old, cls="packet-only", gate="packet-integrity"):
         return {"packet_digest": cp.digest(old), "implementer": "author", "lanes": {l: "packet-only" for l in cp.LANES},
@@ -620,16 +656,31 @@ class PacketTests(unittest.TestCase):
         self.assertEqual(cp.canonical(p), cp.canonical(self.packet()))
         p["core"]["direction_coverage"].pop()
         with self.assertRaises(cp.Invalid):
-            cp.validate_packet(b, p)
+            cp._validate_packet_generated(b, p)
 
     def test_policy_packet_rejects_missing_registry(self):
         b = self.bundle()
         del b["registry"]
         with self.assertRaisesRegex(cp.Invalid, "registry is required"):
-            cp.render(b, {"notes": "", "refs": []})
+            cp._render_validated(b, {"notes": "", "refs": []})
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaisesRegex(cp.Invalid, "registry is required"):
                 cp.collect(Path(d), "mapping.json", [], "bundle.json", registry=None)
+
+    def test_public_packet_apis_cannot_skip_live_validation(self):
+        b = self.bundle()
+        p = self.packet()
+        with patch.object(cp, "validate_bundle", side_effect=cp.Invalid("live bundle rejected")):
+            with self.assertRaisesRegex(cp.Invalid, "live bundle rejected"):
+                cp.render(Path("."), b, {"notes": "", "refs": []})
+            with self.assertRaisesRegex(cp.Invalid, "live bundle rejected"):
+                cp.validate_packet(Path("."), b, p)
+        review = self.review(p)
+        gates = {"stage_evidence": {"standard_pr_review": {"ref": {"path": "missing", "sha256": "0" * 64}}}}
+        with patch.object(cp, "validate_packet"), \
+             patch.object(cp, "resolve_evidence", side_effect=cp.Invalid("evidence missing")):
+            with self.assertRaisesRegex(cp.Invalid, "evidence missing"):
+                cp.ledger(Path("."), b, p, review, gates)
 
     def test_packet_only_does_not_restart(self):
         old = self.packet()
@@ -705,18 +756,18 @@ class PacketTests(unittest.TestCase):
         gates["stage_evidence"] = {s: {"head": p["head_oid"], "ref": {"path": "fixture-" + s, "sha256": "0" * 64}}
                                    for s in ("standard_pr_review", "acceptance_check", "root_recheck")}
         with self.assertRaisesRegex(cp.Invalid, "recheck missing"):
-            cp.ledger(q, r, gates, old=p)
+            cp._ledger_validated(q, r, gates, old=p)
         check = {"old_packet_digest": cp.digest(p), "new_packet_digest": cp.digest(q), "review_digest": cp.digest(r),
                  "reviewer": "independent-reviewer", "implementer": "author", "qualified": True,
                  "resolved": ["F1"], "evidence": {"path": "fixture-recheck", "sha256": "0" * 64}, "new_findings": []}
-        self.assertEqual(cp.ledger(q, r, gates, check, p)["verdict"], "target-theorem-proved")
+        self.assertEqual(cp._ledger_validated(q, r, gates, check, p)["verdict"], "target-theorem-proved")
         for reviewer in cp.LANES:
             check["reviewer"] = reviewer
             with self.assertRaisesRegex(cp.Invalid, "must be new"):
-                cp.ledger(q, r, gates, check, p)
+                cp._ledger_validated(q, r, gates, check, p)
         check["reviewer"] = "author"
         with self.assertRaises(cp.Invalid):
-            cp.ledger(q, r, gates, check, p)
+            cp._ledger_validated(q, r, gates, check, p)
 
 
 if __name__ == "__main__":
