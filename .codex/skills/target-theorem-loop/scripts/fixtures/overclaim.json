@@ -3,9 +3,9 @@
   "goal": "completion-fixture",
   "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "fixed_goal": {
-    "commit": "8856a3b391bb73d36c0126f379211dc7846c7070",
+    "commit": "99232860082d114a169b942ab33cf43864279748",
     "path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
-    "blob": "48df61b7101cda66b1c6f07a16761195fd3a71f3"
+    "blob": "8982b0e62e84ae02c188c2b4e05abf1bf732eb26"
   },
   "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "dependency_policy": {
