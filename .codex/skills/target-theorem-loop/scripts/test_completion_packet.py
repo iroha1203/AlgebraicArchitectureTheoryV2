@@ -17,6 +17,7 @@ spec.loader.exec_module(cp)
 def mapping():
     n = lambda s: "CompletionFixture." + s
     return {"schema_version": 2, "goal": "completion-fixture", "goal_path": str(HERE / "fixtures/goal.md"),
+            "fixed_goal": {"commit": "8" * 40, "path": str(HERE / "fixtures/goal.md"), "blob": "4" * 40},
             "report_path": str(HERE / "fixtures/goal.md"),
             "dependency_policy": {
                 "schema_version": 1, "method": "focused-owner-plus-pinned-dependency-trust",
@@ -68,6 +69,19 @@ class PacketTests(unittest.TestCase):
         core = self.core()
         self.assertEqual(len(core["direction_coverage"][1]["declarations"]), 2)
         self.assertEqual(len(core["dependency_dag"]["edges"]), 2)
+
+    def test_any_reference_path_preserves_every_hop_kind(self):
+        rows = {
+            "A": {"references": [{"name": "B", "site": "type", "position": "/binder", "origin": "type"}]},
+            "B": {"references": [{"name": "C", "site": "projection", "position": "/0", "origin": "value"}]},
+            "C": {"references": []},
+        }
+        found = cp.path_between_any_reference(rows, "A", "C")
+        self.assertEqual(found["path"], ["A", "B", "C"])
+        self.assertEqual(found["references"], [
+            {"from": "A", "to": "B", "site": "type", "position": "/binder", "origin": "type"},
+            {"from": "B", "to": "C", "site": "projection", "position": "/0", "origin": "value"},
+        ])
 
     def test_array_containers(self):
         for invalid in ({}, "", None, 0):
@@ -198,6 +212,7 @@ class PacketTests(unittest.TestCase):
             empty = {"artifact_ids": []}
             cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean fixture", "manifest": a["repository"]["manifest"],
+                     "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                      "artifacts": {aid: a, bid: b}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
             def fake_run(args, cwd=None, env=None):
                 if args[:2] == ["lean", "--version"]: return "Lean fixture"
@@ -205,10 +220,14 @@ class PacketTests(unittest.TestCase):
                 if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
                 raise AssertionError(args)
             def fake_blob(owner, head, path):
-                return a["repository"]["manifest"] if path == "lake-manifest.json" else {"path": path, "blob": "a" * 40}
+                if path == "lake-manifest.json": return a["repository"]["manifest"]
+                if path == "CompletionRegistry.lean": return {"path": path, "blob": "d" * 40}
+                return {"path": path, "blob": "a" * 40}
             with patch.object(cp, "run", side_effect=fake_run), \
                  patch.object(cp, "blob", side_effect=fake_blob), \
-                 patch.object(cp, "validate_repository", return_value=repo):
+                 patch.object(cp, "validate_repository", return_value=(repo, repo)), \
+                 patch.object(cp, "source_for_module", side_effect=lambda owner, package, module, commit:
+                              a["source"] if module == "Pkg.A" else b["source"]):
                 with self.assertRaisesRegex(cp.Invalid, "root namespace collision"):
                     cp.validate_registry(repo, registry, [aid, bid])
 
@@ -302,6 +321,22 @@ class PacketTests(unittest.TestCase):
                 cp.repo_identity(Path("/tmp/pkg"), Path("/tmp/repo"),
                                  {"path": "lake-manifest.json", "blob": "c" * 40}, entry)
 
+    def test_validator_rejects_external_path_package_as_baseline(self):
+        repo = Path("/tmp/baseline").resolve()
+        external = Path("/tmp/external-path-package").resolve()
+        entry = {"type": "path", "name": "external", "dir": "../external-path-package"}
+        identity = {"kind": "baseline", "url": "https://github.com/example/project",
+                    "commit": "a" * 40,
+                    "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
+                    "manifest_entry": entry}
+        manifest = {"name": "baseline", "packages": [entry]}
+        with patch.object(cp, "blob", return_value=identity["manifest"]), \
+             patch.object(cp, "read", return_value=manifest), \
+             patch.object(cp, "package_owners", return_value=[(external, external, entry)]), \
+             patch.object(cp, "run", return_value="a" * 40):
+            with self.assertRaisesRegex(cp.Invalid, "must belong to baseline"):
+                cp.validate_repository(repo, identity)
+
     def test_repository_url_must_be_public_and_credential_free(self):
         for value in (
             "https://token@github.com/example/repo",
@@ -314,6 +349,8 @@ class PacketTests(unittest.TestCase):
             "https://127.1/example/repo",
             "https://10.1/example/repo",
             "https://0x7f.0.0.1/example/repo",
+            "https://224.0.0.1/example/repo",
+            "https://239.255.255.255/example/repo",
             "https://internal/example/repo",
             "ssh://git@buildhost/example/repo",
             "https://cache.corp/example/repo",
@@ -333,6 +370,7 @@ class PacketTests(unittest.TestCase):
             registry = Path(d)
             cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean old", "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
+                     "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                      "artifacts": {}, "dependency_sets": {}, "roots": {}})
             with patch.object(cp, "run", return_value="Lean current"):
                 with self.assertRaisesRegex(cp.Invalid, "Lean version mismatch"):
@@ -354,6 +392,7 @@ class PacketTests(unittest.TestCase):
                 "schema_version": cp.REGISTRY_VERSION,
                 "lean_version": "Lean current",
                 "manifest": row["repository"]["manifest"],
+                "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                 "artifacts": {artifact_id: row},
                 "dependency_sets": {cp.digest(empty): empty},
                 "roots": {},
@@ -363,8 +402,11 @@ class PacketTests(unittest.TestCase):
                 if args[:2] == ["lean", "--print-prefix"]: return str(repo / "sysroot")
                 if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
                 raise AssertionError(args)
+            def fake_blob(owner, head, path):
+                if path == "CompletionRegistry.lean": return {"path": path, "blob": "d" * 40}
+                return row["repository"]["manifest"]
             with patch.object(cp, "run", side_effect=fake_run), \
-                 patch.object(cp, "blob", return_value=row["repository"]["manifest"]):
+                 patch.object(cp, "blob", side_effect=fake_blob):
                 with self.assertRaisesRegex(cp.Invalid, "artifact Lean version mismatch"):
                     cp.validate_registry(repo, registry, [artifact_id])
 
@@ -393,6 +435,7 @@ class PacketTests(unittest.TestCase):
                 "registry_type": "completion-artifact-registry",
                 "schema_version": cp.REGISTRY_VERSION,
                 "lean_version": "Lean fixture", "manifest": manifest,
+                "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                 "artifacts": {}, "dependency_sets": {cp.digest(empty): empty},
                 "roots": {"Pkg.Owner": root},
             })
@@ -400,8 +443,12 @@ class PacketTests(unittest.TestCase):
                 if args[:2] == ["lean", "--version"]: return "Lean fixture"
                 if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
                 raise AssertionError(args)
+            def fake_blob(owner, head, path):
+                if path == "CompletionRegistry.lean": return {"path": path, "blob": "d" * 40}
+                return manifest
             with patch.object(cp, "run", side_effect=fake_run), \
-                 patch.object(cp, "blob", return_value=manifest):
+                 patch.object(cp, "blob", side_effect=fake_blob), \
+                 patch.object(cp, "source_module_name", return_value="Pkg.Owner"):
                 with self.assertRaisesRegex(cp.Invalid, "content-addressed registry root mismatch"):
                     cp.validate_registry(repo, registry, [])
 
@@ -440,6 +487,7 @@ class PacketTests(unittest.TestCase):
             empty = {"artifact_ids": []}
             cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean fixture", "manifest": row["repository"]["manifest"],
+                     "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                      "artifacts": {artifact_id: row}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
             def fake_run(args, cwd=None, env=None):
                 if args[:2] == ["lean", "--version"]: return "Lean fixture"
@@ -448,10 +496,12 @@ class PacketTests(unittest.TestCase):
                 raise AssertionError(args)
             def fake_blob(owner, head, path):
                 if path == "lake-manifest.json": return row["repository"]["manifest"]
+                if path == "CompletionRegistry.lean": return {"path": path, "blob": "d" * 40}
                 return {"path": path, "blob": "f" * 40}
             with patch.object(cp, "run", side_effect=fake_run), patch.object(cp, "blob", side_effect=fake_blob), \
-                 patch.object(cp, "validate_repository", return_value=repo):
-                with self.assertRaisesRegex(cp.Invalid, "source blob mismatch"):
+                 patch.object(cp, "validate_repository", return_value=(repo, repo)), \
+                 patch.object(cp, "source_for_module", return_value={"path": row["source"]["path"], "blob": "f" * 40}):
+                with self.assertRaisesRegex(cp.Invalid, "module/source mismatch"):
                     cp.validate_registry(repo, registry, [artifact_id])
             with self.assertRaisesRegex(cp.Invalid, "repository relative"):
                 cp.relative(repo, "../escape")
@@ -474,6 +524,7 @@ class PacketTests(unittest.TestCase):
                 "direct_modules": ["Pkg.Direct", "Pkg.Runtime"], "dependency_set": cp.digest(deps)}
         root["root_id"] = cp.digest(root)
         index = {"lean_version": "Lean fixture", "manifest": owner["repository"]["manifest"],
+                 "indexer": {"path": "CompletionRegistry.lean", "blob": "d" * 40},
                  "artifacts": {direct_id: direct, runtime_id: runtime, owner_id: owner},
                  "dependency_sets": {cp.digest(empty): empty, cp.digest(deps): deps},
                  "roots": {"Pkg.Owner": root}}
@@ -537,10 +588,21 @@ class PacketTests(unittest.TestCase):
             goal.write_text("# fixture\n\n- `id`: `completion-fixture`\n- `tracking issue`: [#2](https://github.com/example/project/issues/2)\n")
             m = mapping()
             m["goal_path"] = "goal.md"
-            cp.validate_goal_binding(repo, m)
+            m["fixed_goal"] = {"commit": "8" * 40, "path": "goal.md", "blob": "4" * 40}
+            def fixed_goal_git(args, cwd=None, env=None):
+                if args[:2] == ["git", "rev-parse"] and args[2].endswith("^{commit}"):
+                    return "8" * 40
+                if args[:2] == ["git", "rev-parse"]:
+                    return "4" * 40
+                if args[:2] == ["git", "hash-object"]:
+                    return "4" * 40
+                raise AssertionError(args)
+            with patch.object(cp, "run", side_effect=fixed_goal_git):
+                cp.validate_goal_binding(repo, m)
             m["goal"] = "other"
             m["dependency_policy"]["authorization"]["goal"] = "other"
-            with self.assertRaisesRegex(cp.Invalid, "fixed GOAL card"):
+            with patch.object(cp, "run", side_effect=fixed_goal_git), \
+                 self.assertRaisesRegex(cp.Invalid, "fixed GOAL card"):
                 cp.validate_goal_binding(repo, m)
 
     def test_repository_local_value_terminal_requires_reviewed_predecessor(self):
@@ -572,7 +634,10 @@ class PacketTests(unittest.TestCase):
         self.assertEqual(predecessor["artifact_id"], "f" * 64)
         self.assertEqual(predecessor["reviewed_head"], "d" * 40)
         self.assertEqual(predecessor["artifact_repository_commit"], "c" * 40)
-        self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
+        edge = next(edge for edge in core["dependency_dag"]["edges"] if edge["to"] == terminal["name"])
+        self.assertEqual(edge["dependency_kind"], "typed-reference-path")
+        self.assertEqual(edge["reference_path"][-1]["site"], "term")
+        self.assertEqual(edge["reference_path"][-1]["origin"], "value")
         changed = copy.deepcopy(x)
         changed["terminals"][0]["value"] = "changed-proof-value"
         with self.assertRaisesRegex(cp.Invalid, "predecessor declaration mismatch"):

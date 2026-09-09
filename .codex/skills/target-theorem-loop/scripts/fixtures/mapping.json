@@ -2,15 +2,20 @@
   "schema_version": 2,
   "goal": "completion-fixture",
   "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+  "fixed_goal": {
+    "commit": "8856a3b391bb73d36c0126f379211dc7846c7070",
+    "path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+    "blob": "48df61b7101cda66b1c6f07a16761195fd3a71f3"
+  },
   "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "dependency_policy": {
     "schema_version": 1,
     "method": "focused-owner-plus-pinned-dependency-trust",
     "authorization": {
       "goal": "completion-fixture",
-      "decision_ref": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4432#issuecomment-5595237953",
+      "decision_ref": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4432#issuecomment-5596352825",
       "conflict_issue_ref": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4432",
-      "tracking_issue_ref": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416"
+      "tracking_issue_ref": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4430"
     },
     "selected_owner": "focused-source-receipt-required",
     "repository_local": "runtime-only-material-selected-or-reviewed",

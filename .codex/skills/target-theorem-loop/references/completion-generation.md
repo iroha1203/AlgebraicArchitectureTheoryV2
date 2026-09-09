@@ -33,7 +33,8 @@ loaderが要求する`.olean.private` / `.olean.server` / `.ir`の存在分と�
 lock-pinned Git packageはmanifestのURL/revと実repositoryを照合し、同一repoのartifactは
 固定headのbaseline artifactとして照合する。絶対pathはregistry metadataへ保存しない。
 
-registry schema version 2では、依存集合自体もcontent-addressed dependency-set IDとして一度だけ保存する。receiptと
+registry schema version 2では、manifestに加えてindexer自身を固定headのpath/blobへ結合する。
+依存集合自体もcontent-addressed dependency-set IDとして一度だけ保存する。receiptと
 owner artifactはそのset IDだけを参照し、artifact ID配列やreceipt本文を再帰内包しない。同一moduleは
 一artifactへ解決し、diamond dependencyもregistry内で一度だけ記録する。後続ownerをcheckする時は、
 先行ownerのregistry形式receiptを`--dependency-receipt`へ渡す。これによりbaselineの同名moduleを
@@ -42,7 +43,8 @@ legacy receiptとregistry receiptは同じcheckで混在させない。
 selected sourceのpackage相対pathからsource module名を導出し、CLIの`--module`と完全一致させる。
 root recordはsource、direct import、dependency setをcontent-addressed root IDへ固定し、receiptから
 参照する。再検証時はregistryだけをstageして`lean --deps`を再実行し、direct importをroot recordと
-完全一致させる。
+完全一致させる。artifactのmodule名とsource pathは、固定commitのexact package rootから再導出し、
+metadataの自己申告だけでは受理しない。
 
 `check`はregistry artifactだけをhardlink（filesystemが異なる場合はcopy）した一時namespaceを
 唯一の`LEAN_PATH`とし、明示された単一leafだけを`lean -o`でelaborateする。stagingの前後に
@@ -51,6 +53,9 @@ root recordはsource、direct import、dependency setをcontent-addressed root I
 `lean`は対象toolchainの実行ファイルを使い、`index`の発見時だけ親が`lake env`でlock済みpackage
 search pathを与える。`check`を全Research moduleのloopへ使わない。subagentの実行制限は
 [AAT guideline](../../../../docs/aat/guideline.md)に従う。
+`validate`は各selected ownerについて同じregistry-only namespaceで単一leafのfocused `lean -o`を再演し、
+保存された全出力componentとstdout/stderrのhashをreceiptへ照合する。これはselected ownerに限るbounded
+再検査であり、依存closureのsource buildやResearch全体buildではない。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
 抽出と再検査は、各receiptが参照するownerと平坦な推移artifact IDをregistryから一時treeへstageし、
@@ -109,7 +114,8 @@ reviewed predecessorのcommentも同じrepositoryに限定する。生成器はU
 `Expr.const`と別のmetadataなので、この集合比較から分ける。全Expr constructorを持つ
 literal ASTのfixtureでは、参照名・site・位置をPythonの手書き期待値と完全一致で検査する。
 
-対象source、GOAL、report、対応表、extractorは固定headに存在する必要がある。
+対象source、report、対応表、extractor、generatorは固定headに存在する必要がある。
+対応表は固定GOALのcommit/path/blobも持ち、そのcommit上のblobと現在のGOAL cardが一致しなければならない。
 未コミット変更・head/blob不一致・出力欠落・未知version・抽出不能は投稿不可。
 toolchain外の依存がreceiptで解決できなければ、対象を勝手に縮小せず未確認を報告する。
 
@@ -143,7 +149,9 @@ certificate生成元、必須route、固定decision、非空虚性の中心node�
 必要なownerを追加して再収集するまで未確認である。
 
 definitionやprivate補助宣言は経路に含める。`simp`は最終証明項に残る参照を抽出する。
-型・binder型の参照、projectionは別siteとして残し、型参照だけのhopをproof-use経路にしない。
+型・binder型の参照、projectionは別siteとして残す。reviewed predecessorへの各hopにも
+`origin`・`site`・`position`を保持し、型参照やprojectionを値のproof-useと表示しない。
+型参照だけのhopをproof-use経路にしない。
 term部分の参照も数学的な必要性を保証しない。未使用let値や型を引数として渡す式を
 実質的なproof-useと誤認しないよう、Lean査読が値の実体を確認する。
 

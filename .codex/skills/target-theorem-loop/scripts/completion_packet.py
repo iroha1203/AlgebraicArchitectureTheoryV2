@@ -152,9 +152,13 @@ def public_repository_url(url):
         except OSError:
             address = None
         if address is not None:
-            need(address.is_global, "repository URL must be public")
+            need(address.is_global and not address.is_multicast and not address.is_unspecified and
+                 not address.is_reserved and not address.is_loopback and not address.is_link_local and
+                 not address.is_private, "repository URL must be public")
     else:
-        need(address.is_global, "repository URL must be public")
+        need(address.is_global and not address.is_multicast and not address.is_unspecified and
+             not address.is_reserved and not address.is_loopback and not address.is_link_local and
+             not address.is_private, "repository URL must be public")
     return value
 
 
@@ -192,7 +196,15 @@ def validate_mapping_repository(repo, mapping):
 
 def validate_goal_binding(repo, mapping):
     """Bind the mapping and its authorization to the fixed GOAL card itself."""
+    fixed = mapping["fixed_goal"]
     goal_path = repo / relative(repo, mapping["goal_path"])
+    need(fixed["path"] == relative(repo, goal_path), "fixed GOAL path mismatch")
+    need(run(["git", "rev-parse", fixed["commit"] + "^{commit}"], repo) == fixed["commit"],
+         "fixed GOAL commit does not resolve")
+    need(run(["git", "rev-parse", f'{fixed["commit"]}:{fixed["path"]}'], repo) == fixed["blob"],
+         "fixed GOAL blob does not match commit")
+    need(run(["git", "hash-object", fixed["path"]], repo) == fixed["blob"],
+         "fixed GOAL card changed")
     text = goal_path.read_text()
     ids = re.findall(r"^- `id`: `([^`]+)`\s*$", text, re.M)
     need(ids == [mapping["goal"]], "mapping GOAL differs from fixed GOAL card")
@@ -279,9 +291,9 @@ def registry_paths(registry):
     return registry, registry / "index.json", registry / "objects"
 
 
-def empty_registry(lean_version, manifest_ref):
+def empty_registry(lean_version, manifest_ref, indexer_ref):
     return {"registry_type": "completion-artifact-registry", "schema_version": REGISTRY_VERSION,
-            "lean_version": lean_version, "manifest": manifest_ref, "artifacts": {},
+            "lean_version": lean_version, "manifest": manifest_ref, "indexer": indexer_ref, "artifacts": {},
             "dependency_sets": {}, "roots": {}}
 
 
@@ -344,21 +356,26 @@ def validate_repository(repo, identity):
     matches = [(owner, package_dir, row) for owner, package_dir, row in owners if row == entry]
     need(len(matches) == 1, "manifest owner resolution mismatch")
     owner, _, _ = matches[0]
+    if entry["type"] in ("path", "root"):
+        need(owner == repo, "baseline path package must belong to baseline repository")
     need(run(["git", "rev-parse", "HEAD"], owner) == identity["commit"], "artifact repository commit mismatch")
     remote = run(["git", "remote", "get-url", "origin"], owner)
     need(normalize_url(remote) == normalize_url(identity["url"]), "artifact repository URL mismatch")
-    return owner
+    return owner, matches[0][1]
 
 
 def validate_registry(repo, registry, artifact_ids=None):
     registry, index_path, objects = registry_paths(registry)
     index = read(index_path)
-    fields(index, ["registry_type", "schema_version", "lean_version", "manifest", "artifacts", "dependency_sets", "roots"])
+    fields(index, ["registry_type", "schema_version", "lean_version", "manifest", "indexer",
+                   "artifacts", "dependency_sets", "roots"])
     need(index["registry_type"] == "completion-artifact-registry" and index["schema_version"] == REGISTRY_VERSION,
          "registry schema")
     need(index["lean_version"] == run(["lean", "--version"], repo), "registry Lean version mismatch")
     need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), index["manifest"]["path"]) == index["manifest"],
          "registry manifest changed")
+    need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), index["indexer"]["path"]) == index["indexer"],
+         "registry indexer changed")
     ids = sorted(index["artifacts"]) if artifact_ids is None else sorted(set(artifact_ids))
     for set_id in index["dependency_sets"]:
         need(set(dependency_members(index, set_id)) <= set(index["artifacts"]),
@@ -369,6 +386,10 @@ def validate_registry(repo, registry, artifact_ids=None):
         need(root_entry["root_id"] == digest({k: v for k, v in root_entry.items() if k != "root_id"}),
              "content-addressed registry root mismatch")
         fields(root_entry["source"], ["path", "blob"])
+        need(source_module_name(repo, root_entry["source"]["path"]) == root_module,
+             "registry root module/source mismatch")
+        need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), root_entry["source"]["path"]) == root_entry["source"],
+             "registry root source changed")
         distinct(root_entry["direct_modules"], "root direct modules", allow_empty=True)
         dependency_members(index, root_entry["dependency_set"])
     owners = {}
@@ -388,8 +409,10 @@ def validate_registry(repo, registry, artifact_ids=None):
         if owner is None:
             owner = validate_repository(repo, metadata["repository"])
             owners[key] = owner
-        need(blob(owner, metadata["repository"]["commit"], metadata["source"]["path"]) == metadata["source"],
-             "artifact source blob mismatch")
+        repository_root, package_dir = owner
+        need(source_for_module(repository_root, package_dir, metadata["module"],
+                               metadata["repository"]["commit"]) == metadata["source"],
+             "artifact module/source mismatch")
         top = metadata["module"].split(".")[0]
         need(not (sysroot / top).exists() and not (sysroot / (top + ".olean")).exists(), "registry overlaps toolchain namespace")
         prior = top_owners.setdefault(top, key)
@@ -454,20 +477,22 @@ def index_dependencies(repo, source, module, registry, helper_path=None):
     manifest, manifest_data = manifest_for(repo, source)
     head = run(["git", "rev-parse", "HEAD"], repo)
     manifest_ref = blob(repo, head, manifest)
+    helper = relative(repo, helper_path or Path(__file__).with_name("CompletionRegistry.lean"))
+    indexer_ref = blob(repo, head, helper)
     lean_version = run(["lean", "--version"], repo)
     registry, index_path, objects = registry_paths(registry)
     if index_path.exists():
         index = read(index_path)
-        need(index["lean_version"] == lean_version and index["manifest"] == manifest_ref, "registry context mismatch")
+        need(index["lean_version"] == lean_version and index["manifest"] == manifest_ref and
+             index["indexer"] == indexer_ref, "registry context mismatch")
     else:
-        index = empty_registry(lean_version, manifest_ref)
+        index = empty_registry(lean_version, manifest_ref, indexer_ref)
     empty_set = store_dependency_set(index, [])
     sysroot = Path(run(["lean", "--print-prefix"], repo)).resolve() / "lib/lean"
     roots = list(dict.fromkeys(Path(p).resolve() for p in os.environ.get("LEAN_PATH", "").split(os.pathsep)
                               if p and Path(p).resolve() != sysroot))
     direct_paths = [Path(p).resolve() for p in run(["lean", "--deps", source], repo).splitlines()]
     direct_modules = [module_from_artifact(p, roots) for p in direct_paths if not p.is_relative_to(sysroot)]
-    helper = relative(repo, helper_path or Path(__file__).with_name("CompletionRegistry.lean"))
     imported = (json.loads(run(["lean", "--run", helper, *direct_modules], repo), object_pairs_hook=unique_pairs)
                 if direct_modules else [])
     distinct(imported, "imported modules", allow_empty=True)
@@ -614,6 +639,20 @@ def validate_registry_receipt(repo, registry, receipt):
                         run(["lean", "--deps", metadata["source"]["path"]], repo, env).splitlines()]
         actual_direct = sorted(module_from_artifact(path, roots)
                                for path in direct_paths if not path.is_relative_to(sysroot))
+        with tempfile.TemporaryDirectory(prefix="completion-replay-") as directory:
+            replay_output = Path(directory) / (receipt["module"].replace(".", "/") + ".olean")
+            replay_output.parent.mkdir(parents=True, exist_ok=True)
+            replay = subprocess.run(["lean", "-o", str(replay_output), metadata["source"]["path"]],
+                                    cwd=repo, env=env, capture_output=True)
+            need(replay.returncode == 0, "focused receipt replay failed")
+            for suffix, expected in metadata["olean_files"].items():
+                component = Path(str(replay_output.with_suffix("")) + "." + suffix)
+                need(component.is_file() and file_hash(component) == expected,
+                     "focused receipt replay artifact mismatch")
+            need(hashlib.sha256(replay.stdout).hexdigest() == receipt["stdout"]["sha256"],
+                 "focused receipt replay stdout mismatch")
+            need(hashlib.sha256(replay.stderr).hexdigest() == receipt["stderr"]["sha256"],
+                 "focused receipt replay stderr mismatch")
     need(actual_direct == root_entry["direct_modules"], "registry root direct imports changed")
     need(receipt["exit_code"] == 0, "failed focused check")
     for stream in ("stdout", "stderr"):
@@ -803,11 +842,17 @@ def distinct(values, what, allow_empty=False, unique=True):
 
 
 def validate_map(mapping):
-    fields(mapping, ["schema_version", "goal", "goal_path", "report_path", "dependency_policy",
+    fields(mapping, ["schema_version", "goal", "goal_path", "fixed_goal", "report_path", "dependency_policy",
                      "reviewed_predecessors", "criteria", "claims", "premises", "evidence"])
     need(mapping["schema_version"] == VERSION, "unsupported schema version")
     for name in ["goal", "goal_path", "report_path"]:
         string(mapping[name])
+    fields(mapping["fixed_goal"], ["commit", "path", "blob"])
+    need(re.fullmatch(r"[0-9a-f]{40}", mapping["fixed_goal"]["commit"]) is not None,
+         "fixed GOAL commit")
+    need(re.fullmatch(r"[0-9a-f]{40}", mapping["fixed_goal"]["blob"]) is not None,
+         "fixed GOAL blob")
+    need(mapping["fixed_goal"]["path"] == mapping["goal_path"], "fixed GOAL path")
     policy = mapping["dependency_policy"]
     fields(policy, ["schema_version", "method", "authorization", "selected_owner", "repository_local",
                     "external_lake", "source_build_claim"])
@@ -912,17 +957,22 @@ def path_between(rows, start, end, direct=False):
 
 
 def path_between_any_reference(rows, start, end):
-    """Find a dependency path including statement, value, and projection references."""
-    queue = deque([(start, [start])])
+    """Find a typed dependency path including statement, value, and projection references."""
+    queue = deque([(start, [start], [])])
     visited = {start}
     while queue:
-        node, path = queue.popleft()
-        for name in sorted({edge["name"] for edge in rows.get(node, {}).get("references", [])}):
+        node, path, hops = queue.popleft()
+        references = sorted(rows.get(node, {}).get("references", []),
+                            key=lambda edge: (edge["name"], edge["origin"], edge["site"], edge["position"]))
+        for reference in references:
+            name = reference["name"]
+            hop = {"from": node, "to": name, "origin": reference["origin"],
+                   "site": reference["site"], "position": reference["position"]}
             if name == end:
-                return path + [name]
+                return {"path": path + [name], "references": hops + [hop]}
             if name in rows and name not in visited:
                 visited.add(name)
-                queue.append((name, path + [name]))
+                queue.append((name, path + [name], hops + [hop]))
     return None
 
 
@@ -1074,11 +1124,13 @@ def material(mapping, extraction, goal_text, repository_artifacts=None, reviewed
                                   "reviewed_head": predecessor["reviewed_head"],
                                   "review_ref": predecessor["review_ref"]})
         for start in sorted(central):
-            path = path_between_any_reference({**rows, **terminal_rows}, start, terminal["name"])
-            if path is not None:
+            reference_path = path_between_any_reference({**rows, **terminal_rows}, start, terminal["name"])
+            if reference_path is not None:
+                path = reference_path["path"]
                 edge = {"from": start, "to": terminal["name"],
                         "distance": "direct" if len(path) == 2 else "via", "path": path,
-                        "dependency_kind": "statement-value-or-projection"}
+                        "dependency_kind": "typed-reference-path",
+                        "reference_path": reference_path["references"]}
                 if edge not in routes:
                     routes.append(edge)
     adjacency = {n: set() for n in central}
@@ -1212,7 +1264,7 @@ def registry_evidence(index, artifact_ids, receipts, policy):
         dependency_sets.append({"dependency_set_id": set_id, "artifact_count": len(members),
                                 "members_digest": digest(members)})
     return {"evidence_type": "completion-artifact-registry-summary", "schema_version": REGISTRY_VERSION,
-            "lean_version": index["lean_version"], "manifest": index["manifest"],
+            "lean_version": index["lean_version"], "manifest": index["manifest"], "indexer": index["indexer"],
             "artifact_count": len(artifact_ids), "artifact_set_digest": artifact_set_digest(index, artifact_ids),
             "dependency_policy": policy,
             "artifact_classes": {
@@ -1269,9 +1321,10 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
     repository_artifacts = repository_artifact_context(index, artifact_ids, receipts)
     core = material(mapping, extraction, (repo / goal["path"]).read_text(), repository_artifacts,
                     lambda reviewed_head, source_path: blob(repo, reviewed_head, source_path))
+    generator_ref = blob(repo, head, __file__)
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
               "goal": goal, "report": report, "mapping": mapping_ref,
-              "extractor": extractor_ref, "generator_sha256": file_hash(__file__)}
+              "extractor": extractor_ref, "generator": generator_ref}
     bundle = {"schema_version": VERSION, "source": source, "mapping": mapping,
               "extraction": extraction, "receipts": receipts, "core": core}
     bundle["registry"] = {"path": relative(repo, registry), "artifact_ids": artifact_ids,
@@ -1285,12 +1338,11 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
 def validate_bundle(repo, b):
     fields(b, ["schema_version", "source", "mapping", "extraction", "receipts", "core", "registry"])
     need(b["schema_version"] == VERSION, "bundle schema")
-    fields(b["source"], ["snapshot", "base_oid", "goal", "report", "mapping", "extractor", "generator_sha256"])
+    fields(b["source"], ["snapshot", "base_oid", "goal", "report", "mapping", "extractor", "generator"])
     need(run(["git", "rev-parse", b["source"]["base_oid"] + "^{commit}"], repo) == b["source"]["base_oid"], "base ref mismatch")
     need(b["source"]["snapshot"] == snapshot(repo), "source snapshot mismatch")
-    need(b["source"]["generator_sha256"] == file_hash(__file__), "generator changed; recollect")
     head = b["source"]["snapshot"]["head"]
-    for key in ("goal", "report", "mapping", "extractor"):
+    for key in ("goal", "report", "mapping", "extractor", "generator"):
         ref = b["source"][key]
         need(blob(repo, head, ref["path"]) == ref, f"{key} ref mismatch")
     need(read(repo / b["source"]["mapping"]["path"]) == b["mapping"], "mapping differs from fixed source")
