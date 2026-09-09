@@ -105,6 +105,220 @@ class PacketTests(unittest.TestCase):
                     with cp.extraction_environment(repo, [a]):
                         pass
 
+    def registry_row(self, module, olean_hash, dependencies=None, url="https://example.test/repo"):
+        dependency_set = cp.digest({"artifact_ids": sorted(dependencies or [])})
+        return {"artifact_type": "lean-olean", "schema_version": 1, "module": module,
+                "repository": {"kind": "baseline", "url": url, "commit": "c" * 40,
+                               "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
+                               "manifest_entry": {"type": "path", "name": "fixture", "dir": "."}},
+                "source": {"path": module.replace(".", "/") + ".lean", "blob": "a" * 40},
+                "olean_sha256": olean_hash, "olean_files": {"olean": olean_hash},
+                "lean_version": "Lean fixture", "dependency_set": dependency_set}
+
+    def test_registry_companion_staging_and_tamper(self):
+        with tempfile.TemporaryDirectory() as d:
+            registry = Path(d)
+            objects = registry / "objects"
+            objects.mkdir()
+            main = hashlib.sha256(b"main").hexdigest()
+            private = hashlib.sha256(b"private").hexdigest()
+            (objects / main).write_bytes(b"main")
+            (objects / private).write_bytes(b"private")
+            row = self.registry_row("Pkg.A", main)
+            row["olean_files"]["olean.private"] = private
+            artifact_id = cp.digest(row)
+            index = {"artifacts": {artifact_id: row}}
+            with patch.object(cp, "validate_registry", return_value=index), \
+                 patch.dict(cp.os.environ, {"LEAN_PATH": "/ambient/must-not-survive"}):
+                with cp.registry_environment(Path(d), registry, [artifact_id]) as env:
+                    tree = Path(env["LEAN_PATH"])
+                    self.assertNotIn("ambient", env["LEAN_PATH"])
+                    self.assertEqual((tree / "Pkg/A.olean").read_bytes(), b"main")
+                    self.assertEqual((tree / "Pkg/A.olean.private").read_bytes(), b"private")
+                (objects / private).write_bytes(b"tampered")
+                with self.assertRaisesRegex(cp.Invalid, "changed while staging"):
+                    with cp.registry_environment(Path(d), registry, [artifact_id]):
+                        pass
+
+    def test_content_addressed_diamond_is_unique(self):
+        h = hashlib.sha256(b"artifact").hexdigest()
+        leaf = self.registry_row("Pkg.Leaf", h)
+        leaf_id = cp.digest(leaf)
+        left = self.registry_row("Pkg.Left", h, [leaf_id])
+        right = self.registry_row("Pkg.Right", h, [leaf_id])
+        left_id, right_id = cp.digest(left), cp.digest(right)
+        root = self.registry_row("Pkg.Root", h, [leaf_id, left_id, right_id])
+        index = {"artifacts": {leaf_id: leaf, left_id: left, right_id: right, cp.digest(root): root}}
+        self.assertEqual(len(index["artifacts"]), 4)
+        self.assertEqual(root["dependency_set"], cp.digest({"artifact_ids": sorted({leaf_id, left_id, right_id})}))
+        for artifact_id, row in index["artifacts"].items():
+            self.assertEqual(cp.digest(row), artifact_id)
+
+    def test_focused_receipt_chain_replaces_baseline(self):
+        h = hashlib.sha256(b"artifact").hexdigest()
+        rows = {}
+        def add(module, tag, deps=()):
+            row = self.registry_row(module, hashlib.sha256(tag.encode()).hexdigest(), list(deps))
+            artifact_id = cp.digest(row)
+            rows[artifact_id] = row
+            return artifact_id
+        base_a = add("Pkg.A", "base-a")
+        focused_a = add("Pkg.A", "focused-a")
+        base_b = add("Pkg.B", "base-b", [base_a])
+        focused_b = add("Pkg.B", "focused-b", [focused_a])
+        empty = {"artifact_ids": []}
+        focused_a_set = {"artifact_ids": [focused_a]}
+        receipt_a = {"artifact_id": focused_a, "dependency_set": cp.digest(empty)}
+        receipt_b = {"artifact_id": focused_b, "dependency_set": cp.digest(focused_a_set)}
+        index = {"artifacts": rows, "dependency_sets": {cp.digest(empty): empty,
+                                                         cp.digest(focused_a_set): focused_a_set}}
+        selected = cp.overlay_artifact_ids(index, [base_a, base_b], [receipt_a, receipt_b])
+        self.assertEqual(set(selected), {focused_a, focused_b})
+
+    def test_registry_rejects_root_namespace_collision(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo, registry = Path(d), Path(d) / "registry"
+            objects = registry / "objects"
+            objects.mkdir(parents=True)
+            h = hashlib.sha256(b"same").hexdigest()
+            (objects / h).write_bytes(b"same")
+            a = self.registry_row("Pkg.A", h, url="https://example.test/a")
+            b = self.registry_row("Pkg.B", h, url="https://example.test/b")
+            aid, bid = cp.digest(a), cp.digest(b)
+            empty = {"artifact_ids": []}
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+                     "lean_version": "Lean fixture", "manifest": a["repository"]["manifest"],
+                     "artifacts": {aid: a, bid: b}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
+            def fake_run(args, cwd=None, env=None):
+                if args[:2] == ["lean", "--version"]: return "Lean fixture"
+                if args[:2] == ["lean", "--print-prefix"]: return str(repo / "sysroot")
+                if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
+                raise AssertionError(args)
+            def fake_blob(owner, head, path):
+                return a["repository"]["manifest"] if path == "lake-manifest.json" else {"path": path, "blob": "a" * 40}
+            with patch.object(cp, "run", side_effect=fake_run), \
+                 patch.object(cp, "blob", side_effect=fake_blob), \
+                 patch.object(cp, "validate_repository", return_value=repo):
+                with self.assertRaisesRegex(cp.Invalid, "root namespace collision"):
+                    cp.validate_registry(repo, registry, [aid, bid])
+
+    def test_registry_rejects_search_order_collision(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = Path(d) / "a.olean", Path(d) / "b.olean"
+            a.write_bytes(b"a")
+            b.write_bytes(b"b")
+            with self.assertRaisesRegex(cp.Invalid, "search order"):
+                cp.select_artifact([(Path(d), a), (Path(d), b)], "Pkg.A")
+
+    def test_registry_rejects_manifest_commit_mismatch(self):
+        entry = {"type": "git", "name": "pkg", "rev": "a" * 40, "url": "https://example.test/pkg"}
+        with patch.object(cp, "run", return_value="b" * 40):
+            with self.assertRaisesRegex(cp.Invalid, "manifest commit mismatch"):
+                cp.repo_identity(Path("/tmp/pkg"), Path("/tmp/repo"),
+                                 {"path": "lake-manifest.json", "blob": "c" * 40}, entry)
+
+    def test_registry_rejects_missing_object(self):
+        with tempfile.TemporaryDirectory() as d:
+            registry = Path(d)
+            h = hashlib.sha256(b"missing").hexdigest()
+            row = self.registry_row("Pkg.A", h)
+            artifact_id = cp.digest(row)
+            with patch.object(cp, "validate_registry", return_value={"artifacts": {artifact_id: row}}):
+                with self.assertRaises(OSError):
+                    with cp.registry_environment(Path(d), registry, [artifact_id]):
+                        pass
+
+    def test_manifest_resolves_external_sibling_package(self):
+        with tempfile.TemporaryDirectory() as d:
+            base = Path(d)
+            repo, project = base / "repo", base / "repo/project"
+            package = base / "packages/pkg"
+            project.mkdir(parents=True)
+            package.mkdir(parents=True)
+            manifest = project / "lake-manifest.json"
+            entry = {"type": "git", "name": "pkg", "rev": "a" * 40,
+                     "url": "https://example.test/pkg"}
+            data = {"version": "1", "packagesDir": "../../packages", "packages": [entry],
+                    "name": "project", "lakeDir": ".lake"}
+            resolved_package = package.resolve()
+            def fake_run(args, cwd=None, env=None):
+                if args[:3] == ["git", "rev-parse", "--show-toplevel"]:
+                    return str(resolved_package if Path(cwd).resolve().is_relative_to(resolved_package) else repo.resolve())
+                raise AssertionError(args)
+            with patch.object(cp, "run", side_effect=fake_run):
+                owners = cp.package_owners(repo, manifest, data)
+            self.assertTrue(any(owner == resolved_package and row == entry for owner, _, row in owners))
+
+    def test_registry_rejects_repository_url_mismatch(self):
+        entry = {"type": "git", "name": "pkg", "rev": "a" * 40,
+                 "url": "https://example.test/pkg"}
+        def fake_run(args, cwd=None, env=None):
+            if args[:3] == ["git", "rev-parse", "HEAD"]: return "a" * 40
+            if args[:3] == ["git", "remote", "get-url"]: return "https://attacker.test/pkg"
+            raise AssertionError(args)
+        with patch.object(cp, "run", side_effect=fake_run):
+            with self.assertRaisesRegex(cp.Invalid, "repository identity mismatch"):
+                cp.repo_identity(Path("/tmp/pkg"), Path("/tmp/repo"),
+                                 {"path": "lake-manifest.json", "blob": "c" * 40}, entry)
+
+    def test_registry_rejects_lean_version_mismatch(self):
+        with tempfile.TemporaryDirectory() as d:
+            registry = Path(d)
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+                     "lean_version": "Lean old", "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
+                     "artifacts": {}, "dependency_sets": {}, "roots": {}})
+            with patch.object(cp, "run", return_value="Lean current"):
+                with self.assertRaisesRegex(cp.Invalid, "Lean version mismatch"):
+                    cp.validate_registry(Path(d), registry, [])
+
+    def test_registry_rejects_source_blob_and_path_escape(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo, registry = Path(d), Path(d) / "registry"
+            objects = registry / "objects"
+            objects.mkdir(parents=True)
+            h = hashlib.sha256(b"main").hexdigest()
+            (objects / h).write_bytes(b"main")
+            row = self.registry_row("Pkg.A", h)
+            artifact_id = cp.digest(row)
+            empty = {"artifact_ids": []}
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+                     "lean_version": "Lean fixture", "manifest": row["repository"]["manifest"],
+                     "artifacts": {artifact_id: row}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
+            def fake_run(args, cwd=None, env=None):
+                if args[:2] == ["lean", "--version"]: return "Lean fixture"
+                if args[:2] == ["lean", "--print-prefix"]: return str(repo / "sysroot")
+                if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
+                raise AssertionError(args)
+            def fake_blob(owner, head, path):
+                if path == "lake-manifest.json": return row["repository"]["manifest"]
+                return {"path": path, "blob": "f" * 40}
+            with patch.object(cp, "run", side_effect=fake_run), patch.object(cp, "blob", side_effect=fake_blob), \
+                 patch.object(cp, "validate_repository", return_value=repo):
+                with self.assertRaisesRegex(cp.Invalid, "source blob mismatch"):
+                    cp.validate_registry(repo, registry, [artifact_id])
+            with self.assertRaisesRegex(cp.Invalid, "repository relative"):
+                cp.relative(repo, "../escape")
+
+    def test_registry_evidence_is_self_describing_and_deduplicated(self):
+        h = hashlib.sha256(b"main").hexdigest()
+        empty = {"artifact_ids": []}
+        direct = self.registry_row("Pkg.Direct", h)
+        direct_id = cp.digest(direct)
+        deps = {"artifact_ids": [direct_id]}
+        owner = self.registry_row("Pkg.Owner", h, [direct_id])
+        owner_id = cp.digest(owner)
+        index = {"lean_version": "Lean fixture", "manifest": owner["repository"]["manifest"],
+                 "artifacts": {direct_id: direct, owner_id: owner},
+                 "dependency_sets": {cp.digest(empty): empty, cp.digest(deps): deps},
+                 "roots": {"Pkg.Owner": {"source": owner["source"], "direct_modules": ["Pkg.Direct"],
+                                          "dependency_set": cp.digest(deps)}}}
+        receipt = {"module": "Pkg.Owner", "artifact_id": owner_id, "dependency_set": cp.digest(deps)}
+        evidence = cp.registry_evidence(index, [direct_id, owner_id], [receipt])
+        self.assertEqual(evidence["artifact_count"], 2)
+        self.assertEqual(len(evidence["repositories"]), 1)
+        self.assertEqual(evidence["selected_owner_artifacts"][0]["metadata"]["source"], owner["source"])
+        self.assertEqual(evidence["direct_dependency_artifacts"][0]["metadata"]["olean_files"], direct["olean_files"])
+
     def test_metadata_rejection(self):
         for key, value in (("kind", "unknown"), ("universe_parameters", {}), ("type_display", ""),
                            ("source_range", {}), ("source_range", {"start_line": 0, "end_line": 1, "start_column": 0, "end_column": 1})):

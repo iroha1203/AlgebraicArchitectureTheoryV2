@@ -14,26 +14,49 @@ version 2では、固定sourceとJSON対応表からpacketを生成する。
 各コマンドは失敗時に非零で終了する。古い成功出力の有無で成功を判定しない。
 
 ```text
-$packet check --source <単一leaf.lean> --module <owner> --out .tmp/completion/cache
-$packet collect --mapping <対応表.json> --receipt <owner.receipt.json> --out .tmp/completion/bundle.json
-$packet render --bundle .tmp/completion/bundle.json --packet .tmp/completion/packet.json
-$packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/packet.json
+$packet index --source <単一leaf.lean> --module <owner> --registry .tmp/completion/registry
+$packet check --source <単一leaf.lean> --module <owner> --registry .tmp/completion/registry --out .tmp/completion/cache \
+  [--dependency-receipt <先行owner.receipt.json> ...]
+$packet collect --mapping <対応表.json> --registry .tmp/completion/registry \
+  --receipt <owner.receipt.json> --out .tmp/completion/bundle.json
+$packet render --bundle .tmp/completion/bundle.json --registry .tmp/completion/registry \
+  --packet .tmp/completion/packet.json
+$packet validate --bundle .tmp/completion/bundle.json --registry .tmp/completion/registry \
+  --packet .tmp/completion/packet.json
 ```
 
-`check`は明示された単一leafだけを`lean -o`でelaborateする。`lean`は対象toolchainの
-実行ファイルを使い、必要なpackage search pathは親が`LEAN_PATH`または`lake env`で設定する。
-`--deps`で見つけたtoolchain外のimportには、同じhead/source/oleanを結ぶ
-`--dependency-receipt <file>`を要求する。既存cacheを無条件で信用せず、証拠のない依存は
-親が必要なmoduleに限って確認する。`check`を全Research moduleのloopへ使わない。
-外部packageのreceiptは、そのGit作業領域内で同じcheckを実行し、同領域内に保存する。
-親repoへ渡す際はpackageのrepo相対位置・commit・source/blobも再検算する。
-subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に従う。
+`index`は明示leafのdirect importから、Lean loaderが実際に読む推移module集合を一度だけ取得し、
+toolchain外artifactをversioned content-addressed registryへ登録する。依存sourceをelaborateする
+file loopではない。各artifact IDはmodule、repository identity、固定commit、親repoの
+`lake-manifest.json` blobとexact package entry、source blob、Lean version、`.olean`および
+loaderが要求する`.olean.private` / `.olean.server` / `.ir`の存在分と各hashから生成する。
+lock-pinned Git packageはmanifestのURL/revと実repositoryを照合し、同一repoのartifactは
+固定headのbaseline artifactとして照合する。絶対pathはregistry metadataへ保存しない。
+
+registryの依存集合自体もcontent-addressed dependency-set IDとして一度だけ保存する。receiptと
+owner artifactはそのset IDだけを参照し、artifact ID配列やreceipt本文を再帰内包しない。同一moduleは
+一artifactへ解決し、diamond dependencyもregistry内で一度だけ記録する。後続ownerをcheckする時は、
+先行ownerのregistry形式receiptを`--dependency-receipt`へ渡す。これによりbaselineの同名moduleを
+直前のfocused artifactへ置換し、そのreceiptが固定した推移artifact ID集合を引き継ぐ。
+legacy receiptとregistry receiptは同じcheckで混在させない。
+
+`check`はregistry artifactだけをhardlink（filesystemが異なる場合はcopy）した一時namespaceを
+唯一の`LEAN_PATH`とし、明示された単一leafだけを`lean -o`でelaborateする。stagingの前後に
+全component hashを再検算し、ambient `LEAN_PATH`、package `.lake/build`、同名cacheへfallbackしない。
+`lean`は対象toolchainの実行ファイルを使い、`index`の発見時だけ親が`lake env`でlock済みpackage
+search pathを与える。`check`を全Research moduleのloopへ使わない。subagentの実行制限は
+[AAT guideline](../../../../docs/aat/guideline.md)に従う。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
-抽出と再検査は、推移依存を含む検証済みreceiptのartifactだけを一時treeへコピーし、
+抽出と再検査は、各receiptが参照するownerと平坦な推移artifact IDをregistryから一時treeへstageし、
 そのtreeを唯一の`LEAN_PATH`とする。元cacheや環境変数の同名moduleを読み込まない。
-同一moduleの異なるdigestは拒否する。toolchainのroot namespaceと重なる外部receiptは
-初期実装では未対応として拒否し、検索順による上書きを許さない。
+同一moduleの異なるdigest、異なるrepositoryによるroot namespace共有、toolchain root namespaceとの
+重複、未登録package、欠落object、path escapeを拒否し、検索順による上書きを許さない。
+bundleにはlocal registry pathとartifact-set digestだけでなく、重複排除したrepository identity、
+package pin、commit、manifest blob、repositoryごとのmodule/source Merkle rootとolean-component Merkle root、
+selected ownerとdirect dependencyの完全metadata、dependency-setの件数とmembers digestを埋め込む。
+したがって投稿bundleだけで入力の由来と固定値を読め、live `validate`はそのcanonical evidence summaryを
+registry indexから再生成して一致を要求する。全推移artifact rowの反復掲載は行わない。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
 型・値・owner・private名・公理・参照位置に加え、宣言種別・universe parameter一覧・
 読みやすい型表示・source位置を記録する。位置を環境から取得できない場合は`source_range: null`
@@ -48,8 +71,13 @@ check/collectの再実行では、head、`--base`の解決commit、platformを�
 toolchain artifactのhash、出力先のrepo相対pathや実行記録もpacket digestへ影響する。
 同じ環境での再実行だけではdigest一致を保証しない。別環境の検証では`result: pass`と
 検査内容を確認し、元のpacketとの同一性を示す場合はこれらの入力も照合する。
-元bundleの`validate`は、現在のsource snapshot・toolchain・artifactが記録と異なれば
+元bundleの`validate`は、現在のsource snapshot・toolchain・registry artifact setが記録と異なれば
 失敗する。この不一致を無視して承認しない。
+
+ここでlock済みLake artifactはbounded cache trust boundaryである。registryはmanifest pin、Git source
+blob、既存olean componentのhash、Lean versionを相互に固定しambientすり替えを拒否するが、外部packageの
+全sourceを再elaborateしてsourceからoleanを再生成したという証明ではない。selected owner leafだけを
+focused `lean -o`するという本手順の範囲を越えて、このcache trust assumptionをsource-build証拠として主張しない。
 
 各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
 独自の位置付き走査の全件集合と照合し、欠落も余分な参照も拒否する。projection名は
