@@ -150,9 +150,18 @@ r_N:\operatorname{Aut}_C(P)\times\operatorname{Aut}_C(Q)
 端点自己同型や`c`が正規化と可換する条件は追加しない。
 
 底を固定する場合は、raw側では`πV`、像側では`π_N`によって両端のhomがそれぞれの
-底の恒等射へ送られる自己同型対を定義域・終域に取る。その間への`r_N`の制限を構成し、
-既存の `normalizationBaseQualifiedComparisonSubgroupHom` と一致させる。
-反映条件・像・核・fiberはこの制限の定義域と終域で取り直し、同じ各結論を証明する。
+底の恒等射へ送られる全自己同型対の群を `Q_base`、`R_base` とする。
+その間への制限 `r_base:Q_base→R_base` を構成する。
+`Γ_base=Q_base∩Γ_c`、`Δ_base=R_base∩Γ_{N(c)}` をそれぞれの比較保存部分群とし、
+`r_base`をさらに制限した `r̄_base:Γ_base→Δ_base` を構成する。
+既存の `normalizationBaseQualifiedComparisonSubgroupHom` との一致は、
+同じunderlying端点対を保つ部分群の同定の下で、この `r̄_base` に要求する。
+
+反映の必要十分条件は全底資格群上で
+`r_base⁻¹(Δ_base)=Γ_base` と
+`ker r_base≤Γ_base ∧ r_base(Γ_base)=Δ_base∩im r_base` の同値として証明する。
+適合するliftの像は `r_base(Γ_base)` とし、非空fiberの核による右作用と
+全射の場合の短完全列は `r̄_base` について証明する。
 
 この条項は判定条件とfiber構造を確定する。AATの生成された完全幾何の正規化についての
 反映・lift全射性の成立判定は、n1010 S4の固定入力と持ち上げ構成において扱う。
