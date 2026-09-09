@@ -17,6 +17,7 @@ spec.loader.exec_module(cp)
 def mapping():
     n = lambda s: "CompletionFixture." + s
     return {"schema_version": 3, "goal": "completion-fixture", "goal_path": str(HERE / "fixtures/goal.md"),
+            "fixed_goal": {"commit": "f" * 40, "path": str(HERE / "fixtures/goal.md"), "blob": "b" * 40},
             "report_path": str(HERE / "fixtures/goal.md"), "criteria": ["classification", "decisions"],
             "claims": [
                 {"id": "input", "criterion": "classification", "goal_quote": "入力条件の必要十分性", "direction": "iff",
@@ -27,7 +28,8 @@ def mapping():
                 {"id": "decisions", "criterion": "decisions", "goal_quote": "成立例と不成立例", "direction": "decision",
                  "declarations": [n("identityMember"), n("negativeMember")],
                  "central": [n("identityMember"), n("negativeMember")], "routes": []}],
-            "premises": [], "evidence": {g: [n("inputCharacterization")] for g in cp.GATES}}
+            "premises": [], "external_predecessors": [],
+            "evidence": {g: [n("inputCharacterization")] for g in cp.GATES}}
 
 
 def extraction():
@@ -89,9 +91,13 @@ class PacketTests(unittest.TestCase):
             repo = Path(d)
             (repo / "a.olean").write_bytes(b"a")
             (repo / "b.olean").write_bytes(b"b")
-            a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean")}
-            b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean")}
-            with patch.object(cp, "validate_receipt"):
+            context = {"policy": "lake-resolved-runtime-trust", "manifest": {}, "source_build_claim": False}
+            a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean"),
+                 "dependency_context": context}
+            b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean"),
+                 "dependency_context": context}
+            with patch.object(cp, "validate_receipt"), \
+                 patch.object(cp, "lake_environment", return_value={"LEAN_PATH": "ambient"}):
                 with cp.extraction_environment(repo, [b]) as env:
                     tree = Path(env["LEAN_PATH"].split(cp.os.pathsep)[0])
                     self.assertEqual((tree / "P/B.olean").read_bytes(), b"b")
@@ -116,6 +122,19 @@ class PacketTests(unittest.TestCase):
             self.core()
         self.m["premises"][0]["consumed_by"].pop()
         self.core()
+
+    def test_external_material_predecessor_is_explicit(self):
+        external = "External.reviewedTheorem"
+        row = self.x["declarations"][0]
+        row["references"].append({"name": external, "site": "term", "position": "/external", "origin": "value"})
+        row["constant_names"]["value"].append(external)
+        row["constant_names"]["value"].sort()
+        self.x["terminals"].append({"name": external, "owner": "External.Owner", "type": "reviewed type"})
+        self.m["external_predecessors"] = [{"name": external, "owner": "External.Owner",
+                                             "goal_quote": "入力条件", "consumed_by": [row["name"]]}]
+        core = self.core()
+        self.assertEqual(core["external_predecessors"][0]["declaration"]["name"], external)
+        self.assertTrue(any(edge["to"] == external for edge in core["dependency_dag"]["edges"]))
 
     def test_false_central_edge(self):
         self.m["claims"][0]["routes"][0]["to"] = "CompletionFixture.identityMember"

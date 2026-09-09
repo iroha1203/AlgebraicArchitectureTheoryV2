@@ -2,6 +2,11 @@
   "schema_version": 3,
   "goal": "completion-fixture",
   "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+  "fixed_goal": {
+    "commit": "36d6e8de7541f3bb038ef99c2501367457ccea4e",
+    "path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+    "blob": "994cdbd693f50aa13ad0220216ba2d60d573e613"
+  },
   "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "criteria": [
     "classification",
@@ -51,6 +56,7 @@
     }
   ],
   "premises": [],
+  "external_predecessors": [],
   "evidence": {
     "goal_claim_and_artifacts": [
       "CompletionFixture.inputCharacterization"

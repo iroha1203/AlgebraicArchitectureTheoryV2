@@ -50,7 +50,7 @@ G-118の撤回記録と最終監査からは、訂正後にfresh 4査読が実�
 
 ```bash
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
-lake env python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
+python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
 ```
 
 後者はコミット済みsourceの明示的な小さいleafを個別に実行し、全Research buildを呼ばない。

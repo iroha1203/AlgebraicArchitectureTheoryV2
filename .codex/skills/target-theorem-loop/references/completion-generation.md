@@ -21,7 +21,8 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 ```
 
 `check`は明示された単一leafだけを`lean -o`でelaborateする。`lean`は対象toolchainの
-実行ファイルを使い、package search pathは親が`LEAN_PATH`または`lake env`で設定する。
+実行ファイルを使う。生成器はsourceに最も近い`lake-manifest.json`から`lake env`を解決し、
+呼出元の任意`LEAN_PATH`をfocused checkや抽出に使わない。
 receiptは選択ownerの固定head、source blob、exact command、出力olean、stdout/stderr、
 Lean version、最寄りの`lake-manifest.json` blobを結ぶ。
 
@@ -32,10 +33,10 @@ runtime importはこのfocused elaborationの実行環境であり、数学claim
 subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に従う。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
-選択ownerのartifactだけを一時overlayの先頭へ置き、依存は同じmanifest-pinned Lake環境から
-解決する。同一ownerの異なるdigestは拒否する。manifestやtoolchainが変わればvalidateを
-失敗させる。ambient dependency artifactの同一性やsource-build provenanceは保証範囲に含めず、
-その限定をpacketと最終査読で明示する。
+選択ownerのartifactだけを一時overlayの先頭へ置き、依存はsourceのmanifestから解決した
+Lake環境から読む。同一ownerの異なるdigest、複数Lake環境のowner混在は拒否する。
+manifestやtoolchainが変わればvalidateを失敗させる。runtime dependency artifactの同一性や
+source-build provenanceは保証範囲に含めず、その限定をpacketと最終査読で明示する。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
 型・値・owner・private名・公理・参照位置に加え、宣言種別・universe parameter一覧・
 読みやすい型表示・source位置を記録する。位置を環境から取得できない場合は`source_range: null`
@@ -60,6 +61,8 @@ literal ASTのfixtureでは、参照名・site・位置をPythonの手書き期�
 
 対象source、GOAL、report、対応表、extractorは固定headに存在する必要がある。
 未コミット変更・head/blob不一致・出力欠落・未知version・抽出不能は投稿不可。
+対応表の`fixed_goal`はtarget固定時のcommit/path/blobを持つ。現在のGOAL blobはlifecycle状態の
+追跡用に別記し、claim quoteとtarget判定は固定版本文から解決する。
 version 2 packet/receiptをversion 3へ暗黙変換しない。
 
 ## 対応表と数学判断
@@ -74,6 +77,9 @@ version 2 packet/receiptをversion 3へ暗黙変換しない。
   bundleのsource/receiptと併せて読む。宣言参照だけでgateをpassにしない。
 - `direction_coverage`は各claimへ複数のexact refと型を添えて生成する。同じ宣言を複数claimへ
   割り当てる場合は、そのstatementが全てを支えることを査読する。
+- 外部packageの定理をmaterial predecessorとして使う場合だけ、`external_predecessors`へ
+  exact declaration、owner、GOAL quote、consumerを登録する。生成器は選択ownerの値からの
+  到達と抽出された型を固定し、4本査読はそのstatementと数学的使用を直接確認する。
 
 機械検査は登録済みcriteriaの欠落、空ref、未解決ref、型不正等を拒否する。
 GOAL全体からのcriterion/premiseの選び落とし、statementより広いclaim、量化の弱化、
@@ -142,6 +148,7 @@ recheckにも保存済み確認本文のrefを付ける。これらのIDやhash�
 
 ```bash
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
+python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
 ```
 
 抽出器の統合試験は同梱`CompletionFixture.lean`を単一leafとして上記check/collect/render/validateで

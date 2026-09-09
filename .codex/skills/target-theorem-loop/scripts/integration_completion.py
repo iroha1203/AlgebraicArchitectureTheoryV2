@@ -61,7 +61,7 @@ def main():
     cp.write(out / "receipt-b.json", shadow_b)
     external = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionExternalFixture.lean"),
                         "CompletionExternalFixture", out / "cache-external")
-    cp.need(external["dependency_context"]["policy"] == "manifest-pinned-runtime-trust",
+    cp.need(external["dependency_context"]["policy"] == "lake-resolved-runtime-trust",
             "external dependency policy missing")
     cp.need(external["dependency_context"]["source_build_claim"] is False,
             "runtime dependencies mislabeled as source-built")
@@ -69,9 +69,22 @@ def main():
         external_rows = json.loads(cp.run(
             ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
              "CompletionExternalFixture"], repo, env))
-    cp.need(any(row["name"] == "CompletionExternalFixture.manifestPinnedRuntimeCanary"
+    cp.need(any(row["name"] == "CompletionExternalFixture.externalRuntimeCanary"
                 for row in external_rows["declarations"]),
             "external-package focused overlay failed")
+    terminal_names = {row["name"] for row in external_rows["terminals"]}
+    cp.need("AAT.Util.standardAxioms" in terminal_names,
+            "repo-local runtime predecessor was not exposed as a terminal")
+    cp.need("CategoryTheory.Idempotents.Karoubi.idem" in terminal_names,
+            "external material predecessor was not exposed as a terminal")
+    repo_predecessor = cp.check(repo, "Formal/Util/AssertStandardAxioms.lean",
+                                "Formal.Util.AssertStandardAxioms", out / "cache-repo-predecessor")
+    with cp.extraction_environment(repo, [external, repo_predecessor]) as env:
+        promoted_rows = json.loads(cp.run(
+            ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+             "CompletionExternalFixture", "Formal.Util.AssertStandardAxioms"], repo, env))
+    cp.need(any(row["name"] == "AAT.Util.standardAxioms" for row in promoted_rows["declarations"]),
+            "repo-local material predecessor was not promoted to a selected owner")
     (out / "cache-a/CompletionShadow/B.olean").write_bytes(b"stale unrecorded artifact")
     previous_path = os.environ.get("LEAN_PATH")
     os.environ["LEAN_PATH"] = str(out / "cache-a")

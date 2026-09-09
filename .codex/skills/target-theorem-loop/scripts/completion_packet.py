@@ -118,7 +118,7 @@ def snapshot(repo):
 
 
 def dependency_context(repo, source):
-    """Bind a focused check to its Lake manifest without certifying runtime imports."""
+    """Bind a focused check to its Lake environment without certifying runtime imports."""
     source_path = (repo / relative(repo, source)).resolve()
     directory = source_path.parent
     manifest = None
@@ -131,9 +131,24 @@ def dependency_context(repo, source):
             break
         directory = directory.parent
     need(manifest is not None, "Lake manifest not found for focused source")
-    return {"policy": "manifest-pinned-runtime-trust",
+    return {"policy": "lake-resolved-runtime-trust",
             "manifest": manifest,
             "source_build_claim": False}
+
+
+def lake_environment(repo, context):
+    fields(context, ["policy", "manifest", "source_build_claim"])
+    need(context["policy"] == "lake-resolved-runtime-trust" and
+         context["source_build_claim"] is False, "invalid dependency policy")
+    manifest = context["manifest"]
+    need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), manifest["path"]) == manifest,
+         "Lake manifest changed")
+    manifest_dir = (repo / manifest["path"]).parent
+    search_path = run(["lake", "env", "printenv", "LEAN_PATH"], manifest_dir)
+    need(bool(search_path), "Lake environment has no LEAN_PATH")
+    env = dict(os.environ)
+    env["LEAN_PATH"] = search_path
+    return env
 
 
 def validate_receipt(repo, receipt):
@@ -165,7 +180,8 @@ def check(repo, source, module, out):
     olean = out / (module.replace(".", "/") + ".olean")
     olean.parent.mkdir(parents=True, exist_ok=True)
     command = ["lean", "-o", relative(repo, olean), source]
-    result = subprocess.run(command, cwd=repo, capture_output=True)
+    context = dependency_context(repo, source)
+    result = subprocess.run(command, cwd=repo, env=lake_environment(repo, context), capture_output=True)
     streams = {}
     for name, data in (("stdout", result.stdout), ("stderr", result.stderr)):
         path = out / (module + "." + name)
@@ -174,7 +190,7 @@ def check(repo, source, module, out):
     need(result.returncode == 0, f"focused check failed: {streams}")
     return {"head": head, "source": source_ref, "module": module,
             "olean": relative(repo, olean), "olean_sha256": file_hash(olean),
-            "dependency_context": dependency_context(repo, source),
+            "dependency_context": context,
             "command": command, "exit_code": result.returncode,
             "lean_version": run(["lean", "--version"], repo), **streams}
 
@@ -196,10 +212,13 @@ def distinct(values, what, allow_empty=False, unique=True):
 
 
 def validate_map(mapping):
-    fields(mapping, ["schema_version", "goal", "goal_path", "report_path", "criteria", "claims", "premises", "evidence"])
+    fields(mapping, ["schema_version", "goal", "goal_path", "fixed_goal", "report_path", "criteria", "claims", "premises", "external_predecessors", "evidence"])
     need(mapping["schema_version"] == VERSION, "unsupported schema version")
     for name in ["goal", "goal_path", "report_path"]:
         string(mapping[name])
+    fields(mapping["fixed_goal"], ["commit", "path", "blob"])
+    for value in mapping["fixed_goal"].values():
+        string(value)
     distinct(mapping["criteria"], "criteria")
     array(mapping["claims"])
     array(mapping["premises"])
@@ -239,6 +258,15 @@ def validate_map(mapping):
             distinct(p["consumed_by"], "premise consumers")
     if premises:
         distinct(premises, "premise IDs")
+    array(mapping["external_predecessors"])
+    external_names = []
+    for predecessor in mapping["external_predecessors"]:
+        fields(predecessor, ["name", "owner", "goal_quote", "consumed_by"])
+        for key in ("name", "owner", "goal_quote"):
+            string(predecessor[key])
+        distinct(predecessor["consumed_by"], "external predecessor consumers")
+        external_names.append(predecessor["name"])
+    distinct(external_names, "external predecessor names", allow_empty=True)
     fields(mapping["evidence"], GATES)
     for refs in mapping["evidence"].values():
         distinct(refs, "gate evidence")
@@ -291,7 +319,8 @@ def material(mapping, extraction, goal_text):
             names = sorted({e["name"] for e in row["references"] if e["origin"] == origin and e["site"] != "projection"})
             need(names == row["constant_names"][origin], "independent constant coverage mismatch")
         rows[row["name"]] = row
-    terminals = {r["name"] for r in extraction["terminals"]}
+    terminal_rows = {r["name"]: r for r in extraction["terminals"]}
+    terminals = set(terminal_rows)
     for row in rows.values():
         need(all(e["name"] in rows or e["name"] in terminals for e in row["references"]), "unresolved extracted reference")
     central = set()
@@ -305,6 +334,13 @@ def material(mapping, extraction, goal_text):
                 "kind": rows[name]["kind"], "universe_parameters": rows[name]["universe_parameters"],
                 "type_display": rows[name]["type_display"], "source_range": rows[name]["source_range"],
                 "type_digest": digest(rows[name]["type"]), "value_digest": digest(rows[name]["value"])}
+
+    def external_declaration(name):
+        need(name in terminal_rows, f"missing external declaration: {name}")
+        row = terminal_rows[name]
+        fields(row, ["name", "owner", "type"])
+        return {"name": name, "owner": row["owner"], "kind": "external",
+                "type": row["type"], "type_digest": digest(row["type"])}
 
     def route(a, b, distance):
         path = path_between(rows, a, b, distance == "direct")
@@ -328,6 +364,21 @@ def material(mapping, extraction, goal_text):
                 for consumer in p["consumed_by"]:
                     need(path_between(rows, consumer, dep), "premise has no value-use route for registered consumer")
                     route(consumer, dep, "either")
+    external_nodes = set()
+    external_evidence = []
+    for predecessor in mapping["external_predecessors"]:
+        need(predecessor["goal_quote"] in goal_text, "external predecessor GOAL ref does not resolve")
+        node = external_declaration(predecessor["name"])
+        need(node["owner"] == predecessor["owner"], "external predecessor owner mismatch")
+        external_nodes.add(predecessor["name"])
+        for consumer in predecessor["consumed_by"]:
+            need(consumer in rows, f"missing external predecessor consumer: {consumer}")
+            need(path_between(rows, consumer, predecessor["name"]),
+                 "external predecessor has no value-use route")
+            path = path_between(rows, consumer, predecessor["name"])
+            routes.append({"from": consumer, "to": predecessor["name"],
+                           "distance": "direct" if len(path) == 2 else "via", "path": path})
+        external_evidence.append({**predecessor, "declaration": node})
     for names in mapping["evidence"].values():
         central.update(names)
     # Every selected node is present; cycles are explicit, not silently discarded.
@@ -353,9 +404,11 @@ def material(mapping, extraction, goal_text):
     for n in adjacency:
         visit(n, set(), done)
     return {"criteria": mapping["criteria"], "direction_coverage": directions,
-            "dependency_dag": {"semantics": "target-acceptance-spine", "nodes": [declaration(n) for n in sorted(central)],
+            "dependency_dag": {"semantics": "target-acceptance-spine", "nodes": [declaration(n) for n in sorted(central)] +
+                               [external_declaration(n) for n in sorted(external_nodes)],
                                "edges": sorted(routes, key=lambda e: canonical(e))},
             "material_premises": mapping["premises"], "gate_evidence": mapping["evidence"],
+            "external_predecessors": external_evidence,
             "review_required": GATES}
 
 
@@ -382,9 +435,22 @@ def extraction_environment(repo, receipts):
             shutil.copyfile(source, destination)
             need(file_hash(destination) == expected, "artifact changed while staging")
         env = dict(os.environ)
-        ambient = env.get("LEAN_PATH", "")
-        env["LEAN_PATH"] = directory + (os.pathsep + ambient if ambient else "")
+        contexts = {canonical(receipt["dependency_context"]) for receipt in receipts}
+        need(len(contexts) == 1, "selected owners must use one Lake environment")
+        env = lake_environment(repo, receipts[0]["dependency_context"])
+        env["LEAN_PATH"] = directory + os.pathsep + env["LEAN_PATH"]
         yield env
+
+
+def fixed_goal_text(repo, mapping):
+    fixed = mapping["fixed_goal"]
+    need(run(["git", "rev-parse", fixed["commit"] + "^{commit}"], repo) == fixed["commit"],
+         "fixed GOAL commit does not resolve")
+    need(run(["git", "rev-parse", f'{fixed["commit"]}:{relative(repo, fixed["path"])}'], repo) == fixed["blob"],
+         "fixed GOAL blob mismatch")
+    text = run(["git", "show", f'{fixed["commit"]}:{relative(repo, fixed["path"])}'], repo)
+    need(mapping["goal"] in text, "fixed GOAL identity mismatch")
+    return text
 
 
 def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
@@ -394,6 +460,7 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     head = snap["head"]
     mapping_ref = blob(repo, head, mapping_path)
     goal = blob(repo, head, mapping["goal_path"])
+    fixed_text = fixed_goal_text(repo, mapping)
     report = blob(repo, head, mapping["report_path"])
     receipts = [read(p) for p in receipt_paths]
     need(receipts, "no focused receipts")
@@ -408,10 +475,10 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     with extraction_environment(repo, receipts) as env:
         result = run(["lean", "--run", extractor, *modules], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
-    core = material(mapping, extraction, (repo / goal["path"]).read_text())
+    core = material(mapping, extraction, fixed_text)
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
-              "goal": goal, "report": report, "mapping": mapping_ref,
-              "extractor": extractor_ref, "generator_sha256": file_hash(__file__)}
+              "goal": goal, "fixed_goal": mapping["fixed_goal"], "report": report, "mapping": mapping_ref,
+              "extractor": extractor_ref, "generator": blob(repo, head, __file__)}
     bundle = {"schema_version": VERSION, "source": source, "mapping": mapping,
               "extraction": extraction, "receipts": receipts, "core": core}
     write(output, bundle)
@@ -421,15 +488,15 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
 def validate_bundle(repo, b):
     fields(b, ["schema_version", "source", "mapping", "extraction", "receipts", "core"])
     need(b["schema_version"] == VERSION, "bundle schema")
-    fields(b["source"], ["snapshot", "base_oid", "goal", "report", "mapping", "extractor", "generator_sha256"])
+    fields(b["source"], ["snapshot", "base_oid", "goal", "fixed_goal", "report", "mapping", "extractor", "generator"])
     need(run(["git", "rev-parse", b["source"]["base_oid"] + "^{commit}"], repo) == b["source"]["base_oid"], "base ref mismatch")
     need(b["source"]["snapshot"] == snapshot(repo), "source snapshot mismatch")
-    need(b["source"]["generator_sha256"] == file_hash(__file__), "generator changed; recollect")
     head = b["source"]["snapshot"]["head"]
-    for key in ("goal", "report", "mapping", "extractor"):
+    for key in ("goal", "report", "mapping", "extractor", "generator"):
         ref = b["source"][key]
         need(blob(repo, head, ref["path"]) == ref, f"{key} ref mismatch")
     need(read(repo / b["source"]["mapping"]["path"]) == b["mapping"], "mapping differs from fixed source")
+    need(b["source"]["fixed_goal"] == b["mapping"]["fixed_goal"], "fixed GOAL source mismatch")
     for r in b["receipts"]:
         validate_receipt(repo, r)
     need(sorted(r["module"] for r in b["receipts"]) == b["extraction"]["modules"], "extract scope mismatch")
@@ -437,7 +504,7 @@ def validate_bundle(repo, b):
     with extraction_environment(repo, b["receipts"]) as env:
         actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
     need(actual == b["extraction"], "extraction differs from Lean artifacts")
-    core = material(b["mapping"], b["extraction"], (repo / b["source"]["goal"]["path"]).read_text())
+    core = material(b["mapping"], b["extraction"], fixed_goal_text(repo, b["mapping"]))
     need(core == b["core"], "core was edited")
 
 
@@ -589,7 +656,7 @@ def main():
     repo = root()
     if a.command == "check":
         r = check(repo, a.source, a.module, a.out)
-        write(Path(a.out) / (a.module + ".receipt.json"), r)
+        write(repo / relative(repo, a.out) / (a.module + ".receipt.json"), r)
     elif a.command == "collect":
         collect(repo, a.mapping, a.receipt, a.out, a.base)
     elif a.command == "route":
