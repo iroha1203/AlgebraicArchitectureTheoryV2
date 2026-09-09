@@ -9,13 +9,14 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 
 - fixed base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
-- common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
+- common criteria base: `b223e2fd06861ea1852b346614c2ad45619ab63c`
+- acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D5 のfixed-head実装査読
+- current proof obligation: 更新後acceptance contractによるfixed-target A–Dの最終監査
 - pending proof obligations: none after acceptance of the Cycle 13 candidate
 - current target state: `target-proof-checkpoint`
-- completion candidate: yes, pending Cycle 13 review and final completion audit
-- next proof obligation: Cycle 13を受理後、固定target A–D 全体のschema-complete completion packetと最終4-lane査読を実施
+- completion candidate: yes; Cycle 13 accepted, pending same-head standard review and final completion review
+- next proof obligation: boundedなschema-complete completion packetを固定し、最終4-lane査読を実施
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1609,3 +1610,73 @@ Cycle 13 material premise roles are:
 - `direction-hypothesis`: none.
 - `discharge-required`: comparison preservation and both endpoint bottom identities; discharged respectively by `N.map_comp` and `π_N N=πV`.
 - `conclusion-equivalent-risk`: none; comparison and qualification are subgroup membership conditions, and the preservation maps are proved rather than supplied by callers.
+
+## Cycle 14 — updated-contract final audit resumption
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 14
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: b223e2fd06861ea1852b346614c2ad45619ab63c
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 13 acceptance comment 5594157652 and updated-contract resumption comment 5610313908"
+  proof_dag_predecessors:
+    - "Cycles 1--13 accepted Lean declarations and immutable PR/cycle review refs"
+    - "acceptance-contract.md blob eb8e1b230e1106cc3d2c826a037578d8dfea7a1f"
+    - "updated dependency tracking completion rule: accepted predecessors terminate after declaration/source, acceptance ref, current statement/application, and relevant proof-use checks"
+  proof_obligation: "run the same-head standard PR review, fix one bounded schema-complete A--D packet, obtain fresh Math A / Math B / Lean A / Lean B completion verdicts, and integrate the formal completion ledger"
+  selection_reason: "A--D and every mathematical proof obligation were accepted through Cycle 13; only the whole-GOAL completion gates remain."
+  expected_result_type: proof-obligation-discharged
+  lean_targets: []
+  risks:
+    - "reusing per-cycle acceptance as the required fresh whole-GOAL verdict"
+    - "treating CI, declaration existence, or packet prose as mathematical proof"
+    - "reopening a completed predecessor trace merely because deeper dependencies or historical details exist"
+  unchecked:
+    - "same-head standard PR review"
+    - "bounded schema-complete final packet"
+    - "fresh four-lane final completion review"
+    - "formal completion ledger, CI, merge, and lifecycle synchronization"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "The fixed mathematical target and Cycle 1--13 Lean sources are unchanged. The final audit is resumed under the updated finite predecessor-tracking rule."
+  completion_candidate: yes
+  lean_artifacts: []
+  evidence:
+    - "Issue #4416 Cycle 13 acceptance comment 5594157652"
+    - "Issue #4416 updated-contract resumption comment 5610313908"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - "fixed target A--D and completion conditions"
+    conjuncts:
+      - "This cycle changes audit state only; accepted mathematical evidence remains in the Cycle 1--13 artifacts."
+    undischarged_assumptions: []
+    acceptance_point: "The candidate remains target-proof-checkpoint until the fixed-head standard review, final packet, fresh four-lane review, and root integration all pass."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "whole-GOAL final review gates"
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: []
+    unused:
+      - "Cycle 1--13 report entries are review indices and are not substituted for the fresh final review."
+  structure_field_escape: cannot-determine
+  route_integrity: cannot-determine
+  target_fitting: cannot-determine
+  vacuity: cannot-determine
+  one_way_as_equivalence: cannot-determine
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "No Lean source changed in this cycle."
+  blocking_findings: []
+  next_obligation: "create the audit PR, run the standard review, then post and review the bounded final packet"
+```
