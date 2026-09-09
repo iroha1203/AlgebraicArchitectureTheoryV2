@@ -107,7 +107,7 @@ class PacketTests(unittest.TestCase):
 
     def registry_row(self, module, olean_hash, dependencies=None, url="https://example.test/repo"):
         dependency_set = cp.digest({"artifact_ids": sorted(dependencies or [])})
-        return {"artifact_type": "lean-olean", "schema_version": 1, "module": module,
+        return {"artifact_type": "lean-olean", "schema_version": cp.REGISTRY_VERSION, "module": module,
                 "repository": {"kind": "baseline", "url": url, "commit": "c" * 40,
                                "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
                                "manifest_entry": {"type": "path", "name": "fixture", "dir": "."}},
@@ -186,7 +186,7 @@ class PacketTests(unittest.TestCase):
             b = self.registry_row("Pkg.B", h, url="https://example.test/b")
             aid, bid = cp.digest(a), cp.digest(b)
             empty = {"artifact_ids": []}
-            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean fixture", "manifest": a["repository"]["manifest"],
                      "artifacts": {aid: a, bid: b}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
             def fake_run(args, cwd=None, env=None):
@@ -261,15 +261,125 @@ class PacketTests(unittest.TestCase):
                 cp.repo_identity(Path("/tmp/pkg"), Path("/tmp/repo"),
                                  {"path": "lake-manifest.json", "blob": "c" * 40}, entry)
 
+    def test_repository_url_must_be_public_and_credential_free(self):
+        for value in (
+            "https://token@github.com/example/repo",
+            "file:///example/repo",
+            "/example/repo",
+            "../private/repo",
+            "https://github.com/example/repo?token=secret",
+            "https://localhost/example/repo",
+            "https://127.0.0.1/example/repo",
+        ):
+            with self.subTest(value=value), self.assertRaisesRegex(cp.Invalid, "public"):
+                cp.public_repository_url(value)
+        for value in (
+            "https://github.com/example/repo.git",
+            "git://github.com/example/repo",
+            "git@github.com:example/repo.git",
+            "ssh://git@github.com/example/repo.git",
+        ):
+            self.assertEqual(cp.public_repository_url(value), value)
+
     def test_registry_rejects_lean_version_mismatch(self):
         with tempfile.TemporaryDirectory() as d:
             registry = Path(d)
-            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean old", "manifest": {"path": "lake-manifest.json", "blob": "b" * 40},
                      "artifacts": {}, "dependency_sets": {}, "roots": {}})
             with patch.object(cp, "run", return_value="Lean current"):
                 with self.assertRaisesRegex(cp.Invalid, "Lean version mismatch"):
                     cp.validate_registry(Path(d), registry, [])
+
+    def test_registry_rejects_per_artifact_lean_version_mismatch(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo, registry = Path(d), Path(d) / "registry"
+            objects = registry / "objects"
+            objects.mkdir(parents=True)
+            h = hashlib.sha256(b"main").hexdigest()
+            (objects / h).write_bytes(b"main")
+            row = self.registry_row("Pkg.A", h)
+            row["lean_version"] = "Lean forged-old"
+            artifact_id = cp.digest(row)
+            empty = {"artifact_ids": []}
+            cp.write(registry / "index.json", {
+                "registry_type": "completion-artifact-registry",
+                "schema_version": cp.REGISTRY_VERSION,
+                "lean_version": "Lean current",
+                "manifest": row["repository"]["manifest"],
+                "artifacts": {artifact_id: row},
+                "dependency_sets": {cp.digest(empty): empty},
+                "roots": {},
+            })
+            def fake_run(args, cwd=None, env=None):
+                if args[:2] == ["lean", "--version"]: return "Lean current"
+                if args[:2] == ["lean", "--print-prefix"]: return str(repo / "sysroot")
+                if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
+                raise AssertionError(args)
+            with patch.object(cp, "run", side_effect=fake_run), \
+                 patch.object(cp, "blob", return_value=row["repository"]["manifest"]):
+                with self.assertRaisesRegex(cp.Invalid, "artifact Lean version mismatch"):
+                    cp.validate_registry(repo, registry, [artifact_id])
+
+    def test_source_module_is_derived_from_lake_package_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d).resolve()
+            source = repo / "project/Pkg/Owner.lean"
+            source.parent.mkdir(parents=True)
+            source.write_text("def x := 1\n")
+            (repo / "project/lake-manifest.json").write_text(json.dumps({
+                "version": "1", "packagesDir": ".lake/packages", "packages": [],
+                "name": "fixture", "lakeDir": ".lake",
+            }))
+            self.assertEqual(cp.source_module_name(repo, source), "Pkg.Owner")
+
+    def test_registry_root_is_content_addressed(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo, registry = Path(d), Path(d) / "registry"
+            registry.mkdir()
+            empty = {"artifact_ids": []}
+            manifest = {"path": "lake-manifest.json", "blob": "b" * 40}
+            root = {"root_id": "0" * 64, "module": "Pkg.Owner",
+                    "source": {"path": "Pkg/Owner.lean", "blob": "a" * 40},
+                    "direct_modules": [], "dependency_set": cp.digest(empty)}
+            cp.write(registry / "index.json", {
+                "registry_type": "completion-artifact-registry",
+                "schema_version": cp.REGISTRY_VERSION,
+                "lean_version": "Lean fixture", "manifest": manifest,
+                "artifacts": {}, "dependency_sets": {cp.digest(empty): empty},
+                "roots": {"Pkg.Owner": root},
+            })
+            def fake_run(args, cwd=None, env=None):
+                if args[:2] == ["lean", "--version"]: return "Lean fixture"
+                if args[:3] == ["git", "rev-parse", "HEAD"]: return "c" * 40
+                raise AssertionError(args)
+            with patch.object(cp, "run", side_effect=fake_run), \
+                 patch.object(cp, "blob", return_value=manifest):
+                with self.assertRaisesRegex(cp.Invalid, "content-addressed registry root mismatch"):
+                    cp.validate_registry(repo, registry, [])
+
+    def test_focused_command_binds_source_module_and_output(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d)
+            output = repo / "cache/Pkg/Owner.olean"
+            output.parent.mkdir(parents=True)
+            output.write_bytes(b"focused")
+            h = cp.file_hash(output)
+            metadata = self.registry_row("Pkg.Owner", h)
+            receipt = {"module": "Pkg.Owner",
+                       "command": ["lean", "-o", "cache/Pkg/Owner.olean", "Pkg/Owner.lean"]}
+            cp.validate_focused_command(repo, receipt, metadata)
+            bad = copy.deepcopy(receipt)
+            bad["command"] = ["definitely-not-lean"]
+            with self.assertRaisesRegex(cp.Invalid, "command shape"):
+                cp.validate_focused_command(repo, bad, metadata)
+            bad = copy.deepcopy(receipt)
+            bad["command"][3] = "Pkg/Other.lean"
+            with self.assertRaisesRegex(cp.Invalid, "source mismatch"):
+                cp.validate_focused_command(repo, bad, metadata)
+            output.write_bytes(b"tampered")
+            with self.assertRaisesRegex(cp.Invalid, "output missing/changed"):
+                cp.validate_focused_command(repo, receipt, metadata)
 
     def test_registry_rejects_source_blob_and_path_escape(self):
         with tempfile.TemporaryDirectory() as d:
@@ -281,7 +391,7 @@ class PacketTests(unittest.TestCase):
             row = self.registry_row("Pkg.A", h)
             artifact_id = cp.digest(row)
             empty = {"artifact_ids": []}
-            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": 1,
+            cp.write(registry / "index.json", {"registry_type": "completion-artifact-registry", "schema_version": cp.REGISTRY_VERSION,
                      "lean_version": "Lean fixture", "manifest": row["repository"]["manifest"],
                      "artifacts": {artifact_id: row}, "dependency_sets": {cp.digest(empty): empty}, "roots": {}})
             def fake_run(args, cwd=None, env=None):
@@ -307,12 +417,15 @@ class PacketTests(unittest.TestCase):
         deps = {"artifact_ids": [direct_id]}
         owner = self.registry_row("Pkg.Owner", h, [direct_id])
         owner_id = cp.digest(owner)
+        root = {"module": "Pkg.Owner", "source": owner["source"],
+                "direct_modules": ["Pkg.Direct"], "dependency_set": cp.digest(deps)}
+        root["root_id"] = cp.digest(root)
         index = {"lean_version": "Lean fixture", "manifest": owner["repository"]["manifest"],
                  "artifacts": {direct_id: direct, owner_id: owner},
                  "dependency_sets": {cp.digest(empty): empty, cp.digest(deps): deps},
-                 "roots": {"Pkg.Owner": {"source": owner["source"], "direct_modules": ["Pkg.Direct"],
-                                          "dependency_set": cp.digest(deps)}}}
-        receipt = {"module": "Pkg.Owner", "artifact_id": owner_id, "dependency_set": cp.digest(deps)}
+                 "roots": {"Pkg.Owner": root}}
+        receipt = {"module": "Pkg.Owner", "root_id": root["root_id"],
+                   "artifact_id": owner_id, "dependency_set": cp.digest(deps)}
         evidence = cp.registry_evidence(index, [direct_id, owner_id], [receipt])
         self.assertEqual(evidence["artifact_count"], 2)
         self.assertEqual(len(evidence["repositories"]), 1)
