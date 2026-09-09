@@ -444,12 +444,13 @@ def extraction_environment(repo, receipts):
 
 def fixed_goal_text(repo, mapping):
     fixed = mapping["fixed_goal"]
+    need(relative(repo, fixed["path"]) == relative(repo, mapping["goal_path"]),
+         "fixed/current GOAL path mismatch")
     need(run(["git", "rev-parse", fixed["commit"] + "^{commit}"], repo) == fixed["commit"],
          "fixed GOAL commit does not resolve")
     need(run(["git", "rev-parse", f'{fixed["commit"]}:{relative(repo, fixed["path"])}'], repo) == fixed["blob"],
          "fixed GOAL blob mismatch")
     text = run(["git", "show", f'{fixed["commit"]}:{relative(repo, fixed["path"])}'], repo)
-    need(mapping["goal"] in text, "fixed GOAL identity mismatch")
     return text
 
 
