@@ -1233,7 +1233,7 @@ def registry_evidence(index, artifact_ids, receipts, policy):
 
 def collect(repo, mapping_path, receipt_paths, output, base="origin/main", registry=None):
     need(registry is not None, "registry is required by the dependency policy")
-    mapping = read(mapping_path)
+    mapping = read(repo / relative(repo, mapping_path))
     validate_map(mapping)
     validate_mapping_repository(repo, mapping)
     validate_goal_binding(repo, mapping)
