@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D の自然な包含と自然性失敗の特徴づけ
+- current proof obligation: D の自己同型群・qualified部分群準同型
 - pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: `i:KN→J`、対象別 `p`、`p` の自然性同値、G-117 tagged反例での失敗を構成
+- next proof obligation: `r_N`、比較を保つ部分群準同型、底を固定する資格付き部分群への制限を構成
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1299,3 +1299,153 @@ Cycle 11 material premise roles are:
 - `direction-hypothesis`: none.
 - `discharge-required`: the comparison evaluation and the morphism component of `π_N N=πV`; discharged by D2's functor definitions and D1's base computation.
 - `conclusion-equivalent-risk`: none; `π_N` is constructed from raw base maps and carries no field asserting the desired functor equality.
+
+## Cycle 12 — one-sided naturality and tagged retraction failure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 12
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 724a13f0da5421b914aab37453f268599ebf8690
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 11 result: D3 merged and discharged; D4 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_absorption
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor
+    - AAT.AG.DoctrineFiberProduct.canonicalObjectNormalizationTotal_natural_iff_operationCoherent
+    - AAT.AG.DoctrineFiberProduct.taggedEndpointFlip_not_natural
+  proof_obligation: "D4: construct i:KN→J and objectwise p with p i=1, characterize p naturality by f e_P=e_Q f and CanonicalNormalizationOperationCoherent, and realize its failure on the fixed tagged Bool counterexample"
+  selection_reason: "D4 records the exact asymmetry between the universally valid one-sided absorption and the refuted opposite exchange equation before any automorphism-group construction can use normalization."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationNaturalityFailure.lean
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion_retraction
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff_operationCoherent
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_retraction_not_natural
+  risks:
+    - "packaging p as a natural transformation and thereby assuming the refuted equation"
+    - "reversing the Lean and conventional composition orders"
+    - "claiming that i naturality requires the failed operation coherence"
+    - "introducing a new counterexample instead of reusing the fixed G-117 tagged witness"
+    - "disconnecting the inequality from the existing Bool component evaluations"
+  unchecked:
+    - "D5: endpoint automorphism and qualified subgroup homomorphisms"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the natural inclusion i from KN to the raw Karoubi embedding J using D1 absorption.  Constructed objectwise reverse maps p and proved their split identity.  Proved p naturality at each raw f iff f≫e_Q=e_P≫f, and iff the exact G-117 operation coherence holds.  Embedded the fixed tagged package and flip in C, retained one-sided absorption and i naturality, refuted p naturality with the existing inequality, and re-exposed the false/true Bool evaluations of the two composites."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationNaturalityFailure.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.rawPackageKaroubiInclusion
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion_app_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionApp
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionApp_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion_retraction
+    - AAT.AG.RealizationComparisonIdempotents.NormalizedPackageRetractionNaturalAt
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff
+    - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_natural_iff_operationCoherent
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff_operationCoherent
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalizationPackage
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalizationFlip
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_absorption
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_inclusion_naturality
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_not_natural
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_retraction_not_natural
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_normalize_then_flip_snd
+    - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_flip_then_normalize_snd
+  claim_mapping:
+    theorem_names:
+      - normalizedPackageInclusion_app_f
+      - normalizedPackageRetractionApp_f
+      - normalizedPackageInclusion_retraction
+      - normalizedPackageRetractionNaturalAt_iff
+      - canonicalPackageNormalization_natural_iff_operationCoherent
+      - normalizedPackageRetractionNaturalAt_iff_operationCoherent
+      - taggedCanonicalNormalization_absorption
+      - taggedCanonicalNormalization_inclusion_naturality
+      - taggedCanonicalNormalization_not_natural
+      - taggedCanonicalNormalization_retraction_not_natural
+      - taggedCanonicalNormalization_normalize_then_flip_snd
+      - taggedCanonicalNormalization_flip_then_normalize_snd
+    source_labels:
+      - "fixed target D paragraphs 4--5: natural inclusion, objectwise retraction, exact naturality obstruction, and tagged failure"
+    conjuncts:
+      - "J:C→Kar(C) -> raw identity-idempotent embedding"
+      - "i:KN→J -> component raw e_P and universal naturality from one-sided absorption"
+      - "p_P:J(P)→KN(P) -> component raw e_P without a false natural-transformation wrapper"
+      - "p_P i_P=1_KN(P) -> endpoint idempotence"
+      - "p naturality at f -> iff f≫e_Q=e_P≫f"
+      - "opposite exchange equation -> iff existing CanonicalNormalizationOperationCoherent"
+      - "tagged package/flip -> actual object and morphism of the same C"
+      - "tagged flip -> one-sided absorption and i naturality hold while p naturality fails"
+      - "tagged inequality -> the same false/true Bool operation evaluations"
+    undischarged_assumptions: []
+    acceptance_point: "D4 separates the proved natural inclusion from the merely objectwise reverse maps, proves the exact iff obstruction, and reuses rather than replaces the G-117 counterexample and its computational witness."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D natural inclusion i and objectwise split p"
+      - "D exact naturality characterization by exchange and operation coherence"
+      - "D fixed tagged counterexample placement, failure, and Bool evaluation connection"
+    remaining:
+      - "D5 endpoint automorphism and qualified subgroup homomorphisms"
+  certificate_provenance:
+    discharged:
+      - "i naturality is derived from reviewed D1 absorption for arbitrary raw morphisms"
+      - "p naturality is tested as an explicit proposition and not stored in the morphism or object interface"
+      - "failure is inherited from the fixed G-117 tagged total morphism and its operation-map computation"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalPackageNormalization_absorption proves the naturality field of i"
+      - "canonicalPackageNormalization_idem proves p_P i_P=1 and removes the duplicate source idempotent in the naturality iff"
+      - "canonicalObjectNormalizationTotal_natural_iff_operationCoherent transfers the package-level equation to the existing operation condition"
+      - "taggedEndpointFlip_not_natural refutes the package-level equation; taggedLeftComposite_snd and taggedRightComposite_snd expose the Bool witness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted builds: NormalizationProjection and LaxDiagnosticProjectorModificationCounterexample; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal namespace audit: 18 current-module declarations, standard axioms only"
+    - "18 source-level declarations in NormalizationNaturalityFailure.lean"
+  blocking_findings: []
+  next_obligation: "D5: construct the endpoint automorphism product hom r_N, restrict it to comparison-preserving subgroups, and then to the raw/image bottom-qualified subgroups"
+```
+
+### Cycle 12 acceptance spine
+
+`normalizedPackageInclusion` uses `Karoubi.decompId_i` with component `e_P`.
+Its naturality square is the D1 sandwich equation and therefore holds for every
+raw morphism.  The reverse `Karoubi.decompId_p` maps exist objectwise and split
+the inclusion, but are not packaged as a natural transformation.
+
+For each `f`, `NormalizedPackageRetractionNaturalAt f` is proved equivalent to
+`f ≫ e_Q = e_P ≫ f`; the extra source projector introduced by `N(f)` is removed
+only by endpoint idempotence.  The existing G-117 theorem identifies this exact
+equation with `CanonicalNormalizationOperationCoherent`.
+
+The fixed tagged package and endpoint flip are then lifted into the same full
+subcategory `C`.  D1 absorption and `i` naturality remain valid, while the
+opposite equation and `p` naturality fail.  The two composites retain the
+existing `false` and `true` evaluations on `taggedBoolOperation`, so the failure
+is connected to the same computational witness rather than a new proposition.
+
+Cycle 12 material premise roles are:
+
+- `ambient-boundary`: arbitrary `U`, arbitrary admissible endpoints and raw morphisms; the final refutation specializes only to the fixed tagged witness required by the target.
+- `direction-hypothesis`: none.
+- `discharge-required`: naturality of `i`, splitting of `p`, both iff characterizations, and tagged failure; each is discharged by reviewed D1/G-117 declarations.
+- `conclusion-equivalent-risk`: none; no naturality field is added to `p`, and operation coherence remains an equivalent tested proposition rather than an input.
