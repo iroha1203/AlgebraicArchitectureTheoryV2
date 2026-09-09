@@ -409,7 +409,8 @@ def index_dependencies(repo, source, module, registry):
     direct_paths = [Path(p).resolve() for p in run(["lean", "--deps", source], repo).splitlines()]
     direct_modules = [module_from_artifact(p, roots) for p in direct_paths if not p.is_relative_to(sysroot)]
     helper = relative(repo, Path(__file__).with_name("CompletionRegistry.lean"))
-    imported = json.loads(run(["lean", "--run", helper, *direct_modules], repo), object_pairs_hook=unique_pairs)
+    imported = (json.loads(run(["lean", "--run", helper, *direct_modules], repo), object_pairs_hook=unique_pairs)
+                if direct_modules else [])
     distinct(imported, "imported modules", allow_empty=True)
     owners = package_owners(repo, manifest, manifest_data)
     artifact_ids = []
