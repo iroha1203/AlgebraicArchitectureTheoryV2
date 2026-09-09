@@ -3,6 +3,19 @@
   "goal": "completion-fixture",
   "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
+  "dependency_policy": {
+    "schema_version": 1,
+    "method": "focused-owner-plus-pinned-dependency-trust",
+    "authorization": {
+      "decision_ref": "https://example.test/decision",
+      "conflict_issue_ref": "https://example.test/conflict",
+      "tracking_issue_ref": "https://example.test/tracking"
+    },
+    "selected_owner": "focused-source-receipt-required",
+    "repository_local": "runtime-only-material-must-be-selected",
+    "external_lake": "manifest-pinned-artifact-trust",
+    "source_build_claim": false
+  },
   "criteria": [
     "classification",
     "decisions"

@@ -76,8 +76,17 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
 
 ## Evidenceと依存
 
-- 対象全宣言についてfocused elaboration、`#print axioms`、placeholder scanを固定する。
+- claim、premise、gateへ対応させる対象全宣言のownerについてfocused elaboration、
+  `#print axioms`相当のkernel抽出、placeholder scanを固定する。全import closureのsource elaborationを
+  要求せず、選択ownerを縮小して未確認claimを隠すことも認めない。
 - main theoremだけでなく、spine、bridge、finite witness、certificate construction、instance/import chainを依存DAGとして追う。
+- 人間がtracking Issueへ明示的に固定したcompletion方法に限り、lock manifestでcommitとsourceを固定した
+  外部Lake packageの既存artifactをdependency trust premiseとして利用できる。このpremiseは
+  sourceからartifactを再生成した証拠でも、数学premiseの放電でもない。
+- 同一repoの非選択artifactはruntime dependencyに限る。material claim、premise、中心routeを支える
+  repo内宣言はfocused ownerとして選択し、非選択artifactだけで監査済みと扱わない。
+- dependency policy、承認Issue/comment、artifact三分類、`source_build_claim: false`をpacketへ固定する。
+  全Research moduleを回るfile loopやaggregate/full buildをcompletion receiptのために実行しない。
 - 新規`axiom`、許可されない`sorry`/`admit`/`unsafe`、本体からResearchへのimportは受理しない。
 - rootのpacket、PR本文、report、ledger、CIは監査対象であり、数学claimの一次証拠ではない。
 - 中心claimの`cannot-determine`または`unchecked`はcheckpoint/blockedへ倒す。

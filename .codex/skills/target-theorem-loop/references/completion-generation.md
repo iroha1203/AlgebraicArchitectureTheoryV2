@@ -79,12 +79,18 @@ toolchain artifactのhash、出力先のrepo相対pathや実行記録もpacket d
 元bundleの`validate`は、現在のsource snapshot・toolchain・registry artifact setが記録と異なれば
 失敗する。この不一致を無視して承認しない。
 
-ここでregistryへindexする既存Lake artifactは、外部packageか同一repoかを問わずbounded cache trust
-assumptionである。registryはmanifest pin、Git source blob、既存olean componentのhash、Lean versionを
-相互に固定しambientすり替えを拒否するが、各sourceを再elaborateしてsourceからoleanを再生成したという
-証明ではない。selected owner leafだけをfocused `lean -o`するという本手順の範囲を越えて、このassumptionを
-source-build証拠として主張しない。固定適用版が全toolchain外importのsource-derived receiptを要求するGOALでは、
-人間がcompletion方法の変更を明示承認しない限り、このregistryだけをcompletion証拠として受理しない。
+対応表は`dependency_policy`を必須入力として持つ。現行方式は
+`focused-owner-plus-pinned-dependency-trust`だけを受理し、選択ownerにはfocused source receiptを要求する。
+registryへindexする既存Lake artifactは、外部packageか同一repoかを問わずbounded cache trust assumptionである。
+registryはmanifest pin、Git source blob、既存olean componentのhash、Lean versionを相互に固定しambientすり替えを
+拒否するが、各sourceを再elaborateしてsourceからoleanを再生成したという証明ではない。
+
+外部Lake packageはmanifest固定artifact trust、同一repoの非選択artifactはruntime dependencyに分類する。
+後者はmaterial claim、premise、中心routeの証拠に使えず、それらを所有するrepo内moduleは選択ownerへ追加する。
+packetは三分類の件数とmembers digest、人間判断のtracking/conflict/decision ref、
+`source_build_claim: false`を保持する。selected owner leafだけをfocused `lean -o`する範囲を越えて、
+依存artifactをsource-build証拠として主張しない。固定適用版からcompletion方法を変更する場合は、targetと
+anti-weakening条件を維持した人間判断をtracking Issueへ記録し、そのrefを対応表へ固定する。
 
 各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
 独自の位置付き走査の全件集合と照合し、欠落も余分な参照も拒否する。projection名は

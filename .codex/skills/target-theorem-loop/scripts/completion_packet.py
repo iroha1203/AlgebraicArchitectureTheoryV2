@@ -718,10 +718,23 @@ def distinct(values, what, allow_empty=False, unique=True):
 
 
 def validate_map(mapping):
-    fields(mapping, ["schema_version", "goal", "goal_path", "report_path", "criteria", "claims", "premises", "evidence"])
+    fields(mapping, ["schema_version", "goal", "goal_path", "report_path", "dependency_policy", "criteria", "claims", "premises", "evidence"])
     need(mapping["schema_version"] == VERSION, "unsupported schema version")
     for name in ["goal", "goal_path", "report_path"]:
         string(mapping[name])
+    policy = mapping["dependency_policy"]
+    fields(policy, ["schema_version", "method", "authorization", "selected_owner", "repository_local",
+                    "external_lake", "source_build_claim"])
+    need(policy["schema_version"] == 1, "dependency policy version")
+    need(policy["method"] == "focused-owner-plus-pinned-dependency-trust", "dependency policy method")
+    fields(policy["authorization"], ["decision_ref", "conflict_issue_ref", "tracking_issue_ref"])
+    for ref in policy["authorization"].values():
+        string(ref)
+        need(ref.startswith("https://"), "dependency policy authorization ref")
+    need(policy["selected_owner"] == "focused-source-receipt-required", "selected owner policy")
+    need(policy["repository_local"] == "runtime-only-material-must-be-selected", "repository-local policy")
+    need(policy["external_lake"] == "manifest-pinned-artifact-trust", "external Lake policy")
+    need(policy["source_build_claim"] is False, "dependency policy must not claim source build")
     distinct(mapping["criteria"], "criteria")
     array(mapping["claims"])
     array(mapping["premises"])
@@ -874,7 +887,8 @@ def material(mapping, extraction, goal_text):
     done = set()
     for n in adjacency:
         visit(n, set(), done)
-    return {"criteria": mapping["criteria"], "direction_coverage": directions,
+    return {"criteria": mapping["criteria"], "dependency_policy": mapping["dependency_policy"],
+            "direction_coverage": directions,
             "dependency_dag": {"semantics": "target-acceptance-spine", "nodes": [declaration(n) for n in sorted(central)],
                                "edges": sorted(routes, key=lambda e: canonical(e))},
             "material_premises": mapping["premises"], "gate_evidence": mapping["evidence"],
@@ -921,7 +935,7 @@ def extraction_environment(repo, receipts):
         yield env
 
 
-def registry_evidence(index, artifact_ids, receipts):
+def registry_evidence(index, artifact_ids, receipts, policy):
     """Canonical review-facing provenance; large closures are committed by Merkle-style digests."""
     artifact_ids = sorted(set(artifact_ids))
     repository_rows = {}
@@ -945,6 +959,13 @@ def registry_evidence(index, artifact_ids, receipts):
                                  ({"module": row["module"], "olean_files": row["olean_files"]} for row in rows.values()),
                                  key=lambda value: canonical(value)))})
     owner_ids = sorted(r["artifact_id"] for r in receipts)
+    owner_id_set = set(owner_ids)
+    external_ids = sorted(artifact_id for artifact_id in artifact_ids
+                          if artifact_id not in owner_id_set
+                          and index["artifacts"][artifact_id]["repository"]["kind"] == "lake-git")
+    repository_runtime_ids = sorted(artifact_id for artifact_id in artifact_ids
+                                    if artifact_id not in owner_id_set
+                                    and index["artifacts"][artifact_id]["repository"]["kind"] == "baseline")
     direct_ids = set()
     set_ids = set()
     for receipt in receipts:
@@ -964,6 +985,16 @@ def registry_evidence(index, artifact_ids, receipts):
     return {"evidence_type": "completion-artifact-registry-summary", "schema_version": REGISTRY_VERSION,
             "lean_version": index["lean_version"], "manifest": index["manifest"],
             "artifact_count": len(artifact_ids), "artifact_set_digest": artifact_set_digest(index, artifact_ids),
+            "dependency_policy": policy,
+            "artifact_classes": {
+                "focused_owner": {"claim": "focused-source-elaboration", "artifact_count": len(owner_ids),
+                                  "members_digest": digest(owner_ids)},
+                "manifest_pinned_external": {"claim": "dependency-trust-not-source-build",
+                                             "artifact_count": len(external_ids),
+                                             "members_digest": digest(external_ids)},
+                "repository_runtime": {"claim": "runtime-dependency-not-material-claim-evidence",
+                                       "artifact_count": len(repository_runtime_ids),
+                                       "members_digest": digest(repository_runtime_ids)}},
             "repositories": repositories, "dependency_sets": dependency_sets,
             "selected_owner_artifacts": [{"artifact_id": artifact_id, "metadata": index["artifacts"][artifact_id]}
                                          for artifact_id in owner_ids],
@@ -1018,7 +1049,8 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
     if registry:
         bundle["registry"] = {"path": relative(repo, registry), "artifact_ids": artifact_ids,
                               "artifact_set_digest": artifact_set_digest(index, artifact_ids),
-                              "evidence": registry_evidence(index, artifact_ids, receipts)}
+                              "evidence": registry_evidence(index, artifact_ids, receipts,
+                                                            mapping["dependency_policy"])}
     write(output, bundle)
     return bundle
 
@@ -1042,7 +1074,8 @@ def validate_bundle(repo, b):
         index = validate_registry(repo, registry, artifact_ids)
         need(b["registry"]["artifact_set_digest"] == artifact_set_digest(index, artifact_ids),
              "bundle registry artifact set mismatch")
-        need(b["registry"]["evidence"] == registry_evidence(index, artifact_ids, b["receipts"]),
+        need(b["registry"]["evidence"] == registry_evidence(index, artifact_ids, b["receipts"],
+                                                              b["mapping"]["dependency_policy"]),
              "bundle registry evidence mismatch")
         for r in b["receipts"]:
             validate_registry_receipt(repo, registry, r)

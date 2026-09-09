@@ -17,7 +17,16 @@ spec.loader.exec_module(cp)
 def mapping():
     n = lambda s: "CompletionFixture." + s
     return {"schema_version": 2, "goal": "completion-fixture", "goal_path": str(HERE / "fixtures/goal.md"),
-            "report_path": str(HERE / "fixtures/goal.md"), "criteria": ["classification", "decisions"],
+            "report_path": str(HERE / "fixtures/goal.md"),
+            "dependency_policy": {
+                "schema_version": 1, "method": "focused-owner-plus-pinned-dependency-trust",
+                "authorization": {"decision_ref": "https://example.test/decision",
+                                  "conflict_issue_ref": "https://example.test/conflict",
+                                  "tracking_issue_ref": "https://example.test/tracking"},
+                "selected_owner": "focused-source-receipt-required",
+                "repository_local": "runtime-only-material-must-be-selected",
+                "external_lake": "manifest-pinned-artifact-trust", "source_build_claim": False},
+            "criteria": ["classification", "decisions"],
             "claims": [
                 {"id": "input", "criterion": "classification", "goal_quote": "入力条件の必要十分性", "direction": "iff",
                  "declarations": [n("inputCharacterization")],
@@ -426,11 +435,28 @@ class PacketTests(unittest.TestCase):
                  "roots": {"Pkg.Owner": root}}
         receipt = {"module": "Pkg.Owner", "root_id": root["root_id"],
                    "artifact_id": owner_id, "dependency_set": cp.digest(deps)}
-        evidence = cp.registry_evidence(index, [direct_id, owner_id], [receipt])
+        evidence = cp.registry_evidence(index, [direct_id, owner_id], [receipt], mapping()["dependency_policy"])
         self.assertEqual(evidence["artifact_count"], 2)
         self.assertEqual(len(evidence["repositories"]), 1)
         self.assertEqual(evidence["selected_owner_artifacts"][0]["metadata"]["source"], owner["source"])
         self.assertEqual(evidence["direct_dependency_artifacts"][0]["metadata"]["olean_files"], direct["olean_files"])
+        self.assertEqual(evidence["artifact_classes"]["focused_owner"]["artifact_count"], 1)
+        self.assertEqual(evidence["artifact_classes"]["repository_runtime"]["artifact_count"], 1)
+        self.assertFalse(evidence["dependency_policy"]["source_build_claim"])
+
+    def test_dependency_policy_is_closed_and_fail_closed(self):
+        bad = mapping()
+        bad["dependency_policy"]["source_build_claim"] = True
+        with self.assertRaisesRegex(cp.Invalid, "must not claim source build"):
+            cp.validate_map(bad)
+        bad = mapping()
+        bad["dependency_policy"]["authorization"]["decision_ref"] = "local decision"
+        with self.assertRaisesRegex(cp.Invalid, "authorization ref"):
+            cp.validate_map(bad)
+        bad = mapping()
+        bad["dependency_policy"]["repository_local"] = "trusted"
+        with self.assertRaisesRegex(cp.Invalid, "repository-local policy"):
+            cp.validate_map(bad)
 
     def test_metadata_rejection(self):
         for key, value in (("kind", "unknown"), ("universe_parameters", {}), ("type_display", ""),

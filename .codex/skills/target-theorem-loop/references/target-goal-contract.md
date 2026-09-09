@@ -54,7 +54,9 @@ field名の有無ではなく、該当内容と参照先を確認する。
 
 監査へ渡すときはGOALと共通基準のcommit・pathおよび該当条項を添える。
 final packetの`completion_criteria`にはカード固有の条件と適用版付き共通基準の参照を
-含める。既存packetの必須項目や正式ゲートは維持する。
+含める。completion証拠の取得方法を人間判断で変更した場合は、targetの変更ではないこと、
+承認Issue/comment、依存trustの範囲をpacketのdependency policyへ固定する。
+既存packetの必須項目や正式ゲートは維持する。
 
 ## 欠陥判定
 
