@@ -1674,16 +1674,16 @@ audits:
     discharged: []
     unresolved: []
   proof_use:
-    used:
-      - "Cycle 1--13 report entries identify the accepted declaration-level routes to be rechecked in the final packet."
+    used: []
     unused:
+      - "Cycle 1--13 report entries are indices for the whole-GOAL recheck, not Cycle 14 proof-use evidence."
       - "withdrawn generated completion packets and pattern-2 receipts"
-  structure_field_escape: none-found
-  route_integrity: pass-candidate
-  target_fitting: none-found
-  vacuity: none-found
-  one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
+  structure_field_escape: cannot-determine
+  route_integrity: cannot-determine
+  target_fitting: cannot-determine
+  vacuity: cannot-determine
+  one_way_as_equivalence: cannot-determine
+  goal_or_report_reinterpretation: cannot-determine
   validation_refs:
     - "focused checks, declaration audits, and CI remain to be fixed on the completion PR head"
   blocking_findings: []
