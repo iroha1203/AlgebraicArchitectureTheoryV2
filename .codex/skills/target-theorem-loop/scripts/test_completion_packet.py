@@ -96,7 +96,7 @@ class PacketTests(unittest.TestCase):
     def test_import_tree_recursive_and_conflict(self):
         # Test staging independently of git/Lean qualification, covered by integration.
         with tempfile.TemporaryDirectory() as d:
-            repo = Path(d)
+            repo = Path(d).resolve()
             (repo / "a.olean").write_bytes(b"a")
             (repo / "b.olean").write_bytes(b"b")
             a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean"), "dependencies": []}
@@ -276,6 +276,20 @@ class PacketTests(unittest.TestCase):
             row["repository"]["manifest_entry"] = owners[0][2]
             cp.validate_artifact_metadata(row)
 
+    def test_nested_manifest_root_is_distinct_from_same_repository_path_dependency(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d).resolve()
+            project = repo / "research/lean"
+            project.mkdir(parents=True)
+            manifest = project / "lake-manifest.json"
+            path_entry = {"type": "path", "name": "baseline", "dir": "../.."}
+            data = {"version": "1", "packagesDir": "../../.lake/packages",
+                    "packages": [path_entry], "name": "researchLean", "lakeDir": ".lake"}
+            with patch.object(cp, "run", return_value=str(repo)):
+                owners = cp.package_owners(repo, manifest, data)
+            self.assertIn((repo, repo, path_entry), owners)
+            self.assertIn((repo, project, {"type": "root", "name": "researchLean", "dir": "."}), owners)
+
     def test_registry_rejects_repository_url_mismatch(self):
         entry = {"type": "git", "name": "pkg", "rev": "a" * 40,
                  "url": "https://example.test/pkg"}
@@ -297,6 +311,9 @@ class PacketTests(unittest.TestCase):
             "https://github.com/example/repo?token=secret",
             "https://localhost/example/repo",
             "https://127.0.0.1/example/repo",
+            "https://127.1/example/repo",
+            "https://10.1/example/repo",
+            "https://0x7f.0.0.1/example/repo",
             "https://internal/example/repo",
             "ssh://git@buildhost/example/repo",
             "https://cache.corp/example/repo",
@@ -513,6 +530,19 @@ class PacketTests(unittest.TestCase):
         with patch.object(cp, "run", return_value="git@github.com:iroha1203/AlgebraicArchitectureTheoryV2.git"):
             cp.validate_mapping_repository(Path("."), local)
 
+    def test_mapping_binds_fixed_goal_id_and_tracking_issue(self):
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d).resolve()
+            goal = repo / "goal.md"
+            goal.write_text("# fixture\n\n- `id`: `completion-fixture`\n- `tracking issue`: [#2](https://github.com/example/project/issues/2)\n")
+            m = mapping()
+            m["goal_path"] = "goal.md"
+            cp.validate_goal_binding(repo, m)
+            m["goal"] = "other"
+            m["dependency_policy"]["authorization"]["goal"] = "other"
+            with self.assertRaisesRegex(cp.Invalid, "fixed GOAL card"):
+                cp.validate_goal_binding(repo, m)
+
     def test_repository_local_value_terminal_requires_reviewed_predecessor(self):
         x = extraction()
         terminal = copy.deepcopy(x["declarations"][0])
@@ -527,7 +557,7 @@ class PacketTests(unittest.TestCase):
         row["constant_names"]["value"].sort()
         context = {terminal["owner"]: {"artifact_id": "f" * 64,
                                         "source": {"path": "RepoLocal/Unreviewed.lean", "blob": "e" * 40},
-                                        "repository_commit": "d" * 40}}
+                                        "repository_commit": "c" * 40}}
         with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
             cp.material(mapping(), x, self.goal, context)
         m = mapping()
@@ -536,14 +566,66 @@ class PacketTests(unittest.TestCase):
                                         "reviewed_head": "d" * 40, "source_blob": "e" * 40,
                                         "artifact_id": "f" * 64,
                                         "review_ref": "https://github.com/example/project/pull/3#issuecomment-30"}]
-        core = cp.material(m, x, self.goal, context)
+        same_reviewed_source = lambda head, path: {"path": path, "blob": "e" * 40}
+        core = cp.material(m, x, self.goal, context, same_reviewed_source)
         predecessor = core["reviewed_predecessors"][0]
         self.assertEqual(predecessor["artifact_id"], "f" * 64)
+        self.assertEqual(predecessor["reviewed_head"], "d" * 40)
+        self.assertEqual(predecessor["artifact_repository_commit"], "c" * 40)
         self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
         changed = copy.deepcopy(x)
         changed["terminals"][0]["value"] = "changed-proof-value"
         with self.assertRaisesRegex(cp.Invalid, "predecessor declaration mismatch"):
-            cp.material(m, changed, self.goal, context)
+            cp.material(m, changed, self.goal, context, same_reviewed_source)
+        with self.assertRaisesRegex(cp.Invalid, "reviewed source mismatch"):
+            cp.material(m, x, self.goal, context,
+                        lambda head, path: {"path": path, "blob": "0" * 40})
+
+    def test_repository_local_predecessor_closure_is_transitive(self):
+        x = extraction()
+        first = copy.deepcopy(x["declarations"][0])
+        second = copy.deepcopy(x["declarations"][0])
+        first.update({"name": "RepoLocal.First", "owner": "RepoLocal.A", "value": "first"})
+        second.update({"name": "RepoLocal.Second", "owner": "RepoLocal.B", "value": "second",
+                       "references": [], "constant_names": {"type": [], "value": []}})
+        first["references"] = [{"name": second["name"], "site": "term", "position": "/body",
+                               "origin": "value"}]
+        first["constant_names"] = {"type": [], "value": [second["name"]]}
+        x["terminals"].extend([first, second])
+        x["declarations"][0]["references"].append(
+            {"name": first["name"], "site": "term", "position": "/body", "origin": "value"})
+        x["declarations"][0]["constant_names"]["value"].append(first["name"])
+        x["declarations"][0]["constant_names"]["value"].sort()
+        context = {
+            first["owner"]: {"artifact_id": "a" * 64,
+                              "source": {"path": "RepoLocal/A.lean", "blob": "1" * 40},
+                              "repository_commit": "3" * 40},
+            second["owner"]: {"artifact_id": "b" * 64,
+                               "source": {"path": "RepoLocal/B.lean", "blob": "2" * 40},
+                               "repository_commit": "4" * 40}}
+        m = mapping()
+        m["reviewed_predecessors"] = [{"declaration": first["name"], "owner": first["owner"],
+                                        "declaration_digest": cp.digest(first),
+                                        "reviewed_head": "5" * 40, "source_blob": "1" * 40,
+                                        "artifact_id": "a" * 64,
+                                        "review_ref": "https://github.com/example/project/pull/3#issuecomment-30"}]
+        with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
+            cp.material(m, x, self.goal, context,
+                        lambda head, path: {"path": path, "blob": "1" * 40})
+
+    def test_repository_local_projection_terminal_cannot_escape_review(self):
+        x = extraction()
+        terminal = copy.deepcopy(x["declarations"][0])
+        terminal.update({"name": "RepoLocal.Projected", "owner": "RepoLocal.Projection",
+                         "type": "Sort 1", "type_display": "Type", "value": None, "axioms": []})
+        x["terminals"].append(terminal)
+        x["declarations"][0]["references"].append(
+            {"name": terminal["name"], "site": "projection", "position": "/0", "origin": "value"})
+        context = {terminal["owner"]: {"artifact_id": "a" * 64,
+                                        "source": {"path": "RepoLocal/Projection.lean", "blob": "b" * 40},
+                                        "repository_commit": "c" * 40}}
+        with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
+            cp.material(mapping(), x, self.goal, context)
 
     def test_repository_local_type_terminal_cannot_escape_review(self):
         x = extraction()

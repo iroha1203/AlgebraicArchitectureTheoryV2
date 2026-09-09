@@ -70,9 +70,14 @@ def main (args : List String) : IO UInt32 := do
   if args == ["--reference-fixture"] then
     IO.println referenceFixture.compress
     return 0
-  let modules := args.toArray.map String.toName
+  let selectedPrefix := "--selected="
+  let repositoryPrefix := "--repository="
+  let modules := args.filterMap (fun arg =>
+    if arg.startsWith selectedPrefix then some (arg.drop selectedPrefix.length).toName else none) |>.toArray
+  let repositoryModules := args.filterMap (fun arg =>
+    if arg.startsWith repositoryPrefix then some (arg.drop repositoryPrefix.length).toName else none) |>.toArray
   if modules.isEmpty then
-    IO.eprintln "usage: CompletionAudit.lean OWNER_MODULE ..."
+    IO.eprintln "usage: CompletionAudit.lean --selected=OWNER_MODULE [--repository=MODULE ...]"
     return 2
   initSearchPath (← findSysroot)
   let env ← importModules (modules.map fun n => { module := n }) {} 0
@@ -91,9 +96,21 @@ def main (args : List String) : IO UInt32 := do
             let external := (env.getModuleIdxFor? dep).map (fun i => !modules.contains env.header.moduleNames[i.toNat]!) |>.getD true
             if external then terminals := terminals.insert dep
     let mut externalRows := #[]
-    for n in terminals.toList.mergeSort (fun a b => a.toString ≤ b.toString) do
+    let mut visited : NameSet := {}
+    while !terminals.isEmpty do
+      let n := terminals.toList.mergeSort (fun a b => a.toString ≤ b.toString) |>.head!
+      terminals := terminals.erase n
+      if visited.contains n then continue
+      visited := visited.insert n
       if let some info := env.find? n then
         externalRows := externalRows.push (← row env n info)
+        let owner := (env.getModuleIdxFor? n).map (fun i => env.header.moduleNames[i.toNat]!)
+        if owner.any repositoryModules.contains then
+          for edge in refs info.type "type" ++ (info.value? (allowOpaque := true) |>.map (fun v => refs v "term") |>.getD #[]) do
+            if let .ok name := edge.getObjValAs? String "name" then
+              let dep := name.toName
+              let external := (env.getModuleIdxFor? dep).map (fun i => !modules.contains env.header.moduleNames[i.toNat]!) |>.getD true
+              if external && !visited.contains dep then terminals := terminals.insert dep
     return obj [("schema_version", toJson (2 : Nat)), ("modules", toJson (modules.map Name.toString)),
       ("declarations", toJson rows), ("terminals", toJson externalRows)]
   let (result, _) ← (action.toIO { fileName := "CompletionAudit", fileMap := default } { env := env })

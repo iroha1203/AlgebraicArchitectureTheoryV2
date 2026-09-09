@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -144,7 +145,14 @@ def public_repository_url(url):
     try:
         address = ipaddress.ip_address(host)
     except ValueError:
-        pass
+        try:
+            # inet_aton also recognizes legacy compact IPv4 spellings such as
+            # 127.1; normalize those before deciding whether the host is public.
+            address = ipaddress.ip_address(socket.inet_aton(host))
+        except OSError:
+            address = None
+        if address is not None:
+            need(address.is_global, "repository URL must be public")
     else:
         need(address.is_global, "repository URL must be public")
     return value
@@ -180,6 +188,19 @@ def validate_mapping_repository(repo, mapping):
     refs.extend(predecessor["review_ref"] for predecessor in mapping["reviewed_predecessors"])
     need(all(github_ref_repository(ref) == expected for ref in refs),
          "evidence ref repository differs from baseline repository")
+
+
+def validate_goal_binding(repo, mapping):
+    """Bind the mapping and its authorization to the fixed GOAL card itself."""
+    goal_path = repo / relative(repo, mapping["goal_path"])
+    text = goal_path.read_text()
+    ids = re.findall(r"^- `id`: `([^`]+)`\s*$", text, re.M)
+    need(ids == [mapping["goal"]], "mapping GOAL differs from fixed GOAL card")
+    tracking = re.findall(
+        r"^- `tracking issue`: \[#[1-9][0-9]*\]\((https://github\.com/[^/]+/[^/]+/issues/[1-9][0-9]*)\)\s*$",
+        text, re.M)
+    need(tracking == [mapping["dependency_policy"]["authorization"]["tracking_issue_ref"]],
+         "mapping tracking issue differs from fixed GOAL card")
 
 
 def manifest_for(repo, source):
@@ -229,7 +250,7 @@ def package_owners(repo, manifest, data):
         result.append((owner, directory, entry))
     # The parent repository is always a valid baseline owner, even if a Lake
     # manifest omits its conventional path entry.
-    if not any(owner == repo for owner, _, _ in result):
+    if not any(package_dir == manifest.parent.resolve() for _, package_dir, _ in result):
         result.append((repo, manifest.parent, {"type": "root", "name": data["name"], "dir": "."}))
     return result
 
@@ -461,7 +482,10 @@ def index_dependencies(repo, source, module, registry, helper_path=None):
             continue
         artifact_path, main_hash = select_artifact(candidates, imported_module)
         owner_matches = [(owner, package_dir, entry) for owner, package_dir, entry in owners
-                         if artifact_path.is_relative_to(owner)]
+                         if artifact_path.is_relative_to(package_dir)]
+        if owner_matches:
+            depth = max(len(package_dir.parts) for _, package_dir, _ in owner_matches)
+            owner_matches = [match for match in owner_matches if len(match[1].parts) == depth]
         need(len(owner_matches) == 1, f"unregistered package artifact: {imported_module}")
         owner, package_dir, entry = owner_matches[0]
         identity = repo_identity(owner, repo, manifest_ref, entry)
@@ -674,9 +698,11 @@ def check_registry(repo, source, module, out, registry, dependency_receipts=()):
     need(result.returncode == 0, f"focused registry check failed: {streams}")
     manifest = index["manifest"]
     manifest_data = read(repo / manifest["path"])
+    manifest_dir = (repo / manifest["path"]).parent.resolve()
     matches = [(owner, package_dir, entry) for owner, package_dir, entry in
-               package_owners(repo, repo / manifest["path"], manifest_data) if owner == repo]
-    need(matches, "baseline repository is not registered in manifest")
+               package_owners(repo, repo / manifest["path"], manifest_data)
+               if owner == repo and package_dir == manifest_dir]
+    need(len(matches) == 1, "baseline package root is not uniquely registered")
     owner, _, entry = matches[0]
     identity = repo_identity(owner, repo, manifest, entry)
     candidates = {suffix: Path(str(olean.with_suffix("")) + "." + suffix)
@@ -886,7 +912,7 @@ def path_between_any_reference(rows, start, end):
     return None
 
 
-def material(mapping, extraction, goal_text, repository_artifacts=None):
+def material(mapping, extraction, goal_text, repository_artifacts=None, reviewed_source_at=None):
     validate_map(mapping)
     repository_artifacts = {} if repository_artifacts is None else repository_artifacts
     need(isinstance(repository_artifacts, dict), "repository artifact context")
@@ -990,12 +1016,22 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
         if name in reachable_rows:
             continue
         reachable_rows.add(name)
-        for edge in rows[name]["references"]:
+        current = rows.get(name) or terminal_rows.get(name)
+        need(current is not None, "missing reachable declaration row")
+        # Selected declarations are always traversed.  External terminals are
+        # leaves, while repository-local terminals remain inside the audited
+        # proof/premise closure and are traversed transitively.
+        if name in terminal_rows and current["owner"] not in repository_artifacts:
+            continue
+        for edge in current["references"]:
             dependency = edge["name"]
             if dependency in rows and dependency not in reachable_rows:
                 queue.append(dependency)
             elif dependency in terminal_rows:
                 reachable_terminals.add(dependency)
+                if (terminal_rows[dependency]["owner"] in repository_artifacts and
+                        dependency not in reachable_rows):
+                    queue.append(dependency)
     required_predecessors = {name for name in reachable_terminals
                              if terminal_rows[name]["owner"] in repository_artifacts}
     declared_predecessors = {p["declaration"] for p in mapping["reviewed_predecessors"]}
@@ -1009,7 +1045,9 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
         artifact = repository_artifacts[terminal["owner"]]
         need(predecessor["artifact_id"] == artifact["artifact_id"], "predecessor artifact mismatch")
         need(predecessor["source_blob"] == artifact["source"]["blob"], "predecessor source mismatch")
-        need(predecessor["reviewed_head"] == artifact["repository_commit"], "predecessor reviewed head mismatch")
+        need(reviewed_source_at is not None, "historical predecessor source validator is required")
+        reviewed_source = reviewed_source_at(predecessor["reviewed_head"], artifact["source"]["path"])
+        need(reviewed_source == artifact["source"], "predecessor reviewed source mismatch")
         predecessor_nodes.append({"name": terminal["name"], "owner": terminal["owner"],
                                   "type": terminal["type"], "kind": "reviewed-predecessor",
                                   "declaration_digest": digest(terminal),
@@ -1018,10 +1056,11 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
                                   "axioms": terminal["axioms"],
                                   "artifact_id": artifact["artifact_id"],
                                   "source": artifact["source"],
-                                  "reviewed_head": artifact["repository_commit"],
+                                  "artifact_repository_commit": artifact["repository_commit"],
+                                  "reviewed_head": predecessor["reviewed_head"],
                                   "review_ref": predecessor["review_ref"]})
         for start in sorted(central):
-            path = path_between_any_reference(rows, start, terminal["name"])
+            path = path_between_any_reference({**rows, **terminal_rows}, start, terminal["name"])
             if path is not None:
                 edge = {"from": start, "to": terminal["name"],
                         "distance": "direct" if len(path) == 2 else "via", "path": path,
@@ -1183,6 +1222,7 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
     mapping = read(mapping_path)
     validate_map(mapping)
     validate_mapping_repository(repo, mapping)
+    validate_goal_binding(repo, mapping)
     snap = snapshot(repo)
     head = snap["head"]
     mapping_ref = blob(repo, head, mapping_path)
@@ -1205,11 +1245,16 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main", regis
     extractor = "research/lean/ResearchLean/Tools/CompletionAudit.lean"
     extractor_ref = blob(repo, head, extractor)
     environment = registry_environment(repo, registry, artifact_ids)
+    repository_modules = sorted(index["artifacts"][artifact_id]["module"] for artifact_id in artifact_ids
+                                if index["artifacts"][artifact_id]["repository"]["kind"] == "baseline")
+    extractor_args = [*("--selected=" + module for module in modules),
+                      *("--repository=" + module for module in repository_modules)]
     with environment as env:
-        result = run(["lean", "--run", extractor, *modules], repo, env)
+        result = run(["lean", "--run", extractor, *extractor_args], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
     repository_artifacts = repository_artifact_context(index, artifact_ids, receipts)
-    core = material(mapping, extraction, (repo / goal["path"]).read_text(), repository_artifacts)
+    core = material(mapping, extraction, (repo / goal["path"]).read_text(), repository_artifacts,
+                    lambda reviewed_head, source_path: blob(repo, reviewed_head, source_path))
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
               "goal": goal, "report": report, "mapping": mapping_ref,
               "extractor": extractor_ref, "generator_sha256": file_hash(__file__)}
@@ -1237,6 +1282,7 @@ def validate_bundle(repo, b):
     need(read(repo / b["source"]["mapping"]["path"]) == b["mapping"], "mapping differs from fixed source")
     validate_map(b["mapping"])
     validate_mapping_repository(repo, b["mapping"])
+    validate_goal_binding(repo, b["mapping"])
     fields(b["registry"], ["path", "artifact_ids", "artifact_set_digest", "evidence"])
     registry = repo / relative(repo, b["registry"]["path"])
     artifact_ids = b["registry"]["artifact_ids"]
@@ -1251,11 +1297,16 @@ def validate_bundle(repo, b):
     environment = registry_environment(repo, registry, artifact_ids)
     need(sorted(r["module"] for r in b["receipts"]) == b["extraction"]["modules"], "extract scope mismatch")
     # Re-extract from the checked artifacts; a consistent edit of bundle/core is not evidence.
+    repository_modules = sorted(index["artifacts"][artifact_id]["module"] for artifact_id in artifact_ids
+                                if index["artifacts"][artifact_id]["repository"]["kind"] == "baseline")
+    extractor_args = [*("--selected=" + module for module in b["extraction"]["modules"]),
+                      *("--repository=" + module for module in repository_modules)]
     with environment as env:
-        actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
+        actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *extractor_args], repo, env))
     need(actual == b["extraction"], "extraction differs from Lean artifacts")
     core = material(b["mapping"], b["extraction"], (repo / b["source"]["goal"]["path"]).read_text(),
-                    repository_artifact_context(index, artifact_ids, b["receipts"]))
+                    repository_artifact_context(index, artifact_ids, b["receipts"]),
+                    lambda reviewed_head, source_path: blob(repo, reviewed_head, source_path))
     need(core == b["core"], "core was edited")
 
 

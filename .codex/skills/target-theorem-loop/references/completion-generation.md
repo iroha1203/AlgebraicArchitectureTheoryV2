@@ -91,13 +91,16 @@ registryはmanifest pin、Git source blob、既存olean componentのhash、Lean 
 後者が選択宣言のstatement、proof value、projectionから到達する場合、そのownerを選択ownerへ追加するか、exact owner、
 terminalの型・値・axiom等を含むdeclaration digest、reviewed head、source blob、使用artifact ID、
 既受理review commentを`reviewed_predecessors`へ固定する。生成器はregistryの
-baseline module分類とLean抽出のvalue-origin terminalを結合し、未列挙と余分な列挙をともに拒否する。
+baseline module分類とLean抽出のstatement・proof value・projection参照を結合する。
+repo-local terminal自身から到達するrepo-local terminalも推移的に辿り、未列挙と余分な列挙をともに拒否する。
+`reviewed_head`は過去に査読されたheadを表し、そのheadと現在使用artifactの両方でowner source blobが同一であることを
+検査する。現在artifactのrepository commitは別fieldに保持し、査読headの別名として扱わない。
 packetは三分類の件数とmembers digest、人間判断のtracking/conflict/decision ref、
 `source_build_claim: false`を保持する。selected owner leafだけをfocused `lean -o`する範囲を越えて、
 依存artifactをsource-build証拠として主張しない。固定適用版からcompletion方法を変更する場合は、targetと
 anti-weakening条件を維持した人間判断をtracking Issueへ記録し、そのrefを対応表へ固定する。
 authorizationは同一GitHub repositoryの異なるtracking/conflict Issueと、conflict Issue上のdecision commentを
-区別して固定し、GOAL IDおよび現在のbaseline GitHub repositoryとも結合する。
+区別して固定し、GOALカードの`id`・tracking Issueおよび現在のbaseline GitHub repositoryとも結合する。
 reviewed predecessorのcommentも同じrepositoryに限定する。生成器はURL形と役割を検査し、最終査読はリンク先本文が実際の
 人間判断であることを確認する。
 

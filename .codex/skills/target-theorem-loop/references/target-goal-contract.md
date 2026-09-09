@@ -58,7 +58,8 @@ final packetの`completion_criteria`にはカード固有の条件と適用版�
 承認Issue/comment、依存trustの範囲をpacketのdependency policyへ固定する。
 同一repoの既受理predecessorをfocused再検査せず利用する場合は、その型・値・axiomを含むexact
 declaration digest、reviewed head、source blob、使用artifact ID、review commentを対応表へ固定し、
-未確認runtime artifactと区別する。
+reviewed headと現在artifactの両方でsource blobの同一性を検証して、未確認runtime artifactと区別する。
+repo-local predecessorからさらに到達するrepo-local terminalも推移的に同じ監査対象とする。
 既存packetの必須項目や正式ゲートは維持する。
 
 ## 欠陥判定

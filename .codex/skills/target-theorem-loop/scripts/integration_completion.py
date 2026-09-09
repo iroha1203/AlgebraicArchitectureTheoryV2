@@ -34,8 +34,8 @@ def main():
     raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean", "--reference-fixture"], repo)
     cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
     sources = [("research/lean/ResearchLean/Tools/CompletionFixture.lean", "ResearchLean.Tools.CompletionFixture"),
-               ("research/lean/ResearchLean/Tools/CompletionShadowA.lean", "ResearchLean.Tools.CompletionShadowA"),
-               ("research/lean/ResearchLean/Tools/CompletionShadowB.lean", "ResearchLean.Tools.CompletionShadowB")]
+               ("research/lean/ResearchLean/Tools/CompletionShadowB.lean", "ResearchLean.Tools.CompletionShadowB"),
+               ("research/lean/ResearchLean/Tools/CompletionShadowA.lean", "ResearchLean.Tools.CompletionShadowA")]
     for source, module in sources:
         cp.index_dependencies(repo, source, module, registry)
     receipt = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionFixture.lean",
@@ -43,12 +43,26 @@ def main():
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
     # Independent caches sharing a namespace: the earlier cache contains stale B.
-    shadow_a = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowA.lean",
-                                 "ResearchLean.Tools.CompletionShadowA", out / "cache-a", registry, [])
     shadow_b = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowB.lean",
-                                 "ResearchLean.Tools.CompletionShadowB", out / "cache-b", registry, [])
-    cp.write(out / "receipt-a.json", shadow_a)
+                                 "ResearchLean.Tools.CompletionShadowB", out / "cache-b", registry,
+                                 [receipt_path])
     cp.write(out / "receipt-b.json", shadow_b)
+    shadow_a = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowA.lean",
+                                 "ResearchLean.Tools.CompletionShadowA", out / "cache-a", registry,
+                                 [out / "receipt-b.json"])
+    cp.write(out / "receipt-a.json", shadow_a)
+    # A -> B -> CompletionFixture exercises recursive repository-local terminal extraction.
+    index = cp.read(registry / "index.json")
+    traversal_ids = [shadow_a["artifact_id"], *cp.dependency_members(index, shadow_a["dependency_set"])]
+    with cp.registry_environment(repo, registry, traversal_ids) as env:
+        traversal = json.loads(cp.run([
+            "lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+            "--selected=ResearchLean.Tools.CompletionShadowA",
+            "--repository=ResearchLean.Tools.CompletionShadowB",
+            "--repository=ResearchLean.Tools.CompletionFixture"], repo, env))
+    terminal_names = {row["name"] for row in traversal["terminals"]}
+    cp.need({"CompletionShadow.b", "CompletionFixture.universeIdentity"} <= terminal_names,
+            "transitive repository-local terminal extraction failed")
     stale = out / "cache-a/ResearchLean/Tools/CompletionShadowB.olean"
     stale.parent.mkdir(parents=True, exist_ok=True)
     stale.write_bytes(b"stale unrecorded artifact")
@@ -107,7 +121,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": cp.run(["git", "rev-parse", "HEAD"], repo), "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "declaration-metadata", "recursive-repository-terminal-closure", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 
