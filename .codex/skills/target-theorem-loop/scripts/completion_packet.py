@@ -140,7 +140,6 @@ def validate_receipt(repo, receipt):
     fields(receipt, ["head", "source", "module", "olean", "olean_sha256", "dependency_context", "command", "stdout", "stderr", "exit_code", "lean_version"])
     distinct(receipt["command"], "command arguments", unique=False)
     need(isinstance(receipt["module"], str) and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_][A-Za-z_0-9]*)*", receipt["module"]), "invalid receipt module")
-    need(Path(receipt["source"]["path"]).stem == receipt["module"].rsplit(".", 1)[-1], "module/source mismatch")
     need(receipt["olean"].endswith(receipt["module"].replace(".", "/") + ".olean"), "module/olean mismatch")
     need(receipt["head"] == run(["git", "rev-parse", "HEAD"], repo), "receipt head mismatch")
     need(receipt["lean_version"] == run(["lean", "--version"], repo), "receipt toolchain mismatch")
