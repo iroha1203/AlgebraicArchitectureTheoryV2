@@ -82,6 +82,29 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
 - rootのpacket、PR本文、report、ledger、CIは監査対象であり、数学claimの一次証拠ではない。
 - 中心claimの`cannot-determine`または`unchecked`はcheckpoint/blockedへ倒す。
 
+### 依存の追跡完了条件
+
+上記の出所・proof-use・instance/import chainの追跡には、次の完了条件を適用する。
+
+- repository内の受理済みpredecessorは、使用する宣言・source版と、その成果を含む受理済み
+  PRまたはcycleのreview refを特定し、現在のstatement・必要な定義・適用引数と、今回の
+  proof-useが要求を満たすことを確認した時点で追跡完了とする。受理版から使用箇所に関係する
+  変更がある場合は、その変更部分を確認する。受理記録は再利用の資格を示し、数学的な
+  適用の正しさは現在のsourceで確認する。
+- 追跡完了したpredecessorの内部依存や、作成時から全再利用時までの査読履歴を再帰的に
+  再認定しない。既存のPR/cycle単位の受理記録を、宣言ごとの新しい査読証明書へ作り直す
+  必要はない。「今回の査読で内部を再監査していない」だけでは未監査と判定しない。
+- 固定したtoolchain・mathlib等の標準ライブラリの一般的な型・論理・輸送の基盤は、使用版と
+  使用API・適用条件を確認して追跡完了とする。基礎公理の採用やライブラリ全体の証明・
+  build履歴の再認定は要求しない。対象宣言のaxiom監査とbuild運用規則は引き続き適用する。
+- 今回構成するcertificate/witnessや、今回放電すべき条件を担うfield/instanceは、
+  「既存基盤」と呼ぶだけでは追跡完了にしない。固定targetへの対応、必要な前提の放電、
+  指定された具体例の評価を確認し、未受理の数学的依存は今回の監査対象として残す。
+- 完了済みの追跡を再開する場合、査読者は具体的な宣言・箇所、statementの不一致、
+  未放電仮定、受理記録との不整合、関係するsource変更等の根拠と、固定targetへの影響を
+  示す。追加確認はその問題に必要な範囲に限定する。より深い依存が存在することや履歴の
+  詳細不足だけでは、中心finding、`unchecked`、`cannot-determine`を追加しない。
+
 ## Regression gate
 
 標準PR review後、rootが次の各scenarioを固定headのreview evidenceと実体へ適用する。
@@ -98,7 +121,7 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
 | 一般補題の方向仮定を具体的入力でも受け取るだけ | `proof-checkpoint` |
 | 指定作用の評価や成立判定を形式的な存在・場合分けだけで代替 | `proof-checkpoint` |
 | 片方向theoremをequivalence/completionと表示 | `rejected` |
-| support/dependency theoremが未監査 | `proof-checkpoint` |
+| 追跡完了条件を満たさないmaterial support/dependency theoremが未監査 | `proof-checkpoint` |
 | CI green、merge、wrapper、定理名の存在だけ | completion不可 |
 | 中心claimに未確認あり | `Blocked / cannot determine`または`target-proof-checkpoint` |
 
