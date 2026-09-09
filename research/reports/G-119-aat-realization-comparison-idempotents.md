@@ -1506,18 +1506,22 @@ result:
     - AAT.AG.RealizationComparisonIdempotents.mem_normalizedComparisonSubgroup
     - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_comparison
     - AAT.AG.RealizationComparisonIdempotents.normalizationComparisonSubgroupHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationComparisonSubgroupHom_val
     - AAT.AG.RealizationComparisonIdempotents.rawNormalizationComparisonSourceHom
     - AAT.AG.RealizationComparisonIdempotents.rawNormalizationComparisonTargetHom
     - AAT.AG.RealizationComparisonIdempotents.normalizedComparisonSourceHom
     - AAT.AG.RealizationComparisonIdempotents.normalizedComparisonTargetHom
     - AAT.AG.RealizationComparisonIdempotents.rawNormalizationBottomAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationBottomAutomorphismHom_hom
     - AAT.AG.RealizationComparisonIdempotents.normalizedBottomAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizedBottomAutomorphismHom_hom
     - AAT.AG.RealizationComparisonIdempotents.rawBaseQualifiedNormalizationComparisonSubgroup
     - AAT.AG.RealizationComparisonIdempotents.mem_rawBaseQualifiedNormalizationComparisonSubgroup
     - AAT.AG.RealizationComparisonIdempotents.normalizedBaseQualifiedComparisonSubgroup
     - AAT.AG.RealizationComparisonIdempotents.mem_normalizedBaseQualifiedComparisonSubgroup
     - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_bottom
     - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom_val
   claim_mapping:
     theorem_names:
       - normalizationEndpointAutomorphismHom_fst_hom
@@ -1538,9 +1542,11 @@ result:
       - "raw comparison subgroup -> p≫c=c≫b"
       - "normalized comparison subgroup -> N(p)≫N(c)=N(c)≫N(b)"
       - "comparison subgroup hom -> preservation follows from N.map_comp"
+      - "comparison subgroup hom evaluation -> its underlying endpoint pair is the full r_N value"
       - "raw bottom qualification -> both endpoint homs become identities under pi V"
       - "normalized bottom qualification -> both endpoint homs become identities under pi_N"
       - "qualified restriction -> preservation follows from pi_N N=pi V on each endpoint"
+      - "qualified restriction evaluation -> its underlying comparison pair is the first restriction value"
       - "scope limit -> no reflection, injectivity, or lift-surjectivity claim"
     undischarged_assumptions: []
     acceptance_point: "D5 uses the full endpoint automorphism groups and standard subgroup kernels, transports comparison preservation by functoriality and bottom qualification by the reviewed D3 equality, and stops exactly before the S2/S4 reflection and lifting questions."
@@ -1575,8 +1581,8 @@ audits:
   validation_refs:
     - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.NormalizationNaturalityFailure; exit 0"
     - "focused research module check; exit 0"
-    - "module terminal namespace audit: 22 current-module declarations, standard axioms only"
-    - "22 source-level declarations in NormalizationComparisonGroup.lean"
+    - "module terminal namespace audit: 26 current-module declarations, standard axioms only"
+    - "26 source-level declarations in NormalizationComparisonGroup.lean"
   blocking_findings: []
   next_obligation: "after Cycle 13 acceptance, generate and independently review the schema-complete G-119 completion packet across fixed target A--D"
 ```

@@ -182,6 +182,17 @@ noncomputable def normalizationComparisonSubgroupHom
     apply Subtype.ext
     exact map_mul (normalizationEndpointAutomorphismHom P Q) a.1 b.1
 
+/-- Evaluation rule: the comparison-subgroup restriction has the same
+underlying endpoint pair as the full normalization homomorphism. -/
+@[simp]
+theorem normalizationComparisonSubgroupHom_val
+    {U : AtomCarrier.{u}}
+    {P Q : CanonicalNormalizationAdmissiblePackage U} (c : P ⟶ Q)
+    (pair : rawNormalizationComparisonSubgroup c) :
+    (normalizationComparisonSubgroupHom c pair).1 =
+      normalizationEndpointAutomorphismHom P Q pair.1 :=
+  rfl
+
 /-- The source projection from the raw comparison-preserving subgroup. -/
 noncomputable def rawNormalizationComparisonSourceHom
     {U : AtomCarrier.{u}}
@@ -223,6 +234,16 @@ noncomputable def rawNormalizationBottomAutomorphismHom
   functorAutomorphismHom
     (canonicalNormalizationCoreInclusion U ⋙ packageProjection U) P
 
+/-- Evaluation rule: raw bottom observation maps the underlying automorphism
+through `πV`. -/
+@[simp]
+theorem rawNormalizationBottomAutomorphismHom_hom
+    {U : AtomCarrier.{u}} (P : CanonicalNormalizationAdmissiblePackage U)
+    (a : Aut P) :
+    (rawNormalizationBottomAutomorphismHom P a).hom =
+      (canonicalNormalizationCoreInclusion U ⋙ packageProjection U).map a.hom :=
+  rfl
+
 /-- Normalized endpoint automorphisms are observed at the bottom through
 `π_N`. -/
 noncomputable def normalizedBottomAutomorphismHom
@@ -232,6 +253,16 @@ noncomputable def normalizedBottomAutomorphismHom
         ((packageNormalizationFunctor U).obj P)) :=
   functorAutomorphismHom
     (normalizedPackageProjection U) ((packageNormalizationFunctor U).obj P)
+
+/-- Evaluation rule: normalized bottom observation maps the underlying
+automorphism through `π_N`. -/
+@[simp]
+theorem normalizedBottomAutomorphismHom_hom
+    {U : AtomCarrier.{u}} (P : CanonicalNormalizationAdmissiblePackage U)
+    (a : Aut ((packageNormalizationFunctor U).obj P)) :
+    (normalizedBottomAutomorphismHom P a).hom =
+      (normalizedPackageProjection U).map a.hom :=
+  rfl
 
 /-- Raw comparison-preserving pairs whose two endpoint automorphisms become
 identities under `πV`. -/
@@ -322,6 +353,17 @@ noncomputable def normalizationBaseQualifiedComparisonSubgroupHom
   map_mul' a b := by
     apply Subtype.ext
     exact map_mul (normalizationComparisonSubgroupHom c) a.1 b.1
+
+/-- Evaluation rule: the base-qualified restriction retains the underlying
+comparison-subgroup value of the first restriction of `r_N`. -/
+@[simp]
+theorem normalizationBaseQualifiedComparisonSubgroupHom_val
+    {U : AtomCarrier.{u}}
+    {P Q : CanonicalNormalizationAdmissiblePackage U} (c : P ⟶ Q)
+    (pair : rawBaseQualifiedNormalizationComparisonSubgroup c) :
+    (normalizationBaseQualifiedComparisonSubgroupHom c pair).1 =
+      normalizationComparisonSubgroupHom c pair.1 :=
+  rfl
 
 #assert_standard_axioms_only AAT.AG.RealizationComparisonIdempotents
 
