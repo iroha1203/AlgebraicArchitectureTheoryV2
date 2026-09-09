@@ -96,7 +96,7 @@ def main (args : List String) : IO UInt32 := do
         let owner := (env.getModuleIdxFor? n).map (fun i => env.header.moduleNames[i.toNat]!)
         externalRows := externalRows.push (obj [("name", str n.toString),
           ("owner", str (owner.getD env.mainModule).toString), ("type", str (reprStr info.type))])
-    return obj [("schema_version", toJson (2 : Nat)), ("modules", toJson (modules.map Name.toString)),
+    return obj [("schema_version", toJson (3 : Nat)), ("modules", toJson (modules.map Name.toString)),
       ("declarations", toJson rows), ("terminals", toJson externalRows)]
   let (result, _) ← (action.toIO { fileName := "CompletionAudit", fileMap := default } { env := env })
   IO.println result.compress

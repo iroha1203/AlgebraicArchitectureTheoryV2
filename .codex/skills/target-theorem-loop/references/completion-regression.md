@@ -17,7 +17,7 @@ G-118は監査事故のサンプルとして使う。全451宣言の再監査を
 
 選んだ撤回本文、入力packetコメント本文のSHA-256、抽出範囲、旧新routingは
 [サンプルmanifest](../scripts/fixtures/g118-sample.json)に固定した。
-packetコメントのdigestは取得したUTF-8本文のhashであり、v2の中心証拠digestとは区別する。
+packetコメントのdigestは取得したUTF-8本文のhashであり、生成packetの中心証拠digestとは区別する。
 
 中心`T`とfull `Γ`の誤った同一視、代表宣言への過大なdirection割当は、機械的な到達だけでは
 判定できない意味上の事例である。[overclaim.json](../scripts/fixtures/overclaim.json)は
@@ -53,12 +53,15 @@ python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
 python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
 ```
 
-後者はコミット済みsourceの明示的な3つの小さいleafを個別に実行し、全Research buildを呼ばない。
+後者はコミット済みsourceの明示的な小さいleafを個別に実行し、全Research buildを呼ばない。
 追加の2 leafは同一namespaceを別cacheへ出力し、先のcacheに未記録の古いmoduleを残す。
-環境変数にもそのcacheを設定したままcollectと再抽出を行い、receiptのartifactだけを読むことを検証する。
+環境変数にもそのcacheを設定したままcollectと再抽出を行い、focused owner overlayが
+同名の古いowner artifactより優先されることを検証する。
 生成物・stdout/stderr・receipt・packet・結果は`.tmp/completion/integration/`に保存する。
 期待参照はfixtureのsourceから独立に定め、直接参照、private補助定理経由、型のみの参照、
 `simp`参照、標準公理、再生成一致、手編集拒否を検査する。
+外部packageとrepo-local runtime importを持つcanaryでも、選択ownerだけをfocused elaborationし、
+runtime依存をsource-build済みと主張せず抽出できることを検査する。
 全宣言の型・値のconstant集合をLean標準走査と照合するほか、全Expr constructorの
 literal ASTから独立に定めた参照集合・site・位置を完全一致で検査する。
 全type参照を削除するmutation、余分な参照、元lane確認者の再利用も拒否する。

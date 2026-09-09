@@ -33,16 +33,29 @@ def main():
     raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean", "--reference-fixture"], repo)
     cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
     receipt = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionFixture.lean"),
-                       "CompletionFixture", out / "cache", [])
+                       "CompletionFixture", out / "cache")
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
     # Independent caches sharing a namespace: the earlier cache contains stale B.
     shadow_a = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowA.lean"),
-                        "CompletionShadow.A", out / "cache-a", [])
+                        "CompletionShadow.A", out / "cache-a")
     shadow_b = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowB.lean"),
-                        "CompletionShadow.B", out / "cache-b", [])
+                        "CompletionShadow.B", out / "cache-b")
     cp.write(out / "receipt-a.json", shadow_a)
     cp.write(out / "receipt-b.json", shadow_b)
+    external = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionExternalFixture.lean"),
+                        "CompletionExternalFixture", out / "cache-external")
+    cp.need(external["dependency_context"]["policy"] == "manifest-pinned-runtime-trust",
+            "external dependency policy missing")
+    cp.need(external["dependency_context"]["source_build_claim"] is False,
+            "runtime dependencies mislabeled as source-built")
+    with cp.extraction_environment(repo, [external]) as env:
+        external_rows = json.loads(cp.run(
+            ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+             "CompletionExternalFixture"], repo, env))
+    cp.need(any(row["name"] == "CompletionExternalFixture.manifestPinnedRuntimeCanary"
+                for row in external_rows["declarations"]),
+            "external-package focused overlay failed")
     (out / "cache-a/CompletionShadow/B.olean").write_bytes(b"stale unrecorded artifact")
     previous_path = os.environ.get("LEAN_PATH")
     os.environ["LEAN_PATH"] = str(out / "cache-a")
@@ -97,7 +110,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "focused-owner-overlay", "manifest-pinned-runtime-canary", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 

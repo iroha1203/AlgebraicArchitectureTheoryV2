@@ -78,6 +78,11 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
 
 - 対象全宣言についてfocused elaboration、`#print axioms`、placeholder scanを固定する。
 - main theoremだけでなく、spine、bridge、finite witness、certificate construction、instance/import chainを依存DAGとして追う。
+- 依存DAGはtarget acceptance spineであり、全import graphではない。同一repoのmaterial predecessorは
+  選択ownerとしてfocused確認する。通常のruntime import、外部packageの全module、全oleanを
+  completion証拠へ昇格しない。
+- 外部packageの定理をmaterial predecessorとして使う場合はexact declarationとstatementを直接査読する。
+  manifest固定やfocused check成功だけを、その定理のstatement一致やproof-useの代替にしない。
 - 新規`axiom`、許可されない`sorry`/`admit`/`unsafe`、本体からResearchへのimportは受理しない。
 - rootのpacket、PR本文、report、ledger、CIは監査対象であり、数学claimの一次証拠ではない。
 - 中心claimの`cannot-determine`または`unchecked`はcheckpoint/blockedへ倒す。

@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "goal": "completion-fixture",
   "goal_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",
   "report_path": ".codex/skills/target-theorem-loop/scripts/fixtures/goal.md",

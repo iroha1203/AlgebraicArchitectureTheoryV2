@@ -1,6 +1,6 @@
 # Completion packet生成と検査
 
-version 2では、固定sourceとJSON対応表からpacketを生成する。
+version 3では、固定sourceとJSON対応表からpacketを生成する。
 入出力のfield・enum・未知field・重複keyの検査は
 [`completion_packet.py`](../scripts/completion_packet.py)の`validate_map`、`material`、
 `validate_bundle`、`validate_packet`に集約する。対応表の最小例は
@@ -21,27 +21,29 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 ```
 
 `check`は明示された単一leafだけを`lean -o`でelaborateする。`lean`は対象toolchainの
-実行ファイルを使い、必要なpackage search pathは親が`LEAN_PATH`または`lake env`で設定する。
-`--deps`で見つけたtoolchain外のimportには、同じhead/source/oleanを結ぶ
-`--dependency-receipt <file>`を要求する。既存cacheを無条件で信用せず、証拠のない依存は
-親が必要なmoduleに限って確認する。`check`を全Research moduleのloopへ使わない。
-外部packageのreceiptは、そのGit作業領域内で同じcheckを実行し、同領域内に保存する。
-親repoへ渡す際はpackageのrepo相対位置・commit・source/blobも再検算する。
+実行ファイルを使い、package search pathは親が`LEAN_PATH`または`lake env`で設定する。
+receiptは選択ownerの固定head、source blob、exact command、出力olean、stdout/stderr、
+Lean version、最寄りの`lake-manifest.json` blobを結ぶ。
+
+runtime importはこのfocused elaborationの実行環境であり、数学claimの証拠ではない。
+外部packageや非選択moduleについてsourceからoleanを生成したとは主張しない。
+全importのreceipt、全artifact hash、推移closureの列挙、content-addressed registryを要求しない。
+`check`を全Research moduleのloopへ使わず、対応表で選んだownerだけに実行する。
 subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に従う。
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
-抽出と再検査は、推移依存を含む検証済みreceiptのartifactだけを一時treeへコピーし、
-そのtreeを唯一の`LEAN_PATH`とする。元cacheや環境変数の同名moduleを読み込まない。
-同一moduleの異なるdigestは拒否する。toolchainのroot namespaceと重なる外部receiptは
-初期実装では未対応として拒否し、検索順による上書きを許さない。
+選択ownerのartifactだけを一時overlayの先頭へ置き、依存は同じmanifest-pinned Lake環境から
+解決する。同一ownerの異なるdigestは拒否する。manifestやtoolchainが変わればvalidateを
+失敗させる。ambient dependency artifactの同一性やsource-build provenanceは保証範囲に含めず、
+その限定をpacketと最終査読で明示する。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
 型・値・owner・private名・公理・参照位置に加え、宣言種別・universe parameter一覧・
 読みやすい型表示・source位置を記録する。位置を環境から取得できない場合は`source_range: null`
 とし、取得不能を明示する。`validate`はGitと実行出力を検算し、
 対象oleanから再抽出してbundleと一致することを確認する。全sourceのGit blob一覧は
 入力整合のための読取りであり、全moduleのelaborationではない。
-receiptはコマンド実行証拠なので手で作成・編集しない。第三者査読はreceiptとsourceを
-照合し、必要な対象だけを独立に再実行する。
+receiptはコマンド実行証拠なので手で作成・編集しない。第三者査読は選択ownerのreceiptと
+sourceを照合し、必要な対象だけを独立に再実行する。
 
 byte一致を要求する再生成は、同じ保存済みbundleと補助入力からのrenderを指す。
 check/collectの再実行では、head、`--base`の解決commit、platformを含むLean version、
@@ -58,7 +60,7 @@ literal ASTのfixtureでは、参照名・site・位置をPythonの手書き期�
 
 対象source、GOAL、report、対応表、extractorは固定headに存在する必要がある。
 未コミット変更・head/blob不一致・出力欠落・未知version・抽出不能は投稿不可。
-toolchain外の依存がreceiptで解決できなければ、対象を勝手に縮小せず未確認を報告する。
+version 2 packet/receiptをversion 3へ暗黙変換しない。
 
 ## 対応表と数学判断
 
@@ -84,10 +86,12 @@ GOAL全体からのcriterion/premiseの選び落とし、statementより広いcl
 certificate生成元、必須route、固定decision、非空虚性の中心nodeを含める。
 `core.gate_evidence`の宣言も必須nodeとなる。edgeは消費側から参照先へ向ける。
 
-指定ownerの型と値にあるconstant参照を自動列挙し、外部宣言は型/owner付き終端にする。
+指定ownerの型と値にあるconstant参照を自動列挙し、非選択宣言は型/owner付き終端にする。
 生成器は選択node間の到達を計算し、directは1 hop、viaは補助宣言経由の経路として
-全hopを出力する。必須routeを証拠なしにdirect扱いできない。外部終端を越える必須routeは、
-必要なownerを追加して再収集するまで未確認である。
+全hopを出力する。必須routeを証拠なしにdirect扱いできない。同一repoのmaterial predecessorを
+越える必須routeは、必要なownerを追加して再収集するまで未確認である。外部packageの定理を
+material predecessorとして使う場合はexact declarationとstatementを4本査読が直接確認する。
+runtime importの存在だけをpremise dischargeやproof-useに数えない。
 
 definitionやprivate補助宣言は経路に含める。`simp`は最終証明項に残る参照を抽出する。
 型・binder型の参照、projectionは別siteとして残し、型参照だけのhopをproof-use経路にしない。
@@ -117,7 +121,7 @@ packetを直接編集しない。補助説明や補助リンクは`render --auxi
 source、対応表、中心証拠のdigestと補助欄以外の実データが全て不変な場合に限り、
 packet-only findingを直接確認へ送る。中心gateに属するfindingは、自己申告がpacket-onlyでも
 fresh 4査読へ送る。schemaの意味や抽出結果を変える修正も再収集・fresh 4査読を要求する。
-未知versionの旧packetを暗黙変換しない。過去の完了結果に遡及適用しない。
+未知versionの旧packetを暗黙変換しない。version 2以前のpacketや過去の完了結果に遡及適用しない。
 
 `ledger --bundle <bundle> --packet <packet> --review <review> --gates <gates> --out <ledger>`は
 4 laneと全gateを検査する。直接確認を使う場合は`--old-packet`と`--recheck`を追加する。
@@ -143,4 +147,7 @@ python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
 抽出器の統合試験は同梱`CompletionFixture.lean`を単一leafとして上記check/collect/render/validateで
 処理する。期待する独立参照は`inputCharacterization → differenceCriterion, kernelInputCriterion`、
 private helper経由の到達、型参照のみの`typedOnly`、`simp`参照である。
+`CompletionExternalFixture.lean`はmanifest固定の外部packageとrepo-local runtime importを持つ
+単一leaf canaryであり、推移closureのelaborationやartifact registryなしにfocused ownerを
+抽出できることを確認する。
 一般fixtureとG-118由来のサンプル比較は[回帰記録](completion-regression.md)を参照する。

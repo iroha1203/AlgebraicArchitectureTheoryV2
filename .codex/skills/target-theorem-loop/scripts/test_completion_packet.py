@@ -16,7 +16,7 @@ spec.loader.exec_module(cp)
 
 def mapping():
     n = lambda s: "CompletionFixture." + s
-    return {"schema_version": 2, "goal": "completion-fixture", "goal_path": str(HERE / "fixtures/goal.md"),
+    return {"schema_version": 3, "goal": "completion-fixture", "goal_path": str(HERE / "fixtures/goal.md"),
             "report_path": str(HERE / "fixtures/goal.md"), "criteria": ["classification", "decisions"],
             "claims": [
                 {"id": "input", "criterion": "classification", "goal_quote": "入力条件の必要十分性", "direction": "iff",
@@ -42,7 +42,7 @@ def extraction():
                      "value": "value:" + name, "axioms": [],
                      "constant_names": {"type": [], "value": sorted(n(d) for d in deps)},
                      "references": [{"name": n(d), "site": "term", "position": "/body", "origin": "value"} for d in deps]})
-    return {"schema_version": 2, "modules": ["CompletionFixture"], "declarations": rows, "terminals": []}
+    return {"schema_version": 3, "modules": ["CompletionFixture"], "declarations": rows, "terminals": []}
 
 
 class PacketTests(unittest.TestCase):
@@ -83,26 +83,21 @@ class PacketTests(unittest.TestCase):
                 with self.assertRaises(cp.Invalid):
                     cp.material(mapping(), bad, self.goal)
 
-    def test_import_tree_recursive_and_conflict(self):
-        # Test staging independently of git/Lean qualification, covered by integration.
+    def test_focused_overlay_and_conflict(self):
+        # Test selected-owner precedence independently of git/Lean qualification.
         with tempfile.TemporaryDirectory() as d:
             repo = Path(d)
             (repo / "a.olean").write_bytes(b"a")
             (repo / "b.olean").write_bytes(b"b")
-            a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean"), "dependencies": []}
-            b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean"), "dependencies": [a]}
-            with patch.object(cp, "validate_receipt"), patch.object(cp, "run", return_value=d):
+            a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean")}
+            b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean")}
+            with patch.object(cp, "validate_receipt"):
                 with cp.extraction_environment(repo, [b]) as env:
-                    tree = Path(env["LEAN_PATH"])
-                    self.assertEqual((tree / "P/A.olean").read_bytes(), b"a")
+                    tree = Path(env["LEAN_PATH"].split(cp.os.pathsep)[0])
                     self.assertEqual((tree / "P/B.olean").read_bytes(), b"b")
                 conflict = {**a, "olean": "b.olean", "olean_sha256": b["olean_sha256"]}
                 with self.assertRaisesRegex(cp.Invalid, "conflicting module"):
                     with cp.extraction_environment(repo, [a, conflict]):
-                        pass
-                (repo / "lib/lean/P").mkdir(parents=True)
-                with self.assertRaisesRegex(cp.Invalid, "toolchain namespace"):
-                    with cp.extraction_environment(repo, [a]):
                         pass
 
     def test_metadata_rejection(self):

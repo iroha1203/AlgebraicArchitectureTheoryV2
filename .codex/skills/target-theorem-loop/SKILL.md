@@ -69,6 +69,9 @@ completion candidateでは、PR内容判定を再利用せず、別の`$math-lea
 
 新規final packetは[生成手順](references/completion-generation.md)に従い、固定sourceと
 claim対応表から機械生成し、投稿前にvalidateする。中心claimの判断は独立4査読に残す。
+focused receiptは対応表で選んだownerに限定する。全import closure、外部package全module、
+全olean artifactをcompletion certificateへ昇格せず、Research full build hard ruleと同時に
+boundedに実行できることを先に確認する。
 completion findingの分類と修正後の再査読条件は、共有review protocolの
 「completion packetの直接確認」に従う。中心findingはfresh 4本、packet-only非中心findingは
 有資格の直接確認で解消する。未実施laneや中心未確認を直接確認で代替しない。

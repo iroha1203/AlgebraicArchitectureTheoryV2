@@ -19,7 +19,7 @@ import subprocess
 import sys
 import tempfile
 
-VERSION = 2
+VERSION = 3
 GATES = (
     "goal_claim_and_artifacts statement_strength all_discharge_required "
     "certificate_provenance proof_use structure_field_escape route_integrity "
@@ -117,38 +117,45 @@ def snapshot(repo):
             "lean_version": run(["lean", "--version"], repo)}
 
 
+def dependency_context(repo, source):
+    """Bind a focused check to its Lake manifest without certifying runtime imports."""
+    source_path = (repo / relative(repo, source)).resolve()
+    directory = source_path.parent
+    manifest = None
+    while directory.is_relative_to(repo):
+        candidate = directory / "lake-manifest.json"
+        if candidate.is_file():
+            manifest = blob(repo, run(["git", "rev-parse", "HEAD"], repo), candidate)
+            break
+        if directory == repo:
+            break
+        directory = directory.parent
+    need(manifest is not None, "Lake manifest not found for focused source")
+    return {"policy": "manifest-pinned-runtime-trust",
+            "manifest": manifest,
+            "source_build_claim": False}
+
+
 def validate_receipt(repo, receipt):
-    fields(receipt, ["head", "source", "module", "olean", "olean_sha256", "dependencies", "command", "stdout", "stderr", "exit_code", "lean_version"])
-    array(receipt["dependencies"])
+    fields(receipt, ["head", "source", "module", "olean", "olean_sha256", "dependency_context", "command", "stdout", "stderr", "exit_code", "lean_version"])
     distinct(receipt["command"], "command arguments", unique=False)
     need(isinstance(receipt["module"], str) and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_][A-Za-z_0-9]*)*", receipt["module"]), "invalid receipt module")
+    need(Path(receipt["source"]["path"]).stem == receipt["module"].rsplit(".", 1)[-1], "module/source mismatch")
     need(receipt["olean"].endswith(receipt["module"].replace(".", "/") + ".olean"), "module/olean mismatch")
     need(receipt["head"] == run(["git", "rev-parse", "HEAD"], repo), "receipt head mismatch")
     need(receipt["lean_version"] == run(["lean", "--version"], repo), "receipt toolchain mismatch")
     need(blob(repo, receipt["head"], receipt["source"]["path"]) == receipt["source"], "receipt source mismatch")
+    need(receipt["dependency_context"] == dependency_context(repo, receipt["source"]["path"]), "dependency context mismatch")
     need(file_hash(repo / relative(repo, receipt["olean"])) == receipt["olean_sha256"], "stale olean")
+    need(receipt["command"] == ["lean", "-o", receipt["olean"], receipt["source"]["path"]], "focused command mismatch")
     need(receipt["exit_code"] == 0, "failed focused check")
     for stream in ("stdout", "stderr"):
         fields(receipt[stream], ["path", "sha256"])
         need(file_hash(repo / relative(repo, receipt[stream]["path"])) == receipt[stream]["sha256"], "missing/changed command output")
-    sysroot = Path(run(["lean", "--print-prefix"], repo)).resolve()
-    for dep in receipt["dependencies"]:
-        if "system" in dep:
-            fields(dep, ["system", "sha256"])
-            path = (sysroot / dep["system"]).resolve()
-            need(path.is_relative_to(sysroot), "system path escape")
-            need(file_hash(path) == dep["sha256"], "system dependency mismatch")
-        elif "repository" in dep:
-            fields(dep, ["repository", "receipt"])
-            external_repo = repo / relative(repo, dep["repository"])
-            need(Path(run(["git", "rev-parse", "--show-toplevel"], external_repo)).resolve() == external_repo.resolve(), "dependency repository mismatch")
-            validate_receipt(external_repo, dep["receipt"])
-        else:
-            validate_receipt(repo, dep)
 
 
-def check(repo, source, module, out, dependency_receipts):
-    """Compile one explicit leaf; require receipts for every non-toolchain import."""
+def check(repo, source, module, out):
+    """Compile one explicit selected owner against its manifest-pinned Lake environment."""
     need(re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_][A-Za-z_0-9]*)*", module), "invalid module")
     source = relative(repo, source)
     need(Path(source).name not in ("ResearchLean.lean", "Formal.lean", "AG.lean"), "aggregate forbidden")
@@ -156,24 +163,6 @@ def check(repo, source, module, out, dependency_receipts):
     source_ref = blob(repo, head, source)
     out = repo / relative(repo, out)
     out.mkdir(parents=True, exist_ok=True)
-    deps = []
-    available = []
-    for receipt_path in dependency_receipts:
-        receipt_path = Path(receipt_path).resolve()
-        owner_repo = Path(run(["git", "rev-parse", "--show-toplevel"], receipt_path.parent)).resolve()
-        r = read(receipt_path)
-        available.append((owner_repo, r))
-    sysroot = Path(run(["lean", "--print-prefix"], repo)).resolve()
-    for depname in run(["lean", "--deps", source], repo).splitlines():
-        dep = Path(depname).resolve()
-        if dep.is_relative_to(sysroot):
-            deps.append({"system": dep.relative_to(sysroot).as_posix(), "sha256": file_hash(dep)})
-        else:
-            found = [(owner_repo, r) for owner_repo, r in available if (owner_repo / r["olean"]).resolve() == dep]
-            need(len(found) == 1, f"dependency needs focused receipt: {dep.name}")
-            owner_repo, r = found[0]
-            validate_receipt(owner_repo, r)
-            deps.append(r if owner_repo == repo else {"repository": relative(repo, owner_repo), "receipt": r})
     olean = out / (module.replace(".", "/") + ".olean")
     olean.parent.mkdir(parents=True, exist_ok=True)
     command = ["lean", "-o", relative(repo, olean), source]
@@ -186,7 +175,8 @@ def check(repo, source, module, out, dependency_receipts):
     need(result.returncode == 0, f"focused check failed: {streams}")
     return {"head": head, "source": source_ref, "module": module,
             "olean": relative(repo, olean), "olean_sha256": file_hash(olean),
-            "dependencies": deps, "command": command, "exit_code": result.returncode,
+            "dependency_context": dependency_context(repo, source),
+            "command": command, "exit_code": result.returncode,
             "lean_version": run(["lean", "--version"], repo), **streams}
 
 
@@ -372,33 +362,20 @@ def material(mapping, extraction, goal_text):
 
 @contextmanager
 def extraction_environment(repo, receipts):
-    """One clean namespace tree, containing only recursively validated receipts.
-
-    Lean selects the first root namespace directory, not the first exact module.
-    Never append ambient/cache roots: they can supply an unrecorded stale module.
-    Toolchain namespaces cannot be overlaid by user receipts in this version.
-    """
+    """Put focused owner artifacts first; runtime imports remain Lake environment inputs."""
     array(receipts)
     need(receipts, "no focused receipts")
-    system = Path(run(["lean", "--print-prefix"], repo)).resolve() / "lib/lean"
     artifacts = {}
 
-    def include(owner, receipt):
-        validate_receipt(owner, receipt)
+    def include(receipt):
+        validate_receipt(repo, receipt)
         module = receipt["module"]
-        top = system / module.split(".")[0]
-        need(not top.exists() and not top.with_suffix(".olean").exists(), "receipt overlaps toolchain namespace")
         previous = artifacts.get(module)
         need(previous is None or previous[1] == receipt["olean_sha256"], "conflicting module receipts")
-        artifacts[module] = (owner / receipt["olean"], receipt["olean_sha256"])
-        for dep in receipt["dependencies"]:
-            if "repository" in dep:
-                include(owner / relative(owner, dep["repository"]), dep["receipt"])
-            elif "system" not in dep:
-                include(owner, dep)
+        artifacts[module] = (repo / receipt["olean"], receipt["olean_sha256"])
 
     for receipt in receipts:
-        include(repo, receipt)
+        include(receipt)
     with tempfile.TemporaryDirectory(prefix="completion-import-") as directory:
         for module, (source, expected) in artifacts.items():
             destination = Path(directory) / (module.replace(".", "/") + ".olean")
@@ -406,7 +383,8 @@ def extraction_environment(repo, receipts):
             shutil.copyfile(source, destination)
             need(file_hash(destination) == expected, "artifact changed while staging")
         env = dict(os.environ)
-        env["LEAN_PATH"] = directory
+        ambient = env.get("LEAN_PATH", "")
+        env["LEAN_PATH"] = directory + (os.pathsep + ambient if ambient else "")
         yield env
 
 
@@ -588,7 +566,6 @@ def main():
     c.add_argument("--source", required=True)
     c.add_argument("--module", required=True)
     c.add_argument("--out", required=True)
-    c.add_argument("--dependency-receipt", action="append", default=[])
     c = sub.add_parser("collect")
     c.add_argument("--mapping", required=True)
     c.add_argument("--receipt", action="append", required=True)
@@ -612,7 +589,7 @@ def main():
     a = p.parse_args()
     repo = root()
     if a.command == "check":
-        r = check(repo, a.source, a.module, a.out, a.dependency_receipt)
+        r = check(repo, a.source, a.module, a.out)
         write(Path(a.out) / (a.module + ".receipt.json"), r)
     elif a.command == "collect":
         collect(repo, a.mapping, a.receipt, a.out, a.base)
