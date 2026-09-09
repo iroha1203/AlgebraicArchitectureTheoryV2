@@ -919,8 +919,8 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
                           "type", "value", "axioms", "constant_names", "references"])
         for field in ("name", "owner", "type", "kind", "type_display"):
             string(terminal[field])
-        need(terminal["value"] is not None, "reviewable terminal value unavailable")
-        string(terminal["value"])
+        if terminal["value"] is not None:
+            string(terminal["value"])
         distinct(terminal["axioms"], "terminal axioms", allow_empty=True)
         need(set(terminal["axioms"]) <= ALLOWED_AXIOMS, "terminal axiom audit failed")
         need(terminal["name"] not in terminal_rows, "duplicate extracted terminal")
@@ -991,6 +991,7 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
     predecessor_nodes = []
     for predecessor in mapping["reviewed_predecessors"]:
         terminal = terminal_rows[predecessor["declaration"]]
+        need(terminal["value"] is not None, "reviewed predecessor value unavailable")
         need(predecessor["owner"] == terminal["owner"], "predecessor owner mismatch")
         need(predecessor["declaration_digest"] == digest(terminal), "predecessor declaration mismatch")
         artifact = repository_artifacts[terminal["owner"]]
