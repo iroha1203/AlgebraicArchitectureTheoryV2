@@ -1326,6 +1326,7 @@ selection:
     - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion
     - AAT.AG.RealizationComparisonIdempotents.normalizedPackageInclusion_retraction
     - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff_operationCoherent
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_id
     - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_retraction_not_natural
   risks:
     - "packaging p as a natural transformation and thereby assuming the refuted equation"
@@ -1352,6 +1353,7 @@ result:
     - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff
     - AAT.AG.RealizationComparisonIdempotents.canonicalPackageNormalization_natural_iff_operationCoherent
     - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_iff_operationCoherent
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageRetractionNaturalAt_id
     - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalizationPackage
     - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalizationFlip
     - AAT.AG.RealizationComparisonIdempotents.taggedCanonicalNormalization_absorption
@@ -1368,6 +1370,7 @@ result:
       - normalizedPackageRetractionNaturalAt_iff
       - canonicalPackageNormalization_natural_iff_operationCoherent
       - normalizedPackageRetractionNaturalAt_iff_operationCoherent
+      - normalizedPackageRetractionNaturalAt_id
       - taggedCanonicalNormalization_absorption
       - taggedCanonicalNormalization_inclusion_naturality
       - taggedCanonicalNormalization_not_natural
@@ -1383,6 +1386,7 @@ result:
       - "p_P i_P=1_KN(P) -> endpoint idempotence"
       - "p naturality at f -> iff f≫e_Q=e_P≫f"
       - "opposite exchange equation -> iff existing CanonicalNormalizationOperationCoherent"
+      - "positive naturality witness -> every identity morphism satisfies the retraction naturality predicate"
       - "tagged package/flip -> actual object and morphism of the same C"
       - "tagged flip -> one-sided absorption and i naturality hold while p naturality fails"
       - "tagged inequality -> the same false/true Bool operation evaluations"
@@ -1419,8 +1423,8 @@ audits:
   validation_refs:
     - "direct predecessor targeted builds: NormalizationProjection and LaxDiagnosticProjectorModificationCounterexample; exit 0"
     - "focused research module check; exit 0"
-    - "module terminal namespace audit: 18 current-module declarations, standard axioms only"
-    - "18 source-level declarations in NormalizationNaturalityFailure.lean"
+    - "module terminal namespace audit: 19 current-module declarations, standard axioms only"
+    - "19 source-level declarations in NormalizationNaturalityFailure.lean"
   blocking_findings: []
   next_obligation: "D5: construct the endpoint automorphism product hom r_N, restrict it to comparison-preserving subgroups, and then to the raw/image bottom-qualified subgroups"
 ```

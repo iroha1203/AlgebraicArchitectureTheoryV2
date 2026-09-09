@@ -150,6 +150,16 @@ theorem normalizedPackageRetractionNaturalAt_iff_operationCoherent
   (normalizedPackageRetractionNaturalAt_iff f).trans
     (canonicalPackageNormalization_natural_iff_operationCoherent f)
 
+/-- The retraction family is natural at every identity morphism.  Together
+with the tagged negative witness below, this records that the naturality
+predicate is neither vacuous nor universally true. -/
+theorem normalizedPackageRetractionNaturalAt_id
+    {U : AtomCarrier.{u}} (P : CanonicalNormalizationAdmissiblePackage U) :
+    NormalizedPackageRetractionNaturalAt (𝟙 P) := by
+  apply (normalizedPackageRetractionNaturalAt_iff_operationCoherent
+    (𝟙 P)).mpr
+  exact canonicalNormalizationOperationCoherent_id P.obj P.property
+
 /-- The fixed G-117 tagged package as an object of the same admissible
 full subcategory `C` used throughout G-119(D). -/
 noncomputable def taggedCanonicalNormalizationPackage :
