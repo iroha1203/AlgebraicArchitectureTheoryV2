@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D の包含、比較関手、底射影 `π_N`
+- current proof obligation: D の自然な包含と自然性失敗の特徴づけ
 - pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: `Kar(V)K`、`Arr(N_C)→M(E_core)`、正規化比較の計算、`π_N N=πV` を構成
+- next proof obligation: `i:KN→J`、対象別 `p`、`p` の自然性同値、G-117 tagged反例での失敗を構成
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1166,3 +1166,136 @@ Cycle 10 の material premise role は次のとおりである。
 - `direction-hypothesis`: なし。
 - `discharge-required`: `N_C`、`K`の充満忠実性、`N`の関手性と充満性。Cycle 9の査読済みD1定理とKaroubi構成から放電する。
 - `conclusion-equivalent-risk`: 該当なし。`N_C` を `N` の像とせず、任意のsandwich射を直接Homとする。
+
+## Cycle 11 — ambient Karoubi comparison and bottom projection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 11
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 4edbf8371fc326c1a058290f40ef6e91a2cd6fc1
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 10 result: D2 merged and discharged; D3 selected next"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageKaroubiFunctor
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor
+    - AAT.AG.RealizationComparisonIdempotents.packageProjection_canonicalPackageNormalization
+    - AAT.AG.RealizationComparisonIdempotents.arrowKaroubiMap
+    - CategoryTheory.Idempotents.functorExtension₂
+  proof_obligation: "D3: construct Kar(V)K, the induced Arr(N_C)→M(E_core), the normalized comparison with underlying c e_P, pi_N, and the equality pi_N N=pi V on objects and morphisms"
+  selection_reason: "D3 connects the reviewed normalization category to the clause-A comparison surface and fixes the common bottom projection required by the remaining naturality and qualified-group clauses."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationProjection.lean
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageCoreKaroubiFunctor
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageArrowCoreComparison
+    - AAT.AG.RealizationComparisonIdempotents.canonicalNormalizedCoreComparison_obj_hom_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_normalization_eq
+  risks:
+    - "constructing a second comparison category instead of using Arrow(Kar(E_core))"
+    - "losing the source normalization in the claimed underlying comparison"
+    - "assuming pi(e_P)=1 instead of using the reviewed D1 computation"
+    - "proving pi_N N=pi V only on objects and omitting morphisms"
+  unchecked:
+    - "D4: i, objectwise p, naturality characterization, and tagged failure"
+    - "D5: endpoint automorphism and qualified subgroup homomorphisms"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed V as the standard full-subcategory inclusion, formed Kar(V)K with mathlib functorExtension₂, and induced the Arrow comparison into M(E_core).  The normalized raw comparison evaluates to e_P≫c, i.e. c e_P in the target notation.  Constructed pi_N from actual base maps and proved pi_N N=pi V as a functor equality with separate object and morphism APIs."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationProjection.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.canonicalNormalizationCoreInclusion
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageCoreKaroubiFunctor
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageArrowCoreComparison
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageArrowCoreComparison_eq
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageArrowCoreComparison_obj_hom_f
+    - AAT.AG.RealizationComparisonIdempotents.canonicalNormalizedCoreComparison
+    - AAT.AG.RealizationComparisonIdempotents.canonicalNormalizedCoreComparison_obj_hom_f
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_obj
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_map
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_normalization_obj
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_normalization_map
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_normalization_eq
+  claim_mapping:
+    theorem_names:
+      - normalizedPackageArrowCoreComparison_eq
+      - normalizedPackageArrowCoreComparison_obj_hom_f
+      - canonicalNormalizedCoreComparison_obj_hom_f
+      - normalizedPackageProjection_obj
+      - normalizedPackageProjection_map
+      - normalizedPackageProjection_normalization_obj
+      - normalizedPackageProjection_normalization_map
+      - normalizedPackageProjection_normalization_eq
+    source_labels:
+      - "fixed target D paragraph 3: ambient inclusion, comparison, and bottom projection"
+    conjuncts:
+      - "V:C→E_core -> standard full-subcategory inclusion"
+      - "Kar(V)K -> standard functorExtension₂ applied after K"
+      - "Arr(N_C)→M(E_core) -> mapArrow followed by arrowKaroubiMap V"
+      - "normalized comparison -> underlying e_P≫c, conventional c e_P"
+      - "pi_N objects -> packagePoint of the labelled package"
+      - "pi_N morphisms -> actual base component of the raw total morphism"
+      - "pi_N N=pi V -> equality on both objects and arbitrary morphisms"
+    undischarged_assumptions: []
+    acceptance_point: "D3 reuses the fixed clause-A Arrow(Kar _) surface and the existing package projection; the morphism equality is discharged by the reviewed pi(e_P)=1 computation rather than a new premise."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D ambient inclusion and induced Karoubi/Arrow comparison"
+      - "D normalized comparison evaluation c e_P"
+      - "D bottom projection pi_N and equality pi_N N=pi V"
+    remaining:
+      - "D4--D5 naturality characterization, tagged failure, and group homomorphisms"
+  certificate_provenance:
+    discharged:
+      - "endpoint idempotents are the reviewed canonicalPackageNormalization values carried through K and Kar(V)"
+      - "bottom normalization disappears by the reviewed packageProjection_canonicalPackageNormalization theorem"
+    unresolved: []
+  proof_use:
+    used:
+      - "normalizedPackageKaroubiFunctor supplies K before the standard Karoubi action of V"
+      - "packageNormalizationFunctor supplies e_P≫c before the Arrow comparison"
+      - "the base component of canonicalPackageNormalization reduces to the identity in the morphism proof of pi_N N=pi V"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.NormalizationCategory; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal namespace audit: 13 current-module declarations, standard axioms only"
+    - "13 source-level declarations in NormalizationProjection.lean"
+  blocking_findings: []
+  next_obligation: "D4: construct i:KN→J, objectwise p and its splitting, characterize p naturality by the failed two-sided equation and operation coherence, and instantiate the G-117 tagged counterexample"
+```
+
+### Cycle 11 acceptance spine
+
+`canonicalNormalizationCoreInclusion` is the standard inclusion of the admissible
+full subcategory, and `normalizedPackageCoreKaroubiFunctor` applies mathlib's
+Karoubi action after the reviewed fully faithful `K`.  Its Arrow functor is the
+required comparison into `M(E_core)`.  Precomposition with `N` exposes the
+underlying map as `e_P ≫ c`, exactly `c e_P` in the fixed conventional notation.
+
+`normalizedPackageProjection` reads the existing package point and the actual
+base component of every sandwich morphism.  On an arbitrary raw morphism, the
+base of `N(f)` is the identity followed by `f.base`; the identity is supplied by
+the Cycle 9 theorem `π(e_P)=1`.  Thus the object and morphism computations combine
+to the functor equality `π_N N=πV` without a new preservation certificate.
+
+Cycle 11 material premise roles are:
+
+- `ambient-boundary`: arbitrary `U`, admissible packages, and all raw or sandwich morphisms at the displayed endpoints.
+- `direction-hypothesis`: none.
+- `discharge-required`: the comparison evaluation and the morphism component of `π_N N=πV`; discharged by D2's functor definitions and D1's base computation.
+- `conclusion-equivalent-risk`: none; `π_N` is constructed from raw base maps and carries no field asserting the desired functor equality.
