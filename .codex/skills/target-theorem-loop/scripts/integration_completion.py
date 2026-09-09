@@ -33,36 +33,38 @@ def main():
     registry = out / "registry"
     raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean", "--reference-fixture"], repo)
     cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
-    def index_with_staged(source, module, staged=()):
-        previous = os.environ.get("LEAN_PATH")
-        roots = [str(Path(path).resolve()) for path in staged]
-        if previous:
-            roots.extend(previous.split(os.pathsep))
-        if roots:
-            os.environ["LEAN_PATH"] = os.pathsep.join(roots)
-        try:
+    def index_with_artifacts(source, module, artifact_ids=()):
+        if not artifact_ids:
             cp.index_dependencies(repo, source, module, registry)
-        finally:
-            if previous is None:
-                os.environ.pop("LEAN_PATH", None)
-            else:
-                os.environ["LEAN_PATH"] = previous
+            return
+        with cp.registry_environment(repo, registry, artifact_ids) as env:
+            previous = os.environ.get("LEAN_PATH")
+            os.environ["LEAN_PATH"] = env["LEAN_PATH"]
+            try:
+                cp.index_dependencies(repo, source, module, registry)
+            finally:
+                if previous is None:
+                    os.environ.pop("LEAN_PATH", None)
+                else:
+                    os.environ["LEAN_PATH"] = previous
 
-    index_with_staged("research/lean/ResearchLean/Tools/CompletionFixture.lean",
-                      "ResearchLean.Tools.CompletionFixture")
+    index_with_artifacts("research/lean/ResearchLean/Tools/CompletionFixture.lean",
+                         "ResearchLean.Tools.CompletionFixture")
     receipt = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionFixture.lean",
                                 "ResearchLean.Tools.CompletionFixture", out / "cache", registry, [])
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
     # Independent caches sharing a namespace: the earlier cache contains stale B.
-    index_with_staged("research/lean/ResearchLean/Tools/CompletionShadowB.lean",
-                      "ResearchLean.Tools.CompletionShadowB", [out / "cache"])
+    index_with_artifacts("research/lean/ResearchLean/Tools/CompletionShadowB.lean",
+                         "ResearchLean.Tools.CompletionShadowB", [receipt["artifact_id"]])
     shadow_b = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowB.lean",
                                  "ResearchLean.Tools.CompletionShadowB", out / "cache-b", registry,
                                  [receipt_path])
     cp.write(out / "receipt-b.json", shadow_b)
-    index_with_staged("research/lean/ResearchLean/Tools/CompletionShadowA.lean",
-                      "ResearchLean.Tools.CompletionShadowA", [out / "cache-b", out / "cache"])
+    index = cp.read(registry / "index.json")
+    b_ids = [shadow_b["artifact_id"], *cp.dependency_members(index, shadow_b["dependency_set"])]
+    index_with_artifacts("research/lean/ResearchLean/Tools/CompletionShadowA.lean",
+                         "ResearchLean.Tools.CompletionShadowA", b_ids)
     shadow_a = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowA.lean",
                                  "ResearchLean.Tools.CompletionShadowA", out / "cache-a", registry,
                                  [out / "receipt-b.json"])
