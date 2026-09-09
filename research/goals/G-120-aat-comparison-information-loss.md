@@ -13,6 +13,8 @@
 係数観測と冪等正規化が比較情報をどう変えるかを、比較を維持する変更の部分群、
 その観測核、変更の持ち上げとして記述する。一般的な判定定理をG-118の生成比較と
 G-119のcanonical正規化へ接続し、情報損失を具体的な元と作用で示す。
+G-118の非因子化を、観測核・比較保存部分群・基点付き剰余類による表示変更に整合する
+構造として説明し、生成比較で失われる相対差の全体を片側端点の係数不可視自己同型として分類する。
 これにより、後続の有限表示と完全幾何のliftが保持・復元すべき比較情報を特定する。
 これはn1010のS2に対応する。
 
@@ -67,6 +69,31 @@ Q_c=\operatorname{CompositeFiberAut}(X)\times\operatorname{CompositeFiberAut}(Y)
 両端の底を固定する資格は既存の合成投影によるものとし、`c`自身の底への像には
 恒等性を要求しない。
 
+各生成比較について、既存の `generatedCompatibleUpperGeometryMateAt_isIso` から
+同型 `c:X≅Y` を得る。その実係数写像から係数環の同型を構成し、両端の観測を
+`O_X,O_Y`、その核を `K_X^obs,K_Y^obs` とする。比較による既存の共役群同型
+`T_c:CompositeFiberAut(X)≃CompositeFiberAut(Y)` と係数環の同型による共役 `S_c` が
+`O_Y T_c=S_c O_X` を満たすことを実係数成分で証明し、核上の群同型
+`T_c:K_X^obs≃K_Y^obs` を得る。`T_c`のunderlying射は通常の合成記法で `cbc⁻¹` とする。
+このとき、同じ端点対を保つ同定として
+
+\[
+K_c=K_X^{\mathrm{obs}}\times K_Y^{\mathrm{obs}},\qquad
+L_c=\{(b,T_c(b))\mid b\in K_X^{\mathrm{obs}}\}
+\]
+
+を証明する。群演算の積・逆元を用いて基点付き集合の同値
+
+\[
+\Psi_c:K_c/L_c\simeq K_Y^{\mathrm{obs}},\qquad
+[(b,p)]\longmapsto p\,T_c(b)^{-1},\qquad
+u\longmapsto[(1,u)]
+\]
+
+を構成する。代表元によらないこと、両逆、基点 `L_c` と恒等元 `1` の対応を証明する。
+ここでも左辺は左剰余類集合として扱う。この分類とAを接続し、生成比較について
+観測だけで適合性を判定できることと `K_Y^obs={1}` を同値にする。
+
 固定例は `UpperDecisionWitness` の `fixedCoefficientObservation`、
 `fixedPositiveQualifiedPair`、`fixedNegativeQualifiedPair` を用いる。
 これらをそれぞれ `O_*`、`q₊`、`q₋` とし、同じ生成比較に対して
@@ -78,6 +105,7 @@ q_+\in\Gamma_*,\qquad q_-\notin\Gamma_*,\qquad O_*(q_+)=O_*(q_-),
 
 を証明する。`k_*L_*≠L_*` を示し、Aの必要十分条件から既存の
 `fixedQualifiedDecision_not_factor_through_coefficientObservation` と同じ非因子化結論を導く。
+さらに `Ψ_*(k_*L_*)≠1` を上の同値の評価式から証明する。
 正負対と比較は上記の既存生成器で固定し、新しい例への置換はしない。
 
 [G-118 C1s](G-118-aat-diagnostic-descent-transport.md)で固定された任意の入力表示変更に対し、
@@ -86,6 +114,12 @@ q_+\in\Gamma_*,\qquad q_-\notin\Gamma_*,\qquad O_*(q_+)=O_*(q_-),
 恒等・逆・型の合う有限合成との整合を証明する。係数環の同一視は生成された端点同型の
 係数成分から得る。輸送先の比較は既存の入力再構成と生成器から得て、その比較との
 整合を証明する。
+
+生成された端点同型による群同型を `θ_X,θ_Y`、変更後比較を `c'` とするとき、
+`θ_Y T_c=T_{c'} θ_X` を証明する。上記の観測図式から得る核の同型への制限の下で、
+`θ_X×θ_Y` が誘導する剰余類同値を `φ̄` とし、
+`Ψ_{c'} φ̄=(θ_Y|K_Y^obs) Ψ_c` を証明する。
+この同定も恒等・逆・型の合う有限合成と整合させる。
 
 ### C. 冪等像への変更の保存・反映・持ち上げ
 
@@ -142,7 +176,7 @@ r_N:\operatorname{Aut}_C(P)\times\operatorname{Aut}_C(Q)
 \to\operatorname{Aut}_{N_C}(P)\times\operatorname{Aut}_{N_C}(Q)
 \]
 
-として用いる。raw比較群を`Γ_c`、像の比較群を`Γ_{N(c)}`とし、Cの反映の必要十分条件を
+として用いる。raw比較群を`Γ_c`、像の比較群を`Γ_{N(c)}`とし、条項Cの反映の必要十分条件を
 `r_N,Γ_c,Γ_{N(c)}`について証明する。適合するliftの像、制限準同型の各非空fiberの
 核による右作用、全射の場合の短完全列も同様に構成する。
 
@@ -173,6 +207,7 @@ r_N:\operatorname{Aut}_C(P)\times\operatorname{Aut}_C(Q)
 | 任意の群準同型・部分群（A） | 入力として保持 | Aの必要十分条件・fiber・剰余類 | 群の法則から観測による判定可能性へ |
 | 群同型と可換図式（A） | 一般定理の仮定 | Aの輸送と整合 | 核・交わり・基点付き剰余類の移送へ |
 | G-118の生成入力とC1s表示変更（B） | 既存入力として保持 | Bの実図式とその輸送は構成義務 | 既存の入力再構成・生成器・端点同型からAの適用へ |
+| 生成比較の同型性・共役（B） | 既存構成として使用し、接続を放電する義務 | Bの係数観測との可換式、核のグラフ、ΨとC1s整合 | 既存の生成比較のIsIso定理と共役群同型から、失われる相対差全体の分類へ |
 | G-118の固定正負対（B） | 構成・放電義務 | Bの同一観測、適合・非適合、核内の元、非基点性 | QualifiedComparisonCoefficientNonfactorizationの固定例からAの非因子化へ |
 | 比較・冪等対・両立式（C） | 一般定理の仮定 | Cの準同型・保存・反映条件・lift | 中心化群とKaroubiの射から核・像・fiberへ |
 | 3点集合の二例（C） | 構成・放電義務 | Cの各行の全条件と評価・非存在証拠 | 具体的写像から一般的反映・lift全射性の失敗へ |
