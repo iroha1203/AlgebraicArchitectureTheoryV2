@@ -481,20 +481,34 @@ def index_dependencies(repo, source, module, registry, helper_path=None):
             need(not candidates, f"package artifact overlaps toolchain module: {imported_module}")
             continue
         artifact_path, main_hash = select_artifact(candidates, imported_module)
+        component_paths = {suffix: Path(str(artifact_path.with_suffix("")) + "." + suffix)
+                           for suffix in ("olean", "olean.private", "olean.server", "ir")}
+        components = {suffix: path for suffix, path in component_paths.items() if path.is_file()}
+        need("olean" in components, f"missing olean data file: {imported_module}")
+        olean_files = {suffix: file_hash(path) for suffix, path in components.items()}
         owner_matches = [(owner, package_dir, entry) for owner, package_dir, entry in owners
                          if artifact_path.is_relative_to(package_dir)]
         if owner_matches:
             depth = max(len(package_dir.parts) for _, package_dir, _ in owner_matches)
             owner_matches = [match for match in owner_matches if len(match[1].parts) == depth]
-        need(len(owner_matches) == 1, f"unregistered package artifact: {imported_module}")
+        if not owner_matches:
+            # A prior focused receipt may be staged in an isolated temporary
+            # root. Reuse only an exact content-addressed registry row; never
+            # infer repository ownership from that temporary path.
+            registered = [(artifact_id, row) for artifact_id, row in index["artifacts"].items()
+                          if row["module"] == imported_module and row["olean_files"] == olean_files]
+            need(len(registered) == 1, f"unregistered package artifact: {imported_module}")
+            artifact_id, metadata = registered[0]
+            artifact_ids.append(artifact_id)
+            top = imported_module.split(".")[0]
+            owner_key = digest(metadata["repository"])
+            need(top_owners.setdefault(top, owner_key) == owner_key,
+                 "root namespace collision between repositories")
+            continue
+        need(len(owner_matches) == 1, f"ambiguous package artifact owner: {imported_module}")
         owner, package_dir, entry = owner_matches[0]
         identity = repo_identity(owner, repo, manifest_ref, entry)
         source_ref = source_for_module(owner, package_dir, imported_module, identity["commit"])
-        candidates = {suffix: Path(str(artifact_path.with_suffix("")) + "." + suffix)
-                      for suffix in ("olean", "olean.private", "olean.server", "ir")}
-        components = {suffix: path for suffix, path in candidates.items() if path.is_file()}
-        need("olean" in components, f"missing olean data file: {imported_module}")
-        olean_files = {suffix: file_hash(path) for suffix, path in components.items()}
         metadata = {"artifact_type": "lean-olean", "schema_version": REGISTRY_VERSION,
                     "module": imported_module, "repository": identity, "source": source_ref,
                     "olean_sha256": main_hash, "olean_files": olean_files,
