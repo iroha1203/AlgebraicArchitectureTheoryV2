@@ -117,6 +117,21 @@ def snapshot(repo):
             "lean_version": run(["lean", "--version"], repo)}
 
 
+def toolchain(repo, manifest_path):
+    """Resolve Lake's Lean, but record only reproducible metadata (not local paths)."""
+    manifest_dir = (repo / relative(repo, manifest_path)).parent
+    lake = shutil.which("lake")
+    need(lake is not None, "lake executable not found")
+    lake_path = run([lake, "env", "printenv", "PATH"], manifest_dir)
+    lean = shutil.which("lean", path=lake_path)
+    need(lean is not None, "Lake environment has no lean executable")
+    env = dict(os.environ)
+    env["PATH"] = lake_path
+    return ({"lake_sha256": file_hash(lake), "lake_version": run([lake, "--version"]),
+             "lean_sha256": file_hash(lean), "lean_version": run([lean, "--version"], manifest_dir, env)},
+            lean)
+
+
 def dependency_context(repo, source):
     """Bind a focused check to its Lake environment without certifying runtime imports."""
     source_path = (repo / relative(repo, source)).resolve()
@@ -131,20 +146,23 @@ def dependency_context(repo, source):
             break
         directory = directory.parent
     need(manifest is not None, "Lake manifest not found for focused source")
-    return {"policy": "lake-resolved-runtime-trust",
-            "manifest": manifest,
-            "source_build_claim": False}
+    resolved, _ = toolchain(repo, manifest["path"])
+    return {"policy": "lake-resolved-runtime-trust", "manifest": manifest,
+            "toolchain": resolved, "source_build_claim": False}
 
 
 def lake_environment(repo, context):
-    fields(context, ["policy", "manifest", "source_build_claim"])
+    fields(context, ["policy", "manifest", "toolchain", "source_build_claim"])
     need(context["policy"] == "lake-resolved-runtime-trust" and
          context["source_build_claim"] is False, "invalid dependency policy")
     manifest = context["manifest"]
     need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), manifest["path"]) == manifest,
          "Lake manifest changed")
     manifest_dir = (repo / manifest["path"]).parent
-    search_path = run(["lake", "env", "printenv", "LEAN_PATH"], manifest_dir)
+    current, _ = toolchain(repo, manifest["path"])
+    need(current == context["toolchain"], "Lake/Lean toolchain changed")
+    lake = shutil.which("lake")
+    search_path = run([lake, "env", "printenv", "LEAN_PATH"], manifest_dir)
     need(bool(search_path), "Lake environment has no LEAN_PATH")
     env = dict(os.environ)
     env["LEAN_PATH"] = search_path
@@ -157,7 +175,7 @@ def validate_receipt(repo, receipt):
     need(isinstance(receipt["module"], str) and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_][A-Za-z_0-9]*)*", receipt["module"]), "invalid receipt module")
     need(receipt["olean"].endswith(receipt["module"].replace(".", "/") + ".olean"), "module/olean mismatch")
     need(receipt["head"] == run(["git", "rev-parse", "HEAD"], repo), "receipt head mismatch")
-    need(receipt["lean_version"] == run(["lean", "--version"], repo), "receipt toolchain mismatch")
+    need(receipt["lean_version"] == receipt["dependency_context"]["toolchain"]["lean_version"], "receipt toolchain mismatch")
     need(blob(repo, receipt["head"], receipt["source"]["path"]) == receipt["source"], "receipt source mismatch")
     need(receipt["dependency_context"] == dependency_context(repo, receipt["source"]["path"]), "dependency context mismatch")
     need(file_hash(repo / relative(repo, receipt["olean"])) == receipt["olean_sha256"], "stale olean")
@@ -181,7 +199,8 @@ def check(repo, source, module, out):
     olean.parent.mkdir(parents=True, exist_ok=True)
     command = ["lean", "-o", relative(repo, olean), source]
     context = dependency_context(repo, source)
-    result = subprocess.run(command, cwd=repo, env=lake_environment(repo, context), capture_output=True)
+    _, lean = toolchain(repo, context["manifest"]["path"])
+    result = subprocess.run([lean, *command[1:]], cwd=repo, env=lake_environment(repo, context), capture_output=True)
     streams = {}
     for name, data in (("stdout", result.stdout), ("stderr", result.stderr)):
         path = out / (module + "." + name)
@@ -192,7 +211,7 @@ def check(repo, source, module, out):
             "olean": relative(repo, olean), "olean_sha256": file_hash(olean),
             "dependency_context": context,
             "command": command, "exit_code": result.returncode,
-            "lean_version": run(["lean", "--version"], repo), **streams}
+            "lean_version": context["toolchain"]["lean_version"], **streams}
 
 
 def string(value):
@@ -288,7 +307,13 @@ def path_between(rows, start, end, direct=False):
     return None
 
 
-def material(mapping, extraction, goal_text):
+def repo_module_sources(repo, owner):
+    suffix = owner.replace(".", "/") + ".lean"
+    tracked = run(["git", "ls-files", "--", "*.lean"], repo).splitlines()
+    return [path for path in tracked if path == suffix or path.endswith("/" + suffix)]
+
+
+def material(mapping, extraction, goal_text, repo=None):
     validate_map(mapping)
     fields(extraction, ["schema_version", "modules", "declarations", "terminals"])
     need(extraction["schema_version"] == VERSION, "extractor schema")
@@ -370,6 +395,9 @@ def material(mapping, extraction, goal_text):
         need(predecessor["goal_quote"] in goal_text, "external predecessor GOAL ref does not resolve")
         node = external_declaration(predecessor["name"])
         need(node["owner"] == predecessor["owner"], "external predecessor owner mismatch")
+        need(repo is not None, "repository is required to classify external predecessors")
+        need(not repo_module_sources(repo, node["owner"]),
+             "same-repo predecessor must have a focused selected-owner receipt")
         external_nodes.add(predecessor["name"])
         for consumer in predecessor["consumed_by"]:
             need(consumer in rows, f"missing external predecessor consumer: {consumer}")
@@ -434,11 +462,16 @@ def extraction_environment(repo, receipts):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, destination)
             need(file_hash(destination) == expected, "artifact changed while staging")
-        env = dict(os.environ)
-        contexts = {canonical(receipt["dependency_context"]) for receipt in receipts}
-        need(len(contexts) == 1, "selected owners must use one Lake environment")
-        env = lake_environment(repo, receipts[0]["dependency_context"])
-        env["LEAN_PATH"] = directory + os.pathsep + env["LEAN_PATH"]
+        contexts = [receipt["dependency_context"] for receipt in receipts]
+        lean_tools = {canonical(context["toolchain"]) for context in contexts}
+        need(len(lean_tools) == 1, "selected owners must use one Lean toolchain")
+        env = lake_environment(repo, contexts[0])
+        search = [directory]
+        for context in contexts:
+            for entry in lake_environment(repo, context)["LEAN_PATH"].split(os.pathsep):
+                if entry and entry not in search:
+                    search.append(entry)
+        env["LEAN_PATH"] = os.pathsep.join(search)
         yield env
 
 
@@ -476,7 +509,7 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     with extraction_environment(repo, receipts) as env:
         result = run(["lean", "--run", extractor, *modules], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
-    core = material(mapping, extraction, fixed_text)
+    core = material(mapping, extraction, fixed_text, repo)
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
               "goal": goal, "fixed_goal": mapping["fixed_goal"], "report": report, "mapping": mapping_ref,
               "extractor": extractor_ref, "generator": blob(repo, head, __file__)}
@@ -505,7 +538,7 @@ def validate_bundle(repo, b):
     with extraction_environment(repo, b["receipts"]) as env:
         actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
     need(actual == b["extraction"], "extraction differs from Lean artifacts")
-    core = material(b["mapping"], b["extraction"], fixed_goal_text(repo, b["mapping"]))
+    core = material(b["mapping"], b["extraction"], fixed_goal_text(repo, b["mapping"]), repo)
     need(core == b["core"], "core was edited")
 
 

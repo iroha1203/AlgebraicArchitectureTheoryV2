@@ -24,7 +24,7 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 実行ファイルを使う。生成器はsourceに最も近い`lake-manifest.json`から`lake env`を解決し、
 呼出元の任意`LEAN_PATH`をfocused checkや抽出に使わない。
 receiptは選択ownerの固定head、source blob、exact command、出力olean、stdout/stderr、
-Lean version、最寄りの`lake-manifest.json` blobを結ぶ。
+Lean/Lake実行artifactのhashとversion、最寄りの`lake-manifest.json` blobを結ぶ。
 
 runtime importはこのfocused elaborationの実行環境であり、数学claimの証拠ではない。
 外部packageや非選択moduleについてsourceからoleanを生成したとは主張しない。
@@ -34,7 +34,9 @@ subagentの実行制限は[AAT guideline](../../../../docs/aat/guideline.md)に�
 
 `collect`は複数の`--receipt`を受け取り、選んだownerの宣言をLeanから抽出する。
 選択ownerのartifactだけを一時overlayの先頭へ置き、依存はsourceのmanifestから解決した
-Lake環境から読む。同一ownerの異なるdigest、複数Lake環境のowner混在は拒否する。
+Lake環境から読む。同一ownerの異なるdigestは拒否する。rootとResearchのように複数の
+Lake packageからownerを選ぶ場合は、各receiptのmanifest由来`LEAN_PATH`を結合するが、
+Lean toolchain artifactが一致しない混在は拒否する。
 manifestやtoolchainが変わればvalidateを失敗させる。runtime dependency artifactの同一性や
 source-build provenanceは保証範囲に含めず、その限定をpacketと最終査読で明示する。
 `--base`で比較元commitを指定でき、省略時はその時点の`origin/main`をcommitへ解決して固定する。
@@ -79,7 +81,9 @@ version 2 packet/receiptをversion 3へ暗黙変換しない。
   割り当てる場合は、そのstatementが全てを支えることを査読する。
 - 外部packageの定理をmaterial predecessorとして使う場合だけ、`external_predecessors`へ
   exact declaration、owner、GOAL quote、consumerを登録する。生成器は選択ownerの値からの
-  到達と抽出された型を固定し、4本査読はそのstatementと数学的使用を直接確認する。
+  到達と抽出された型を固定し、owner名に対応するtracked Lean sourceがrepo内にないことを
+  検査する。同一repoのterminalをexternalと申告してfocused receiptを回避できない。
+  4本査読はそのstatementと数学的使用を直接確認する。
 
 機械検査は登録済みcriteriaの欠落、空ref、未解決ref、型不正等を拒否する。
 GOAL全体からのcriterion/premiseの選び落とし、statementより広いclaim、量化の弱化、
@@ -148,13 +152,15 @@ recheckにも保存済み確認本文のrefを付ける。これらのIDやhash�
 
 ```bash
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
-python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
+python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py --case fixture
 ```
 
 抽出器の統合試験は同梱`CompletionFixture.lean`を単一leafとして上記check/collect/render/validateで
 処理する。期待する独立参照は`inputCharacterization → differenceCriterion, kernelInputCriterion`、
 private helper経由の到達、型参照のみの`typedOnly`、`simp`参照である。
-`CompletionExternalFixture.lean`はmanifest固定の外部packageとrepo-local runtime importを持つ
-単一leaf canaryであり、推移closureのelaborationやartifact registryなしにfocused ownerを
-抽出できることを確認する。
+統合scriptは`--case`で必ず一つのleaf/caseだけを選び、一回の実行で複数leafを順次
+elaborateしない。`--case external`の`CompletionExternalFixture.lean`はLake解決した外部packageと
+repo-local runtime importを持つ単一leaf canaryであり、推移closureのelaborationやartifact
+registryなしにfocused ownerを抽出できること、およびrepo-local/external owner分類を確認する。
+`reference`、`shadow-a`、`shadow-b`、`repo-predecessor`も必要な対象を個別に指定して実行する。
 一般fixtureとG-118由来のサンプル比較は[回帰記録](completion-regression.md)を参照する。

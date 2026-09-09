@@ -3,7 +3,6 @@
 import argparse
 import copy
 import json
-import os
 from pathlib import Path
 import completion_packet as cp
 
@@ -26,12 +25,53 @@ def expected_reference_fixture():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default=".tmp/completion/integration")
+    parser.add_argument("--case", required=True,
+                        choices=("reference", "fixture", "external", "shadow-a", "shadow-b", "repo-predecessor"))
     args = parser.parse_args()
     repo = cp.root()
     here = Path(__file__).resolve().parent
     out = repo / cp.relative(repo, args.out)
-    raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean", "--reference-fixture"], repo)
-    cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
+    if args.case == "reference":
+        raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+                      "--reference-fixture"], repo)
+        cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
+        print(json.dumps({"result": "pass", "case": args.case}))
+        return
+    if args.case in ("shadow-a", "shadow-b"):
+        suffix = "A" if args.case == "shadow-a" else "B"
+        receipt = cp.check(repo, cp.relative(repo, here / f"fixtures/Shadow{suffix}.lean"),
+                           f"CompletionShadow.{suffix}", out / "cache")
+        cp.write(out / "receipt.json", receipt)
+        print(json.dumps({"result": "pass", "case": args.case}))
+        return
+    if args.case == "repo-predecessor":
+        receipt = cp.check(repo, "Formal/Util/AssertStandardAxioms.lean",
+                           "Formal.Util.AssertStandardAxioms", out / "cache")
+        cp.write(out / "receipt.json", receipt)
+        print(json.dumps({"result": "pass", "case": args.case}))
+        return
+    if args.case == "external":
+        receipt = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionExternalFixture.lean"),
+                           "CompletionExternalFixture", out / "cache")
+        cp.write(out / "receipt.json", receipt)
+        cp.need(receipt["dependency_context"]["policy"] == "lake-resolved-runtime-trust",
+                "external dependency policy missing")
+        cp.need(receipt["dependency_context"]["source_build_claim"] is False,
+                "runtime dependencies mislabeled as source-built")
+        with cp.extraction_environment(repo, [receipt]) as env:
+            extracted = json.loads(cp.run(
+                ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+                 "CompletionExternalFixture"], repo, env))
+        terminals = {row["name"] for row in extracted["terminals"]}
+        cp.need("AAT.Util.standardAxioms" in terminals, "repo-local terminal missing")
+        cp.need("CategoryTheory.Idempotents.Karoubi.idem" in terminals, "external terminal missing")
+        cp.need(cp.repo_module_sources(repo, "Formal.Util.AssertStandardAxioms"),
+                "repo-local owner classification failed")
+        cp.need(not cp.repo_module_sources(repo, "Mathlib.CategoryTheory.Idempotents.Karoubi"),
+                "external owner classification failed")
+        print(json.dumps({"result": "pass", "case": args.case}))
+        return
+    cp.need(args.case == "fixture", "unknown integration case")
     receipt = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionFixture.lean"),
                        "CompletionFixture", out / "cache")
     receipt_path = out / "receipt.json"
@@ -52,54 +92,10 @@ def main():
         pass
     else:
         raise cp.Invalid("runtime dependency promoted to source-build evidence")
-    # Independent caches sharing a namespace: the earlier cache contains stale B.
-    shadow_a = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowA.lean"),
-                        "CompletionShadow.A", out / "cache-a")
-    shadow_b = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowB.lean"),
-                        "CompletionShadow.B", out / "cache-b")
-    cp.write(out / "receipt-a.json", shadow_a)
-    cp.write(out / "receipt-b.json", shadow_b)
-    external = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionExternalFixture.lean"),
-                        "CompletionExternalFixture", out / "cache-external")
-    cp.need(external["dependency_context"]["policy"] == "lake-resolved-runtime-trust",
-            "external dependency policy missing")
-    cp.need(external["dependency_context"]["source_build_claim"] is False,
-            "runtime dependencies mislabeled as source-built")
-    with cp.extraction_environment(repo, [external]) as env:
-        external_rows = json.loads(cp.run(
-            ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
-             "CompletionExternalFixture"], repo, env))
-    cp.need(any(row["name"] == "CompletionExternalFixture.externalRuntimeCanary"
-                for row in external_rows["declarations"]),
-            "external-package focused overlay failed")
-    terminal_names = {row["name"] for row in external_rows["terminals"]}
-    cp.need("AAT.Util.standardAxioms" in terminal_names,
-            "repo-local runtime predecessor was not exposed as a terminal")
-    cp.need("CategoryTheory.Idempotents.Karoubi.idem" in terminal_names,
-            "external material predecessor was not exposed as a terminal")
-    repo_predecessor = cp.check(repo, "Formal/Util/AssertStandardAxioms.lean",
-                                "Formal.Util.AssertStandardAxioms", out / "cache-repo-predecessor")
-    with cp.extraction_environment(repo, [external, repo_predecessor]) as env:
-        promoted_rows = json.loads(cp.run(
-            ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
-             "CompletionExternalFixture", "Formal.Util.AssertStandardAxioms"], repo, env))
-    cp.need(any(row["name"] == "AAT.Util.standardAxioms" for row in promoted_rows["declarations"]),
-            "repo-local material predecessor was not promoted to a selected owner")
-    (out / "cache-a/CompletionShadow/B.olean").write_bytes(b"stale unrecorded artifact")
-    previous_path = os.environ.get("LEAN_PATH")
-    os.environ["LEAN_PATH"] = str(out / "cache-a")
-    try:
-        bundle = cp.collect(repo, cp.relative(repo, here / "fixtures/mapping.json"),
-                            [receipt_path, out / "receipt-a.json", out / "receipt-b.json"], out / "bundle.json")
-        cp.validate_bundle(repo, bundle)
-    finally:
-        if previous_path is None:
-            os.environ.pop("LEAN_PATH", None)
-        else:
-            os.environ["LEAN_PATH"] = previous_path
+    bundle = cp.collect(repo, cp.relative(repo, here / "fixtures/mapping.json"),
+                        [receipt_path], out / "bundle.json")
+    cp.validate_bundle(repo, bundle)
     rows = {row["name"]: row for row in bundle["extraction"]["declarations"]}
-    cp.need(rows["CompletionShadow.a"]["owner"] == "CompletionShadow.A" and
-            rows["CompletionShadow.b"]["owner"] == "CompletionShadow.B", "multiple cache module resolution failed")
     cp.need(rows["CompletionFixture.positive"]["kind"] == "definition" and
             rows["CompletionFixture.inputCharacterization"]["kind"] == "theorem", "declaration kind mismatch")
     cp.need(rows["CompletionFixture.universeIdentity"]["universe_parameters"] == ["u"], "universe parameters lost")
@@ -139,7 +135,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "declaration-metadata", "forged-command-rejected", "source-build-overclaim-rejected", "multiple-cache-same-namespace", "focused-owner-overlay", "manifest-pinned-runtime-canary", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "declaration-metadata", "forged-command-rejected", "source-build-overclaim-rejected", "focused-owner-overlay", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 

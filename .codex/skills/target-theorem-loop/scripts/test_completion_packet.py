@@ -91,7 +91,9 @@ class PacketTests(unittest.TestCase):
             repo = Path(d)
             (repo / "a.olean").write_bytes(b"a")
             (repo / "b.olean").write_bytes(b"b")
-            context = {"policy": "lake-resolved-runtime-trust", "manifest": {}, "source_build_claim": False}
+            toolchain = {"lake_sha256": "l", "lake_version": "lake", "lean_sha256": "e", "lean_version": "lean"}
+            context = {"policy": "lake-resolved-runtime-trust", "manifest": {"path": "root"},
+                       "toolchain": toolchain, "source_build_claim": False}
             a = {"module": "P.A", "olean": "a.olean", "olean_sha256": cp.file_hash(repo / "a.olean"),
                  "dependency_context": context}
             b = {"module": "P.B", "olean": "b.olean", "olean_sha256": cp.file_hash(repo / "b.olean"),
@@ -104,6 +106,14 @@ class PacketTests(unittest.TestCase):
                 conflict = {**a, "olean": "b.olean", "olean_sha256": b["olean_sha256"]}
                 with self.assertRaisesRegex(cp.Invalid, "conflicting module"):
                     with cp.extraction_environment(repo, [a, conflict]):
+                        pass
+                other = copy.deepcopy(b)
+                other["dependency_context"]["manifest"]["path"] = "research/lean/lake-manifest.json"
+                with cp.extraction_environment(repo, [a, other]) as env:
+                    self.assertIn("ambient", env["LEAN_PATH"])
+                other["dependency_context"]["toolchain"]["lean_sha256"] = "different"
+                with self.assertRaisesRegex(cp.Invalid, "one Lean toolchain"):
+                    with cp.extraction_environment(repo, [a, other]):
                         pass
 
     def test_metadata_rejection(self):
@@ -132,9 +142,14 @@ class PacketTests(unittest.TestCase):
         self.x["terminals"].append({"name": external, "owner": "External.Owner", "type": "reviewed type"})
         self.m["external_predecessors"] = [{"name": external, "owner": "External.Owner",
                                              "goal_quote": "入力条件", "consumed_by": [row["name"]]}]
-        core = self.core()
+        with patch.object(cp, "repo_module_sources", return_value=[]):
+            core = cp.material(self.m, self.x, self.goal, Path("/repo"))
         self.assertEqual(core["external_predecessors"][0]["declaration"]["name"], external)
         self.assertTrue(any(edge["to"] == external for edge in core["dependency_dag"]["edges"]))
+
+        with patch.object(cp, "repo_module_sources", return_value=["Formal/External/Owner.lean"]), \
+             self.assertRaisesRegex(cp.Invalid, "same-repo predecessor"):
+            cp.material(self.m, self.x, self.goal, Path("/repo"))
 
     def test_false_central_edge(self):
         self.m["claims"][0]["routes"][0]["to"] = "CompletionFixture.identityMember"

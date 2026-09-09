@@ -50,13 +50,13 @@ G-118の撤回記録と最終監査からは、訂正後にfresh 4査読が実�
 
 ```bash
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
-python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
+python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py --case fixture
 ```
 
-後者はコミット済みsourceの明示的な小さいleafを個別に実行し、全Research buildを呼ばない。
-追加の2 leafは同一namespaceを別cacheへ出力し、先のcacheに未記録の古いmoduleを残す。
-環境変数にもそのcacheを設定したままcollectと再抽出を行い、focused owner overlayが
-同名の古いowner artifactより優先されることを検証する。
+後者は`--case`でコミット済みsourceの明示的な小さいleafを一つだけ実行し、全Research buildを
+呼ばない。複数caseを内部loopで実行するmodeは持たない。別Lake環境のreceipt結合、同一namespaceの
+別cache、競合digestはunit testの独立fixtureで検査する。実artifactの追加canaryが必要なら
+`external`、`shadow-a`、`shadow-b`、`repo-predecessor`を一回につき一つだけ明示して実行する。
 生成物・stdout/stderr・receipt・packet・結果は`.tmp/completion/integration/`に保存する。
 期待参照はfixtureのsourceから独立に定め、直接参照、private補助定理経由、型のみの参照、
 `simp`参照、標準公理、再生成一致、手編集拒否を検査する。
