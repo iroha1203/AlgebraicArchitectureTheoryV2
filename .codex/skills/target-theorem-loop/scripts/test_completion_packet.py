@@ -539,11 +539,28 @@ class PacketTests(unittest.TestCase):
         core = cp.material(m, x, self.goal, context)
         predecessor = core["reviewed_predecessors"][0]
         self.assertEqual(predecessor["artifact_id"], "f" * 64)
+        self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
         changed = copy.deepcopy(x)
         changed["terminals"][0]["value"] = "changed-proof-value"
         with self.assertRaisesRegex(cp.Invalid, "predecessor declaration mismatch"):
             cp.material(m, changed, self.goal, context)
-        self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
+
+    def test_repository_local_type_terminal_cannot_escape_review(self):
+        x = extraction()
+        terminal = copy.deepcopy(x["declarations"][0])
+        terminal.update({"name": "RepoLocal.UnreviewedPredicate", "owner": "RepoLocal.Interface",
+                         "type": "Sort 1", "type_display": "Type", "value": None, "axioms": []})
+        x["terminals"].append(terminal)
+        row = x["declarations"][0]
+        row["references"].append({"name": terminal["name"], "site": "type", "position": "/binder",
+                                  "origin": "type"})
+        row["constant_names"]["type"].append(terminal["name"])
+        row["constant_names"]["type"].sort()
+        context = {terminal["owner"]: {"artifact_id": "a" * 64,
+                                        "source": {"path": "RepoLocal/Interface.lean", "blob": "b" * 40},
+                                        "repository_commit": "c" * 40}}
+        with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
+            cp.material(mapping(), x, self.goal, context)
 
     def test_metadata_rejection(self):
         for key, value in (("kind", "unknown"), ("universe_parameters", {}), ("type_display", ""),

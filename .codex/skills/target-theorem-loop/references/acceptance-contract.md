@@ -86,7 +86,7 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
 - 同一repoの非選択artifactはruntime dependencyに限る。material claim、premise、中心routeを支える
   repo内宣言はfocused ownerとして選択するか、exact owner・型/値/axiomを含むdeclaration digest・
   reviewed head・source blob・使用artifact ID・既受理review refを持つ
-  reviewed predecessorとして対応表へ列挙する。選択宣言のvalueから到達するrepo-local terminalを
+  reviewed predecessorとして対応表へ列挙する。選択宣言のstatement、value、projectionから到達するrepo-local terminalを
   この二経路の外で受理せず、非選択artifactだけで監査済みと扱わない。
 - dependency policy、対象repositoryへ結合した承認Issue/comment、artifact三分類、
   `source_build_claim: false`をpacketへ固定する。

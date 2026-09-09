@@ -88,7 +88,7 @@ registryはmanifest pin、Git source blob、既存olean componentのhash、Lean 
 拒否するが、各sourceを再elaborateしてsourceからoleanを再生成したという証明ではない。
 
 外部Lake packageはmanifest固定artifact trust、同一repoの非選択artifactはruntime dependencyに分類する。
-後者が選択宣言のproof valueから到達する場合、そのownerを選択ownerへ追加するか、exact owner、
+後者が選択宣言のstatement、proof value、projectionから到達する場合、そのownerを選択ownerへ追加するか、exact owner、
 terminalの型・値・axiom等を含むdeclaration digest、reviewed head、source blob、使用artifact ID、
 既受理review commentを`reviewed_predecessors`へ固定する。生成器はregistryの
 baseline module分類とLean抽出のvalue-origin terminalを結合し、未列挙と余分な列挙をともに拒否する。

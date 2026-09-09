@@ -871,6 +871,21 @@ def path_between(rows, start, end, direct=False):
     return None
 
 
+def path_between_any_reference(rows, start, end):
+    """Find a dependency path including statement, value, and projection references."""
+    queue = deque([(start, [start])])
+    visited = {start}
+    while queue:
+        node, path = queue.popleft()
+        for name in sorted({edge["name"] for edge in rows.get(node, {}).get("references", [])}):
+            if name == end:
+                return path + [name]
+            if name in rows and name not in visited:
+                visited.add(name)
+                queue.append((name, path + [name]))
+    return None
+
+
 def material(mapping, extraction, goal_text, repository_artifacts=None):
     validate_map(mapping)
     repository_artifacts = {} if repository_artifacts is None else repository_artifacts
@@ -976,8 +991,6 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
             continue
         reachable_rows.add(name)
         for edge in rows[name]["references"]:
-            if edge["origin"] != "value" or edge["site"] != "term":
-                continue
             dependency = edge["name"]
             if dependency in rows and dependency not in reachable_rows:
                 queue.append(dependency)
@@ -991,7 +1004,6 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
     predecessor_nodes = []
     for predecessor in mapping["reviewed_predecessors"]:
         terminal = terminal_rows[predecessor["declaration"]]
-        need(terminal["value"] is not None, "reviewed predecessor value unavailable")
         need(predecessor["owner"] == terminal["owner"], "predecessor owner mismatch")
         need(predecessor["declaration_digest"] == digest(terminal), "predecessor declaration mismatch")
         artifact = repository_artifacts[terminal["owner"]]
@@ -1009,10 +1021,11 @@ def material(mapping, extraction, goal_text, repository_artifacts=None):
                                   "reviewed_head": artifact["repository_commit"],
                                   "review_ref": predecessor["review_ref"]})
         for start in sorted(central):
-            path = path_between(rows, start, terminal["name"])
+            path = path_between_any_reference(rows, start, terminal["name"])
             if path is not None:
                 edge = {"from": start, "to": terminal["name"],
-                        "distance": "direct" if len(path) == 2 else "via", "path": path}
+                        "distance": "direct" if len(path) == 2 else "via", "path": path,
+                        "dependency_kind": "statement-value-or-projection"}
                 if edge not in routes:
                     routes.append(edge)
     adjacency = {n: set() for n in central}
