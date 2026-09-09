@@ -186,10 +186,14 @@ recheckにも保存済み確認本文のrefを付ける。これらのIDやhash�
 
 ```bash
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
+lake env python3 .codex/skills/target-theorem-loop/scripts/integration_completion.py
+lake env python3 .codex/skills/target-theorem-loop/scripts/integration_registry_external.py
 ```
 
 抽出器の統合試験は`research/lean/ResearchLean/Tools/CompletionFixture.lean`を単一leafとして上記
 index/check/collect/render/validateで
 処理する。期待する独立参照は`inputCharacterization → differenceCriterion, kernelInputCriterion`、
 private helper経由の到達、型参照のみの`typedOnly`、`simp`参照である。
+外部package統合試験は一時directory内に小さいsibling Git packageを作り、ネットワークを使わず
+manifest pin、index、registry-only focused check、live receipt validation、artifact改竄拒否を実行する。
 一般fixtureとG-118由来のサンプル比較は[回帰記録](completion-regression.md)を参照する。

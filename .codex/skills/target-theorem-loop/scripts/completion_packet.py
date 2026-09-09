@@ -387,7 +387,7 @@ def select_artifact(candidates, module):
     return candidates[0][1], file_hash(candidates[0][1])
 
 
-def index_dependencies(repo, source, module, registry):
+def index_dependencies(repo, source, module, registry, helper_path=None):
     """Inventory the already-built transitive imports; never elaborate a dependency file."""
     source = relative(repo, source)
     need(Path(source).name not in ("ResearchLean.lean", "Formal.lean", "AG.lean"), "aggregate forbidden")
@@ -408,7 +408,7 @@ def index_dependencies(repo, source, module, registry):
                               if p and Path(p).resolve() != sysroot))
     direct_paths = [Path(p).resolve() for p in run(["lean", "--deps", source], repo).splitlines()]
     direct_modules = [module_from_artifact(p, roots) for p in direct_paths if not p.is_relative_to(sysroot)]
-    helper = relative(repo, Path(__file__).with_name("CompletionRegistry.lean"))
+    helper = relative(repo, helper_path or Path(__file__).with_name("CompletionRegistry.lean"))
     imported = (json.loads(run(["lean", "--run", helper, *direct_modules], repo), object_pairs_hook=unique_pairs)
                 if direct_modules else [])
     distinct(imported, "imported modules", allow_empty=True)
