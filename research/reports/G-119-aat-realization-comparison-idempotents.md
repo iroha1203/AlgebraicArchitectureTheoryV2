@@ -1143,8 +1143,8 @@ audits:
   validation_refs:
     - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.CanonicalNormalizationAbsorption; exit 0"
     - "focused research module check; exit 0"
-    - "module terminal namespace audit: 27 declarations including the 8 imported D1 declarations, standard axioms only"
-    - "15 source-level declarations in NormalizationCategory.lean"
+    - "module terminal namespace audit: 29 current-module declarations, standard axioms only; the 8 D1 declarations were audited independently in Cycle 9"
+    - "16 source-level declarations in NormalizationCategory.lean"
   blocking_findings: []
   next_obligation: "D3: construct Kar(V)K, Arr(N_C)→M(E_core), normalized comparison evaluation, pi_N, and pi_N N=pi V"
 ```

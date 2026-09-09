@@ -32,7 +32,19 @@ universe u
 /-- An object of G-119(D)'s normalized category retains its admissible core
 package as an explicit label. -/
 structure NormalizedPackageObject (U : AtomCarrier.{u}) where
+  /-- The underlying admissible package label; no image or fixed-point condition
+  is imposed on objects of the normalized category. -/
   obj : CanonicalNormalizationAdmissiblePackage U
+
+/-- Two normalized-package objects are equal when their underlying package
+labels are equal.  This is the basic no-unfold extensionality API for `N_C`. -/
+@[ext]
+theorem normalizedPackageObject_ext {U : AtomCarrier.{u}}
+    {P Q : NormalizedPackageObject U} (h : P.obj = Q.obj) : P = Q := by
+  cases P
+  cases Q
+  cases h
+  rfl
 
 /-- The Karoubi object `(P,e_P)` associated with a labelled normalized-package
 object.  Its idempotence is supplied by the reviewed D1 theorem. -/
