@@ -36,6 +36,22 @@ def main():
                        "CompletionFixture", out / "cache")
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
+    forged = copy.deepcopy(receipt)
+    forged["command"][0] = "true"
+    try:
+        cp.validate_receipt(repo, forged)
+    except cp.Invalid:
+        pass
+    else:
+        raise cp.Invalid("forged focused command accepted")
+    forged = copy.deepcopy(receipt)
+    forged["dependency_context"]["source_build_claim"] = True
+    try:
+        cp.validate_receipt(repo, forged)
+    except cp.Invalid:
+        pass
+    else:
+        raise cp.Invalid("runtime dependency promoted to source-build evidence")
     # Independent caches sharing a namespace: the earlier cache contains stale B.
     shadow_a = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowA.lean"),
                         "CompletionShadow.A", out / "cache-a")
@@ -110,7 +126,7 @@ def main():
         raise cp.Invalid("manual packet edit accepted")
     cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
-             "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "focused-owner-overlay", "manifest-pinned-runtime-canary", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
+             "axioms", "fixed-source", "declaration-metadata", "forged-command-rejected", "source-build-overclaim-rejected", "multiple-cache-same-namespace", "focused-owner-overlay", "manifest-pinned-runtime-canary", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
 
 
