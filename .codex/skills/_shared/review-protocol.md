@@ -35,8 +35,8 @@
   - 本筋修正(中心findingを直した): 実装を完了し直して最終スナップショットを固定し、正式レビューを
     再実行する。構造が変わっているので、再実行で新たに出るfindingは正当とする。
   - 微調整(非中心findingだけを直した): 「直接対応」で確認する。正式レビューを再実行しない。
-  `prd-completion-review`のfindingには直接対応を適用しない。
-  `target-theorem-loop`の完了判定は、下記「completion packetの直接確認」に従う。
+  完了判定ゲート(`target-theorem-loop` / `prd-completion-review`)のfindingには直接対応を
+  適用しない。従来どおり実装フェーズへ戻し、完了判定はそのゲートの正式再実行だけで更新する。
 - **直接対応**: 既存findingの対象だけを直した修正を、親が変更箇所とfindingに限定した
   単一subagentで確認する。全観点・全laneや`review-pr`を再起動しない。直接対応の資格条件は
   分野別に次とする。資格条件を1つでも満たさない修正、および資格の判定が不能な修正は、
@@ -66,36 +66,6 @@
   直接対応では、この出力を既存のPR監査記録へ追記する。直近の正式レビューの全findingが解消され、
   修正後確認が有資格なら、これを2回目の正式レビューなしの最終内容証拠として扱い、
   当該分野のレビューゲート合格(承認)と同等に扱う。
-
-## completion packetの直接確認
-
-target-theorem完了判定では、全findingを次の二種に分ける。修正者の「軽微」という申告では
-分類を確定せず、担当laneと親が対象source・証拠・差分を確認する。
-
-- central completion finding: statement、premise放電、certificate、中心proof-use、
-  structure-field escape、route、nonvacuity、全方向、axiom、claim statusを変え得るもの。
-  falseな中心edgeや中心predecessor欠落は、Lean本文不変でもここに含む。
-  修正後は固定sourceと新packetから4 laneをfreshに再実行する。
-- packet-only non-central finding: 中心証拠と判断を変えないenum値型、補助ref、圧縮表示、
-  文言の不整合。資格ある直接確認で閉じ、全4 laneの再起動を要求しない。
-  唯一の放電refの欠落、方向の過大割当、抽出不能を空集合にした記載は非中心に降格しない。
-
-直接確認は、最終4 laneが全て担当coverageを完了し、中心veto・中心未確認がなく、残る
-findingがpacket-onlyの場合だけ適用する。未実施laneの代替にはならない。
-対象head・GOAL・Lean source/依存・対応表・中心証拠・検査基準の不変性を、生成時のdigestと
-実diffで確認する。表示修正ではpacket digestだけが変わってよい。中心情報を補助欄へ
-移した修正、生成器の抽出規則の変更、旧中心証拠を復元できない修正は資格外とする。
-
-親は新規の単一確認subagentへ、元finding、旧/new入力とpacket、固定source、機械検査結果を
-渡す。確認者は独立に資格と各findingの解消を検査し、対象外差分と新findingも記録する。
-中心finding、資格喪失、判定不能はfresh 4査読へ戻す。新しい非中心findingは直接確認の
-対象に追加し、解消までcompletionを保留する。通常cycleの非中心finding後送規定は使わない。
-
-確認記録には旧/new packet digest、元4 lane記録、finding ID、確認者、資格判定、解消証拠を
-含める。元verdictを改変せず「元4査読 + 有資格な修正後確認」で最終承認を構成する。
-中心の再査読は呼出元のcycle回数制限に従う。全gateのpass、全finding解消、root recheckは
-直接確認でも省略しない。具体的な生成・schema検査は
-[completion generation](../target-theorem-loop/references/completion-generation.md)を参照する。
 
 ## 非編集とfail-closed
 
