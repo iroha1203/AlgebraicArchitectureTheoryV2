@@ -79,18 +79,25 @@ toolchain artifactのhash、出力先のrepo相対pathや実行記録もpacket d
 元bundleの`validate`は、現在のsource snapshot・toolchain・registry artifact setが記録と異なれば
 失敗する。この不一致を無視して承認しない。
 
-対応表は`dependency_policy`を必須入力として持つ。現行方式は
+対応表は`dependency_policy`と`reviewed_predecessors`を必須入力として持つ。現行方式は
 `focused-owner-plus-pinned-dependency-trust`だけを受理し、選択ownerにはfocused source receiptを要求する。
+この方式では`index`、`check`、`collect`、`render`、`validate`の全工程でregistryを必須とし、
+registry証拠を欠くlegacy bundleを受理しない。
 registryへindexする既存Lake artifactは、外部packageか同一repoかを問わずbounded cache trust assumptionである。
 registryはmanifest pin、Git source blob、既存olean componentのhash、Lean versionを相互に固定しambientすり替えを
 拒否するが、各sourceを再elaborateしてsourceからoleanを再生成したという証明ではない。
 
 外部Lake packageはmanifest固定artifact trust、同一repoの非選択artifactはruntime dependencyに分類する。
-後者はmaterial claim、premise、中心routeの証拠に使えず、それらを所有するrepo内moduleは選択ownerへ追加する。
+後者が選択宣言のproof valueから到達する場合、そのownerを選択ownerへ追加するか、exact owner、
+terminal declaration digest、既受理review commentを`reviewed_predecessors`へ固定する。生成器はregistryの
+baseline module分類とLean抽出のvalue-origin terminalを結合し、未列挙と余分な列挙をともに拒否する。
 packetは三分類の件数とmembers digest、人間判断のtracking/conflict/decision ref、
 `source_build_claim: false`を保持する。selected owner leafだけをfocused `lean -o`する範囲を越えて、
 依存artifactをsource-build証拠として主張しない。固定適用版からcompletion方法を変更する場合は、targetと
 anti-weakening条件を維持した人間判断をtracking Issueへ記録し、そのrefを対応表へ固定する。
+authorizationは同一GitHub repositoryの異なるtracking/conflict Issueと、conflict Issue上のdecision commentを
+区別して固定し、GOAL IDとも結合する。生成器はURL形と役割を検査し、最終査読はリンク先本文が実際の
+人間判断であることを確認する。
 
 各宣言の型・値ごとの全constant名は、独立したLean標準`Expr.getUsedConstants`でも収集する。
 独自の位置付き走査の全件集合と照合し、欠落も余分な参照も拒否する。projection名は
@@ -181,7 +188,8 @@ recheckにも保存済み確認本文のrefを付ける。これらのIDやhash�
 python3 .codex/skills/target-theorem-loop/scripts/test_completion_packet.py
 ```
 
-抽出器の統合試験は同梱`CompletionFixture.lean`を単一leafとして上記check/collect/render/validateで
+抽出器の統合試験は`research/lean/ResearchLean/Tools/CompletionFixture.lean`を単一leafとして上記
+index/check/collect/render/validateで
 処理する。期待する独立参照は`inputCharacterization → differenceCriterion, kernelInputCriterion`、
 private helper経由の到達、型参照のみの`typedOnly`、`simp`参照である。
 一般fixtureとG-118由来のサンプル比較は[回帰記録](completion-regression.md)を参照する。

@@ -20,13 +20,14 @@ def mapping():
             "report_path": str(HERE / "fixtures/goal.md"),
             "dependency_policy": {
                 "schema_version": 1, "method": "focused-owner-plus-pinned-dependency-trust",
-                "authorization": {"decision_ref": "https://example.test/decision",
-                                  "conflict_issue_ref": "https://example.test/conflict",
-                                  "tracking_issue_ref": "https://example.test/tracking"},
+                "authorization": {"goal": "completion-fixture",
+                                  "decision_ref": "https://github.com/example/project/issues/1#issuecomment-10",
+                                  "conflict_issue_ref": "https://github.com/example/project/issues/1",
+                                  "tracking_issue_ref": "https://github.com/example/project/issues/2"},
                 "selected_owner": "focused-source-receipt-required",
                 "repository_local": "runtime-only-material-must-be-selected",
                 "external_lake": "manifest-pinned-artifact-trust", "source_build_claim": False},
-            "criteria": ["classification", "decisions"],
+            "reviewed_predecessors": [], "criteria": ["classification", "decisions"],
             "claims": [
                 {"id": "input", "criterion": "classification", "goal_quote": "入力条件の必要十分性", "direction": "iff",
                  "declarations": [n("inputCharacterization")],
@@ -218,6 +219,9 @@ class PacketTests(unittest.TestCase):
             b.write_bytes(b"b")
             with self.assertRaisesRegex(cp.Invalid, "search order"):
                 cp.select_artifact([(Path(d), a), (Path(d), b)], "Pkg.A")
+            b.write_bytes(b"a")
+            with self.assertRaisesRegex(cp.Invalid, "multiple artifact candidates"):
+                cp.select_artifact([(Path(d), a), (Path(d), b)], "Pkg.A")
 
     def test_registry_rejects_manifest_commit_mismatch(self):
         entry = {"type": "git", "name": "pkg", "rev": "a" * 40, "url": "https://example.test/pkg"}
@@ -279,6 +283,9 @@ class PacketTests(unittest.TestCase):
             "https://github.com/example/repo?token=secret",
             "https://localhost/example/repo",
             "https://127.0.0.1/example/repo",
+            "https://internal/example/repo",
+            "ssh://git@buildhost/example/repo",
+            "https://cache.corp/example/repo",
         ):
             with self.subTest(value=value), self.assertRaisesRegex(cp.Invalid, "public"):
                 cp.public_repository_url(value)
@@ -422,26 +429,34 @@ class PacketTests(unittest.TestCase):
         h = hashlib.sha256(b"main").hexdigest()
         empty = {"artifact_ids": []}
         direct = self.registry_row("Pkg.Direct", h)
+        direct["repository"]["kind"] = "lake-git"
+        direct["repository"]["manifest_entry"] = {
+            "type": "git", "name": "external", "rev": "c" * 40,
+            "url": "https://example.test/repo"}
         direct_id = cp.digest(direct)
-        deps = {"artifact_ids": [direct_id]}
-        owner = self.registry_row("Pkg.Owner", h, [direct_id])
+        runtime = self.registry_row("Pkg.Runtime", h)
+        runtime_id = cp.digest(runtime)
+        deps = {"artifact_ids": sorted([direct_id, runtime_id])}
+        owner = self.registry_row("Pkg.Owner", h, deps["artifact_ids"])
         owner_id = cp.digest(owner)
         root = {"module": "Pkg.Owner", "source": owner["source"],
-                "direct_modules": ["Pkg.Direct"], "dependency_set": cp.digest(deps)}
+                "direct_modules": ["Pkg.Direct", "Pkg.Runtime"], "dependency_set": cp.digest(deps)}
         root["root_id"] = cp.digest(root)
         index = {"lean_version": "Lean fixture", "manifest": owner["repository"]["manifest"],
-                 "artifacts": {direct_id: direct, owner_id: owner},
+                 "artifacts": {direct_id: direct, runtime_id: runtime, owner_id: owner},
                  "dependency_sets": {cp.digest(empty): empty, cp.digest(deps): deps},
                  "roots": {"Pkg.Owner": root}}
         receipt = {"module": "Pkg.Owner", "root_id": root["root_id"],
                    "artifact_id": owner_id, "dependency_set": cp.digest(deps)}
-        evidence = cp.registry_evidence(index, [direct_id, owner_id], [receipt], mapping()["dependency_policy"])
-        self.assertEqual(evidence["artifact_count"], 2)
-        self.assertEqual(len(evidence["repositories"]), 1)
+        evidence = cp.registry_evidence(index, [direct_id, runtime_id, owner_id], [receipt], mapping()["dependency_policy"])
+        self.assertEqual(evidence["artifact_count"], 3)
+        self.assertEqual(len(evidence["repositories"]), 2)
         self.assertEqual(evidence["selected_owner_artifacts"][0]["metadata"]["source"], owner["source"])
         self.assertEqual(evidence["direct_dependency_artifacts"][0]["metadata"]["olean_files"], direct["olean_files"])
         self.assertEqual(evidence["artifact_classes"]["focused_owner"]["artifact_count"], 1)
         self.assertEqual(evidence["artifact_classes"]["repository_runtime"]["artifact_count"], 1)
+        self.assertEqual(evidence["artifact_classes"]["manifest_pinned_external"]["artifact_count"], 1)
+        self.assertEqual(sum(row["artifact_count"] for row in evidence["artifact_classes"].values()), 3)
         self.assertFalse(evidence["dependency_policy"]["source_build_claim"])
 
     def test_dependency_policy_is_closed_and_fail_closed(self):
@@ -457,6 +472,42 @@ class PacketTests(unittest.TestCase):
         bad["dependency_policy"]["repository_local"] = "trusted"
         with self.assertRaisesRegex(cp.Invalid, "repository-local policy"):
             cp.validate_map(bad)
+        bad = mapping()
+        bad["dependency_policy"]["authorization"]["decision_ref"] = \
+            "https://github.com/example/project/issues/2#issuecomment-10"
+        with self.assertRaisesRegex(cp.Invalid, "decision must be recorded"):
+            cp.validate_map(bad)
+        bad = mapping()
+        bad["dependency_policy"]["authorization"]["goal"] = "another-goal"
+        with self.assertRaisesRegex(cp.Invalid, "GOAL linkage"):
+            cp.validate_map(bad)
+
+    def test_repository_kind_must_match_manifest_entry(self):
+        row = self.registry_row("Pkg.A", "f" * 64)
+        row["repository"]["kind"] = "lake-git"
+        with self.assertRaisesRegex(cp.Invalid, "kind/manifest entry mismatch"):
+            cp.validate_artifact_metadata(row)
+
+    def test_repository_local_value_terminal_requires_reviewed_predecessor(self):
+        x = extraction()
+        terminal = {"name": "RepoLocal.UnreviewedLemma", "owner": "RepoLocal.Unreviewed", "type": "Prop"}
+        x["terminals"].append(terminal)
+        row = next(row for row in x["declarations"] if row["name"] == "CompletionFixture.negativeMember")
+        row["references"].append({"name": terminal["name"], "site": "term", "position": "/body",
+                                  "origin": "value"})
+        row["constant_names"]["value"].append(terminal["name"])
+        row["constant_names"]["value"].sort()
+        context = {terminal["owner"]: "f" * 64}
+        with self.assertRaisesRegex(cp.Invalid, "terminal predecessor coverage"):
+            cp.material(mapping(), x, self.goal, context)
+        m = mapping()
+        m["reviewed_predecessors"] = [{"declaration": terminal["name"], "owner": terminal["owner"],
+                                        "declaration_digest": cp.digest(terminal),
+                                        "review_ref": "https://github.com/example/project/pull/3#issuecomment-30"}]
+        core = cp.material(m, x, self.goal, context)
+        predecessor = core["reviewed_predecessors"][0]
+        self.assertEqual(predecessor["artifact_id"], "f" * 64)
+        self.assertTrue(any(edge["to"] == terminal["name"] for edge in core["dependency_dag"]["edges"]))
 
     def test_metadata_rejection(self):
         for key, value in (("kind", "unknown"), ("universe_parameters", {}), ("type_display", ""),
@@ -550,7 +601,8 @@ class PacketTests(unittest.TestCase):
 
     def bundle(self):
         return {"source": {"snapshot": {"head": "a"}, "base_oid": "base"}, "mapping": self.m,
-                "extraction": self.x, "core": self.core(), "receipts": []}
+                "extraction": self.x, "core": self.core(), "receipts": [],
+                "registry": {"fixture": "required"}}
 
     def packet(self):
         return cp.render(self.bundle(), {"notes": "", "refs": []})
@@ -569,6 +621,15 @@ class PacketTests(unittest.TestCase):
         p["core"]["direction_coverage"].pop()
         with self.assertRaises(cp.Invalid):
             cp.validate_packet(b, p)
+
+    def test_policy_packet_rejects_missing_registry(self):
+        b = self.bundle()
+        del b["registry"]
+        with self.assertRaisesRegex(cp.Invalid, "registry is required"):
+            cp.render(b, {"notes": "", "refs": []})
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaisesRegex(cp.Invalid, "registry is required"):
+                cp.collect(Path(d), "mapping.json", [], "bundle.json", registry=None)
 
     def test_packet_only_does_not_restart(self):
         old = self.packet()

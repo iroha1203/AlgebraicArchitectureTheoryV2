@@ -7,15 +7,17 @@
     "schema_version": 1,
     "method": "focused-owner-plus-pinned-dependency-trust",
     "authorization": {
-      "decision_ref": "https://example.test/decision",
-      "conflict_issue_ref": "https://example.test/conflict",
-      "tracking_issue_ref": "https://example.test/tracking"
+      "goal": "completion-fixture",
+      "decision_ref": "https://github.com/example/project/issues/1#issuecomment-10",
+      "conflict_issue_ref": "https://github.com/example/project/issues/1",
+      "tracking_issue_ref": "https://github.com/example/project/issues/2"
     },
     "selected_owner": "focused-source-receipt-required",
     "repository_local": "runtime-only-material-must-be-selected",
     "external_lake": "manifest-pinned-artifact-trust",
     "source_build_claim": false
   },
+  "reviewed_predecessors": [],
   "criteria": [
     "classification",
     "decisions"

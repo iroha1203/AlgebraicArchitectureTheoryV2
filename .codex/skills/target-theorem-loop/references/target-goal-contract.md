@@ -56,6 +56,8 @@ field名の有無ではなく、該当内容と参照先を確認する。
 final packetの`completion_criteria`にはカード固有の条件と適用版付き共通基準の参照を
 含める。completion証拠の取得方法を人間判断で変更した場合は、targetの変更ではないこと、
 承認Issue/comment、依存trustの範囲をpacketのdependency policyへ固定する。
+同一repoの既受理predecessorをfocused再検査せず利用する場合は、そのexact declaration digestと
+review commentを対応表へ固定し、未確認runtime artifactと区別する。
 既存packetの必須項目や正式ゲートは維持する。
 
 ## 欠陥判定

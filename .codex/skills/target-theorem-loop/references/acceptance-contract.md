@@ -84,7 +84,9 @@ selected object、cover、sheaf、coefficient、complex、realization、certific
   外部Lake packageの既存artifactをdependency trust premiseとして利用できる。このpremiseは
   sourceからartifactを再生成した証拠でも、数学premiseの放電でもない。
 - 同一repoの非選択artifactはruntime dependencyに限る。material claim、premise、中心routeを支える
-  repo内宣言はfocused ownerとして選択し、非選択artifactだけで監査済みと扱わない。
+  repo内宣言はfocused ownerとして選択するか、exact owner・declaration digest・既受理review refを持つ
+  reviewed predecessorとして対応表へ列挙する。選択宣言のvalueから到達するrepo-local terminalを
+  この二経路の外で受理せず、非選択artifactだけで監査済みと扱わない。
 - dependency policy、承認Issue/comment、artifact三分類、`source_build_claim: false`をpacketへ固定する。
   全Research moduleを回るfile loopやaggregate/full buildをcompletion receiptのために実行しない。
 - 新規`axiom`、許可されない`sorry`/`admit`/`unsafe`、本体からResearchへのimportは受理しない。

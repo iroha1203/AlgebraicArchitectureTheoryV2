@@ -30,25 +30,34 @@ def main():
     repo = cp.root()
     here = Path(__file__).resolve().parent
     out = repo / cp.relative(repo, args.out)
+    registry = out / "registry"
     raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean", "--reference-fixture"], repo)
     cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
-    receipt = cp.check(repo, cp.relative(repo, here / "fixtures/CompletionFixture.lean"),
-                       "CompletionFixture", out / "cache", [])
+    sources = [("research/lean/ResearchLean/Tools/CompletionFixture.lean", "ResearchLean.Tools.CompletionFixture"),
+               ("research/lean/ResearchLean/Tools/CompletionShadowA.lean", "ResearchLean.Tools.CompletionShadowA"),
+               ("research/lean/ResearchLean/Tools/CompletionShadowB.lean", "ResearchLean.Tools.CompletionShadowB")]
+    for source, module in sources:
+        cp.index_dependencies(repo, source, module, registry)
+    receipt = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionFixture.lean",
+                                "ResearchLean.Tools.CompletionFixture", out / "cache", registry, [])
     receipt_path = out / "receipt.json"
     cp.write(receipt_path, receipt)
     # Independent caches sharing a namespace: the earlier cache contains stale B.
-    shadow_a = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowA.lean"),
-                        "CompletionShadow.A", out / "cache-a", [])
-    shadow_b = cp.check(repo, cp.relative(repo, here / "fixtures/ShadowB.lean"),
-                        "CompletionShadow.B", out / "cache-b", [])
+    shadow_a = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowA.lean",
+                                 "ResearchLean.Tools.CompletionShadowA", out / "cache-a", registry, [])
+    shadow_b = cp.check_registry(repo, "research/lean/ResearchLean/Tools/CompletionShadowB.lean",
+                                 "ResearchLean.Tools.CompletionShadowB", out / "cache-b", registry, [])
     cp.write(out / "receipt-a.json", shadow_a)
     cp.write(out / "receipt-b.json", shadow_b)
-    (out / "cache-a/CompletionShadow/B.olean").write_bytes(b"stale unrecorded artifact")
+    stale = out / "cache-a/ResearchLean/Tools/CompletionShadowB.olean"
+    stale.parent.mkdir(parents=True, exist_ok=True)
+    stale.write_bytes(b"stale unrecorded artifact")
     previous_path = os.environ.get("LEAN_PATH")
     os.environ["LEAN_PATH"] = str(out / "cache-a")
     try:
         bundle = cp.collect(repo, cp.relative(repo, here / "fixtures/mapping.json"),
-                            [receipt_path, out / "receipt-a.json", out / "receipt-b.json"], out / "bundle.json")
+                            [receipt_path, out / "receipt-a.json", out / "receipt-b.json"], out / "bundle.json",
+                            registry=registry)
         cp.validate_bundle(repo, bundle)
     finally:
         if previous_path is None:
@@ -56,8 +65,9 @@ def main():
         else:
             os.environ["LEAN_PATH"] = previous_path
     rows = {row["name"]: row for row in bundle["extraction"]["declarations"]}
-    cp.need(rows["CompletionShadow.a"]["owner"] == "CompletionShadow.A" and
-            rows["CompletionShadow.b"]["owner"] == "CompletionShadow.B", "multiple cache module resolution failed")
+    cp.need(rows["CompletionShadow.a"]["owner"] == "ResearchLean.Tools.CompletionShadowA" and
+            rows["CompletionShadow.b"]["owner"] == "ResearchLean.Tools.CompletionShadowB",
+            "multiple cache module resolution failed")
     cp.need(rows["CompletionFixture.positive"]["kind"] == "definition" and
             rows["CompletionFixture.inputCharacterization"]["kind"] == "theorem", "declaration kind mismatch")
     cp.need(rows["CompletionFixture.universeIdentity"]["universe_parameters"] == ["u"], "universe parameters lost")
