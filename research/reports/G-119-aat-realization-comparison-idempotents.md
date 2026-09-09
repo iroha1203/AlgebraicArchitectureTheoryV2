@@ -11,11 +11,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
-- current proof obligation: D の自己同型群・qualified部分群準同型
-- pending proof obligations: D
+- current proof obligation: D5 のfixed-head実装査読
+- pending proof obligations: none after acceptance of the Cycle 13 candidate
 - current target state: `target-proof-checkpoint`
-- completion candidate: no
-- next proof obligation: `r_N`、比較を保つ部分群準同型、底を固定する資格付き部分群への制限を構成
+- completion candidate: yes, pending Cycle 13 review and final completion audit
+- next proof obligation: Cycle 13を受理後、固定target A–D 全体のschema-complete completion packetと最終4-lane査読を実施
 
 ## Cycle 1 — Karoubi completion and arrow equivalence
 
@@ -1453,3 +1453,159 @@ Cycle 12 material premise roles are:
 - `direction-hypothesis`: none.
 - `discharge-required`: naturality of `i`, splitting of `p`, both iff characterizations, and tagged failure; each is discharged by reviewed D1/G-117 declarations.
 - `conclusion-equivalent-risk`: none; no naturality field is added to `p`, and operation coherence remains an equivalent tested proposition rather than an input.
+
+## Cycle 13 — normalization on comparison-preserving automorphism groups
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-119-aat-realization-comparison-idempotents
+cycle: 13
+goal_blob_sha: 83b7efa5a097143b8a12d575955eb5c4a76c54a4
+base_oid: 0973ecc6e7e1096c83f4af794d327d8df0614b0a
+tracking_issue: 4416
+report_path: research/reports/G-119-aat-realization-comparison-idempotents.md
+selection:
+  proof_state_ref: "Issue #4416 Cycle 12 result: D4 merged and discharged; D5 is the sole remaining target obligation"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor
+    - AAT.AG.RealizationComparisonIdempotents.packageNormalizationFunctor_full
+    - AAT.AG.RealizationComparisonIdempotents.normalizedPackageProjection_normalization_map
+    - CategoryTheory.Functor.mapIso
+    - Subgroup.comap
+  proof_obligation: "D5: construct r_N on the full product of endpoint automorphism groups, restrict it from raw to normalized comparison-preserving subgroups, and restrict again to the subgroups qualified by endpoint identity under pi V and pi_N"
+  selection_reason: "D5 is the last fixed D clause; it must record preservation without claiming the reflection or lift-surjectivity explicitly deferred to S2 and S4."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationComparisonGroup.lean
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationComparisonSubgroupHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom
+  risks:
+    - "defining r_N only on a selected subgroup instead of all endpoint automorphisms"
+    - "reversing p c=c b under the Aut multiplication convention"
+    - "assuming comparison preservation rather than transporting it by N.map_comp"
+    - "using the same bottom functor on both sides instead of pi V and pi_N respectively"
+    - "claiming reflection, injectivity, or lift surjectivity assigned to S2/S4"
+  unchecked:
+    - "fixed-head Cycle 13 four-lane review"
+    - "schema-complete final completion review across A--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed r_N by the standard functor action on both full endpoint automorphism groups.  Defined the raw p≫c=c≫b and normalized N(p)≫N(c)=N(c)≫N(b) subgroups and proved functorial preservation, yielding a subgroup homomorphism.  Defined raw endpoint qualification through pi V and normalized qualification through pi_N as kernel comaps, used the D3 morphism equality pi_N N=pi V to preserve both endpoint identities, and restricted the subgroup homomorphism accordingly.  No reflection or lift-surjectivity statement is made."
+  completion_candidate: yes
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationComparisonGroup.lean
+  evidence:
+    - AAT.AG.RealizationComparisonIdempotents.functorAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphismHom_fst_hom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphismHom_snd_hom
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.mem_rawNormalizationComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.normalizedComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.mem_normalizedComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_comparison
+    - AAT.AG.RealizationComparisonIdempotents.normalizationComparisonSubgroupHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationComparisonSubgroupHom_val
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationComparisonSourceHom
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationComparisonTargetHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizedComparisonSourceHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizedComparisonTargetHom
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationBottomAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.rawNormalizationBottomAutomorphismHom_hom
+    - AAT.AG.RealizationComparisonIdempotents.normalizedBottomAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizedBottomAutomorphismHom_hom
+    - AAT.AG.RealizationComparisonIdempotents.rawBaseQualifiedNormalizationComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.mem_rawBaseQualifiedNormalizationComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.normalizedBaseQualifiedComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.mem_normalizedBaseQualifiedComparisonSubgroup
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_bottom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom_val
+  claim_mapping:
+    theorem_names:
+      - normalizationEndpointAutomorphismHom_fst_hom
+      - normalizationEndpointAutomorphismHom_snd_hom
+      - mem_rawNormalizationComparisonSubgroup
+      - mem_normalizedComparisonSubgroup
+      - normalizationEndpointAutomorphism_preserves_comparison
+      - normalizationComparisonSubgroupHom
+      - mem_rawBaseQualifiedNormalizationComparisonSubgroup
+      - mem_normalizedBaseQualifiedComparisonSubgroup
+      - normalizationEndpointAutomorphism_preserves_bottom
+      - normalizationBaseQualifiedComparisonSubgroupHom
+    source_labels:
+      - "fixed target D paragraph 6: endpoint automorphism, comparison-preserving, and bottom-qualified subgroup homomorphisms"
+    conjuncts:
+      - "r_N domain -> all Aut_C(P)×Aut_C(Q), not a selected subset"
+      - "r_N codomain -> all normalized endpoint automorphism pairs"
+      - "raw comparison subgroup -> p≫c=c≫b"
+      - "normalized comparison subgroup -> N(p)≫N(c)=N(c)≫N(b)"
+      - "comparison subgroup hom -> preservation follows from N.map_comp"
+      - "comparison subgroup hom evaluation -> its underlying endpoint pair is the full r_N value"
+      - "raw bottom qualification -> both endpoint homs become identities under pi V"
+      - "normalized bottom qualification -> both endpoint homs become identities under pi_N"
+      - "qualified restriction -> preservation follows from pi_N N=pi V on each endpoint"
+      - "qualified restriction evaluation -> its underlying comparison pair is the first restriction value"
+      - "scope limit -> no reflection, injectivity, or lift-surjectivity claim"
+    undischarged_assumptions: []
+    acceptance_point: "D5 uses the full endpoint automorphism groups and standard subgroup kernels, transports comparison preservation by functoriality and bottom qualification by the reviewed D3 equality, and stops exactly before the S2/S4 reflection and lifting questions."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D full endpoint product hom r_N"
+      - "D raw-to-normalized comparison-preserving subgroup hom"
+      - "D restriction to the pi V / pi_N bottom-qualified subgroups"
+    remaining:
+      - "independent fixed-head Cycle 13 review"
+      - "schema-complete final completion review"
+  certificate_provenance:
+    discharged:
+      - "endpoint automorphisms are mapped by the existing normalization functor's mapIso, not by a selected witness"
+      - "comparison preservation is inherited from the raw subgroup equation through Functor.map_comp"
+      - "bottom preservation is inherited from the D3 equality pi_N N=pi V"
+    unresolved: []
+  proof_use:
+    used:
+      - "Functor.map_id and map_comp prove the full endpoint automorphism group homomorphisms"
+      - "congrArg of packageNormalizationFunctor.map transports p≫c=c≫b to the normalized comparison equation"
+      - "normalizedPackageProjection_normalization_map transports each raw bottom-kernel identity to the normalized bottom kernel"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.RealizationComparisonIdempotents.NormalizationNaturalityFailure; exit 0"
+    - "focused research module check; exit 0"
+    - "module terminal namespace audit: 26 current-module declarations, standard axioms only"
+    - "26 source-level declarations in NormalizationComparisonGroup.lean"
+  blocking_findings: []
+  next_obligation: "after Cycle 13 acceptance, generate and independently review the schema-complete G-119 completion packet across fixed target A--D"
+```
+
+### Cycle 13 acceptance spine
+
+`normalizationEndpointAutomorphismHom` is defined on the full product
+`Aut_C(P) × Aut_C(Q)` by applying `N.mapIso` at each endpoint.  The raw and
+normalized comparison subgroups use the literal equations `p ≫ c = c ≫ b`
+and `N(p) ≫ N(c) = N(c) ≫ N(b)`.  Applying `N.map` to the first equation and
+using `map_comp` proves that `r_N` restricts to a group homomorphism between
+these subgroups.
+
+Raw bottom qualification is the intersection of the two kernel comaps for the
+endpoint actions of `πV`; normalized qualification uses the corresponding
+actions of `π_N`.  The D3 morphism equality rewrites each `π_N(N(a))` to
+`πV(a)`, so the comparison subgroup hom restricts again to the two qualified
+subgroups.  These standard subgroup constructions carry only the equations
+specified by the target and add no reflection or lifting certificate.
+
+Cycle 13 material premise roles are:
+
+- `ambient-boundary`: arbitrary `U`, arbitrary admissible `P,Q`, arbitrary raw comparison `c`, and all endpoint automorphisms.
+- `direction-hypothesis`: none.
+- `discharge-required`: comparison preservation and both endpoint bottom identities; discharged respectively by `N.map_comp` and `π_N N=πV`.
+- `conclusion-equivalent-risk`: none; comparison and qualification are subgroup membership conditions, and the preservation maps are proved rather than supplied by callers.
