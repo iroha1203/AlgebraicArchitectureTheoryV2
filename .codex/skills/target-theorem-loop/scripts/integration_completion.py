@@ -105,7 +105,7 @@ def main():
         pass
     else:
         raise cp.Invalid("manual packet edit accepted")
-    cp.write(out / "result.json", {"head": receipt["head"], "declarations": len(rows),
+    cp.write(out / "result.json", {"head": cp.run(["git", "rev-parse", "HEAD"], repo), "declarations": len(rows),
              "packet_digest": cp.digest(packet), "checks": ["focused", "AST-exact-coverage", "upstream-constant-set-coverage", "missing-type-category-rejected", "direct", "private-via", "type-only", "simp",
              "axioms", "fixed-source", "declaration-metadata", "multiple-cache-same-namespace", "stale-and-ambient-shadow-isolation", "re-extraction", "regeneration", "manual-edit-rejected"], "result": "pass"})
     print(json.dumps({"result": "pass", "declarations": len(rows), "output": cp.relative(repo, out)}, ensure_ascii=False))
