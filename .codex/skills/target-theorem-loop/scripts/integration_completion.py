@@ -32,8 +32,10 @@ def main():
     here = Path(__file__).resolve().parent
     out = repo / cp.relative(repo, args.out)
     if args.case == "reference":
-        raw = cp.run(["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
-                      "--reference-fixture"], repo)
+        context = cp.dependency_context(repo, "research/lean/ResearchLean/Tools/CompletionAudit.lean")
+        _, lean, _ = cp.toolchain(repo, context["manifest"]["path"])
+        raw = cp.run([lean, "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+                      "--reference-fixture"], repo, cp.lake_environment(repo, context))
         cp.need(json.loads(raw) == expected_reference_fixture(), "AST reference fixture mismatch")
         print(json.dumps({"result": "pass", "case": args.case}))
         return
@@ -59,8 +61,9 @@ def main():
         cp.need(receipt["dependency_context"]["source_build_claim"] is False,
                 "runtime dependencies mislabeled as source-built")
         with cp.extraction_environment(repo, [receipt]) as env:
+            _, lean, _ = cp.toolchain(repo, receipt["dependency_context"]["manifest"]["path"])
             extracted = json.loads(cp.run(
-                ["lean", "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
+                [lean, "--run", "research/lean/ResearchLean/Tools/CompletionAudit.lean",
                  "CompletionExternalFixture"], repo, env))
         terminals = {row["name"] for row in extracted["terminals"]}
         cp.need("AAT.Util.standardAxioms" in terminals, "repo-local terminal missing")

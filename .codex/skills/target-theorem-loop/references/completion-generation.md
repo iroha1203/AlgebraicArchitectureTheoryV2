@@ -24,7 +24,9 @@ $packet validate --bundle .tmp/completion/bundle.json --packet .tmp/completion/p
 実行ファイルを使う。生成器はsourceに最も近い`lake-manifest.json`から`lake env`を解決し、
 呼出元の任意`LEAN_PATH`をfocused checkや抽出に使わない。
 receiptは選択ownerの固定head、source blob、exact command、出力olean、stdout/stderr、
-Lean/Lake実行artifactのhashとversion、最寄りの`lake-manifest.json` blobを結ぶ。
+Elanが対象toolchainへ解決したLean/Lake実行artifact（shimではない）のhashとversion、
+最寄りの`lake-manifest.json` blobを結ぶ。check、抽出、validate時の再抽出は、いずれも
+その解決済みLeanを絶対pathで実行する。
 
 runtime importはこのfocused elaborationの実行環境であり、数学claimの証拠ではない。
 外部packageや非選択moduleについてsourceからoleanを生成したとは主張しない。

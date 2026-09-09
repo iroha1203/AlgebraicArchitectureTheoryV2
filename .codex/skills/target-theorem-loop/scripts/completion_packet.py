@@ -113,23 +113,27 @@ def snapshot(repo):
             entries.append({"path": path, "blob": meta.split()[2]})
     changed = set(run(["git", "diff", "--name-only", head], repo).splitlines())
     need(not (changed & {e["path"] for e in entries}), "dirty source snapshot")
-    return {"head": head, "sources": entries,
-            "lean_version": run(["lean", "--version"], repo)}
+    resolved, _, _ = toolchain(repo, "lake-manifest.json")
+    return {"head": head, "sources": entries, "toolchain": resolved}
 
 
 def toolchain(repo, manifest_path):
     """Resolve Lake's Lean, but record only reproducible metadata (not local paths)."""
     manifest_dir = (repo / relative(repo, manifest_path)).parent
-    lake = shutil.which("lake")
-    need(lake is not None, "lake executable not found")
+    elan = shutil.which("elan")
+    need(elan is not None, "elan executable not found")
+    lean = run([elan, "which", "lean"], manifest_dir)
+    lake = run([elan, "which", "lake"], manifest_dir)
+    need(Path(lean).is_file() and Path(lake).is_file(), "resolved Lean toolchain artifact missing")
     lake_path = run([lake, "env", "printenv", "PATH"], manifest_dir)
-    lean = shutil.which("lean", path=lake_path)
-    need(lean is not None, "Lake environment has no lean executable")
+    env_lean = shutil.which("lean", path=lake_path)
+    need(env_lean is not None and Path(env_lean).resolve() == Path(lean).resolve(),
+         "Lake and elan resolved different Lean executables")
     env = dict(os.environ)
     env["PATH"] = lake_path
     return ({"lake_sha256": file_hash(lake), "lake_version": run([lake, "--version"]),
              "lean_sha256": file_hash(lean), "lean_version": run([lean, "--version"], manifest_dir, env)},
-            lean)
+            lean, lake)
 
 
 def dependency_context(repo, source):
@@ -146,7 +150,7 @@ def dependency_context(repo, source):
             break
         directory = directory.parent
     need(manifest is not None, "Lake manifest not found for focused source")
-    resolved, _ = toolchain(repo, manifest["path"])
+    resolved, _, _ = toolchain(repo, manifest["path"])
     return {"policy": "lake-resolved-runtime-trust", "manifest": manifest,
             "toolchain": resolved, "source_build_claim": False}
 
@@ -159,9 +163,8 @@ def lake_environment(repo, context):
     need(blob(repo, run(["git", "rev-parse", "HEAD"], repo), manifest["path"]) == manifest,
          "Lake manifest changed")
     manifest_dir = (repo / manifest["path"]).parent
-    current, _ = toolchain(repo, manifest["path"])
+    current, _, lake = toolchain(repo, manifest["path"])
     need(current == context["toolchain"], "Lake/Lean toolchain changed")
-    lake = shutil.which("lake")
     search_path = run([lake, "env", "printenv", "LEAN_PATH"], manifest_dir)
     need(bool(search_path), "Lake environment has no LEAN_PATH")
     env = dict(os.environ)
@@ -199,7 +202,7 @@ def check(repo, source, module, out):
     olean.parent.mkdir(parents=True, exist_ok=True)
     command = ["lean", "-o", relative(repo, olean), source]
     context = dependency_context(repo, source)
-    _, lean = toolchain(repo, context["manifest"]["path"])
+    _, lean, _ = toolchain(repo, context["manifest"]["path"])
     result = subprocess.run([lean, *command[1:]], cwd=repo, env=lake_environment(repo, context), capture_output=True)
     streams = {}
     for name, data in (("stdout", result.stdout), ("stderr", result.stderr)):
@@ -507,7 +510,8 @@ def collect(repo, mapping_path, receipt_paths, output, base="origin/main"):
     extractor = "research/lean/ResearchLean/Tools/CompletionAudit.lean"
     extractor_ref = blob(repo, head, extractor)
     with extraction_environment(repo, receipts) as env:
-        result = run(["lean", "--run", extractor, *modules], repo, env)
+        _, lean, _ = toolchain(repo, receipts[0]["dependency_context"]["manifest"]["path"])
+        result = run([lean, "--run", extractor, *modules], repo, env)
     extraction = json.loads(result, object_pairs_hook=unique_pairs)
     core = material(mapping, extraction, fixed_text, repo)
     source = {"snapshot": snap, "base_oid": run(["git", "rev-parse", base + "^{commit}"], repo),
@@ -536,7 +540,8 @@ def validate_bundle(repo, b):
     need(sorted(r["module"] for r in b["receipts"]) == b["extraction"]["modules"], "extract scope mismatch")
     # Re-extract from the checked artifacts; a consistent edit of bundle/core is not evidence.
     with extraction_environment(repo, b["receipts"]) as env:
-        actual = json.loads(run(["lean", "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
+        _, lean, _ = toolchain(repo, b["receipts"][0]["dependency_context"]["manifest"]["path"])
+        actual = json.loads(run([lean, "--run", b["source"]["extractor"]["path"], *b["extraction"]["modules"]], repo, env))
     need(actual == b["extraction"], "extraction differs from Lean artifacts")
     core = material(b["mapping"], b["extraction"], fixed_goal_text(repo, b["mapping"]), repo)
     need(core == b["core"], "core was edited")
