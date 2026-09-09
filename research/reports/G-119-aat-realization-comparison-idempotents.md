@@ -11,6 +11,9 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - fixed GOAL blob: `83b7efa5a097143b8a12d575955eb5c4a76c54a4`
 - active GOAL blob at the completion-audit base: `c4f170b4c28ea40a964bf8c82b4718266b6066b1`
 - common criteria base: `2d0478fcc0b00bf4f2072a03180fcf6a892e1c45`
+- completion audit schema: PR #4435 で復元した手組み
+  `completion-ledger.md` blob `52af37a4f0bdbe839c7839875057c0a53280929c`
+  （Issue #4416 comment 5605317972 の人間判断による）
 - tracking Issue: [#4416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4416)
 - current proof obligation: 固定target A–D 全体の手組みcompletion audit
 - pending mathematical proof obligations: none after Cycle 13 acceptance
@@ -1627,7 +1630,7 @@ selection:
   proof_state_ref: "Issue #4416 Cycle 13 result and completion-audit reset comment 5605317972"
   proof_dag_predecessors:
     - "Cycles 1--13 accepted Lean declarations and review records"
-    - ".codex/skills/target-theorem-loop/references/completion-ledger.md at the fixed GOAL criteria commit"
+    - ".codex/skills/target-theorem-loop/references/completion-ledger.md blob 52af37a4f0bdbe839c7839875057c0a53280929c restored by PR #4435 and selected by Issue #4416 comment 5605317972"
     - "PR #4435 merge c1a63e7f67e07e6a3bc1b8d02ff6d627bf192be0, restoring the hand-written completion audit"
   proof_obligation: "assemble the fixed-target A--D final packet, run the standard PR review and a separate fresh Math A / Math B / Lean A / Lean B completion review, and issue the formal completion verdict"
   selection_reason: "All mathematical clauses A--D are individually accepted. The remaining obligation is the fail-closed whole-GOAL comparison required before target-theorem-proved."
