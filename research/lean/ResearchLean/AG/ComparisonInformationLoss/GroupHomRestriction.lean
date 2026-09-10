@@ -235,8 +235,9 @@ theorem restrictedSubgroupHom_shortExact_iff_map_eq
       restrictedKernelInclusion_mulExact f A B hAB,
       (restrictedSubgroupHom_surjective_iff_map_eq f A B hAB).mpr hmap⟩
 
-/-- A nontrivial positive instance for the `IsGroupShortExact` predicate: the
-kernel inclusion followed by the identity restriction on the full subgroup. -/
+/-- A uniform positive instance for `IsGroupShortExact`, including every
+nontrivial group: the kernel inclusion followed by the identity restriction on
+the full subgroup. -/
 theorem isGroupShortExact_identity_top (G : Type u) [Group G] :
     IsGroupShortExact
       (restrictedKernelInclusion (MonoidHom.id G) ⊤ ⊤ (by simp))
