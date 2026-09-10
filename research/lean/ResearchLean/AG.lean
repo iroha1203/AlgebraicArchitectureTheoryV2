@@ -20,6 +20,7 @@ import ResearchLean.AG.ComparisonInformationLoss.FixedWitness
 import ResearchLean.AG.ComparisonInformationLoss.PresentationTransport
 import ResearchLean.AG.ComparisonInformationLoss.GroupHomRestriction
 import ResearchLean.AG.ComparisonInformationLoss.KaroubiRestriction
+import ResearchLean.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
