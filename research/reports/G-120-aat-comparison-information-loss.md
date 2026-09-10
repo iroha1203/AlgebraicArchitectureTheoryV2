@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: A2, observation-diagram transport and identity/composition coherence
-- pending proof obligations: A2 and B--D
+- current proof obligation: B1, generated-comparison observation diagram and endpoint-kernel conjugacy
+- pending proof obligations: B--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A2, transport kernels, intersections, fibers, and pointed quotient sets along commuting group equivalences
+- next proof obligation: B1, construct the generated comparison observation diagram and prove endpoint-kernel conjugacy
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -134,3 +134,142 @@ Cycle 1 の material premise role は次のとおりである。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加 premise なし。
 - `conclusion-equivalent-risk`: 該当なし。
+
+## Cycle 2 — Observation-diagram transport and coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 2
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 5c4286fba0b15fad040aba911c2b960ccb8903df
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Issue #4443 Cycle 1: A1 discharged; A2 selected"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.compatibleKernel
+    - Mathlib.GroupTheory.Coset.Basic
+    - Mathlib.Algebra.Group.Subgroup.Map
+  proof_obligation: "A2: transport kernels, intersections, observation fibers, compatible fiber parts, and pointed left-coset sets along commuting group equivalences, with identity and composition coherence"
+  selection_reason: "A2 completes the general theorem package needed before the generated-comparison application in B can reuse its quotient and transport constructions."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationTransport.lean
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv
+  risks:
+    - "stating kernel transport as a supplied certificate instead of deriving it from the commuting observation square"
+    - "requiring normality of the compatible kernel"
+    - "transporting only representatives without quotient well-definedness"
+    - "recording pointwise formulas without identity/composition coherence"
+  unchecked:
+    - "B--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed observation-diagram identity and composition, induced equivalences on kernels and compatible kernels, observation fibers and their compatible parts, and the pointed left-coset set. Proved representative/basepoint evaluations and identity/composition coherence for every induced transport."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationTransport.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.kernelEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleKernelEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.fiberEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleFiberEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv_mk
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv_basepoint
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.kernelEquiv_refl
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.kernelEquiv_trans
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleKernelEquiv_refl
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleKernelEquiv_trans
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.fiberEquiv_refl
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.fiberEquiv_trans
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleFiberEquiv_refl
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.compatibleFiberEquiv_trans
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv_refl
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.quotientEquiv_trans
+  claim_mapping:
+    theorem_names:
+      - ObservationEquiv.refl
+      - ObservationEquiv.trans
+      - ObservationEquiv.mem_compatible_iff
+      - ObservationEquiv.kernelEquiv
+      - ObservationEquiv.compatibleKernelEquiv
+      - ObservationEquiv.fiberEquiv
+      - ObservationEquiv.compatibleFiberEquiv
+      - ObservationEquiv.quotientEquiv
+      - ObservationEquiv.quotientEquiv_mk
+      - ObservationEquiv.quotientEquiv_basepoint
+      - ObservationEquiv.kernelEquiv_refl
+      - ObservationEquiv.kernelEquiv_trans
+      - ObservationEquiv.compatibleKernelEquiv_refl
+      - ObservationEquiv.compatibleKernelEquiv_trans
+      - ObservationEquiv.fiberEquiv_refl
+      - ObservationEquiv.fiberEquiv_trans
+      - ObservationEquiv.compatibleFiberEquiv_refl
+      - ObservationEquiv.compatibleFiberEquiv_trans
+      - ObservationEquiv.quotientEquiv_refl
+      - ObservationEquiv.quotientEquiv_trans
+    source_labels:
+      - "fixed target A: transport under commuting group equivalences"
+      - "fixed target A: identity and composition coherence"
+    conjuncts:
+      - "O' phi = psi O and phi(Gamma)=Gamma' imply kernel and compatible-kernel group equivalences"
+      - "kL maps to phi(k)L' and the basepoint maps to the basepoint"
+      - "observation fibers and their compatible parts are transported"
+      - "kernel, intersection, fiber, compatible-fiber, and pointed-quotient transports respect identity and composition"
+    undischarged_assumptions: []
+    acceptance_point: "The only proof fields in ObservationEquiv are exactly the two commuting conditions from fixed target A. Every transported conclusion is constructed from them, and the quotient uses the general left-coset relation without a normality premise."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "A transport of kernels and compatible intersections"
+      - "A transport of observation fibers and compatible parts"
+      - "A pointed left-coset equivalence with representative and basepoint evaluations"
+      - "A identity/composition coherence for all induced transports"
+    remaining:
+      - "all B--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "kernel membership is derived from ObservationEquiv.observation_comm"
+      - "compatible membership is derived from ObservationEquiv.compatible_map"
+    unresolved: []
+  proof_use:
+    used:
+      - "observation_comm in both directions of kernel and fiber transport"
+      - "compatible_map in compatible-kernel and compatible-fiber transport"
+      - "leftRel membership in both directions of quotient well-definedness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "direct predecessor targeted build: ResearchLean.AG.ComparisonInformationLoss.ObservationKernel; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/ObservationTransport.lean; exit 0"
+    - "permanent namespace audit: 40 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B1: construct Q_c, Gamma_c, O_c and endpoint observation conjugacy for each generated comparison"
+```
+
+### Cycle 2 acceptance spine
+
+`ObservationEquiv` は固定 target A が仮定する `phi,psi,O,O',Gamma,Gamma'` と二つの
+可換条件だけを保持する。`kernelEquiv` は観測可換式から核所属を導出し、
+`compatibleKernelEquiv` は部分群のmap等式から交わりを輸送する。fiber と適合部分は
+定義predicateのsubtypeとして両方向に運び、`quotientEquiv` は一般左剰余類relationの
+well-definednessを両方向で証明して `kL` を `phi(k)L'` へ送る。核、交わり、fiber、
+適合fiber、基点付き剰余類の各構成について恒等・合成との一致を別定理で固定した。
+
+Cycle 2 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の群 `Q,R,Q',R'`、群準同型 `O,O'`、部分群 `Gamma,Gamma'`、
+  群同型 `phi,psi`。
+- `direction-hypothesis`: `O' phi = psi O` と `phi(Gamma)=Gamma'`。
+- `discharge-required`: 追加 premise なし。
+- `conclusion-equivalent-risk`: 可換条件が輸送結論を直接保持していないことを、核・fiber・
+  quotientの各proof termで確認する。
