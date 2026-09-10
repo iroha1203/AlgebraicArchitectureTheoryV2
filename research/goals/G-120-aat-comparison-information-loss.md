@@ -1,12 +1,10 @@
 # G-120-aat-comparison-information-loss — 観測・正規化による比較情報の保存と損失
 
 - `id`: `G-120-aat-comparison-information-loss`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成。active化時に作成する。
+- `tracking issue`: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
 - `source note`: [n1010 §3–4・§9.3](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)
-- active化条件: [G-119](G-119-aat-realization-comparison-idempotents.md)の共通完了基準を含む
-  `target-theorem-proved` の完了認定後、人間の判断によりactive化する。
 
 ## 研究目的
 
