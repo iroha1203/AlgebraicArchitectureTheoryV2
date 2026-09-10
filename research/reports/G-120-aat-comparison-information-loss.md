@@ -927,6 +927,8 @@ result:
     - AAT.AG.ComparisonInformationLoss.restrictedFiber_existsUnique_smul_eq
     - AAT.AG.ComparisonInformationLoss.restrictedKernelInclusion_mulExact
     - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom_shortExact_iff_map_eq
+    - AAT.AG.ComparisonInformationLoss.isGroupShortExact_identity_top
+    - AAT.AG.ComparisonInformationLoss.not_isGroupShortExact_identity_bot_top
   claim_mapping:
     theorem_names:
       - comap_eq_iff_ker_le_and_map_eq_inf_range
@@ -942,6 +944,7 @@ result:
       - "the restricted fiber over t is nonempty iff t belongs to the ambient image of A"
       - "the opposite restricted kernel acts by x times k on the right, with a unique displacement between any two fiber points"
       - "the literal kernel inclusion and restricted homomorphism form a short exact sequence iff A maps onto B"
+      - "the short-exact predicate has a full-subgroup identity instance and fails for the bottom-to-full restriction in every nontrivial group"
     undischarged_assumptions: []
     acceptance_point: "Every conclusion is derived from arbitrary group laws, the homomorphism, the two subgroups, and the preservation inclusion. Reflection, lift existence, and exactness are theorem conclusions rather than supplied certificates."
     port_status: not-applicable
@@ -977,7 +980,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean; exit 0"
-    - "permanent ComparisonInformationLoss namespace audit: 16 declarations, standard axioms only"
+    - "permanent ComparisonInformationLoss namespace audit: 18 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "C2: construct the Karoubi endpoint restriction homomorphism and specialize the reflection, lift-fiber, and short-exact API"
 ```

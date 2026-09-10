@@ -12,6 +12,13 @@ kernel is already contained in `A` and the image of `A` is the part of `B`
 lying in the ambient range.  A nonempty fiber of the restricted homomorphism
 is a right torsor for its kernel, and surjectivity produces the corresponding
 short exact sequence.
+
+Implementation notes: Lean's `MulAction` is a left-action interface, so the
+required right multiplication is represented by a left action of the opposite
+kernel group; using the kernel itself would reverse the action law.  The
+four-term group sequence is recorded as injectivity, mathlib's
+`Function.MulExact`, and surjectivity.  A categorical short complex would add
+categorical packaging not used by the elementwise C and D applications.
 -/
 
 namespace AAT.AG.ComparisonInformationLoss
@@ -27,6 +34,8 @@ def restrictedSubgroupHom (f : G →* H) (A : Subgroup G) (B : Subgroup H)
   map_one' := Subtype.ext (map_one f)
   map_mul' a b := Subtype.ext (map_mul f (a : G) (b : G))
 
+/-- The value API for `restrictedSubgroupHom`; it normalizes a restricted
+value to the original ambient homomorphism. -/
 @[simp]
 theorem restrictedSubgroupHom_coe (f : G →* H) (A : Subgroup G) (B : Subgroup H)
     (hAB : A.map f ≤ B) (a : A) :
@@ -98,6 +107,8 @@ instance restrictedFiberSMul (f : G →* H) (A : Subgroup G) (B : Subgroup H)
     rw [map_mul, x.property, MonoidHom.mem_ker.mp (MulOpposite.unop k).property,
       mul_one]⟩
 
+/-- The computation API for the C.3 fiber action; it normalizes the action to
+literal right multiplication on the source subgroup. -/
 @[simp]
 theorem restrictedFiber_smul_coe
     (f : G →* H) (A : Subgroup G) (B : Subgroup H)
@@ -109,6 +120,8 @@ theorem restrictedFiber_smul_coe
         (restrictedSubgroupHom f A B hAB).ker) : A) :=
   rfl
 
+/-- The C.3 right-kernel action, presented through the opposite group so that
+Lean's left `MulAction` laws express right multiplication in the correct order. -/
 instance restrictedFiberMulAction
     (f : G →* H) (A : Subgroup G) (B : Subgroup H)
     (hAB : A.map f ≤ B) (t : B) :
@@ -221,6 +234,27 @@ theorem restrictedSubgroupHom_shortExact_iff_map_eq
     exact ⟨Subtype.val_injective,
       restrictedKernelInclusion_mulExact f A B hAB,
       (restrictedSubgroupHom_surjective_iff_map_eq f A B hAB).mpr hmap⟩
+
+/-- A nontrivial positive instance for the `IsGroupShortExact` predicate: the
+kernel inclusion followed by the identity restriction on the full subgroup. -/
+theorem isGroupShortExact_identity_top (G : Type u) [Group G] :
+    IsGroupShortExact
+      (restrictedKernelInclusion (MonoidHom.id G) ⊤ ⊤ (by simp))
+      (restrictedSubgroupHom (MonoidHom.id G) ⊤ ⊤ (by simp)) := by
+  apply (restrictedSubgroupHom_shortExact_iff_map_eq
+    (MonoidHom.id G) ⊤ ⊤ (by simp)).mpr
+  simp
+
+/-- A negative instance for `IsGroupShortExact`: in every nontrivial group,
+the identity homomorphism restricted from the bottom subgroup to the full
+subgroup is not surjective. -/
+theorem not_isGroupShortExact_identity_bot_top
+    (G : Type u) [Group G] [Nontrivial G] :
+    ¬ IsGroupShortExact
+      (restrictedKernelInclusion (MonoidHom.id G) ⊥ ⊤ (by simp))
+      (restrictedSubgroupHom (MonoidHom.id G) ⊥ ⊤ (by simp)) := by
+  rw [restrictedSubgroupHom_shortExact_iff_map_eq]
+  simp
 
 #assert_standard_axioms_only AAT.AG.ComparisonInformationLoss
 
