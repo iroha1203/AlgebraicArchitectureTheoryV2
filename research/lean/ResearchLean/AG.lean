@@ -15,6 +15,7 @@ import ResearchLean.AG.AtomFoundation.TransportLaws
 import ResearchLean.AG.ComparisonInformationLoss.ObservationKernel
 import ResearchLean.AG.ComparisonInformationLoss.ObservationTransport
 import ResearchLean.AG.ComparisonInformationLoss.GeneratedComparisonObservation
+import ResearchLean.AG.ComparisonInformationLoss.EndpointKernelClassification
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
