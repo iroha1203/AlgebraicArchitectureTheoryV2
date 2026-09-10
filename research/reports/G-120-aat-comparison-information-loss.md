@@ -16,7 +16,7 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - pending proof obligations: C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C1, establish the reusable subgroup-restriction, reflection, fiber-torsor, and short-exact API
+- next proof obligation: C2, construct the Karoubi endpoint restriction homomorphism and specialize the C1 API
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -880,3 +880,122 @@ Cycle 6 の material premise role は次のとおりである。
   theorem と生成端点同型からすべて放電する。
 - `conclusion-equivalent-risk`: transport や coherence を入力 field とせず、changed input の
   再生成器と pasted/composite coherence から構成する。
+
+## Cycle 7 — Group-homomorphism restriction, reflection, fibers, and exactness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 7
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 25d4500953d6f377e0cad7200230453143cb0405
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 6 discharged B4; C--D remained"
+  proof_dag_predecessors:
+    - Mathlib.Algebra.Exact
+    - Mathlib.GroupTheory.Coset.Basic
+  proof_obligation: "C1: prove the reusable subgroup-restriction reflection criterion, restricted-fiber right torsor, and short-exact package"
+  selection_reason: "The same unrestricted group theorem supplies every reflection, lift-fiber, and short-exact conclusion required by C and D."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean
+    - AAT.AG.ComparisonInformationLoss.comap_eq_iff_ker_le_and_map_eq_inf_range
+    - AAT.AG.ComparisonInformationLoss.restrictedFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom_shortExact_iff_map_eq
+  risks:
+    - "replacing ambient image intersection by surjectivity onto all of B"
+    - "storing reflection or lift existence as an input field"
+    - "using left multiplication while claiming the required right-kernel action"
+    - "calling a fiber a torsor without proving freeness and transitivity"
+  unchecked:
+    - "C2 Karoubi specialization and C finite counterexamples"
+    - "D normalization specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the subgroup restriction from preservation, proved the exact ambient reflection criterion, identified restricted-lift existence with subgroup image membership, constructed the literal right action of the restricted kernel on every fiber and proved unique transitivity, and proved the kernel short-exact sequence criterion."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom
+    - AAT.AG.ComparisonInformationLoss.comap_eq_iff_ker_le_and_map_eq_inf_range
+    - AAT.AG.ComparisonInformationLoss.nonempty_restrictedFiber_iff_mem_map
+    - AAT.AG.ComparisonInformationLoss.restrictedFiber_action_free
+    - AAT.AG.ComparisonInformationLoss.restrictedFiber_action_transitive
+    - AAT.AG.ComparisonInformationLoss.restrictedFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.restrictedKernelInclusion_mulExact
+    - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom_shortExact_iff_map_eq
+  claim_mapping:
+    theorem_names:
+      - comap_eq_iff_ker_le_and_map_eq_inf_range
+      - nonempty_restrictedFiber_iff_mem_map
+      - restrictedFiber_existsUnique_smul_eq
+      - restrictedSubgroupHom_shortExact_iff_map_eq
+    source_labels:
+      - "fixed target C.2: reflection iff kernel containment and image intersection"
+      - "fixed target C.3: lift image, right-kernel torsor, and short exact sequence"
+      - "fixed target D: reusable reflection, fiber, and exactness theorem"
+    conjuncts:
+      - "B.comap f = A iff ker f is contained in A and map A is B intersect range f"
+      - "the restricted fiber over t is nonempty iff t belongs to the ambient image of A"
+      - "the opposite restricted kernel acts by x times k on the right, with a unique displacement between any two fiber points"
+      - "the literal kernel inclusion and restricted homomorphism form a short exact sequence iff A maps onto B"
+    undischarged_assumptions: []
+    acceptance_point: "Every conclusion is derived from arbitrary group laws, the homomorphism, the two subgroups, and the preservation inclusion. Reflection, lift existence, and exactness are theorem conclusions rather than supplied certificates."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "general reflection necessary-and-sufficient condition"
+      - "general restricted-lift image condition"
+      - "general right-kernel fiber torsor"
+      - "general short-exact criterion"
+    remaining:
+      - "C Karoubi restriction construction and specialization"
+      - "C two fixed finite counterexamples"
+      - "D canonical normalization specialization"
+  certificate_provenance:
+    discharged:
+      - "the restricted homomorphism is constructed from the supplied preservation inclusion"
+      - "kernel elements acting on a fiber are proved from their defining kernel equation"
+      - "the unique displacement is constructed as x inverse times y"
+    unresolved: []
+  proof_use:
+    used:
+      - "preservation inclusion constructs restrictedSubgroupHom"
+      - "kernel containment and image-intersection equality prove the reverse comap inclusion"
+      - "fiber equations prove the displacement lies in the restricted kernel"
+      - "MonoidHom.mulExact_iff and Subgroup.range_subtype prove exactness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean; exit 0"
+    - "permanent ComparisonInformationLoss namespace audit: 16 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "C2: construct the Karoubi endpoint restriction homomorphism and specialize the reflection, lift-fiber, and short-exact API"
+```
+
+### Cycle 7 acceptance spine
+
+`restrictedSubgroupHom` は唯一の direction hypothesis である `A.map f ≤ B` から実際の
+制限準同型を構成する。反映条件は ambient な `B.comap f = A` を、`ker f ≤ A` と
+`A.map f = B ⊓ f.range` の連言へ同値変形し、全射性を仮定しない。
+
+`RestrictedFiber` 上では `ker(restrictedSubgroupHom)ᵐᵒᵖ` が `x ↦ xk` により作用する。
+任意の二点 `x,y` に対する元は `x⁻¹y` から構成され、自由性と合わせて一意性を得る。
+短完全列は実際の kernel subtype inclusion、`Function.MulExact`、restriction の全射性から構成し、
+全射性を `A.map f = B` と同値にしている。
+
+Cycle 7 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の群 `G,H`、群準同型 `f:G→H`、部分群 `A≤G,B≤H`。
+- `direction-hypothesis`: `A.map f ≤ B`。制限準同型の構成にのみ使用する。
+- `discharge-required`: 反映条件、lift fiber の像、右核作用の自由かつ推移性、短完全列。
+- `conclusion-equivalent-risk`: 反映、fiber 非空性、全射性、exactness を入力 record に保持しない。
