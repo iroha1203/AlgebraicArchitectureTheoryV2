@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: B4, transport the generated-comparison observation-loss diagram across arbitrary fixed G-118 C1s presentation changes
-- pending proof obligations: B--D
+- current proof obligation: C, idempotent-image preservation, reflection, lift fibers, and fixed finite counterexamples
+- pending proof obligations: C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B4, construct endpoint, kernel, compatible-kernel, quotient, and Psi transport with identity/inverse/composition coherence
+- next proof obligation: C1, establish the reusable subgroup-restriction, reflection, fiber-torsor, and short-exact API
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -676,3 +676,207 @@ Cycle 5 の material premise role は次のとおりである。
   `UpperDecisionWitness` 定理で放電する。
 - `conclusion-equivalent-risk`: 非因子化を predecessor theorem の alias とせず、構成した
   `k_*` と A の必要十分条件から再導出する。
+
+## Cycle 6 — Presentation-change transport and classification naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 6
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 9fb71b290a5ecc41a4b87d59a48ce9033831c4a2
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 5 accepted the fixed nonbasepoint witness; B4 remained"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationChange.generatedEndpointPairMulEquivAt
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationChange.Chain.pastedEndpointPairMulEquivAt
+  proof_obligation: "B4: transport the regenerated comparison observation diagram, K_c, L_c, pointed quotient, endpoint kernels, comparison conjugation, and Psi across arbitrary fixed G-118 C1s changes with identity, inverse, and finite typed-composition coherence"
+  selection_reason: "B4 completes every generated-comparison obligation before the independent idempotent-image analysis in C."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationTransport.lean
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/PresentationTransport.lean
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainObservationLossEquivTargetKernel_naturality
+  risks:
+    - "using a chosen coefficient identity without deriving it from the generated endpoint isomorphisms"
+    - "transporting a supplied comparison rather than the comparison regenerated from changedInput"
+    - "proving only one-step naturality without inverse or finite typed-composition coherence"
+    - "replacing the general pointed left-coset set by a quotient group"
+  unchecked:
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the actual C1s endpoint and coefficient observation diagram from the regenerated comparison, transported K_c, L_c, and the pointed quotient, proved endpoint-kernel and comparison-conjugation naturality, and proved Psi naturality. Added identity, inverse, binary composition, and dependent finite-chain coherence for the observation diagram, both kernels, quotient, and target endpoint kernel."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationTransport.lean
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/PresentationTransport.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.symm
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.kernelEquiv_symm
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.coefficientObservationEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.coefficientObservationEquivAt_eq_refl
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.kernelEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.compatibleKernelEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.quotientEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.endpointKernelConjugation_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.endpointKernelConjugation_inverse_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.endpointConjugation_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.endpointConjugation_inverse_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationLossEquivTargetKernel_equiv_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationLossEquivTargetKernel_inverse_equiv_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationEquivAt_identity
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationEquivAt_inverse
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.observationEquivAt_comp
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainObservationEquivAt_cons
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainKernelEquivAt_cons
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainCompatibleKernelEquivAt_cons
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainQuotientEquivAt_cons
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainTargetKernelEquivAt_cons
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainObservationLossEquivTargetKernel_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainObservationLossEquivTargetKernel_inverse_equiv_naturality
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.PresentationChange.chainEndpointConjugation_inverse_naturality
+  claim_mapping:
+    theorem_names:
+      - coefficientObservationEquivAt_eq_refl
+      - kernelEquivAt_product
+      - endpointKernelConjugation_naturality
+      - endpointConjugation_naturality
+      - endpointConjugation_inverse_naturality
+      - observationLossEquivTargetKernel_naturality
+      - observationLossEquivTargetKernel_inverse_naturality
+      - observationLossEquivTargetKernel_inverse_equiv_naturality
+      - observationEquivAt_identity
+      - observationEquivAt_inverse
+      - observationEquivAt_comp
+      - chainObservationEquivAt_eq_composite
+      - chainKernelEquivAt_eq_composite
+      - chainCompatibleKernelEquivAt_eq_composite
+      - chainQuotientEquivAt_eq_composite
+      - chainSourceEndpointEquivAt_coe_eq_recursive
+      - chainTargetEndpointEquivAt_coe_eq_recursive
+      - chainEndpointConjugation_naturality
+      - chainEndpointConjugation_inverse_naturality
+      - chainObservationLossEquivTargetKernel_naturality
+      - chainObservationLossEquivTargetKernel_inverse_naturality
+      - chainObservationLossEquivTargetKernel_inverse_equiv_naturality
+    source_labels:
+      - "fixed target B: arbitrary G-118 C1s presentation-change transport"
+      - "fixed target B: theta_Y T_c = T_c' theta_X and Psi_c' phibar = theta_Y Psi_c"
+      - "fixed target B: identity, inverse, and finite typed-composition coherence"
+    conjuncts:
+      - "the coefficient observation identification is induced by the two generated endpoint coefficient components and proved equal to identity from their hom/inv coefficient laws"
+      - "the changed comparison is regenerated from changedInput, and its endpoint pair, product observation, K_c, L_c, and pointed quotient are transported"
+      - "the full endpoint equivalences intertwine the changed and original comparison conjugations in both generated and inverse GOAL orientations; the kernel statement is their restriction"
+      - "Psi naturality is proved in both directions, including the original-to-changed orientation and its finite-chain form"
+      - "identity, inverse, binary composition, and every dependent finite chain agree with the actual generated/pasted endpoint actions"
+    undischarged_assumptions: []
+    acceptance_point: "All transports are constructed from existing C1s generated endpoint isomorphisms and their coefficient and qualified-subgroup theorems. No new hypothesis, chosen comparison, normality premise, or finite-carrier restriction is added."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B4 transport of generated comparison observation diagram, K_c, L_c, and pointed quotient"
+      - "B4 endpoint comparison-conjugation and Psi naturality"
+      - "B4 identity, inverse, binary composition, and finite-chain coherence"
+    remaining:
+      - "all C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "coefficient identification comes from generated base and pulled endpoint coefficient conjugations"
+      - "qualified-subgroup transport comes from the existing C1s image theorem"
+      - "finite-chain action comes from the existing pasted-versus-recursive-versus-composite endpoint theorems"
+    unresolved: []
+  accepted_dependencies:
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF1.lean"
+      blob_at_base: 3b708eab571efe393baad80ed555c18bf5d075e5
+      accepted_pr: 4403
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097"
+      use: "generated endpoint coefficient-component identity laws"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean"
+      blob_at_base: 7871e33aee515fb6a723a402358d69da89e57c9b
+      accepted_pr: 4403
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097"
+      use: "one-step qualified-comparison subgroup transport"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF6.lean"
+      blob_at_base: 489707c277a806afa509754a0eb15f0e08bcebff
+      accepted_pr: 4391
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4391#issuecomment-5553257870"
+      use: "one-step endpoint coefficient observation squares"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF7.lean"
+      blob_at_base: 17f020105a0679f89bcc6320e44dcd3e3febeaf8
+      accepted_pr: 4403
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097"
+      use: "identity, inverse, and binary-composition laws for generated endpoint isomorphisms"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF8.lean"
+      blob_at_base: b3127432aebc9529464ac0d25b102d19c9a6fe5b
+      accepted_pr: 4403
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4403#issuecomment-5557145097"
+      use: "structural change identity, inverse, composition, and dependent Chain.composite"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF9.lean"
+      blob_at_base: bc26d4faeedab0fbfeda4ef2b7a896c969a1c5e8
+      accepted_pr: 4394
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4394#issuecomment-5554932002"
+      use: "identity, inverse, composition, and pasted/recursive finite endpoint actions"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF10.lean"
+      blob_at_base: f1e749a2ea5e31844319819cd6d4289edc307ec1
+      accepted_pr: 4395
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4395#issuecomment-5555031950"
+      use: "composite-generated endpoint coherence"
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF12.lean"
+      blob_at_base: 0b0fa838b3a2794b6be077c5780426c284568733
+      accepted_pr: 4397
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4397#issuecomment-5555465539"
+      use: "finite-chain coefficient and qualified-subgroup transport"
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean"
+      blob_at_base: a5cf9d624e6f1b220b1065a219c111b74113d077
+      accepted_pr: 4450
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4450#issuecomment-5622324810"
+      use: "B2 endpoint-kernel product and Psi classification"
+  proof_use:
+    used:
+      - "all four generated endpoint hom/inv coefficient identity theorems"
+      - "one-step and pasted finite-chain coefficient-observation squares"
+      - "one-step and pasted finite-chain qualified-comparison subgroup image theorems"
+      - "generated endpoint comparison coherence and B2 representative formula"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor build: ResearchLean.AG.DoctrineFiberProduct.UpperGeometryCompatibleSourcePresentationNaturalityF12; exit 0"
+    - "targeted predecessor build: ResearchLean.AG.ComparisonInformationLoss.ObservationTransport; exit 0 before the local inverse-API extension"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/PresentationTransport.lean; exit 0"
+    - "permanent PresentationChange namespace audit: 95 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "C1: prove the reusable subgroup-restriction reflection criterion, restricted-fiber right torsor, and short-exact package"
+```
+
+### Cycle 6 acceptance spine
+
+`coefficientObservationEquivAt` は base/pulled の生成端点同型の実係数成分による共役の積であり、
+4本の係数恒等式を使って identity と一致することを別定理で証明する。主
+`observationEquivAt` はこの構成と、既存の積観測可換式・qualified subgroup image を使う。
+そこから一般 A2 API により `K_c`、`L_c`、基点付き左剰余類を運び、端点成分の核制限と
+既存 B2 の代表元公式から comparison conjugation と `Psi` の自然性を証明する。
+
+有限合成は endpoint action を再定義せず、G-118 C1s の pasted action、typed recursive action、
+structural composite から新たに生成した action の三者一致を使う。このため chain の
+`K_c`、`L_c`、quotient、target kernel、および `Psi` square は全リンクの実作用を保持する。
+
+Cycle 6 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U,ctx,P,k,input,i` と任意の固定 G-118 C1s change / dependent chain。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 係数観測と qualified subgroup の移送、比較共役の自然性。既存 C1s
+  theorem と生成端点同型からすべて放電する。
+- `conclusion-equivalent-risk`: transport や coherence を入力 field とせず、changed input の
+  再生成器と pasted/composite coherence から構成する。

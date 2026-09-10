@@ -17,6 +17,7 @@ import ResearchLean.AG.ComparisonInformationLoss.ObservationTransport
 import ResearchLean.AG.ComparisonInformationLoss.GeneratedComparisonObservation
 import ResearchLean.AG.ComparisonInformationLoss.EndpointKernelClassification
 import ResearchLean.AG.ComparisonInformationLoss.FixedWitness
+import ResearchLean.AG.ComparisonInformationLoss.PresentationTransport
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment

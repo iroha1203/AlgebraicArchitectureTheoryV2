@@ -41,6 +41,18 @@ variable {O : Q →* R} {Gamma : Subgroup Q}
 variable {O' : Q' →* R'} {Gamma' : Subgroup Q'}
 variable {O'' : Q'' →* R''} {Gamma'' : Subgroup Q''}
 
+/-- Two observation-diagram equivalences are equal when their two actual
+group equivalences are equal; the commuting proofs are propositions. -/
+theorem ext (e f : ObservationEquiv O Gamma O' Gamma')
+    (change_eq : e.changeEquiv = f.changeEquiv)
+    (observation_eq : e.observationEquiv = f.observationEquiv) :
+    e = f := by
+  cases e
+  cases f
+  cases change_eq
+  cases observation_eq
+  rfl
+
 /-- Identity observation-diagram equivalence.  This is the identity input for
 the coherence part of G-120(A2). -/
 def refl (O : Q →* R) (Gamma : Subgroup Q) : ObservationEquiv O Gamma O Gamma where
@@ -78,6 +90,28 @@ theorem mem_compatible_iff (e : ObservationEquiv O Gamma O' Gamma') (q : Q) :
     simpa using (show q' = q from e.changeEquiv.injective hqq') ▸ hq'
   · intro hq
     exact ⟨q, hq, rfl⟩
+
+/-- Reverse an observation-diagram equivalence. -/
+def symm (e : ObservationEquiv O Gamma O' Gamma') :
+    ObservationEquiv O' Gamma' O Gamma where
+  changeEquiv := e.changeEquiv.symm
+  observationEquiv := e.observationEquiv.symm
+  observation_comm q' := by
+    apply e.observationEquiv.injective
+    rw [e.observationEquiv.apply_symm_apply, ← e.observation_comm,
+      e.changeEquiv.apply_symm_apply]
+  compatible_map := by
+    apply SetLike.ext
+    intro q
+    constructor
+    · rintro ⟨q', hq', hqq'⟩
+      have hq'eq : q' = e.changeEquiv q := by
+        apply e.changeEquiv.symm.injective
+        simpa using hqq'
+      apply (e.mem_compatible_iff q).mp
+      simpa [hq'eq] using hq'
+    · intro hq
+      exact ⟨e.changeEquiv q, (e.mem_compatible_iff q).mpr hq, by simp⟩
 
 /-- The group equivalence between observation kernels induced by G-120(A)'s
 commuting square.  Kernel membership is derived from `observation_comm`; it is
@@ -293,6 +327,29 @@ theorem quotientEquiv_refl (O : Q →* R) (Gamma : Subgroup Q) :
 theorem quotientEquiv_trans (e : ObservationEquiv O Gamma O' Gamma')
     (f : ObservationEquiv O' Gamma' O'' Gamma'') :
     (e.trans f).quotientEquiv = e.quotientEquiv.trans f.quotientEquiv := by
+  ext x
+  refine QuotientGroup.induction_on x (fun k => ?_)
+  rfl
+
+/-- Kernel transport for the reversed observation diagram is the inverse of
+the forward kernel transport. -/
+theorem kernelEquiv_symm (e : ObservationEquiv O Gamma O' Gamma') :
+    e.symm.kernelEquiv = e.kernelEquiv.symm := by
+  ext k
+  rfl
+
+/-- Compatible-kernel transport for the reversed observation diagram is the
+inverse of the forward compatible-kernel transport. -/
+theorem compatibleKernelEquiv_symm
+    (e : ObservationEquiv O Gamma O' Gamma') :
+    e.symm.compatibleKernelEquiv = e.compatibleKernelEquiv.symm := by
+  ext k
+  rfl
+
+/-- Pointed left-coset transport for the reversed observation diagram is the
+inverse of the forward pointed transport. -/
+theorem quotientEquiv_symm (e : ObservationEquiv O Gamma O' Gamma') :
+    e.symm.quotientEquiv = e.quotientEquiv.symm := by
   ext x
   refine QuotientGroup.induction_on x (fun k => ?_)
   rfl
