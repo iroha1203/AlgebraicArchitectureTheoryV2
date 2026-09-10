@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: C, idempotent-image preservation, reflection, lift fibers, and fixed finite counterexamples
-- pending proof obligations: C--D
+- current proof obligation: D, canonical normalization specialization
+- pending proof obligations: D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C3, construct and decide the two fixed finite Karoubi counterexamples
+- next proof obligation: D1, specialize reflection, lift fibers, right-kernel action, and short exactness to canonical normalization
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -1165,3 +1165,131 @@ Cycle 8 の material premise role は次のとおりである。
   `r(Gamma_0)=Gamma_a` を条件仮定として用いる。
 - `discharge-required`: Karoubi自己同型と逆射、群準同型 `r`、比較保存、反映条件、lift fiber、右核作用、短完全列。
 - `conclusion-equivalent-risk`: 比較保存、反映、lift、全射性をstructure fieldとして受け取らず、入力射と部分群から構成する。
+
+## Cycle 9 — Fixed finite Karoubi counterexamples
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 9
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 1f57da1ae4730e4c73158490c192a4e522955897
+goal_path: research/goals/G-120-aat-comparison-information-loss.md
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 8 accepted the general Karoubi restriction API; the two fixed finite examples remained"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.nonempty_idempotentCompatibleLiftFiber_iff_mem_map
+  proof_obligation: "C3: construct and decide the constant-zero reflection counterexample and the unequal-fiber no-lift counterexample on the fixed three-point object in FintypeCat"
+  selection_reason: "These are the exact two finite decisions fixed by clause C and complete that clause before the canonical-normalization specialization."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestrictionFiniteWitness.lean
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZero_reflection_fails
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair_not_mem_restrictionRange
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair_has_no_compatibleLift
+  risks:
+    - "using a finite carrier in Type instead of the fixed object in the category of finite sets"
+    - "showing only Gamma_0 nonmembership without proving membership of the restriction in Gamma_a"
+    - "checking only a selected finite list of raw permutations instead of excluding every candidate lift"
+    - "asserting that the image swap is an automorphism without constructing its Karoubi inverse laws"
+  unchecked:
+    - "D canonical normalization specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed both fixed FintypeCat examples. The constant-zero pair lies in H, fails Gamma_0 at point 1, maps into Gamma_a, and witnesses reflection failure. The fold-image swap is a genuine Karoubi automorphism pair in Gamma_a but is outside the full range of r, hence outside r(Gamma_0) and has an empty compatible lift fiber."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestrictionFiniteWitness.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZero_idempotent
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZeroCentralizingPair_mem_H
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZeroCentralizingPair_raw_mismatch
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZeroCentralizingPair_not_mem_GammaZero
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZero_restriction_mem_GammaImage
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.constantZero_reflection_fails
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberFold_idempotent
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiber_imageComparison_f
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapAut
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair_not_mem_restrictionRange
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair_not_mem_compatibleImage
+    - AAT.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness.unequalFiberImageSwapPair_has_no_compatibleLift
+  claim_mapping:
+    theorem_names:
+      - constantZeroCentralizingPair_mem_H
+      - constantZeroCentralizingPair_not_mem_GammaZero
+      - constantZero_restriction_mem_GammaImage
+      - constantZero_reflection_fails
+      - unequalFiber_imageComparison_f
+      - unequalFiberImageSwapPair
+      - unequalFiberImageSwapPair_not_mem_restrictionRange
+      - unequalFiberImageSwapPair_has_no_compatibleLift
+    source_labels:
+      - "fixed target C finite example 1: constant-zero reflection failure on {0,1,2}"
+      - "fixed target C finite example 2: unequal-fiber image swap with no raw lift"
+    conjuncts:
+      - "the first example proves idempotence, compatibility of the idempotents with c=id, H membership, Gamma_0 nonmembership, image compatibility, and reflection failure"
+      - "the raw mismatch is evaluated at point 1 as the false equality 2=1"
+      - "the second comparison has underlying morphism exactly the fold e, and the same image swap at both endpoints lies in Gamma_a"
+      - "every raw centralizing source automorphism restricting to the image swap would send both 1 and 2 to 0, contradicting injectivity"
+      - "the image swap is outside im r, therefore outside r(Gamma_0), and its specialized compatible-lift fiber is empty"
+    undischarged_assumptions: []
+    acceptance_point: "Both examples are closed computations on the fixed FintypeCat object Fin 3. The second proof quantifies over an arbitrary element of H and derives a contradiction; lift failure is not encoded as input or reduced to a sampled enumeration."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C fixed constant-zero reflection counterexample"
+      - "C fixed unequal-fiber no-lift counterexample"
+    remaining:
+      - "D canonical normalization specialization"
+  certificate_provenance:
+    discharged:
+      - "both idempotents and compatibility equations are proved from the explicit Fin 3 maps"
+      - "the image swap hom and inverse are constructed from the explicit two-point swap map and its square equals the Karoubi identity"
+      - "reflection failure uses an explicit H element and pointwise raw mismatch"
+      - "no-lift uses the sandwich equality, centralizer membership, and raw automorphism injectivity"
+    unresolved: []
+  accepted_dependencies:
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestriction.lean"
+      blob_at_base: e4e132de3cbac6b29d347bed16ba533b8134b385
+      accepted_pr: 4454
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4454#issuecomment-5626713534"
+      use: "the endpoint restriction, comparison subgroups, reflection equation, lift fiber, and lift-image criterion specialized by the two examples"
+  proof_use:
+    used:
+      - "constant-zero idempotence and centralizer equations package the first pair as an element of H"
+      - "evaluation of the raw comparison equation at 1 proves Gamma_0 nonmembership"
+      - "the explicit sandwich evaluations prove that the same pair maps into Gamma_a"
+      - "fold idempotence identifies the normalized comparison a with the fixed fold e"
+      - "the image-swap square supplies both inverse laws in the Karoubi automorphism"
+      - "restriction equality at 1 and centrality at 2 force a hypothetical raw lift to identify distinct raw points"
+      - "the accepted lift-image iff converts nonmembership in r(Gamma_0) to emptiness of the compatible lift fiber"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/KaroubiRestrictionFiniteWitness.lean; exit 0"
+    - "permanent finite-witness namespace audit: 25 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D1: specialize reflection, lift fibers, right-kernel action, and short exactness to G-119 canonical normalization"
+```
+
+### Cycle 9 acceptance spine
+
+第1例は `FintypeCat.of (Fin 3)` の恒等比較と定値0の冪等射を用いる。
+入力側で `1` と `2` を交換し、出力側を恒等にする対は両方の中心化群に属する。
+しかし raw 比較式は点 `1` で `2=1` を要求するため `Gamma_0` に属さない。
+sandwich 後は両端が定値0に潰れて `Gamma_a` に属し、反映失敗を実元で示す。
+
+第2例の冪等射は `0↦0, 1↦1, 2↦1` で、像側の2点 `0,1` を交換する
+Karoubi 自己同型の hom と inverse を具体的に構成する。raw lift を任意に仮定すると、
+sandwich 式の点 `1` での評価から `b(1)=0`、中心化式の点 `2` での評価から
+`b(2)=0` を得る。raw 自己同型の単射性に反するため、全候補に対して lift は存在しない。
