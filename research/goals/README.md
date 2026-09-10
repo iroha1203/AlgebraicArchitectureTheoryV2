@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-119-aat-realization-comparison-idempotents](G-119-aat-realization-comparison-idempotents.md)
-  (n1010 S1。比較と冪等完備化の交換、AAT三段への接続、canonical正規化の関手)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
   G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
@@ -34,6 +32,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-119-aat-realization-comparison-idempotents](G-119-aat-realization-comparison-idempotents.md)
+  (`target-theorem-proved`。比較と冪等完備化の交換、AAT三段への接続、
+  canonical正規化の関手・自然性非対称・比較群準同型を確定)
 - [G-118-aat-diagnostic-descent-transport](G-118-aat-diagnostic-descent-transport.md)
   (`target-theorem-proved`。入力表示変更に自然な比較分類、fixed firing、
   mixed transport、係数観測による情報損失を確定)
