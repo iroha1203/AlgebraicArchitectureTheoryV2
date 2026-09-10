@@ -16,7 +16,7 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - pending proof obligations: C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C2, construct the Karoubi endpoint restriction homomorphism and specialize the C1 API
+- next proof obligation: C3, construct and decide the two fixed finite Karoubi counterexamples
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -1002,3 +1002,161 @@ Cycle 7 の material premise role は次のとおりである。
 - `direction-hypothesis`: `A.map f ≤ B`。制限準同型の構成にのみ使用する。
 - `discharge-required`: 反映条件、lift fiber の像、右核作用の自由かつ推移性、短完全列。
 - `conclusion-equivalent-risk`: 反映、fiber 非空性、全射性、exactness を入力 record に保持しない。
+
+## Cycle 8 — Karoubi endpoint restriction and the specialized C API
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 8
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 27a4530eef5ecfd3247e56af7c4608c5c51a6864
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 7 accepted the generic restriction/reflection/fiber/exactness API; C2 remained"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom
+    - AAT.AG.ComparisonInformationLoss.comap_eq_iff_ker_le_and_map_eq_inf_range
+    - AAT.AG.ComparisonInformationLoss.restrictedFiber_existsUnique_smul_eq
+    - AAT.AG.RealizationComparisonIdempotents.karoubiArrowToArrowKaroubiObj
+  proof_obligation: "C2: construct H, Gamma_0, the endpoint sandwich homomorphism r, preservation and rBar, then specialize reflection, lift fibers, the right torsor, and short exactness"
+  selection_reason: "This connects the accepted generic group API to the exact Karoubi comparison of fixed target C and leaves only the two finite decisions in clause C."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestriction.lean
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_preserves_comparison
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.idempotentCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.idempotentCompatibleRestriction_shortExact
+  risks:
+    - "constructing a raw automorphism instead of an automorphism of the Karoubi object"
+    - "omitting the explicit inverse sandwiches e b^-1 e and d p^-1 d"
+    - "defining Gamma_0 in the ambient endpoint group instead of as a subgroup of H"
+    - "assuming preservation, reflection, lift existence, or surjectivity as a new field"
+    - "failing to connect e c d to the accepted Karoubi-arrow construction"
+  unchecked:
+    - "C two fixed finite counterexamples"
+    - "D normalization specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed centralizer subgroups and their product H, Gamma_0 as a comap subgroup of H with ambient image H intersect Gamma_c, genuine Karoubi automorphisms with the prescribed hom/inverse sandwiches, their endpoint product homomorphism r, preservation and rBar, and all reflection/lift/right-torsor/short-exact conclusions by specializing Cycle 7."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestriction.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.idempotentCentralizerAutSubgroup
+    - AAT.AG.ComparisonInformationLoss.idempotentRestrictionAut
+    - AAT.AG.ComparisonInformationLoss.idempotentRestrictionHom_hom_f
+    - AAT.AG.ComparisonInformationLoss.idempotentRestrictionHom_inv_f
+    - AAT.AG.ComparisonInformationLoss.idempotentComparisonKaroubiArrow
+    - AAT.AG.ComparisonInformationLoss.idempotentImageComparison
+    - AAT.AG.ComparisonInformationLoss.idempotentImageComparison_agrees_karoubiArrowEquivalence
+    - AAT.AG.ComparisonInformationLoss.centralizingEndpointSubgroup
+    - AAT.AG.ComparisonInformationLoss.centralizingCompatibleSubgroup_map_eq_inf
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_preserves_comparison
+    - AAT.AG.ComparisonInformationLoss.idempotentCompatibleRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.nonempty_idempotentCompatibleLiftFiber_iff_mem_map
+    - AAT.AG.ComparisonInformationLoss.idempotentCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.idempotentCompatibleRestriction_shortExact
+  claim_mapping:
+    theorem_names:
+      - idempotentRestrictionHom_hom_f
+      - idempotentRestrictionHom_inv_f
+      - centralizingCompatibleSubgroup_map_eq_inf
+      - idempotentEndpointRestriction_preserves_comparison
+      - idempotentEndpointRestriction_reflection_iff
+      - nonempty_idempotentCompatibleLiftFiber_iff_mem_map
+      - idempotentCompatibleLiftFiber_action_free
+      - idempotentCompatibleLiftFiber_action_transitive
+      - idempotentCompatibleLiftFiber_existsUnique_smul_eq
+      - idempotentCompatibleRestriction_shortExact
+    source_labels:
+      - "fixed target C.1: H, Gamma_0, r(b,p)=(ebe,dpd), preservation, and rBar"
+      - "fixed target C.2: reflection necessary-and-sufficient condition"
+      - "fixed target C.3: lift image, right-kernel torsor, and short exactness under surjectivity"
+    conjuncts:
+      - "each centralizing endpoint automorphism produces a genuine Karoubi automorphism whose hom and inverse are the requested sandwiches"
+      - "Gamma_0 is a subgroup of H and its ambient image is H intersect Gamma_c"
+      - "the endpoint product homomorphism sends every Gamma_0 element into Gamma_a and restricts to rBar"
+      - "reflection is exactly kernel containment together with Gamma_a intersect image(r)"
+      - "a lift fiber is nonempty exactly on r(Gamma_0), and the kernel of rBar acts freely and transitively by right multiplication"
+      - "r(Gamma_0)=Gamma_a produces the literal short exact sequence"
+    undischarged_assumptions: []
+    acceptance_point: "The only categorical hypotheses are the two idempotence equations and e c = c d from the fixed target. Preservation and every later conclusion are derived from the subgroup definitions and the accepted C1 API."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C general Karoubi endpoint sandwich homomorphism and explicit inverse maps"
+      - "C comparison preservation and restricted homomorphism"
+      - "C general reflection criterion"
+      - "C general lift-fiber image, right torsor, and short exactness"
+    remaining:
+      - "C two fixed finite counterexamples"
+      - "D canonical normalization specialization"
+  certificate_provenance:
+    discharged:
+      - "Karoubi objects and comparison are constructed from X,Y,c,e,d and the three fixed equations"
+      - "endpoint Karoubi inverses are constructed as e b^-1 e and d p^-1 d"
+      - "preservation is proved from centralizer and raw comparison equations"
+      - "rBar is constructed from the proved subgroup image inclusion"
+    unresolved: []
+  accepted_dependencies:
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean"
+      blob_at_base: 8d2353328ebbb9f9270a51960b1f411be883efd3
+      accepted_pr: 4453
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4453#issuecomment-5626440175"
+      use: "generic subgroup restriction, reflection, lift fiber, right action, and short exactness"
+    - source: "research/lean/ResearchLean/AG/RealizationComparisonIdempotents/KaroubiArrowEquivalence.lean"
+      blob_at_base: 09401532e5b8852a9906d343a6f7256ad364e054
+      accepted_pr: 4417
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4417#issuecomment-5588109222"
+      use: "accepted construction of the normalized e c d comparison from an idempotent arrow square"
+  proof_use:
+    used:
+      - "idempotence proves Karoubi object and sandwich morphism laws"
+      - "centralizer equations prove inverse centralization, Karoubi inverse laws, and homomorphism multiplication"
+      - "e c = c d constructs the actual idempotent arrow square and participates in the image comparison morphism proof"
+      - "raw comparison preservation and both centralizer equations prove that r maps Gamma_0 into Gamma_a"
+      - "the accepted generic reflection, lift-fiber, right-action, and short-exact theorems are applied to the constructed r and subgroup inclusion"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor build: ResearchLean.AG.RealizationComparisonIdempotents.KaroubiArrowEquivalence; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/KaroubiRestriction.lean; exit 0"
+    - "permanent ComparisonInformationLoss namespace audit: 37 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "C3: construct and decide the constant-zero reflection counterexample and unequal-fiber lift counterexample on Fin 3"
+```
+
+### Cycle 8 acceptance spine
+
+`idempotentCentralizerAutSubgroup` は端点自己同型が冪等射と可換する条件を部分群として
+保持する。各元から Karoubi 対象の自己同型を構成し、hom は `e b e`、inverse は
+`e b⁻¹ e` に一致する。二端点の積 `H` から得る `idempotentEndpointRestrictionHom` は
+これら二つの構成の積である。
+
+`centralizingCompatibleSubgroup` は `H` の中の `Gamma_0` であり、ambient endpoint group
+への像が `H ⊓ Gamma_c` に一致する。raw comparison equation と両端の centralizer equation
+から `r(Gamma_0) ≤ Gamma_a` を証明し、その包含だけを使って `rBar` を構成する。
+反映、lift fiber の像、右核作用、短完全列は Cycle 7 の一般定理をこの実構成へ適用した結果である。
+
+`idempotentComparisonKaroubiArrow` は `e c = c d` を Arrow square として保持し、既存
+`karoubiArrowToArrowKaroubiObj` が作る比較の underlying morphism と
+`idempotentImageComparison` の `e c d` が一致する。したがって像比較を独立に選び直していない。
+
+Cycle 8 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の圏 `E`、対象 `X,Y`、射 `c,e,d`。
+- `direction-hypothesis`: `e²=e`、`d²=d`、`e c = c d`。固定target Cの一般定理仮定である。
+- `discharge-required`: Karoubi自己同型と逆射、群準同型 `r`、比較保存、反映条件、lift fiber、右核作用、短完全列。
+- `conclusion-equivalent-risk`: 比較保存、反映、lift、全射性をstructure fieldとして受け取らず、入力射と部分群から構成する。
