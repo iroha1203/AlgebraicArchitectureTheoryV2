@@ -578,6 +578,7 @@ result:
     - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_coset_ne_basepoint
     - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedQualifiedDecision_not_factor_via_observationKernel
     - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_value
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_formula_ne_one
     - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_ne_one
   claim_mapping:
     theorem_names:
@@ -589,6 +590,7 @@ result:
       - fixedKernelChange_coset_ne_basepoint
       - fixedQualifiedDecision_not_factor_via_observationKernel
       - fixedKernelChange_Psi_value
+      - fixedKernelChange_Psi_formula_ne_one
       - fixedKernelChange_Psi_ne_one
     source_labels:
       - "fixed target B: named q+/q- coefficient collision and qualified separation"
@@ -619,6 +621,22 @@ audits:
       - "kernel membership is derived from fixedCoefficientObservation_positive_eq_negative"
       - "compatible separation is inherited from the existing literal qualified-subgroup membership proofs"
     unresolved: []
+  accepted_dependencies:
+    - source: "research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonCoefficientNonfactorization.lean"
+      blob_at_base: fba42ec0a608b42696fecfa58edc7304fc62b73c
+      accepted_head: 1f97320f378f4b301d507a969a88a939bcf50110
+      accepted_pr: 4378
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4378#issuecomment-5550849734"
+      use: "fixed q+/q- definitions, coefficient collision, and literal compatible/noncompatible proofs"
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationKernel.lean"
+      blob_at_base: 68a333ba31071e6cef39dec171750e5e6ba1a454
+      accepted_pr: 4445
+      use: "clause-A kernel containment and basepoint criteria"
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean"
+      blob_at_base: a5cf9d624e6f1b220b1065a219c111b74113d077
+      accepted_pr: 4450
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4450#issuecomment-5622324810"
+      use: "Psi representative and basepoint formulas"
   proof_use:
     used:
       - "fixed positive compatible membership and fixed negative nonmembership"
@@ -635,7 +653,8 @@ audits:
   validation_refs:
     - "targeted predecessor build: ResearchLean.AG.ComparisonInformationLoss.EndpointKernelClassification; exit 0"
     - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/FixedWitness.lean; exit 0"
-    - "permanent namespace audit: 14 declarations, standard axioms only"
+    - "permanent namespace audit: 15 declarations, standard axioms only"
+    - "accepted fixed-witness predecessor: PR #4378 head 1f97320f378f4b301d507a969a88a939bcf50110, fixed-base blob fba42ec0a608b42696fecfa58edc7304fc62b73c"
   blocking_findings: []
   next_obligation: "B4: transport the generated comparison observation-loss diagram and Psi across arbitrary fixed G-118 C1s presentation changes, with identity, inverse, and finite-composition coherence"
 ```

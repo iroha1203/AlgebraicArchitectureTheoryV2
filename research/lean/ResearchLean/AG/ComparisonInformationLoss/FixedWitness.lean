@@ -138,19 +138,31 @@ theorem fixedKernelChange_Psi_value :
             fixedKernelChange).1)⁻¹ :=
   observationLossEquivTargetKernelAt_mk problem.data PUnit.unit fixedKernelChange
 
+/-- G-120(B3) proof-use form of the fixed obstruction: the explicit right
+side of the B2 representative formula is nonidentity.  If it were identity,
+the classification equivalence and its basepoint formula would force
+`k_*L_* = L_*`, contradicting the fixed nonbasepoint theorem. -/
+theorem fixedKernelChange_Psi_formula_ne_one :
+    ((endpointKernelProductEquivAt problem.data PUnit.unit).symm
+          fixedKernelChange).2 *
+        (endpointObservationKernelEquivAt problem.data PUnit.unit
+          ((endpointKernelProductEquivAt problem.data PUnit.unit).symm
+            fixedKernelChange).1)⁻¹ ≠ 1 := by
+  intro hformula
+  apply fixedKernelChange_coset_ne_basepoint
+  apply (observationLossEquivTargetKernelAt problem.data PUnit.unit).injective
+  rw [observationLossEquivTargetKernelAt_mk,
+    observationLossEquivTargetKernelAt_basepoint]
+  exact hformula
+
 /-- G-120(B3) main classified obstruction: the explicit value of `Psi` on
 the fixed nonbasepoint loss class is not the identity of the target endpoint
 observation kernel. -/
 theorem fixedKernelChange_Psi_ne_one :
     observationLossEquivTargetKernelAt problem.data PUnit.unit
-        (QuotientGroup.mk fixedKernelChange) ≠ 1 := by
-  intro hvalue
-  rw [fixedKernelChange_Psi_value] at hvalue
-  apply fixedKernelChange_coset_ne_basepoint
-  apply (observationLossEquivTargetKernelAt problem.data PUnit.unit).injective
-  rw [observationLossEquivTargetKernelAt_basepoint]
+      (QuotientGroup.mk fixedKernelChange) ≠ 1 := by
   rw [fixedKernelChange_Psi_value]
-  exact hvalue
+  exact fixedKernelChange_Psi_formula_ne_one
 
 end
 
