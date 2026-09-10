@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: B3, construct and verify the fixed finite witness
+- current proof obligation: B4, transport the generated-comparison observation-loss diagram across arbitrary fixed G-118 C1s presentation changes
 - pending proof obligations: B--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B3, construct the fixed q+/q- witness, its nonbasepoint loss class, and the resulting nonfactorization
+- next proof obligation: B4, construct endpoint, kernel, compatible-kernel, quotient, and Psi transport with identity/inverse/composition coherence
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -529,3 +529,131 @@ Cycle 4 の material premise role は次のとおりである。
 - `discharge-required`: 追加 premise なし。Cycle 3 の実比較由来端点核同型を再利用する。
 - `conclusion-equivalent-risk`: graph 等式や `Psi` を field として受け取らず、既存の
   product observation と qualified-comparison 方程式から構成する。
+
+## Cycle 5 — Fixed coefficient-invisible loss witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 5
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 40439e15f3cf0872cf942a96b51a48898cde9052
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 4 accepted the endpoint-kernel quotient classification; B3 remained"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.UpperDecisionWitness.fixedCoefficientObservation_positive_eq_negative
+    - AAT.AG.DoctrineFiberProduct.UpperDecisionWitness.fixedPositiveQualifiedDecision
+    - AAT.AG.DoctrineFiberProduct.UpperDecisionWitness.fixedNegativeNotQualifiedDecision
+    - AAT.AG.ComparisonInformationLoss.mul_mem_iff_kernel_coset_basepoint
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt_mk
+  proof_obligation: "B3: reuse the fixed q+/q- generated-comparison witness, construct k*=q+^-1 q- in K* outside Gamma*, prove its loss class is nonbasepoint, recover the fixed nonfactorization through A, and prove Psi*(k*L*) != 1"
+  selection_reason: "B3 is the fixed finite witness required to show that the general B2 obstruction is realized by the existing G-118 example rather than by a replacement example."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/FixedWitness.lean
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_ne_one
+  risks:
+    - "replacing the fixed G-118 positive or negative pair"
+    - "asserting kernel membership without using the coefficient-observation collision"
+    - "deriving nonfactorization only by aliasing the predecessor theorem rather than through clause A"
+    - "proving Psi nontriviality without connecting it to the explicit representative evaluation"
+  unchecked:
+    - "B4 presentation-change compatibility"
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Reused the exact fixed q+ and q- pairs, derived their actual generated observation collision and qualified/nonqualified separation, constructed k*=q+^-1 q- as an element of K* outside Gamma* and L*, proved k*L* differs from the basepoint, rederived the existing nonfactorization statement through the clause-A kernel criterion, and proved the explicitly evaluated Psi value is nonidentity."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/FixedWitness.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedPositiveChange_mem_compatible
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedNegativeChange_not_mem_compatible
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedObservation_positive_eq_negative
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_not_mem_compatible
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_not_mem_compatibleKernel
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_coset_ne_basepoint
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedQualifiedDecision_not_factor_via_observationKernel
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_value
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.fixedKernelChange_Psi_ne_one
+  claim_mapping:
+    theorem_names:
+      - fixedPositiveChange_mem_compatible
+      - fixedNegativeChange_not_mem_compatible
+      - fixedObservation_positive_eq_negative
+      - fixedKernelChange
+      - fixedKernelChange_not_mem_compatible
+      - fixedKernelChange_coset_ne_basepoint
+      - fixedQualifiedDecision_not_factor_via_observationKernel
+      - fixedKernelChange_Psi_value
+      - fixedKernelChange_Psi_ne_one
+    source_labels:
+      - "fixed target B: named q+/q- coefficient collision and qualified separation"
+      - "fixed target B: k*=q+^-1q- in K* outside Gamma* and nonbasepoint loss class"
+      - "fixed target B: nonfactorization via clause A and nonidentity Psi value"
+    conjuncts:
+      - "the exact pre-existing fixed positive and negative pairs are used"
+      - "q+ is compatible, q- is not, and O*(q+)=O*(q-)"
+      - "k*=q+^-1q- belongs to K* but not Gamma* or L*"
+      - "k*L* is not the basepoint"
+      - "the original fixed decision cannot factor through O*, derived from A's kernel criterion"
+      - "the representative formula evaluates Psi*(k*L*) to a nonidentity target-kernel element"
+    undischarged_assumptions: []
+    acceptance_point: "The witness declarations are abbreviations of the exact existing G-118 pairs. Kernel membership is proved from their existing observation equality; all separation consequences are then derived rather than stored."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B fixed q+/q- coefficient collision and compatibility separation"
+      - "B fixed kernel element outside Gamma and compatible kernel"
+      - "B nonbasepoint loss class, nonfactorization, and nonidentity Psi value"
+    remaining:
+      - "B4 presentation-change compatibility"
+      - "all C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "q+/q- are definitionally the pre-existing UpperDecisionWitness pairs"
+      - "kernel membership is derived from fixedCoefficientObservation_positive_eq_negative"
+      - "compatible separation is inherited from the existing literal qualified-subgroup membership proofs"
+    unresolved: []
+  proof_use:
+    used:
+      - "fixed positive compatible membership and fixed negative nonmembership"
+      - "fixed product coefficient-observation collision"
+      - "clause-A basepoint and kernel-containment criteria"
+      - "Cycle 4 Psi representative and basepoint evaluations"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor build: ResearchLean.AG.ComparisonInformationLoss.EndpointKernelClassification; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/FixedWitness.lean; exit 0"
+    - "permanent namespace audit: 14 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B4: transport the generated comparison observation-loss diagram and Psi across arbitrary fixed G-118 C1s presentation changes, with identity, inverse, and finite-composition coherence"
+```
+
+### Cycle 5 acceptance spine
+
+`fixedPositiveChange` と `fixedNegativeChange` は G-118 の既存固定対の abbreviation であり、
+新しい有限例を選ばない。既存の係数観測衝突を群準同型の積・逆元へ適用して
+`fixedKernelChange : K_*` を構成し、`q_+ k_* = q_-` と正負の membership separation から
+`k_* ∉ Γ_*` を導く。A の基点判定は `k_*L_* ≠ L_*` を与え、A の kernel containment
+判定は既存と同じ非因子化 statement を別経路で与える。最後に B2 の代表元評価式と
+基点保存を用い、`Psi_*(k_*L_*) ≠ 1` を証明する。
+
+Cycle 5 の material premise role は次のとおりである。
+
+- `ambient-boundary`: G-118 で固定済みの `problem.data` と頂点 `PUnit.unit`。
+- `direction-hypothesis`: なし。
+- `discharge-required`: `q_+∈Γ_*`、`q_-∉Γ_*`、`O_*(q_+)=O_*(q_-)`。いずれも既存の
+  `UpperDecisionWitness` 定理で放電する。
+- `conclusion-equivalent-risk`: 非因子化を predecessor theorem の alias とせず、構成した
+  `k_*` と A の必要十分条件から再導出する。
