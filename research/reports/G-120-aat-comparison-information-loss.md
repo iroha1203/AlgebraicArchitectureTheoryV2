@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: B1, generated-comparison observation diagram and endpoint-kernel conjugacy
+- current proof obligation: B2, identify the product kernel and compatible kernel as an endpoint-kernel product and conjugation graph, then construct Psi
 - pending proof obligations: B--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B1, construct the generated comparison observation diagram and prove endpoint-kernel conjugacy
+- next proof obligation: B2, prove the endpoint-product and graph identifications and construct the pointed left-coset classification
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -273,3 +273,135 @@ Cycle 2 の material premise role は次のとおりである。
 - `discharge-required`: 追加 premise なし。
 - `conclusion-equivalent-risk`: 可換条件が輸送結論を直接保持していないことを、核・fiber・
   quotientの各proof termで確認する。
+
+## Cycle 3 — Generated-comparison observation diagram and endpoint kernels
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 3
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: 613c1f7c535b46ca9d10f931fc43a111ed7e50fe
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 2 accepted A2; B--D remained"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.exists_observation_predicate_iff_ker_le
+    - AAT.AG.ComparisonInformationLoss.ObservationEquiv.kernelEquiv
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedPairCoefficientObservationAt
+    - AAT.AG.DoctrineFiberProduct.qualifiedComparisonSubgroup
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt_isIso
+    - AAT.AG.DoctrineFiberProduct.CompositeFiberAut.conjugationMulEquiv
+  proof_obligation: "B1: construct Q_c, Gamma_c, O_c, K_c, L_c and the pointed quotient for each generated comparison, and prove coefficient-observation conjugacy and the induced endpoint-kernel equivalence"
+  selection_reason: "B1 supplies the concrete generated-comparison diagram and endpoint kernel transport required before the graph and quotient classification in B2."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/GeneratedComparisonObservation.lean
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointObservationKernelEquivAt
+  risks:
+    - "replacing the actual generated comparison coefficient map by a chosen identity"
+    - "assuming the generated comparison itself fixes the base"
+    - "storing endpoint-kernel transport as an input certificate"
+    - "reversing the categorical conjugation order"
+  unchecked:
+    - "B2 product-kernel and graph identifications and Psi"
+    - "B fixed witness and presentation-change compatibility"
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Instantiated the product change group, comparison-preserving subgroup, product coefficient observation, its kernel, compatible kernel, and pointed left-coset obstruction at every generated comparison. Constructed the actual coefficient-ring equivalence from the generated comparison and its inverse, proved endpoint conjugation commutes with coefficient observation, and restricted it to an endpoint-kernel group equivalence."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/GeneratedComparisonObservation.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.compatibleSubgroupAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationKernelAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.compatibleKernelAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.exists_observation_predicate_iff_kernel_leAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.comparisonIsoAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.comparisonCoefficientIsoAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointChangeEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointObservationEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointObservation_commutesAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointObservationKernelEquivAt
+  claim_mapping:
+    theorem_names:
+      - exists_observation_predicate_iff_kernel_leAt
+      - comparisonCoefficientIsoAt_hom
+      - coefficientObservation_conjugation
+      - endpointChangeEquivAt_hom
+      - endpointObservation_commutesAt
+      - endpointObservationKernelEquivAt
+      - endpointObservationKernelEquivAt_apply
+    source_labels:
+      - "fixed target B: generated-comparison observation diagram"
+      - "fixed target B: comparison-induced endpoint observation conjugacy"
+    conjuncts:
+      - "Q_c is the product of the two generated endpoint CompositeFiberAut groups"
+      - "Gamma_c is the existing qualifiedComparisonSubgroup and O_c is the existing product coefficient observation"
+      - "K_c, L_c, and K_c/L_c are obtained by the general clause-A construction"
+      - "the coefficient-ring isomorphism has the actual generated comparison coefficient map as its forward map"
+      - "T_c has underlying ordinary composite c b c^-1 and commutes with coefficient observation through coefficient conjugation S_c"
+      - "T_c restricts to a group equivalence of endpoint observation kernels"
+    undischarged_assumptions: []
+    acceptance_point: "The only isomorphism premise is the already proved generated-comparison IsIso theorem. The coefficient equivalence is constructed from the actual forward and inverse coefficient maps, and kernel transport is derived via ObservationEquiv.kernelEquiv."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B generated-comparison observation diagram"
+      - "B endpoint coefficient-observation conjugacy"
+      - "B induced endpoint observation-kernel group equivalence"
+    remaining:
+      - "B product kernel, graph subgroup, Psi, and fixed witness"
+      - "B presentation-change compatibility"
+      - "all C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "generated comparison invertibility comes from generatedCompatibleUpperGeometryMateAt_isIso"
+      - "coefficient inverse laws come from the actual comparison Iso hom_inv_id and inv_hom_id"
+      - "endpoint kernel membership is derived from the commuting observation square"
+    unresolved: []
+  proof_use:
+    used:
+      - "existing generatedPairCoefficientObservationAt as O_c"
+      - "existing qualifiedComparisonSubgroup as Gamma_c"
+      - "actual comparison hom and inverse coefficient maps in comparisonCoefficientIsoAt"
+      - "existing composite-fiber conjugation in T_c"
+      - "coefficient-observation commutation in the restriction to endpoint kernels"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor build: ResearchLean.AG.ComparisonInformationLoss.ObservationTransport; exit 0"
+    - "targeted predecessor build: ResearchLean.AG.DoctrineFiberProduct.QualifiedComparisonCoefficientTransport; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/GeneratedComparisonObservation.lean; exit 0"
+    - "permanent namespace audit: 20 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B2: identify K_c as the endpoint-kernel product and L_c as the graph of T_c, then construct Psi"
+```
+
+### Cycle 3 acceptance spine
+
+`ChangeGroupAt`、`compatibleSubgroupAt`、`observationAt` は G-118 の生成端点対、既存の
+`qualifiedComparisonSubgroup`、既存の `generatedPairCoefficientObservationAt` を変更せず
+用いる。`comparisonIsoAt` は既存の生成比較そのものを `asIso` で包み、
+`comparisonCoefficientIsoAt_hom` は係数環同型の forward map がその実係数写像であることを
+固定する。`coefficientObservation_conjugation` は complete-geometry 共役と係数環共役の
+可換式を実係数成分で証明し、その可換式から `endpointObservationKernelEquivAt` を導出する。
+したがって、端点核同型は field や supplied certificate ではない。
+
+Cycle 3 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U,ctx,P,k,input,i` と、それらから生成された比較・端点。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 生成比較の同型性。既存の
+  `generatedCompatibleUpperGeometryMateAt_isIso` で放電する。
+- `conclusion-equivalent-risk`: 核同型を入力せず、比較共役と係数観測可換式から構成する。
