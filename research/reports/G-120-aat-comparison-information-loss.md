@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: B2, identify the product kernel and compatible kernel as an endpoint-kernel product and conjugation graph, then construct Psi
+- current proof obligation: B3, construct and verify the fixed finite witness
 - pending proof obligations: B--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B2, prove the endpoint-product and graph identifications and construct the pointed left-coset classification
+- next proof obligation: B3, construct the fixed q+/q- witness, its nonbasepoint loss class, and the resulting nonfactorization
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -405,3 +405,127 @@ Cycle 3 の material premise role は次のとおりである。
 - `discharge-required`: 生成比較の同型性。既存の
   `generatedCompatibleUpperGeometryMateAt_isIso` で放電する。
 - `conclusion-equivalent-risk`: 核同型を入力せず、比較共役と係数観測可換式から構成する。
+
+## Cycle 4 — Endpoint-kernel graph and pointed quotient classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 4
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: b94bcaf00687ad26ce354b004947c73eb3afd861
+tracking_issue: 4443
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycle 3 accepted the generated-comparison observation diagram and endpoint kernel transport; B2 remained"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationKernelAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.compatibleKernelAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointObservationKernelEquivAt
+    - AAT.AG.ComparisonInformationLoss.subsingleton_kernel_quotient_iff_ker_le
+  proof_obligation: "B2: identify K_c with the endpoint-kernel product, identify L_c with the graph of comparison conjugation, construct Psi([a,b]) = b T_c(a)^-1 and its inverse, and derive the exact target-kernel criterion"
+  selection_reason: "B2 is the fixed algebraic classification needed to read the concrete witness in B3 and to state presentation-change compatibility in B4."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt
+  risks:
+    - "silently replacing the actual product observation kernel by a definitionally different product"
+    - "assuming normality of the compatible kernel or giving the coset set a quotient-group structure"
+    - "orienting the graph relation or conjugation inverse incorrectly"
+    - "proving only an abstract cardinality statement without the required representative and inverse formulas"
+  unchecked:
+    - "B3 fixed finite witness"
+    - "B4 presentation-change compatibility"
+    - "C--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed an underlying-pair-preserving group equivalence K_X^obs x K_Y^obs ≃ K_c, proved that the pullback of L_c is exactly the graph of T_c, and classified its general pointed left-coset set by K_Y^obs with the required representative, inverse, and basepoint formulas. Derived that observation-only compatibility is possible exactly when every target endpoint kernel element is the identity."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.PointedLeftCoset.equivOfMapEq
+    - AAT.AG.ComparisonInformationLoss.PointedLeftCoset.graphQuotientEquiv
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.endpointKernelProductEquivAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.compatibleKernelInEndpointProductAt_eq_graph
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt_mk
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt_symm_apply
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.observationLossEquivTargetKernelAt_basepoint
+    - AAT.AG.ComparisonInformationLoss.GeneratedComparison.exists_observation_predicate_iff_targetKernel_eq_one
+  claim_mapping:
+    theorem_names:
+      - endpointKernelProductEquivAt
+      - compatibleKernelInEndpointProductAt_eq_graph
+      - observationLossEquivTargetKernelAt
+      - observationLossEquivTargetKernelAt_mk
+      - observationLossEquivTargetKernelAt_symm_apply
+      - observationLossEquivTargetKernelAt_basepoint
+      - exists_observation_predicate_iff_targetKernel_eq_one
+    source_labels:
+      - "fixed target B: K_c endpoint-product and L_c graph identifications"
+      - "fixed target B: pointed quotient classification Psi"
+      - "fixed target B: observation-only iff target observation kernel trivial"
+    conjuncts:
+      - "K_c is identified with K_X^obs x K_Y^obs while preserving its actual endpoint pair"
+      - "the transported L_c is exactly graph(T_c)"
+      - "Psi sends [(a,b)] to b T_c(a)^-1, has inverse u maps to [(1,u)], and preserves the basepoint"
+      - "an observation-only predicate exists iff every element of K_Y^obs equals 1"
+    undischarged_assumptions: []
+    acceptance_point: "The quotient remains the general left-coset set. The graph equality is proved from actual qualified-comparison membership, and both directions of Psi are explicit rather than inferred from cardinality."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B product observation-kernel identification"
+      - "B compatible-kernel graph identification"
+      - "B pointed quotient classification and exact target-kernel criterion"
+    remaining:
+      - "B3 fixed finite witness"
+      - "B4 presentation-change compatibility"
+      - "all C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "endpoint factor membership is projected from actual product-observation kernel membership"
+      - "graph membership is derived from the existing qualifiedComparisonSubgroup equation"
+      - "target kernel transport is the Cycle 3 equivalence derived from coefficient-observation conjugacy"
+    unresolved: []
+  proof_use:
+    used:
+      - "actual observationKernelAt and compatibleKernelAt subgroups"
+      - "endpointObservationKernelEquivAt in the graph and representative formula"
+      - "general leftRel membership for both quotient transports"
+      - "Cycle 1 observation predicate and singleton quotient criterion"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean; exit 0"
+    - "permanent namespace audits: PointedLeftCoset 5 declarations and GeneratedComparison 14 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "B3: construct the fixed q+/q- witness, prove a nonbasepoint loss class and nonfactorization, and exhibit a nonidentity Psi value"
+```
+
+### Cycle 4 acceptance spine
+
+`endpointKernelProductEquivAt` は `K_c` の実要素から両端点への射影で核所属を導出し、
+逆向きには二つの端点核所属から既存の積観測の核所属を構成する。
+`compatibleKernelInEndpointProductAt_eq_graph` は `L_c` の既存
+`qualifiedComparisonSubgroup` 方程式を両方向に使って graph 等式を証明する。
+一般補題 `graphQuotientEquiv` は正規性を仮定せず、左剰余類 relation 上で
+`[(a,b)] ↦ b * T(a)⁻¹` の well-definedness と逆写像 `u ↦ [(1,u)]` を直接証明する。
+このため `observationLossEquivTargetKernelAt` は抽象的な濃度比較ではなく、固定 target の
+代表元公式と基点を保持する `Psi` そのものである。
+
+Cycle 4 の material premise role は次のとおりである。
+
+- `ambient-boundary`: 任意の `U,ctx,P,k,input,i` と、それらから生成された比較・端点。
+- `direction-hypothesis`: なし。
+- `discharge-required`: 追加 premise なし。Cycle 3 の実比較由来端点核同型を再利用する。
+- `conclusion-equivalent-risk`: graph 等式や `Psi` を field として受け取らず、既存の
+  product observation と qualified-comparison 方程式から構成する。
