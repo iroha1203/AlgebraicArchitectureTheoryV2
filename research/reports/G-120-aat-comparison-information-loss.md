@@ -1035,7 +1035,7 @@ selection:
     - "omitting the explicit inverse sandwiches e b^-1 e and d p^-1 d"
     - "defining Gamma_0 in the ambient endpoint group instead of as a subgroup of H"
     - "assuming preservation, reflection, lift existence, or surjectivity as a new field"
-    - "failing to connect e c d to the accepted Karoubi-arrow construction"
+    - "failing to connect d c e, represented by e ≫ c ≫ d, to the accepted Karoubi-arrow construction"
   unchecked:
     - "C two fixed finite counterexamples"
     - "D normalization specialization"
@@ -1086,7 +1086,7 @@ result:
       - "a lift fiber is nonempty exactly on r(Gamma_0), and the kernel of rBar acts freely and transitively by right multiplication"
       - "r(Gamma_0)=Gamma_a produces the literal short exact sequence"
     undischarged_assumptions: []
-    acceptance_point: "The only categorical hypotheses are the two idempotence equations and e c = c d from the fixed target. Preservation and every later conclusion are derived from the subgroup definitions and the accepted C1 API."
+    acceptance_point: "The categorical hypotheses are the two idempotence equations and d c = c e (represented by e ≫ c = c ≫ d) from the fixed target. The short-exact conclusion additionally uses exactly the target's stated condition r(Gamma_0)=Gamma_a. Preservation and every later conclusion are derived from the subgroup definitions and the accepted C1 API."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -1115,14 +1115,15 @@ audits:
       blob_at_base: 09401532e5b8852a9906d343a6f7256ad364e054
       accepted_pr: 4417
       review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4417#issuecomment-5588109222"
-      use: "accepted construction of the normalized e c d comparison from an idempotent arrow square"
+      use: "accepted construction of the normalized d c e comparison, represented by e ≫ c ≫ d, from an idempotent arrow square"
   proof_use:
     used:
       - "idempotence proves Karoubi object and sandwich morphism laws"
       - "centralizer equations prove inverse centralization, Karoubi inverse laws, and homomorphism multiplication"
-      - "e c = c d constructs the actual idempotent arrow square and participates in the image comparison morphism proof"
+      - "d c = c e, represented by e ≫ c = c ≫ d, constructs the actual idempotent arrow square and participates in the image comparison morphism proof"
       - "raw comparison preservation and both centralizer equations prove that r maps Gamma_0 into Gamma_a"
       - "the accepted generic reflection, lift-fiber, right-action, and short-exact theorems are applied to the constructed r and subgroup inclusion"
+      - "the short-exact theorem uses its stated conditional hypothesis r(Gamma_0)=Gamma_a via the accepted generic short-exact equivalence"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -1150,13 +1151,17 @@ audits:
 から `r(Gamma_0) ≤ Gamma_a` を証明し、その包含だけを使って `rBar` を構成する。
 反映、lift fiber の像、右核作用、短完全列は Cycle 7 の一般定理をこの実構成へ適用した結果である。
 
-`idempotentComparisonKaroubiArrow` は `e c = c d` を Arrow square として保持し、既存
+`idempotentComparisonKaroubiArrow` は通常合成記法の `d c = c e`（Lean では
+`e ≫ c = c ≫ d`）を Arrow square として保持し、既存
 `karoubiArrowToArrowKaroubiObj` が作る比較の underlying morphism と
-`idempotentImageComparison` の `e c d` が一致する。したがって像比較を独立に選び直していない。
+`idempotentImageComparison` の通常記法 `d c e`（Lean では `e ≫ c ≫ d`）が
+一致する。したがって像比較を独立に選び直していない。
 
 Cycle 8 の material premise role は次のとおりである。
 
 - `ambient-boundary`: 任意の圏 `E`、対象 `X,Y`、射 `c,e,d`。
-- `direction-hypothesis`: `e²=e`、`d²=d`、`e c = c d`。固定target Cの一般定理仮定である。
+- `direction-hypothesis`: `e²=e`、`d²=d`、通常合成記法の `d c = c e`（Leanでは
+  `e ≫ c = c ≫ d`）。また短完全列の定理にのみ、固定 target C.3 自身が述べる
+  `r(Gamma_0)=Gamma_a` を条件仮定として用いる。
 - `discharge-required`: Karoubi自己同型と逆射、群準同型 `r`、比較保存、反映条件、lift fiber、右核作用、短完全列。
 - `conclusion-equivalent-risk`: 比較保存、反映、lift、全射性をstructure fieldとして受け取らず、入力射と部分群から構成する。

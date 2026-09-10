@@ -214,8 +214,10 @@ def idempotentComparisonKaroubiArrow {X Y : E} (c : X ⟶ Y)
     · exact he
     · exact hd
 
-/-- The Karoubi comparison `a = e c d`.  Its morphism proof deliberately uses
-the fixed compatibility equation `e c = c d`, preserving the target's route
+/-- The Karoubi comparison `a = d c e` in the GOAL's ordinary-composition
+notation, represented by `e ≫ c ≫ d` in Lean. Its morphism proof uses
+the fixed compatibility equation `d c = c e`, represented by
+`e ≫ c = c ≫ d`, preserving the target's route
 from the raw idempotent square. -/
 def idempotentImageComparison {X Y : E} (c : X ⟶ Y)
     (e : X ⟶ X) (d : Y ⟶ Y)
@@ -434,8 +436,11 @@ instance idempotentCompatibleLiftFiberSMul
     (t : comparisonAutomorphismSubgroup (idempotentImageComparison c e d he hd hedc)) :
     SMul (idempotentCompatibleRestrictionHom c e d he hd hedc).kerᵐᵒᵖ
       (IdempotentCompatibleLiftFiber c e d he hd hedc t) := by
-  unfold idempotentCompatibleRestrictionHom IdempotentCompatibleLiftFiber
-  infer_instance
+  exact restrictedFiberSMul
+    (idempotentEndpointRestrictionHom X Y e d he hd)
+    (centralizingCompatibleSubgroup c e d)
+    (comparisonAutomorphismSubgroup (idempotentImageComparison c e d he hd hedc))
+    (idempotentEndpointRestriction_map_le c e d he hd hedc) t
 
 /-- The specialized right action satisfies the group action laws. -/
 instance idempotentCompatibleLiftFiberMulAction
@@ -444,8 +449,11 @@ instance idempotentCompatibleLiftFiberMulAction
     (t : comparisonAutomorphismSubgroup (idempotentImageComparison c e d he hd hedc)) :
     MulAction (idempotentCompatibleRestrictionHom c e d he hd hedc).kerᵐᵒᵖ
       (IdempotentCompatibleLiftFiber c e d he hd hedc t) := by
-  unfold idempotentCompatibleRestrictionHom IdempotentCompatibleLiftFiber
-  infer_instance
+  exact restrictedFiberMulAction
+    (idempotentEndpointRestrictionHom X Y e d he hd)
+    (centralizingCompatibleSubgroup c e d)
+    (comparisonAutomorphismSubgroup (idempotentImageComparison c e d he hd hedc))
+    (idempotentEndpointRestriction_map_le c e d he hd hedc) t
 
 /-- G-120(C.3)'s lift criterion: a compatible image change has a compatible
 raw lift exactly when it lies in `r(Gamma_0)`. -/
