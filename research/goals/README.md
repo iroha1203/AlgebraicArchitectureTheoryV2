@@ -25,6 +25,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 
 ## draft（人間の確認待ち）
+- [G-121-aat-finite-decoder-representability](G-121-aat-finite-decoder-representability.md)
+  (n1010 S3。有限decoderの対象・射の表示可能性)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
