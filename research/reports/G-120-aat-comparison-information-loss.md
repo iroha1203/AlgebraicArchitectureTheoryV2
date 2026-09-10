@@ -129,6 +129,8 @@ singleton条件を証明する。
 Cycle 1 の material premise role は次のとおりである。
 
 - `ambient-boundary`: 任意の群 `Q,R`、群準同型 `O : Q →* R`、部分群 `Gamma ≤ Q`。
+  fiber と基点の定理では、固定 target 由来の `gamma : Q`、`hgamma : gamma ∈ Gamma`、
+  `k : O.ker` も入力として保持する。
 - `direction-hypothesis`: なし。
 - `discharge-required`: 追加 premise なし。
 - `conclusion-equivalent-risk`: 該当なし。
