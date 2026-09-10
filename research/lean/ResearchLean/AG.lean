@@ -13,6 +13,7 @@ import ResearchLean.AG.AtomFoundation.RefinementSupplyWitness
 import ResearchLean.AG.AtomFoundation.Transport
 import ResearchLean.AG.AtomFoundation.TransportLaws
 import ResearchLean.AG.ComparisonInformationLoss.ObservationKernel
+import ResearchLean.AG.ComparisonInformationLoss.ObservationTransport
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
