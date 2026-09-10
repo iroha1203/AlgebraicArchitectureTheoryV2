@@ -1180,7 +1180,6 @@ selection:
   proof_state_ref: "Cycle 8 accepted the general Karoubi restriction API; the two fixed finite examples remained"
   proof_dag_predecessors:
     - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestrictionHom
-    - AAT.AG.ComparisonInformationLoss.idempotentEndpointRestriction_reflection_iff
     - AAT.AG.ComparisonInformationLoss.nonempty_idempotentCompatibleLiftFiber_iff_mem_map
   proof_obligation: "C3: construct and decide the constant-zero reflection counterexample and the unequal-fiber no-lift counterexample on the fixed three-point object in FintypeCat"
   selection_reason: "These are the exact two finite decisions fixed by clause C and complete that clause before the canonical-normalization specialization."

@@ -31,9 +31,11 @@ abbrev ThreePoint : FintypeCat := FintypeCat.of (Fin 3)
 def constantZero : ThreePoint ⟶ ThreePoint :=
   FintypeCat.homMk (fun _ => 0)
 
+/-- The constant-zero map evaluates to `0` at every point. -/
 @[simp]
 theorem constantZero_apply (x : Fin 3) : constantZero x = 0 := rfl
 
+/-- The constant-zero endomorphism is idempotent. -/
 theorem constantZero_idempotent : constantZero ≫ constantZero = constantZero := by
   apply FintypeCat.hom_ext
   intro x
@@ -43,6 +45,7 @@ theorem constantZero_idempotent : constantZero ≫ constantZero = constantZero :
 noncomputable def swapTwelveAut : Aut ThreePoint :=
   FintypeCat.equivEquivIso (Equiv.swap (1 : Fin 3) 2)
 
+/-- Swapping `1` and `2` centralizes the constant-zero idempotent. -/
 theorem swapTwelve_centralizes_constantZero :
     swapTwelveAut.hom ≫ constantZero = constantZero ≫ swapTwelveAut.hom := by
   apply FintypeCat.hom_ext
@@ -54,6 +57,7 @@ noncomputable def constantZeroCentralizingPair :
     centralizingEndpointSubgroup ThreePoint ThreePoint constantZero constantZero :=
   ⟨(swapTwelveAut, 1), swapTwelve_centralizes_constantZero, by simp⟩
 
+/-- The fixed raw endpoint pair belongs to the centralizer product `H`. -/
 theorem constantZeroCentralizingPair_mem_H :
     (constantZeroCentralizingPair : Aut ThreePoint × Aut ThreePoint) ∈
       centralizingEndpointSubgroup ThreePoint ThreePoint constantZero constantZero :=
@@ -69,6 +73,7 @@ theorem constantZeroCentralizingPair_raw_mismatch :
   change (2 : Fin 3) = 1 at hpoint
   exact (by decide : (2 : Fin 3) ≠ 1) hpoint
 
+/-- The fixed raw endpoint pair does not preserve the identity comparison. -/
 theorem constantZeroCentralizingPair_not_mem_GammaZero :
     constantZeroCentralizingPair ∉
       centralizingCompatibleSubgroup (𝟙 ThreePoint) constantZero constantZero := by
@@ -124,16 +129,19 @@ theorem constantZero_reflection_fails :
 def unequalFiberFold : ThreePoint ⟶ ThreePoint :=
   FintypeCat.homMk (fun x => if x = 0 then 0 else 1)
 
+/-- Pointwise evaluation formula for the unequal-fiber fold. -/
 @[simp]
 theorem unequalFiberFold_apply (x : Fin 3) :
     unequalFiberFold x = (if x = 0 then 0 else 1) := rfl
 
+/-- The unequal-fiber fold is idempotent. -/
 theorem unequalFiberFold_idempotent :
     unequalFiberFold ≫ unequalFiberFold = unequalFiberFold := by
   apply FintypeCat.hom_ext
   intro x
   fin_cases x <;> decide
 
+/-- The zero fiber of the unequal-fiber fold is the singleton `{0}`. -/
 theorem unequalFiberFold_eq_zero_iff (x : Fin 3) :
     unequalFiberFold x = 0 ↔ x = 0 := by
   fin_cases x <;> decide
@@ -152,6 +160,7 @@ raw point `1` because both represent the second image point. -/
 def unequalFiberImageSwap : ThreePoint ⟶ ThreePoint :=
   FintypeCat.homMk (fun x => if x = 0 then 1 else 0)
 
+/-- Pointwise evaluation formula for the swap of the two image points. -/
 @[simp]
 theorem unequalFiberImageSwap_apply (x : Fin 3) :
     unequalFiberImageSwap x = (if x = 0 then 1 else 0) := rfl
