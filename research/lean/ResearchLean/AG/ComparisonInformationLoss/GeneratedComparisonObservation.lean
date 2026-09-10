@@ -28,21 +28,24 @@ set_option maxHeartbeats 3000000
 
 noncomputable section
 
-/-- The raw endpoint-change group of a generated compatible comparison. -/
+/-- G-120(B1) data: the raw endpoint-change group.  It reuses the two actual
+generated endpoint `CompositeFiberAut` groups supplied by the G-118 input. -/
 abbrev ChangeGroupAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex) :=
   UpperGeometryCompatibleProblemInputData.GeneratedQualifiedPairAt input i
 
-/-- The product coefficient-observation group of a generated comparison. -/
+/-- G-120(B1) data: the observation codomain.  Its two factors are the
+coefficient automorphism groups fixed by the generated input coefficient `k`. -/
 abbrev ObservationGroupAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     (_input : UpperGeometryCompatibleProblemInputData ctx P k) (_i : P.Vertex) :=
   Aut (CommRingCat.of k) × Aut (CommRingCat.of k)
 
-/-- Product coefficient observation on both generated endpoints. -/
+/-- G-120(B1) main construction `O_c`: product coefficient observation on both
+generated endpoints, inherited from G-118's existing endpoint observations. -/
 noncomputable def observationAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -50,7 +53,8 @@ noncomputable def observationAt
     ChangeGroupAt input i →* ObservationGroupAt input i :=
   input.generatedPairCoefficientObservationAt i
 
-/-- Comparison-preserving endpoint changes for the generated comparison. -/
+/-- G-120(B1) main construction `Gamma_c`: comparison-preserving endpoint
+changes, using the actual generated comparison and the existing G-118 subgroup. -/
 def compatibleSubgroupAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -58,30 +62,33 @@ def compatibleSubgroupAt
     Subgroup (ChangeGroupAt input i) :=
   qualifiedComparisonSubgroup (input.generatedCompatibleUpperGeometryMateAt i)
 
-/-- Coefficient-invisible endpoint changes for the generated comparison. -/
+/-- G-120(B1) data `K_c`: the kernel of the constructed product observation;
+no extra invisibility certificate is supplied. -/
 abbrev observationKernelAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex) :=
   (observationAt input i).ker
 
-/-- Coefficient-invisible changes that also preserve the generated comparison. -/
+/-- G-120(B1) data `L_c`: invisible changes that also preserve the generated
+comparison, obtained by the clause-A `compatibleKernel` construction. -/
 abbrev compatibleKernelAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex) :=
   compatibleKernel (observationAt input i) (compatibleSubgroupAt input i)
 
-/-- The pointed left-coset obstruction attached to the generated comparison. -/
+/-- G-120(B1) data: the pointed left-coset obstruction `K_c/L_c`.  This is the
+general clause-A coset type and does not require normality of `L_c`. -/
 abbrev observationLossAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
     (input : UpperGeometryCompatibleProblemInputData ctx P k) (i : P.Vertex) :=
   observationKernelAt input i ⧸ compatibleKernelAt input i
 
-/-- The general observation criterion specialized to the generated comparison
-diagram: qualified membership is determined by the product coefficient
-observation exactly when every invisible change is qualified. -/
+/-- G-120(B1) API theorem applying clause A to the generated comparison diagram:
+qualified membership is determined by the product coefficient observation
+exactly when every invisible change is qualified.  It has no new premise. -/
 theorem exists_observation_predicate_iff_kernel_leAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -94,8 +101,8 @@ theorem exists_observation_predicate_iff_kernel_leAt
   exists_observation_predicate_iff_ker_le
     (observationAt input i) (compatibleSubgroupAt input i)
 
-/-- The actual generated comparison, packaged as a complete-geometry
-isomorphism using its already proved invertibility. -/
+/-- G-120(B1) construction of `c : X ≅ Y`: the actual generated comparison,
+packaged using G-118's already proved `generatedCompatibleUpperGeometryMateAt_isIso`. -/
 noncomputable def comparisonIsoAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -105,8 +112,9 @@ noncomputable def comparisonIsoAt
   letI := input.generatedCompatibleUpperGeometryMateAt_isIso i
   exact asIso (input.generatedCompatibleUpperGeometryMateAt i)
 
-/-- A complete-geometry isomorphism induces the coefficient-ring equivalence
-given by its actual forward and inverse coefficient maps. -/
+/-- G-120(B1) helper construction: a complete-geometry isomorphism induces the
+coefficient-ring equivalence given by its actual forward and inverse coefficient
+maps.  The only premise is the supplied geometry isomorphism. -/
 noncomputable def coefficientRingEquivOfGeometryIso
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (iso : G ≅ H) : G.Coefficient ≃+* H.Coefficient where
@@ -123,7 +131,8 @@ noncomputable def coefficientRingEquivOfGeometryIso
   map_mul' := iso.hom.geometry.coefficientHom.map_mul
   map_add' := iso.hom.geometry.coefficientHom.map_add
 
-/-- The coefficient-ring isomorphism carried by the generated comparison. -/
+/-- G-120(B1) main coefficient isomorphism `S_c`, specialized from the actual
+generated comparison isomorphism rather than a chosen coefficient identity. -/
 noncomputable def comparisonCoefficientIsoAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -132,8 +141,8 @@ noncomputable def comparisonCoefficientIsoAt
       CommRingCat.of (input.generatedPulledRouteGeometryAt i).Coefficient :=
   (coefficientRingEquivOfGeometryIso (comparisonIsoAt input i)).toCommRingCatIso
 
-/-- The forward map of the generated coefficient isomorphism is the actual
-coefficient map of the generated comparison. -/
+/-- G-120(B1) API evaluation: the forward map of `S_c` is the actual coefficient
+map of the generated comparison.  It unfolds the preceding construction. -/
 @[simp] theorem comparisonCoefficientIsoAt_hom
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -142,8 +151,8 @@ coefficient map of the generated comparison. -/
       (input.generatedCompatibleUpperGeometryMateAt i).geometry.coefficientHom :=
   rfl
 
-/-- Conjugation by the coefficient component of a complete-geometry
-isomorphism transports coefficient automorphisms between the endpoints. -/
+/-- G-120(B1) helper construction: conjugation by the actual coefficient
+component of a geometry isomorphism transports coefficient automorphisms. -/
 noncomputable def coefficientConjugationMulEquiv
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (iso : G ≅ H) :
@@ -152,7 +161,9 @@ noncomputable def coefficientConjugationMulEquiv
   Aut.autMulEquivOfIso
     (coefficientRingEquivOfGeometryIso iso).toCommRingCatIso
 
-/-- Endpoint conjugation commutes with coefficient observation. -/
+/-- G-120(B1) helper theorem: endpoint conjugation commutes with coefficient
+observation.  The equality is derived from the actual coefficient components
+of the supplied geometry isomorphism and endpoint automorphism. -/
 theorem coefficientObservation_conjugation
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (iso : G ≅ H) (automorphism : CompositeFiberAut G) :
@@ -164,8 +175,8 @@ theorem coefficientObservation_conjugation
   ext value
   rfl
 
-/-- The generated comparison transports source endpoint changes by the
-existing complete-fiber conjugation. -/
+/-- G-120(B1) main construction `T_c`: the generated comparison transports
+source endpoint changes by the existing G-118 complete-fiber conjugation. -/
 noncomputable def endpointChangeEquivAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -174,8 +185,9 @@ noncomputable def endpointChangeEquivAt
       CompositeFiberAut (input.generatedPulledRouteGeometryAt i) :=
   CompositeFiberAut.conjugationMulEquiv (comparisonIsoAt input i)
 
-/-- In ordinary composition notation, endpoint transport has underlying map
-`b ↦ c b c⁻¹`; the displayed Lean composite reads from left to right. -/
+/-- G-120(B1) API evaluation for `T_c`: in ordinary composition notation its
+underlying map is `b ↦ c b c⁻¹`; the displayed Lean composite reads from left
+to right and follows from the existing conjugation theorem. -/
 @[simp] theorem endpointChangeEquivAt_hom
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -189,8 +201,8 @@ noncomputable def endpointChangeEquivAt
   CompositeFiberAut.conjugationMulEquiv_hom
     (comparisonIsoAt input i) automorphism
 
-/-- The actual coefficient component of the generated comparison transports
-coefficient automorphisms by conjugation. -/
+/-- G-120(B1) main construction `S_c`: the actual coefficient component of the
+generated comparison transports coefficient automorphisms by conjugation. -/
 noncomputable def endpointObservationEquivAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -199,8 +211,9 @@ noncomputable def endpointObservationEquivAt
       Aut (CommRingCat.of (input.generatedPulledRouteGeometryAt i).Coefficient) :=
   coefficientConjugationMulEquiv (comparisonIsoAt input i)
 
-/-- The two endpoint coefficient observations form the commuting square
-required by the general observation transport theorem. -/
+/-- G-120(B1) main theorem `O_Y T_c = S_c O_X`: the endpoint observations form
+the commuting square required by clause A.  It specializes the coefficient
+conjugation equality to the actual generated comparison. -/
 theorem endpointObservation_commutesAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -215,8 +228,9 @@ theorem endpointObservation_commutesAt
           (input.generatedBaseRouteGeometryAt i) automorphism) :=
   coefficientObservation_conjugation (comparisonIsoAt input i) automorphism
 
-/-- Restrict comparison conjugation to the coefficient-observation kernels
-at the two generated endpoints. -/
+/-- G-120(B1) main kernel theorem: restrict `T_c` to the two endpoint
+coefficient-observation kernels.  Kernel membership is derived from the
+commuting square through clause A, not supplied as a premise. -/
 noncomputable def endpointObservationKernelEquivAt
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
@@ -236,8 +250,8 @@ noncomputable def endpointObservationKernelEquivAt
       compatible_map := by simp }
   exact diagram.kernelEquiv
 
-/-- The kernel equivalence has the comparison-conjugation map on underlying
-endpoint automorphisms. -/
+/-- G-120(B1) API evaluation: the induced kernel equivalence has `T_c` as its
+underlying endpoint map.  It unfolds the clause-A kernel restriction. -/
 @[simp] theorem endpointObservationKernelEquivAt_apply
     {U : AtomCarrier.{u}} {ctx : ActiveRefinementBCContext U}
     {P : FiniteTransportPresentation.{u}} {k : CommRingCat.{v}}
