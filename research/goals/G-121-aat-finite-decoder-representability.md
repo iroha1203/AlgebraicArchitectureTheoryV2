@@ -1,7 +1,7 @@
 # G-121-aat-finite-decoder-representability — 有限decoderの対象・射の表示可能性
 
 - `id`: `G-121-aat-finite-decoder-representability`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
 - `source note`: [n1010 §5・§9.4](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)
