@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 13 review of D's finite code normalization functor
-- pending proof obligations: remaining D realization natural isomorphism and counterexample, then E
+- current proof obligation: Cycle 14 review of D's realization natural isomorphism
+- pending proof obligations: remaining D finite counterexample, then E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: D's realization natural isomorphism for the finite normalization functor
+- next proof obligation: D's fixed Fin 1 raw-code counterexample and non-fullness witness
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1644,3 +1644,117 @@ presentation, equal false defaults plus the evaluation of its original raw extra
 reconstruct the new raw equality.  Source-map and Atom-table retention then proves that decoded
 equality is preserved between representatives.  Quotient mapping is therefore well defined, and
 the identity and composition laws follow from equality of the retained decoded components.
+
+## Cycle 14: semantic realization natural isomorphism
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 14
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: e48dd46b80e976139eee36aaf779c7dd4a7239d0
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 13: finite normalization functor R_fin constructed"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction_eval
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization
+  proof_obligation: "D2b: build the identity-source-map, identity-Atom semantic isomorphism between each normalized code and its original decoding; prove naturality; assemble D0^0 composed with R_fin naturally isomorphic to D0"
+  selection_reason: "Cycle 13 changes raw defaults while preserving all semantic evaluations. The fixed target requires that distinction to be witnessed by a natural semantic isomorphism rather than raw code equality."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso_naturality
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso
+  risks:
+    - "claiming raw finite-code equality from evaluation equality"
+    - "accepting extraction equivalence or naturality as caller-supplied certificates"
+    - "using non-identity source or Atom components"
+    - "proving objectwise isomorphism without naturality"
+  unchecked:
+    - "D Fin 1 counterexample"
+    - "E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved a decoded extraction equivalence between every normalized pointed code and its original. Constructed forward and reverse semantic arrows with identity source map and identity Atom equivalence, proved their inverse laws, exposed component APIs, proved naturality for every quotient morphism by representative induction and both decoded components, and assembled the required natural isomorphism."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_toSemantic_extracts_iff
+    - AAT.AG.FiniteDecoderRepresentability.normalizedToOriginalHom
+    - AAT.AG.FiniteDecoderRepresentability.originalToNormalizedHom
+    - AAT.AG.FiniteDecoderRepresentability.normalizedToOriginalHom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.normalizedToOriginalHom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.originalToNormalizedHom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.originalToNormalizedHom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_hom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_hom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso_naturality
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso
+  claim_mapping:
+    theorem_names:
+      - normalizeFiniteInstanceCode_toSemantic_extracts_iff
+      - finiteNormalizationRealizationIsoApp
+      - finiteNormalizationRealizationIso_naturality
+      - finiteNormalizationRealizationIso
+    source_labels:
+      - "fixed target D: normalized and original codes decode to the same extraction predicate"
+      - "fixed target D: semantic comparison components have identity source map and Atom permutation"
+      - "fixed target D: D0^0 composed with R_fin is naturally isomorphic to D0"
+    conjuncts:
+      - "forward and reverse exact pointed morphisms are constructed"
+      - "both inverse laws are proved"
+      - "naturality holds for every quotient morphism"
+      - "raw code equality is not asserted"
+    undischarged_assumptions: []
+    acceptance_point: "Finite U.Atom and DecidableEq are inherited from R_fin. Extraction equivalence, inverse laws, and naturality are derived; no semantic isomorphism or square is accepted from callers."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D realization component isomorphisms"
+      - "D realization comparison naturality"
+      - "D natural isomorphism D0^0 composed with R_fin isomorphic to D0"
+    remaining:
+      - "D Fin 1 counterexample"
+      - "all E obligations"
+  certificate_provenance:
+    discharged:
+      - "Cycle 13 evaluation preservation derives extraction equivalence"
+      - "identity computational maps generate both semantic arrows"
+      - "category extensionality proves inverse laws"
+      - "quotient representative induction and retained components prove naturality"
+    unresolved: []
+  proof_use:
+    used:
+      - "normalized extraction evaluation equality is used in both arrow directions"
+      - "source-map equality and Atom-equivalence equality are both used in naturality"
+      - "forward and reverse arrows are both used in the Iso constructor"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean"
+    - "namespace #assert_standard_axioms_only: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D3: instantiate the specified Fin 1 true-default and false-default codes, prove equal evaluations and semantic isomorphism, identify R_fin(P_t) with P_f at raw code level, and refute morphisms in both original-code directions by the Cycle 10 default criterion"
+```
+
+### Cycle 14 acceptance spine
+
+The public decoded bridge says exactly that the normalized and original doctrines extract the
+same Atoms.  It fills both directions of an exact pointed isomorphism whose source map and Atom
+equivalence are identities.  The inverse laws therefore follow from equality of the two
+computational components.  For an arbitrary quotient morphism, representative induction and
+Cycle 13's retained source/Atom components prove the naturality square.  Raw codes remain
+distinct in general; only their semantic realizations are naturally isomorphic.
