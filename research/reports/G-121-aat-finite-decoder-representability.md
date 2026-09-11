@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 5 review of A's permutation transport coherence
-- pending proof obligations: B--E
+- current proof obligation: Cycle 6 review of B's anchored-coverage/continuous-extension equivalence
+- pending proof obligations: B's compactness and arrow-coherence restatement, then C--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B's topological characterization of G-112 coverage
+- next proof obligation: B's compactness and decoded-arrow coherence restatement
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -671,3 +671,125 @@ Cycle 5 material premise roles are:
   proved in this module or explicitly reused from the existing code API.
 - `conclusion-equivalent-risk`: none. The input is the permutation itself, not a transport
   equality, homeomorphism extension, or coherence certificate.
+
+## Cycle 6 — Anchored coverage and continuous target extensions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 6
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: cef553ba77ce56853dde7f84d8d8e2026dfc3599
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 5: all fixed target A clauses discharged"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.coveredObjectWitness_necessary
+    - AAT.AG.DoctrineFiberProduct.endpointFiniteTargetCofiniteCoverage
+    - AAT.AG.DoctrineFiberProduct.atomPredicateCode_finiteOrCofinite
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap
+    - AAT.AG.FiniteDecoderRepresentability.continuousMapToAtomPredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap_rightInverse
+  proof_obligation: "B1: characterize Nonempty AnchoredCoverageWitness by finite source and target Source types together with a continuous OnePoint extension of every target extraction predicate"
+  selection_reason: "The accepted G-112 theorem already gives necessity and sufficiency using finite/cofinite extraction sets. Target A converts exactly that predicate condition to continuous extension, so the fixed B equivalence can be proved without creating a parallel coverage construction."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CoverageTopology.lean
+    - AAT.AG.FiniteDecoderRepresentability.nonempty_anchoredCoverageWitness_iff_finite_continuousExtensions
+  risks:
+    - "building a new coverage certificate instead of invoking the accepted G-112 constructor"
+    - "proving only sufficiency and not extracting both finite endpoints from an actual witness"
+    - "storing continuous extension as a field rather than quantifying the actual map and pointwise formula"
+    - "losing the Bool=true iff extracts specification when converting through A1"
+  unchecked:
+    - "B compactness reformulation for discrete Source spaces"
+    - "B source-map and Atom-permutation agreement with decoder identity/composition"
+    - "C--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved both directions between target finite/cofinite extraction and actual continuous Bool extensions using A1 and the accepted G-112 code theorem. From an anchored witness, extracted finite Source types and target finite/cofinite extraction through both actual endpoint anchors; converted the latter to continuous extensions. Conversely, converted supplied extensions to the accepted target condition, installed the two derived Finite instances, and invoked endpointFiniteTargetCofiniteCoverage."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CoverageTopology.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.allExtractionsFiniteOrCofinite_of_continuousExtensions
+    - AAT.AG.FiniteDecoderRepresentability.continuousExtensions_of_allExtractionsFiniteOrCofinite
+    - AAT.AG.FiniteDecoderRepresentability.allExtractionsFiniteOrCofinite_iff_continuousExtensions
+    - AAT.AG.FiniteDecoderRepresentability.nonempty_anchoredCoverageWitness_iff_finite_continuousExtensions
+  claim_mapping:
+    theorem_names:
+      - allExtractionsFiniteOrCofinite_iff_continuousExtensions
+      - nonempty_anchoredCoverageWitness_iff_finite_continuousExtensions
+    source_labels:
+      - "fixed target B: target extraction predicates extend continuously exactly when finite or cofinite"
+      - "fixed target B: anchored coverage exists iff both Sources are finite and every target extraction has such an extension"
+    conjuncts:
+      - "actual continuous maps with Bool=true iff target extracts"
+      - "finite source and target Source types extracted from actual endpoint anchors"
+      - "necessity and sufficiency of the complete anchored coverage condition"
+      - "sufficiency routed through the accepted G-112 coverage constructor"
+    undischarged_assumptions: []
+    acceptance_point: "The main theorem quantifies the actual continuous map for every target source cell. Its reverse direction constructs finite/cofinite evidence from those maps and calls the existing endpointFiniteTargetCofiniteCoverage theorem; no coverage witness appears as a premise."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B1 anchored coverage iff finite endpoints and continuous target extensions"
+    remaining:
+      - "B compactness restatement and decoded arrow identity/composition coherence"
+      - "all C--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "finite endpoints and target extraction conditions are derived from actual sourceAnchor and targetAnchor fields"
+      - "continuous-extension necessity derives a raw code from the genuine ContinuousMap through A1"
+      - "coverage sufficiency is constructed by the accepted G-112 endpointFiniteTargetCofiniteCoverage"
+    unresolved: []
+  proof_use:
+    used:
+      - "each supplied continuous map and pointwise iff derives the finite/cofinite target condition"
+      - "A1 right inverse identifies recovered-code evaluation with the actual continuous map"
+      - "both endpoint anchors yield their respective Finite Source instances"
+      - "the derived target condition is passed to the accepted G-112 coverage constructor"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CoverageTopology.lean"
+    - "namespace #assert_standard_axioms_only: 6 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
+  blocking_findings: []
+  next_obligation: "B2: restate endpoint Source finiteness as compactness of discrete Source spaces and connect coverage presentation source maps, Atom permutations, identity, and composition to typedPresentationToSemantic and finiteCodeCartRealization"
+```
+
+### Cycle 6 acceptance spine
+
+For one endpoint object, continuous-extension necessity applies the A1 inverse to each
+genuine continuous map and uses the A1 right inverse to identify its raw evaluation.
+The accepted theorem that every raw exception table is finite or cofinite then transfers
+through the supplied pointwise iff to the semantic extraction set. Sufficiency uses the
+accepted G-112 finite/cofinite encoder followed by the A1 continuous-map construction.
+
+For a semantic arrow, an actual `AnchoredCoverageWitness` contains both endpoint anchors.
+The accepted anchor-necessity theorem supplies both Source finiteness conclusions and the
+target finite/cofinite condition, which the endpoint lemma converts to continuous maps.
+Conversely, the two finite proof terms become local instances, continuous extensions yield
+the target finite/cofinite condition, and the accepted G-112 coverage constructor produces
+the full anchors, typed presentation, endpoint isomorphisms, and commuting square.
+
+Cycle 6 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed `AtomCarrier U`, the fixed discrete Atom topology,
+  and the existing evaluator's `[DecidableEq U.Atom]`.
+- `direction-hypothesis`: either an actual anchored witness, or the two target-level
+  `Finite` propositions and an actual continuous extension with its pointwise formula for
+  every target source cell.
+- `discharge-required`: both endpoint finite conclusions, conversion in both directions
+  between target extraction and continuous extension, and construction of the full coverage
+  witness; all are proved or routed to the accepted G-112 constructors.
+- `conclusion-equivalent-risk`: none. No new input structure stores a code, endpoint anchor,
+  coverage square, finite/cofinite proof, or inverse law.
