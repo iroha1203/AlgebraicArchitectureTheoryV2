@@ -1445,6 +1445,10 @@ result:
   evidence:
     - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeProperty
     - AAT.AG.FiniteDecoderRepresentability.FalseDefaultFiniteCodeCategory
+    - AAT.AG.FiniteDecoderRepresentability.singletonConstantDefaultCode
+    - AAT.AG.FiniteDecoderRepresentability.singletonConstantDefaultCode_normalized_defaultValue
+    - AAT.AG.FiniteDecoderRepresentability.singletonConstantFalseCode_mem
+    - AAT.AG.FiniteDecoderRepresentability.singletonConstantTrueCode_not_mem
     - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization
     - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_obj
     - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_map
@@ -1496,7 +1500,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean"
-    - "namespace #assert_standard_axioms_only: 7 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 11 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "D2: replace every extraction table by finitePredicateCode of its evaluation with false default, retain Source/normalize/point, lift presentations and quotient morphisms functorially, and build D0^0 composed with R_fin naturally isomorphic to D0"
 ```

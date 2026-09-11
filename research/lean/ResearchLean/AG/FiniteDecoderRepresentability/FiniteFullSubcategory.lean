@@ -29,7 +29,8 @@ variable {U : AtomCarrier.{u}}
 
 /--
 G-121(D) object condition: every normalized extraction table has authored
-default `false`.  No condition is imposed on unnormalized table positions.
+default `false`.  No condition is imposed on unnormalized table positions;
+`DecidableEq` is required by the ambient finite-code category.
 -/
 def falseDefaultFiniteCodeProperty [DecidableEq U.Atom] :
     ObjectProperty (FiniteCodeCartCategory U) :=
@@ -42,8 +43,50 @@ abbrev FalseDefaultFiniteCodeCategory
   (falseDefaultFiniteCodeProperty (U := U)).FullSubcategory
 
 /--
+Vacuity-test fixture for G-121(D): the singleton source code with a constant
+authored default.  It is independent of Atom-carrier inhabitation.
+-/
+def singletonConstantDefaultCode (U : AtomCarrier.{u}) (defaultValue : Bool) :
+    FiniteInstanceCode U where
+  doctrine :=
+    { sourceCard := 1
+      normalize := id
+      extraction := fun _ =>
+        { defaultValue := defaultValue
+          exceptions := ∅ } }
+  point := ULift.up 0
+
+/-- The fixture exposes its authored default after normalization. -/
+@[simp]
+theorem singletonConstantDefaultCode_normalized_defaultValue
+    (U : AtomCarrier.{u}) (defaultValue : Bool)
+    (input : (singletonConstantDefaultCode U defaultValue).doctrine.Source) :
+    (normalizedExtractionCode
+      (singletonConstantDefaultCode U defaultValue) input).defaultValue =
+        defaultValue :=
+  rfl
+
+/-- Positive instance: the constant-false fixture belongs to `P₀⁰`. -/
+theorem singletonConstantFalseCode_mem [DecidableEq U.Atom] :
+    falseDefaultFiniteCodeProperty
+      (singletonConstantDefaultCode U false) := by
+  intro input
+  rw [singletonConstantDefaultCode_normalized_defaultValue]
+
+/-- Negative instance: the constant-true fixture does not belong to `P₀⁰`. -/
+theorem singletonConstantTrueCode_not_mem [DecidableEq U.Atom] :
+    ¬ falseDefaultFiniteCodeProperty
+      (singletonConstantDefaultCode U true) := by
+  intro hmem
+  let input : FiniteSource.{u} 1 := ULift.up 0
+  have h := hmem input
+  simp only [singletonConstantDefaultCode_normalized_defaultValue] at h
+  exact Bool.noConfusion h
+
+/--
 G-121(D)'s restricted decoder `D₀⁰`; it forgets only the proof of the
 object condition and then applies the existing finite-code realization.
+`DecidableEq` is inherited from that ambient category and decoder.
 -/
 def falseDefaultFiniteCodeRealization [DecidableEq U.Atom] :
     FalseDefaultFiniteCodeCategory U ⥤ ExtractionInstance U :=
