@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-121-aat-finite-decoder-representability](G-121-aat-finite-decoder-representability.md)
-  (n1010 S3。有限decoderの対象・射の表示可能性)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
   G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
@@ -32,6 +30,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-121-aat-finite-decoder-representability](G-121-aat-finite-decoder-representability.md)
+  (`target-theorem-proved`。有限decoderの対象・射の表示範囲、有限carrier正規化、
+  無限supportと可算構文の表示限界を確定)
 - [G-120-aat-comparison-information-loss](G-120-aat-comparison-information-loss.md)
   (`target-theorem-proved`。観測核による比較判定、生成比較の情報損失分類、
   冪等像・canonical正規化における反映・lift・fiber構造を確定)

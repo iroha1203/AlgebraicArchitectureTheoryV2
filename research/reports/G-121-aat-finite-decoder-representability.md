@@ -12,11 +12,31 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: terminal fixed-target completion audit
-- pending proof obligations: none in the fixed A--E statement; terminal completion gates remain
-- current target state: `target-proof-candidate`
-- completion candidate: yes
-- next proof obligation: standard PR review, schema-complete final packet, and fresh whole-target Math A/B plus Lean A/B review
+- final completion audit PR: [#4479](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479), merge `04839ecccf4e426a68788fd6fec957467d202b18`
+- standard PR review: [PR comment 5638875031](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638875031), `Mergeable`
+- schema-complete final packet: [PR comment 5638898517](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638898517)
+- final math/Lean review and formal completion ledger: [PR comment 5638971421](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638971421), 4/4 `No major findings`, all gates pass
+- current proof obligation: none
+- pending proof obligations: none
+- current target state: `target-theorem-proved`
+- completion candidate: terminal
+- next proof obligation: none for G-121
+
+## Completion judgment (final, 2026-09-12)
+
+- candidate head: `1565481b09bb25a65fcdc613219b1f5a07e04876`
+- fixed GOAL blob: `6ad52ff6177f3b895b3bed89e399a5afb9821f18`
+- standard review: [PR comment 5638875031](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638875031), `Mergeable`
+- final packet: [PR comment 5638898517](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638898517)
+- final independent review and formal ledger: [PR comment 5638971421](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4479#issuecomment-5638971421), 4/4 `No major findings`, all gates pass
+- merge commit: `04839ecccf4e426a68788fd6fec957467d202b18`
+- verdict: `target-theorem-proved`
+- remaining proof obligations: none
+
+固定target A--Eは19 module・292宣言の実体へ対応し、全ての
+`discharge-required` premiseを放電した。statement、premise、certificate provenance、
+proof-use、field内容、route、nonvacuity、全方向、定義展開、依存、axiom、placeholderを
+独立4 laneで確認した。Research aggregate/full buildは実行していない。
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -2462,5 +2482,77 @@ accepting this report as mathematical evidence.
 All 19 modules are imported by `ResearchLean.AG` and listed in `research-modules.txt`.  The
 candidate carries no known remaining `discharge-required` premise and no known unchecked central
 claim, but those are inputs to the formal four-lane review, not a pre-review completion verdict.
-`target-theorem-proved` remains unavailable until the same-head standard review, final packet,
-all completion gates, CI, and the fresh whole-target review pass.
+At this candidate snapshot, `target-theorem-proved` was unavailable until the same-head standard
+review, final packet, all completion gates, CI, and the fresh whole-target review passed.
+
+## Cycle 20: terminal completion synchronization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 20
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 04839ecccf4e426a68788fd6fec957467d202b18
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "PR #4479 formal completion ledger comment 5638971421"
+  proof_dag_predecessors:
+    - "same-head standard PR review comment 5638875031"
+    - "schema-complete final packet comment 5638898517"
+    - "fresh four-lane final review and formal completion ledger comment 5638971421"
+    - "PR #4479 merge 04839ecccf4e426a68788fd6fec957467d202b18"
+  proof_obligation: "synchronize the merged target-theorem-proved verdict to GOAL, report, and index"
+  selection_reason: "all pre-merge completion gates passed on one fixed head and the completion audit PR merged"
+  expected_result_type: blocker-fixed
+  lean_targets: []
+  risks:
+    - "marking a gate complete before its fixed-head evidence"
+    - "calling static/typecheck acceptance alone proof completion"
+    - "overstating noncomputable representability as a decoder algorithm"
+  unchecked: []
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "All fixed G-121 A--E obligations and completion gates are discharged; GOAL, report, and index now record the terminal result."
+  completion_candidate: no
+  lean_artifacts: []
+  evidence:
+    - "final packet 5638898517: fixed A--E, 19 modules, 292 declarations, material premise/provenance/proof-use map, and bounded accepted-dependency trace"
+    - "standard PR review 5638875031: Mergeable"
+    - "fresh final review 5638971421: Math A, Math B, Lean A, and Lean B all No major findings"
+    - "formal completion ledger 5638971421: all 15 gates pass; no remaining obligations, blockers, or unchecked central claims"
+    - "PR #4479 merge 04839ecccf4e426a68788fd6fec957467d202b18; CI 7/7 pass"
+    - "Issue #4458 completion comment 5638977580"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - terminal lifecycle synchronization
+    conjuncts:
+      - "No theorem statement or proof body changes; this cycle records the already reviewed and merged terminal verdict."
+    undischarged_assumptions: []
+    acceptance_point: "The fixed G-121 target A--E is target-theorem-proved."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "the merged completion verdict drives the GOAL status, report proof state, and completed index entry"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "all 20 report YAML blocks parse"
+    - "git diff --check: pass"
+    - "terminal synchronization changes only GOAL, report, and index; no Lean source change"
+  blocking_findings: []
+  next_obligation: "merge this lifecycle synchronization and update Issue #4458; closing the tracking Issue still requires an explicit human instruction"
+```
