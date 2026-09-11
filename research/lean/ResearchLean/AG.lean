@@ -23,6 +23,7 @@ import ResearchLean.AG.ComparisonInformationLoss.KaroubiRestriction
 import ResearchLean.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness
 import ResearchLean.AG.ComparisonInformationLoss.CanonicalNormalizationRestriction
 import ResearchLean.AG.FiniteDecoderRepresentability.OnePointCode
+import ResearchLean.AG.FiniteDecoderRepresentability.EvaluationClassification
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
