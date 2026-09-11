@@ -945,7 +945,7 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.endpointFiniteTargetCofinitePresentation_typed_hom_comm
     - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_ofPresentation
     - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_id
-    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_comp
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_compPresentation
   claim_mapping:
     theorem_names:
       - typedPresentationToSemantic_sourceMap
@@ -955,7 +955,7 @@ result:
       - endpointFiniteTargetCofinitePresentation_typed_hom_comm
       - finiteCodeCartRealization_map_ofPresentation
       - typedPresentationToSemantic_id
-      - typedPresentationToSemantic_comp
+      - finiteCodeCartRealization_map_compPresentation
     source_labels:
       - "fixed target B: coverage presentation source map and Atom permutation agree with the decoder arrow"
       - "fixed target B: identity and composition agree under typedPresentationToSemantic and D0"

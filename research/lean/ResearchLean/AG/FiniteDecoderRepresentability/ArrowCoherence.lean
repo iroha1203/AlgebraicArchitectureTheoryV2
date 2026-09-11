@@ -19,7 +19,10 @@ open CategoryTheory AtomFoundation DoctrineFiberProduct
 
 variable {U : AtomCarrier.{u}}
 
-/-- Typed decoding reads exactly the authored source-map field. -/
+/--
+G-121(B3) decoder API: typed decoding reads exactly the authored source-map
+field.  The `simp` direction normalizes the semantic component to source data.
+-/
 @[simp]
 theorem typedPresentationToSemantic_sourceMap
     [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
@@ -28,7 +31,10 @@ theorem typedPresentationToSemantic_sourceMap
       presentation.sourceMap :=
   rfl
 
-/-- Typed decoding reads exactly the permutation decoded from the authored table. -/
+/--
+G-121(B3) decoder API: typed decoding reads `AtomPermutationCode.toEquiv` of
+the authored table.  The `simp` direction normalizes semantics to code data.
+-/
 @[simp]
 theorem typedPresentationToSemantic_atomEquiv
     [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
@@ -38,8 +44,9 @@ theorem typedPresentationToSemantic_atomEquiv
   rfl
 
 /--
-The G-112 coverage presentation's decoded source map is the semantic source map
-transported across the generated finite endpoint enumerations.
+G-121(B3) coverage specialization: the G-112 presentation's decoded source map
+is the semantic source map transported across its finite endpoint enumerations.
+The `Finite` instances and `htarget` are exactly the constructor's hypotheses.
 -/
 theorem endpointFiniteTargetCofinitePresentation_decoded_sourceMap_apply
     [DecidableEq U.Atom] (input : CartSemanticInput U)
@@ -57,7 +64,11 @@ theorem endpointFiniteTargetCofinitePresentation_decoded_sourceMap_apply
           (finiteSourceEquiv input.source.doctrine.Source source)) :=
   rfl
 
-/-- The G-112 coverage presentation itself decodes the identity Atom permutation. -/
+/--
+G-121(B3) coverage specialization: the G-112 presentation itself decodes the
+identity Atom permutation.  The input permutation remains in the target anchor;
+the `Finite` instances and `htarget` come from the G-112 constructor.
+-/
 theorem endpointFiniteTargetCofinitePresentation_decoded_atomEquiv
     [DecidableEq U.Atom] (input : CartSemanticInput U)
     [Finite input.source.doctrine.Source]
@@ -69,8 +80,9 @@ theorem endpointFiniteTargetCofinitePresentation_decoded_atomEquiv
   exact AtomPermutationCode.toEquiv_refl
 
 /--
-The G-112 generated endpoint isomorphisms and the typed decoder form the actual
-semantic square used by the coverage witness.
+G-121(B3) main coverage bridge: the G-112 generated endpoint isomorphisms and
+the typed decoder form the actual semantic square used by the coverage witness.
+Its finiteness and target-extraction hypotheses are those of that constructor.
 -/
 theorem endpointFiniteTargetCofinitePresentation_typed_hom_comm
     [DecidableEq U.Atom] (input : CartSemanticInput U)
@@ -86,7 +98,10 @@ theorem endpointFiniteTargetCofinitePresentation_typed_hom_comm
           input.hom.doctrineHom.atomEquiv).hom := by
   exact endpointFiniteTargetCofinitePresentation_hom_comm input htarget
 
-/-- `D₀` maps a represented morphism to the same arrow as direct typed decoding. -/
+/--
+G-121(B3) decoder bridge: `D₀` maps an authored quotient representative to the
+same arrow as direct typed decoding.  The `simp` direction exposes that decoder.
+-/
 @[simp]
 theorem finiteCodeCartRealization_map_ofPresentation
     [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
@@ -96,7 +111,10 @@ theorem finiteCodeCartRealization_map_ofPresentation
       typedPresentationToSemantic presentation :=
   rfl
 
-/-- The typed identity presentation and `D₀` both evaluate to semantic identity. -/
+/--
+G-121(B3) identity law: the existing typed identity presentation evaluates to
+semantic identity by `D₀.map_id`.  The `simp` direction selects that identity.
+-/
 @[simp]
 theorem typedPresentationToSemantic_id
     [DecidableEq U.Atom] (object : FiniteInstanceCode U) :
@@ -107,15 +125,24 @@ theorem typedPresentationToSemantic_id
     𝟙 object.toSemantic at h
   exact h
 
-/-- Typed composition and the compositional action of `D₀` have the same evaluation. -/
-theorem typedPresentationToSemantic_comp
+/--
+G-121(B3) composition law: `D₀` evaluates the quotient representative of the
+existing `compPresentation` as the composite of the two represented arrows.
+-/
+theorem finiteCodeCartRealization_map_compPresentation
     [DecidableEq U.Atom]
     {source middle target : FiniteInstanceCode U}
     (first : CartPresentationBetween source middle)
     (second : CartPresentationBetween middle target) :
-    typedPresentationToSemantic (compPresentation first second) =
-      typedPresentationToSemantic first ≫
-        typedPresentationToSemantic second := by
+    finiteCodeCartRealization.map
+        (FiniteCodeCartHom.ofPresentation (compPresentation first second)) =
+      finiteCodeCartRealization.map
+          (FiniteCodeCartHom.ofPresentation first) ≫
+        finiteCodeCartRealization.map
+          (FiniteCodeCartHom.ofPresentation second) := by
+  rw [finiteCodeCartRealization_map_ofPresentation,
+    finiteCodeCartRealization_map_ofPresentation,
+    finiteCodeCartRealization_map_ofPresentation]
   exact toSemanticCart_compPresentation_hom first second
 
 #assert_standard_axioms_only AAT.AG.FiniteDecoderRepresentability
