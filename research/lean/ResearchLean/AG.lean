@@ -38,6 +38,7 @@ import ResearchLean.AG.FiniteDecoderRepresentability.FiniteCodeNormalization
 import ResearchLean.AG.FiniteDecoderRepresentability.FiniteNormalizationRealizationIso
 import ResearchLean.AG.FiniteDecoderRepresentability.FinOneCounterexample
 import ResearchLean.AG.FiniteDecoderRepresentability.NatAdjacentSwap
+import ResearchLean.AG.FiniteDecoderRepresentability.NatSwapAnchoredCoverage
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
