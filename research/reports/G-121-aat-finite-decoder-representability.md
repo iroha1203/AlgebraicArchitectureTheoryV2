@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 1 review of A's raw code/continuous-map equivalence
-- pending proof obligations: the remaining claims in A, then B--E
+- current proof obligation: Cycle 2 review of A's evaluation-quotient classification
+- pending proof obligations: A's finite/infinite carrier and transport claims, then B--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A's evaluation quotient and finite/infinite carrier classification
+- next proof obligation: A's finite/infinite carrier fiber classification
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -134,3 +134,129 @@ Cycle 1 material premise roles are:
   exception set; both are constructed in the definitions.
 - `conclusion-equivalent-risk`: none. The inverse accepts a genuine continuous map, and
   its continuity proof is used to construct, rather than store, the finite exception set.
+
+## Cycle 2 — Evaluation quotient and the existing finite/cofinite encoder
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 2
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: edfe21ec29a0fb582d21d8b44460d82ba9269fba
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 1: raw code/continuous-map equivalence discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeContinuousMapEquiv
+    - AAT.AG.DoctrineFiberProduct.finiteOrCofiniteAtomPredicateCode
+    - AAT.AG.DoctrineFiberProduct.finiteOrCofiniteAtomPredicateCode_holds_iff
+    - AAT.AG.DoctrineFiberProduct.atomPredicateCode_finiteOrCofinite
+  proof_obligation: "A2: define pointwise evaluation equality, construct the quotient equivalence with Bool predicates whose true set is finite or cofinite, and identify the inverse with the existing G-112 encoder"
+  selection_reason: "The quotient classification is the next direct conjunct of A and fixes the canonical semantic image used by the finite/infinite fiber classification. Reusing the G-112 encoder also closes the first explicit predecessor connection required by A."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationQuotientEquiv
+  risks:
+    - "installing a global Setoid instance that changes unrelated quotient inference"
+    - "encoding an arbitrary Bool predicate rather than proving the finite/cofinite image condition"
+    - "constructing a parallel canonical encoder instead of using the accepted G-112 code"
+    - "proving only one inverse or only a Prop-valued surrogate"
+  unchecked:
+    - "A's finite/infinite carrier fiber classification"
+    - "A's permutation transport and identity/inverse/composition coherence"
+    - "B--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined an explicit evaluation setoid without a global instance; mapped every raw code to its finite-or-cofinite Bool predicate using the accepted code-classification theorem; used the existing finiteOrCofiniteAtomPredicateCode as the inverse; proved its Bool evaluation formula and both quotient inverses; and packaged the required equivalence."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationEq
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationSetoid
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_eval
+    - AAT.AG.FiniteDecoderRepresentability.evaluationQuotientToFiniteOrCofiniteBoolPredicate
+    - AAT.AG.FiniteDecoderRepresentability.finiteOrCofiniteBoolPredicateToEvaluationQuotient
+    - AAT.AG.FiniteDecoderRepresentability.evaluationQuotient_leftInverse
+    - AAT.AG.FiniteDecoderRepresentability.evaluationQuotient_rightInverse
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationQuotientEquiv
+  claim_mapping:
+    theorem_names:
+      - atomPredicateCodeEvaluationEq
+      - atomPredicateCodeEvaluationSetoid
+      - FiniteOrCofiniteBoolPredicate.toCode_eval
+      - evaluationQuotient_leftInverse
+      - evaluationQuotient_rightInverse
+      - atomPredicateCodeEvaluationQuotientEquiv
+    source_labels:
+      - "fixed target A: q~q' is equality of evaluation on D"
+      - "fixed target A: Code(D)/~ is equivalent to Bool predicates with finite or cofinite true set"
+      - "fixed target A: existing finiteOrCofiniteAtomPredicateCode agrees with the classification"
+    conjuncts:
+      - "evaluation equality is an equivalence relation on raw codes"
+      - "every raw code evaluates to a Bool predicate with finite true set or finite false set"
+      - "the canonical inverse is the existing G-112 finite/cofinite encoder"
+      - "the canonical encoder evaluates pointwise to the input Bool predicate"
+      - "both quotient-level inverse laws hold"
+    undischarged_assumptions: []
+    acceptance_point: "The relation is exactly pointwise equality of existing eval values, the codomain retains Bool rather than replacing it by an unrelated Prop quotient, and the inverse is generated by the accepted finite/cofinite code construction from the subtype evidence."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "A2 evaluation relation and setoid"
+      - "A2 finite/cofinite semantic image and quotient equivalence"
+      - "A2 pointwise agreement with the existing G-112 encoder"
+    remaining:
+      - "A finite/infinite carrier fiber claims and transport coherence"
+      - "all B--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "finite/cofinite property of a code is derived by atomPredicateCode_finiteOrCofinite"
+      - "inverse raw code is constructed by finiteOrCofiniteAtomPredicateCode from the predicate subtype evidence"
+    unresolved: []
+  proof_use:
+    used:
+      - "pointwise evaluation equality supplies quotient well-definedness"
+      - "finite/cofinite evidence constructs the inverse code"
+      - "finiteOrCofiniteAtomPredicateCode_holds_iff proves the actual Bool evaluation formula"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean; exit 0"
+    - "namespace #assert_standard_axioms_only: 14 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
+  blocking_findings: []
+  next_obligation: "A3: prove evaluation injectivity for infinite carriers and the exact two-code fiber classification, including the empty carrier, for finite carriers"
+```
+
+### Cycle 2 acceptance spine
+
+`atomPredicateCodeEvaluationSetoid` is an explicit value rather than a global instance.
+The forward map uses the existing theorem that every exception table is finite or
+cofinite. The inverse calls `finiteOrCofiniteAtomPredicateCode` itself, and
+`FiniteOrCofiniteBoolPredicate.toCode_eval` proves that this accepted G-112 construction
+has exactly the requested Bool evaluation. Quotient soundness closes the raw-code class
+direction; subtype extensionality closes the predicate direction.
+
+Cycle 2 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed `AtomCarrier U`, `[DecidableEq U.Atom]`, and
+  either an existing raw code or a Bool predicate carrying the target's finite/cofinite
+  image condition.
+- `direction-hypothesis`: none.
+- `discharge-required`: finite/cofinite image of existing codes, inverse code
+  construction, quotient well-definedness, pointwise encoder agreement, and both
+  inverse laws; all are constructed in the module.
+- `conclusion-equivalent-risk`: none. The subtype evidence states membership in the
+  target semantic image; it does not contain a raw code, quotient inverse, or equality
+  certificate.
