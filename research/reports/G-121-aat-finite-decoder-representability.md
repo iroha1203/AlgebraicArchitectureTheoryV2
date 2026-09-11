@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 17 review of E's anchored coverage contrast
-- pending proof obligations: E subset-indexed/cardinality obstruction
+- current proof obligation: Cycle 18 review of E's subset-indexed automorphism injection
+- pending proof obligations: E uncountability and countable-decoder/syntax obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: E's arbitrary-subset adjacent-swap family and injectivity into `Aut(X_*)`
+- next proof obligation: derive `Aut(X_*)` uncountability and non-surjectivity of every decoder from a countable syntax type
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -2182,3 +2182,147 @@ and the displayed code arrow is the authored identity presentation.  Its decoded
 identity, so the arrow-category square reduces to `id ≫ u_σ.hom = id ≫ u_σ.hom`.  The combined
 theorem keeps Cycle 16's exact no-preimage statement for that same hom.  Thus endpoint-isomorphic
 coverage and fixed-code non-representability coexist without changing either notion.
+
+## Cycle 18: subset-indexed automorphism injection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 18
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 9b5a0991b62397c6ebf4542d54d5ad5c80d2e1ed
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 17: anchored coverage contrast proved"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_extracts
+    - AAT.AG.FiniteDecoderRepresentability.natSwapSemanticObject
+    - Equiv.natSumNatEquivNat
+  proof_obligation: "E3: for every subset S of Nat construct the pairwise swap sigma_S and identity-source semantic automorphism u_S; prove sigma_S(2n)=2n+1 iff n belongs to S; prove S maps to u_S injectively"
+  selection_reason: "The subset family is the explicit cardinal lower bound required before the abstract countability contradiction can be stated without assuming an uncountability certificate."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSubsetSwaps.lean
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_even_eq_odd_iff
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut_injective
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAutEmbedding
+  risks:
+    - "accepting decidable membership or a finite subset instead of arbitrary Set Nat"
+    - "constructing only functions rather than actual permutations and semantic automorphisms"
+    - "assuming subset injectivity as a field or external certificate"
+    - "proving distinct permutations without connecting them to distinct semantic Iso values"
+  unchecked:
+    - "E uncountability of Aut(X_*)"
+    - "E arbitrary countable decoder non-surjectivity"
+    - "E countable alphabet/finite-list/object-and-hom syntax specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For arbitrary S : Set Nat, constructed an involutive conditional swap on Nat + Nat and conjugated it to the pairwise permutation sigma_S of Nat; proved its even and odd behavior in both membership branches and the exact even-output iff; constructed semantic hom and inverse on the fixed all-true object with identity source maps; assembled u_S as an Iso; extracted equality of Atom equivalences from equality of semantic Isos and used the even-output iff to prove subset injectivity; packaged the result as an embedding of Set Nat into Aut(X_*)."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSubsetSwaps.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn_inl_of_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn_inl_of_not_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn_inr_of_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn_inr_of_not_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwapFn_involutive
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwap
+    - AAT.AG.FiniteDecoderRepresentability.subsetSumSwap_apply
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_even_of_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_even_of_not_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_odd_of_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_odd_of_not_mem
+    - AAT.AG.FiniteDecoderRepresentability.subsetAdjacentSwap_even_eq_odd_iff
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwap_extracts_iff
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticHom
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticInv
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticHom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticHom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticInv_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSwapSemanticInv_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut_hom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut_hom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut_injective
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAutEmbedding
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAutEmbedding_apply
+  claim_mapping:
+    theorem_names:
+      - subsetSumSwapFn_involutive
+      - subsetAdjacentSwap_even_of_mem
+      - subsetAdjacentSwap_even_of_not_mem
+      - subsetAdjacentSwap_odd_of_mem
+      - subsetAdjacentSwap_odd_of_not_mem
+      - subsetAdjacentSwap_even_eq_odd_iff
+      - natSubsetSemanticAut
+      - natSubsetSemanticAut_injective
+      - natSubsetSemanticAutEmbedding
+    source_labels:
+      - "fixed target E: swap only the pair at n when n belongs to S"
+      - "fixed target E: sigma_S(2n)=2n+1 iff n belongs to S"
+      - "fixed target E: identity source map gives u_S in Aut(X_*)"
+      - "fixed target E: S maps to u_S injectively"
+    conjuncts:
+      - "S ranges over arbitrary Set Nat with classical internal choice only"
+      - "the conditional function is proved involutive and promoted to Equiv.Perm"
+      - "both elements of each pair are swapped for membership and fixed for nonmembership"
+      - "semantic hom and inverse are built from the fixed all-true extraction"
+      - "Iso equality implies permutation equality through the public hom Atom component"
+      - "the even-input iff recovers pointwise subset membership"
+    undischarged_assumptions: []
+    acceptance_point: "No decidability, finiteness, permutation table, semantic arrow, or injectivity certificate is supplied by callers. Classical logic is used internally only to branch on membership in an arbitrary subset."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "E arbitrary-subset pair permutations"
+      - "E subset-indexed identity-source semantic automorphisms"
+      - "E exact membership evaluation"
+      - "E injection Set Nat into Aut(X_*)"
+    remaining:
+      - "E uncountability of Aut(X_*)"
+      - "E arbitrary countable decoder non-surjectivity"
+      - "E countable syntax specialization"
+  certificate_provenance:
+    discharged:
+      - "conditional summand definition and branch proofs yield involutivity"
+      - "conjugation by the even/odd equivalence yields a total Nat permutation"
+      - "the fixed all-true decoded API yields semantic exactness"
+      - "semantic Iso equality is projected to the actual Atom equivalence"
+      - "the proved even-output iff reconstructs subset extensional equality"
+    unresolved: []
+  proof_use:
+    used:
+      - "summand involutivity supplies the Equiv.Perm constructor"
+      - "membership/nonmembership computations prove the exact evaluation iff"
+      - "forward and inverse semantic arrows supply the Iso"
+      - "hom Atom-equivalence projection and the evaluation iff prove injection"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.FiniteDecoderRepresentability.NatSwapAnchoredCoverage"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/NatSubsetSwaps.lean"
+    - "namespace #assert_standard_axioms_only: 27 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "E4: use the embedding Set Nat into Aut(X_*) and Cantor's theorem to prove Aut(X_*) uncountable, then refute surjectivity of every map from a countable type"
+```
+
+### Cycle 18 acceptance spine
+
+An arbitrary subset controls a literal involution of `Nat ⊕ Nat`: membership exchanges the two
+summands at that index and nonmembership fixes them.  Conjugating by the even/odd equivalence
+gives a permutation of `Nat` with the required pair computations.  The constant-true semantic
+object admits that permutation with identity source map, and its actual inverse supplies a
+semantic automorphism.  Equality of two such Isos forces equality of their hom Atom
+equivalences; evaluating at `2n` then recovers membership in the original subsets.  This proves
+the injection into `Aut(X_*)` explicitly, before any cardinality theorem is invoked.
