@@ -1297,3 +1297,77 @@ Cycle 10 material premise roles are:
   the thirteen declarations.
 - `conclusion-equivalent-risk`: none. The sufficient side receives no presentation, source-map
   equality, Atom table, extraction equality, endpoint isomorphism, or decode equality.
+
+## Cycle 11: infinite-carrier consequences and D0 faithfulness
+
+```yaml
+cycle: 11
+status: implemented-awaiting-review
+lean:
+  module: ResearchLean.AG.FiniteDecoderRepresentability.FixedArrowConsequences
+  declarations:
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_defaultValue_eq_iff_apply_infty_eq
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_evaluationEq_transport
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_defaultValue_eq_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_injective
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_faithful
+  claim_mapping:
+    theorem_names:
+      - normalizedExtractionCode_defaultValue_eq_iff_apply_infty_eq
+      - normalizedExtractionCode_defaultValue_eq_of_infinite
+      - exists_fixedPresentation_decode_iff_of_infinite
+      - exists_finiteCodeCartHom_map_iff_of_infinite
+      - finiteCodeCartRealization_faithful
+    source_labels:
+      - "fixed target C: default preservation is equality at infinity"
+      - "fixed target C: on an infinite Atom carrier semantic exactness supplies the default equation"
+      - "fixed target C: representability iff finite actual support on an infinite carrier"
+      - "fixed target C: D0 is faithful on every carrier"
+    undischarged_assumptions: []
+    acceptance_point: "Infinity is used only to recover equality of raw finite-exception codes from their actual evaluations. Faithfulness is proved from the existing decoded-equality quotient and does not use carrier finiteness."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C default condition as equality at infinity"
+      - "C infinite-carrier reduction to finite support alone"
+      - "C D0 faithfulness from the decoded-equality quotient"
+    remaining:
+      - "all D--E obligations"
+  certificate_provenance:
+    discharged:
+      - "semantic extraction_iff supplies evaluation equality at every actual Atom"
+      - "Infinite.exists_notMem_finset, through the Cycle 3 theorem, recovers raw-code and default equality"
+      - "the quotient's defining relation is equality of decoded semantic arrows"
+    unresolved: []
+  proof_use:
+    used:
+      - "the semantic Atom equivalence transports source evaluation to target evaluation"
+      - "the infinite-carrier raw evaluation injectivity theorem supplies default preservation"
+      - "Cycle 10 fixed-arrow iff removes the now-automatic default conjunct"
+      - "map equality is used exactly as the quotient relation in faithfulness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowConsequences.lean"
+    - "namespace #assert_standard_axioms_only: 7 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D: finite-carrier false-default full subcategory, full faithfulness of its restricted decoder, normalization functor, realization natural isomorphism, and finite-carrier non-fullness witness outside the restriction"
+```
+
+### Cycle 11 acceptance spine
+
+For each semantic arrow and normalized source, extraction exactness gives pointwise equality
+between the target table and the source table transported by the actual Atom permutation.  On
+an infinite carrier, Cycle 3 evaluation injectivity upgrades this to raw-code equality, whose
+default component is the condition used by Cycle 10.  Thus both typed-presentation and quotient
+representability reduce exactly to finite actual support.  Separately, `FiniteCodeCartHom` is
+already quotiented by decoded semantic equality, so equality after `D0.map` is precisely the
+quotient relation and yields faithfulness without an infinity assumption.

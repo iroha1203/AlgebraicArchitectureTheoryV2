@@ -32,6 +32,7 @@ import ResearchLean.AG.FiniteDecoderRepresentability.DiscreteCompactness
 import ResearchLean.AG.FiniteDecoderRepresentability.ArrowCoherence
 import ResearchLean.AG.FiniteDecoderRepresentability.PermutationCodeClassification
 import ResearchLean.AG.FiniteDecoderRepresentability.FixedArrowClassification
+import ResearchLean.AG.FiniteDecoderRepresentability.FixedArrowConsequences
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
