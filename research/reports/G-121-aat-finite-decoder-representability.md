@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 15 review of D's fixed `Fin 1` counterexample
-- pending proof obligations: E
+- current proof obligation: Cycle 16 review of E's fixed adjacent-swap automorphism
+- pending proof obligations: E anchored coverage and subset-indexed/cardinality obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: E's fixed Nat carrier, adjacent-swap semantic automorphism, and fixed-endpoint non-representability
+- next proof obligation: E's anchored coverage witness for the same non-representable fixed-endpoint arrow
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1900,3 +1900,155 @@ false-default singleton exception table and hence identifies the full pointed ra
 original code category, Cycle 10's necessary default equality would force `false = true` in one
 direction and `true = false` in the other.  Thus the semantic isomorphism exists exactly where
 claimed and cannot be promoted to an isomorphism between the original authored codes.
+
+## Cycle 16: fixed infinite-support adjacent-swap automorphism
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 16
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 1186ec9a41071a4f290152d94b0e59e6213513cc
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 15: all D obligations discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm
+    - AAT.AG.DoctrineFiberProduct.FiniteInstanceCode.toSemantic
+  proof_obligation: "E1: construct the fixed Nat carrier and all-true singleton-source code, adjacent-pair semantic automorphism, all-point movement, fixed-endpoint decoding nonexistence, decoder non-fullness, and one-point lift"
+  selection_reason: "The fixed infinite-support witness is the common predecessor for E's anchored coverage contrast and its subset-indexed uncountability strengthening."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatAdjacentSwap.lean
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso
+    - AAT.AG.FiniteDecoderRepresentability.not_exists_natSwapCodeHom
+    - AAT.AG.FiniteDecoderRepresentability.natSwap_finiteCodeCartRealization_not_full
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapOnePointHomeomorph
+  risks:
+    - "claiming the fixed endomorphism type is empty even though the identity arrow exists"
+    - "replacing the literal code endpoint to manufacture a presentation"
+    - "supplying an infinite-support certificate or semantic exactness witness as input"
+    - "stating non-fullness without connecting it to an actual target hom"
+    - "requiring finite support for the one-point homeomorphism"
+  unchecked:
+    - "E anchored coverage witness"
+    - "E subset-indexed automorphisms, injectivity, and uncountability"
+    - "E arbitrary countable decoder non-surjectivity and countable syntax specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the literal Nat carrier, singleton-source identity-normalized all-true code P_*, and X_*=D0(P_*); defined the adjacent swap by XOR with one and proved its even/odd equations and that every Atom moves; built an identity-source semantic involution and Iso; identified its actual support with the whole carrier; used C's infinite-carrier decoder-image iff to refute exactly the existence of a code hom mapping to u_sigma.hom; derived failure of Full for D0; and instantiated A's unrestricted one-point homeomorphism with its infinity and Atom computations."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatAdjacentSwap.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCarrier
+    - AAT.AG.FiniteDecoderRepresentability.natSwapTrueTable
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode
+    - AAT.AG.FiniteDecoderRepresentability.natSwapSemanticObject
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_extraction
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_point
+    - AAT.AG.FiniteDecoderRepresentability.natSwapTrueTable_eval
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapNat
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_apply
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_even
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_odd
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_ne
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_extracts
+    - AAT.AG.FiniteDecoderRepresentability.natSwapCode_extracts_iff
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticHom
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso_hom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso_hom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso_inv_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso_inv_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_support_eq_univ
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_support_infinite
+    - AAT.AG.FiniteDecoderRepresentability.not_exists_natSwapCodeHom
+    - AAT.AG.FiniteDecoderRepresentability.natSwap_finiteCodeCartRealization_not_full
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapOnePointHomeomorph
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapOnePointHomeomorph_infty
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapOnePointHomeomorph_coe
+  claim_mapping:
+    theorem_names:
+      - natAdjacentSwap_even
+      - natAdjacentSwap_odd
+      - natAdjacentSwap_ne
+      - natAdjacentSwapSemanticIso
+      - natAdjacentSwap_support_infinite
+      - not_exists_natSwapCodeHom
+      - natSwap_finiteCodeCartRealization_not_full
+      - natAdjacentSwapOnePointHomeomorph
+    source_labels:
+      - "fixed target E: D is Nat; sourceCard one; normalize identity; point unique; all tables true empty"
+      - "fixed target E: sigma swaps 2n with 2n+1"
+      - "fixed target E: identity source map produces u_sigma and every Atom moves"
+      - "fixed target E: no P_* to P_* arrow decodes u_sigma.hom, so D0 is not full"
+      - "fixed target E: sigma-plus is a homeomorphism by A's transport"
+    conjuncts:
+      - "the exact fixed code and semantic object are constructed"
+      - "both adjacent-swap evaluation equations and involutivity are proved"
+      - "actual support equals univ and is infinite"
+      - "nonexistence concerns only a preimage of the specified semantic hom at literal endpoints"
+      - "Full.map_surjective at the witness contradicts fixed-endpoint non-representability"
+      - "the one-point extension fixes infinity and restricts to sigma on Atoms"
+    undischarged_assumptions: []
+    acceptance_point: "Nat infinitude and discrete topology are canonical instances for the fixed carrier. The permutation, semantic laws, support, nonexistence witness, and homeomorphism are all constructed internally."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "E fixed Nat code and semantic object"
+      - "E adjacent-pair semantic automorphism and all-point movement"
+      - "E fixed-endpoint non-representability"
+      - "E D0 non-fullness"
+      - "E one-point homeomorphism"
+    remaining:
+      - "E anchored coverage witness and square"
+      - "E arbitrary-subset automorphism family and injectivity"
+      - "E uncountability and arbitrary countable decoder non-surjectivity"
+      - "E countable syntax specialization"
+  certificate_provenance:
+    discharged:
+      - "XOR involutivity constructs the permutation inverse laws"
+      - "the all-true table derives semantic extraction exactness"
+      - "pointwise movement identifies support with univ"
+      - "Cycle 11's infinite-carrier classification supplies the exact image obstruction"
+      - "Cycle 5's arbitrary-permutation lift supplies the one-point homeomorphism"
+    unresolved: []
+  proof_use:
+    used:
+      - "the general XOR computation proves the even and odd target equations and all-point movement"
+      - "XOR involutivity proves both permutation and semantic Iso inverse laws"
+      - "all-point movement is used to prove infinite actual support"
+      - "infinite support refutes the exact decoder-preimage existential"
+      - "the semantic witness is passed to Full.map_surjective"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.FiniteDecoderRepresentability.FinOneCounterexample"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/NatAdjacentSwap.lean"
+    - "namespace #assert_standard_axioms_only: 32 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "E2: construct AnchoredCoverageWitness for u_sigma.hom with identity source anchor, u_sigma target anchor, idTypedPresentation P_*, and evaluate the square"
+```
+
+### Cycle 16 acceptance spine
+
+The fixed code has one source, identity normalization, and the constant-true raw table.  XOR with
+one is an involution satisfying the two required adjacent-pair equations and moves every natural
+number.  The resulting identity-source semantic automorphism therefore has actual support equal
+to the infinite whole carrier.  Cycle 11's fixed-endpoint classification rules out precisely a
+code arrow mapping to this hom; it does not erase the existing identity endomorphism.  Applying
+that counterexample to `Full.map_surjective` proves the decoder is not full.  Independently, the
+same unrestricted permutation extends through Cycle 5 to a homeomorphism of the one-point
+compactification, fixing infinity and acting by the adjacent swap on every embedded Atom.
