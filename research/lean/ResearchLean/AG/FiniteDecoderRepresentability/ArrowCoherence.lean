@@ -22,6 +22,7 @@ variable {U : AtomCarrier.{u}}
 /--
 G-121(B3) decoder API: typed decoding reads exactly the authored source-map
 field.  The `simp` direction normalizes the semantic component to source data.
+`DecidableEq U.Atom` is inherited from the existing finite-code decoder.
 -/
 @[simp]
 theorem typedPresentationToSemantic_sourceMap
@@ -34,6 +35,7 @@ theorem typedPresentationToSemantic_sourceMap
 /--
 G-121(B3) decoder API: typed decoding reads `AtomPermutationCode.toEquiv` of
 the authored table.  The `simp` direction normalizes semantics to code data.
+`DecidableEq U.Atom` is inherited from that existing permutation decoder.
 -/
 @[simp]
 theorem typedPresentationToSemantic_atomEquiv
@@ -101,6 +103,7 @@ theorem endpointFiniteTargetCofinitePresentation_typed_hom_comm
 /--
 G-121(B3) decoder bridge: `D₀` maps an authored quotient representative to the
 same arrow as direct typed decoding.  The `simp` direction exposes that decoder.
+`DecidableEq U.Atom` is the existing finite-code evaluator's requirement.
 -/
 @[simp]
 theorem finiteCodeCartRealization_map_ofPresentation
@@ -114,6 +117,7 @@ theorem finiteCodeCartRealization_map_ofPresentation
 /--
 G-121(B3) identity law: the existing typed identity presentation evaluates to
 semantic identity by `D₀.map_id`.  The `simp` direction selects that identity.
+`DecidableEq U.Atom` is inherited from the finite-code identity and decoder.
 -/
 @[simp]
 theorem typedPresentationToSemantic_id
@@ -128,6 +132,7 @@ theorem typedPresentationToSemantic_id
 /--
 G-121(B3) composition law: `D₀` evaluates the quotient representative of the
 existing `compPresentation` as the composite of the two represented arrows.
+`DecidableEq U.Atom` is inherited from the finite-code composition and decoder.
 -/
 theorem finiteCodeCartRealization_map_compPresentation
     [DecidableEq U.Atom]
