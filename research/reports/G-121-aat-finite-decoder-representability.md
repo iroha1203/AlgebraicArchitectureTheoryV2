@@ -308,6 +308,7 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eval_injective_of_infinite
     - AAT.AG.FiniteDecoderRepresentability.continuousMap_eq_of_coe_eq_of_infinite
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_defaultValue
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_eval
     - AAT.AG.FiniteDecoderRepresentability.eq_finitePredicateCode_of_eval_eq
     - AAT.AG.FiniteDecoderRepresentability.FinitePredicateCodeFiber
@@ -373,7 +374,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean"
-    - "namespace #assert_standard_axioms_only: 17 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 18 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
   next_obligation: "A4: prove the existing G-112 encoder selects the default-false fiber code on finite carriers and the unique raw code on infinite carriers; then prove transport compatibility and identity/inverse/composition coherence"
@@ -398,11 +399,12 @@ carrier is nonempty.
 Cycle 3 material premise roles are:
 
 - `ambient-boundary`: arbitrary fixed `AtomCarrier U` and the existing evaluator's
-  `[DecidableEq U.Atom]`; the two branches add exactly `[Infinite U.Atom]` or
-  `[Finite U.Atom]` from the fixed target. Finite enumeration is constructed
-  noncomputably inside `finitePredicateCode` and is not an exposed premise.
-- `direction-hypothesis`: pointwise evaluation equality in the raw-code lemma and
-  equality on the embedded Atom carrier in the continuous-map lemma.
+  `[DecidableEq U.Atom]`.
+- `direction-hypothesis`: the fixed target's branch assumptions `[Infinite U.Atom]`
+  and `[Finite U.Atom]`, pointwise evaluation equality in the raw-code lemma, and
+  equality on the embedded Atom carrier in the continuous-map lemma. Finite
+  enumeration is constructed noncomputably inside `finitePredicateCode` and is not
+  an exposed premise.
 - `discharge-required`: recovery of the infinite default, both raw structure fields,
   construction and exhaustiveness of the finite fiber, exact exception tables, and
   empty-carrier-safe distinction; all are proved in the module.

@@ -133,6 +133,16 @@ noncomputable def finitePredicateCode (predicate : U.Atom → Bool)
       exceptions := Finset.univ.filter (fun atom => predicate atom ≠ defaultValue) }
 
 /--
+G-121(A3) constructor API: the authored default is preserved definitionally.
+The only premise is the target's finite-carrier branch.
+-/
+@[simp]
+theorem finitePredicateCode_defaultValue (predicate : U.Atom → Bool)
+    (defaultValue : Bool) :
+    (finitePredicateCode predicate defaultValue).defaultValue = defaultValue := by
+  rfl
+
+/--
 G-121(A3) API theorem: the finite constructor evaluates to its input predicate.
 Its premises are exactly target-level finiteness and the evaluator's decidable equality.
 -/
@@ -211,7 +221,8 @@ theorem finitePredicateCode_false_ne_true (predicate : U.Atom → Bool) :
     finitePredicateCode predicate false ≠ finitePredicateCode predicate true := by
   intro h
   have hdefault := congrArg AtomPredicateCode.defaultValue h
-  simp [finitePredicateCode] at hdefault
+  simp only [finitePredicateCode_defaultValue] at hdefault
+  exact Bool.noConfusion hdefault
 
 /--
 G-121(A3) API identification of the first exact fiber code: the underlying set
@@ -241,7 +252,9 @@ theorem finitePredicateCode_extensions_apply_infty_ne [DecidableEq U.Atom]
     (predicate : U.Atom → Bool) :
     atomPredicateCodeToContinuousMap (finitePredicateCode predicate false) ∞ ≠
       atomPredicateCodeToContinuousMap (finitePredicateCode predicate true) ∞ := by
-  simp [finitePredicateCode]
+  simp only [atomPredicateCodeToContinuousMap_apply_infty,
+    finitePredicateCode_defaultValue]
+  decide
 
 /--
 G-121(A3) API consequence of the infinity-value theorem: the two finite
