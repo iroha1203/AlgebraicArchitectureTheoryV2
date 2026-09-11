@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 11 review of C's infinite-carrier consequences and D0 faithfulness
-- pending proof obligations: D--E
+- current proof obligation: Cycle 12 review of D's finite-carrier full subcategory and restricted decoder
+- pending proof obligations: remaining D normalization and counterexample, then E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: D's finite-carrier false-default full subcategory and restricted decoder
+- next proof obligation: D's code normalization functor and realization natural isomorphism
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1403,3 +1403,109 @@ default component is the condition used by Cycle 10.  Thus both typed-presentati
 representability reduce exactly to finite actual support.  Separately, `FiniteCodeCartHom` is
 already quotiented by decoded semantic equality, so equality after `D0.map` is precisely the
 quotient relation and yields faithfulness without an infinity assumption.
+
+## Cycle 12: finite-carrier full subcategory and restricted decoder
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 12
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 25126f9a34de2b4df2fd6b349354622239e05074
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 11: all C obligations discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_faithful
+    - CategoryTheory.ObjectProperty.FullSubcategory
+  proof_obligation: "D1: define the full subcategory on codes whose normalized extraction defaults are false, restrict D0 to it, and prove the restricted decoder full and faithful for finite Atom carriers"
+  selection_reason: "The object restriction is the domain of D's normalization functor. Cycle 10 supplies fullness once finite carrier support and endpoint default equality are discharged; Cycle 11 supplies faithfulness."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_full
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_faithful
+  risks:
+    - "restricting every extraction table instead of only normalized positions"
+    - "adding a morphism-side preservation certificate instead of taking a full subcategory"
+    - "assuming finite support rather than deriving it from carrier finiteness"
+    - "claiming fullness outside the finite-carrier branch"
+  unchecked:
+    - "D normalization functor, realization natural isomorphism, and Fin 1 counterexample"
+    - "E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the exact normalized false-default ObjectProperty and its ordinary full subcategory. Restricted D0 by the standard inclusion. Proved faithfulness from Cycle 11's decoder injectivity for every carrier. Under Finite U.Atom, proved fullness by deriving finite actual support from carrier finiteness and the default equation from the two endpoint object properties, then applying Cycle 10's exact fixed-arrow iff."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeProperty
+    - AAT.AG.FiniteDecoderRepresentability.FalseDefaultFiniteCodeCategory
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_obj
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_map
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_faithful
+    - AAT.AG.FiniteDecoderRepresentability.falseDefaultFiniteCodeRealization_full
+  claim_mapping:
+    theorem_names:
+      - falseDefaultFiniteCodeProperty
+      - falseDefaultFiniteCodeRealization_faithful
+      - falseDefaultFiniteCodeRealization_full
+    source_labels:
+      - "fixed target D: P0^0 has false defaults at normalized extraction positions"
+      - "fixed target D: restricted decoder D0^0 is fully faithful on finite Atom carriers"
+    conjuncts:
+      - "the subcategory is full and carries no morphism-side condition"
+      - "unnormalized extraction-table positions remain unrestricted"
+      - "faithfulness holds for every carrier"
+      - "fullness derives actual permutation support finiteness from Finite U.Atom"
+      - "fullness derives the normalized default equation from endpoint membership"
+    undischarged_assumptions: []
+    acceptance_point: "The only new direction hypothesis for fullness is the fixed target's finite-carrier branch. No support Finset, presentation, morphism-side certificate, or unnormalized-table condition is accepted."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D false-default full subcategory"
+      - "D restricted decoder full and faithful for finite carriers"
+    remaining:
+      - "D normalization functor, realization natural isomorphism, and Fin 1 counterexample"
+      - "all E obligations"
+  certificate_provenance:
+    discharged:
+      - "ObjectProperty.FullSubcategory supplies exactly all existing code morphisms"
+      - "Set.toFinite supplies support finiteness from the finite carrier instance"
+      - "source.property and target.property supply both sides of the default equation"
+      - "Cycle 10 constructs the quotient morphism preimage"
+    unresolved: []
+  proof_use:
+    used:
+      - "endpoint membership is used at the normalized source and its actual source-map image"
+      - "carrier finiteness is used to make the actual moved-point Set finite"
+      - "Cycle 11 map injectivity removes the full-subcategory wrapper in faithfulness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean"
+    - "namespace #assert_standard_axioms_only: 7 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D2: replace every extraction table by finitePredicateCode of its evaluation with false default, retain Source/normalize/point, lift presentations and quotient morphisms functorially, and build D0^0 composed with R_fin naturally isomorphic to D0"
+```
+
+### Cycle 12 acceptance spine
+
+The object predicate reads only `extraction (normalize input)`.  Because the associated
+subcategory is the standard full subcategory, its homs carry no new preservation field.
+Faithfulness is inherited by equality reflection through the underlying `D0` quotient.
+For fullness on a finite carrier, every actual permutation support is finite, while both
+normalized endpoint defaults reduce to `false`; Cycle 10 then constructs the exact underlying
+quotient arrow, which the full-subcategory hom wrapper retains unchanged.
