@@ -16,6 +16,21 @@ The last part records two exact syntax specializations from the target: finite
 lists over a countable alphabet, and the sum of countably many presentation
 object names with countable morphism syntax for every ordered pair.  Only
 countability is assumed; no computability data is requested.
+
+## Implementation notes
+
+`CountablePresentationSyntax` bundles the object and typed-morphism families
+with their countability proofs so one value fixes the complete syntax boundary
+used by the decoder corollary.  Passing all four ingredients separately would
+prove the same cardinal fact but would not package the target's combined
+presentation-syntax regime as a reusable input.
+
+`CombinedSyntax` is an object-code sum with a nested dependent sum over source
+and target.  A plain nondependent union of morphism expressions was rejected
+because it would erase their endpoint types; using only the nested sigma was
+also rejected because the target explicitly combines presentation-object names
+with morphism syntax.  The bundle carries propositions of countability, not
+chosen encoders, so it adds no computability assumption.
 -/
 
 namespace AAT.AG.FiniteDecoderRepresentability
