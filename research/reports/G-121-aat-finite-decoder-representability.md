@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 12 review of D's finite-carrier full subcategory and restricted decoder
-- pending proof obligations: remaining D normalization and counterexample, then E
+- current proof obligation: Cycle 13 review of D's finite code normalization functor
+- pending proof obligations: remaining D realization natural isomorphism and counterexample, then E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: D's code normalization functor and realization natural isomorphism
+- next proof obligation: D's realization natural isomorphism for the finite normalization functor
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1513,3 +1513,134 @@ Faithfulness is inherited by equality reflection through the underlying `D0` quo
 For fullness on a finite carrier, every actual permutation support is finite, while both
 normalized endpoint defaults reduce to `false`; Cycle 10 then constructs the exact underlying
 quotient arrow, which the full-subcategory hom wrapper retains unchanged.
+
+## Cycle 13: finite code normalization functor
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 13
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 6f6cd96637c0113bfb0a4ffc1ef60ba1182f46b9
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 12: D false-default full subcategory and restricted decoder discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eq_of_defaultValue_eq_of_eval_eq
+    - AAT.AG.FiniteDecoderRepresentability.FalseDefaultFiniteCodeCategory
+    - AAT.AG.DoctrineFiberProduct.compPresentation
+  proof_obligation: "D2a: replace every extraction table by the canonical same-evaluation false-default table; retain Source, normalize, point, source map, and Atom table; lift the construction through presentation quotients to a functor R_fin from P0 to P0^0"
+  selection_reason: "Cycle 12 fixed the target full subcategory. The object and morphism normalization must now be constructed before comparing its semantic realization with D0."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean
+    - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteCodeCartHom
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor
+  risks:
+    - "changing semantic evaluations while changing raw defaults"
+    - "changing Source, normalize, point, source map, or Atom permutation"
+    - "accepting raw extraction equality for normalized codes instead of reconstructing it"
+    - "mapping a chosen quotient representative without proving independence"
+    - "omitting identity or composition laws"
+  unchecked:
+    - "D realization natural isomorphism and Fin 1 counterexample"
+    - "E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed canonical false-default table normalization with identical evaluation; lifted it pointwise to doctrine and pointed-instance codes while retaining source cardinality, normalize, and point; rebuilt each normalized presentation's raw extraction equality from equal false defaults and the original presentation's evaluation equality; proved decoded-equality relation preservation; mapped quotient morphisms independently of representatives; and proved identity and composition laws for R_fin."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.normalizeAtomPredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizeAtomPredicateCode_eval
+    - AAT.AG.FiniteDecoderRepresentability.normalizeAtomPredicateCode_defaultValue
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction_defaultValue
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction_eval
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_doctrine
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_point
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_falseDefault
+    - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation
+    - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation_rel
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteCodeCartHom
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteCodeCartHom_ofPresentation
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor_obj_obj
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor_map_hom
+  claim_mapping:
+    theorem_names:
+      - normalizeAtomPredicateCode_eval
+      - normalizeFiniteInstanceCode_falseDefault
+      - normalizeCartPresentation
+      - normalizeCartPresentation_rel
+      - finiteCodeNormalizationFunctor
+    source_labels:
+      - "fixed target D: replace each table by false and the set of true evaluations"
+      - "fixed target D: retain Source, normalize, point, source map, and decoded Atom permutation"
+      - "fixed target D: prove typed-presentation laws, representative independence, identity, and composition"
+    conjuncts:
+      - "each normalized raw table is finitePredicateCode of the original evaluation with false default"
+      - "the object lands in the exact normalized false-default full subcategory"
+      - "presentation extraction equality is reconstructed from the original law"
+      - "quotient mapping respects decoded equality"
+      - "identity and composition are proved as quotient equalities"
+    undischarged_assumptions: []
+    acceptance_point: "Finite U.Atom and the evaluator's DecidableEq are the fixed finite branch. No normalized table, presentation law, quotient representative, identity law, or composition law is supplied by callers."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D finite code normalization on objects"
+      - "D normalized typed presentations"
+      - "D representative-independent quotient morphism action"
+      - "D normalization functor identity and composition laws"
+    remaining:
+      - "D realization natural isomorphism and Fin 1 counterexample"
+      - "all E obligations"
+  certificate_provenance:
+    discharged:
+      - "finitePredicateCode internally enumerates the finite carrier"
+      - "original presentation extraction_eq supplies transported evaluation equality"
+      - "decoded component equality proves quotient representative independence"
+      - "quotient soundness plus retained components proves functor laws"
+    unresolved: []
+  proof_use:
+    used:
+      - "Finite U.Atom constructs each canonical false-default exception Finset"
+      - "original raw extraction equality is evaluated at every Atom"
+      - "source-map and Atom-equivalence components are used to preserve the quotient relation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean"
+    - "namespace #assert_standard_axioms_only: 25 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "D2b: construct the identity-source-map, identity-Atom natural isomorphism between D0^0 composed with R_fin and D0, with explicit component and naturality computations"
+```
+
+### Cycle 13 acceptance spine
+
+`normalizeAtomPredicateCode` is exactly `finitePredicateCode code.eval false`, so it changes
+authored raw structure while preserving evaluation.  The lifted doctrine and instance code keep
+the source cardinality, normalization table, and selected point definitionally.  On a typed
+presentation, equal false defaults plus the evaluation of its original raw extraction equality
+reconstruct the new raw equality.  Source-map and Atom-table retention then proves that decoded
+equality is preserved between representatives.  Quotient mapping is therefore well defined, and
+the identity and composition laws follow from equality of the retained decoded components.
