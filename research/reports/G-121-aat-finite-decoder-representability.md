@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 14 review of D's realization natural isomorphism
-- pending proof obligations: remaining D finite counterexample, then E
+- current proof obligation: Cycle 15 review of D's fixed `Fin 1` counterexample
+- pending proof obligations: E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: D's fixed Fin 1 raw-code counterexample and non-fullness witness
+- next proof obligation: E's fixed Nat carrier, adjacent-swap semantic automorphism, and fixed-endpoint non-representability
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1762,3 +1762,141 @@ equivalence are identities.  The inverse laws therefore follow from equality of 
 computational components.  For an arbitrary quotient morphism, representative induction and
 Cycle 13's retained source/Atom components prove the naturality square.  Raw codes remain
 distinct in general; only their semantic realizations are naturally isomorphic.
+
+## Cycle 15: fixed `Fin 1` raw-code counterexample
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 15
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 8c0ab09d93f5443d9f27f504c12e6c8b85ce0b4f
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 14: semantic realization natural isomorphism constructed"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentation_necessary
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso
+  proof_obligation: "D3: instantiate the specified Fin 1 true-default and false-default codes, prove equal evaluations and semantic isomorphism, identify R_fin(P_t) with P_f as raw code, and refute original-code morphisms in both directions"
+  selection_reason: "This is D's final fixed witness and separates semantic isomorphism after decoding from isomorphism in the authored finite-code category."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FinOneCounterexample.lean
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso
+    - AAT.AG.FiniteDecoderRepresentability.normalize_finOneTrueCode_eq
+    - AAT.AG.FiniteDecoderRepresentability.not_nonempty_finOneTrueFalseCodeIso
+  risks:
+    - "using evaluation equality as raw code equality"
+    - "changing either source map or Atom permutation in the semantic isomorphism"
+    - "showing only one direction of original-code nonexistence"
+    - "asserting non-isomorphism without connecting it to the actual P0 category"
+  unchecked:
+    - "E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the exact one-Atom carrier and the two specified singleton-source codes; proved both tables evaluate true; built inverse semantic arrows with identity source and Atom components; proved normalization of the true-default raw code is exactly the false-default code; used the fixed-presentation default necessity in each direction to refute both original-code hom types; and derived absence of a P0 isomorphism."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FinOneCounterexample.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.finOneCarrier
+    - AAT.AG.FiniteDecoderRepresentability.finOneAtom
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueTable
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseTable
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueTable_eval
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseTable_eval
+    - AAT.AG.FiniteDecoderRepresentability.finOneTable_evaluation_eq
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueCode
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseCode
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueCode_extraction
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseCode_extraction
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueCode_point
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseCode_point
+    - AAT.AG.FiniteDecoderRepresentability.finOneCode_extracts_iff
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueToFalseSemanticHom
+    - AAT.AG.FiniteDecoderRepresentability.finOneFalseToTrueSemanticHom
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso_hom_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso_hom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso_inv_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.finOneTrueFalseSemanticIso_inv_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.normalize_finOneTrueTable_eq
+    - AAT.AG.FiniteDecoderRepresentability.normalize_finOneTrueCode_eq
+    - AAT.AG.FiniteDecoderRepresentability.not_nonempty_finOneTrueToFalseCodeHom
+    - AAT.AG.FiniteDecoderRepresentability.not_nonempty_finOneFalseToTrueCodeHom
+    - AAT.AG.FiniteDecoderRepresentability.not_nonempty_finOneTrueFalseCodeIso
+  claim_mapping:
+    theorem_names:
+      - finOneTable_evaluation_eq
+      - finOneTrueFalseSemanticIso
+      - normalize_finOneTrueCode_eq
+      - not_nonempty_finOneTrueToFalseCodeHom
+      - not_nonempty_finOneFalseToTrueCodeHom
+      - not_nonempty_finOneTrueFalseCodeIso
+    source_labels:
+      - "fixed target D: D equals Fin 1; sourceCard one; normalize identity; point unique"
+      - "fixed target D: P_t has true empty and P_f has false singleton at every source"
+      - "fixed target D: equal evaluation and identity-component semantic isomorphism"
+      - "fixed target D: R_fin(P_t) equals P_f as raw code"
+      - "fixed target D: neither original P0 hom direction exists, hence no P0 isomorphism"
+    conjuncts:
+      - "both raw tables evaluate true on the unique Atom"
+      - "semantic hom and inverse use identity source map and identity Atom equivalence"
+      - "the normalization equality is a structure equality, not merely semantic equivalence"
+      - "default mismatch contradicts the necessary fixed-presentation criterion in both directions"
+      - "the semantic isomorphism cannot be replaced by an isomorphism in FiniteCodeCartCategory"
+    undischarged_assumptions: []
+    acceptance_point: "All carrier, source, table, point, and arrow data are the fixed concrete example. Equality, inverse laws, and both nonexistence results are derived; no witness or contradiction is accepted from callers."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D fixed Fin 1 table evaluation"
+      - "D fixed semantic isomorphism with identity components"
+      - "D raw normalization equality"
+      - "D original-code nonexistence in both directions and non-isomorphism"
+    remaining:
+      - "all E obligations"
+  certificate_provenance:
+    discharged:
+      - "Fin 1 subsingleton gives the complete table evaluation"
+      - "decoded extraction equality constructs both semantic arrows"
+      - "finite table extensionality proves the raw normalization equality"
+      - "Cycle 10 default necessity yields both contradictions"
+    unresolved: []
+  proof_use:
+    used:
+      - "the unique Atom is evaluated in the exceptional false-default table"
+      - "identity source and Atom components are used in both inverse laws"
+      - "the authored defaults are evaluated at the unique normalized source in each nonexistence proof"
+      - "the forward nonexistence theorem consumes the hom of any alleged P0 isomorphism"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.FiniteDecoderRepresentability.FiniteNormalizationRealizationIso"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FinOneCounterexample.lean"
+    - "namespace #assert_standard_axioms_only: 32 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "E1: construct the fixed Nat carrier and all-true singleton-source code, the adjacent-pair swap semantic automorphism, prove every Atom moves, and refute a fixed-endpoint P0 presentation via the finite-support criterion"
+```
+
+### Cycle 15 acceptance spine
+
+The two authored tables are structurally different but evaluate to the same constant-true
+predicate on `Fin 1`.  That equality supplies inverse decoded arrows with identity computational
+components, while finite normalization converts the true-default table to the explicit
+false-default singleton exception table and hence identifies the full pointed raw codes.  In the
+original code category, Cycle 10's necessary default equality would force `false = true` in one
+direction and `true = false` in the other.  Thus the semantic isomorphism exists exactly where
+claimed and cannot be promoted to an isomorphism between the original authored codes.
