@@ -1559,10 +1559,15 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.normalizeAtomPredicateCode_eval
     - AAT.AG.FiniteDecoderRepresentability.normalizeAtomPredicateCode_defaultValue
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_sourceCard
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_normalize
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction_defaultValue
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteDoctrineCode_extraction_eval
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_doctrine
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_sourceCard
+    - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_normalize
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_point
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteInstanceCode_falseDefault
     - AAT.AG.FiniteDecoderRepresentability.normalizeCartPresentation
@@ -1572,6 +1577,8 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteCodeCartHom
     - AAT.AG.FiniteDecoderRepresentability.normalizeFiniteCodeCartHom_ofPresentation
     - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor_obj_obj
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeNormalizationFunctor_map_hom
   claim_mapping:
     theorem_names:
       - normalizeAtomPredicateCode_eval
@@ -1623,7 +1630,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean"
-    - "namespace #assert_standard_axioms_only: 18 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 25 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "D2b: construct the identity-source-map, identity-Atom natural isomorphism between D0^0 composed with R_fin and D0, with explicit component and naturality computations"
 ```

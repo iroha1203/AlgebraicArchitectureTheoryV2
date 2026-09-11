@@ -36,7 +36,11 @@ noncomputable def normalizeAtomPredicateCode [DecidableEq U.Atom]
     [Finite U.Atom] (code : AtomPredicateCode U) : AtomPredicateCode U :=
   finitePredicateCode code.eval false
 
-/-- Normalized tables evaluate exactly as the original authored tables. -/
+/--
+G-121(D) evaluation API: normalized tables evaluate exactly as the original
+authored tables. `Finite` builds the table, `DecidableEq` evaluates it, and the
+`simp` direction removes normalization from an evaluation.
+-/
 @[simp]
 theorem normalizeAtomPredicateCode_eval [DecidableEq U.Atom]
     [Finite U.Atom] (code : AtomPredicateCode U) (atom : U.Atom) :
@@ -44,7 +48,11 @@ theorem normalizeAtomPredicateCode_eval [DecidableEq U.Atom]
   simpa only [normalizeAtomPredicateCode] using
     (finitePredicateCode_eval code.eval false atom)
 
-/-- Every normalized table has authored default `false`. -/
+/--
+G-121(D) default API: every normalized table has authored default `false`.
+The instances have the same provenance as the constructor; the `simp` direction
+exposes the chosen false default.
+-/
 @[simp]
 theorem normalizeAtomPredicateCode_defaultValue [DecidableEq U.Atom]
     [Finite U.Atom] (code : AtomPredicateCode U) :
@@ -61,14 +69,42 @@ noncomputable def normalizeFiniteDoctrineCode [DecidableEq U.Atom]
   normalize := code.normalize
   extraction := fun source => normalizeAtomPredicateCode (code.extraction source)
 
-/-- The doctrine normalization table is retained literally. -/
+/--
+G-121(D) doctrine computation API: normalization retains `sourceCard`; the
+`simp` direction exposes the original finite Source cardinality.
+-/
+@[simp]
+theorem normalizeFiniteDoctrineCode_sourceCard [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteDoctrineCode U) :
+    (normalizeFiniteDoctrineCode code).sourceCard = code.sourceCard :=
+  rfl
+
+/--
+G-121(D) doctrine computation API: the normalization table is retained
+literally; the `simp` direction exposes the original map.
+-/
 @[simp]
 theorem normalizeFiniteDoctrineCode_normalize [DecidableEq U.Atom]
     [Finite U.Atom] (code : FiniteDoctrineCode U) :
     (normalizeFiniteDoctrineCode code).normalize = code.normalize :=
   rfl
 
-/-- Every extraction table of the normalized doctrine has default `false`. -/
+/--
+G-121(D) doctrine computation API: each new extraction table is exactly the
+canonical normalization of the table at the same position.
+-/
+@[simp]
+theorem normalizeFiniteDoctrineCode_extraction [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteDoctrineCode U)
+    (source : (normalizeFiniteDoctrineCode code).Source) :
+    (normalizeFiniteDoctrineCode code).extraction source =
+      normalizeAtomPredicateCode (code.extraction source) :=
+  rfl
+
+/--
+G-121(D) doctrine default API: every normalized extraction table has default
+`false`; the `simp` direction reduces the new table's authored default.
+-/
 @[simp]
 theorem normalizeFiniteDoctrineCode_extraction_defaultValue
     [DecidableEq U.Atom] [Finite U.Atom]
@@ -77,7 +113,10 @@ theorem normalizeFiniteDoctrineCode_extraction_defaultValue
     ((normalizeFiniteDoctrineCode code).extraction source).defaultValue = false :=
   normalizeAtomPredicateCode_defaultValue _
 
-/-- Every extraction table of the normalized doctrine preserves evaluation. -/
+/--
+G-121(D) doctrine evaluation API: every normalized extraction table preserves
+evaluation; the `simp` direction reduces it to the original table evaluation.
+-/
 @[simp]
 theorem normalizeFiniteDoctrineCode_extraction_eval
     [DecidableEq U.Atom] [Finite U.Atom]
@@ -96,7 +135,43 @@ noncomputable def normalizeFiniteInstanceCode [DecidableEq U.Atom]
   doctrine := normalizeFiniteDoctrineCode code.doctrine
   point := code.point
 
-/-- The selected source point is retained literally by code normalization. -/
+/--
+G-121(D) pointed-code computation API: the new doctrine is exactly the doctrine
+normalization above.  The `simp` direction exposes that construction.
+-/
+@[simp]
+theorem normalizeFiniteInstanceCode_doctrine [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteInstanceCode U) :
+    (normalizeFiniteInstanceCode code).doctrine =
+      normalizeFiniteDoctrineCode code.doctrine :=
+  rfl
+
+/--
+G-121(D) pointed-code computation API: source cardinality, hence the dependent
+Source type, is retained.  The `simp` direction exposes the original cardinality.
+-/
+@[simp]
+theorem normalizeFiniteInstanceCode_sourceCard [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteInstanceCode U) :
+    (normalizeFiniteInstanceCode code).doctrine.sourceCard =
+      code.doctrine.sourceCard :=
+  rfl
+
+/--
+G-121(D) pointed-code computation API: the source normalization map is retained;
+the `simp` direction exposes the original normalization.
+-/
+@[simp]
+theorem normalizeFiniteInstanceCode_normalize [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteInstanceCode U) :
+    (normalizeFiniteInstanceCode code).doctrine.normalize =
+      code.doctrine.normalize :=
+  rfl
+
+/--
+G-121(D) pointed-code API: the selected source point is retained literally;
+the `simp` direction exposes the original point.
+-/
 @[simp]
 theorem normalizeFiniteInstanceCode_point [DecidableEq U.Atom]
     [Finite U.Atom] (code : FiniteInstanceCode U) :
@@ -137,7 +212,8 @@ noncomputable def normalizeCartPresentation [DecidableEq U.Atom]
         ((source.doctrine.extraction
           (source.doctrine.normalize input)).transport
             presentation.atomEquiv.toEquiv).eval atom at hraw
-      simp only [normalizeFiniteInstanceCode, normalizeFiniteDoctrineCode,
+      simp only [normalizeFiniteInstanceCode_doctrine,
+        normalizeFiniteDoctrineCode_extraction,
         normalizeAtomPredicateCode_eval]
       conv_rhs at hraw =>
         rw [← presentation.atomEquiv.toEquiv.apply_symm_apply atom]
@@ -148,7 +224,10 @@ noncomputable def normalizeCartPresentation [DecidableEq U.Atom]
       exact hraw
   source_eq := presentation.source_eq
 
-/-- Presentation normalization retains the authored source map literally. -/
+/--
+G-121(D) presentation API: normalization retains the authored source map;
+the `simp` direction exposes the original field.
+-/
 @[simp]
 theorem normalizeCartPresentation_sourceMap [DecidableEq U.Atom]
     [Finite U.Atom] {source target : FiniteInstanceCode U}
@@ -156,7 +235,10 @@ theorem normalizeCartPresentation_sourceMap [DecidableEq U.Atom]
     (normalizeCartPresentation presentation).sourceMap = presentation.sourceMap :=
   rfl
 
-/-- Presentation normalization retains the authored finite Atom table literally. -/
+/--
+G-121(D) presentation API: normalization retains the authored finite Atom table;
+the `simp` direction exposes the original field and hence its decoded permutation.
+-/
 @[simp]
 theorem normalizeCartPresentation_atomEquiv [DecidableEq U.Atom]
     [Finite U.Atom] {source target : FiniteInstanceCode U}
@@ -185,7 +267,10 @@ theorem normalizeCartPresentation_rel
       normalizeCartPresentation_atomEquiv] using congrArg
       (fun hom => hom.doctrineHom.atomEquiv) hrel
 
-/-- Normalize a quotient morphism independently of its chosen representative. -/
+/--
+G-121(D) quotient action: normalize a morphism independently of its chosen
+representative. `Finite` and `DecidableEq` are inherited from table normalization.
+-/
 noncomputable def normalizeFiniteCodeCartHom [DecidableEq U.Atom]
     [Finite U.Atom] {source target : FiniteInstanceCode U}
     (hom : FiniteCodeCartHom source target) :
@@ -194,7 +279,10 @@ noncomputable def normalizeFiniteCodeCartHom [DecidableEq U.Atom]
   Quotient.map normalizeCartPresentation
     (fun _ _ hrel => normalizeCartPresentation_rel hrel) hom
 
-/-- The quotient action sends an inserted presentation to its normalized presentation. -/
+/--
+G-121(D) quotient computation API: an inserted presentation maps to its
+normalized presentation; the `simp` direction exposes that representative.
+-/
 @[simp]
 theorem normalizeFiniteCodeCartHom_ofPresentation [DecidableEq U.Atom]
     [Finite U.Atom] {source target : FiniteInstanceCode U}
@@ -219,14 +307,58 @@ noncomputable def finiteCodeNormalizationFunctor [DecidableEq U.Atom]
     apply ObjectProperty.hom_ext
     apply Quotient.sound
     apply ExtInstHom.ext
-    apply ExactDoctrineHom.ext <;> rfl
+    apply ExactDoctrineHom.ext
+    · change (normalizeCartPresentation
+        (idTypedPresentation code)).sourceMap = id
+      rw [normalizeCartPresentation_sourceMap]
+      rfl
+    · change (normalizeCartPresentation
+        (idTypedPresentation code)).atomEquiv.toEquiv = Equiv.refl U.Atom
+      rw [normalizeCartPresentation_atomEquiv]
+      exact AtomPermutationCode.toEquiv_refl
   map_comp first second := by
     refine Quotient.inductionOn₂ first second ?_
     intro firstPresentation secondPresentation
     apply ObjectProperty.hom_ext
     apply Quotient.sound
     apply ExtInstHom.ext
-    apply ExactDoctrineHom.ext <;> rfl
+    apply ExactDoctrineHom.ext
+    · change (normalizeCartPresentation
+        (compPresentation firstPresentation secondPresentation)).sourceMap =
+        (compPresentation (normalizeCartPresentation firstPresentation)
+          (normalizeCartPresentation secondPresentation)).sourceMap
+      rw [normalizeCartPresentation_sourceMap]
+      rfl
+    · change (normalizeCartPresentation
+        (compPresentation firstPresentation secondPresentation)).atomEquiv.toEquiv =
+        (compPresentation (normalizeCartPresentation firstPresentation)
+          (normalizeCartPresentation secondPresentation)).atomEquiv.toEquiv
+      rw [normalizeCartPresentation_atomEquiv]
+      rfl
+
+/--
+G-121(D) functor object API: forgetting membership exposes exactly the normalized
+pointed code.  The `simp` direction removes the full-subcategory wrapper.
+-/
+@[simp]
+theorem finiteCodeNormalizationFunctor_obj_obj [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteCodeCartCategory U) :
+    (finiteCodeNormalizationFunctor.obj code).obj =
+      normalizeFiniteInstanceCode code :=
+  rfl
+
+/--
+G-121(D) functor morphism API: forgetting membership exposes the
+representative-independent quotient normalization.  The `simp` direction
+removes the full-subcategory wrapper.
+-/
+@[simp]
+theorem finiteCodeNormalizationFunctor_map_hom [DecidableEq U.Atom]
+    [Finite U.Atom] {source target : FiniteCodeCartCategory U}
+    (hom : source ⟶ target) :
+    (finiteCodeNormalizationFunctor.map hom).hom =
+      normalizeFiniteCodeCartHom hom :=
+  rfl
 
 #assert_standard_axioms_only AAT.AG.FiniteDecoderRepresentability
 
