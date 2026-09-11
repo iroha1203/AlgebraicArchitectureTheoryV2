@@ -1,7 +1,7 @@
 # G-120-aat-comparison-information-loss — 観測・正規化による比較情報の保存と損失
 
 - `id`: `G-120-aat-comparison-information-loss`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
 - `source note`: [n1010 §3–4・§9.3](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)

@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-120-aat-comparison-information-loss](G-120-aat-comparison-information-loss.md)
-  (n1010 S2。観測・正規化による比較情報の保存と損失)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
   G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
@@ -34,6 +32,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-120-aat-comparison-information-loss](G-120-aat-comparison-information-loss.md)
+  (`target-theorem-proved`。観測核による比較判定、生成比較の情報損失分類、
+  冪等像・canonical正規化における反映・lift・fiber構造を確定)
 - [G-119-aat-realization-comparison-idempotents](G-119-aat-realization-comparison-idempotents.md)
   (`target-theorem-proved`。比較と冪等完備化の交換、AAT三段への接続、
   canonical正規化の関手・自然性非対称・比較群準同型を確定)
