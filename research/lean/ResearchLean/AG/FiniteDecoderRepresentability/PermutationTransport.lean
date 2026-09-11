@@ -112,7 +112,7 @@ theorem continuousPredicateTransport_refl
     continuousPredicateTransport map (Equiv.refl U.Atom) = map := by
   ext x
   induction x using OnePoint.rec <;>
-    simp [continuousPredicateTransport]
+    simp
 
 /-- G-121(A5) coherence: successive continuous pullbacks compose. -/
 theorem continuousPredicateTransport_trans
@@ -121,12 +121,7 @@ theorem continuousPredicateTransport_trans
     continuousPredicateTransport (continuousPredicateTransport map first) second =
       continuousPredicateTransport map (first.trans second) := by
   ext x
-  induction x using OnePoint.rec with
-  | infty => rfl
-  | coe atom =>
-      change map (first.symm (second.symm atom) : U.Atom) =
-        map ((first.trans second).symm atom : U.Atom)
-      rfl
+  induction x using OnePoint.rec <;> simp
 
 /-- G-121(A5) coherence: pullback by a permutation and its inverse cancels. -/
 @[simp]
@@ -149,7 +144,7 @@ theorem atomPredicateCodeToContinuousMap_transport [DecidableEq U.Atom]
   induction x using OnePoint.rec with
   | infty => rfl
   | coe atom =>
-      simp [continuousPredicateTransport, atomPredicateCode_eval_transport_apply]
+      simp [atomPredicateCode_eval_transport_apply]
 
 #assert_standard_axioms_only AAT.AG.FiniteDecoderRepresentability
 

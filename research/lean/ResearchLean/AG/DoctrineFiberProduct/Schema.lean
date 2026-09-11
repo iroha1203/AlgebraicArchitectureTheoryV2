@@ -71,7 +71,7 @@ def Holds {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (code : AtomPredicateCode U) (atom : U.Atom) : Prop :=
   code.eval atom = true
 
-/-- Transport a finite/cofinite predicate along a finite-support permutation. -/
+/-- Transport a finite/cofinite predicate along an arbitrary Atom permutation. -/
 def transport {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (code : AtomPredicateCode U) (equiv : Equiv.Perm U.Atom) :
     AtomPredicateCode U where
