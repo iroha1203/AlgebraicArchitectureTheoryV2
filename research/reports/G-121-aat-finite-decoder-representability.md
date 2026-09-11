@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 19 review of E's uncountability and countable-syntax obstruction
-- pending proof obligations: none in the fixed A--E statement; cycle review and terminal completion audit remain
+- current proof obligation: terminal fixed-target completion audit
+- pending proof obligations: none in the fixed A--E statement; terminal completion gates remain
 - current target state: `target-proof-candidate`
 - completion candidate: yes
-- next proof obligation: audit Cycle 19, then run the terminal fixed-target completion review
+- next proof obligation: standard PR review, schema-complete final packet, and fresh whole-target Math A/B plus Lean A/B review
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -2443,3 +2443,24 @@ neither an enumeration nor a computation procedure.  `List Alphabet` gives the f
 case.  For presentation syntax, the combined type is the sum of object codes and a nested
 dependent sum of morphism expressions indexed by both source and target; its countability is
 derived from exactly the object and pairwise-morphism countability fields.
+
+## Terminal completion candidate basis
+
+The completion candidate is the fixed GOAL blob
+`6ad52ff6177f3b895b3bed89e399a5afb9821f18` together with the cumulative Cycle 1--19
+artifacts.  The terminal review must independently reconstruct the following map rather than
+accepting this report as mathematical evidence.
+
+| Fixed clause | Cumulative Lean evidence | Status before terminal review |
+| --- | --- | --- |
+| A: finite-exception codes and continuous Bool maps | `OnePointCode`, `EvaluationClassification`, `CodeFibers`, `EncoderChoice`, `PermutationTransport` | implemented; terminal review pending |
+| B: coverage and compactness equivalences | `CoverageTopology`, `DiscreteCompactness`, `ArrowCoherence` | implemented; terminal review pending |
+| C: exact image of displayed arrows | `PermutationCodeClassification`, `FixedArrowClassification`, `FixedArrowConsequences` | implemented; terminal review pending |
+| D: finite normalization, fullness, realization iso, and fixed counterexample | `FiniteFullSubcategory`, `FiniteCodeNormalization`, `FiniteNormalizationRealizationIso`, `FinOneCounterexample` | implemented; terminal review pending |
+| E: infinite-support obstruction, anchored coverage, subset family, and countable-syntax lower bound | `NatAdjacentSwap`, `NatSwapAnchoredCoverage`, `NatSubsetSwaps`, `CountableSyntaxObstruction` | implemented; terminal review pending |
+
+All 19 modules are imported by `ResearchLean.AG` and listed in `research-modules.txt`.  The
+candidate carries no known remaining `discharge-required` premise and no known unchecked central
+claim, but those are inputs to the formal four-lane review, not a pre-review completion verdict.
+`target-theorem-proved` remains unavailable until the same-head standard review, final packet,
+all completion gates, CI, and the fresh whole-target review pass.
