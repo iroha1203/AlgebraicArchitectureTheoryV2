@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `b56be2b938dd8f7d62647111980d768a35527dde`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4443](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4443)
-- current proof obligation: D, canonical normalization specialization
-- pending proof obligations: D
-- current target state: `target-proof-checkpoint`
-- completion candidate: no
-- next proof obligation: D1, specialize reflection, lift fibers, right-kernel action, and short exactness to canonical normalization
+- current proof obligation: schema-complete final completion audit across A--D
+- pending proof obligations: independent final Math 2 + Lean 2 completion review
+- current target state: `target-theorem-completion-candidate`
+- completion candidate: yes
+- next proof obligation: assemble the final completion packet and run a fresh whole-GOAL `math-lean-review`
 
 ## Cycle 1 — Observation kernel criterion and pointed quotient
 
@@ -1292,3 +1292,169 @@ sandwich 後は両端が定値0に潰れて `Gamma_a` に属し、反映失敗�
 Karoubi 自己同型の hom と inverse を具体的に構成する。raw lift を任意に仮定すると、
 sandwich 式の点 `1` での評価から `b(1)=0`、中心化式の点 `2` での評価から
 `b(2)=0` を得る。raw 自己同型の単射性に反するため、全候補に対して lift は存在しない。
+
+## Cycle 10 — Canonical normalization reflection and lifting
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-120-aat-comparison-information-loss
+cycle: 10
+goal_blob_sha: fdf55308582fabca2ffecf085a959e3be02fed43
+base_oid: df2964a34e54d0e39c5f8dce1184d8b9d67f714d
+goal_path: research/goals/G-120-aat-comparison-information-loss.md
+report_path: research/reports/G-120-aat-comparison-information-loss.md
+selection:
+  proof_state_ref: "Cycles 1--9 discharged A--C; D canonical normalization was the sole remaining mathematical obligation"
+  proof_dag_predecessors:
+    - AAT.AG.ComparisonInformationLoss.comap_eq_iff_ker_le_and_map_eq_inf_range
+    - AAT.AG.ComparisonInformationLoss.restrictedSubgroupHom
+    - AAT.AG.ComparisonInformationLoss.RestrictedFiber
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphismHom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_comparison
+    - AAT.AG.RealizationComparisonIdempotents.normalizationEndpointAutomorphism_preserves_bottom
+    - AAT.AG.RealizationComparisonIdempotents.normalizationBaseQualifiedComparisonSubgroupHom
+  proof_obligation: "D: specialize reflection, lift image, right-kernel torsors, and conditional short exactness to canonical normalization on all endpoint groups and on the separately constructed base-fixing endpoint groups"
+  selection_reason: "This is the last fixed mathematical clause and connects the general decision theorem to the accepted G-119 normalization and bottom-projection constructions without adding endpoint centralization conditions."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/CanonicalNormalizationRestriction.lean
+    - AAT.AG.ComparisonInformationLoss.normalizationComparison_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleRestriction_shortExact
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseComparison_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleRestriction_hom_agrees_existing
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleRestriction_shortExact
+  risks:
+    - "routing through clause C centralizers and thereby adding a condition not present in canonical normalization"
+    - "calling the existing comparison-first qualified subgroup Q_base instead of constructing base-fixing endpoint groups before intersecting comparison compatibility"
+    - "asserting actual reflection or surjectivity rather than the fixed necessary-and-sufficient and conditional conclusions"
+    - "claiming agreement with the G-119 homomorphism without an explicit underlying-pair-preserving identification of the opposite subgroup nestings"
+  unchecked:
+    - "fixed-head Cycle 10 Math 2 + Lean 2 review"
+    - "fresh schema-complete final Math 2 + Lean 2 review across A--D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Specialized the generic reflection, lift-image, right-torsor, and conditional short-exact theorems to the accepted full normalization endpoint homomorphism. Constructed Q_base and R_base as endpoint base-fixing subgroups, Gamma_base and Delta_base inside them, r_base and rBar_base, repeated all decision and fiber results, and identified rBar_base with the accepted G-119 comparison-first restriction by explicit underlying-pair-preserving group equivalences and a homomorphism equality."
+  completion_candidate: yes
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/ComparisonInformationLoss/CanonicalNormalizationRestriction.lean
+  evidence:
+    - AAT.AG.ComparisonInformationLoss.normalizationEndpointAutomorphism_map_le
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleRestrictionHom_eq_existing
+    - AAT.AG.ComparisonInformationLoss.normalizationComparison_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.nonempty_normalizationCompatibleLiftFiber_iff_mem_map
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleLiftFiber_action_free
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleLiftFiber_action_transitive
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.normalizationCompatibleRestriction_shortExact
+    - AAT.AG.ComparisonInformationLoss.rawNormalizationBaseEndpointSubgroup
+    - AAT.AG.ComparisonInformationLoss.normalizedBaseEndpointSubgroup
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseEndpointHom
+    - AAT.AG.ComparisonInformationLoss.rawBaseComparisonSubgroup
+    - AAT.AG.ComparisonInformationLoss.normalizedBaseComparisonSubgroup
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleRestrictionHom
+    - AAT.AG.ComparisonInformationLoss.rawBaseComparisonEquivExisting
+    - AAT.AG.ComparisonInformationLoss.normalizedBaseComparisonEquivExisting
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleRestriction_hom_agrees_existing
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseComparison_reflection_iff
+    - AAT.AG.ComparisonInformationLoss.nonempty_normalizationBaseCompatibleLiftFiber_iff_mem_map
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleLiftFiber_action_free
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleLiftFiber_action_transitive
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleLiftFiber_existsUnique_smul_eq
+    - AAT.AG.ComparisonInformationLoss.normalizationBaseCompatibleRestriction_shortExact
+  claim_mapping:
+    theorem_names:
+      - normalizationComparison_reflection_iff
+      - nonempty_normalizationCompatibleLiftFiber_iff_mem_map
+      - normalizationCompatibleLiftFiber_existsUnique_smul_eq
+      - normalizationCompatibleRestriction_shortExact
+      - rawBaseComparisonSubgroup_map_eq_inf
+      - normalizedBaseComparisonSubgroup_map_eq_inf
+      - normalizationBaseCompatibleRestriction_hom_agrees_existing
+      - normalizationBaseComparison_reflection_iff
+      - nonempty_normalizationBaseCompatibleLiftFiber_iff_mem_map
+      - normalizationBaseCompatibleLiftFiber_existsUnique_smul_eq
+      - normalizationBaseCompatibleRestriction_shortExact
+    source_labels:
+      - "fixed target D full canonical-normalization endpoint groups"
+      - "fixed target D base-fixing endpoint groups and comparison subgroups"
+    conjuncts:
+      - "r_N is the accepted G-119 homomorphism on all raw endpoint automorphisms and preserves the raw comparison subgroup by functoriality"
+      - "full reflection is exactly kernel containment plus normalized comparison subgroup intersect range, without a surjectivity premise"
+      - "full compatible lift existence is the subgroup image condition and every nonempty fiber is a right torsor for the restricted kernel"
+      - "full subgroup surjectivity implies the literal short exact sequence"
+      - "Q_base and R_base are defined before comparison compatibility by the two endpoint bottom-kernel equations"
+      - "Gamma_base and Delta_base are subgroups inside Q_base and R_base, with ambient images equal to the stated intersections"
+      - "r_base preserves comparison compatibility and restricts to rBar_base"
+      - "opposite subgroup nestings are identified by group equivalences preserving the complete endpoint pair"
+      - "under those equivalences rBar_base equals normalizationBaseQualifiedComparisonSubgroupHom as a group homomorphism"
+      - "base-qualified reflection, lift-image, right torsor, and conditional short exactness have the same exact forms as the general theorem"
+    undischarged_assumptions: []
+    acceptance_point: "Only G-119's canonical-normalization admissibility of P and Q is required. Reflection and lift surjectivity are conclusions or explicit conditional hypotheses where the fixed target states them; no endpoint centralization or normalization-commutation premise is introduced."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "D full normalization reflection condition, lift image, right-kernel action, and conditional short exactness"
+      - "D Q_base, R_base, r_base, Gamma_base, Delta_base, and rBar_base"
+      - "D agreement of rBar_base with the accepted G-119 base-qualified comparison restriction"
+      - "D base-qualified reflection condition, lift image, right-kernel action, and conditional short exactness"
+    remaining:
+      - "fixed-head Cycle 10 independent review"
+      - "fresh whole-GOAL final completion review"
+  certificate_provenance:
+    discharged:
+      - "comparison preservation is inherited from the actual functor action N.mapIso and N.map_comp"
+      - "base preservation is inherited endpointwise from the accepted equality pi_N N = piV"
+      - "all reflection and fiber conclusions are obtained from the accepted generic group theorem applied to the constructed homomorphisms and subgroups"
+      - "agreement with G-119 is an equality of homomorphisms after explicit subgroup reassociation, not a supplied compatibility field"
+    unresolved: []
+  accepted_dependencies:
+    - source: "research/lean/ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean"
+      blob_at_base: 8d2353328ebbb9f9270a51960b1f411be883efd3
+      accepted_pr: 4453
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4453#issuecomment-5626440175"
+      use: "generic restriction, reflection, lift fiber, opposite-kernel action, and short exactness"
+    - source: "research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationComparisonGroup.lean"
+      blob_at_base: 070db1ae3cde4fca15c3531fd301f53b20909eab
+      accepted_pr: 4440
+      review_ref: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4440#issuecomment-5610736109"
+      use: "accepted r_N, raw and normalized comparison subgroups, bottom projections, qualification preservation, and the comparison-first base-qualified restriction"
+  proof_use:
+    used:
+      - "normalizationEndpointAutomorphism_preserves_comparison proves the full subgroup image inclusion used to construct the restriction"
+      - "normalizationEndpointAutomorphism_preserves_bottom proves both endpoint components of Q_base map into R_base"
+      - "membership of Gamma_base supplies the raw comparison equation used to prove r_base(Gamma_base) is contained in Delta_base"
+      - "the subgroup reassociation equivalences use both base and comparison membership proofs and preserve the full endpoint pair"
+      - "the generic reflection theorem is instantiated separately at r_N and r_base"
+      - "the generic lift-image and right-action theorems are instantiated separately for full and base-qualified fibers"
+      - "each short-exact theorem uses only its stated subgroup-image equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "targeted predecessor build: ResearchLean.AG.RealizationComparisonIdempotents.NormalizationComparisonGroup; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/ComparisonInformationLoss/CanonicalNormalizationRestriction.lean; exit 0"
+    - "permanent ComparisonInformationLoss namespace audit: 40 new declarations at this module check, standard axioms only"
+  blocking_findings: []
+  next_obligation: "after Cycle 10 acceptance, assemble the schema-complete G-120 completion packet and run a fresh Math 2 + Lean 2 final review"
+```
+
+### Cycle 10 acceptance spine
+
+全群版は G-119 の `normalizationEndpointAutomorphismHom` を変更せずに用いる。raw と
+normalized の比較部分群の間の保存は `N.map_comp` 由来の既存定理で放電し、
+generic restriction API から反映の必要十分条件、lift像、右核 torsor、条件付き短完全列を得る。
+
+base-qualified 版は、raw 端点積の中で両投影が恒等になる部分群 `Q_base` と、
+normalized 端点積の同様の部分群 `R_base` を先に構成する。その内部に
+`Gamma_base` と `Delta_base` を置き、`pi_N N = piV` から `r_base` とその制限を構成する。
+G-119 の既存実装は比較部分群を先に取る逆の入れ子であるため、underlying endpoint pair を
+保つ群同値を raw/normalized の両側に構成し、その同定下で制限準同型が一致することを
+点ごとおよび準同型の等式として証明する。
