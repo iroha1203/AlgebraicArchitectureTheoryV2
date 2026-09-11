@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 2 review of A's evaluation-quotient classification
-- pending proof obligations: A's finite/infinite carrier and transport claims, then B--E
+- current proof obligation: Cycle 3 review of A's finite/infinite raw-code fibers
+- pending proof obligations: A's G-112 choice agreement and transport claims, then B--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A's finite/infinite carrier fiber classification
+- next proof obligation: A's G-112 choice agreement and transport coherence
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -108,7 +108,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean"
     - "namespace #assert_standard_axioms_only: standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
@@ -234,7 +234,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean"
     - "the evaluation relation has explicit satisfying and falsifying finite-fixture instances"
     - "namespace #assert_standard_axioms_only: 16 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
@@ -263,3 +263,151 @@ Cycle 2 material premise roles are:
 - `conclusion-equivalent-risk`: none. The subtype evidence states membership in the
   target semantic image; it does not contain a raw code, quotient inverse, or equality
   certificate.
+
+## Cycle 3 — Infinite injectivity and exact finite code fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 3
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 1e46e7da3dc002bfeb307fb60c661759fd056e89
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 2: evaluation quotient classification discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationEq
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap
+    - AAT.AG.FiniteDecoderRepresentability.continuousMapToAtomPredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap_rightInverse
+  proof_obligation: "A3: prove raw evaluation injectivity and continuous-extension uniqueness for infinite carriers, and classify the complete raw-code fiber as exactly the default-false and default-true codes for finite carriers, including the empty carrier"
+  selection_reason: "A2 fixed the semantic quotient. A3 now determines precisely when raw authored defaults retain extra information and supplies the finite/infinite split required by the remaining G-112 agreement and morphism clauses."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eval_injective_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCodeFiberEquiv
+  risks:
+    - "assuming equality of authored defaults instead of deriving it outside finite exception supports"
+    - "stating only existence or cardinality two without identifying the complete raw-code fiber"
+    - "losing one code on the empty carrier by identifying codes only through evaluation"
+    - "claiming extension uniqueness without connecting through the raw A1 equivalence"
+  unchecked:
+    - "A's agreement of the G-112 encoder with the finite default-false and infinite unique choices"
+    - "A's permutation transport and identity/inverse/composition coherence"
+    - "B--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Derived default equality on infinite carriers by evaluating outside the union of two finite exception tables, then recovered raw code equality and continuous-extension uniqueness. On finite carriers, constructed the code for each authored Bool default, proved evaluation and uniqueness, exhibited an equivalence from the actual fiber subtype to Bool, identified the two exception tables, separated the two raw codes even for an empty carrier, and separated their infinity values."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eq_of_evaluationEq_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eval_injective_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.continuousMap_eq_of_coe_eq_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_defaultValue
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_eval
+    - AAT.AG.FiniteDecoderRepresentability.eq_finitePredicateCode_of_eval_eq
+    - AAT.AG.FiniteDecoderRepresentability.FinitePredicateCodeFiber
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCodeFiberEquiv
+    - AAT.AG.FiniteDecoderRepresentability.eval_eq_iff_eq_false_or_eq_true
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_false_ne_true
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_false_exceptions
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_true_exceptions
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_extensions_apply_infty_ne
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_extensions_ne
+  claim_mapping:
+    theorem_names:
+      - atomPredicateCode_eval_injective_of_infinite
+      - continuousMap_eq_of_coe_eq_of_infinite
+      - finitePredicateCodeFiberEquiv
+      - eval_eq_iff_eq_false_or_eq_true
+      - finitePredicateCode_false_exceptions
+      - finitePredicateCode_true_exceptions
+      - finitePredicateCode_false_ne_true
+      - finitePredicateCode_extensions_apply_infty_ne
+      - finitePredicateCode_extensions_ne
+    source_labels:
+      - "fixed target A: evaluation is injective and continuous extension is unique when D is infinite"
+      - "fixed target A: every finite-carrier predicate has exactly the two specified raw codes"
+      - "fixed target A: the two codes and their infinity values remain distinct for empty D"
+    conjuncts:
+      - "infinite raw-code evaluation injectivity"
+      - "infinite continuous-map uniqueness from equality on D"
+      - "finite fiber equivalence with Bool through authored default under the target's Finite premise"
+      - "explicit default-false true-set and default-true false-set exception tables"
+      - "raw-code and directly stated infinity-value distinction without a nonempty premise"
+    undischarged_assumptions: []
+    acceptance_point: "Infinite default equality is constructed from the existing finite exception fields. Finite classification is an equivalence of the actual raw-code fiber, and the distinctness theorems require no Nonempty assumption, so the empty carrier is included."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "A3 infinite evaluation injectivity"
+      - "A3 infinite continuous-extension uniqueness"
+      - "A3 exact finite raw-code fiber, explicit exception sets, and empty-carrier distinction"
+    remaining:
+      - "A G-112 choice agreement and transport coherence"
+      - "all B--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "the infinite witness Atom is derived by Infinite.exists_notMem_finset from the two authored exception tables"
+      - "the finite inverse code is constructed from Finset.univ.filter and a chosen Bool default"
+      - "continuous uniqueness consumes the A1 inverse and right-inverse theorems"
+    unresolved: []
+  proof_use:
+    used:
+      - "Infinite U.Atom supplies an Atom outside both finite exception tables"
+      - "pointwise evaluation equality first recovers default equality and then exception-table equality"
+      - "Finite U.Atom is noncomputably enumerated inside the constructor to supply the complete finite exception tables"
+      - "the fiber subtype proof is used in the equivalence left inverse"
+      - "A1 continuous-map right inverse transports raw injectivity to extension uniqueness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean"
+    - "namespace #assert_standard_axioms_only: 18 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
+  blocking_findings: []
+  next_obligation: "A4: prove the existing G-112 encoder selects the default-false fiber code on finite carriers and the unique raw code on infinite carriers; then prove transport compatibility and identity/inverse/composition coherence"
+```
+
+### Cycle 3 acceptance spine
+
+For infinite `U.Atom`, the proof chooses an Atom outside the union of the two actual
+finite exception tables. Evaluation there equals each authored default, so the assumed
+pointwise equality derives default equality rather than accepting it. Evaluation at every
+remaining Atom then determines exception membership, giving raw code equality. Applying
+this theorem to codes recovered by the accepted A1 equivalence gives uniqueness of a
+continuous extension from its values on `U.Atom`.
+
+For finite `U.Atom`, `finitePredicateCode predicate defaultValue` records exactly the
+points where the predicate differs from the authored default. Its evaluation theorem and
+the converse uniqueness theorem make the full fiber subtype equivalent to `Bool`. The
+two exception-table theorems identify the target's exact displayed codes. Their default
+fields, and hence their A1 extensions at infinity, are unequal without assuming the
+carrier is nonempty.
+
+Cycle 3 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed `AtomCarrier U` and the existing evaluator's
+  `[DecidableEq U.Atom]`.
+- `direction-hypothesis`: the fixed target's branch assumptions `[Infinite U.Atom]`
+  and `[Finite U.Atom]`, pointwise evaluation equality in the raw-code lemma, and
+  equality on the embedded Atom carrier in the continuous-map lemma. Finite
+  enumeration is constructed noncomputably inside `finitePredicateCode` and is not
+  an exposed premise.
+- `discharge-required`: recovery of the infinite default, both raw structure fields,
+  construction and exhaustiveness of the finite fiber, exact exception tables, and
+  empty-carrier-safe distinction; all are proved in the module.
+- `conclusion-equivalent-risk`: none. The finite fiber stores the target pointwise
+  evaluation condition only; it does not store a second code, a classification theorem,
+  or either inverse law.
