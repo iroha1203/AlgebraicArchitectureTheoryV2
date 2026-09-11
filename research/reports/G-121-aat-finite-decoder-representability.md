@@ -1133,8 +1133,9 @@ audits:
 
 The support predicate is the fixed target's actual moved-point set, represented as a `Set`
 so arbitrary carriers remain allowed.  Necessity uses the existing decoder law that every
-Atom outside an authored support Finset is fixed.  Sufficiency derives the only finite table
-from `Set.Finite.toFinset`, proves invariance from permutation injectivity, proves fixedness
+Atom outside an authored support Finset is fixed.  Sufficiency canonically derives one finite
+table from the actual moved-point set via `Set.Finite.toFinset`, proves invariance from permutation
+injectivity, proves fixedness
 outside the actual support by membership negation, and invokes the existing constructor.
 The result is equality of whole `Equiv.Perm` values, not pointwise agreement restricted to
 the chosen table.
