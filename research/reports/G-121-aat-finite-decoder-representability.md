@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 6 review of B's anchored-coverage/continuous-extension equivalence
-- pending proof obligations: B's compactness and arrow-coherence restatement, then C--E
+- current proof obligation: Cycle 7 review of B's discrete-compactness restatement
+- pending proof obligations: B's arrow-coherence restatement, then C--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B's compactness and decoded-arrow coherence restatement
+- next proof obligation: B's decoded-arrow coherence restatement
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -793,3 +793,107 @@ Cycle 6 material premise roles are:
   witness; all are proved or routed to the accepted G-112 constructors.
 - `conclusion-equivalent-risk`: none. No new input structure stores a code, endpoint anchor,
   coverage square, finite/cofinite proof, or inverse law.
+
+## Cycle 7 — Discrete Source compactness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 7
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: ddb66f6af38674531d35ed8de5092cf11351786b
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 6: B1 coverage/continuous-extension equivalence discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.nonempty_anchoredCoverageWitness_iff_finite_continuousExtensions
+    - Finite.compactSpace
+    - finite_of_compact_of_discrete
+  proof_obligation: "B2 object clause: identify finiteness with compactness for the explicitly discrete Source topology and restate the complete B1 coverage criterion using compactness at both endpoints"
+  selection_reason: "The compactness clause is an exact logical restatement of the accepted B1 endpoint finiteness propositions. Keeping it separate from arrow coherence makes the fixed topology and the later decoder comparison independently reviewable."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/DiscreteCompactness.lean
+    - AAT.AG.FiniteDecoderRepresentability.nonempty_anchoredCoverageWitness_iff_compact_continuousExtensions
+  risks:
+    - "assuming an ambient topology on Source rather than fixing the discrete topology"
+    - "proving compactness only from finiteness and omitting the converse"
+    - "dropping either endpoint or the target continuous-extension clause"
+  unchecked:
+    - "B source-map and Atom-permutation agreement with decoder identity/composition"
+    - "C--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved for an arbitrary type that Finite is equivalent to CompactSpace under the explicit bottom topology, using the standard finite compactness instance and compact-discrete finiteness theorem. Rewrote the accepted B1 criterion to require compactness of both discrete Source spaces while preserving every actual target continuous extension and its pointwise specification."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/DiscreteCompactness.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.finite_iff_compactSpace_bot
+    - AAT.AG.FiniteDecoderRepresentability.nonempty_anchoredCoverageWitness_iff_compact_continuousExtensions
+  claim_mapping:
+    theorem_names:
+      - finite_iff_compactSpace_bot
+      - nonempty_anchoredCoverageWitness_iff_compact_continuousExtensions
+    source_labels:
+      - "fixed target B: Source finiteness is equivalent to compactness of its discrete topology"
+      - "fixed target B: coverage criterion stated by compactness of both Sources and continuous target extensions"
+    conjuncts:
+      - "Finite X iff CompactSpace X under TopologicalSpace.bot"
+      - "compactness of the source Source type"
+      - "compactness of the target Source type"
+      - "all target extraction predicates have the B1 continuous extensions"
+    undischarged_assumptions: []
+    acceptance_point: "Both CompactSpace propositions carry an explicit bottom topology in the public statement, so no caller-selected topology or compactness certificate can change the meaning of the fixed discrete-space claim."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B discrete Source finiteness/compactness equivalence"
+      - "B complete compactness form of the coverage criterion"
+    remaining:
+      - "B decoded-arrow identity/composition coherence"
+      - "all C--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "finite-to-compact uses the standard Finite.compactSpace construction"
+      - "compact-to-finite uses finite_of_compact_of_discrete after fixing TopologicalSpace.bot"
+    unresolved: []
+  proof_use:
+    used:
+      - "both directions of finite_iff_compactSpace_bot rewrite the two endpoint propositions"
+      - "the accepted B1 equivalence supplies the unchanged continuous-extension clause"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/DiscreteCompactness.lean"
+    - "namespace #assert_standard_axioms_only: standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans"
+  blocking_findings: []
+  next_obligation: "B3: connect coverage presentation source maps and Atom permutations to typedPresentationToSemantic and finiteCodeCartRealization, including identity and composition"
+```
+
+### Cycle 7 acceptance spine
+
+`finite_iff_compactSpace_bot` states the topology in the proposition itself.  Its forward
+direction installs only the supplied `Finite` proof and uses the standard compactness
+construction; its reverse direction installs the explicit bottom topology and applies the
+compact-discrete finiteness theorem.  The main theorem rewrites both endpoint propositions
+of the accepted Cycle 6 equivalence and leaves the quantified continuous maps unchanged.
+
+Cycle 7 material premise roles are:
+
+- `ambient-boundary`: arbitrary Source types and their explicitly fixed bottom topology,
+  plus the existing G-121 discrete Atom topology inherited from B1.
+- `direction-hypothesis`: either a `Finite` proposition or a `CompactSpace` proposition for
+  the same explicit discrete topology; the main theorem has the same two directions as B1.
+- `discharge-required`: both finite/compact implications and both endpoint rewrites; all are
+  proved in `finite_iff_compactSpace_bot` and used by the main theorem.
+- `conclusion-equivalent-risk`: none. Compactness is not supplied for an arbitrary topology,
+  and the continuous-extension clause is neither stored nor weakened.
