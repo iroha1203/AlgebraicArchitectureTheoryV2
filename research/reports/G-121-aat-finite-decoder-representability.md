@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 3 review of A's finite/infinite raw-code fibers
-- pending proof obligations: A's G-112 choice agreement and transport claims, then B--E
+- current proof obligation: Cycle 4 review of A's G-112 encoder choice agreement
+- pending proof obligations: A's permutation transport claims, then B--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A's G-112 choice agreement and transport coherence
+- next proof obligation: A's permutation transport coherence
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -411,3 +411,123 @@ Cycle 3 material premise roles are:
 - `conclusion-equivalent-risk`: none. The finite fiber stores the target pointwise
   evaluation condition only; it does not store a second code, a classification theorem,
   or either inverse law.
+
+## Cycle 4 — Agreement with the accepted G-112 encoder
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 4
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 9708c57b387df40ae2d8a93ff75cb19eca66ef6a
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 3: finite/infinite raw-code fibers discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_eval
+    - AAT.AG.FiniteDecoderRepresentability.eq_finitePredicateCode_of_eval_eq
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eval_injective_of_infinite
+  proof_obligation: "A4: identify the accepted G-112 finite/cofinite encoder with the default-false code on finite carriers and with the unique raw code on infinite carriers"
+  selection_reason: "A2 connected the quotient inverse to G-112 and A3 classified the raw fibers. This cycle now fixes which member the accepted encoder actually selects in each finite/infinite branch."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EncoderChoice.lean
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_eq_finitePredicateCode_false
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.eq_toCode_iff_eval_eq_of_infinite
+  risks:
+    - "proving only evaluation equivalence on finite carriers instead of raw equality to the default-false code"
+    - "exposing Fintype rather than the fixed target Finite premise"
+    - "reimplementing the G-112 encoder instead of using its accepted definition and evaluation theorem"
+    - "assuming uniqueness on infinite carriers rather than deriving it from raw evaluation injectivity"
+  unchecked:
+    - "A's permutation transport and identity/inverse/composition coherence"
+    - "B--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved that finite carrierhood forces the accepted G-112 encoder into its finite-true-set branch and hence authored default false; combined this with A3 fiber uniqueness at a fixed default to obtain raw code equality. On infinite carriers, combined the accepted encoder evaluation theorem with A3 raw injectivity to prove that every raw code carrying the predicate equals the G-112 code, and packaged the uniqueness as an iff."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EncoderChoice.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_defaultValue_of_finite
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_eq_finitePredicateCode_false
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.eq_toCode_of_eval_eq_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.eq_toCode_iff_eval_eq_of_infinite
+  claim_mapping:
+    theorem_names:
+      - FiniteOrCofiniteBoolPredicate.toCode_defaultValue_of_finite
+      - FiniteOrCofiniteBoolPredicate.toCode_eq_finitePredicateCode_false
+      - FiniteOrCofiniteBoolPredicate.eq_toCode_of_eval_eq_of_infinite
+      - FiniteOrCofiniteBoolPredicate.eq_toCode_iff_eval_eq_of_infinite
+    source_labels:
+      - "fixed target A: existing finiteOrCofiniteAtomPredicateCode agrees with the classification"
+      - "fixed target A: on finite D it selects the default-false code"
+      - "fixed target A: on infinite D it agrees with the unique raw code"
+    conjuncts:
+      - "finite G-112 authored default is false"
+      - "finite G-112 raw code equals the explicit default-false fiber code"
+      - "infinite raw code has the prescribed evaluation iff it equals the G-112 code"
+    undischarged_assumptions: []
+    acceptance_point: "The finite conclusion is raw structure equality, not quotient equality. The infinite conclusion quantifies an arbitrary raw code and derives uniqueness from evaluation, rather than carrying uniqueness in the predicate subtype."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "A4 finite default-false selection by the accepted G-112 encoder"
+      - "A4 infinite agreement with the unique raw code"
+    remaining:
+      - "A permutation transport and identity/inverse/composition coherence"
+      - "all B--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "finite default is derived by unfolding the accepted G-112 branch test and discharging set finiteness from Finite U.Atom"
+      - "finite raw equality uses the accepted G-112 evaluation theorem and A3 fixed-default uniqueness"
+      - "infinite uniqueness uses the accepted G-112 evaluation theorem and A3 raw injectivity"
+    unresolved: []
+  proof_use:
+    used:
+      - "Finite U.Atom refutes the non-finite branch of the accepted encoder"
+      - "G-112 pointwise evaluation supplies membership in the finite and infinite raw fibers"
+      - "A3 fixed-default uniqueness upgrades finite evaluation equality to raw equality"
+      - "A3 infinite injectivity upgrades pointwise evaluation equality to raw equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EncoderChoice.lean"
+    - "namespace #assert_standard_axioms_only: 4 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
+  blocking_findings: []
+  next_obligation: "A5: extend arbitrary Atom permutations to OnePoint homeomorphisms and prove code/continuous-map/evaluation transport compatibility with identity, inverse, and composition"
+```
+
+### Cycle 4 acceptance spine
+
+For finite `U.Atom`, the existing G-112 definition tests whether the true locus is
+finite. The target's `Finite U.Atom` premise discharges this test, so the selected
+raw code has default `false`. Its accepted pointwise evaluation theorem places it
+in the A3 fiber; A3 uniqueness at that fixed default then identifies the entire raw
+structure with `finitePredicateCode predicate false`.
+
+For infinite `U.Atom`, the proof does not inspect the encoder branch. Any raw code
+with the requested evaluation agrees pointwise with the accepted G-112 code by its
+existing evaluation theorem, and A3 injectivity forces raw equality. The iff form
+records both the evaluation and uniqueness directions.
+
+Cycle 4 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed `AtomCarrier U` and the existing evaluator's
+  `[DecidableEq U.Atom]`.
+- `direction-hypothesis`: the fixed target's branch assumptions `[Finite U.Atom]`
+  and `[Infinite U.Atom]`; the infinite uniqueness theorem also assumes the actual
+  pointwise evaluation formula for the arbitrary code.
+- `discharge-required`: accepted encoder default selection, finite raw equality, and
+  infinite raw uniqueness; all are proved in the module.
+- `conclusion-equivalent-risk`: none. The predicate subtype contains only the target's
+  finite/cofinite image condition, not a code, default, raw equality, or uniqueness proof.
