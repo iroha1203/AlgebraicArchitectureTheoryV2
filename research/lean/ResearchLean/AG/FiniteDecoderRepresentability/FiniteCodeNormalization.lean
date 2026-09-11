@@ -91,7 +91,9 @@ theorem normalizeFiniteDoctrineCode_normalize [DecidableEq U.Atom]
 
 /--
 G-121(D) doctrine computation API: each new extraction table is exactly the
-canonical normalization of the table at the same position.
+canonical normalization of the table at the same position. `Finite` constructs
+that table and `DecidableEq` evaluates it; the `simp` direction exposes the
+canonical normalized table.
 -/
 @[simp]
 theorem normalizeFiniteDoctrineCode_extraction [DecidableEq U.Atom]
