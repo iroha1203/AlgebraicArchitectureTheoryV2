@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 16 review of E's fixed adjacent-swap automorphism
-- pending proof obligations: E anchored coverage and subset-indexed/cardinality obstruction
+- current proof obligation: Cycle 17 review of E's anchored coverage contrast
+- pending proof obligations: E subset-indexed/cardinality obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: E's anchored coverage witness for the same non-representable fixed-endpoint arrow
+- next proof obligation: E's arbitrary-subset adjacent-swap family and injectivity into `Aut(X_*)`
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -2052,3 +2052,133 @@ code arrow mapping to this hom; it does not erase the existing identity endomorp
 that counterexample to `Full.map_surjective` proves the decoder is not full.  Independently, the
 same unrestricted permutation extends through Cycle 5 to a homeomorphism of the one-point
 compactification, fixing infinity and acting by the adjacent swap on every embedded Atom.
+
+## Cycle 17: anchored coverage of the non-representable arrow
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 17
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: e5d560d4d29b4a41a3b6047e5cedcd8ed5d9ff8a
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 16: fixed-endpoint adjacent-swap non-representability proved"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapSemanticIso
+    - AAT.AG.FiniteDecoderRepresentability.not_exists_natSwapCodeHom
+    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_id
+    - AAT.AG.DoctrineFiberProduct.AnchoredCoverageWitness
+  proof_obligation: "E2: construct anchored coverage of u_sigma.hom with identity source anchor, u_sigma target anchor, idTypedPresentation P_*, and evaluate the commutative square"
+  selection_reason: "The fixed target requires the same arrow to witness both literal-endpoint non-representability and coverage after endpoint isomorphisms; this cycle constructs the second side without altering Cycle 16's first side."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSwapAnchoredCoverage.lean
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_square
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_covered_and_not_fixed_representable
+  risks:
+    - "using a non-identity presentation that already contains the infinite permutation"
+    - "changing the source anchor away from identity"
+    - "using an endpoint isomorphism unrelated to u_sigma"
+    - "stating coverage without proving the arrow-category square"
+    - "letting coverage erase the literal-endpoint non-representability conclusion"
+  unchecked:
+    - "E subset-indexed automorphisms, injectivity, and uncountability"
+    - "E arbitrary countable decoder non-surjectivity and countable syntax specialization"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Bundled u_sigma.hom as the semantic input; constructed its source anchor from P_* and the identity Iso, its target anchor from the same P_* and u_sigma, and its arrow witness from idTypedPresentation P_*; proved the square by the decoded identity theorem; exposed the exact anchor, presentation, and endpoint-Iso computations; and combined coverage with Cycle 16's fixed-endpoint decoder-preimage nonexistence for the identical semantic arrow."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSwapAnchoredCoverage.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapInput
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapInput_source
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapInput_target
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapInput_hom
+    - AAT.AG.FiniteDecoderRepresentability.natSwapIdentityAnchor
+    - AAT.AG.FiniteDecoderRepresentability.natSwapIdentityAnchor_code
+    - AAT.AG.FiniteDecoderRepresentability.natSwapIdentityAnchor_iso
+    - AAT.AG.FiniteDecoderRepresentability.natSwapAdjacentAnchor
+    - AAT.AG.FiniteDecoderRepresentability.natSwapAdjacentAnchor_code
+    - AAT.AG.FiniteDecoderRepresentability.natSwapAdjacentAnchor_iso
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_sourceAnchor
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_targetAnchor
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_presentation
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_sourceIso
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_targetIso
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwapAnchoredCoverage_square
+    - AAT.AG.FiniteDecoderRepresentability.natAdjacentSwap_covered_and_not_fixed_representable
+  claim_mapping:
+    theorem_names:
+      - natAdjacentSwapAnchoredCoverage
+      - natAdjacentSwapAnchoredCoverage_presentation
+      - natAdjacentSwapAnchoredCoverage_sourceIso
+      - natAdjacentSwapAnchoredCoverage_targetIso
+      - natAdjacentSwapAnchoredCoverage_square
+      - natAdjacentSwap_covered_and_not_fixed_representable
+    source_labels:
+      - "fixed target E: source endpoint isomorphism is identity"
+      - "fixed target E: target endpoint isomorphism is u_sigma"
+      - "fixed target E: representing arrow is idTypedPresentation P_*"
+      - "fixed target E: evaluate the commutative square"
+      - "fixed target E: show endpoint-isomorphic coverage alongside fixed-code nonexistence"
+    conjuncts:
+      - "both anchors use the literal code P_*"
+      - "the source Iso is identity and the target Iso is the constructed adjacent-swap automorphism"
+      - "the typed presentation is definitionally the authored identity presentation"
+      - "the square reduces through D0's identity law"
+      - "the combined theorem retains the no-preimage conclusion for u_sigma.hom"
+    undischarged_assumptions: []
+    acceptance_point: "All anchors, endpoint isomorphisms, the presentation, and the square are constructed internally from the fixed Cycle 16 data. No coverage witness or commuting equation is accepted from callers."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "E anchored coverage witness"
+      - "E exact source and target anchors"
+      - "E identity presentation"
+      - "E commutative square and coverage/non-representability contrast"
+    remaining:
+      - "E arbitrary-subset automorphism family and injectivity"
+      - "E uncountability and arbitrary countable decoder non-surjectivity"
+      - "E countable syntax specialization"
+  certificate_provenance:
+    discharged:
+      - "Cycle 16 supplies the actual semantic automorphism and no-preimage theorem"
+      - "Iso.refl constructs the source anchor"
+      - "u_sigma itself constructs the target anchor"
+      - "the existing authored identity presentation supplies the displayed arrow"
+      - "D0's proved identity computation supplies the square"
+    unresolved: []
+  proof_use:
+    used:
+      - "u_sigma.hom is both the semantic input arrow and target anchor hom"
+      - "typedPresentationToSemantic_id reduces the displayed identity arrow"
+      - "not_exists_natSwapCodeHom supplies the other conjunct of the final contrast"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.FiniteDecoderRepresentability.NatAdjacentSwap"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/NatSwapAnchoredCoverage.lean"
+    - "namespace #assert_standard_axioms_only: 18 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "E3: for every S subset Nat construct the pairwise swap sigma_S and identity-source semantic automorphism u_S, then prove S maps to u_S injectively from the even-input evaluation iff"
+```
+
+### Cycle 17 acceptance spine
+
+The source and target anchors both retain the literal code `P_*`; only their semantic endpoint
+isomorphisms differ.  The source uses identity, the target uses the already constructed `u_σ`,
+and the displayed code arrow is the authored identity presentation.  Its decoded arrow is
+identity, so the arrow-category square reduces to `id ≫ u_σ.hom = id ≫ u_σ.hom`.  The combined
+theorem keeps Cycle 16's exact no-preimage statement for that same hom.  Thus endpoint-isomorphic
+coverage and fixed-code non-representability coexist without changing either notion.
