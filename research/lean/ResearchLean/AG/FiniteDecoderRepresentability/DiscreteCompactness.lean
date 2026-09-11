@@ -24,7 +24,12 @@ local instance discreteCompactnessAtomTopology : TopologicalSpace U.Atom := ⊥
 local instance discreteCompactnessAtomDiscreteTopology : DiscreteTopology U.Atom :=
   discreteTopology_bot U.Atom
 
-/-- A type is finite exactly when its discrete topology is compact. -/
+/--
+G-121(B2) API bridge: a Source type is finite exactly when its explicitly
+discrete topology is compact.  The forward direction uses the standard
+`Finite.compactSpace` construction; the reverse direction uses
+`finite_of_compact_of_discrete` after fixing the bottom topology.
+-/
 theorem finite_iff_compactSpace_bot (X : Type v) :
     Finite X ↔ @CompactSpace X ⊥ := by
   constructor
