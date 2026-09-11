@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 18 review of E's subset-indexed automorphism injection
-- pending proof obligations: E uncountability and countable-decoder/syntax obstruction
-- current target state: `target-proof-checkpoint`
-- completion candidate: no
-- next proof obligation: derive `Aut(X_*)` uncountability and non-surjectivity of every decoder from a countable syntax type
+- current proof obligation: Cycle 19 review of E's uncountability and countable-syntax obstruction
+- pending proof obligations: none in the fixed A--E statement; cycle review and terminal completion audit remain
+- current target state: `target-proof-candidate`
+- completion candidate: yes
+- next proof obligation: audit Cycle 19, then run the terminal fixed-target completion review
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -2326,3 +2326,120 @@ object admits that permutation with identity source map, and its actual inverse 
 semantic automorphism.  Equality of two such Isos forces equality of their hom Atom
 equivalences; evaluating at `2n` then recovers membership in the original subsets.  This proves
 the injection into `Aut(X_*)` explicitly, before any cardinality theorem is invoked.
+
+## Cycle 19: uncountability and countable-syntax obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 19
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 605de9580a10d8c7515526167bd118853f71bc99
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 18: Set Nat embeds into Aut(X_*)"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAut_injective
+    - AAT.AG.FiniteDecoderRepresentability.natSubsetSemanticAutEmbedding
+    - Function.cantor_injective
+  proof_obligation: "E4: prove Aut(X_*) uncountable; refute surjectivity for every decoder from a countable type; specialize to finite lists over a countable alphabet and combined countable object-and-pairwise-morphism syntax"
+  selection_reason: "Cycle 18 supplied the exact injection needed for Cantor's contradiction, leaving only the fixed cardinal and syntax consequences."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CountableSyntaxObstruction.lean
+    - AAT.AG.FiniteDecoderRepresentability.setNat_uncountable
+    - AAT.AG.FiniteDecoderRepresentability.natSemanticAut_uncountable
+    - AAT.AG.FiniteDecoderRepresentability.countableDecoder_not_surjective
+    - AAT.AG.FiniteDecoderRepresentability.finiteListDecoder_not_surjective
+    - AAT.AG.FiniteDecoderRepresentability.CountablePresentationSyntax.combinedSyntaxDecoder_not_surjective
+  risks:
+    - "assuming the target automorphism type uncountable instead of deriving it from the subset family"
+    - "proving non-surjectivity only for one selected decoder rather than every map from every countable type"
+    - "replacing finite lists by streams or requiring a computable encoding"
+    - "dropping source or target indices from the pairwise morphism syntax"
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Derived Uncountable (Set Nat) directly from Countable's injection into Nat and Cantor's no-injection theorem; transported uncountability through the proved subset-indexed semantic automorphism injection; applied the generic countable-to-uncountable no-surjection theorem to every decoder; instantiated it for List Alphabet; bundled countably many object codes with a countable morphism-syntax family for each ordered endpoint pair, proved their sum-of-dependent-sums countable, and refuted every decoder from that combined syntax."
+  completion_candidate: yes
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CountableSyntaxObstruction.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.setNat_uncountable
+    - AAT.AG.FiniteDecoderRepresentability.natSemanticAut_uncountable
+    - AAT.AG.FiniteDecoderRepresentability.countableDecoder_not_surjective
+    - AAT.AG.FiniteDecoderRepresentability.finiteListDecoder_not_surjective
+    - AAT.AG.FiniteDecoderRepresentability.CountablePresentationSyntax
+    - AAT.AG.FiniteDecoderRepresentability.CountablePresentationSyntax.CombinedSyntax
+    - AAT.AG.FiniteDecoderRepresentability.CountablePresentationSyntax.combinedSyntax_countable
+    - AAT.AG.FiniteDecoderRepresentability.CountablePresentationSyntax.combinedSyntaxDecoder_not_surjective
+  claim_mapping:
+    theorem_names:
+      - setNat_uncountable
+      - natSemanticAut_uncountable
+      - countableDecoder_not_surjective
+      - finiteListDecoder_not_surjective
+      - CountablePresentationSyntax.combinedSyntax_countable
+      - CountablePresentationSyntax.combinedSyntaxDecoder_not_surjective
+    source_labels:
+      - "fixed target E: Aut(X_*) is uncountable"
+      - "fixed target E: every decoder T -> Aut(X_*) from a countable T is non-surjective"
+      - "fixed target E: finite lists over a countable alphabet"
+      - "fixed target E: countably many presentation objects and countable morphism syntax for every pair, combined into one type"
+      - "fixed target E: the lower bound assumes countability, not computability"
+    conjuncts:
+      - "powerset uncountability is proved by Cantor rather than supplied"
+      - "the Cycle 18 injection is the actual route from Set Nat to Aut(X_*)"
+      - "the generic decoder is an arbitrary function from an arbitrary Countable type"
+      - "List supplies precisely finite strings"
+      - "CombinedSyntax contains object codes and typed morphism expressions with both endpoint indices"
+      - "the presentation bundle carries Countable propositions only and no computational fields"
+    undischarged_assumptions: []
+    acceptance_point: "The only syntax-side hypothesis is Countable. No Encodable, DecidableEq, computability, faithfulness, selected enumeration, or nonempty-domain assumption is introduced."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "E uncountability of Aut(X_*)"
+      - "E arbitrary countable decoder non-surjectivity"
+      - "E countable-alphabet finite-list specialization"
+      - "E countable presentation-object and pairwise morphism-syntax specialization"
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Countable's actual injection into Nat and Function.cantor_injective prove Set Nat uncountable"
+      - "Cycle 18's proved semantic automorphism injection transports that uncountability"
+      - "Mathlib's countable-to-uncountable theorem refutes each actual decoder"
+      - "Sum, Sigma, and List countability instances derive the syntax specializations"
+    unresolved: []
+  proof_use:
+    used:
+      - "natSubsetSemanticAut_injective is the cardinal lower-bound map"
+      - "the arbitrary decode parameter is passed directly to not_surjective_countable_uncountable"
+      - "both endpoint indices occur in the nested Sigma syntax"
+      - "combinedSyntax_countable is installed for the final presentation decoder theorem"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake build ResearchLean.AG.FiniteDecoderRepresentability.NatSubsetSwaps"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CountableSyntaxObstruction.lean"
+    - "namespace #assert_standard_axioms_only: 23 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "terminal fixed-target A--E completion audit"
+```
+
+### Cycle 19 acceptance spine
+
+Cantor's theorem first rules out any injection from `Set Nat` to `Nat`; the Cycle 18 injection
+then forces the actual automorphism type of `X_*` to be uncountable.  The generic theorem accepts
+an arbitrary type-class witness `Countable T` and an arbitrary function from `T`, so it assumes
+neither an enumeration nor a computation procedure.  `List Alphabet` gives the finite-string
+case.  For presentation syntax, the combined type is the sum of object codes and a nested
+dependent sum of morphism expressions indexed by both source and target; its countability is
+derived from exactly the object and pairwise-morphism countability fields.
