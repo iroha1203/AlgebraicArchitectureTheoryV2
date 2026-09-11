@@ -1695,8 +1695,12 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp
     - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_hom_sourceMap
     - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_hom_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_inv_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIsoApp_inv_atomEquiv
     - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso_naturality
     - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso_hom_app
+    - AAT.AG.FiniteDecoderRepresentability.finiteNormalizationRealizationIso_inv_app
   claim_mapping:
     theorem_names:
       - normalizeFiniteInstanceCode_toSemantic_extracts_iff
@@ -1745,7 +1749,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean"
-    - "namespace #assert_standard_axioms_only: 12 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 16 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "D3: instantiate the specified Fin 1 true-default and false-default codes, prove equal evaluations and semantic isomorphism, identify R_fin(P_t) with P_f at raw code level, and refute morphisms in both original-code directions by the Cycle 10 default criterion"
 ```

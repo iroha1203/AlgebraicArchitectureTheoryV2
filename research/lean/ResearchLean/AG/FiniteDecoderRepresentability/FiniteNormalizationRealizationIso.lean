@@ -29,7 +29,8 @@ variable {U : AtomCarrier.{u}}
 /--
 G-121(D) semantic evaluation bridge: normalized and original pointed codes have
 the same extraction proposition at every source and Atom.  This is the public
-decoded API used by both directions of the component isomorphism.
+decoded API used by both directions of the component isomorphism. `Finite`
+constructs the normalized tables and `DecidableEq` evaluates both codes.
 -/
 theorem normalizeFiniteInstanceCode_toSemantic_extracts_iff
     [DecidableEq U.Atom] [Finite U.Atom] (code : FiniteInstanceCode U)
@@ -68,7 +69,8 @@ noncomputable def normalizedToOriginalHom [DecidableEq U.Atom]
 /--
 G-121(D) reverse semantic comparison from the original code to its normalized
 code.  It has the same identity computational maps and uses the reverse of the
-derived extraction equivalence.
+derived extraction equivalence. `Finite` and `DecidableEq` are inherited from
+the normalization and decoder.
 -/
 noncomputable def originalToNormalizedHom [DecidableEq U.Atom]
     [Finite U.Atom] (code : FiniteInstanceCode U) :
@@ -116,7 +118,8 @@ theorem originalToNormalizedHom_atomEquiv [DecidableEq U.Atom]
 
 /--
 G-121(D) semantic component isomorphism.  This is an isomorphism after decoding,
-not an equality of the two raw finite instance codes.
+not an equality of the two raw finite instance codes. `Finite` and `DecidableEq`
+are exactly the finite normalization and decoder premises.
 -/
 noncomputable def finiteNormalizationRealizationIsoApp
     [DecidableEq U.Atom] [Finite U.Atom] (code : FiniteInstanceCode U) :
@@ -154,6 +157,27 @@ theorem finiteNormalizationRealizationIsoApp_hom_atomEquiv
   normalizedToOriginalHom_atomEquiv code
 
 /--
+G-121(D) component API: the inverse leg's source map is identity.  The `simp`
+direction exposes the computational map used by the inverse law.
+-/
+@[simp]
+theorem finiteNormalizationRealizationIsoApp_inv_sourceMap
+    [DecidableEq U.Atom] [Finite U.Atom] (code : FiniteInstanceCode U) :
+    (finiteNormalizationRealizationIsoApp code).inv.doctrineHom.sourceMap = id :=
+  originalToNormalizedHom_sourceMap code
+
+/--
+G-121(D) component API: the inverse leg's Atom equivalence is identity.  The
+`simp` direction exposes the computational equivalence used by the inverse law.
+-/
+@[simp]
+theorem finiteNormalizationRealizationIsoApp_inv_atomEquiv
+    [DecidableEq U.Atom] [Finite U.Atom] (code : FiniteInstanceCode U) :
+    (finiteNormalizationRealizationIsoApp code).inv.doctrineHom.atomEquiv =
+      Equiv.refl U.Atom :=
+  originalToNormalizedHom_atomEquiv code
+
+/--
 G-121(D) naturality of the identity-component semantic comparison for an
 arbitrary finite-code quotient morphism.  The equality is derived from its
 representatives and the retained source-map and Atom-table computations.
@@ -170,15 +194,34 @@ theorem finiteNormalizationRealizationIso_naturality
   intro presentation
   apply ExtInstHom.ext
   apply ExactDoctrineHom.ext
-  · rfl
-  · apply Equiv.ext
+  · change
+      (normalizedToOriginalHom target).doctrineHom.sourceMap ∘
+          (typedPresentationToSemantic
+            (normalizeCartPresentation presentation)).doctrineHom.sourceMap =
+        (typedPresentationToSemantic presentation).doctrineHom.sourceMap ∘
+          (normalizedToOriginalHom source).doctrineHom.sourceMap
+    rw [normalizedToOriginalHom_sourceMap,
+      typedPresentationToSemantic_sourceMap,
+      normalizeCartPresentation_sourceMap,
+      typedPresentationToSemantic_sourceMap]
+    rfl
+  · change
+      (normalizeCartPresentation presentation).atomEquiv.toEquiv.trans
+          (normalizedToOriginalHom target).doctrineHom.atomEquiv =
+        (normalizedToOriginalHom source).doctrineHom.atomEquiv.trans
+          presentation.atomEquiv.toEquiv
+    rw [normalizeCartPresentation_atomEquiv,
+      normalizedToOriginalHom_atomEquiv,
+      normalizedToOriginalHom_atomEquiv]
+    apply Equiv.ext
     intro atom
     rfl
 
 /--
 G-121(D)'s natural isomorphism `D₀⁰ ∘ R_fin ≅ D₀`.  Its components
 have identity source map and identity Atom equivalence, while raw code equality
-is deliberately not asserted.
+is deliberately not asserted. `Finite` and `DecidableEq` are inherited from the
+two compared functors.
 -/
 noncomputable def finiteNormalizationRealizationIso [DecidableEq U.Atom]
     [Finite U.Atom] :
@@ -188,6 +231,30 @@ noncomputable def finiteNormalizationRealizationIso [DecidableEq U.Atom]
   NatIso.ofComponents
     (fun code => finiteNormalizationRealizationIsoApp (U := U) code)
     (fun hom => finiteNormalizationRealizationIso_naturality (U := U) hom)
+
+/--
+G-121(D) global comparison API: the forward natural-transformation component is
+the constructed semantic normalization isomorphism's forward leg.  The `simp`
+direction exposes that component.
+-/
+@[simp]
+theorem finiteNormalizationRealizationIso_hom_app [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteCodeCartCategory U) :
+    (finiteNormalizationRealizationIso (U := U)).hom.app code =
+      (finiteNormalizationRealizationIsoApp code).hom :=
+  rfl
+
+/--
+G-121(D) global comparison API: the inverse natural-transformation component is
+the constructed semantic normalization isomorphism's inverse leg.  The `simp`
+direction exposes that component.
+-/
+@[simp]
+theorem finiteNormalizationRealizationIso_inv_app [DecidableEq U.Atom]
+    [Finite U.Atom] (code : FiniteCodeCartCategory U) :
+    (finiteNormalizationRealizationIso (U := U)).inv.app code =
+      (finiteNormalizationRealizationIsoApp code).inv :=
+  rfl
 
 #assert_standard_axioms_only AAT.AG.FiniteDecoderRepresentability
 
