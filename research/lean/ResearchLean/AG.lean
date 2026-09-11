@@ -26,6 +26,7 @@ import ResearchLean.AG.FiniteDecoderRepresentability.OnePointCode
 import ResearchLean.AG.FiniteDecoderRepresentability.EvaluationClassification
 import ResearchLean.AG.FiniteDecoderRepresentability.CodeFibers
 import ResearchLean.AG.FiniteDecoderRepresentability.EncoderChoice
+import ResearchLean.AG.FiniteDecoderRepresentability.PermutationTransport
 import ResearchLean.AG.CrossStageCoherence
 import ResearchLean.AG.DoctrineFiberProduct
 import ResearchLean.AG.DiagnosticConservativity.TransportAlignment
