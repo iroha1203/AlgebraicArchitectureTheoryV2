@@ -8,6 +8,14 @@ This module proves the central classification in G-121(C).  For fixed finite
 instance codes, a semantic arrow is decoded by an existing typed presentation
 exactly when its actual Atom permutation has finite moved support and it
 preserves the authored default values of the normalized extraction tables.
+
+## Implementation notes
+
+The sufficient constructor keeps the two endpoint codes literal and uses the
+actual semantic source map and Atom permutation.  It does not choose endpoint
+isomorphisms or accept component equalities as certificates: normalization,
+extraction, point preservation, and decoder equality are derived from the
+semantic morphism and the two classified conditions.
 -/
 
 namespace AAT.AG.FiniteDecoderRepresentability
@@ -18,10 +26,47 @@ open CategoryTheory AtomFoundation DoctrineFiberProduct
 
 variable {U : AtomCarrier.{u}}
 
-/-- The actual extraction code used after normalization at a source cell. -/
+/--
+G-121(C) notation API: `t_P(s)` is the actual authored extraction code after
+the existing finite doctrine's normalization.  It introduces no new premise.
+-/
 def normalizedExtractionCode (code : FiniteInstanceCode U)
     (source : code.doctrine.Source) : AtomPredicateCode U :=
   code.doctrine.extraction (code.doctrine.normalize source)
+
+/--
+G-121(C) normalization API for authored defaults.  The `simp` direction exposes
+the existing extraction table selected by normalization.
+-/
+@[simp]
+theorem normalizedExtractionCode_defaultValue (code : FiniteInstanceCode U)
+    (source : code.doctrine.Source) :
+    (normalizedExtractionCode code source).defaultValue =
+      (code.doctrine.extraction
+        (code.doctrine.normalize source)).defaultValue :=
+  rfl
+
+/--
+G-121(C) normalization API for evaluation.  `DecidableEq` comes from the
+existing evaluator, and `simp` exposes the normalized authored table.
+-/
+@[simp]
+theorem normalizedExtractionCode_eval [DecidableEq U.Atom]
+    (code : FiniteInstanceCode U) (source : code.doctrine.Source)
+    (atom : U.Atom) :
+    (normalizedExtractionCode code source).eval atom =
+      (code.doctrine.extraction (code.doctrine.normalize source)).eval atom :=
+  rfl
+
+/--
+G-121(C) transport API: Atom transport preserves the authored default.  The
+`simp` direction removes transport from the default-value observation.
+-/
+@[simp]
+theorem atomPredicateCode_transport_defaultValue [DecidableEq U.Atom]
+    (code : AtomPredicateCode U) (equiv : Equiv.Perm U.Atom) :
+    (code.transport equiv).defaultValue = code.defaultValue :=
+  rfl
 
 /--
 G-121(C) raw-code API: equal authored defaults and pointwise evaluations imply
@@ -61,12 +106,12 @@ theorem fixedPresentation_necessary [DecidableEq U.Atom]
         (normalizedExtractionCode target
           (hom.doctrineHom.sourceMap input)).defaultValue =
         (normalizedExtractionCode source input).defaultValue := by
-  have hatom := congrArg
-    (fun arrow => arrow.doctrineHom.atomEquiv) hdecode
-  have hsource := congrArg
-    (fun arrow => arrow.doctrineHom.sourceMap) hdecode
-  change presentation.atomEquiv.toEquiv = hom.doctrineHom.atomEquiv at hatom
-  change presentation.sourceMap = hom.doctrineHom.sourceMap at hsource
+  have hatom : presentation.atomEquiv.toEquiv = hom.doctrineHom.atomEquiv := by
+    simpa only [typedPresentationToSemantic_atomEquiv] using congrArg
+      (fun arrow => arrow.doctrineHom.atomEquiv) hdecode
+  have hsource : presentation.sourceMap = hom.doctrineHom.sourceMap := by
+    simpa only [typedPresentationToSemantic_sourceMap] using congrArg
+      (fun arrow => arrow.doctrineHom.sourceMap) hdecode
   constructor
   · rw [← hatom]
     exact atomPermutationSupport_finite_of_code presentation.atomEquiv
@@ -74,7 +119,8 @@ theorem fixedPresentation_necessary [DecidableEq U.Atom]
     rw [← hsource]
     have hcode := congrArg AtomPredicateCode.defaultValue
       (presentation.extraction_eq input)
-    exact hcode
+    simpa only [normalizedExtractionCode,
+      atomPredicateCode_transport_defaultValue] using hcode
 
 /--
 G-121(C) sufficiency constructor: finite actual Atom support and normalized
@@ -102,7 +148,7 @@ noncomputable def fixedPresentationOfFiniteSupport
         (hom.doctrineHom.sourceMap input))
       (second := (normalizedExtractionCode source input).transport
         hom.doctrineHom.atomEquiv)
-      (hdefault input)
+      (by simpa only [atomPredicateCode_transport_defaultValue] using hdefault input)
     intro atom
     have hexact := hom.doctrineHom.extraction_iff input
       (hom.doctrineHom.atomEquiv.symm atom)
@@ -116,17 +162,13 @@ noncomputable def fixedPresentationOfFiniteSupport
     rw [FiniteDoctrineCode.toDoctrine_extracts_iff,
       FiniteDoctrineCode.toDoctrine_extracts_iff,
       hom.doctrineHom.atomEquiv.apply_symm_apply] at hexact
-    change
-      (normalizedExtractionCode source input).eval
-          (hom.doctrineHom.atomEquiv.symm atom) = true ↔
-        (normalizedExtractionCode target
-          (hom.doctrineHom.sourceMap input)).eval atom = true at hexact
-    apply Bool.eq_iff_iff.mpr
-    change
-      (normalizedExtractionCode target
-          (hom.doctrineHom.sourceMap input)).eval atom = true ↔
-        ((normalizedExtractionCode source input).transport
-          hom.doctrineHom.atomEquiv).eval atom = true
+    have hexact' :
+        (normalizedExtractionCode source input).eval
+            (hom.doctrineHom.atomEquiv.symm atom) = true ↔
+          (normalizedExtractionCode target
+            (hom.doctrineHom.sourceMap input)).eval atom = true := by
+      simpa only [AtomPredicateCode.Holds,
+        normalizedExtractionCode_eval] using hexact
     have htransport :
         ((normalizedExtractionCode source input).transport
           hom.doctrineHom.atomEquiv).eval atom =
@@ -135,11 +177,50 @@ noncomputable def fixedPresentationOfFiniteSupport
       conv_lhs =>
         rw [← hom.doctrineHom.atomEquiv.apply_symm_apply atom]
       rw [AtomPredicateCode.eval_transport]
+    apply Bool.eq_iff_iff.mpr
     rw [htransport]
-    exact hexact.symm
+    exact hexact'.symm
   source_eq := hom.source_eq
 
-/-- The sufficiency constructor decodes to the supplied semantic arrow itself. -/
+/--
+G-121(C) constructor API: the sufficient presentation uses the semantic source
+map literally.  The `simp` direction exposes that actual morphism component.
+-/
+@[simp]
+theorem fixedPresentationOfFiniteSupport_sourceMap
+    [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
+    (hom : source.toSemantic ⟶ target.toSemantic)
+    (hfinite : (atomPermutationSupport hom.doctrineHom.atomEquiv).Finite)
+    (hdefault : ∀ input : source.doctrine.Source,
+      (normalizedExtractionCode target
+        (hom.doctrineHom.sourceMap input)).defaultValue =
+      (normalizedExtractionCode source input).defaultValue) :
+    (fixedPresentationOfFiniteSupport hom hfinite hdefault).sourceMap =
+      hom.doctrineHom.sourceMap :=
+  rfl
+
+/--
+G-121(C) constructor API: the sufficient presentation's finite Atom table
+decodes to the semantic permutation.  The `simp` direction exposes that component.
+-/
+@[simp]
+theorem fixedPresentationOfFiniteSupport_atomEquiv_toEquiv
+    [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
+    (hom : source.toSemantic ⟶ target.toSemantic)
+    (hfinite : (atomPermutationSupport hom.doctrineHom.atomEquiv).Finite)
+    (hdefault : ∀ input : source.doctrine.Source,
+      (normalizedExtractionCode target
+        (hom.doctrineHom.sourceMap input)).defaultValue =
+      (normalizedExtractionCode source input).defaultValue) :
+    (fixedPresentationOfFiniteSupport hom hfinite hdefault).atomEquiv.toEquiv =
+      hom.doctrineHom.atomEquiv :=
+  atomPermutationCodeOfFiniteSupport_toEquiv _ _
+
+/--
+G-121(C) constructor correctness: the sufficient presentation decodes to the
+supplied semantic arrow itself.  The `simp` direction selects that semantic arrow;
+`DecidableEq` is inherited from the existing typed decoder.
+-/
 @[simp]
 theorem fixedPresentationOfFiniteSupport_decode
     [DecidableEq U.Atom] {source target : FiniteInstanceCode U}
@@ -153,8 +234,8 @@ theorem fixedPresentationOfFiniteSupport_decode
         (fixedPresentationOfFiniteSupport hom hfinite hdefault) = hom := by
   apply ExtInstHom.ext
   apply ExactDoctrineHom.ext
-  · rfl
-  · exact atomPermutationCodeOfFiniteSupport_toEquiv _ _
+  · exact fixedPresentationOfFiniteSupport_sourceMap hom hfinite hdefault
+  · exact fixedPresentationOfFiniteSupport_atomEquiv_toEquiv hom hfinite hdefault
 
 /--
 G-121(C) main fixed-presentation theorem: typed representability is equivalent

@@ -1194,9 +1194,14 @@ result:
     - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean
   evidence:
     - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_defaultValue
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_eval
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_transport_defaultValue
     - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eq_of_defaultValue_eq_of_eval_eq
     - AAT.AG.FiniteDecoderRepresentability.fixedPresentation_necessary
     - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport_atomEquiv_toEquiv
     - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport_decode
     - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff
     - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_exists_fixedPresentation
@@ -1259,7 +1264,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean"
-    - "namespace #assert_standard_axioms_only: 8 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 13 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans"
   blocking_findings: []
   next_obligation: "C3: identify normalized default preservation with equality of A's continuous extensions at infinity; derive it from semantic exactness on infinite carriers; reduce representability to finite support alone; and prove D0 faithful from its decoded-equality quotient"
@@ -1289,6 +1294,6 @@ Cycle 10 material premise roles are:
   and the normalized default equation appearing on the fixed target's right-hand side.
 - `discharge-required`: finite Atom table, source map, normalization, raw extraction equality,
   selected point, decode equality, and quotient representative bridge; all are constructed by
-  the eight declarations.
+  the thirteen declarations.
 - `conclusion-equivalent-risk`: none. The sufficient side receives no presentation, source-map
   equality, Atom table, extraction equality, endpoint isomorphism, or decode equality.
