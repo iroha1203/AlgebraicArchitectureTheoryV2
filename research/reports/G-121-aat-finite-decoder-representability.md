@@ -148,12 +148,11 @@ report_path: research/reports/G-121-aat-finite-decoder-representability.md
 selection:
   proof_state_ref: "Issue #4458 Cycle 1: raw code/continuous-map equivalence discharged"
   proof_dag_predecessors:
-    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeContinuousMapEquiv
     - AAT.AG.DoctrineFiberProduct.finiteOrCofiniteAtomPredicateCode
     - AAT.AG.DoctrineFiberProduct.finiteOrCofiniteAtomPredicateCode_holds_iff
     - AAT.AG.DoctrineFiberProduct.atomPredicateCode_finiteOrCofinite
   proof_obligation: "A2: define pointwise evaluation equality, construct the quotient equivalence with Bool predicates whose true set is finite or cofinite, and identify the inverse with the existing G-112 encoder"
-  selection_reason: "The quotient classification is the next direct conjunct of A and fixes the canonical semantic image used by the finite/infinite fiber classification. Reusing the G-112 encoder also closes the first explicit predecessor connection required by A."
+  selection_reason: "The quotient classification is the next direct conjunct of A and fixes the canonical semantic image used by the finite/infinite fiber classification. Cycle 1 is an already accepted earlier conjunct, not a proof-term predecessor of this independent quotient theorem; the actual external predecessor connection here is the accepted G-112 encoder."
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean
@@ -176,6 +175,8 @@ result:
   evidence:
     - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationEq
     - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationSetoid
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationEq_positive_instance
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeEvaluationEq_negative_instance
     - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate
     - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode
     - AAT.AG.FiniteDecoderRepresentability.FiniteOrCofiniteBoolPredicate.toCode_eval
@@ -218,6 +219,7 @@ audits:
     discharged:
       - "finite/cofinite property of a code is derived by atomPredicateCode_finiteOrCofinite"
       - "inverse raw code is constructed by finiteOrCofiniteAtomPredicateCode from the predicate subtype evidence"
+      - "the reused G-112 K1 encoder was accepted in PR #4193 (head 7c1262b16687b2c89c88932f3b4ffa3c53819adb, merge 9e85f70df25eedae54914fbfbc235e56118420f6) and G-112 completion was accepted in PR #4197 (head bf882573945a45780b022bc811754f8444846c53, merge e9f891b8b0d763c6c29cb2d8b6e723b43a6bb9bb); ExactBottomCoverageClassification.lean has blob 760ed9c70de06405a6f40c7c79d6f9ff9a212d6c at both the G-121 activation source and this cycle base"
     unresolved: []
   proof_use:
     used:
@@ -233,7 +235,8 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean; exit 0"
-    - "namespace #assert_standard_axioms_only: 14 declarations, standard axioms only"
+    - "the evaluation relation has explicit satisfying and falsifying finite-fixture instances"
+    - "namespace #assert_standard_axioms_only: 17 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
   next_obligation: "A3: prove evaluation injectivity for infinite carriers and the exact two-code fiber classification, including the empty carrier, for finite carriers"
