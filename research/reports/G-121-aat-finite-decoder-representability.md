@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 8 review of B's coverage-presentation and decoder arrow coherence
-- pending proof obligations: C--E
+- current proof obligation: Cycle 9 review of C's Atom-permutation finite-support classification
+- pending proof obligations: remaining C, then D--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C's fixed-code morphism representability criterion
+- next proof obligation: C's fixed-code typed-presentation representability criterion
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1032,3 +1032,121 @@ Cycle 8 material premise roles are:
   theorems.
 - `conclusion-equivalent-risk`: none. No semantic equality, square, or functor law is accepted
   as a new input field; all are read from the existing constructors and decoder.
+
+## Cycle 9 — Finite-support Atom permutation tables
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 9
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 5ddafa8fb30ce7393d4ea40a27db0d4c291a1786
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 8: all fixed target B clauses discharged"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.AtomPermutationCode
+    - AAT.AG.DoctrineFiberProduct.AtomPermutationCode.ofPerm
+    - AAT.AG.DoctrineFiberProduct.AtomPermutationCode.toEquiv_ofPerm
+    - AAT.AG.DoctrineFiberProduct.AtomPermutationCode.toEquiv_apply_not_mem
+  proof_obligation: "C1 Atom component: prove that a semantic Atom permutation is exactly decoded by an existing finite Atom table iff its actual moved-point set is finite, and construct the table from that finite set"
+  selection_reason: "Finite support is one independent conjunct of the fixed-code morphism criterion. Isolating its exact existing-code classification prevents the later presentation constructor from accepting an authored support table or decoded-equality certificate as an extra premise."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/PermutationCodeClassification.lean
+    - AAT.AG.FiniteDecoderRepresentability.exists_atomPermutationCode_toEquiv_iff
+  risks:
+    - "using a Fintype-only Finset support API for an arbitrary carrier"
+    - "taking a support Finset as supplied data instead of deriving it from Set.Finite"
+    - "constructing a table whose extension merely agrees on support rather than decoding to the supplied permutation"
+    - "omitting invariance of the moved-point set under the permutation"
+  unchecked:
+    - "remaining C fixed-code presentation construction, default-value necessity/sufficiency, infinite-carrier simplification, quotient faithfulness"
+    - "D--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the actual moved-point support as a Set for arbitrary Atom carriers. Proved every decoded AtomPermutationCode has finite moved support by containment in its authored Finset. Conversely, converted a finite moved-point set to its derived Finset, proved that set invariant and fixedness off it, applied AtomPermutationCode.ofPerm, and proved exact whole-permutation decoding. Packaged both directions as an existence iff."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/PermutationCodeClassification.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationSupport
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationSupport_finite_of_code
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationCodeOfFiniteSupport
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationCodeOfFiniteSupport_toEquiv
+    - AAT.AG.FiniteDecoderRepresentability.exists_atomPermutationCode_toEquiv_iff
+  claim_mapping:
+    theorem_names:
+      - atomPermutationSupport_finite_of_code
+      - atomPermutationCodeOfFiniteSupport_toEquiv
+      - exists_atomPermutationCode_toEquiv_iff
+    source_labels:
+      - "fixed target C: supp(sigma) is the set of actually moved Atoms"
+      - "fixed target C: finite support is necessary and sufficient for the Atom component to have an existing finite-table representation"
+    conjuncts:
+      - "support is a Set and does not require Fintype on the carrier"
+      - "a decoded table moves Atoms only inside its authored Finset"
+      - "the finite moved set is converted to the constructor support Finset"
+      - "the support is invariant under the permutation"
+      - "the constructed table decodes to the supplied permutation as an Equiv equality"
+      - "existence iff finite moved support"
+    undischarged_assumptions: []
+    acceptance_point: "The sufficiency theorem accepts only the semantic permutation and finiteness of its actual moved-point Set. The Finset, invariance proof, off-support fixedness, subtype table, and exact decoding equality are all constructed internally."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C finite-support necessity for decoded Atom tables"
+      - "C finite-support sufficiency and exact Atom table construction"
+    remaining:
+      - "C full typed-presentation representability iff including default values"
+      - "C continuous infinity-value restatement, infinite-carrier simplification, and D0 faithfulness"
+      - "all D--E obligations"
+  certificate_provenance:
+    discharged:
+      - "the support Finset is hfinite.toFinset for the actual moved-point Set"
+      - "the table is AtomPermutationCode.ofPerm and exact decoding is AtomPermutationCode.toEquiv_ofPerm"
+    unresolved: []
+  proof_use:
+    used:
+      - "outside-support decoding fixes each Atom, proving necessity"
+      - "permutation injectivity proves moved-set invariance"
+      - "finite-set membership proves off-support fixedness"
+      - "the constructed table witnesses the reverse implication"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/PermutationCodeClassification.lean"
+    - "namespace #assert_standard_axioms_only: 5 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans"
+  blocking_findings: []
+  next_obligation: "C2: construct and classify CartPresentationBetween source target decoding a fixed semantic arrow from finite Atom support plus normalized default-value preservation"
+```
+
+### Cycle 9 acceptance spine
+
+The support predicate is the fixed target's actual moved-point set, represented as a `Set`
+so arbitrary carriers remain allowed.  Necessity uses the existing decoder law that every
+Atom outside an authored support Finset is fixed.  Sufficiency canonically derives one finite
+table from the actual moved-point set via `Set.Finite.toFinset`, proves invariance from permutation
+injectivity, proves fixedness
+outside the actual support by membership negation, and invokes the existing constructor.
+The result is equality of whole `Equiv.Perm` values, not pointwise agreement restricted to
+the chosen table.
+
+Cycle 9 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed Atom carrier and `[DecidableEq U.Atom]` inherited from
+  the existing permutation table decoder.
+- `direction-hypothesis`: either an actual `AtomPermutationCode` decoding to the semantic
+  permutation, or finiteness of the permutation's actual moved-point Set.
+- `discharge-required`: support containment, derived Finset, invariance, off-support fixedness,
+  subtype table construction, and exact decoding; all are proved in the five declarations.
+- `conclusion-equivalent-risk`: none. No authored Finset, table, invariance proof, or decoding
+  equality is supplied to the sufficiency constructor.
