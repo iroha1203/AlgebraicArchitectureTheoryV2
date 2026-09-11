@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 7 review of B's discrete-compactness restatement
-- pending proof obligations: B's arrow-coherence restatement, then C--E
+- current proof obligation: Cycle 8 review of B's coverage-presentation and decoder arrow coherence
+- pending proof obligations: C--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B's decoded-arrow coherence restatement
+- next proof obligation: C's fixed-code morphism representability criterion
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -897,3 +897,138 @@ Cycle 7 material premise roles are:
   proved in `finite_iff_compactSpace_bot` and used by the main theorem.
 - `conclusion-equivalent-risk`: none. Compactness is not supplied for an arbitrary topology,
   and the continuous-extension clause is neither stored nor weakened.
+
+## Cycle 8 — Coverage presentation and decoder arrow coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 8
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 5bf2d3f74ba75abaf23ab5f9631f60a8fcfa2d32
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 7: B object/topology compactness clause discharged"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.endpointFiniteTargetCofinitePresentation
+    - AAT.AG.DoctrineFiberProduct.endpointFiniteTargetCofinitePresentation_hom_comm
+    - AAT.AG.DoctrineFiberProduct.typedPresentationToSemantic
+    - AAT.AG.DoctrineFiberProduct.idTypedPresentation
+    - AAT.AG.DoctrineFiberProduct.compPresentation
+    - AAT.AG.DoctrineFiberProduct.finiteCodeCartRealization
+  proof_obligation: "B3: expose agreement of the G-112 coverage presentation's source map and Atom permutation with its typed decoder, connect its endpoint square to typedPresentationToSemantic, and prove that direct typed decoding and D0 evaluation agree for represented morphisms, identity, and composition"
+  selection_reason: "B1 and B2 already characterize existence and endpoint topology. The remaining fixed B clause is arrow-level: it must point to the actual G-112 generated presentation and the existing quotient functor rather than merely cite category laws abstractly."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/ArrowCoherence.lean
+    - AAT.AG.FiniteDecoderRepresentability.endpointFiniteTargetCofinitePresentation_typed_hom_comm
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_ofPresentation
+  risks:
+    - "stating only abstract functor laws without identifying the generated coverage presentation fields"
+    - "confusing the presentation's identity Atom table with the semantic input permutation carried by the target endpoint isomorphism"
+    - "proving source-map or Atom agreement only for raw presentations rather than for typedPresentationToSemantic"
+    - "introducing a second decoder or composition operation"
+  unchecked:
+    - "C--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Exposed that typedPresentationToSemantic reads the authored sourceMap and decoded Atom permutation exactly. Specialized the source-map formula and identity presentation permutation to the concrete G-112 coverage constructor, and restated its accepted endpoint commuting square with typed decoding. Proved that finiteCodeCartRealization maps a quotient representative to that same typed arrow and that the existing typed identity and composition constructors decode to categorical identity and composition."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/ArrowCoherence.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_sourceMap
+    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.endpointFiniteTargetCofinitePresentation_decoded_sourceMap_apply
+    - AAT.AG.FiniteDecoderRepresentability.endpointFiniteTargetCofinitePresentation_decoded_atomEquiv
+    - AAT.AG.FiniteDecoderRepresentability.endpointFiniteTargetCofinitePresentation_typed_hom_comm
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_ofPresentation
+    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_id
+    - AAT.AG.FiniteDecoderRepresentability.typedPresentationToSemantic_comp
+  claim_mapping:
+    theorem_names:
+      - typedPresentationToSemantic_sourceMap
+      - typedPresentationToSemantic_atomEquiv
+      - endpointFiniteTargetCofinitePresentation_decoded_sourceMap_apply
+      - endpointFiniteTargetCofinitePresentation_decoded_atomEquiv
+      - endpointFiniteTargetCofinitePresentation_typed_hom_comm
+      - finiteCodeCartRealization_map_ofPresentation
+      - typedPresentationToSemantic_id
+      - typedPresentationToSemantic_comp
+    source_labels:
+      - "fixed target B: coverage presentation source map and Atom permutation agree with the decoder arrow"
+      - "fixed target B: identity and composition agree under typedPresentationToSemantic and D0"
+    conjuncts:
+      - "typed decoding exposes the exact authored source map"
+      - "typed decoding exposes AtomPermutationCode.toEquiv"
+      - "the G-112 generated source map is the semantic source map conjugated by the endpoint enumerations"
+      - "the G-112 presentation's own Atom table is identity while the semantic permutation is carried by the target anchor"
+      - "the accepted G-112 endpoint square uses the same typed decoder"
+      - "D0.map on an authored representative is direct typed decoding"
+      - "idTypedPresentation decodes to identity"
+      - "compPresentation decodes to composition"
+    undischarged_assumptions: []
+    acceptance_point: "The theorems inspect the actual generated presentation and existing D0 functor. The identity Atom table is not mislabeled as the semantic input permutation: the latter remains explicitly in the target endpoint isomorphism of the commuting-square theorem."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B generated-presentation source-map and Atom-permutation agreement"
+      - "B coverage square connection to typed decoding"
+      - "B D0 representative, identity, and composition evaluation coherence"
+    remaining:
+      - "all C--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "coverage fields come from endpointFiniteTargetCofinitePresentation, not from a supplied parallel witness"
+      - "the semantic square is endpointFiniteTargetCofinitePresentation_hom_comm with its existing generated endpoint isomorphisms"
+      - "D0 evaluation is the quotient lift FiniteCodeCartHom.toSemantic"
+    unresolved: []
+  proof_use:
+    used:
+      - "the actual presentation fields determine both decoded components"
+      - "the generated finiteSourceEquiv maps identify the coverage source table"
+      - "the target endpoint isomorphism retains input.hom.doctrineHom.atomEquiv"
+      - "finiteCodeCartRealization.map_id and the existing composition theorem supply identity and composition"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/ArrowCoherence.lean"
+    - "namespace #assert_standard_axioms_only: 8 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans"
+  blocking_findings: []
+  next_obligation: "C1: prove the iff between existence of a fixed-endpoint typed presentation decoding a semantic arrow and finite Atom support plus preservation of normalized extraction-code default values"
+```
+
+### Cycle 8 acceptance spine
+
+The generic accessor theorems identify the two data components of every typed decoder
+without adding a certificate.  For the G-112 constructor, the decoded source map is the
+input semantic source map transported through the generated finite endpoint enumerations.
+Its authored Atom table is identity; the input semantic Atom permutation is retained by
+the generated target endpoint isomorphism, and the accepted commuting theorem explicitly
+composes that isomorphism with the same typed decoder.
+
+At the quotient-calculus level, `finiteCodeCartRealization_map_ofPresentation` shows that
+`D₀.map` of an authored representative is definitionally the direct typed decode.  The
+identity and composition theorems then consume the existing `idTypedPresentation`,
+`compPresentation`, functor identity law, and decoded-composition theorem rather than
+constructing a parallel category or decoder.
+
+Cycle 8 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed Atom carrier, finite generated endpoints where the
+  coverage constructor requires them, and the existing `[DecidableEq U.Atom]` evaluator.
+- `direction-hypothesis`: the target finite/cofinite extraction condition required by the
+  accepted G-112 constructor; arbitrary typed presentations for the generic decoder laws.
+- `discharge-required`: exact source-map and Atom components, the generated semantic square,
+  representative evaluation, identity, and composition; all are proved by the eight public
+  theorems.
+- `conclusion-equivalent-risk`: none. No semantic equality, square, or functor law is accepted
+  as a new input field; all are read from the existing constructors and decoder.
