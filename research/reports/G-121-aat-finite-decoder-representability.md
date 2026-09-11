@@ -236,7 +236,7 @@ audits:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean; exit 0"
     - "the evaluation relation has explicit satisfying and falsifying finite-fixture instances"
-    - "namespace #assert_standard_axioms_only: 17 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 16 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
   next_obligation: "A3: prove evaluation injectivity for infinite carriers and the exact two-code fiber classification, including the empty carrier, for finite carriers"

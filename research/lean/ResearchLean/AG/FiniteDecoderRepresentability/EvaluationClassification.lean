@@ -186,21 +186,12 @@ noncomputable def atomPredicateCodeEvaluationQuotientEquiv
 /-! ## Instance pair for the evaluation relation -/
 
 /--
-G-121(A2) fixture API instance exposing the decidable equality already derived
-by `FiniteModel.FiniteAtom`; it supplies only the two vacuity-checking examples.
--/
-local instance evaluationFiniteModelAtomDecidableEq :
-    DecidableEq FiniteModel.carrier.Atom := by
-  change DecidableEq FiniteModel.FiniteAtom
-  infer_instance
-
-/--
 G-121(A2) positive instance for the new relation, using the finite fixture and
 the all-false raw code.  This is a vacuity-checking API witness with no premise.
 -/
 theorem atomPredicateCodeEvaluationEq_positive_instance :
-    atomPredicateCodeEvaluationEq
-      (U := FiniteModel.carrier)
+    @atomPredicateCodeEvaluationEq FiniteModel.carrier
+      (by change DecidableEq FiniteModel.FiniteAtom; infer_instance)
       { defaultValue := false, exceptions := ∅ }
       { defaultValue := false, exceptions := ∅ } := by
   intro atom
@@ -211,8 +202,8 @@ G-121(A2) negative instance for the new relation: the all-false and all-true
 codes disagree at the fixture Atom `componentA`.  It has no external premise.
 -/
 theorem atomPredicateCodeEvaluationEq_negative_instance :
-    ¬ atomPredicateCodeEvaluationEq
-      (U := FiniteModel.carrier)
+    ¬ @atomPredicateCodeEvaluationEq FiniteModel.carrier
+      (by change DecidableEq FiniteModel.FiniteAtom; infer_instance)
       { defaultValue := false, exceptions := ∅ }
       { defaultValue := true, exceptions := ∅ } := by
   intro h
