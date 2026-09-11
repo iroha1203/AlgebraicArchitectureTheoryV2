@@ -117,21 +117,24 @@ theorem continuousMap_eq_of_coe_eq_of_infinite
 
 section Finite
 
-variable [Fintype U.Atom]
+variable [Finite U.Atom]
 
 /--
 G-121(A3) finite-fiber API constructor: a Bool predicate and authored default
-determine the raw exception table.  Finiteness supplies `Finset.univ`; no
-semantic certificate is stored.
+determine the raw exception table.  The target's `Finite U.Atom` premise is
+noncomputably enumerated internally; no `Fintype` or semantic certificate is exposed.
 -/
-def finitePredicateCode (predicate : U.Atom → Bool) (defaultValue : Bool) :
-    AtomPredicateCode U where
-  defaultValue := defaultValue
-  exceptions := Finset.univ.filter (fun atom => predicate atom ≠ defaultValue)
+noncomputable def finitePredicateCode (predicate : U.Atom → Bool)
+    (defaultValue : Bool) : AtomPredicateCode U := by
+  classical
+  letI := Fintype.ofFinite U.Atom
+  exact
+    { defaultValue := defaultValue
+      exceptions := Finset.univ.filter (fun atom => predicate atom ≠ defaultValue) }
 
 /--
 G-121(A3) API theorem: the finite constructor evaluates to its input predicate.
-Its premises are exactly finite enumeration and the evaluator's decidable equality.
+Its premises are exactly target-level finiteness and the evaluator's decidable equality.
 -/
 @[simp]
 theorem finitePredicateCode_eval (predicate : U.Atom → Bool)
@@ -172,7 +175,7 @@ abbrev FinitePredicateCodeFiber [DecidableEq U.Atom]
 G-121(A3) main finite classification: the complete raw-code fiber is equivalent
 to its authored default `Bool`.  This remains two-valued for an empty carrier.
 -/
-def finitePredicateCodeFiberEquiv [DecidableEq U.Atom]
+noncomputable def finitePredicateCodeFiberEquiv [DecidableEq U.Atom]
     (predicate : U.Atom → Bool) :
     FinitePredicateCodeFiber predicate ≃ Bool where
   toFun code := code.1.defaultValue
@@ -211,36 +214,46 @@ theorem finitePredicateCode_false_ne_true (predicate : U.Atom → Bool) :
   simp [finitePredicateCode] at hdefault
 
 /--
-G-121(A3) API identification of the first exact fiber code: its exception table
-is precisely the finite set where the predicate is true.
+G-121(A3) API identification of the first exact fiber code: the underlying set
+of its exception table is precisely the set where the predicate is true.
 -/
 theorem finitePredicateCode_false_exceptions (predicate : U.Atom → Bool) :
-    (finitePredicateCode predicate false).exceptions =
-      Finset.univ.filter (fun atom => predicate atom = true) := by
+    ((finitePredicateCode predicate false).exceptions : Set U.Atom) =
+      {atom | predicate atom = true} := by
   ext atom
   cases h : predicate atom <;> simp [finitePredicateCode, h]
 
 /--
-G-121(A3) API identification of the second exact fiber code: its exception table
-is precisely the finite set where the predicate is false.
+G-121(A3) API identification of the second exact fiber code: the underlying set
+of its exception table is precisely the set where the predicate is false.
 -/
 theorem finitePredicateCode_true_exceptions (predicate : U.Atom → Bool) :
-    (finitePredicateCode predicate true).exceptions =
-      Finset.univ.filter (fun atom => predicate atom = false) := by
+    ((finitePredicateCode predicate true).exceptions : Set U.Atom) =
+      {atom | predicate atom = false} := by
   ext atom
   cases h : predicate atom <;> simp [finitePredicateCode, h]
 
 /--
-G-121(A3) main extension distinction in the finite case: the two extensions
-have different values at infinity, including when the carrier is empty.
+G-121(A3) main finite extension claim: the two extensions have different values
+at infinity, directly stating the fixed target even when the carrier is empty.
+-/
+theorem finitePredicateCode_extensions_apply_infty_ne [DecidableEq U.Atom]
+    (predicate : U.Atom → Bool) :
+    atomPredicateCodeToContinuousMap (finitePredicateCode predicate false) ∞ ≠
+      atomPredicateCodeToContinuousMap (finitePredicateCode predicate true) ∞ := by
+  simp [finitePredicateCode]
+
+/--
+G-121(A3) API consequence of the infinity-value theorem: the two finite
+extensions are unequal as continuous maps, with no nonempty-carrier premise.
 -/
 theorem finitePredicateCode_extensions_ne [DecidableEq U.Atom]
     (predicate : U.Atom → Bool) :
     atomPredicateCodeToContinuousMap (finitePredicateCode predicate false) ≠
       atomPredicateCodeToContinuousMap (finitePredicateCode predicate true) := by
   intro h
-  have hinfty := congrFun (congrArg ContinuousMap.toFun h) ∞
-  simp [finitePredicateCode] at hinfty
+  apply finitePredicateCode_extensions_apply_infty_ne predicate
+  exact congrFun (congrArg ContinuousMap.toFun h) ∞
 
 end Finite
 

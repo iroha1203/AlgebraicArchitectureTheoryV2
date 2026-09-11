@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 2 review of A's evaluation-quotient classification
-- pending proof obligations: A's finite/infinite carrier and transport claims, then B--E
+- current proof obligation: Cycle 3 review of A's finite/infinite raw-code fibers
+- pending proof obligations: A's G-112 choice agreement and transport claims, then B--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A's finite/infinite carrier fiber classification
+- next proof obligation: A's G-112 choice agreement and transport coherence
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -108,7 +108,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean"
     - "namespace #assert_standard_axioms_only: standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
@@ -234,7 +234,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean; exit 0"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean"
     - "the evaluation relation has explicit satisfying and falsifying finite-fixture instances"
     - "namespace #assert_standard_axioms_only: 16 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
@@ -316,6 +316,7 @@ result:
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_false_ne_true
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_false_exceptions
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_true_exceptions
+    - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_extensions_apply_infty_ne
     - AAT.AG.FiniteDecoderRepresentability.finitePredicateCode_extensions_ne
   claim_mapping:
     theorem_names:
@@ -326,6 +327,7 @@ result:
       - finitePredicateCode_false_exceptions
       - finitePredicateCode_true_exceptions
       - finitePredicateCode_false_ne_true
+      - finitePredicateCode_extensions_apply_infty_ne
       - finitePredicateCode_extensions_ne
     source_labels:
       - "fixed target A: evaluation is injective and continuous extension is unique when D is infinite"
@@ -334,9 +336,9 @@ result:
     conjuncts:
       - "infinite raw-code evaluation injectivity"
       - "infinite continuous-map uniqueness from equality on D"
-      - "finite fiber equivalence with Bool through authored default"
+      - "finite fiber equivalence with Bool through authored default under the target's Finite premise"
       - "explicit default-false true-set and default-true false-set exception tables"
-      - "raw-code and infinity-value distinction without a nonempty premise"
+      - "raw-code and directly stated infinity-value distinction without a nonempty premise"
     undischarged_assumptions: []
     acceptance_point: "Infinite default equality is constructed from the existing finite exception fields. Finite classification is an equivalence of the actual raw-code fiber, and the distinctness theorems require no Nonempty assumption, so the empty carrier is included."
     port_status: not-applicable
@@ -359,7 +361,7 @@ audits:
     used:
       - "Infinite U.Atom supplies an Atom outside both finite exception tables"
       - "pointwise evaluation equality first recovers default equality and then exception-table equality"
-      - "Fintype U.Atom supplies the complete finite exception tables"
+      - "Finite U.Atom is noncomputably enumerated inside the constructor to supply the complete finite exception tables"
       - "the fiber subtype proof is used in the equivalence left inverse"
       - "A1 continuous-map right inverse transports raw injectivity to extension uniqueness"
     unused: []
@@ -370,8 +372,8 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean; exit 0"
-    - "namespace #assert_standard_axioms_only: 15 declarations, standard axioms only"
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean"
+    - "namespace #assert_standard_axioms_only: 17 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
   next_obligation: "A4: prove the existing G-112 encoder selects the default-false fiber code on finite carriers and the unique raw code on infinite carriers; then prove transport compatibility and identity/inverse/composition coherence"
@@ -397,7 +399,8 @@ Cycle 3 material premise roles are:
 
 - `ambient-boundary`: arbitrary fixed `AtomCarrier U` and the existing evaluator's
   `[DecidableEq U.Atom]`; the two branches add exactly `[Infinite U.Atom]` or
-  `[Fintype U.Atom]` from the fixed target.
+  `[Finite U.Atom]` from the fixed target. Finite enumeration is constructed
+  noncomputably inside `finitePredicateCode` and is not an exposed premise.
 - `direction-hypothesis`: pointwise evaluation equality in the raw-code lemma and
   equality on the embedded Atom carrier in the continuous-map lemma.
 - `discharge-required`: recovery of the infinite default, both raw structure fields,
