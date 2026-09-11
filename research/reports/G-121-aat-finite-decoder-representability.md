@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 9 review of C's Atom-permutation finite-support classification
-- pending proof obligations: remaining C, then D--E
+- current proof obligation: Cycle 10 review of C's fixed-endpoint morphism representability classification
+- pending proof obligations: remaining C consequences, then D--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C's fixed-code typed-presentation representability criterion
+- next proof obligation: C's infinity-value, infinite-carrier simplification, and D0 faithfulness consequences
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1150,3 +1150,145 @@ Cycle 9 material premise roles are:
   subtype table construction, and exact decoding; all are proved in the five declarations.
 - `conclusion-equivalent-risk`: none. No authored Finset, table, invariance proof, or decoding
   equality is supplied to the sufficiency constructor.
+
+## Cycle 10 — Fixed-endpoint morphism representability
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 10
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 0e61656cf4b3f4539d7ea725c5f3a49986390e31
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 9: C Atom finite-support table classification discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationCodeOfFiniteSupport
+    - AAT.AG.FiniteDecoderRepresentability.atomPermutationSupport_finite_of_code
+    - AAT.AG.DoctrineFiberProduct.CartPresentationBetween
+    - AAT.AG.DoctrineFiberProduct.typedPresentationToSemantic
+    - AAT.AG.DoctrineFiberProduct.FiniteDoctrineCode.toDoctrine_extracts_iff
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_ofPresentation
+  proof_obligation: "C2 main iff: for literal finite-code endpoints and an actual semantic arrow, classify existence of a decoding CartPresentationBetween and of a D0 quotient morphism by finite actual Atom support plus preservation of normalized extraction-code default values"
+  selection_reason: "This is the central fixed-endpoint theorem of C. Cycle 9 supplies the only nontrivial finite table constructor; semantic exactness must now discharge normalization and evaluation while the default condition recovers raw code equality."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean
+    - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff
+  risks:
+    - "accepting source-map or Atom-component equality as an extra sufficiency certificate"
+    - "proving only evaluation equality rather than raw extraction-code equality"
+    - "forgetting that normalized tables, not arbitrary extraction-table positions, govern the default condition"
+    - "choosing new endpoint codes or endpoint isomorphisms instead of keeping source and target literal"
+    - "stopping at typed presentations without connecting the D0 quotient morphism"
+  unchecked:
+    - "C infinity-value restatement, infinite-carrier simplification, and D0 faithfulness"
+    - "D--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the normalized extraction code t_P(s). Proved raw finite-exception codes equal from equal defaults and pointwise evaluations. Necessity extracts finite Atom support from the actual presentation table and default preservation from its raw extraction equality after decoder component identification. Sufficiency uses the semantic arrow's source map, Cycle 9's exact finite Atom table, semantic normalization, semantic extraction iff, and default preservation to construct all CartPresentationBetween fields and prove direct decoding equality. Finally proved equivalence with existence of a D0 quotient morphism by choosing and inserting actual quotient representatives."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eq_of_defaultValue_eq_of_eval_eq
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentation_necessary
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport
+    - AAT.AG.FiniteDecoderRepresentability.fixedPresentationOfFiniteSupport_decode
+    - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_exists_fixedPresentation
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff
+  claim_mapping:
+    theorem_names:
+      - fixedPresentation_necessary
+      - fixedPresentationOfFiniteSupport_decode
+      - exists_fixedPresentation_decode_iff
+      - exists_finiteCodeCartHom_map_iff_exists_fixedPresentation
+      - exists_finiteCodeCartHom_map_iff
+    source_labels:
+      - "fixed target C: t_P(s) is the normalized extraction table"
+      - "fixed target C: fixed-code morphism representability iff finite support and normalized default preservation"
+      - "fixed target C: equivalent existence of a CartPresentationBetween decoding the same arrow"
+    conjuncts:
+      - "literal source and target FiniteInstanceCode endpoints"
+      - "actual semantic source map and Atom permutation are used by the constructed presentation"
+      - "normalization and selected point laws come from the actual semantic arrow"
+      - "semantic extraction exactness gives pointwise evaluation equality"
+      - "default preservation upgrades evaluation equality to raw code equality"
+      - "the constructed typed presentation decodes to the original semantic arrow"
+      - "typed-presentation existence and D0 quotient-morphism existence are equivalent"
+      - "both existence forms have the same finite-support/default-value iff"
+    undischarged_assumptions: []
+    acceptance_point: "The sufficient side accepts only the actual semantic arrow, finiteness of its actual moved support, and the fixed target's normalized default equation. The source map, Atom table, three presentation laws, raw code equality, and decode equality are constructed; endpoints are not replaced."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "C fixed-endpoint typed-presentation representability iff"
+      - "C fixed-endpoint D0 morphism representability iff"
+      - "C exact recovery of source map and Atom permutation in the constructed presentation"
+    remaining:
+      - "C default condition as equality at infinity"
+      - "C infinite-carrier reduction to finite support alone"
+      - "C D0 faithfulness from the decoded-equality quotient"
+      - "all D--E obligations"
+  certificate_provenance:
+    discharged:
+      - "the Atom table is constructed from actual support by Cycle 9"
+      - "normalization and source-point laws are actual fields of the semantic arrow"
+      - "raw extraction equality is reconstructed from semantic extraction iff and the supplied target-level default condition"
+      - "the D0 representative is either inserted with ofPresentation or recovered by Quotient.exists_rep"
+    unresolved: []
+  proof_use:
+    used:
+      - "presentation decode equality identifies both computational morphism components in necessity"
+      - "presentation extraction_eq yields default preservation"
+      - "semantic normalize_eq, extraction_iff, and source_eq populate all validation laws in sufficiency"
+      - "finite support constructs the exact AtomPermutationCode"
+      - "default preservation is used by raw-code extensionality"
+      - "quotient representative equality transports D0.map to direct typed decoding"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean"
+    - "namespace #assert_standard_axioms_only: 8 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans"
+  blocking_findings: []
+  next_obligation: "C3: identify normalized default preservation with equality of A's continuous extensions at infinity; derive it from semantic exactness on infinite carriers; reduce representability to finite support alone; and prove D0 faithful from its decoded-equality quotient"
+```
+
+### Cycle 10 acceptance spine
+
+For necessity, equality of the typed decoder with the supplied semantic arrow identifies the
+presentation's source map and decoded Atom permutation.  The authored Atom table then proves
+finite actual support, and applying `defaultValue` to the presentation's raw extraction law
+gives exactly the normalized default equation because transport preserves defaults.
+
+For sufficiency, the constructed presentation uses the semantic source map literally and the
+Cycle 9 table decoding the semantic Atom permutation exactly.  Semantic normalization and the
+selected-point law fill two validation fields.  Semantic extraction exactness, evaluated at the
+inverse Atom, gives equality of the target normalized table and the transported source table at
+every Atom.  The supplied default equation supplies their missing infinity/default component;
+raw-code extensionality then proves the required structure equality.  No endpoint isomorphic
+replacement occurs.  Quotient representative existence finally connects exactly these typed
+presentations to morphisms of `FiniteCodeCartCategory U` under `finiteCodeCartRealization`.
+
+Cycle 10 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed Atom carrier, literal finite instance codes `source` and
+  `target`, and `[DecidableEq U.Atom]` inherited from the existing evaluator and decoder.
+- `direction-hypothesis`: an actual semantic arrow; for sufficiency, finite actual moved support
+  and the normalized default equation appearing on the fixed target's right-hand side.
+- `discharge-required`: finite Atom table, source map, normalization, raw extraction equality,
+  selected point, decode equality, and quotient representative bridge; all are constructed by
+  the eight declarations.
+- `conclusion-equivalent-risk`: none. The sufficient side receives no presentation, source-map
+  equality, Atom table, extraction equality, endpoint isomorphism, or decode equality.
