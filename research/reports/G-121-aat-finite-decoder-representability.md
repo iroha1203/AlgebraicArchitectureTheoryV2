@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 10 review of C's fixed-endpoint morphism representability classification
-- pending proof obligations: remaining C consequences, then D--E
+- current proof obligation: Cycle 11 review of C's infinite-carrier consequences and D0 faithfulness
+- pending proof obligations: D--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: C's infinity-value, infinite-carrier simplification, and D0 faithfulness consequences
+- next proof obligation: D's finite-carrier false-default full subcategory and restricted decoder
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -1301,16 +1301,48 @@ Cycle 10 material premise roles are:
 ## Cycle 11: infinite-carrier consequences and D0 faithfulness
 
 ```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
 cycle: 11
-status: implemented-awaiting-review
-lean:
-  module: ResearchLean.AG.FiniteDecoderRepresentability.FixedArrowConsequences
-  declarations:
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 5f8ee568b7f8d7d8b5dac971580faca31f24fd5f
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 10: C fixed-endpoint finite-support/default classification discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eq_of_evaluationEq_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap_apply_infty
+    - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff
+    - AAT.AG.DoctrineFiberProduct.cartPresentationSetoid
+  proof_obligation: "C3: identify normalized default preservation with equality at infinity; derive it from semantic exactness on infinite carriers; reduce both representability forms to finite support alone; prove D0 faithful for every carrier"
+  selection_reason: "These are exactly the remaining consequences of C after Cycle 10's fixed-arrow classification. They close C before the finite-carrier restriction and normalization work in D."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowConsequences.lean
+    - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_faithful
+  risks:
+    - "assuming default preservation instead of deriving it from infinity and semantic exactness"
+    - "reversing the Atom transport in the extraction evaluation equation"
+    - "restricting D0 faithfulness to infinite carriers"
+    - "proving representative equality without reconnecting it to the quotient relation"
+  unchecked:
+    - "D--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Identified default preservation with equality of the canonical continuous extensions at infinity. Derived transported pointwise evaluation equality from semantic extraction exactness, then used infinite-carrier raw evaluation injectivity to recover default preservation without a support premise. Reduced typed-presentation and D0 quotient representability to finite actual support alone. Proved D0 faithful for arbitrary carriers by an explicit public bridge from realization-map equality of representatives to the defining quotient relation."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowConsequences.lean
+  evidence:
     - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_defaultValue_eq_iff_apply_infty_eq
     - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_evaluationEq_transport
     - AAT.AG.FiniteDecoderRepresentability.normalizedExtractionCode_defaultValue_eq_of_infinite
     - AAT.AG.FiniteDecoderRepresentability.exists_fixedPresentation_decode_iff_of_infinite
     - AAT.AG.FiniteDecoderRepresentability.exists_finiteCodeCartHom_map_iff_of_infinite
+    - AAT.AG.FiniteDecoderRepresentability.cartPresentationSetoid_rel_of_realization_map_eq
     - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_map_injective
     - AAT.AG.FiniteDecoderRepresentability.finiteCodeCartRealization_faithful
   claim_mapping:
@@ -1357,7 +1389,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowConsequences.lean"
-    - "namespace #assert_standard_axioms_only: 7 declarations, standard axioms only"
+    - "namespace #assert_standard_axioms_only: 8 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "D: finite-carrier false-default full subcategory, full faithfulness of its restricted decoder, normalization functor, realization natural isomorphism, and finite-carrier non-fullness witness outside the restriction"
 ```
