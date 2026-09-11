@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `492ed27ac66c0c89e8a680f986efa659cbba2472`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4458)
-- current proof obligation: Cycle 4 review of A's G-112 encoder choice agreement
-- pending proof obligations: A's permutation transport claims, then B--E
+- current proof obligation: Cycle 5 review of A's permutation transport coherence
+- pending proof obligations: B--E
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: A's permutation transport coherence
+- next proof obligation: B's topological characterization of G-112 coverage
 
 ## Cycle 1 — Raw finite-exception code / continuous-map equivalence
 
@@ -531,3 +531,143 @@ Cycle 4 material premise roles are:
   infinite raw uniqueness; all are proved in the module.
 - `conclusion-equivalent-risk`: none. The predicate subtype contains only the target's
   finite/cofinite image condition, not a code, default, raw equality, or uniqueness proof.
+
+## Cycle 5 — Arbitrary permutation transport coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-121-aat-finite-decoder-representability
+cycle: 5
+goal_blob_sha: 6ad52ff6177f3b895b3bed89e399a5afb9821f18
+base_oid: 7317a1a83462fdd9f58c8e0ab608de32c8797b86
+tracking_issue: 4458
+report_path: research/reports/G-121-aat-finite-decoder-representability.md
+selection:
+  proof_state_ref: "Issue #4458 Cycle 4: accepted G-112 encoder choice agreement discharged"
+  proof_dag_predecessors:
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap
+    - AAT.AG.DoctrineFiberProduct.AtomPredicateCode.transport
+    - AAT.AG.DoctrineFiberProduct.AtomPredicateCode.eval_transport
+    - AAT.AG.DoctrineFiberProduct.AtomPredicateCode.transport_refl
+    - AAT.AG.DoctrineFiberProduct.AtomPredicateCode.transport_trans
+    - AAT.AG.DoctrineFiberProduct.AtomPredicateCode.transport_symm_cancel
+  proof_obligation: "A5: extend every Atom permutation to a OnePoint homeomorphism fixing infinity and prove that A1 intertwines existing code transport with inverse pullback, coherently with identity, inverse, composition, and evaluation"
+  selection_reason: "Cycles 1-4 complete A's object and raw-fiber classification. The remaining A clause is functoriality under unrestricted Atom permutations and is the transport API needed later by C and E."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/PermutationTransport.lean
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap_transport
+  risks:
+    - "restricting the permutation to finite support"
+    - "using the forward permutation rather than inverse pullback on continuous maps"
+    - "reversing the composition order relative to Equiv.trans and existing code transport"
+    - "proving only embedded-Atom evaluation and omitting infinity or whole-map equality"
+  unchecked:
+    - "B--E"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Extended an arbitrary Equiv.Perm U.Atom through its discrete homeomorphism to Homeomorph.onePointCongr; proved its infinity and embedded-Atom evaluations and identity/inverse/composition laws; defined continuous pullback along the inverse and proved its identity/composition/inverse laws; exposed the arbitrary-point inverse evaluation formula for existing code transport; and proved whole ContinuousMap equality intertwining A1 with the two actions."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FiniteDecoderRepresentability/PermutationTransport.lean
+  evidence:
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm_apply_infty
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm_apply_coe
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm_refl
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm_symm
+    - AAT.AG.FiniteDecoderRepresentability.onePointAtomPerm_trans
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCode_eval_transport_apply
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport_apply
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport_refl
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport_trans
+    - AAT.AG.FiniteDecoderRepresentability.continuousPredicateTransport_symm_cancel
+    - AAT.AG.FiniteDecoderRepresentability.atomPredicateCodeToContinuousMap_transport
+  claim_mapping:
+    theorem_names:
+      - onePointAtomPerm_apply_infty
+      - onePointAtomPerm_apply_coe
+      - onePointAtomPerm_refl
+      - onePointAtomPerm_symm
+      - onePointAtomPerm_trans
+      - atomPredicateCode_eval_transport_apply
+      - continuousPredicateTransport_refl
+      - continuousPredicateTransport_trans
+      - continuousPredicateTransport_symm_cancel
+      - atomPredicateCodeToContinuousMap_transport
+    source_labels:
+      - "fixed target A: every Atom permutation extends to a OnePoint homeomorphism fixing infinity"
+      - "fixed target A: E_D(q.transport sigma) equals E_D(q) precomposed with inverse sigma-plus"
+      - "fixed target A: code, continuous map, and evaluation correspondences respect identity, inverse, and composition"
+    conjuncts:
+      - "unrestricted permutation extension and point evaluations"
+      - "identity, inverse, and composition coherence of the OnePoint extension"
+      - "inverse-point evaluation formula for existing raw-code transport"
+      - "identity, composition, and inverse coherence of continuous pullback"
+      - "whole-map equivariance of the A1 equivalence"
+    undischarged_assumptions: []
+    acceptance_point: "All theorems quantify Equiv.Perm U.Atom directly. The continuous action is explicitly inverse pullback, and the final conclusion is equality of bundled ContinuousMap values including infinity."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "A5 unrestricted OnePoint permutation extension"
+      - "A5 code/continuous/evaluation transport compatibility"
+      - "A5 identity, inverse, and composition coherence"
+    remaining:
+      - "all B--E construction obligations"
+  certificate_provenance:
+    discharged:
+      - "OnePoint homeomorphism is constructed by mathlib Homeomorph.onePointCongr from the actual arbitrary permutation"
+      - "continuous action is constructed as ContinuousMap.comp with the actual inverse homeomorphism"
+      - "code action is the existing AtomPredicateCode.transport, with its accepted laws reused"
+    unresolved: []
+  proof_use:
+    used:
+      - "the input permutation supplies both the OnePoint homeomorphism and existing code transport"
+      - "existing eval_transport proves the inverse-point evaluation formula"
+      - "OnePoint.rec checks both infinity and every embedded Atom"
+      - "existing A1 evaluation at infinity and embedded Atoms proves whole-map equivariance"
+      - "existing transport_refl, transport_trans, and transport_symm_cancel remain the code-side coherence laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/FiniteDecoderRepresentability/PermutationTransport.lean"
+    - "namespace #assert_standard_axioms_only: 15 declarations, standard axioms only"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
+  blocking_findings: []
+  next_obligation: "B1: characterize Nonempty AnchoredCoverageWitness by finite endpoints and continuous extension of every target extraction predicate, then restate endpoint finiteness as compactness"
+```
+
+### Cycle 5 acceptance spine
+
+`onePointAtomPerm` uses the arbitrary input permutation itself, first as a homeomorphism
+of the fixed discrete Atom space and then through mathlib's one-point-congruence constructor.
+Its point API proves that infinity is fixed and embedded Atoms follow the input permutation.
+The identity, inverse, and composition theorems are equalities of bundled homeomorphisms.
+
+`continuousPredicateTransport` is precomposition by the inverse extended homeomorphism.
+Its composition order matches `Equiv.trans`, and its inverse law follows from that composition
+law. The existing code transport is not replaced: its accepted evaluation law is converted to
+the arbitrary-target-Atom formula, while its existing identity/composition/inverse laws supply
+the code-side coherence. Finally, `atomPredicateCodeToContinuousMap_transport` proves equality
+of bundled continuous maps by checking both OnePoint constructors.
+
+Cycle 5 material premise roles are:
+
+- `ambient-boundary`: arbitrary fixed `AtomCarrier U`, the fixed discrete topology, and the
+  existing evaluator's `[DecidableEq U.Atom]` where code evaluation is used.
+- `direction-hypothesis`: the arbitrary input `Equiv.Perm U.Atom`; no support hypothesis.
+- `discharge-required`: construction of the extended homeomorphism, restriction and infinity
+  values, action direction, whole-map equivariance, and all three coherence laws; all are
+  proved in this module or explicitly reused from the existing code API.
+- `conclusion-equivalent-risk`: none. The input is the permutation itself, not a transport
+  equality, homeomorphism extension, or coherence certificate.
