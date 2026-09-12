@@ -340,7 +340,7 @@ audits:
   validation_refs:
     - "focused checks: ExactGeometryPull 22, ExactGeometryPullProjection 9, ExactGeometryPullCoherence 30, ExactGeometryTransportAdjunction 21, ExactGeometryPushCartesian 29, ExactGeometryPullCocartesian 46, ExactGeometryTransportUnitIso 5, ExactGeometryTransportCounitIso 3 declarations; standard axioms only"
     - "targeted module builds: ExactGeometryPull, ExactGeometryPullProjection, ExactGeometryPullCoherence, ExactGeometryTransportAdjunction, ExactGeometryPushCartesian, ExactGeometryPullCocartesian, ExactGeometryTransportUnitIso, ExactGeometryTransportCounitIso: pass; no Research aggregate/full build"
-    - "git diff --check and placeholder/hidden/BiDi/privacy/reverse-import scans: pending final fixed-head run"
+    - "fixed head 5a552304c06aa93c5cb4b3a2f31838549ec690c3: git diff --check and placeholder/hidden/BiDi/privacy/reverse-import scans pass"
   blocking_findings: []
   next_obligation: "B2: construct the exact-derived G-118 configuration, compatible source, pullback/cleavage comparisons, four endpoint geometries, generated mate, and its equality with G-116's canonical mate"
 ```
