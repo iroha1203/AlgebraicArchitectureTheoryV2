@@ -442,6 +442,20 @@ theorem authoredExactBarAlpha_projection_of_post_fac
     (ψ := lhs.1 ≫ rightHom) (ψ' := rhs.1 ≫ rightHom)
   simpa only [lhs, rhs, topLift] using hpost
 
+/-! ## Implementation notes for presentation normalization
+
+The cancellation theorem above is stated for the semantic square generated
+definitionally by a `BCPresentation`.  An arbitrary `AuthoredBCDatumSquare`
+instead stores its semantic square together with `realization_eq`.  We
+eliminate that existing provenance equality, retain precisely the authored
+lift and two-cell fields below, and reassemble a definitionally normalized
+datum so that all endpoint transports remain visible to the simplifier.
+
+Accepting a pre-normalized datum or an endpoint equality from the caller was
+rejected: either would add a premise absent from G-122(B), whereas the datum
+already contains the required realization provenance.
+-/
+
 /-- The authored fields remaining after replacing a realized semantic square
 by the semantic square generated from its presentation. -/
 structure ExactBarAlphaNormalizedFields

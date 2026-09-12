@@ -21,6 +21,9 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 3000000
 
+/-- The source endpoint comparison projects to the authored direct-to-canonical
+bridge followed by the realization-generated pullback-source lift.  Every
+factor is constructed from `A`, `z`, `k`, and `g`. -/
 theorem authoredExactGeneratedMateSourceToCanonicalBaseNorthwestIsoAt_hom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -32,6 +35,9 @@ theorem authoredExactGeneratedMateSourceToCanonicalBaseNorthwestIsoAt_hom
           (authoredExactCanonicalBaseRouteFiberAt A z k g) := by
   rfl
 
+/-- The target endpoint comparison projects to the authored direct-to-canonical
+pulled bridge followed by the same realization-generated pullback-source lift.
+No endpoint equality is accepted from the caller. -/
 theorem authoredExactGeneratedMateTargetToCanonicalPulledNorthwestIsoAt_hom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -43,6 +49,8 @@ theorem authoredExactGeneratedMateTargetToCanonicalPulledNorthwestIsoAt_hom
           (authoredExactCanonicalPulledRouteFiberAt A z k g) := by
   rfl
 
+/-- Conjugate the actual G-118 generated mate by the two internally constructed
+canonical endpoint comparisons in the mixed pullback fiber. -/
 noncomputable def authoredExactCanonicalMateInMixedFiberAt
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -54,6 +62,8 @@ noncomputable def authoredExactCanonicalMateInMixedFiberAt
     authoredExactGeneratedMateInMixedFiberAt A z k g ≫
     (authoredExactCanonicalPulledToGeneratedFiberIsoAt A z k g).inv
 
+/-- The transported northwest mate decomposes through the canonical mixed-fiber
+mate and the two realization-generated endpoint lifts. -/
 theorem authoredExactCanonicalMateNorthwest_decomposition
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -75,6 +85,9 @@ theorem authoredExactCanonicalMateNorthwest_decomposition
     authoredExactCanonicalPulledToGeneratedNorthwestIsoAt,
     authoredExactCanonicalMateInMixedFiberAt, Functor.map_comp]
 
+/-- Forgetting exact qualification sends the mixed-fiber mate to the canonical
+authored refinement mate supplied by the G-118 data generated from
+`A`, `z`, `k`, and `g`. -/
 theorem authoredExactCanonicalMateInMixedFiberAt_toRefinement
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -108,6 +121,9 @@ theorem authoredExactCanonicalMateInMixedFiberAt_toRefinement
         PUnit.unit]
   rfl
 
+/-- The actual G-118 mate, transported through both exact endpoint comparisons,
+satisfies the direct-versus-pulled route triangle.  The proof uses the generated
+G-118 triangle and Cartesian factor laws, not a caller-supplied equation. -/
 theorem authoredExactDirectEndpointMate_triangle
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)

@@ -24,6 +24,9 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 12000000
 
+/-- The independently generated G-116 core Beck--Chevalley mate factors through
+the selected right Cartesian lift.  Its source is the presentation and source
+package; no mate factorization is accepted as an input. -/
 theorem coreBeckChevalleyMate_app_selectedLift_fac
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (presentation : BCPresentation U)
@@ -66,6 +69,9 @@ theorem coreBeckChevalleyMate_app_selectedLift_fac
           (bcBottomPresentation presentation))).map
     ((bcLeftAdjunction presentation).counit.app sourcePackage))
 
+/-- The five-factor exact `barAlpha` is the complete-geometry lift of the
+commuting semantic square.  The proof consumes the actual G-118 endpoint
+triangle together with exact unit and counit factor laws. -/
 theorem authoredExactBarAlphaIsoAt_triangle
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
