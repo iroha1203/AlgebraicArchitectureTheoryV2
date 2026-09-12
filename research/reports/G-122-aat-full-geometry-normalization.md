@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 10 review and acceptance of exact push/pull normalization transport and barAlpha naturality
-- pending proof obligations: C--D
+- current proof obligation: Cycle 11 review and acceptance of the selected complete-geometry factorization and its G-116 projection
+- pending proof obligations: C classification and fixed witness; D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the complete selected projector, its barAlpha conjugate and factor, and connect their projections to the existing G-116 comparison
+- next proof obligation: classify the selected projectors and comparison by the selector, prove the IsIso equivalences, and construct the fixed finite axis-fold witness
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1165,4 +1165,96 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaNormalizationNaturality: 4198/4198 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "C: construct barD, barE, and barBeta from the same selector; prove idempotence, factorization, Karoubi isomorphism, and the G-116/G-119 projection equalities"
+```
+
+## Cycle 11 — Selected complete-geometry factorization and projection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 11
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 69a777c59dd3a266a57ab4e5ad59c6bc0f948e39
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 10 merge 69a777c59dd3a266a57ab4e5ad59c6bc0f948e39; normalization was natural along the exact routes and barAlpha, while the selected complete-geometry factor and its raw projection remained"
+  proof_obligation: "C factorization slice: use the original G-116 selector to construct the actual via-base target projector barD, its barAlpha-conjugate source projector barE, and barBeta = barD barAlpha; prove both idempotences, both factorization equations, the induced Karoubi isomorphism, rho(barD)=E_z, and rho(barBeta)=beta_z"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting barD, barE, barBeta, their idempotence, or a projection equation from the caller"
+    - "using an unrelated idempotent instead of transporting the same source selector through the actual bottom-push/right-pull route"
+    - "proving only an abstract Karoubi existence statement without the actual barBeta morphism"
+    - "claiming all of C while selector classification, IsIso equivalences, and the fixed finite witness remain"
+  unchecked:
+    - "C selector-branch identification with endpoint normalizations and identities"
+    - "C IsIso(barBeta) iff barD=id iff not chi"
+    - "C canonical-normalization noninjectivity connection and fixed finite axis-fold witness"
+    - "C comparison with the existing G-119 Karoubi construction"
+    - "D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined barD by branching on the unchanged G-116 selector and, on the selected branch, mapping the source canonical complete-geometry normalization through the actual bottom exact push and right exact pull functors; defined barE by conjugation with the actual five-factor barAlpha and barBeta as barAlpha followed by barD; proved whole-fiber idempotence, coefficient identity, both factorization equations, and an explicit Karoubi isomorphism whose hom is barBeta and inverse is barD followed by barAlpha inverse; then projected the same maps through the exact endpoint comparisons and identified them with G-116 E_z and beta_z."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaProjection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_idem
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_coefficient_id
+    - AAT.AG.FullGeometryNormalization.authoredExactBarEAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarEAt_idem
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_source_factorization
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_target_factorization
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaKaroubiIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_projection
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_projection
+  claim_mapping:
+    source_labels:
+      - "fixed target C: barD is the same selector transported through the via-base route"
+      - "fixed target C: barE = barAlpha inverse barD barAlpha and barBeta = barD barAlpha"
+      - "fixed target C: rho(barD)=E_z, rho(barBeta)=beta_z, idempotence, coefficient identity, factorization, and Karoubi isomorphism"
+    conjuncts:
+      - "the branch test is exactly omega(z) != 1 together with CanonicalObjectNormalizationAdmissible(P_z)"
+      - "the selected branch uses the source canonical normalization and the literal bottom-push/right-pull functor maps; the other branch is identity"
+      - "barE and barBeta use the actual Cycle 8--9 barAlpha isomorphism, not a new comparison certificate"
+      - "the Karoubi hom is the actual barBeta and its inverse is barD followed by barAlpha inverse"
+      - "the projection equalities are stated along the constructed exact-derived support-core endpoint isomorphisms and land in the existing G-116 projector and raw comparison"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A, z, omega, k, and g. Selection, admissibility extraction, complete-geometry morphisms, idempotence, factorization, Karoubi data, and both projection equations are constructed internally."
+audits:
+  premise_delta:
+    discharged:
+      - "complete-geometry barD, barE, and barBeta construction from the same selector"
+      - "whole-fiber idempotence and coefficient identity"
+      - "both selected comparison factorization equations and explicit Karoubi isomorphism"
+      - "rho(barD)=E_z and rho(barBeta)=beta_z along the generated endpoint comparisons"
+    remaining:
+      - "C classification, IsIso equivalences, canonical-normalization noninjectivity connection, G-119 alignment, and fixed witness"
+      - "D"
+  certificate_provenance:
+    discharged:
+      - "barD uses canonicalGeometryFiberNormalization only after the selector supplies source admissibility"
+      - "idempotence is preserved by the actual exact functor maps and barE is obtained by isomorphism conjugation"
+      - "projection uses the exact push/pull projection naturality laws and the already proved barAlpha projection"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalGeometryNormalization_idem under bottom push and right pull"
+      - "the actual authoredExactBarAlphaIsoAt hom and inverse in the conjugate, comparison, and Karoubi inverse"
+      - "exactGeometryPullProjectionIso_naturality, towerTransportComparison_naturality, source normalization projection, and authoredExactBarAlphaIsoAt_projection"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "canonical focused checks from research-modules.txt: ExactBarBetaFactorization 13 and ExactBarBetaProjection 2 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaProjection: 4213/4213 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "C classification: identify both selector branches with endpoint normalizations or identities, prove the IsIso equivalences and noninjectivity connection, and construct the fixed finite axis-fold witness"
 ```
