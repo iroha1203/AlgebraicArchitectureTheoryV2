@@ -134,8 +134,6 @@ theorem canonicalNormalizationSectionUpper_comp
     cases hoperation
     have hleft := canonicalNormalizationSectionOperationMap_heq_normalized
       P admissible (f.comp g) operation
-    have hfirst := canonicalNormalizationSectionOperationMap_heq_normalized
-      P admissible f operation
     have hsecond := canonicalNormalizationSectionOperationMap_heq_normalized
       P admissible g
         (canonicalNormalizationSectionOperationMap P admissible f operation)
