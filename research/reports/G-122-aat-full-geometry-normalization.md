@@ -535,8 +535,8 @@ result:
     - AAT.AG.FullGeometryNormalization.authoredExactCanonicalPulledToGeneratedNorthwestIsoAt
   claim_mapping:
     source_labels:
-      - "fixed target B: G_z,H_z,B_z,T_z and generated m_z"
-      - "fixed target B: complete mate invertibility and coefficient identity"
+      - "fixed target B: G_z,H_z,B_z,T_z and the generated-mate spine before the B_z/T_z identifications"
+      - "fixed target B: generated-spine mate invertibility and coefficient identity"
       - "fixed target B: projection through unit/counit and endpoint comparison to G-116 routes"
     conjuncts:
       - "edge RealizableHom inputs are reconstructed from A.context.square.presentation and realization_eq"

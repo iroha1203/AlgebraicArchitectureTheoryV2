@@ -165,7 +165,8 @@ noncomputable def authoredExactGeneratedMateTargetGeometryAt
 
 /-! ## Coefficient and core-projection APIs -/
 
-/-- The direct-route endpoint retains the coefficient ring `k`. -/
+/-- The direct-route endpoint retains the coefficient ring `k`.  As a simp
+rule this normalizes the endpoint coefficient type to the fixed type `k`. -/
 @[simp] theorem authoredExactDirectGeometryAt_coefficient
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -177,7 +178,8 @@ noncomputable def authoredExactGeneratedMateTargetGeometryAt
     (authoredExactLeftInput A) (authoredSouthwestGeometryFiberAt A z k g)).trans
       rfl
 
-/-- The via-base endpoint retains the coefficient ring `k`. -/
+/-- The via-base endpoint retains the coefficient ring `k`.  As a simp rule
+this normalizes the endpoint coefficient type to the fixed type `k`. -/
 @[simp] theorem authoredExactViaBaseGeometryAt_coefficient
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -188,7 +190,8 @@ noncomputable def authoredExactGeneratedMateTargetGeometryAt
     (authoredExactRightInput A) (authoredExactTargetGeometryAt A z k g)).trans
       rfl
 
-/-- The generated-mate source retains the coefficient ring `k`. -/
+/-- The generated-mate source retains the coefficient ring `k`.  As a simp
+rule this normalizes the endpoint coefficient type to the fixed type `k`. -/
 @[simp] theorem authoredExactGeneratedMateSourceGeometryAt_coefficient
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -203,7 +206,8 @@ noncomputable def authoredExactGeneratedMateTargetGeometryAt
   rw [exactGeometryPull_coefficient]
   rfl
 
-/-- The generated-mate target retains the coefficient ring `k`. -/
+/-- The generated-mate target retains the coefficient ring `k`.  As a simp
+rule this normalizes the endpoint coefficient type to the fixed type `k`. -/
 @[simp] theorem authoredExactGeneratedMateTargetGeometryAt_coefficient
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
