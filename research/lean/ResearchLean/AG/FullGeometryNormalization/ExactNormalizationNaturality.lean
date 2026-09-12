@@ -19,6 +19,8 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 3000000
 
+/-- Casting an operation along equal endpoints is heterogeneously equal to the
+original operation. -/
 private theorem castOperation_heq
     {U : AtomCarrier.{u}} (R : OperationReading U)
     {first first' second second' : ArchitectureObject U}
@@ -29,6 +31,8 @@ private theorem castOperation_heq
   cases hsecond
   rfl
 
+/-- Transporting an operation along an atom equivalence preserves its value up
+to the dependent endpoint casts. -/
 private theorem transportOperation_heq
     {U : AtomCarrier.{u}} (e : U.Atom ≃ U.Atom) (R : OperationReading U)
     {first second : ArchitectureObject U} (operation : R.Op first second) :
@@ -36,6 +40,8 @@ private theorem transportOperation_heq
   unfold transportOperation
   exact castOperation_heq R _ _ operation
 
+/-- Equal base and component maps determine heterogeneous equality of geometry
+reading morphisms. -/
 private theorem geometryReadHom_heq_of_base_eq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {f g : PackageTotalHom G.core H.core}
