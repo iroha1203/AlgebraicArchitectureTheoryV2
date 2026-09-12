@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 11 review and acceptance of the selected complete-geometry factorization and its G-116 projection
-- pending proof obligations: C classification, G-116/G-119 Karoubi alignment, and fixed witness; D
+- current proof obligation: Cycle 12 review and acceptance of the selector and invertibility classification
+- pending proof obligations: C G-116/G-119 Karoubi alignment and fixed witness; D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: classify the selected projectors and comparison by the selector, prove the IsIso equivalences, and connect the Karoubi isomorphism to G-116 before constructing the fixed finite axis-fold witness
+- next proof obligation: connect the complete-geometry Karoubi isomorphism to G-116/G-119 and construct the fixed finite axis-fold witness
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1258,4 +1258,93 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaProjection: 4213/4213 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "C classification: identify both selector branches with endpoint normalizations or identities, prove the IsIso equivalences and noninjectivity connection, connect the Karoubi isomorphism to G-116, and construct the fixed finite axis-fold witness"
+```
+
+## Cycle 12 — Selector and invertibility classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 12
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 7b177092ef4da7e8b50878319f69b4755c82e3ab
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 11 merge 7b177092ef4da7e8b50878319f69b4755c82e3ab; the selected complete-geometry factorization and its two G-116 projection equations were proved, while selector-branch endpoint identification and invertibility classification remained"
+  proof_obligation: "C classification slice: prove that on chi the two projectors are the canonical normalizations of the actual direct and via-base endpoints, off chi both are identities, and IsIso(barBeta) iff barD=id iff not chi, using the existing G-116 selector identity classification and canonical-normalization noninjectivity"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "assuming endpoint admissibility or barAlpha normalization naturality instead of generating and using them"
+    - "proving only one selector direction or omitting the inadmissible nonselected branch"
+    - "confusing an isomorphism in the Karoubi category with ambient IsIso(barBeta)"
+    - "accepting identity reflection or noninjectivity as a caller certificate"
+  unchecked:
+    - "C projection of the complete-geometry Karoubi isomorphism to the existing G-116 Karoubi isomorphism"
+    - "C comparison with the existing G-119 Karoubi construction"
+    - "C fixed finite axis-fold witness and nonempty input family"
+    - "D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Used the actual bottom-push and right-pull normalization transport laws to identify barD with the via-base endpoint normalization on the selected branch; combined this with the proved barAlpha normalization naturality to identify the conjugate barE with the direct endpoint normalization; proved both projectors are identities off the exact selector; reflected barD=id through the Cycle 11 projection equality to G-116's transported selector classification and discharged its noninjectivity conjunct with canonicalObjectNormalization_not_injective; and chained ambient IsIso(barBeta) through the invertible barAlpha factor and idempotent barD to obtain the fixed classification."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaClassification.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_eq_endpoint_normalization
+    - AAT.AG.FullGeometryNormalization.authoredExactBarEAt_eq_endpoint_normalization
+    - AAT.AG.FullGeometryNormalization.authoredExactBarProjectorsAt_eq_endpoint_normalizations
+    - AAT.AG.FullGeometryNormalization.authoredExactBarProjectorsAt_eq_id
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_eq_id_iff
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_isIso_iff_barDAt_isIso
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_isIso_iff_barDAt_eq_id
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_rawFailureLocus
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_isIso_iff_not_selected
+  claim_mapping:
+    source_labels:
+      - "fixed target C: on chi, (barE,barD)=(n_G,n_H); off chi both are identities"
+      - "fixed target C: IsIso(barBeta) iff barD=id iff not chi"
+      - "fixed target C: canonical normalization noninjectivity comes from canonicalObjectNormalization_not_injective"
+    conjuncts:
+      - "selected barD is the actual source normalization mapped by bottom push and right pull, then identified with the generated via-base endpoint normalization"
+      - "selected barE is identified by literal conjugation and the proved full-fiber barAlpha normalization equation"
+      - "the off-selector theorem covers both omega=1 and failure of admissibility"
+      - "ambient invertibility of the actual barBeta is distinguished from its always-invertible Karoubi restriction"
+      - "barD identity is reflected through the generated endpoint comparison to the existing G-116 selector theorem"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A, z, omega, k, and g. Endpoint admissibility, naturality, idempotence, identity reflection, and canonical-normalization noninjectivity are generated or imported as proved theorems."
+audits:
+  premise_delta:
+    discharged:
+      - "selected endpoint normalization identification for barE and barD"
+      - "identity classification for both nonselected projectors"
+      - "ambient IsIso(barBeta) iff barD=id iff not chi"
+      - "the canonical-normalization noninjectivity input of the G-116 identity classification"
+    remaining:
+      - "C G-116/G-119 Karoubi alignment and fixed finite axis-fold witness"
+      - "D"
+  certificate_provenance:
+    discharged:
+      - "endpoint admissibility is generated from the selected source admissibility by the Cycle 10 exact transport theorems"
+      - "identity reflection is inherited from the proved G-116 faithful via-base route and the Cycle 11 barD projection equation"
+      - "noninjectivity is the accepted canonicalObjectNormalization_not_injective theorem, not a supplied hypothesis"
+    unresolved: []
+  proof_use:
+    used:
+      - "geomFiberTransportFunctor_map_normalization followed by exactGeometryPullFunctor_map_normalization"
+      - "authoredExactBarAlphaIsoAt_normalization_natural in the barE conjugation equality"
+      - "authoredExactBarDAt_projection and authoredViaBaseDiagnosticObjectCollapseComponentAtCochain_eq_id_iff"
+      - "isIso_comp_left_iff and idempotence of barD"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "canonical focused check from research-modules.txt: ExactBarBetaClassification 10 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaClassification: 4229/4229 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "C: project the actual complete-geometry Karoubi isomorphism to G-116, connect its position to G-119, and construct the fixed finite axis-fold non-IsIso and nonempty-family witness"
 ```
