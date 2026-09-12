@@ -153,11 +153,29 @@ audits:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/FullGeometryNormalization/CanonicalNormalization.lean: pass"
     - "namespace #assert_standard_axioms_only: 49 declarations, standard axioms only"
     - "cd research/lean && lake build ResearchLean.AG.FullGeometryNormalization.ComparisonGroup: pass (targeted module build only)"
-    - "ComparisonGroup namespace #assert_standard_axioms_only: 16 declarations, standard axioms only"
+    - "ComparisonGroup namespace #assert_standard_axioms_only: 26 declarations, standard axioms only"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: no findings"
   blocking_findings: []
   next_obligation: "B1: construct exact-derived complete-geometry push/pull functors and the two endpoint geometries from A,z,k,g_z, with exact core projection, coefficient identity, identity/composition, and unit/counit isomorphisms"
 ```
+
+### Cycle 1 review record
+
+- Initial review head `267a33069dd63cd218d90385fc6b9e774c5e8ee0`: Math A/B and
+  Lean A/B independently found the same central omission: the implementation stopped at
+  G-119's core-normalization and Karoubi connection without a named comparison-group
+  bridge.  The Lean lanes also found missing declaration docstrings.
+- Repair head `b311ff38cdf72a1bcfa24336a815c4bce1854817`: added
+  `ComparisonGroup.lean`, completed the G-119 Karoubi object/arrow and comparison-group
+  connection, updated the claim mapping, and added the missing docstrings.
+- Formal rerun at the repair head: Math B and Lean B returned no findings. Math A and
+  Lean A found no central issue and one identical noncentral no-unfold API issue.
+- Direct response to the noncentral issue: added named endpoint-component evaluation,
+  normalized-membership, and restricted-hom value lemmas; changed all three preservation
+  proofs to use those APIs instead of unfolding the public endpoint homomorphisms. Both
+  finding lanes confirmed the issue resolved. No findings remain in Cycle 1.
+- Review result: fixed target A is `proof-obligation-discharged`; G-122 remains
+  `target-proof-checkpoint` because B--D are not yet discharged.
 
 ### Cycle 1 acceptance spine
 

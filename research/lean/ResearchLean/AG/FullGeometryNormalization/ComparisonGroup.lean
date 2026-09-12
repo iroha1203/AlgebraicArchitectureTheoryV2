@@ -77,6 +77,26 @@ noncomputable def geometryNormalizationEndpointAutomorphismHom
     (functorAutomorphismHom (geometryNormalizationFunctor.{u, v} U) G)
     (functorAutomorphismHom (geometryNormalizationFunctor.{u, v} U) H)
 
+/-- Normalization rule: the source endpoint is mapped by `N_geom`. -/
+@[simp]
+theorem geometryNormalizationEndpointAutomorphismHom_fst_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut G × Aut H) :
+    (geometryNormalizationEndpointAutomorphismHom G H pair).1.hom =
+      (geometryNormalizationFunctor.{u, v} U).map pair.1.hom :=
+  rfl
+
+/-- Normalization rule: the target endpoint is mapped by `N_geom`. -/
+@[simp]
+theorem geometryNormalizationEndpointAutomorphismHom_snd_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut G × Aut H) :
+    (geometryNormalizationEndpointAutomorphismHom G H pair).2.hom =
+      (geometryNormalizationFunctor.{u, v} U).map pair.2.hom :=
+  rfl
+
 /-- Raw complete-geometry endpoint pairs preserving the selected comparison
 `c`. -/
 def rawGeometryNormalizationComparisonSubgroup
@@ -137,6 +157,19 @@ def normalizedGeometryComparisonSubgroup
             b.inv) := by rw [relation]
       _ = (geometryNormalizationFunctor.{u, v} U).map c ≫ b.inv := by simp
 
+/-- Membership in the normalized geometry comparison subgroup is exactly
+preservation of `N_geom(c)` by the endpoint automorphisms. -/
+theorem mem_normalizedGeometryComparisonSubgroup
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    {c : G ⟶ H}
+    {pair : Aut ((geometryNormalizationFunctor.{u, v} U).obj G) ×
+      Aut ((geometryNormalizationFunctor.{u, v} U).obj H)} :
+    pair ∈ normalizedGeometryComparisonSubgroup c ↔
+      pair.1.hom ≫ (geometryNormalizationFunctor.{u, v} U).map c =
+        (geometryNormalizationFunctor.{u, v} U).map c ≫ pair.2.hom :=
+  Iff.rfl
+
 /-- Functoriality of `N_geom` carries each raw geometry comparison-preserving
 pair to a normalized one. -/
 theorem geometryNormalizationEndpointAutomorphism_preserves_comparison
@@ -146,10 +179,13 @@ theorem geometryNormalizationEndpointAutomorphism_preserves_comparison
     (h : pair ∈ rawGeometryNormalizationComparisonSubgroup c) :
     geometryNormalizationEndpointAutomorphismHom G H pair ∈
       normalizedGeometryComparisonSubgroup c := by
+  rw [mem_normalizedGeometryComparisonSubgroup]
+  have h' := (mem_rawGeometryNormalizationComparisonSubgroup).mp h
   have mapped := congrArg
-    (fun k => (geometryNormalizationFunctor.{u, v} U).map k) h
-  simpa only [geometryNormalizationEndpointAutomorphismHom,
-    functorAutomorphismHom, Functor.map_comp] using mapped
+    (fun k => (geometryNormalizationFunctor.{u, v} U).map k) h'
+  simpa only [geometryNormalizationEndpointAutomorphismHom_fst_hom,
+    geometryNormalizationEndpointAutomorphismHom_snd_hom,
+    Functor.map_comp] using mapped
 
 /-- G-122(A)'s restriction of the complete endpoint normalization
 homomorphism to comparison-preserving subgroups. -/
@@ -169,6 +205,17 @@ noncomputable def geometryNormalizationComparisonSubgroupHom
     apply Subtype.ext
     exact map_mul (geometryNormalizationEndpointAutomorphismHom G H) a.1 b.1
 
+/-- Evaluation rule: restricting the endpoint normalization homomorphism
+does not change its underlying endpoint pair. -/
+@[simp]
+theorem geometryNormalizationComparisonSubgroupHom_val
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
+    (pair : rawGeometryNormalizationComparisonSubgroup c) :
+    (geometryNormalizationComparisonSubgroupHom c pair).1 =
+      geometryNormalizationEndpointAutomorphismHom G H pair.1 :=
+  rfl
+
 /-! ## Core projection of the comparison groups -/
 
 /-- Core projection on a pair of raw complete-geometry endpoint
@@ -183,6 +230,26 @@ noncomputable def geometryCoreEndpointAutomorphismHom
     (functorAutomorphismHom (admissibleGeometryCoreFunctor.{u, v} U) G)
     (functorAutomorphismHom (admissibleGeometryCoreFunctor.{u, v} U) H)
 
+/-- Core-projection rule for the source endpoint automorphism. -/
+@[simp]
+theorem geometryCoreEndpointAutomorphismHom_fst_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut G × Aut H) :
+    (geometryCoreEndpointAutomorphismHom G H pair).1.hom =
+      (admissibleGeometryCoreFunctor.{u, v} U).map pair.1.hom :=
+  rfl
+
+/-- Core-projection rule for the target endpoint automorphism. -/
+@[simp]
+theorem geometryCoreEndpointAutomorphismHom_snd_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut G × Aut H) :
+    (geometryCoreEndpointAutomorphismHom G H pair).2.hom =
+      (admissibleGeometryCoreFunctor.{u, v} U).map pair.2.hom :=
+  rfl
+
 /-- Core projection sends raw geometry pairs preserving `c` to G-119's raw
 comparison subgroup for the projected comparison. -/
 theorem geometryCoreEndpointAutomorphism_preserves_comparison
@@ -193,10 +260,13 @@ theorem geometryCoreEndpointAutomorphism_preserves_comparison
     geometryCoreEndpointAutomorphismHom G H pair ∈
       rawNormalizationComparisonSubgroup
         ((admissibleGeometryCoreFunctor.{u, v} U).map c) := by
+  rw [mem_rawNormalizationComparisonSubgroup]
+  have h' := (mem_rawGeometryNormalizationComparisonSubgroup).mp h
   have mapped := congrArg
-    (fun k => (admissibleGeometryCoreFunctor.{u, v} U).map k) h
-  simpa only [geometryCoreEndpointAutomorphismHom,
-    functorAutomorphismHom, Functor.map_comp] using mapped
+    (fun k => (admissibleGeometryCoreFunctor.{u, v} U).map k) h'
+  simpa only [geometryCoreEndpointAutomorphismHom_fst_hom,
+    geometryCoreEndpointAutomorphismHom_snd_hom,
+    Functor.map_comp] using mapped
 
 /-- Restrict raw core projection to the complete-geometry and G-119 raw
 comparison subgroups. -/
@@ -216,6 +286,17 @@ noncomputable def rawGeometryComparisonCoreHom
     apply Subtype.ext
     exact map_mul (geometryCoreEndpointAutomorphismHom G H) a.1 b.1
 
+/-- Evaluation rule: restricting raw core projection retains the same
+underlying endpoint pair. -/
+@[simp]
+theorem rawGeometryComparisonCoreHom_val
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
+    (pair : rawGeometryNormalizationComparisonSubgroup c) :
+    (rawGeometryComparisonCoreHom c pair).1 =
+      geometryCoreEndpointAutomorphismHom G H pair.1 :=
+  rfl
+
 /-- Core projection on normalized complete-geometry endpoint
 automorphisms. -/
 noncomputable def normalizedGeometryCoreEndpointAutomorphismHom
@@ -233,6 +314,28 @@ noncomputable def normalizedGeometryCoreEndpointAutomorphismHom
     (functorAutomorphismHom (normalizedGeometryCoreFunctor.{u, v} U)
       ((geometryNormalizationFunctor.{u, v} U).obj H))
 
+/-- Normalized core-projection rule for the source endpoint automorphism. -/
+@[simp]
+theorem normalizedGeometryCoreEndpointAutomorphismHom_fst_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut ((geometryNormalizationFunctor.{u, v} U).obj G) ×
+      Aut ((geometryNormalizationFunctor.{u, v} U).obj H)) :
+    (normalizedGeometryCoreEndpointAutomorphismHom G H pair).1.hom =
+      (normalizedGeometryCoreFunctor.{u, v} U).map pair.1.hom :=
+  rfl
+
+/-- Normalized core-projection rule for the target endpoint automorphism. -/
+@[simp]
+theorem normalizedGeometryCoreEndpointAutomorphismHom_snd_hom
+    {U : AtomCarrier.{u}}
+    (G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (pair : Aut ((geometryNormalizationFunctor.{u, v} U).obj G) ×
+      Aut ((geometryNormalizationFunctor.{u, v} U).obj H)) :
+    (normalizedGeometryCoreEndpointAutomorphismHom G H pair).2.hom =
+      (normalizedGeometryCoreFunctor.{u, v} U).map pair.2.hom :=
+  rfl
+
 /-- Core projection sends normalized geometry pairs preserving `N_geom(c)`
 to G-119's normalized comparison subgroup. -/
 theorem normalizedGeometryCoreEndpointAutomorphism_preserves_comparison
@@ -244,10 +347,12 @@ theorem normalizedGeometryCoreEndpointAutomorphism_preserves_comparison
     normalizedGeometryCoreEndpointAutomorphismHom G H pair ∈
       normalizedComparisonSubgroup
         ((admissibleGeometryCoreFunctor.{u, v} U).map c) := by
+  rw [mem_normalizedComparisonSubgroup]
+  have h' := (mem_normalizedGeometryComparisonSubgroup).mp h
   have mapped := congrArg
-    (fun k => (normalizedGeometryCoreFunctor.{u, v} U).map k) h
-  simpa only [normalizedGeometryCoreEndpointAutomorphismHom,
-    functorAutomorphismHom, Functor.map_comp,
+    (fun k => (normalizedGeometryCoreFunctor.{u, v} U).map k) h'
+  simpa only [normalizedGeometryCoreEndpointAutomorphismHom_fst_hom,
+    normalizedGeometryCoreEndpointAutomorphismHom_snd_hom, Functor.map_comp,
     normalizedGeometryCoreFunctor_geometryNormalizationFunctor_map] using mapped
 
 /-- Restrict normalized core projection to the complete-geometry and G-119
@@ -268,6 +373,17 @@ noncomputable def normalizedGeometryComparisonCoreHom
   map_mul' a b := by
     apply Subtype.ext
     exact map_mul (normalizedGeometryCoreEndpointAutomorphismHom G H) a.1 b.1
+
+/-- Evaluation rule: restricting normalized core projection retains the
+same underlying endpoint pair. -/
+@[simp]
+theorem normalizedGeometryComparisonCoreHom_val
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
+    (pair : normalizedGeometryComparisonSubgroup c) :
+    (normalizedGeometryComparisonCoreHom c pair).1 =
+      normalizedGeometryCoreEndpointAutomorphismHom G H pair.1 :=
+  rfl
 
 /-- G-122(A): normalization of comparison-preserving complete-geometry
 endpoint changes commutes with projection to G-119's comparison-group
