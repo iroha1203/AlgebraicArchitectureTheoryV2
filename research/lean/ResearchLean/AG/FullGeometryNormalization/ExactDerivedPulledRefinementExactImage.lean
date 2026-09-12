@@ -9,6 +9,13 @@ geometry morphism.  On the exact-derived configuration, the pulled
 refinement is itself the image of the realization-derived exact comparison.
 The theorem below keeps both endpoint casts explicit and identifies the full
 pointed refinement maps, not only their source or atom functions separately.
+
+## Implementation notes
+
+The proof separates the pullback commutative square from endpoint casts and
+then maps the resulting exact equality into refinements.  A single global
+unfolding was rejected because typeclass normalization of the dependent route
+is unstable and obscures the provenance of the pullback comparison.
 -/
 
 namespace AAT.AG.FullGeometryNormalization
@@ -20,6 +27,8 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 3000000
 
+/-- An endpoint equality within one doctrine induces the identity doctrine
+homomorphism, while retaining the required pointed source cast. -/
 private theorem eqToHom_doctrineHom_sameDoctrine
     {U : AtomCarrier.{u}} (D : ExtractionDoctrine U)
     (x y : D.Source)
@@ -30,11 +39,15 @@ private theorem eqToHom_doctrineHom_sameDoctrine
   cases h
   rfl
 
+/-- The constructor presentation of an exact refinement arrow agrees with the
+canonical exact-to-refinement functor on morphisms. -/
 private theorem ofExact_eq_exactPointedToRefinement_map
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U} (f : X ⟶ Y) :
     PointedRefinementHom.ofExact f = (exactPointedToRefinement U).map f := by
   rfl
 
+/-- The pointed pullback square commutes after inserting the authored target
+and northeast endpoint identifications. -/
 private theorem authoredExactPullbackTarget_fst_eq_snd_right
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :

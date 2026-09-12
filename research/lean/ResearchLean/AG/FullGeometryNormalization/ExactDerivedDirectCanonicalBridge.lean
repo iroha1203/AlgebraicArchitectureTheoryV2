@@ -10,6 +10,16 @@ canonical-authored normalization.  Cartesian uniqueness is applied first at
 the refinement-package stage and then at the refinement-geometry stage.  The
 resulting isomorphisms are reflected back into the exact package and complete
 geometry categories.
+
+## Implementation notes
+
+The construction applies Cartesian uniqueness at the refinement-package and
+refinement-geometry projections before exactifying the result.  Directly
+rebuilding all exact upper fields was rejected because it would duplicate the
+accepted Cartesian universal properties.  The final fiber comparison is made
+by composing the raw exact isomorphism with the cocartesian transport lift;
+treating the raw isomorphism as already vertical was rejected because its
+endpoints lie over isomorphic, not definitionally equal, base points.
 -/
 
 namespace AAT.AG.FullGeometryNormalization
@@ -21,6 +31,8 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 3000000
 
+/-- The two embedded package morphisms in the literal base-first route compose
+to a strongly Cartesian morphism over the refinement package projection. -/
 private theorem directBaseRoutePackage_isStronglyCartesian
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -69,6 +81,8 @@ private theorem directBaseRoutePackage_isStronglyCartesian
     using CategoryTheory.Functor.IsStronglyCartesian.comp
       (refinementPackageProjection U)
 
+/-- The two embedded package morphisms in the literal pulled-first route
+compose to a strongly Cartesian refinement-package morphism. -/
 private theorem directPulledRoutePackage_isStronglyCartesian
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -117,6 +131,8 @@ private theorem directPulledRoutePackage_isStronglyCartesian
     using CategoryTheory.Functor.IsStronglyCartesian.comp
       (refinementPackageProjection U)
 
+/-- The embedded complete-geometry morphisms in the literal base-first route
+compose to a strongly Cartesian refinement-geometry morphism. -/
 private theorem directBaseRouteGeometry_isStronglyCartesian
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -146,6 +162,8 @@ private theorem directBaseRouteGeometry_isStronglyCartesian
     using CategoryTheory.Functor.IsStronglyCartesian.comp
       (refinementGeometryProjection U)
 
+/-- The embedded complete-geometry morphisms in the literal pulled-first route
+compose to a strongly Cartesian refinement-geometry morphism. -/
 private theorem directPulledRouteGeometry_isStronglyCartesian
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -368,6 +386,9 @@ noncomputable def authoredExactDirectToCanonicalPulledGeometryIsoAt
     packageIso geometryRefinementIso
     (geometryHomBase.trans packageToRefinement.symm)
 
+/-- The forward base-route geometry comparison projects to the
+realization-generated source-point isomorphism.  The equality is inherited
+from the two Cartesian uniqueness comparisons and their exactification. -/
 theorem authoredExactDirectToCanonicalBaseGeometryIsoAt_hom_projection
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)
@@ -380,6 +401,9 @@ theorem authoredExactDirectToCanonicalBaseGeometryIsoAt_hom_projection
   unfold authoredExactDirectToCanonicalBaseGeometryIsoAt
   rfl
 
+/-- The forward pulled-route geometry comparison projects to the
+realization-generated pulled source-point isomorphism.  The equality is
+inherited from the two Cartesian uniqueness comparisons and exactification. -/
 theorem authoredExactDirectToCanonicalPulledGeometryIsoAt_hom_projection
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) (z : A.context.Category)

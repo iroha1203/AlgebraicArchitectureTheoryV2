@@ -8,6 +8,13 @@ canonical-authored base route with the refinement image of the original exact
 two-edge base route.  The source endpoint cast is the comparison generated
 from pullback realization and fiber incidence; no route equality certificate
 is accepted from the caller.
+
+## Implementation notes
+
+The base refinement is first represented by the original exact bottom arrow
+with explicit endpoint casts.  Rewriting inside the dependent refinement
+configuration was rejected because it changes the type of the pullback leg;
+the proof instead normalizes the standalone exact arrow before mapping it.
 -/
 
 namespace AAT.AG.FullGeometryNormalization
@@ -19,6 +26,8 @@ open DoctrineFiberProduct
 
 set_option maxHeartbeats 3000000
 
+/-- An equality cast between two sources of one doctrine has identity doctrine
+component; this isolates proof-dependent endpoint casts from route algebra. -/
 @[simp] private theorem eqToHom_doctrineHom_sameDoctrine
     {U : AtomCarrier.{u}} (D : ExtractionDoctrine U)
     (x y : D.Source)
