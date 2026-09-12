@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 7 review and acceptance of the exact direct-to-canonical complete endpoint bridges
-- pending proof obligations: B2 a_z, b_z, barAlpha, and G-116 mate equality, B3 operation-map commutation and barAlpha naturality, C--D
+- current proof obligation: Cycle 8 review and acceptance of a_z, b_z, the five-factor barAlpha, and its coefficient identity
+- pending proof obligations: B2 G-114/G-116 mate alignment and final projection equality, B3 operation-map commutation and barAlpha naturality, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compose the accepted endpoint bridges with the generated mate and exact transport unit/counit to construct a_z, b_z, and barAlpha, then prove the G-116 projected mate equality
+- next proof obligation: construct the exact-image cleavage and mates-coherence alignment between the generated G-114 mate and the G-116 canonical mate, then prove the final barAlpha projection equality
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -889,4 +889,112 @@ audits:
     - "targeted module builds for all three Cycle 7 modules: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "construct a_z and b_z from the endpoint bridges and exact transport unit/counit, form barAlpha, and prove its projection is the G-116 authored support canonical mate"
+```
+
+### Cycle 7 review record
+
+- Initial review head `07301b350be69485c8df468263ff9383e08ae7e5`:
+  Math B found no major finding. Math A and Lean A/B found no central issue and
+  required the pulled exact-image provenance to be separated from the earlier
+  active-condition proof, plus missing declaration docstrings and implementation
+  notes.
+- Direct response head `97471901928c64dbb5038a46175c0a321658cb12`
+  changed comments and report provenance only. Fresh Math and Lean confirmation
+  agents found the union of findings resolved and no new finding.
+- Standard review comment, all seven CI checks, root acceptance, and merge
+  completed in PR #4493. The accepted merge commit is
+  `f63995a77253724741efdbf244ab2f2bbf991873`.
+- Review result: fixed target B2b2 endpoint bridges are
+  `proof-obligation-discharged`; G-122 remains `target-proof-checkpoint`.
+
+## Cycle 8 — Five-factor complete mate and coefficient identity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 8
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: f63995a77253724741efdbf244ab2f2bbf991873
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 7 merge f63995a77253724741efdbf244ab2f2bbf991873; exact B_z/T_z endpoint bridges were available but the unit-mate-counit composite was not"
+  proof_obligation: "B2c: construct the literal a_z and b_z endpoint isomorphisms from the exact transport unit and counit, insert the accepted direct-to-generated endpoint bridges around the pushed G-118 mate, form barAlpha as the required five-factor complete-geometry isomorphism, and prove that its coefficient map is the identity"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "collapsing endpoint alignment into an opaque arrow and losing the required five-factor formula"
+    - "accepting invertibility or coefficient identity from the caller"
+    - "claiming the G-116 projection equality before the G-114/G-116 mates-coherence theorem is constructed"
+    - "proving coefficient identity only for the unit, middle mate, and counit while omitting endpoint bridges"
+  unchecked:
+    - "G-114 exact-image mate to G-116 canonical mate alignment"
+    - "final projection commuting square for barAlpha"
+    - "B3 normalization-morphism equations and barAlpha naturality"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed BToGen and GenToT from the Cycle 7 endpoint bridges and the canonical-to-generated comparisons; constructed the literal a_z and b_z isomorphisms from the exact bottom unit and top counit; wrapped the pushed generated mate as an isomorphism; formed barAlpha as the required five-factor complete-geometry isomorphism; exposed its hom formula; and proved the coefficient identity for every factor and for barAlpha itself."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedDirectCanonicalBridgeLaws.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedMateComposite.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedMateCompositeCoefficient.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalBaseGeometryIsoAt_hom_fac
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalPulledGeometryIsoAt_hom_fac
+    - AAT.AG.FullGeometryNormalization.authoredExactBToGeneratedBaseNorthwestIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedPulledToTargetNorthwestIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactUnitTopPushIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactTopCounitIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTopPushIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_hom
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_hom_coefficient_id
+  claim_mapping:
+    source_labels:
+      - "fixed target B: a_z, b_z, and barAlpha_z = b_z (pi_2)_!(m_z) a_z"
+      - "fixed target B: kappa(barAlpha_z) = 1"
+    conjuncts:
+      - "a_z is the bottom exact transport unit, mapped by left pull and top push"
+      - "b_z is the top exact transport counit at the via-base endpoint"
+      - "the middle comparison is the actual G-118 generated mate transported to the authored northwest fiber and pushed along top"
+      - "the two endpoint-alignment factors are exactly the Cycle 7 direct/canonical bridges composed with canonical/generated comparisons"
+      - "all five factors are isomorphisms and their coefficient maps are identity"
+    undischarged_assumptions: []
+    acceptance_point: "Only A, z, k, and g are supplied. Unit, counit, endpoint comparisons, generated mate, invertibility, factor equations, and coefficient equations are generated by accepted exact transport and Cartesian comparison APIs."
+audits:
+  premise_delta:
+    discharged:
+      - "construction and invertibility of a_z"
+      - "construction and invertibility of b_z"
+      - "the literal five-factor complete-geometry barAlpha isomorphism"
+      - "the whole-morphism coefficient identity kappa(barAlpha_z)=1"
+    remaining:
+      - "the G-114 exact-image mate to G-116 canonical mate coherence theorem"
+      - "rho(barAlpha_z)=alpha_z along the constructed support-core endpoint isomorphisms"
+      - "B3 remainder and C--D"
+  certificate_provenance:
+    discharged:
+      - "a_z and b_z use the actual exact adjunction unit and counit and their existing IsIso proofs"
+      - "the middle isomorphism uses generatedCompatibleUpperGeometryMateAt_isIso through the pushed exact-derived mate"
+      - "endpoint bridge coefficient identities are derived from their Cartesian factor laws and literal exact route coefficient identities"
+    unresolved:
+      - "mate alignment between independently generated G-114 and G-116 comparison constructions"
+  proof_use:
+    used:
+      - "exactGeometryTransportPullUnit_app_isIso and exactGeometryTransportPullCounit_app_isIso"
+      - "functorial mapIso preserves the unit, endpoint, and generated-mate isomorphisms"
+      - "the public five-factor hom formula is used to multiply the five coefficient identities"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: bridge laws 5, mate composite 10, coefficient laws 13 declarations; standard axioms only"
+    - "targeted module builds for all three Cycle 8 modules: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "construct the exact-image cleavage comparison and mates-coherence alignment from G-114 to G-116, then prove the final barAlpha projection square"
 ```
