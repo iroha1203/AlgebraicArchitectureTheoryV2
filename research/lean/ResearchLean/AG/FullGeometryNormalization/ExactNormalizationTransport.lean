@@ -7,8 +7,8 @@ import ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorAdmissibleFibe
 
 This module establishes the object-level part of G-122(B3): canonical
 normalization admissibility is generated at the endpoints of the actual
-complete-geometry push and pull functors.  No target admissibility proof is
-accepted from the caller.
+complete-geometry push and pull functors.  No opposite-endpoint admissibility
+proof is accepted from the caller.
 -/
 
 namespace AAT.AG.FullGeometryNormalization
@@ -205,6 +205,8 @@ noncomputable def exactGeometryPullAdmissibleFunctor
     (fun target ↦ canonicalGeometryNormalizationAdmissible_exactPull
       input target.obj target.property)
 
+/-- Forgetting the restricted push object normalizes to the object produced
+by the underlying exact complete-geometry transport functor. -/
 @[simp]
 theorem exactGeometryTransportAdmissibleFunctor_obj_obj
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -215,6 +217,8 @@ theorem exactGeometryTransportAdmissibleFunctor_obj_obj
       (geomFiberTransportFunctor input.semantic.hom).obj source.obj :=
   rfl
 
+/-- Forgetting the restricted pull object normalizes to the object produced
+by the underlying exact complete-geometry pull functor. -/
 @[simp]
 theorem exactGeometryPullAdmissibleFunctor_obj_obj
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -225,6 +229,8 @@ theorem exactGeometryPullAdmissibleFunctor_obj_obj
       (exactGeometryPullFunctor input).obj target.obj :=
   rfl
 
+/-- Forgetting a restricted push map normalizes to the map produced by the
+underlying exact complete-geometry transport functor. -/
 @[simp]
 theorem exactGeometryTransportAdmissibleFunctor_map_hom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
@@ -235,6 +241,8 @@ theorem exactGeometryTransportAdmissibleFunctor_map_hom
       (geomFiberTransportFunctor input.semantic.hom).map hom.hom :=
   rfl
 
+/-- Forgetting a restricted pull map normalizes to the map produced by the
+underlying exact complete-geometry pull functor. -/
 @[simp]
 theorem exactGeometryPullAdmissibleFunctor_map_hom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
