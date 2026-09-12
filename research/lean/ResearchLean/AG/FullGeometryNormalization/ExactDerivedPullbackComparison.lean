@@ -38,6 +38,7 @@ noncomputable def authoredExactPulledComparison
     (authoredExactRefinementBCCompatibleSource A)
     (authoredExactRefinementBC_exactImage A)
 
+/-- The generated refined source point is the original southwest point. -/
 theorem authoredExactRefinementBCSourcePoint_eq
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -49,6 +50,7 @@ theorem authoredExactRefinementBCSourcePoint_eq
   cases realization_eq
   rfl
 
+/-- The generated second point is the original northeast point. -/
 theorem authoredExactRefinementBCSecondPoint_eq
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -60,6 +62,7 @@ theorem authoredExactRefinementBCSecondPoint_eq
   cases realization_eq
   rfl
 
+/-- The generated bottom point is the original southeast point. -/
 theorem authoredExactRefinementBCBottomPoint_eq
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -75,6 +78,7 @@ theorem authoredExactRefinementBCBottomPoint_eq
   · apply heq_of_eq
     exact (toSemanticBC presentation).square.bottom.source_eq
 
+/-- First leg of the generated mixed cone, retargeted to the original southwest point. -/
 noncomputable def authoredExactMixedFst
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -84,6 +88,7 @@ noncomputable def authoredExactMixedFst
   (authoredExactPointedRefinementBCConfiguration A).pulledFst ≫
     eqToHom (authoredExactRefinementBCSourcePoint_eq A)
 
+/-- Second leg of the generated mixed cone, using the exact horizontal comparison. -/
 noncomputable def authoredExactMixedSnd
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -96,6 +101,7 @@ noncomputable def authoredExactMixedSnd
       (authoredExactPointedRefinementBCConfiguration A).sigmaTwo ≫
     eqToHom (authoredExactRefinementBCSecondPoint_eq A)
 
+/-- First leg of the generated exact target cone, retargeted to southeast. -/
 noncomputable def authoredExactTargetFst
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -105,6 +111,7 @@ noncomputable def authoredExactTargetFst
   (authoredExactPointedRefinementBCConfiguration A).pullbackFst ≫
     eqToHom (authoredExactRefinementBCTargetPoint_eq A)
 
+/-- Second leg of the generated exact target cone, retargeted to northeast. -/
 noncomputable def authoredExactTargetSnd
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -208,6 +215,7 @@ noncomputable def authoredExactTargetFirstIso
       intro atom
       rfl
 
+/-- Universal pointed pullback comparison from the mixed source to original northwest. -/
 noncomputable def authoredExactPullbackSourceIso
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -219,6 +227,7 @@ noncomputable def authoredExactPullbackSourceIso
     A.context.square.semantic.square.northeast
     (authoredExactOriginalSquare_isPullback A)
 
+/-- Canonical comparison from the generated exact target pullback to northeast. -/
 noncomputable def authoredExactPullbackTargetIso
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -233,6 +242,7 @@ noncomputable def authoredExactPullbackTargetIso
   exact asIso (pointedPullbackSnd C.sigmaOne C.sigmaTwo) ≪≫
     eqToIso (authoredExactRefinementBCSecondPoint_eq A)
 
+/-- The source comparison recovers the original left leg. -/
 theorem authoredExactPullbackSourceIso_hom_left
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -241,6 +251,7 @@ theorem authoredExactPullbackSourceIso_hom_left
   (authoredExactMixedSource_isPullback A).isoIsPullback_hom_fst
     _ _ (authoredExactOriginalSquare_isPullback A)
 
+/-- The source comparison recovers the generated mixed second leg along top. -/
 theorem authoredExactPullbackSourceIso_hom_top
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :
@@ -249,6 +260,7 @@ theorem authoredExactPullbackSourceIso_hom_top
   (authoredExactMixedSource_isPullback A).isoIsPullback_hom_snd
     _ _ (authoredExactOriginalSquare_isPullback A)
 
+/-- The target comparison is the generated target second projection. -/
 theorem authoredExactPullbackTargetIso_hom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (A : AuthoredBCDatumSquare U) :

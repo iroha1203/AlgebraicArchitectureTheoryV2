@@ -13,7 +13,7 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
 - current proof obligation: Cycle 3 review and acceptance of the exact-derived G-118 input and pointed pullback comparisons
-- pending proof obligations: B2 generated mate/endpoints and mate equality, B3--D
+- pending proof obligations: B2 generated mate/endpoints, cleavage comparisons, and mate equality, B3--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: B2 complete endpoint geometries, generated mate, and G-116 mate identification
@@ -389,7 +389,7 @@ selection:
     - "identifying only doctrine objects while dropping selected sources"
     - "treating the mixed exact comparison as definitionally identical to a pointed pullback projection"
   unchecked:
-    - "B2b four complete endpoint geometries, unit/counit endpoint isomorphisms, generated complete mate, and G-116 canonical-mate equality"
+    - "B2b four complete endpoint geometries, pullback/cleavage comparison isomorphisms, unit/counit endpoint isomorphisms, generated complete mate, and G-116 canonical-mate equality"
     - "B3 exact-transport preservation of admissibility and canonical normalization"
     - "C--D construction obligations"
 result:
@@ -439,7 +439,7 @@ audits:
       - "B2 exact-derived configuration, compatible source, active condition, target package, and compatible local G-118 input"
       - "B2 selected-point source and target pullback comparisons"
     remaining:
-      - "B2 complete endpoint geometries, generated mate composite, and G-116 mate identification"
+      - "B2 complete endpoint geometries, pullback/cleavage comparisons, generated mate composite, and G-116 mate identification"
       - "B3--D construction obligations"
   certificate_provenance:
     discharged:
@@ -465,5 +465,5 @@ audits:
     - "focused ExactDerivedPullbackComparison: 19 declarations, standard axioms only"
     - "targeted module builds for both modules: pass; no Research aggregate/full build"
   blocking_findings: []
-  next_obligation: "B2b: construct G_z,H_z,B_z,T_z and a_z,b_z, push the generated G-118 mate, and prove the resulting complete comparison projects to and agrees with the G-116 canonical mate"
+  next_obligation: "B2b: construct G_z,H_z,B_z,T_z, the required pullback/cleavage comparison isomorphisms, and a_z,b_z; push the generated G-118 mate; and prove the resulting complete comparison projects to and agrees with the G-116 canonical mate"
 ```
