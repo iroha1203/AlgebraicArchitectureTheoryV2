@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 3 review and acceptance of the exact-derived G-118 input and pointed pullback comparisons
-- pending proof obligations: B2 generated mate/endpoints, cleavage comparisons, and mate equality, B3--D
+- current proof obligation: Cycle 4 review and acceptance of the complete endpoint and generated-mate spine
+- pending proof obligations: B2 direct-to-generated cleavage bridges, a_z, b_z, and G-116 mate equality, B3 normalization commutation, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B2 complete endpoint geometries, generated mate, and G-116 mate identification
+- next proof obligation: B2 direct-to-generated complete cleavage bridges and the a_z/b_z composite
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -466,4 +466,122 @@ audits:
     - "targeted module builds for both modules: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "B2b: construct G_z,H_z,B_z,T_z, the required pullback/cleavage comparison isomorphisms, and a_z,b_z; push the generated G-118 mate; and prove the resulting complete comparison projects to and agrees with the G-116 canonical mate"
+```
+
+### Cycle 3 review record
+
+- Initial review head `b7a2e48b4ca31086dd39827f89044a5d267b0d08`: Math A/B
+  returned no findings. Lean A/B found no central issue and requested declaration
+  docstrings; Lean A also required the report to name the still-open cleavage comparison.
+- Direct response head `5075b42cb` added docstrings and restored the missing open
+  obligation without changing any declaration signature or proof. Lean B then found the
+  first docstrings too terse to expose provenance.
+- Final repair head `3ddc3a8fec4b2790ff898fcf0a07be9bfb95a0c3` made the
+  selected-point, realization, exact-image, and pullback-universality provenance explicit.
+  Both Lean lanes confirmed the findings resolved. No findings remained.
+- Standard review comment, all seven CI checks, root acceptance, and merge completed in
+  PR #4489. The accepted merge commit is
+  `c5badb9d7c317d4b384c77c8988f0283639f02c4`.
+- Review result: fixed target B2a is `proof-obligation-discharged`; G-122 remains
+  `target-proof-checkpoint` because B2b--D remain.
+
+## Cycle 4 — Complete endpoints and the generated-mate spine
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 4
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: c5badb9d7c317d4b384c77c8988f0283639f02c4
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 3 merge c5badb9d7c317d4b384c77c8988f0283639f02c4; complete endpoints and typed generated mate unconstructed"
+  proof_obligation: "B2b1: construct G_z,H_z,B_z,T_z from the realized exact edges; place the actual G-118 mate in the generated fiber, transport it to NW, and push it along the original top edge; retain coefficient and invertibility evidence; expose the unit/counit core projection and G-116 support endpoint comparisons"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting four RealizableHom values or endpoint geometries from the caller"
+    - "wrapping a bare total geometry morphism without proving verticality"
+    - "claiming G-116 mate equality before direct-to-generated cleavage bridges exist"
+    - "using point casts as complete-geometry endpoint isomorphisms"
+  unchecked:
+    - "B2b2 direct B_z/T_z to generated-route complete cleavage isomorphisms, a_z, b_z, barAlpha, and the G-116 mate commuting square"
+    - "B3 normalization commutation and barAlpha naturality"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Recovered all four exact edge inputs from finite realization provenance; constructed G_z,H_z,B_z,T_z in their actual geometry fibers; wrapped the existing G-118 generated mate as a vertical fiber morphism, transported it through the proved source pullback iso to NW, pushed it along the original top edge, and proved IsIso and coefficient identity at all three stages; proved generic unit/counit projection equations and identified the projected complete endpoints with G-116's authored support routes. Also exposed the genuine canonical-authored-to-generated exact endpoint isos in the mixed and NW fibers, while leaving the still-missing direct B_z/T_z cleavage bridges explicit."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedEndpointGeometry.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedGeneratedMate.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedCleavageComparison.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryAdjunctionProjection.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedSupportCoreEndpoints.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactViaBaseGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateSourceGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTargetGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateInMixedFiberAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTopPushAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTopPushAt_isIso
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTopPushAt_coefficient_id
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullUnit_projection
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullCounit_projection
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectSupportCoreIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactViaBaseSupportCoreIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBaseToGeneratedNorthwestIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalPulledToGeneratedNorthwestIsoAt
+  claim_mapping:
+    source_labels:
+      - "fixed target B: G_z,H_z,B_z,T_z and the generated-mate spine before the B_z/T_z identifications"
+      - "fixed target B: generated-spine mate invertibility and coefficient identity"
+      - "fixed target B: projection through unit/counit and endpoint comparison to G-116 routes"
+    conjuncts:
+      - "edge RealizableHom inputs are reconstructed from A.context.square.presentation and realization_eq"
+      - "the mate is exactly generatedCompatibleUpperGeometryMateAt at the one-cell input, not a supplied comparison"
+      - "verticality is derived from the generated core lift and endpoint incidence"
+      - "source transport uses authoredExactPullbackSourceIso and top push uses the original square top edge"
+      - "invertibility is inherited from G-118 and preserved functorially; every displayed mate coefficient map is RingHom.id k"
+      - "unit/counit projection equations are proved by strong Cartesian/Cocartesian uniqueness"
+      - "support endpoint isos use only realization provenance and the Cycle 2 projection isos"
+    undischarged_assumptions: []
+    acceptance_point: "Only A,z,k,g_z are inputs. No endpoint geometry, mate, IsIso proof, coefficient equation, or core projection equation is accepted from the caller. This cycle does not claim the direct B_z/T_z cleavage bridges or the final G-116 mate equality."
+audits:
+  premise_delta:
+    discharged:
+      - "B2 four complete endpoint geometries and their coefficient objects"
+      - "B2 actual generated complete mate in the mixed fiber, NW transport, and top push"
+      - "B2 generated-mate invertibility and coefficient identity"
+      - "B2 unit/counit core projection equations and G-116 support endpoint identification"
+    remaining:
+      - "B2 direct B_z/T_z to canonical-authored route comparisons, a_z, b_z, barAlpha, and G-116 mate equality"
+      - "B3--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "edge inputs come from the authored square finite presentation"
+      - "the mixed-fiber mate and its IsIso instance come from the accepted G-118 generated comparison"
+      - "the source endpoint transport comes from the Cycle 3 universal pullback iso"
+      - "unit/counit projection equations come from the actual complete and core universal lifts"
+    unresolved:
+      - "direct exact iterated-pull route legs must be compared with canonical-authored route legs before complete B_z/T_z bridge isos can be formed"
+  proof_use:
+    used:
+      - "Cycle 2 exact pull and canonical push construct every endpoint and map"
+      - "Cycle 3 exact-derived G-118 input supplies the actual generated mate and source pullback iso"
+      - "G-118 generatedCompatibleUpperGeometryMateAt_isIso supplies genuine invertibility"
+      - "G-116 authoredSupportCanonicalMate routes determine the final projected endpoint types"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: ExactDerivedEndpointGeometry 16, ExactDerivedGeneratedMate 13, ExactDerivedCleavageComparison 12, ExactGeometryAdjunctionProjection 2, ExactDerivedSupportCoreEndpoints 2 declarations; standard axioms only"
+    - "targeted module builds: ExactDerivedEndpointGeometry, ExactDerivedGeneratedMate, ExactDerivedCleavageComparison, ExactGeometryAdjunctionProjection, ExactDerivedSupportCoreEndpoints: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "B2b2: prove the two direct-to-canonical-authored complete route isos, construct a_z and b_z, form barAlpha, and prove its projection commuting square with authoredSupportCanonicalMate"
 ```
