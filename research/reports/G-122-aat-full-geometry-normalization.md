@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 9 review and acceptance of the G-114/G-116 mate alignment and final barAlpha projection equality
-- pending proof obligations: B3 operation-map commutation and barAlpha naturality, C--D
+- current proof obligation: Cycle 10 review and acceptance of exact push/pull normalization transport and barAlpha naturality
+- pending proof obligations: C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove exact push/pull normalization transport, generate endpoint admissibility from the source datum, and prove barAlpha naturality
+- next proof obligation: construct the complete selected projector, its barAlpha conjugate and factor, and connect their projections to the existing G-116 comparison
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1080,4 +1080,89 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactDerivedBarAlphaProjection: 4186/4186 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "B3: prove exact push/pull normalization transport from one source admissibility proof, generate endpoint admissibility internally, and prove n_H barAlpha = barAlpha n_G"
+```
+
+## Cycle 10 — Exact normalization transport and barAlpha naturality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 10
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 9c97eebca9e6df8110ba7dbeb4724e146a61b9b4
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 9 merge 9c97eebca9e6df8110ba7dbeb4724e146a61b9b4; barAlpha and its G-116 projection were proved, while morphism-level normalization transport and barAlpha naturality remained"
+  proof_obligation: "B3: generate target endpoint admissibility from one source admissibility proof; prove the actual exact push and pull functors map canonical normalization to canonical normalization; and prove n_H barAlpha = barAlpha n_G as an equality in the complete-geometry fiber"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "assuming opposite-endpoint admissibility or operation-map coherence"
+    - "using the universal naturality statement refuted by G-117 instead of the actual exact transport maps"
+    - "proving only projected core equality rather than full complete-geometry fiber equality"
+    - "accepting barAlpha naturality as an input instead of deriving it from the Cycle 9 triangle"
+  unchecked:
+    - "C complete selected projector, conjugate, beta, Karoubi image, classification, and fixed finite witness"
+    - "D centralizer and canonical-normalization restriction theorems, sections, kernels, reflection classification, and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Generated dependent operation coherence for the concrete forward and inverse-core exact maps; lifted the resulting core naturality to complete geometry; proved that the actual exact push and pull functors carry the canonical fiber normalization to the internally generated endpoint normalization; generated both authored northeast endpoint admissibility proofs from the southwest input; moved normalization around the actual left/top/bottom/right exact square using the Cycle 9 barAlpha triangle; and cancelled the right Cartesian and top cocartesian lifts to obtain the full fiber equality."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactNormalizationNaturality.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaNormalizationNaturality.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.transportAlongHom_normalization_operationCoherent
+    - AAT.AG.FullGeometryNormalization.inverseCorePackageHom_normalization_operationCoherent
+    - AAT.AG.FullGeometryNormalization.geomFiberTransportFunctor_map_normalization
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullFunctor_map_normalization
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectGeometryAt_admissible
+    - AAT.AG.FullGeometryNormalization.authoredExactViaBaseGeometryAt_admissible
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_normalization_whiskered
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_normalization_natural
+  claim_mapping:
+    source_labels:
+      - "fixed target B: exact transport preserves admissibility from P_z"
+      - "fixed target B: h_!(n_G)=n_{h_!G} and h^*(n_H)=n_{h^*H}"
+      - "fixed target B: n_{H_z} barAlpha_z = barAlpha_z n_{G_z}"
+    conjuncts:
+      - "forward exact transport and inverse-core pullback generate their operation-map coherence internally"
+      - "the literal exact push and pull functor maps carry canonical normalization to the generated endpoint normalization"
+      - "direct and via-base endpoint admissibility are derived from the single southwest admissibility proof"
+      - "barAlpha naturality is an equality of GeomFiber morphisms after strong-lift cancellation"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A, z, k, g and canonical admissibility of the authored southwest support package. Endpoint admissibility, operation coherence, lift factorizations, and barAlpha naturality are constructed internally."
+audits:
+  premise_delta:
+    discharged:
+      - "actual exact push normalization transport"
+      - "actual exact pull normalization transport"
+      - "authored direct and via-base endpoint admissibility from one source proof"
+      - "full-fiber barAlpha normalization naturality"
+    remaining:
+      - "C--D"
+  certificate_provenance:
+    discharged:
+      - "forward coherence is computed from transportOperation and dependent casts"
+      - "pull coherence is computed from inverseCorePackageHom and its canonical admissibility transport"
+      - "barAlpha equality uses the proved Cycle 9 triangle and actual strong Cartesian/cocartesian lift instances"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalObjectNormalizationTotal_natural_of_operationCoherent for both concrete core maps"
+      - "geomFiberTransportMap_fac and exactGeometryPullMap_fac through the actual functor-map equations"
+      - "authoredExactBarAlphaIsoAt_triangle after four endpoint normalization transport equations"
+      - "strong Cartesian right-lift and strong cocartesian top-lift uniqueness to cancel both outer factors"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "canonical focused checks from research-modules.txt: ExactNormalizationNaturality 13 and ExactBarAlphaNormalizationNaturality 12 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaNormalizationNaturality: 4198/4198 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "C: construct barD, barE, and barBeta from the same selector; prove idempotence, factorization, Karoubi isomorphism, and the G-116/G-119 projection equalities"
 ```
