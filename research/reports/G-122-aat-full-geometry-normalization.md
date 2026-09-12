@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 4 review and acceptance of the complete endpoint and generated-mate spine
-- pending proof obligations: B2 direct-to-generated cleavage bridges, a_z, b_z, and G-116 mate equality, B3 normalization commutation, C--D
+- current proof obligation: Cycle 5 review and acceptance of exact push/pull preservation of normalization admissibility
+- pending proof obligations: B2 direct-to-generated cleavage bridges, a_z, b_z, and G-116 mate equality, B3 operation-map commutation and barAlpha naturality, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B2 direct-to-generated complete cleavage bridges and the a_z/b_z composite
+- next proof obligation: B2 direct-to-generated complete cleavage bridges and the a_z/b_z composite, followed by B3 operation-map commutation
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -584,4 +584,105 @@ audits:
     - "targeted module builds: ExactDerivedEndpointGeometry, ExactDerivedGeneratedMate, ExactDerivedCleavageComparison, ExactGeometryAdjunctionProjection, ExactDerivedSupportCoreEndpoints: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "B2b2: prove the two direct-to-canonical-authored complete route isos, construct a_z and b_z, form barAlpha, and prove its projection commuting square with authoredSupportCanonicalMate"
+```
+
+### Cycle 4 review record
+
+- Initial review head `2298ce57aa9fd65134f66eae9237e4aa341c27c3`:
+  Math B and Lean A returned no findings. Math A required two report labels to
+  distinguish the generated mate spine from the still-unconstructed direct
+  `B_z ⟶ T_z` comparison. Lean B required four coefficient simp-theorem
+  docstrings to state their normal-form direction.
+- Direct response head `31029353d2e68ee39df6f287df5f6f8e40460621`
+  changed only those report labels and docstrings. Independent confirmation
+  found both noncentral findings resolved and no new finding.
+- Standard review comment, all seven CI checks, root acceptance, and merge
+  completed in PR #4490. The accepted merge commit is
+  `3c21d6a78a1d1048a2d82172965f48a45a745f7b`.
+- Review result: fixed target B2b1 is `proof-obligation-discharged`; G-122
+  remains `target-proof-checkpoint` because B2b2, the rest of B3, C, and D
+  remain.
+
+## Cycle 5 — Exact transport restricted to normalization-admissible fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 5
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 3c21d6a78a1d1048a2d82172965f48a45a745f7b
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 4 merge 3c21d6a78a1d1048a2d82172965f48a45a745f7b; B3 endpoint admissibility preservation and restricted exact functors unconstructed"
+  proof_obligation: "B3a: derive canonical normalization admissibility after the actual exact complete-geometry push and pull operations, including the inverse-core pullback direction, and restrict both functors to the resulting full subcategories without accepting target admissibility from the caller"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting preservation of target admissibility as a caller premise"
+    - "restricting only the projected core functor instead of the actual complete-geometry push and pull functors"
+    - "claiming equality of normalization morphisms from preservation of admissibility alone"
+    - "claiming barAlpha naturality before B2b2 constructs barAlpha"
+  unchecked:
+    - "B2b2 direct B_z/T_z route isomorphisms, a_z, b_z, barAlpha, and G-116 mate equality"
+    - "B3 equations h_!(n_G)=n_{h_!G} and h^*(n_H)=n_{h^*H}"
+    - "B3 normalization naturality n_H barAlpha = barAlpha n_G"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved that canonical normalization admissibility is preserved by the actual complete-geometry transport functor and by exact pullback through its inverse-core package; derived the inverse-core operation, equation-residual, invariant, and coordinate obligations; and restricted both actual exact functors to full subcategories of admissible endpoint geometries. This cycle proves object membership and functor restriction only, not equality of normalization morphisms."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactNormalizationTransport.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.canonicalGeometryNormalizationAdmissible_exactTransport
+    - AAT.AG.FullGeometryNormalization.transportArchitectureObject_forward_canonicalObjectNormalization_inverseCore
+    - AAT.AG.FullGeometryNormalization.equationResidualConfigurationInvariant_inverseCorePackage
+    - AAT.AG.FullGeometryNormalization.canonicalObjectNormalizationAdmissible_inverseCorePackage
+    - AAT.AG.FullGeometryNormalization.canonicalGeometryNormalizationAdmissible_exactPull
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationAdmissibleGeomFiberProperty
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportAdmissibleFunctor
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullAdmissibleFunctor
+  claim_mapping:
+    source_labels:
+      - "fixed target B: the complete-geometry transport operations preserve the admissible locus on which canonical normalization is available"
+    conjuncts:
+      - "forward preservation uses G-117's transportAlong admissibility theorem on the actual geomFiberTransportFunctor core"
+      - "pullback preservation is proved for the actual inverseCorePackage generated by exactGeometryPull"
+      - "both restrictions retain the complete GeomFiber objects and maps through full-subcategory lifts"
+      - "object and map projection lemmas expose definitional agreement with the original exact functors"
+    undischarged_assumptions:
+      - "source or target endpoint admissibility remains the intended domain condition; preservation at the opposite endpoint is generated internally"
+    acceptance_point: "The inputs are an actual RealizableHom, an endpoint GeomFiber object, and admissibility at that endpoint. No opposite-endpoint admissibility proof, restricted functor, or inverse-core coherence proof is accepted from the caller."
+audits:
+  premise_delta:
+    discharged:
+      - "B3 admissibility preservation under actual exact complete-geometry push"
+      - "B3 admissibility preservation under actual exact complete-geometry pull"
+      - "B3 construction of the restricted exact push and pull functors"
+    remaining:
+      - "B2b2 direct comparison and mate-identification obligations"
+      - "B3 operation-map normalization commutation and barAlpha naturality"
+      - "C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "forward membership is generated from canonicalObjectNormalizationAdmissible_transportAlong"
+      - "pullback membership is generated from the explicit inverseCorePackage reading and exactGeometryPull_core"
+    unresolved: []
+  proof_use:
+    used:
+      - "the actual core of geomFiberTransportFunctor is transportAlong"
+      - "the actual core of exactGeometryPull is inverseCorePackage"
+      - "all five fields of CanonicalObjectNormalizationAdmissible are rebuilt for inverse-core reindexing"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused ExactNormalizationTransport check: 13 declarations, standard axioms only"
+    - "targeted ExactNormalizationTransport module build: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "B2b2 complete route bridges and barAlpha, then B3 operation-map normalization commutation and barAlpha naturality"
 ```
