@@ -81,6 +81,8 @@ noncomputable def canonicalGeometryNormalization
   base := canonicalObjectNormalizationTotal G.core admissible
   geometry := canonicalGeometryNormalizationReadHom G admissible
 
+/-- Normalization rule: the core component is the existing canonical object
+normalization. -/
 @[simp]
 theorem canonicalGeometryNormalization_base
     {U : AtomCarrier.{u}} (G : GeomReadCategory.{u, v} U)
@@ -89,6 +91,8 @@ theorem canonicalGeometryNormalization_base
       canonicalObjectNormalizationTotal G.core admissible :=
   rfl
 
+/-- Normalization rule: canonical geometry normalization fixes the coefficient
+ring. -/
 @[simp]
 theorem canonicalGeometryNormalization_coefficientHom
     {U : AtomCarrier.{u}} (G : GeomReadCategory.{u, v} U)
@@ -97,6 +101,7 @@ theorem canonicalGeometryNormalization_coefficientHom
       RingHom.id G.Coefficient :=
   rfl
 
+/-- Normalization rule: local Support realizations are retained identically. -/
 @[simp]
 theorem canonicalGeometryNormalization_supportComp
     {U : AtomCarrier.{u}} (G : GeomReadCategory.{u, v} U)
@@ -106,6 +111,7 @@ theorem canonicalGeometryNormalization_supportComp
       support :=
   rfl
 
+/-- Normalization rule: local Axis realizations are retained identically. -/
 @[simp]
 theorem canonicalGeometryNormalization_axisComp
     {U : AtomCarrier.{u}} (G : GeomReadCategory.{u, v} U)
@@ -114,6 +120,8 @@ theorem canonicalGeometryNormalization_axisComp
     (canonicalGeometryNormalization G admissible).geometry.axisComp W axis = axis :=
   rfl
 
+/-- Normalization rule: local Observable realizations are retained
+identically. -/
 @[simp]
 theorem canonicalGeometryNormalization_observableComp
     {U : AtomCarrier.{u}} (G : GeomReadCategory.{u, v} U)
@@ -181,6 +189,8 @@ noncomputable def canonicalAdmissibleGeometryNormalization
     (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U) : G ⟶ G :=
   ObjectProperty.homMk (canonicalGeometryNormalization G.obj G.property)
 
+/-- Normalization rule: the admissible-subcategory morphism retains the
+complete normalization constructed above. -/
 @[simp]
 theorem canonicalAdmissibleGeometryNormalization_hom
     {U : AtomCarrier.{u}}
@@ -263,12 +273,16 @@ noncomputable instance normalizedGeometryCategory (U : AtomCarrier.{u}) :
   comp_id := by simp
   assoc := by simp
 
+/-- Normalization rule: the identity of a labelled normalized geometry is its
+canonical idempotent. -/
 @[simp]
 theorem normalizedGeometryCategory_id_f
     {U : AtomCarrier.{u}} (G : NormalizedGeometryObject.{u, v} U) :
     (𝟙 G : G ⟶ G).f = canonicalAdmissibleGeometryNormalization G.obj :=
   rfl
 
+/-- Normalization rule: normalized-geometry composition retains the composite
+of the underlying sandwich arrows. -/
 @[simp]
 theorem normalizedGeometryCategory_comp_f
     {U : AtomCarrier.{u}}
@@ -294,10 +308,14 @@ noncomputable def normalizedGeometryKaroubiFunctor (U : AtomCarrier.{u}) :
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- The Karoubi comparison is faithful because it retains every sandwich
+arrow. -/
 instance normalizedGeometryKaroubiFunctor_faithful (U : AtomCarrier.{u}) :
     (normalizedGeometryKaroubiFunctor.{u, v} U).Faithful where
   map_injective h := h
 
+/-- The Karoubi comparison is full because its source Hom is the same
+sandwich Hom. -/
 instance normalizedGeometryKaroubiFunctor_full (U : AtomCarrier.{u}) :
     (normalizedGeometryKaroubiFunctor.{u, v} U).Full where
   map_surjective f := ⟨f, rfl⟩
@@ -333,6 +351,7 @@ noncomputable def geometryNormalizationFunctor (U : AtomCarrier.{u}) :
       (fun h => h ≫ g)
       (canonicalAdmissibleGeometryNormalization_absorption f).symm
 
+/-- Normalization rule: `N_geom` preserves the complete-geometry label. -/
 @[simp]
 theorem geometryNormalizationFunctor_obj_obj
     {U : AtomCarrier.{u}}
@@ -340,6 +359,8 @@ theorem geometryNormalizationFunctor_obj_obj
     ((geometryNormalizationFunctor.{u, v} U).obj G).obj = G :=
   rfl
 
+/-- Normalization rule: the underlying arrow of `N_geom(f)` is source
+normalization followed by `f`. -/
 @[simp]
 theorem geometryNormalizationFunctor_map_f
     {U : AtomCarrier.{u}}
