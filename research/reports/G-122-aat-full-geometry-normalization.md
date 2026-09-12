@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 8 review and acceptance of a_z, b_z, the five-factor barAlpha, and its coefficient identity
-- pending proof obligations: B2 G-114/G-116 mate alignment and final projection equality, B3 operation-map commutation and barAlpha naturality, C--D
+- current proof obligation: Cycle 9 review and acceptance of the G-114/G-116 mate alignment and final barAlpha projection equality
+- pending proof obligations: B3 operation-map commutation and barAlpha naturality, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the exact-image cleavage and mates-coherence alignment between the generated G-114 mate and the G-116 canonical mate, then prove the final barAlpha projection equality
+- next proof obligation: prove exact push/pull normalization transport, generate endpoint admissibility from the source datum, and prove barAlpha naturality
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -997,4 +997,87 @@ audits:
     - "targeted module builds for all three Cycle 8 modules: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "construct the exact-image cleavage comparison and mates-coherence alignment from G-114 to G-116, then prove the final barAlpha projection square"
+```
+
+## Cycle 9 — Exact mate alignment and final core projection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 9
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: a2db776adf104874e51b69ed8f4a16ebc34bd114
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 8 merge a2db776adf104874e51b69ed8f4a16ebc34bd114; barAlpha and its coefficient identity were available but its G-116 projection equality was not"
+  proof_obligation: "B2d: transport the actual generated G-118 mate through the exact-derived endpoint comparisons, prove the resulting full-geometry barAlpha triangle, identify the independently generated G-116 canonical core mate by its selected Cartesian factorization, and prove the endpoint-conjugated core projection equality"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "treating the generated G-118 mate and G-116 canonical mate as definitionally equal"
+    - "accepting a mate-coherence or endpoint projection equation from the caller"
+    - "using object equality in place of the constructed support-core endpoint isomorphisms"
+    - "claiming G-122 completion while B3 and C--D remain"
+  unchecked:
+    - "B3 exact push/pull normalization transport and barAlpha naturality"
+    - "C complete selected projector, conjugate, beta, Karoubi image, classification, and witness"
+    - "D centralizer and canonical normalization restriction theorems and witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Moved the actual G-118 mate through the realization-generated exact endpoint comparisons and proved its direct endpoint triangle; expanded the five-factor barAlpha through the exact unit, generated mate, and counit to prove the complete semantic square triangle; derived the G-116 canonical mate's selected-right-lift factorization from its generated adjunction; normalized the presentation-built covariant square through the semantic square; and used strong Cartesian and cocartesian uniqueness to prove the final endpoint-conjugated core projection equality."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedMateProjectionTriangle.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaTriangle.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaProjection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectEndpointMate_triangle
+    - AAT.AG.FullGeometryNormalization.coreBeckChevalleyMate_app_selectedLift_fac
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_triangle
+    - AAT.AG.FullGeometryNormalization.coreBeckChevalleyMate_app_iterated_fac
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaIsoAt_projection
+  claim_mapping:
+    source_labels:
+      - "fixed target B: barAlpha_z = b_z (pi_2)_!(m_z) a_z"
+      - "fixed target B: rho(barAlpha_z)=alpha_z along the generated endpoint comparisons"
+      - "fixed target B: equality with the independently generated G-116 canonical mate"
+    conjuncts:
+      - "the exact unit-mate-counit composite satisfies the literal complete-geometry square triangle"
+      - "the selected core canonical mate satisfies the corresponding presentation-independent iterated-lift triangle"
+      - "the core projection equality is stated along authoredExactDirectSupportCoreIsoAt and authoredExactViaBaseSupportCoreIsoAt"
+    undischarged_assumptions: []
+    acceptance_point: "Only A, z, k, and g are inputs. Mate alignment, endpoint comparisons, realization normalization, selected lift factorizations, and the projection equality are generated internally from accepted structures."
+audits:
+  premise_delta:
+    discharged:
+      - "G-114 exact-image generated mate to direct exact endpoints"
+      - "G-116 canonical mate selected-lift characterization"
+      - "rho(barAlpha_z)=alpha_z along the constructed support-core endpoint isomorphisms"
+    remaining:
+      - "B3 normalization transport and barAlpha naturality"
+      - "C--D"
+  certificate_provenance:
+    discharged:
+      - "the full mate triangle uses the exact unit/counit factor laws and the actual generated G-118 mate"
+      - "the core mate factorization uses coreBeckChevalleyMate_homEquiv and the selected G-116 adjunction"
+      - "presentation dependence is removed through BCRealizationProvenance and the semantic square comparison factor law"
+    unresolved: []
+  proof_use:
+    used:
+      - "authoredExactDirectEndpointMate_triangle in the five-factor barAlpha triangle"
+      - "authoredExactBarAlphaIsoAt_triangle after geometryProjection"
+      - "coreBeckChevalleyMate_app_selectedLift_fac, bcSemanticCoreTransportSquareIso_hom_fac, and the left counit factor law"
+      - "strong Cartesian and cocartesian uniqueness for the final projected equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "canonical focused checks from research-modules.txt: mate projection triangle 6, barAlpha triangle 2, final projection 25 generated declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactDerivedBarAlphaProjection: 4186/4186 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "B3: prove exact push/pull normalization transport from one source admissibility proof, generate endpoint admissibility internally, and prove n_H barAlpha = barAlpha n_G"
 ```
