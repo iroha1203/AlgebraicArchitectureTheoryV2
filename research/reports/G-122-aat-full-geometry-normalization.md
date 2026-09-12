@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 16 review and acceptance of the exact-core normalization section constructor
-- pending proof obligations: D exact/geometry section homomorphism laws, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 17 review and acceptance of exact-core section identity and composition laws
+- pending proof obligations: D exact-core sandwich-section law, complete-geometry section, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove identity/composition and sandwich-section laws for the exact-core lift, extend it to complete geometry, and assemble the comparison-group section
+- next proof obligation: prove the exact-core normalization-sandwich section identity, extend the section to complete geometry, and assemble the comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1687,4 +1687,85 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSection: 4069/4069 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: prove exact-core identity/composition and sandwich-section laws, then lift the constructor and laws to complete geometry"
+```
+
+## Cycle 17 — Exact-core section identity and composition laws
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 17
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 2a4fe28269533b4d2a5c0ba9bdb05bf60e105578
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 16 merge 2a4fe28269533b4d2a5c0ba9bdb05bf60e105578; the exact-core raw lift exists but its identity and composition laws are unproved"
+  proof_obligation: "D exact-core group laws: prove that the constructor sends the normalization Karoubi identity n to the raw identity and preserves composition as equality of complete SignedExactCoreReadingHom structures"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "using the raw identity instead of the idempotent as the Karoubi identity"
+    - "discarding dependent operation maps through an extensionality shortcut"
+    - "assuming f.operationMap ignores its implicit object endpoints"
+    - "replacing cast cancellation by a supplied coherence certificate"
+  unchecked:
+    - "normalization sandwich of the raw section recovers a fixed Karoubi morphism"
+    - "complete-geometry section and endpoint/comparison-group packaging"
+    - "D reflection, canonical/bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved the normalization upper map is stable under triple composition.  Showed that the Cycle 16 section sends this Karoubi identity to SignedExactCoreReadingHom.refl.  For arbitrary f and g, proved strict preservation of composition.  In the dependent operation component, identified each section output with f applied to the normalized source operation; then proved that the first lift's target-denormalization cast cancels the second lift's source-normalization cast.  The remaining change is along actual ArchitectureObject equalities, so g.operationMap transports heterogeneously without assuming endpoint irrelevance."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationCoreSectionLaws.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionOperationMap_heq_normalized
+    - AAT.AG.FullGeometryNormalization.canonicalObjectNormalizationUpper_triple
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionUpper_normalization
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionUpper_comp
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: t_C squared is identity, hence prove the composition law"
+      - "n1013 section 3: prove group laws including casts"
+      - "fixed target D: the endpoint lift must be a group-homomorphic section"
+    conjuncts:
+      - "the Karoubi identity n maps to the raw exact identity"
+      - "successive raw lifts equal the raw lift of f.comp g"
+      - "equality includes equation transport, dependent operation map, invariant index, axis index, and coordinate equivalence"
+      - "dependent operation-map equality uses the actual cancellation route"
+    undischarged_assumptions: []
+    acceptance_point: "No identity law, composition law, endpoint-independence principle, or operation coherence is supplied.  The only inputs are P, its fixed admissibility direction hypothesis, and the two exact endomorphisms."
+audits:
+  premise_delta:
+    discharged:
+      - "exact-core identity law relative to the normalization Karoubi identity"
+      - "exact-core composition law"
+    remaining:
+      - "exact-core sandwich-section identity"
+      - "complete geometry and the remainder of D"
+  certificate_provenance:
+    discharged:
+      - "normalization idempotence is the reviewed canonicalObjectNormalizationUpper_comp theorem"
+      - "object-map composition is the Cycle 15 strict transitivity theorem"
+      - "equation computational fields are compared by the reviewed equation transport extensionality theorem"
+      - "operation cancellation is proved from the actual Cycle 16 cast expression"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalObjectNormalizationUpper_comp"
+      - "canonicalNormalizationSectionObjectMap_refl and trans"
+      - "canonicalNormalizationSectionOperationMap definition and cast cancellation"
+      - "SignedExactCoreReadingHom.ext and equationSystemExactTransport_hext"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationCoreSectionLaws 4 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSectionLaws: 4070/4070 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: prove that normalization sandwich of canonicalNormalizationSectionUpper recovers every normalization-fixed exact endomorphism"
 ```
