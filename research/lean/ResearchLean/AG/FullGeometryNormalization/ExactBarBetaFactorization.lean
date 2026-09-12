@@ -9,6 +9,23 @@ This module proves the first coherent slice of G-122(C).  The target
 projector is obtained by applying the actual bottom exact push and right exact
 pull functors to the source selector.  Its conjugate, comparison, and Karoubi
 isomorphism are then derived from the existing exact `barAlpha`.
+
+## Implementation notes
+
+`authoredExactBarDAt` branches on the literal G-116 selector and maps the
+source normalization through the actual bottom-push/right-pull functors.  This
+keeps the selected complete morphism tied to the fixed presentation and makes
+its later projection and classification statements about that same morphism.
+We reject accepting an endpoint idempotent or endpoint admissibility from the
+caller, and also reject choosing an arbitrary complete lift of the G-116 core
+projector, because either choice would hide the required provenance.
+
+The definitions of `barE`, `barBeta`, and the Karoubi isomorphism are literal
+composites of this `barD` with the already constructed five-factor `barAlpha`.
+We reject replacing them by an existential image object or a freshly chosen
+Karoubi isomorphism: such alternatives would not identify the hom with the
+fixed generated comparison whose core projection and invertibility must be
+classified in the remaining part of G-122(C).
 -/
 
 namespace AAT.AG.FullGeometryNormalization
