@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 12 review and acceptance of the selector and invertibility classification
-- pending proof obligations: C G-116/G-119 Karoubi alignment and fixed witness; D
+- current proof obligation: Cycle 14 review and acceptance of the exact centralizer restriction and `barBeta` preimage
+- pending proof obligations: D endpoint sections, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: connect the complete-geometry Karoubi isomorphism to G-116/G-119 and construct the fixed finite axis-fold witness
+- next proof obligation: construct the complete-geometry endpoint section of the Karoubi sandwich restriction and assemble the comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1439,4 +1439,87 @@ audits:
     - "targeted module builds for both Cycle 13 modules: 4269/4269 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: construct the centralizer ambient homomorphism, its comparison-preserving restriction and group-homomorphic section, and prove the selector reflection preimage classification"
+```
+
+## Cycle 14 — Exact centralizer restriction and the `barBeta` preimage
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 14
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: cb2538422a38094f820b7f5551f882fd8134b8c0
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 13 merge cb2538422a38094f820b7f5551f882fd8134b8c0; A--C are discharged and D remains"
+  proof_obligation: "D first slice: specialize G-120's centralizer sandwich map to the actual exact barE/barD endpoints, restrict it from Gamma_barAlpha^cent to the actual Karoubi Gamma_barBeta, and identify the ambient preimage as H^cent intersect Gamma_barBeta"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "using barBeta in place of the reversible raw comparison barAlpha when defining reflection"
+    - "constructing a new Karoubi comparison instead of the actual Cycle 13 arrow"
+    - "asserting a section before the complete-geometry endpoint lift is constructed"
+  unchecked:
+    - "D endpoint group-homomorphic section and rBar-section identity"
+    - "D reflection iff selector classification"
+    - "D canonical N_geom case, bottom-qualified cases, split exact sequences, lift fibers, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Specialized the G-120 centralizer product, raw-compatible subgroup, ambient sandwich homomorphism, comparison preservation, and restricted subgroup homomorphism to authoredExactBarAlphaIsoAt, authoredExactBarEAt, and authoredExactBarDAt.  Proved that G-120's generic idempotent-image arrow is the actual authoredExactBarBetaKaroubiIsoAt hom.  The ambient preimage of its comparison subgroup is exactly the centralizing subgroup preserving the literal authoredExactBarBetaAt, and its image under the endpoint-centralizer inclusion is H^cent intersect Gamma_barBeta."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonGroup.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaAt_projector_comm
+    - AAT.AG.FullGeometryNormalization.authoredExactBarESandwichAlphaD_eq_barBeta
+    - AAT.AG.FullGeometryNormalization.authoredExactIdempotentImageComparison_eq_barBeta
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestrictionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preserves_comparison
+    - AAT.AG.FullGeometryNormalization.authoredExactCompatibleRestrictionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_mem_image_iff_mem_barBeta
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_eq_barBeta
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_map_eq_inf_barBeta
+  claim_mapping:
+    source_labels:
+      - "fixed target D: H^cent and ambient r by endpoint sandwiches"
+      - "fixed target D: comparison preservation and restricted bar r"
+      - "fixed target D: r inverse Gamma_a equals H^cent intersect Gamma_barBeta"
+    conjuncts:
+      - "the raw compatible subgroup is defined with the reversible authoredExactBarAlphaIsoAt hom"
+      - "the target subgroup is defined with the actual authoredExactBarBetaKaroubiIsoAt hom"
+      - "the ambient preimage theorem separately uses the literal noninvertible authoredExactBarBetaAt"
+      - "source and target endpoint evaluations are the required barE-u-barE and barD-v-barD sandwiches"
+    undischarged_assumptions: []
+    acceptance_point: "All declarations quantify only the fixed A,z,omega,k,g inputs and the existing DecidableEq/CommRing requirements; no section, lift, or reflection certificate is accepted."
+audits:
+  premise_delta:
+    discharged:
+      - "D exact centralizer ambient homomorphism"
+      - "D preservation and restriction to the actual image comparison group"
+      - "D exact ambient preimage identity with H^cent intersect Gamma_barBeta"
+    remaining:
+      - "D endpoint section and selector reflection classification"
+      - "D canonical and bottom-qualified versions, split exact/fiber actions, and nontrivial kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "projector commutation, idempotence, and barBeta factorization are the closed A--C exact-generated declarations"
+      - "centralizers, sandwich automorphisms, subgroup restriction, and ambient intersection are the accepted G-120 APIs"
+    unresolved: []
+  proof_use:
+    used:
+      - "G-120 idempotentEndpointRestrictionHom and restrictedSubgroupHom"
+      - "authoredExactBarBetaAt_source_factorization and target_factorization"
+      - "authoredExactBarBetaKaroubiIsoAt as the target comparison, not an alias-only replacement"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarBetaComparisonGroup 16 declarations; standard axioms only"
+    - "targeted dependency build only: ComparisonInformationLoss.KaroubiRestriction 1291/1291 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: construct the complete-geometry endpoint group-homomorphic section of the Karoubi sandwich restriction, then assemble the comparison-group section and selector reflection iff theorem"
 ```
