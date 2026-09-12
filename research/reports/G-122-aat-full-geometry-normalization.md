@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 15 review and acceptance of the object-level normalization section action and its strict laws
-- pending proof obligations: D exact endpoint homomorphic section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 16 review and acceptance of the exact-core normalization section constructor
+- pending proof obligations: D exact/geometry section homomorphism laws, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: lift the object-level action to the exact complete-geometry endpoint homomorphic section and assemble the comparison-group section
+- next proof obligation: prove identity/composition and sandwich-section laws for the exact-core lift, extend it to complete geometry, and assemble the comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1603,4 +1603,88 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationObjectSection: 4068/4068 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: lift the strict object action to exact complete-geometry endpoint automorphisms and construct the group-homomorphic section"
+```
+
+## Cycle 16 — Exact-core normalization section constructor
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 16
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 2e193240cf24f6f81027d57ae8b0fe81dbd9521c
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 15 merge 2e193240cf24f6f81027d57ae8b0fe81dbd9521c; the strict object action exists but no exact core hom carries it"
+  proof_obligation: "D exact-core constructor: lift the strict selected-object-preserving action through configuration, equation, operation, invariant, and signature fields without accepting a completed exact lift or object-dependent coherence certificate"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "copying the input equation transport despite its incompatible objectMap index"
+    - "casting operations without proving configuration naturality"
+    - "using admissibility only in the source direction and silently assuming inverse insensitivity"
+    - "retaining the input normalized objectMap instead of the raw section action"
+  unchecked:
+    - "identity, composition, and sandwich-section equalities for the exact-core constructor"
+    - "complete-geometry lift and endpoint/comparison-group section"
+    - "D reflection, canonical/bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For any exact endomorphism f of an admissible core package, proved that f maps the normalization of A to the normalization of the raw section object F_f(A).  Used this equality to reconstruct an EquationSystemExactTransport whose residual law passes through source normalization, f, and inverse target normalization.  Reconstructed operation mapping with four dependent endpoint casts and proved its configuration naturality by composing the source admissibility, f-naturality, and target admissibility squares.  Reconstructed invariant and coordinate laws in both function and predicate cases, then assembled every field of a SignedExactCoreReadingHom with raw objectMap F_f."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationCoreSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.exactEndomorphism_map_normalization_eq_section_normalization
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionConfigurationHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionEquationTransport
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionOperationMap
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionOperationMap_naturality
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionInvariantTransport
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionCoordinateEq
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionUpper
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: prove b(A)=n_G(F_sigma(A)) from sandwich/object formation"
+      - "n1013 section 3: cast operation output back and reprove residual, operation, invariant, and coordinate laws"
+      - "fixed target D: construct endpoint automorphism sections rather than assume their lifts"
+    conjuncts:
+      - "the output exact hom uses the actual raw object action, not f.objectMap"
+      - "the equation residual law uses both admissibility directions and f's actual residual theorem"
+      - "operation naturality is an equality of ConfigurationHom values"
+      - "function and predicate invariants are both transported"
+      - "the input atom, equation-index, invariant-index, axis, and coordinate equivalences are retained"
+    undischarged_assumptions: []
+    acceptance_point: "Inputs are P, its fixed target direction-hypothesis admissible, and the exact endomorphism whose normalized change is being lifted.  No raw lift, section law, operation coherence, residual law, invariant law, or coordinate law is accepted separately."
+audits:
+  premise_delta:
+    discharged:
+      - "existence of a full SignedExactCoreReadingHom on the raw Cycle 15 object action"
+      - "all object-dependent exact-core field laws for that constructor"
+    remaining:
+      - "homomorphic and sandwich-section laws"
+      - "complete geometry and the remainder of D"
+  certificate_provenance:
+    discharged:
+      - "source and target insensitivity are precisely CanonicalObjectNormalizationAdmissible"
+      - "middle transport and all non-object computational maps are the actual fields of f"
+      - "normalization/object equality is derived from f.object_formation_eq and the Cycle 15 configuration theorem"
+    unresolved: []
+  proof_use:
+    used:
+      - "admissible equationResidual_eq, operation_type_eq, operation_naturality, invariant_transport, and coordinate_eq"
+      - "f equationResidual_eq, operation_naturality, invariant_transport, coordinate_eq, and object_formation_eq"
+      - "Cycle 15 selected-object and configuration laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationCoreSection 13 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSection: 4069/4069 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: prove exact-core identity/composition and sandwich-section laws, then lift the constructor and laws to complete geometry"
 ```
