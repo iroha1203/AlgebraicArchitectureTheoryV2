@@ -1076,7 +1076,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: mate projection triangle 6, barAlpha triangle 2, final projection 25 generated declarations; standard axioms only"
+    - "canonical focused checks from research-modules.txt: mate projection triangle 6, barAlpha triangle 2, final projection 25 generated declarations; standard axioms only"
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactDerivedBarAlphaProjection: 4186/4186 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "B3: prove exact push/pull normalization transport from one source admissibility proof, generate endpoint admissibility internally, and prove n_H barAlpha = barAlpha n_G"
