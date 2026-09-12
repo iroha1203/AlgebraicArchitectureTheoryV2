@@ -121,6 +121,7 @@ theorem authoredExactBarEAt_eq_endpoint_normalization
     simpa only [barD, nVia] using
       authoredExactBarDAt_eq_endpoint_normalization
         A z omega k g selected
+  rw [authoredExactBarEAt_conjugation]
   change alpha.hom ≫ barD ≫ alpha.inv = nDirect
   calc
     alpha.hom ≫ barD ≫ alpha.inv =
@@ -161,7 +162,7 @@ theorem authoredExactBarEAt_eq_id
       CanonicalObjectNormalizationAdmissible
         (A.context.supportPackage z.as))) :
     authoredExactBarEAt A z omega k g = 𝟙 _ := by
-  rw [authoredExactBarEAt,
+  rw [authoredExactBarEAt_conjugation,
     authoredExactBarDAt_eq_id A z omega k g notSelected]
   simp
 
@@ -228,9 +229,7 @@ theorem authoredExactBarBetaAt_isIso_iff_barDAt_isIso
     (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k) :
     IsIso (authoredExactBarBetaAt A z omega k g) ↔
       IsIso (authoredExactBarDAt A z omega k g) := by
-  change IsIso ((authoredExactBarAlphaIsoAt A z k g).hom ≫
-      authoredExactBarDAt A z omega k g) ↔
-    IsIso (authoredExactBarDAt A z omega k g)
+  rw [authoredExactBarBetaAt_factor]
   exact isIso_comp_left_iff _ _
 
 /-- The exact selected comparison is invertible exactly when its idempotent

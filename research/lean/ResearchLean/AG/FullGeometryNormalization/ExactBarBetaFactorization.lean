@@ -156,6 +156,19 @@ noncomputable def authoredExactBarEAt
     authoredExactBarDAt A z omega k g ≫
       (authoredExactBarAlphaIsoAt A z k g).inv
 
+/-- Characterization API for the source projector as the literal `barAlpha`
+conjugate of `barD`. -/
+theorem authoredExactBarEAt_conjugation
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (A : AuthoredBCDatumSquare U) (z : A.context.Category)
+    (omega : DefectCochain A.toTransportData)
+    (k : Type v) [CommRing k]
+    (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k) :
+    authoredExactBarEAt A z omega k g =
+      (authoredExactBarAlphaIsoAt A z k g).hom ≫
+        authoredExactBarDAt A z omega k g ≫
+          (authoredExactBarAlphaIsoAt A z k g).inv := rfl
+
 /-- The exact selected comparison `barBeta = barAlpha ≫ barD` in Lean's
 composition order. -/
 noncomputable def authoredExactBarBetaAt
@@ -168,6 +181,18 @@ noncomputable def authoredExactBarBetaAt
       authoredExactViaBaseGeometryAt A z k g :=
   (authoredExactBarAlphaIsoAt A z k g).hom ≫
     authoredExactBarDAt A z omega k g
+
+/-- Characterization API for the selected comparison as the literal
+`barAlpha` factor followed by `barD`. -/
+theorem authoredExactBarBetaAt_factor
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (A : AuthoredBCDatumSquare U) (z : A.context.Category)
+    (omega : DefectCochain A.toTransportData)
+    (k : Type v) [CommRing k]
+    (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k) :
+    authoredExactBarBetaAt A z omega k g =
+      (authoredExactBarAlphaIsoAt A z k g).hom ≫
+        authoredExactBarDAt A z omega k g := rfl
 
 /-- The conjugate source endomorphism `barE` is idempotent. -/
 theorem authoredExactBarEAt_idem

@@ -1289,8 +1289,11 @@ result:
   proof_obligation_delta: "Used the actual bottom-push and right-pull normalization transport laws to identify barD with the via-base endpoint normalization on the selected branch; combined this with the proved barAlpha normalization naturality to identify the conjugate barE with the direct endpoint normalization; proved both projectors are identities off the exact selector; reflected barD=id through the Cycle 11 projection equality to G-116's transported selector classification and discharged its noninjectivity conjunct with canonicalObjectNormalization_not_injective; and chained ambient IsIso(barBeta) through the invertible barAlpha factor and idempotent barD to obtain the fixed classification."
   completion_candidate: no
   lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
     - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaClassification.lean
   evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBarEAt_conjugation
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaAt_factor
     - AAT.AG.FullGeometryNormalization.authoredExactBarDAt_eq_endpoint_normalization
     - AAT.AG.FullGeometryNormalization.authoredExactBarEAt_eq_endpoint_normalization
     - AAT.AG.FullGeometryNormalization.authoredExactBarProjectorsAt_eq_endpoint_normalizations
@@ -1343,7 +1346,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "canonical focused check from research-modules.txt: ExactBarBetaClassification 10 declarations; standard axioms only"
+    - "canonical focused checks from research-modules.txt: ExactBarBetaFactorization 15 and ExactBarBetaClassification 10 declarations; standard axioms only"
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaClassification: 4229/4229 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "C: project the actual complete-geometry Karoubi isomorphism to G-116, connect its position to G-119, and construct the fixed finite axis-fold non-IsIso and nonempty-family witness"
