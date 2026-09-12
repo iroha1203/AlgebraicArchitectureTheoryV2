@@ -9,6 +9,21 @@ finite axis-fold datum fixed by G-122(C).  At the second cell, the firing and
 admissibility fields of the existing G-116 witness packet select the same
 actual `authoredExactBarBetaAt` classified in the preceding module, so that
 comparison is not an ambient isomorphism.
+
+## Implementation notes
+
+G-122(C) fixes the datum, cell, cochain, coefficient ring, and actual
+comparison, while leaving the auxiliary geometry and raw restriction data to
+the construction.  We therefore use the smallest total input: empty coverage
+requirements, one coordinate and one relation at every context, the integral
+idempotence polynomial `X^2-X`, and identity restriction.  This keeps the
+geometry independent of the selector and makes its transport to the fixed
+finite support package definitionally uniform over all cells.  Requiring a
+nonempty coverage predicate or adding context-dependent coordinates was
+rejected because neither belongs to the fixed claim and both would introduce
+unrelated existence obligations.  The construction does not encode the
+conclusion: noninvertibility of the same `authoredExactBarBetaAt` is derived
+separately from G-116's closed firing and admissibility witness packet.
 -/
 
 namespace AAT.AG.FullGeometryNormalization

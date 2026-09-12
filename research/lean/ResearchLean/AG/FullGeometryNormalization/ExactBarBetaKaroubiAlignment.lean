@@ -10,6 +10,20 @@ G-122(C) to the northeast core fiber.  Endpoint comparison isomorphisms then
 identify that projected arrow with G-116's existing Karoubi comparison.  The
 same object is finally placed in G-119's core comparison category and its
 raw-idempotent exchange normalization.
+
+## Implementation notes
+
+The northeast projection is extended by mathlib's `functorExtension₂`, so the
+projector of each Karoubi object is mapped together with its underlying object
+and arrow.  The endpoint isomorphisms are then restricted as
+`P.p ≫ e.hom` and `Q.p ≫ e.inv`: using the underlying support-core
+isomorphisms unchanged was rejected because those arrows need not be morphisms
+between the projected Karoubi objects.  The actual projected comparison and
+G-116's comparison have isomorphic, rather than definitionally equal,
+endpoints, so their identification is recorded by an `Arrow.isoMk` whose
+square uses the proved projection equation.  Finally, G-119 placement uses its
+existing inclusion functor and proved exchange equality; a new duplicate
+comparison object or a definitional cast would hide those API connections.
 -/
 
 open CategoryTheory CategoryTheory.Idempotents
