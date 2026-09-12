@@ -721,7 +721,7 @@ selection:
   risks:
     - "accepting inverse exactification compatibility from the caller"
     - "using point equality alone as a complete-geometry endpoint isomorphism"
-    - "hiding the G-114 endpoint casts in an ill-typed stronger equality"
+    - "hiding the canonical-authored generated-route endpoint casts in an ill-typed stronger equality"
     - "claiming the final B_z/T_z complete route bridges before package and geometry Cartesian uniqueness are applied"
   unchecked:
     - "B2b2 package-stage and geometry-stage Cartesian comparison isomorphisms"

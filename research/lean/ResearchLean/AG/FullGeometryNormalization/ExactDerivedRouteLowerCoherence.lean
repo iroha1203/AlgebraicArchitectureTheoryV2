@@ -4,7 +4,8 @@ import ResearchLean.AG.FullGeometryNormalization.ExactDerivedCleavageComparison
 # Lower-route coherence for the exact-derived cleavage comparison
 
 This layer compares the literal exact two-edge routes with the lower maps of
-the canonical-authored G-114 route legs.  The only endpoint identifications
+the canonical-authored realization-normalized route legs used by the G-118
+generated route.  The only endpoint identifications
 used below are generated from the realized pullback comparison and the fiber
 incidence equations; no point comparison or factorization certificate is
 accepted from the caller.
