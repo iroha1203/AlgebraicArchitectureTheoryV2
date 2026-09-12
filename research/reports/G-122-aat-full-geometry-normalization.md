@@ -1351,3 +1351,92 @@ audits:
   blocking_findings: []
   next_obligation: "C: project the actual complete-geometry Karoubi isomorphism to G-116, connect its position to G-119, and construct the fixed finite axis-fold non-IsIso and nonempty-family witness"
 ```
+
+## Cycle 13 — Karoubi alignment and the fixed finite witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 13
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: af6fa06291e668b8732062f4a977ddd04fbd681c
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 12 merge af6fa06291e668b8732062f4a977ddd04fbd681c; the selector branches and ambient invertibility classification were proved, while G-116/G-119 Karoubi alignment and the fixed finite example remained in C"
+  proof_obligation: "C terminal slice: project the actual complete-geometry Karoubi isomorphism to the northeast core fiber, identify the resulting comparison with G-116 and G-119, and construct geometry/raw data on the required finite axis-fold example whose same actual barBeta is not IsIso"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "treating an underlying endpoint isomorphism as a Karoubi isomorphism without projector restriction"
+    - "claiming equality across non-definitionally equal generated endpoints instead of a typed Arrow isomorphism"
+    - "using a different raw comparison for the finite noninvertibility witness"
+    - "accepting firing, admissibility, or input-family existence as caller hypotheses"
+  unchecked:
+    - "D"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Extended the actual northeast geometry-fiber projection to Karoubi envelopes; restricted the generated direct and via-base endpoint isomorphisms by their projectors; proved an Arrow isomorphism from the projected actual complete-geometry Karoubi comparison to G-116's authoredDiagnosticKaroubiComparison; mapped that isomorphism to G-119's core comparison category and its raw-idempotent exchange normalization; and constructed integral geometry/raw data on every original finite axis-fold support core by exact transport from finiteWitnessSourcePackage.  The existing G-116 witness packet supplies firing and admissibility at DoubleDiamondTwoCell.second, so the Cycle 12 classification proves non-IsIso for the same authoredExactBarBetaAt and the constructed family proves nonemptiness."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaKaroubiAlignment.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFiniteWitness.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactNortheastKaroubiProjection
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaProjectedKaroubiIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarDTargetKaroubiProjectionIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarESourceKaroubiProjectionIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaKaroubiProjectionAlignmentAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaG119CoreComparisonIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarBetaG119ExchangeIsoAt
+    - AAT.AG.FullGeometryNormalization.finiteAxisFoldFixedCoefficientGeometryFamily
+    - AAT.AG.FullGeometryNormalization.finiteAxisFold_fixedCoefficientGeometryFamily_nonempty
+    - AAT.AG.FullGeometryNormalization.finiteAxisFold_authoredExactBarBetaAt_not_isIso
+    - AAT.AG.FullGeometryNormalization.finiteAxisFold_exactBarBeta_witnessPacket
+  claim_mapping:
+    source_labels:
+      - "fixed target C: project the actual Karoubi isomorphism to G-116"
+      - "fixed target C: identify its position with G-119's comparison construction"
+      - "fixed target C: finiteAxisFoldBCDatumSquare, generated cochain, second cell, and Z coefficient"
+      - "fixed target C: geometry/raw data on the original core, same-route barBeta non-IsIso, and nonempty input family"
+    conjuncts:
+      - "endpoint support-core isomorphisms are restricted by source and target projectors before forming Karoubi isomorphisms"
+      - "the comparison is matched as an Arrow isomorphism with both endpoints, not only by equality of underlying morphisms"
+      - "coreFiberComparisonInclusion and authoredDiagnosticRawIdempotentComparison_exchange are the existing G-119 routes used"
+      - "finite geometry/raw data are constructed at every cell; no existence premise is supplied"
+      - "firing and canonical admissibility are projections of finiteAxisFold_idempotentExchange_witnessPacket"
+      - "noninvertibility applies literally to authoredExactBarBetaAt with coefficient Int at DoubleDiamondTwoCell.second"
+    undischarged_assumptions: []
+    acceptance_point: "The general alignment takes only A, z, omega, k, and g.  The fixed example is a closed named packet generated from the prescribed datum and existing reviewed G-116 witness."
+audits:
+  premise_delta:
+    discharged:
+      - "C projection of the complete-geometry Karoubi isomorphism to G-116"
+      - "C placement in G-119's comparison category and exchange normalization"
+      - "C fixed finite axis-fold geometry/raw-data family, nonemptiness, and same-route non-IsIso"
+    remaining:
+      - "D"
+  certificate_provenance:
+    discharged:
+      - "endpoint intertwining comes from the proved barD and barBeta projection equations plus the inverse barAlpha projection equation"
+      - "G-119 placement uses the existing core inclusion and proved raw-idempotent exchange equality"
+      - "finite firing and admissibility come from finiteAxisFold_idempotentExchange_witnessPacket"
+    unresolved: []
+  proof_use:
+    used:
+      - "authoredExactBarDAt_projection and authoredExactBarBetaAt_projection in the endpoint and Arrow alignment"
+      - "authoredExactBarAlphaIsoAt_projection to derive the inverse endpoint equation"
+      - "authoredDiagnosticRawIdempotentComparison_exchange for the G-119 normalization position"
+      - "authoredExactBarBetaAt_isIso_iff_not_selected with both firing and admissibility fields of the fixed G-116 packet"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "canonical focused checks from research-modules.txt: ExactBarBetaKaroubiAlignment 12 and ExactBarBetaFiniteWitness 16 declarations; standard axioms only"
+    - "targeted module builds for both Cycle 13 modules: 4269/4269 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: construct the centralizer ambient homomorphism, its comparison-preserving restriction and group-homomorphic section, and prove the selector reflection preimage classification"
+```
