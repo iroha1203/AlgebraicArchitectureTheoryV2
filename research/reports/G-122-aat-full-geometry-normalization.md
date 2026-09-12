@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 1 review rerun and acceptance after comparison-group repair
-- pending proof obligations: B--D
+- current proof obligation: Cycle 2 review and acceptance of exact complete-geometry transport
+- pending proof obligations: B2--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B1 exact-derived complete-geometry transport and endpoint construction
+- next proof obligation: B2 exact-derived G-118 configuration, endpoints, and generated-mate identification
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -221,3 +221,126 @@ Cycle 1 material premise roles are:
   constructed in the two Cycle 1 modules.
 - `conclusion-equivalent-risk`: none.  Admissibility contains only the existing core
   reading laws and no complete-geometry morphism, idempotence, absorption, or functor.
+
+## Cycle 2 — Exact complete-geometry transport and adjoint equivalence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 2
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: bdb52a077c59b182a1210b45ce2bf77d3021b18f
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 1 merge bdb52a077c59b182a1210b45ce2bf77d3021b18f; fixed target B transport layer unproved"
+  proof_dag_predecessors:
+    - AAT.AG.CrossStageCoherence.geomFiberTransportFunctor
+    - AAT.AG.CrossStageCoherence.geomFiberLift_isStronglyCocartesian
+    - AAT.AG.DoctrineFiberProduct.selectedCoreFiberReindexFunctor
+    - AAT.AG.DoctrineFiberProduct.generatedExactGeometryHom_isStronglyCartesian
+    - AAT.AG.DoctrineFiberProduct.packageTotalHom_isStronglyCocartesian_of_upper_inverse
+    - AAT.AG.DoctrineFiberProduct.typedRealizableHom_comp_hom
+  proof_obligation: "B1: construct exact-derived complete-geometry pull, prove genuine Cartesian and Cocartesian universal properties for pull and push, construct the push-pull adjunction with invertible unit and counit, and prove core projection, coefficient, identity, composition, and route coherence"
+  selection_reason: "The complete transport layer is required before B's four endpoint geometries, generated mate, mate equality, and normalization-transport laws can be stated without accepting completed geometry morphisms or universal-property certificates."
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "lifting only the core reindexing theorem and treating geometryProjection as conservative"
+    - "accepting a completed geometry factor or Cartesian/Cocartesian certificate as input"
+    - "providing compositor and unitor objects without associativity and unit laws"
+    - "claiming unit or counit invertibility from an invalid cancellation direction"
+    - "omitting coefficient preservation or replacing the core projection by object equality"
+  unchecked:
+    - "B2 exact-derived RefinementBCConfiguration, compatible source, pullback and cleavage comparisons, endpoint geometries, generated G-118 mate, and equality with the G-116 canonical mate"
+    - "B3 exact-transport preservation of admissibility and canonical normalization"
+    - "C selected factorization, Karoubi isomorphism, invertibility classification, and finite axis-fold example"
+    - "D comparison-group sections, reflection, kernels, short exact sequences, and lift-fiber actions"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed exact complete-geometry pull from the realized arrow and target geometry, including its map and functor laws; proved both canonical push and exact pull ambidextrous by genuine field-by-field universal factors; constructed the push-pull adjunction; proved unit and counit components and natural transformations invertible over identity base arrows; connected exact pull to the accepted core reindexing functor by a natural isomorphism; proved coefficient preservation and full contravariant compositor/unitor associativity and unit coherence."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryPull.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryPullProjection.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryPullCoherence.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryTransportAdjunction.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryPushCartesian.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryPullCocartesian.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryTransportUnitIso.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactGeometryTransportCounitIso.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullFunctor
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullLift_crossStageStronglyCartesian
+    - AAT.AG.FullGeometryNormalization.geomFiberLift_crossStageStronglyCartesian
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullLift_crossStageStronglyCocartesian
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullAdjunction
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullUnit_isIso
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullCounit_isIso
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullProjectionIso
+    - AAT.AG.FullGeometryNormalization.exactGeometryPullMap_coefficientHom
+    - AAT.AG.FullGeometryNormalization.geomFiberTransportMap_coefficientHom
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullUnit_app_coefficientHom
+    - AAT.AG.FullGeometryNormalization.exactGeometryTransportPullCounit_app_coefficientHom
+    - AAT.AG.FullGeometryNormalization.exactTypedGeometryPullCompositor_assoc
+    - AAT.AG.FullGeometryNormalization.exactTypedGeometryPullCompositor_left_unit
+    - AAT.AG.FullGeometryNormalization.exactTypedGeometryPullCompositor_right_unit
+  claim_mapping:
+    theorem_names:
+      - exactGeometryPullFunctor
+      - exactGeometryPullProjectionIso
+      - exactTypedGeometryPullCompositor
+      - exactTypedGeometryPullUnitor
+      - exactGeometryTransportPullAdjunction
+      - exactGeometryTransportPullUnit_isIso
+      - exactGeometryTransportPullCounit_isIso
+    source_labels:
+      - "fixed target B: complete-geometry h_! and h^* over pointed exact homs"
+      - "fixed target B: projection to existing core functors, action on arrows, identity/composition, and coefficient identity"
+      - "fixed target B: unit and counit isomorphisms"
+    conjuncts:
+      - "exact pull object and lift are generated from the target geometry and realized arrow, and its map is generated by the Cartesian universal property"
+      - "canonical push and exact pull each have both Cartesian and Cocartesian universal properties constructed from complete geometry data"
+      - "the push-pull hom equivalence is natural in both variables and generates the adjunction, unit, counit, and triangle identities"
+      - "unit and counit are natural isomorphisms and their component coefficient maps are identities"
+      - "exact pull projects by a named natural isomorphism to selectedCoreFiberReindexFunctor and preserves every vertical coefficient map"
+      - "typed exact pull has named compositor and unitor with naturality, coefficient identity, associativity, and both unit laws"
+    undischarged_assumptions: []
+    acceptance_point: "Both additional universal properties quantify over arbitrary compatible total geometry morphisms. Their coverage, overlap, raw, local-carrier, reading, naturality, factorization, reconstruction, and uniqueness data are constructed internally; no complete factor, isomorphism, or universal-property certificate is an input."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B complete push/pull functors and arrow actions"
+      - "B transport projection, coefficient, identity, composition, and coherence"
+      - "B adjunction with unit and counit natural isomorphisms"
+    remaining:
+      - "B2 generated square input, endpoints, G-118 mate, G-116 mate equality, and B3 normalization transport"
+      - "C--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "exact pull Cartesianity is generated from the refinement exactification route and reflected through the faithful exact embedding"
+      - "push Cartesianity and pull Cocartesianity use explicit complete-geometry factors with all computational fields and uniqueness"
+      - "unit/counit invertibility is derived from the two genuine universal properties over identity base arrows"
+      - "core projection uses Cartesian uniqueness and returns a natural isomorphism rather than an object-equality shortcut"
+    unresolved: []
+  proof_use:
+    used:
+      - "G-101 core transport and inverse-package upper cancellations generate lower factors and exact-source data"
+      - "G-108 complete push transport supplies the accepted push functor and its original Cocartesian lift"
+      - "G-115 exact geometry construction and exactification supply the pull object, lift, and Cartesian reflection"
+      - "strong universal-property composition and identity-base IsIso theorems convert the generated factors into unit/counit isomorphisms"
+      - "G-114 typed composition decoding supplies the exact pull compositor base equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: ExactGeometryPull 22, ExactGeometryPullProjection 9, ExactGeometryPullCoherence 30, ExactGeometryTransportAdjunction 21, ExactGeometryPushCartesian 29, ExactGeometryPullCocartesian 46, ExactGeometryTransportUnitIso 5, ExactGeometryTransportCounitIso 3 declarations; standard axioms only"
+    - "targeted module builds: ExactGeometryPull, ExactGeometryPullProjection, ExactGeometryPullCoherence, ExactGeometryTransportAdjunction, ExactGeometryPushCartesian, ExactGeometryPullCocartesian, ExactGeometryTransportUnitIso, ExactGeometryTransportCounitIso: pass; no Research aggregate/full build"
+    - "git diff --check and placeholder/hidden/BiDi/privacy/reverse-import scans: pending final fixed-head run"
+  blocking_findings: []
+  next_obligation: "B2: construct the exact-derived G-118 configuration, compatible source, pullback/cleavage comparisons, four endpoint geometries, generated mate, and its equality with G-116's canonical mate"
+```
