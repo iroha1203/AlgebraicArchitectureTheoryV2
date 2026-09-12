@@ -108,19 +108,22 @@ G-116の経路を完全幾何へ持ち上げ、元の `g_z` から
 射への作用、恒等・合成、単位・余単位の完全幾何での同型と係数恒等を証明する。
 
 G-118の入力は、元のsquareから次のexact refinementとして作る。
+`σ₁`、`σ₂`、`𝟙 SE` は選択点を含む射であり、表の `fst`・`snd`・`refinement` には
+そのdoctrine成分を使う。
 
 | `RefinementBCConfiguration` のfield | 構成する値 |
 | --- | --- |
 | `sOnePrime` | SWのdoctrine |
 | `sOne`、`bottom` | SEのdoctrine |
 | `sTwo` | NEのdoctrine |
-| `fst` | `id_SE` |
-| `snd` | `σ₂` |
-| `refinement` | `ofExact σ₁` |
+| `fst` | `(𝟙 SE).doctrineHom` |
+| `snd` | `σ₂.doctrineHom` |
+| `refinement` | `exactToRefinement σ₁.doctrineHom` |
 | target core package | `Q_z := (σ₁)_! P_z` |
 
-compatible source pointは元のsquareから作り、active conditionは既存の
-`realizedReflection_ofExact` で放電する。target geometryを `q_z := (σ₁)_!g_z` とする。
+compatible source pointを元のsquareから作り、選択点を含むrefinementを
+`PointedRefinementHom.ofExact σ₁` と対応させる。そのactive conditionを既存の
+`realizedReflection_ofExact σ₁` で放電する。target geometryを `q_z := (σ₁)_!g_z` とする。
 生成pullbackと元のsquareの比較
 
 \[
