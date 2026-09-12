@@ -1,9 +1,9 @@
 # G-122-aat-full-geometry-normalization — 完全幾何における生成比較の正規化と変更の持ち上げ
 
 - `id`: `G-122-aat-full-geometry-normalization`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成。active化時に作成する。
+- `tracking issue`: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
 - `source note`: [n1013 §1・§2・§4–§6](../../docs/note/n1013_aat_full_geometry_normalization_design.md)、[n1010 §7.1・§9.5](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)
 
 ## 研究目的
