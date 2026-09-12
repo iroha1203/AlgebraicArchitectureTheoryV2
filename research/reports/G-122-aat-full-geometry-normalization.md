@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 2 review and acceptance of exact complete-geometry transport
-- pending proof obligations: B2--D
+- current proof obligation: Cycle 3 review and acceptance of the exact-derived G-118 input and pointed pullback comparisons
+- pending proof obligations: B2 generated mate/endpoints and mate equality, B3--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B2 exact-derived G-118 configuration, endpoints, and generated-mate identification
+- next proof obligation: B2 complete endpoint geometries, generated mate, and G-116 mate identification
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -343,4 +343,127 @@ audits:
     - "fixed head 5a552304c06aa93c5cb4b3a2f31838549ec690c3: git diff --check and placeholder/hidden/BiDi/privacy/reverse-import scans pass"
   blocking_findings: []
   next_obligation: "B2: construct the exact-derived G-118 configuration, compatible source, pullback/cleavage comparisons, four endpoint geometries, generated mate, and its equality with G-116's canonical mate"
+```
+
+### Cycle 2 review record
+
+- Review head `5a552304c06aa93c5cb4b3a2f31838549ec690c3`: Math A/B and
+  Lean B returned no findings. Lean A found one noncentral report-validation drift:
+  the fixed-head scan had passed but the report still said that run was pending.
+- Direct report-only repair head `5e79deedf2924326e2ca518f2955a4cf82eb3dfd`
+  replaced that stale line with the fixed head and the completed scan result. An
+  independent direct-response check confirmed that the one-line repair was qualified
+  and resolved the finding without changing a theorem, definition, declaration,
+  import, claim scope, or lifecycle status.
+- Standard review comment, all seven CI checks, root acceptance, and merge completed in
+  PR #4488. The accepted merge commit is
+  `fa3ce7c76b83fd7989ba81f23001eaed32823fdc`.
+- Review result: fixed target B1 is `proof-obligation-discharged`; G-122 remains
+  `target-proof-checkpoint` because B2--D remain.
+
+## Cycle 3 — Exact-derived G-118 input and pointed endpoint comparisons
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 3
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: fa3ce7c76b83fd7989ba81f23001eaed32823fdc
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 2 merge fa3ce7c76b83fd7989ba81f23001eaed32823fdc; B2 exact-derived G-118 input and endpoint identifications unproved"
+  proof_dag_predecessors:
+    - AAT.AG.DoctrineFiberProduct.RefinementBCConfiguration
+    - AAT.AG.DoctrineFiberProduct.configurationRealizedReflection_of_exactImage
+    - AAT.AG.DoctrineFiberProduct.pulledExactComparisonAt
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCompatibleProblemInputData.generatedCompatibleUpperGeometryMateAt
+    - AAT.AG.DoctrineFiberProduct.pointedPullback_isPullback
+    - AAT.AG.DoctrineFiberProduct.toSemanticBC_sound
+  proof_obligation: "B2a: generate the exact-derived G-118 configuration, compatible source, exact-image qualification, target package and one-cell compatible geometry input from A,z,k,g_z, and identify both generated pointed pullbacks with the original NW and NE endpoints"
+  selection_reason: "The generated mate cannot be compared with the G-116 mate until its context, target package, source geometry, and both endpoint pullbacks are fixed without caller-supplied certificates."
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting a compatible source, active condition, target package, or finite transport certificate from the caller"
+    - "using a global connectedness or root-reachability hypothesis instead of a cell-local presentation"
+    - "identifying only doctrine objects while dropping selected sources"
+    - "treating the mixed exact comparison as definitionally identical to a pointed pullback projection"
+  unchecked:
+    - "B2b four complete endpoint geometries, unit/counit endpoint isomorphisms, generated complete mate, and G-116 canonical-mate equality"
+    - "B3 exact-transport preservation of admissibility and canonical normalization"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the GOAL-table refinement configuration from the original exact square; generated compatible sources, exact-image qualification, active context, q_z and Q_z, and an edge-free one-vertex compatible G-118 input; exposed the existing generated complete mate; proved cast-aware pointed endpoint equalities, original and mixed pullback certificates, and canonical source/target endpoint isomorphisms whose horizontal comparison square is the original top edge."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedRefinementBC.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedPullbackComparison.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactRefinementBCConfiguration
+    - AAT.AG.FullGeometryNormalization.authoredExactRefinementBCCompatibleSource
+    - AAT.AG.FullGeometryNormalization.authoredExactRefinementBC_condition
+    - AAT.AG.FullGeometryNormalization.authoredExactRefinementBCContextAt
+    - AAT.AG.FullGeometryNormalization.authoredExactCompatibleProblemDataAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedCompatibleUpperGeometryMateAt
+    - AAT.AG.FullGeometryNormalization.authoredExactOriginalSquare_isPullback
+    - AAT.AG.FullGeometryNormalization.authoredExactMixedSource_isPullback
+    - AAT.AG.FullGeometryNormalization.authoredExactPullbackSourceIso
+    - AAT.AG.FullGeometryNormalization.authoredExactPullbackTargetIso
+    - AAT.AG.FullGeometryNormalization.authoredExactPulledComparison_comparisonSquare
+  claim_mapping:
+    theorem_names:
+      - authoredExactRefinementBCConfiguration
+      - authoredExactCompatibleProblemDataAt
+      - authoredExactGeneratedCompatibleUpperGeometryMateAt
+      - authoredExactPullbackSourceIso
+      - authoredExactPullbackTargetIso
+      - authoredExactPulledComparison_comparisonSquare
+    source_labels:
+      - "fixed target B: exact-derived G-118 table, compatible source, target Q_z, and active qualification"
+      - "fixed target B: internally generated root, path, edge, comparator, and geometry data"
+      - "fixed target B: selected-point pullback comparisons SW x_SE NE to NW and SE x_SE NE to NE"
+    conjuncts:
+      - "the configuration fields are exactly SW, SE, NE, SE, identity, right, and exactToRefinement bottom"
+      - "realized reflection follows from membership in the exact comparison image"
+      - "q_z is the canonical complete push of g_z and Q_z is its core retagged only by the generated endpoint equality"
+      - "the local presentation has one vertex and no nonidentity edges or higher cells, so all transport data are generated internally without a global connectedness premise"
+      - "both endpoint comparisons retain selected sources and arise from genuine IsPullback certificates"
+      - "the exact horizontal comparison agrees with the original top edge after the endpoint isomorphisms"
+    undischarged_assumptions: []
+    acceptance_point: "Only A,z,k,g_z are inputs. Compatible points and exact qualification are derived from the realized square; the point-local finite transport has no caller certificate fields; pullback isomorphisms are generated from universal properties and explicit endpoint equalities."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "B2 exact-derived configuration, compatible source, active condition, target package, and compatible local G-118 input"
+      - "B2 selected-point source and target pullback comparisons"
+    remaining:
+      - "B2 complete endpoint geometries, generated mate composite, and G-116 mate identification"
+      - "B3--D construction obligations"
+  certificate_provenance:
+    discharged:
+      - "compatible source equations come from the four selected-point equations of the original realized square"
+      - "active qualification comes from the exact comparison image of the original bottom arrow"
+      - "the original pullback certificate is decoded by toSemanticBC_sound and the mixed pullback is reconstructed from the generated exact comparison"
+      - "the target endpoint isomorphism uses the generated identity first leg and pointed pullback universal property"
+    unresolved: []
+  proof_use:
+    used:
+      - "the original bottom and right arrows determine both the compatible source and mixed pullback"
+      - "pulledExactComparisonAt supplies the actual exact horizontal morphism rather than only a refinement wrapper"
+      - "the existing G-118 constructor consumes the internally built one-cell source data and exposes its actual complete mate"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused ExactDerivedRefinementBC: 15 declarations, standard axioms only"
+    - "focused ExactDerivedPullbackComparison: 19 declarations, standard axioms only"
+    - "targeted module builds for both modules: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "B2b: construct G_z,H_z,B_z,T_z and a_z,b_z, push the generated G-118 mate, and prove the resulting complete comparison projects to and agrees with the G-116 canonical mate"
 ```
