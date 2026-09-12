@@ -12,7 +12,7 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 5 review and acceptance of exact push/pull preservation of normalization admissibility
+- current proof obligation: Cycle 6 review and acceptance of exactification and lower-route coherence support for the B2b2 bridges
 - pending proof obligations: B2 direct-to-generated cleavage bridges, a_z, b_z, and G-116 mate equality, B3 operation-map commutation and barAlpha naturality, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
@@ -685,4 +685,106 @@ audits:
     - "targeted ExactNormalizationTransport module build: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "B2b2 complete route bridges and barAlpha, then B3 operation-map normalization commutation and barAlpha naturality"
+```
+
+### Cycle 5 review record
+
+- Initial review head `c1687d9f1a8c4c78b3a32ada553992c2944a28c1`:
+  Math A/B found no issue. Lean A/B found no central issue and required the
+  module-level endpoint contract plus four `@[simp]` API docstrings to state
+  the precise opposite-endpoint and normal-form directions.
+- Direct response head `5e4e22130fd2c7f2697d0e81fa474de48e8f4a39`
+  changed comments and docstrings only. Both Lean lanes confirmed the union of
+  findings resolved under the qualified direct-response protocol, with no new
+  finding.
+- Standard review comment, all seven CI checks, root acceptance, and merge
+  completed in PR #4491. The accepted merge commit is
+  `c50afc322ecb42926525ff8dfa8958146458d206`.
+- Review result: fixed target B3a is `proof-obligation-discharged`; G-122
+  remains `target-proof-checkpoint` because B2b2, the normalization-morphism
+  equations and mate naturality in B3, C, and D remain.
+
+## Cycle 6 — Exactification and exact-derived lower-route coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 6
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: c50afc322ecb42926525ff8dfa8958146458d206
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 5 merge c50afc322ecb42926525ff8dfa8958146458d206; exact/refinement route type mismatch blocks the B2b2 endpoint bridges"
+  proof_obligation: "B2b2 support: reflect compatible refinement package and geometry isomorphisms into the exact categories without inverse certificates, construct the two direct-to-canonical source-point isomorphisms, and prove the exact lower-route equations forced by the realized pullback comparison"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting inverse exactification compatibility from the caller"
+    - "using point equality alone as a complete-geometry endpoint isomorphism"
+    - "hiding the G-114 endpoint casts in an ill-typed stronger equality"
+    - "claiming the final B_z/T_z complete route bridges before package and geometry Cartesian uniqueness are applied"
+  unchecked:
+    - "B2b2 package-stage and geometry-stage Cartesian comparison isomorphisms"
+    - "B2b2 final vertical B_z/T_z bridge isomorphisms, factor laws, a_z, b_z, barAlpha, and G-116 mate equality"
+    - "B3 normalization-morphism equations and barAlpha naturality"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Added reusable exactification of package and complete-geometry isomorphisms from refinement isomorphisms, deriving inverse lower-map compatibility internally and reflecting both inverse laws through faithful embeddings. Constructed the exact-derived direct-to-canonical source-point isomorphisms and proved cast-explicit exact lower-route equations for both base-first and pulled-first paths from the original pullback projection and comparison-square laws."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactRefinementIso.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedRouteLowerCoherence.lean
+  evidence:
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCleavage.exactPackageIsoOfRefinementIso
+    - AAT.AG.DoctrineFiberProduct.UpperGeometryCleavage.exactGeometryIsoOfRefinementIso
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalBaseSourcePointIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalPulledSourcePointIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectBaseRoute_lower_fac
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectPulledRoute_lower_fac
+  claim_mapping:
+    source_labels:
+      - "fixed target B: pullback and cleavage comparisons needed to identify the direct exact endpoints with the G-118 generated route"
+    conjuncts:
+      - "forward lower-map equality is the only exactification input; inverse compatibility follows from functoriality"
+      - "package and geometry inverse laws are reflected through the faithful exact embeddings"
+      - "source-point isomorphisms use only stored fiber incidences and the realization-proven pullback-source isomorphism"
+      - "base-route coherence uses authoredExactPullbackSourceIso_hom_left"
+      - "pulled-route coherence uses authoredExactPulledComparison_comparisonSquare"
+    undischarged_assumptions: []
+    acceptance_point: "All isomorphisms and factor equations in this cycle are constructed from explicit exact/refinement data and accepted predecessor universal properties. No inverse compatibility, endpoint comparison, or route equality certificate is supplied by the caller. The final complete endpoint bridges are not claimed in this cycle."
+audits:
+  premise_delta:
+    discharged:
+      - "generic inverse compatibility needed to exactify a refinement package isomorphism"
+      - "generic inverse compatibility needed to exactify a refinement geometry isomorphism"
+      - "exact-derived source-point comparisons for the base and pulled routes"
+      - "cast-explicit exact lower-route coherence for both paths"
+    remaining:
+      - "two-stage Cartesian uniqueness and exactification for the complete B2b2 bridges"
+      - "B2b2 mate composite and G-116 projection equality"
+      - "B3 remainder and C--D"
+  certificate_provenance:
+    discharged:
+      - "inverse base equations are derived by mapping inverses and using the supplied forward equality"
+      - "exact lower-route equations are derived from the original realized pullback laws"
+    unresolved: []
+  proof_use:
+    used:
+      - "exactPackageHomOfRefinement and exactGeometryHomOfRefinement construct both directions"
+      - "faithful exact embeddings reflect both inverse laws"
+      - "the original square's left projection and pulled comparison square determine the two route equations"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused ExactRefinementIso: 2 declarations, standard axioms only"
+    - "focused ExactDerivedRouteLowerCoherence: 4 declarations, standard axioms only"
+    - "targeted module builds for ExactRefinementIso and ExactDerivedRouteLowerCoherence: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "apply package-stage and geometry-stage Cartesian uniqueness to construct the two exact complete B2b2 endpoint bridges and their route factor laws"
 ```
