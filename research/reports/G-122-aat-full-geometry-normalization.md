@@ -13,10 +13,10 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
 - current proof obligation: Cycle 11 review and acceptance of the selected complete-geometry factorization and its G-116 projection
-- pending proof obligations: C classification and fixed witness; D
+- pending proof obligations: C classification, G-116/G-119 Karoubi alignment, and fixed witness; D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: classify the selected projectors and comparison by the selector, prove the IsIso equivalences, and construct the fixed finite axis-fold witness
+- next proof obligation: classify the selected projectors and comparison by the selector, prove the IsIso equivalences, and connect the Karoubi isomorphism to G-116 before constructing the fixed finite axis-fold witness
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1190,6 +1190,7 @@ selection:
     - "C selector-branch identification with endpoint normalizations and identities"
     - "C IsIso(barBeta) iff barD=id iff not chi"
     - "C canonical-normalization noninjectivity connection and fixed finite axis-fold witness"
+    - "C projection of the complete-geometry Karoubi isomorphism to the existing G-116 Karoubi isomorphism"
     - "C comparison with the existing G-119 Karoubi construction"
     - "D"
 result:
@@ -1232,7 +1233,7 @@ audits:
       - "both selected comparison factorization equations and explicit Karoubi isomorphism"
       - "rho(barD)=E_z and rho(barBeta)=beta_z along the generated endpoint comparisons"
     remaining:
-      - "C classification, IsIso equivalences, canonical-normalization noninjectivity connection, G-119 alignment, and fixed witness"
+      - "C classification, IsIso equivalences, canonical-normalization noninjectivity connection, G-116/G-119 Karoubi alignment, and fixed witness"
       - "D"
   certificate_provenance:
     discharged:
@@ -1256,5 +1257,5 @@ audits:
     - "canonical focused checks from research-modules.txt: ExactBarBetaFactorization 13 and ExactBarBetaProjection 2 declarations; standard axioms only"
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaProjection: 4213/4213 pass; no Research aggregate/full build"
   blocking_findings: []
-  next_obligation: "C classification: identify both selector branches with endpoint normalizations or identities, prove the IsIso equivalences and noninjectivity connection, and construct the fixed finite axis-fold witness"
+  next_obligation: "C classification: identify both selector branches with endpoint normalizations or identities, prove the IsIso equivalences and noninjectivity connection, connect the Karoubi isomorphism to G-116, and construct the fixed finite axis-fold witness"
 ```
