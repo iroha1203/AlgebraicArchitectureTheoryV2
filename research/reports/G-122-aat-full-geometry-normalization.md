@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 14 review and acceptance of the exact centralizer restriction and `barBeta` preimage
-- pending proof obligations: D endpoint sections, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 15 review and acceptance of the object-level normalization section action and its strict laws
+- pending proof obligations: D exact endpoint homomorphic section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the complete-geometry endpoint section of the Karoubi sandwich restriction and assemble the comparison-group section
+- next proof obligation: lift the object-level action to the exact complete-geometry endpoint homomorphic section and assemble the comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1522,4 +1522,85 @@ audits:
     - "targeted dependency build only: ComparisonInformationLoss.KaroubiRestriction 1291/1291 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: construct the complete-geometry endpoint group-homomorphic section of the Karoubi sandwich restriction, then assemble the comparison-group section and selector reflection iff theorem"
+```
+
+## Cycle 15 — Object-level normalization section action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 15
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 1e6dd26bf543663a378d4fb5bb99eb134849adff
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 14 merge 1e6dd26bf543663a378d4fb5bb99eb134849adff; the exact ambient restriction exists but its required group-homomorphic section does not"
+  proof_obligation: "D endpoint-section foundation: construct, rather than assume, a functorial action of every Atom automorphism on all architecture objects that sends each package-selected object to the selected object over the transported configuration"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "identifying all architecture objects with the same Atom configuration"
+    - "using plain configuration transport, which leaves the selected auxiliary datum behind"
+    - "choosing unrelated lifts whose identity and composition laws cannot form a group homomorphism"
+  unchecked:
+    - "lift the object action through every exact core-reading and complete-geometry field"
+    - "assemble the exact endpoint and comparison-group sections"
+    - "D reflection, canonical and bottom-qualified versions, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Presented every architecture object as an Atom configuration paired with its full configuration-independent dependent auxiliary datum.  At each configuration, swapped the package-selected auxiliary datum with one fixed universal base datum, and conjugated configuration transport by the source and target swaps.  The resulting raw action sends the selected object to the selected transported object and satisfies strict identity and composition laws because the two intermediate swaps cancel."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationObjectSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.architectureObjectPresentation
+    - AAT.AG.FullGeometryNormalization.selectedArchitectureAuxiliarySwap_self
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionObjectMap_configuration
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionObjectMap_selected
+    - AAT.AG.FullGeometryNormalization.canonicalObjectNormalization_sectionObjectMap
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionObjectMap_refl
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionObjectMap_trans
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: ArchitectureObject(U) is a configuration paired with its dependent auxiliary datum"
+      - "n1013 section 3: use selected-data swaps around Atom transport"
+      - "fixed target D: endpoint lifts must assemble into a group-homomorphic section"
+    conjuncts:
+      - "the auxiliary sigma type retains StructureMaps, SelectedQuantities, and both selected values"
+      - "the raw action changes the configuration by the supplied Atom equivalence"
+      - "the package-selected object maps to the package-selected object at the transported configuration"
+      - "identity and transitivity are equalities of the full object maps"
+    undischarged_assumptions: []
+    acceptance_point: "The construction takes only P and an Atom equivalence.  It does not take a fiber equality, object-lift choice, identity law, or composition law as input."
+audits:
+  premise_delta:
+    discharged:
+      - "object-level existence of a selected-point-preserving lift for every Atom automorphism"
+      - "object-level identity and composition laws needed by an eventual endpoint group homomorphism"
+    remaining:
+      - "exact core-reading and complete-geometry field lifts and their laws"
+      - "comparison-group section and the remainder of D"
+  certificate_provenance:
+    discharged:
+      - "selected points come from P.reading.objectReading.object"
+      - "configuration transport laws are the proved AtomFoundation transport laws"
+      - "fiber cancellation is the involution theorem for the actual selected-data swap"
+    unresolved: []
+  proof_use:
+    used:
+      - "AtomFoundation.atomConfiguration_transport_id and atomConfiguration_transport_comp"
+      - "Equiv.swap_apply_self, swap_apply_left, and swap_apply_right"
+      - "objectReading.configuration_eq for the selected-object presentation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationObjectSection 19 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationObjectSection: 4068/4068 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: lift the strict object action to exact complete-geometry endpoint automorphisms and construct the group-homomorphic section"
 ```
