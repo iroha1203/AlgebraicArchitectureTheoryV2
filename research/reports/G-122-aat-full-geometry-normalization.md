@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 6 review and acceptance of exactification and lower-route coherence support for the B2b2 bridges
-- pending proof obligations: B2 direct-to-generated cleavage bridges, a_z, b_z, and G-116 mate equality, B3 operation-map commutation and barAlpha naturality, C--D
+- current proof obligation: Cycle 7 review and acceptance of the exact direct-to-canonical complete endpoint bridges
+- pending proof obligations: B2 a_z, b_z, barAlpha, and G-116 mate equality, B3 operation-map commutation and barAlpha naturality, C--D
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: B2 direct-to-generated complete cleavage bridges and the a_z/b_z composite, followed by B3 operation-map commutation
+- next proof obligation: compose the accepted endpoint bridges with the generated mate and exact transport unit/counit to construct a_z, b_z, and barAlpha, then prove the G-116 projected mate equality
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -787,4 +787,106 @@ audits:
     - "targeted module builds for ExactRefinementIso and ExactDerivedRouteLowerCoherence: pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "apply package-stage and geometry-stage Cartesian uniqueness to construct the two exact complete B2b2 endpoint bridges and their route factor laws"
+```
+
+### Cycle 6 review record
+
+- Initial review head `de233b8618fdb833915a506a100306aada577111`:
+  Math A/B and Lean A found no major findings. Lean B required one noncentral
+  provenance description to identify the canonical-authored route as the
+  G-118 generated-route normalization rather than attributing it to G-114.
+- Direct response head `a134633d858ced232fcd0942cbf144c9475de386`
+  changed only the affected module and report wording. Independent confirmation
+  found the wording issue resolved and no new finding.
+- Standard review comment, all seven CI checks, root acceptance, and merge
+  completed in PR #4492. The accepted merge commit is
+  `dcae389f1a1a7abc272a8435be71263dce254b9c`.
+- Review result: the Cycle 6 B2b2 support obligation is
+  `proof-obligation-discharged`; G-122 remains `target-proof-checkpoint`.
+
+## Cycle 7 — Exact direct-to-canonical complete endpoint bridges
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 7
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: dcae389f1a1a7abc272a8435be71263dce254b9c
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 6 merge dcae389f1a1a7abc272a8435be71263dce254b9c; only cast-explicit lower-route equations were available"
+  proof_obligation: "B2b2: prove the full pointed-refinement equalities for both exact-derived routes, apply Cartesian uniqueness at the refinement-package and refinement-geometry stages, reflect the resulting isomorphisms into the exact categories, and construct the complete direct-to-canonical northwest endpoint bridges"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "rewriting baseRefinementAt through a dependent pointed configuration without preserving endpoint types"
+    - "using the lower ExtInstHom equations as if they were full PointedRefinementHom equalities"
+    - "accepting a package or geometry comparison isomorphism from the caller"
+    - "calling a raw complete-geometry isomorphism a fiber isomorphism without proving the projection equation"
+  unchecked:
+    - "B2 a_z, b_z, barAlpha, and the G-116 projected mate equality"
+    - "B3 normalization-morphism equations and barAlpha naturality"
+    - "C--D construction obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Identified the canonical-authored base and pulled lower routes with the refinement images of the literal exact two-edge routes, with every endpoint cast explicit. Applied strong-Cartesian uniqueness first to package morphisms and then to complete-geometry morphisms, exactified both stages without inverse certificates, proved the cross-stage projections of the exact isomorphisms, and lifted them to the final B_z and T_z northwest fiber isomorphisms."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBaseRefinementExactImage.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedPulledRefinementExactImage.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedDirectCanonicalBridge.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBaseRefinement_exactImage
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBaseRoute_refinementExactImage
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalPulledRoute_base_eq_direct
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalBaseGeometryIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectToCanonicalPulledGeometryIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateSourceToCanonicalBaseNorthwestIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactGeneratedMateTargetToCanonicalPulledNorthwestIsoAt
+  claim_mapping:
+    source_labels:
+      - "fixed target B: the pullback and cleavage comparisons identify the literal exact B_z and T_z endpoints with the G-118 canonical-authored northwest endpoints"
+    conjuncts:
+      - "baseRefinementAt is generated internally as the exact image of the original bottom edge"
+      - "pulledRefinementAt uses realizedReflection_ofExact through pulledRefinementAt_mem_exactComparisonImage"
+      - "both full lower-route equalities are derived from Cycle 6 exact lower coherence plus endpoint incidence casts"
+      - "package and geometry comparison isomorphisms are generated by the two accepted strong-Cartesian universal properties"
+      - "fiber isomorphisms include the required projection equation along authoredExactPullbackSourceIso"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only the fixed G-122 inputs A, z, k, and g. Exact-image witnesses, route equalities, Cartesian comparison isomorphisms, inverse compatibility, and fiber projection compatibility are all generated internally."
+audits:
+  premise_delta:
+    discharged:
+      - "full base-route PointedRefinementHom equality"
+      - "full pulled-route PointedRefinementHom equality"
+      - "package-stage and geometry-stage direct-to-canonical isomorphisms"
+      - "exactification of both route comparisons"
+      - "final B_z and T_z northwest fiber isomorphisms"
+    remaining:
+      - "B2 a_z, b_z, barAlpha, and G-116 mate identification"
+      - "B3 remainder and C--D"
+  certificate_provenance:
+    discharged:
+      - "the base exact-image arrow is the original bottom doctrine map with derived endpoint repointing"
+      - "the pulled exact-image witness is the realization-derived exact comparison"
+      - "all upper comparison isomorphisms come from strong-Cartesian uniqueness"
+    unresolved: []
+  proof_use:
+    used:
+      - "pointedPullback_commutes and the original comparison square normalize the pulled endpoint casts"
+      - "strong-Cartesian composition proves the two literal two-edge routes are Cartesian at both projection stages"
+      - "exactPackageIsoOfRefinementIso and exactGeometryIsoOfRefinementIso reflect both inverse laws"
+      - "the exact geometry projection equations discharge the final GeomFiber morphism condition"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: base exact image 4, pulled exact image 1, direct/canonical bridge 6 declarations; standard axioms only"
+    - "targeted module builds for all three Cycle 7 modules: pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "construct a_z and b_z from the endpoint bridges and exact transport unit/counit, form barAlpha, and prove its projection is the G-116 authored support canonical mate"
 ```
