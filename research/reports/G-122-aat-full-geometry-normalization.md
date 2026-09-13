@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 31 review and acceptance of the actual selector bottom-qualified two-case classification, section, exactness, and lift fibers
-- pending proof obligations: terminal declaration inventory, hand-assembled completion ledger, fixed-head four-lane final review, and lifecycle synchronization
-- current target state: `target-proof-checkpoint`
-- completion candidate: no
-- next proof obligation: audit all A--D clauses and the fixed finite witness against named declarations, require an empty unchecked-central-claim set, then run the terminal fixed-head review
+- current proof obligation: terminal fixed-target completion audit
+- pending proof obligations: none known in the fixed A--D statement; terminal completion gates remain
+- current target state: `target-proof-candidate`
+- completion candidate: yes
+- next proof obligation: standard PR review, schema-complete final packet, and fresh whole-target Math A/B plus Lean A/B review
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2995,3 +2995,45 @@ audits:
   blocking_findings: []
   next_obligation: "terminal G-122 completion audit: hand-assemble the declaration inventory and A--D proof-use/provenance ledger, require empty unchecked_central_claim, then run fresh fixed-head Math A/B and Lean A/B review"
 ```
+
+## Terminal completion candidate basis
+
+The completion candidate is the fixed GOAL blob
+`3c9a4de336f3b49069b1296dd388d3e715a0fdc2` together with the cumulative
+Cycle 1--31 artifacts.  The terminal review must independently reconstruct
+the following map rather than accept this report as mathematical evidence.
+
+| Fixed clause | Cumulative Lean evidence | Status before terminal review |
+| --- | --- | --- |
+| A: complete canonical normalization, labelled sandwich category, functor, bottom/coefficient/core and G-119 connections | `CanonicalNormalization`, `ComparisonGroup` | implemented; terminal review pending |
+| B1: exact complete-geometry push/pull, universal properties, adjoint equivalence, projection and coherence | `ExactGeometryPull*`, `ExactGeometryPushCartesian`, `ExactGeometryTransport*` | implemented; terminal review pending |
+| B2: exact-derived G-118 input, pullback/cleavage endpoint comparisons, five-factor mate, and equality with the G-116 mate | `ExactDerivedRefinementBC` through `ExactDerivedBarAlphaProjection` | implemented; terminal review pending |
+| B3: admissibility transport and canonical-normalization naturality along the actual exact routes | `ExactNormalizationTransport`, `ExactNormalizationNaturality`, `ExactBarAlphaNormalizationNaturality` | implemented; terminal review pending |
+| C: selector factorization, Karoubi image, invertibility iff not-selected, and the fixed finite axis-fold non-isomorphism | `ExactBarBetaFactorization`, `ExactBarBetaProjection`, `ExactBarBetaClassification`, `ExactBarBetaKaroubiAlignment`, `ExactBarBetaFiniteWitness` | implemented; terminal review pending |
+| D selector, unqualified: ambient and restricted groups, total section, reflection iff not-selected, selected witness, split exactness, and lift fibers | `ExactBarBetaComparisonGroup`, `ExactBarBetaReflection`, `ExactBarBetaComparisonSection`, `ExactBarBetaComparisonExactness` | implemented; terminal review pending |
+| D canonical, unqualified: canonical comparison section, non-reflection witness, split exactness, and lift fibers | `CanonicalNormalization*Section`, `ExactBarAlphaCanonicalComparisonSection`, `ExactBarAlphaCanonicalComparisonExactness`, `AmbientKernel*` | implemented; terminal review pending |
+| D bottom-qualified, all three cases: actual bottom predicates, canonical and selector sections, reflection decisions, witnesses, exactness, and lift fibers | `GeometryBottomQualifiedComparisonGroup`, `ExactBarAlphaCanonicalBottomComparison`, `ExactBarBetaBottomQualifiedGroups`, `ExactBarBetaBottomQualifiedClassification` | implemented; terminal review pending |
+
+The candidate inventory contains 58 registered ResearchLean modules and 820 public
+declarations as counted by the accepted per-file focused axiom audits.  Every artifact
+listed by the 31 cycle ledgers has a matching `research-modules.txt` entry.  No Research
+aggregate/full build was run.
+
+The material-premise map to be independently checked is:
+
+| Premise family | Role | Candidate provenance and proof-use | Pre-review status |
+| --- | --- | --- | --- |
+| arbitrary `U`, `[DecidableEq U.Atom]`, `A,z,omega,k,g` | ambient-boundary | quantified throughout the exact-derived construction; no finiteness of `U.Atom` or global reachability is added | implemented; terminal review pending |
+| canonical admissibility | direction-hypothesis | constructs complete normalization in A, is transported internally in B3, selects the normalized branch in C/D, and is discharged concretely in the fixed witness | implemented; terminal review pending |
+| complete normalization and all geometry fields | discharge-required | constructed field-by-field in `CanonicalNormalization`; complete idempotence, absorption, functor laws, and projections feed B--D | implemented; terminal review pending |
+| exact transport, Cartesian/Cocartesian factors, unit/counit, and G-118 input | discharge-required | generated from the original exact square and reviewed universal properties; feeds endpoint comparison and the five-factor mate | implemented; terminal review pending |
+| endpoint bridges, mate equality, and normalization naturality | discharge-required | derived from exact/refinement image, Cartesian uniqueness, unit/counit, and the G-116/G-118 projection triangle; feeds `barAlpha` and `barBeta` | implemented; terminal review pending |
+| selector idempotents, factorization, classification, and finite witness | discharge-required | generated from the same `omega` selector and exact routes; the axis-fold packet supplies firing, admissibility, inputs, and non-isomorphism at the fixed cell | implemented; terminal review pending |
+| sections, reflection, ambient witnesses, short exactness, and lift fibers | discharge-required | sections are constructed, witnesses are actual nonidentity geometry automorphisms, reflection is proved in both directions, and each restricted kernel acts on its typed fiber | implemented; terminal review pending |
+| completed comparison, section, exactness, or witness supplied as an input | conclusion-equivalent-risk | absent from the fixed signatures; cycle ledgers require construction from the declared inputs and reviewed predecessors | no occurrence known; terminal review pending |
+
+All known fixed-target proof obligations now have named Lean evidence, and no known
+central claim is unchecked.  These are inputs to the formal four-lane review, not a
+pre-review completion verdict.  `target-theorem-proved` remains unavailable until the
+same-head standard review, schema-complete final packet, all completion gates, CI, and
+the fresh whole-target review pass.
