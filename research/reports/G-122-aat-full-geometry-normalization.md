@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 28 review and acceptance of the generic complete-geometry bottom-qualified comparison-group foundation
-- pending proof obligations: actual canonical and selector D bottom-qualified sections, reflection classifications, exactness, lift-fiber actions, and witnesses
+- current proof obligation: Cycle 29 review and acceptance of the actual canonical bottom-qualified comparison case
+- pending proof obligations: actual selector D bottom-qualified hierarchy, three-case sections and reflection classification, exactness, lift-fiber actions, and witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: specialize the bottom-qualified foundation to the actual canonical comparison and prove its section, non-reflection witness, exactness, and lift-fiber action
+- next proof obligation: construct the actual selector bottom-qualified endpoint and comparison hierarchy and prove the two selector cases
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2716,4 +2716,93 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D canonical bottom specialization: restrict the actual canonical section, exhibit the bottom-qualified ambient kernel witness and normalized-versus-raw reflection failure, then package exactness and lift fibers"
+```
+
+## Cycle 29 — Actual canonical bottom-qualified comparison case
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 29
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: dd5e11f2154e10a70ff6eeb0717450350911ff9b
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 28 merge dd5e11f2154e10a70ff6eeb0717450350911ff9b supplies the generic bottom-qualified restriction; the actual canonical barAlpha case is not yet specialized"
+  proof_obligation: "D canonical bottom case: restrict the actual canonical section to bottom-qualified groups, prove both endpoint bottom/coefficient retention, exhibit the actual bottom-trivial nonidentity ambient kernel pair and non-reflection, and package split exactness plus the restricted-kernel lift-fiber torsor"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "assuming that the unqualified section preserves bottom rather than deriving it from its endpoint map equations"
+    - "using the ambient endpoint kernel as the lift-fiber action kernel"
+    - "showing non-reflection outside the bottom-qualified endpoint domain"
+    - "omitting source or target coefficient retention"
+  unchecked:
+    - "all selector bottom-qualified subgroup and case-classification statements"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Restricted the actual barAlpha canonical section to the two bottom-qualified comparison groups and proved its right inverse and four endpoint-retention equations.  Proved the actual ambient source involution paired with target identity is nontrivial, bottom- and coefficient-trivial, normalizes into the bottom-qualified comparison group, and is not raw-compatible, yielding bottom-qualified ambient preimage inequality.  Proved surjectivity, the literal restricted-kernel split short exact sequence, and the free transitive opposite-kernel action with unique displacement on every typed lift fiber."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalBottomComparison.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.AuthoredExactCanonicalRawBottomComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactCanonicalNormalizedBottomComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparisonSectionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparisonSection_rightInverse
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_raw_bottom
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_source_ne_one
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_bottom_coefficient_packet
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_normalized_bottom_mem
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparison_preimage_ne_raw
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparison_shortExact
+    - AAT.AG.FullGeometryNormalization.AuthoredExactCanonicalBottomComparisonLiftFiber
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparisonLiftFiber_action_free
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparisonLiftFiber_action_transitive
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalBottomComparisonLiftFiber_existsUnique_smul_eq
+  claim_mapping:
+    source_labels:
+      - "fixed target D table: canonical N_geom, admissible, preservation yes, reflection no, group-homomorphic section"
+      - "fixed target D: the same canonical case inside bottom-fixing endpoint groups"
+      - "fixed target D: split exactness and free transitive restricted-kernel lift-fiber action"
+    conjuncts:
+      - "the section retains both endpoint bottom and coefficient maps"
+      - "the source ambient-kernel automorphism is nonidentity while bottom and coefficient trivial"
+      - "the ambient bottom-qualified preimage is strictly larger than the raw-compatible part"
+      - "the comparison restriction is split-surjective and its own kernel acts freely and transitively on typed fibers"
+    undischarged_assumptions: []
+    acceptance_point: "The only mathematical input beyond A,z,k,g is the fixed canonical admissibility premise already required by D.  The section, witness, surjectivity, exactness, and action are constructed; the ambient witness is explicitly not treated as an element of the restricted action kernel."
+audits:
+  premise_delta:
+    discharged:
+      - "actual canonical bottom-qualified section and right inverse"
+      - "actual canonical bottom-qualified non-reflection witness"
+      - "actual canonical bottom-qualified split exactness and lift-fiber torsor"
+    remaining:
+      - "actual selector bottom-qualified hierarchy and both selector cases"
+  certificate_provenance:
+    discharged:
+      - "section is the existing constructed canonical barAlpha section restricted using proved endpoint bottom equations"
+      - "non-reflection is witnessed by the actual Cycle 24 ambient source involution and target identity"
+      - "fiber displacement is first inverse times second in the bottom-qualified raw-compatible group"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 28 bottom-qualified comparison homomorphism"
+      - "actual canonical section endpoint base and coefficient retention"
+      - "actual ambient-kernel normalization, nonidentity, and raw incompatibility"
+      - "literal kernel subgroup and opposite multiplication for the fiber action"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarAlphaCanonicalBottomComparison 23 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaCanonicalBottomComparison: 4223/4223 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D selector bottom qualification: define its named bottom endpoint and comparison hierarchy, restrict the section, prove the not-chi/chi reflection table and witnesses, then package exactness and lift fibers"
 ```
