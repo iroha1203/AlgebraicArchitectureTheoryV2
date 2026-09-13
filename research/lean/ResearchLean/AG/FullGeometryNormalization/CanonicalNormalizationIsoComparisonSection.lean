@@ -136,6 +136,58 @@ theorem canonicalNormalizationIsoComparisonSection_rightInverse
   · exact canonicalNormalizationAutomorphismSection_rightInverse G pair.1.1
   · exact canonicalNormalizationIsoComparisonSection_target_rightInverse c pair
 
+/-- The source component of the comparison section retains the supplied
+pointed-doctrine morphism. -/
+@[simp]
+theorem canonicalNormalizationIsoComparisonSection_fst_hom_base_base
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    (c : G ≅ H) (pair : normalizedGeometryComparisonSubgroup c.hom) :
+    (canonicalNormalizationIsoComparisonSectionHom c pair).1.1.hom.hom.base.base =
+      pair.1.1.hom.f.hom.base.base :=
+  canonicalNormalizationAutomorphismSection_hom_base_base G pair.1.1
+
+/-- The source component of the comparison section retains the supplied
+coefficient homomorphism. -/
+@[simp]
+theorem canonicalNormalizationIsoComparisonSection_fst_hom_coefficientHom
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    (c : G ≅ H) (pair : normalizedGeometryComparisonSubgroup c.hom) :
+    (canonicalNormalizationIsoComparisonSectionHom c pair).1.1.hom.hom.geometry.coefficientHom =
+      pair.1.1.hom.f.hom.geometry.coefficientHom :=
+  canonicalNormalizationAutomorphismSection_hom_coefficientHom G pair.1.1
+
+/-- The target component of the comparison section retains the supplied
+pointed-doctrine morphism. -/
+@[simp]
+theorem canonicalNormalizationIsoComparisonSection_snd_hom_base_base
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    (c : G ≅ H) (pair : normalizedGeometryComparisonSubgroup c.hom) :
+    (canonicalNormalizationIsoComparisonSectionHom c pair).1.2.hom.hom.base.base =
+      pair.1.2.hom.f.hom.base.base := by
+  have h := congrArg
+    (fun a : Aut ((geometryNormalizationFunctor.{u, v} U).obj H) =>
+      a.hom.f.hom.base.base)
+    (canonicalNormalizationIsoComparisonSection_target_rightInverse c pair)
+  simpa using h
+
+/-- The target component of the comparison section retains the supplied
+coefficient homomorphism. -/
+@[simp]
+theorem canonicalNormalizationIsoComparisonSection_snd_hom_coefficientHom
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    (c : G ≅ H) (pair : normalizedGeometryComparisonSubgroup c.hom) :
+    (canonicalNormalizationIsoComparisonSectionHom c pair).1.2.hom.hom.geometry.coefficientHom =
+      pair.1.2.hom.f.hom.geometry.coefficientHom := by
+  have h := congrArg
+    (fun a : Aut ((geometryNormalizationFunctor.{u, v} U).obj H) =>
+      a.hom.f.hom.geometry.coefficientHom)
+    (canonicalNormalizationIsoComparisonSection_target_rightInverse c pair)
+  simpa using h
+
 #assert_standard_axioms_only AAT.AG.FullGeometryNormalization
 
 end AAT.AG.FullGeometryNormalization
