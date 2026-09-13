@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 20 review and acceptance of the complete endpoint automorphism-group section
-- pending proof obligations: D comparison-preserving subgroup section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 21 review and acceptance of the isomorphism-comparison subgroup section
+- pending proof obligations: D specialization to the actual canonical comparison, selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: restrict the endpoint automorphism section to comparison-preserving groups and prove the subgroup right-inverse law
+- next proof obligation: specialize the isomorphism-comparison section to the actual `barAlpha_z` comparison and its generated admissible endpoints
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2008,4 +2008,83 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationAutomorphismSection: 4084/4084 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: construct a comparison-preserving raw endpoint pair from each normalized comparison pair and prove the restricted section equation"
+```
+
+## Cycle 21 — Isomorphism-comparison subgroup section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 21
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 091b3e717646bc9fb1f06afe7b58d171ae2c4f46
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 20 merge 091b3e717646bc9fb1f06afe7b58d171ae2c4f46; objectwise endpoint sections exist but independent endpoint lifts need not preserve an arbitrary comparison"
+  proof_obligation: "D isomorphism-comparison case: construct a raw comparison-preserving pair from every normalized comparison-preserving pair, without assuming naturality of the objectwise section, and prove a group-homomorphic right inverse of normalization"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "assuming the source and target objectwise sections are natural across the comparison"
+    - "accepting a raw comparison-preserving lift or a target lift as input"
+    - "reversing Aut multiplication or the direction of conjugation"
+    - "proving only endpointwise recovery without subgroup membership"
+  unchecked:
+    - "specialization to the generated admissible endpoints and actual `barAlpha_z`"
+    - "D selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For every isomorphism c of canonical-normalization-admissible complete geometries, lifted the source normalized automorphism by the Cycle 20 section and defined the raw target by conjugation through c.  The conjugate pair preserves c by the actual inverse laws of c.  The normalized target is recovered from the input normalized comparison equation and functoriality, yielding a MonoidHom section of the full comparison-preserving subgroup and a proved right-inverse law.  No naturality premise for the objectwise section is used."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationIsoComparisonSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.geometryIsoConjugationAutomorphismHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationIsoComparisonSectionHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationIsoComparisonSection_target_rightInverse
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationIsoComparisonSection_rightInverse
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: comparison-preserving endpoint lift is a group-homomorphic section"
+      - "fixed target D canonical N_geom case: construct a group-homomorphic section on comparison groups"
+    conjuncts:
+      - "the raw source lift is constructed from the normalized source automorphism"
+      - "the raw target lift is constructed by conjugation through the selected raw isomorphism"
+      - "the raw pair preserves the selected comparison"
+      - "normalization after the subgroup section is the identity on the supplied normalized pair"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only an isomorphism c and an actual member of the normalized comparison subgroup.  The raw target, raw comparison certificate, MonoidHom laws, and right-inverse certificate are all derived."
+audits:
+  premise_delta:
+    discharged:
+      - "comparison-preserving raw endpoint lift for every isomorphism comparison"
+      - "comparison-subgroup MonoidHom section"
+      - "comparison-subgroup right-inverse law"
+    remaining:
+      - "actual `barAlpha_z` admissible-endpoint specialization"
+      - "selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "raw comparison preservation comes from the actual hom/inv laws of c"
+      - "source recovery comes from the Cycle 20 normalization right inverse"
+      - "target recovery comes from the supplied normalized comparison-subgroup membership equation and functoriality"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalNormalizationAutomorphismSectionHom and its right-inverse theorem"
+      - "the actual Iso hom/inv laws"
+      - "the existing normalized and raw geometry comparison subgroups"
+      - "the existing geometryNormalizationComparisonSubgroupHom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationIsoComparisonSection 6 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationIsoComparisonSection: 4085/4085 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: package the actual exact-derived `barAlpha_z` as an isomorphism of generated admissible endpoint objects and specialize the comparison section/right inverse"
 ```
