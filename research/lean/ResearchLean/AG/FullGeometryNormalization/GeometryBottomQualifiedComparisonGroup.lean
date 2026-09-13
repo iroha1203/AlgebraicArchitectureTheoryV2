@@ -1,4 +1,5 @@
 import ResearchLean.AG.FullGeometryNormalization.ComparisonGroup
+import ResearchLean.AG.ComparisonInformationLoss.CanonicalNormalizationRestriction
 
 /-!
 # Bottom-qualified complete-geometry comparison groups
@@ -20,6 +21,7 @@ namespace AAT.AG.FullGeometryNormalization
 
 open AtomFoundation
 open RealizationComparisonIdempotents
+open ComparisonInformationLoss
 
 universe u v
 
@@ -286,27 +288,118 @@ theorem normalizedGeometryBottomAutomorphismHom_core_agrees
           ((geometryNormalizationFunctor.{u, v} U).obj G) a) :=
   rfl
 
-/-- The underlying raw endpoint pair of the geometry restriction is exactly
-the pair seen by G-119's core comparison API. -/
-@[simp]
-theorem rawGeometryBottomQualified_core_pair
+/-- Core projection restricted all the way to G-119's raw base-qualified
+comparison subgroup.  Bottom qualification is transported from the actual
+complete-geometry endpoint equations, not supplied as another premise. -/
+noncomputable def rawGeometryBottomQualifiedComparisonCoreHom
     {U : AtomCarrier.{u}}
-    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} {c : G ⟶ H}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H) :
+    rawGeometryBottomQualifiedComparisonSubgroup c →*
+      rawBaseQualifiedNormalizationComparisonSubgroup
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c) where
+  toFun pair := ⟨rawGeometryComparisonCoreHom c pair.1, pair.2⟩
+  map_one' := by
+    apply Subtype.ext
+    exact map_one (rawGeometryComparisonCoreHom c)
+  map_mul' a b := by
+    apply Subtype.ext
+    exact map_mul (rawGeometryComparisonCoreHom c) a.1 b.1
+
+/-- Evaluation of the raw qualified core projection. -/
+@[simp]
+theorem rawGeometryBottomQualifiedComparisonCoreHom_val
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
     (pair : rawGeometryBottomQualifiedComparisonSubgroup c) :
-    (rawGeometryComparisonCoreHom c pair.1).1 =
-      geometryCoreEndpointAutomorphismHom G H pair.1.1 :=
+    (rawGeometryBottomQualifiedComparisonCoreHom c pair).1 =
+      rawGeometryComparisonCoreHom c pair.1 :=
   rfl
 
-/-- The underlying normalized endpoint pair of the geometry restriction is
-exactly the pair seen by G-119's normalized core comparison API. -/
-@[simp]
-theorem normalizedGeometryBottomQualified_core_pair
+set_option synthInstance.maxHeartbeats 100000 in
+/-- Core projection restricted all the way to G-119's normalized
+base-qualified comparison subgroup. -/
+noncomputable def normalizedGeometryBottomQualifiedComparisonCoreHom
     {U : AtomCarrier.{u}}
-    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} {c : G ⟶ H}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H) :
+    normalizedGeometryBottomQualifiedComparisonSubgroup c →*
+      normalizedBaseQualifiedComparisonSubgroup
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c) where
+  toFun pair := ⟨normalizedGeometryComparisonCoreHom c pair.1, pair.2⟩
+  map_one' := by
+    apply Subtype.ext
+    exact map_one (normalizedGeometryComparisonCoreHom c)
+  map_mul' a b := by
+    apply Subtype.ext
+    exact map_mul (normalizedGeometryComparisonCoreHom c) a.1 b.1
+
+/-- Evaluation of the normalized qualified core projection. -/
+@[simp]
+theorem normalizedGeometryBottomQualifiedComparisonCoreHom_val
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
     (pair : normalizedGeometryBottomQualifiedComparisonSubgroup c) :
-    (normalizedGeometryComparisonCoreHom c pair.1).1 =
-      normalizedGeometryCoreEndpointAutomorphismHom G H pair.1.1 :=
+    (normalizedGeometryBottomQualifiedComparisonCoreHom c pair).1 =
+      normalizedGeometryComparisonCoreHom c pair.1 := by
+  apply Subtype.ext
   rfl
+
+/-- Complete-geometry bottom restriction commutes with G-119's accepted
+base-qualified comparison homomorphism after core projection. -/
+theorem geometryNormalizationBottomQualifiedComparisonCore_commutes
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
+    (pair : rawGeometryBottomQualifiedComparisonSubgroup c) :
+    normalizedGeometryBottomQualifiedComparisonCoreHom c
+        (geometryNormalizationBottomQualifiedComparisonSubgroupHom c pair) =
+      normalizationBaseQualifiedComparisonSubgroupHom
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c)
+        (rawGeometryBottomQualifiedComparisonCoreHom c pair) := by
+  apply Subtype.ext
+  exact geometryNormalizationComparisonSubgroupHom_core_commutes c pair.1
+
+/-! ## Agreement with G-120's endpoint-first subgroup nesting -/
+
+/-- Raw core projection expressed in G-120's endpoint-first base-qualified
+comparison subgroup. -/
+noncomputable def rawGeometryBottomQualifiedG120CoreHom
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H) :
+    rawGeometryBottomQualifiedComparisonSubgroup c →*
+      rawBaseComparisonSubgroup
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c) :=
+  (rawBaseComparisonEquivExisting
+      ((admissibleGeometryCoreFunctor.{u, v} U).map c)).symm.toMonoidHom.comp
+    (rawGeometryBottomQualifiedComparisonCoreHom c)
+
+/-- Normalized core projection expressed in G-120's endpoint-first
+base-qualified comparison subgroup. -/
+noncomputable def normalizedGeometryBottomQualifiedG120CoreHom
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H) :
+    normalizedGeometryBottomQualifiedComparisonSubgroup c →*
+      normalizedBaseComparisonSubgroup
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c) :=
+  (normalizedBaseComparisonEquivExisting
+      ((admissibleGeometryCoreFunctor.{u, v} U).map c)).symm.toMonoidHom.comp
+    (normalizedGeometryBottomQualifiedComparisonCoreHom c)
+
+/-- Under G-120's subgroup reassociation, complete-geometry bottom
+normalization is exactly `rBar_base`. -/
+theorem geometryNormalizationBottomQualifiedG120Core_commutes
+    {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U} (c : G ⟶ H)
+    (pair : rawGeometryBottomQualifiedComparisonSubgroup c) :
+    normalizedGeometryBottomQualifiedG120CoreHom c
+        (geometryNormalizationBottomQualifiedComparisonSubgroupHom c pair) =
+      normalizationBaseCompatibleRestrictionHom
+        ((admissibleGeometryCoreFunctor.{u, v} U).map c)
+        (rawGeometryBottomQualifiedG120CoreHom c pair) := by
+  apply (normalizedBaseComparisonEquivExisting
+    ((admissibleGeometryCoreFunctor.{u, v} U).map c)).injective
+  rw [normalizationBaseCompatibleRestriction_agrees_existing]
+  simpa [rawGeometryBottomQualifiedG120CoreHom,
+    normalizedGeometryBottomQualifiedG120CoreHom] using
+    geometryNormalizationBottomQualifiedComparisonCore_commutes c pair
 
 #assert_standard_axioms_only AAT.AG.FullGeometryNormalization
 

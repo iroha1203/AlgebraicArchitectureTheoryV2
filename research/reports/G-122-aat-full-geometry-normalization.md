@@ -2669,6 +2669,12 @@ result:
     - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedComparisonSubgroupHom
     - AAT.AG.FullGeometryNormalization.rawGeometryBottomAutomorphismHom_core_agrees
     - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomAutomorphismHom_core_agrees
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomQualifiedComparisonCoreHom
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomQualifiedComparisonCoreHom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedComparisonCore_commutes
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomQualifiedG120CoreHom
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomQualifiedG120CoreHom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedG120Core_commutes
   claim_mapping:
     source_labels:
       - "fixed target D: restrict the same three comparison cases to endpoint automorphisms fixing the bottom pi rho"
@@ -2705,8 +2711,8 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused check from research/lean: GeometryBottomQualifiedComparisonGroup 27 declarations; standard axioms only"
-    - "targeted module build ResearchLean.AG.FullGeometryNormalization.GeometryBottomQualifiedComparisonGroup: 4079/4079 pass; no Research aggregate/full build"
+    - "focused check from research/lean: GeometryBottomQualifiedComparisonGroup 33 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.GeometryBottomQualifiedComparisonGroup: 4081/4081 pass; no Research aggregate/full build"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D canonical bottom specialization: restrict the actual canonical section, exhibit the bottom-qualified ambient kernel witness and normalized-versus-raw reflection failure, then package exactness and lift fibers"
