@@ -79,7 +79,7 @@ theorem authoredExactBarAlphaAdmissibleIsoAt_hom
       (authoredExactBarAlphaIsoAt A z k g).hom.1 :=
   rfl
 
-/-- The actual canonical-normalization comparison groups admit the
+/-- The actual canonical-normalization comparison groups have the
 group-homomorphic section constructed from the fixed exact `barAlpha`. -/
 noncomputable def authoredExactCanonicalComparisonSectionHom
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
