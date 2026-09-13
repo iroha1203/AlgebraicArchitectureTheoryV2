@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 18 review and acceptance of the exact-core sandwich-section law
-- pending proof obligations: D complete-geometry section, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 19 review and acceptance of the complete-geometry section constructor and laws
+- pending proof obligations: D endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: extend the exact-core section and its group laws to complete geometry, then assemble the endpoint comparison-group section
+- next proof obligation: package the complete-geometry section on automorphism groups and assemble the endpoint comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1843,4 +1843,89 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSectionRetraction: 4071/4071 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: lift the exact-core section constructor, identity, composition, and retraction law to complete GeometryTotalHom data"
+```
+
+## Cycle 19 — Complete-geometry normalization section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 19
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: cf05bbfd69b01a0fbf3ca4465332a71128ddf0e9
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 18 merge cf05bbfd69b01a0fbf3ca4465332a71128ddf0e9; the exact-core section and retraction laws exist but no complete GeometryTotalHom lift has been constructed"
+  proof_obligation: "D complete-geometry lift: construct the package-total and GeomReadHom section over an arbitrary complete-geometry endomorphism, prove identity, composition, sandwich, and retraction as full GeometryTotalHom equalities, and retain bottom and coefficient maps"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting a completed geometry lift as an input"
+    - "changing the pointed-doctrine or coefficient morphism while lifting the upper exact core"
+    - "proving only equality after core projection"
+    - "using proof irrelevance to discard Support, Axis, or Observable comparison maps"
+  unchecked:
+    - "automorphism and group-homomorphic endpoint/comparison-group packaging"
+    - "D reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the PackageTotalHom section by retaining the input pointed-doctrine morphism and replacing only its upper exact-core morphism by the Cycle 16 section.  Rebuilt all GeomReadHom fields over that new base: nine coverage clauses, overlap comparison, coefficient/raw compatibility, Support/Axis/Observable maps, reading laws, and naturality.  Proved the normalization identity, strict composition, computational sandwich equality, and fixed-morphism retraction as equalities of complete GeometryTotalHom structures.  The dependent geometry comparisons are matched by explicit heterogeneous function extensionality rather than projection-only equality."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationGeometrySection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionTotal
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySectionReadHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySection
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionTotal_normalization
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionTotal_comp
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionTotal_sandwich
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySection_normalization
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySection_comp
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySection_sandwich
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationGeometrySection_retraction
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: extend the section to complete GeometryTotalHom data and prove group laws"
+      - "fixed target D: every section preserves the bottom and coefficient maps of both endpoint automorphisms"
+    conjuncts:
+      - "the lower pointed-doctrine map is exactly the input map"
+      - "the coefficient homomorphism is exactly the input map"
+      - "all geometry comparison fields are reconstructed over the sectioned core total morphism"
+      - "identity, composition, sandwich, and retraction are full complete-geometry morphism equalities"
+    undischarged_assumptions: []
+    acceptance_point: "Inputs are only G, its canonical admissibility, and the actual complete endomorphism f; fixedness is required only by the final retraction theorem.  No completed geometry section or comparison-field coherence certificate is supplied."
+audits:
+  premise_delta:
+    discharged:
+      - "complete-geometry section constructor"
+      - "complete-geometry identity, composition, sandwich, and retraction laws"
+      - "bottom and coefficient map preservation at the morphism level"
+    remaining:
+      - "automorphism/group-homomorphic endpoint and comparison-group section"
+      - "reflection, bottom-qualified group cases, split exact/fiber actions, and kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "upper exact-core data and laws are the reviewed Cycles 16 through 18 constructors and theorems"
+      - "lower doctrine, coefficient, overlap, and local realization data are copied from the actual input morphism and retyped field-by-field"
+      - "complete equality uses GeometryTotalHom.ext, GeomReadHom.ext, and explicit HEq for all three local realization maps"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalNormalizationSectionUpper and its normalization, comp, sandwich laws"
+      - "canonicalNormalizationSectionOperationMap reconstruction through the imported exact-core section"
+      - "PackageTotalHom.ext, GeometryTotalHom.ext, and GeomReadHom.ext"
+      - "the actual input coverage, overlap, raw, coefficient, and local comparison fields"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationGeometrySection 13 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationGeometrySection: 4072/4072 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: lift complete normalization-fixed automorphisms to raw complete-geometry automorphisms and assemble the group-homomorphic endpoint comparison section"
 ```
