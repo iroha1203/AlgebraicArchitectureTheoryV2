@@ -13,7 +13,7 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
 - current proof obligation: Cycle 21 review and acceptance of the isomorphism-comparison subgroup section
-- pending proof obligations: D specialization to the actual canonical comparison, selector reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- pending proof obligations: D specialization to the actual canonical comparison, selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: specialize the isomorphism-comparison section to the actual `barAlpha_z` comparison and its generated admissible endpoints
@@ -2031,7 +2031,7 @@ selection:
     - "proving only endpointwise recovery without subgroup membership"
   unchecked:
     - "specialization to the generated admissible endpoints and actual `barAlpha_z`"
-    - "D selector reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+    - "D selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "For every isomorphism c of canonical-normalization-admissible complete geometries, lifted the source normalized automorphism by the Cycle 20 section and defined the raw target by conjugation through c.  The conjugate pair preserves c by the actual inverse laws of c.  The normalized target is recovered from the input normalized comparison equation and functoriality, yielding a MonoidHom section of the full comparison-preserving subgroup and a proved right-inverse law.  No naturality premise for the objectwise section is used."
@@ -2062,7 +2062,7 @@ audits:
       - "comparison-subgroup right-inverse law"
     remaining:
       - "actual `barAlpha_z` admissible-endpoint specialization"
-      - "selector reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+      - "selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
   certificate_provenance:
     discharged:
       - "raw comparison preservation comes from the actual hom/inv laws of c"
