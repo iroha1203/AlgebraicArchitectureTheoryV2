@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 27 review and acceptance of selector split exactness and lift-fiber kernel action
-- pending proof obligations: all D bottom-qualified cases
+- current proof obligation: Cycle 28 review and acceptance of the generic complete-geometry bottom-qualified comparison-group foundation
+- pending proof obligations: actual canonical and selector D bottom-qualified sections, reflection classifications, exactness, lift-fiber actions, and witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: restrict the selector and canonical comparison constructions to bottom-fixing endpoint groups and prove the same three cases
+- next proof obligation: specialize the bottom-qualified foundation to the actual canonical comparison and prove its section, non-reflection witness, exactness, and lift-fiber action
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2627,4 +2627,93 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D bottom qualification: define bottom-fixing endpoint and comparison subgroups for the selector and canonical constructions, restrict the sections and homomorphisms, and prove preservation, reflection classification, split exactness, lift-fiber action, and non-reflection witnesses in all three cases"
+```
+
+## Cycle 28 — Generic bottom-qualified comparison-group foundation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 28
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: e1734206d48a7006f25786fe6ecbf4cfa0c56b93
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 27 merge e1734206d48a7006f25786fe6ecbf4cfa0c56b93; the unqualified canonical and selector cases are discharged, while every bottom-qualified specialization remains"
+  proof_obligation: "D bottom qualification foundation: define actual raw and normalized complete-geometry bottom projections, endpoint kernels, comparison subgroups, the normalization restriction, and named bridges to the accepted G-119/G-120 core APIs"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "replacing the actual bottom maps by an unrelated predicate"
+    - "assuming preservation instead of deriving it from pi_N N = pi V"
+    - "conflating endpoint bottom kernels with the later restricted lift-fiber kernel"
+    - "claiming any section, reflection classification, or exactness in this foundation cycle"
+  unchecked:
+    - "actual canonical bottom-qualified section, non-reflection witness, exactness, and lift fibers"
+    - "actual selector bottom-qualified hierarchy, three-case reflection table, sections, witnesses, exactness, and lift fibers"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the raw bottom projection as core forgetting followed by pi V and the normalized bottom projection as normalized-core forgetting followed by pi_N; proved pi_N N_geom = pi V rho on maps and functors; defined both endpoint kernels and both two-ended comparison subgroups; proved normalization preserves bottom identity and restricted the comparison homomorphism; and exposed exact core-package agreement bridges."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/GeometryBottomQualifiedComparisonGroup.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomProjection
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomProjection
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomProjection_normalization_eq
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomEndpointSubgroup
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomEndpointSubgroup
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomQualifiedComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomQualifiedComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationEndpointAutomorphism_preserves_bottom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedComparisonSubgroupHom
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomAutomorphismHom_core_agrees
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomAutomorphismHom_core_agrees
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomQualifiedComparisonCoreHom
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomQualifiedComparisonCoreHom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedComparisonCore_commutes
+    - AAT.AG.FullGeometryNormalization.rawGeometryBottomQualifiedG120CoreHom
+    - AAT.AG.FullGeometryNormalization.normalizedGeometryBottomQualifiedG120CoreHom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationBottomQualifiedG120Core_commutes
+  claim_mapping:
+    source_labels:
+      - "fixed target D: restrict the same three comparison cases to endpoint automorphisms fixing the bottom pi rho"
+      - "fixed target D: normalization retains both endpoint bottom data"
+    conjuncts:
+      - "raw and normalized bottom observations are the actual G-119 projections after complete-geometry core forgetting"
+      - "bottom qualification is identity at both endpoints"
+      - "normalization maps raw bottom-qualified pairs to normalized bottom-qualified pairs"
+    undischarged_assumptions: []
+    acceptance_point: "Bottom preservation is derived from the actual functor equality; callers do not supply it. This cycle intentionally leaves every case-specific section, reflection, exactness, fiber, and witness obligation unchecked."
+audits:
+  premise_delta:
+    discharged:
+      - "generic complete-geometry bottom projections and endpoint kernels"
+      - "generic two-ended bottom-qualified comparison subgroups"
+      - "generic normalization restriction and G-119/G-120 bridges"
+    remaining:
+      - "all actual canonical and selector bottom-qualified case theorems"
+  certificate_provenance:
+    discharged:
+      - "bottom preservation is obtained from normalizedGeometryBottomProjection_normalization_map"
+      - "core agreement is definitional through the existing projection functors"
+    unresolved: []
+  proof_use:
+    used:
+      - "the accepted package projections pi V and pi_N"
+      - "geometryNormalizationFunctor and its core projection"
+      - "the existing raw and normalized complete-geometry comparison subgroups"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: GeometryBottomQualifiedComparisonGroup 33 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.GeometryBottomQualifiedComparisonGroup: 4081/4081 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D canonical bottom specialization: restrict the actual canonical section, exhibit the bottom-qualified ambient kernel witness and normalized-versus-raw reflection failure, then package exactness and lift fibers"
 ```
