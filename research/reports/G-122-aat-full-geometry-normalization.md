@@ -2991,10 +2991,23 @@ audits:
   validation_refs:
     - "focused check from research/lean: ExactBarBetaBottomQualifiedClassification 24 public declarations; standard axioms only"
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaBottomQualifiedClassification: 4258/4258 pass; no Research aggregate/full build"
-    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pass at fixed PR #4517 head d9b916d2871c2815e9c188dd129d9ed334deb6f7"
   blocking_findings: []
   next_obligation: "terminal G-122 completion audit: hand-assemble the declaration inventory and A--D proof-use/provenance ledger, require empty unchecked_central_claim, then run fresh fixed-head Math A/B and Lean A/B review"
 ```
+
+### Cycle 31 review record
+
+- Fixed review head `d9b916d2871c2815e9c188dd129d9ed334deb6f7`: Math A/B and
+  Lean A/B all returned `No major findings`, central 0 and noncentral 0.
+- Focused check covered 24 public declarations with standard axioms only; the targeted
+  module build passed 4258/4258 jobs, and all seven CI checks passed.
+- The fixed-head audit is [PR #4517 comment 5651268857](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4517#issuecomment-5651268857).
+  PR #4517 merged as `0f33c9a28185251954540432dbd25c90c15a7592`, and the accepted
+  scope and terminal-audit remainder were synchronized to
+  [Issue #4485 comment 5651271280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485#issuecomment-5651271280).
+- Review result: the Cycle 31 selector bottom obligations are
+  `proof-obligation-discharged`; only the terminal completion gates remain.
 
 ## Terminal completion candidate basis
 
