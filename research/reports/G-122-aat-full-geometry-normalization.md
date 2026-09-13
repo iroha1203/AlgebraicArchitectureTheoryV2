@@ -2382,7 +2382,7 @@ selection:
     - "all bottom-qualified subgroup statements"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Lifted the already constructed complete-geometry ambient-kernel involution to a vertical endomorphism and automorphism in every admissible geometry fiber, retaining identity pointed base and coefficient map.  On the selected branch, paired that nonidentity source automorphism with the target identity, proved it centralizes the actual barE/barD endpoints, lies in the ambient preimage of the actual Karoubi barBeta comparison group, and does not preserve the reversible actual barAlpha.  Off the selector, rewrote barD and barE to identities and barBeta to barAlpha, proving equality of the two subgroups.  Combined the branches into the exact reflection iff not-selected theorem."
+  proof_obligation_delta: "Lifted the already constructed complete-geometry ambient-kernel involution to a vertical endomorphism and automorphism in every admissible geometry fiber, retaining identity pointed base and coefficient map.  On the selected branch, paired that nonidentity source automorphism with the target identity, proved it centralizes the actual barE/barD endpoints, and proved both the source restriction and the full ambient endpoint restriction are identity.  The same pair lies in the ambient preimage of the actual Karoubi barBeta comparison group but does not preserve the reversible actual barAlpha.  Off the selector, rewrote barD and barE to identities and barBeta to barAlpha, proving equality of the two subgroups.  Combined the branches into the exact reflection iff not-selected theorem."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelGeometryFiberLift.lean
@@ -2395,6 +2395,9 @@ result:
     - AAT.AG.FullGeometryNormalization.canonicalGeometryFiberNormalization_comp_ambientKernelGeometryFiberHom
     - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberHom_comp_canonicalGeometryFiberNormalization
     - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_restriction_fst
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_restriction
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_mem_restriction_ker
     - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_mem_preimage
     - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_not_mem_raw
     - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_ne_raw_of_selected
@@ -2407,6 +2410,7 @@ result:
     conjuncts:
       - "the ambient complete-geometry kernel automorphism is a vertical automorphism of the actual direct GeomFiber"
       - "selected endpoint normalization and two-sided absorption imply centralization of the actual barE"
+      - "the actual source sandwich restriction and the full ambient endpoint restriction send the selected witness to identity"
       - "source factorization of barBeta gives selected preimage membership"
       - "cancellation by the inverse of the actual barAlpha Iso gives raw nonmembership"
       - "off the selector barD is identity, so barBeta is literally barAlpha and the preimage equals the raw centralizing subgroup"
@@ -2416,6 +2420,7 @@ audits:
   premise_delta:
     discharged:
       - "actual selector ambient-kernel witness in the geometry fiber"
+      - "actual selected witness membership in the ambient endpoint restriction kernel, distinct from the restricted comparison-hom kernel"
       - "actual selected-branch reflection failure"
       - "actual off-selector reflection equality"
       - "selector reflection iff not selected"
@@ -2426,6 +2431,7 @@ audits:
     discharged:
       - "the fiber automorphism is built from Cycle 24's field-by-field complete-geometry automorphism and its proved identity base projection"
       - "centralization is derived from selected barE identification and the two absorption equations"
+      - "ambient kernel membership is proved as a full Karoubi automorphism-product equality using endpoint sandwich formulas and projector idempotence"
       - "preimage membership is evaluated through the literal authoredExactBarBetaAt source factorization"
       - "raw nonmembership uses the inverse of the literal authoredExactBarAlphaIsoAt and the constructed nonidentity theorem"
     unresolved: []
@@ -2433,8 +2439,9 @@ audits:
     used:
       - "ambientKernelGeometry, its involution and nonidentity, and its identity bottom/coefficient fields"
       - "authoredExactBarEAt_eq_endpoint_normalization"
-      - "authoredExactBarEAt_projector_comm and authoredExactBarBetaAt_factor"
+      - "authoredExactBarBetaAt_source_factorization and authoredExactBarBetaAt_factor"
       - "authoredExactEndpointRestriction_preimage_eq_barBeta"
+      - "authoredExactEndpointRestrictionHom_fst_hom_f and authoredExactEndpointRestrictionHom_snd_hom_f"
       - "authoredExactBarDAt_eq_id off the selector"
     unused: []
   structure_field_escape: none-found
@@ -2444,7 +2451,7 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks from research/lean: AmbientKernelGeometryFiberLift 11 declarations and ExactBarBetaReflection 9 declarations; standard axioms only"
+    - "focused checks from research/lean: AmbientKernelGeometryFiberLift 11 declarations and ExactBarBetaReflection 12 declarations; standard axioms only"
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaReflection: 4239/4239 pass; no Research aggregate/full build"
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []

@@ -76,6 +76,101 @@ noncomputable def authoredExactSelectedAmbientKernelCentralizingPair
       A z omega k g selected).1.2 = 1 :=
   rfl
 
+/-- The source component of the selected ambient witness is killed by the
+actual endpoint restriction.  This is the full Karoubi automorphism equality,
+not merely equality of an underlying field. -/
+@[simp] theorem authoredExactSelectedAmbientKernelCentralizingPair_restriction_fst
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (A : AuthoredBCDatumSquare U) (z : A.context.Category)
+    (omega : DefectCochain A.toTransportData)
+    (k : Type v) [CommRing k]
+    (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k)
+    (selected : omega z.as ≠ 1 ∧ CanonicalObjectNormalizationAdmissible
+      (A.context.supportPackage z.as)) :
+    (authoredExactEndpointRestrictionHom A z omega k g
+      (authoredExactSelectedAmbientKernelCentralizingPair
+        A z omega k g selected)).1 = 1 := by
+  apply Iso.ext
+  apply Karoubi.Hom.ext
+  rw [authoredExactEndpointRestrictionHom_fst_hom_f]
+  rw [authoredExactSelectedAmbientKernelCentralizingPair_fst]
+  rw [authoredExactBarEAt_eq_endpoint_normalization A z omega k g selected]
+  change
+    canonicalGeometryFiberNormalization
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) ≫
+        ambientKernelGeometryFiberHom
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) ≫
+        canonicalGeometryFiberNormalization
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) = _
+  calc
+    _ = canonicalGeometryFiberNormalization
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) ≫
+        canonicalGeometryFiberNormalization
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) := by
+            rw [← Category.assoc,
+              canonicalGeometryFiberNormalization_comp_ambientKernelGeometryFiberHom]
+    _ = canonicalGeometryFiberNormalization
+          (authoredExactDirectGeometryAt A z k g)
+          (authoredExactDirectGeometryAt_admissible A z k g selected.2) :=
+            by
+              rw [← authoredExactBarEAt_eq_endpoint_normalization
+                A z omega k g selected]
+              exact authoredExactBarEAt_idem A z omega k g
+    _ = authoredExactBarEAt A z omega k g :=
+      (authoredExactBarEAt_eq_endpoint_normalization
+        A z omega k g selected).symm
+    _ = _ := rfl
+
+/-- The actual endpoint restriction kills the complete selected ambient pair:
+both its normalized source and its identity target are trivial. -/
+@[simp] theorem authoredExactSelectedAmbientKernelCentralizingPair_restriction
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (A : AuthoredBCDatumSquare U) (z : A.context.Category)
+    (omega : DefectCochain A.toTransportData)
+    (k : Type v) [CommRing k]
+    (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k)
+    (selected : omega z.as ≠ 1 ∧ CanonicalObjectNormalizationAdmissible
+      (A.context.supportPackage z.as)) :
+    authoredExactEndpointRestrictionHom A z omega k g
+      (authoredExactSelectedAmbientKernelCentralizingPair
+        A z omega k g selected) = 1 := by
+  apply Prod.ext
+  · exact authoredExactSelectedAmbientKernelCentralizingPair_restriction_fst
+      A z omega k g selected
+  · change
+      (authoredExactEndpointRestrictionHom A z omega k g
+        (authoredExactSelectedAmbientKernelCentralizingPair
+          A z omega k g selected)).2 =
+        (1 : Aut (authoredExactBarDTargetKaroubiAt A z omega k g))
+    apply Iso.ext
+    apply Karoubi.Hom.ext
+    rw [authoredExactEndpointRestrictionHom_snd_hom_f]
+    rw [authoredExactSelectedAmbientKernelCentralizingPair_snd]
+    exact authoredExactBarDAt_idem A z omega k g
+
+/-- The selected pair lies in the kernel of the **ambient** endpoint
+restriction.  It lies outside the raw compatible subgroup domain (proved
+below), so this statement must not be confused with membership in
+`ker authoredExactCompatibleRestrictionHom`, whose domain already requires
+raw `barAlpha` compatibility. -/
+theorem authoredExactSelectedAmbientKernelCentralizingPair_mem_restriction_ker
+    {U : AtomCarrier.{u}} [DecidableEq U.Atom]
+    (A : AuthoredBCDatumSquare U) (z : A.context.Category)
+    (omega : DefectCochain A.toTransportData)
+    (k : Type v) [CommRing k]
+    (g : FixedCoefficientGeometryAt (A.context.supportPackage z.as) k)
+    (selected : omega z.as ≠ 1 ∧ CanonicalObjectNormalizationAdmissible
+      (A.context.supportPackage z.as)) :
+    authoredExactSelectedAmbientKernelCentralizingPair A z omega k g selected ∈
+      (authoredExactEndpointRestrictionHom A z omega k g).ker := by
+  exact authoredExactSelectedAmbientKernelCentralizingPair_restriction
+    A z omega k g selected
+
 /-- The selected witness preserves the ambient `barBeta`, hence its endpoint
 restriction belongs to the actual Karoubi comparison subgroup. -/
 theorem authoredExactSelectedAmbientKernelCentralizingPair_mem_preimage
