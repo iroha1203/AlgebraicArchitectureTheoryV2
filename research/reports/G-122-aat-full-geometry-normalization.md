@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 24 review and acceptance of the nontrivial ambient complete-geometry kernel witness and canonical reflection failure
-- pending proof obligations: D selector reflection classification, selector split exact/fiber action, all bottom-qualified cases, and selector-case kernel application
+- current proof obligation: Cycle 25 review and acceptance of the exact selector reflection classification and its selected ambient-kernel witness
+- pending proof obligations: D selector section and split exact/fiber action, and all bottom-qualified cases
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the selector centralizer restriction, its section and exact/fiber package, and evaluate the ambient kernel witness in the selected branch
+- next proof obligation: construct the selector comparison-group section and its split exact/fiber package, then restrict all three cases to bottom-fixing subgroups
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2356,4 +2356,104 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D selector: construct the centralizer restriction and section, prove its split exact/fiber package and reflection iff not selected, then restrict all three cases to bottom-fixing subgroups"
+```
+
+## Cycle 25 — Exact selector reflection classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 25
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 9b954abc7e03b2d94a9d9dbffb9751ba8a774084
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 24 merge 9b954abc7e03b2d94a9d9dbffb9751ba8a774084; canonical non-reflection is proved, but the actual selector sandwich preimage has not been classified"
+  proof_obligation: "D selector reflection: lift the ambient normalization-kernel involution into the actual direct geometry fiber, prove that its pair with the target identity is centralizing and preserves barBeta but not the reversible raw barAlpha on the selected branch, prove equality off the selector, and conclude reflection iff not selected"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "reusing the whole-category ambient automorphism without proving that it is a vertical automorphism of the actual geometry fiber"
+    - "proving only normalization absorption rather than centralization of the actual selected source projector barE"
+    - "replacing the actual barBeta and five-factor barAlpha by abstract comparison arrows"
+    - "proving selected failure without proving the converse equality off the selector"
+  unchecked:
+    - "selector section and split exact/fiber action"
+    - "all bottom-qualified subgroup statements"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Lifted the already constructed complete-geometry ambient-kernel involution to a vertical endomorphism and automorphism in every admissible geometry fiber, retaining identity pointed base and coefficient map.  On the selected branch, paired that nonidentity source automorphism with the target identity, proved it centralizes the actual barE/barD endpoints, and proved both the source restriction and the full ambient endpoint restriction are identity.  The same pair lies in the ambient preimage of the actual Karoubi barBeta comparison group but does not preserve the reversible actual barAlpha.  Off the selector, rewrote barD and barE to identities and barBeta to barAlpha, proving equality of the two subgroups.  Combined the branches into the exact reflection iff not-selected theorem."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelGeometryFiberLift.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaReflection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberHom
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberHom_packageBase
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberHom_coefficientHom
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberAut_ne_one
+    - AAT.AG.FullGeometryNormalization.canonicalGeometryFiberNormalization_comp_ambientKernelGeometryFiberHom
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryFiberHom_comp_canonicalGeometryFiberNormalization
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_restriction_fst
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_restriction
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_mem_restriction_ker
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_mem_preimage
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedAmbientKernelCentralizingPair_not_mem_raw
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_ne_raw_of_selected
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_eq_raw_of_not_selected
+    - AAT.AG.FullGeometryNormalization.authoredExactEndpointRestriction_preimage_eq_raw_iff_not_selected
+  claim_mapping:
+    source_labels:
+      - "fixed target D selector reflection: r inverse Gamma_a equals Gamma_c^cent iff not chi_z"
+      - "fixed target D non-reflection witness: source tau is nonidentity, fixes bottom and coefficient, centralizes barE, and (tau,1) preserves barBeta but not barAlpha"
+    conjuncts:
+      - "the ambient complete-geometry kernel automorphism is a vertical automorphism of the actual direct GeomFiber"
+      - "selected endpoint normalization and two-sided absorption imply centralization of the actual barE"
+      - "the actual source sandwich restriction and the full ambient endpoint restriction send the selected witness to identity"
+      - "source factorization of barBeta gives selected preimage membership"
+      - "cancellation by the inverse of the actual barAlpha Iso gives raw nonmembership"
+      - "off the selector barD is identity, so barBeta is literally barAlpha and the preimage equals the raw centralizing subgroup"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A,z,omega,k,g and the selector proof in the selected branch.  The vertical lift, automorphism inverse, nonidentity proof, centralizing pair, comparison membership, raw failure, and both directions of the reflection classification are constructed internally."
+audits:
+  premise_delta:
+    discharged:
+      - "actual selector ambient-kernel witness in the geometry fiber"
+      - "actual selected witness membership in the ambient endpoint restriction kernel, distinct from the restricted comparison-hom kernel"
+      - "actual selected-branch reflection failure"
+      - "actual off-selector reflection equality"
+      - "selector reflection iff not selected"
+    remaining:
+      - "selector section and split exact/fiber action"
+      - "all bottom-qualified subgroup statements"
+  certificate_provenance:
+    discharged:
+      - "the fiber automorphism is built from Cycle 24's field-by-field complete-geometry automorphism and its proved identity base projection"
+      - "centralization is derived from selected barE identification and the two absorption equations"
+      - "ambient kernel membership is proved as a full Karoubi automorphism-product equality using endpoint sandwich formulas and projector idempotence"
+      - "preimage membership is evaluated through the literal authoredExactBarBetaAt source factorization"
+      - "raw nonmembership uses the inverse of the literal authoredExactBarAlphaIsoAt and the constructed nonidentity theorem"
+    unresolved: []
+  proof_use:
+    used:
+      - "ambientKernelGeometry, its involution and nonidentity, and its identity bottom/coefficient fields"
+      - "authoredExactBarEAt_eq_endpoint_normalization"
+      - "authoredExactBarBetaAt_source_factorization and authoredExactBarBetaAt_factor"
+      - "authoredExactEndpointRestriction_preimage_eq_barBeta"
+      - "authoredExactEndpointRestrictionHom_fst_hom_f and authoredExactEndpointRestrictionHom_snd_hom_f"
+      - "authoredExactBarDAt_eq_id off the selector"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks from research/lean: AmbientKernelGeometryFiberLift 11 declarations and ExactBarBetaReflection 12 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaReflection: 4239/4239 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D selector lifting: construct a group-homomorphic section of authoredExactCompatibleRestrictionHom, derive its split short exact sequence and lift-fiber kernel action, then restrict all three D cases to bottom-fixing subgroups"
 ```
