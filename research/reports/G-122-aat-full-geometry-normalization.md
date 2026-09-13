@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 19 review and acceptance of the complete-geometry section constructor and laws
-- pending proof obligations: D endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 20 review and acceptance of the complete endpoint automorphism-group section
+- pending proof obligations: D comparison-preserving subgroup section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: package the complete-geometry section on automorphism groups and assemble the endpoint comparison-group section
+- next proof obligation: restrict the endpoint automorphism section to comparison-preserving groups and prove the subgroup right-inverse law
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1928,4 +1928,84 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationGeometrySection: 4072/4072 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: lift complete normalization-fixed automorphisms to raw complete-geometry automorphisms and assemble the group-homomorphic endpoint comparison section"
+```
+
+## Cycle 20 — Complete endpoint automorphism-group section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 20
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 792e6d5c5e02e639073efdd49956101c05eeeee0
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 19 merge 792e6d5c5e02e639073efdd49956101c05eeeee0; complete morphism-level section laws exist but normalized automorphisms and inverses have not been packaged"
+  proof_obligation: "D automorphism packaging: lift both hom and inv of every normalized complete-geometry automorphism, prove the inverse laws from strict section composition, form endpoint MonoidHom sections, and prove endpoint normalization followed by section is identity"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "lifting only the forward arrow and assuming invertibility"
+    - "using raw identity instead of the normalization Karoubi identity when proving inverse laws"
+    - "reversing multiplication order in Aut"
+    - "losing bottom or coefficient maps during automorphism packaging"
+  unchecked:
+    - "comparison-preserving subgroup membership of endpoint lifts"
+    - "D reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Applied the Cycle 19 complete section separately to the forward and inverse Karoubi arrows.  Derived both inverse equations by mapping their normalized compositions to the normalization Karoubi identity and then using the section's strict composition and normalization laws.  Packaged the lift as a MonoidHom on each endpoint and as the product endpoint MonoidHom, with a proved right-inverse equation against the existing geometry normalization endpoint homomorphism.  The lifted forward maps retain the exact lower pointed-doctrine and coefficient homomorphisms."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationAutomorphismSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationAutomorphismSection
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationAutomorphismSectionHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationAutomorphismSection_rightInverse
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationEndpointAutomorphismSectionHom
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationEndpointAutomorphismSection_rightInverse
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: the endpoint lift is a group-homomorphic section"
+      - "fixed target D canonical N_geom case: construct a group-homomorphic section and preserve bottom/coefficient maps"
+    conjuncts:
+      - "both hom and inv are constructed from normalized automorphism data"
+      - "identity and multiplication are preserved"
+      - "normalization after the section is identity on each endpoint and their product"
+      - "pointed-doctrine and coefficient maps are retained"
+    undischarged_assumptions: []
+    acceptance_point: "No inverse, raw automorphism, group homomorphism, or right-inverse certificate is supplied.  All are constructed from the normalized Aut value using Cycles 19 laws."
+audits:
+  premise_delta:
+    discharged:
+      - "raw complete-geometry automorphism lift with explicit inverse"
+      - "endpoint automorphism MonoidHom section"
+      - "endpoint right-inverse law"
+    remaining:
+      - "restriction to comparison-preserving subgroup"
+      - "reflection, bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "inverse laws come from the actual normalized Aut hom_inv_id and inv_hom_id equations"
+      - "the normalized identity is unfolded to canonical geometry normalization before applying the section identity law"
+      - "the right inverse uses complete sandwich retraction plus the reviewed one-sided absorption law"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalNormalizationGeometrySection_normalization, comp, and retraction"
+      - "canonicalAdmissibleGeometryNormalization_absorption"
+      - "the actual Karoubi Hom comm and Aut inverse equations"
+      - "the existing geometryNormalizationEndpointAutomorphismHom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationAutomorphismSection 10 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationAutomorphismSection: 4084/4084 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: construct a comparison-preserving raw endpoint pair from each normalized comparison pair and prove the restricted section equation"
 ```
