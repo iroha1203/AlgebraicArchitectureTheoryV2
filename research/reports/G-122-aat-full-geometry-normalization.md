@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 22 review and acceptance of the actual `barAlpha_z` canonical comparison section
-- pending proof obligations: D selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 23 review and acceptance of the actual canonical split exact sequence and lift-fiber action
+- pending proof obligations: D selector and canonical reflection classifications, selector split exact/fiber action, all bottom-qualified cases, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove the selector and canonical reflection classifications without conflating the existence of a section with reflection
+- next proof obligation: construct the nontrivial complete-geometry kernel witnesses required to refute canonical reflection and the selected selector case
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2173,4 +2173,86 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaCanonicalComparisonSection: 4215/4215 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: prove the selector iff reflection theorem and the canonical normalization non-reflection theorem while retaining the same comparison groups"
+```
+
+## Cycle 23 — Actual canonical split exact sequence and lift fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 23
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 29f85fabbacad31b7d9d75aa1d9f921563d130ae
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 22 merge 29f85fabbacad31b7d9d75aa1d9f921563d130ae; the actual canonical comparison section is constructed, but its required split exact sequence and lift-fiber kernel action are not yet packaged"
+  proof_obligation: "D canonical exactness: derive surjectivity from the actual section, prove the kernel-inclusion short exact sequence, and construct the free and transitive restricted-kernel action with unique displacement on every actual lift fiber"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "calling the sequence exact from a right inverse without proving injectivity, kernel image equality, and surjectivity"
+    - "using a left kernel multiplication action and reversing the group action law"
+    - "claiming transitivity on an empty ambient preimage instead of the typed nonempty fiber"
+    - "conflating the restricted kernel acting on lift fibers with the ambient endpoint kernel used to refute reflection"
+  unchecked:
+    - "selector and canonical reflection classifications and their ambient nontrivial kernel witnesses"
+    - "selector split exact/fiber action and all bottom-qualified cases"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Used the actual Cycle 22 section to prove surjectivity of the restricted canonical comparison homomorphism.  Constructed the literal kernel inclusion and proved injectivity, exactness at the raw comparison subgroup, and surjectivity in the existing G-120 IsGroupShortExact predicate.  Defined every typed lift fiber, equipped it with right multiplication by the opposite restricted kernel, proved the MulAction laws, freeness and transitivity, and proved existence and uniqueness of the kernel displacement between any two lifts."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonExactness.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonHom_surjective
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparison_shortExact
+    - AAT.AG.FullGeometryNormalization.AuthoredExactCanonicalComparisonLiftFiber
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonLiftFiberMulAction
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonLiftFiber_action_free
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonLiftFiber_action_transitive
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonLiftFiber_existsUnique_smul_eq
+  claim_mapping:
+    source_labels:
+      - "fixed target D: each restricted homomorphism has a split short exact sequence"
+      - "fixed target D: the restricted kernel acts freely and transitively on every lift fiber"
+    conjuncts:
+      - "the actual canonical restricted homomorphism is surjective"
+      - "kernel inclusion is injective and its image is exactly the kernel"
+      - "right multiplication is expressed as a left action of the opposite restricted kernel"
+      - "the action is free and transitive with a unique displacement"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A,z,k,g, the fixed admissibility proof, a normalized compatible change, and two actual lifts when comparing a fiber.  Surjectivity comes from the constructed section, and no exactness, kernel-action, transitivity, or displacement certificate is supplied."
+audits:
+  premise_delta:
+    discharged:
+      - "actual canonical restricted-hom surjectivity"
+      - "actual canonical group short exact sequence"
+      - "actual canonical lift-fiber free and transitive kernel action"
+    remaining:
+      - "selector split exact/fiber action and all bottom-qualified cases"
+      - "selector and canonical reflection classifications and ambient kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "surjectivity witness is the actual Cycle 22 section value and right-inverse theorem"
+      - "exactness uses the literal range of the restricted kernel inclusion"
+      - "fiber displacement is constructed as first inverse times second and its kernel membership follows from the actual equal fiber values"
+    unresolved: []
+  proof_use:
+    used:
+      - "authoredExactCanonicalComparisonSectionHom and its rightInverse theorem"
+      - "ComparisonInformationLoss.IsGroupShortExact and MonoidHom.mulExact_iff"
+      - "the actual geometryNormalizationComparisonSubgroupHom kernel"
+      - "opposite-group multiplication order for the right action"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarAlphaCanonicalComparisonExactness 10 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaCanonicalComparisonExactness: 4217/4217 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: construct a nonidentity complete-geometry automorphism in the ambient endpoint normalization kernel, keep bottom/coefficient maps identity, and evaluate the pair against the fixed comparison to prove non-reflection"
 ```
