@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 30 review and acceptance of the actual selector bottom-qualified subgroup hierarchy
-- pending proof obligations: actual selector D bottom-qualified section, two-case reflection classification and witness, exactness, and lift-fiber action
+- current proof obligation: Cycle 31 review and acceptance of the actual selector bottom-qualified two-case classification, section, exactness, and lift fibers
+- pending proof obligations: terminal declaration inventory, hand-assembled completion ledger, fixed-head four-lane final review, and lifecycle synchronization
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: restrict the actual selector section and reflection classification to the bottom-qualified hierarchy, then prove exactness and lift-fiber action
+- next proof obligation: audit all A--D clauses and the fixed finite witness against named declarations, require an empty unchecked-central-claim set, then run the terminal fixed-head review
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2894,4 +2894,104 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D selector bottom cases: restrict the actual section, prove bottom/coefficient retention, transport the selected ambient witness, establish reflection iff not-selected, and package exactness plus lift fibers"
+```
+
+## Cycle 31 — Actual selector bottom-qualified classification, exactness, and lift fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 31
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: f5f6f8ee3d2ba00c7ea33ccd4ba607c8dab6e5ac
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 30 merge f5f6f8ee3d2ba00c7ea33ccd4ba607c8dab6e5ac supplies the typed selector bottom hierarchy; all case-specific selector bottom conclusions remain"
+  proof_obligation: "D selector bottom cases: restrict the actual section, prove four endpoint-retention equations, transport the selected ambient witness, classify reflection exactly by not-selected, and package the restricted-kernel split exact sequence and typed lift-fiber torsor"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "treating bottom qualification as an alias instead of constructing values in the typed bottom subgroups"
+    - "claiming endpoint retention only from subgroup membership instead of retaining the input bottom and coefficient maps"
+    - "placing the selected ambient witness in the restricted raw-compatible kernel"
+    - "proving only one direction of the selected/not-selected reflection classification"
+    - "using the ambient endpoint kernel for the lift-fiber action"
+  unchecked:
+    - "terminal all-clause inventory, completion ledger, and fixed-head independent final review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Transported the actual selector section through explicit bottom-group equivalences and proved its right inverse plus source/target package-base and coefficient retention.  Transported the selected ambient normalization-kernel pair into the typed bottom centralizing group, proved its source is nonidentity, both endpoints are bottom- and coefficient-trivial, it lies in the ambient bottom endpoint kernel and image preimage, and it lies outside the raw-compatible subgroup.  Proved bottom-qualified reflection for not-selected, failure for selected, and the exact iff classification.  Derived split surjectivity, the literal restricted-kernel short exact sequence, and the free transitive opposite-kernel action with unique displacement on every typed bottom lift fiber."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedClassification.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSectionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSection_rightInverse
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSection_source_packageBase
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSection_source_coefficientHom
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSection_target_packageBase
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonSection_target_coefficientHom
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair_source_ne_one
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair_bottom_coefficient
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair_mem_ambient_ker
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair_mem_preimage
+    - AAT.AG.FullGeometryNormalization.authoredExactSelectedBottomAmbientKernelPair_not_mem_raw
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomEndpointRestriction_preimage_ne_raw_of_selected
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomEndpointRestriction_preimage_eq_raw_of_not_selected
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomEndpointRestriction_preimage_eq_raw_iff_not_selected
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomCompatibleRestrictionHom_surjective
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomCompatibleRestriction_shortExact
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomComparisonLiftFiber
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonLiftFiber_action_free
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonLiftFiber_action_transitive
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomComparisonLiftFiber_existsUnique_smul_eq
+  claim_mapping:
+    source_labels:
+      - "fixed target D table: selector not-selected has preservation, reflection, and a group-homomorphic section"
+      - "fixed target D table: selector selected has preservation and a section but not reflection"
+      - "fixed target D: repeat both selector cases inside endpoint automorphisms fixing bottom pi-rho"
+      - "fixed target D: split exactness and free transitive action of the restricted comparison kernel"
+    conjuncts:
+      - "one bottom-qualified section works in both selector branches and retains both endpoint bottom and coefficient maps"
+      - "the bottom ambient preimage equals the raw-compatible subgroup exactly when the selector is not active"
+      - "on the selected branch an explicit bottom- and coefficient-trivial nonidentity ambient source automorphism paired with identity belongs to the image preimage but not the raw subgroup"
+      - "the bottom comparison restriction is split-surjective and its own restricted kernel acts freely and transitively on every typed lift fiber"
+    undischarged_assumptions: []
+    acceptance_point: "The only inputs are the fixed target's A,z,omega,k,g; selected or not-selected is used only in the corresponding reflection theorem.  The section itself is total in omega.  The selected witness belongs to the ambient bottom endpoint kernel and is explicitly outside the raw-compatible domain, whereas the fiber action uses the distinct restricted comparison kernel."
+audits:
+  premise_delta:
+    discharged:
+      - "actual selector bottom-qualified section and four endpoint-retention equations"
+      - "selected and not-selected bottom-qualified reflection classification with an explicit selected witness"
+      - "actual selector bottom-qualified split exactness and lift-fiber torsor"
+    remaining:
+      - "terminal all-clause completion audit and lifecycle review"
+  certificate_provenance:
+    discharged:
+      - "section is the constructed unqualified selector section transported through the Cycle 30 equivalences, with a reassociation theorem and retained endpoint maps"
+      - "reflection failure uses the actual canonical normalization-kernel involution in the source geometry fiber, not a postulated group element"
+      - "reflection on the off-selector branch uses the literal equality barBeta=barAlpha"
+      - "fiber displacement is first inverse times second in the bottom raw-compatible group"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 30 bottom raw and Karoubi comparison equivalences and restricted reassociation"
+      - "the constructed actual selector section and all four endpoint-retention theorems"
+      - "the actual selected ambient kernel witness, restriction, barBeta compatibility, nonidentity, and raw incompatibility"
+      - "the exact selector factorization and off-selector idempotent identity"
+      - "the literal restricted kernel and opposite multiplication for the lift-fiber action"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarBetaBottomQualifiedClassification 24 public declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaBottomQualifiedClassification: 4258/4258 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "terminal G-122 completion audit: hand-assemble the declaration inventory and A--D proof-use/provenance ledger, require empty unchecked_central_claim, then run fresh fixed-head Math A/B and Lean A/B review"
 ```
