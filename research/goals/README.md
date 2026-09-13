@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-122-aat-full-geometry-normalization](G-122-aat-full-geometry-normalization.md)
-  (n1010 S4。完全幾何での生成比較・冪等正規化と、比較を保つ変更の持ち上げ・反映の分類)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
   G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
@@ -32,6 +30,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-122-aat-full-geometry-normalization](G-122-aat-full-geometry-normalization.md)
+  (`target-theorem-proved`。完全幾何での生成比較・冪等正規化と、比較を保つ変更の
+  持ち上げ・反映、比較群の完全系列とlift fiberを確定)
 - [G-121-aat-finite-decoder-representability](G-121-aat-finite-decoder-representability.md)
   (`target-theorem-proved`。有限decoderの対象・射の表示範囲、有限carrier正規化、
   無限supportと可算構文の表示限界を確定)
