@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 29 review and acceptance of the actual canonical bottom-qualified comparison case
-- pending proof obligations: actual selector D bottom-qualified hierarchy, three-case sections and reflection classification, exactness, lift-fiber actions, and witnesses
+- current proof obligation: Cycle 30 review and acceptance of the actual selector bottom-qualified subgroup hierarchy
+- pending proof obligations: actual selector D bottom-qualified section, two-case reflection classification and witness, exactness, and lift-fiber action
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the actual selector bottom-qualified endpoint and comparison hierarchy and prove the two selector cases
+- next proof obligation: restrict the actual selector section and reflection classification to the bottom-qualified hierarchy, then prove exactness and lift-fiber action
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2805,4 +2805,93 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D selector bottom qualification: define its named bottom endpoint and comparison hierarchy, restrict the section, prove the not-chi/chi reflection table and witnesses, then package exactness and lift fibers"
+```
+
+## Cycle 30 — Actual selector bottom-qualified subgroup hierarchy
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 30
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 18ef7a79ec73d8b155c36f92cbe0ea36598686ad
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 29 merge 18ef7a79ec73d8b155c36f92cbe0ea36598686ad discharges the canonical bottom case; the selector bottom groups and restriction remain untyped"
+  proof_obligation: "D selector bottom foundation: define predicate-first raw and Karoubi endpoint bottom subgroups from the actual package-base map, place bottom centralizing/raw-compatible/image groups inside typed ambient groups, construct the ambient and restricted sandwich homomorphisms, and connect them to the accepted unqualified groups"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "defining every bottom group as top without exposing the actual pi-rho predicate"
+    - "nesting raw and image subgroups in incompatible ambient types, making reflection ill-typed"
+    - "claiming bottom identity from location in a fiber without using the fiber lift law"
+    - "silently replacing the accepted selector restriction"
+  unchecked:
+    - "bottom-qualified selector section and right inverse"
+    - "bottom-qualified selected/off-selector reflection classification and witness"
+    - "bottom-qualified selector split exactness and lift-fiber action"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved every endomorphism in the actual geometry fiber has identity package-base map from IsHomLift.fac'.  Defined raw and Karoubi endpoint bottom subgroups by that literal predicate, then derived their top equalities.  Built bottom Hcent, raw-compatible, Karoubi endpoint-pair, image-comparison, and ambient barBeta-compatible groups with a common typed ambient hierarchy; constructed the bottom ambient sandwich and restricted comparison homomorphisms; proved the typed barBeta preimage identity; and supplied MulEquiv reassociations to the accepted unqualified groups."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedGroups.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.geometryFiberMorphism_packageBase_identity
+    - AAT.AG.FullGeometryNormalization.geometryFiberBottomEndpointSubgroup
+    - AAT.AG.FullGeometryNormalization.geometryFiberKaroubiBottomEndpointSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomCentralizingEndpointSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomCentralizingRawComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomKaroubiEndpointPairSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomKaroubiComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.AuthoredExactBottomCentralizingBarBetaComparisonSubgroup
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomCentralizingEquiv
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomRawComparisonEquiv
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomKaroubiComparisonEquiv
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomEndpointRestrictionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomEndpointRestriction_preimage_eq_barBeta
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomCompatibleRestrictionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactBottomCompatibleRestriction_reassociates
+  claim_mapping:
+    source_labels:
+      - "fixed target D: repeat the selector cases inside automorphisms inducing identity on bottom pi-rho"
+      - "fixed target D: use the internal centralizer and corresponding image group"
+    conjuncts:
+      - "bottom qualification is the actual package-base identity at raw and Karoubi endpoints"
+      - "the endpoint-first ambient groups type both sides of the later preimage equation"
+      - "the bottom ambient preimage is exactly the internal barBeta-compatible group"
+      - "the restricted homomorphism agrees with the accepted selector restriction after explicit reassociation"
+    undischarged_assumptions: []
+    acceptance_point: "Although all actual fiber automorphisms satisfy bottom identity, the groups are defined by the literal predicate and only then proved equal to top from the fiber lift law.  No section, case classification, witness, or exactness is claimed in this cycle."
+audits:
+  premise_delta:
+    discharged:
+      - "typed selector bottom endpoint and comparison hierarchy"
+      - "bottom ambient and restricted selector homomorphisms"
+      - "internal same-barBeta preimage identity and unqualified reassociations"
+    remaining:
+      - "all case-specific selector bottom conclusions"
+  certificate_provenance:
+    discharged:
+      - "bottom identity is derived from the actual GeomFiber IsHomLift instance"
+      - "ambient barBeta preimage reuses the accepted actual sandwich equivalence after typed restriction"
+    unresolved: []
+  proof_use:
+    used:
+      - "crossStageProjection and IsHomLift.fac'"
+      - "actual selector centralizing, raw-compatible, and Karoubi comparison groups"
+      - "actual endpoint restriction and same-barBeta preimage theorem"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarBetaBottomQualifiedGroups 36 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaBottomQualifiedGroups: 4234/4234 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D selector bottom cases: restrict the actual section, prove bottom/coefficient retention, transport the selected ambient witness, establish reflection iff not-selected, and package exactness plus lift fibers"
 ```
