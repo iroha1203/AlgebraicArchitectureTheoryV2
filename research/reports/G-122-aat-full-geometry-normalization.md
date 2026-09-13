@@ -12,11 +12,27 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: terminal fixed-target completion audit
-- pending proof obligations: none known in the fixed A--D statement; terminal completion gates remain
-- current target state: `target-proof-candidate`
-- completion candidate: yes
-- next proof obligation: standard PR review, schema-complete final packet, and fresh whole-target Math A/B plus Lean A/B review
+- final completion audit PR: [#4518](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518), merge `97b7546414efea4df6f1bcef9c22295cc65f8981`
+- standard PR review: [PR comment 5651315837](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651315837), `Mergeable`
+- schema-complete final packet: [PR comment 5651367309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651367309)
+- final math/Lean review and formal completion ledger: [PR comment 5651416120](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651416120), 4/4 `No major findings`, all gates pass
+- current proof obligation: none
+- pending proof obligations: none
+- current target state: `target-theorem-proved`
+- completion candidate: terminal
+- next proof obligation: none for G-122
+
+## Completion judgment (final, 2026-09-13)
+
+- candidate head: `32f453bd040108b0ecb896a53eb02cbb7a8d42e6`
+- fixed GOAL blob: `3c9a4de336f3b49069b1296dd388d3e715a0fdc2`
+- standard review: [PR comment 5651315837](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651315837), `Mergeable`
+- final packet: [PR comment 5651367309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651367309)
+- final independent review and formal ledger: [PR comment 5651416120](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4518#issuecomment-5651416120), 4/4 `No major findings`, all gates pass
+- merge commit: `97b7546414efea4df6f1bcef9c22295cc65f8981`
+- inventory: 58 registered modules and 820 public declarations
+- verdict: `target-theorem-proved`
+- remaining proof obligations: none
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -3046,7 +3062,79 @@ The material-premise map to be independently checked is:
 | completed comparison, section, exactness, or witness supplied as an input | conclusion-equivalent-risk | absent from the fixed signatures; cycle ledgers require construction from the declared inputs and reviewed predecessors | no occurrence known; terminal review pending |
 
 All known fixed-target proof obligations now have named Lean evidence, and no known
-central claim is unchecked.  These are inputs to the formal four-lane review, not a
-pre-review completion verdict.  `target-theorem-proved` remains unavailable until the
-same-head standard review, schema-complete final packet, all completion gates, CI, and
-the fresh whole-target review pass.
+central claim is unchecked.  These were inputs to the formal four-lane review, not a
+pre-review completion verdict.  At this candidate snapshot, `target-theorem-proved` was
+unavailable until the same-head standard review, schema-complete final packet, all
+completion gates, CI, and the fresh whole-target review passed.
+
+## Cycle 32: terminal completion synchronization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 32
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 97b7546414efea4df6f1bcef9c22295cc65f8981
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "PR #4518 formal completion ledger comment 5651416120"
+  proof_dag_predecessors:
+    - "same-head standard PR review comment 5651315837"
+    - "schema-complete final packet comment 5651367309"
+    - "fresh four-lane final review and formal completion ledger comment 5651416120"
+    - "PR #4518 merge 97b7546414efea4df6f1bcef9c22295cc65f8981"
+  proof_obligation: "synchronize the merged target-theorem-proved verdict to GOAL, report, and index"
+  selection_reason: "all pre-merge completion gates passed on one fixed head and the completion audit PR merged"
+  expected_result_type: blocker-fixed
+  lean_targets: []
+  risks:
+    - "marking a gate complete before its fixed-head evidence"
+    - "calling static or typecheck acceptance alone proof completion"
+    - "collapsing ambient endpoint kernels and restricted comparison kernels"
+  unchecked: []
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "All fixed G-122 A--D obligations and completion gates are discharged; GOAL, report, and index now record the terminal result."
+  completion_candidate: no
+  lean_artifacts: []
+  evidence:
+    - "final packet 5651367309: fixed A--D, 58 modules, 820 declarations, and material premise, provenance, proof-use, and dependency maps"
+    - "standard PR review 5651315837: Mergeable"
+    - "fresh final review 5651416120: Math A, Math B, Lean A, and Lean B all No major findings"
+    - "formal completion ledger 5651416120: all 15 gates pass; no remaining obligations, blockers, or unchecked central claims"
+    - "PR #4518 merge 97b7546414efea4df6f1bcef9c22295cc65f8981; CI 7/7 pass"
+    - "Issue #4485 completion comment 5651419314"
+  claim_mapping:
+    theorem_names: []
+    source_labels:
+      - terminal lifecycle synchronization
+    conjuncts:
+      - "No theorem statement or proof body changes; this cycle records the already reviewed and merged terminal verdict."
+    undischarged_assumptions: []
+    acceptance_point: "The fixed G-122 target A--D is target-theorem-proved."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: []
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used:
+      - "the merged completion verdict drives the GOAL status, report proof state, and completed index entry"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "all 32 report YAML blocks parse"
+    - "git diff --check: pass"
+    - "terminal synchronization changes only GOAL, report, and index; no Lean source change"
+  blocking_findings: []
+  next_obligation: "merge this lifecycle synchronization and update Issue #4485; closing the tracking Issue still requires an explicit human instruction"
+```
