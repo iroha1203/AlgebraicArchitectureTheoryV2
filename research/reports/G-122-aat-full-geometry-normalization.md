@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 26 review and acceptance of the exact selector comparison-group section
-- pending proof obligations: D selector split exact/fiber action and all bottom-qualified cases
+- current proof obligation: Cycle 27 review and acceptance of selector split exactness and lift-fiber kernel action
+- pending proof obligations: all D bottom-qualified cases
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: derive the selector split short exact sequence and lift-fiber action from the actual section, then restrict all three cases to bottom-fixing subgroups
+- next proof obligation: restrict the selector and canonical comparison constructions to bottom-fixing endpoint groups and prove the same three cases
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2545,4 +2545,86 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D selector exactness: use the actual section to prove surjectivity and package the selector restricted-kernel short exact sequence and free transitive lift-fiber action"
+```
+
+## Cycle 27 — Selector split exactness and lift fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 27
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: f0fe1ed11df22c2cb5b411536298dc3b1766ef56
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 26 merge f0fe1ed11df22c2cb5b411536298dc3b1766ef56; the actual selector section exists, but its short exact sequence and lift-fiber action are not yet packaged"
+  proof_obligation: "D selector exactness: derive surjectivity from the actual selector section, prove the restricted-kernel inclusion short exact sequence, and construct the free and transitive restricted-kernel action with unique displacement on every actual selector lift fiber"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "calling the sequence exact from a section without proving injectivity, kernel image equality, and surjectivity"
+    - "letting the ambient endpoint restriction kernel act instead of the kernel on the raw-compatible centralizing domain"
+    - "reversing multiplication in the right action"
+    - "asserting transitivity on an untyped or empty ambient preimage"
+  unchecked:
+    - "all bottom-qualified subgroup statements"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Used the actual Cycle 26 section and right-inverse theorem to prove surjectivity of authoredExactCompatibleRestrictionHom.  Proved the literal restricted-kernel inclusion is injective, its image is exactly the kernel, and the comparison restriction is surjective in IsGroupShortExact.  Defined every typed selector lift fiber and the right-multiplication action of the opposite restricted kernel, proved the group action laws, freeness and transitivity, and proved existence and uniqueness of the displacement between any two lifts."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonExactness.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactCompatibleRestrictionHom_surjective
+    - AAT.AG.FullGeometryNormalization.authoredExactCompatibleRestriction_shortExact
+    - AAT.AG.FullGeometryNormalization.AuthoredExactComparisonLiftFiber
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonLiftFiberSMul
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonLiftFiberMulAction
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonLiftFiber_action_free
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonLiftFiber_action_transitive
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonLiftFiber_existsUnique_smul_eq
+  claim_mapping:
+    source_labels:
+      - "fixed target D: each selector restricted homomorphism has a split short exact sequence"
+      - "fixed target D: its restricted kernel acts freely and transitively on every lift fiber"
+    conjuncts:
+      - "the actual selector-compatible restriction is surjective from the constructed section"
+      - "the kernel inclusion is injective and has range exactly the restricted kernel"
+      - "right multiplication is represented as a left action by the opposite restricted kernel"
+      - "each typed lift fiber has free and transitive action with unique displacement"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A,z,omega,k,g, a target compatible Karoubi change, and actual lifts when comparing a fiber.  Surjectivity comes from the constructed section; exactness, action, transitivity, and displacement are not premises."
+audits:
+  premise_delta:
+    discharged:
+      - "actual selector comparison restriction surjectivity"
+      - "actual selector group short exact sequence"
+      - "actual selector lift-fiber free transitive restricted-kernel action"
+    remaining:
+      - "all bottom-qualified subgroup statements"
+  certificate_provenance:
+    discharged:
+      - "surjectivity witness is the actual Cycle 26 section value and right-inverse theorem"
+      - "exactness uses the literal kernel subgroup and its subtype homomorphism"
+      - "fiber displacement is first inverse times second in the raw-compatible centralizing group and its kernel membership follows from equal actual restriction values"
+    unresolved: []
+  proof_use:
+    used:
+      - "authoredExactComparisonSectionHom and authoredExactComparisonSection_rightInverse"
+      - "ComparisonInformationLoss.IsGroupShortExact and MonoidHom.mulExact_iff"
+      - "the actual authoredExactCompatibleRestrictionHom kernel"
+      - "opposite-group multiplication order for the right action"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarBetaComparisonExactness 8 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaComparisonExactness: 4256/4256 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D bottom qualification: define bottom-fixing endpoint and comparison subgroups for the selector and canonical constructions, restrict the sections and homomorphisms, and prove preservation, reflection classification, split exactness, lift-fiber action, and non-reflection witnesses in all three cases"
 ```
