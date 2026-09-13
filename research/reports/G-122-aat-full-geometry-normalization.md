@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 23 review and acceptance of the actual canonical split exact sequence and lift-fiber action
-- pending proof obligations: D selector and canonical reflection classifications, selector split exact/fiber action, all bottom-qualified cases, and kernel witnesses
+- current proof obligation: Cycle 24 review and acceptance of the nontrivial ambient complete-geometry kernel witness and canonical reflection failure
+- pending proof obligations: D selector reflection classification, selector split exact/fiber action, all bottom-qualified cases, and selector-case kernel application
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the nontrivial complete-geometry kernel witnesses required to refute canonical reflection and the selected selector case
+- next proof obligation: construct the selector centralizer restriction, its section and exact/fiber package, and evaluate the ambient kernel witness in the selected branch
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2255,4 +2255,105 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaCanonicalComparisonExactness: 4217/4217 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: construct a nonidentity complete-geometry automorphism in the ambient endpoint normalization kernel, keep bottom/coefficient maps identity, and evaluate the pair against the fixed comparison to prove non-reflection"
+```
+
+## Cycle 24 — Ambient normalization kernel and canonical non-reflection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 24
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 7d30540c0de784867898a191e1be0e1f42688cfe
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 23 merge 7d30540c0de784867898a191e1be0e1f42688cfe; the restricted comparison kernel acts on lift fibers, but no nontrivial ambient endpoint kernel element yet refutes reflection"
+  proof_obligation: "D canonical reflection: construct a nonidentity complete-geometry source automorphism in the ambient normalization kernel, retain bottom and coefficient identities, and prove that its pair with the target identity preserves the normalized actual barAlpha but not the raw actual barAlpha"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "reusing the existing two-decoration noninjectivity witness even though one decoration may be the package-selected object"
+    - "constructing only an object permutation without lifting every exact-core and complete-geometry field"
+    - "claiming non-reflection from noninjectivity without exhibiting a pair in the normalized comparison preimage outside the raw comparison subgroup"
+    - "replacing the actual five-factor barAlpha with an abstract comparison"
+    - "conflating the ambient endpoint kernel with the restricted comparison kernel acting on lift fibers"
+  unchecked:
+    - "D selector reflection classification, selector section/exactness/fiber action, and selector ambient-kernel application"
+    - "all D bottom-qualified subgroup statements"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed three pairwise-distinct universal auxiliary decorations and selected two away from each package-selected decoration. Their configurationwise swap fixes selected objects, is involutive and nonidentity, and is erased by canonical object normalization. Lifted it field-by-field through exact equations, dependent operations, invariants, coordinates, the identity pointed-doctrine base, and identity complete-geometry local data. Packaged the resulting nontrivial complete-geometry automorphism, proved both normalization absorption equations and identity normalized image, and used its pair with the target identity to witness that the ambient preimage of the normalized actual barAlpha comparison subgroup is not the raw actual barAlpha comparison subgroup."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelObjectSwap.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelCoreLift.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelGeometryLift.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelComparisonWitness.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.ambientKernelFirst_ne_second
+    - AAT.AG.FullGeometryNormalization.ambientKernelObjectMap_selected
+    - AAT.AG.FullGeometryNormalization.ambientKernelObjectMap_involutive
+    - AAT.AG.FullGeometryNormalization.ambientKernelObjectMap_ne_id
+    - AAT.AG.FullGeometryNormalization.ambientKernelUpper
+    - AAT.AG.FullGeometryNormalization.ambientKernelTotal_comp_self
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationTotal_comp_ambientKernelTotal
+    - AAT.AG.FullGeometryNormalization.ambientKernelTotal_comp_canonicalNormalizationTotal
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometryAut_ne_one
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometry_packageBase
+    - AAT.AG.FullGeometryNormalization.ambientKernelGeometry_coefficientHom
+    - AAT.AG.FullGeometryNormalization.geometryNormalizationFunctor_map_ambientKernelAdmissibleGeometryAut
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_normalized_mem
+    - AAT.AG.FullGeometryNormalization.authoredExactAmbientKernelComparisonPair_not_raw_mem
+    - AAT.AG.FullGeometryNormalization.authoredExactGeometryNormalizationEndpoint_preimage_normalized_ne_raw
+  claim_mapping:
+    source_labels:
+      - "fixed target D: for each canonical non-reflection input construct source endpoint tau not equal to one in the ambient normalization kernel"
+      - "fixed target D: tau fixes bottom and coefficient data"
+      - "fixed target D canonical case: the pair (tau,1) preserves normalized barAlpha but not raw barAlpha"
+      - "fixed target D: r_N inverse of Gamma_N(c) is not Gamma_c"
+    conjuncts:
+      - "three explicit auxiliary data leave two uniformly selectable decorations outside the selected datum"
+      - "their swap is a nonidentity involution fixing every selected object and every configuration"
+      - "admissibility reconstructs all object-dependent exact-core data without accepting a completed hom"
+      - "the complete geometry lift has identity pointed-doctrine base, coefficient map, and local realization maps"
+      - "canonical normalization absorbs the lift on both sides and sends its Aut to identity"
+      - "the actual source-kernel/target-identity pair lies in the normalized actual barAlpha comparison preimage but outside its raw comparison subgroup"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only the existing canonical admissibility input. The three decorations, avoided pair, permutation, exact-core hom, complete-geometry hom, inverse, nonidentity proof, kernel equations, comparison membership, and raw nonmembership are constructed internally. The final specialization uses the actual generated endpoints and actual five-factor barAlpha Iso."
+audits:
+  premise_delta:
+    discharged:
+      - "universal nontrivial ambient canonical-normalization kernel automorphism"
+      - "bottom/coefficient identity and two-sided normalization absorption"
+      - "actual canonical normalized-comparison preservation and raw-comparison failure"
+      - "actual carrier-set preimage inequality r_N inverse Gamma_N(c) not equal Gamma_c"
+    remaining:
+      - "selector reflection classification, selector exactness/fiber action, and selected-branch use of the ambient kernel"
+      - "all bottom-qualified subgroup statements"
+  certificate_provenance:
+    discharged:
+      - "three explicit ULift Fin 3 decorations, rather than the weaker two-object noninjectivity theorem, supply the selected-avoiding swap"
+      - "canonical admissibility is used to reconstruct equation residuals, operation endpoint casts, invariant transport, and coordinates"
+      - "GeometryTotalHom is constructed over the identity-base ambientKernelTotal with identity coefficient and local comparison maps"
+      - "raw nonmembership is proved by cancellation with the inverse of the actual barAlpha Iso and the constructed nonidentity theorem"
+    unresolved: []
+  proof_use:
+    used:
+      - "CanonicalObjectNormalizationAdmissible operation, residual, invariant, and coordinate equations"
+      - "ambientKernelObjectMap selected-fixing, involution, nonidentity, and normalization-erasure laws"
+      - "SignedExactCoreReadingHom, PackageTotalHom, GeomReadHom, and GeometryTotalHom extensionality"
+      - "the actual authoredExactBarAlphaAdmissibleIsoAt hom and inverse"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks from research/lean: object swap 22, core lift 21, geometry lift 13, comparison witness 14 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.AmbientKernelComparisonWitness: 4219/4219 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D selector: construct the centralizer restriction and section, prove its split exact/fiber package and reflection iff not selected, then restrict all three cases to bottom-fixing subgroups"
 ```
