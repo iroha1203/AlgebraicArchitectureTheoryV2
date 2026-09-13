@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 25 review and acceptance of the exact selector reflection classification and its selected ambient-kernel witness
-- pending proof obligations: D selector section and split exact/fiber action, and all bottom-qualified cases
+- current proof obligation: Cycle 26 review and acceptance of the exact selector comparison-group section
+- pending proof obligations: D selector split exact/fiber action and all bottom-qualified cases
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the selector comparison-group section and its split exact/fiber package, then restrict all three cases to bottom-fixing subgroups
+- next proof obligation: derive the selector split short exact sequence and lift-fiber action from the actual section, then restrict all three cases to bottom-fixing subgroups
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2456,4 +2456,93 @@ audits:
     - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
   blocking_findings: []
   next_obligation: "D selector lifting: construct a group-homomorphic section of authoredExactCompatibleRestrictionHom, derive its split short exact sequence and lift-fiber kernel action, then restrict all three D cases to bottom-fixing subgroups"
+```
+
+## Cycle 26 — Actual selector comparison-group section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 26
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 393dc4e91d93e2e010ddf5725f5231007b08c515
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 25 merge 393dc4e91d93e2e010ddf5725f5231007b08c515; selector reflection is classified, but lifting of every actual Karoubi comparison change is not yet constructed"
+  proof_obligation: "D selector lifting: construct an actual group-homomorphic section from Gamma_a to Gamma_c^cent for both selector branches, prove the compatible restriction right-inverse law, and retain both endpoint pointed-doctrine and coefficient maps"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "using the canonical comparison section across nondefinitionally equal Fiber, admissible-subcategory, and Karoubi types without explicit bridges"
+    - "assuming that sandwich/retraction laws imply centralization of the raw canonical lift"
+    - "using the selected canonical lift on the off-selector identity-projector branch"
+    - "constructing a set-theoretic lift rather than a group homomorphism"
+    - "proving only source retention and inferring target retention without an actual right-inverse calculation"
+  unchecked:
+    - "selector split exact sequence and lift-fiber kernel action"
+    - "all bottom-qualified subgroup statements"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed explicit bridges from actual geometry-fiber Karoubi automorphisms to canonical-normalized admissible automorphisms and back to vertical raw geometry-fiber automorphisms.  Proved directly, field-by-field, that the concrete canonical section commutes with canonical normalization, including the dependent operation transport.  In the selected branch, lifted the source and conjugated it across the actual reversible barAlpha to obtain an actual centralizing compatible pair.  Off the selector, unsandwiched the identity-projector Karoubi automorphisms directly.  Combined the branches into one MonoidHom, proved it is a right inverse of authoredExactCompatibleRestrictionHom, and proved source and target package-base and coefficient retention."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSectionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSection_rightInverse
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSection_source_packageBase
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSection_source_coefficientHom
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSection_target_packageBase
+    - AAT.AG.FullGeometryNormalization.authoredExactComparisonSection_target_coefficientHom
+  claim_mapping:
+    source_labels:
+      - "fixed target D selector cases: comparison-preserving changes have a group-homomorphic section"
+      - "fixed target D: every section retains both endpoint bottom and coefficient maps"
+    conjuncts:
+      - "selected actual Karoubi source automorphisms are bridged to the canonical normalized category without accepting a lift"
+      - "the canonical raw lift is rebuilt as an actual vertical GeomFiber automorphism and directly proved to centralize barE"
+      - "conjugation by the actual five-factor barAlpha constructs the target and proves raw comparison compatibility and barD centrality"
+      - "off the selector, barE and barD are identities and both endpoint Karoubi automorphisms are unsandwiched"
+      - "the case-split construction is a MonoidHom and the actual compatible restriction composed with it is identity"
+      - "source and target package-base and coefficient maps agree with the supplied Karoubi pair"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A,z,omega,k,g and a comparison-preserving actual Karoubi pair.  Selector case analysis is internal.  No endpoint lift, centrality, raw compatibility, section, right-inverse, or preservation certificate is supplied."
+audits:
+  premise_delta:
+    discharged:
+      - "actual selector-wise group-homomorphic comparison section"
+      - "actual compatible restriction right inverse"
+      - "both endpoint package-base and coefficient retention"
+    remaining:
+      - "selector split exact sequence and lift-fiber kernel action"
+      - "all bottom-qualified subgroup statements"
+  certificate_provenance:
+    discharged:
+      - "selected source lift comes from the existing constructive canonical section after explicit Fiber/admissible bridges"
+      - "selected centrality is a new direct computation from the section object map and every exact-core/geometry field, not an abstract consequence of one-sided absorption"
+      - "selected target is conjugation by the literal authoredExactBarAlphaIsoAt"
+      - "off-selector lift uses the proved barE/barD identity equations and underlying arrows of the actual Karoubi automorphisms"
+      - "target retention is recovered from the actual right-inverse equality and endpoint restriction component formula"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalNormalizationSectionObjectMap_selected and canonicalObjectNormalization_sectionObjectMap"
+      - "canonicalNormalizationSectionOperationMap_heq_normalized and canonical normalization admissibility casts"
+      - "canonicalNormalizationAutomorphismSectionHom and its right-inverse/base/coefficient APIs"
+      - "authoredExactBarEAt_eq_endpoint_normalization and authoredExactBarAlphaAt_projector_comm"
+      - "authoredExactBarEAt_eq_id and authoredExactBarDAt_eq_id off the selector"
+      - "authoredExactEndpointRestrictionHom_fst_hom_f and authoredExactEndpointRestrictionHom_snd_hom_f"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: ExactBarBetaComparisonSection 6 public declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarBetaComparisonSection: 4255/4255 pass; no Research aggregate/full build"
+    - "git diff --check, placeholder, hidden/BiDi, privacy, and reverse-import scans: pending PR audit"
+  blocking_findings: []
+  next_obligation: "D selector exactness: use the actual section to prove surjectivity and package the selector restricted-kernel short exact sequence and free transitive lift-fiber action"
 ```
