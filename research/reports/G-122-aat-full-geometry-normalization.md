@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 17 review and acceptance of exact-core section identity and composition laws
-- pending proof obligations: D exact-core sandwich-section law, complete-geometry section, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 18 review and acceptance of the exact-core sandwich-section law
+- pending proof obligations: D complete-geometry section, endpoint comparison-group section, selector reflection, canonical and bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove the exact-core normalization-sandwich section identity, extend the section to complete geometry, and assemble the comparison-group section
+- next proof obligation: extend the exact-core section and its group laws to complete geometry, then assemble the endpoint comparison-group section
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -1768,4 +1768,79 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSectionLaws: 4070/4070 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: prove that normalization sandwich of canonicalNormalizationSectionUpper recovers every normalization-fixed exact endomorphism"
+```
+
+## Cycle 18 — Exact-core normalization sandwich section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 18
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 768b391c82762a999e076a41846d357e08f81c56
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 17 merge 768b391c82762a999e076a41846d357e08f81c56; the raw exact-core lift has identity and composition laws but is not yet proved to split normalization restriction"
+  proof_obligation: "D exact-core section law: prove n.comp(section f).comp(n) = f for every exact endomorphism satisfying the defining Karoubi fixed equation n.comp(f).comp(n) = f"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "assuming the raw section itself equals a normalization-fixed input"
+    - "using the fixed equation before proving the computational sandwich equality"
+    - "collapsing dependent operation casts without endpoint equalities"
+    - "accepting a completed section or retraction certificate as an input"
+  unchecked:
+    - "complete-geometry lift and endpoint/comparison-group packaging"
+    - "D reflection, canonical/bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Proved first, without a fixedness premise, that normalization sandwich of the raw section equals normalization sandwich of the input exact endomorphism.  The object and equation-object fields use normalization idempotence and the exact endomorphism's selected-object law.  The operation field retains both endpoint normalizations: the second source cast is identified with castOperation along the actual object idempotence equalities before applying f.operationMap.  The public retraction theorem then uses exactly the supplied Karoubi fixed equation to recover f."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationCoreSectionRetraction.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionUpper_sandwich
+    - AAT.AG.FullGeometryNormalization.canonicalNormalizationSectionUpper_retraction
+  claim_mapping:
+    source_labels:
+      - "n1013 section 3: construct a section of the normalized automorphism restriction"
+      - "fixed target D: rbar s = id"
+    conjuncts:
+      - "the raw section has the same normalization sandwich as its input"
+      - "a normalization-fixed exact endomorphism is recovered by the sandwich"
+      - "the equality includes every SignedExactCoreReadingHom field"
+      - "dependent operation casts are discharged using actual normalization idempotence equalities"
+    undischarged_assumptions: []
+    acceptance_point: "The retraction premise is exactly the defining Karoubi fixed-morphism equation.  No section, lift, endpoint-independence, or cast-coherence certificate is supplied."
+audits:
+  premise_delta:
+    discharged:
+      - "exact-core normalization sandwich section identity"
+    remaining:
+      - "complete-geometry section and endpoint comparison-group section"
+      - "reflection, canonical/bottom-qualified cases, split exact/fiber actions, and kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "object equality is derived from canonical normalization idempotence and exactEndomorphism_map_normalization_eq_section_normalization"
+      - "operation equality is derived from the concrete section operation and castOperation along object idempotence equalities"
+      - "the final recovery step uses only the input fixed-morphism equation"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalObjectNormalization_idempotent"
+      - "exactEndomorphism_map_normalization_eq_section_normalization"
+      - "canonicalNormalizationSectionOperationMap_heq_normalized"
+      - "SignedExactCoreReadingHom.ext and equationSystemExactTransport_hext"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check from research/lean: CanonicalNormalizationCoreSectionRetraction 2 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationCoreSectionRetraction: 4071/4071 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: lift the exact-core section constructor, identity, composition, and retraction law to complete GeometryTotalHom data"
 ```
