@@ -12,11 +12,11 @@ proof-use、検証、査読結果を cycle ごとに記録する。
 - common criteria base: `1e512404148cb9be24c9683b75133deff33142f6`
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - tracking Issue: [#4485](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4485)
-- current proof obligation: Cycle 21 review and acceptance of the isomorphism-comparison subgroup section
-- pending proof obligations: D specialization to the actual canonical comparison, selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
+- current proof obligation: Cycle 22 review and acceptance of the actual `barAlpha_z` canonical comparison section
+- pending proof obligations: D selector and canonical reflection classifications, bottom-qualified cases, split exact/fiber actions, and kernel witnesses
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: specialize the isomorphism-comparison section to the actual `barAlpha_z` comparison and its generated admissible endpoints
+- next proof obligation: prove the selector and canonical reflection classifications without conflating the existence of a section with reflection
 
 ## Cycle 1 — Canonical normalization in complete geometry
 
@@ -2087,4 +2087,90 @@ audits:
     - "targeted module build ResearchLean.AG.FullGeometryNormalization.CanonicalNormalizationIsoComparisonSection: 4085/4085 pass; no Research aggregate/full build"
   blocking_findings: []
   next_obligation: "D: package the actual exact-derived `barAlpha_z` as an isomorphism of generated admissible endpoint objects and specialize the comparison section/right inverse"
+```
+
+## Cycle 22 — Actual barAlpha canonical comparison section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-122-aat-full-geometry-normalization
+cycle: 22
+goal_blob_sha: 3c9a4de336f3b49069b1296dd388d3e715a0fdc2
+base_oid: 5bb5c72798000f556404d37616141cc9326f3c2e
+tracking_issue: 4485
+report_path: research/reports/G-122-aat-full-geometry-normalization.md
+selection:
+  proof_state_ref: "Cycle 21 merge 5bb5c72798000f556404d37616141cc9326f3c2e; the isomorphism-comparison section is generic but has not been connected to the actual generated endpoints and five-factor barAlpha"
+  proof_obligation: "D canonical case: package the generated direct and via-base endpoints in the admissible complete-geometry category, package the actual barAlpha as their isomorphism, specialize the comparison-group section/right inverse, and state bottom/coefficient retention for both endpoint lifts"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "accepting endpoint admissibility, the comparison, its inverse, or a section certificate independently of A,z,k,g and the fixed admissibility input"
+    - "specializing only an abstract isomorphism while leaving the actual five-factor barAlpha disconnected"
+    - "retaining bottom/coefficient data only at the source endpoint"
+    - "claiming canonical reflection from the existence of a right-inverse section"
+  unchecked:
+    - "D selector and canonical reflection classifications"
+    - "bottom-qualified comparison groups, split exact/fiber actions, and kernel witnesses"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Generated both admissible endpoint objects from the single southwest admissibility proof and packaged the actual five-factor barAlpha hom and inv as an isomorphism of that full subcategory.  Specialized the Cycle 21 comparison-subgroup MonoidHom and right-inverse theorem to this exact comparison.  Added generic and actual named theorems showing that both source and target lifts retain the supplied normalized pointed-doctrine and coefficient maps; target retention is derived from the whole-Aut right inverse and the normalization functor's component preservation."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationIsoComparisonSection.lean
+    - research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonSection.lean
+  evidence:
+    - AAT.AG.FullGeometryNormalization.authoredExactDirectAdmissibleGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactViaBaseAdmissibleGeometryAt
+    - AAT.AG.FullGeometryNormalization.authoredExactBarAlphaAdmissibleIsoAt
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSectionHom
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSection_rightInverse
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSection_fst_hom_base_base
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSection_fst_hom_coefficientHom
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSection_snd_hom_base_base
+    - AAT.AG.FullGeometryNormalization.authoredExactCanonicalComparisonSection_snd_hom_coefficientHom
+  claim_mapping:
+    source_labels:
+      - "fixed target D canonical N_geom case with c := barAlpha_z and P_z admissible"
+      - "fixed target D: every section retains both endpoint bottom and coefficient maps"
+    conjuncts:
+      - "the generated endpoints are canonical-normalization admissible"
+      - "the selected raw comparison is the actual five-factor barAlpha hom with its actual inverse"
+      - "the actual normalized comparison group admits a group-homomorphic section and right inverse"
+      - "both endpoint lifts retain pointed-doctrine and coefficient maps"
+    undischarged_assumptions: []
+    acceptance_point: "The caller supplies only A,z,k,g and the fixed southwest admissibility proof.  Endpoint admissibility is generated by exact pull/push, while the raw comparison and inverse are the already constructed actual barAlpha Iso.  No section, target lift, membership, or right-inverse certificate is supplied."
+audits:
+  premise_delta:
+    discharged:
+      - "actual barAlpha admissible-endpoint isomorphism"
+      - "actual canonical comparison-subgroup section and right inverse"
+      - "source and target pointed-doctrine/coefficient retention"
+    remaining:
+      - "selector and canonical reflection classifications"
+      - "bottom-qualified comparison groups, split exact/fiber actions, and kernel witnesses"
+  certificate_provenance:
+    discharged:
+      - "endpoint admissibility comes from authoredExactDirectGeometryAt_admissible and authoredExactViaBaseGeometryAt_admissible"
+      - "comparison hom/inv and inverse laws come from the actual authoredExactBarAlphaIsoAt"
+      - "the subgroup section and right inverse are the actual specialization of the reviewed Cycle 21 construction"
+      - "target component retention is proved from target right inverse plus geometryNormalizationFunctor map preservation"
+    unresolved: []
+  proof_use:
+    used:
+      - "the generated exact-derived endpoint objects and actual five-factor barAlpha Iso"
+      - "the single southwest CanonicalObjectNormalizationAdmissible proof"
+      - "canonicalNormalizationIsoComparisonSectionHom and rightInverse"
+      - "geometryNormalizationFunctor_map_packageBase and geometryNormalizationFunctor_map_coefficientHom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks from research/lean: CanonicalNormalizationIsoComparisonSection 10 declarations and ExactBarAlphaCanonicalComparisonSection 10 declarations; standard axioms only"
+    - "targeted module build ResearchLean.AG.FullGeometryNormalization.ExactBarAlphaCanonicalComparisonSection: 4215/4215 pass; no Research aggregate/full build"
+  blocking_findings: []
+  next_obligation: "D: prove the selector iff reflection theorem and the canonical normalization non-reflection theorem while retaining the same comparison groups"
 ```
