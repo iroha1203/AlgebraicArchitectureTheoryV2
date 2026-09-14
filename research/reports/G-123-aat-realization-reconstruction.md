@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 17 multiobject endomorphism-serialization transfer
+- current proof obligation: Cycle 18 actual endpoint-typed free-path candidate obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the endpoint-typed syntax's per-object endomorphism embeddings into tagged primitive lists, then decide from the fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
+- next proof obligation: add a source-derived typed congruence/substitution layer or classify additional legal parameter placements, then decide from fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
 
 ## Requirement ledger
 
@@ -29,7 +29,7 @@
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated`; `taggedPrimitiveRelationPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; その全有限wordから構成した自由モノイド圏と任意relationsによる商 | 一様flipの全package/Karoubi証拠; sourceごとの任意Bool選択から実category自己射と完全readback; Atom/Source/Object/全端点Operationのdisjoint alphabetと有限list embedding; actual free-wordおよび任意word-relation quotientでgenerationをcanonical quotient mapから放電しfullness/retract矛盾 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、multiobject endpoint-typed syntaxまたは合法な追加parameter syntaxの検査、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated`; `taggedPrimitiveRelationPresentation_not_full_and_retractGenerated`; `TaggedPrimitiveVertex`, `taggedPrimitiveEndpoints`, `TaggedPrimitivePathPresentation`, `taggedPrimitivePathEndomorphismEmbedding`, `taggedPrimitivePathPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; free word/relation quotient; Cycle 18のnamed parameter rootと全ArchitectureObject頂点 | 一様flipの全package/Karoubi証拠; source-choice実category射とreadback; disjoint alphabet/list embedding; actual free-word/relation quotient; 全4roleをedgeに保持しoperationのexact endpointsを使うmultiobject free path category、parallel edgeを保持するexact-reference serializationと単射、Cycle 17 transfer適用 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`との関係、typed congruence/substitution、Atom/Sourceの最終placement、合法な追加parameter syntax、固定入力由来D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -2523,4 +2523,99 @@ audits:
   vacuity: "each endomorphism type contains its identity, and injectivity gives a genuine left inverse"
   blocking_findings: []
   next_obligation: "Construct the endpoint-typed syntax's endomorphism embeddings into tagged primitive lists without semantic answer encoding, and separately establish the exact final Sigma,D,R_Theta source-choice membership theorem."
+```
+
+## Cycle 18 — Actual endpoint-typed free-path obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 18
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 9931d4f45777f4ee2a711994e6fe6fae9e0b34ff
+tracking_issue: 4520
+selection:
+  proof_state_ref: "Cycle 17 left every endomorphism embedding as an explicit generic hypothesis"
+  proof_obligation: "Construct an actual multiobject endpoint-typed free-path category containing all four existing tagged primitive roles, inject every endomorphism path into tagged primitive lists, and apply Cycle 17"
+  selection_reason: "This is the first concrete multiobject candidate to discharge Cycle 17's encode hypothesis while retaining parallel primitive edges and exact operation endpoints."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndpointPathObstruction.lean
+  risks:
+    - "use Quiver.Path.toList, which records vertices and collapses parallel edges"
+    - "erase dependent operation endpoints"
+    - "treat the parameter-root placement of Atom/Source as the uniquely legal final placement"
+    - "promote failure of one free-path candidate to fixed-target refutation"
+  unchecked:
+    - "source-derived typed congruence, substitution, and quotient normal forms"
+    - "final placement and additional legal parameter roles"
+    - "final Sigma,D,R_Theta and mandatory-C source-choice membership"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed a named parameter-root/architecture-object vertex type; assigned every tagged primitive an exact endpoint pair; defined the dependent primitive-edge quiver and its free path category; serialized paths by exact edge references; proved fixed-endpoint serialization injective even with parallel edges; and applied Cycle 17 to refute simultaneous fullness and retract generation for this actual candidate."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndpointPathObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.TaggedPrimitiveVertex
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveEndpoints
+    - AAT.AG.RealizationReconstruction.TaggedPrimitiveEdge
+    - AAT.AG.RealizationReconstruction.TaggedPrimitivePathPresentation
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathReferences
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathReferences_injective
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathEndomorphismEmbedding
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathPresentation_not_full_and_retractGenerated
+  claim_mapping:
+    input_premises:
+      - "Cycle 14 complete existing Atom/Source/Object/endpoint-indexed Operation alphabet"
+      - "the explicit parameter-root/object endpoint assignment fixed before any semantic functor"
+      - "an arbitrary functor from the constructed free path category into the independent mandatory-C category"
+    constructed_evidence:
+      - "all Atom and Source references as distinct root loops"
+      - "all Object references as loops at their exact architecture objects"
+      - "all Operation references as edges with their exact dependent source and target"
+      - "an exact edge-reference list for every path and a dependent induction proof of injectivity"
+      - "the per-object embedding family required by Cycle 17"
+    proof_use:
+      - "endpoint equality recovers the intermediate vertex after equal edge references"
+      - "Subtype.ext recovers parallel dependent edges without collapsing them"
+      - "the constructed embedding family is passed directly to Cycle 17"
+      - "Cycle 17 and Cycle 14 use it at the retract-selected object"
+    unfinished:
+      - "the parameter root is a syntactic vertex, not a semantic ArchitectureObject"
+      - "the chosen Atom/Source placement is one candidate and may be narrower than final legal occurrence placement"
+      - "no typed congruence quotient, substitution system, or additional parameter token is constructed"
+      - "final Sigma,D,R_Theta and source-choice membership are not constructed"
+      - "no fixed-target refutation or target-theorem-proved status is claimed"
+    acceptance_point: "Acceptance refutes only the constructed endpoint-typed free-path candidate. It does not establish that every legal target-compliant syntax admits this placement or serialization."
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCEndpointPathObstruction passed"
+    namespace_axiom_audit: "27 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 18 discharges the endomorphism embedding for one actual multiobject endpoint-typed free-path candidate while preserving all four roles and parallel operation edges. The fixed target remains neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "actual multiobject category laws via Mathlib Paths"
+      - "exact operation endpoint typing and preservation of parallel primitive labels"
+      - "constructive endomorphism serialization embedding for every object"
+      - "fullness/retract incompatibility for this candidate"
+    remaining:
+      - "legal typed congruence/substitution and any quotient embedding or normal form"
+      - "final parameter placement/provenance exhaustion"
+      - "final Sigma,D,R_Theta and mandatory-C membership"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the path embedding is constructed by recursion and dependent induction, not accepted as a field"
+    unresolved:
+      - "final grammar placement, congruence, and semantic-category membership"
+  structure_field_escape: "edges store one exact primitive plus endpoint typing only; no semantic morphism, decoder image, fullness, retract, or embedding certificate is stored"
+  route_integrity: "the quiver, endpoints, path category, and serialization are fixed before the arbitrary semantic functor"
+  target_fitting: "all existing tagged roles are retained, but the root placement and absence of additional legal roles are explicitly candidate-specific"
+  vacuity: "the category contains identities and every well-typed finite path; parallel references are distinguished by their exact values"
+  blocking_findings: []
+  next_obligation: "Construct a source-derived typed congruence/substitution quotient with an actual representative embedding or normal form, and separately prove the final Sigma,D,R_Theta membership of all mandatory-C source-choice maps."
 ```
