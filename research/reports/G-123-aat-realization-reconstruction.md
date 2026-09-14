@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 8 common-family integration of the original G-122 input range
+- current proof obligation: Cycle 9 endpoint-indexed G-122 operation references and source evaluation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the G-122 primitive operation role and branch-specific interpretations without quoting completed maps, then define the closed finite presentation
+- next proof obligation: determine a genuine finite generating grammar for arbitrary opaque G-122 operation families, or prove a target-level obstruction rather than re-inputting a completed operationMap
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解 | Bの二具体適用、Eのモデル同期; 後続のG-122 operation role、branch別interpretation、closed presentation設計; Dの量化保持 | G-122の`PrimitiveOperation`とbranch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価 | Bの二具体適用、Eのモデル同期; 後続のG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -30,7 +30,7 @@
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal` | G-117の固定`taggedOperationPackage`とadmissibility | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness | 固定点関手は同じKaroubi二射`et,e`の像を同一視する | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続 |
-| D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation roleとprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
+| D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
 | F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | — | `Q,K,H` | — | D・Eとの共通分類 | 全項目未完了 |
@@ -1233,5 +1233,138 @@ review_round_2:
     reviewed_delta: "a95ac65ace99682e8eee934fb87ae856c3a14c7c..03f079c5c"
     code: "changed examples to branches in the module introduction"
     pr_metadata: "updated the PR validation count from 399 to 397 without changing the reviewed source head"
+  rerun_required: true
+```
+
+## Cycle 9 — Endpoint-indexed G-122 operation references
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 9
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2eaa58fae1e0ac915a61995cd2d683832519ead6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 8 merged at 2eaa58fae; the common G-122 branch retained objects and non-operation source roles but PrimitiveOperation had no G-122 constructor"
+  proof_dag_predecessors:
+    - "Cycle 8 arbitrary G122FamilyInput/G122CellInput common-family branch"
+    - "OperationReading.Op: endpoint-indexed selected operation identity with configurationMap evaluation"
+    - "G-123(A) and n1014 section 2: retain both endpoints, operation identity, and configuration action"
+  proof_obligation: "Represent each original G-122 support operation at its exact endpoints and evaluate both its identity and configuration action, without accepting a completed operationMap family or claiming a finite generating grammar"
+  selection_reason: "An individual source Op value is original primitive data, while a family assigning a target Op to every source Op would already be the completed morphism component forbidden by the fixed target. This cycle makes that distinction explicit in the common declaration."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "calling an arbitrary source-operation reference a finite generator"
+    - "forgetting operation identity by interpreting only its ConfigurationHom"
+    - "accepting a forall-source-target operation family and thereby repackaging a completed operationMap"
+    - "restricting endpoints to the fixed finite example or a selected object subset"
+    - "deriving full operation-map reconstruction from the reference evaluator"
+  unchecked:
+    - "finite operation grammar and sufficient generating relations for arbitrary opaque Op families"
+    - "construction of every admissible full operationMap from finite coherent data"
+    - "branch-specific full primitive interpretations and congruence"
+    - "closed Sigma, D_Theta, R_Theta, P_Theta, and F_Theta"
+    - "AAT res/ext/J and four reconstruction properties"
+    - "D display recovery and classification; E translations; F"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Added PrimitiveOperation.g122Ref for one operation of the original authored support package at arbitrary source and target ArchitectureObject values. Added g122Value to recover the identical Op value and g122ConfigurationMap to evaluate its original configuration action without assuming configurationMap injective. Specialized every operation of the mandated finite-axis-fold support package through the same general constructor and proved literal identity readback. No operation-map family, target-operation choice, finiteness premise, interpreter completeness, or reconstruction conclusion was added."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation.g122Ref
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation.g122Value
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation.g122ConfigurationMap
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation.g122Value_ref
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation.g122ConfigurationMap_ref
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldOperationReference
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldOperationReference_value
+  claim_mapping:
+    source_labels:
+      - "GOAL A operation row: endpoints, operation identity, and configuration action"
+      - "GOAL C: configuration-invisible operation distinctions must remain visible"
+      - "user anti-weakening clauses 1--3 and 5"
+      - "n1014 sections 2, 6.3, and 6.4"
+    input_premises:
+      - "the already fixed arbitrary G122FamilyInput and G122CellInput"
+      - "one operation value from the original authored support package at arbitrary original endpoints"
+      - "no target operation, completed operation-map family, extension witness, finiteness, or injectivity premise"
+    constructed_evidence:
+      - "an endpoint-indexed PrimitiveOperation value under the same common parameter and semantic object"
+      - "literal readback of the same source operation identity"
+      - "configuration action evaluated by the source OperationReading.configurationMap"
+      - "the full fixed finite-axis-fold Op family specializes through the general branch"
+    proof_use:
+      - "the dependent Op type fixes both source and target indices of g122Ref"
+      - "g122Value keeps operation identity available independently of configuration action"
+      - "g122ConfigurationMap consumes g122Value and the original operation reading"
+      - "the fixed specialization theorem verifies identity readback rather than only equality after configuration forgetting"
+    unfinished:
+      - "g122Ref is a parameter-relative source reference, not a proof that the Op family has finite generators"
+      - "no map between two arbitrary G-122 operation families is constructed"
+      - "no res/ext/J, fullness, faithfulness, finite syntax, or D recovery claim is asserted"
+  candidate_failure_record:
+    candidate: "recover a full target operationMap from object/configuration data alone"
+    obstacle: "OperationReading.Op is an opaque endpoint-indexed type and configurationMap need not be injective or surjective; it supplies no constructors, composition, normal form, or reification from ConfigurationHom"
+    forbidden_shortcut: "supplying a target operation reference for every source operation is definitionally the missing completed operationMap family under another name"
+    status: "candidate obstruction only; not yet a refutation of the fixed target, and alternative finite grammars remain to be investigated"
+    paper_conclusion_at_risk: "without operation-identity recovery, the uniform flip separation and the claimed recovery of comparison-preserving changes would be lost"
+  validation:
+    focused_checks: "1/1 pass"
+    namespace_axiom_audit: "409 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 9 is a proof checkpoint: it preserves and evaluates every individual source operation at exact endpoints, including the original finite specialization, but it does not construct finite operation generation or recover a full operationMap. A, D, and G-123 remain unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "the common G-122 PrimitiveOperation role is no longer absent"
+      - "operation identity and configuration action are kept as distinct outputs"
+      - "arbitrary source/target endpoints and the full original Op family are retained"
+      - "the fixed finite example uses the general operation-reference constructor"
+    remaining:
+      - "find finite generating syntax sufficient for every admissible operationMap without accepting that map as data"
+      - "construct full branch interpretation, congruence, and reconstruction"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the operation payload comes only from the original authored support package"
+      - "configuration evaluation uses the same support package's OperationReading.configurationMap"
+    unresolved:
+      - "finite generation and full-map recovery for arbitrary opaque Op families"
+  proof_use:
+    used:
+      - "operation identity in g122Value and the fixed identity theorem"
+      - "configurationMap in g122ConfigurationMap and its constructor equation"
+      - "both endpoint indices in the PrimitiveOperation result type"
+    unused: []
+  structure_field_escape: "no forall-endpoint operation-map family, target-operation selector, extension witness, or completed core/geometry morphism is stored"
+  route_integrity: "identity-preserving source evaluation only; no finite-generation or extension route is claimed"
+  target_fitting: "all endpoints and all original support Op values remain referenceable; no fixed subgroup, selected endpoint subset, or configuration-map quotient is used"
+  vacuity: "g122Value_ref is literal identity, and the fixed theorem ranges over every operation of the mandated support package"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused AATClosedFamilySignature.lean: pass, 409 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "Investigate a genuine parameter-relative finite grammar for arbitrary G-122 Op families and admissible maps; distinguish a failed grammar from a target-level cardinality or opacity obstruction."
+initial_review:
+  head: 3a714f99ae1a1e0774b7c77918004daa9382589d
+  verdict: pass-after-noncentral-fix
+  independent_lanes:
+    math_a: pass
+    math_b: pass-after-noncentral-fix
+    lean_a: pass
+    lean_b: pass-after-noncentral-fix
+  central_findings: []
+  noncentral_findings:
+    - "g122Value was described as preventing future identity erasure, although the current accessor only keeps identity independently available"
+  direct_response:
+    reviewed_delta: "3a714f99ae1a1e0774b7c77918004daa9382589d..98b36ac19"
+    report: "replaced prevents replacement with keeps identity available independently of configuration action"
   rerun_required: true
 ```

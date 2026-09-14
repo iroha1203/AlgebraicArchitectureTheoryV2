@@ -200,8 +200,10 @@ inductive PrimitiveObject :
 
 The tagged constructor contains an actual operation of the fixed G-117
 package, retaining both endpoints and the pre-existing operation identity.
-Protocol edges retain their original typed endpoints.  These constructors are
-operation names/values, not completed semantic maps. -/
+The G-122 reference constructor likewise contains one operation from the
+original authored support package at its actual endpoints.  Protocol edges
+retain their original typed endpoints.  These constructors are individual
+operation names/values, not completed operation-map families. -/
 inductive PrimitiveOperation :
     (θ : ClosedFamilyParameter.{u, v}) → (X : FamilyRealization θ) →
       PrimitiveObject θ X → PrimitiveObject θ X →
@@ -209,6 +211,12 @@ inductive PrimitiveOperation :
   | tagged {source target : ArchitectureObject FiniteModel.carrier}
       (operation : taggedOperationPackage.reading.operationReading.Op source target) :
       PrimitiveOperation .taggedOperation .taggedOperation (.tagged source) (.tagged target)
+  | g122Ref {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      {source target : ArchitectureObject input.Carrier}
+      (operation : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).reading.operationReading.Op
+          source target) :
+      PrimitiveOperation (.g122 input) (.g122 X) (.g122 source) (.g122 target)
   | lensGet {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveOperation (.lens input) (.lens X)
@@ -225,6 +233,57 @@ inductive PrimitiveOperation :
       (edge : input.schema.Edge source target) :
       PrimitiveOperation (.protocol input) (.protocol X) (PrimitiveObject.protocolState source)
         (PrimitiveObject.protocolState target)
+
+namespace PrimitiveOperation
+
+/-- Read back the exact source operation identity stored by a G-122 primitive
+reference.  The fixed indices rule out every non-G-122 constructor. -/
+def g122Value {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : ArchitectureObject input.Carrier}
+    (operation : PrimitiveOperation (.g122 input) (.g122 X)
+      (.g122 source) (.g122 target)) :
+    let _ := input.atomDecidableEq
+    (input.authored.context.supportPackage X.cell.as).reading.operationReading.Op
+      source target := by
+  cases operation with
+  | g122Ref value => exact value
+
+/-- Evaluate the configuration action of a G-122 primitive reference through
+the original operation reading.  Operation identity is retained separately by
+`g122Value`; no injectivity of `configurationMap` is assumed. -/
+def g122ConfigurationMap {input : G122FamilyInput.{u, v}}
+    {X : G122CellInput input}
+    {source target : ArchitectureObject input.Carrier}
+    (operation : PrimitiveOperation (.g122 input) (.g122 X)
+      (.g122 source) (.g122 target)) :
+    ConfigurationHom source.configuration target.configuration := by
+  letI := input.atomDecidableEq
+  exact
+    (input.authored.context.supportPackage X.cell.as).reading.operationReading.configurationMap
+      operation.g122Value
+
+@[simp] theorem g122Value_ref {input : G122FamilyInput.{u, v}}
+    {X : G122CellInput input}
+    {source target : ArchitectureObject input.Carrier}
+    (operation : let _ := input.atomDecidableEq
+      (input.authored.context.supportPackage X.cell.as).reading.operationReading.Op
+        source target) :
+    g122Value (g122Ref operation) = operation :=
+  rfl
+
+@[simp] theorem g122ConfigurationMap_ref
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : ArchitectureObject input.Carrier}
+    (operation : let _ := input.atomDecidableEq
+      (input.authored.context.supportPackage X.cell.as).reading.operationReading.Op
+        source target) :
+    g122ConfigurationMap (g122Ref operation) =
+      let _ := input.atomDecidableEq
+      (input.authored.context.supportPackage X.cell.as).reading.operationReading.configurationMap
+        operation :=
+  rfl
+
+end PrimitiveOperation
 
 /-- Context names are generated independently of completed geometry maps. -/
 inductive PrimitiveContext :
@@ -267,6 +326,24 @@ the general branch. -/
 noncomputable def finiteAxisFoldAtom (atom : FiniteModel.FiniteAtom) :
     PrimitiveAtom finiteAxisFoldParameter finiteAxisFoldRealization :=
   .g122 atom
+
+/-- Every operation of the mandated finite axis-fold support package is
+represented at the same endpoints through the general G-122 reference
+constructor. -/
+noncomputable def finiteAxisFoldOperationReference
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : finiteAxisFoldSupportPackage.reading.operationReading.Op source target) :
+    PrimitiveOperation finiteAxisFoldParameter finiteAxisFoldRealization
+      (.g122 source) (.g122 target) :=
+  .g122Ref operation
+
+/-- The fixed specialization reads back the identical operation value; it is
+not reconstructed from its configuration map. -/
+@[simp] theorem finiteAxisFoldOperationReference_value
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : finiteAxisFoldSupportPackage.reading.operationReading.Op source target) :
+    PrimitiveOperation.g122Value (finiteAxisFoldOperationReference operation) = operation :=
+  rfl
 
 /-- The fixed G-117 operation family is represented at every pair of its
 actual architecture-object endpoints. -/
