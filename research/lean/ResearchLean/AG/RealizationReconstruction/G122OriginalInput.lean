@@ -1,6 +1,6 @@
-import ResearchLean.AG.RealizationReconstruction.AATClosedFamilySignature
 import ResearchLean.AG.FullGeometryNormalization.ExactDerivedRefinementBC
 import ResearchLean.AG.FullGeometryNormalization.ExactBarBetaFiniteWitness
+import Formal.Util.AssertStandardAxioms
 
 /-!
 # The original G-122 input, separated from its generated constructions

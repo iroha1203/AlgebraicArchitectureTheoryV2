@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 7 standalone decomposition of the original G-122 input range
+- current proof obligation: Cycle 8 common-family integration of the original G-122 input range
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: integrate the preserved G-122 input into the common family declaration, then construct branch-specific primitive interpretations without quoting completed maps
+- next proof obligation: construct the G-122 primitive operation role and branch-specific interpretations without quoting completed maps, then define the closed finite presentation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `ClosedFamilyParameter`, `FamilyRealization`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveOperation`/`PrimitiveContext`; standalone前駆体`G122FamilyInput`, `G122CellInput` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117/G-122のnullary tag; standalone bundleではG-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatchとrole-specific constructor; standalone bundleではG-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立てる依存分解 | Bの二具体適用、Eのモデル同期; 後続のcommon-family統合、branch別interpretationとclosed presentation設計; Dの量化保持 | `ClosedFamilyParameter.finiteAxisFold`はなおnullaryでありstandalone bundleとの接続が未完了; branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解 | Bの二具体適用、Eのモデル同期; 後続のG-122 operation role、branch別interpretation、closed presentation設計; Dの量化保持 | G-122の`PrimitiveOperation`とbranch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -30,7 +30,7 @@
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal` | G-117の固定`taggedOperationPackage`とadmissibility | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness | 固定点関手は同じKaroubi二射`et,e`の像を同一視する | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続 |
-| D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldG122CellInput` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、元の有限例を同じ一般入力分解へ入れ、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | primitive syntax/interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
+| D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation roleとprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
 | F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | — | `Q,K,H` | — | D・Eとの共通分類 | 全項目未完了 |
@@ -1073,4 +1073,165 @@ review_round_2:
     reviewed_delta: "1283e9cb511b4cd870bea783d8682d6611465f15..ef4da6d9938598979645784c21b2398553a98d95"
     verdict: pass
     new_findings: []
+```
+
+## Cycle 8 — Common-family integration of the original G-122 range
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 8
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f2b175cdb2fe03a02675b6c7eff8db79a35cd9bd
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 7 merged at f2b175cdb; the exact G-122 input range existed only as a standalone bundle and the common declaration still had a nullary fixed-example branch"
+  proof_dag_predecessors:
+    - "Cycle 7 G122FamilyInput/G122CellInput dependency split and fixed finite specialization"
+    - "Cycle 4 ClosedFamilyParameter and role-indexed primitive source scaffold"
+    - "G-122 support-package, signature, equation, invariant, selected-geometry, and raw-restriction source fields"
+  proof_obligation: "Replace the nullary fixed G-122 family tag by the arbitrary original G122FamilyInput, place every G122CellInput under that same branch, and expose only source-derived primitive roles without accepting completed transports, comparisons, or display maps"
+  selection_reason: "This closes the Cycle 7/common-declaration disconnect while preserving the quantifier order parameter first and arbitrary semantic object second. It deliberately stops before inventing an operation syntax that would merely re-input completed operation maps."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATUniformFlipKaroubi.lean
+  risks:
+    - "retaining only the fixed finite G-122 example under the common declaration"
+    - "collapsing the independent carrier and coefficient universes"
+    - "using a universe wrapper that changes or restricts the underlying semantic object"
+    - "adding a G-122 operation constructor whose payload is already a completed global operation map"
+    - "calling source-role availability a finite presentation or interpretation"
+    - "calling common-family integration an A or D discharge"
+  unchecked:
+    - "a source-generated G-122 primitive operation role and its endpoint discipline"
+    - "branch-specific primitive interpretations and congruence"
+    - "closed finite presentation Sigma and intrinsic D_Theta"
+    - "AAT complete-geometry res/ext/J and four reconstruction properties"
+    - "D display recovery, both kernels, every lift fiber, and the three-case classification"
+    - "E bidirectional AAT translations"
+    - "F classification and fixed finite examples"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Reversed the dependency between the standalone input module and the common signature; replaced the nullary G-122 tag by a payload carrying an arbitrary G122FamilyInput at independent carrier and coefficient universes; introduced a property-free indexed FamilyRealization constructor carrying every arbitrary G122CellInput unchanged; and specialized the mandated finite axis-fold input through that same general branch. Added source-derived G-122 Atom, source, object, context, diagnostic-cell, signature-axis/coordinate, equation, invariant, raw-coordinate, and raw-relation roles. No G-122 operation constructor or interpreter was added, because a constructor accepting a completed global operation map would move a target conclusion into syntax."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ClosedFamilyParameter.g122
+    - AAT.AG.RealizationReconstruction.FamilyRealization.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveAtom.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveSource.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveObject.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveContext.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveDiagnosticCell.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureAxis.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureCoordinate.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveEquationIndex.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveInvariantIndex.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveCoordinateIndex.g122
+    - AAT.AG.RealizationReconstruction.PrimitiveRelationIndex.g122
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldParameter
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldRealization
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldAtom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: one declaration, fixed mandatory input family, and quantification over every semantic object after the parameter"
+      - "GOAL D: the original G-122 input range and mandated finite axis-fold specialization"
+      - "user instruction: anti-weakening clauses 1--3 and 5"
+      - "n1014 sections 6.3 and 6.5"
+    input_premises:
+      - "one arbitrary G122FamilyInput containing the original carrier, authored square, coefficient carrier/ring, and decidable equality"
+      - "one arbitrary G122CellInput below that fixed family parameter, containing z, omega, selected geometry, and raw restrictions"
+      - "no source transport, compatible problem data, comparison, normalization, section, kernel, fiber, decoder, or display map"
+    constructed_evidence:
+      - "ClosedFamilyParameter.g122 carries the family input without narrowing it"
+      - "FamilyRealization.g122 injects each original cell input under the already fixed parameter without adding a premise"
+      - "the fixed finite-axis-fold parameter and realization inhabit the same general constructors"
+      - "each added primitive role is read from the original carrier or authored/support/geometry/raw structures"
+    proof_use:
+      - "the G-122 parameter payload determines the carrier, coefficient universe, authored square, and all dependent primitive role types"
+      - "the semantic-object constructor carries the cell, cochain, selected geometry, and raw inputs unchanged; the cell, selected geometry, and raw inputs determine the corresponding added role types, while the cochain remains available to the already constructed barBeta output"
+      - "the fixed finite Atom specialization passes through the general g122 parameter and realization constructors"
+    unfinished:
+      - "FamilyRealization is only a property-free common index; it is not the realization category, a decoder image, or a reconstruction theorem"
+      - "the primitive role types are semantic-source references and are not yet a finite syntax Sigma"
+      - "PrimitiveOperation has no G-122 constructor; operation generation and interpretation remain open"
+      - "no D recovery or AAT complete-geometry reconstruction conclusion is asserted"
+  validation:
+    focused_checks: "2/2 pass"
+    namespace_axiom_audits:
+      - "G122OriginalInput: 44 declarations, standard axioms only"
+      - "AATClosedFamilySignature: 397 declarations, standard axioms only"
+    bounded_target_builds:
+      - "ResearchLean.AG.RealizationReconstruction.AATClosedFamilySignature passed"
+      - "ResearchLean.AG.RealizationReconstruction.AATUniformFlipKaroubi passed"
+    research_full_build: not-run
+  verdict: "Cycle 8 is a proof checkpoint: the exact arbitrary G-122 input range is now inside the same closed family declaration and the mandated finite example uses that branch. Operation generation, interpretation, finite presentation, reconstruction, and display recovery remain unproved, so neither A nor D nor G-123 is discharged."
+audits:
+  premise_delta:
+    discharged:
+      - "the common family no longer represents G-122 by a nullary fixed-example tag"
+      - "arbitrary G122CellInput values remain quantified after one fixed G122FamilyInput parameter"
+      - "the carrier and coefficient universes remain independent"
+      - "the fixed finite example is a specialization of the arbitrary branch"
+    remaining:
+      - "construct the missing operation role from generated source data rather than completed maps"
+      - "construct branch-specific interpretations and the closed finite presentation"
+      - "all reconstruction, display recovery, translation, and classification obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "the common constructors carry only the Cycle 7 original inputs"
+      - "source-derived role payloads are selected from the carrier, authored square, its support package, selected geometry, or raw restrictions"
+    unresolved:
+      - "finite generation and interpretation adequacy of all G-122 roles"
+  proof_use:
+    used:
+      - "G122FamilyInput in ClosedFamilyParameter.g122 and every dependent G-122 role"
+      - "G122CellInput in FamilyRealization.g122 and every object-dependent G-122 role"
+      - "the same general constructors in the fixed finite specialization"
+    unused: []
+  structure_field_escape: "FamilyRealization.g122 adds no field beyond the original cell input; no generated transport, comparison, normalization, group element, section, kernel, lift fiber, decoder, or completed map is accepted"
+  route_integrity: "checkpoint-only; the preserved source roles have no interpreter or decoder yet"
+  target_fitting: "the general branch retains arbitrary authored squares, cells, cochains, coefficient rings, selected geometries, and raw restrictions; the finite example does not define or restrict it"
+  vacuity: "the branch has arbitrary payloads and the fixed witness is proved by direct specialization, not by replacing the general family"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused G122OriginalInput.lean: pass, standard axioms only"
+    - "focused AATClosedFamilySignature.lean: pass, standard axioms only"
+    - "bounded AATClosedFamilySignature and AATUniformFlipKaroubi targets: pass"
+  blocking_findings: []
+  next_obligation: "Construct a source-generated G-122 PrimitiveOperation with exact endpoints, then define branch-specific primitive interpretations and congruence without accepting completed maps."
+initial_review:
+  head: bf0829140e691d3e1979f899d483e0064f4897f6
+  verdict: pass-after-noncentral-fix
+  central_findings: []
+  noncentral_findings:
+    - "the diagnostic-cell docstring still described the former fixed finite family"
+    - "two disconnected FiniteAxisFold signature aliases could be mistaken for the new general source roles"
+    - "the report omitted carrier-derived roles and overstated the cochain's direct role-type dependency"
+  direct_response:
+    - "generalized the diagnostic-cell wording and removed the disconnected aliases"
+    - "added carrier provenance and separated cochain preservation/barBeta use from primitive role-type dependencies"
+  rerun_required: true
+review_round_2:
+  head: a95ac65ace99682e8eee934fb87ae856c3a14c7c
+  verdict: pass-after-noncentral-fix
+  independent_lanes:
+    math_a: pass
+    math_b: pass-after-noncentral-fix
+    lean_a: pass-after-external-metadata-fix
+    lean_b: pass
+  noncentral_findings:
+    - "the module introduction called the general G-122 branch an example rather than a branch"
+    - "the PR body retained the pre-fix 399-declaration audit count"
+  direct_response:
+    reviewed_delta: "a95ac65ace99682e8eee934fb87ae856c3a14c7c..03f079c5c"
+    code: "changed examples to branches in the module introduction"
+    pr_metadata: "updated the PR validation count from 399 to 397 without changing the reviewed source head"
+  rerun_required: true
 ```
