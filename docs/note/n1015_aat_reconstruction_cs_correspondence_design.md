@@ -1,6 +1,6 @@
 # n1015: 再構成定理のCSへの対応 — モデル同期とプロトコルの追随変更
 
-[G-123のdraftカード](../../research/goals/G-123-aat-realization-reconstruction.md) E・Fの
+[G-123のGOALカード](../../research/goals/G-123-aat-realization-reconstruction.md) E・Fの
 独立なCS意味論、decoder、変更分類の構成案を本ノートで定める。
 
 [n1012](n1012_aat_unified_theory_foundations_paper_plan.md) の二つのCS適用と、

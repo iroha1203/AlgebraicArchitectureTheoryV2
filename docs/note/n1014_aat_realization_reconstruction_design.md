@@ -6,7 +6,7 @@ G-123として設計する。[n1012](n1012_aat_unified_theory_foundations_paper_
 CS側の独立な意味、二つの実現圏・表示圏・decoderの具体案、共通の変更分類は
 [n1015](n1015_aat_reconstruction_cs_correspondence_design.md) に置く。
 研究目標と完了条件は
-[G-123のdraftカード](../../research/goals/G-123-aat-realization-reconstruction.md) にまとめる。
+[G-123のGOALカード](../../research/goals/G-123-aat-realization-reconstruction.md) にまとめる。
 本ノートは構成の選択理由と、入力・表示の具体化に必要な検討を扱う。
 
 ## 1. 論文の到達点と設計基準
